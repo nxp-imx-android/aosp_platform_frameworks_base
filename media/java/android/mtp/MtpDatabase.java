@@ -580,6 +580,10 @@ public class MtpDatabase {
             MtpConstants.FORMAT_PLS_PLAYLIST,
             MtpConstants.FORMAT_XML_DOCUMENT,
             MtpConstants.FORMAT_FLAC,
+            // add fsl supported medial format
+            MtpConstants.FORMAT_ASF,
+            MtpConstants.FORMAT_AVI,
+            MtpConstants.FORMAT_WMV,
         };
     }
 
