@@ -16134,6 +16134,7 @@ package android.media {
     method public void setOnTimedTextListener(android.media.MediaPlayer.OnTimedTextListener);
     method public void setOnVideoSizeChangedListener(android.media.MediaPlayer.OnVideoSizeChangedListener);
     method public void setPlaybackParams(android.media.PlaybackParams);
+    method public void setPlaySpeed(int);
     method public void setScreenOnWhilePlaying(boolean);
     method public void setSurface(android.view.Surface);
     method public void setSyncParams(android.media.SyncParams);
@@ -16263,6 +16264,7 @@ package android.media {
     field public static final int DEFAULT = 0; // 0x0
     field public static final int HE_AAC = 4; // 0x4
     field public static final int VORBIS = 6; // 0x6
+    field public static final int MP3 = 7; // 0x6
   }
 
   public final class MediaRecorder.AudioSource {

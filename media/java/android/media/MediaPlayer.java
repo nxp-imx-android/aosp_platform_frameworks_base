@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+/* Copyright 2009-2013 Freescale Semiconductor Inc. */
+
 package android.media;
 
 import android.annotation.IntDef;
@@ -1848,6 +1850,114 @@ public class MediaPlayer implements SubtitleController.Listener
      */
     public native void attachAuxEffect(int effectId);
 
+    /* Do not change these values (starting with KEY_PARAMETER) without updating
+     * their counterparts in include/media/mediaplayer.h!
+     */
+
+    // There are currently no defined keys usable from Java with get*Parameter.
+    // But if any keys are defined, the order must be kept in sync with include/media/mediaplayer.h.
+    // private static final int KEY_PARAMETER_... = ...;
+    private static final int KEY_PARAMETER_PLAYBACK_RATE_PERMILLE = 1300;
+
+    /**
+     * Sets the parameter indicated by key.
+     * @param key key indicates the parameter to be set.
+     * @param value value of the parameter to be set.
+     * @return true if the parameter is set successfully, false otherwise
+     * {@hide}
+     */
+    public native boolean setParameter(int key, Parcel value);
+
+    /**
+     * Sets the parameter indicated by key.
+     * @param key key indicates the parameter to be set.
+     * @param value value of the parameter to be set.
+     * @return true if the parameter is set successfully, false otherwise
+     * {@hide}
+     */
+    public boolean setParameter(int key, String value) {
+        Parcel p = Parcel.obtain();
+        p.writeString(value);
+        boolean ret = setParameter(key, p);
+        p.recycle();
+        return ret;
+    }
+
+    /**
+     * Sets the parameter indicated by key.
+     * @param key key indicates the parameter to be set.
+     * @param value value of the parameter to be set.
+     * @return true if the parameter is set successfully, false otherwise
+     * {@hide}
+     */
+    public boolean setParameter(int key, int value) {
+        Parcel p = Parcel.obtain();
+        p.writeInt(value);
+        boolean ret = setParameter(key, p);
+        p.recycle();
+        return ret;
+    }
+
+    /**
+     * Set play speed.
+     *
+     * @param Speed is normalized speed multiplied by 0x10000
+     * Range of normalized speed is:
+     *         [-16,-2] means rewind, [0.1, 16] means forward, step is 0.1
+     * When normalized speed is [0.1, 1.9] audio is outputted, otherwise audio
+     * is not outputted.
+     */
+    public void setPlaySpeed(int Speed) {
+        setParameter(KEY_PARAMETER_PLAYBACK_RATE_PERMILLE, Speed);
+    }
+
+    /*
+     * Gets the value of the parameter indicated by key.
+     * @param key key indicates the parameter to get.
+     * @param reply value of the parameter to get.
+     */
+    private native void getParameter(int key, Parcel reply);
+
+    /**
+     * Gets the value of the parameter indicated by key.
+     * The caller is responsible for recycling the returned parcel.
+     * @param key key indicates the parameter to get.
+     * @return value of the parameter.
+     * {@hide}
+     */
+    public Parcel getParcelParameter(int key) {
+        Parcel p = Parcel.obtain();
+        getParameter(key, p);
+        return p;
+    }
+
+    /**
+     * Gets the value of the parameter indicated by key.
+     * @param key key indicates the parameter to get.
+     * @return value of the parameter.
+     * {@hide}
+     */
+    public String getStringParameter(int key) {
+        Parcel p = Parcel.obtain();
+        getParameter(key, p);
+        String ret = p.readString();
+        p.recycle();
+        return ret;
+    }
+
+    /**
+     * Gets the value of the parameter indicated by key.
+     * @param key key indicates the parameter to get.
+     * @return value of the parameter.
+     * {@hide}
+     */
+    public int getIntParameter(int key) {
+        Parcel p = Parcel.obtain();
+        getParameter(key, p);
+        int ret = p.readInt();
+        p.recycle();
+        return ret;
+    }
 
     /**
      * Sets the send level of the player to the attached auxiliary effect.

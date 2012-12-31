@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+/* Copyright 2009-2013 Freescale Semiconductor Inc. */
+
 package android.media;
 
 import android.annotation.NonNull;
@@ -369,6 +371,8 @@ public class MediaRecorder
         public static final int AAC_ELD = 5;
         /** Ogg Vorbis audio codec */
         public static final int VORBIS = 6;
+        /** MP3 audio codec */
+        public static final int MP3 = 7;
     }
 
     /**
