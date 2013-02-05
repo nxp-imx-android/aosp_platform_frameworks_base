@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+/* Copyright (C) 2013 Freescale Semiconductor, Inc. */
+
 package com.android.systemui;
 
 import static android.opengl.GLES20.*;
@@ -699,13 +701,16 @@ public class ImageWallpaper extends WallpaperService {
 
             mEglConfig = chooseEglConfig();
             if (mEglConfig == null) {
-                throw new RuntimeException("eglConfig not initialized");
+                //chooseEGLConfig fail since no egl render type EGL_OPENGL_ES2_BIT when disable gpu acceleration,
+                //should switch to SW canvas renderer without throwing exception in this case.
+                checkEglError();
+                return false;
             }
 
             mEglContext = createContext(mEgl, mEglDisplay, mEglConfig);
             if (mEglContext == EGL_NO_CONTEXT) {
-                throw new RuntimeException("createContext failed " +
-                        GLUtils.getEGLErrorString(mEgl.eglGetError()));
+                checkEglError();
+                return false;
             }
 
             int attribs[] = {
