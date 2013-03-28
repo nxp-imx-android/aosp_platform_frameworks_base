@@ -31,6 +31,7 @@ import android.graphics.Bitmap;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StatFs;
 import android.os.FileUtils;
 import android.os.Handler;
 import android.os.IUserManager;
@@ -146,6 +147,8 @@ public class UserManagerService extends IUserManager.Stub {
 
     static final int WRITE_USER_MSG = 1;
     static final int WRITE_USER_DELAY = 2*1000;  // 2 seconds
+
+    private static final long MIN_AVAILABLE_SPACE = 32 * 1024 * 1024;
 
     private static final String XATTR_SERIAL = "user.serial";
 
@@ -645,6 +648,21 @@ public class UserManagerService extends IUserManager.Stub {
         }
         return aliveUserCount;
     }
+
+    /**
+     * Check if we've enough space for new user.
+     */
+    private static final boolean isNoFreeSpace() {
+        final String path = Environment.getDataDirectory().getPath();
+        StatFs fileStats = new StatFs(path);
+        long restM = fileStats.getAvailableBlocks() * fileStats.getBlockSize();
+        Slog.w(LOG_TAG, "remain size for data is " + restM);
+        if ( restM < MIN_AVAILABLE_SPACE)
+            return true;
+        else
+            return false;
+    }
+
 
     /**
      * Enforces that only the system UID or root's UID or apps that have the
@@ -1263,6 +1281,7 @@ public class UserManagerService extends IUserManager.Stub {
                     if (isGuest && findCurrentGuestUserLocked() != null) {
                         return null;
                     }
+                    if (isNoFreeSpace()) return null;
                     userId = getNextAvailableIdLocked();
                     userInfo = new UserInfo(userId, name, null, flags);
                     userInfo.serialNumber = mNextSerialNumber++;
