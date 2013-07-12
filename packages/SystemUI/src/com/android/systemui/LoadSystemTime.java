@@ -31,6 +31,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 
+import android.graphics.PixelFormat;
 import android.graphics.Color;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuff;
@@ -85,6 +86,7 @@ public class LoadSystemTime extends Service {
             mAddedPaint.setARGB(255, 128, 255, 128);
 
             surfaceHolder = this.getHolder();
+            getHolder().setFormat(PixelFormat.TRANSLUCENT);
             surfaceHolder.addCallback(this);
         }
 
@@ -146,7 +148,7 @@ public class LoadSystemTime extends Service {
     public void onCreate() {
         super.onCreate();
         mIndex = 0;
-        mPattern = "yyyy-MM-dd HH:mm:ss:SSS";
+        mPattern = "mm:ss:SSS";
         mSdf = new SimpleDateFormat(mPattern);
         mTimeList = new ArrayList<String>();
         for(int i = 0; i < mLineNumber; i++ ){
