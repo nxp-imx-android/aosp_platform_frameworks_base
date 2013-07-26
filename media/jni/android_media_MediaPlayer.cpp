@@ -125,6 +125,7 @@ void JNIMediaPlayerListener::notify(int msg, int ext1, int ext2, const Parcel *o
             env->CallStaticVoidMethod(mClass, fields.post_event, mObject,
                     msg, ext1, ext2, jParcel);
             env->DeleteLocalRef(jParcel);
+            jParcel = NULL;
         }
     } else {
         env->CallStaticVoidMethod(mClass, fields.post_event, mObject,
