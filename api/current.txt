@@ -16134,7 +16134,7 @@ package android.media {
     method public void setOnTimedTextListener(android.media.MediaPlayer.OnTimedTextListener);
     method public void setOnVideoSizeChangedListener(android.media.MediaPlayer.OnVideoSizeChangedListener);
     method public void setPlaybackParams(android.media.PlaybackParams);
-    method public void setPlaySpeed(int);
+    method public void setPlaySpeed(int[]);
     method public void setScreenOnWhilePlaying(boolean);
     method public void setSurface(android.view.Surface);
     method public void setSyncParams(android.media.SyncParams);

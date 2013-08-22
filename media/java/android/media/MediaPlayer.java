@@ -1907,8 +1907,9 @@ public class MediaPlayer implements SubtitleController.Listener
      * When normalized speed is [0.1, 1.9] audio is outputted, otherwise audio
      * is not outputted.
      */
-    public void setPlaySpeed(int Speed) {
-        setParameter(KEY_PARAMETER_PLAYBACK_RATE_PERMILLE, Speed);
+    public void setPlaySpeed(int[] Speed) {
+        setParameter(KEY_PARAMETER_PLAYBACK_RATE_PERMILLE, Speed[0]);
+        Speed[0] = getIntParameter(KEY_PARAMETER_PLAYBACK_RATE_PERMILLE);
     }
 
     /*
