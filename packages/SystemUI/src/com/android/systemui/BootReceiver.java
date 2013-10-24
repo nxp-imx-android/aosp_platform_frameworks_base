@@ -21,6 +21,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.Settings;
+import android.util.Slog;
 import android.util.Log;
 
 /**
@@ -38,6 +39,12 @@ public class BootReceiver extends BroadcastReceiver {
             if (Settings.Global.getInt(res, Settings.Global.SHOW_PROCESSES, 0) != 0) {
                 Intent loadavg = new Intent(context, com.android.systemui.LoadAverageService.class);
                 context.startService(loadavg);
+            }
+
+            // ContentResolver sys = context.getContentResolver();
+            if (Settings.Global.getInt(res,Settings.Global.SHOW_SYSTEM_TIME,0) != 0){
+                Intent loadsystime = new Intent(context, com.android.systemui.LoadSystemTime.class);
+                context.startService(loadsystime);
             }
         } catch (Exception e) {
             Log.e(TAG, "Can't start load average service", e);
