@@ -26513,6 +26513,7 @@ package android.provider {
     field public static final java.lang.String RADIO_NFC = "nfc";
     field public static final java.lang.String RADIO_WIFI = "wifi";
     field public static final java.lang.String SHOW_PROCESSES = "show_processes";
+    field public static final java.lang.String SHOW_SYSTEM_TIME = "show_system_time";
     field public static final java.lang.String STAY_ON_WHILE_PLUGGED_IN = "stay_on_while_plugged_in";
     field public static final java.lang.String SYS_PROP_SETTING_VERSION = "sys.settings_global_version";
     field public static final java.lang.String TRANSITION_ANIMATION_SCALE = "transition_animation_scale";
@@ -26706,6 +26707,7 @@ package android.provider {
     field public static final java.lang.String SETUP_WIZARD_HAS_RUN = "setup_wizard_has_run";
     field public static final java.lang.String SHOW_GTALK_SERVICE_STATUS = "SHOW_GTALK_SERVICE_STATUS";
     field public static final deprecated java.lang.String SHOW_PROCESSES = "show_processes";
+    field public static final java.lang.String SHOW_SYSTEM_TIME = "show_system_time";
     field public static final deprecated java.lang.String SHOW_WEB_SUGGESTIONS = "show_web_suggestions";
     field public static final java.lang.String SOUND_EFFECTS_ENABLED = "sound_effects_enabled";
     field public static final deprecated java.lang.String STAY_ON_WHILE_PLUGGED_IN = "stay_on_while_plugged_in";
