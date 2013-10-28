@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2010 The Android Open Source Project
- *
+ * Copyright (C) 2013-2015 Freescale Semiconductor, Inc.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -596,6 +596,14 @@ public class PointerLocationView extends View implements InputDeviceListener,
         }
         for (int i = 0; i < NI; i++) {
             final int id = event.getPointerId(i);
+
+			//add bound check
+			int size = mPointers.size();
+			if(id >= size) {
+				Log.w(TAG, "addPointerEvent, id " + id + " >= size " + size);
+				return;
+			}
+
             final PointerState ps = mCurDown ? mPointers.get(id) : null;
             final PointerCoords coords = ps != null ? ps.mCoords : mTempCoords;
             event.getPointerCoords(i, coords);
