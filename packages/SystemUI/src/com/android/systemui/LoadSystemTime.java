@@ -16,7 +16,7 @@
 
 package com.android.systemui;
 
-import com.android.internal.os.ProcessStats;
+import com.android.internal.app.ProcessStats;
 
 import android.app.Service;
 import android.content.Context;
