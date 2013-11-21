@@ -15,6 +15,10 @@
 ** limitations under the License.
 */
 
+/*
+ * Copyright (C) 2013 Freescale Semiconductor, Inc.
+ */
+
 //#define LOG_NDEBUG 0
 #define LOG_TAG "Camera-JNI"
 #include <utils/Log.h>
@@ -313,6 +317,8 @@ void JNICameraContext::postData(int32_t msgType, const sp<IMemory>& dataPtr,
     switch (dataMsgType) {
         case CAMERA_MSG_VIDEO_FRAME:
             // should never happen
+            // actually, it happeded little change on start/stop recorder
+            mCamera->releaseRecordingFrame(dataPtr);
             break;
 
         // For backward-compatibility purpose, if there is no callback
