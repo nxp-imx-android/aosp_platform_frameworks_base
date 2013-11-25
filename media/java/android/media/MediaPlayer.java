@@ -665,6 +665,7 @@ public class MediaPlayer implements SubtitleController.Listener
     private static final int INVOKE_ID_DESELECT_TRACK = 5;
     private static final int INVOKE_ID_SET_VIDEO_SCALE_MODE = 6;
     private static final int INVOKE_ID_GET_SELECTED_TRACK = 7;
+    private static final int INVOKE_ID_SET_PLAY_SPEED = 8;
 
     /**
      * Create a request parcel which can be routed to the native media
@@ -1850,54 +1851,6 @@ public class MediaPlayer implements SubtitleController.Listener
      */
     public native void attachAuxEffect(int effectId);
 
-    /* Do not change these values (starting with KEY_PARAMETER) without updating
-     * their counterparts in include/media/mediaplayer.h!
-     */
-
-    // There are currently no defined keys usable from Java with get*Parameter.
-    // But if any keys are defined, the order must be kept in sync with include/media/mediaplayer.h.
-    // private static final int KEY_PARAMETER_... = ...;
-    private static final int KEY_PARAMETER_PLAYBACK_RATE_PERMILLE = 1300;
-
-    /**
-     * Sets the parameter indicated by key.
-     * @param key key indicates the parameter to be set.
-     * @param value value of the parameter to be set.
-     * @return true if the parameter is set successfully, false otherwise
-     * {@hide}
-     */
-    public native boolean setParameter(int key, Parcel value);
-
-    /**
-     * Sets the parameter indicated by key.
-     * @param key key indicates the parameter to be set.
-     * @param value value of the parameter to be set.
-     * @return true if the parameter is set successfully, false otherwise
-     * {@hide}
-     */
-    public boolean setParameter(int key, String value) {
-        Parcel p = Parcel.obtain();
-        p.writeString(value);
-        boolean ret = setParameter(key, p);
-        p.recycle();
-        return ret;
-    }
-
-    /**
-     * Sets the parameter indicated by key.
-     * @param key key indicates the parameter to be set.
-     * @param value value of the parameter to be set.
-     * @return true if the parameter is set successfully, false otherwise
-     * {@hide}
-     */
-    public boolean setParameter(int key, int value) {
-        Parcel p = Parcel.obtain();
-        p.writeInt(value);
-        boolean ret = setParameter(key, p);
-        p.recycle();
-        return ret;
-    }
-
     /**
      * Set play speed.
      *
@@ -1908,56 +1861,18 @@ public class MediaPlayer implements SubtitleController.Listener
      * is not outputted.
      */
     public void setPlaySpeed(int[] Speed) {
-        setParameter(KEY_PARAMETER_PLAYBACK_RATE_PERMILLE, Speed[0]);
-        Speed[0] = getIntParameter(KEY_PARAMETER_PLAYBACK_RATE_PERMILLE);
-    }
-
-    /*
-     * Gets the value of the parameter indicated by key.
-     * @param key key indicates the parameter to get.
-     * @param reply value of the parameter to get.
-     */
-    private native void getParameter(int key, Parcel reply);
-
-    /**
-     * Gets the value of the parameter indicated by key.
-     * The caller is responsible for recycling the returned parcel.
-     * @param key key indicates the parameter to get.
-     * @return value of the parameter.
-     * {@hide}
-     */
-    public Parcel getParcelParameter(int key) {
-        Parcel p = Parcel.obtain();
-        getParameter(key, p);
-        return p;
-    }
-
-    /**
-     * Gets the value of the parameter indicated by key.
-     * @param key key indicates the parameter to get.
-     * @return value of the parameter.
-     * {@hide}
-     */
-    public String getStringParameter(int key) {
-        Parcel p = Parcel.obtain();
-        getParameter(key, p);
-        String ret = p.readString();
-        p.recycle();
-        return ret;
-    }
-
-    /**
-     * Gets the value of the parameter indicated by key.
-     * @param key key indicates the parameter to get.
-     * @return value of the parameter.
-     * {@hide}
-     */
-    public int getIntParameter(int key) {
-        Parcel p = Parcel.obtain();
-        getParameter(key, p);
-        int ret = p.readInt();
-        p.recycle();
-        return ret;
+        Parcel request = Parcel.obtain();
+        Parcel reply = Parcel.obtain();
+        try {
+            request.writeInterfaceToken(IMEDIA_PLAYER);
+            request.writeInt(INVOKE_ID_SET_PLAY_SPEED);
+            request.writeInt(Speed[0]);
+            invoke(request, reply);
+            Speed[0] = reply.readInt();
+        } finally {
+            request.recycle();
+            reply.recycle();
+        }
     }
 
     /**
