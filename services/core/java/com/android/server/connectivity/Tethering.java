@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2014 Freescale Semiconductor, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,6 +113,7 @@ public class Tethering extends BaseNetworkObserver {
 
     // USB is  192.168.42.1 and 255.255.255.0
     // Wifi is 192.168.43.1 and 255.255.255.0
+    // Wifi P2P is 192.168.49.1 and 255.255.255.0
     // BT is limited to max default of 5 connections. 192.168.44.1 to 192.168.48.1
     // with 255.255.255.0
     // P2P is 192.168.49.1 and 255.255.255.0
@@ -266,6 +268,10 @@ public class Tethering extends BaseNetworkObserver {
         synchronized (mPublicSync) {
             for (String regex : mTetherableWifiRegexs) {
                 if (iface.matches(regex)) return true;
+            }
+            String regex = "p2p0";
+            if (iface.matches(".*" + regex + ".*")) {
+                return true;
             }
             return false;
         }
