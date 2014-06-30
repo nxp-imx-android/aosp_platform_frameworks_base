@@ -27,6 +27,7 @@ import android.database.ContentObserver;
 import android.hardware.display.WifiDisplay;
 import android.hardware.display.WifiDisplaySessionInfo;
 import android.hardware.display.WifiDisplayStatus;
+import android.hardware.display.DisplayManager;
 import android.media.RemoteDisplay;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -42,6 +43,7 @@ import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.GroupInfoListener;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 import android.os.Handler;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Slog;
 import android.view.Surface;
@@ -558,6 +560,15 @@ final class WifiDisplayController implements DumpUtils.Dump {
      * until all preconditions for the connection have been satisfied and the
      * connection is established (or not).
      */
+    private void handleSendDisconnectionBroadcast() {
+        final Intent intent;
+            intent = new Intent(DisplayManager.ACTION_WIFI_DISPLAY_DISCONNECTION);
+            intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+            // Send protected broadcast about wifi display action to registered receivers.
+            mContext.sendBroadcastAsUser(intent, UserHandle.ALL);
+            Slog.i(TAG, "handleSendDisconnectionBroadcast");
+    }
+
     private void updateConnection() {
         // Step 0. Stop scans if necessary to prevent interference while connected.
         // Resume scans later when no longer attempting to connect.
@@ -569,6 +580,7 @@ final class WifiDisplayController implements DumpUtils.Dump {
             Slog.i(TAG, "Stopped listening for RTSP connection on " + mRemoteDisplayInterface
                     + " from Wifi display: " + mConnectedDevice.deviceName);
 
+            handleSendDisconnectionBroadcast();
             mRemoteDisplay.dispose();
             mRemoteDisplay = null;
             mRemoteDisplayInterface = null;
