@@ -58,6 +58,15 @@ import java.util.Enumeration;
 
 import libcore.util.Objects;
 
+import android.hardware.input.InputManager;
+import android.os.SystemClock;
+import android.view.InputDevice;
+import android.view.KeyCharacterMap;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.MotionEvent.PointerProperties;
+import android.view.MotionEvent.PointerCoords;
+
 /**
  * Manages all of the various asynchronous interactions with the {@link WifiP2pManager}
  * on behalf of {@link WifiDisplayAdapter}.
@@ -162,6 +171,12 @@ final class WifiDisplayController implements DumpUtils.Dump {
 
     private WifiP2pDevice mThisDevice;
 
+    //UIBC
+    private float mHover_x, mHover_y;
+    private long mDownTime;
+    private static final int UIBC_SPEC_KEY_DOWN = 3;
+    private static final int UIBC_SPEC_KEY_UP   = 4;
+
     public WifiDisplayController(Context context, Handler handler, Listener listener) {
         mContext = context;
         mHandler = handler;
@@ -208,6 +223,128 @@ final class WifiDisplayController implements DumpUtils.Dump {
         }
 
         updateWfdEnableState();
+    }
+
+    private void onUibcDataToDo(int type, float f0, float f1, int i0) {
+
+        switch(type) {
+            case MotionEvent.ACTION_DOWN:
+                onUibcUpMoveDown(type, f0, f1, i0);
+                break;
+            case MotionEvent.ACTION_UP:
+                onUibcUpMoveDown(type, f0, f1, i0);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                onUibcUpMoveDown(type, f0, f1, i0);
+                break;
+            case MotionEvent.ACTION_SCROLL:
+                onUibcScroll(f0, f1, i0);
+                break;
+            case UIBC_SPEC_KEY_DOWN:
+                onUibcKeyUpDown(type, i0);
+                break;
+            case UIBC_SPEC_KEY_UP:
+                onUibcKeyUpDown(type, i0);
+                break;
+            default:
+                if (DEBUG) Slog.i(TAG,"onUibcData other type:" + type);
+
+        }
+
+    }
+
+
+    private void onUibcKeyUpDown(int action, int i0) {
+        long now = SystemClock.uptimeMillis();
+        int updown;
+        if (action == UIBC_SPEC_KEY_UP)
+            updown = KeyEvent.ACTION_DOWN;
+        else
+            updown = KeyEvent.ACTION_UP;
+        InputManager.getInstance().injectInputEvent(
+            new KeyEvent(now, now, updown, i0, 0, 0,
+                   KeyCharacterMap.VIRTUAL_KEYBOARD,
+                   0, 0, 0),
+            InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
+
+    }
+
+    private void onUibcUpMoveDown(int action, float x, float y, int i0) {
+
+        final float DEFAULT_SIZE = 1.0f;
+        final int DEFAULT_META_STATE = 0;
+        final float DEFAULT_PRECISION_X = 1.0f;
+        final float DEFAULT_PRECISION_Y = 1.0f;
+        final int DEFAULT_DEVICE_ID = 0;
+        final int DEFAULT_EDGE_FLAGS = 0;
+        long downtime = 0;
+
+        int mode = -1;
+        long eventtime = SystemClock.uptimeMillis();
+        int inputSource = InputDevice.SOURCE_TOUCHSCREEN;
+        float pressure = 0.7f;  //Default pressure should not be max 1.0 :)
+
+        mHover_x = x;
+        mHover_y = y;
+
+        if (action == MotionEvent.ACTION_DOWN) {
+            downtime = eventtime;
+            mDownTime = eventtime;
+            mode = InputManager.INJECT_INPUT_EVENT_MODE_WAIT_FOR_FINISH;
+            pressure = 0.7f;
+        } else if (action == MotionEvent.ACTION_UP) {
+            downtime = mDownTime > 0 ? mDownTime : eventtime;
+            mode = InputManager.INJECT_INPUT_EVENT_MODE_WAIT_FOR_FINISH;
+            pressure = 0;
+            mDownTime = 0;
+        } else if (action == MotionEvent.ACTION_MOVE) {
+            downtime = mDownTime > 0 ? mDownTime : eventtime;
+            mode = InputManager.INJECT_INPUT_EVENT_MODE_ASYNC;
+            pressure = 0.5f;
+        } else {
+            if (DEBUG) Slog.e(TAG, "on UibcUpMoveDown meets other action :(");
+            return;
+        }
+
+        MotionEvent event = MotionEvent.obtain(downtime, eventtime,
+                                action, x, y, pressure, DEFAULT_SIZE,
+                                DEFAULT_META_STATE, DEFAULT_PRECISION_X,
+                                DEFAULT_PRECISION_Y, DEFAULT_DEVICE_ID,
+                                DEFAULT_EDGE_FLAGS);
+        event.setSource(inputSource);
+        if (DEBUG) Slog.i(TAG, "injectMotionEvent: " + event);
+        InputManager.getInstance().injectInputEvent(event, mode);
+
+    }
+
+    private void onUibcScroll(float x, float y, int up) {
+        float axis = (up == 1) ? 1.0f : -1.0f;
+
+        PointerProperties[] pps = new PointerProperties[1];
+        PointerProperties   pp0 = new PointerProperties();
+        PointerCoords[]     pcs = new PointerCoords[1];
+        PointerCoords       pc0 = new PointerCoords();
+
+        pp0.id = 0;
+        pp0.toolType = MotionEvent.TOOL_TYPE_MOUSE;
+        pps[0] = pp0;
+
+        pc0.x = mHover_x;
+        pc0.y = mHover_y;
+        pc0.pressure = 1;
+        pc0.size = 1;
+        pc0.setAxisValue(MotionEvent.AXIS_VSCROLL, x);
+        pc0.setAxisValue(MotionEvent.AXIS_HSCROLL, y);
+        pcs[0] = pc0;
+
+        MotionEvent event = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_SCROLL,
+                                               1, pps, pcs, 0, 0, 1, 1, 0, 0, 0, 0);
+        event.setSource(InputDevice.SOURCE_MOUSE);
+        if (DEBUG) Slog.i(TAG," Inject the mouse event2.0: " + event.toString());
+
+
+        InputManager.getInstance().injectInputEvent(event,
+                InputManager.INJECT_INPUT_EVENT_MODE_WAIT_FOR_FINISH);
     }
 
     @Override
@@ -766,6 +903,16 @@ final class WifiDisplayController implements DumpUtils.Dump {
                         final WifiDisplay display = createWifiDisplay(mConnectedDevice);
                         advertiseDisplay(display, surface, width, height, flags);
                     }
+                }
+
+                @Override
+                public void onUibcData(int type, float f0, float f1, int i0) {
+                    //TODO
+                    Slog.i(TAG, "RemoteDisplay sendinto onUibcData: type(" + type +
+                                                                  ") f0(" + f0 +
+                                                                  ") f1(" + f1 +
+                                                                  ") i0(" + i0 + ")");
+                    onUibcDataToDo(type, f0, f1, i0);
                 }
 
                 @Override
