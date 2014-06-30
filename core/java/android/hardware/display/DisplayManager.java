@@ -58,8 +58,19 @@ public final class DisplayManager {
      * </p>
      * @hide
      */
+
     public static final String ACTION_WIFI_DISPLAY_STATUS_CHANGED =
             "android.hardware.display.action.WIFI_DISPLAY_STATUS_CHANGED";
+    /**
+     * Broadcast receiver that indicates when mannually disconnect wifi display.
+     * <p>
+     * This broadcast is only sent to registered receivers and can only be sent by the system.
+     * </p>
+     * @hide
+     */
+     public static final String ACTION_WIFI_DISPLAY_DISCONNECTION =
+         "android.hardware.display.action.WIFI_DISPLAY_DISCONNECTION";
+
 
     /**
      * Contains a {@link WifiDisplayStatus} object.
