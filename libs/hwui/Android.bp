@@ -43,6 +43,9 @@ cc_defaults {
         device_uses_hwc2: {
             cflags: ["-DUSE_HWC2"],
         },
+        imx6dq_soc: {
+            cflags: ["-DFSL_FORCE_USE_OPENGL_2X"],
+        },
     },
 }
 
