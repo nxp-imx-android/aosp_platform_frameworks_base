@@ -51,6 +51,12 @@ Extensions::Extensions() {
         mVersionMinor = 0;
     }
 
+#ifdef FSL_FORCE_USE_OPENGL_2X
+    // Fall back to openGL ES 2.x, as 3.x have performance drop in DL GC880
+    if (mVersionMajor == 3)
+        mVersionMajor = 2;
+#endif
+
     auto extensions = StringUtils::split((const char*) glGetString(GL_EXTENSIONS));
     mHasNPot = extensions.has("GL_OES_texture_npot");
     mHasFramebufferFetch = extensions.has("GL_NV_shader_framebuffer_fetch");
