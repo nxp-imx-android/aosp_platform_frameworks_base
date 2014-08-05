@@ -103,6 +103,10 @@ ifndef HWUI_COMPILE_SYMBOLS
     LOCAL_CFLAGS += -fvisibility=hidden
 endif
 
+ifeq ($(BOARD_SOC_TYPE), IMX6DQ)
+    LOCAL_CFLAGS += -DFSL_FORCE_USE_OPENGL_2X
+endif
+
 ifdef HWUI_COMPILE_FOR_PERF
     # TODO: Non-arm?
     LOCAL_CFLAGS += -fno-omit-frame-pointer -marm -mapcs
