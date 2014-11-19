@@ -120,6 +120,7 @@ public final class ViewRootImpl implements ViewParent,
      * at 60 Hz. This can be used to measure the potential framerate.
      */
     private static final String PROPERTY_PROFILE_RENDERING = "viewroot.profile_rendering";
+    private static final String PROPERTY_HW_RENDERING = "sys.viewroot.hw";
 
     // properties used by emulator to determine display shape
     public static final String PROPERTY_EMULATOR_WIN_OUTSET_BOTTOM_PX =
@@ -720,7 +721,8 @@ public final class ViewRootImpl implements ViewParent,
 
         // Try to enable hardware acceleration if requested
         final boolean hardwareAccelerated =
-                (attrs.flags & WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED) != 0;
+                ((attrs.flags & WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED) != 0)
+                && (SystemProperties.getBoolean(PROPERTY_HW_RENDERING, true));
 
         if (hardwareAccelerated) {
             if (!HardwareRenderer.isAvailable()) {
