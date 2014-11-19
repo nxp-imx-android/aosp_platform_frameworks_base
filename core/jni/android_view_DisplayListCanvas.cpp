@@ -204,6 +204,15 @@ static void android_view_DisplayListCanvas_drawLayer(JNIEnv* env, jobject clazz,
 
 static jboolean android_view_DisplayListCanvas_isAvailable(JNIEnv* env, jobject clazz) {
     char prop[PROPERTY_VALUE_MAX];
+
+    // when OpenGL ES 2.0 is disabled, this property should be set to false.
+    // it is set to true by default.
+    property_get("sys.viewroot.hw", prop, "true");
+    if (strcmp(prop, "false") == 0) {
+        ALOGI("OpenGL ES 2.0 is disabled");
+        return JNI_FALSE;
+    }
+
     if (property_get("ro.kernel.qemu", prop, NULL) == 0) {
         // not in the emulator
         return JNI_TRUE;
