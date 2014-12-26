@@ -54,9 +54,12 @@ public class MediaFile {
     public static final int FILE_TYPE_MID     = 11;
     public static final int FILE_TYPE_SMF     = 12;
     public static final int FILE_TYPE_IMY     = 13;
-    private static final int FIRST_MIDI_FILE_TYPE = FILE_TYPE_MID;
-    private static final int LAST_MIDI_FILE_TYPE = FILE_TYPE_IMY;
+    public static final int FILE_TYPE_RA     = 14;
+    public static final int FILE_TYPE_APE    = 15;
 
+    private static final int FIRST_MIDI_FILE_TYPE = FILE_TYPE_MID;
+    private static final int LAST_MIDI_FILE_TYPE = FILE_TYPE_APE;
+   
     // Video file types
     public static final int FILE_TYPE_MP4     = 21;
     public static final int FILE_TYPE_M4V     = 22;
@@ -76,8 +79,9 @@ public class MediaFile {
     public static final int FILE_TYPE_QT      = 201;
     public static final int FILE_TYPE_MOV     = 202;
     public static final int FILE_TYPE_FLV     = 203;
+    public static final int FILE_TYPE_RMVB    = 204;
     private static final int FIRST_VIDEO_FILE_TYPE2 = FILE_TYPE_MP2PS;
-    private static final int LAST_VIDEO_FILE_TYPE2 = FILE_TYPE_FLV;
+    private static final int LAST_VIDEO_FILE_TYPE2 = FILE_TYPE_RMVB;
 
     // Image file types
     public static final int FILE_TYPE_JPEG    = 31;
@@ -250,7 +254,7 @@ public class MediaFile {
 		//Check FSL_AAC_PARSER property
 		value = SystemProperties.get("ro.FSL_AAC_PARSER");
 		if ("1".equals(value)) {
-		addFileType("ADTS", FILE_TYPE_AAC, "audio/aac-adts", MtpConstants.FORMAT_AAC);
+			addFileType("ADTS", FILE_TYPE_AAC, "audio/aac-adts", MtpConstants.FORMAT_AAC, false);
 		}
 		
 		//Check FSL_FLV_PARSER property
@@ -269,10 +273,18 @@ public class MediaFile {
 		//Check FSL_ASF_PARSER property
 		value = SystemProperties.get("ro.FSL_ASF_PARSER");
 		if ("1".equals(value)) {
-			addFileType("WMA", FILE_TYPE_WMA, "audio/x-ms-wma", MtpConstants.FORMAT_WMA);
-			addFileType("WMV", FILE_TYPE_WMV, "video/x-ms-wmv", MtpConstants.FORMAT_WMV);
+			addFileType("WMA", FILE_TYPE_WMA, "audio/x-ms-wma", MtpConstants.FORMAT_WMA, false);
+			addFileType("WMV", FILE_TYPE_WMV, "video/x-ms-wmv", MtpConstants.FORMAT_WMV, false);
 			addFileType("ASF", FILE_TYPE_WMV, "video/x-ms-asf");
 		}
+
+        value = SystemProperties.get("ro.FSL_REAL_PARSER");
+        if ("1".equals(value)) {
+            addFileType("RMVB", FILE_TYPE_RMVB, "video/rmff");
+            addFileType("RM", FILE_TYPE_RMVB, "video/rmff");
+            addFileType("RV", FILE_TYPE_RMVB, "video/rmff");
+            addFileType("RA", FILE_TYPE_RA, "audio/rmff");
+        }
 		
         addFileType("JPG", FILE_TYPE_JPEG, "image/jpeg", MtpConstants.FORMAT_EXIF_JPEG, true);
         addFileType("JPEG", FILE_TYPE_JPEG, "image/jpeg", MtpConstants.FORMAT_EXIF_JPEG, false);
@@ -317,6 +329,7 @@ public class MediaFile {
         addFileType("ZIP", FILE_TYPE_ZIP, "application/zip");
         addFileType("MPG", FILE_TYPE_MP2PS, "video/mp2p");
         addFileType("MPEG", FILE_TYPE_MP2PS, "video/mp2p");
+        addFileType("APE", FILE_TYPE_APE, "audio/x-monkeys-audio");
     }
 
     public static boolean isAudioFileType(int fileType) {
