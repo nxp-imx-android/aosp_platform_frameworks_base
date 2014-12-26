@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* Copyright 2009-2013 Freescale Semiconductor Inc. */
+/* Copyright 2009-2014 Freescale Semiconductor, Inc. */
 
 package android.media;
 
@@ -54,8 +54,10 @@ public class MediaFile {
     public static final int FILE_TYPE_MID     = 11;
     public static final int FILE_TYPE_SMF     = 12;
     public static final int FILE_TYPE_IMY     = 13;
+    public static final int FILE_TYPE_RA     = 14;
+
     private static final int FIRST_MIDI_FILE_TYPE = FILE_TYPE_MID;
-    private static final int LAST_MIDI_FILE_TYPE = FILE_TYPE_IMY;
+    private static final int LAST_MIDI_FILE_TYPE = FILE_TYPE_RA;
    
     // Video file types
     public static final int FILE_TYPE_MP4     = 21;
@@ -75,8 +77,9 @@ public class MediaFile {
     public static final int FILE_TYPE_MP2PS   = 200;
     public static final int FILE_TYPE_MOV     = 201;
     public static final int FILE_TYPE_FLV     = 202;
+	public static final int FILE_TYPE_RMVB     = 203;
     private static final int FIRST_VIDEO_FILE_TYPE2 = FILE_TYPE_MP2PS;
-    private static final int LAST_VIDEO_FILE_TYPE2 = FILE_TYPE_FLV;
+    private static final int LAST_VIDEO_FILE_TYPE2 = FILE_TYPE_RMVB;
 
     // Image file types
     public static final int FILE_TYPE_JPEG    = 31;
@@ -251,7 +254,15 @@ public class MediaFile {
             addFileType("WMV", FILE_TYPE_WMV, "video/x-ms-wmv", MtpConstants.FORMAT_WMV);
             addFileType("ASF", FILE_TYPE_WMV, "video/x-ms-asf");
         }
-  
+
+        value = SystemProperties.get("ro.FSL_REAL_PARSER");
+        if ("1".equals(value)) {
+            addFileType("RMVB", FILE_TYPE_RMVB, "video/rmff");
+            addFileType("RM", FILE_TYPE_RMVB, "video/rmff");
+            addFileType("RV", FILE_TYPE_RMVB, "video/rmff");
+            addFileType("RA", FILE_TYPE_RA, "audio/rmff");
+        }
+
         addFileType("JPG", FILE_TYPE_JPEG, "image/jpeg", MtpConstants.FORMAT_EXIF_JPEG);
         addFileType("JPEG", FILE_TYPE_JPEG, "image/jpeg", MtpConstants.FORMAT_EXIF_JPEG);
         addFileType("GIF", FILE_TYPE_GIF, "image/gif", MtpConstants.FORMAT_GIF);
