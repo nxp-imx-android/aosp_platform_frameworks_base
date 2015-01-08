@@ -170,7 +170,9 @@ public class TaskViewThumbnail extends View {
         int top = (int) Math.max(0, taskBar.getTranslationY() +
                 taskBar.getMeasuredHeight() - 1);
         mClipRect.set(0, top, getMeasuredWidth(), getMeasuredHeight());
-        setClipBounds(mClipRect);
+        if (!mClipRect.isEmpty()) {
+            setClipBounds(mClipRect);
+        }
     }
 
     /** Updates the visibility of the the thumbnail. */
