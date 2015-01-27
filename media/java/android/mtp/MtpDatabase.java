@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2015 Freescale Semiconductor, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -309,12 +310,20 @@ public class MtpDatabase {
         try {
             File f = new File(path);
             String canonical = f.getCanonicalPath();
+            File rootFile;
+            String rootPath;
             for (String root: mStorageMap.keySet()) {
-                if (canonical.startsWith(root)) {
+                rootFile = new File(root);
+                rootPath = rootFile.getCanonicalPath();
+                if (!root.equals(rootPath))
+                    Log.d (TAG, "root is " + root + ",but rootPath is" + rootPath);
+                if (canonical.startsWith(rootPath)) {
                     return true;
                 }
             }
         } catch (IOException e) {
+            // ignore
+        } catch (SecurityException e) {
             // ignore
         }
         return false;
