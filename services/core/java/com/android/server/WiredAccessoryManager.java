@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2008 The Android Open Source Project
+ * Copyright (C) 2015 Freescale Semiconductor, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -368,12 +369,13 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
             }
 
             // Monitor USB
-            uei = new UEventInfo(NAME_USB_AUDIO, BIT_USB_HEADSET_ANLG, BIT_USB_HEADSET_DGTL, 0);
+            //usb audio device is handled well by UsbHostManager.java
+           /* uei = new UEventInfo(NAME_USB_AUDIO, BIT_USB_HEADSET_ANLG, BIT_USB_HEADSET_DGTL, 0);
             if (uei.checkSwitchExists()) {
                 retVal.add(uei);
             } else {
                 Slog.w(TAG, "This kernel does not have usb audio support");
-            }
+            }*/
 
             // Monitor HDMI
             //
