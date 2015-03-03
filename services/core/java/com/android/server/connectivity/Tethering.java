@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2010 The Android Open Source Project
- * Copyright (C) 2014 Freescale Semiconductor, Inc.
+ * Copyright (C) 2015 Freescale Semiconductor, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -277,17 +277,11 @@ public class Tethering extends BaseNetworkObserver implements IControlsTethering
                     trackNewTetherableInterface(iface, interfaceType);
                 }
             } else {
-                if (interfaceType == ConnectivityManager.TETHERING_BLUETOOTH) {
-                    tetherState.mStateMachine.sendMessage(
-                            TetherInterfaceStateMachine.CMD_INTERFACE_DOWN);
-                    mTetherStates.remove(iface);
-                } else {
                     // Ignore usb0 down after enabling RNDIS.
                     // We will handle disconnect in interfaceRemoved.
                     // Similarly, ignore interface down for WiFi.  We monitor WiFi AP status
                     // through the WifiManager.WIFI_AP_STATE_CHANGED_ACTION intent.
                     if (VDBG) Log.d(TAG, "ignore interface down for " + iface);
-                }
             }
         }
     }
@@ -608,7 +602,10 @@ public class Tethering extends BaseNetworkObserver implements IControlsTethering
             // the errors are referring to past tethering attempts anyway.
             if (tetherState.mLastState != IControlsTethering.STATE_AVAILABLE) {
                 Log.e(TAG, "Tried to Tether an unavailable iface: " + iface + ", ignoring");
-                return ConnectivityManager.TETHER_ERROR_UNAVAIL_IFACE;
+                if (isBluetooth(iface))
+                    Log.d(TAG, "For Bluetooth pan we should have a try");
+                else
+                    return ConnectivityManager.TETHER_ERROR_UNAVAIL_IFACE;
             }
             tetherState.mStateMachine.sendMessage(TetherInterfaceStateMachine.CMD_TETHER_REQUESTED);
             return ConnectivityManager.TETHER_ERROR_NO_ERROR;
