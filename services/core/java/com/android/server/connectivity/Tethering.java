@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2010 The Android Open Source Project
- * Copyright (C) 2014 Freescale Semiconductor, Inc.
+ * Copyright (C) 2015 Freescale Semiconductor, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -242,6 +242,8 @@ public class Tethering extends BaseNetworkObserver {
                     // ignore usb0 down after enabling RNDIS
                     // we will handle disconnect in interfaceRemoved instead
                     if (VDBG) Log.d(TAG, "ignore interface down for " + iface);
+                } else if (isBluetooth(iface)) {
+                    if (VDBG) Log.d(TAG, "Bluetooth device should ignore interface down for " + iface);
                 } else if (sm != null) {
                     sm.sendMessage(TetherInterfaceSM.CMD_INTERFACE_DOWN);
                     mIfaces.remove(iface);
@@ -344,7 +346,10 @@ public class Tethering extends BaseNetworkObserver {
         }
         if (!sm.isAvailable() && !sm.isErrored()) {
             Log.e(TAG, "Tried to Tether an unavailable iface :" + iface + ", ignoring");
-            return ConnectivityManager.TETHER_ERROR_UNAVAIL_IFACE;
+            if (isBluetooth(iface))
+                Log.d(TAG, "For Bluetooth pan we should have a try");
+            else
+                return ConnectivityManager.TETHER_ERROR_UNAVAIL_IFACE;
         }
         sm.sendMessage(TetherInterfaceSM.CMD_TETHER_REQUESTED);
         return ConnectivityManager.TETHER_ERROR_NO_ERROR;
