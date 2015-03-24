@@ -17401,6 +17401,7 @@ package android.media {
     method public void setOnTimedTextListener(android.media.MediaPlayer.OnTimedTextListener);
     method public void setOnVideoSizeChangedListener(android.media.MediaPlayer.OnVideoSizeChangedListener);
     method public void setPlaybackParams(android.media.PlaybackParams);
+    method public void setPlaySpeed(int[]);
     method public void setScreenOnWhilePlaying(boolean);
     method public void setSurface(android.view.Surface);
     method public void setSyncParams(android.media.SyncParams);
@@ -17529,6 +17530,7 @@ package android.media {
     field public static final int AMR_WB = 2; // 0x2
     field public static final int DEFAULT = 0; // 0x0
     field public static final int HE_AAC = 4; // 0x4
+    field public static final int MP3 = 7; // 0x7
     field public static final int VORBIS = 6; // 0x6
   }
 
@@ -28570,6 +28572,7 @@ package android.provider {
     field public static final java.lang.String RADIO_NFC = "nfc";
     field public static final java.lang.String RADIO_WIFI = "wifi";
     field public static final java.lang.String SHOW_PROCESSES = "show_processes";
+    field public static final java.lang.String SHOW_SYSTEM_TIME = "show_system_time";
     field public static final java.lang.String STAY_ON_WHILE_PLUGGED_IN = "stay_on_while_plugged_in";
     field public static final java.lang.String SYS_PROP_SETTING_VERSION = "sys.settings_global_version";
     field public static final java.lang.String THEATER_MODE_ON = "theater_mode_on";
@@ -28764,6 +28767,7 @@ package android.provider {
     field public static final java.lang.String SETUP_WIZARD_HAS_RUN = "setup_wizard_has_run";
     field public static final java.lang.String SHOW_GTALK_SERVICE_STATUS = "SHOW_GTALK_SERVICE_STATUS";
     field public static final deprecated java.lang.String SHOW_PROCESSES = "show_processes";
+    field public static final java.lang.String SHOW_SYSTEM_TIME = "show_system_time";
     field public static final deprecated java.lang.String SHOW_WEB_SUGGESTIONS = "show_web_suggestions";
     field public static final java.lang.String SOUND_EFFECTS_ENABLED = "sound_effects_enabled";
     field public static final deprecated java.lang.String STAY_ON_WHILE_PLUGGED_IN = "stay_on_while_plugged_in";
