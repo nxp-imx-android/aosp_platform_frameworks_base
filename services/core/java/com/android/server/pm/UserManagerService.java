@@ -655,7 +655,7 @@ public class UserManagerService extends IUserManager.Stub {
     private static final boolean isNoFreeSpace() {
         final String path = Environment.getDataDirectory().getPath();
         StatFs fileStats = new StatFs(path);
-        long restM = fileStats.getAvailableBlocks() * fileStats.getBlockSize();
+        long restM = (long)fileStats.getAvailableBlocks() * (long)fileStats.getBlockSize();
         Slog.w(LOG_TAG, "remain size for data is " + restM);
         if ( restM < MIN_AVAILABLE_SPACE)
             return true;
