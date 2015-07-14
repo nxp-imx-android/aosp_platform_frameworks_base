@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* Copyright 2009-2014 Freescale Semiconductor, Inc. */
+/* Copyright 2009-2015 Freescale Semiconductor, Inc. */
 
 package android.media;
 
@@ -55,9 +55,10 @@ public class MediaFile {
     public static final int FILE_TYPE_SMF     = 12;
     public static final int FILE_TYPE_IMY     = 13;
     public static final int FILE_TYPE_RA     = 14;
+    public static final int FILE_TYPE_APE    = 15;
 
     private static final int FIRST_MIDI_FILE_TYPE = FILE_TYPE_MID;
-    private static final int LAST_MIDI_FILE_TYPE = FILE_TYPE_RA;
+    private static final int LAST_MIDI_FILE_TYPE = FILE_TYPE_APE;
    
     // Video file types
     public static final int FILE_TYPE_MP4     = 21;
@@ -292,6 +293,7 @@ public class MediaFile {
         addFileType("ZIP", FILE_TYPE_ZIP, "application/zip");
         addFileType("MPG", FILE_TYPE_MP2PS, "video/mp2p");
         addFileType("MPEG", FILE_TYPE_MP2PS, "video/mp2p");
+        addFileType("APE", FILE_TYPE_APE, "audio/x-monkeys-audio");
     }
 
     public static boolean isAudioFileType(int fileType) {
