@@ -297,6 +297,7 @@ public class KeyguardPasswordView extends KeyguardAbsKeyInputView
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         if (mCallback != null) {
+            destroyDrawingCache();
             mCallback.userActivity();
         }
     }
