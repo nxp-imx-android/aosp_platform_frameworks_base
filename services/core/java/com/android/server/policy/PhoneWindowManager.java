@@ -1663,6 +1663,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mHasNavigationBar = true;
         }
 
+        //if device type is tablet force enable NavigationBar and forbid NavigationBar move
+        String deviceType = SystemProperties.get("sys.device.type");
+        if (! "".equals(deviceType) && deviceType.equals("tablet")) {
+            mNavigationBarCanMove = false;
+            mHasNavigationBar = true;
+        }
+
         // For demo purposes, allow the rotation of the HDMI display to be controlled.
         // By default, HDMI locks rotation to landscape.
         if ("portrait".equals(SystemProperties.get("persist.demo.hdmirotation"))) {
