@@ -1537,7 +1537,6 @@ public final class Settings {
             MOVED_TO_GLOBAL.add(Settings.Global.DEBUG_APP);
             MOVED_TO_GLOBAL.add(Settings.Global.WAIT_FOR_DEBUGGER);
             MOVED_TO_GLOBAL.add(Settings.Global.SHOW_PROCESSES);
-            MOVED_TO_GLOBAL.add(Settings.Global.SHOW_SYSTEM_TIME);
             MOVED_TO_GLOBAL.add(Settings.Global.ALWAYS_FINISH_ACTIVITIES);
             MOVED_TO_GLOBAL.add(Settings.Global.TZINFO_UPDATE_CONTENT_URL);
             MOVED_TO_GLOBAL.add(Settings.Global.TZINFO_UPDATE_METADATA_URL);
@@ -2440,7 +2439,6 @@ public final class Settings {
          */
         @Deprecated
         public static final String SHOW_PROCESSES = Global.SHOW_PROCESSES;
-        public static final String SHOW_SYSTEM_TIME = Global.SHOW_SYSTEM_TIME;
 
         /**
          * If 1, the activity manager will aggressively finish activities and
@@ -7435,7 +7433,6 @@ public final class Settings {
          * Control whether the process CPU usage meter should be shown.
          */
         public static final String SHOW_PROCESSES = "show_processes";
-        public static final String SHOW_SYSTEM_TIME = "show_system_time";
 
         /**
          * If 1 low power mode is enabled.

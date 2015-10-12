@@ -26,7 +26,7 @@ LOCAL_RESOURCE_DIR := $(LOCAL_PATH)/res \
     frameworks/base/packages/SystemUI/res \
     frameworks/base/packages/Keyguard/res
 
-LOCAL_JAVA_LIBRARIES := android.test.runner telephony-common
+LOCAL_JAVA_LIBRARIES := android.test.runner telephony-common freescale-extended
 
 LOCAL_PACKAGE_NAME := SystemUITests
 

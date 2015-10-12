@@ -16,6 +16,7 @@
 
 package com.android.providers.settings;
 
+import com.freescale.provider.Developer;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
@@ -1466,7 +1467,7 @@ class DatabaseHelper extends SQLiteOpenHelper {
                             Settings.Global.DEBUG_APP,
                             Settings.Global.WAIT_FOR_DEBUGGER,
                             Settings.Global.SHOW_PROCESSES,
-                            Settings.Global.SHOW_SYSTEM_TIME,
+                            new Developer().getShowSystemTime(),
                             Settings.Global.ALWAYS_FINISH_ACTIVITIES,
                     };
                     String[] secureToGlobal = {

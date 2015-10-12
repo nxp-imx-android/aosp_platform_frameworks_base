@@ -146,10 +146,10 @@
         android:process="com.android.systemui"
         android:supportsRtl="true"
         android:theme="@style/systemui_theme">
-        <!-- Keep theme in sync with SystemUIApplication.onCreate().
+	<uses-library android:name="freescale-extended" />
+	<!-- Keep theme in sync with SystemUIApplication.onCreate().
              Setting the theme on the application does not affect views inflated by services.
              The application theme is set again from onCreate to take effect for those views. -->
-
         <!-- Broadcast receiver that gets the broadcast at boot time and starts
              up everything else.
              TODO: Should have an android:permission attribute

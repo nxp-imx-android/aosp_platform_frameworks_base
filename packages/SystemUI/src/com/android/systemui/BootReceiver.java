@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.provider.Settings;
 import android.util.Slog;
 import android.util.Log;
+import com.freescale.provider.Developer;
 
 /**
  * Performs a number of miscellaneous, non-system-critical actions
@@ -42,7 +43,7 @@ public class BootReceiver extends BroadcastReceiver {
             }
 
             // ContentResolver sys = context.getContentResolver();
-            if (Settings.Global.getInt(res,Settings.Global.SHOW_SYSTEM_TIME,0) != 0){
+            if (Settings.Global.getInt(res, new Developer().getShowSystemTime(),0) != 0){
                 Intent loadsystime = new Intent(context, com.android.systemui.LoadSystemTime.class);
                 context.startService(loadsystime);
             }
