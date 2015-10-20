@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* Copyright 2009-2013 Freescale Semiconductor Inc. */
+/* Copyright 2009-2015 Freescale Semiconductor, Inc. */
 
 package android.media;
 
@@ -1860,20 +1860,6 @@ public class MediaPlayer implements SubtitleController.Listener
      * When normalized speed is [0.1, 1.9] audio is outputted, otherwise audio
      * is not outputted.
      */
-    public void setPlaySpeed(int[] Speed) {
-        Parcel request = Parcel.obtain();
-        Parcel reply = Parcel.obtain();
-        try {
-            request.writeInterfaceToken(IMEDIA_PLAYER);
-            request.writeInt(INVOKE_ID_SET_PLAY_SPEED);
-            request.writeInt(Speed[0]);
-            invoke(request, reply);
-            Speed[0] = reply.readInt();
-        } finally {
-            request.recycle();
-            reply.recycle();
-        }
-    }
 
     /**
      * Sets the send level of the player to the attached auxiliary effect.
