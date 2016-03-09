@@ -868,7 +868,14 @@ public class VolumeDialogController {
 
         @Override
         public void onRemoteVolumeChanged(Token token, int flags) {
-            final int stream = mRemoteStreams.get(token);
+            final int stream;
+            try {
+                stream = mRemoteStreams.get(token);
+            } catch (NullPointerException e) {
+                Log.w(TAG, "mRemoteStreams.get(token)", e);
+                return;
+            }
+
             final boolean showUI = (flags & AudioManager.FLAG_SHOW_UI) != 0;
             boolean changed = updateActiveStreamW(stream);
             if (showUI) {
