@@ -75,6 +75,7 @@ public class WallpaperCropActivity extends Activity {
     protected CropView mCropView;
     protected Uri mUri;
     private View mSetWallpaperButton;
+    private boolean isClick;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +84,7 @@ public class WallpaperCropActivity extends Activity {
         if (!enableRotation()) {
             setRequestedOrientation(Configuration.ORIENTATION_PORTRAIT);
         }
+        isClick = false;
     }
 
     protected void init() {
@@ -108,7 +110,10 @@ public class WallpaperCropActivity extends Activity {
                     @Override
                     public void onClick(View v) {
                         boolean finishActivityWhenDone = true;
-                        cropImageAndSetWallpaper(imageUri, null, finishActivityWhenDone);
+                        if (isClick == false) {
+                            isClick = true;
+                            cropImageAndSetWallpaper(imageUri, null, finishActivityWhenDone);
+                        }
                     }
                 });
         mSetWallpaperButton = findViewById(R.id.set_wallpaper_button);
