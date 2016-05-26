@@ -4614,20 +4614,6 @@ public class ConnectivityService extends IConnectivityManager.Stub
                     " to " + state);
         }
 
-        if (state == NetworkInfo.State.CONNECTED) {
-            if (networkAgent.linkProperties.getHttpProxy() != null) {
-                String proxyHost = networkAgent.linkProperties.getHttpProxy().getHost();
-                String proxyPort = Integer.toString(networkAgent.linkProperties.getHttpProxy().getPort());
-                if (proxyHost != "") {
-                    log("we will set proxy to " + proxyHost + ":" + proxyPort + " in sendrolon");
-                    SystemProperties.set("rw.HTTP_PROXY", proxyHost + ":" + proxyPort);
-                } else {
-                    loge("Empty proxy host occured on makeDefault. Common proxy properity issued");
-                }
-            } else {
-                SystemProperties.set("rw.HTTP_PROXY", "");
-            }
-        }
         if (state == NetworkInfo.State.CONNECTED && !networkAgent.created) {
             try {
                 // This should never fail.  Specifying an already in use NetID will cause failure.
@@ -4786,10 +4772,6 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     protected void notifyNetworkCallbacks(NetworkAgentInfo networkAgent, int notifyType) {
         if (DBG) log("notifyType " + notifyTypeToName(notifyType) + " for " + networkAgent.name());
-        if (notifyType ==  ConnectivityManager.CALLBACK_LOST) {
-            if (DBG) log("As we lost networkAgent so clear common Proxy");
-            SystemProperties.set("rw.HTTP_PROXY", "");
-        }
         for (int i = 0; i < networkAgent.networkRequests.size(); i++) {
             NetworkRequest nr = networkAgent.networkRequests.valueAt(i);
             NetworkRequestInfo nri = mNetworkRequests.get(nr);
