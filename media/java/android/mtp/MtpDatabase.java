@@ -588,6 +588,10 @@ public class MtpDatabase implements AutoCloseable {
             MtpConstants.FORMAT_XML_DOCUMENT,
             MtpConstants.FORMAT_FLAC,
             MtpConstants.FORMAT_DNG,
+            // add fsl supported medial format
+            MtpConstants.FORMAT_ASF,
+            MtpConstants.FORMAT_AVI,
+            MtpConstants.FORMAT_WMV,
         };
     }
 

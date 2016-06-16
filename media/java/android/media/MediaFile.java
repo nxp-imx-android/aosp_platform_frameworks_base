@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+/* Copyright 2009-2016 Freescale Semiconductor Inc. */
+
 package android.media;
 
 import android.media.DecoderCapabilities;
@@ -24,6 +26,8 @@ import android.mtp.MtpConstants;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import android.os.SystemProperties;
+import android.util.Log;
 
 /**
  * MediaScanner helper class.
@@ -70,8 +74,10 @@ public class MediaFile {
     // More video file types
     public static final int FILE_TYPE_MP2PS   = 200;
     public static final int FILE_TYPE_QT      = 201;
+    public static final int FILE_TYPE_MOV     = 202;
+    public static final int FILE_TYPE_FLV     = 203;
     private static final int FIRST_VIDEO_FILE_TYPE2 = FILE_TYPE_MP2PS;
-    private static final int LAST_VIDEO_FILE_TYPE2 = FILE_TYPE_QT;
+    private static final int LAST_VIDEO_FILE_TYPE2 = FILE_TYPE_FLV;
 
     // Image file types
     public static final int FILE_TYPE_JPEG    = 31;
@@ -213,6 +219,7 @@ public class MediaFile {
         addFileType("MP4", FILE_TYPE_MP4, "video/mp4", MtpConstants.FORMAT_MPEG);
         addFileType("M4V", FILE_TYPE_M4V, "video/mp4", MtpConstants.FORMAT_MPEG);
         addFileType("MOV", FILE_TYPE_QT, "video/quicktime", MtpConstants.FORMAT_MPEG);
+        addFileType("MOV", FILE_TYPE_MOV, "video/mp4", MtpConstants.FORMAT_MPEG);
 
         addFileType("3GP", FILE_TYPE_3GPP, "video/3gpp",  MtpConstants.FORMAT_3GP_CONTAINER);
         addFileType("3GPP", FILE_TYPE_3GPP, "video/3gpp", MtpConstants.FORMAT_3GP_CONTAINER);
@@ -221,11 +228,45 @@ public class MediaFile {
         addFileType("MKV", FILE_TYPE_MKV, "video/x-matroska");
         addFileType("WEBM", FILE_TYPE_WEBM, "video/webm");
         addFileType("TS", FILE_TYPE_MP2TS, "video/mp2ts");
+        addFileType("M2TS", FILE_TYPE_MP2TS, "video/mp2ts");
         addFileType("AVI", FILE_TYPE_AVI, "video/avi");
 
         if (isWMVEnabled()) {
             addFileType("WMV", FILE_TYPE_WMV, "video/x-ms-wmv", MtpConstants.FORMAT_WMV);
             addFileType("ASF", FILE_TYPE_ASF, "video/x-ms-asf");
+        }
+
+        String value= SystemProperties.get("ro.FSL_AVI_PARSER");
+        //Check FSL_AVI_PARSER property
+        if ("1".equals(value)) {
+            addFileType("DIVX", FILE_TYPE_AVI, "video/avi");
+        }
+
+        //Check FSL_AAC_PARSER property
+        value = SystemProperties.get("ro.FSL_AAC_PARSER");
+        if ("1".equals(value)) {
+        addFileType("ADTS", FILE_TYPE_AAC, "audio/aac-adts", MtpConstants.FORMAT_AAC);
+        }
+
+        //Check FSL_FLV_PARSER property
+        value = SystemProperties.get("ro.FSL_FLV_PARSER");
+        if ("1".equals(value)) {
+            addFileType("FLV", FILE_TYPE_FLV, "video/flv");
+            addFileType("F4V", FILE_TYPE_FLV, "video/flv");
+        }
+
+        //Check FSL_MPG2_PARSER property
+        value = SystemProperties.get("ro.FSL_MPG2_PARSER");
+        if ("1".equals(value)) {
+            addFileType("VOB", FILE_TYPE_MP2PS, "video/mp2p");
+        }
+
+        //Check FSL_ASF_PARSER property
+        value = SystemProperties.get("ro.FSL_ASF_PARSER");
+        if ("1".equals(value)) {
+            addFileType("WMA", FILE_TYPE_WMA, "audio/x-ms-wma", MtpConstants.FORMAT_WMA);
+            addFileType("WMV", FILE_TYPE_WMV, "video/x-ms-wmv", MtpConstants.FORMAT_WMV);
+            addFileType("ASF", FILE_TYPE_WMV, "video/x-ms-asf");
         }
 
         addFileType("JPG", FILE_TYPE_JPEG, "image/jpeg", MtpConstants.FORMAT_EXIF_JPEG);
