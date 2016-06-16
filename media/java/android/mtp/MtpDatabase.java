@@ -598,6 +598,10 @@ public class MtpDatabase implements AutoCloseable {
             MtpConstants.FORMAT_FLAC,
             MtpConstants.FORMAT_DNG,
             MtpConstants.FORMAT_HEIF,
+            // add fsl supported medial format
+            MtpConstants.FORMAT_ASF,
+            MtpConstants.FORMAT_AVI,
+            MtpConstants.FORMAT_WMV,
         };
     }
 
