@@ -1250,6 +1250,8 @@ public class AppOpsService extends IAppOpsService.Stub {
                     } catch (RemoteException e) {
                         Slog.w(TAG, "Could not contact PackageManager", e);
                     }
+
+                 if(uid!=Process.MEDIA_UID){
                     if (pkgUid != uid) {
                         // Oops!  The package name is not valid for the uid they are calling
                         // under.  Abort.
@@ -1259,6 +1261,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                                 + " under uid " + uid + " but it is really " + pkgUid, ex);
                         return null;
                     }
+                  }
                 } finally {
                     Binder.restoreCallingIdentity(ident);
                 }
