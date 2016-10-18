@@ -246,9 +246,18 @@ final class OverlayDisplayWindow implements DumpUtils.Dump {
         scale = Math.min(scale, (float)mDefaultDisplayInfo.logicalHeight / mHeight);
         scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
 
-        float offsetScale = (scale / mWindowScale - 1.0f) * 0.5f;
         int width = (int)(mWidth * scale);
         int height = (int)(mHeight * scale);
+        // when width/height equals default display resolution, it will cover all screen.
+        // but the overlay window is black, so it will black all screen and can't recover.
+        if ((width == mDefaultDisplayInfo.logicalWidth) &&
+            (height == mDefaultDisplayInfo.logicalHeight)) {
+            scale = (scale + MIN_SCALE) / 2;
+            width = (int)(mWidth * scale);
+            height = (int)(mHeight * scale);
+        }
+
+        float offsetScale = (scale / mWindowScale - 1.0f) * 0.5f;
         int x = (int)(mWindowX + mLiveTranslationX - width * offsetScale);
         int y = (int)(mWindowY + mLiveTranslationY - height * offsetScale);
         x = Math.max(0, Math.min(x, mDefaultDisplayInfo.logicalWidth - width));
