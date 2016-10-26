@@ -712,7 +712,7 @@ public final class CameraManager {
                     // device info; ILLEGAL_ARGUMENT means that this devices is not supported.
                     // Skip listing the device.  Other errors,
                     // propagate exception onward
-                    if (e.errorCode != ICameraService.ERROR_DISCONNECTED ||
+                    if (e.errorCode != ICameraService.ERROR_DISCONNECTED &&
                             e.errorCode != ICameraService.ERROR_ILLEGAL_ARGUMENT) {
                         throwAsPublicException(e);
                     }
