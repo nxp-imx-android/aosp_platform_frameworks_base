@@ -34,6 +34,8 @@ import com.android.systemui.RecentsComponent;
 import com.android.systemui.stackdivider.Divider;
 import com.android.systemui.tuner.TunerService;
 
+import java.util.ArrayList;
+
 import static android.view.WindowManager.DOCKED_INVALID;
 import static android.view.WindowManager.DOCKED_LEFT;
 import static android.view.WindowManager.DOCKED_TOP;
@@ -170,15 +172,21 @@ public class NavigationBarGestureHelper extends GestureDetector.SimpleOnGestureL
         mTouchDownX = (int) event.getX();
         mTouchDownY = (int) event.getY();
 
+        mDownOnRecents = false;
         if (mNavigationBarView != null) {
-            View recentsButton = mNavigationBarView.getRecentsButton().getCurrentView();
-            if (recentsButton != null) {
+            ArrayList<View> recentsViews = mNavigationBarView.getRecentsButton().getViews();
+            for (int i = 0; i < recentsViews.size(); i++) {
+                View recentsButton = recentsViews.get(i);
+                if (recentsButton == null) {
+                    continue;
+                }
                 mDownOnRecents = mTouchDownX >= recentsButton.getLeft()
                         && mTouchDownX <= recentsButton.getRight()
                         && mTouchDownY >= recentsButton.getTop()
                         && mTouchDownY <= recentsButton.getBottom();
-            } else {
-                mDownOnRecents = false;
+                if (mDownOnRecents) {
+                    break;
+                }
             }
         }
     }
@@ -265,7 +273,7 @@ public class NavigationBarGestureHelper extends GestureDetector.SimpleOnGestureL
         if (!mIsVertical && mDivider.getView().isHorizontalDivision()) {
             return DRAG_MODE_DIVIDER;
         }
-        return DRAG_MODE_RECENTS;
+        return DRAG_MODE_NONE;
     }
 
     public boolean onTouchEvent(MotionEvent event) {
