@@ -462,7 +462,11 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 if (stageDir != null && deltaBytes > 0) {
                     mPm.freeStorage(params.volumeUuid, deltaBytes);
                 }
-                Libcore.os.posix_fallocate(targetFd, 0, lengthBytes);
+                try {
+                    Libcore.os.posix_fallocate(targetFd, 0, lengthBytes);
+                } catch (ErrnoException e) {
+                    Slog.e(TAG, "Do Not Support posix_fallocate");
+                }
             }
 
             if (offsetBytes > 0) {
