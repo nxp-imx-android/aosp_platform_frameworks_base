@@ -49,7 +49,6 @@ public abstract class WindowOrientationListener {
             "debug.orientation.log", false);
 
     private static final boolean USE_GRAVITY_SENSOR = false;
-    private static final int DEFAULT_BATCH_LATENCY = 100000;
 
     private Handler mHandler;
     private SensorManager mSensorManager;
@@ -119,12 +118,7 @@ public abstract class WindowOrientationListener {
                     Slog.d(TAG, "WindowOrientationListener enabled");
                 }
                 mOrientationJudge.resetLocked();
-                if (mSensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-                    mSensorManager.registerListener(
-                            mOrientationJudge, mSensor, mRate, DEFAULT_BATCH_LATENCY, mHandler);
-                } else {
-                    mSensorManager.registerListener(mOrientationJudge, mSensor, mRate, mHandler);
-                }
+                mSensorManager.registerListener(mOrientationJudge, mSensor, mRate, mHandler);
                 mEnabled = true;
             }
         }
