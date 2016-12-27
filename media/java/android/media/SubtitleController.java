@@ -160,6 +160,12 @@ public class SubtitleController {
     }
 
     private void doSelectTrack(SubtitleTrack track) {
+        // MA-9136 android.media.cts.MediaPlayerTest#testChangeTimedTextTrack workaround
+        // call sleep to schedule so track data won't be sent before mediaplayer.slectTrack finish
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException ignored) {
+        }
         mTrackIsExplicit = true;
         if (mSelectedTrack == track) {
             return;
