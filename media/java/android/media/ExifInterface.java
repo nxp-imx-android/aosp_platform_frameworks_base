@@ -852,6 +852,8 @@ public class ExifInterface {
 
     // Primary image IFD Exif Private tags (See JEITA CP-3451 Table 15. page 55).
     private static final ExifTag[] IFD_EXIF_TAGS = new ExifTag[] {
+            new ExifTag(TAG_JPEG_INTERCHANGE_FORMAT, 513, IFD_FORMAT_ULONG),
+            new ExifTag(TAG_JPEG_INTERCHANGE_FORMAT_LENGTH, 514, IFD_FORMAT_ULONG),
             new ExifTag(TAG_EXPOSURE_TIME, 33434, IFD_FORMAT_URATIONAL),
             new ExifTag(TAG_F_NUMBER, 33437, IFD_FORMAT_URATIONAL),
             new ExifTag(TAG_EXPOSURE_PROGRAM, 34850, IFD_FORMAT_USHORT),
