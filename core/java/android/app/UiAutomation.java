@@ -642,6 +642,10 @@ public final class UiAutomation {
                 mLastEventTimeMillis = startTimeMillis;
             }
 
+            // Add some additional timeout on single and dual core devices.
+            int cpuCount = Runtime.getRuntime().availableProcessors();
+            long additionalTimeoutMillis = cpuCount > 2 ? 0 : (cpuCount > 1 ? 200 : 600);
+
             while (true) {
                 final long currentTimeMillis = SystemClock.uptimeMillis();
                 // Did we get idle state within the global timeout?
@@ -655,7 +659,7 @@ public final class UiAutomation {
                 }
                 // Did we get an idle state within the idle timeout?
                 final long elapsedIdleTimeMillis = currentTimeMillis - mLastEventTimeMillis;
-                final long remainingIdleTimeMillis = idleTimeoutMillis - elapsedIdleTimeMillis;
+                final long remainingIdleTimeMillis = idleTimeoutMillis + additionalTimeoutMillis - elapsedIdleTimeMillis;
                 if (remainingIdleTimeMillis <= 0) {
                     return;
                 }
