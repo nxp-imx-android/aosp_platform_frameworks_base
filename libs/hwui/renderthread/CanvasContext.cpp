@@ -339,6 +339,10 @@ void CanvasContext::draw() {
     LOG_ALWAYS_FATAL_IF(!mCanvas || mEglSurface == EGL_NO_SURFACE,
             "drawRenderNode called on a context with no canvas or surface!");
 #endif
+    if (mEglSurface == EGL_NO_SURFACE) {
+        ALOGE("drawRenderNode called on a context with no canvas or surface!");
+        return;
+    }
 
     SkRect dirty;
     mDamageAccumulator.finish(&dirty);

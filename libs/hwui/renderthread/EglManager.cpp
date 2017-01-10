@@ -225,9 +225,11 @@ void EglManager::createPBufferSurface() {
 EGLSurface EglManager::createSurface(EGLNativeWindowType window) {
     initialize();
     EGLSurface surface = eglCreateWindowSurface(mEglDisplay, mEglConfig, window, nullptr);
-    LOG_ALWAYS_FATAL_IF(surface == EGL_NO_SURFACE,
-            "Failed to create EGLSurface for window %p, eglErr = %s",
+    if (surface == EGL_NO_SURFACE) {
+        ALOGE("Failed to create EGLSurface for window %p, eglErr = %s",
             (void*) window, egl_error_str());
+        return surface;
+    }
 
     if (mSwapBehavior != SwapBehavior::Preserved) {
         LOG_ALWAYS_FATAL_IF(eglSurfaceAttrib(mEglDisplay, surface, EGL_SWAP_BEHAVIOR, EGL_BUFFER_DESTROYED) == EGL_FALSE,
