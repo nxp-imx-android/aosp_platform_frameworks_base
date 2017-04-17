@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2008 The Android Open Source Project
+ * Copyright 2017 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -404,8 +405,15 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
 
             try {
                 String devPath = event.get("DEVPATH");
-                String name = event.get("SWITCH_NAME");
-                int state = Integer.parseInt(event.get("SWITCH_STATE"));
+                String name;
+                int state;
+                if (devPath.indexOf("extcon") != -1) {
+                    name = event.get("NAME");
+                    state = Integer.parseInt(event.get("STATE"));
+                } else {
+                    name = event.get("SWITCH_NAME");
+                    state = Integer.parseInt(event.get("SWITCH_STATE"));
+                }
                 synchronized (mLock) {
                     updateStateLocked(devPath, name, state);
                 }
@@ -426,12 +434,20 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
 
         private final class UEventInfo {
             private final String mDevName;
+            private final String mClassName;
             private final int mState1Bits;
             private final int mState2Bits;
             private final int mStateNbits;
 
             public UEventInfo(String devName, int state1Bits, int state2Bits, int stateNbits) {
                 mDevName = devName;
+
+                /*Check if the kernel is using EXTCON class*/
+                File f_extcon = new File(String.format(Locale.US, "/sys/class/extcon/%s/state", mDevName));
+                if (f_extcon.exists())
+                    mClassName = "extcon";
+                else
+                    mClassName = "switch";
                 mState1Bits = state1Bits;
                 mState2Bits = state2Bits;
                 mStateNbits = stateNbits;
@@ -440,11 +456,11 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
             public String getDevName() { return mDevName; }
 
             public String getDevPath() {
-                return String.format(Locale.US, "/devices/virtual/switch/%s", mDevName);
+                return String.format(Locale.US, "/devices/virtual/%s/%s", mClassName, mDevName);
             }
 
             public String getSwitchStatePath() {
-                return String.format(Locale.US, "/sys/class/switch/%s/state", mDevName);
+                return String.format(Locale.US, "/sys/class/%s/%s/state", mClassName, mDevName);
             }
 
             public boolean checkSwitchExists() {
