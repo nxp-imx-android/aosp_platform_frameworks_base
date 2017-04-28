@@ -832,7 +832,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private UEventObserver mHDMIObserver = new UEventObserver() {
         @Override
         public void onUEvent(UEventObserver.UEvent event) {
-            setHdmiPlugged("1".equals(event.get("SWITCH_STATE")));
+            File f_extcon = new File("/sys/class/extcon/extcon0");
+            File f_switch = new File("/sys/class/switch/hdmi");
+
+            if (f_extcon.exists())
+                setHdmiPlugged(parse_ext_status(event.get("STATE")));
+            else if (f_switch.exists())
+                setHdmiPlugged("1".equals(event.get("STATE")));
+            else
+                setHdmiPlugged("1".equals(event.get("SWITCH_STATE")));
         }
     };
 
@@ -5585,6 +5593,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
+    private boolean parse_ext_status(String status) {
+        boolean state_cable = false;
+        // extcon event state changes from kernel4.9
+        // new state will be like STATE=HDMI=1
+        if(status.contains("HDMI=1"))
+            state_cable = true;
+        Slog.v(TAG, "state_cable  " + state_cable);
+        return state_cable;
+    }
+
     void initializeHdmiState() {
         boolean plugged = false;
         // watch for HDMI plug messages if the hdmi switch exists
@@ -5610,6 +5628,43 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         reader.close();
                     } catch (IOException ex) {
                     }
+                }
+            }
+        } else if (new File("/sys/class/extcon/extcon0").exists()) {
+            File file = new File("/sys/class/extcon");
+            File[] files = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                String filename = String.format("/sys/class/extcon/extcon%d", i);
+                String state = String.format("/sys/class/extcon/extcon%d/state", i);
+                File devPath = new File(filename);
+                FileReader reader = null;
+                try {
+                    if (devPath.exists() && (devPath.getCanonicalPath().indexOf("hdmi_video") >= 0)) {
+                       int start = devPath.getCanonicalPath().indexOf("/devices");
+                        mHDMIObserver.startObserving("DEVPATH=" +
+                                             devPath.getCanonicalPath().substring(start));
+                        try {
+                            reader = new FileReader(state);
+                            char[] buf = new char[1024];
+                            int n = reader.read(buf);
+                            if (n > 1) {
+                                plugged =  parse_ext_status((new String(buf, 0, n-1)).trim());
+                            }
+                        } catch (IOException ex) {
+                            Slog.w(TAG, "Couldn't read hdmi state from " + state + ": " + ex);
+                        } catch (NumberFormatException ex) {
+                            Slog.w(TAG, "Couldn't read hdmi state from " + state + ": " + ex);
+                        } finally {
+                            if (reader != null) {
+                                try {
+                                    reader.close();
+                                } catch (IOException ex) {
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    Slog.e(TAG, "Could not get the extcon path" + e);
                 }
             }
         }

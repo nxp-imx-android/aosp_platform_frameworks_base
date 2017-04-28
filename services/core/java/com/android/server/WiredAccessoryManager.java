@@ -45,6 +45,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.io.IOException;
 
 /**
  * <p>WiredAccessoryManager monitors for a wired headset on the main board or dock using
@@ -83,6 +84,7 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
     private int mSwitchValues;
 
     private final WiredAccessoryObserver mObserver;
+    private final WiredAccessoryExtconObserver mExtconObserver;
     private final InputManagerService mInputManager;
 
     private final boolean mUseDevInputEventForAudioJack;
@@ -97,6 +99,7 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
         mUseDevInputEventForAudioJack =
                 context.getResources().getBoolean(R.bool.config_useDevInputEventForAudioJack);
 
+        mExtconObserver = new WiredAccessoryExtconObserver();
         mObserver = new WiredAccessoryObserver();
     }
 
@@ -116,7 +119,11 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
                     SW_HEADPHONE_INSERT_BIT | SW_MICROPHONE_INSERT_BIT | SW_LINEOUT_INSERT_BIT);
         }
 
-        mObserver.init();
+        File f_extcon = new File("/sys/class/extcon/extcon0");
+        if (f_extcon.exists())
+            mExtconObserver.init();
+        else
+            mObserver.init();
     }
 
     @Override
@@ -475,6 +482,136 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
                               ((switchState == mStateNbits) ? mStateNbits : 0)));
 
                 return ((headsetState & preserveMask) | setBits);
+            }
+        }
+    }
+
+    class WiredAccessoryExtconObserver extends UEventObserver {
+        private final List<UEventInfo> mUEventInfo;
+
+        public WiredAccessoryExtconObserver() {
+            mUEventInfo = makeObservedUEventList();
+        }
+
+        void init() {
+            synchronized (mLock) {
+                if (LOG) Slog.v(TAG, "init()");
+                char[] buffer = new char[1024];
+
+                for (int i = 0; i < mUEventInfo.size(); ++i) {
+                    UEventInfo uei = mUEventInfo.get(i);
+                    try {
+                         FileReader f = new FileReader(uei.getStatePath());
+                         int len = f.read(buffer, 0, 1024);
+                         f.close();
+                         int state = parse_status((new String(buffer, 0, len)).trim());
+
+                         if (state > 0) {
+                             updateStateLocked(uei.getDevPath(), uei.getDevName(), state);
+                         }
+                    } catch (FileNotFoundException e) {
+                        Slog.w(TAG, uei.getStatePath() +
+                                " not found while attempting to determine initial switch state");
+                    } catch (Exception e) {
+                        Slog.e(TAG, "" , e);
+                    }
+                }
+            }
+
+            // At any given time accessories could be inserted
+            // one on the board, one on the dock and one on HDMI:
+            // observe three UEVENTs
+            for (int i = 0; i < mUEventInfo.size(); ++i) {
+                UEventInfo uei = mUEventInfo.get(i);
+                startObserving("DEVPATH=" + uei.getDevPath());
+            }
+        }
+
+        private List<UEventInfo> makeObservedUEventList() {
+            List<UEventInfo> retVal = new ArrayList<UEventInfo>();
+            UEventInfo uei;
+
+            File file = new File("/sys/class/extcon");
+            File[] files = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                uei = new UEventInfo(String.format(Locale.US, "extcon%d", i));
+                retVal.add(uei);
+            }
+            return retVal;
+        }
+
+        private int parse_status(String status) {
+            int state_cable = 0;
+            // extcon event state changes from kernel4.9
+            // new state will be like STATE=MICROPHONE=1\nHEADPHONE=0
+            if(status.contains("HEADPHONE=1"))
+                state_cable |= BIT_HEADSET_NO_MIC;
+            if(status.contains("MICROPHONE=1"))
+                state_cable |= BIT_HEADSET;
+            if(status.contains("HDMI=1"))
+                state_cable |= BIT_HDMI_AUDIO;
+            if(status.contains("LINE-OUT=1"))
+                state_cable |= BIT_LINEOUT;
+
+            Slog.v(TAG, "state_cable  " + state_cable);
+            return state_cable;
+        }
+
+        @Override
+        public void onUEvent(UEventObserver.UEvent event) {
+            if (LOG) Slog.v(TAG, "Headset UEVENT: " + event.toString());
+
+            try {
+                String devPath = event.get("DEVPATH");
+                String name;
+                int state;
+                name = event.get("NAME");
+                state = parse_status(event.get("STATE"));
+
+                synchronized (mLock) {
+                    updateStateLocked(devPath, name, state);
+                }
+            } catch (NumberFormatException e) {
+                Slog.e(TAG, "Could not parse switch state from event " + event);
+            }
+        }
+
+        private void updateStateLocked(String devPath, String name, int state) {
+            for (int i = 0; i < mUEventInfo.size(); ++i) {
+                UEventInfo uei = mUEventInfo.get(i);
+                if (devPath.equals(uei.getDevPath())) {
+                    updateLocked(name, state);
+                    return;
+                }
+            }
+        }
+
+        private final class UEventInfo {
+            private final String mDevName;
+
+            public UEventInfo(String devName) {
+                mDevName = devName;
+            }
+
+            public String getDevName() { return mDevName; }
+
+            public String getDevPath() {
+                try {
+                    String extconPath = String.format(Locale.US,"/sys/class/extcon/%s", mDevName);
+                    File devPath = new File(extconPath);
+                    if (devPath.exists()) {
+                         int start = devPath.getCanonicalPath().indexOf("/devices");
+                         return devPath.getCanonicalPath().substring(start);
+                    }
+                    return null;
+                } catch (IOException e) {
+                    Slog.e(TAG, "Could not get the extcon path" + e);
+                    return null;
+                }
+            }
+
+            public String getStatePath() {
+                return String.format(Locale.US, "/sys/class/extcon/%s/state", mDevName);
             }
         }
     }
