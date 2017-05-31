@@ -541,17 +541,25 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
         }
 
         private int parse_status(String status) {
-            int state_cable = 0;
+            int state_cable = mHeadsetState;
             // extcon event state changes from kernel4.9
             // new state will be like STATE=MICROPHONE=1\nHEADPHONE=0
             if(status.contains("HEADPHONE=1"))
                 state_cable |= BIT_HEADSET_NO_MIC;
+            else if(status.contains("HEADPHONE=0"))
+                state_cable &= ~BIT_HEADSET_NO_MIC;
             if(status.contains("MICROPHONE=1"))
                 state_cable |= BIT_HEADSET;
+            else if(status.contains("MICROPHONE=0"))
+                state_cable &= ~BIT_HEADSET;
             if(status.contains("HDMI=1"))
                 state_cable |= BIT_HDMI_AUDIO;
+            else if(status.contains("HDMI=0"))
+                state_cable &= ~BIT_HDMI_AUDIO;
             if(status.contains("LINE-OUT=1"))
                 state_cable |= BIT_LINEOUT;
+            else if(status.contains("LINE-OUT=0"))
+                state_cable &= ~BIT_LINEOUT;
 
             Slog.v(TAG, "state_cable  " + state_cable);
             return state_cable;
