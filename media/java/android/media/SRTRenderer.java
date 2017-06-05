@@ -143,6 +143,7 @@ class SRTTrack extends WebVttTrack {
                     cue.mLines[i++] = span;
                 }
 
+                cue.mRunID = runID;
                 addCue(cue);
             }
 
