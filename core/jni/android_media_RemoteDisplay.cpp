@@ -44,6 +44,7 @@ static struct {
     jmethodID notifyDisplayConnected;
     jmethodID notifyDisplayDisconnected;
     jmethodID notifyDisplayError;
+    jmethodID notifyDisplayUibc;
 } gRemoteDisplayClassInfo;
 
 // ----------------------------------------------------------------------------
@@ -93,6 +94,15 @@ public:
         env->CallVoidMethod(mRemoteDisplayObjGlobal,
                 gRemoteDisplayClassInfo.notifyDisplayError, error);
         checkAndClearExceptionFromCallback(env, "notifyDisplayError");
+    }
+
+    virtual void onUibcData(uint32_t type, float f0, float f1, uint32_t i0) {
+        JNIEnv* env = AndroidRuntime::getJNIEnv();
+
+        env->CallVoidMethod(mRemoteDisplayObjGlobal,
+                 gRemoteDisplayClassInfo.notifyDisplayUibc, type, f0, f1, i0);
+        checkAndClearExceptionFromCallback(env, "notifyDisplayUibc");
+
     }
 
 private:
@@ -199,6 +209,8 @@ int register_android_media_RemoteDisplay(JNIEnv* env)
             clazz, "notifyDisplayDisconnected", "()V");
     gRemoteDisplayClassInfo.notifyDisplayError = GetMethodIDOrDie(env,
             clazz, "notifyDisplayError", "(I)V");
+    gRemoteDisplayClassInfo.notifyDisplayUibc =
+            env->GetMethodID(clazz, "notifyDisplayUibc", "(IFFI)V");
     return err;
 }
 
