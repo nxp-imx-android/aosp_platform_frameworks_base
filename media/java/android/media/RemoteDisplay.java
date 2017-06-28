@@ -155,6 +155,15 @@ public final class RemoteDisplay {
         });
     }
 
+    private void notifyDisplayUibc(final int type, final float f0, final float f1, final int i0) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mListener.onUibcData(type, f0, f1, i0);
+            }
+        });
+    }
+
     /**
      * Listener invoked when the remote display connection changes state.
      */
@@ -163,5 +172,6 @@ public final class RemoteDisplay {
                 int width, int height, int flags, int session);
         void onDisplayDisconnected();
         void onDisplayError(int error);
+        void onUibcData(int type, float f0, float f1, int i0);
     }
 }
