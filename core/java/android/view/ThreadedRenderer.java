@@ -243,6 +243,14 @@ public final class ThreadedRenderer {
      *         false otherwise
      */
     public static boolean isAvailable() {
+        // when OpenGL ES 2.0 is disabled, this property should be set to false.
+        // it is set to true by default.
+        String supportOpenGL = SystemProperties.get("sys.viewroot.hw", "true");
+        if (supportOpenGL.equals("false")) {
+            Log.i(LOG_TAG, "OpenGL ES 2.0 is disabled");
+            return false;
+        }
+
         if (sSupportsOpenGL != null) {
             return sSupportsOpenGL.booleanValue();
         }
