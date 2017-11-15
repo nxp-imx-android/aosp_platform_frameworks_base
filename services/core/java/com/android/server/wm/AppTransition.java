@@ -52,7 +52,6 @@ import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.GraphicBuffer;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.os.Binder;
@@ -348,12 +347,12 @@ public class AppTransition implements Dump {
         setAppTransitionState(APP_STATE_TIMEOUT);
     }
 
-    GraphicBuffer getAppTransitionThumbnailHeader(int taskId) {
+    Bitmap getAppTransitionThumbnailHeader(int taskId) {
         AppTransitionAnimationSpec spec = mNextAppTransitionAnimationsSpecs.get(taskId);
         if (spec == null) {
             spec = mDefaultNextAppTransitionAnimationSpec;
         }
-        return spec != null ? spec.buffer : null;
+        return spec != null ? spec.bitmap : null;
     }
 
     /** Returns whether the next thumbnail transition is aspect scaled up. */
@@ -734,9 +733,9 @@ public class AppTransition implements Dump {
     }
 
     private void putDefaultNextAppTransitionCoordinates(int left, int top, int width, int height,
-            GraphicBuffer buffer) {
+            Bitmap bitmap) {
         mDefaultNextAppTransitionAnimationSpec = new AppTransitionAnimationSpec(-1 /* taskId */,
-                buffer, new Rect(left, top, left + width, top + height));
+                bitmap, new Rect(left, top, left + width, top + height));
     }
 
     /**
@@ -961,7 +960,7 @@ public class AppTransition implements Dump {
      * when a thumbnail is specified with the pending animation override.
      */
     Animation createThumbnailAspectScaleAnimationLocked(Rect appRect, @Nullable Rect contentInsets,
-            GraphicBuffer thumbnailHeader, final int taskId, int uiMode, int orientation) {
+            Bitmap thumbnailHeader, final int taskId, int uiMode, int orientation) {
         Animation a;
         final int thumbWidthI = thumbnailHeader.getWidth();
         final float thumbWidth = thumbWidthI > 0 ? thumbWidthI : 1;
@@ -1314,7 +1313,7 @@ public class AppTransition implements Dump {
      * when a thumbnail is specified with the pending animation override.
      */
     Animation createThumbnailScaleAnimationLocked(int appWidth, int appHeight, int transit,
-            GraphicBuffer thumbnailHeader) {
+            Bitmap thumbnailHeader) {
         Animation a;
         getDefaultNextAppTransitionStartRect(mTmpRect);
         final int thumbWidthI = thumbnailHeader.getWidth();
@@ -1359,7 +1358,7 @@ public class AppTransition implements Dump {
             int transit, int taskId) {
         final int appWidth = containingFrame.width();
         final int appHeight = containingFrame.height();
-        final GraphicBuffer thumbnailHeader = getAppTransitionThumbnailHeader(taskId);
+        Bitmap thumbnailHeader = getAppTransitionThumbnailHeader(taskId);
         Animation a;
         getDefaultNextAppTransitionStartRect(mTmpRect);
         final int thumbWidthI = thumbnailHeader != null ? thumbnailHeader.getWidth() : appWidth;
@@ -1732,7 +1731,7 @@ public class AppTransition implements Dump {
         }
     }
 
-    void overridePendingAppTransitionThumb(GraphicBuffer srcThumb, int startX, int startY,
+    void overridePendingAppTransitionThumb(Bitmap srcThumb, int startX, int startY,
                                            IRemoteCallback startedCallback, boolean scaleUp) {
         if (isTransitionSet()) {
             clear();
@@ -1747,7 +1746,7 @@ public class AppTransition implements Dump {
         }
     }
 
-    void overridePendingAppTransitionAspectScaledThumb(GraphicBuffer srcThumb, int startX, int startY,
+    void overridePendingAppTransitionAspectScaledThumb(Bitmap srcThumb, int startX, int startY,
             int targetWidth, int targetHeight, IRemoteCallback startedCallback, boolean scaleUp) {
         if (isTransitionSet()) {
             clear();
@@ -1781,7 +1780,7 @@ public class AppTransition implements Dump {
                             // to be set.
                             Rect rect = spec.rect;
                             putDefaultNextAppTransitionCoordinates(rect.left, rect.top,
-                                    rect.width(), rect.height(), spec.buffer);
+                                    rect.width(), rect.height(), spec.bitmap);
                         }
                     }
                 }

@@ -39,7 +39,8 @@ import static com.android.server.wm.WindowManagerService.MAX_ANIMATION_DURATION;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_PLACING_SURFACES;
 
 import android.content.res.Configuration;
-import android.graphics.GraphicBuffer;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.os.Binder;
@@ -684,9 +685,8 @@ class WindowSurfacePlacer {
             return;
         }
         final int taskId = appToken.getTask().mTaskId;
-        final GraphicBuffer thumbnailHeader =
-                mService.mAppTransition.getAppTransitionThumbnailHeader(taskId);
-        if (thumbnailHeader == null) {
+        Bitmap thumbnailHeader = mService.mAppTransition.getAppTransitionThumbnailHeader(taskId);
+        if (thumbnailHeader == null || thumbnailHeader.getConfig() == Bitmap.Config.ALPHA_8) {
             if (DEBUG_APP_TRANSITIONS) Slog.d(TAG, "No thumbnail header bitmap for: " + taskId);
             return;
         }
@@ -711,10 +711,12 @@ class WindowSurfacePlacer {
                 Slog.i(TAG, "  THUMBNAIL " + surfaceControl + ": CREATE");
             }
 
-            // Transfer the thumbnail to the surface
+            // Draw the thumbnail onto the surface
             Surface drawSurface = new Surface();
             drawSurface.copyFrom(surfaceControl);
-            drawSurface.attachAndQueueBuffer(thumbnailHeader);
+            Canvas c = drawSurface.lockCanvas(dirty);
+            c.drawBitmap(thumbnailHeader, 0, 0, null);
+            drawSurface.unlockCanvasAndPost(c);
             drawSurface.release();
 
             // Get the thumbnail animation

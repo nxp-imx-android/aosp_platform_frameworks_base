@@ -25,8 +25,6 @@ import android.annotation.TestApi;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.GraphicBuffer;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
@@ -828,11 +826,7 @@ public class ActivityOptions {
             case ANIM_THUMBNAIL_SCALE_DOWN:
             case ANIM_THUMBNAIL_ASPECT_SCALE_UP:
             case ANIM_THUMBNAIL_ASPECT_SCALE_DOWN:
-                // Unpackage the GraphicBuffer from the parceled thumbnail
-                final GraphicBuffer buffer = opts.getParcelable(KEY_ANIM_THUMBNAIL);
-                if (buffer != null) {
-                    mThumbnail = Bitmap.createHardwareBitmap(buffer);
-                }
+                mThumbnail = (Bitmap) opts.getParcelable(KEY_ANIM_THUMBNAIL);
                 mStartX = opts.getInt(KEY_ANIM_START_X, 0);
                 mStartY = opts.getInt(KEY_ANIM_START_Y, 0);
                 mWidth = opts.getInt(KEY_ANIM_WIDTH, 0);
@@ -925,14 +919,9 @@ public class ActivityOptions {
         return mCustomInPlaceResId;
     }
 
-    /**
-     * The thumbnail is copied into a hardware bitmap when it is bundled and sent to the system, so
-     * it should always be backed by a GraphicBuffer on the other end.
-     *
-     * @hide
-     */
-    public GraphicBuffer getThumbnail() {
-        return mThumbnail != null ? mThumbnail.createGraphicBufferHandle() : null;
+    /** @hide */
+    public Bitmap getThumbnail() {
+        return mThumbnail;
     }
 
     /** @hide */
@@ -1241,16 +1230,7 @@ public class ActivityOptions {
             case ANIM_THUMBNAIL_SCALE_DOWN:
             case ANIM_THUMBNAIL_ASPECT_SCALE_UP:
             case ANIM_THUMBNAIL_ASPECT_SCALE_DOWN:
-                // Once we parcel the thumbnail for transfering over to the system, create a copy of
-                // the bitmap to a hardware bitmap and pass through the GraphicBuffer
-                if (mThumbnail != null) {
-                    final Bitmap hwBitmap = mThumbnail.copy(Config.HARDWARE, false /* isMutable */);
-                    if (hwBitmap != null) {
-                        b.putParcelable(KEY_ANIM_THUMBNAIL, hwBitmap.createGraphicBufferHandle());
-                    } else {
-                        Slog.w(TAG, "Failed to copy thumbnail");
-                    }
-                }
+                b.putParcelable(KEY_ANIM_THUMBNAIL, mThumbnail);
                 b.putInt(KEY_ANIM_START_X, mStartX);
                 b.putInt(KEY_ANIM_START_Y, mStartY);
                 b.putInt(KEY_ANIM_WIDTH, mWidth);

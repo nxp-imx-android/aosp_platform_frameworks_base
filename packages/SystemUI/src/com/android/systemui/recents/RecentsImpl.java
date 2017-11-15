@@ -29,7 +29,8 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.graphics.GraphicBuffer;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -254,6 +255,8 @@ public class RecentsImpl implements ActivityOptions.OnAnimationFinishedListener 
                     DividerView.INVALID_RECENTS_GROW_TARGET);
         }
     });
+
+    protected Bitmap mThumbTransitionBitmapCache;
 
     public RecentsImpl(Context context) {
         mContext = context;
@@ -806,6 +809,14 @@ public class RecentsImpl implements ActivityOptions.OnAnimationFinishedListener 
                 }
                 mHeaderBar.layout(0, 0, taskViewWidth, mTaskBarHeight);
             }
+
+            // Update the transition bitmap to match the new header bar height
+            if (mThumbTransitionBitmapCache == null ||
+                    (mThumbTransitionBitmapCache.getWidth() != taskViewWidth) ||
+                    (mThumbTransitionBitmapCache.getHeight() != mTaskBarHeight)) {
+                mThumbTransitionBitmapCache = Bitmap.createBitmap(taskViewWidth,
+                        mTaskBarHeight, Bitmap.Config.ARGB_8888);
+            }
         }
     }
 
@@ -887,7 +898,8 @@ public class RecentsImpl implements ActivityOptions.OnAnimationFinishedListener 
                     mTmpTransform = stackLayout.getStackTransformScreenCoordinates(task,
                             stackScroller.getStackScroll(), mTmpTransform, null,
                             windowOverrideRect);
-                    GraphicBuffer thumbnail = drawThumbnailTransitionBitmap(task, mTmpTransform);
+                    Bitmap thumbnail = drawThumbnailTransitionBitmap(task, mTmpTransform,
+                            mThumbTransitionBitmapCache);
                     Rect toTaskRect = new Rect();
                     mTmpTransform.rect.round(toTaskRect);
                     specs.add(new AppTransitionAnimationSpec(task.key.id, thumbnail, toTaskRect));
@@ -910,8 +922,8 @@ public class RecentsImpl implements ActivityOptions.OnAnimationFinishedListener 
                             () -> {
                         Rect rect = new Rect();
                         toTaskRect.round(rect);
-                        GraphicBuffer thumbnail = drawThumbnailTransitionBitmap(toTask,
-                                toTransform);
+                        Bitmap thumbnail = drawThumbnailTransitionBitmap(toTask, toTransform,
+                                mThumbTransitionBitmapCache);
                         return Lists.newArrayList(new AppTransitionAnimationSpec(
                                 toTask.key.id, thumbnail, rect));
                     });
@@ -949,8 +961,8 @@ public class RecentsImpl implements ActivityOptions.OnAnimationFinishedListener 
     /**
      * Draws the header of a task used for the window animation into a bitmap.
      */
-    private GraphicBuffer drawThumbnailTransitionBitmap(Task toTask,
-            TaskViewTransform toTransform) {
+    private Bitmap drawThumbnailTransitionBitmap(Task toTask, TaskViewTransform toTransform,
+            Bitmap thumbnail) {
         SystemServicesProxy ssp = Recents.getSystemServices();
         int width = (int) toTransform.rect.width();
         int height = (int) toTransform.rect.height();
@@ -959,9 +971,10 @@ public class RecentsImpl implements ActivityOptions.OnAnimationFinishedListener 
                 boolean disabledInSafeMode = !toTask.isSystemApp && ssp.isInSafeMode();
                 mHeaderBar.onTaskViewSizeChanged(width, height);
                 if (RecentsDebugFlags.Static.EnableTransitionThumbnailDebugMode) {
-                    return RecentsTransitionHelper.drawViewIntoGraphicBuffer(width, mTaskBarHeight,
-                            null, 1f, 0xFFff0000);
+                    thumbnail.eraseColor(0xFFff0000);
                 } else {
+                    thumbnail.eraseColor(0);
+                    Canvas c = new Canvas(thumbnail);
                     // Workaround for b/27815919, reset the callback so that we do not trigger an
                     // invalidate on the header bar as a result of updating the icon
                     Drawable icon = mHeaderBar.getIconView().getDrawable();
@@ -972,10 +985,11 @@ public class RecentsImpl implements ActivityOptions.OnAnimationFinishedListener 
                             disabledInSafeMode);
                     mHeaderBar.onTaskDataLoaded();
                     mHeaderBar.setDimAlpha(toTransform.dimAlpha);
-                    return RecentsTransitionHelper.drawViewIntoGraphicBuffer(width, mTaskBarHeight,
-                            mHeaderBar, 1f, 0);
+                    mHeaderBar.draw(c);
+                    c.setBitmap(null);
                 }
             }
+            return thumbnail.createAshmemBitmap();
         }
         return null;
     }

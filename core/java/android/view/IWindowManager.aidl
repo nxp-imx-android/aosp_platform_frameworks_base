@@ -26,7 +26,6 @@ import com.android.internal.policy.IShortcutService;
 import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.GraphicBuffer;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
@@ -99,9 +98,9 @@ interface IWindowManager
             int startHeight);
     void overridePendingAppTransitionClipReveal(int startX, int startY,
             int startWidth, int startHeight);
-    void overridePendingAppTransitionThumb(in GraphicBuffer srcThumb, int startX, int startY,
+    void overridePendingAppTransitionThumb(in Bitmap srcThumb, int startX, int startY,
             IRemoteCallback startedCallback, boolean scaleUp);
-    void overridePendingAppTransitionAspectScaledThumb(in GraphicBuffer srcThumb, int startX,
+    void overridePendingAppTransitionAspectScaledThumb(in Bitmap srcThumb, int startX,
             int startY, int targetWidth, int targetHeight, IRemoteCallback startedCallback,
             boolean scaleUp);
     /**
