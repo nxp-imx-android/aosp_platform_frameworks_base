@@ -188,7 +188,6 @@ public class UsbDeviceManager implements ActivityManagerInternal.ScreenObserver 
         sBlackListedInterfaces = new HashSet<>();
         sBlackListedInterfaces.add(UsbConstants.USB_CLASS_AUDIO);
         sBlackListedInterfaces.add(UsbConstants.USB_CLASS_COMM);
-        sBlackListedInterfaces.add(UsbConstants.USB_CLASS_HID);
         sBlackListedInterfaces.add(UsbConstants.USB_CLASS_PRINTER);
         sBlackListedInterfaces.add(UsbConstants.USB_CLASS_MASS_STORAGE);
         sBlackListedInterfaces.add(UsbConstants.USB_CLASS_HUB);
