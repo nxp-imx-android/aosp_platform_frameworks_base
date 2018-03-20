@@ -39,6 +39,9 @@ public final class UsbAudioDevice {
     private String mDeviceName = "";
     private String mDeviceDescription = "";
 
+    public boolean mIsInputHeadset = false; // as reported by UsbDescriptorParser
+    public boolean mIsOutputHeadset = false; // as reported by UsbDescriptorParser
+
     public UsbAudioDevice(int card, int device,
             boolean hasPlayback, boolean hasCapture, int deviceClass) {
         mCard = card;
@@ -73,5 +76,9 @@ public final class UsbAudioDevice {
         mDeviceDescription = deviceDescription;
     }
 
+    void setHeadsetState(boolean isInputHeadset, boolean isOutputHeadset) {
+        mIsInputHeadset = isInputHeadset;
+        mIsOutputHeadset = isOutputHeadset;
+    }
 }
 
