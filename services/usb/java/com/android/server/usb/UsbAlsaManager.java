@@ -188,7 +188,7 @@ public final class UsbAlsaManager {
             // Playback Device
             if (audioDevice.mHasPlayback) {
                 int device;
-                if (mIsOutputHeadset) {
+                if (audioDevice.mIsOutputHeadset) {
                     device = AudioSystem.DEVICE_OUT_USB_HEADSET;
                 } else {
                     device = (audioDevice == mAccessoryAudioDevice
@@ -206,7 +206,7 @@ public final class UsbAlsaManager {
             // Capture Device
             if (audioDevice.mHasCapture) {
                 int device;
-                if (mIsInputHeadset) {
+                if (audioDevice.mIsInputHeadset) {
                     device = AudioSystem.DEVICE_IN_USB_HEADSET;
                 } else {
                     device = (audioDevice == mAccessoryAudioDevice
@@ -341,6 +341,7 @@ public final class UsbAlsaManager {
 
         UsbAudioDevice audioDevice =
                 new UsbAudioDevice(card, device, hasPlayback, hasCapture, deviceClass);
+        audioDevice.setHeadsetState(mIsInputHeadset, mIsOutputHeadset);
         AlsaCardsParser.AlsaCardRecord cardRecord = mCardsParser.getCardRecordFor(card);
         audioDevice.setDeviceNameAndDescription(cardRecord.mCardName, cardRecord.mCardDescription);
 
