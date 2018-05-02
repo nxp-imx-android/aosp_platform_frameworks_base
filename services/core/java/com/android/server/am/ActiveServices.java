@@ -122,7 +122,7 @@ public final class ActiveServices {
     private static final boolean SHOW_DUNGEON_NOTIFICATION = false;
 
     // How long we wait for a service to finish executing.
-    static final int SERVICE_TIMEOUT = 20*1000;
+    static final int SERVICE_TIMEOUT = 40*1000;
 
     // How long we wait for a service to finish executing.
     static final int SERVICE_BACKGROUND_TIMEOUT = SERVICE_TIMEOUT * 10;
