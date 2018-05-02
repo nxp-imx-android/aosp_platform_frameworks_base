@@ -522,11 +522,11 @@ public class ActivityManagerService extends IActivityManager.Stub
     static final int PROC_START_TIMEOUT_WITH_WRAPPER = 1200*1000;
 
     // How long we allow a receiver to run before giving up on it.
-    static final int BROADCAST_FG_TIMEOUT = 10*1000;
+    static final int BROADCAST_FG_TIMEOUT = 20*1000;
     static final int BROADCAST_BG_TIMEOUT = 60*1000;
 
     // How long we wait until we timeout on key dispatching.
-    static final int KEY_DISPATCHING_TIMEOUT = 5*1000;
+    static final int KEY_DISPATCHING_TIMEOUT = 10*1000;
 
     // How long we wait until we timeout on key dispatching during instrumentation.
     static final int INSTRUMENTATION_KEY_DISPATCHING_TIMEOUT = 60*1000;
