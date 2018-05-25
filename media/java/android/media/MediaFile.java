@@ -56,9 +56,10 @@ public class MediaFile {
     public static final int FILE_TYPE_IMY     = 13;
     public static final int FILE_TYPE_RA     = 14;
     public static final int FILE_TYPE_APE    = 15;
+    public static final int FILE_TYPE_DSF    = 16;
 
     private static final int FIRST_MIDI_FILE_TYPE = FILE_TYPE_MID;
-    private static final int LAST_MIDI_FILE_TYPE = FILE_TYPE_APE;
+    private static final int LAST_MIDI_FILE_TYPE = FILE_TYPE_DSF;
    
     // Video file types
     public static final int FILE_TYPE_MP4     = 21;
@@ -284,6 +285,11 @@ public class MediaFile {
             addFileType("RM", FILE_TYPE_RMVB, "video/rmff");
             addFileType("RV", FILE_TYPE_RMVB, "video/rmff");
             addFileType("RA", FILE_TYPE_RA, "audio/rmff");
+        }
+
+        value = SystemProperties.get("ro.FSL_DSF_PARSER");
+        if ("1".equals(value)) {
+            addFileType("DSF", FILE_TYPE_DSF, "audio/dsf");
         }
 		
         addFileType("JPG", FILE_TYPE_JPEG, "image/jpeg", MtpConstants.FORMAT_EXIF_JPEG, true);
