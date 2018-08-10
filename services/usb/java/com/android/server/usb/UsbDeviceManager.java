@@ -158,7 +158,7 @@ public class UsbDeviceManager implements ActivityManagerInternal.ScreenObserver 
     // Delay for debouncing USB disconnects.
     // We often get rapid connect/disconnect events when enabling USB functions,
     // which need debouncing.
-    private static final int UPDATE_DELAY = 1000;
+    private static final int UPDATE_DELAY = 1500;
 
     // Timeout for entering USB request mode.
     // Request is cancelled if host does not configure device within 10 seconds.
@@ -1463,7 +1463,7 @@ public class UsbDeviceManager implements ActivityManagerInternal.ScreenObserver 
                 // State transition is done when sys.usb.state is set to the new configuration
                 value = getSystemProperty(USB_STATE_PROPERTY, "");
                 if (state.equals(value)) return true;
-                SystemClock.sleep(50);
+                SystemClock.sleep(200);
             }
             Slog.e(TAG, "waitForState(" + state + ") FAILED: got " + value);
             return false;
