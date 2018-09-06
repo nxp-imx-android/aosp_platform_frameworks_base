@@ -143,8 +143,8 @@ LOCAL_MODULE_CLASS := EXECUTABLES
 
 # Enable sanitizer and allow very verbose printing on eng builds
 ifeq ($(TARGET_BUILD_VARIANT),eng)
-    LOCAL_CLANG := true
-    LOCAL_SANITIZE := address
+#   LOCAL_CLANG := true
+#   LOCAL_SANITIZE := address
     LOCAL_CFLAGS += \
         -DVERY_VERBOSE_PRINTING
 endif
