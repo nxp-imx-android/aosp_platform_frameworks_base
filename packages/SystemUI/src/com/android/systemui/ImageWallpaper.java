@@ -34,6 +34,8 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.WindowManager;
 
+import com.android.internal.os.RoSystemProperties;
+
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -487,7 +489,13 @@ public class ImageWallpaper extends WallpaperService {
         }
 
         private void drawWallpaperWithCanvas(SurfaceHolder sh, int w, int h, int left, int top) {
-            Canvas c = sh.lockHardwareCanvas();
+            Canvas c = null;
+            if (RoSystemProperties.CONFIG_HW_RENDERING) {
+                c = sh.lockHardwareCanvas();
+            }
+            else {
+                c = sh.lockCanvas();
+            }
             if (c != null) {
                 try {
                     if (DEBUG) {
