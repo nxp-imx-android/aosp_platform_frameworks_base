@@ -1193,20 +1193,29 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
      * @return {@code true} if {@code cachedBluetoothDevice} is a2dp device
      */
     public boolean isA2dpDevice() {
-        A2dpProfile a2dpProfile = mProfileManager.getA2dpProfile();
-        return a2dpProfile != null && a2dpProfile.getConnectionStatus(mDevice) ==
-                BluetoothProfile.STATE_CONNECTED;
+        A2dpProfile mA2dpProfile;
+        mA2dpProfile = mProfileManager.getA2dpProfile();
+        if (mA2dpProfile != null)
+            return mA2dpProfile.getConnectionStatus(mDevice) ==
+                    BluetoothProfile.STATE_CONNECTED;
+        else {
+            return false;
+        }
     }
 
     /**
      * @return {@code true} if {@code cachedBluetoothDevice} is HFP device
      */
     public boolean isHfpDevice() {
-        HeadsetProfile headsetProfile = mProfileManager.getHeadsetProfile();
-        return headsetProfile != null && headsetProfile.getConnectionStatus(mDevice) ==
-                BluetoothProfile.STATE_CONNECTED;
+        HeadsetProfile mheadsetprofile;
+        mheadsetprofile = mProfileManager.getHeadsetProfile();
+        if (mheadsetprofile != null)
+            return mheadsetprofile.getConnectionStatus(mDevice) ==
+                    BluetoothProfile.STATE_CONNECTED;
+        else {
+            return false;
+        }
     }
-
     /**
      * @return {@code true} if {@code cachedBluetoothDevice} is Hearing Aid device
      */
