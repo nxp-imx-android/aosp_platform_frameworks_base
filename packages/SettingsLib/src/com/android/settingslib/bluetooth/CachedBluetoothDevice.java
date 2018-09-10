@@ -1189,15 +1189,27 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
      * @return {@code true} if {@code cachedBluetoothDevice} is a2dp device
      */
     public boolean isA2dpDevice() {
-        return mProfileManager.getA2dpProfile().getConnectionStatus(mDevice) ==
-                BluetoothProfile.STATE_CONNECTED;
+        A2dpProfile mA2dpProfile;
+        mA2dpProfile = mProfileManager.getA2dpProfile();
+        if (mA2dpProfile != null)
+            return mA2dpProfile.getConnectionStatus(mDevice) ==
+                    BluetoothProfile.STATE_CONNECTED;
+        else {
+            return false;
+        }
     }
 
     /**
      * @return {@code true} if {@code cachedBluetoothDevice} is HFP device
      */
     public boolean isHfpDevice() {
-        return mProfileManager.getHeadsetProfile().getConnectionStatus(mDevice) ==
-                BluetoothProfile.STATE_CONNECTED;
+        HeadsetProfile mheadsetprofile;
+        mheadsetprofile = mProfileManager.getHeadsetProfile();
+        if (mheadsetprofile != null)
+            return mheadsetprofile.getConnectionStatus(mDevice) ==
+                    BluetoothProfile.STATE_CONNECTED;
+        else {
+            return false;
+        }
     }
 }
