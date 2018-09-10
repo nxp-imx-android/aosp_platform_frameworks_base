@@ -62,4 +62,5 @@ public class RoSystemProperties {
     public static final boolean CONTROL_PRIVAPP_PERMISSIONS_DISABLE =
             !CONTROL_PRIVAPP_PERMISSIONS_LOG && !CONTROL_PRIVAPP_PERMISSIONS_ENFORCE;
 
+    public static final boolean CONFIG_HW_RENDERING = SystemProperties.getBoolean("sys.viewroot.hw", true);
 }

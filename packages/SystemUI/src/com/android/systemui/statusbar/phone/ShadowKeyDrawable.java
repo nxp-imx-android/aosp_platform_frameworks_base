@@ -28,6 +28,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 
+import com.android.internal.os.RoSystemProperties;
 import com.android.systemui.R;
 
 /**
@@ -171,7 +172,9 @@ public class ShadowKeyDrawable extends Drawable {
             d.draw(canvas);
         }
 
-        bitmap = bitmap.copy(Bitmap.Config.HARDWARE, false);
+        if (RoSystemProperties.CONFIG_HW_RENDERING) {
+            bitmap = bitmap.copy(Bitmap.Config.HARDWARE, false);
+        }
         mState.mLastDrawnBitmap = bitmap;
         canvas.restore();
     }
