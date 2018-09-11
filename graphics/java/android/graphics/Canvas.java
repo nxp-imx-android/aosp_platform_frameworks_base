@@ -23,6 +23,8 @@ import android.annotation.Nullable;
 import android.annotation.Size;
 import android.os.Build;
 
+import com.android.internal.os.RoSystemProperties;
+
 import dalvik.annotation.optimization.CriticalNative;
 import dalvik.annotation.optimization.FastNative;
 
@@ -775,7 +777,8 @@ public class Canvas extends BaseCanvas {
 
     private static void checkValidClipOp(@NonNull Region.Op op) {
         if (sCompatiblityVersion >= Build.VERSION_CODES.P
-                && op != Region.Op.INTERSECT && op != Region.Op.DIFFERENCE) {
+                && op != Region.Op.INTERSECT && op != Region.Op.DIFFERENCE
+                && !RoSystemProperties.CONFIG_LEGACY_OP) {
             throw new IllegalArgumentException(
                     "Invalid Region.Op - only INTERSECT and DIFFERENCE are allowed");
         }
