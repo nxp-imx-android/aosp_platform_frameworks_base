@@ -63,4 +63,5 @@ public class RoSystemProperties {
             !CONTROL_PRIVAPP_PERMISSIONS_LOG && !CONTROL_PRIVAPP_PERMISSIONS_ENFORCE;
 
     public static final boolean CONFIG_HW_RENDERING = SystemProperties.getBoolean("sys.viewroot.hw", true);
+    public static final boolean CONFIG_LEGACY_OP = SystemProperties.getBoolean("ro.legacy.op", false);
 }
