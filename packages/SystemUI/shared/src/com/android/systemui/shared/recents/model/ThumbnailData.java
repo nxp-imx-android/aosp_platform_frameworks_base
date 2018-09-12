@@ -21,8 +21,10 @@ import static com.android.systemui.shared.system.WindowManagerWrapper.WINDOWING_
 
 import android.app.ActivityManager.TaskSnapshot;
 import android.graphics.Bitmap;
+import android.graphics.GraphicBuffer;
 import android.graphics.Rect;
 
+import com.android.internal.os.RoSystemProperties;
 /**
  * Data for a single thumbnail.
  */
@@ -51,7 +53,16 @@ public class ThumbnailData {
     }
 
     public ThumbnailData(TaskSnapshot snapshot) {
-        thumbnail = Bitmap.createHardwareBitmap(snapshot.getSnapshot());
+        GraphicBuffer thumbnailBuffer = snapshot.getSnapshot();
+        if (RoSystemProperties.CONFIG_HW_RENDERING) {
+            thumbnail = Bitmap.createHardwareBitmap(thumbnailBuffer);
+        } else if (thumbnailBuffer != null) {
+            thumbnail = Bitmap.createBitmap(thumbnailBuffer.getWidth(),
+                        thumbnailBuffer.getHeight(), Bitmap.Config.ARGB_8888);
+        } else {
+            thumbnail = null;
+        }
+
         insets = new Rect(snapshot.getContentInsets());
         orientation = snapshot.getOrientation();
         reducedResolution = snapshot.isReducedResolution();
