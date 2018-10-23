@@ -2631,10 +2631,8 @@ public class LocationManagerService extends ILocationManager.Stub {
                 allProvidersSet.addAll(allRealProviders);
                 // When disabling location, disable gps and network provider that could have been
                 // enabled by location mode api.
-                if (enabled == false) {
                     allProvidersSet.add(LocationManager.GPS_PROVIDER);
                     allProvidersSet.add(LocationManager.NETWORK_PROVIDER);
-                }
                 if (allProvidersSet.isEmpty()) {
                     return;
                 }
