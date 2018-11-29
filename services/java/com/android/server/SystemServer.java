@@ -264,6 +264,8 @@ public final class SystemServer {
     private PackageManager mPackageManager;
     private ContentResolver mContentResolver;
     private EntropyMixer mEntropyMixer;
+    private Future<?> mNetworkPrepare = null;
+    private boolean isAndroidAuto = false;
 
     private boolean mOnlyCore;
     private boolean mFirstBoot;
@@ -273,6 +275,8 @@ public final class SystemServer {
 
     private static final String START_SENSOR_SERVICE = "StartSensorService";
     private static final String START_HIDL_SERVICES = "StartHidlServices";
+    private static final String START_WIFI_SERVICE= "StartWifiService";
+    private static final String START_NETWORK = "StartNetwork";
 
 
     private Future<?> mSensorServiceStart;
@@ -767,6 +771,10 @@ public final class SystemServer {
         boolean isWatch = context.getPackageManager().hasSystemFeature(
                 PackageManager.FEATURE_WATCH);
 
+        if ("zygote_auto".equals(SystemProperties.get("ro.zygote"))) {
+            isAndroidAuto = true;
+        }
+
         // For debugging RescueParty
         if (Build.IS_DEBUGGABLE && SystemProperties.getBoolean("debug.crash_system", false)) {
             throw new RuntimeException();
@@ -1131,45 +1139,78 @@ public final class SystemServer {
             traceEnd();
 
             if (!mOnlyCore) {
-                if (context.getPackageManager().hasSystemFeature(
-                            PackageManager.FEATURE_WIFI)) {
-                    // Wifi Service must be started first for wifi-related services.
-                    traceBeginAndSlog("StartWifi");
-                    mSystemServiceManager.startService(WIFI_SERVICE_CLASS);
-                    traceEnd();
-                    traceBeginAndSlog("StartWifiScanning");
-                    mSystemServiceManager.startService(
-                        "com.android.server.wifi.scanner.WifiScanningService");
-                    traceEnd();
-                }
+                if (!isAndroidAuto) {
+                    if (context.getPackageManager().hasSystemFeature(
+                                PackageManager.FEATURE_WIFI)) {
+                        // Wifi Service must be started first for wifi-related services.
+                        traceBeginAndSlog("StartWifi");
+                        mSystemServiceManager.startService(WIFI_SERVICE_CLASS);
+                        traceEnd();
+                        traceBeginAndSlog("StartWifiScanning");
+                        mSystemServiceManager.startService(
+                                "com.android.server.wifi.scanner.WifiScanningService");
+                        traceEnd();
+                    }
 
-                if (context.getPackageManager().hasSystemFeature(
-                    PackageManager.FEATURE_WIFI_RTT)) {
-                    traceBeginAndSlog("StartRttService");
-                    mSystemServiceManager.startService(
-                        "com.android.server.wifi.rtt.RttService");
-                    traceEnd();
-                }
+                    if (context.getPackageManager().hasSystemFeature(
+                                PackageManager.FEATURE_WIFI_RTT)) {
+                        traceBeginAndSlog("StartRttService");
+                        mSystemServiceManager.startService(
+                                "com.android.server.wifi.rtt.RttService");
+                        traceEnd();
+                    }
 
-                if (context.getPackageManager().hasSystemFeature(
-                    PackageManager.FEATURE_WIFI_AWARE)) {
-                    traceBeginAndSlog("StartWifiAware");
-                    mSystemServiceManager.startService(WIFI_AWARE_SERVICE_CLASS);
-                    traceEnd();
-                }
+                    if (context.getPackageManager().hasSystemFeature(
+                                PackageManager.FEATURE_WIFI_AWARE)) {
+                        traceBeginAndSlog("StartWifiAware");
+                        mSystemServiceManager.startService(WIFI_AWARE_SERVICE_CLASS);
+                        traceEnd();
+                    }
 
-                if (context.getPackageManager().hasSystemFeature(
-                    PackageManager.FEATURE_WIFI_DIRECT)) {
-                    traceBeginAndSlog("StartWifiP2P");
-                    mSystemServiceManager.startService(WIFI_P2P_SERVICE_CLASS);
-                    traceEnd();
-                }
+                    if (context.getPackageManager().hasSystemFeature(
+                                PackageManager.FEATURE_WIFI_DIRECT)) {
+                        traceBeginAndSlog("StartWifiP2P");
+                        mSystemServiceManager.startService(WIFI_P2P_SERVICE_CLASS);
+                        traceEnd();
+                    }
 
-                if (context.getPackageManager().hasSystemFeature(
-                    PackageManager.FEATURE_LOWPAN)) {
-                    traceBeginAndSlog("StartLowpan");
-                    mSystemServiceManager.startService(LOWPAN_SERVICE_CLASS);
-                    traceEnd();
+                    if (context.getPackageManager().hasSystemFeature(
+                                PackageManager.FEATURE_LOWPAN)) {
+                        traceBeginAndSlog("StartLowpan");
+                        mSystemServiceManager.startService(LOWPAN_SERVICE_CLASS);
+                        traceEnd();
+                    }
+                } else { 
+                    SystemServerInitThreadPool.get().submit(() -> {
+                        if (context.getPackageManager().hasSystemFeature(
+                                    PackageManager.FEATURE_WIFI)) {
+                            // Wifi Service must be started first for wifi-related services.
+                            mSystemServiceManager.startService(WIFI_SERVICE_CLASS);
+                            mSystemServiceManager.startService(
+                                    "com.android.server.wifi.scanner.WifiScanningService");
+                        }
+
+                        if (context.getPackageManager().hasSystemFeature(
+                                    PackageManager.FEATURE_WIFI_RTT)) {
+                            mSystemServiceManager.startService(
+                                    "com.android.server.wifi.rtt.RttService");
+                        }
+
+                        if (context.getPackageManager().hasSystemFeature(
+                                    PackageManager.FEATURE_WIFI_AWARE)) {
+                            mSystemServiceManager.startService(WIFI_AWARE_SERVICE_CLASS);
+                        }
+
+                        if (context.getPackageManager().hasSystemFeature(
+                                    PackageManager.FEATURE_WIFI_DIRECT)) {
+                            mSystemServiceManager.startService(WIFI_P2P_SERVICE_CLASS);
+                        }
+
+                        if (context.getPackageManager().hasSystemFeature(
+                                    PackageManager.FEATURE_LOWPAN)) {
+                            mSystemServiceManager.startService(LOWPAN_SERVICE_CLASS);
+                        }
+                    }, START_WIFI_SERVICE);
                 }
             }
 
@@ -1803,48 +1844,86 @@ public final class SystemServer {
                 reportWtf("starting System UI", e);
             }
             traceEnd();
-            traceBeginAndSlog("MakeNetworkManagementServiceReady");
-            try {
-                if (networkManagementF != null) networkManagementF.systemReady();
-            } catch (Throwable e) {
-                reportWtf("making Network Managment Service ready", e);
-            }
-            CountDownLatch networkPolicyInitReadySignal = null;
-            if (networkPolicyF != null) {
-                networkPolicyInitReadySignal = networkPolicyF
-                        .networkScoreAndNetworkManagementServiceReady();
-            }
-            traceEnd();
-            traceBeginAndSlog("MakeIpSecServiceReady");
-            try {
-                if (ipSecServiceF != null) ipSecServiceF.systemReady();
-            } catch (Throwable e) {
-                reportWtf("making IpSec Service ready", e);
-            }
-            traceEnd();
-            traceBeginAndSlog("MakeNetworkStatsServiceReady");
-            try {
-                if (networkStatsF != null) networkStatsF.systemReady();
-            } catch (Throwable e) {
-                reportWtf("making Network Stats Service ready", e);
-            }
-            traceEnd();
-            traceBeginAndSlog("MakeConnectivityServiceReady");
-            try {
-                if (connectivityF != null) connectivityF.systemReady();
-            } catch (Throwable e) {
-                reportWtf("making Connectivity Service ready", e);
-            }
-            traceEnd();
-            traceBeginAndSlog("MakeNetworkPolicyServiceReady");
-            try {
-                if (networkPolicyF != null) {
-                    networkPolicyF.systemReady(networkPolicyInitReadySignal);
+
+            if (!isAndroidAuto) {
+                traceBeginAndSlog("MakeNetworkManagementServiceReady");
+                try {
+                    if (networkManagementF != null) networkManagementF.systemReady();
+                } catch (Throwable e) {
+                    reportWtf("making Network Managment Service ready", e);
                 }
-            } catch (Throwable e) {
-                reportWtf("making Network Policy Service ready", e);
+                CountDownLatch networkPolicyInitReadySignal = null;
+                if (networkPolicyF != null) {
+                    networkPolicyInitReadySignal = networkPolicyF
+                            .networkScoreAndNetworkManagementServiceReady();
+                }
+                traceEnd();
+                traceBeginAndSlog("MakeIpSecServiceReady");
+                try {
+                    if (ipSecServiceF != null) ipSecServiceF.systemReady();
+                } catch (Throwable e) {
+                    reportWtf("making IpSec Service ready", e);
+                }
+                traceEnd();
+                traceBeginAndSlog("MakeNetworkStatsServiceReady");
+                try {
+                    if (networkStatsF != null) networkStatsF.systemReady();
+                } catch (Throwable e) {
+                    reportWtf("making Network Stats Service ready", e);
+                }
+                traceEnd();
+                traceBeginAndSlog("MakeConnectivityServiceReady");
+                try {
+                    if (connectivityF != null) connectivityF.systemReady();
+                } catch (Throwable e) {
+                    reportWtf("making Connectivity Service ready", e);
+                }
+                traceEnd();
+                traceBeginAndSlog("MakeNetworkPolicyServiceReady");
+                try {
+                    if (networkPolicyF != null) {
+                        networkPolicyF.systemReady(networkPolicyInitReadySignal);
+                    }
+                } catch (Throwable e) {
+                    reportWtf("making Network Policy Service ready", e);
+                }
+                traceEnd();
+            } else {
+                mNetworkPrepare = SystemServerInitThreadPool.get().submit(() -> {
+                    try {
+                        if (networkManagementF != null) networkManagementF.systemReady();
+                    } catch (Throwable e) {
+                        reportWtf("making Network Managment Service ready", e);
+                    }
+                    CountDownLatch networkPolicyInitReadySignal = null;
+                    if (networkPolicyF != null) {
+                        networkPolicyInitReadySignal = networkPolicyF
+                                .networkScoreAndNetworkManagementServiceReady();
+                    }
+                    try {
+                        if (ipSecServiceF != null) ipSecServiceF.systemReady();
+                    } catch (Throwable e) {
+                        reportWtf("making IpSec Service ready", e);
+                    }
+                    try {
+                        if (networkStatsF != null) networkStatsF.systemReady();
+                    } catch (Throwable e) {
+                        reportWtf("making Network Stats Service ready", e);
+                    }
+                    try {
+                        if (connectivityF != null) connectivityF.systemReady();
+                    } catch (Throwable e) {
+                        reportWtf("making Connectivity Service ready", e);
+                    }
+                    try {
+                        if (networkPolicyF != null) {
+                            networkPolicyF.systemReady(networkPolicyInitReadySignal);
+                        }
+                    } catch (Throwable e) {
+                        reportWtf("making Network Policy Service ready", e);
+                    }
+                }, START_NETWORK);
             }
-            traceEnd();
 
             traceBeginAndSlog("StartWatchdog");
             Watchdog.getInstance().start();
@@ -1936,6 +2015,10 @@ public final class SystemServer {
             }
             traceEnd();
         }, BOOT_TIMINGS_TRACE_LOG);
+
+        if (mNetworkPrepare != null) {
+            ConcurrentUtils.waitForFutureNoInterrupt(mNetworkPrepare, START_NETWORK);
+        }
     }
 
     static final void startSystemUi(Context context, WindowManagerService windowManager) {
