@@ -80,6 +80,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import android.os.SystemProperties;
 
 
 class BluetoothManagerService extends IBluetoothManager.Stub {
@@ -1557,6 +1558,12 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
 
         @Override
         public void handleMessage(Message msg) {
+            if (SystemProperties.getBoolean("vendor.all.car", false)) {
+                if (!"1".equals(SystemProperties.get("sys.boot_completed"))) {
+                    mHandler.sendMessageDelayed(mHandler.obtainMessage(msg.what, msg.arg1, msg.arg2, msg.obj), 100);
+                    return;
+                }
+            }
             switch (msg.what) {
                 case MESSAGE_GET_NAME_AND_ADDRESS:
                     if (DBG) {
