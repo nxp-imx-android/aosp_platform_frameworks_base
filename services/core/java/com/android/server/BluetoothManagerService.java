@@ -70,6 +70,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import android.os.SystemProperties;
 
 
 class BluetoothManagerService extends IBluetoothManager.Stub {
@@ -1350,6 +1351,12 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
 
         @Override
         public void handleMessage(Message msg) {
+            if ("zygote_auto".equals(SystemProperties.get("ro.zygote"))) {
+                if (!"1".equals(SystemProperties.get("vendor.all.setup_main.ready"))) {
+                    mHandler.sendMessageDelayed(mHandler.obtainMessage(msg.what, msg.arg1, msg.arg2, msg.obj), 100);
+                    return;
+                }
+            }
             switch (msg.what) {
                 case MESSAGE_GET_NAME_AND_ADDRESS:
                     if (DBG) Slog.d(TAG, "MESSAGE_GET_NAME_AND_ADDRESS");
