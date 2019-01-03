@@ -7284,6 +7284,25 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     final void finishBooting() {
+        class MonitorZygoteProperty extends Thread {
+            private ArrayList<String> mAbis = new ArrayList<String>();
+            public void addAbi(String abi) {
+                mAbis.add(abi);
+            }
+            @Override
+            public void run() {
+                try {
+                    while (!"1".equals(SystemProperties.get("sys.all.zygote_auto.ready"))) {
+                        Thread.sleep(20);
+                    }
+                    for (String abi : mAbis) {
+                        zygoteProcess.establishZygoteConnectionForAbi(abi);
+                    }
+                } catch (Exception err) {
+                    Slog.w(TAG, "Get exception when waiting for AndroidAuto secondary zygote " + err.toString());
+                }
+            }
+        }
         synchronized (this) {
             if (!mBootAnimationComplete) {
                 mCallFinishBooting = true;
@@ -7291,9 +7310,20 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
             mCallFinishBooting = false;
         }
-
+        boolean isAndroidAuto = false;
+        MonitorZygoteProperty monitorThread = null;
+        if ("zygote_auto".equals(SystemProperties.get("ro.zygote"))) {
+            isAndroidAuto = true;
+        }
         ArraySet<String> completedIsas = new ArraySet<String>();
         for (String abi : Build.SUPPORTED_ABIS) {
+            if (isAndroidAuto && !abi.equals("arm64-v8a")) {
+                if (monitorThread == null) {
+                    monitorThread = new MonitorZygoteProperty();
+                }
+                monitorThread.addAbi(abi);
+                break;
+            }
             zygoteProcess.establishZygoteConnectionForAbi(abi);
             final String instructionSet = VMRuntime.getInstructionSet(abi);
             if (!completedIsas.contains(instructionSet)) {
@@ -7305,6 +7335,11 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
                 completedIsas.add(instructionSet);
             }
+        }
+
+        if (monitorThread != null && isAndroidAuto) {
+            Slog.d(TAG, "Detect AndroidAuto, will use async thread to wait for secondary zygote.");
+            monitorThread.start();
         }
 
         IntentFilter pkgFilter = new IntentFilter();

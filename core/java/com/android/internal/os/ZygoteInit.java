@@ -727,9 +727,11 @@ public class ZygoteInit {
         /* For child process */
         if (pid == 0) {
             if (hasSecondZygote(abiList)) {
-                waitForSecondaryZygote(socketName);
+                if (!("zygote_auto".equals(SystemProperties.get("ro.zygote"))))
+                    waitForSecondaryZygote(socketName);
             }
-
+            else
+                Slog.d(TAG, "Android Automotive images, no need to wait for secondary zygote");
             zygoteServer.closeServerSocket();
             return handleSystemServerProcess(parsedArgs);
         }
@@ -844,7 +846,10 @@ public class ZygoteInit {
             }
 
             Log.i(TAG, "Accepting command socket connections");
-
+            if ("1".equals(SystemProperties.get("sys.all.setup_main.ready"))) {
+                SystemProperties.set("sys.all.zygote_auto.ready", "1");
+                Log.d(TAG, "Android Automotive second zygote ready now.");
+            }
             // The select loop returns early in the child process after a fork and
             // loops forever in the zygote.
             caller = zygoteServer.runSelectLoop(abiList);
