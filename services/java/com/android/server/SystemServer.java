@@ -308,6 +308,12 @@ public final class SystemServer {
 
         mRuntimeStartElapsedTime = SystemClock.elapsedRealtime();
         mRuntimeStartUptime = SystemClock.uptimeMillis();
+        if ("zygote_auto".equals(SystemProperties.get("ro.zygote"))) {
+            isAndroidAuto = true;
+        }
+
+        if (isAndroidAuto)
+            SystemProperties.set("vendor.all.system_server.start", "1");
     }
 
     private void run() {
