@@ -1015,6 +1015,13 @@ public final class SystemServer {
             }
         }
 
+        try {
+            startSystemUi_0(context);
+        } catch (Throwable e) {
+            reportWtf("starting System UI part 0", e);
+        }
+
+
         // We start this here so that we update our configuration to set watch or television
         // as appropriate.
         traceBeginAndSlog("StartUiModeManager");
@@ -1839,13 +1846,11 @@ public final class SystemServer {
                 traceEnd();
             }
 
-            traceBeginAndSlog("StartSystemUI");
             try {
-                startSystemUi(context, windowManagerF);
+                startSystemUi_1(windowManagerF);
             } catch (Throwable e) {
-                reportWtf("starting System UI", e);
+                reportWtf("starting System UI part 1", e);
             }
-            traceEnd();
 
             if (!isAndroidAuto) {
                 traceBeginAndSlog("MakeNetworkManagementServiceReady");
@@ -2023,13 +2028,15 @@ public final class SystemServer {
         }
     }
 
-    static final void startSystemUi(Context context, WindowManagerService windowManager) {
+    static final void startSystemUi_0(Context context) {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName("com.android.systemui",
                     "com.android.systemui.SystemUIService"));
         intent.addFlags(Intent.FLAG_DEBUG_TRIAGED_MISSING);
-        //Slog.d(TAG, "Starting service: " + intent);
         context.startServiceAsUser(intent, UserHandle.SYSTEM);
+    }
+
+    static final void startSystemUi_1(WindowManagerService windowManager) {
         windowManager.onSystemUiStarted();
     }
 
