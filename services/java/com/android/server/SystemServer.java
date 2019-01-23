@@ -308,6 +308,12 @@ public final class SystemServer {
 
         mRuntimeStartElapsedTime = SystemClock.elapsedRealtime();
         mRuntimeStartUptime = SystemClock.uptimeMillis();
+        if ("zygote_auto".equals(SystemProperties.get("ro.zygote"))) {
+            isAndroidAuto = true;
+        }
+
+        if (isAndroidAuto)
+            SystemProperties.set("vendor.all.system_server.start", "1");
     }
 
     private void run() {
@@ -770,10 +776,6 @@ public final class SystemServer {
 
         boolean isWatch = context.getPackageManager().hasSystemFeature(
                 PackageManager.FEATURE_WATCH);
-
-        if ("zygote_auto".equals(SystemProperties.get("ro.zygote"))) {
-            isAndroidAuto = true;
-        }
 
         // For debugging RescueParty
         if (Build.IS_DEBUGGABLE && SystemProperties.getBoolean("debug.crash_system", false)) {
