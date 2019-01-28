@@ -1022,12 +1022,6 @@ public final class SystemServer {
             }
         }
 
-        try {
-            startSystemUi_0(context);
-        } catch (Throwable e) {
-            reportWtf("starting System UI part 0", e);
-        }
-
 
         // We start this here so that we update our configuration to set watch or television
         // as appropriate.
@@ -1613,6 +1607,12 @@ public final class SystemServer {
             traceBeginAndSlog("StartCrossProfileAppsService");
             mSystemServiceManager.startService(CrossProfileAppsService.class);
             traceEnd();
+        }
+
+        try {
+            startSystemUi_0(context);
+        } catch (Throwable e) {
+            reportWtf("starting System UI part 0", e);
         }
 
         if (!isWatch) {
