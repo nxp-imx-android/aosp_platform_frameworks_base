@@ -1593,6 +1593,12 @@ public final class SystemServer {
         }
         traceEnd();
 
+        try {
+            startSystemUi_0(context);
+        } catch (Throwable e) {
+            reportWtf("starting System UI part 0", e);
+        }
+
         // Needed by DevicePolicyManager for initialization
         traceBeginAndSlog("StartBootPhaseLockSettingsReady");
         mSystemServiceManager.startBootPhase(SystemService.PHASE_LOCK_SETTINGS_READY);
@@ -1715,13 +1721,11 @@ public final class SystemServer {
                 traceEnd();
             }
 
-            traceBeginAndSlog("StartSystemUI");
             try {
-                startSystemUi(context, windowManagerF);
+                startSystemUi_1(windowManagerF);
             } catch (Throwable e) {
-                reportWtf("starting System UI", e);
+                reportWtf("starting System UI part 1", e);
             }
-            traceEnd();
             traceBeginAndSlog("MakeNetworkScoreReady");
             try {
                 if (networkScoreF != null) networkScoreF.systemReady();
@@ -1864,13 +1868,15 @@ public final class SystemServer {
         }, BOOT_TIMINGS_TRACE_LOG);
     }
 
-    static final void startSystemUi(Context context, WindowManagerService windowManager) {
+    static final void startSystemUi_0(Context context) {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName("com.android.systemui",
                     "com.android.systemui.SystemUIService"));
         intent.addFlags(Intent.FLAG_DEBUG_TRIAGED_MISSING);
-        //Slog.d(TAG, "Starting service: " + intent);
         context.startServiceAsUser(intent, UserHandle.SYSTEM);
+    }
+
+    static final void startSystemUi_1(WindowManagerService windowManager) {
         windowManager.onSystemUiStarted();
     }
 
