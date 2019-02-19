@@ -24,6 +24,7 @@ import android.os.ZygoteProcess;
 import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
 import android.util.Log;
+import android.os.SystemProperties;
 
 import com.android.internal.annotations.GuardedBy;
 
@@ -111,6 +112,11 @@ public class WebViewZygote {
             // Otherwise, bring down the service. The name may be null if the package
             // information has not yet been resolved.
             final String serviceName = getServiceNameLocked();
+            if ("zygote_auto".equals(SystemProperties.get("ro.zygote"))) {
+                if (serviceName.equals(WEBVIEW_ZYGOTE_SERVICE_32)) {
+                    return;
+                }
+            }
             if (serviceName == null) return;
 
             if (enabled) {
@@ -137,6 +143,11 @@ public class WebViewZygote {
             }
 
             final String serviceName = getServiceNameLocked();
+            if ("zygote_auto".equals(SystemProperties.get("ro.zygote"))) {
+                if (serviceName.equals(WEBVIEW_ZYGOTE_SERVICE_32)) {
+                    return;
+                }
+            }
             sZygote = null;
 
             // The service may enter the RUNNING state before it opens the socket,
