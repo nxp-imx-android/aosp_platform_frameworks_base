@@ -144,8 +144,6 @@ public class ZygoteInit {
         Trace.traceEnd(Trace.TRACE_TAG_DALVIK);
         preloadSharedLibraries();
 
-        waitForPreloadAsync();
-
         // Ask the WebViewFactory to do any initialization that must run in the zygote process,
         // for memory sharing purposes.
         WebViewFactory.prepareWebViewInZygote();
@@ -711,6 +709,9 @@ public class ZygoteInit {
             parsedArgs = new ZygoteConnection.Arguments(args);
             ZygoteConnection.applyDebuggerSystemProperty(parsedArgs);
             ZygoteConnection.applyInvokeWithSystemProperty(parsedArgs);
+
+            /* Make sure all preload process end before start SystemServer */
+            waitForPreloadAsync();
 
             /* Request to fork the system server process */
             pid = Zygote.forkSystemServer(
