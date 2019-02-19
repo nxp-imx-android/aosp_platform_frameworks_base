@@ -249,6 +249,8 @@ public final class SystemServer {
     private Future<?> mSensorServiceStart;
     private Future<?> mZygotePreload;
 
+    private boolean isAndroidAuto = false;
+
     /**
      * Start the sensor service. This is a blocking call and can take time.
      */
@@ -272,6 +274,13 @@ public final class SystemServer {
         mFactoryTestMode = FactoryTest.getMode();
         // Remember if it's runtime restart(when sys.boot_completed is already set) or reboot
         mRuntimeRestart = "1".equals(SystemProperties.get("sys.boot_completed"));
+
+        if ("zygote_auto".equals(SystemProperties.get("ro.zygote"))) {
+            isAndroidAuto = true;
+        }
+
+        if (isAndroidAuto)
+            SystemProperties.set("vendor.all.system_server.start", "1");
     }
 
     private void run() {
