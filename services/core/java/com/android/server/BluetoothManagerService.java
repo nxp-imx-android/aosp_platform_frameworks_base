@@ -1352,7 +1352,7 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
         @Override
         public void handleMessage(Message msg) {
             if ("zygote_auto".equals(SystemProperties.get("ro.zygote"))) {
-                if (!"1".equals(SystemProperties.get("vendor.all.setup_main.ready"))) {
+                if (!"1".equals(SystemProperties.get("sys.all.setup_main.ready"))) {
                     mHandler.sendMessageDelayed(mHandler.obtainMessage(msg.what, msg.arg1, msg.arg2, msg.obj), 100);
                     return;
                 }
