@@ -19831,6 +19831,14 @@ public final class Settings {
                 "redact_otp_notifications_from_untrusted_listeners";
 
         /**
+         * Timeout used to dismiss the Global Actions Dialog to avoid the possibility of
+         * OLED burn-in from the dialog.
+         * @hide
+         */
+        public static final String GLOBAL_ACTIONS_TIMEOUT_MILLIS =
+                "global_actions_timeout_ms";
+
+        /**
          * Settings migrated from Wear OS settings provider.
          * @hide
          */

@@ -7394,6 +7394,10 @@
          OEM/Partner can explicitly opt to disable the screen. -->
     <bool name="config_enableGaiaEducationInPrivateSpace">true</bool>
 
+    <!-- Default dismiss timeout (in milliseconds) for the power menu (Global Actions) dialog to
+         avoid possible screen burn in issues. Set to '0' to disable timeout -->
+    <integer name="config_globalActionsDialogTimeout">0</integer>
+
     <!-- Whether to enable usb state update via udc sysfs. -->
     <bool name="config_enableUdcSysfsUsbStateUpdate">false</bool>
 
