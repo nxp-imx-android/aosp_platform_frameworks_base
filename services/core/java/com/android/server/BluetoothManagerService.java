@@ -207,6 +207,7 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
     private int mState;
     private final BluetoothHandler mHandler;
     private int mErrorRecoveryRetryCounter;
+    private int mRestartRetryCounter;
     private final int mSystemUiUid;
 
     private boolean mIsHearingAidProfileSupported;
@@ -390,6 +391,7 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
         mAddress = null;
         mName = null;
         mErrorRecoveryRetryCounter = 0;
+        mRestartRetryCounter = 0;
         mContentResolver = context.getContentResolver();
         // Observe BLE scan only mode settings change.
         registerForBleScanModeChange();
@@ -1829,6 +1831,10 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
                             Slog.w(TAG, "bluetooth is recovered from error");
                             mErrorRecoveryRetryCounter = 0;
                         }
+                        if (mRestartRetryCounter != 0) {
+                            Slog.w(TAG, "bluetooth is started");
+                            mRestartRetryCounter = 0;
+                        }
                     }
                     break;
                 }
@@ -1889,11 +1895,18 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
                     /* Enable without persisting the setting as
                      it doesnt change when IBluetooth
                      service restarts */
-                    mEnable = true;
-                    addActiveLog(BluetoothProtoEnums.ENABLE_DISABLE_REASON_RESTARTED,
-                            mContext.getPackageName(), true);
-                    handleEnable(mQuietEnable);
-                    break;
+                    if (mRestartRetryCounter++ < MAX_ERROR_RESTART_RETRIES) {
+                        Slog.d(TAG, "MESSAGE_RESTART_BLUETOOTH_SERVICE mRestartRetryCounter= "+ mRestartRetryCounter );
+                        mEnable = true;
+                        addActiveLog(BluetoothProtoEnums.ENABLE_DISABLE_REASON_RESTARTED,
+                                mContext.getPackageName(), true);
+                        handleEnable(mQuietEnable);
+                        break;
+                    } else {
+                       Slog.d(TAG, "Bluetooth is dead,no more retry to restart." );
+                       mEnable = false;
+                       handleDisable();
+                    }
                 }
                 case MESSAGE_TIMEOUT_BIND: {
                     Slog.e(TAG, "MESSAGE_TIMEOUT_BIND");
