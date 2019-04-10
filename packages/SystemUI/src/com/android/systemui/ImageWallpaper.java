@@ -252,7 +252,12 @@ public class ImageWallpaper extends WallpaperService {
             // This means that the bitmap should be loaded synchronously if
             // it was already unloaded.
             if (mBackground == null) {
-                updateBitmap(mWallpaperManager.getBitmap(true /* hardware */));
+                if (RoSystemProperties.CONFIG_HW_RENDERING) {
+                    updateBitmap(mWallpaperManager.getBitmap(true /* hardware */));
+                }
+                else {
+                    updateBitmap(mWallpaperManager.getBitmap(false));
+                }
             }
             mSurfaceRedrawNeeded = true;
             drawFrame();
@@ -368,7 +373,12 @@ public class ImageWallpaper extends WallpaperService {
                 protected Bitmap doInBackground(Void... params) {
                     Throwable exception;
                     try {
-                        return mWallpaperManager.getBitmap(true /* hardware */);
+                        if (RoSystemProperties.CONFIG_HW_RENDERING) {
+                            return mWallpaperManager.getBitmap(true /* hardware */);
+                        }
+                        else {
+                            return mWallpaperManager.getBitmap(false);
+                        }
                     } catch (RuntimeException | OutOfMemoryError e) {
                         exception = e;
                     }
@@ -393,7 +403,12 @@ public class ImageWallpaper extends WallpaperService {
                     }
 
                     try {
-                        return mWallpaperManager.getBitmap(true /* hardware */);
+                        if (RoSystemProperties.CONFIG_HW_RENDERING) {
+                            return mWallpaperManager.getBitmap(true /* hardware */);
+                        }
+                        else {
+                            return mWallpaperManager.getBitmap(false);
+                        }
                     } catch (RuntimeException | OutOfMemoryError e) {
                         Log.w(TAG, "Unable to load default wallpaper!", e);
                     }
