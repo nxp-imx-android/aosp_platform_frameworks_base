@@ -37,6 +37,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.util.EventLog;
 import android.util.Log;
 import android.util.Slog;
@@ -552,6 +553,9 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                     BackupObserverUtils
                             .sendBackupOnPackageResult(mBackupObserver, packageName,
                                     BackupManager.ERROR_TRANSPORT_QUOTA_EXCEEDED);
+                    // add 10ms delay to make sure thread mBackupRunner execute sendQuotaExceeded in time before application is killed
+                    SystemClock.sleep(20);
+
                     if (DEBUG) {
                         Slog.i(TAG, "Transport quota exceeded for package: " + packageName);
                         EventLog.writeEvent(EventLogTags.FULL_BACKUP_QUOTA_EXCEEDED,
