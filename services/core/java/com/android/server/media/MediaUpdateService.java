@@ -53,11 +53,8 @@ public class MediaUpdateService extends SystemService {
 
     @Override
     public void onStart() {
-        if (("userdebug".equals(android.os.Build.TYPE) || "eng".equals(android.os.Build.TYPE))
-                && !TextUtils.isEmpty(MEDIA_UPDATE_PACKAGE_NAME)) {
-            connect();
-            registerBroadcastReceiver();
-        }
+        connect();
+        registerBroadcastReceiver();
     }
 
     private void connect() {
