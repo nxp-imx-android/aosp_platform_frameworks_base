@@ -499,6 +499,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
 
             mCurrentUser = ActivityManager.getCurrentUser();
             mScreenLocked = true;
+            mHideUsbNotification = true;
 
             mSettings = getPinnedSharedPrefs(mContext);
             if (mSettings == null) {
@@ -800,6 +801,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                     mConnected = (msg.arg1 == 1);
                     mConfigured = (msg.arg2 == 1);
 
+                    mHideUsbNotification = mHideUsbNotification && (!mConnected);
                     updateUsbNotification(false);
                     updateAdbNotification(false);
                     if (mBootCompleted) {
@@ -866,7 +868,6 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                         Slog.i(TAG, "HOST_STATE connected:" + connected);
                     }
 
-                    mHideUsbNotification = false;
                     while (devices.hasNext()) {
                         Map.Entry pair = (Map.Entry) devices.next();
                         if (DEBUG) {
@@ -882,7 +883,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                                 UsbInterface intrface = config.getInterface(interfaceCount);
                                 interfaceCount--;
                                 if (sBlackListedInterfaces.contains(intrface.getInterfaceClass())) {
-                                    mHideUsbNotification = true;
+                                    mHideUsbNotification = mHideUsbNotification && true;
                                     break;
                                 }
                             }
