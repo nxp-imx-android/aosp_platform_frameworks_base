@@ -69,6 +69,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.Provider;
 import java.security.Security;
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Startup class for the zygote process.
@@ -126,6 +128,9 @@ public class ZygoteInit {
 
     private static boolean sPreloadComplete;
 
+    private static CountDownLatch pclassCountDown;
+    private static CountDownLatch ptextCountDown;
+
     /**
      * Cached classloader to use for the system server. Will only be populated in the system
      * server process.
@@ -143,6 +148,7 @@ public class ZygoteInit {
         bootTimingsTraceLog.traceBegin("CacheNonBootClasspathClassLoaders");
         cacheNonBootClasspathClassLoaders();
         bootTimingsTraceLog.traceEnd(); // CacheNonBootClasspathClassLoaders
+        preloadTextResources();
         bootTimingsTraceLog.traceBegin("PreloadResources");
         preloadResources();
         bootTimingsTraceLog.traceEnd(); // PreloadResources
@@ -153,7 +159,7 @@ public class ZygoteInit {
         maybePreloadGraphicsDriver();
         Trace.traceEnd(Trace.TRACE_TAG_DALVIK);
         preloadSharedLibraries();
-        preloadTextResources();
+        waitForPreloadAsync();
         // Ask the WebViewFactory to do any initialization that must run in the zygote process,
         // for memory sharing purposes.
         WebViewFactory.prepareWebViewInZygote();
@@ -208,8 +214,18 @@ public class ZygoteInit {
     }
 
     private static void preloadTextResources() {
-        Hyphenator.init();
-        TextView.preloadFontCache();
+        class PreloadTextResourceThread  extends Thread {
+        @Override
+            public void run() {
+                Hyphenator.init();
+                TextView.preloadFontCache();
+                ptextCountDown.countDown();
+            }
+        }
+
+        ptextCountDown = new CountDownLatch(1);
+        PreloadTextResourceThread thread = new PreloadTextResourceThread();
+        thread.start();
     }
 
     /**
@@ -248,6 +264,42 @@ public class ZygoteInit {
      * Kbytes (in one case, 500+K).
      */
     private static void preloadClasses() {
+
+        class PreloadClassThread extends Thread {
+            ArrayList<String> preloadList;
+            public void setList(ArrayList<String> list) {
+                this.preloadList = list;
+            }
+
+            @Override
+            public void run() {
+                try {
+                    for (String line: preloadList) {
+                        try {
+                            Class.forName(line, true, null);
+                        } catch (ClassNotFoundException e) {
+                            Log.w(TAG, "Class not found for preloading: " + line);
+                        } catch (UnsatisfiedLinkError e) {
+                            Log.w(TAG, "Problem preloading " + line + ": " + e);
+                        } catch (Throwable t) {
+                            Log.e(TAG, "Error preloading " + line + ".", t);
+                            if (t instanceof Error) {
+                                throw (Error) t;
+                            }
+                            if (t instanceof RuntimeException) {
+                                throw (RuntimeException) t;
+                            }
+                            throw new RuntimeException(t);
+                        }
+                    }
+                } catch (Exception err) {
+                    throw err;
+                } finally {
+                    pclassCountDown.countDown();
+                }
+            }
+        }
+
         final VMRuntime runtime = VMRuntime.getRuntime();
 
         InputStream is;
@@ -285,6 +337,11 @@ public class ZygoteInit {
         float defaultUtilization = runtime.getTargetHeapUtilization();
         runtime.setTargetHeapUtilization(0.8f);
 
+        ArrayList<String> list_all = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<ArrayList<String>> task_list = new ArrayList<ArrayList<String>>();
+        int list_len = 0;
+
         try {
             BufferedReader br =
                     new BufferedReader(new InputStreamReader(is), Zygote.SOCKET_BUFFER_SIZE);
@@ -293,38 +350,28 @@ public class ZygoteInit {
             String line;
             while ((line = br.readLine()) != null) {
                 // Skip comments and blank lines.
-                line = line.trim();
-                if (line.startsWith("#") || line.equals("")) {
-                    continue;
+                //Split to multiple thread. Each thread handle 1600 classes.
+                list.add(line);
+                list_len ++;
+                if (list_len >= 1600) {
+                    list = new ArrayList<String>();
+                    list_len = 0;
+                    task_list.add(list);
                 }
 
                 Trace.traceBegin(Trace.TRACE_TAG_DALVIK, line);
-                try {
-                    if (false) {
-                        Log.v(TAG, "Preloading " + line + "...");
-                    }
-                    // Load and explicitly initialize the given class. Use
-                    // Class.forName(String, boolean, ClassLoader) to avoid repeated stack lookups
-                    // (to derive the caller's class-loader). Use true to force initialization, and
-                    // null for the boot classpath class-loader (could as well cache the
-                    // class-loader of this class in a variable).
-                    Class.forName(line, true, null);
-                    count++;
-                } catch (ClassNotFoundException e) {
-                    Log.w(TAG, "Class not found for preloading: " + line);
-                } catch (UnsatisfiedLinkError e) {
-                    Log.w(TAG, "Problem preloading " + line + ": " + e);
-                } catch (Throwable t) {
-                    Log.e(TAG, "Error preloading " + line + ".", t);
-                    if (t instanceof Error) {
-                        throw (Error) t;
-                    }
-                    if (t instanceof RuntimeException) {
-                        throw (RuntimeException) t;
-                    }
-                    throw new RuntimeException(t);
-                }
                 Trace.traceEnd(Trace.TRACE_TAG_DALVIK);
+            }
+
+            if (list_len != 0) {
+                list = new ArrayList<String>();
+                task_list.add(list);
+            }
+            pclassCountDown = new CountDownLatch(task_list.size());
+            for(ArrayList<String> onelist: task_list) {
+                PreloadClassThread thread = new PreloadClassThread();
+                thread.setList(onelist);
+                thread.start();
             }
 
             Log.i(TAG, "...preloaded " + count + " classes in "
@@ -377,6 +424,17 @@ public class ZygoteInit {
                     hidlBase,
                     hidlManager,
                 });
+    }
+
+    private static void waitForPreloadAsync() {
+        if (pclassCountDown != null) {
+            try {
+                pclassCountDown.await();
+                ptextCountDown.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -824,7 +882,6 @@ public class ZygoteInit {
 
         // Mark zygote start. This ensures that thread creation will throw
         // an error.
-        ZygoteHooks.startZygoteNoThreadCreation();
 
         // Zygote goes into its own process group.
         try {
@@ -897,8 +954,6 @@ public class ZygoteInit {
 
 
             Zygote.initNativeState(isPrimaryZygote);
-
-            ZygoteHooks.stopZygoteNoThreadCreation();
 
             zygoteServer = new ZygoteServer(isPrimaryZygote);
 
