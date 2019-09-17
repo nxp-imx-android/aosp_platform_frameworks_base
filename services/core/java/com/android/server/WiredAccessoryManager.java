@@ -490,7 +490,7 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
         private final List<ExtconInfo> mExtconInfos;
 
         WiredAccessoryExtconObserver() {
-            mExtconInfos = ExtconInfo.getExtconInfos(".*audio.*");
+            mExtconInfos = ExtconInfo.getExtconInfos(".*extcon.*");
 
         }
 
