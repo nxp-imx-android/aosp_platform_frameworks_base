@@ -16,6 +16,8 @@
 package com.android.server;
 
 import android.annotation.Nullable;
+import android.annotation.StringDef;
+import android.os.FileUtils;
 import android.os.UEventObserver;
 import android.util.ArrayMap;
 import android.util.Slog;
@@ -23,10 +25,11 @@ import android.util.Slog;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * A specialized UEventObserver that receives UEvents from the kernel for devices in the {@code
@@ -85,44 +88,169 @@ public abstract class ExtconUEventObserver extends UEventObserver {
         }
     }
 
+
+    /** Cable */
+    public static final class ExtconCable {
+        private final ExtconInfo mExtconInfo;
+        private final int mIndex;
+        private final @ExtconInfo.ExtconDeviceType String mName;
+
+        public ExtconCable(ExtconInfo extconInfo, int index, String name) {
+            mExtconInfo = extconInfo;
+            mIndex = index;
+            mName = name;
+        }
+
+        /** The path to the state file */
+        public String getStatePath() {
+            return String.format(Locale.US, "/sys/class/extcon/%s/cable.%d/state",
+                    mExtconInfo.mName, mIndex);
+        }
+    }
+
+
     /** An External Connection to watch. */
     public static final class ExtconInfo {
+        /* Copied from drivers/extcon/extcon.c */
+
+        /* USB external connector */
+        public static final String EXTCON_USB = "USB";
+        public static final String EXTCON_USB_HOST = "USB-HOST";
+
+        /* Charger external connector */
+        public static final String EXTCON_TA = "TA";
+        public static final String EXTCON_FAST_CHARGER = "FAST-CHARGER";
+        public static final String EXTCON_SLOW_CHARGER = "SLOW-CHARGER";
+        public static final String EXTCON_CHARGE_DOWNSTREAM = "CHARGE-DOWNSTREAM";
+
+        /* Audio/Video external connector */
+        public static final String EXTCON_LINE_IN = "LINE-IN";
+        public static final String EXTCON_LINE_OUT = "LINE-OUT";
+        public static final String EXTCON_MICROPHONE = "MICROPHONE";
+        public static final String EXTCON_HEADPHONE = "HEADPHONE";
+
+        public static final String EXTCON_HDMI = "HDMI";
+        public static final String EXTCON_MHL = "MHL";
+        public static final String EXTCON_DVI = "DVI";
+        public static final String EXTCON_VGA = "VGA";
+        public static final String EXTCON_SPDIF_IN = "SPDIF-IN";
+        public static final String EXTCON_SPDIF_OUT = "SPDIF-OUT";
+        public static final String EXTCON_VIDEO_IN = "VIDEO-IN";
+        public static final String EXTCON_VIDEO_OUT = "VIDEO-OUT";
+
+        /* Etc external connector */
+        public static final String EXTCON_DOCK = "DOCK";
+        public static final String EXTCON_JIG = "JIG";
+        public static final String EXTCON_MECHANICAL = "MECHANICAL";
+
+        @StringDef({
+                EXTCON_USB,
+                EXTCON_USB_HOST,
+                EXTCON_TA,
+                EXTCON_FAST_CHARGER,
+                EXTCON_SLOW_CHARGER,
+                EXTCON_CHARGE_DOWNSTREAM,
+                EXTCON_LINE_IN,
+                EXTCON_LINE_OUT,
+                EXTCON_MICROPHONE,
+                EXTCON_HEADPHONE,
+                EXTCON_HDMI,
+                EXTCON_MHL,
+                EXTCON_DVI,
+                EXTCON_VGA,
+                EXTCON_SPDIF_IN,
+                EXTCON_SPDIF_OUT,
+                EXTCON_VIDEO_IN,
+                EXTCON_VIDEO_OUT,
+                EXTCON_DOCK,
+                EXTCON_JIG,
+                EXTCON_MECHANICAL,
+        })
+        public @interface ExtconDeviceType {
+        }
+
         private static final String TAG = "ExtconInfo";
 
-        /** Returns a new list of all external connections whose name matches {@code regex}. */
-        public static List<ExtconInfo> getExtconInfos(@Nullable String regex) {
-            if (!extconExists()) {
-                return new ArrayList<>(0);  // Always return a new list.
+
+        private static ExtconInfo[] sExtconInfos;
+
+        private static synchronized void init() {
+
+            if (sExtconInfos != null) {
+                return;
             }
-            Pattern p = regex == null ? null : Pattern.compile(regex);
+            if (!extconExists()) {
+                sExtconInfos = new ExtconInfo[0];
+            }
             File file = new File("/sys/class/extcon");
             File[] files = file.listFiles();
             if (files == null) {
                 Slog.wtf(TAG, file + " exists " + file.exists() + " isDir " + file.isDirectory()
                         + " but listFiles returns null. "
                         + SELINUX_POLICIES_NEED_TO_BE_CHANGED);
-                return new ArrayList<>(0);  // Always return a new list.
+                sExtconInfos = new ExtconInfo[0];
             } else {
-                ArrayList list = new ArrayList(files.length);
+                ArrayList<ExtconInfo> list = new ArrayList<>(files.length);
                 for (File f : files) {
                     String name = f.getName();
-                    if (p == null || p.matcher(name).matches()) {
-                        ExtconInfo uei = new ExtconInfo(name);
-                        list.add(uei);
-                        if (LOG) Slog.d(TAG, name + " matches " + regex);
-                    } else {
-                        if (LOG) Slog.d(TAG, name + " does not match " + regex);
-                    }
+                    ExtconInfo uei = new ExtconInfo(name);
+                    list.add(uei);
                 }
-                return list;
+                sExtconInfos = list.toArray(new ExtconInfo[0]);
             }
         }
 
-        private final String mName;
 
-        public ExtconInfo(String name) {
-            mName = name;
+        /**
+         * Returns a new list of all external connections for the types given.
+         */
+        public static List<ExtconInfo> getExtconInfoForTypes(
+                @ExtconDeviceType String[] extconTypes) {
+            init();
+            return Arrays.stream(sExtconInfos).filter(
+                    extconInfo -> Arrays.stream(extconTypes).anyMatch(
+                            type -> extconInfo.hasCableType(type))).collect(
+                    Collectors.toList());
         }
+
+
+        private final String mName;
+        private final ExtconCable[] mCables;
+
+
+        private ExtconInfo(String name) {
+            mName = name;
+            mCables = initCables();
+        }
+
+        /** True if any cable has the type given */
+        public boolean hasCableType(@ExtconDeviceType String type) {
+            return Arrays.stream(mCables).anyMatch(cable -> cable.mName.equals(type));
+        }
+
+        private ExtconCable[] initCables() {
+            File dir = getDir();
+            if (!dir.exists()) {
+                return new ExtconCable[0];
+            }
+            File[] cableDirs = FileUtils.listFilesOrEmpty(dir,
+                    (dir1, name) -> name.startsWith("cable."));
+            ExtconCable[] cables = new ExtconCable[cableDirs.length];
+            for (int i = 0; i < cableDirs.length; i++) {
+                try {
+                    String name = FileUtils.readTextFile(new File(cableDirs[i], "name"), 0, null);
+                    name = name.replace("\n", "").replace("\r", "");
+                    cables[i] = new ExtconCable(this, i, name);
+                } catch (IOException e) {
+                    throw new RuntimeException("todo", e);
+                }
+
+
+            }
+
+            return cables;
+        }
+
 
         /** The name of the external connection */
         public String getName() {
@@ -139,18 +267,22 @@ public abstract class ExtconUEventObserver extends UEventObserver {
         @Nullable
         public String getDevicePath() {
             try {
-                String extconPath = String.format(Locale.US, "/sys/class/extcon/%s", mName);
+                String extconPath = String.format(Locale.US, "/sys/class/extcon/%s/device", mName);
                 File devPath = new File(extconPath);
                 if (devPath.exists()) {
                     String canonicalPath = devPath.getCanonicalPath();
                     int start = canonicalPath.indexOf("/devices");
-                    return canonicalPath.substring(start);
+                    return canonicalPath.substring(start) + "/extcon/" + mName;
                 }
                 return null;
             } catch (IOException e) {
                 Slog.e(TAG, "Could not get the extcon device path for " + mName, e);
                 return null;
             }
+        }
+
+        public File getDir() {
+            return new File("/sys/class/extcon", mName);
         }
 
         /** The path to the state file */
