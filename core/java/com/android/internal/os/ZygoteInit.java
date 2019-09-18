@@ -159,7 +159,6 @@ public class ZygoteInit {
         maybePreloadGraphicsDriver();
         Trace.traceEnd(Trace.TRACE_TAG_DALVIK);
         preloadSharedLibraries();
-        waitForPreloadAsync();
         // Ask the WebViewFactory to do any initialization that must run in the zygote process,
         // for memory sharing purposes.
         WebViewFactory.prepareWebViewInZygote();
@@ -833,6 +832,9 @@ public class ZygoteInit {
             if (profileSystemServer) {
                 parsedArgs.mRuntimeFlags |= Zygote.PROFILE_SYSTEM_SERVER;
             }
+
+            /* Make sure all preload process end before start SystemServer */
+            waitForPreloadAsync();
 
             /* Request to fork the system server process */
             pid = Zygote.forkSystemServer(
