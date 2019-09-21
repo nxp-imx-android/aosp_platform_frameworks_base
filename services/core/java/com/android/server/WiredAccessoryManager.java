@@ -524,10 +524,23 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
             int []maskAndState = {0,0};
             // extcon event state changes from kernel4.9
             // new state will be like STATE=MICROPHONE=1\nHEADPHONE=0
-            updateBit(maskAndState, BIT_HEADSET_NO_MIC, status, "HEADPHONE") ;
-            updateBit(maskAndState, BIT_HEADSET, status,"MICROPHONE") ;
-            updateBit(maskAndState, BIT_HDMI_AUDIO, status,"HDMI") ;
-            updateBit(maskAndState, BIT_LINEOUT, status,"LINE-OUT") ;
+            String state = extconInfo.getState();
+            if (state != null && state.contains("HEADPHONE")) {
+                updateBit(maskAndState, BIT_HEADSET_NO_MIC, status, "HEADPHONE") ;
+            }
+
+            if (state != null && state.contains("MICROPHONE")) {
+                updateBit(maskAndState, BIT_HEADSET, status, "MICROPHONE") ;
+            }
+
+            if (state != null && state.contains("HDMI")) {
+                updateBit(maskAndState, BIT_HDMI_AUDIO, status, "HDMI") ;
+            }
+
+            if (state != null && state.contains("LINE-OUT")) {
+                updateBit(maskAndState, BIT_LINEOUT, status, "LINE-OUT") ;
+            }
+
             if (LOG) Slog.v(TAG, "mask " + maskAndState[0] + " state " + maskAndState[1]);
             return Pair.create(maskAndState[0],maskAndState[1]);
         }
