@@ -17,6 +17,7 @@ package com.android.server;
 
 import android.annotation.Nullable;
 import android.os.UEventObserver;
+import android.os.FileUtils;
 import android.util.ArrayMap;
 import android.util.Slog;
 
@@ -107,8 +108,17 @@ public abstract class ExtconUEventObserver extends UEventObserver {
                 for (File f : files) {
                     String name = f.getName();
                     if (p == null || p.matcher(name).matches()) {
-                        ExtconInfo uei = new ExtconInfo(name);
-                        list.add(uei);
+                        try
+                        {
+                            String state = FileUtils.readTextFile(new File("/sys/class/extcon/" + name + "/state"), 0, null).trim();
+                            if (state.contains("HDMI") || state.contains("HEADPHONE") || state.contains("MICROPHONE") || state.contains("LINE-OUT")) {
+                                ExtconInfo uei = new ExtconInfo(name);
+                                list.add(uei);
+                            }
+                        } catch (IOException e) {
+                            Slog.e(TAG, "Can't access /sys/class/extcon/" + name + "/state");
+                            continue;
+                        }
                         if (LOG) Slog.d(TAG, name + " matches " + regex);
                     } else {
                         if (LOG) Slog.d(TAG, name + " does not match " + regex);
@@ -156,6 +166,17 @@ public abstract class ExtconUEventObserver extends UEventObserver {
         /** The path to the state file */
         public String getStatePath() {
             return String.format(Locale.US, "/sys/class/extcon/%s/state", mName);
+        }
+
+        public String getState() {
+            try
+            {
+                String state = FileUtils.readTextFile(new File(getStatePath()), 0, null).trim();
+                return state;
+            } catch (IOException e) {
+                Slog.e(TAG, "Can't access " + getStatePath());
+                return null;
+            }
         }
     }
 
