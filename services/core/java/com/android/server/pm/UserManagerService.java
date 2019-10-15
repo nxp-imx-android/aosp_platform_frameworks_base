@@ -3673,8 +3673,10 @@ public class UserManagerService extends IUserManager.Stub {
         final int userSerial = userInfo.serialNumber;
         // Migrate only if build fingerprints mismatch
         boolean migrateAppsData = !Build.FINGERPRINT.equals(userInfo.lastLoggedInFingerprint);
-        mUserDataPreparer.prepareUserData(userId, userSerial, StorageManager.FLAG_STORAGE_DE);
-        mPm.reconcileAppsData(userId, StorageManager.FLAG_STORAGE_DE, migrateAppsData);
+        if (!SystemProperties.getBoolean("vendor.all.car", false)) {
+            mUserDataPreparer.prepareUserData(userId, userSerial, StorageManager.FLAG_STORAGE_DE);
+            mPm.reconcileAppsData(userId, StorageManager.FLAG_STORAGE_DE, migrateAppsData);
+        }
 
         if (userId != UserHandle.USER_SYSTEM) {
             synchronized (mRestrictionsLock) {
