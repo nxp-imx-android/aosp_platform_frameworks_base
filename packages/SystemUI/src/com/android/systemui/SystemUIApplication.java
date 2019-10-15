@@ -42,6 +42,7 @@ import com.android.systemui.statusbar.phone.StatusBar;
 import com.android.systemui.statusbar.phone.StatusBarWindowController;
 import com.android.systemui.util.NotificationChannels;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,6 +61,7 @@ public class SystemUIApplication extends Application implements SysUiServiceProv
     private boolean mServicesStarted;
     private boolean mBootCompleted;
     private final Map<Class<?>, Object> mComponents = new HashMap<>();
+    private String[] mNamesDelay = null;
 
     @Override
     public void onCreate() {
@@ -68,6 +70,12 @@ public class SystemUIApplication extends Application implements SysUiServiceProv
         // application theme in the manifest does only work for activities. Keep this in sync with
         // the theme set there.
         setTheme(R.style.Theme_SystemUI);
+
+        // If running in Android Automotive, filter some non-critical service and delay to initialize.
+        if (SystemProperties.getBoolean("vendor.all.car", false)) {
+            mNamesDelay = new String[] {"com.android.systemui.volume.VolumeUI",
+                                        "com.android.systemui.recents.Recents" };
+        }
 
         SystemUIFactory.createFromConfig(this);
 
@@ -89,6 +97,33 @@ public class SystemUIApplication extends Application implements SysUiServiceProv
                         }
                     }
 
+                    //Handle delayed services
+                    if (mNamesDelay != null) {
+                        final int N = mNamesDelay.length;
+                        SystemUI[] servicesDelay = new SystemUI[N];
+                        for (int i = 0; i < N; i++) {
+                            String clsName = mNamesDelay[i];
+                            Class cls;
+                            try {
+                                cls = Class.forName(clsName);
+                                Object obj = cls.newInstance();
+                                if (obj instanceof SystemUI.Injector) {
+                                    obj = ((SystemUI.Injector) obj).apply(context);
+                                }
+                                servicesDelay[i] = (SystemUI) obj;
+                            } catch(ClassNotFoundException ex){
+                                throw new RuntimeException(ex);
+                            } catch (IllegalAccessException ex) {
+                                throw new RuntimeException(ex);
+                            } catch (InstantiationException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            servicesDelay[i].mContext = context;
+                            servicesDelay[i].mComponents = mComponents;
+                            servicesDelay[i].start();
+                            servicesDelay[i].onBootCompleted();
+                        }
+                    }
 
                 }
             }, bootCompletedFilter);
@@ -128,8 +163,15 @@ public class SystemUIApplication extends Application implements SysUiServiceProv
      */
 
     public void startServicesIfNeeded() {
+        ArrayList<String> array = new ArrayList<String>();
         String[] names = getResources().getStringArray(R.array.config_systemUIServiceComponents);
-        startServicesIfNeeded(names);
+        final int N = names.length;
+        for (int i = 0; i < N; i++) {
+            if (!serviceNeedDelay(names[i])) {
+                array.add(names[i]);
+            }
+        }
+        startServicesIfNeeded((String[])array.toArray(new String[0]));
     }
 
     /**
@@ -142,6 +184,17 @@ public class SystemUIApplication extends Application implements SysUiServiceProv
         String[] names =
                   getResources().getStringArray(R.array.config_systemUIServiceComponentsPerUser);
         startServicesIfNeeded(names);
+    }
+
+    private boolean serviceNeedDelay(String service) {
+        if (mNamesDelay == null)
+            return false;
+        final int N = mNamesDelay.length;
+        for (int i = 0; i < N; i++) {
+            if (mNamesDelay[i].equals(service))
+                return true;
+        }
+        return false;
     }
 
     private void startServicesIfNeeded(String[] services) {
