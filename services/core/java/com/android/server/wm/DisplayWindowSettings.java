@@ -688,8 +688,13 @@ class DisplayWindowSettings {
         private final AtomicFile mAtomicFile;
 
         AtomicFileStorage() {
-            final File folder = new File(Environment.getDataDirectory(), "system");
-            mAtomicFile = new AtomicFile(new File(folder, "display_settings.xml"), "wm-displays");
+            final File f1 = new File(new File(Environment.getVendorDirectory(), "etc"), "display_settings.xml");
+            if (f1.exists()) {
+                mAtomicFile = new AtomicFile(f1, "wm-displays");
+            } else {
+                final File folder = new File(Environment.getDataDirectory(), "system");
+                mAtomicFile = new AtomicFile(new File(folder, "display_settings.xml"), "wm-displays");
+            }
         }
 
         @Override
