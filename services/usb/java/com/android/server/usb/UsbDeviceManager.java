@@ -1823,8 +1823,13 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                     /**
                      * Dont force to default when the configuration is already set to default.
                      */
-                    if (msg.arg1 != 1) {
-                        setEnabledFunctions(UsbManager.FUNCTION_NONE, !isAdbEnabled());
+
+                    if (mCurrentFunctionsApplied) {
+                        updateState("CONFIGURED");
+                    } else if (msg.arg1 != 1) {
+                        if (msg.arg1 != 1) {
+                            setEnabledFunctions(UsbManager.FUNCTION_NONE, !isAdbEnabled());
+                        }
                     }
                     break;
                 case MSG_GADGET_HAL_REGISTERED:
