@@ -312,8 +312,18 @@ public final class SystemServer {
             isAndroidAuto = true;
         }
 
-        if (isAndroidAuto)
+        if (isAndroidAuto) {
             SystemProperties.set("vendor.all.system_server.start", "1");
+        } else {
+            try {
+                SystemProperties.set("ctl.start", "audioserver");
+                SystemProperties.set("ctl.start", "drm");
+                SystemProperties.set("ctl.start", "media");
+                SystemProperties.set("ctl.start", "mediadrm");
+            } catch (Throwable ex) {
+                Slog.e("System", "************ Failed to start the delayed system services", ex);
+            }
+        }
     }
 
     private void run() {
