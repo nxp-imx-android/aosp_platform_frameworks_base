@@ -156,7 +156,10 @@ public class SystemUIApplication extends Application implements SysUiServiceProv
             }
         }
 
-        SystemProperties.set("vendor.all.system_server.ready", "1");
+        if ("zygote_auto".equals(SystemProperties.get("ro.zygote"))) {
+            SystemProperties.set("vendor.all.system_server.ready", "1");
+        }
+
         Log.v(TAG, "Starting SystemUI services for user " +
                 Process.myUserHandle().getIdentifier() + ".");
         TimingsTraceLog log = new TimingsTraceLog("SystemUIBootTiming",
