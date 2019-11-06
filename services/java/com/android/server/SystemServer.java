@@ -325,6 +325,8 @@ public final class SystemServer {
     private static final String SYSPROP_START_UPTIME = "sys.system_server.start_uptime";
 
     private Future<?> mSensorServiceStart;
+    private Future<?> mInstallerStart;
+    private boolean isAndroidAuto = false;
     private Future<?> mZygotePreload;
 
     /**
@@ -352,6 +354,7 @@ public final class SystemServer {
     public SystemServer() {
         // Check for factory test mode.
         mFactoryTestMode = FactoryTest.getMode();
+        isAndroidAuto = SystemProperties.getBoolean("vendor.all.car", false);
 
         // Record process start information.
         // Note SYSPROP_START_COUNT will increment by *2* on a FDE device when it fully boots;
@@ -638,7 +641,7 @@ public final class SystemServer {
         // create critical directories such as /data/user with the appropriate
         // permissions.  We need this to complete before we initialize other services.
         traceBeginAndSlog("StartInstaller");
-        Installer installer = mSystemServiceManager.startService(Installer.class);
+        final Installer installer = mSystemServiceManager.startService(Installer.class);
         traceEnd();
 
         // In some cases after launching an app we need to access device identifiers,
@@ -791,7 +794,13 @@ public final class SystemServer {
 
         // Manages Overlay packages
         traceBeginAndSlog("StartOverlayManagerService");
-        mSystemServiceManager.startService(new OverlayManagerService(mSystemContext, installer));
+        if (isAndroidAuto) {
+            SystemServerInitThreadPool.get().submit(() -> {
+                mSystemServiceManager.startService(new OverlayManagerService(mSystemContext, installer));
+            }, "OverlayManagerService");
+        } else {
+            mSystemServiceManager.startService(new OverlayManagerService(mSystemContext, installer));
+        }
         traceEnd();
 
         traceBeginAndSlog("StartSensorPrivacyService");
@@ -946,6 +955,16 @@ public final class SystemServer {
                     new KeyAttestationApplicationIdProviderService(context));
             traceEnd();
 
+            final ActivityManagerService activityManagerServiceF = mActivityManagerService;
+            if (isAndroidAuto) {
+                traceBeginAndSlog("InstallSystemProviders");
+                mInstallerStart = SystemServerInitThreadPool.get().submit(() -> {
+                    activityManagerServiceF.installSystemProviders();
+                    // Now that SettingsProvider is ready, reactivate SQLiteCompatibilityWalFlags
+                    SQLiteCompatibilityWalFlags.reset();
+                }, "InstallSystemProviders");
+                traceEnd();
+            }
             traceBeginAndSlog("StartKeyChainSystemService");
             mSystemServiceManager.startService(KeyChainSystemService.class);
             traceEnd();
@@ -978,11 +997,13 @@ public final class SystemServer {
             mSystemServiceManager.startService(CONTENT_SERVICE_CLASS);
             traceEnd();
 
-            traceBeginAndSlog("InstallSystemProviders");
-            mActivityManagerService.installSystemProviders();
-            // Now that SettingsProvider is ready, reactivate SQLiteCompatibilityWalFlags
-            SQLiteCompatibilityWalFlags.reset();
-            traceEnd();
+            if (!isAndroidAuto) {
+                traceBeginAndSlog("InstallSystemProviders");
+                activityManagerServiceF.installSystemProviders();
+                // Now that SettingsProvider is ready, reactivate SQLiteCompatibilityWalFlags
+                SQLiteCompatibilityWalFlags.reset();
+                traceEnd();
+            }
 
             // Records errors and logs, for example wtf()
             // Currently this service indirectly depends on SettingsProvider so do this after
@@ -1020,6 +1041,10 @@ public final class SystemServer {
             // WMS needs sensor service ready
             ConcurrentUtils.waitForFutureNoInterrupt(mSensorServiceStart, START_SENSOR_SERVICE);
             mSensorServiceStart = null;
+            if (isAndroidAuto) {
+                ConcurrentUtils.waitForFutureNoInterrupt(mInstallerStart, "InstallSystemProviders");
+                mInstallerStart = null;
+            }
             wm = WindowManagerService.main(context, inputManager, !mFirstBoot, mOnlyCore,
                     new PhoneWindowManager(), mActivityManagerService.mActivityTaskManager);
             ServiceManager.addService(Context.WINDOW_SERVICE, wm, /* allowIsolated= */ false,
@@ -1134,10 +1159,21 @@ public final class SystemServer {
         }
 
         traceBeginAndSlog("MakeDisplayReady");
-        try {
-            wm.displayReady();
-        } catch (Throwable e) {
-            reportWtf("making display ready", e);
+        final WindowManagerService wmF = wm;
+        if (isAndroidAuto) {
+            SystemServerInitThreadPool.get().submit(() -> {
+                try {
+                    wmF.displayReady();
+                } catch (Throwable e) {
+                    reportWtf("making display ready", e);
+                }
+            }, "MakeDisplayReady");
+        } else {
+            try {
+                wmF.displayReady();
+            } catch (Throwable e) {
+                reportWtf("making display ready", e);
+            }
         }
         traceEnd();
 
