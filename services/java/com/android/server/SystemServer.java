@@ -1366,52 +1366,90 @@ public final class SystemServer {
             }
             traceEnd();
 
-            if (context.getPackageManager().hasSystemFeature(
-                    PackageManager.FEATURE_WIFI)) {
-                // Wifi Service must be started first for wifi-related services.
-                traceBeginAndSlog("StartWifi");
-                mSystemServiceManager.startService(WIFI_SERVICE_CLASS);
-                traceEnd();
-                traceBeginAndSlog("StartWifiScanning");
-                mSystemServiceManager.startService(
-                        "com.android.server.wifi.scanner.WifiScanningService");
-                traceEnd();
-            }
+            if (isAndroidAuto) {
+                SystemServerInitThreadPool.get().submit(() -> {
+                    if (context.getPackageManager().hasSystemFeature(
+                                PackageManager.FEATURE_WIFI)) {
+                        // Wifi Service must be started first for wifi-related services.
+                        mSystemServiceManager.startService(WIFI_SERVICE_CLASS);
+                        mSystemServiceManager.startService(
+                                "com.android.server.wifi.scanner.WifiScanningService");
+                                }
 
-            if (context.getPackageManager().hasSystemFeature(
-                    PackageManager.FEATURE_WIFI_RTT)) {
-                traceBeginAndSlog("StartRttService");
-                mSystemServiceManager.startService(
-                        "com.android.server.wifi.rtt.RttService");
-                traceEnd();
-            }
+                    if (context.getPackageManager().hasSystemFeature(
+                                PackageManager.FEATURE_WIFI_RTT)) {
+                        mSystemServiceManager.startService(
+                                "com.android.server.wifi.rtt.RttService");
+                                }
 
-            if (context.getPackageManager().hasSystemFeature(
-                    PackageManager.FEATURE_WIFI_AWARE)) {
-                traceBeginAndSlog("StartWifiAware");
-                mSystemServiceManager.startService(WIFI_AWARE_SERVICE_CLASS);
-                traceEnd();
-            }
+                    if (context.getPackageManager().hasSystemFeature(
+                                PackageManager.FEATURE_WIFI_AWARE)) {
+                        mSystemServiceManager.startService(WIFI_AWARE_SERVICE_CLASS);
+                                }
 
-            if (context.getPackageManager().hasSystemFeature(
-                    PackageManager.FEATURE_WIFI_DIRECT)) {
-                traceBeginAndSlog("StartWifiP2P");
-                mSystemServiceManager.startService(WIFI_P2P_SERVICE_CLASS);
-                traceEnd();
-            }
+                    if (context.getPackageManager().hasSystemFeature(
+                                PackageManager.FEATURE_WIFI_DIRECT)) {
+                        mSystemServiceManager.startService(WIFI_P2P_SERVICE_CLASS);
+                                }
 
-            if (context.getPackageManager().hasSystemFeature(
-                    PackageManager.FEATURE_LOWPAN)) {
-                traceBeginAndSlog("StartLowpan");
-                mSystemServiceManager.startService(LOWPAN_SERVICE_CLASS);
-                traceEnd();
-            }
+                    if (context.getPackageManager().hasSystemFeature(
+                                PackageManager.FEATURE_LOWPAN)) {
+                        mSystemServiceManager.startService(LOWPAN_SERVICE_CLASS);
+                                }
 
-            if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_ETHERNET) ||
-                    mPackageManager.hasSystemFeature(PackageManager.FEATURE_USB_HOST)) {
-                traceBeginAndSlog("StartEthernet");
-                mSystemServiceManager.startService(ETHERNET_SERVICE_CLASS);
-                traceEnd();
+                    if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_ETHERNET) ||
+                            mPackageManager.hasSystemFeature(PackageManager.FEATURE_USB_HOST)) {
+                        mSystemServiceManager.startService(ETHERNET_SERVICE_CLASS);
+                            }
+                }, "StartConnectivity");
+            } else {
+                if (context.getPackageManager().hasSystemFeature(
+                        PackageManager.FEATURE_WIFI)) {
+                    // Wifi Service must be started first for wifi-related services.
+                    traceBeginAndSlog("StartWifi");
+                    mSystemServiceManager.startService(WIFI_SERVICE_CLASS);
+                    traceEnd();
+                    traceBeginAndSlog("StartWifiScanning");
+                    mSystemServiceManager.startService(
+                            "com.android.server.wifi.scanner.WifiScanningService");
+                    traceEnd();
+                }
+
+                if (context.getPackageManager().hasSystemFeature(
+                        PackageManager.FEATURE_WIFI_RTT)) {
+                    traceBeginAndSlog("StartRttService");
+                    mSystemServiceManager.startService(
+                            "com.android.server.wifi.rtt.RttService");
+                    traceEnd();
+                }
+
+                if (context.getPackageManager().hasSystemFeature(
+                        PackageManager.FEATURE_WIFI_AWARE)) {
+                    traceBeginAndSlog("StartWifiAware");
+                    mSystemServiceManager.startService(WIFI_AWARE_SERVICE_CLASS);
+                    traceEnd();
+                }
+
+                if (context.getPackageManager().hasSystemFeature(
+                        PackageManager.FEATURE_WIFI_DIRECT)) {
+                    traceBeginAndSlog("StartWifiP2P");
+                    mSystemServiceManager.startService(WIFI_P2P_SERVICE_CLASS);
+                    traceEnd();
+                }
+
+                if (context.getPackageManager().hasSystemFeature(
+                        PackageManager.FEATURE_LOWPAN)) {
+                    traceBeginAndSlog("StartLowpan");
+                    mSystemServiceManager.startService(LOWPAN_SERVICE_CLASS);
+                    traceEnd();
+                }
+
+                if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_ETHERNET) ||
+                        mPackageManager.hasSystemFeature(PackageManager.FEATURE_USB_HOST)) {
+                    traceBeginAndSlog("StartEthernet");
+                    mSystemServiceManager.startService(ETHERNET_SERVICE_CLASS);
+                    traceEnd();
+                }
             }
 
             traceBeginAndSlog("StartConnectivityService");
