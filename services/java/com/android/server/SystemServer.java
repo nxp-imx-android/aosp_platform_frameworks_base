@@ -1570,14 +1570,26 @@ public final class SystemServer {
             }
             traceEnd();
 
-            if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_USB_HOST)
-                    || mPackageManager.hasSystemFeature(
-                    PackageManager.FEATURE_USB_ACCESSORY)
-                    || isEmulator) {
-                // Manage USB host and device support
-                traceBeginAndSlog("StartUsbService");
-                mSystemServiceManager.startService(USB_SERVICE_CLASS);
-                traceEnd();
+            if (isAndroidAuto) {
+                SystemServerInitThreadPool.get().submit(() -> {
+                    if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_USB_HOST)
+                            || mPackageManager.hasSystemFeature(
+                                PackageManager.FEATURE_USB_ACCESSORY)
+                            || isEmulator) {
+                        // Manage USB host and device support
+                        mSystemServiceManager.startService(USB_SERVICE_CLASS);
+                    }
+                }, "StartUSB");
+            } else {
+                if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_USB_HOST)
+                        || mPackageManager.hasSystemFeature(
+                        PackageManager.FEATURE_USB_ACCESSORY)
+                        || isEmulator) {
+                    // Manage USB host and device support
+                    traceBeginAndSlog("StartUsbService");
+                    mSystemServiceManager.startService(USB_SERVICE_CLASS);
+                    traceEnd();
+                }
             }
 
             if (!isWatch) {
