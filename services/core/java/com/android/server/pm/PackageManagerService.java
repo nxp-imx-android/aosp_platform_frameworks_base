@@ -652,6 +652,7 @@ public class PackageManagerService extends IPackageManager.Stub
     final boolean mIsPreNUpgrade;
     final boolean mIsPreNMR1Upgrade;
     final boolean mIsPreQUpgrade;
+    private boolean isAndroidAuto = false;
 
     @GuardedBy("mPackages")
     private boolean mDexOptDialogShown;
@@ -2417,6 +2418,7 @@ public class PackageManagerService extends IPackageManager.Stub
         mOnlyCore = onlyCore;
         mMetrics = new DisplayMetrics();
         mInstaller = installer;
+        isAndroidAuto = SystemProperties.getBoolean("vendor.all.car", false);
 
         // Create sub-components that provide services / data. Order here is important.
         synchronized (mInstallLock) {
@@ -2493,7 +2495,6 @@ public class PackageManagerService extends IPackageManager.Stub
         mApexManager = new ApexManager(context);
         synchronized (mInstallLock) {
         // writer
-        synchronized (mPackages) {
             mHandlerThread = new ServiceThread(TAG,
                     Process.THREAD_PRIORITY_BACKGROUND, true /*allowIo*/);
             mHandlerThread.start();
@@ -2614,86 +2615,173 @@ public class PackageManagerService extends IPackageManager.Stub
 
             // Set flag to monitor and not change apk file paths when
             // scanning install directories.
-            int scanFlags = SCAN_BOOTING | SCAN_INITIAL;
-
-            if (mIsUpgrade || mFirstBoot) {
-                scanFlags = scanFlags | SCAN_FIRST_BOOT_OR_UPGRADE;
-            }
+            final int scanFlags = SCAN_BOOTING | SCAN_INITIAL;
 
             // Collect vendor/product/product_services overlay packages. (Do this before scanning
             // any apps.)
             // For security and version matching reason, only consider overlay packages if they
             // reside in the right directory.
-            scanDirTracedLI(new File(VENDOR_OVERLAY_DIR),
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_VENDOR,
-                    0);
-            scanDirTracedLI(new File(PRODUCT_OVERLAY_DIR),
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_PRODUCT,
-                    0);
-            scanDirTracedLI(new File(PRODUCT_SERVICES_OVERLAY_DIR),
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_PRODUCT_SERVICES,
-                    0);
-            scanDirTracedLI(new File(ODM_OVERLAY_DIR),
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_ODM,
-                    0);
-            scanDirTracedLI(new File(OEM_OVERLAY_DIR),
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_OEM,
-                    0);
+
+            Future<?> scanOverlay = null;
+            final CountDownLatch packageThreadCD = new CountDownLatch(13);
+            if (mFirstBoot || mIsUpgrade || !isAndroidAuto) {
+                scanDirTracedLI(new File(VENDOR_OVERLAY_DIR),
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_VENDOR,
+                        0);
+                scanDirTracedLI(new File(PRODUCT_OVERLAY_DIR),
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_PRODUCT,
+                        0);
+                scanDirTracedLI(new File(PRODUCT_SERVICES_OVERLAY_DIR),
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_PRODUCT_SERVICES,
+                        0);
+                scanDirTracedLI(new File(ODM_OVERLAY_DIR),
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_ODM,
+                        0);
+                scanDirTracedLI(new File(OEM_OVERLAY_DIR),
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_OEM,
+                        0);
+            } else {
+                scanOverlay = PackageManagerInitThreadPool.get().submit(() -> {
+                    scanDirTracedLI(new File(VENDOR_OVERLAY_DIR),
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_VENDOR,
+                            0);
+                    scanDirTracedLI(new File(PRODUCT_OVERLAY_DIR),
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_PRODUCT,
+                            0);
+                    scanDirTracedLI(new File(PRODUCT_SERVICES_OVERLAY_DIR),
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_PRODUCT_SERVICES,
+                            0);
+                    scanDirTracedLI(new File(ODM_OVERLAY_DIR),
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_ODM,
+                            0);
+                    scanDirTracedLI(new File(OEM_OVERLAY_DIR),
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_OEM,
+                            0);
+                        packageThreadCD.countDown();
+                }, "scanOverlay");
+
+            }
 
             mParallelPackageParserCallback.findStaticOverlayPackages();
 
+            Future<?> scanFramework = null;
+            if (mFirstBoot || mIsUpgrade || !isAndroidAuto) {
+                scanDirTracedLI(frameworkDir,
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_NO_DEX
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_PRIVILEGED,
+                        0);
+                if (!mPackages.containsKey("android")) {
+                    throw new IllegalStateException(
+                            "Failed to load frameworks package; check log for warnings");
+                }
+            } else {
+                scanFramework = PackageManagerInitThreadPool.get().submit(() -> {
+                    scanDirTracedLI(frameworkDir,
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_NO_DEX
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_PRIVILEGED,
+                            0);
+                    if (!mPackages.containsKey("android")) {
+                        throw new IllegalStateException(
+                                "Failed to load frameworks package; check log for warnings");
+                    }
+                    packageThreadCD.countDown();
+                }, "scanFramework");
+            }
             // Find base frameworks (resource packages without code).
-            scanDirTracedLI(frameworkDir,
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_NO_DEX
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_PRIVILEGED,
-                    0);
-            if (!mPackages.containsKey("android")) {
-                throw new IllegalStateException(
-                        "Failed to load frameworks package; check log for warnings");
+
+            Future<?> scanPriv = null;
+            // Collect privileged system packages.
+
+            final File privilegedAppDir = new File(Environment.getRootDirectory(), "priv-app");
+            if (mFirstBoot || mIsUpgrade || !isAndroidAuto) {
+                scanDirTracedLI(privilegedAppDir,
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_PRIVILEGED,
+                        0);
+            } else {
+                scanPriv = PackageManagerInitThreadPool.get().submit(() -> {
+                    scanDirTracedLI(privilegedAppDir,
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_PRIVILEGED,
+                            0);
+                    packageThreadCD.countDown();
+                }, "scanPriv");
             }
 
-            // Collect privileged system packages.
-            final File privilegedAppDir = new File(Environment.getRootDirectory(), "priv-app");
-            scanDirTracedLI(privilegedAppDir,
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_PRIVILEGED,
-                    0);
-
-            // Collect ordinary system packages.
             final File systemAppDir = new File(Environment.getRootDirectory(), "app");
-            scanDirTracedLI(systemAppDir,
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM,
-                    0);
+            if (mFirstBoot || mIsUpgrade || !isAndroidAuto) {
+                scanDirTracedLI(systemAppDir,
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM,
+                        0);
+            } else {
+                // Collect ordinary system packages.
+                PackageManagerInitThreadPool.get().submit(() -> {
+                    scanDirTracedLI(systemAppDir,
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM,
+                            0);
+                    packageThreadCD.countDown();
+                }, "systemAppDir");
+            }
 
             // Collect privileged vendor packages.
             File privilegedVendorAppDir = new File(Environment.getVendorDirectory(), "priv-app");
@@ -2702,14 +2790,30 @@ public class PackageManagerService extends IPackageManager.Stub
             } catch (IOException e) {
                 // failed to look up canonical path, continue with original one
             }
-            scanDirTracedLI(privilegedVendorAppDir,
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_VENDOR
-                    | SCAN_AS_PRIVILEGED,
-                    0);
+
+            final File privilegedVendorAppDirf = privilegedVendorAppDir;
+            if (mFirstBoot || mIsUpgrade || !isAndroidAuto) {
+                scanDirTracedLI(privilegedVendorAppDirf,
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_VENDOR
+                        | SCAN_AS_PRIVILEGED,
+                        0);
+            } else {
+                PackageManagerInitThreadPool.get().submit(() -> {
+                    scanDirTracedLI(privilegedVendorAppDirf,
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_VENDOR
+                            | SCAN_AS_PRIVILEGED,
+                            0);
+                    packageThreadCD.countDown();
+                }, "privilegedVendorAppDir");
+            }
 
             // Collect ordinary vendor packages.
             File vendorAppDir = new File(Environment.getVendorDirectory(), "app");
@@ -2718,13 +2822,28 @@ public class PackageManagerService extends IPackageManager.Stub
             } catch (IOException e) {
                 // failed to look up canonical path, continue with original one
             }
-            scanDirTracedLI(vendorAppDir,
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_VENDOR,
-                    0);
+
+            final File vendorAppDirf = vendorAppDir;
+            if (mFirstBoot || mIsUpgrade || !isAndroidAuto) {
+                scanDirTracedLI(vendorAppDirf,
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_VENDOR,
+                        0);
+            } else {
+                PackageManagerInitThreadPool.get().submit(() -> {
+                    scanDirTracedLI(vendorAppDirf,
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_VENDOR,
+                            0);
+                    packageThreadCD.countDown();
+                }, "vendorAppDir");
+            }
 
             // Collect privileged odm packages. /odm is another vendor partition
             // other than /vendor.
@@ -2735,14 +2854,30 @@ public class PackageManagerService extends IPackageManager.Stub
             } catch (IOException e) {
                 // failed to look up canonical path, continue with original one
             }
-            scanDirTracedLI(privilegedOdmAppDir,
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_VENDOR
-                    | SCAN_AS_PRIVILEGED,
-                    0);
+            final File privilegedOdmAppDirf = privilegedOdmAppDir;
+            if (mFirstBoot || mIsUpgrade || !isAndroidAuto) {
+                scanDirTracedLI(privilegedOdmAppDirf,
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_VENDOR
+                        | SCAN_AS_PRIVILEGED,
+                        0);
+
+            } else {
+                PackageManagerInitThreadPool.get().submit(() -> {
+                    scanDirTracedLI(privilegedOdmAppDirf,
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_VENDOR
+                            | SCAN_AS_PRIVILEGED,
+                            0);
+                    packageThreadCD.countDown();
+                }, "privilegedOdmAppDir");
+            }
 
             // Collect ordinary odm packages. /odm is another vendor partition
             // other than /vendor.
@@ -2752,23 +2887,51 @@ public class PackageManagerService extends IPackageManager.Stub
             } catch (IOException e) {
                 // failed to look up canonical path, continue with original one
             }
-            scanDirTracedLI(odmAppDir,
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_VENDOR,
-                    0);
+            final File odmAppDirf = odmAppDir;
+
+            if (mFirstBoot || mIsUpgrade || !isAndroidAuto) {
+                scanDirTracedLI(odmAppDirf,
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_VENDOR,
+                        0);
+            } else {
+                PackageManagerInitThreadPool.get().submit(() -> {
+                    scanDirTracedLI(odmAppDirf,
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_VENDOR,
+                            0);
+                    packageThreadCD.countDown();
+                }, "odmAppDir");
+            }
 
             // Collect all OEM packages.
             final File oemAppDir = new File(Environment.getOemDirectory(), "app");
-            scanDirTracedLI(oemAppDir,
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_OEM,
-                    0);
+            if (mFirstBoot || mIsUpgrade || !isAndroidAuto) {
+                scanDirTracedLI(oemAppDir,
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_OEM,
+                        0);
+            } else {
+                PackageManagerInitThreadPool.get().submit(() -> {
+                    scanDirTracedLI(oemAppDir,
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_OEM,
+                            0);
+                    packageThreadCD.countDown();
+                }, "oemAppDir");
+            }
 
             // Collected privileged /product packages.
             File privilegedProductAppDir = new File(Environment.getProductDirectory(), "priv-app");
@@ -2777,14 +2940,29 @@ public class PackageManagerService extends IPackageManager.Stub
             } catch (IOException e) {
                 // failed to look up canonical path, continue with original one
             }
-            scanDirTracedLI(privilegedProductAppDir,
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_PRODUCT
-                    | SCAN_AS_PRIVILEGED,
-                    0);
+            final File privilegedProductAppDirf = privilegedProductAppDir;
+            if (mFirstBoot || mIsUpgrade || !isAndroidAuto) {
+                scanDirTracedLI(privilegedProductAppDirf,
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_PRODUCT
+                        | SCAN_AS_PRIVILEGED,
+                        0);
+            } else {
+                PackageManagerInitThreadPool.get().submit(() -> {
+                    scanDirTracedLI(privilegedProductAppDirf,
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_PRODUCT
+                            | SCAN_AS_PRIVILEGED,
+                            0);
+                    packageThreadCD.countDown();
+                }, "privilegedProductAppDir");
+            }
 
             // Collect ordinary /product packages.
             File productAppDir = new File(Environment.getProductDirectory(), "app");
@@ -2793,13 +2971,27 @@ public class PackageManagerService extends IPackageManager.Stub
             } catch (IOException e) {
                 // failed to look up canonical path, continue with original one
             }
-            scanDirTracedLI(productAppDir,
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_PRODUCT,
-                    0);
+            final File productAppDirf = productAppDir;
+            if (mFirstBoot || mIsUpgrade || !isAndroidAuto) {
+                scanDirTracedLI(productAppDirf,
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_PRODUCT,
+                        0);
+            } else {
+                PackageManagerInitThreadPool.get().submit(() -> {
+                    scanDirTracedLI(productAppDirf,
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_PRODUCT,
+                            0);
+                    packageThreadCD.countDown();
+                }, "productAppDir");
+            }
 
             // Collected privileged /product_services packages.
             File privilegedProductServicesAppDir =
@@ -2810,14 +3002,29 @@ public class PackageManagerService extends IPackageManager.Stub
             } catch (IOException e) {
                 // failed to look up canonical path, continue with original one
             }
-            scanDirTracedLI(privilegedProductServicesAppDir,
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_PRODUCT_SERVICES
-                    | SCAN_AS_PRIVILEGED,
-                    0);
+            final File privilegedProductServicesAppDirf = privilegedProductServicesAppDir;
+            if (mFirstBoot || mIsUpgrade || !isAndroidAuto) {
+                scanDirTracedLI(privilegedProductServicesAppDirf,
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_PRODUCT_SERVICES
+                        | SCAN_AS_PRIVILEGED,
+                        0);
+            } else {
+                PackageManagerInitThreadPool.get().submit(() -> {
+                    scanDirTracedLI(privilegedProductServicesAppDirf,
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_PRODUCT_SERVICES
+                            | SCAN_AS_PRIVILEGED,
+                            0);
+                    packageThreadCD.countDown();
+                }, "privilegedProductServicesAppDir");
+            }
 
             // Collect ordinary /product_services packages.
             File productServicesAppDir = new File(Environment.getProductServicesDirectory(), "app");
@@ -2826,13 +3033,48 @@ public class PackageManagerService extends IPackageManager.Stub
             } catch (IOException e) {
                 // failed to look up canonical path, continue with original one
             }
-            scanDirTracedLI(productServicesAppDir,
-                    mDefParseFlags
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanFlags
-                    | SCAN_AS_SYSTEM
-                    | SCAN_AS_PRODUCT_SERVICES,
-                    0);
+            final File productServicesAppDirf = productServicesAppDir;
+            if (mFirstBoot || mIsUpgrade || !isAndroidAuto) {
+                scanDirTracedLI(productServicesAppDirf,
+                        mDefParseFlags
+                        | PackageParser.PARSE_IS_SYSTEM_DIR,
+                        scanFlags
+                        | SCAN_AS_SYSTEM
+                        | SCAN_AS_PRODUCT_SERVICES,
+                        0);
+            } else {
+                PackageManagerInitThreadPool.get().submit(() -> {
+                    scanDirTracedLI(productServicesAppDirf,
+                            mDefParseFlags
+                            | PackageParser.PARSE_IS_SYSTEM_DIR,
+                            scanFlags
+                            | SCAN_AS_SYSTEM
+                            | SCAN_AS_PRODUCT_SERVICES,
+                            0);
+                    packageThreadCD.countDown();
+                }, "productServicesAppDir");
+            }
+
+            if (!mFirstBoot && !mIsUpgrade && isAndroidAuto) {
+                if (scanFramework != null) {
+                    ConcurrentUtils.waitForFutureNoInterrupt(scanFramework,"scanFramework");
+                    scanFramework = null;
+                }
+                if (scanPriv != null) {
+                    ConcurrentUtils.waitForFutureNoInterrupt(scanPriv,"scanPriv");
+                    scanPriv = null;
+                }
+                if (scanOverlay != null) {
+                    ConcurrentUtils.waitForFutureNoInterrupt(scanOverlay,"scanOverlay");
+                    scanOverlay = null;
+                }
+                try {
+                    packageThreadCD.await();
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
 
             // Prune any system packages that no longer exist.
             final List<String> possiblyDeletedUpdatedSystemApps = new ArrayList<>();
@@ -3371,7 +3613,6 @@ public class PackageManagerService extends IPackageManager.Stub
                 MetricsLogger.histogram(null, "ota_package_manager_init_time",
                         (int) (SystemClock.uptimeMillis() - startTime));
             }
-        } // synchronized (mPackages)
         } // synchronized (mInstallLock)
 
         mModuleInfoProvider = new ModuleInfoProvider(mContext, this);
@@ -9035,6 +9276,9 @@ public class PackageManagerService extends IPackageManager.Stub
 
     private void scanDirLI(File scanDir, int parseFlags, int scanFlags, long currentTime) {
         final File[] files = scanDir.listFiles();
+        if (mIsUpgrade || mFirstBoot) {
+            scanFlags = scanFlags | SCAN_FIRST_BOOT_OR_UPGRADE;
+        }
         if (ArrayUtils.isEmpty(files)) {
             Log.d(TAG, "No files in app dir " + scanDir);
             return;
