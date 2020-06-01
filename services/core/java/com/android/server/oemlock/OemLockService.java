@@ -59,6 +59,11 @@ public class OemLockService extends SystemService {
 
     /** Select the OEM lock implementation */
     private static OemLock getOemLock(Context context) {
+        String secure_prop = SystemProperties.get("ro.boot.keystore");
+        if (!secure_prop.equals("trusty")) {
+            Slog.i(TAG, "System is not using Trusty OS and will use persistent data block based lock");
+            return new PersistentDataBlockLock(context);
+        }
         final IOemLock oemLockHal = VendorLock.getOemLockHalService();
         if (oemLockHal != null) {
             Slog.i(TAG, "Using vendor lock via the HAL");
