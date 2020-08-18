@@ -47,6 +47,8 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.SomeArgs;
 import com.android.systemui.SystemUI;
 import com.android.systemui.statusbar.CommandQueue;
+import com.android.systemui.shared.system.ActivityManagerWrapper;
+import com.android.systemui.shared.system.TaskStackChangeListener;
 
 import java.util.List;
 
@@ -77,16 +79,15 @@ public class AuthController extends SystemUI implements CommandQueue.Callbacks,
     @VisibleForTesting
     IActivityTaskManager mActivityTaskManager;
     @VisibleForTesting
-    BiometricTaskStackListener mTaskStackListener;
-    @VisibleForTesting
     IBiometricServiceReceiverInternal mReceiver;
 
-    public class BiometricTaskStackListener extends TaskStackListener {
+    @VisibleForTesting
+    private final TaskStackChangeListener mTaskStackListener = new TaskStackChangeListener() {
         @Override
         public void onTaskStackChanged() {
             mHandler.post(mTaskStackChangedRunnable);
         }
-    }
+    };
 
     @VisibleForTesting
     final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
@@ -265,12 +266,7 @@ public class AuthController extends SystemUI implements CommandQueue.Callbacks,
         mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
         mActivityTaskManager = mInjector.getActivityTaskManager();
 
-        try {
-            mTaskStackListener = new BiometricTaskStackListener();
-            mActivityTaskManager.registerTaskStackListener(mTaskStackListener);
-        } catch (RemoteException e) {
-            Log.w(TAG, "Unable to register task stack listener", e);
-        }
+        ActivityManagerWrapper.getInstance().registerTaskStackListener(mTaskStackListener);
     }
 
     @Override
