@@ -73,6 +73,7 @@ import android.annotation.UiThread;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
 import android.app.ActivityManagerInternal;
+import android.app.admin.DevicePolicyManagerInternal;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentProvider;
@@ -205,6 +206,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
@@ -228,6 +230,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
      */
     @DurationMillisLong
     private static final long SYSTEM_READY_USER_INIT_TIMEOUT = 3000;
+    @Nullable
+    private ArrayList<InputMethodInfo> mAllowedImesByPolicyForTest;
 
     @Retention(SOURCE)
     @IntDef({ShellCommandResult.SUCCESS, ShellCommandResult.FAILURE})
@@ -3505,7 +3509,13 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
             @NonNull ResultReceiver imeBackCallbackReceiver, boolean imeRequestedVisible) {
+        ProtoLog.v(IMMS_DEBUG,
+                "startInputOrWindowGainedFocus: userId=%d callingUserId=%d editorInfo=%s",
+                userId, UserHandle.getCallingUserId(), editorInfo);
         if (UserHandle.getCallingUserId() != userId) {
+            ProtoLog.v(IMMS_DEBUG,
+                    "startInputOrWindowGainedFocus callingUserId != userid (%d != %d)",
+                    UserHandle.getCallingUserId(), userId);
             mContext.enforceCallingOrSelfPermission(
                     Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
 
@@ -3641,6 +3651,81 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
     }
 
+    /**
+     * Returns List of {@link InputMethodInfo} that are allowed for the user
+     * {@link EditorInfo#targetDevicePolicyUser}, {@code null} means all are allowed.
+     * @param editorInfo {@link EditorInfo} of the editor user is interacting with.
+     */
+    @Nullable
+    @GuardedBy("ImfLock.class")
+    private List<InputMethodInfo> getAllowedImesByPolicyLocked(@Nullable EditorInfo editorInfo) {
+        if (!Flags.enforceDevicePolicyIme()) {
+            return null;
+        }
+        if (editorInfo == null || editorInfo.targetDevicePolicyUser == null) {
+            return null;
+        }
+        int dpUserId = editorInfo.targetDevicePolicyUser.getIdentifier();
+        Set<String> allowedImePackages =
+                LocalServices.getService(DevicePolicyManagerInternal.class)
+                        .getPermittedInputMethodPackages(dpUserId);
+        List<InputMethodInfo> allowedImes = getAllowedImesForPackages(allowedImePackages, dpUserId);
+        // The getPermittedInputMethods() method returns null if no DPM restrictions are set for the
+        // user. In this test-only scenario, we proceed with the test-specific IMEs only when we
+        // can confirm no real policy is active. This prevents adb shell commands from circumventing
+        // an otherwise active DPM policy.
+        if (mAllowedImesByPolicyForTest != null && !mAllowedImesByPolicyForTest.isEmpty()
+                && allowedImePackages == null) {
+            mAllowedImesByPolicyForTest.forEach(imi ->
+                    ProtoLog.d(IMMS_DEBUG, "Test-only allowed IME: " + imi.getPackageName())
+            );
+            return mAllowedImesByPolicyForTest;
+        }
+        if (editorInfo != null && editorInfo.targetDevicePolicyUser != null) {
+            ProtoLog.v(IMMS_DEBUG,
+                    "startInputOrWindowGainedFocus editorInfo.targetDevicePolicyUser: %d",
+                    editorInfo.targetDevicePolicyUser);
+            StringBuilder allowedImesLog = new StringBuilder("allowedImes: ");
+            if (allowedImes != null) {
+                allowedImes.forEach(allowedIme ->
+                        allowedImesLog.append(allowedIme.getId()).append(", "));
+            } else {
+                allowedImesLog.append("null");
+            }
+            ProtoLog.d(IMMS_DEBUG, allowedImesLog.toString());
+        }
+        return allowedImes;
+    }
+
+    private List<InputMethodInfo> getAllowedImesForPackages(
+            Set<String> allowedImePackages, int dpUserId) {
+        mContext.enforceCallingOrSelfPermission(
+                Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
+        mContext.enforceCallingOrSelfPermission(
+                Manifest.permission.MANAGE_USERS, null);
+        if (allowedImePackages == null) {
+            return null;
+        }
+        List<InputMethodInfo> allowedImes = null;
+        UserInfo parentUserInfo = UserManager.get(mContext).getProfileParent(dpUserId);
+        List<InputMethodInfo> imes = InputMethodManagerInternal
+                .get().getInputMethodListAsUser(parentUserInfo.id);
+        if (imes == null) {
+            return null;
+        }
+        allowedImes = new ArrayList<>();
+        for (InputMethodInfo ime : imes) {
+            if (ime.isAuxiliaryIme()) {
+                continue;
+            }
+            if (allowedImePackages.contains(ime.getPackageName())) {
+                Slog.d(TAG, "getAllowedImesForPackages: add " + ime.getPackageName());
+                allowedImes.add(ime);
+            }
+        }
+        return allowedImes;
+    }
+
     @GuardedBy("ImfLock.class")
     @NonNull
     private InputBindResult startInputOrWindowGainedFocusInternalLocked(
@@ -3673,6 +3758,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
         final int userId = bindingController.getUserId();
         final var userData = getUserData(userId);
+        enforceDevicePolicyLocked(userId, bindingController, editorInfo);
+
         final boolean sameWindowFocused = userData.mImeBindingState.mFocusedWindow == windowToken;
         final boolean isTextEditor = (startInputFlags & StartInputFlags.IS_TEXT_EDITOR) != 0;
         final boolean isStartInputByWindowGainFocus =
@@ -3766,6 +3853,73 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             }
         }
         return res;
+    }
+
+    /**
+     * Only allow IMEs allowed by DevicePolicy to unlock work profile.
+     */
+    @GuardedBy("ImfLock.class")
+    private void enforceDevicePolicyLocked(
+            @UserIdInt int userId, @NonNull InputMethodBindingController bindingController,
+            @Nullable EditorInfo editorInfo) {
+        if (!Flags.enforceDevicePolicyIme()) {
+            return;
+        }
+
+        final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
+        final String currentImeId = settings.getSelectedInputMethod();
+        ProtoLog.d(IMMS_DEBUG, "enforceDevicePolicy currentImeId %s", currentImeId);
+        // When allowedImes are provided, DevicePolicy must be enforced for selecting IME.
+        // If current IME is not in allowedImes, reselect a new IME based on DevicePolicy.
+        List<InputMethodInfo> allowedImes = getAllowedImesByPolicyLocked(editorInfo);
+        boolean reselectIme = editorInfo != null && allowedImes != null && !allowedImes.isEmpty();
+        if (reselectIme) {
+            for (InputMethodInfo ime : allowedImes) {
+                String imeId = ime.getId();
+                if (currentImeId.equals(imeId)) {
+                    // current IME is approved. Do nothing.
+                    reselectIme = false;
+                    break;
+                }
+            }
+        }
+
+        if (reselectIme && editorInfo.targetDevicePolicyUser != null) {
+            final int policyUserId = editorInfo.targetDevicePolicyUser.getIdentifier();
+            ProtoLog.d(IMMS_DEBUG, "enforceDevicePolicy for policyUserId " + policyUserId);
+            final InputMethodSettings policyUserSettings =
+                    InputMethodSettingsRepository.get(policyUserId);
+            // first try selecting a system-default IME from allowedImes list.
+            if (!chooseNewDefaultIMELocked(allowedImes, policyUserId)) {
+                ProtoLog.d(IMMS_DEBUG, "enforceDevicePolicy chooseNewDefaultIMELocked"
+                                + " didn't find any active IME, calling enableAllowedIme");
+                // If unable to choose find allowedIme from defaults, enable the first allowed IME.
+                final InputMethodInfo imi = allowedImes.get(0);
+                enableAllowedImeLocked(imi, policyUserSettings);
+                chooseNewIMELocked(imi, policyUserId);
+            }
+            String selectedId = policyUserSettings.getSelectedInputMethod();
+            bindingController.setImeIdToRestoreOnNextSession(currentImeId);
+            ProtoLog.d(IMMS_DEBUG, "enforceDevicePolicy found IME to"
+                    + " enable for policy id: %s and will enabled it for userId: %d",
+                    selectedId,
+                    userId);
+            setInputMethodLocked(
+                    selectedId,
+                    policyUserSettings.getSelectedInputMethodSubtypeIndex(selectedId),
+                    userId);
+        } else if (allowedImes == null
+                && bindingController.getImeIdToRestoreOnNextSession() != null) {
+            // restore user IME when no longer enforced by DevicePolicy.
+            String imeId = bindingController.getImeIdToRestoreOnNextSession();
+            setInputMethodLocked(
+                    imeId,
+                    settings.getSelectedInputMethodSubtypeIndex(imeId),
+                    userId);
+            ProtoLog.d(IMMS_DEBUG, "enforceDevicePolicy restore IME %s",
+                    imeId);
+            bindingController.setImeIdToRestoreOnNextSession(null);
+        }
     }
 
     @NonNull
@@ -4334,6 +4488,36 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
     }
 
+    @BinderThread
+    @IInputMethodManagerImpl.PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
+    @Override
+    public void setAllowedImesByPolicyForTest(
+            @NonNull IInputMethodClient client, @Nullable List<String> allowedPackages) {
+        final int uid = Binder.getCallingUid();
+        final int callingUserId = UserHandle.getUserId(uid);
+        synchronized (ImfLock.class) {
+            final int userId = resolveImeUserIdLocked(callingUserId);
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                ProtoLog.v(IMMS_DEBUG, "Setting mAllowedImesByPolicyForTest");
+                if (allowedPackages == null) {
+                    mAllowedImesByPolicyForTest = null;
+                    return;
+                }
+                List<InputMethodInfo> imes = InputMethodManagerInternal
+                        .get().getInputMethodListAsUser(userId);
+                mAllowedImesByPolicyForTest = new ArrayList<>(allowedPackages.size());
+                for (InputMethodInfo ime : imes) {
+                    if (allowedPackages.contains(ime.getPackageName())) {
+                        mAllowedImesByPolicyForTest.add(ime);
+                    }
+                }
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+        }
+    }
+
     @GuardedBy("ImfLock.class")
     private void removeVirtualStylusIdForTestSessionLocked() {
         removeStylusDeviceIdLocked(VIRTUAL_STYLUS_ID_FOR_TEST);
@@ -4812,6 +4996,26 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     @GuardedBy("ImfLock.class")
+    private boolean chooseNewDefaultIMELocked(
+            @Nullable List<InputMethodInfo> allowedImes, @UserIdInt int userId) {
+        final InputMethodInfo imi = InputMethodInfoUtils.getMostApplicableDefaultIME(allowedImes);
+        if (imi != null) {
+            ProtoLog.v(IMMS_DEBUG, "New default IME was selected: %s", imi.getId());
+            resetSelectedInputMethodAndSubtypeLocked(imi.getId(), userId);
+            return true;
+        }
+
+        return false;
+    }
+
+    @GuardedBy("ImfLock.class")
+    private void chooseNewIMELocked(
+            @NonNull InputMethodInfo imi, @UserIdInt int userId) {
+        ProtoLog.v(IMMS_DEBUG, "New DP-allowed IME was selected: %s", imi.getId());
+        resetSelectedInputMethodAndSubtypeLocked(imi.getId(), userId);
+    }
+
+    @GuardedBy("ImfLock.class")
     private boolean chooseNewDefaultIMELocked(@UserIdInt int userId) {
         final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
         final InputMethodInfo imi = InputMethodInfoUtils.getMostApplicableDefaultIME(
@@ -4904,7 +5108,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     void postInputMethodSettingUpdatedLocked(boolean resetDefaultEnabledIme,
             @UserIdInt int userId) {
         ProtoLog.v(IMMS_DEBUG, "--- re-buildInputMethodList reset = %s"
-                    + " \n ------ caller=%s", resetDefaultEnabledIme, Debug.getCallers(10));
+                + " \n ------ caller=%s", resetDefaultEnabledIme, Debug.getCallers(10));
         if (!mSystemReady) {
             Slog.e(TAG, "buildInputMethodListLocked is not allowed until system is ready");
             return;
@@ -4941,15 +5145,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
 
         if (resetDefaultEnabledIme || reenableMinimumNonAuxSystemImes) {
-            final ArrayList<InputMethodInfo> defaultEnabledIme =
-                    InputMethodInfoUtils.getDefaultEnabledImes(mContext, settings.getMethodList(),
-                            reenableMinimumNonAuxSystemImes);
-            final int numImes = defaultEnabledIme.size();
-            for (int i = 0; i < numImes; ++i) {
-                final InputMethodInfo imi = defaultEnabledIme.get(i);
-                ProtoLog.v(IMMS_DEBUG, "--- enable ime = %s", imi);
-                setInputMethodEnabledLocked(imi.getId(), true, userId);
-            }
+            reenableImesLocked(reenableMinimumNonAuxSystemImes, settings);
         }
 
         final String defaultImiId = settings.getSelectedInputMethod();
@@ -5042,7 +5238,25 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         settings.putDefaultVoiceInputMethod(newSystemVoiceIme.getId());
     }
 
-    // ----------------------------------------------------------------------
+    private void reenableImesLocked(
+            boolean reenableMinimumNonAuxSystemImesOnly, @NonNull InputMethodSettings settings) {
+        final ArrayList<InputMethodInfo> defaultEnabledImes =
+                InputMethodInfoUtils.getDefaultEnabledImes(mContext, settings.getMethodList(),
+                        reenableMinimumNonAuxSystemImesOnly);
+        final int numImes = defaultEnabledImes.size();
+        for (int i = 0; i < numImes; ++i) {
+            final InputMethodInfo imi = defaultEnabledImes.get(i);
+            ProtoLog.v(IMMS_DEBUG, "--- enable ime = %s", imi);
+            setInputMethodEnabledLocked(imi.getId(), true, settings.getUserId());
+        }
+    }
+
+    @GuardedBy("ImfLock.class")
+    private void enableAllowedImeLocked(
+            @NonNull InputMethodInfo allowedIme, @NonNull InputMethodSettings settings) {
+        ProtoLog.v(IMMS_DEBUG, "--- enable DP-allowed ime = %s", allowedIme);
+        setInputMethodEnabledLocked(allowedIme.getId(), true /* enabled */, settings.getUserId());
+    }
 
     /**
      * Enable or disable the given IME by updating {@link Settings.Secure#ENABLED_INPUT_METHODS}.

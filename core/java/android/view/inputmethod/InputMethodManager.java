@@ -3732,6 +3732,23 @@ public final class InputMethodManager {
     }
 
     /**
+     * A test-only method to set a list of allowed IMEs for the next session.
+     * Note: this will reset on the next window focus.
+     * @param allowedPackages {@link List} of allowed IME packages. Set {@code null} to reset after
+     *                                    the test run.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENFORCE_DEVICE_POLICY_IME)
+    @TestApi
+    @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
+    public void setAllowedImesByPolicyForTest(@Nullable List<String> allowedPackages) {
+        synchronized (mH) {
+            IInputMethodManagerGlobalInvoker.setAllowedImesByPolicyForTest(
+                    mClient, allowedPackages);
+        }
+    }
+
+    /**
      * An empty method only to avoid crashes of apps that call this method via reflection and do not
      * handle {@link NoSuchMethodException} in a graceful manner.
      *

@@ -191,6 +191,10 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
         @PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
         void setStylusWindowIdleTimeoutForTest(IInputMethodClient client, long timeout);
 
+        @PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
+        void setAllowedImesByPolicyForTest(
+                @NonNull IInputMethodClient client, @NonNull List<String> allowedPackages);
+
         IImeTracker getImeTrackerService();
 
         void onShellCommand(@Nullable FileDescriptor in, @Nullable FileDescriptor out,
@@ -440,6 +444,15 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
         super.setStylusWindowIdleTimeoutForTest_enforcePermission();
 
         mCallback.setStylusWindowIdleTimeoutForTest(client, timeout);
+    }
+
+    @EnforcePermission(Manifest.permission.TEST_INPUT_METHOD)
+    @Override
+    public void setAllowedImesByPolicyForTest(
+            IInputMethodClient client, @NonNull List<String> allowedPackages) {
+        super.setAllowedImesByPolicyForTest_enforcePermission();
+
+        mCallback.setAllowedImesByPolicyForTest(client, allowedPackages);
     }
 
     @Override

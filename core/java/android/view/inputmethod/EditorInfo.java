@@ -793,6 +793,22 @@ public class EditorInfo implements InputType, Parcelable {
     @Nullable
     public UserHandle targetInputMethodUser = null;
 
+    /**
+     * If not {@code null}, this editor requires that an IME is used that is allowed by the given
+     * user's {@link android.app.admin.DevicePolicyManager#setPermittedInputMethods permitted IMEs}.
+     *
+     * <p>Note: This field will be silently ignored when
+     * {@link com.android.server.inputmethod.InputMethodSystemProperty#MULTI_CLIENT_IME_ENABLED} is
+     * {@code true}.</p>
+     *
+     * <p>Note also that pseudo handles such as {@link UserHandle#ALL} are not supported.</p>
+     *
+     * @hide
+     */
+    @RequiresPermission(INTERACT_ACROSS_USERS_FULL)
+    @Nullable
+    public UserHandle targetDevicePolicyUser = null;
+
     @IntDef({TrimPolicy.HEAD, TrimPolicy.TAIL})
     @Retention(RetentionPolicy.SOURCE)
     @interface TrimPolicy {
@@ -1381,6 +1397,7 @@ public class EditorInfo implements InputType, Parcelable {
         dest.writeStringArray(contentMimeTypes);
         UserHandle.writeToParcel(targetInputMethodUser, dest);
         dest.writeBoolean(mWritingToolsEnabled);
+        UserHandle.writeToParcel(targetDevicePolicyUser, dest);
     }
 
     /**
@@ -1422,6 +1439,7 @@ public class EditorInfo implements InputType, Parcelable {
                     res.contentMimeTypes = source.readStringArray();
                     res.targetInputMethodUser = UserHandle.readFromParcel(source);
                     res.mWritingToolsEnabled = source.readBoolean();
+                    res.targetDevicePolicyUser = UserHandle.readFromParcel(source);
                     return res;
                 }
 

@@ -616,6 +616,21 @@ final class IInputMethodManagerGlobalInvoker {
         }
     }
 
+    @AnyThread
+    @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
+    static void setAllowedImesByPolicyForTest(
+            IInputMethodClient client, @Nullable List<String> allowedPackages) {
+        final IInputMethodManager service = getService();
+        if (service == null) {
+            return;
+        }
+        try {
+            service.setAllowedImesByPolicyForTest(client, allowedPackages);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     /** @see com.android.server.inputmethod.ImeTrackerService#onStart */
     @AnyThread
     static void onStart(@NonNull ImeTracker.Token statsToken, int uid, @ImeTracker.Type int type,

@@ -2557,6 +2557,21 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     @Test
+    public void getPermittedInputMethods() throws Exception {
+        setupProfileOwner();
+        configureProfileOwnerOfOrgOwnedDevice(admin1, CALLER_USER_HANDLE);
+
+        // Allow all input methods
+        parentDpm.setPermittedInputMethods(admin1, null);
+        assertThat(parentDpm.getPermittedInputMethods(admin1)).isNull();
+
+        // Allow only system input methods
+        parentDpm.setPermittedInputMethods(admin1, new ArrayList<>());
+        assertThat(parentDpm.getPermittedInputMethods(admin1)).isEmpty();
+    }
+
+
+    @Test
     public void testGetProxyParameters() throws Exception {
         assertThat(dpm.getProxyParameters(inetAddrProxy("192.0.2.1", 1234), emptyList()))
                 .isEqualTo(new Pair<>("192.0.2.1:1234", ""));

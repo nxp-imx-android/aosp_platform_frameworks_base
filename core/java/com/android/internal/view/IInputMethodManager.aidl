@@ -226,4 +226,11 @@ interface IInputMethodManager {
 
     /** Returns the singleton instance for the Ime Tracker Service. */
     IImeTracker getImeTrackerService();
+
+    /** Test method to set DevicePolicy allowed IMEs. */
+    @EnforcePermission("TEST_INPUT_METHOD")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.TEST_INPUT_METHOD)")
+    void setAllowedImesByPolicyForTest(
+            in IInputMethodClient client, in List<String> allowedPackages);
 }
