@@ -390,6 +390,8 @@ status_t BootAnimation::readyToRun() {
             resolution.getWidth(), resolution.getHeight(), PIXEL_FORMAT_RGB_565);
 
     SurfaceComposerClient::Transaction t;
+    Rect displayRect(resolution.getWidth(),resolution.getHeight());
+    t.setDisplayProjection(mDisplayToken, ui::ROTATION_0, displayRect, displayRect);
 
     // this guest property specifies multi-display IDs to show the boot animation
     // multiple ids can be set with comma (,) as separator, for example:
