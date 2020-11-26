@@ -1912,7 +1912,7 @@ public final class AutofillManager {
             return;
         }
 
-        if (mServiceClient == null) {
+        if (mServiceClient == null && hasAutofillFeature()) {
             mServiceClient = new AutofillManagerClient(this);
             try {
                 final int userId = mContext.getUserId();
