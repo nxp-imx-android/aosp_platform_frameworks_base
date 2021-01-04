@@ -3578,8 +3578,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
             }
         } else if (ExtconUEventObserver.extconExists()
-                && !ExtconUEventObserver.ExtconInfo.getExtconInfoForTypes(
-                new String[]{ExtconUEventObserver.ExtconInfo.EXTCON_HDMI}).isEmpty()) {
+                && ExtconUEventObserver.namedExtconDirExists(HdmiVideoExtconUEventObserver.NAME)) {
             HdmiVideoExtconUEventObserver observer = new HdmiVideoExtconUEventObserver();
             plugged = observer.init();
             mHDMIObserver = observer;
@@ -5655,9 +5654,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private class HdmiVideoExtconUEventObserver extends ExtconStateObserver<Boolean> {
         private static final String HDMI_EXIST = "HDMI=1";
         private static final String NAME = "hdmi";
-        // TODO (nchalko) handle more than one HDMI
-        private final ExtconInfo mHdmi = ExtconInfo.getExtconInfoForTypes(
-                new String[]{ExtconInfo.EXTCON_HDMI}).get(0);
+        private final ExtconInfo mHdmi = new ExtconInfo(NAME);
 
         private boolean init() {
             boolean plugged = false;
