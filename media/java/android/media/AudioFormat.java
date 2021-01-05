@@ -419,7 +419,7 @@ public final class AudioFormat implements Parcelable {
      * @hide
      */
     // never unhide
-    public static final int SAMPLE_RATE_HZ_MAX = 192000;
+    public static final int SAMPLE_RATE_HZ_MAX = 384000;
     /** Sample rate will be a route-dependent value.
      * For AudioTrack, it is usually the sink sample rate,
      * and for AudioRecord it is usually the source sample rate.
