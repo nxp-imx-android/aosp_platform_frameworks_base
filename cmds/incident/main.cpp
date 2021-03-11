@@ -210,13 +210,20 @@ parse_receiver_arg(const string& arg, string* pkg, string* cls)
 static int
 stream_output(const int read_fd, const int write_fd) {
     while (true) {
-        int amt = splice(read_fd, NULL, write_fd, NULL, 4096, 0);
+        uint8_t buf[4096];
+        ssize_t amt = TEMP_FAILURE_RETRY(read(read_fd, buf, sizeof(buf)));
         if (amt < 0) {
-            return errno;
+            break;
         } else if (amt == 0) {
-            return 0;
+            break;
+        }
+
+        ssize_t wamt = TEMP_FAILURE_RETRY(write(write_fd, buf, amt));
+        if (wamt != amt) {
+            return errno;
         }
     }
+    return 0;
 }
 
 // ================================================================================
