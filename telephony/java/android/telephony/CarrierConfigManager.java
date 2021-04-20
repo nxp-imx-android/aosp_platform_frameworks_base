@@ -1969,6 +1969,15 @@ public class CarrierConfigManager {
             "apn_settings_default_apn_types_string_array";
 
     /**
+     * Specifies disallowed substrings for the {@link android.provider.Telephony.Carriers.APN}.
+     *
+     * Note: If the preset APN contains these strings, then adding or editing is not allowed.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_CARRIER_CONFIG_APN_STRING_RESTRICTION)
+    public static final String KEY_DISALLOW_ADDING_APN_STRING_ARRAY =
+            "disallow_adding_apn_string_array";
+
+    /**
      * Configs used for APN setup.
      */
     public static final class Apn {
@@ -11356,6 +11365,9 @@ public class CarrierConfigManager {
         sDefaults.putStringArray(KEY_READ_ONLY_APN_TYPES_STRING_ARRAY, new String[] {"dun"});
         sDefaults.putStringArray(KEY_READ_ONLY_APN_FIELDS_STRING_ARRAY, null);
         sDefaults.putStringArray(KEY_APN_SETTINGS_DEFAULT_APN_TYPES_STRING_ARRAY, null);
+        if (Flags.enableCarrierConfigApnStringRestriction()) {
+            sDefaults.putStringArray(KEY_DISALLOW_ADDING_APN_STRING_ARRAY, null);
+        }
         sDefaults.putAll(Apn.getDefaults());
 
         sDefaults.putBoolean(KEY_BROADCAST_EMERGENCY_CALL_STATE_CHANGES_BOOL, false);
