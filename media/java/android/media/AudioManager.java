@@ -65,7 +65,7 @@ import android.media.audiopolicy.AudioPolicy;
 import android.media.audiopolicy.AudioPolicy.AudioPolicyFocusListener;
 import android.media.audiopolicy.AudioProductStrategy;
 import android.media.audiopolicy.AudioVolumeGroup;
-import android.media.audiopolicy.AudioVolumeGroupChangeHandler;
+import android.media.audiopolicy.IAudioVolumeChangeDispatcher;
 import android.media.projection.MediaProjection;
 import android.media.session.MediaController;
 import android.media.session.MediaSession;
@@ -128,8 +128,6 @@ public class AudioManager {
     private static final String TAG = "AudioManager";
     private static final boolean DEBUG = false;
     private static final AudioPortEventHandler sAudioPortEventHandler = new AudioPortEventHandler();
-    private static final AudioVolumeGroupChangeHandler sAudioAudioVolumeGroupChangedHandler =
-            new AudioVolumeGroupChangeHandler();
 
     private static WeakReference<Context> sContext;
 
@@ -8761,9 +8759,13 @@ public class AudioManager {
         }
     }
 
+    //====================================================================
+    // Notification of volume group changes
     /**
+     * Callback to receive updates on volume group changes, register using
+     * {@link AudioManager#registerVolumeGroupCallback(Executor, AudioVolumeCallback)}.
+     *
      * @hide
-     * Callback registered by client to be notified upon volume group change.
      */
     @SystemApi
     public abstract static class VolumeGroupCallback {
@@ -8774,33 +8776,61 @@ public class AudioManager {
         public void onAudioVolumeGroupChanged(int group, int flags) {}
     }
 
-   /**
-    * @hide
-    * Register an audio volume group change listener.
-    * @param callback the {@link VolumeGroupCallback} to register
-    */
+    /**
+     * @hide
+     * Register an audio volume group change listener.
+     *
+     * @param executor {@link Executor} to handle the callbacks
+     * @param callback the callback to receive the audio volume group changes
+     * @throws SecurityException if the caller doesn't have the required permission.
+     */
     @SystemApi
-    public void registerVolumeGroupCallback(
-            @NonNull Executor executor,
+    public void registerVolumeGroupCallback(@NonNull Executor executor,
             @NonNull VolumeGroupCallback callback) {
-        Preconditions.checkNotNull(executor, "executor must not be null");
-        Preconditions.checkNotNull(callback, "volume group change cb must not be null");
-        sAudioAudioVolumeGroupChangedHandler.init();
-        // TODO: make use of executor
-        sAudioAudioVolumeGroupChangedHandler.registerListener(callback);
+        mVolumeChangedListenerMgr.addListener(executor, callback, "registerVolumeGroupCallback",
+                () -> new AudioVolumeChangeDispatcherStub());
     }
 
-   /**
-    * @hide
-    * Unregister an audio volume group change listener.
-    * @param callback the {@link VolumeGroupCallback} to unregister
-    */
+    /**
+     * @hide
+     * Unregister an audio volume group change listener.
+     * @param callback the {@link VolumeGroupCallback} to unregister
+     */
     @SystemApi
-    public void unregisterVolumeGroupCallback(
-            @NonNull VolumeGroupCallback callback) {
-        Preconditions.checkNotNull(callback, "volume group change cb must not be null");
-        sAudioAudioVolumeGroupChangedHandler.unregisterListener(callback);
+    public void unregisterVolumeGroupCallback(@NonNull VolumeGroupCallback callback) {
+        mVolumeChangedListenerMgr.removeListener(callback, "unregisterVolumeGroupCallback");
     }
+
+    /**
+     * Manages the VolumeGroupCallback listeners and the AudioVolumeChangeDispatcherStub
+     */
+    private final CallbackUtil.LazyListenerManager<VolumeGroupCallback> mVolumeChangedListenerMgr =
+            new CallbackUtil.LazyListenerManager();
+
+    final class AudioVolumeChangeDispatcherStub extends IAudioVolumeChangeDispatcher.Stub
+            implements CallbackUtil.DispatcherStub {
+
+        @Override
+        public void register(boolean register) {
+            try {
+                if (register) {
+                    getService().registerAudioVolumeCallback(this);
+                } else {
+                    getService().unregisterAudioVolumeCallback(this);
+                }
+            } catch (RemoteException e) {
+                e.rethrowFromSystemServer();
+            }
+        }
+
+        @Override
+        public void onAudioVolumeGroupChanged(int group, int flags) {
+            mVolumeChangedListenerMgr.callListeners((listener) ->
+                    listener.onAudioVolumeGroupChanged(group, flags));
+        }
+    }
+
+    //====================================================================
 
     /**
      * Return if an asset contains haptic channels or not.

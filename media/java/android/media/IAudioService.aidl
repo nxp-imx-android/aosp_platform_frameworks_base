@@ -65,6 +65,7 @@ import android.media.audiopolicy.AudioPolicyConfig;
 import android.media.audiopolicy.AudioProductStrategy;
 import android.media.audiopolicy.AudioVolumeGroup;
 import android.media.audiopolicy.IAudioPolicyCallback;
+import android.media.audiopolicy.IAudioVolumeChangeDispatcher;
 import android.media.projection.IMediaProjection;
 import android.net.Uri;
 import android.os.PersistableBundle;
@@ -445,6 +446,10 @@ interface IAudioService {
     oneway void unregisterAudioServerStateDispatcher(IAudioServerStateDispatcher asd);
 
     boolean isAudioServerRunning();
+
+    void registerAudioVolumeCallback(IAudioVolumeChangeDispatcher avc);
+
+    oneway void unregisterAudioVolumeCallback(IAudioVolumeChangeDispatcher avc);
 
     int setUidDeviceAffinity(in IAudioPolicyCallback pcb, in int uid, in int[] deviceTypes,
              in String[] deviceAddresses);
