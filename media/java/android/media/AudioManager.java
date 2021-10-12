@@ -2597,11 +2597,13 @@ public class AudioManager {
         if (effectType < 0 || effectType >= NUM_SOUND_EFFECTS) {
             return;
         }
-
-        if (!querySoundEffectsEnabled(Process.myUserHandle().getIdentifier())) {
-            return;
-        }
-
+        /*
+        * This parameter for enabling sound effects is not implemented in sound settings of AA yet
+        * commenting this if statement to bypass the setting and therefore enabling sound effects of keyboard and touch actions all the time
+        * if (!querySoundEffectsEnabled(Process.myUserHandle().getIdentifier())) {
+        *     return;
+        * }
+        */
         final IAudioService service = getService();
         try {
             service.playSoundEffect(effectType);
