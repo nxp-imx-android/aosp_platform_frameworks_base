@@ -1075,6 +1075,11 @@ public class KeyguardViewMediator extends SystemUI implements Dumpable {
         mUpdateMonitor.dispatchStartedWakingUp();
         maybeSendUserPresentBroadcast();
         Trace.endSection();
+        // only play "unlock" noises if not on a call (since the incall UI
+        // disables the keyguard)
+        if (TelephonyManager.EXTRA_STATE_IDLE.equals(mPhoneState)) {
+            playSounds(false);  //play unlock sound during waking up of the device
+        }
     }
 
     public void onScreenTurningOn(IKeyguardDrawnCallback callback) {
@@ -1992,11 +1997,6 @@ public class KeyguardViewMediator extends SystemUI implements Dumpable {
                 mDrawnCallback = null;
             }
 
-            // only play "unlock" noises if not on a call (since the incall UI
-            // disables the keyguard)
-            if (TelephonyManager.EXTRA_STATE_IDLE.equals(mPhoneState)) {
-                playSounds(false);
-            }
 
             setShowingLocked(false);
             mWakeAndUnlocking = false;
