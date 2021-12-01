@@ -484,8 +484,8 @@ final class DisplayPowerState {
                     stateChanged = (state != mActualState);
                     brightnessState = mPendingBacklight;
                     sdrBrightnessState = mPendingSdrBacklight;
-                    backlightChanged = brightnessState != mActualBacklight
-                            || sdrBrightnessState != mActualSdrBacklight;
+                    backlightChanged = (Float.compare(brightnessState, mActualBacklight) != 0)
+                            || (Float.compare(sdrBrightnessState, mActualSdrBacklight) != 0);
                     if (!stateChanged) {
                         // State changed applied, notify outer class.
                         postScreenUpdateThreadSafe();
