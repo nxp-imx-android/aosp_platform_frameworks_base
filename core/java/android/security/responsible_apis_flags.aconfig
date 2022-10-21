@@ -179,3 +179,23 @@ flag {
     description: "Flag for failing instead of logging in case of parcel size mismatches"
     bug: "416031865"
 }
+
+flag {
+    name: "wtf_bundle_defuse"
+    namespace: "responsible_apis"
+    description: "Flag for wtf logging when defuse is enabled."
+    bug: "254848919"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "deprecate_bundle_defuse"
+    namespace: "responsible_apis"
+    description: "Flag for failing instead of logging when defuse is enabled."
+    bug: "254848919"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
