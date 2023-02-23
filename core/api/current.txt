@@ -44119,6 +44119,7 @@ package android.telecom {
     field public static final int PROPERTY_IS_EXTERNAL_CALL = 64; // 0x40
     field @FlaggedApi("com.android.server.telecom.flags.voip_app_actions_support") public static final int PROPERTY_IS_TRANSACTIONAL = 32768; // 0x8000
     field public static final int PROPERTY_NETWORK_IDENTIFIED_EMERGENCY_CALL = 2048; // 0x800
+    field @FlaggedApi("com.android.server.telecom.flags.remotely_hosted_property") public static final int PROPERTY_REMOTELY_HOSTED = 65536; // 0x10000
     field public static final int PROPERTY_RTT = 1024; // 0x400
     field public static final int PROPERTY_SELF_MANAGED = 256; // 0x100
     field public static final int PROPERTY_VOIP_AUDIO_MODE = 4096; // 0x1000
