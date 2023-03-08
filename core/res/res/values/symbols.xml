@@ -4248,6 +4248,9 @@
   <java-symbol type="integer" name="config_autoGroupAtCount" />
   <java-symbol type="bool" name="config_dozeAlwaysOnDisplayAvailable" />
   <java-symbol type="bool" name="config_dozePickupGestureEnabled" />
+  <java-symbol type="bool" name="config_dozeEnabled" />
+  <java-symbol type="bool" name="config_dozeTapGestureEnabled" />
+  <java-symbol type="bool" name="config_dozeDoubleTapGestureEnabled" />
   <java-symbol type="bool" name="config_dozeAlwaysOnEnabled" />
   <java-symbol type="bool" name="config_dozeSupportsAodWallpaper" />
   <java-symbol type="bool" name="config_displayBlanksAfterDoze" />

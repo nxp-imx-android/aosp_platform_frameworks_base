@@ -78,6 +78,13 @@ flag {
 }
 
 flag {
+    name: "configurable_default_doze_values"
+    namespace: "display_manager"
+    description: "Specify the default doze values in config.xml"
+    bug: "279161929"
+}
+
+flag {
     name: "brightness_wear_bedtime_mode_clamper"
     namespace: "display_manager"
     description: "Feature flag for the Wear Bedtime mode brightness clamper"
