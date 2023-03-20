@@ -20,6 +20,8 @@
     <bool name="def_dim_screen">true</bool>
     <integer name="def_screen_off_timeout">60000</integer>
     <integer name="def_sleep_timeout">-1</integer>
+    <string name="enabled_input_methods" translatable="false">com.android.inputmethod.latin/.LatinIME</string>
+    <string name="default_input_method" translatable="false">com.android.inputmethod.latin/.LatinIME</string>
     <bool name="def_airplane_mode_on">false</bool>
     <bool name="def_theater_mode_on">false</bool>
     <!-- Comma-separated list of bluetooth, wifi, and cell. -->
