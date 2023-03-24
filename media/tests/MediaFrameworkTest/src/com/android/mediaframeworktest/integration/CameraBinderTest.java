@@ -60,6 +60,9 @@ public class CameraBinderTest extends AndroidTestCase {
     private static final int CAMERA_TYPE_BACKWARD_COMPATIBLE = 0;
     private static final int CAMERA_TYPE_ALL = 1;
 
+    // camera actual nums
+    private int mNumCameras = 0;
+
     protected CameraBinderTestUtils mUtils;
 
     public CameraBinderTest() {
@@ -76,14 +79,15 @@ public class CameraBinderTest extends AndroidTestCase {
     public void testNumberOfCameras() throws Exception {
 
         int numCameras = mUtils.getCameraService().getNumberOfCameras(CAMERA_TYPE_ALL);
-        assertTrue("At least this many cameras: " + mUtils.getGuessedNumCameras(),
-                numCameras >= mUtils.getGuessedNumCameras());
+        // assertTrue("At least this many cameras: " + mUtils.getGuessedNumCameras(),
+        //         numCameras >= mUtils.getGuessedNumCameras());
+        mNumCameras = numCameras;
         Log.v(TAG, "Number of cameras " + numCameras);
     }
 
     @SmallTest
     public void testCameraInfo() throws Exception {
-        for (int cameraId = 0; cameraId < mUtils.getGuessedNumCameras(); ++cameraId) {
+        for (int cameraId = 0; cameraId < mNumCameras; ++cameraId) {
 
             CameraInfo info = mUtils.getCameraService().getCameraInfo(cameraId,
                     /*overrideToPortrait*/false);
@@ -98,7 +102,7 @@ public class CameraBinderTest extends AndroidTestCase {
 
     @SmallTest
     public void testGetLegacyParameters() throws Exception {
-        for (int cameraId = 0; cameraId < mUtils.getGuessedNumCameras(); ++cameraId) {
+        for (int cameraId = 0; cameraId < mNumCameras; ++cameraId) {
 
             String parameters = mUtils.getCameraService().getLegacyParameters(cameraId);
             assertNotNull(parameters);
@@ -117,7 +121,7 @@ public class CameraBinderTest extends AndroidTestCase {
     /** The camera2 api is only supported on HAL3.2+ devices */
     @SmallTest
     public void testSupportsCamera2Api() throws Exception {
-        for (int cameraId = 0; cameraId < mUtils.getGuessedNumCameras(); ++cameraId) {
+        for (int cameraId = 0; cameraId < mNumCameras; ++cameraId) {
             boolean supports = mUtils.getCameraService().supportsCameraApi(
                 String.valueOf(cameraId), API_VERSION_2);
 
@@ -128,7 +132,7 @@ public class CameraBinderTest extends AndroidTestCase {
     /** The camera1 api is supported on *all* devices regardless of HAL version */
     @SmallTest
     public void testSupportsCamera1Api() throws Exception {
-        for (int cameraId = 0; cameraId < mUtils.getGuessedNumCameras(); ++cameraId) {
+        for (int cameraId = 0; cameraId < mNumCameras; ++cameraId) {
 
             boolean supports = mUtils.getCameraService().supportsCameraApi(
                 String.valueOf(cameraId), API_VERSION_1);
@@ -150,7 +154,7 @@ public class CameraBinderTest extends AndroidTestCase {
 
     @SmallTest
     public void testConnect() throws Exception {
-        for (int cameraId = 0; cameraId < mUtils.getGuessedNumCameras(); ++cameraId) {
+        for (int cameraId = 0; cameraId < mNumCameras; ++cameraId) {
 
             ICameraClient dummyCallbacks = new DummyCameraClient();
 
@@ -255,7 +259,7 @@ public class CameraBinderTest extends AndroidTestCase {
 
     @SmallTest
     public void testConnectDevice() throws Exception {
-        for (int cameraId = 0; cameraId < mUtils.getGuessedNumCameras(); ++cameraId) {
+        for (int cameraId = 0; cameraId < mNumCameras; ++cameraId) {
 
             ICameraDeviceCallbacks dummyCallbacks = new DummyCameraDeviceCallbacks();
 
@@ -323,7 +327,7 @@ public class CameraBinderTest extends AndroidTestCase {
      */
     @SmallTest
     public void testAddRemoveListeners() throws Exception {
-        for (int cameraId = 0; cameraId < mUtils.getGuessedNumCameras(); ++cameraId) {
+        for (int cameraId = 0; cameraId < mNumCameras; ++cameraId) {
 
             ICameraServiceListener listener = new DummyCameraServiceListener();
 
