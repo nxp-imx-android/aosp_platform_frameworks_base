@@ -73,15 +73,15 @@ public class CameraBinderTest extends AndroidTestCase {
         super.setUp();
 
         mUtils = new CameraBinderTestUtils(getContext());
+        mNumCameras = mUtils.getCameraService().getNumberOfCameras(CAMERA_TYPE_ALL);
     }
 
     @SmallTest
     public void testNumberOfCameras() throws Exception {
 
         int numCameras = mUtils.getCameraService().getNumberOfCameras(CAMERA_TYPE_ALL);
-        // assertTrue("At least this many cameras: " + mUtils.getGuessedNumCameras(),
-        //         numCameras >= mUtils.getGuessedNumCameras());
-        mNumCameras = numCameras;
+        assertTrue("At least this many cameras: " + mUtils.getGuessedNumCameras(),
+                numCameras <= mUtils.getGuessedNumCameras());
         Log.v(TAG, "Number of cameras " + numCameras);
     }
 
