@@ -63,6 +63,8 @@ public class MediaRecorderTest extends ActivityInstrumentationTestCase2<MediaFra
     private int HIGH_SPEED_FPS = 120;
 
     private static final int CAMERA_ID = 0;
+    private static int mVideoWidth = 352;
+    private static int mVideoHeight = 288;
 
     Context mContext;
     Camera mCamera;
@@ -76,6 +78,33 @@ public class MediaRecorderTest extends ActivityInstrumentationTestCase2<MediaFra
         getActivity();
         mRecorder = new MediaRecorder();
         super.setUp();
+    }
+
+    private void setSupportedResolution(Camera camera) {
+        Camera.Parameters parameters = camera.getParameters();
+        List<Camera.Size> videoSizes = parameters.getSupportedVideoSizes();
+        // getSupportedVideoSizes returns null when separate video/preview size
+        // is not supported.
+        if (videoSizes == null) {
+            videoSizes = parameters.getSupportedPreviewSizes();
+        }
+        int minVideoWidth = Integer.MAX_VALUE;
+        int minVideoHeight = Integer.MAX_VALUE;
+        for (Camera.Size size : videoSizes)
+        {
+            if (size.width == 352 && size.height == 288) {
+                mVideoWidth = 352;
+                mVideoHeight = 288;
+                return;
+            }
+            if (size.width < minVideoWidth || size.height < minVideoHeight) {
+                minVideoWidth = size.width;
+                minVideoHeight = size.height;
+            }
+        }
+        // Use minimum resolution to avoid that one frame size exceeds file size limit.
+        mVideoWidth = minVideoWidth;
+        mVideoHeight = minVideoHeight;
     }
 
     private void recordVideo(int frameRate, int width, int height,
@@ -124,7 +153,8 @@ public class MediaRecorderTest extends ActivityInstrumentationTestCase2<MediaFra
             if (!useSurface) {
                 mCamera = Camera.open(CAMERA_ID);
                 Camera.Parameters parameters = mCamera.getParameters();
-                parameters.setPreviewSize(352, 288);
+                setSupportedResolution(mCamera);
+                parameters.setPreviewSize(mVideoWidth, mVideoHeight);
                 parameters.set("orientation", "portrait");
                 mCamera.setParameters(parameters);
                 mCamera.unlock();
@@ -141,7 +171,7 @@ public class MediaRecorderTest extends ActivityInstrumentationTestCase2<MediaFra
             recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
             recorder.setOutputFile(MediaNames.RECORDED_SURFACE_3GP);
             recorder.setVideoFrameRate(30);
-            recorder.setVideoSize(352, 288);
+            recorder.setVideoSize(mVideoWidth, mVideoHeight);
             recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
             recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
@@ -474,7 +504,14 @@ public class MediaRecorderTest extends ActivityInstrumentationTestCase2<MediaFra
         try {
             mCamera = Camera.open(CAMERA_ID);
             Camera.Parameters parameters = mCamera.getParameters();
-            parameters.setPreviewSize(352, 288);
+            setSupportedResolution(mCamera);
+            if(!(mVideoWidth == 352 && mVideoHeight == 288)){
+                Log.d(TAG, "testPortraitH263 skipped");
+                mCamera.release();
+                return;
+            }
+
+            parameters.setPreviewSize(mVideoWidth, mVideoHeight);
             parameters.set("orientation", "portrait");
             mCamera.setParameters(parameters);
             mCamera.unlock();
@@ -482,13 +519,13 @@ public class MediaRecorderTest extends ActivityInstrumentationTestCase2<MediaFra
             Thread.sleep(1000);
             int codec = MediaRecorder.VideoEncoder.H263;
             int frameRate = MediaProfileReader.getMaxFrameRateForCodec(codec);
-            recordVideo(frameRate, 352, 288, codec,
+            recordVideo(frameRate, mVideoWidth, mVideoHeight, codec,
                     MediaRecorder.OutputFormat.THREE_GPP,
                     MediaNames.RECORDED_PORTRAIT_H263, true);
             mCamera.lock();
             mCamera.release();
             videoRecordedResult =
-                validateVideo(MediaNames.RECORDED_PORTRAIT_H263, 352, 288);
+                validateVideo(MediaNames.RECORDED_PORTRAIT_H263, mVideoWidth, mVideoHeight);
         } catch (Exception e) {
             Log.v(TAG, e.toString());
         }
@@ -546,7 +583,7 @@ public class MediaRecorderTest extends ActivityInstrumentationTestCase2<MediaFra
                 }
             }
         } catch (Exception e) {
-            Log.v(TAG, e.toString());
+            Log.e(TAG, e.toString());
         }
         assertTrue("testGetSurfaceApi", noOfFailure == 0);
     }
