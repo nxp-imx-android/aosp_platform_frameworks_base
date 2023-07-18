@@ -51,6 +51,7 @@ static jmethodID gAudioProductStrategyCstor;
 static struct {
     jfieldID    mAudioAttributesGroups;
     jfieldID    mName;
+    jfieldID    mZoneId;
     jfieldID    mId;
 } gAudioProductStrategyFields;
 
@@ -79,11 +80,13 @@ static jint convertAudioProductStrategiesFromNative(
     jobject jAudioAttribute = NULL;
     jstring jName = NULL;
     jint jStrategyId = NULL;
+    jint jZoneId = NULL;
     jint numAttributesGroups;
     size_t indexGroup = 0;
 
     jName = env->NewStringUTF(strategy.getName().c_str());
     jStrategyId = static_cast<jint>(strategy.getId());
+    jZoneId = static_cast<jint>(strategy.getZoneId());
 
     // Audio Attributes Group array
     int attrGroupIndex = 0;
@@ -150,7 +153,7 @@ static jint convertAudioProductStrategiesFromNative(
     }
     *jAudioStrategy = env->NewObject(gAudioProductStrategyClass, gAudioProductStrategyCstor,
                                      jName,
-                                     jStrategyId,
+                                     jStrategyId, jZoneId,
                                      jAudioAttributesGroups);
 exit:
     if (jAudioAttributes != NULL) {
@@ -229,7 +232,8 @@ int register_android_media_AudioProductStrategies(JNIEnv *env)
     gAudioProductStrategyClass = MakeGlobalRefOrDie(env, audioProductStrategyClass);
     gAudioProductStrategyCstor = GetMethodIDOrDie(
                 env, audioProductStrategyClass, "<init>",
-                "(Ljava/lang/String;I[Landroid/media/audiopolicy/AudioProductStrategy$AudioAttributesGroup;)V");
+                "(Ljava/lang/String;"
+                "II[Landroid/media/audiopolicy/AudioProductStrategy$AudioAttributesGroup;)V");
     gAudioProductStrategyFields.mAudioAttributesGroups = GetFieldIDOrDie(
                 env, audioProductStrategyClass, "mAudioAttributesGroups",
                 "[Landroid/media/audiopolicy/AudioProductStrategy$AudioAttributesGroup;");
@@ -237,6 +241,8 @@ int register_android_media_AudioProductStrategies(JNIEnv *env)
                 env, audioProductStrategyClass, "mName", "Ljava/lang/String;");
     gAudioProductStrategyFields.mId = GetFieldIDOrDie(
                 env, audioProductStrategyClass, "mId", "I");
+    gAudioProductStrategyFields.mZoneId = GetFieldIDOrDie(
+                env, audioProductStrategyClass, "mZoneId", "I");
 
     jclass audioAttributesGroupClass = FindClassOrDie(env, kAudioAttributesGroupsClassPathName);
     gAudioAttributesGroupClass = MakeGlobalRefOrDie(env, audioAttributesGroupClass);

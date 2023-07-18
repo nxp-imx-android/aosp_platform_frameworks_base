@@ -60,6 +60,7 @@ import static android.media.audio.Flags.roForegroundAudioControl;
 import static android.media.audio.Flags.scoManagedByAudio;
 import static android.media.audio.Flags.unifyAbsoluteVolumeManagement;
 import static android.media.audiopolicy.Flags.enableFadeManagerConfiguration;
+import static android.media.audiopolicy.Flags.multiZoneAudio;
 import static android.media.audiopolicy.Flags.volumeGroupManagementUpdate;
 import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.os.Process.INVALID_UID;
@@ -4645,6 +4646,18 @@ public class AudioService extends IAudioService.Stub
 
     @Override
     @android.annotation.EnforcePermission(anyOf = {
+            MODIFY_AUDIO_ROUTING,
+            QUERY_AUDIO_STATE,
+            MODIFY_AUDIO_SETTINGS_PRIVILEGED })
+    public int getVolumeGroupIdForAttributes(@NonNull AudioAttributes attributes, int zoneId) {
+        super.getVolumeGroupIdForAttributes_enforcePermission();
+        Objects.requireNonNull(attributes, "Audio attributes must not be null");
+        return AudioProductStrategy.getVolumeGroupIdForAudioAttributes(attributes, zoneId,
+                /* fallbackOnDefault= */ true);
+    }
+
+    @Override
+    @android.annotation.EnforcePermission(anyOf = {
             MODIFY_AUDIO_SETTINGS_PRIVILEGED, MODIFY_AUDIO_ROUTING })
     /** @see AudioManager#setVolumeGroupVolumeIndex(int, int, int) */
     public void setVolumeGroupVolumeIndex(int groupId, int index, int flags,
@@ -5300,6 +5313,8 @@ public class AudioService extends IAudioService.Stub
                 + registerVolumeCallbackApiHardening());
         pw.println("\tcom.android.media.audio.Flags.updatePreferredDevicesForStrategy:"
                 + updatePreferredDevicesForStrategy());
+        pw.println("\tandroid.media.audiopolicy.Flags.multi_zone_audio:"
+                + multiZoneAudio());
     }
 
     private void dumpAudioMode(PrintWriter pw) {

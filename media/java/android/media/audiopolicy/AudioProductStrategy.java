@@ -17,7 +17,9 @@
 package android.media.audiopolicy;
 
 import static android.media.audiopolicy.AudioVolumeGroup.DEFAULT_VOLUME_GROUP;
+import static android.media.audiopolicy.Flags.multiZoneAudio;
 
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
@@ -51,6 +53,26 @@ public final class AudioProductStrategy implements Parcelable {
      */
     public static final int DEFAULT_GROUP = -1;
 
+    /**
+     * Default zone id for audio product strategies. Product strategies without assigned zone id
+     * will be this value.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @SystemApi
+    public static final int DEFAULT_ZONE_ID = 0;
+
+    /**
+     * Invalid zone id.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @SystemApi
+    public static final int INVALID_ZONE_ID = -1;
+
+    private static final int MATCH_ON_ZONE_ID_SCORE = 1 << 4;
     private static final int MATCH_ON_TAGS_SCORE = 1 << 3;
     private static final int MATCH_ON_FLAGS_SCORE = 1 << 2;
     private static final int MATCH_ON_USAGE_SCORE = 1 << 1;
@@ -59,7 +81,7 @@ public final class AudioProductStrategy implements Parcelable {
     private static final int NO_MATCH = -1;
     private static final int MATCH_ATTRIBUTES_EQUALS = MATCH_ON_TAGS_SCORE | MATCH_ON_FLAGS_SCORE
             | MATCH_ON_CONTENT_TYPE_SCORE | MATCH_ON_USAGE_SCORE;
-    private static final int MATCH_EQUALS = MATCH_ATTRIBUTES_EQUALS;
+    private static final int MATCH_EQUALS = MATCH_ON_ZONE_ID_SCORE | MATCH_ATTRIBUTES_EQUALS;
 
     private static final String TAG = "AudioProductStrategy";
 
@@ -73,6 +95,7 @@ public final class AudioProductStrategy implements Parcelable {
 
     private final AudioAttributesGroup[] mAudioAttributesGroups;
     private final String mName;
+
     /**
      * Unique identifier of a product strategy.
      * This Id can be assimilated to Car Audio Usage and even more generally to usage.
@@ -80,6 +103,13 @@ public final class AudioProductStrategy implements Parcelable {
      * upper layer but was transpiring in the {@link AudioAttributes#getUsage()}.
      */
     private final int mId;
+
+    /**
+     * Product strategy zone ID, default is {@code DEFAULT_ZONE_ID}.
+     *
+     * @hide
+     */
+    private int mZoneId = DEFAULT_ZONE_ID;
 
     private static final Object sLock = new Object();
 
@@ -122,6 +152,50 @@ public final class AudioProductStrategy implements Parcelable {
             @NonNull AudioAttributes attributes, boolean fallbackOnDefault) {
         AudioAttributesGroup aag =
                 getAudioAttributesGroupForAttributes(attributes, fallbackOnDefault);
+        return getAudioProductStrategyForAudioAttributes(attributes, DEFAULT_ZONE_ID,
+                fallbackOnDefault);
+    }
+
+    /**
+     * Selects the zone id for a volume group id.
+     *
+     * @param groupId to consider
+     * @return the zone id for the given groupId if found, {@code #INVALID_ZONE_ID} otherwise.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @SystemApi
+    public static int getZoneIdForAudioVolumeGroupId(int groupId) {
+        for (AudioProductStrategy strategy : getAudioProductStrategies()) {
+            for (AudioAttributesGroup aag : strategy.mAudioAttributesGroups) {
+                if (aag.mVolumeGroupId == groupId) {
+                    return strategy.getZoneId();
+                }
+            }
+        }
+        return INVALID_ZONE_ID;
+    }
+
+    /**
+     * Select the best {@link AudioProductStrategy} object for the given {@link AudioAttributes}
+     *  and zone id.
+     * @param attributes to consider
+     * @param zoneId zone id to consider
+     * @param fallbackOnDefault if set, allows to fallback on the default strategy (e.g. the
+     * strategy associated to {@code DEFAULT_ATTRIBUTES}).
+     * @return the highest matching score {@link AudioProductStrategy} if found, default if fallback
+     * on default is set, {@code null} otherwise.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @SystemApi
+    @Nullable
+    public static AudioProductStrategy getAudioProductStrategyForAudioAttributes(
+            @NonNull AudioAttributes attributes, int zoneId, boolean fallbackOnDefault) {
+        AudioAttributesGroup aag =
+                getAudioAttributesGroupForAttributes(attributes, zoneId, fallbackOnDefault);
         return aag != null ? getAudioProductStrategyWithId(aag.getStrategyId()) :  null;
     }
 
@@ -154,7 +228,7 @@ public final class AudioProductStrategy implements Parcelable {
         ArrayList<AudioProductStrategy> apsList = new ArrayList<>();
         native_list_audio_product_strategies(apsList);
         return new AudioProductStrategy("invalid strategy", apsList.size() + 1,
-                new AudioAttributesGroup[0]);
+                DEFAULT_ZONE_ID, new AudioAttributesGroup[0]);
     }
 
     /**
@@ -188,8 +262,11 @@ public final class AudioProductStrategy implements Parcelable {
     public static int getLegacyStreamTypeForStrategyWithAudioAttributes(
             @NonNull AudioAttributes audioAttributes) {
         Objects.requireNonNull(audioAttributes, "AudioAttributes must not be null");
+        boolean fallbackOnDefault = true;
+
         AudioAttributesGroup aag = getAudioAttributesGroupForAttributes(audioAttributes,
-                /* fallbackOnDefault= */ true);
+                DEFAULT_ZONE_ID, fallbackOnDefault);
+
         if (aag != null) {
             int streamType = aag.getStreamType();
             if (streamType == AudioSystem.STREAM_DEFAULT) {
@@ -206,6 +283,9 @@ public final class AudioProductStrategy implements Parcelable {
     }
 
     /**
+     * Selects matching volume id for audio attributes for audio attributes, or fallbacks back on
+     * default if {@code fallbackOnDefault} is {@code true}
+     *
      * @param attributes the {@link AudioAttributes} that best identify VolumeGroupId
      * @param fallbackOnDefault if set, allows to fallback on the default group (e.g. the group
      *                          associated to {@link AudioManager#STREAM_MUSIC}).
@@ -219,13 +299,67 @@ public final class AudioProductStrategy implements Parcelable {
      */
     public static int getVolumeGroupIdForAudioAttributes(
             @NonNull AudioAttributes attributes, boolean fallbackOnDefault) {
-        AudioAttributesGroup aag = getAudioAttributesGroupForAttributes(attributes,
+        return getVolumeGroupIdForAudioAttributes(attributes, DEFAULT_ZONE_ID, fallbackOnDefault);
+    }
+
+    /**
+     * Selects matching volume id for audio attributes for audio attributes and zone, or fallbacks
+     * back on default if {@code fallbackOnDefault} is {@code true}
+     *
+     * @param attributes the {@link AudioAttributes} to identify VolumeGroupId with
+     * @param fallbackOnDefault if set, allows to fallback on the default group (e.g. the group
+     *                          associated to {@link AudioManager#STREAM_MUSIC}).
+     * @return volume group id associated with the given {@link AudioAttributes} if found,
+     *     default volume group id if fallbackOnDefault is set
+     * <p>By convention, the product strategy with default attributes will be associated to the
+     * default volume group (e.g. associated to {@link AudioManager#STREAM_MUSIC})
+     * or {@code DEFAULT_VOLUME_GROUP} if not found.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @SystemApi
+    public static int getVolumeGroupIdForAudioAttributes(
+            @NonNull AudioAttributes attributes, int zoneId, boolean fallbackOnDefault) {
+        AudioAttributesGroup aag = getAudioAttributesGroupForAttributes(attributes, zoneId,
                 fallbackOnDefault);
         return aag != null ? aag.getVolumeGroupId() : DEFAULT_VOLUME_GROUP;
     }
 
+    private static boolean isDefaultMatchScore(int matchScore) {
+        if (multiZoneAudio()) {
+            return (matchScore == MATCH_ON_DEFAULT_SCORE) || (matchScore == MATCH_ON_ZONE_ID_SCORE);
+        }
+        return matchScore == MATCH_ON_DEFAULT_SCORE;
+    }
+
     private static boolean isMatchScoreEquals(int matchScore) {
+        if (multiZoneAudio()) {
+            return matchScore == MATCH_EQUALS;
+        }
         return matchScore == MATCH_ATTRIBUTES_EQUALS;
+    }
+
+    @Nullable
+    private static AudioAttributesGroup getAudioAttributesGroupForAttributes(
+            @NonNull AudioAttributes attributes, int zoneId, boolean fallbackOnDefault) {
+        Objects.requireNonNull(attributes, "attributes must not be null");
+        int matchScore = NO_MATCH;
+        AudioAttributesGroup bestAudioAttributesGroupOrDefault = null;
+        for (AudioProductStrategy productStrategy : getAudioProductStrategies()) {
+            ScoredAudioAttributesGroup scoredAag =
+                    productStrategy.getScoredAttributeGroupForAttribute(attributes, zoneId);
+            int score = scoredAag.getScore();
+            if (isMatchScoreEquals(score)) {
+                return scoredAag.getAudioAttributesGroup();
+            }
+            if (score > matchScore) {
+                matchScore = score;
+                bestAudioAttributesGroupOrDefault = scoredAag.getAudioAttributesGroup();
+            }
+        }
+        return (!isDefaultMatchScore(matchScore) || fallbackOnDefault)
+                ? bestAudioAttributesGroupOrDefault : null;
     }
 
     @Nullable
@@ -246,7 +380,8 @@ public final class AudioProductStrategy implements Parcelable {
                 bestAudioAttributesGroupOrDefault = scoredAag.getAudioAttributesGroup();
             }
         }
-        return (matchScore != MATCH_ON_DEFAULT_SCORE || fallbackOnDefault)
+
+        return (!isDefaultMatchScore(matchScore) || fallbackOnDefault)
                 ? bestAudioAttributesGroupOrDefault : null;
     }
 
@@ -284,14 +419,16 @@ public final class AudioProductStrategy implements Parcelable {
     /**
      * @param name of the product strategy
      * @param id of the product strategy
+     * @param zoneId zone for product strategy
      * @param aag {@link AudioAttributesGroup} associated to the given product strategy
      */
-    private AudioProductStrategy(@NonNull String name, int id,
-            @NonNull AudioAttributesGroup[] aag) {
+    private AudioProductStrategy(@NonNull String name, int id, int zoneId,
+                                 @NonNull AudioAttributesGroup[] aag) {
         Objects.requireNonNull(name, "name must not be null");
         Objects.requireNonNull(aag, "AudioAttributesGroups must not be null");
         mName = name;
         mId = id;
+        mZoneId = zoneId;
         mAudioAttributesGroups = aag;
         for (AudioAttributesGroup audioAttributesGroup : mAudioAttributesGroups) {
             if (audioAttributesGroup.getStrategyId() != mId) {
@@ -310,6 +447,17 @@ public final class AudioProductStrategy implements Parcelable {
     @SystemApi
     public int getId() {
         return mId;
+    }
+
+    /**
+     * @return the product strategy zone ID, default is {@code DEFAULT_ZONE_ID}.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @SystemApi
+    public int getZoneId() {
+        return mZoneId;
     }
 
     /**
@@ -356,12 +504,16 @@ public final class AudioProductStrategy implements Parcelable {
     @TestApi
     public int getLegacyStreamTypeForAudioAttributes(@NonNull AudioAttributes attributes) {
         ScoredAudioAttributesGroup scoredAag;
-        scoredAag = getScoredAttributeGroupForAttribute(attributes);
         // If there is no match (score = NO_MATCH) audio attributes group (aag) is guaranteed to be
         // null
+        if (multiZoneAudio()) {
+            scoredAag = getScoredAttributeGroupForAttribute(attributes, mZoneId);
+        } else {
+            scoredAag = getScoredAttributeGroupForAttribute(attributes);
+        }
         AudioAttributesGroup aag = scoredAag.getAudioAttributesGroup();
         int score = scoredAag.getScore();
-        return (aag != null && score != MATCH_ON_DEFAULT_SCORE)
+        return (aag != null && !isDefaultMatchScore(score))
                 ? aag.getStreamType() : AudioSystem.STREAM_DEFAULT;
     }
 
@@ -374,18 +526,59 @@ public final class AudioProductStrategy implements Parcelable {
      */
     @SystemApi
     public boolean supportsAudioAttributes(@NonNull AudioAttributes aa) {
-        return getAudioAttributesSupportScore(aa) > MATCH_ON_DEFAULT_SCORE;
+        if (multiZoneAudio()) {
+            return supportsAudioAttributes(aa, mZoneId);
+        }
+        return getScoredAttributeGroupForAttribute(aa).getScore() > MATCH_ON_DEFAULT_SCORE;
+    }
+
+    /**
+     * Checks if the given {@link AudioAttributes} and zone id are supported by this
+     * {@link AudioProductStrategy}.
+     *
+     * @param aa the {@link AudioAttributes} to be considered
+     * @param zoneId to be considered
+     * @return true if the {@link AudioProductStrategy} supports the given {@link AudioAttributes},
+     *         false otherwise.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @SystemApi
+    public boolean supportsAudioAttributes(@NonNull AudioAttributes aa, int zoneId) {
+        int score = getAudioAttributesSupportScore(aa, zoneId);
+        return score > MATCH_ON_DEFAULT_SCORE && score != MATCH_ON_ZONE_ID_SCORE;
     }
 
     /**
      * Checks if the strategy supports the given {@link AudioAttributes} and gives a
      * compatibility score.
-     * @param attributes to evaluate
+     *
+     * @param aa to evaluate
+     * @param zoneId to be considered
      * @return {@code NO_MATCH} if not supporting the given {@link AudioAttributes},
      * positive or zero score otherwise.
      */
-    private int getAudioAttributesSupportScore(@NonNull AudioAttributes attributes) {
-        return getScoredAttributeGroupForAttribute(attributes).getScore();
+    private int getAudioAttributesSupportScore(@NonNull AudioAttributes aa, int zoneId) {
+        return getScoredAttributeGroupForAttribute(aa, zoneId).getScore();
+    }
+
+    private ScoredAudioAttributesGroup getScoredAttributeGroupForAttribute(
+            @NonNull AudioAttributes aa, int zoneId) {
+        Objects.requireNonNull(aa, "AudioAttributes must not be null");
+        int bestScore = NO_MATCH;
+        AudioAttributesGroup bestAttributGroupOrDefault = null;
+        for (AudioAttributesGroup aag : mAudioAttributesGroups) {
+            int score = aag.getAttributesMatchingScore(aa, mZoneId, zoneId);
+            if (isMatchScoreEquals(score)) {
+                return new ScoredAudioAttributesGroup(MATCH_EQUALS, aag);
+            }
+            if (score > bestScore) {
+                bestAttributGroupOrDefault = aag;
+                bestScore = score;
+            }
+        }
+        return new ScoredAudioAttributesGroup(bestScore, bestAttributGroupOrDefault);
     }
 
     /**
@@ -403,7 +596,7 @@ public final class AudioProductStrategy implements Parcelable {
         AudioAttributesGroup bestAttributGroupOrDefault = null;
         for (AudioAttributesGroup aag : mAudioAttributesGroups) {
             int score = aag.getAttributesMatchingScore(aa);
-            if (score == MATCH_EQUALS) {
+            if (isMatchScoreEquals(score)) {
                 return new ScoredAudioAttributesGroup(MATCH_EQUALS, aag);
             }
             if (score > bestScore) {
@@ -438,10 +631,33 @@ public final class AudioProductStrategy implements Parcelable {
      */
     @TestApi
     public int getVolumeGroupIdForAudioAttributes(@NonNull AudioAttributes attributes) {
+        if (multiZoneAudio()) {
+            return getVolumeGroupIdForAudioAttributes(attributes, mZoneId);
+        }
         ScoredAudioAttributesGroup scoredAag = getScoredAttributeGroupForAttribute(attributes);
         AudioAttributesGroup aag = scoredAag.getAudioAttributesGroup();
         int score = scoredAag.getScore();
         return (aag != null && score != MATCH_ON_DEFAULT_SCORE)
+                ? aag.getVolumeGroupId() : DEFAULT_VOLUME_GROUP;
+    }
+
+    /**
+     * Selects the {@link AudioVolumeGroup} id associated with highest matching
+     * {@link AudioAttributes} score.
+     * @param attributes the {@link AudioAttributes} to be considered
+     * @return the volume group id associated with the highest and non zero matching
+     * {@link AudioAttributes} score, {@code DEFAULT_VOLUME_GROUP} otherwise.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @SystemApi
+    public int getVolumeGroupIdForAudioAttributes(@NonNull AudioAttributes attributes, int zoneId) {
+        ScoredAudioAttributesGroup scoredAag = getScoredAttributeGroupForAttribute(attributes,
+                zoneId);
+        AudioAttributesGroup aag = scoredAag.getAudioAttributesGroup();
+        int score = scoredAag.getScore();
+        return (aag != null && !isDefaultMatchScore(score))
                 ? aag.getVolumeGroupId() : DEFAULT_VOLUME_GROUP;
     }
 
@@ -454,6 +670,7 @@ public final class AudioProductStrategy implements Parcelable {
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString(mName);
         dest.writeInt(mId);
+        dest.writeInt(mZoneId);
         dest.writeInt(mAudioAttributesGroups.length);
         for (AudioAttributesGroup aag : mAudioAttributesGroups) {
             aag.writeToParcel(dest, flags);
@@ -467,12 +684,13 @@ public final class AudioProductStrategy implements Parcelable {
                 public AudioProductStrategy createFromParcel(@NonNull Parcel in) {
                     String name = in.readString();
                     int id = in.readInt();
+                    int zoneId = in.readInt();
                     int nbAttributesGroups = in.readInt();
                     AudioAttributesGroup[] aag = new AudioAttributesGroup[nbAttributesGroups];
                     for (int index = 0; index < nbAttributesGroups; index++) {
                         aag[index] = AudioAttributesGroup.CREATOR.createFromParcel(in);
                     }
-                    return new AudioProductStrategy(name, id, aag);
+                    return new AudioProductStrategy(name, id, zoneId, aag);
                 }
 
                 @Override
@@ -492,6 +710,10 @@ public final class AudioProductStrategy implements Parcelable {
         StringBuilder s = new StringBuilder();
         s.append("\n").append(indent).append("Name: ").append(mName);
         s.append(" Id: ").append(mId);
+        if (multiZoneAudio()) {
+            s.append(" ZoneId: ");
+            s.append(mZoneId);
+        }
         for (AudioAttributesGroup aag : mAudioAttributesGroups) {
             s.append(aag.toString(indent)).append(indent);
         }
@@ -521,15 +743,45 @@ public final class AudioProductStrategy implements Parcelable {
      * native API native_get_product_strategies_from_audio_attributes
      * Keep in sync with native counterpart code in
      * frameworks/av/media/libaudioclient/AudioProductStrategy::attributesMatchesScore
+     *
      * @param refAttr {@link AudioAttributes} to be taken as the reference
      * @param attr {@link AudioAttributes} of the requester.
+     * @param refZoneId zone id of the strategy evaluated
+     * @param zoneId zone id to consider
+     * @return matching score
+     */
+    private static int attributesAndZonesMatchesScore(@NonNull AudioAttributes refAttr,
+            @NonNull AudioAttributes attr, int refZoneId, int zoneId) {
+        if (zoneId != refZoneId && refZoneId != DEFAULT_ZONE_ID) {
+            // Default zone shall match for all zoneId requested to ensure a fallback
+            return NO_MATCH;
+        }
+        int score = MATCH_ON_DEFAULT_SCORE;
+        if (refZoneId == zoneId) {
+            score |= MATCH_ON_ZONE_ID_SCORE;
+        }
+        final int attributeMatchScore = attributesMatchesScore(refAttr, attr);
+        if (attributeMatchScore == NO_MATCH) {
+            return NO_MATCH;
+        }
+        return score | attributeMatchScore;
+    }
+
+    /**
+     * To avoid duplicating the logic in java and native, we shall make use of
+     * native API native_get_product_strategies_from_audio_attributes
+     * Keep in sync with native counterpart code in
+     * frameworks/av/media/libaudioclient/AudioProductStrategy::attributesMatchesScore
+     * @param refAttr {@link AudioAttributes} to be taken as the reference
+     * @param attr {@link AudioAttributes} of the requester.
+     * @return matching score
      */
     private static int attributesMatchesScore(@NonNull AudioAttributes refAttr,
             @NonNull AudioAttributes attr) {
         Objects.requireNonNull(refAttr, "Reference audio attributes must not be null");
         Objects.requireNonNull(attr, "Audio attributes to check must not be null");
         if (refAttr.equals(attr)) {
-            return MATCH_EQUALS;
+            return MATCH_ATTRIBUTES_EQUALS;
         }
         if (refAttr.equals(DEFAULT_ATTRIBUTES)) {
             return MATCH_ON_DEFAULT_SCORE;
@@ -688,7 +940,31 @@ public final class AudioProductStrategy implements Parcelable {
             int strategyScore = NO_MATCH;
             for (AudioAttributes refAa : mAudioAttributes) {
                 int attributesGroupScore = attributesMatchesScore(refAa, attributes);
-                if (attributesGroupScore == MATCH_EQUALS) {
+                if (isMatchScoreEquals(attributesGroupScore)) {
+                    return attributesGroupScore;
+                }
+                strategyScore = Math.max(strategyScore, attributesGroupScore);
+            }
+            return strategyScore;
+        }
+
+        /**
+         * Checks if the {@link AudioProductStrategy.AudioAttributesGroup} supports the given
+         * {@link AudioAttributes} and gives a compatibility score.
+         *
+         * @param attributes to evaluate
+         * @param refZoneId zone id of the strategy evaluated
+         * @param zoneId zone id to consider
+         * @return {@code NO_MATCH} if not supporting the given {@link AudioAttributes},
+         * positive or zero score otherwise.
+         */
+        int getAttributesMatchingScore(@NonNull AudioAttributes attributes, int refZoneId,
+                int zoneId) {
+            int strategyScore = NO_MATCH;
+            for (AudioAttributes refAa : mAudioAttributes) {
+                int attributesGroupScore = attributesAndZonesMatchesScore(refAa, attributes,
+                        refZoneId, zoneId);
+                if (isMatchScoreEquals(attributesGroupScore)) {
                     return attributesGroupScore;
                 }
                 strategyScore = Math.max(strategyScore, attributesGroupScore);

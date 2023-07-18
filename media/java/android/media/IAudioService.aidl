@@ -154,6 +154,9 @@ interface IAudioService {
     @EnforcePermission(anyOf={"MODIFY_AUDIO_SETTINGS_PRIVILEGED", "MODIFY_AUDIO_ROUTING"})
     List<AudioVolumeGroup> getAudioVolumeGroups();
 
+    @EnforcePermission(anyOf={"MODIFY_AUDIO_ROUTING", "QUERY_AUDIO_STATE", "MODIFY_AUDIO_SETTINGS_PRIVILEGED"})
+    int getVolumeGroupIdForAttributes(in AudioAttributes attributes, int zoneId);
+
     @EnforcePermission(anyOf={"MODIFY_AUDIO_SETTINGS_PRIVILEGED", "MODIFY_AUDIO_ROUTING"})
     void setVolumeGroupVolumeIndex(int groupId, int index, int flags, String callingPackage,
             in String attributionTag);
