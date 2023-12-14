@@ -50,6 +50,7 @@ import static android.media.audio.Flags.roForegroundAudioControl;
 import static android.media.audio.Flags.scoManagedByAudio;
 import static android.media.audio.Flags.unifyAbsoluteVolumeManagement;
 import static android.media.audiopolicy.Flags.enableFadeManagerConfiguration;
+import static android.media.audiopolicy.Flags.volumeGroupManagementUpdate;
 import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.os.Process.INVALID_UID;
 import static android.provider.Settings.Secure.VOLUME_HUSH_MUTE;
@@ -1410,14 +1411,25 @@ public class AudioService extends IAudioService.Stub
             int numStreamTypes = AudioSystem.getNumStreamTypes();
 
             for (int streamType = numStreamTypes - 1; streamType >= 0; streamType--) {
-                AudioAttributes attr =
-                        AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(
-                                streamType);
-                int maxVolume = AudioSystem.getMaxVolumeIndexForAttributes(attr);
+                int maxVolume = -1;
+                int minVolume = -1;
+
+                if (volumeGroupManagementUpdate()) {
+                    int groupId = getVolumeGroupForStreamType(streamType);
+                    if (groupId != AudioVolumeGroup.DEFAULT_VOLUME_GROUP) {
+                        maxVolume = AudioSystem.getMaxVolumeIndexForGroup(groupId);
+                        minVolume = AudioSystem.getMinVolumeIndexForGroup(groupId);
+                    }
+                } else {
+                    AudioAttributes attr =
+                            AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(
+                                    streamType);
+                    maxVolume = AudioSystem.getMaxVolumeIndexForAttributes(attr);
+                    minVolume = AudioSystem.getMinVolumeIndexForAttributes(attr);
+                }
                 if (maxVolume != -1) {
                     MAX_STREAM_VOLUME[streamType] = maxVolume;
                 }
-                int minVolume = AudioSystem.getMinVolumeIndexForAttributes(attr);
                 if (minVolume != -1) {
                     MIN_STREAM_VOLUME[streamType] = minVolume;
                 }
@@ -2283,11 +2295,21 @@ public class AudioService extends IAudioService.Stub
             if (streamState == null) {
                 continue;
             }
-            final int res = AudioSystem.initStreamVolume(
-                    streamType, MIN_STREAM_VOLUME[streamType], MAX_STREAM_VOLUME[streamType]);
-            if (res != AudioSystem.AUDIO_STATUS_OK) {
-                status = res;
-                Log.e(TAG, "Failed to initStreamVolume (" + res + ") for stream " + streamType);
+            int result;
+            if (volumeGroupManagementUpdate()) {
+                int groupId = getVolumeGroupForStreamType(streamType);
+                result = initMinMaxForVolumeGroup(groupId, MIN_STREAM_VOLUME[streamType],
+                        MAX_STREAM_VOLUME[streamType], /* logEvent= */ false);
+            } else {
+                result = AudioSystem.initStreamVolume(streamType, MIN_STREAM_VOLUME[streamType],
+                        MAX_STREAM_VOLUME[streamType]);
+                if (result != AudioSystem.AUDIO_STATUS_OK) {
+                    Log.e(TAG, "Failed to initStreamVolume (" + result + ") for stream "
+                            + streamType);
+                }
+            }
+            if (result != AudioSystem.AUDIO_STATUS_OK) {
+                status = result;
                 // stream volume initialization failed, no need to try the others, it will be
                 // attempted again when MSG_REINIT_VOLUMES is handled
                 break;
@@ -2341,10 +2363,23 @@ public class AudioService extends IAudioService.Stub
                 AudioSystem.STREAM_MUSIC, AudioSystem.STREAM_VOICE_CALL,
                 AudioSystem.STREAM_ACCESSIBILITY };
         for (int streamType : basicStreams) {
-            final AudioAttributes aa = new AudioAttributes.Builder()
-                    .setInternalLegacyStreamType(streamType).build();
-            if (AudioSystem.getMaxVolumeIndexForAttributes(aa) < 0
-                    || AudioSystem.getMinVolumeIndexForAttributes(aa) < 0) {
+            int maxVolumeIndex;
+            int minVolumeIndex;
+            if (volumeGroupManagementUpdate()) {
+                int groupId = getVolumeGroupForStreamType(streamType);
+                if (groupId == AudioVolumeGroup.DEFAULT_VOLUME_GROUP) {
+                    success = false;
+                    break;
+                }
+                maxVolumeIndex = AudioSystem.getMaxVolumeIndexForGroup(groupId);
+                minVolumeIndex = AudioSystem.getMinVolumeIndexForGroup(groupId);
+            } else {
+                final AudioAttributes aa = new AudioAttributes.Builder()
+                        .setInternalLegacyStreamType(streamType).build();
+                maxVolumeIndex = AudioSystem.getMaxVolumeIndexForAttributes(aa);
+                minVolumeIndex = AudioSystem.getMinVolumeIndexForAttributes(aa);
+            }
+            if (maxVolumeIndex < 0 || minVolumeIndex < 0) {
                 success = false;
                 break;
             }
@@ -8859,6 +8894,35 @@ public class AudioService extends IAudioService.Stub
                 attributes, /* fallbackOnDefault= */ false);
     }
 
+    private static int initMinMaxForVolumeGroup(int groupId, int minVol, int maxVol,
+            boolean logEvent) {
+        int status = AudioSystem.setMinVolumeIndexForGroup(groupId, minVol);
+        if (status != AudioSystem.AUDIO_STATUS_OK) {
+            if (logEvent) {
+                sVolumeLogger.enqueue(new EventLogger.StringEvent(
+                        "Failed setMinVolumeIndexForGroup with status=" + status)
+                        .printSlog(ALOGE, TAG));
+            } else {
+                Log.e(TAG, "Failed to setMinVolumeIndexForGroup (" + status + ") for group "
+                        + groupId);
+            }
+            return status;
+
+        }
+        status = AudioSystem.setMaxVolumeIndexForGroup(groupId, maxVol);
+        if (status != AudioSystem.AUDIO_STATUS_OK) {
+            if (logEvent) {
+                sVolumeLogger.enqueue(new EventLogger.StringEvent(
+                        "Failed setMaxVolumeIndexForGroup with status=" + status)
+                        .printSlog(ALOGE, TAG));
+            } else {
+                Log.e(TAG, "Failed to setMaxVolumeIndexForGroup (" + status + ") for group "
+                        + groupId);
+            }
+        }
+        return status;
+    }
+
     // NOTE: Locking order for synchronized objects related to volume management:
     //  1     mSettingsLock
     //  2       mVolumeStateLock
@@ -8913,8 +8977,13 @@ public class AudioService extends IAudioService.Stub
                     mIndexMax = MAX_STREAM_VOLUME[mPublicStreamType];
                 }
             } else if (!avg.getAudioAttributes().isEmpty()) {
-                mIndexMin = AudioSystem.getMinVolumeIndexForAttributes(mAudioAttributes);
-                mIndexMax = AudioSystem.getMaxVolumeIndexForAttributes(mAudioAttributes);
+                if (volumeGroupManagementUpdate()) {
+                    mIndexMin = AudioSystem.getMinVolumeIndexForGroup(mAudioVolumeGroup.getId());
+                    mIndexMax = AudioSystem.getMaxVolumeIndexForGroup(mAudioVolumeGroup.getId());
+                } else {
+                    mIndexMin = AudioSystem.getMinVolumeIndexForAttributes(mAudioAttributes);
+                    mIndexMax = AudioSystem.getMaxVolumeIndexForAttributes(mAudioAttributes);
+                }
             } else {
                 throw new IllegalArgumentException("volume group: " + mAudioVolumeGroup.name()
                         + " has neither valid attributes nor valid stream types assigned");
@@ -9110,7 +9179,12 @@ public class AudioService extends IAudioService.Stub
             }
 
             // Set the volume index
-            mAudioSystem.setVolumeIndexForAttributes(mAudioAttributes, index, muted, device);
+            if (volumeGroupManagementUpdate()) {
+                mAudioSystem.setVolumeIndexForGroup(mAudioVolumeGroup.getId(), index, muted,
+                        device);
+            } else {
+                mAudioSystem.setVolumeIndexForAttributes(mAudioAttributes, index, muted, device);
+            }
         }
 
         @GuardedBy("AudioService.this.mVolumeStateLock")
@@ -9531,15 +9605,24 @@ public class AudioService extends IAudioService.Stub
                 AudioManager.clearVolumeCache(AudioManager.VOLUME_MIN_CACHING_API);
             }
 
-            final int status = AudioSystem.initStreamVolume(
-                    mStreamType, indexMinVolCurve, indexMaxVolCurve);
+            int status;
+            if (volumeGroupManagementUpdate()) {
+                int groupId = getVolumeGroupForStreamType(mStreamType);
+                status = initMinMaxForVolumeGroup(groupId, indexMinVolCurve, indexMaxVolCurve,
+                        /* logEvent= */ true);
+            } else {
+                status = AudioSystem.initStreamVolume(mStreamType, indexMinVolCurve,
+                        indexMaxVolCurve);
+                if (status != AudioSystem.AUDIO_STATUS_OK) {
+                    sVolumeLogger.enqueue(new EventLogger.StringEvent(
+                            "Failed initStreamVolume with status=" + status).printSlog(ALOGE, TAG));
+                }
+            }
             sVolumeLogger.enqueue(new EventLogger.StringEvent(
                     "updateIndexFactors() stream:" + mStreamType + " index min/max:"
                             + mIndexMin / 10 + "/" + mIndexMax / 10 + " indexStepFactor:"
                             + mIndexStepFactor).printSlog(ALOGI, TAG));
             if (status != AudioSystem.AUDIO_STATUS_OK) {
-                sVolumeLogger.enqueue(new EventLogger.StringEvent(
-                        "Failed initStreamVolume with status=" + status).printSlog(ALOGE, TAG));
                 sendMsg(mAudioHandler, MSG_REINIT_VOLUMES, SENDMSG_NOOP, 0, 0,
                         "updateIndexFactors()" /*obj*/, 2 * INDICATE_SYSTEM_READY_RETRY_DELAY_MS);
             }

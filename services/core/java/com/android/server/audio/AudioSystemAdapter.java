@@ -558,6 +558,36 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
         return AudioSystem.setVolumeIndexForAttributes(attributes, index, muted, device);
     }
 
+    /** Same as {@link AudioSystem#setVolumeIndexForGroup(int, int, boolean, int)} */
+    public int setVolumeIndexForGroup(int groupId, int index, boolean muted, int device) {
+        return AudioSystem.setVolumeIndexForGroup(groupId, index, muted, device);
+    }
+
+    /** Same as {@link AudioSystem#getVolumeIndexForGroup(int, int)} */
+    public int getVolumeIndexForGroup(int groupId, int device) {
+        return AudioSystem.getVolumeIndexForGroup(groupId, device);
+    }
+
+    /** Same as {@link AudioSystem#getMinVolumeIndexForGroup(int)} */
+    public int getMinVolumeIndexForGroup(int groupId) {
+        return AudioSystem.getMinVolumeIndexForGroup(groupId);
+    }
+
+    /** Same as {@link AudioSystem#setMinVolumeIndexForGroup(int, int)} */
+    public int setMinVolumeIndexForGroup(int groupId, int index) {
+        return AudioSystem.setMinVolumeIndexForGroup(groupId, index);
+    }
+
+    /** Same as {@link AudioSystem#getMaxVolumeIndexForGroup(int)} */
+    public int getMaxVolumeIndexForGroup(int groupId) {
+        return AudioSystem.getMaxVolumeIndexForGroup(groupId);
+    }
+
+    /** Same as {@link AudioSystem#setMaxVolumeIndexForGroup(int, int)} */
+    public int setMaxVolumeIndexForGroup(int groupId, int index) {
+        return AudioSystem.setMaxVolumeIndexForGroup(groupId, index);
+    }
+
     /**
      * Same as {@link AudioSystem#setPhoneState(int, int)}
      * @param state
