@@ -27,9 +27,11 @@ import static android.Manifest.permission.INTERNAL_SYSTEM_WINDOW;
 import static android.Manifest.permission.MANAGE_DISPLAYS;
 import static android.Manifest.permission.MODIFY_HDR_CONVERSION_MODE;
 import static android.Manifest.permission.RESTRICT_DISPLAY_MODES;
+import static android.Manifest.permission.WRITE_SETTINGS;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE;
+import static android.hardware.display.DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE;
 import static android.hardware.display.DisplayManagerGlobal.InternalEventFlag;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
@@ -172,6 +174,7 @@ import android.window.ScreenCapture;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.display.BrightnessSynchronizer;
+import com.android.internal.display.BrightnessUtils;
 import com.android.internal.foldables.FoldLockSettingAvailabilityProvider;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.ArrayUtils;
@@ -4144,6 +4147,47 @@ public final class DisplayManagerService extends SystemService {
         return config;
     }
 
+    private BrightnessInfo getBrightnessInfoInternal(int displayId) {
+        synchronized (mSyncRoot) {
+            LogicalDisplay display = mLogicalDisplayMapper.getDisplayLocked(
+                    displayId, /* includeDisabled= */ false);
+            if (display == null || !display.isEnabledLocked()) {
+                return null;
+            }
+            DisplayPowerController dpc = mDisplayPowerControllers.get(displayId);
+            if (dpc != null) {
+                return dpc.getBrightnessInfo();
+            }
+        }
+        return null;
+    }
+
+    private float getBrightnessInternal(int displayId) {
+        synchronized (mSyncRoot) {
+            DisplayPowerController dpc = mDisplayPowerControllers.get(displayId);
+            if (dpc != null) {
+                return dpc.getScreenBrightnessSetting();
+            } else {
+                return PowerManager.BRIGHTNESS_INVALID_FLOAT;
+            }
+        }
+    }
+
+    private void setBrightnessInternal(int displayId, float brightness) {
+        if (Float.isNaN(brightness)) {
+            Slog.w(TAG, "Attempted to set invalid brightness: " + brightness);
+            return;
+        }
+        MathUtils.constrain(brightness, PowerManager.BRIGHTNESS_MIN, PowerManager.BRIGHTNESS_MAX);
+        synchronized (mSyncRoot) {
+            DisplayPowerController dpc = mDisplayPowerControllers.get(displayId);
+            if (dpc != null) {
+                dpc.setBrightness(brightness);
+            }
+            mPersistentDataStore.saveIfNeeded();
+        }
+    }
+
     private final class DisplayManagerHandler extends Handler {
         public DisplayManagerHandler(Looper looper) {
             super(looper, null, true /*async*/);
@@ -5272,21 +5316,10 @@ public final class DisplayManagerService extends SystemService {
             getBrightnessInfo_enforcePermission();
             final long token = Binder.clearCallingIdentity();
             try {
-                synchronized (mSyncRoot) {
-                    LogicalDisplay display = mLogicalDisplayMapper.getDisplayLocked(
-                            displayId, /* includeDisabled= */ false);
-                    if (display == null || !display.isEnabledLocked()) {
-                        return null;
-                    }
-                    DisplayPowerController dpc = mDisplayPowerControllers.get(displayId);
-                    if (dpc != null) {
-                        return dpc.getBrightnessInfo();
-                    }
-                }
+                return getBrightnessInfoInternal(displayId);
             } finally {
                 Binder.restoreCallingIdentity(token);
             }
-            return null;
         }
 
         @Override // Binder call
@@ -5316,23 +5349,45 @@ public final class DisplayManagerService extends SystemService {
         @Override // Binder call
         public void setBrightness(int displayId, float brightness) {
             setBrightness_enforcePermission();
-            if (Float.isNaN(brightness)) {
-                Slog.w(TAG, "Attempted to set invalid brightness: " + brightness);
-                return;
-            }
-            MathUtils.constrain(brightness, PowerManager.BRIGHTNESS_MIN,
-                    PowerManager.BRIGHTNESS_MAX);
             final long token = Binder.clearCallingIdentity();
             try {
-                synchronized (mSyncRoot) {
-                    DisplayPowerController dpc = mDisplayPowerControllers.get(displayId);
-                    if (dpc != null) {
-                        dpc.setBrightness(brightness);
-                    }
-                    mPersistentDataStore.saveIfNeeded();
-                }
+                setBrightnessInternal(displayId, brightness);
             } finally {
                 Binder.restoreCallingIdentity(token);
+            }
+        }
+
+        @EnforcePermission(WRITE_SETTINGS)
+        @Override // Binder call
+        public void setBrightnessByUnit(int displayId, float value,
+                @DisplayManager.BrightnessUnit int unit) {
+            setBrightnessByUnit_enforcePermission();
+            synchronized (mSyncRoot) {
+                float brightnessFloat;
+                if (unit == BRIGHTNESS_UNIT_PERCENTAGE) {
+                    if (value < 0 || value > 100) {
+                        throw new IllegalArgumentException(
+                                "Attempted to set invalid brightness percentage: " + value + "%");
+                    }
+
+                    BrightnessInfo info = getBrightnessInfoInternal(displayId);
+                    if (info == null) {
+                        Slog.w(TAG,
+                                "setBrightnessByUnit: no BrightnessInfo for display "
+                                        + displayId);
+                        return;
+                    }
+
+                    // Convert from user-perception to power-linear scale
+                    float linearBrightness = BrightnessUtils.convertGammaToLinear(value / 100);
+
+                    // Interpolate to the range [currentlyAllowedMin, currentlyAllowedMax]
+                    brightnessFloat = MathUtils.lerp(info.brightnessMinimum, info.brightnessMaximum,
+                            linearBrightness);
+                } else {
+                    throw new IllegalArgumentException("Invalid brightness unit: " + unit);
+                }
+                setBrightnessInternal(displayId, brightnessFloat);
             }
         }
 
@@ -5340,19 +5395,38 @@ public final class DisplayManagerService extends SystemService {
         @Override // Binder call
         public float getBrightness(int displayId) {
             getBrightness_enforcePermission();
-            float brightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
             final long token = Binder.clearCallingIdentity();
             try {
-                synchronized (mSyncRoot) {
-                    DisplayPowerController dpc = mDisplayPowerControllers.get(displayId);
-                    if (dpc != null) {
-                        brightness = dpc.getScreenBrightnessSetting();
-                    }
-                }
+                return getBrightnessInternal(displayId);
             } finally {
                 Binder.restoreCallingIdentity(token);
             }
-            return brightness;
+        }
+
+        @Override // Binder call
+        public float getBrightnessByUnit(int displayId, @DisplayManager.BrightnessUnit int unit) {
+            synchronized (mSyncRoot) {
+                if (unit == BRIGHTNESS_UNIT_PERCENTAGE) {
+                    BrightnessInfo info = getBrightnessInfoInternal(displayId);
+                    if (info == null) {
+                        Slog.w(TAG,
+                                "getBrightnessByUnit: no BrightnessInfo for display "
+                                        + displayId);
+                        return PowerManager.BRIGHTNESS_INVALID;
+                    }
+                    float brightnessFloat = getBrightnessInternal(displayId);
+                    float normalizedBrightness = MathUtils.norm(info.brightnessMinimum,
+                            info.brightnessMaximum, brightnessFloat);
+
+                    // Convert from power-linear scale to user-perception
+                    float gammaBrightness = BrightnessUtils.convertLinearToGamma(
+                            normalizedBrightness);
+
+                    return gammaBrightness * 100;
+                } else {
+                    throw new IllegalArgumentException("Invalid brightness unit: " + unit);
+                }
+            }
         }
 
         @EnforcePermission(CONTROL_DISPLAY_BRIGHTNESS)

@@ -1137,6 +1137,19 @@ public final class DisplayManagerGlobal {
     }
 
     /**
+     * @see DisplayManager#setBrightness(int, float, int)
+     */
+    @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
+    public void setBrightness(int displayId, float value,
+            @DisplayManager.BrightnessUnit int unit) {
+        try {
+            mDm.setBrightnessByUnit(displayId, value, unit);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Report whether/how the display supports DISPLAY_DECORATION.
      *
      * @param displayId The display whose support is being queried.
@@ -1161,6 +1174,17 @@ public final class DisplayManagerGlobal {
     public float getBrightness(int displayId) {
         try {
             return mDm.getBrightness(displayId);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @see DisplayManager#getBrightness(int, int)
+     */
+    public float getBrightness(int displayId, @DisplayManager.BrightnessUnit int unit) {
+        try {
+            return mDm.getBrightnessByUnit(displayId, unit);
         } catch (RemoteException ex) {
             throw ex.rethrowFromSystemServer();
         }
