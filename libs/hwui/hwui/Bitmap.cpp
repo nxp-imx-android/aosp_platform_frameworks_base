@@ -212,7 +212,14 @@ sk_sp<Bitmap> Bitmap::allocateHardwareBitmap(const SkBitmap& bitmap) {
 #ifdef __ANDROID__  // Layoutlib does not support hardware acceleration
     return uirenderer::HardwareBitmapUploader::allocateHardwareBitmap(bitmap);
 #else
-    return Bitmap::allocateHeapBitmap(bitmap.info());
+    sk_sp<Bitmap> dest = Bitmap::allocateHeapBitmap(bitmap.info());
+
+    // HardwareBitmapUploader::allocateHardwareBitmap(SkBitmap&) copies Bitmap contents
+    // to a GL texture. To simulate this with an heap bitmap, we use memcpy.
+    auto destPM = dest->getSkBitmap().pixmap();
+    LOG_ALWAYS_FATAL_IF(!bitmap.pixmap().readPixels(destPM), "failed to copy pixels");
+
+    return dest;
 #endif
 }
 
