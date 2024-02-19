@@ -749,15 +749,12 @@ public class SettingsBackupTest {
                  Settings.Secure.SECURE_FRP_MODE,
                  Settings.Secure.SEARCH_WEB_RESULTS_OVERRIDE_LIMIT,
                  Settings.Secure.SELECTED_INPUT_METHOD_SUBTYPE,
-                 Settings.Secure.SELECTED_SPELL_CHECKER,  // Intentionally removed in Q
-                 Settings.Secure.SELECTED_SPELL_CHECKER_SUBTYPE,  // Intentionally removed in Q
                  Settings.Secure.SETTINGS_CLASSNAME,
                  Settings.Secure.SHOW_NOTE_ABOUT_NOTIFICATION_HIDING, // candidate?
                  Settings.Secure.SHOW_ROTATION_SUGGESTIONS,
                  Settings.Secure.SKIP_FIRST_USE_HINTS, // candidate?
                  Settings.Secure.SLEEP_TIMEOUT,
                  Settings.Secure.SMS_DEFAULT_APPLICATION,
-                 Settings.Secure.SPELL_CHECKER_ENABLED,  // Intentionally removed in Q
                  Settings.Secure.TRUST_AGENTS_INITIALIZED,
                  Settings.Secure.KNOWN_TRUST_AGENTS_INITIALIZED,
                  Settings.Secure.TV_APP_USES_NON_SYSTEM_INPUTS,
