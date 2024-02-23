@@ -4073,7 +4073,7 @@ package android.content.pm {
     field public int targetSandboxVersion;
   }
 
-  public class CrossProfileApps {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class CrossProfileApps {
     method @RequiresPermission(anyOf={android.Manifest.permission.INTERACT_ACROSS_PROFILES, android.Manifest.permission.START_CROSS_PROFILE_ACTIVITIES}) public void startActivity(@NonNull android.content.ComponentName, @NonNull android.os.UserHandle, @Nullable android.app.Activity, @Nullable android.os.Bundle);
     method @RequiresPermission(anyOf={android.Manifest.permission.INTERACT_ACROSS_PROFILES, android.Manifest.permission.START_CROSS_PROFILE_ACTIVITIES}) public void startActivity(@NonNull android.content.ComponentName, @NonNull android.os.UserHandle);
   }
@@ -4490,7 +4490,7 @@ package android.content.pm {
     method @Nullable public android.app.Person[] getPersons();
   }
 
-  public class ShortcutManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class ShortcutManager {
     method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_APP_PREDICTIONS) @WorkerThread public java.util.List<android.content.pm.ShortcutManager.ShareShortcutInfo> getShareTargets(@NonNull android.content.IntentFilter);
     method public boolean hasShareTargets(@NonNull String);
   }
@@ -4626,7 +4626,7 @@ package android.content.pm.verify.domain {
     field public static final int STATE_UNMODIFIABLE = 2; // 0x2
   }
 
-  public final class DomainVerificationManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class DomainVerificationManager {
     method @Nullable @RequiresPermission(android.Manifest.permission.DOMAIN_VERIFICATION_AGENT) public android.content.pm.verify.domain.DomainVerificationInfo getDomainVerificationInfo(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
     method @NonNull @RequiresPermission(android.Manifest.permission.UPDATE_DOMAIN_VERIFICATION_USER_SELECTION) public java.util.SortedSet<android.content.pm.verify.domain.DomainOwner> getOwnersForDomain(@NonNull String);
     method @FlaggedApi("android.content.pm.relative_reference_intent_filters") @NonNull public java.util.Map<java.lang.String,java.util.List<android.content.UriRelativeFilterGroup>> getUriRelativeFilterGroups(@NonNull String, @NonNull java.util.List<java.lang.String>);
@@ -7199,7 +7199,7 @@ package android.hardware.usb {
     method public boolean resetDevice();
   }
 
-  public class UsbManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class UsbManager {
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public long getCurrentFunctions();
     method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_USB) public java.util.List<android.hardware.usb.UsbPort> getPorts();
     method @FlaggedApi("android.hardware.usb.flags.expose_usb_speed_system_api") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public int getUsbBandwidthMbps();
@@ -11119,7 +11119,7 @@ package android.os {
     method @Nullable public Object onTransactStarted(@NonNull android.os.IBinder, int);
   }
 
-  public final class BugreportManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class BugreportManager {
     method @RequiresPermission(android.Manifest.permission.DUMP) @WorkerThread public void preDumpUiData();
     method @RequiresPermission(android.Manifest.permission.DUMP) public void requestBugreport(@NonNull android.os.BugreportParams, @Nullable CharSequence, @Nullable CharSequence);
     method @RequiresPermission(android.Manifest.permission.DUMP) @WorkerThread public void retrieveBugreport(@NonNull String, @NonNull android.os.ParcelFileDescriptor, @NonNull java.util.concurrent.Executor, @NonNull android.os.BugreportManager.BugreportCallback);

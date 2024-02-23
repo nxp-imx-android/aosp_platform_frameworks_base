@@ -1112,7 +1112,7 @@ package android.content.pm {
     field public int privateFlags;
   }
 
-  public class CrossProfileApps {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class CrossProfileApps {
     method public boolean canConfigureInteractAcrossProfiles(@NonNull String);
   }
 
@@ -1170,7 +1170,7 @@ package android.content.pm {
     method public boolean isVisibleToPublisher();
   }
 
-  public class ShortcutManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class ShortcutManager {
     ctor public ShortcutManager(android.content.Context);
   }
 
@@ -1919,7 +1919,7 @@ package android.hardware.soundtrigger {
 
 package android.hardware.usb {
 
-  public class UsbManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class UsbManager {
     method public boolean isUvcGadgetSupportEnabled();
   }
 

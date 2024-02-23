@@ -144,7 +144,7 @@ package android.content.pm {
 
 package android.hardware.usb {
 
-  public class UsbManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class UsbManager {
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public int getGadgetHalVersion();
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public int getUsbHalVersion();
     field public static final int GADGET_HAL_NOT_SUPPORTED = -1; // 0xffffffff
@@ -300,7 +300,7 @@ package android.net {
     method public static void setHttpProxyConfiguration(@Nullable android.net.ProxyInfo);
   }
 
-  public class VpnManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class VpnManager {
     field public static final int TYPE_VPN_LEGACY = 3; // 0x3
     field public static final int TYPE_VPN_NONE = -1; // 0xffffffff
     field public static final int TYPE_VPN_OEM = 4; // 0x4

@@ -12767,7 +12767,7 @@ package android.content.pm {
     field public int reqTouchScreen;
   }
 
-  public class CrossProfileApps {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class CrossProfileApps {
     method public boolean canInteractAcrossProfiles();
     method public boolean canRequestInteractAcrossProfiles();
     method @NonNull public android.content.Intent createRequestInteractAcrossProfilesIntent();
@@ -14000,7 +14000,7 @@ package android.content.pm {
     method @NonNull public android.content.pm.ShortcutInfo.Builder setStartingTheme(int);
   }
 
-  public class ShortcutManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class ShortcutManager {
     method @WorkerThread public boolean addDynamicShortcuts(@NonNull java.util.List<android.content.pm.ShortcutInfo>);
     method @WorkerThread public android.content.Intent createShortcutResultIntent(@NonNull android.content.pm.ShortcutInfo);
     method public void disableShortcuts(@NonNull java.util.List<java.lang.String>);
@@ -14080,7 +14080,7 @@ package android.content.pm {
 
 package android.content.pm.verify.domain {
 
-  public final class DomainVerificationManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class DomainVerificationManager {
     method @Nullable public android.content.pm.verify.domain.DomainVerificationUserState getDomainVerificationUserState(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
   }
 
@@ -21169,7 +21169,7 @@ package android.hardware.usb {
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.usb.UsbInterface> CREATOR;
   }
 
-  public class UsbManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class UsbManager {
     method public android.hardware.usb.UsbAccessory[] getAccessoryList();
     method public java.util.HashMap<java.lang.String,android.hardware.usb.UsbDevice> getDeviceList();
     method public boolean hasPermission(android.hardware.usb.UsbDevice);
@@ -29964,7 +29964,7 @@ package android.net {
     method public String sanitize(String);
   }
 
-  public class VpnManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class VpnManager {
     method public void deleteProvisionedVpnProfile();
     method @Nullable public android.net.VpnProfileState getProvisionedVpnProfileState();
     method @Nullable public android.content.Intent provisionVpnProfile(@NonNull android.net.PlatformVpnProfile);
@@ -33485,7 +33485,7 @@ package android.os {
     method public boolean unlinkToDeath(@NonNull android.os.IBinder.DeathRecipient, int);
   }
 
-  public final class BugreportManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class BugreportManager {
     method @WorkerThread public void cancelBugreport();
     method @WorkerThread public void startConnectivityBugreport(@NonNull android.os.ParcelFileDescriptor, @NonNull java.util.concurrent.Executor, @NonNull android.os.BugreportManager.BugreportCallback);
   }
