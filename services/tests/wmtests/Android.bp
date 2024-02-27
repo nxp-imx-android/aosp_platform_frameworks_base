@@ -61,8 +61,6 @@ java_genrule {
         // Used for the ProtoLogIntegrationTest, where don't test decoding or writing to file
         // so the parameters below are irrelevant.
         "--viewer-config-file-path /some/unused/file/path.pb " +
-        "--legacy-viewer-config-file-path /some/unused/file/path.json.gz " +
-        "--legacy-output-file-path /some/unused/file/path.winscope " +
         // END of irrelevant params.
         "--output-srcjar $(out) " +
         "$(locations :wmtests-sources)",

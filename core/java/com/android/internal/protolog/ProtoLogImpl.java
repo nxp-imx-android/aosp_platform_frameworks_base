@@ -17,8 +17,6 @@
 package com.android.internal.protolog;
 
 import static com.android.internal.protolog.common.ProtoLogToolInjected.Value.CACHE_UPDATER;
-import static com.android.internal.protolog.common.ProtoLogToolInjected.Value.LEGACY_OUTPUT_FILE_PATH;
-import static com.android.internal.protolog.common.ProtoLogToolInjected.Value.LEGACY_VIEWER_CONFIG_PATH;
 import static com.android.internal.protolog.common.ProtoLogToolInjected.Value.LOG_GROUPS;
 import static com.android.internal.protolog.common.ProtoLogToolInjected.Value.VIEWER_CONFIG_PATH;
 
@@ -45,12 +43,6 @@ public class ProtoLogImpl {
 
     @ProtoLogToolInjected(VIEWER_CONFIG_PATH)
     private static String sViewerConfigPath;
-
-    @ProtoLogToolInjected(LEGACY_VIEWER_CONFIG_PATH)
-    private static String sLegacyViewerConfigPath;
-
-    @ProtoLogToolInjected(LEGACY_OUTPUT_FILE_PATH)
-    private static String sLegacyOutputFilePath;
 
     @ProtoLogToolInjected(LOG_GROUPS)
     private static TreeMap<String, IProtoLogGroup> sLogGroups;

@@ -29,16 +29,11 @@ class CommandOptions(args: Array<String>) {
         private const val PROTOLOGGROUP_CLASS_PARAM = "--loggroups-class"
         private const val PROTOLOGGROUP_JAR_PARAM = "--loggroups-jar"
         private const val VIEWER_CONFIG_PARAM = "--viewer-config"
-        private const val VIEWER_CONFIG_TYPE_PARAM = "--viewer-config-type"
         private const val OUTPUT_SOURCE_JAR_PARAM = "--output-srcjar"
         private const val VIEWER_CONFIG_FILE_PATH_PARAM = "--viewer-config-file-path"
-        // TODO(b/324128613): Remove these legacy options once we fully flip the Perfetto protolog flag
-        private const val LEGACY_VIEWER_CONFIG_FILE_PATH_PARAM = "--legacy-viewer-config-file-path"
-        private const val LEGACY_OUTPUT_FILE_PATH = "--legacy-output-file-path"
         private val parameters = setOf(PROTOLOG_CLASS_PARAM, PROTOLOGGROUP_CLASS_PARAM,
-            PROTOLOGGROUP_JAR_PARAM, VIEWER_CONFIG_PARAM, VIEWER_CONFIG_TYPE_PARAM,
-            OUTPUT_SOURCE_JAR_PARAM, VIEWER_CONFIG_FILE_PATH_PARAM,
-            LEGACY_VIEWER_CONFIG_FILE_PATH_PARAM, LEGACY_OUTPUT_FILE_PATH)
+            PROTOLOGGROUP_JAR_PARAM, VIEWER_CONFIG_PARAM,
+            OUTPUT_SOURCE_JAR_PARAM, VIEWER_CONFIG_FILE_PATH_PARAM)
 
         val USAGE = """
             Usage: ${Constants.NAME} <command> [<args>]
@@ -51,7 +46,7 @@ class CommandOptions(args: Array<String>) {
 
             $GENERATE_CONFIG_CMD $PROTOLOG_CLASS_PARAM <class name>
                 $PROTOLOGGROUP_CLASS_PARAM <class name> $PROTOLOGGROUP_JAR_PARAM <config.jar>
-                $VIEWER_CONFIG_PARAM <viewer.json|viewer.pb> [<input.java>]
+                $VIEWER_CONFIG_PARAM <viewer.pb> [<input.java>]
             - creates viewer config file from given java files.
         """.trimIndent()
 
@@ -100,14 +95,6 @@ class CommandOptions(args: Array<String>) {
         private fun validateViewerConfigFilePath(name: String): String {
             if (!name.endsWith(".pb")) {
                 throw InvalidCommandException("Proto file (ending with .pb) required, " +
-                        "got $name instead")
-            }
-            return name
-        }
-
-        private fun validateLegacyViewerConfigFilePath(name: String): String {
-            if (!name.endsWith(".json.gz")) {
-                throw InvalidCommandException("GZiped Json file (ending with .json.gz) required, " +
                         "got $name instead")
             }
             return name
@@ -165,12 +152,9 @@ class CommandOptions(args: Array<String>) {
     val protoLogGroupsClassNameArg: String
     val protoLogGroupsJarArg: String
     val viewerConfigFileNameArg: String
-    val viewerConfigTypeArg: String
     val outputSourceJarArg: String
     val logProtofileArg: String
     val viewerConfigFilePathArg: String
-    val legacyViewerConfigFilePathArg: String?
-    val legacyOutputFilePath: String?
     val javaSourceArgs: List<String>
     val command: String
 
@@ -216,18 +200,9 @@ class CommandOptions(args: Array<String>) {
                     validateClassName(getParam(PROTOLOGGROUP_CLASS_PARAM, params))
                 protoLogGroupsJarArg = validateJarName(getParam(PROTOLOGGROUP_JAR_PARAM, params))
                 viewerConfigFileNameArg = validateNotSpecified(VIEWER_CONFIG_PARAM, params)
-                viewerConfigTypeArg = validateNotSpecified(VIEWER_CONFIG_TYPE_PARAM, params)
                 outputSourceJarArg = validateSrcJarName(getParam(OUTPUT_SOURCE_JAR_PARAM, params))
                 viewerConfigFilePathArg = validateViewerConfigFilePath(
                     getParam(VIEWER_CONFIG_FILE_PATH_PARAM, params))
-                legacyViewerConfigFilePathArg =
-                    getOptionalParam(LEGACY_VIEWER_CONFIG_FILE_PATH_PARAM, params)?.let {
-                        validateLegacyViewerConfigFilePath(it)
-                    }
-                legacyOutputFilePath =
-                    getOptionalParam(LEGACY_OUTPUT_FILE_PATH, params)?.let {
-                        validateOutputFilePath(it)
-                    }
                 javaSourceArgs = validateJavaInputList(inputFiles)
                 logProtofileArg = ""
             }
@@ -238,13 +213,9 @@ class CommandOptions(args: Array<String>) {
                 protoLogGroupsJarArg = validateJarName(getParam(PROTOLOGGROUP_JAR_PARAM, params))
                 viewerConfigFileNameArg =
                     validateConfigFileName(getParam(VIEWER_CONFIG_PARAM, params))
-                viewerConfigTypeArg = validateConfigType(getParam(VIEWER_CONFIG_TYPE_PARAM, params))
                 outputSourceJarArg = validateNotSpecified(OUTPUT_SOURCE_JAR_PARAM, params)
                 viewerConfigFilePathArg =
                     validateNotSpecified(VIEWER_CONFIG_FILE_PATH_PARAM, params)
-                legacyViewerConfigFilePathArg =
-                    validateNotSpecified(LEGACY_VIEWER_CONFIG_FILE_PATH_PARAM, params)
-                legacyOutputFilePath = validateNotSpecified(LEGACY_OUTPUT_FILE_PATH, params)
                 javaSourceArgs = validateJavaInputList(inputFiles)
                 logProtofileArg = ""
             }

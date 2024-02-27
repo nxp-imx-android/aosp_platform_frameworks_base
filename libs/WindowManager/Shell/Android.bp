@@ -72,28 +72,9 @@ java_genrule {
         "--loggroups-class com.android.wm.shell.protolog.ShellProtoLogGroup " +
         "--loggroups-jar $(location :wm_shell_protolog-groups) " +
         "--viewer-config-file-path /system_ext/etc/wmshell.protolog.pb " +
-        "--legacy-viewer-config-file-path /system_ext/etc/wmshell.protolog.json.gz " +
-        "--legacy-output-file-path /data/misc/wmtrace/shell_log.winscope " +
         "--output-srcjar $(out) " +
         "$(locations :wm_shell-sources)",
     out: ["wm_shell_protolog.srcjar"],
-}
-
-java_genrule {
-    name: "generate-wm_shell_protolog.json",
-    srcs: [
-        ":wm_shell-sources",
-        ":wm_shell_protolog-groups",
-    ],
-    tools: ["protologtool"],
-    cmd: "$(location protologtool) generate-viewer-config " +
-        "--protolog-class com.android.internal.protolog.ProtoLog " +
-        "--loggroups-class com.android.wm.shell.protolog.ShellProtoLogGroup " +
-        "--loggroups-jar $(location :wm_shell_protolog-groups) " +
-        "--viewer-config-type json " +
-        "--viewer-config $(out) " +
-        "$(locations :wm_shell-sources)",
-    out: ["wm_shell_protolog.json"],
 }
 
 java_genrule {
@@ -107,24 +88,9 @@ java_genrule {
         "--protolog-class com.android.internal.protolog.ProtoLog " +
         "--loggroups-class com.android.wm.shell.protolog.ShellProtoLogGroup " +
         "--loggroups-jar $(location :wm_shell_protolog-groups) " +
-        "--viewer-config-type proto " +
         "--viewer-config $(out) " +
         "$(locations :wm_shell-sources)",
     out: ["wmshell.protolog.pb"],
-}
-
-java_genrule {
-    name: "protolog.json.gz",
-    srcs: [":generate-wm_shell_protolog.json"],
-    out: ["wmshell.protolog.json.gz"],
-    cmd: "gzip -c < $(in) > $(out)",
-}
-
-prebuilt_etc {
-    name: "wmshell.protolog.json.gz",
-    system_ext_specific: true,
-    src: ":protolog.json.gz",
-    filename_from_src: true,
 }
 
 prebuilt_etc {
@@ -216,7 +182,6 @@ android_library {
 java_defaults {
     name: "wmshell_defaults",
     required: [
-        "wmshell.protolog.json.gz",
         "wmshell.protolog.pb",
     ],
 }
