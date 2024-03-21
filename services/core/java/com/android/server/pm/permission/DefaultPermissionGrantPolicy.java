@@ -648,6 +648,10 @@ final class DefaultPermissionGrantPolicy {
         grantPermissionsToSystemPackage(pm, getDefaultDockManagerPackage(), userId,
                 NOTIFICATION_PERMISSIONS);
 
+        // Cactus Player
+        grantPermissionsToSystemPackage(pm, "android.intent.category.CACTUSPLAYER_VIDEOPLAYER", userId,
+                STORAGE_PERMISSIONS);
+
         // Camera
         grantPermissionsToSystemPackage(pm,
                 getDefaultSystemHandlerActivityPackage(pm, MediaStore.ACTION_IMAGE_CAPTURE, userId),
