@@ -432,6 +432,7 @@ public class NavigationBarControllerImpl implements
                 ? mContext
                 : mContext.createDisplayContext(display);
 
+        context.setTheme(mContext.getThemeResId());
         NavigationBarComponent component = mNavigationBarComponentFactory.create(
                 context, savedState);
         NavigationBar navBar = component.getNavigationBar();
