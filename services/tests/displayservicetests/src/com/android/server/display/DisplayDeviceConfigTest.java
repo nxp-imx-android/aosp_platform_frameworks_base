@@ -464,20 +464,83 @@ public final class DisplayDeviceConfigTest {
         assertTrue(mDisplayDeviceConfig.hasSdrToHdrRatioSpline());
         assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(500 * 1.6f),
                 mDisplayDeviceConfig.getHdrBrightnessFromSdr(
-                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(500), Float.POSITIVE_INFINITY),
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(500), /* maxDesiredHdrSdrRatio= */
+                        Float.POSITIVE_INFINITY, /* ratioScaleFactor= */ 1),
                 ZERO_DELTA);
         assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(500),
                 mDisplayDeviceConfig.getHdrBrightnessFromSdr(
-                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(500), 1.0f),
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(500), /* maxDesiredHdrSdrRatio= */
+                        1.0f, /* ratioScaleFactor= */ 1),
                 ZERO_DELTA);
         assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(500 * 1.25f),
                 mDisplayDeviceConfig.getHdrBrightnessFromSdr(
-                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(500), 1.25f),
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(500), /* maxDesiredHdrSdrRatio= */
+                        1.25f, /* ratioScaleFactor= */ 1),
                 SMALL_DELTA);
         assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(2 * 4),
                 mDisplayDeviceConfig.getHdrBrightnessFromSdr(
-                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(2), Float.POSITIVE_INFINITY),
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(2), /* maxDesiredHdrSdrRatio= */
+                        Float.POSITIVE_INFINITY, /* ratioScaleFactor= */ 1),
                 SMALL_DELTA);
+
+        // Ratio scale factor
+        assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(500),
+                mDisplayDeviceConfig.getHdrBrightnessFromSdr(
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(500), /* maxDesiredHdrSdrRatio= */
+                        Float.POSITIVE_INFINITY, /* ratioScaleFactor= */ 0),
+                ZERO_DELTA);
+        assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(500 * ((1.6f - 1) * 0.3f + 1)),
+                mDisplayDeviceConfig.getHdrBrightnessFromSdr(
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(500), /* maxDesiredHdrSdrRatio= */
+                        Float.POSITIVE_INFINITY, /* ratioScaleFactor= */ 0.3f),
+                SMALL_DELTA);
+        assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(2),
+                mDisplayDeviceConfig.getHdrBrightnessFromSdr(
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(2), /* maxDesiredHdrSdrRatio= */
+                        Float.POSITIVE_INFINITY, /* ratioScaleFactor= */ 0),
+                SMALL_DELTA);
+        assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(2 * ((4 - 1) * 0.85f + 1)),
+                mDisplayDeviceConfig.getHdrBrightnessFromSdr(
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(2), /* maxDesiredHdrSdrRatio= */
+                        Float.POSITIVE_INFINITY, /* ratioScaleFactor= */ 0.85f),
+                SMALL_DELTA);
+        assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(2 * ((4 - 1) * 0.5f + 1)),
+                mDisplayDeviceConfig.getHdrBrightnessFromSdr(
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(2), /* maxDesiredHdrSdrRatio= */
+                        Float.POSITIVE_INFINITY, /* ratioScaleFactor= */ 0.5f),
+                SMALL_DELTA);
+
+        // Max desired Hdr/SDR ratio applied after ratio scale factor
+        assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(500),
+                mDisplayDeviceConfig.getHdrBrightnessFromSdr(
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(500), /* maxDesiredHdrSdrRatio= */
+                        1.25f, /* ratioScaleFactor= */ 0),
+                ZERO_DELTA);
+        assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(500 * ((1.6f - 1) * 0.3f + 1)),
+                mDisplayDeviceConfig.getHdrBrightnessFromSdr(
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(500), /* maxDesiredHdrSdrRatio= */
+                        1.3f, /* ratioScaleFactor= */ 0.3f),
+                SMALL_DELTA);
+        assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(500 * 1.1f),
+                mDisplayDeviceConfig.getHdrBrightnessFromSdr(
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(500), /* maxDesiredHdrSdrRatio= */
+                        1.1f, /* ratioScaleFactor= */ 0.3f),
+                SMALL_DELTA);
+        assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(2 * ((4 - 1) * 0.85f + 1)),
+                mDisplayDeviceConfig.getHdrBrightnessFromSdr(
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(2), /* maxDesiredHdrSdrRatio= */ 5,
+                        /* ratioScaleFactor= */ 0.85f),
+                SMALL_DELTA);
+        assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(2 * 2),
+                mDisplayDeviceConfig.getHdrBrightnessFromSdr(
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(2), /* maxDesiredHdrSdrRatio= */ 2,
+                        /* ratioScaleFactor= */ 0.5f),
+                SMALL_DELTA);
+        assertEquals(NITS_TO_BRIGHTNESS_SPLINE.interpolate(2),
+                mDisplayDeviceConfig.getHdrBrightnessFromSdr(
+                        NITS_TO_BRIGHTNESS_SPLINE.interpolate(2), /* maxDesiredHdrSdrRatio= */ 1,
+                        /* ratioScaleFactor= */ 0.5f),
+                ZERO_DELTA);
     }
 
     @Test

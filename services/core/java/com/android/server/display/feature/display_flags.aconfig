@@ -506,6 +506,14 @@ flag {
 }
 
 flag {
+    name: "hdr_brightness_setting"
+    namespace: "display_manager"
+    description: "New settings page for controlling the HDR brightness."
+    bug: "323940755"
+    is_fixed_read_only: true
+}
+
+flag {
     name: "enable_on_mode_changed_vsync_phase_offset"
     namespace: "core_graphics"
     description: "Flag to utilize vsync offset and presentation deadline from onModeChanged callback"

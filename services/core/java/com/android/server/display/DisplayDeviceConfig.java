@@ -1222,9 +1222,11 @@ public class DisplayDeviceConfig {
      *
      * @return the HDR brightness or BRIGHTNESS_INVALID when no mapping exists.
      */
-    public float getHdrBrightnessFromSdr(float brightness, float maxDesiredHdrSdrRatio) {
+    public float getHdrBrightnessFromSdr(float brightness, float maxDesiredHdrSdrRatio,
+            float ratioScaleFactor) {
         Spline sdrToHdrSpline = mHbmData != null ? mHbmData.sdrToHdrRatioSpline : null;
-        return getHdrBrightnessFromSdr(brightness, maxDesiredHdrSdrRatio, sdrToHdrSpline);
+        return getHdrBrightnessFromSdr(brightness, maxDesiredHdrSdrRatio, ratioScaleFactor,
+                sdrToHdrSpline);
     }
 
     /**
@@ -1235,7 +1237,7 @@ public class DisplayDeviceConfig {
      * @return the HDR brightness or BRIGHTNESS_INVALID when no mapping exists.
      */
     public float getHdrBrightnessFromSdr(float brightness, float maxDesiredHdrSdrRatio,
-            @Nullable Spline sdrToHdrSpline) {
+            float ratioScaleFactor, @Nullable Spline sdrToHdrSpline) {
         if (sdrToHdrSpline == null) {
             return PowerManager.BRIGHTNESS_INVALID;
         }
@@ -1246,7 +1248,9 @@ public class DisplayDeviceConfig {
             return PowerManager.BRIGHTNESS_INVALID;
         }
 
-        float ratio = Math.min(sdrToHdrSpline.interpolate(nits), maxDesiredHdrSdrRatio);
+        float rawRatio = sdrToHdrSpline.interpolate(nits);
+        float scaledRatio = (rawRatio - 1) * ratioScaleFactor + 1;
+        float ratio = Math.min(scaledRatio, maxDesiredHdrSdrRatio);
         float hdrNits = nits * ratio;
         if (getNitsToBacklightSpline() == null) {
             return PowerManager.BRIGHTNESS_INVALID;

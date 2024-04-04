@@ -2082,9 +2082,11 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         final DisplayDeviceInfo info = mDisplayDevice.getDisplayDeviceInfoLocked();
         return mInjector.getHighBrightnessModeController(mHandler, info.width, info.height,
                 displayToken, displayUniqueId, PowerManager.BRIGHTNESS_MIN,
-                PowerManager.BRIGHTNESS_MAX, hbmData, (sdrBrightness, maxDesiredHdrSdrRatio) ->
+                PowerManager.BRIGHTNESS_MAX, hbmData,
+                (sdrBrightness, maxDesiredHdrSdrRatio, ratioScaleFactor) ->
                         mDisplayDeviceConfig.getHdrBrightnessFromSdr(sdrBrightness,
-                                maxDesiredHdrSdrRatio), modeChangeCallback, hbmMetadata, mContext);
+                                maxDesiredHdrSdrRatio, ratioScaleFactor), modeChangeCallback,
+                hbmMetadata, mContext);
     }
 
     private void blockScreenOn() {
