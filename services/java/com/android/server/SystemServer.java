@@ -296,6 +296,7 @@ import com.android.server.wm.ActivityTaskManagerService;
 import com.android.server.wm.WindowManagerGlobalLock;
 import com.android.server.wm.WindowManagerService;
 
+import dalvik.system.VMDebug;
 import dalvik.system.VMRuntime;
 
 import java.io.File;
@@ -776,6 +777,12 @@ public final class SystemServer implements Dumpable {
     }
 
     private void run() {
+        if (VMDebug.isDebuggingEnabled()
+                && SystemProperties.getBoolean("debug.system_server.jdwp_wait", false)) {
+            Slog.i(TAG, "System server is waiting for debugger before starting...");
+            Debug.waitForDebugger();
+        }
+
         TimingsTraceAndSlog t = new TimingsTraceAndSlog();
         try {
             t.traceBegin("InitBeforeStartServices");
