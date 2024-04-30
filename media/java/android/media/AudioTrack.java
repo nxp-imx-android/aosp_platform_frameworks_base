@@ -17,6 +17,7 @@
 package android.media;
 
 import static android.media.AudioManager.AUDIO_SESSION_ID_GENERATE;
+import static android.media.audiopolicy.Flags.multiZoneAudio;
 import static android.media.audio.Flags.FLAG_CODEC_PROVENANCE_API;
 import static android.media.audio.Flags.FLAG_ROUTED_DEVICE_IDS;
 import static android.media.audio.Flags.FLAG_PARTIAL_FLUSH_FOR_PCM_OFFLOAD;
@@ -1514,10 +1515,22 @@ public class AudioTrack extends PlayerBase
                     throw new UnsupportedOperationException(
                             "Offload and low latency modes are incompatible");
                 }
-                if (AudioSystem.getDirectPlaybackSupport(mFormat, mAttributes)
-                        == AudioSystem.DIRECT_NOT_SUPPORTED) {
-                    throw new UnsupportedOperationException(
-                            "Cannot create AudioTrack, offload format / attributes not supported");
+                if (multiZoneAudio()) {
+                    AttributionSource attributionSource = mContext == null
+                            ? AttributionSource.myAttributionSource() :
+                            mContext.getAttributionSource();
+
+                    if (AudioSystem.getDirectPlaybackSupport(mFormat, mAttributes,
+                            attributionSource.getUid()) == AudioSystem.DIRECT_NOT_SUPPORTED) {
+                        throw new UnsupportedOperationException("Cannot create AudioTrack, "
+                                + "offload format / attributes not supported");
+                    }
+                } else {
+                    if (AudioSystem.getDirectPlaybackSupport(mFormat, mAttributes)
+                            == AudioSystem.DIRECT_NOT_SUPPORTED) {
+                        throw new UnsupportedOperationException("Cannot create AudioTrack, "
+                                + "offload format / attributes not supported");
+                    }
                 }
             }
 
@@ -1968,29 +1981,29 @@ public class AudioTrack extends PlayerBase
         mChannelConfiguration = channelConfig;
 
         switch (channelConfig) {
-        case AudioFormat.CHANNEL_OUT_DEFAULT: //AudioFormat.CHANNEL_CONFIGURATION_DEFAULT
-        case AudioFormat.CHANNEL_OUT_MONO:
-        case AudioFormat.CHANNEL_CONFIGURATION_MONO:
-            mChannelCount = 1;
-            mChannelMask = AudioFormat.CHANNEL_OUT_MONO;
-            break;
-        case AudioFormat.CHANNEL_OUT_STEREO:
-        case AudioFormat.CHANNEL_CONFIGURATION_STEREO:
-            mChannelCount = 2;
-            mChannelMask = AudioFormat.CHANNEL_OUT_STEREO;
-            break;
-        default:
-            if (channelConfig == AudioFormat.CHANNEL_INVALID && channelIndexMask != 0) {
-                mChannelCount = 0;
-                break; // channel index configuration only
+            case AudioFormat.CHANNEL_OUT_DEFAULT, // AudioFormat.CHANNEL_CONFIGURATION_DEFAULT
+                 AudioFormat.CHANNEL_OUT_MONO,
+                 AudioFormat.CHANNEL_CONFIGURATION_MONO -> {
+                mChannelCount = 1;
+                mChannelMask = AudioFormat.CHANNEL_OUT_MONO;
             }
-            if (!isMultichannelConfigSupported(channelConfig, audioFormat)) {
-                throw new IllegalArgumentException(
-                        "Unsupported channel mask configuration " + channelConfig
-                        + " for encoding " + audioFormat);
+            case AudioFormat.CHANNEL_OUT_STEREO,
+                 AudioFormat.CHANNEL_CONFIGURATION_STEREO -> {
+                mChannelCount = 2;
+                mChannelMask = AudioFormat.CHANNEL_OUT_STEREO;
             }
-            mChannelMask = channelConfig;
-            mChannelCount = AudioFormat.channelCountFromOutChannelMask(channelConfig);
+            default -> {
+                if (channelConfig == AudioFormat.CHANNEL_INVALID && channelIndexMask != 0) {
+                    mChannelCount = 0; // channel index configuration only
+                } else {
+                    if (!isMultichannelConfigSupported(channelConfig, audioFormat)) {
+                        throw new IllegalArgumentException("Unsupported channel mask configuration "
+                                + channelConfig + " for encoding " + audioFormat);
+                    }
+                    mChannelMask = channelConfig;
+                    mChannelCount = AudioFormat.channelCountFromOutChannelMask(channelConfig);
+                }
+            }
         }
         // check the channel index configuration (if present)
         mChannelIndexMask = channelIndexMask;
@@ -2003,7 +2016,8 @@ public class AudioTrack extends PlayerBase
                             || channelIndexCount <= AudioSystem.OUT_CHANNEL_COUNT_MAX); // PCM
             if (!accepted) {
                 throw new IllegalArgumentException(
-                        "Unsupported channel index mask configuration " + channelIndexMask
+                        "Unsupported channel index mask configuration "
+                        + channelIndexMask
                         + " for encoding " + audioFormat);
             }
             if (mChannelCount == 0) {

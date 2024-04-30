@@ -16,6 +16,8 @@
 
 package com.android.server.audio;
 
+import static android.media.audio.Flags.FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.Mockito.any;
@@ -44,7 +46,9 @@ import android.os.IpcDataCache;
 import android.os.PermissionEnforcer;
 import android.os.RemoteException;
 import android.os.test.TestLooper;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -62,6 +66,8 @@ import java.util.List;
 public class AbsoluteVolumeBehaviorTest {
     @Rule
     public TestRule compatChangeRule = new CoreCompatChangeRule();
+
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private static final String TAG = "AbsoluteVolumeBehaviorTest";
 
@@ -231,6 +237,7 @@ public class AbsoluteVolumeBehaviorTest {
                 eq(DEVICE_SPEAKER_OUT), any());
     }
 
+    @EnableFlags(FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT)
     @Test
     public void setStreamVolume_noAbsVolFlag_dispatchesVolumeChanged() throws RemoteException {
         VolumeInfo volumeInfo = new VolumeInfo.Builder(AudioManager.STREAM_MUSIC)
@@ -368,6 +375,7 @@ public class AbsoluteVolumeBehaviorTest {
                 anyInt(), anyInt());
     }
 
+    @EnableFlags(FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT)
     @Test
     public void switchAbsoluteVolumeBehaviorToAdjustOnly_onlyDispatchesVolumeChangeForNewListener()
             throws RemoteException {
