@@ -3001,4 +3001,28 @@ public class AudioSystem
      * @hide
      */
     public static native int setSimulateDeviceConnections(boolean enabled);
+
+    /**
+     * Maps a given zone id to a given user id, this will be use for routing and volume management
+     * when audio policy engine with audio zone id's are used.
+     *
+     * @param userId to consider
+     * @param zoneId to consider
+     * @return {@link #SUCCESS} if successfully mapped.
+     *
+     * @hide
+     */
+    public static native int setProductStrategiesZoneIdForUserId(int userId, int zoneId);
+
+    /**
+     * Resets the zone id to given user id mapping previously set via
+     * {@link #setProductStrategiesZoneIdForUserId(int, int)}
+     *
+     * @param userId
+     * @return {@link #SUCCESS} if successfully reset.
+     *
+     * @hide
+     */
+    public static native int resetProductStrategiesZoneIdForUserId(int userId);
+
 }

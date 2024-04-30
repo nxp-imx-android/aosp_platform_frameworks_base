@@ -37,6 +37,7 @@ public class NoOpAudioSystemAdapter extends AudioSystemAdapter {
     private boolean mMuteMicrophoneFails = false;
     private boolean mIsStreamActive = false;
     private List<AudioProductStrategy> mAudioProductStrategies = Collections.emptyList();
+    private boolean mFailOnUserSetProductStrategiesMapping = false;
 
     public void configureIsMicrophoneMuted(boolean muted) {
         mIsMicMuted = muted;
@@ -199,5 +200,25 @@ public class NoOpAudioSystemAdapter extends AudioSystemAdapter {
     @Override
     public List<AudioProductStrategy> getAudioProductStrategies(boolean filterInternal) {
         return mAudioProductStrategies;
+    }
+
+    @Override
+    public int setProductStrategiesZoneIdForUserId(int userId, int zoneId) {
+        return mFailOnUserSetProductStrategiesMapping
+                ? AudioSystem.AUDIO_STATUS_ERROR : AudioSystem.AUDIO_STATUS_OK;
+    }
+
+    @Override
+    public int resetProductStrategiesZoneIdForUserId(int userId) {
+        return AudioSystem.AUDIO_STATUS_OK;
+    }
+
+    /**
+     * Configures this adapter to fail when calling
+     * {@link #setProductStrategiesZoneIdForUserId(int, int)}.
+     * @param fail true to fail, false otherwise
+     */
+    public void configureFailOnSetProductStrategiesZoneIdForUserId(boolean fail) {
+        mFailOnUserSetProductStrategiesMapping = fail;
     }
 }

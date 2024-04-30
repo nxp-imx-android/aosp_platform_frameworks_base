@@ -1882,6 +1882,92 @@ public class AudioManager {
     }
 
     /**
+     * Maps a given zone id to a given user id, this will be use for routing and volume management
+     * when audio policy engine with audio zone id's are used.
+     * At initial state, all user ids are implicitly assigned to the zone 0. All other zones
+     * are not reachable in term of routing and volume management.
+     *
+     * <p>If the user is not mapped to a particular zone then the audio management of the user will
+     * fall under the {@link AudioProductStrategy#DEFAULT_ZONE_ID}
+     *
+     * @param userId to consider
+     * @param zoneId the userId shall be assigned to
+     * @return true if the operation was successful, false otherwise
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            android.Manifest.permission.MODIFY_AUDIO_ROUTING,
+            android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
+    public boolean setProductStrategiesZoneIdForUserId(int userId, int zoneId) {
+        IAudioService service = getService();
+        try {
+            int status = service.setProductStrategiesZoneIdForUserId(userId, zoneId);
+            return status == AudioSystem.SUCCESS;
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Resets the zone id to given user id mapping previously set by
+     * {@link #setProductStrategiesZoneIdForUserId(int, int)}
+     *
+     * @param userId to consider
+     * @return true if the operation was successful, false otherwise.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            android.Manifest.permission.MODIFY_AUDIO_ROUTING,
+            android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
+    public boolean resetProductStrategiesZoneIdForUserId(int userId) {
+        IAudioService service = getService();
+        try {
+            int status = service.resetProductStrategiesZoneIdForUserId(userId);
+            return status == AudioSystem.SUCCESS;
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns the current user mapped to a particular audio zone
+     *
+     * <p>If the user is not mapped to a particular zone then the audio management of the user will
+     * fall under the {@link AudioProductStrategy#DEFAULT_ZONE_ID}
+     *
+     * At initialization, all the UserId are attached to the zone 0.
+     * As the secondary zones are non reachable for neither routing nor volume, it will return
+     * {@code UserHandle.USER_NULL} until explicitly assigned by
+     * {@link #setProductStrategiesZoneIdForUserId(int, int)}.
+     *
+     * @param zoneId to consider
+     * @return the UserId if the zone is mapped to a UserId, {@code UserHandle.USER_CURRENT}
+     * otherwise.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
+    public int getUserIdForZoneId(int zoneId) {
+        IAudioService service = getService();
+        try {
+            return service.getUserIdForZoneId(zoneId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Set the system usages to be supported on this device.
      * @param systemUsages array of system usages to support {@link AttributeSystemUsage}
      * @hide
