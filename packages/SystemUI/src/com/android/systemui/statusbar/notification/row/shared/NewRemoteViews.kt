@@ -19,10 +19,10 @@ package com.android.systemui.statusbar.notification.row.shared
 import android.widget.RemoteViews
 
 class NewRemoteViews(
-    val contracted: RemoteViews?,
-    val headsUp: RemoteViews?,
-    val expanded: RemoteViews?,
-    val public: RemoteViews?,
-    val normalGroupHeader: RemoteViews?,
-    val minimizedGroupHeader: RemoteViews?,
+    val contracted: RemoteViews? = null,
+    val headsUp: RemoteViews? = null,
+    val expanded: RemoteViews? = null,
+    val public: RemoteViews? = null,
+    val normalGroupHeader: RemoteViews? = null,
+    val minimizedGroupHeader: RemoteViews? = null,
 )
