@@ -142,6 +142,11 @@ public class DisplayManagerFlags {
             Flags::refactorDisplayPowerController
     );
 
+    private final FlagState mDozeBrightnessStrategy = new FlagState(
+            Flags.FLAG_DOZE_BRIGHTNESS_STRATEGY,
+            Flags::dozeBrightnessStrategy
+    );
+
     private final FlagState mUseFusionProxSensor = new FlagState(
             Flags.FLAG_USE_FUSION_PROX_SENSOR,
             Flags::useFusionProxSensor
@@ -420,6 +425,10 @@ public class DisplayManagerFlags {
         return mRefactorDisplayPowerController.isEnabled();
     }
 
+    public boolean isDozeBrightnessStrategyEnabled() {
+        return mDozeBrightnessStrategy.isEnabled();
+    }
+
     public boolean isUseFusionProxSensorEnabled() {
         return mUseFusionProxSensor.isEnabled();
     }
@@ -634,6 +643,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mPixelAnisotropyCorrectionEnabled);
         pw.println(" " + mSensorBasedBrightnessThrottling);
         pw.println(" " + mRefactorDisplayPowerController);
+        pw.println(" " + mDozeBrightnessStrategy);
         pw.println(" " + mResolutionBackupRestore);
         pw.println(" " + mUseFusionProxSensor);
         pw.println(" " + mDozeBrightnessFloat);

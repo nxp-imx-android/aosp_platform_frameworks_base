@@ -487,6 +487,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     private boolean mBootCompleted;
     private final DisplayManagerFlags mFlags;
 
+    @Nullable
     private DisplayOffloadSession mDisplayOffloadSession;
 
     // Used to scale the brightness in doze mode
@@ -598,7 +599,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 new DisplayBrightnessController(context, null,
                         mDisplayId, mLogicalDisplay.getDisplayInfoLocked().brightnessDefault,
                         brightnessSetting, () -> postBrightnessChangeRunnable(),
-                        new HandlerExecutor(mHandler), flags);
+                        new HandlerExecutor(mHandler), flags, mDisplayDeviceConfig);
 
         String thermalBrightnessThrottlingDataId =
                 logicalDisplay.getDisplayInfoLocked().thermalBrightnessThrottlingDataId;
@@ -974,6 +975,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         reloadReduceBrightColours();
         setAnimatorRampSpeeds(/* isIdleMode= */ false);
 
+        mDisplayBrightnessController.onDisplayChanged(mDisplayDeviceConfig);
         mBrightnessRangeController.loadFromConfig(hbmMetadata, token, info, mDisplayDeviceConfig);
     }
 
@@ -1506,7 +1508,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             brightnessState = clampScreenBrightness(brightnessState);
         }
 
-        if (useDozeBrightness && (Float.isNaN(brightnessState)
+        if (!mFlags.isDozeBrightnessStrategyEnabled() && useDozeBrightness
+                && (Float.isNaN(brightnessState)
                 || displayBrightnessState.getDisplayBrightnessStrategyName()
                 .equals(DisplayBrightnessStrategyConstants.FALLBACK_BRIGHTNESS_STRATEGY_NAME))) {
             if (mFlags.isDisplayOffloadEnabled() && mDisplayOffloadSession != null
@@ -2518,7 +2521,11 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     }
 
     public float getDozeBrightnessForOffload() {
-        return mDisplayBrightnessController.getCurrentBrightness() * mDozeScaleFactor;
+        if (mFlags.isDozeBrightnessStrategyEnabled()) {
+            return mDisplayBrightnessController.getManualDozeBrightness();
+        } else {
+            return mDisplayBrightnessController.getCurrentBrightness() * mDozeScaleFactor;
+        }
     }
 
     public void setBrightness(float brightness) {
