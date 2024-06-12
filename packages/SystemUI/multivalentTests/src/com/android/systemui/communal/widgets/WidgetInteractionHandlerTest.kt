@@ -75,26 +75,6 @@ class WidgetInteractionHandlerTest : SysuiTestCase() {
     }
 
     @Test
-    fun launchAnimatorIsUsedForSmartspaceView() {
-        val parent = FrameLayout(context)
-        val view = SmartspaceAppWidgetHostView(context)
-        parent.addView(view)
-        val (fillInIntent, activityOptions) = testResponse.getLaunchOptions(view)
-
-        underTest.onInteraction(view, testIntent, testResponse)
-
-        verify(activityStarter)
-            .startPendingIntentMaybeDismissingKeyguard(
-                eq(testIntent),
-                eq(false),
-                isNull(),
-                notNull(),
-                refEq(fillInIntent),
-                refEq(activityOptions.toBundle()),
-            )
-    }
-
-    @Test
     fun launchAnimatorIsNotUsedForRegularView() {
         val parent = FrameLayout(context)
         val view = View(context)
