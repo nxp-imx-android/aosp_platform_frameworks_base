@@ -17,17 +17,7 @@
 package com.android.systemui.statusbar.chips.call.domain.interactor
 
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.applicationCoroutineScope
-import com.android.systemui.plugins.activityStarter
 import com.android.systemui.statusbar.phone.ongoingcall.data.repository.ongoingCallRepository
-import com.android.systemui.util.time.fakeSystemClock
 
 val Kosmos.callChipInteractor: CallChipInteractor by
-    Kosmos.Fixture {
-        CallChipInteractor(
-            scope = applicationCoroutineScope,
-            repository = ongoingCallRepository,
-            systemClock = fakeSystemClock,
-            activityStarter = activityStarter,
-        )
-    }
+    Kosmos.Fixture { CallChipInteractor(repository = ongoingCallRepository) }
