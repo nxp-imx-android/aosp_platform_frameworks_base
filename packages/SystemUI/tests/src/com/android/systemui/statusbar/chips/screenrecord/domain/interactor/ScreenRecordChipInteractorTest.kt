@@ -31,8 +31,8 @@ import com.android.systemui.mediaprojection.taskswitcher.FakeActivityTaskManager
 import com.android.systemui.res.R
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.screenRecordRepository
-import com.android.systemui.statusbar.chips.domain.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.screenrecord.ui.view.EndScreenRecordingDialogDelegate
+import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.mockSystemUIDialogFactory
