@@ -833,7 +833,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 return false;
             }
             mUiEventLogger.log(GlobalActionsEvent.GA_SHUTDOWN_LONG_PRESS);
-            if (!mUserManager.hasUserRestriction(UserManager.DISALLOW_SAFE_BOOT)) {
+            if (!mUserManager.hasUserRestriction(UserManager.DISALLOW_SAFE_BOOT,
+                    getCurrentUser().getUserHandle())) {
                 mWindowManagerFuncs.reboot(true);
                 return true;
             }
@@ -974,7 +975,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 return false;
             }
             mUiEventLogger.log(GlobalActionsEvent.GA_REBOOT_LONG_PRESS);
-            if (!mUserManager.hasUserRestriction(UserManager.DISALLOW_SAFE_BOOT)) {
+            if (!mUserManager.hasUserRestriction(UserManager.DISALLOW_SAFE_BOOT,
+                    getCurrentUser().getUserHandle())) {
                 mWindowManagerFuncs.reboot(true);
                 return true;
             }
