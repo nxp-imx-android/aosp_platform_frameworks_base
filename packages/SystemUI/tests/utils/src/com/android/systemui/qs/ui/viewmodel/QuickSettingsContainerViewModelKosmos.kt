@@ -19,6 +19,7 @@ package com.android.systemui.qs.ui.viewmodel
 import com.android.systemui.brightness.ui.viewmodel.brightnessSliderViewModel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.qs.panels.ui.viewmodel.editModeViewModel
+import com.android.systemui.qs.panels.ui.viewmodel.quickQuickSettingsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.tileGridViewModel
 
 val Kosmos.quickSettingsContainerViewModel by
@@ -27,5 +28,6 @@ val Kosmos.quickSettingsContainerViewModel by
             brightnessSliderViewModel,
             tileGridViewModel,
             editModeViewModel,
+            quickQuickSettingsViewModel,
         )
     }
