@@ -161,7 +161,9 @@ import com.android.server.storage.AppFuseBridge;
 import com.android.server.storage.StorageSessionController;
 import com.android.server.storage.StorageSessionController.ExternalStorageServiceException;
 import com.android.server.storage.WatchedVolumeInfo;
+import com.android.server.utils.Watchable;
 import com.android.server.utils.WatchedArrayMap;
+import com.android.server.utils.Watcher;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal.ScreenObserver;
 
@@ -1964,6 +1966,13 @@ class StorageManagerService extends IStorageManager.Stub
         mContext = context;
         mCallbacks = new Callbacks(FgThread.get().getLooper());
 
+        mVolumes.registerObserver(new Watcher() {
+            @Override
+            public void onChange(Watchable what) {
+                // When we change the list or any volume contained in it, invalidate the cache
+                StorageManager.invalidateVolumeListCache();
+            }
+        });
         HandlerThread hthread = new HandlerThread(TAG);
         hthread.start();
         mHandler = new StorageManagerServiceHandler(hthread.getLooper());
