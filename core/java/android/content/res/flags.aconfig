@@ -246,3 +246,13 @@ flag {
     description: "Generate and use idmaps for external resources referenced in APKs"
     bug: "373535266"
 }
+
+flag {
+    name: "apply_font_weight_adjustment_on_cached_strings"
+    namespace: "resource_manager"
+    description: "Apply font weight adjustments on cached spannables if the weight has changed between caching and retrieving"
+    bug: "379962518"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
