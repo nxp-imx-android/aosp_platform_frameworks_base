@@ -4138,6 +4138,11 @@
     <!-- Whether device supports double tap to wake -->
     <bool name="config_supportDoubleTapWake">false</bool>
 
+    <!-- Whether device supports double tap to sleep. This will allow the user to enable/disable
+         double tap gestures in non-action areas in the lock screen and launcher workspace to go to
+         sleep. -->
+    <bool name="config_supportDoubleTapSleep">false</bool>
+
     <!-- The RadioAccessFamilies supported by the device.
          Empty is viewed as "all".  Only used on devices which
          don't support RIL_REQUEST_GET_RADIO_CAPABILITY
