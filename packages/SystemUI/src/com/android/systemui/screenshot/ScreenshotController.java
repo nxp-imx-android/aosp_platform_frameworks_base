@@ -95,7 +95,7 @@ import javax.inject.Provider;
 /**
  * Controls the state and flow for screenshots.
  */
-public class ScreenshotController implements ScreenshotHandler {
+public class ScreenshotController implements InteractiveScreenshotHandler {
     private static final String TAG = logTag(ScreenshotController.class);
 
     // From WizardManagerHelper.java
@@ -392,16 +392,19 @@ public class ScreenshotController implements ScreenshotHandler {
      * Requests the view to dismiss the current screenshot (may be ignored, if screenshot is already
      * being dismissed)
      */
-    void requestDismissal(ScreenshotEvent event) {
+    @Override
+    public void requestDismissal(ScreenshotEvent event) {
         mViewProxy.requestDismissal(event);
     }
 
-    boolean isPendingSharedTransition() {
+    @Override
+    public boolean isPendingSharedTransition() {
         return mActionExecutor.isPendingSharedTransition();
     }
 
     // Any cleanup needed when the service is being destroyed.
-    void onDestroy() {
+    @Override
+    public void onDestroy() {
         if (mSaveInBgTask != null) {
             // just log success/failure for the pre-existing screenshot
             mSaveInBgTask.setActionsReadyListener(this::logSuccessOnActionsReady);
@@ -582,7 +585,8 @@ public class ScreenshotController implements ScreenshotHandler {
         layout.setClipToPadding(false);
     }
 
-    void removeWindow() {
+    @Override
+    public void removeWindow() {
         final View decorView = mWindow.peekDecorView();
         if (decorView != null && decorView.isAttachedToWindow()) {
             if (DEBUG_WINDOW) {
@@ -833,12 +837,12 @@ public class ScreenshotController implements ScreenshotHandler {
 
     /** Injectable factory to create screenshot controller instances for a specific display. */
     @AssistedFactory
-    public interface Factory {
+    public interface Factory extends InteractiveScreenshotHandler.Factory {
         /**
          * Creates an instance of the controller for that specific display.
          *
          * @param display                 display to capture
          */
-        ScreenshotController create(Display display);
+        LegacyScreenshotController create(Display display);
     }
 }
