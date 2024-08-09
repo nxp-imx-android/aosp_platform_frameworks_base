@@ -255,9 +255,26 @@ void nativeFlushAll(JNIEnv* env, jclass clazz, jlong ptr) {
     datasource->flushAll();
 }
 
+template <bool PostponeStop>
+void* onSetupCb(struct PerfettoDsImpl*, PerfettoDsInstanceIndex inst_id, void* ds_config,
+                size_t ds_config_size, void* user_arg, struct PerfettoDsOnSetupArgs*) {
+    JNIEnv* env = GetOrAttachJNIEnvironment(gVm, JNI_VERSION_1_6);
+
+    auto* datasource = reinterpret_cast<PerfettoDataSource*>(user_arg);
+
+    ScopedLocalRef<jobject> java_data_source_instance(env,
+                                                      datasource->newInstance(env, ds_config,
+                                                                              ds_config_size,
+                                                                              inst_id));
+
+    auto* datasource_instance = new PerfettoDataSourceInstance(env, java_data_source_instance.get(),
+                                                               inst_id, PostponeStop);
+    return static_cast<void*>(datasource_instance);
+};
+
 void nativeRegisterDataSource(JNIEnv* env, jclass clazz, jlong datasource_ptr,
                               jint buffer_exhausted_policy, jboolean will_notify_on_stop,
-                              jboolean no_flush) {
+                              jboolean no_flush, jboolean postpone_stop) {
     sp<PerfettoDataSource> datasource = reinterpret_cast<PerfettoDataSource*>(datasource_ptr);
 
     struct PerfettoDsParams params = PerfettoDsParamsDefault();
@@ -266,22 +283,11 @@ void nativeRegisterDataSource(JNIEnv* env, jclass clazz, jlong datasource_ptr,
 
     params.user_arg = reinterpret_cast<void*>(datasource.get());
 
-    params.on_setup_cb = [](struct PerfettoDsImpl*, PerfettoDsInstanceIndex inst_id,
-                            void* ds_config, size_t ds_config_size, void* user_arg,
-                            struct PerfettoDsOnSetupArgs*) -> void* {
-        JNIEnv* env = GetOrAttachJNIEnvironment(gVm, JNI_VERSION_1_6);
-
-        auto* datasource = reinterpret_cast<PerfettoDataSource*>(user_arg);
-
-        ScopedLocalRef<jobject> java_data_source_instance(env,
-                                                          datasource->newInstance(env, ds_config,
-                                                                                  ds_config_size,
-                                                                                  inst_id));
-
-        auto* datasource_instance =
-                new PerfettoDataSourceInstance(env, java_data_source_instance.get(), inst_id);
-        return static_cast<void*>(datasource_instance);
-    };
+    if (postpone_stop == JNI_TRUE) {
+        params.on_setup_cb = onSetupCb<true>;
+    } else {
+        params.on_setup_cb = onSetupCb<false>;
+    }
 
     params.on_create_tls_cb = [](struct PerfettoDsImpl* ds_impl, PerfettoDsInstanceIndex inst_id,
                                  struct PerfettoDsTracerImpl* tracer, void* user_arg) -> void* {
@@ -338,11 +344,11 @@ void nativeRegisterDataSource(JNIEnv* env, jclass clazz, jlong datasource_ptr,
     }
 
     params.on_stop_cb = [](struct PerfettoDsImpl*, PerfettoDsInstanceIndex inst_id, void* user_arg,
-                           void* inst_ctx, struct PerfettoDsOnStopArgs*) {
+                           void* inst_ctx, struct PerfettoDsOnStopArgs* args) {
         JNIEnv* env = GetOrAttachJNIEnvironment(gVm, JNI_VERSION_1_6);
 
         auto* datasource_instance = static_cast<PerfettoDataSourceInstance*>(inst_ctx);
-        datasource_instance->onStop(env);
+        datasource_instance->onStop(env, args);
     };
 
     params.on_destroy_cb = [](struct PerfettoDsImpl* ds_impl, void* user_arg,
@@ -374,6 +380,16 @@ jobject nativeGetPerfettoInstanceLocked(JNIEnv* /* env */, jclass /* clazz */, j
 void nativeReleasePerfettoInstanceLocked(JNIEnv* /* env */, jclass /* clazz */, jlong dataSourcePtr,
                                          PerfettoDsInstanceIndex instance_idx) {
     sp<PerfettoDataSource> datasource = reinterpret_cast<PerfettoDataSource*>(dataSourcePtr);
+    PerfettoDsImplReleaseInstanceLocked(datasource->dataSource.impl, instance_idx);
+}
+
+void nativeStopDonePerfettoInstanceLocked(JNIEnv* /* env */, jclass /* clazz */,
+                                          jlong dataSourcePtr,
+                                          PerfettoDsInstanceIndex instance_idx) {
+    sp<PerfettoDataSource> datasource = reinterpret_cast<PerfettoDataSource*>(dataSourcePtr);
+    auto* datasource_instance = static_cast<PerfettoDataSourceInstance*>(
+            PerfettoDsImplGetInstanceLocked(datasource->dataSource.impl, instance_idx));
+    datasource_instance->stopDone();
     PerfettoDsImplReleaseInstanceLocked(datasource->dataSource.impl, instance_idx);
 }
 
@@ -426,11 +442,13 @@ const JNINativeMethod gMethods[] = {
          (void*)nativeCreate},
         {"nativeFlushAll", "(J)V", (void*)nativeFlushAll},
         {"nativeGetFinalizer", "()J", (void*)nativeGetFinalizer},
-        {"nativeRegisterDataSource", "(JIZZ)V", (void*)nativeRegisterDataSource},
+        {"nativeRegisterDataSource", "(JIZZZ)V", (void*)nativeRegisterDataSource},
         {"nativeGetPerfettoInstanceLocked", "(JI)Landroid/tracing/perfetto/DataSourceInstance;",
          (void*)nativeGetPerfettoInstanceLocked},
         {"nativeReleasePerfettoInstanceLocked", "(JI)V",
          (void*)nativeReleasePerfettoInstanceLocked},
+        {"nativeStopDonePerfettoInstanceLocked", "(JI)V",
+         (void*)nativeStopDonePerfettoInstanceLocked},
 
         {"nativePerfettoDsTraceIterateBegin", "(J)Z", (void*)nativePerfettoDsTraceIterateBegin},
         {"nativePerfettoDsTraceIterateNext", "(J)Z", (void*)nativePerfettoDsTraceIterateNext},
