@@ -1286,6 +1286,11 @@ java_aconfig_library {
     visibility: [":__subpackages__"],
 }
 
+cc_aconfig_library {
+    name: "android.net.platform.flags-aconfig-cc",
+    aconfig_declarations: "android.net.platform.flags-aconfig",
+}
+
 java_aconfig_library {
     name: "android.net.platform.flags-aconfig-java-export",
     aconfig_declarations: "android.net.platform.flags-aconfig",
