@@ -83,5 +83,8 @@ constructor(val rotation: Rotation = Rotation.ROTATION_0,
     @After
     fun teardown() {
         testApp.exit(wmHelper)
+        mailApp.exit(wmHelper)
+        newTasksApp.exit(wmHelper)
+        imeApp.exit(wmHelper)
     }
 }
