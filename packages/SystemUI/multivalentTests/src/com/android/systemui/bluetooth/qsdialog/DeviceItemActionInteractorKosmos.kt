@@ -20,8 +20,7 @@ import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
-import com.android.systemui.plugins.activityStarter
-import com.android.systemui.util.mockito.mock
+import org.mockito.kotlin.mock
 
 val Kosmos.bluetoothTileDialogLogger: BluetoothTileDialogLogger by Kosmos.Fixture { mock {} }
 
@@ -29,14 +28,10 @@ val Kosmos.localBluetoothManager: LocalBluetoothManager by Kosmos.Fixture { mock
 
 val Kosmos.dialogTransitionAnimator: DialogTransitionAnimator by Kosmos.Fixture { mock {} }
 
-val Kosmos.deviceItemActionInteractor: DeviceItemActionInteractor by
+val Kosmos.deviceItemActionInteractorImpl: DeviceItemActionInteractorImpl by
     Kosmos.Fixture {
-        DeviceItemActionInteractor(
-            activityStarter,
-            dialogTransitionAnimator,
-            localBluetoothManager,
+        DeviceItemActionInteractorImpl(
             testDispatcher,
-            bluetoothTileDialogLogger,
             uiEventLogger,
         )
     }
