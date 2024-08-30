@@ -682,6 +682,19 @@ public class ContextWrapper extends Context {
                 resultReceiver, scheduler, initialCode, initialData, initialExtras, options);
     }
 
+    /** @hide */
+    @Override
+    public void sendOrderedBroadcastMultiplePermissions(
+            @NonNull Intent intent, @NonNull String[] receiverPermissions,
+            @NonNull String[] excludedPermissions, @Nullable String receiverAppOp,
+            @Nullable BroadcastReceiver resultReceiver, @Nullable Handler scheduler,
+            int initialCode, @Nullable String initialData, @Nullable Bundle initialExtras,
+            @Nullable Bundle options) {
+        mBase.sendOrderedBroadcastMultiplePermissions(intent, receiverPermissions,
+                excludedPermissions, receiverAppOp, resultReceiver, scheduler, initialCode,
+                initialData, initialExtras, options);
+    }
+
     @Override
     public void sendOrderedBroadcast(@RequiresPermission @NonNull Intent intent, int initialCode,
             @Nullable String receiverPermission, @Nullable String receiverAppOp,

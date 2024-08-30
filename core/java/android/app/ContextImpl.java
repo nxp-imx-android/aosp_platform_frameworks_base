@@ -1571,10 +1571,17 @@ class ContextImpl extends Context {
         sendOrderedBroadcastAsUserMultiplePermissions(intent, user, receiverPermissions, appOp,
                 options, resultReceiver, scheduler, initialCode, initialData, initialExtras);
     }
-
     @Override
     public void sendOrderedBroadcastAsUserMultiplePermissions(Intent intent, UserHandle user,
             String[] receiverPermissions, int appOp, Bundle options,
+            BroadcastReceiver resultReceiver, Handler scheduler, int initialCode,
+            String initialData, Bundle initialExtras) {
+        sendOrderedBroadcastAsUserMultiplePermissions(intent, user, receiverPermissions, null,
+                appOp, options, resultReceiver, scheduler, initialCode, initialData, initialExtras);
+    }
+
+    private void sendOrderedBroadcastAsUserMultiplePermissions(Intent intent, UserHandle user,
+            String[] receiverPermissions, String[] excludedPermissions, int appOp, Bundle options,
             BroadcastReceiver resultReceiver, Handler scheduler, int initialCode,
             String initialData, Bundle initialExtras) {
         IIntentReceiver rd = null;
@@ -1601,7 +1608,7 @@ class ContextImpl extends Context {
             ActivityManager.getService().broadcastIntentWithFeature(
                     mMainThread.getApplicationThread(), getAttributionTag(), intent, resolvedType,
                     rd, initialCode, initialData, initialExtras, receiverPermissions,
-                    null /*excludedPermissions=*/, null, appOp, options, true, false,
+                    excludedPermissions, null, appOp, options, true, false,
                     user.getIdentifier());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
@@ -1633,6 +1640,20 @@ class ContextImpl extends Context {
         sendOrderedBroadcastAsUserMultiplePermissions(intent, getUser(), receiverPermissions,
                 intAppOp, options, resultReceiver, scheduler, initialCode, initialData,
                 initialExtras);
+    }
+
+    @Override
+    public void sendOrderedBroadcastMultiplePermissions(Intent intent, String[] receiverPermissions,
+            String[] excludedPermissions, String receiverAppOp, BroadcastReceiver resultReceiver,
+            Handler scheduler, int initialCode, String initialData, @Nullable Bundle initialExtras,
+            @Nullable Bundle options) {
+        int intAppOp = AppOpsManager.OP_NONE;
+        if (!TextUtils.isEmpty(receiverAppOp)) {
+            intAppOp = AppOpsManager.strOpToOp(receiverAppOp);
+        }
+        sendOrderedBroadcastAsUserMultiplePermissions(intent, getUser(), receiverPermissions,
+                excludedPermissions, intAppOp, options, resultReceiver, scheduler, initialCode,
+                initialData, initialExtras);
     }
 
     @Override

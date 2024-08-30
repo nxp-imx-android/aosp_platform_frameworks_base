@@ -280,6 +280,7 @@ package android {
     field public static final String REBOOT = "android.permission.REBOOT";
     field public static final String RECEIVE_BOOT_COMPLETED = "android.permission.RECEIVE_BOOT_COMPLETED";
     field public static final String RECEIVE_MMS = "android.permission.RECEIVE_MMS";
+    field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final String RECEIVE_SENSITIVE_NOTIFICATIONS = "android.permission.RECEIVE_SENSITIVE_NOTIFICATIONS";
     field public static final String RECEIVE_SMS = "android.permission.RECEIVE_SMS";
     field public static final String RECEIVE_WAP_PUSH = "android.permission.RECEIVE_WAP_PUSH";
     field public static final String RECORD_AUDIO = "android.permission.RECORD_AUDIO";
