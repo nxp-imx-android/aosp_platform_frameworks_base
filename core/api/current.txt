@@ -141,16 +141,16 @@ package android {
     field public static final String MANAGE_DEVICE_POLICY_APPS_CONTROL = "android.permission.MANAGE_DEVICE_POLICY_APPS_CONTROL";
     field public static final String MANAGE_DEVICE_POLICY_APP_RESTRICTIONS = "android.permission.MANAGE_DEVICE_POLICY_APP_RESTRICTIONS";
     field public static final String MANAGE_DEVICE_POLICY_APP_USER_DATA = "android.permission.MANAGE_DEVICE_POLICY_APP_USER_DATA";
-    field @FlaggedApi("android.app.admin.flags.assist_content_user_restriction_enabled") public static final String MANAGE_DEVICE_POLICY_ASSIST_CONTENT = "android.permission.MANAGE_DEVICE_POLICY_ASSIST_CONTENT";
+    field public static final String MANAGE_DEVICE_POLICY_ASSIST_CONTENT = "android.permission.MANAGE_DEVICE_POLICY_ASSIST_CONTENT";
     field public static final String MANAGE_DEVICE_POLICY_AUDIO_OUTPUT = "android.permission.MANAGE_DEVICE_POLICY_AUDIO_OUTPUT";
     field public static final String MANAGE_DEVICE_POLICY_AUTOFILL = "android.permission.MANAGE_DEVICE_POLICY_AUTOFILL";
     field public static final String MANAGE_DEVICE_POLICY_BACKUP_SERVICE = "android.permission.MANAGE_DEVICE_POLICY_BACKUP_SERVICE";
-    field @FlaggedApi("android.app.admin.flags.dedicated_device_control_api_enabled") public static final String MANAGE_DEVICE_POLICY_BLOCK_UNINSTALL = "android.permission.MANAGE_DEVICE_POLICY_BLOCK_UNINSTALL";
+    field public static final String MANAGE_DEVICE_POLICY_BLOCK_UNINSTALL = "android.permission.MANAGE_DEVICE_POLICY_BLOCK_UNINSTALL";
     field public static final String MANAGE_DEVICE_POLICY_BLUETOOTH = "android.permission.MANAGE_DEVICE_POLICY_BLUETOOTH";
     field public static final String MANAGE_DEVICE_POLICY_BUGREPORT = "android.permission.MANAGE_DEVICE_POLICY_BUGREPORT";
     field public static final String MANAGE_DEVICE_POLICY_CALLS = "android.permission.MANAGE_DEVICE_POLICY_CALLS";
     field public static final String MANAGE_DEVICE_POLICY_CAMERA = "android.permission.MANAGE_DEVICE_POLICY_CAMERA";
-    field @FlaggedApi("android.app.admin.flags.dedicated_device_control_api_enabled") public static final String MANAGE_DEVICE_POLICY_CAMERA_TOGGLE = "android.permission.MANAGE_DEVICE_POLICY_CAMERA_TOGGLE";
+    field public static final String MANAGE_DEVICE_POLICY_CAMERA_TOGGLE = "android.permission.MANAGE_DEVICE_POLICY_CAMERA_TOGGLE";
     field public static final String MANAGE_DEVICE_POLICY_CERTIFICATES = "android.permission.MANAGE_DEVICE_POLICY_CERTIFICATES";
     field public static final String MANAGE_DEVICE_POLICY_COMMON_CRITERIA_MODE = "android.permission.MANAGE_DEVICE_POLICY_COMMON_CRITERIA_MODE";
     field @FlaggedApi("android.view.contentprotection.flags.manage_device_policy_enabled") public static final String MANAGE_DEVICE_POLICY_CONTENT_PROTECTION = "android.permission.MANAGE_DEVICE_POLICY_CONTENT_PROTECTION";
@@ -169,10 +169,10 @@ package android {
     field public static final String MANAGE_DEVICE_POLICY_LOCK = "android.permission.MANAGE_DEVICE_POLICY_LOCK";
     field public static final String MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS = "android.permission.MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS";
     field public static final String MANAGE_DEVICE_POLICY_LOCK_TASK = "android.permission.MANAGE_DEVICE_POLICY_LOCK_TASK";
-    field @FlaggedApi("android.app.admin.flags.esim_management_enabled") public static final String MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS = "android.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS";
+    field public static final String MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS = "android.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS";
     field public static final String MANAGE_DEVICE_POLICY_METERED_DATA = "android.permission.MANAGE_DEVICE_POLICY_METERED_DATA";
     field public static final String MANAGE_DEVICE_POLICY_MICROPHONE = "android.permission.MANAGE_DEVICE_POLICY_MICROPHONE";
-    field @FlaggedApi("android.app.admin.flags.dedicated_device_control_api_enabled") public static final String MANAGE_DEVICE_POLICY_MICROPHONE_TOGGLE = "android.permission.MANAGE_DEVICE_POLICY_MICROPHONE_TOGGLE";
+    field public static final String MANAGE_DEVICE_POLICY_MICROPHONE_TOGGLE = "android.permission.MANAGE_DEVICE_POLICY_MICROPHONE_TOGGLE";
     field public static final String MANAGE_DEVICE_POLICY_MOBILE_NETWORK = "android.permission.MANAGE_DEVICE_POLICY_MOBILE_NETWORK";
     field public static final String MANAGE_DEVICE_POLICY_MODIFY_USERS = "android.permission.MANAGE_DEVICE_POLICY_MODIFY_USERS";
     field public static final String MANAGE_DEVICE_POLICY_MTE = "android.permission.MANAGE_DEVICE_POLICY_MTE";
@@ -7875,7 +7875,7 @@ package android.app.admin {
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.admin.DeviceAdminInfo> CREATOR;
     field public static final int HEADLESS_DEVICE_OWNER_MODE_AFFILIATED = 1; // 0x1
-    field @FlaggedApi("android.app.admin.flags.headless_device_owner_single_user_enabled") public static final int HEADLESS_DEVICE_OWNER_MODE_SINGLE_USER = 2; // 0x2
+    field public static final int HEADLESS_DEVICE_OWNER_MODE_SINGLE_USER = 2; // 0x2
     field public static final int HEADLESS_DEVICE_OWNER_MODE_UNSUPPORTED = 0; // 0x0
     field public static final int USES_ENCRYPTED_STORAGE = 7; // 0x7
     field public static final int USES_POLICY_DISABLE_CAMERA = 8; // 0x8
@@ -7964,13 +7964,13 @@ package android.app.admin {
     field public static final String LOCK_TASK_POLICY = "lockTask";
     field public static final String PACKAGES_SUSPENDED_POLICY = "packagesSuspended";
     field public static final String PACKAGE_UNINSTALL_BLOCKED_POLICY = "packageUninstallBlocked";
-    field @FlaggedApi("android.app.admin.flags.policy_engine_migration_v2_enabled") public static final String PASSWORD_COMPLEXITY_POLICY = "passwordComplexity";
+    field public static final String PASSWORD_COMPLEXITY_POLICY = "passwordComplexity";
     field public static final String PERMISSION_GRANT_POLICY = "permissionGrant";
     field public static final String PERSISTENT_PREFERRED_ACTIVITY_POLICY = "persistentPreferredActivity";
     field public static final String RESET_PASSWORD_TOKEN_POLICY = "resetPasswordToken";
     field public static final String SECURITY_LOGGING_POLICY = "securityLogging";
     field public static final String STATUS_BAR_DISABLED_POLICY = "statusBarDisabled";
-    field @FlaggedApi("android.app.admin.flags.policy_engine_migration_v2_enabled") public static final String USB_DATA_SIGNALING_POLICY = "usbDataSignaling";
+    field public static final String USB_DATA_SIGNALING_POLICY = "usbDataSignaling";
     field public static final String USER_CONTROL_DISABLED_PACKAGES_POLICY = "userControlDisabledPackages";
   }
 
@@ -8081,7 +8081,7 @@ package android.app.admin {
     method public CharSequence getStartUserSessionMessage(@NonNull android.content.ComponentName);
     method @Deprecated public boolean getStorageEncryption(@Nullable android.content.ComponentName);
     method public int getStorageEncryptionStatus();
-    method @FlaggedApi("android.app.admin.flags.esim_management_enabled") @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS) public java.util.Set<java.lang.Integer> getSubscriptionIds();
+    method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS) public java.util.Set<java.lang.Integer> getSubscriptionIds();
     method @Nullable public android.app.admin.SystemUpdatePolicy getSystemUpdatePolicy();
     method @Nullable public android.os.PersistableBundle getTransferOwnershipBundle();
     method @Nullable public java.util.List<android.os.PersistableBundle> getTrustAgentConfiguration(@Nullable android.content.ComponentName, @NonNull android.content.ComponentName);
@@ -8121,7 +8121,7 @@ package android.app.admin {
     method public boolean isLogoutEnabled();
     method public boolean isManagedProfile(@NonNull android.content.ComponentName);
     method public boolean isMasterVolumeMuted(@NonNull android.content.ComponentName);
-    method @FlaggedApi("android.app.admin.flags.is_mte_policy_enforced") public static boolean isMtePolicyEnforced();
+    method public static boolean isMtePolicyEnforced();
     method public boolean isNetworkLoggingEnabled(@Nullable android.content.ComponentName);
     method public boolean isOrganizationOwnedDeviceWithManagedProfile();
     method public boolean isOverrideApnEnabled(@NonNull android.content.ComponentName);
@@ -8597,7 +8597,7 @@ package android.app.admin {
     field public static final int TAG_ADB_SHELL_CMD = 210002; // 0x33452
     field public static final int TAG_ADB_SHELL_INTERACTIVE = 210001; // 0x33451
     field public static final int TAG_APP_PROCESS_START = 210005; // 0x33455
-    field @FlaggedApi("android.app.admin.flags.backup_service_security_log_event_enabled") public static final int TAG_BACKUP_SERVICE_TOGGLED = 210044; // 0x3347c
+    field public static final int TAG_BACKUP_SERVICE_TOGGLED = 210044; // 0x3347c
     field public static final int TAG_BLUETOOTH_CONNECTION = 210039; // 0x33477
     field public static final int TAG_BLUETOOTH_DISCONNECTION = 210040; // 0x33478
     field public static final int TAG_CAMERA_POLICY_SET = 210034; // 0x33472
@@ -8756,6 +8756,8 @@ package android.app.appfunctions {
     method public int getResultCode();
     method @NonNull public android.app.appsearch.GenericDocument getResultDocument();
     method public boolean isSuccess();
+    method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") @NonNull public static android.app.appfunctions.ExecuteAppFunctionResponse newFailure(int, @Nullable String, @Nullable android.os.Bundle);
+    method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") @NonNull public static android.app.appfunctions.ExecuteAppFunctionResponse newSuccess(@NonNull android.app.appsearch.GenericDocument, @Nullable android.os.Bundle);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.ExecuteAppFunctionResponse> CREATOR;
     field public static final String PROPERTY_RETURN_VALUE = "returnValue";
@@ -8765,13 +8767,6 @@ package android.app.appfunctions {
     field public static final int RESULT_INVALID_ARGUMENT = 4; // 0x4
     field public static final int RESULT_OK = 0; // 0x0
     field public static final int RESULT_TIMED_OUT = 5; // 0x5
-  }
-
-  @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public static final class ExecuteAppFunctionResponse.Builder {
-    ctor public ExecuteAppFunctionResponse.Builder(@NonNull android.app.appsearch.GenericDocument);
-    ctor public ExecuteAppFunctionResponse.Builder(int, @NonNull String);
-    method @NonNull public android.app.appfunctions.ExecuteAppFunctionResponse build();
-    method @NonNull public android.app.appfunctions.ExecuteAppFunctionResponse.Builder setExtras(@NonNull android.os.Bundle);
   }
 
 }
@@ -34116,7 +34111,7 @@ package android.os {
     field public static final String DISALLOW_AIRPLANE_MODE = "no_airplane_mode";
     field public static final String DISALLOW_AMBIENT_DISPLAY = "no_ambient_display";
     field public static final String DISALLOW_APPS_CONTROL = "no_control_apps";
-    field @FlaggedApi("android.app.admin.flags.assist_content_user_restriction_enabled") public static final String DISALLOW_ASSIST_CONTENT = "no_assist_content";
+    field public static final String DISALLOW_ASSIST_CONTENT = "no_assist_content";
     field public static final String DISALLOW_AUTOFILL = "no_autofill";
     field public static final String DISALLOW_BLUETOOTH = "no_bluetooth";
     field public static final String DISALLOW_BLUETOOTH_SHARING = "no_bluetooth_sharing";
@@ -34166,7 +34161,7 @@ package android.os {
     field public static final String DISALLOW_SHARE_INTO_MANAGED_PROFILE = "no_sharing_into_profile";
     field public static final String DISALLOW_SHARE_LOCATION = "no_share_location";
     field public static final String DISALLOW_SHARING_ADMIN_CONFIGURED_WIFI = "no_sharing_admin_configured_wifi";
-    field @FlaggedApi("android.app.admin.flags.esim_management_enabled") public static final String DISALLOW_SIM_GLOBALLY = "no_sim_globally";
+    field public static final String DISALLOW_SIM_GLOBALLY = "no_sim_globally";
     field public static final String DISALLOW_SMS = "no_sms";
     field public static final String DISALLOW_SYSTEM_ERROR_DIALOGS = "no_system_error_dialogs";
     field @FlaggedApi("com.android.net.thread.platform.flags.thread_user_restriction_enabled") public static final String DISALLOW_THREAD_NETWORK = "no_thread_network";
@@ -43969,7 +43964,10 @@ package android.telephony {
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_ENTITLEMENT_STATUS_REFRESH_DAYS_INT = "satellite_entitlement_status_refresh_days_int";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_ENTITLEMENT_SUPPORTED_BOOL = "satellite_entitlement_supported_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ESOS_SUPPORTED_BOOL = "satellite_esos_supported_bool";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_SCREEN_OFF_INACTIVITY_TIMEOUT_SEC_INT = "satellite_screen_off_inactivity_timeout_duration_sec_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_ESOS_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_esos_inactivity_timeout_sec_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_P2P_SMS_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_p2p_sms_inactivity_timeout_sec_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_P2P_SMS_SUPPORTED_BOOL = "satellite_roaming_p2p_sms_supported_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_SCREEN_OFF_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_screen_off_inactivity_timeout_sec_int";
     field public static final String KEY_SHOW_4G_FOR_3G_DATA_ICON_BOOL = "show_4g_for_3g_data_icon_bool";
     field public static final String KEY_SHOW_4G_FOR_LTE_DATA_ICON_BOOL = "show_4g_for_lte_data_icon_bool";
     field public static final String KEY_SHOW_APN_SETTING_CDMA_BOOL = "show_apn_setting_cdma_bool";
