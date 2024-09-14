@@ -6396,6 +6396,7 @@ package android.app {
     method public android.graphics.drawable.Icon getLargeIcon();
     method @Nullable public android.content.LocusId getLocusId();
     method public CharSequence getSettingsText();
+    method @FlaggedApi("android.app.api_rich_ongoing") @Nullable public String getShortCriticalText();
     method public String getShortcutId();
     method public android.graphics.drawable.Icon getSmallIcon();
     method public String getSortKey();
@@ -6719,6 +6720,7 @@ package android.app {
     method @NonNull public android.app.Notification.Builder setPublicVersion(android.app.Notification);
     method @NonNull public android.app.Notification.Builder setRemoteInputHistory(CharSequence[]);
     method @NonNull public android.app.Notification.Builder setSettingsText(CharSequence);
+    method @FlaggedApi("android.app.api_rich_ongoing") @NonNull public android.app.Notification.Builder setShortCriticalText(@Nullable String);
     method @NonNull public android.app.Notification.Builder setShortcutId(String);
     method @NonNull public android.app.Notification.Builder setShowWhen(boolean);
     method @NonNull public android.app.Notification.Builder setSmallIcon(@DrawableRes int);
@@ -19168,7 +19170,7 @@ package android.hardware.camera2 {
     method @NonNull public java.util.List<android.hardware.camera2.CaptureRequest.Key<?>> getAvailableCaptureRequestKeys();
     method @NonNull public java.util.List<android.hardware.camera2.CaptureResult.Key<?>> getAvailableCaptureResultKeys();
     method public java.util.List<android.hardware.camera2.CaptureRequest.Key<?>> getAvailablePhysicalCameraRequestKeys();
-    method @FlaggedApi("com.android.internal.camera.flags.feature_combination_query") @NonNull public java.util.List<android.hardware.camera2.CameraCharacteristics.Key<?>> getAvailableSessionCharacteristicsKeys();
+    method @NonNull public java.util.List<android.hardware.camera2.CameraCharacteristics.Key<?>> getAvailableSessionCharacteristicsKeys();
     method public java.util.List<android.hardware.camera2.CaptureRequest.Key<?>> getAvailableSessionKeys();
     method @NonNull public java.util.List<android.hardware.camera2.CameraCharacteristics.Key<?>> getKeys();
     method @NonNull public java.util.List<android.hardware.camera2.CameraCharacteristics.Key<?>> getKeysNeedingPermission();
@@ -19211,7 +19213,7 @@ package android.hardware.camera2 {
     field @FlaggedApi("com.android.internal.camera.flags.camera_manual_flash_strength_control") @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.Integer> FLASH_TORCH_STRENGTH_MAX_LEVEL;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<int[]> HOT_PIXEL_AVAILABLE_HOT_PIXEL_MODES;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<android.hardware.camera2.params.DeviceStateSensorOrientationMap> INFO_DEVICE_STATE_SENSOR_ORIENTATION_MAP;
-    field @FlaggedApi("com.android.internal.camera.flags.feature_combination_query") @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.Integer> INFO_SESSION_CONFIGURATION_QUERY_VERSION;
+    field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.Integer> INFO_SESSION_CONFIGURATION_QUERY_VERSION;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.Integer> INFO_SUPPORTED_HARDWARE_LEVEL;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<java.lang.String> INFO_VERSION;
     field @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<android.util.Size[]> JPEG_AVAILABLE_THUMBNAIL_SIZES;
@@ -20081,14 +20083,14 @@ package android.hardware.camera2.params {
 
   public final class ExtensionSessionConfiguration {
     ctor public ExtensionSessionConfiguration(int, @NonNull java.util.List<android.hardware.camera2.params.OutputConfiguration>, @NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.CameraExtensionSession.StateCallback);
-    method @FlaggedApi("com.android.internal.camera.flags.extension_10_bit") public void clearColorSpace();
-    method @FlaggedApi("com.android.internal.camera.flags.extension_10_bit") @Nullable public android.graphics.ColorSpace getColorSpace();
+    method public void clearColorSpace();
+    method @Nullable public android.graphics.ColorSpace getColorSpace();
     method @NonNull public java.util.concurrent.Executor getExecutor();
     method public int getExtension();
     method @NonNull public java.util.List<android.hardware.camera2.params.OutputConfiguration> getOutputConfigurations();
     method @Nullable public android.hardware.camera2.params.OutputConfiguration getPostviewOutputConfiguration();
     method @NonNull public android.hardware.camera2.CameraExtensionSession.StateCallback getStateCallback();
-    method @FlaggedApi("com.android.internal.camera.flags.extension_10_bit") public void setColorSpace(@NonNull android.graphics.ColorSpace.Named);
+    method public void setColorSpace(@NonNull android.graphics.ColorSpace.Named);
     method public void setPostviewOutputConfiguration(@Nullable android.hardware.camera2.params.OutputConfiguration);
   }
 
@@ -32771,6 +32773,7 @@ package android.os {
     field @NonNull public static final String RELEASE_OR_PREVIEW_DISPLAY;
     field @Deprecated public static final String SDK;
     field public static final int SDK_INT;
+    field @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static final int SDK_MINOR_INT;
     field public static final String SECURITY_PATCH;
   }
 
@@ -34265,9 +34268,14 @@ package android.os {
     method public final int areAllEffectsSupported(@NonNull int...);
     method public final boolean areAllPrimitivesSupported(@NonNull int...);
     method @NonNull public int[] areEffectsSupported(@NonNull int...);
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public boolean areEnvelopeEffectsSupported();
     method @NonNull public boolean[] arePrimitivesSupported(@NonNull int...);
     method @RequiresPermission(android.Manifest.permission.VIBRATE) public abstract void cancel();
     method public int getId();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public int getMaxEnvelopeEffectControlPointDurationMillis();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public int getMaxEnvelopeEffectDurationMillis();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public int getMaxEnvelopeEffectSize();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public int getMinEnvelopeEffectControlPointDurationMillis();
     method @NonNull public int[] getPrimitiveDurations(@NonNull int...);
     method public float getQFactor();
     method public float getResonantFrequency();
@@ -36922,6 +36930,19 @@ package android.provider {
 
   public static final class ContactsContract.RawContacts.Data implements android.provider.BaseColumns android.provider.ContactsContract.DataColumns {
     field public static final String CONTENT_DIRECTORY = "data";
+  }
+
+  @FlaggedApi("android.provider.new_default_account_api_enabled") public static final class ContactsContract.RawContacts.DefaultAccountAndState {
+    ctor public ContactsContract.RawContacts.DefaultAccountAndState(int, @Nullable android.accounts.Account);
+    method @Nullable public android.accounts.Account getCloudAccount();
+    method public int getState();
+    method @NonNull public static android.provider.ContactsContract.RawContacts.DefaultAccountAndState ofCloud(@NonNull android.accounts.Account);
+    method @NonNull public static android.provider.ContactsContract.RawContacts.DefaultAccountAndState ofLocal();
+    method @NonNull public static android.provider.ContactsContract.RawContacts.DefaultAccountAndState ofNotSet();
+    field public static final int DEFAULT_ACCOUNT_STATE_CLOUD = 3; // 0x3
+    field public static final int DEFAULT_ACCOUNT_STATE_INVALID = 0; // 0x0
+    field public static final int DEFAULT_ACCOUNT_STATE_LOCAL = 2; // 0x2
+    field public static final int DEFAULT_ACCOUNT_STATE_NOT_SET = 1; // 0x1
   }
 
   public static final class ContactsContract.RawContacts.DisplayPhoto {
@@ -44066,6 +44087,7 @@ package android.telephony {
   }
 
   public static final class CarrierConfigManager.Gps {
+    field @FlaggedApi("android.location.flags.enable_ni_supl_message_injection_by_carrier_config") public static final String KEY_ENABLE_NI_SUPL_MESSAGE_INJECTION_BOOL = "gps.enable_ni_supl_message_injection_bool";
     field public static final String KEY_PERSIST_LPP_MODE_BOOL = "gps.persist_lpp_mode_bool";
     field public static final String KEY_PREFIX = "gps.";
   }
@@ -50785,6 +50807,7 @@ package android.view {
     method public android.view.Display.HdrCapabilities getHdrCapabilities();
     method public float getHdrSdrRatio();
     method @Deprecated public int getHeight();
+    method @FlaggedApi("com.android.server.display.feature.flags.highest_hdr_sdr_ratio_api") public float getHighestHdrSdrRatio();
     method @Deprecated public void getMetrics(android.util.DisplayMetrics);
     method public android.view.Display.Mode getMode();
     method public String getName();
