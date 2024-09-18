@@ -39,6 +39,7 @@ object PreferenceMainPageProvider : SettingsPageProvider {
             ListPreferencePageProvider.buildInjectEntry().setLink(fromPage = owner).build(),
             TwoTargetSwitchPreferencePageProvider.buildInjectEntry()
                 .setLink(fromPage = owner).build(),
+            IntroPreferencePageProvider.buildInjectEntry().setLink(fromPage = owner).build(),
         )
     }
 
