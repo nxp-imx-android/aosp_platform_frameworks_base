@@ -910,7 +910,6 @@ public final class CameraManager {
      * @see #openCamera
      */
     @NonNull
-    @FlaggedApi(Flags.FLAG_CAMERA_DEVICE_SETUP)
     public CameraDevice.CameraDeviceSetup getCameraDeviceSetup(@NonNull String cameraId)
             throws CameraAccessException {
         // isCameraDeviceSetup does all the error checking we need.
@@ -958,7 +957,6 @@ public final class CameraManager {
      * @see #getCameraDeviceSetup(String)
      * @see #getCameraIdList()
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_DEVICE_SETUP)
     public boolean isCameraDeviceSetupSupported(@NonNull String cameraId)
             throws CameraAccessException {
         if (cameraId == null) {
@@ -1102,8 +1100,7 @@ public final class CameraManager {
         synchronized (mLock) {
             ICameraDeviceUser cameraUser = null;
             CameraDevice.CameraDeviceSetup cameraDeviceSetup = null;
-            if (Flags.cameraDeviceSetup()
-                    && CameraDeviceSetupImpl.isCameraDeviceSetupSupported(characteristics)) {
+            if (CameraDeviceSetupImpl.isCameraDeviceSetupSupported(characteristics)) {
                 cameraDeviceSetup = getCameraDeviceSetupUnsafe(cameraId);
             }
 
