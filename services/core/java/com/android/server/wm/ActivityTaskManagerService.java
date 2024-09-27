@@ -2127,6 +2127,26 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     }
 
     @Override
+    public boolean setTaskIsPerceptible(int taskId, boolean isPerceptible) {
+        enforceTaskPermission("setTaskIsPerceptible()");
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            synchronized (mGlobalLock) {
+                final Task task = mRootWindowContainer.anyTaskForId(taskId,
+                        MATCH_ATTACHED_TASK_ONLY);
+                if (task == null) {
+                    Slog.w(TAG, "setTaskIsPerceptible: No task to set with id=" + taskId);
+                    return false;
+                }
+                task.mIsPerceptible = isPerceptible;
+            }
+            return true;
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+    }
+
+    @Override
     public boolean removeTask(int taskId) {
         mAmInternal.enforceCallingPermission(REMOVE_TASKS, "removeTask()");
         synchronized (mGlobalLock) {

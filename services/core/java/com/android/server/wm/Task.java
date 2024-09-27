@@ -504,6 +504,17 @@ class Task extends TaskFragment {
     int mOffsetYForInsets;
 
     /**
+     * When set to true, the task will be kept at a PERCEPTIBLE_APP_ADJ, and downgraded
+     * to PREVIOUS_APP_ADJ if not in foreground for a period of time.
+     * One example use case is for desktop form factors, where it is important keep tasks in the
+     * perceptible state (rather than cached where it may be frozen) when a user moves it to the
+     * foreground.
+     * On startup, restored Tasks will not be perceptible, until user actually interacts with it
+     * (i.e. brings it to the foreground)
+     */
+    boolean mIsPerceptible = false;
+
+    /**
      * Whether the compatibility overrides that change the resizability of the app should be allowed
      * for the specific app.
      */
@@ -3854,6 +3865,7 @@ class Task extends TaskFragment {
         pw.print(ActivityInfo.resizeModeToString(mResizeMode));
         pw.print(" mSupportsPictureInPicture="); pw.print(mSupportsPictureInPicture);
         pw.print(" isResizeable="); pw.println(isResizeable());
+        pw.print(" isPerceptible="); pw.println(mIsPerceptible);
         pw.print(prefix); pw.print("lastActiveTime="); pw.print(lastActiveTime);
         pw.println(" (inactive for " + (getInactiveDuration() / 1000) + "s)");
         pw.print(prefix); pw.println(" isTrimmable=" + mIsTrimmableFromRecents);
