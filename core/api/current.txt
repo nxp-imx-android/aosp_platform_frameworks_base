@@ -5333,6 +5333,7 @@ package android.app {
     method @NonNull public String getProcessName();
     method public int getRealUid();
     method public int getReason();
+    method @FlaggedApi("android.app.app_start_info_component") public int getStartComponent();
     method public int getStartType();
     method public int getStartupState();
     method @NonNull public java.util.Map<java.lang.Integer,java.lang.Long> getStartupTimestamps();
@@ -5347,6 +5348,11 @@ package android.app {
     field public static final int STARTUP_STATE_ERROR = 1; // 0x1
     field public static final int STARTUP_STATE_FIRST_FRAME_DRAWN = 2; // 0x2
     field public static final int STARTUP_STATE_STARTED = 0; // 0x0
+    field @FlaggedApi("android.app.app_start_info_component") public static final int START_COMPONENT_ACTIVITY = 1; // 0x1
+    field @FlaggedApi("android.app.app_start_info_component") public static final int START_COMPONENT_BROADCAST = 2; // 0x2
+    field @FlaggedApi("android.app.app_start_info_component") public static final int START_COMPONENT_CONTENT_PROVIDER = 3; // 0x3
+    field @FlaggedApi("android.app.app_start_info_component") public static final int START_COMPONENT_OTHER = 5; // 0x5
+    field @FlaggedApi("android.app.app_start_info_component") public static final int START_COMPONENT_SERVICE = 4; // 0x4
     field public static final int START_REASON_ALARM = 0; // 0x0
     field public static final int START_REASON_BACKUP = 1; // 0x1
     field public static final int START_REASON_BOOT_COMPLETE = 2; // 0x2
@@ -6495,6 +6501,7 @@ package android.app {
     field public static final int FLAG_NO_CLEAR = 32; // 0x20
     field public static final int FLAG_ONGOING_EVENT = 2; // 0x2
     field public static final int FLAG_ONLY_ALERT_ONCE = 8; // 0x8
+    field @FlaggedApi("android.app.api_rich_ongoing") public static final int FLAG_PROMOTED_ONGOING = 262144; // 0x40000
     field @Deprecated public static final int FLAG_SHOW_LIGHTS = 1; // 0x1
     field public static final int FOREGROUND_SERVICE_DEFAULT = 0; // 0x0
     field public static final int FOREGROUND_SERVICE_DEFERRED = 2; // 0x2
@@ -6847,6 +6854,47 @@ package android.app {
     method public android.app.Notification.MessagingStyle.Message setData(String, android.net.Uri);
   }
 
+  @FlaggedApi("android.app.api_rich_ongoing") public static class Notification.ProgressStyle extends android.app.Notification.Style {
+    ctor public Notification.ProgressStyle();
+    method @NonNull public android.app.Notification.ProgressStyle addProgressSegment(@NonNull android.app.Notification.ProgressStyle.Segment);
+    method @NonNull public android.app.Notification.ProgressStyle addProgressStep(@NonNull android.app.Notification.ProgressStyle.Step);
+    method public int getProgress();
+    method @Nullable public android.graphics.drawable.Icon getProgressEndIcon();
+    method public int getProgressMax();
+    method @NonNull public java.util.List<android.app.Notification.ProgressStyle.Segment> getProgressSegments();
+    method @Nullable public android.graphics.drawable.Icon getProgressStartIcon();
+    method @NonNull public java.util.List<android.app.Notification.ProgressStyle.Step> getProgressSteps();
+    method @Nullable public android.graphics.drawable.Icon getProgressTrackerIcon();
+    method public boolean isProgressIndeterminate();
+    method public boolean isStyledByProgress();
+    method @NonNull public android.app.Notification.ProgressStyle setProgress(int);
+    method @NonNull public android.app.Notification.ProgressStyle setProgressEndIcon(@Nullable android.graphics.drawable.Icon);
+    method @NonNull public android.app.Notification.ProgressStyle setProgressIndeterminate(boolean);
+    method @NonNull public android.app.Notification.ProgressStyle setProgressSegments(@NonNull java.util.List<android.app.Notification.ProgressStyle.Segment>);
+    method @NonNull public android.app.Notification.ProgressStyle setProgressStartIcon(@Nullable android.graphics.drawable.Icon);
+    method @NonNull public android.app.Notification.ProgressStyle setProgressSteps(@NonNull java.util.List<android.app.Notification.ProgressStyle.Step>);
+    method @NonNull public android.app.Notification.ProgressStyle setProgressTrackerIcon(@Nullable android.graphics.drawable.Icon);
+    method @NonNull public android.app.Notification.ProgressStyle setStyledByProgress(boolean);
+  }
+
+  public static final class Notification.ProgressStyle.Segment {
+    ctor public Notification.ProgressStyle.Segment(int);
+    method @ColorInt public int getColor();
+    method public int getLength();
+    method public int getStableId();
+    method @NonNull public android.app.Notification.ProgressStyle.Segment setColor(@ColorInt int);
+    method @NonNull public android.app.Notification.ProgressStyle.Segment setStableId(int);
+  }
+
+  public static final class Notification.ProgressStyle.Step {
+    ctor public Notification.ProgressStyle.Step(int);
+    method @ColorInt public int getColor();
+    method public int getPosition();
+    method public int getStableId();
+    method @NonNull public android.app.Notification.ProgressStyle.Step setColor(@ColorInt int);
+    method @NonNull public android.app.Notification.ProgressStyle.Step setStableId(int);
+  }
+
   public abstract static class Notification.Style {
     ctor @Deprecated public Notification.Style();
     method public android.app.Notification build();
@@ -7008,6 +7056,7 @@ package android.app {
     method public boolean areNotificationsEnabled();
     method public boolean areNotificationsPaused();
     method public boolean canNotifyAsPackage(@NonNull String);
+    method @FlaggedApi("android.app.api_rich_ongoing") public boolean canPostPromotedNotifications();
     method public boolean canUseFullScreenIntent();
     method public void cancel(int);
     method public void cancel(@Nullable String, int);
@@ -8724,13 +8773,15 @@ package android.app.admin {
 package android.app.appfunctions {
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class AppFunctionManager {
-    method @RequiresPermission(anyOf={"android.permission.EXECUTE_APP_FUNCTIONS_TRUSTED", "android.permission.EXECUTE_APP_FUNCTIONS"}, conditional=true) public void executeAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
+    method @Deprecated @RequiresPermission(anyOf={"android.permission.EXECUTE_APP_FUNCTIONS_TRUSTED", "android.permission.EXECUTE_APP_FUNCTIONS"}, conditional=true) public void executeAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
+    method @RequiresPermission(anyOf={"android.permission.EXECUTE_APP_FUNCTIONS_TRUSTED", "android.permission.EXECUTE_APP_FUNCTIONS"}, conditional=true) public void executeAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.concurrent.Executor, @NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public abstract class AppFunctionService extends android.app.Service {
     ctor public AppFunctionService();
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @MainThread public abstract void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
+    method @Deprecated @MainThread public abstract void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
+    method @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
     field @NonNull public static final String SERVICE_INTERFACE = "android.app.appfunctions.AppFunctionService";
   }
 
@@ -36934,14 +36985,16 @@ package android.provider {
 
   @FlaggedApi("android.provider.new_default_account_api_enabled") public static final class ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState {
     ctor public ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState(int, @Nullable android.accounts.Account);
-    method @Nullable public android.accounts.Account getCloudAccount();
+    method @Nullable public android.accounts.Account getAccount();
     method public int getState();
     method @NonNull public static android.provider.ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState ofCloud(@NonNull android.accounts.Account);
     method @NonNull public static android.provider.ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState ofLocal();
     method @NonNull public static android.provider.ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState ofNotSet();
+    method @NonNull public static android.provider.ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState ofSim(@NonNull android.accounts.Account);
     field public static final int DEFAULT_ACCOUNT_STATE_CLOUD = 3; // 0x3
     field public static final int DEFAULT_ACCOUNT_STATE_LOCAL = 2; // 0x2
     field public static final int DEFAULT_ACCOUNT_STATE_NOT_SET = 1; // 0x1
+    field public static final int DEFAULT_ACCOUNT_STATE_SIM = 4; // 0x4
   }
 
   public static final class ContactsContract.RawContacts.DisplayPhoto {
@@ -46645,6 +46698,8 @@ package android.telephony.data {
     field public static final int TYPE_IMS = 64; // 0x40
     field public static final int TYPE_MCX = 1024; // 0x400
     field public static final int TYPE_MMS = 2; // 0x2
+    field @FlaggedApi("com.android.internal.telephony.flags.oem_paid_private") public static final int TYPE_OEM_PAID = 65536; // 0x10000
+    field @FlaggedApi("com.android.internal.telephony.flags.oem_paid_private") public static final int TYPE_OEM_PRIVATE = 131072; // 0x20000
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final int TYPE_RCS = 32768; // 0x8000
     field public static final int TYPE_SUPL = 4; // 0x4
     field public static final int TYPE_VSIM = 4096; // 0x1000
