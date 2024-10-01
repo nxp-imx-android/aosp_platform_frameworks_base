@@ -33,7 +33,6 @@ import android.net.NetworkRequest;
 import android.net.NetworkScore;
 import android.net.vcn.VcnGatewayConnectionConfig;
 import android.os.Handler;
-import android.os.HandlerExecutor;
 import android.os.Looper;
 import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
@@ -41,6 +40,7 @@ import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.VisibleForTesting.Visibility;
+import com.android.modules.utils.HandlerExecutor;
 
 import java.util.Objects;
 import java.util.Set;
