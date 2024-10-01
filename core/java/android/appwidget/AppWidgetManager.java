@@ -1626,7 +1626,6 @@ public class AppWidgetManager {
         return extras;
     }
 
-
     @UiThread
     private static @NonNull Executor createUpdateExecutorIfNull() {
         if (sUpdateExecutor == null) {

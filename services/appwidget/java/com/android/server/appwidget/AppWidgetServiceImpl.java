@@ -53,10 +53,9 @@ import android.app.PendingIntent;
 import android.app.StatsManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.admin.DevicePolicyManagerInternal.OnCrossProfileWidgetProvidersChangeListener;
-import android.app.usage.Flags;
-import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.app.usage.UsageStatsManagerInternal;
+import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetManagerInternal;
 import android.appwidget.AppWidgetProviderInfo;
@@ -88,6 +87,7 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Binder;
@@ -243,6 +243,10 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     // Hard limit of number of widgets can be pinned by a host.
     private static final int MAX_NUMBER_OF_WIDGETS_PER_HOST = 200;
 
+    // Default bucket interval for reporting widget interaction events to UsageStatsManager
+    private static final long DEFAULT_WIDGET_EVENTS_REPORT_INTERVAL_MS =
+            Duration.ofHours(1).toMillis();
+
     // Handles user and package related broadcasts.
     // See {@link #registerBroadcastReceiver}
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
@@ -312,6 +316,9 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     private final Object mWidgetPackagesLock = new Object();
     // Set of packages that has at least one widget bounded by a host, keyed on userId.
     private final SparseArray<ArraySet<String>> mWidgetPackages = new SparseArray<>();
+    // Callback for report widget events alarm.
+    private final AlarmManager.OnAlarmListener mReportWidgetEventsAlarm =
+            () -> reportWidgetEventsToUsageStatsRepeating();
 
     private BackupRestoreController mBackupRestoreController;
 
@@ -360,6 +367,8 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     // Counter that keeps track of how many times generated preview API are
     // being called to ensure they are subject to rate limiting.
     private ApiCounter mGeneratedPreviewsApiCounter;
+    // Current bucket interval for reporting widget interaction events to UsageStatsManager.
+    private long mWidgetEventsReportIntervalMs;
 
     AppWidgetServiceImpl(Context context) {
         mContext = context;
@@ -404,6 +413,10 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 generatedPreviewMaxCallsPerInterval,
                 // Set a limit on the number of providers if storing them in memory.
                 remoteViewsProto() ? Integer.MAX_VALUE : generatedPreviewsMaxProviders);
+        mWidgetEventsReportIntervalMs = DeviceConfig.getLong(NAMESPACE_SYSTEMUI,
+                SystemUiDeviceConfigFlags.WIDGET_EVENTS_REPORT_INTERVAL_MS,
+                DEFAULT_WIDGET_EVENTS_REPORT_INTERVAL_MS);
+        updateWidgetEventsReportAlarm();
         DeviceConfig.addOnPropertiesChangedListener(NAMESPACE_SYSTEMUI,
                 new HandlerExecutor(mCallbackHandler), this::handleSystemUiDeviceConfigChange);
 
@@ -4969,25 +4982,137 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 final SparseArray<String> uid2PackageName = new SparseArray<String>();
                 uid2PackageName.put(providerId.uid, packageName);
                 mAppOpsManagerInternal.updateAppWidgetVisibility(uid2PackageName, true);
-                reportWidgetInteractionEvent(packageName, UserHandle.getUserId(providerId.uid),
-                        "tap");
+
+                PersistableBundle extras = new PersistableBundle();
+                extras.putString(UsageStatsManager.EXTRA_EVENT_CATEGORY,
+                        AppWidgetManager.EVENT_CATEGORY_APPWIDGET);
+                extras.putString(UsageStatsManager.EXTRA_EVENT_ACTION, "tap");
+                mUsageStatsManagerInternal.reportUserInteractionEvent(packageName,
+                        UserHandle.getUserId(providerId.uid), extras);
             }
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
     }
 
-    private void reportWidgetInteractionEvent(@NonNull String packageName, @UserIdInt int userId,
-            @NonNull String action) {
-        if (Flags.userInteractionTypeApi()) {
-            PersistableBundle extras = new PersistableBundle();
-            extras.putString(UsageStatsManager.EXTRA_EVENT_CATEGORY, "android.appwidget");
-            extras.putString(UsageStatsManager.EXTRA_EVENT_ACTION, action);
-            mUsageStatsManagerInternal.reportUserInteractionEvent(packageName, userId, extras);
-        } else {
-            mUsageStatsManagerInternal.reportEvent(packageName, userId,
-                    UsageEvents.Event.USER_INTERACTION);
+    @Override
+    public void reportWidgetEvents(String callingPackage, PersistableBundle[] events)
+            throws RemoteException {
+        final int userId = UserHandle.getCallingUserId();
+        final int callingUid = Binder.getCallingUid();
+
+        if (DEBUG) {
+            Slog.i(TAG, "reportWidgetEvents() " + userId);
         }
+
+        // Make sure the package runs under the caller uid.
+        mSecurityPolicy.enforceCallFromPackage(callingPackage);
+        synchronized (mLock) {
+            ensureGroupStateLoadedLocked(userId);
+
+            for (int i = 0; i < events.length; i++) {
+                final PersistableBundle event = events[i];
+                final int appWidgetId = validateWidgetEventBundle(event);
+                final Widget widget = lookupWidgetLocked(appWidgetId, callingUid, callingPackage);
+                if (widget == null) {
+                    if (DEBUG) {
+                        Slog.w(TAG, "Dropped widget event for " + appWidgetId
+                                + ", widget not found");
+                    }
+                    return;
+                }
+                widget.mergeEventLocked(event);
+                if (mWidgetEventsReportIntervalMs <= 0) {
+                    widget.reportWidgetEventIfNeededLocked(mUsageStatsManagerInternal);
+                }
+            }
+        }
+    }
+
+    /**
+     * Validate that the given event bundle has the correct format based on
+     * {@link AppWidgetManager#createWidgetInteractionEvent}.
+     *
+     * @return The app widget ID in the bundle.
+     */
+    private int validateWidgetEventBundle(@NonNull PersistableBundle event) {
+        int appWidgetId = -1;
+        boolean hasAction = false;
+        boolean hasCategory = false;
+        boolean hasDuration = false;
+        for (String key : event.keySet()) {
+            switch(key) {
+                case UsageStatsManager.EXTRA_EVENT_ACTION:
+                    if (!AppWidgetManager.EVENT_TYPE_WIDGET_INTERACTION.equals(
+                            event.getString(key, null))) {
+                        throw new IllegalArgumentException("Invalid widget event action, expected "
+                                + AppWidgetManager.EVENT_TYPE_WIDGET_INTERACTION);
+                    }
+                    hasAction = true;
+                    break;
+                case UsageStatsManager.EXTRA_EVENT_CATEGORY:
+                    if (!AppWidgetManager.EVENT_CATEGORY_APPWIDGET.equals(
+                            event.getString(key, null))) {
+                        throw new IllegalArgumentException(
+                                "Invalid widget event category, expected "
+                                        + AppWidgetManager.EVENT_CATEGORY_APPWIDGET);
+                    }
+                    hasCategory = true;
+                    break;
+                case AppWidgetManager.EXTRA_APPWIDGET_ID:
+                    appWidgetId = event.getInt(key, -1);
+                    break;
+                case AppWidgetManager.EXTRA_EVENT_DURATION_MS:
+                    if (!(event.get(key) instanceof Long)) {
+                        throw new IllegalArgumentException(
+                                "Widget extra " + AppWidgetManager.EXTRA_EVENT_DURATION_MS
+                                        + " has invalid type");
+                    }
+                    hasDuration = true;
+                    break;
+                case AppWidgetManager.EXTRA_EVENT_POSITION_RECT:
+                    if (!(event.get(key) instanceof int[] rect && rect.length == 4)) {
+                        throw new IllegalArgumentException(
+                                "Widget extra " + AppWidgetManager.EXTRA_EVENT_POSITION_RECT
+                                        + " has invalid type");
+                    }
+                    break;
+                case AppWidgetManager.EXTRA_EVENT_CLICKED_VIEWS:
+                    if (!(event.get(key) instanceof int[])) {
+                        throw new IllegalArgumentException(
+                                "Widget extra " + AppWidgetManager.EXTRA_EVENT_CLICKED_VIEWS
+                                        + " has invalid type");
+                    }
+                    break;
+                case AppWidgetManager.EXTRA_EVENT_SCROLLED_VIEWS:
+                    if (!(event.get(key) instanceof int[])) {
+                        throw new IllegalArgumentException(
+                                "Widget extra " + AppWidgetManager.EXTRA_EVENT_SCROLLED_VIEWS
+                                        + " has invalid type");
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            "Unexpected key in widget event bundle: " + key);
+            }
+        }
+        if (appWidgetId == -1) {
+            throw new IllegalArgumentException(
+                    "Widget event is missing bundle extra " + AppWidgetManager.EXTRA_APPWIDGET_ID);
+        }
+        if (!hasAction) {
+            throw new IllegalArgumentException(
+                    "Widget event is missing bundle extra " + UsageStatsManager.EXTRA_EVENT_ACTION);
+        }
+        if (!hasCategory) {
+            throw new IllegalArgumentException("Widget event is missing bundle extra "
+                    + UsageStatsManager.EXTRA_EVENT_CATEGORY);
+        }
+        if (!hasDuration) {
+            throw new IllegalArgumentException("Widget event is missing bundle extra "
+                    + AppWidgetManager.EXTRA_EVENT_DURATION_MS);
+        }
+        return appWidgetId;
     }
 
     @Override
@@ -5515,7 +5640,49 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                         /* defaultValue= */ mGeneratedPreviewsApiCounter.getMaxProviders());
                 mGeneratedPreviewsApiCounter.setMaxProviders(maxProviders);
             }
+            if (changed.contains(
+                    SystemUiDeviceConfigFlags.WIDGET_EVENTS_REPORT_INTERVAL_MS)) {
+                mWidgetEventsReportIntervalMs = properties.getLong(
+                        SystemUiDeviceConfigFlags.WIDGET_EVENTS_REPORT_INTERVAL_MS,
+                        /* defaultValue = */ mWidgetEventsReportIntervalMs);
+                updateWidgetEventsReportAlarm();
+            }
         }
+    }
+
+    /**
+     * Cancels the current report alarm, and sets a new alarm to be run
+     * mWidgetEventsReportIntervalMs milliseconds from now.
+     */
+    private void updateWidgetEventsReportAlarm() {
+        mAlarmHandler.post(() -> {
+            mAlarmManager.cancel(mReportWidgetEventsAlarm);
+
+            // If mWidgetEventsReportIntervalMs is 0 or less, do not set an alarm. The event will be
+            // reported to UsageStatsManager as soon as it is received from the widget view.
+            if (mWidgetEventsReportIntervalMs <= 0) return;
+
+            mAlarmManager.set(AlarmManager.ELAPSED_REALTIME,
+                    SystemClock.elapsedRealtime() + mWidgetEventsReportIntervalMs,
+                    "AppWidgetService_reportWidgetEvents", mReportWidgetEventsAlarm, mAlarmHandler);
+        });
+    }
+
+    /**
+     * Reports any pending widget events to UsageStatsManager, and schedules an alarm to repeat this
+     * mWidgetEventsReportIntervalMs milliseconds from now.
+     */
+    private void reportWidgetEventsToUsageStatsRepeating() {
+        synchronized (mLock) {
+            final int widgetCount = mWidgets.size();
+            for (int i = 0; i < widgetCount; i++) {
+                mWidgets.get(i).reportWidgetEventIfNeededLocked(mUsageStatsManagerInternal);
+            }
+        }
+
+        mAlarmManager.set(AlarmManager.ELAPSED_REALTIME,
+                SystemClock.elapsedRealtime() + mWidgetEventsReportIntervalMs,
+                "AppWidgetService_reportWidgetEvents", mReportWidgetEventsAlarm, mAlarmHandler);
     }
 
     private final class CallbackHandler extends Handler {
@@ -6298,6 +6465,12 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         // Map of request type to updateSequenceNo.
         SparseLongArray updateSequenceNos = new SparseLongArray(2);
         boolean trackingUpdate = false;
+        final ArraySet<Integer> clickedIds =
+                new ArraySet<>(AppWidgetHostView.InteractionLogger.MAX_NUM_ITEMS);
+        final ArraySet<Integer> scrolledIds =
+                new ArraySet<>(AppWidgetHostView.InteractionLogger.MAX_NUM_ITEMS);
+        int[] position = null;
+        long duration = 0L;
 
         @Override
         public String toString() {
@@ -6320,6 +6493,72 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
 
         public RemoteViews getEffectiveViewsLocked() {
             return maskedViews != null ? maskedViews : views;
+        }
+
+        /**
+         * Merge the passed event bundle with this widget's current events.
+         */
+        public void mergeEventLocked(@NonNull PersistableBundle newEvent) {
+            for (String key : newEvent.keySet()) {
+                switch(key) {
+                    case AppWidgetManager.EXTRA_EVENT_DURATION_MS:
+                        duration += newEvent.getLong(key);
+                        break;
+                    case AppWidgetManager.EXTRA_EVENT_POSITION_RECT:
+                        position = newEvent.getIntArray(key);
+                        break;
+                    case AppWidgetManager.EXTRA_EVENT_CLICKED_VIEWS:
+                        int[] newClickedIds = newEvent.getIntArray(key);
+                        for (int i = 0; i < newClickedIds.length && clickedIds.size()
+                                < AppWidgetHostView.InteractionLogger.MAX_NUM_ITEMS; i++) {
+                            clickedIds.add(newClickedIds[i]);
+                        }
+                        break;
+                    case AppWidgetManager.EXTRA_EVENT_SCROLLED_VIEWS:
+                        int[] newScrolledIds = newEvent.getIntArray(key);
+                        for (int i = 0; i < newScrolledIds.length && scrolledIds.size()
+                                < AppWidgetHostView.InteractionLogger.MAX_NUM_ITEMS; i++) {
+                            scrolledIds.add(newScrolledIds[i]);
+                        }
+                        break;
+                }
+            }
+        }
+
+        /**
+         * Reports a widget event to UsageStatsManager if there is event data to report.
+         */
+        public void reportWidgetEventIfNeededLocked(
+                @NonNull UsageStatsManagerInternal usageStatsManager) {
+            // Each event must have a non-zero duration.
+            if (duration == 0L) return;
+
+            Rect positionRect = null;
+            if (position != null && position.length == 4) {
+                positionRect = new Rect(position[0], position[1], position[2], position[3]);
+            }
+            PersistableBundle event = AppWidgetManager.createWidgetInteractionEvent(appWidgetId,
+                    duration, positionRect, toIntArray(clickedIds), toIntArray(scrolledIds));
+            usageStatsManager.reportUserInteractionEvent(
+                    provider.id.componentName.getPackageName(),
+                    UserHandle.getUserId(provider.id.uid), event);
+            if (DEBUG) {
+                Slog.i(TAG, "Reported widget interaction usage event: " + event);
+            }
+
+            duration = 0L;
+            position = null;
+            clickedIds.clear();
+            scrolledIds.clear();
+        }
+
+        private static int[] toIntArray(ArraySet<Integer> set) {
+            if (set.isEmpty()) return null;
+            int[] array = new int[set.size()];
+            for (int i = 0; i < array.length; i++) {
+                array[i] = set.valueAt(i);
+            }
+            return array;
         }
     }
 
