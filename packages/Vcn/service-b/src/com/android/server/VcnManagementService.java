@@ -86,6 +86,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.VisibleForTesting.Visibility;
 import com.android.net.module.util.BinderUtils;
+import com.android.net.module.util.HandlerUtils;
 import com.android.net.module.util.LocationPermissionChecker;
 import com.android.net.module.util.PermissionUtils;
 import com.android.server.vcn.TelephonySubscriptionTracker;
@@ -1332,41 +1333,46 @@ public class VcnManagementService extends IVcnManagementService.Stub {
         final IndentingPrintWriter pw = new IndentingPrintWriter(writer, "| ");
 
         // Post to handler thread to prevent ConcurrentModificationExceptions, and avoid lock-hell.
-        mHandler.runWithScissors(() -> {
-            mNetworkProvider.dump(pw);
-            pw.println();
+        HandlerUtils.runWithScissorsForDump(
+                mHandler,
+                () -> {
+                    mNetworkProvider.dump(pw);
+                    pw.println();
 
-            mTrackingNetworkCallback.dump(pw);
-            pw.println();
+                    mTrackingNetworkCallback.dump(pw);
+                    pw.println();
 
-            synchronized (mLock) {
-                mLastSnapshot.dump(pw);
-                pw.println();
+                    synchronized (mLock) {
+                        mLastSnapshot.dump(pw);
+                        pw.println();
 
-                pw.println("mConfigs:");
-                pw.increaseIndent();
-                for (Entry<ParcelUuid, VcnConfig> entry : mConfigs.entrySet()) {
-                    pw.println(entry.getKey() + ": "
-                            + entry.getValue().getProvisioningPackageName());
-                }
-                pw.decreaseIndent();
-                pw.println();
+                        pw.println("mConfigs:");
+                        pw.increaseIndent();
+                        for (Entry<ParcelUuid, VcnConfig> entry : mConfigs.entrySet()) {
+                            pw.println(
+                                    entry.getKey()
+                                            + ": "
+                                            + entry.getValue().getProvisioningPackageName());
+                        }
+                        pw.decreaseIndent();
+                        pw.println();
 
-                pw.println("mVcns:");
-                pw.increaseIndent();
-                for (Vcn vcn : mVcns.values()) {
-                    vcn.dump(pw);
-                }
-                pw.decreaseIndent();
-                pw.println();
-            }
+                        pw.println("mVcns:");
+                        pw.increaseIndent();
+                        for (Vcn vcn : mVcns.values()) {
+                            vcn.dump(pw);
+                        }
+                        pw.decreaseIndent();
+                        pw.println();
+                    }
 
-            pw.println("Local log:");
-            pw.increaseIndent();
-            LOCAL_LOG.dump(pw);
-            pw.decreaseIndent();
-            pw.println();
-        }, DUMP_TIMEOUT_MILLIS);
+                    pw.println("Local log:");
+                    pw.increaseIndent();
+                    LOCAL_LOG.dump(pw);
+                    pw.decreaseIndent();
+                    pw.println();
+                },
+                DUMP_TIMEOUT_MILLIS);
     }
 
     // TODO(b/180452282): Make name more generic and implement directly with VcnManagementService
