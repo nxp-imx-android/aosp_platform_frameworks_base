@@ -32,12 +32,12 @@ import android.net.IpSecTransformState;
 import android.net.Network;
 import android.net.vcn.VcnManager;
 import android.os.Handler;
-import android.os.HandlerExecutor;
 import android.os.OutcomeReceiver;
 import android.os.PowerManager;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.VisibleForTesting.Visibility;
+import com.android.modules.utils.HandlerExecutor;
 import com.android.server.vcn.VcnContext;
 
 import java.lang.annotation.ElementType;

@@ -19,7 +19,7 @@ package android.net.vcn.util;
 import android.annotation.Nullable;
 import android.os.ParcelUuid;
 
-import com.android.internal.util.HexDump;
+import com.android.net.module.util.HexDump;
 
 /** @hide */
 public class LogUtils {
