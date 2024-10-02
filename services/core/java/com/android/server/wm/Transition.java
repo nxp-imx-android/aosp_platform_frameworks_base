@@ -26,6 +26,7 @@ import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
+import static android.hardware.SyncFence.SIGNAL_TIME_PENDING;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
@@ -95,6 +96,7 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.HardwareBuffer;
+import android.hardware.SyncFence;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Debug;
@@ -134,6 +136,7 @@ import com.android.window.flags.Flags;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -265,8 +268,10 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
      */
     private ArrayList<Task> mTransientHideTasks;
 
+    private static final Duration TRANSACTION_PRESENTED_TIMEOUT = Duration.ofSeconds(1);
+
     @VisibleForTesting
-    ArrayList<Runnable> mTransactionCompletedListeners = null;
+    ArrayList<Runnable> mTransactionPresentedListeners = null;
 
     private ArrayList<Runnable> mTransitionEndedListeners = null;
 
@@ -1911,13 +1916,17 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         commitVisibleActivities(transaction);
         commitVisibleWallpapers(transaction);
 
-        if (mTransactionCompletedListeners != null) {
-            for (int i = 0; i < mTransactionCompletedListeners.size(); i++) {
-                final Runnable listener = mTransactionCompletedListeners.get(i);
-                transaction.addTransactionCompletedListener(Runnable::run,
-                        (stats) -> listener.run());
-            }
-            mTransactionCompletedListeners = null;
+        if (mTransactionPresentedListeners != null) {
+            final List<Runnable> transactionPresentedListeners =
+                    new ArrayList<>(mTransactionPresentedListeners);
+
+            addTransactionPresentedCallback(transaction, () -> {
+                for (int i = 0; i < transactionPresentedListeners.size(); i++) {
+                    transactionPresentedListeners.get(i).run();
+                }
+            });
+
+            mTransactionPresentedListeners = null;
         }
 
         // Fall-back to the default display if there isn't one participating.
@@ -2266,11 +2275,11 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
      * Adds a listener that will be executed after the start transaction of this transition
      * is presented on the screen, the listener will be executed on a binder thread
      */
-    void addTransactionCompletedListener(Runnable listener) {
-        if (mTransactionCompletedListeners == null) {
-            mTransactionCompletedListeners = new ArrayList<>();
+    void addTransactionPresentedListener(Runnable listener) {
+        if (mTransactionPresentedListeners == null) {
+            mTransactionPresentedListeners = new ArrayList<>();
         }
-        mTransactionCompletedListeners.add(listener);
+        mTransactionPresentedListeners.add(listener);
     }
 
     /**
@@ -2285,6 +2294,42 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             mTransitionEndedListeners = new ArrayList<>();
         }
         mTransitionEndedListeners.add(listener);
+    }
+
+    private void addTransactionPresentedCallback(SurfaceControl.Transaction transaction,
+            Runnable onPresented) {
+        transaction.addTransactionCompletedListener(Runnable::run,
+                (stats) -> {
+                    if (com.android.window.flags.Flags.waitForPresentFenceOnDisplaySwitch()) {
+                        final SyncFence fence = stats.getPresentFence();
+                        waitForPresentFence(fence, onPresented);
+                    } else {
+                        onPresented.run();
+                    }
+                });
+    }
+
+    private void waitForPresentFence(SyncFence fence, Runnable onPresented) {
+        try {
+            if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+                Trace.beginSection("Awaiting for the present fence");
+            }
+
+            fence.await(TRANSACTION_PRESENTED_TIMEOUT);
+        } finally {
+            if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+                Trace.endSection();
+            }
+
+            onPresented.run();
+
+            final long signalTime = fence.getSignalTime();
+            if (signalTime == SIGNAL_TIME_PENDING) {
+                Slog.e(TAG, "Timeout occurred when waiting for the transaction "
+                        + "to be presented");
+            }
+            fence.close();
+        }
     }
 
     /**

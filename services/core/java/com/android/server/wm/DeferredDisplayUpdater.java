@@ -294,7 +294,7 @@ class DeferredDisplayUpdater {
                 getCurrentDisplayChange(fromRotation, startBounds);
         displayChange.setPhysicalDisplayChanged(true);
 
-        transition.addTransactionCompletedListener(this::continueScreenUnblocking);
+        transition.addTransactionPresentedListener(this::continueScreenUnblocking);
         mDisplayContent.mTransitionController.requestStartTransition(transition,
                 /* startTask= */ null, /* remoteTransition= */ null, displayChange);
 
@@ -366,7 +366,7 @@ class DeferredDisplayUpdater {
 
     /**
      * Continues the screen unblocking flow, could be called either on a binder thread as
-     * a result of surface transaction completed listener or from {@link WindowManagerService#mH}
+     * a result of surface transaction presented listener or from {@link WindowManagerService#mH}
      * handler in case of timeout
      */
     private void continueScreenUnblocking() {
