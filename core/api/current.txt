@@ -6858,43 +6858,43 @@ package android.app {
 
   @FlaggedApi("android.app.api_rich_ongoing") public static class Notification.ProgressStyle extends android.app.Notification.Style {
     ctor public Notification.ProgressStyle();
+    method @NonNull public android.app.Notification.ProgressStyle addProgressPoint(@NonNull android.app.Notification.ProgressStyle.Point);
     method @NonNull public android.app.Notification.ProgressStyle addProgressSegment(@NonNull android.app.Notification.ProgressStyle.Segment);
-    method @NonNull public android.app.Notification.ProgressStyle addProgressStep(@NonNull android.app.Notification.ProgressStyle.Step);
     method public int getProgress();
     method @Nullable public android.graphics.drawable.Icon getProgressEndIcon();
     method public int getProgressMax();
+    method @NonNull public java.util.List<android.app.Notification.ProgressStyle.Point> getProgressPoints();
     method @NonNull public java.util.List<android.app.Notification.ProgressStyle.Segment> getProgressSegments();
     method @Nullable public android.graphics.drawable.Icon getProgressStartIcon();
-    method @NonNull public java.util.List<android.app.Notification.ProgressStyle.Step> getProgressSteps();
     method @Nullable public android.graphics.drawable.Icon getProgressTrackerIcon();
     method public boolean isProgressIndeterminate();
     method public boolean isStyledByProgress();
     method @NonNull public android.app.Notification.ProgressStyle setProgress(int);
     method @NonNull public android.app.Notification.ProgressStyle setProgressEndIcon(@Nullable android.graphics.drawable.Icon);
     method @NonNull public android.app.Notification.ProgressStyle setProgressIndeterminate(boolean);
+    method @NonNull public android.app.Notification.ProgressStyle setProgressPoints(@NonNull java.util.List<android.app.Notification.ProgressStyle.Point>);
     method @NonNull public android.app.Notification.ProgressStyle setProgressSegments(@NonNull java.util.List<android.app.Notification.ProgressStyle.Segment>);
     method @NonNull public android.app.Notification.ProgressStyle setProgressStartIcon(@Nullable android.graphics.drawable.Icon);
-    method @NonNull public android.app.Notification.ProgressStyle setProgressSteps(@NonNull java.util.List<android.app.Notification.ProgressStyle.Step>);
     method @NonNull public android.app.Notification.ProgressStyle setProgressTrackerIcon(@Nullable android.graphics.drawable.Icon);
     method @NonNull public android.app.Notification.ProgressStyle setStyledByProgress(boolean);
+  }
+
+  public static final class Notification.ProgressStyle.Point {
+    ctor public Notification.ProgressStyle.Point(int);
+    method @ColorInt public int getColor();
+    method public int getId();
+    method public int getPosition();
+    method @NonNull public android.app.Notification.ProgressStyle.Point setColor(@ColorInt int);
+    method @NonNull public android.app.Notification.ProgressStyle.Point setId(int);
   }
 
   public static final class Notification.ProgressStyle.Segment {
     ctor public Notification.ProgressStyle.Segment(int);
     method @ColorInt public int getColor();
+    method public int getId();
     method public int getLength();
-    method public int getStableId();
     method @NonNull public android.app.Notification.ProgressStyle.Segment setColor(@ColorInt int);
-    method @NonNull public android.app.Notification.ProgressStyle.Segment setStableId(int);
-  }
-
-  public static final class Notification.ProgressStyle.Step {
-    ctor public Notification.ProgressStyle.Step(int);
-    method @ColorInt public int getColor();
-    method public int getPosition();
-    method public int getStableId();
-    method @NonNull public android.app.Notification.ProgressStyle.Step setColor(@ColorInt int);
-    method @NonNull public android.app.Notification.ProgressStyle.Step setStableId(int);
+    method @NonNull public android.app.Notification.ProgressStyle.Segment setId(int);
   }
 
   public abstract static class Notification.Style {
@@ -8787,7 +8787,7 @@ package android.app.appfunctions {
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public abstract class AppFunctionService extends android.app.Service {
     ctor public AppFunctionService();
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @Deprecated @MainThread public abstract void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
+    method @Deprecated @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
     method @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
     field @NonNull public static final String SERVICE_INTERFACE = "android.app.appfunctions.AppFunctionService";
   }
@@ -8822,13 +8822,12 @@ package android.app.appfunctions {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.ExecuteAppFunctionResponse> CREATOR;
     field public static final String PROPERTY_RETURN_VALUE = "returnValue";
     field public static final int RESULT_APP_UNKNOWN_ERROR = 2; // 0x2
-    field public static final int RESULT_CANCELLED = 7; // 0x7
+    field public static final int RESULT_CANCELLED = 6; // 0x6
     field public static final int RESULT_DENIED = 1; // 0x1
-    field public static final int RESULT_DISABLED = 6; // 0x6
+    field public static final int RESULT_DISABLED = 5; // 0x5
     field public static final int RESULT_INTERNAL_ERROR = 3; // 0x3
     field public static final int RESULT_INVALID_ARGUMENT = 4; // 0x4
     field public static final int RESULT_OK = 0; // 0x0
-    field public static final int RESULT_TIMED_OUT = 5; // 0x5
   }
 
 }
@@ -12114,6 +12113,7 @@ package android.content.om {
     method @NonNull public void setResourceValue(@NonNull String, int, @NonNull String, @Nullable String);
     method @NonNull public void setResourceValue(@NonNull String, @NonNull android.os.ParcelFileDescriptor, @Nullable String);
     method @FlaggedApi("android.content.res.asset_file_descriptor_frro") @NonNull public void setResourceValue(@NonNull String, @NonNull android.content.res.AssetFileDescriptor, @Nullable String);
+    method @FlaggedApi("android.content.res.dimension_frro") public void setResourceValue(@NonNull String, float, int, @Nullable String);
     method public void setTargetOverlayable(@Nullable String);
   }
 
@@ -32821,7 +32821,7 @@ package android.os {
     field @NonNull public static final String RELEASE_OR_PREVIEW_DISPLAY;
     field @Deprecated public static final String SDK;
     field public static final int SDK_INT;
-    field @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static final int SDK_MINOR_INT;
+    field @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static final int SDK_INT_FULL;
     field public static final String SECURITY_PATCH;
   }
 
@@ -32863,6 +32863,9 @@ package android.os {
     field public static final int TIRAMISU = 33; // 0x21
     field public static final int UPSIDE_DOWN_CAKE = 34; // 0x22
     field public static final int VANILLA_ICE_CREAM = 35; // 0x23
+  }
+
+  @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static class Build.VERSION_CODES_FULL {
   }
 
   public final class Bundle extends android.os.BaseBundle implements java.lang.Cloneable android.os.Parcelable {
@@ -54956,6 +54959,7 @@ package android.view.accessibility {
     method public boolean addAccessibilityStateChangeListener(@NonNull android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener);
     method public void addAccessibilityStateChangeListener(@NonNull android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener, @Nullable android.os.Handler);
     method public void addAudioDescriptionRequestedChangeListener(@NonNull java.util.concurrent.Executor, @NonNull android.view.accessibility.AccessibilityManager.AudioDescriptionRequestedChangeListener);
+    method @FlaggedApi("com.android.graphics.hwui.flags.high_contrast_text_small_text_rect") public void addHighContrastTextStateChangeListener(@NonNull java.util.concurrent.Executor, @NonNull android.view.accessibility.AccessibilityManager.HighContrastTextStateChangeListener);
     method public boolean addTouchExplorationStateChangeListener(@NonNull android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener);
     method public void addTouchExplorationStateChangeListener(@NonNull android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener, @Nullable android.os.Handler);
     method @ColorInt public int getAccessibilityFocusColor();
@@ -54968,12 +54972,14 @@ package android.view.accessibility {
     method public static boolean isAccessibilityButtonSupported();
     method public boolean isAudioDescriptionRequested();
     method public boolean isEnabled();
+    method @FlaggedApi("com.android.graphics.hwui.flags.high_contrast_text_small_text_rect") public boolean isHighContrastTextEnabled();
     method public boolean isRequestFromAccessibilityTool();
     method public boolean isTouchExplorationEnabled();
     method public void removeAccessibilityRequestPreparer(android.view.accessibility.AccessibilityRequestPreparer);
     method public boolean removeAccessibilityServicesStateChangeListener(@NonNull android.view.accessibility.AccessibilityManager.AccessibilityServicesStateChangeListener);
     method public boolean removeAccessibilityStateChangeListener(@NonNull android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener);
     method public boolean removeAudioDescriptionRequestedChangeListener(@NonNull android.view.accessibility.AccessibilityManager.AudioDescriptionRequestedChangeListener);
+    method @FlaggedApi("com.android.graphics.hwui.flags.high_contrast_text_small_text_rect") public void removeHighContrastTextStateChangeListener(@NonNull android.view.accessibility.AccessibilityManager.HighContrastTextStateChangeListener);
     method public boolean removeTouchExplorationStateChangeListener(@NonNull android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener);
     method public void sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent);
     field public static final int FLAG_CONTENT_CONTROLS = 4; // 0x4
@@ -54991,6 +54997,10 @@ package android.view.accessibility {
 
   public static interface AccessibilityManager.AudioDescriptionRequestedChangeListener {
     method public void onAudioDescriptionRequestedChanged(boolean);
+  }
+
+  @FlaggedApi("com.android.graphics.hwui.flags.high_contrast_text_small_text_rect") public static interface AccessibilityManager.HighContrastTextStateChangeListener {
+    method public void onHighContrastTextStateChanged(boolean);
   }
 
   public static interface AccessibilityManager.TouchExplorationStateChangeListener {

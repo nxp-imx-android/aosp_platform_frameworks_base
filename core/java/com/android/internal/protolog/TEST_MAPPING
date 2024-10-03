@@ -1,6 +1,9 @@
 {
   "postsubmit": [
     {
+      "name": "TracingTests"
+    },
+    {
       "name": "ProtologPerfTests"
     }
   ]
