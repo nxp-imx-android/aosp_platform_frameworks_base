@@ -423,7 +423,6 @@ public class ResourcesManagerTest {
 
     @Test
     @SmallTest
-    @RequiresFlagsEnabled(Flags.FLAG_REGISTER_RESOURCE_PATHS)
     @DisabledOnRavenwood(blockedBy = PackageManager.class)
     public void testExistingResourcesAfterResourcePathsRegistration()
              throws PackageManager.NameNotFoundException {
@@ -448,7 +447,6 @@ public class ResourcesManagerTest {
 
     @Test
     @SmallTest
-    @RequiresFlagsEnabled(Flags.FLAG_REGISTER_RESOURCE_PATHS)
     @DisabledOnRavenwood(blockedBy = PackageManager.class)
     public void testNewResourcesAfterResourcePathsRegistration()
             throws PackageManager.NameNotFoundException {
@@ -470,7 +468,6 @@ public class ResourcesManagerTest {
 
     @Test
     @SmallTest
-    @RequiresFlagsEnabled(Flags.FLAG_REGISTER_RESOURCE_PATHS)
     @DisabledOnRavenwood(blockedBy = PackageManager.class)
     public void testExistingResourcesCreatedByConstructorAfterResourcePathsRegistration()
             throws PackageManager.NameNotFoundException {
@@ -541,7 +538,6 @@ public class ResourcesManagerTest {
 
     @Test
     @SmallTest
-    @RequiresFlagsEnabled(Flags.FLAG_REGISTER_RESOURCE_PATHS)
     @DisabledOnRavenwood(blockedBy = PackageManager.class)
     public void testNewResourcesWithOutdatedImplAfterResourcePathsRegistration()
             throws PackageManager.NameNotFoundException {
@@ -575,7 +571,6 @@ public class ResourcesManagerTest {
 
     @Test
     @SmallTest
-    @RequiresFlagsEnabled(Flags.FLAG_REGISTER_RESOURCE_PATHS)
     @DisabledOnRavenwood(blockedBy = PackageManager.class)
     public void testRegisteringOwnApplicationInfo() {
         Resources old_resources = mResourcesManager.getResources(
@@ -603,7 +598,6 @@ public class ResourcesManagerTest {
 
     @Test
     @SmallTest
-    @RequiresFlagsEnabled(Flags.FLAG_REGISTER_RESOURCE_PATHS)
     @DisabledOnRavenwood(blockedBy = PackageManager.class)
     public void testRegisterPathWithExistingResourcesWithInvalidPath()
             throws PackageManager.NameNotFoundException, IOException {

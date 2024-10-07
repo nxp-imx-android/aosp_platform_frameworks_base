@@ -29,7 +29,6 @@ import android.annotation.ColorRes;
 import android.annotation.DimenRes;
 import android.annotation.Discouraged;
 import android.annotation.DrawableRes;
-import android.annotation.FlaggedApi;
 import android.annotation.FontRes;
 import android.annotation.FractionRes;
 import android.annotation.IntegerRes;
@@ -2888,15 +2887,9 @@ public class Resources {
      *                 API calls.
      * @param appInfo The ApplicationInfo that contains resources paths of the package.
      */
-    @FlaggedApi(android.content.res.Flags.FLAG_REGISTER_RESOURCE_PATHS)
-    @RavenwoodThrow(reason = "FLAG_REGISTER_RESOURCE_PATHS is unsupported")
+    @RavenwoodThrow(reason = "registerResourcePaths is unsupported")
     public static void registerResourcePaths(@NonNull String uniqueId,
             @NonNull ApplicationInfo appInfo) {
-        if (Flags.registerResourcePaths()) {
-            ResourcesManager.getInstance().registerResourcePaths(uniqueId, appInfo);
-        } else {
-            throw new UnsupportedOperationException("Flag " + Flags.FLAG_REGISTER_RESOURCE_PATHS
-                    + " is disabled.");
-        }
+        ResourcesManager.getInstance().registerResourcePaths(uniqueId, appInfo);
     }
 }
