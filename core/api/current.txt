@@ -9834,6 +9834,7 @@ package android.companion {
   public final class AssociationInfo implements android.os.Parcelable {
     method public int describeContents();
     method @Nullable public android.companion.AssociatedDevice getAssociatedDevice();
+    method @FlaggedApi("android.companion.association_device_icon") @Nullable public android.graphics.drawable.Icon getDeviceIcon();
     method @Nullable public android.net.MacAddress getDeviceMacAddress();
     method @Nullable public String getDeviceProfile();
     method @Nullable public CharSequence getDisplayName();
@@ -9847,6 +9848,7 @@ package android.companion {
 
   public final class AssociationRequest implements android.os.Parcelable {
     method public int describeContents();
+    method @FlaggedApi("android.companion.association_device_icon") @Nullable public android.graphics.drawable.Icon getDeviceIcon();
     method @Nullable public String getDeviceProfile();
     method @Nullable public CharSequence getDisplayName();
     method public boolean isForceConfirmation();
@@ -9866,6 +9868,7 @@ package android.companion {
     ctor public AssociationRequest.Builder();
     method @NonNull public android.companion.AssociationRequest.Builder addDeviceFilter(@Nullable android.companion.DeviceFilter<?>);
     method @NonNull public android.companion.AssociationRequest build();
+    method @FlaggedApi("android.companion.association_device_icon") @NonNull @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public android.companion.AssociationRequest.Builder setDeviceIcon(@NonNull android.graphics.drawable.Icon);
     method @NonNull public android.companion.AssociationRequest.Builder setDeviceProfile(@NonNull String);
     method @NonNull public android.companion.AssociationRequest.Builder setDisplayName(@NonNull CharSequence);
     method @NonNull @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public android.companion.AssociationRequest.Builder setForceConfirmation(boolean);
@@ -12286,6 +12289,7 @@ package android.content.pm {
     method public int getMemtagMode();
     method public int getNativeHeapZeroInitialized();
     method public int getRequestRawExternalStorageAccess();
+    method @FlaggedApi("android.content.pm.audio_playback_capture_allowance") public boolean isAudioPlaybackCaptureAllowed();
     method public boolean isProfileable();
     method public boolean isProfileableByShell();
     method public boolean isResourceOverlay();
@@ -22601,6 +22605,7 @@ package android.media {
     method public void sendEvent(int, int, @Nullable byte[]) throws android.media.MediaCasException;
     method public void setEventListener(@Nullable android.media.MediaCas.EventListener, @Nullable android.os.Handler);
     method public void setPrivateData(@NonNull byte[]) throws android.media.MediaCasException;
+    method @FlaggedApi("com.android.media.flags.update_client_profile_priority") public boolean updateResourcePriority(int, int);
     field public static final int PLUGIN_STATUS_PHYSICAL_MODULE_CHANGED = 0; // 0x0
     field public static final int PLUGIN_STATUS_SESSION_NUMBER_CHANGED = 1; // 0x1
     field public static final int SCRAMBLING_MODE_AES128 = 9; // 0x9
@@ -34334,6 +34339,7 @@ package android.os {
     method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public boolean areEnvelopeEffectsSupported();
     method @NonNull public boolean[] arePrimitivesSupported(@NonNull int...);
     method @RequiresPermission(android.Manifest.permission.VIBRATE) public abstract void cancel();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @Nullable public android.os.vibrator.VibratorFrequencyProfile getFrequencyProfile();
     method public int getId();
     method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public int getMaxEnvelopeEffectControlPointDurationMillis();
     method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public int getMaxEnvelopeEffectDurationMillis();
@@ -34683,6 +34689,19 @@ package android.os.strictmode {
   }
 
   public final class WebViewMethodCalledOnWrongThreadViolation extends android.os.strictmode.Violation {
+  }
+
+}
+
+package android.os.vibrator {
+
+  @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public final class VibratorFrequencyProfile {
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public android.util.SparseArray<java.lang.Float> getFrequenciesOutputAcceleration();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @Nullable public android.util.Range<java.lang.Float> getFrequencyRange(float);
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public float getMaxFrequencyHz();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public float getMaxOutputAccelerationGs();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public float getMinFrequencyHz();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public float getOutputAccelerationGs(float);
   }
 
 }
