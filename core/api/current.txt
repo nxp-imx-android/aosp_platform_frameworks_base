@@ -4950,7 +4950,7 @@ package android.app {
     field @Deprecated @FlaggedApi("com.android.window.flags.bal_additional_start_modes") public static final int MODE_BACKGROUND_ACTIVITY_START_ALLOWED = 1; // 0x1
     field @FlaggedApi("com.android.window.flags.bal_additional_start_modes") public static final int MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS = 3; // 0x3
     field @FlaggedApi("com.android.window.flags.bal_additional_start_modes") public static final int MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE = 4; // 0x4
-    field @FlaggedApi("com.android.window.flags.bal_additional_start_modes") public static final int MODE_BACKGROUND_ACTIVITY_START_DENIED = 2; // 0x2
+    field public static final int MODE_BACKGROUND_ACTIVITY_START_DENIED = 2; // 0x2
     field public static final int MODE_BACKGROUND_ACTIVITY_START_SYSTEM_DEFINED = 0; // 0x0
   }
 
@@ -5103,6 +5103,7 @@ package android.app {
     method public int noteProxyOpNoThrow(@NonNull String, @Nullable String, int, @Nullable String, @Nullable String);
     method @Nullable public static String permissionToOp(@NonNull String);
     method public void setOnOpNotedCallback(@Nullable java.util.concurrent.Executor, @Nullable android.app.AppOpsManager.OnOpNotedCallback);
+    method @FlaggedApi("android.permission.flags.sync_on_op_noted_api") public void setOnOpNotedCallback(@Nullable java.util.concurrent.Executor, @Nullable android.app.AppOpsManager.OnOpNotedCallback, int);
     method @Deprecated public int startOp(@NonNull String, int, @NonNull String);
     method public int startOp(@NonNull String, int, @Nullable String, @Nullable String, @Nullable String);
     method @Deprecated public int startOpNoThrow(@NonNull String, int, @NonNull String);
@@ -5157,6 +5158,7 @@ package android.app {
     field public static final String OPSTR_WRITE_CONTACTS = "android:write_contacts";
     field public static final String OPSTR_WRITE_EXTERNAL_STORAGE = "android:write_external_storage";
     field public static final String OPSTR_WRITE_SETTINGS = "android:write_settings";
+    field @FlaggedApi("android.permission.flags.sync_on_op_noted_api") public static final int OP_NOTED_CALLBACK_FLAG_IGNORE_ASYNC = 1; // 0x1
     field public static final int WATCH_FOREGROUND_CHANGES = 1; // 0x1
   }
 
@@ -8792,7 +8794,8 @@ package android.app.appfunctions {
     ctor public AppFunctionService();
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method @Deprecated @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
-    method @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
+    method @Deprecated @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
+    method @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull String, @NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
     field @NonNull public static final String SERVICE_INTERFACE = "android.app.appfunctions.AppFunctionService";
   }
 
@@ -9834,6 +9837,7 @@ package android.companion {
   public final class AssociationInfo implements android.os.Parcelable {
     method public int describeContents();
     method @Nullable public android.companion.AssociatedDevice getAssociatedDevice();
+    method @FlaggedApi("android.companion.association_device_icon") @Nullable public android.graphics.drawable.Icon getDeviceIcon();
     method @Nullable public android.net.MacAddress getDeviceMacAddress();
     method @Nullable public String getDeviceProfile();
     method @Nullable public CharSequence getDisplayName();
@@ -9847,6 +9851,7 @@ package android.companion {
 
   public final class AssociationRequest implements android.os.Parcelable {
     method public int describeContents();
+    method @FlaggedApi("android.companion.association_device_icon") @Nullable public android.graphics.drawable.Icon getDeviceIcon();
     method @Nullable public String getDeviceProfile();
     method @Nullable public CharSequence getDisplayName();
     method public boolean isForceConfirmation();
@@ -9866,6 +9871,7 @@ package android.companion {
     ctor public AssociationRequest.Builder();
     method @NonNull public android.companion.AssociationRequest.Builder addDeviceFilter(@Nullable android.companion.DeviceFilter<?>);
     method @NonNull public android.companion.AssociationRequest build();
+    method @FlaggedApi("android.companion.association_device_icon") @NonNull @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public android.companion.AssociationRequest.Builder setDeviceIcon(@NonNull android.graphics.drawable.Icon);
     method @NonNull public android.companion.AssociationRequest.Builder setDeviceProfile(@NonNull String);
     method @NonNull public android.companion.AssociationRequest.Builder setDisplayName(@NonNull CharSequence);
     method @NonNull @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public android.companion.AssociationRequest.Builder setForceConfirmation(boolean);
@@ -12286,6 +12292,7 @@ package android.content.pm {
     method public int getMemtagMode();
     method public int getNativeHeapZeroInitialized();
     method public int getRequestRawExternalStorageAccess();
+    method @FlaggedApi("android.content.pm.audio_playback_capture_allowance") public boolean isAudioPlaybackCaptureAllowed();
     method public boolean isProfileable();
     method public boolean isProfileableByShell();
     method public boolean isResourceOverlay();
@@ -21415,6 +21422,7 @@ package android.media {
     field public static final int ENCODING_AAC_XHE = 16; // 0x10
     field public static final int ENCODING_AC3 = 5; // 0x5
     field public static final int ENCODING_AC4 = 17; // 0x11
+    field @FlaggedApi("android.media.audio.dolby_ac4_level4_encoding_api") public static final int ENCODING_AC4_L4 = 32; // 0x20
     field public static final int ENCODING_DEFAULT = 1; // 0x1
     field public static final int ENCODING_DOLBY_MAT = 19; // 0x13
     field public static final int ENCODING_DOLBY_TRUEHD = 14; // 0xe
@@ -22600,6 +22608,7 @@ package android.media {
     method public void sendEvent(int, int, @Nullable byte[]) throws android.media.MediaCasException;
     method public void setEventListener(@Nullable android.media.MediaCas.EventListener, @Nullable android.os.Handler);
     method public void setPrivateData(@NonNull byte[]) throws android.media.MediaCasException;
+    method @FlaggedApi("com.android.media.flags.update_client_profile_priority") public boolean updateResourcePriority(int, int);
     field public static final int PLUGIN_STATUS_PHYSICAL_MODULE_CHANGED = 0; // 0x0
     field public static final int PLUGIN_STATUS_SESSION_NUMBER_CHANGED = 1; // 0x1
     field public static final int SCRAMBLING_MODE_AES128 = 9; // 0x9
@@ -26918,7 +26927,6 @@ package android.media.session {
     field public static final int STATE_FAST_FORWARDING = 4; // 0x4
     field public static final int STATE_NONE = 0; // 0x0
     field public static final int STATE_PAUSED = 2; // 0x2
-    field @FlaggedApi("com.android.media.flags.enable_notifying_activity_manager_with_media_session_status_change") public static final int STATE_PLAYBACK_SUPPRESSED = 12; // 0xc
     field public static final int STATE_PLAYING = 3; // 0x3
     field public static final int STATE_REWINDING = 5; // 0x5
     field public static final int STATE_SKIPPING_TO_NEXT = 10; // 0xa
@@ -33923,9 +33931,12 @@ package android.os {
   public class RemoteCallbackList<E extends android.os.IInterface> {
     ctor public RemoteCallbackList();
     method public int beginBroadcast();
+    method @FlaggedApi("android.os.binder_frozen_state_change_callback") public void broadcast(@NonNull java.util.function.Consumer<E>);
     method public void finishBroadcast();
     method public Object getBroadcastCookie(int);
     method public E getBroadcastItem(int);
+    method @FlaggedApi("android.os.binder_frozen_state_change_callback") public int getFrozenCalleePolicy();
+    method @FlaggedApi("android.os.binder_frozen_state_change_callback") public int getMaxQueueSize();
     method public Object getRegisteredCallbackCookie(int);
     method public int getRegisteredCallbackCount();
     method public E getRegisteredCallbackItem(int);
@@ -33935,6 +33946,16 @@ package android.os {
     method public boolean register(E);
     method public boolean register(E, Object);
     method public boolean unregister(E);
+    field @FlaggedApi("android.os.binder_frozen_state_change_callback") public static final int FROZEN_CALLEE_POLICY_DROP = 3; // 0x3
+    field @FlaggedApi("android.os.binder_frozen_state_change_callback") public static final int FROZEN_CALLEE_POLICY_ENQUEUE_ALL = 1; // 0x1
+    field @FlaggedApi("android.os.binder_frozen_state_change_callback") public static final int FROZEN_CALLEE_POLICY_ENQUEUE_MOST_RECENT = 2; // 0x2
+    field @FlaggedApi("android.os.binder_frozen_state_change_callback") public static final int FROZEN_CALLEE_POLICY_UNSET = 0; // 0x0
+  }
+
+  @FlaggedApi("android.os.binder_frozen_state_change_callback") public static final class RemoteCallbackList.Builder<E extends android.os.IInterface> {
+    ctor public RemoteCallbackList.Builder(int);
+    method @NonNull public android.os.RemoteCallbackList<E> build();
+    method @NonNull public android.os.RemoteCallbackList.Builder setMaxQueueSize(int);
   }
 
   public class RemoteException extends android.util.AndroidException {
@@ -34334,6 +34355,7 @@ package android.os {
     method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public boolean areEnvelopeEffectsSupported();
     method @NonNull public boolean[] arePrimitivesSupported(@NonNull int...);
     method @RequiresPermission(android.Manifest.permission.VIBRATE) public abstract void cancel();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @Nullable public android.os.vibrator.VibratorFrequencyProfile getFrequencyProfile();
     method public int getId();
     method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public int getMaxEnvelopeEffectControlPointDurationMillis();
     method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public int getMaxEnvelopeEffectDurationMillis();
@@ -34683,6 +34705,19 @@ package android.os.strictmode {
   }
 
   public final class WebViewMethodCalledOnWrongThreadViolation extends android.os.strictmode.Violation {
+  }
+
+}
+
+package android.os.vibrator {
+
+  @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public final class VibratorFrequencyProfile {
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public android.util.SparseArray<java.lang.Float> getFrequenciesOutputAcceleration();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @Nullable public android.util.Range<java.lang.Float> getFrequencyRange(float);
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public float getMaxFrequencyHz();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public float getMaxOutputAccelerationGs();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public float getMinFrequencyHz();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public float getOutputAccelerationGs(float);
   }
 
 }
@@ -49240,6 +49275,7 @@ package android.text.style {
     field public static final String ARG_PROTOCOL = "android.arg.protocol";
     field public static final String ARG_QUANTITY = "android.arg.quantity";
     field public static final String ARG_QUERY_STRING = "android.arg.query_string";
+    field @FlaggedApi("com.android.text.flags.tts_span_duration") public static final String ARG_SECONDS = "android.arg.seconds";
     field public static final String ARG_TEXT = "android.arg.text";
     field public static final String ARG_UNIT = "android.arg.unit";
     field public static final String ARG_USERNAME = "android.arg.username";
@@ -49276,6 +49312,7 @@ package android.text.style {
     field public static final String TYPE_DATE = "android.type.date";
     field public static final String TYPE_DECIMAL = "android.type.decimal";
     field public static final String TYPE_DIGITS = "android.type.digits";
+    field @FlaggedApi("com.android.text.flags.tts_span_duration") public static final String TYPE_DURATION = "android.type.duration";
     field public static final String TYPE_ELECTRONIC = "android.type.electronic";
     field public static final String TYPE_FRACTION = "android.type.fraction";
     field public static final String TYPE_MEASURE = "android.type.measure";
@@ -49333,6 +49370,13 @@ package android.text.style {
     ctor public TtsSpan.DigitsBuilder();
     ctor public TtsSpan.DigitsBuilder(String);
     method public android.text.style.TtsSpan.DigitsBuilder setDigits(String);
+  }
+
+  @FlaggedApi("com.android.text.flags.tts_span_duration") public static class TtsSpan.DurationBuilder extends android.text.style.TtsSpan.SemioticClassBuilder<android.text.style.TtsSpan.DurationBuilder> {
+    ctor @FlaggedApi("com.android.text.flags.tts_span_duration") public TtsSpan.DurationBuilder();
+    method @FlaggedApi("com.android.text.flags.tts_span_duration") @NonNull public android.text.style.TtsSpan.DurationBuilder setHours(int);
+    method @FlaggedApi("com.android.text.flags.tts_span_duration") @NonNull public android.text.style.TtsSpan.DurationBuilder setMinutes(int);
+    method @FlaggedApi("com.android.text.flags.tts_span_duration") @NonNull public android.text.style.TtsSpan.DurationBuilder setSeconds(int);
   }
 
   public static class TtsSpan.ElectronicBuilder extends android.text.style.TtsSpan.SemioticClassBuilder<android.text.style.TtsSpan.ElectronicBuilder> {
@@ -49417,6 +49461,7 @@ package android.text.style {
     ctor public TtsSpan.TimeBuilder(int, int);
     method public android.text.style.TtsSpan.TimeBuilder setHours(int);
     method public android.text.style.TtsSpan.TimeBuilder setMinutes(int);
+    method @FlaggedApi("com.android.text.flags.tts_span_duration") @NonNull public android.text.style.TtsSpan.TimeBuilder setSeconds(int);
   }
 
   public static class TtsSpan.VerbatimBuilder extends android.text.style.TtsSpan.SemioticClassBuilder<android.text.style.TtsSpan.VerbatimBuilder> {
@@ -52549,10 +52594,12 @@ package android.view {
     ctor public SurfaceView(android.content.Context, android.util.AttributeSet, int);
     ctor public SurfaceView(android.content.Context, android.util.AttributeSet, int, int);
     method public void applyTransactionToFrame(@NonNull android.view.SurfaceControl.Transaction);
+    method @FlaggedApi("android.view.flags.surface_view_set_composition_order") public int getCompositionOrder();
     method public android.view.SurfaceHolder getHolder();
     method @Deprecated @Nullable public android.os.IBinder getHostToken();
     method public android.view.SurfaceControl getSurfaceControl();
     method public void setChildSurfacePackage(@NonNull android.view.SurfaceControlViewHost.SurfacePackage);
+    method @FlaggedApi("android.view.flags.surface_view_set_composition_order") public void setCompositionOrder(int);
     method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0) float);
     method public void setSecure(boolean);
     method public void setSurfaceLifecycle(int);
@@ -54890,6 +54937,7 @@ package android.view.accessibility {
     method public void setPackageName(CharSequence);
     method public void setSpeechStateChangeTypes(int);
     method public void writeToParcel(android.os.Parcel, int);
+    field @FlaggedApi("android.view.accessibility.tri_state_checked") public static final int CONTENT_CHANGE_TYPE_CHECKED = 8192; // 0x2000
     field public static final int CONTENT_CHANGE_TYPE_CONTENT_DESCRIPTION = 4; // 0x4
     field public static final int CONTENT_CHANGE_TYPE_CONTENT_INVALID = 1024; // 0x400
     field public static final int CONTENT_CHANGE_TYPE_DRAG_CANCELLED = 512; // 0x200
@@ -55035,6 +55083,7 @@ package android.view.accessibility {
     method @Deprecated public void getBoundsInParent(android.graphics.Rect);
     method public void getBoundsInScreen(android.graphics.Rect);
     method public void getBoundsInWindow(@NonNull android.graphics.Rect);
+    method @FlaggedApi("android.view.accessibility.tri_state_checked") public int getChecked();
     method public android.view.accessibility.AccessibilityNodeInfo getChild(int);
     method @Nullable public android.view.accessibility.AccessibilityNodeInfo getChild(int, int);
     method public int getChildCount();
@@ -55077,7 +55126,7 @@ package android.view.accessibility {
     method public boolean isAccessibilityDataSensitive();
     method public boolean isAccessibilityFocused();
     method public boolean isCheckable();
-    method public boolean isChecked();
+    method @Deprecated @FlaggedApi("android.view.accessibility.tri_state_checked") public boolean isChecked();
     method public boolean isClickable();
     method public boolean isContentInvalid();
     method public boolean isContextClickable();
@@ -55122,7 +55171,8 @@ package android.view.accessibility {
     method public void setBoundsInWindow(@NonNull android.graphics.Rect);
     method public void setCanOpenPopup(boolean);
     method public void setCheckable(boolean);
-    method public void setChecked(boolean);
+    method @Deprecated @FlaggedApi("android.view.accessibility.tri_state_checked") public void setChecked(boolean);
+    method @FlaggedApi("android.view.accessibility.tri_state_checked") public void setChecked(int);
     method public void setClassName(CharSequence);
     method public void setClickable(boolean);
     method public void setCollectionInfo(android.view.accessibility.AccessibilityNodeInfo.CollectionInfo);
@@ -55218,6 +55268,9 @@ package android.view.accessibility {
     field public static final int ACTION_SELECT = 4; // 0x4
     field public static final int ACTION_SET_SELECTION = 131072; // 0x20000
     field public static final int ACTION_SET_TEXT = 2097152; // 0x200000
+    field @FlaggedApi("android.view.accessibility.tri_state_checked") public static final int CHECKED_STATE_FALSE = 0; // 0x0
+    field @FlaggedApi("android.view.accessibility.tri_state_checked") public static final int CHECKED_STATE_PARTIAL = 2; // 0x2
+    field @FlaggedApi("android.view.accessibility.tri_state_checked") public static final int CHECKED_STATE_TRUE = 1; // 0x1
     field @NonNull public static final android.os.Parcelable.Creator<android.view.accessibility.AccessibilityNodeInfo> CREATOR;
     field public static final String EXTRA_DATA_RENDERING_INFO_KEY = "android.view.accessibility.extra.DATA_RENDERING_INFO_KEY";
     field public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH";
