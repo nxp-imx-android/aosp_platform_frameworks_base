@@ -32880,6 +32880,41 @@ package android.os {
   }
 
   @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static class Build.VERSION_CODES_FULL {
+    field public static final int BASE = 100000; // 0x186a0
+    field public static final int BASE_1_1 = 200000; // 0x30d40
+    field public static final int CUPCAKE = 300000; // 0x493e0
+    field public static final int DONUT = 400000; // 0x61a80
+    field public static final int ECLAIR = 500000; // 0x7a120
+    field public static final int ECLAIR_0_1 = 600000; // 0x927c0
+    field public static final int ECLAIR_MR1 = 700000; // 0xaae60
+    field public static final int FROYO = 800000; // 0xc3500
+    field public static final int GINGERBREAD = 900000; // 0xdbba0
+    field public static final int GINGERBREAD_MR1 = 1000000; // 0xf4240
+    field public static final int HONEYCOMB = 1100000; // 0x10c8e0
+    field public static final int HONEYCOMB_MR1 = 1200000; // 0x124f80
+    field public static final int HONEYCOMB_MR2 = 1300000; // 0x13d620
+    field public static final int ICE_CREAM_SANDWICH = 1400000; // 0x155cc0
+    field public static final int ICE_CREAM_SANDWICH_MR1 = 1500000; // 0x16e360
+    field public static final int JELLY_BEAN = 1600000; // 0x186a00
+    field public static final int JELLY_BEAN_MR1 = 1700000; // 0x19f0a0
+    field public static final int JELLY_BEAN_MR2 = 1800000; // 0x1b7740
+    field public static final int KITKAT = 1900000; // 0x1cfde0
+    field public static final int KITKAT_WATCH = 2000000; // 0x1e8480
+    field public static final int LOLLIPOP = 2100000; // 0x200b20
+    field public static final int LOLLIPOP_MR1 = 2200000; // 0x2191c0
+    field public static final int M = 2300000; // 0x231860
+    field public static final int N = 2400000; // 0x249f00
+    field public static final int N_MR1 = 2500000; // 0x2625a0
+    field public static final int O = 2600000; // 0x27ac40
+    field public static final int O_MR1 = 2700000; // 0x2932e0
+    field public static final int P = 2800000; // 0x2ab980
+    field public static final int Q = 2900000; // 0x2c4020
+    field public static final int R = 3000000; // 0x2dc6c0
+    field public static final int S = 3100000; // 0x2f4d60
+    field public static final int S_V2 = 3200000; // 0x30d400
+    field public static final int TIRAMISU = 3300000; // 0x325aa0
+    field public static final int UPSIDE_DOWN_CAKE = 3400000; // 0x33e140
+    field public static final int VANILLA_ICE_CREAM = 3500000; // 0x3567e0
   }
 
   public final class Bundle extends android.os.BaseBundle implements java.lang.Cloneable android.os.Parcelable {
@@ -33933,12 +33968,9 @@ package android.os {
   public class RemoteCallbackList<E extends android.os.IInterface> {
     ctor public RemoteCallbackList();
     method public int beginBroadcast();
-    method @FlaggedApi("android.os.binder_frozen_state_change_callback") public void broadcast(@NonNull java.util.function.Consumer<E>);
     method public void finishBroadcast();
     method public Object getBroadcastCookie(int);
     method public E getBroadcastItem(int);
-    method @FlaggedApi("android.os.binder_frozen_state_change_callback") public int getFrozenCalleePolicy();
-    method @FlaggedApi("android.os.binder_frozen_state_change_callback") public int getMaxQueueSize();
     method public Object getRegisteredCallbackCookie(int);
     method public int getRegisteredCallbackCount();
     method public E getRegisteredCallbackItem(int);
@@ -33948,16 +33980,6 @@ package android.os {
     method public boolean register(E);
     method public boolean register(E, Object);
     method public boolean unregister(E);
-    field @FlaggedApi("android.os.binder_frozen_state_change_callback") public static final int FROZEN_CALLEE_POLICY_DROP = 3; // 0x3
-    field @FlaggedApi("android.os.binder_frozen_state_change_callback") public static final int FROZEN_CALLEE_POLICY_ENQUEUE_ALL = 1; // 0x1
-    field @FlaggedApi("android.os.binder_frozen_state_change_callback") public static final int FROZEN_CALLEE_POLICY_ENQUEUE_MOST_RECENT = 2; // 0x2
-    field @FlaggedApi("android.os.binder_frozen_state_change_callback") public static final int FROZEN_CALLEE_POLICY_UNSET = 0; // 0x0
-  }
-
-  @FlaggedApi("android.os.binder_frozen_state_change_callback") public static final class RemoteCallbackList.Builder<E extends android.os.IInterface> {
-    ctor public RemoteCallbackList.Builder(int);
-    method @NonNull public android.os.RemoteCallbackList<E> build();
-    method @NonNull public android.os.RemoteCallbackList.Builder setMaxQueueSize(int);
   }
 
   public class RemoteException extends android.util.AndroidException {
@@ -43851,8 +43873,8 @@ package android.telephony {
     field public static final String KEY_5G_NR_SSRSRQ_THRESHOLDS_INT_ARRAY = "5g_nr_ssrsrq_thresholds_int_array";
     field public static final String KEY_5G_NR_SSSINR_THRESHOLDS_INT_ARRAY = "5g_nr_sssinr_thresholds_int_array";
     field public static final String KEY_ADDITIONAL_CALL_SETTING_BOOL = "additional_call_setting_bool";
-    field @FlaggedApi("com.android.internal.telephony.flags.show_call_id_and_call_waiting_in_additional_settings_menu") public static final String KEY_ADDITIONAL_SETTINGS_CALLER_ID_VISIBILITY_BOOL = "additional_settings_caller_id_visibility_bool";
-    field @FlaggedApi("com.android.internal.telephony.flags.show_call_id_and_call_waiting_in_additional_settings_menu") public static final String KEY_ADDITIONAL_SETTINGS_CALL_WAITING_VISIBILITY_BOOL = "additional_settings_call_waiting_visibility_bool";
+    field public static final String KEY_ADDITIONAL_SETTINGS_CALLER_ID_VISIBILITY_BOOL = "additional_settings_caller_id_visibility_bool";
+    field public static final String KEY_ADDITIONAL_SETTINGS_CALL_WAITING_VISIBILITY_BOOL = "additional_settings_call_waiting_visibility_bool";
     field public static final String KEY_ALLOW_ADDING_APNS_BOOL = "allow_adding_apns_bool";
     field public static final String KEY_ALLOW_ADD_CALL_DURING_VIDEO_CALL_BOOL = "allow_add_call_during_video_call";
     field public static final String KEY_ALLOW_EMERGENCY_NUMBERS_IN_CALL_LOG_BOOL = "allow_emergency_numbers_in_call_log_bool";
@@ -43935,7 +43957,7 @@ package android.telephony {
     field public static final String KEY_CDMA_NONROAMING_NETWORKS_STRING_ARRAY = "cdma_nonroaming_networks_string_array";
     field public static final String KEY_CDMA_ROAMING_MODE_INT = "cdma_roaming_mode_int";
     field public static final String KEY_CDMA_ROAMING_NETWORKS_STRING_ARRAY = "cdma_roaming_networks_string_array";
-    field @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") public static final String KEY_CELLULAR_SERVICE_CAPABILITIES_INT_ARRAY = "cellular_service_capabilities_int_array";
+    field public static final String KEY_CELLULAR_SERVICE_CAPABILITIES_INT_ARRAY = "cellular_service_capabilities_int_array";
     field public static final String KEY_CELLULAR_USAGE_SETTING_INT = "cellular_usage_setting_int";
     field public static final String KEY_CHECK_PRICING_WITH_CARRIER_FOR_DATA_ROAMING_BOOL = "check_pricing_with_carrier_data_roaming_bool";
     field public static final String KEY_CI_ACTION_ON_SYS_UPDATE_BOOL = "ci_action_on_sys_update_bool";
@@ -45973,7 +45995,7 @@ package android.telephony {
     method @Nullable public String getMncString();
     method @Deprecated public String getNumber();
     method public int getPortIndex();
-    method @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") @NonNull public java.util.Set<java.lang.Integer> getServiceCapabilities();
+    method @NonNull public java.util.Set<java.lang.Integer> getServiceCapabilities();
     method public int getSimSlotIndex();
     method public int getSubscriptionId();
     method public int getSubscriptionType();
@@ -46056,9 +46078,9 @@ package android.telephony {
     field public static final int PHONE_NUMBER_SOURCE_CARRIER = 2; // 0x2
     field public static final int PHONE_NUMBER_SOURCE_IMS = 3; // 0x3
     field public static final int PHONE_NUMBER_SOURCE_UICC = 1; // 0x1
-    field @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") public static final int SERVICE_CAPABILITY_DATA = 3; // 0x3
-    field @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") public static final int SERVICE_CAPABILITY_SMS = 2; // 0x2
-    field @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") public static final int SERVICE_CAPABILITY_VOICE = 1; // 0x1
+    field public static final int SERVICE_CAPABILITY_DATA = 3; // 0x3
+    field public static final int SERVICE_CAPABILITY_SMS = 2; // 0x2
+    field public static final int SERVICE_CAPABILITY_VOICE = 1; // 0x1
     field public static final int SUBSCRIPTION_TYPE_LOCAL_SIM = 0; // 0x0
     field public static final int SUBSCRIPTION_TYPE_REMOTE_SIM = 1; // 0x1
     field public static final int USAGE_SETTING_DATA_CENTRIC = 2; // 0x2
@@ -46307,8 +46329,8 @@ package android.telephony {
     method @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_NETWORK_STATE, android.Manifest.permission.MODIFY_PHONE_STATE, android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.READ_BASIC_PHONE_STATE}) public boolean isDataEnabled();
     method @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_NETWORK_STATE, android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.MODIFY_PHONE_STATE, android.Manifest.permission.READ_BASIC_PHONE_STATE}) public boolean isDataEnabledForReason(int);
     method @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_NETWORK_STATE, android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.READ_BASIC_PHONE_STATE}) public boolean isDataRoamingEnabled();
-    method @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") public boolean isDeviceSmsCapable();
-    method @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") public boolean isDeviceVoiceCapable();
+    method public boolean isDeviceSmsCapable();
+    method public boolean isDeviceVoiceCapable();
     method public boolean isEmergencyNumber(@NonNull String);
     method public boolean isHearingAidCompatibilitySupported();
     method @RequiresPermission(anyOf={android.Manifest.permission.READ_PRECISE_PHONE_STATE, "android.permission.READ_PRIVILEGED_PHONE_STATE"}) public boolean isManualNetworkSelectionAllowed();
@@ -46367,7 +46389,7 @@ package android.telephony {
     field public static final String ACTION_MULTI_SIM_CONFIG_CHANGED = "android.telephony.action.MULTI_SIM_CONFIG_CHANGED";
     field public static final String ACTION_NETWORK_COUNTRY_CHANGED = "android.telephony.action.NETWORK_COUNTRY_CHANGED";
     field @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public static final String ACTION_PHONE_STATE_CHANGED = "android.intent.action.PHONE_STATE";
-    field @FlaggedApi("com.android.internal.telephony.flags.reset_mobile_network_settings") public static final String ACTION_RESET_MOBILE_NETWORK_SETTINGS = "android.telephony.action.RESET_MOBILE_NETWORK_SETTINGS";
+    field public static final String ACTION_RESET_MOBILE_NETWORK_SETTINGS = "android.telephony.action.RESET_MOBILE_NETWORK_SETTINGS";
     field public static final String ACTION_RESPOND_VIA_MESSAGE = "android.intent.action.RESPOND_VIA_MESSAGE";
     field public static final String ACTION_SECRET_CODE = "android.telephony.action.SECRET_CODE";
     field public static final String ACTION_SHOW_VOICEMAIL_NOTIFICATION = "android.telephony.action.SHOW_VOICEMAIL_NOTIFICATION";
