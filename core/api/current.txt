@@ -239,6 +239,7 @@ package android {
     field @Deprecated public static final String PROCESS_OUTGOING_CALLS = "android.permission.PROCESS_OUTGOING_CALLS";
     field public static final String PROVIDE_OWN_AUTOFILL_SUGGESTIONS = "android.permission.PROVIDE_OWN_AUTOFILL_SUGGESTIONS";
     field public static final String PROVIDE_REMOTE_CREDENTIALS = "android.permission.PROVIDE_REMOTE_CREDENTIALS";
+    field @FlaggedApi("android.security.aapm_api") public static final String QUERY_ADVANCED_PROTECTION_MODE = "android.permission.QUERY_ADVANCED_PROTECTION_MODE";
     field public static final String QUERY_ALL_PACKAGES = "android.permission.QUERY_ALL_PACKAGES";
     field public static final String READ_ASSISTANT_APP_SEARCH_DATA = "android.permission.READ_ASSISTANT_APP_SEARCH_DATA";
     field public static final String READ_BASIC_PHONE_STATE = "android.permission.READ_BASIC_PHONE_STATE";
@@ -8781,7 +8782,6 @@ package android.app.admin {
 package android.app.appfunctions {
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class AppFunctionManager {
-    method @Deprecated @RequiresPermission(anyOf={"android.permission.EXECUTE_APP_FUNCTIONS_TRUSTED", "android.permission.EXECUTE_APP_FUNCTIONS"}, conditional=true) public void executeAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
     method @RequiresPermission(anyOf={"android.permission.EXECUTE_APP_FUNCTIONS_TRUSTED", "android.permission.EXECUTE_APP_FUNCTIONS"}, conditional=true) public void executeAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.concurrent.Executor, @NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
     method public void isAppFunctionEnabled(@NonNull String, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void setAppFunctionEnabled(@NonNull String, int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,java.lang.Exception>);
@@ -8793,9 +8793,7 @@ package android.app.appfunctions {
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public abstract class AppFunctionService extends android.app.Service {
     ctor public AppFunctionService();
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @Deprecated @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
-    method @Deprecated @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
-    method @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull String, @NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
+    method @MainThread public abstract void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull String, @NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
     field @NonNull public static final String SERVICE_INTERFACE = "android.app.appfunctions.AppFunctionService";
   }
 
@@ -10804,6 +10802,7 @@ package android.content {
     field public static final String ACCESSIBILITY_SERVICE = "accessibility";
     field public static final String ACCOUNT_SERVICE = "account";
     field public static final String ACTIVITY_SERVICE = "activity";
+    field @FlaggedApi("android.security.aapm_api") public static final String ADVANCED_PROTECTION_SERVICE = "advanced_protection";
     field public static final String ALARM_SERVICE = "alarm";
     field public static final String APPWIDGET_SERVICE = "appwidget";
     field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public static final String APP_FUNCTION_SERVICE = "app_function";
@@ -10865,6 +10864,7 @@ package android.content {
     field public static final String IPSEC_SERVICE = "ipsec";
     field public static final String JOB_SCHEDULER_SERVICE = "jobscheduler";
     field public static final String KEYGUARD_SERVICE = "keyguard";
+    field @FlaggedApi("android.security.keystore_grant_api") public static final String KEYSTORE_SERVICE = "keystore";
     field public static final String LAUNCHER_APPS_SERVICE = "launcherapps";
     field @UiContext public static final String LAYOUT_INFLATER_SERVICE = "layout_inflater";
     field public static final String LOCALE_SERVICE = "locale";
@@ -16104,6 +16104,7 @@ package android.graphics {
     enum_constant public static final android.graphics.ColorSpace.Named CIE_LAB;
     enum_constant public static final android.graphics.ColorSpace.Named CIE_XYZ;
     enum_constant public static final android.graphics.ColorSpace.Named DCI_P3;
+    enum_constant @FlaggedApi("com.android.graphics.flags.display_bt2020_colorspace") public static final android.graphics.ColorSpace.Named DISPLAY_BT2020;
     enum_constant public static final android.graphics.ColorSpace.Named DISPLAY_P3;
     enum_constant public static final android.graphics.ColorSpace.Named EXTENDED_SRGB;
     enum_constant public static final android.graphics.ColorSpace.Named LINEAR_EXTENDED_SRGB;
@@ -18620,6 +18621,7 @@ package android.hardware {
     field public static final int DATASPACE_BT709 = 281083904; // 0x10c10000
     field public static final int DATASPACE_DCI_P3 = 155844608; // 0x94a0000
     field public static final int DATASPACE_DEPTH = 4096; // 0x1000
+    field @FlaggedApi("com.android.graphics.flags.display_bt2020_colorspace") public static final int DATASPACE_DISPLAY_BT2020 = 142999552; // 0x8860000
     field public static final int DATASPACE_DISPLAY_P3 = 143261696; // 0x88a0000
     field public static final int DATASPACE_DYNAMIC_DEPTH = 4098; // 0x1002
     field public static final int DATASPACE_HEIF = 4100; // 0x1004
@@ -32782,6 +32784,8 @@ package android.os {
   public class Build {
     ctor public Build();
     method @NonNull public static java.util.List<android.os.Build.Partition> getFingerprintedPartitions();
+    method @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static int getMajorSdkVersion(int);
+    method @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static int getMinorSdkVersion(int);
     method public static String getRadioVersion();
     method @RequiresPermission("android.permission.READ_PRIVILEGED_PHONE_STATE") public static String getSerial();
     field public static final String BOARD;
@@ -32878,6 +32882,41 @@ package android.os {
   }
 
   @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static class Build.VERSION_CODES_FULL {
+    field public static final int BASE = 100000; // 0x186a0
+    field public static final int BASE_1_1 = 200000; // 0x30d40
+    field public static final int CUPCAKE = 300000; // 0x493e0
+    field public static final int DONUT = 400000; // 0x61a80
+    field public static final int ECLAIR = 500000; // 0x7a120
+    field public static final int ECLAIR_0_1 = 600000; // 0x927c0
+    field public static final int ECLAIR_MR1 = 700000; // 0xaae60
+    field public static final int FROYO = 800000; // 0xc3500
+    field public static final int GINGERBREAD = 900000; // 0xdbba0
+    field public static final int GINGERBREAD_MR1 = 1000000; // 0xf4240
+    field public static final int HONEYCOMB = 1100000; // 0x10c8e0
+    field public static final int HONEYCOMB_MR1 = 1200000; // 0x124f80
+    field public static final int HONEYCOMB_MR2 = 1300000; // 0x13d620
+    field public static final int ICE_CREAM_SANDWICH = 1400000; // 0x155cc0
+    field public static final int ICE_CREAM_SANDWICH_MR1 = 1500000; // 0x16e360
+    field public static final int JELLY_BEAN = 1600000; // 0x186a00
+    field public static final int JELLY_BEAN_MR1 = 1700000; // 0x19f0a0
+    field public static final int JELLY_BEAN_MR2 = 1800000; // 0x1b7740
+    field public static final int KITKAT = 1900000; // 0x1cfde0
+    field public static final int KITKAT_WATCH = 2000000; // 0x1e8480
+    field public static final int LOLLIPOP = 2100000; // 0x200b20
+    field public static final int LOLLIPOP_MR1 = 2200000; // 0x2191c0
+    field public static final int M = 2300000; // 0x231860
+    field public static final int N = 2400000; // 0x249f00
+    field public static final int N_MR1 = 2500000; // 0x2625a0
+    field public static final int O = 2600000; // 0x27ac40
+    field public static final int O_MR1 = 2700000; // 0x2932e0
+    field public static final int P = 2800000; // 0x2ab980
+    field public static final int Q = 2900000; // 0x2c4020
+    field public static final int R = 3000000; // 0x2dc6c0
+    field public static final int S = 3100000; // 0x2f4d60
+    field public static final int S_V2 = 3200000; // 0x30d400
+    field public static final int TIRAMISU = 3300000; // 0x325aa0
+    field public static final int UPSIDE_DOWN_CAKE = 3400000; // 0x33e140
+    field public static final int VANILLA_ICE_CREAM = 3500000; // 0x3567e0
   }
 
   public final class Bundle extends android.os.BaseBundle implements java.lang.Cloneable android.os.Parcelable {
@@ -39697,6 +39736,20 @@ package android.security {
 
 }
 
+package android.security.advancedprotection {
+
+  @FlaggedApi("android.security.aapm_api") public class AdvancedProtectionManager {
+    method @RequiresPermission(android.Manifest.permission.QUERY_ADVANCED_PROTECTION_MODE) public boolean isAdvancedProtectionEnabled();
+    method @RequiresPermission(android.Manifest.permission.QUERY_ADVANCED_PROTECTION_MODE) public void registerAdvancedProtectionCallback(@NonNull java.util.concurrent.Executor, @NonNull android.security.advancedprotection.AdvancedProtectionManager.Callback);
+    method @RequiresPermission(android.Manifest.permission.QUERY_ADVANCED_PROTECTION_MODE) public void unregisterAdvancedProtectionCallback(@NonNull android.security.advancedprotection.AdvancedProtectionManager.Callback);
+  }
+
+  @FlaggedApi("android.security.aapm_api") public static interface AdvancedProtectionManager.Callback {
+    method public void onAdvancedProtectionChanged(boolean);
+  }
+
+}
+
 package android.security.identity {
 
   public class AccessControlProfile {
@@ -40112,6 +40165,14 @@ package android.security.keystore {
     method @Deprecated @NonNull public android.security.keystore.KeyProtection.Builder setUserAuthenticationValidityDurationSeconds(@IntRange(from=0xffffffff) int);
     method @NonNull public android.security.keystore.KeyProtection.Builder setUserConfirmationRequired(boolean);
     method @NonNull public android.security.keystore.KeyProtection.Builder setUserPresenceRequired(boolean);
+  }
+
+  @FlaggedApi("android.security.keystore_grant_api") public class KeyStoreManager {
+    method @NonNull public java.util.List<java.security.cert.X509Certificate> getGrantedCertificateChainFromId(long) throws android.security.keystore.KeyPermanentlyInvalidatedException, java.security.UnrecoverableKeyException;
+    method @NonNull public java.security.Key getGrantedKeyFromId(long) throws android.security.keystore.KeyPermanentlyInvalidatedException, java.security.UnrecoverableKeyException;
+    method @NonNull public java.security.KeyPair getGrantedKeyPairFromId(long) throws android.security.keystore.KeyPermanentlyInvalidatedException, java.security.UnrecoverableKeyException;
+    method public long grantKeyAccess(@NonNull String, int) throws android.security.KeyStoreException, java.security.UnrecoverableKeyException;
+    method public void revokeKeyAccess(@NonNull String, int) throws android.security.KeyStoreException, java.security.UnrecoverableKeyException;
   }
 
   public class SecureKeyImportUnavailableException extends java.security.ProviderException {
@@ -43849,8 +43910,8 @@ package android.telephony {
     field public static final String KEY_5G_NR_SSRSRQ_THRESHOLDS_INT_ARRAY = "5g_nr_ssrsrq_thresholds_int_array";
     field public static final String KEY_5G_NR_SSSINR_THRESHOLDS_INT_ARRAY = "5g_nr_sssinr_thresholds_int_array";
     field public static final String KEY_ADDITIONAL_CALL_SETTING_BOOL = "additional_call_setting_bool";
-    field @FlaggedApi("com.android.internal.telephony.flags.show_call_id_and_call_waiting_in_additional_settings_menu") public static final String KEY_ADDITIONAL_SETTINGS_CALLER_ID_VISIBILITY_BOOL = "additional_settings_caller_id_visibility_bool";
-    field @FlaggedApi("com.android.internal.telephony.flags.show_call_id_and_call_waiting_in_additional_settings_menu") public static final String KEY_ADDITIONAL_SETTINGS_CALL_WAITING_VISIBILITY_BOOL = "additional_settings_call_waiting_visibility_bool";
+    field public static final String KEY_ADDITIONAL_SETTINGS_CALLER_ID_VISIBILITY_BOOL = "additional_settings_caller_id_visibility_bool";
+    field public static final String KEY_ADDITIONAL_SETTINGS_CALL_WAITING_VISIBILITY_BOOL = "additional_settings_call_waiting_visibility_bool";
     field public static final String KEY_ALLOW_ADDING_APNS_BOOL = "allow_adding_apns_bool";
     field public static final String KEY_ALLOW_ADD_CALL_DURING_VIDEO_CALL_BOOL = "allow_add_call_during_video_call";
     field public static final String KEY_ALLOW_EMERGENCY_NUMBERS_IN_CALL_LOG_BOOL = "allow_emergency_numbers_in_call_log_bool";
@@ -43933,7 +43994,7 @@ package android.telephony {
     field public static final String KEY_CDMA_NONROAMING_NETWORKS_STRING_ARRAY = "cdma_nonroaming_networks_string_array";
     field public static final String KEY_CDMA_ROAMING_MODE_INT = "cdma_roaming_mode_int";
     field public static final String KEY_CDMA_ROAMING_NETWORKS_STRING_ARRAY = "cdma_roaming_networks_string_array";
-    field @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") public static final String KEY_CELLULAR_SERVICE_CAPABILITIES_INT_ARRAY = "cellular_service_capabilities_int_array";
+    field public static final String KEY_CELLULAR_SERVICE_CAPABILITIES_INT_ARRAY = "cellular_service_capabilities_int_array";
     field public static final String KEY_CELLULAR_USAGE_SETTING_INT = "cellular_usage_setting_int";
     field public static final String KEY_CHECK_PRICING_WITH_CARRIER_FOR_DATA_ROAMING_BOOL = "check_pricing_with_carrier_data_roaming_bool";
     field public static final String KEY_CI_ACTION_ON_SYS_UPDATE_BOOL = "ci_action_on_sys_update_bool";
@@ -45909,6 +45970,7 @@ package android.telephony {
     method public byte[] getPdu();
     method public int getProtocolIdentifier();
     method public String getPseudoSubject();
+    method @FlaggedApi("com.android.internal.telephony.flags.support_sms_over_ims_apis") @Nullable public String getRecipientAddress();
     method public String getServiceCenterAddress();
     method public int getStatus();
     method public int getStatusOnIcc();
@@ -45970,7 +46032,7 @@ package android.telephony {
     method @Nullable public String getMncString();
     method @Deprecated public String getNumber();
     method public int getPortIndex();
-    method @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") @NonNull public java.util.Set<java.lang.Integer> getServiceCapabilities();
+    method @NonNull public java.util.Set<java.lang.Integer> getServiceCapabilities();
     method public int getSimSlotIndex();
     method public int getSubscriptionId();
     method public int getSubscriptionType();
@@ -46053,9 +46115,9 @@ package android.telephony {
     field public static final int PHONE_NUMBER_SOURCE_CARRIER = 2; // 0x2
     field public static final int PHONE_NUMBER_SOURCE_IMS = 3; // 0x3
     field public static final int PHONE_NUMBER_SOURCE_UICC = 1; // 0x1
-    field @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") public static final int SERVICE_CAPABILITY_DATA = 3; // 0x3
-    field @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") public static final int SERVICE_CAPABILITY_SMS = 2; // 0x2
-    field @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") public static final int SERVICE_CAPABILITY_VOICE = 1; // 0x1
+    field public static final int SERVICE_CAPABILITY_DATA = 3; // 0x3
+    field public static final int SERVICE_CAPABILITY_SMS = 2; // 0x2
+    field public static final int SERVICE_CAPABILITY_VOICE = 1; // 0x1
     field public static final int SUBSCRIPTION_TYPE_LOCAL_SIM = 0; // 0x0
     field public static final int SUBSCRIPTION_TYPE_REMOTE_SIM = 1; // 0x1
     field public static final int USAGE_SETTING_DATA_CENTRIC = 2; // 0x2
@@ -46304,8 +46366,8 @@ package android.telephony {
     method @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_NETWORK_STATE, android.Manifest.permission.MODIFY_PHONE_STATE, android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.READ_BASIC_PHONE_STATE}) public boolean isDataEnabled();
     method @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_NETWORK_STATE, android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.MODIFY_PHONE_STATE, android.Manifest.permission.READ_BASIC_PHONE_STATE}) public boolean isDataEnabledForReason(int);
     method @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_NETWORK_STATE, android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.READ_BASIC_PHONE_STATE}) public boolean isDataRoamingEnabled();
-    method @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") public boolean isDeviceSmsCapable();
-    method @FlaggedApi("com.android.internal.telephony.flags.data_only_cellular_service") public boolean isDeviceVoiceCapable();
+    method public boolean isDeviceSmsCapable();
+    method public boolean isDeviceVoiceCapable();
     method public boolean isEmergencyNumber(@NonNull String);
     method public boolean isHearingAidCompatibilitySupported();
     method @RequiresPermission(anyOf={android.Manifest.permission.READ_PRECISE_PHONE_STATE, "android.permission.READ_PRIVILEGED_PHONE_STATE"}) public boolean isManualNetworkSelectionAllowed();
@@ -46364,7 +46426,7 @@ package android.telephony {
     field public static final String ACTION_MULTI_SIM_CONFIG_CHANGED = "android.telephony.action.MULTI_SIM_CONFIG_CHANGED";
     field public static final String ACTION_NETWORK_COUNTRY_CHANGED = "android.telephony.action.NETWORK_COUNTRY_CHANGED";
     field @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public static final String ACTION_PHONE_STATE_CHANGED = "android.intent.action.PHONE_STATE";
-    field @FlaggedApi("com.android.internal.telephony.flags.reset_mobile_network_settings") public static final String ACTION_RESET_MOBILE_NETWORK_SETTINGS = "android.telephony.action.RESET_MOBILE_NETWORK_SETTINGS";
+    field public static final String ACTION_RESET_MOBILE_NETWORK_SETTINGS = "android.telephony.action.RESET_MOBILE_NETWORK_SETTINGS";
     field public static final String ACTION_RESPOND_VIA_MESSAGE = "android.intent.action.RESPOND_VIA_MESSAGE";
     field public static final String ACTION_SECRET_CODE = "android.telephony.action.SECRET_CODE";
     field public static final String ACTION_SHOW_VOICEMAIL_NOTIFICATION = "android.telephony.action.SHOW_VOICEMAIL_NOTIFICATION";
@@ -50944,6 +51006,7 @@ package android.view {
     method public android.view.Display.Mode[] getSupportedModes();
     method @Deprecated public float[] getSupportedRefreshRates();
     method @Deprecated public int getWidth();
+    method @FlaggedApi("com.android.server.display.feature.flags.enable_has_arr_support") public boolean hasArrSupport();
     method public boolean isHdr();
     method public boolean isHdrSdrRatioAvailable();
     method public boolean isMinimalPostProcessingSupported();
@@ -52177,7 +52240,7 @@ package android.view {
     method public void clear();
     method public void copyFrom(android.view.MotionEvent.PointerCoords);
     method public float getAxisValue(int);
-    method @FlaggedApi("com.android.hardware.input.pointer_coords_is_resampled_api") public boolean isResampled();
+    method public boolean isResampled();
     method public void setAxisValue(int, float);
     field public float orientation;
     field public float pressure;
@@ -56597,7 +56660,7 @@ package android.view.inputmethod {
     method public java.util.Map<android.view.inputmethod.InputMethodInfo,java.util.List<android.view.inputmethod.InputMethodSubtype>> getShortcutInputMethodsAndSubtypes();
     method @Deprecated public void hideSoftInputFromInputMethod(android.os.IBinder, int);
     method public boolean hideSoftInputFromWindow(android.os.IBinder, int);
-    method public boolean hideSoftInputFromWindow(android.os.IBinder, int, android.os.ResultReceiver);
+    method @Deprecated public boolean hideSoftInputFromWindow(android.os.IBinder, int, android.os.ResultReceiver);
     method @Deprecated public void hideStatusIcon(android.os.IBinder);
     method public void invalidateInput(@NonNull android.view.View);
     method public boolean isAcceptingText();
@@ -56621,7 +56684,7 @@ package android.view.inputmethod {
     method public void showInputMethodAndSubtypeEnabler(@Nullable String);
     method public void showInputMethodPicker();
     method public boolean showSoftInput(android.view.View, int);
-    method public boolean showSoftInput(android.view.View, int, android.os.ResultReceiver);
+    method @Deprecated public boolean showSoftInput(android.view.View, int, android.os.ResultReceiver);
     method @Deprecated public void showSoftInputFromInputMethod(android.os.IBinder, int);
     method @Deprecated public void showStatusIcon(android.os.IBinder, String, @DrawableRes int);
     method @FlaggedApi("android.view.inputmethod.connectionless_handwriting") public void startConnectionlessStylusHandwriting(@NonNull android.view.View, @Nullable android.view.inputmethod.CursorAnchorInfo, @NonNull java.util.concurrent.Executor, @NonNull android.view.inputmethod.ConnectionlessHandwritingCallback);
@@ -58127,12 +58190,16 @@ package android.webkit {
     method public abstract String[] getAcceptTypes();
     method @Nullable public abstract String getFilenameHint();
     method public abstract int getMode();
+    method @FlaggedApi("android.webkit.file_system_access") public int getPermissionMode();
     method @Nullable public abstract CharSequence getTitle();
     method public abstract boolean isCaptureEnabled();
     method @Nullable public static android.net.Uri[] parseResult(int, android.content.Intent);
     field public static final int MODE_OPEN = 0; // 0x0
+    field @FlaggedApi("android.webkit.file_system_access") public static final int MODE_OPEN_FOLDER = 2; // 0x2
     field public static final int MODE_OPEN_MULTIPLE = 1; // 0x1
     field public static final int MODE_SAVE = 3; // 0x3
+    field @FlaggedApi("android.webkit.file_system_access") public static final int PERMISSION_MODE_READ = 0; // 0x0
+    field @FlaggedApi("android.webkit.file_system_access") public static final int PERMISSION_MODE_READ_WRITE = 1; // 0x1
   }
 
   public abstract class WebHistoryItem implements java.lang.Cloneable {
@@ -58489,7 +58556,7 @@ package android.webkit {
     method public void setWebViewRenderProcessClient(@Nullable android.webkit.WebViewRenderProcessClient);
     method @Deprecated public boolean shouldDelayChildPressedState();
     method @Deprecated public boolean showFindDialog(@Nullable String, boolean);
-    method public static void startSafeBrowsing(@NonNull android.content.Context, @Nullable android.webkit.ValueCallback<java.lang.Boolean>);
+    method @Deprecated @FlaggedApi("android.webkit.deprecate_start_safe_browsing") public static void startSafeBrowsing(@NonNull android.content.Context, @Nullable android.webkit.ValueCallback<java.lang.Boolean>);
     method public void stopLoading();
     method public void zoomBy(float);
     method public boolean zoomIn();
@@ -61684,6 +61751,8 @@ package android.window {
 
   public final class BackEvent {
     ctor public BackEvent(float, float, float, int);
+    ctor @FlaggedApi("com.android.window.flags.predictive_back_timestamp_api") public BackEvent(float, float, float, int, long);
+    method @FlaggedApi("com.android.window.flags.predictive_back_timestamp_api") public long getFrameTime();
     method @FloatRange(from=0, to=1) public float getProgress();
     method public int getSwipeEdge();
     method public float getTouchX();
