@@ -10864,6 +10864,7 @@ package android.content {
     field public static final String IPSEC_SERVICE = "ipsec";
     field public static final String JOB_SCHEDULER_SERVICE = "jobscheduler";
     field public static final String KEYGUARD_SERVICE = "keyguard";
+    field @FlaggedApi("android.security.keystore_grant_api") public static final String KEYSTORE_SERVICE = "keystore";
     field public static final String LAUNCHER_APPS_SERVICE = "launcherapps";
     field @UiContext public static final String LAYOUT_INFLATER_SERVICE = "layout_inflater";
     field public static final String LOCALE_SERVICE = "locale";
@@ -16103,6 +16104,7 @@ package android.graphics {
     enum_constant public static final android.graphics.ColorSpace.Named CIE_LAB;
     enum_constant public static final android.graphics.ColorSpace.Named CIE_XYZ;
     enum_constant public static final android.graphics.ColorSpace.Named DCI_P3;
+    enum_constant @FlaggedApi("com.android.graphics.flags.display_bt2020_colorspace") public static final android.graphics.ColorSpace.Named DISPLAY_BT2020;
     enum_constant public static final android.graphics.ColorSpace.Named DISPLAY_P3;
     enum_constant public static final android.graphics.ColorSpace.Named EXTENDED_SRGB;
     enum_constant public static final android.graphics.ColorSpace.Named LINEAR_EXTENDED_SRGB;
@@ -18619,6 +18621,7 @@ package android.hardware {
     field public static final int DATASPACE_BT709 = 281083904; // 0x10c10000
     field public static final int DATASPACE_DCI_P3 = 155844608; // 0x94a0000
     field public static final int DATASPACE_DEPTH = 4096; // 0x1000
+    field @FlaggedApi("com.android.graphics.flags.display_bt2020_colorspace") public static final int DATASPACE_DISPLAY_BT2020 = 142999552; // 0x8860000
     field public static final int DATASPACE_DISPLAY_P3 = 143261696; // 0x88a0000
     field public static final int DATASPACE_DYNAMIC_DEPTH = 4098; // 0x1002
     field public static final int DATASPACE_HEIF = 4100; // 0x1004
@@ -40164,6 +40167,14 @@ package android.security.keystore {
     method @NonNull public android.security.keystore.KeyProtection.Builder setUserPresenceRequired(boolean);
   }
 
+  @FlaggedApi("android.security.keystore_grant_api") public class KeyStoreManager {
+    method @NonNull public java.util.List<java.security.cert.X509Certificate> getGrantedCertificateChainFromId(long) throws android.security.keystore.KeyPermanentlyInvalidatedException, java.security.UnrecoverableKeyException;
+    method @NonNull public java.security.Key getGrantedKeyFromId(long) throws android.security.keystore.KeyPermanentlyInvalidatedException, java.security.UnrecoverableKeyException;
+    method @NonNull public java.security.KeyPair getGrantedKeyPairFromId(long) throws android.security.keystore.KeyPermanentlyInvalidatedException, java.security.UnrecoverableKeyException;
+    method public long grantKeyAccess(@NonNull String, int) throws android.security.KeyStoreException, java.security.UnrecoverableKeyException;
+    method public void revokeKeyAccess(@NonNull String, int) throws android.security.KeyStoreException, java.security.UnrecoverableKeyException;
+  }
+
   public class SecureKeyImportUnavailableException extends java.security.ProviderException {
     ctor public SecureKeyImportUnavailableException();
     ctor public SecureKeyImportUnavailableException(String);
@@ -52229,7 +52240,7 @@ package android.view {
     method public void clear();
     method public void copyFrom(android.view.MotionEvent.PointerCoords);
     method public float getAxisValue(int);
-    method @FlaggedApi("com.android.hardware.input.pointer_coords_is_resampled_api") public boolean isResampled();
+    method public boolean isResampled();
     method public void setAxisValue(int, float);
     field public float orientation;
     field public float pressure;
@@ -58179,12 +58190,16 @@ package android.webkit {
     method public abstract String[] getAcceptTypes();
     method @Nullable public abstract String getFilenameHint();
     method public abstract int getMode();
+    method @FlaggedApi("android.webkit.file_system_access") public int getPermissionMode();
     method @Nullable public abstract CharSequence getTitle();
     method public abstract boolean isCaptureEnabled();
     method @Nullable public static android.net.Uri[] parseResult(int, android.content.Intent);
     field public static final int MODE_OPEN = 0; // 0x0
+    field @FlaggedApi("android.webkit.file_system_access") public static final int MODE_OPEN_FOLDER = 2; // 0x2
     field public static final int MODE_OPEN_MULTIPLE = 1; // 0x1
     field public static final int MODE_SAVE = 3; // 0x3
+    field @FlaggedApi("android.webkit.file_system_access") public static final int PERMISSION_MODE_READ = 0; // 0x0
+    field @FlaggedApi("android.webkit.file_system_access") public static final int PERMISSION_MODE_READ_WRITE = 1; // 0x1
   }
 
   public abstract class WebHistoryItem implements java.lang.Cloneable {
@@ -58541,7 +58556,7 @@ package android.webkit {
     method public void setWebViewRenderProcessClient(@Nullable android.webkit.WebViewRenderProcessClient);
     method @Deprecated public boolean shouldDelayChildPressedState();
     method @Deprecated public boolean showFindDialog(@Nullable String, boolean);
-    method public static void startSafeBrowsing(@NonNull android.content.Context, @Nullable android.webkit.ValueCallback<java.lang.Boolean>);
+    method @Deprecated @FlaggedApi("android.webkit.deprecate_start_safe_browsing") public static void startSafeBrowsing(@NonNull android.content.Context, @Nullable android.webkit.ValueCallback<java.lang.Boolean>);
     method public void stopLoading();
     method public void zoomBy(float);
     method public boolean zoomIn();
