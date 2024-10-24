@@ -526,12 +526,7 @@ public class BatteryControllerImpl extends BroadcastReceiver implements BatteryC
     }
 
     private void fireBatteryAlertStateChanged() {
-        synchronized (mChangeCallbacks) {
-            final int n = mChangeCallbacks.size();
-            for (int i = 0; i < n; i++) {
-                mChangeCallbacks.get(i).onBatteryAlertStateChanged(mStateAlert);
-            }
-        }
+        dispatchSafeChange((callback) -> callback.onBatteryAlertStateChanged(mStateAlert));
     }
 
     @Override
