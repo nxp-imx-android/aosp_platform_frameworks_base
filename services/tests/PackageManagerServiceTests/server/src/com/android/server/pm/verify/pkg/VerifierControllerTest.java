@@ -18,6 +18,7 @@ package com.android.server.pm.verify.pkg;
 
 import static android.content.pm.PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
 import static android.content.pm.PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
+import static android.os.Process.INVALID_UID;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -45,7 +46,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.Presubmit;
-import android.util.Pair;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -119,19 +119,19 @@ public class VerifierControllerTest {
     PackageInstallerSession.VerifierCallback mSessionCallback;
 
     private VerifierController mVerifierController;
+    private String mPackageName;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mPackageName = this.getClass().getPackageName();
         // Mock that the UID of this test becomes the UID of the verifier
         when(mSnapshot.getPackageUidInternal(anyString(), anyLong(), anyInt(), anyInt()))
                 .thenReturn(InstrumentationRegistry.getInstrumentation().getContext()
                         .getApplicationInfo().uid);
-        when(mInjector.getVerifierPackageName(any(Computer.class), anyInt())).thenReturn(
-                TEST_VERIFIER_COMPONENT_NAME.getPackageName());
         when(mInjector.getRemoteService(
-                any(Computer.class), any(Context.class), anyInt(), any(Handler.class)
-        )).thenReturn(new Pair<>(mMockServiceConnector, TEST_VERIFIER_COMPONENT_NAME));
+                eq(mPackageName), any(Context.class), anyInt(), any(Handler.class)
+        )).thenReturn(mMockServiceConnector);
         when(mInjector.getVerificationRequestTimeoutMillis()).thenReturn(
                 TEST_TIMEOUT_DURATION_MILLIS);
         when(mInjector.getMaxVerificationExtendedTimeoutMillis()).thenReturn(
@@ -160,27 +160,7 @@ public class VerifierControllerTest {
         mTestDeclaredLibraries.add(TEST_SHARED_LIBRARY_INFO2);
         mTestExtensionParams.putString(TEST_KEY, TEST_VALUE);
 
-        mVerifierController = new VerifierController(mContext, mHandler, mInjector);
-    }
-
-    @Test
-    public void testVerifierNotInstalled() {
-        when(mInjector.getVerifierPackageName(any(Computer.class), anyInt())).thenReturn(null);
-        when(mInjector.getRemoteService(
-                any(Computer.class), any(Context.class), anyInt(), any(Handler.class)
-        )).thenReturn(null);
-        assertThat(mVerifierController.getVerifierPackageName(mSnapshotSupplier, 0)).isNull();
-        assertThat(mVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier, 0))
-                .isFalse();
-        assertThat(mVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isFalse();
-        assertThat(mVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ true)).isFalse();
-        verifyNoMoreInteractions(mSessionCallback);
+        mVerifierController = new VerifierController(mContext, mHandler, mPackageName, mInjector);
     }
 
     @Test
@@ -190,11 +170,10 @@ public class VerifierControllerTest {
     }
 
     @Test
-    public void testVerifierAvailableButNotConnected() {
-        assertThat(mVerifierController.getVerifierPackageName(mSnapshotSupplier, 0)).isNotNull();
-        when(mInjector.getRemoteService(
-                any(Computer.class), any(Context.class), anyInt(), any(Handler.class)
-        )).thenReturn(null);
+    public void testVerifierNotInstalledOnUser() {
+        when(mSnapshot.getPackageUidInternal(
+                eq(mPackageName), anyLong(), anyInt(), anyInt()
+        )).thenReturn(INVALID_UID);
         assertThat(mVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier, 0))
                 .isFalse();
         // Test that nothing crashes if the verifier is available even though there's no bound
@@ -220,7 +199,7 @@ public class VerifierControllerTest {
         verify(mMockService, times(1)).onVerificationRequired(any(VerificationSession.class));
         callbacks.onBinderDied();
         // Test that nothing crashes if the service connection is lost
-        assertThat(mVerifierController.getVerifierPackageName(mSnapshotSupplier, 0)).isNotNull();
+        assertThat(mVerifierController.getVerifierPackageName()).isNotNull();
         mVerifierController.notifyPackageNameAvailable(TEST_PACKAGE_NAME);
         mVerifierController.notifyVerificationCancelled(TEST_PACKAGE_NAME);
         mVerifierController.notifyVerificationTimeout(TEST_ID);

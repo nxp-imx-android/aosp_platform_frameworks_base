@@ -28,7 +28,20 @@ import android.os.IBinder;
 
 /**
  * A base service implementation for the verifier agent to implement.
- *
+ * <p></p>
+ * The verifier agent app should register the implemented {@link VerifierService} in the manifest.
+ * Example:
+ * <pre>{@code
+ *     <service android:name=".MyVerifierService"
+ *         permission="android.permission.BIND_VERIFICATION_AGENT">
+ *       <intent-filter>
+ *         <action android:name="android.intent.action.VERIFICATION_AGENT" />
+ *       </intent-filter>
+ *     </service>
+ * }</pre>
+ * <p></p>
+ * Notice that the verifier agent app should also declare {@code android:forceQueryable="true"} to
+ * make itself visible to the installers.
  * @hide
  */
 @SystemApi

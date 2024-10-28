@@ -438,7 +438,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
      * Note all calls must be done outside {@link #mLock} to prevent lock inversion.
      */
     private final StagingManager mStagingManager;
-    @NonNull private final VerifierController mVerifierController;
+    @NonNull
+    private final VerifierController mVerifierController;
 
     private final InstallDependencyHelper mInstallDependencyHelper;
 
@@ -2984,20 +2985,19 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             // Feature is not enabled.
             return false;
         }
+        if (mVerifierController.getVerifierPackageName() == null) {
+            // The system doesn't have a verifier specified.
+            return false;
+        }
         if ((params.installFlags & PackageManager.INSTALL_FROM_ADB) != 0) {
             // adb installs are exempted from verification unless explicitly requested
             if (!params.forceVerification) {
                 return false;
             }
         }
-        final String verifierPackageName = mVerifierController.getVerifierPackageName(
-                mPm::snapshotComputer, userId);
-        if (verifierPackageName == null) {
-            // Feature is enabled but no verifier installed.
-            return false;
-        }
+        final String verifierPackageName = mVerifierController.getVerifierPackageName();
         synchronized (mLock) {
-            if (verifierPackageName.equals(mPackageName)) {
+            if (TextUtils.equals(verifierPackageName, mPackageName)) {
                 // The verifier itself is being updated. Skip.
                 Slog.w(TAG, "Skipping verification service because the verifier is being updated");
                 return false;

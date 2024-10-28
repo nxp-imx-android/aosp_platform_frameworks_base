@@ -404,6 +404,8 @@ class PackageManagerShellCommand extends ShellCommand {
                     return runGetVerificationPolicy();
                 case "set-verification-policy":
                     return runSetVerificationPolicy();
+                case "get-verification-service-provider":
+                    return runGetVerificationServiceProvider();
                 default: {
                     if (ART_SERVICE_COMMANDS.contains(cmd)) {
                         return runArtServiceCommand();
@@ -4693,7 +4695,6 @@ class PackageManagerShellCommand extends ShellCommand {
                 translateUserId(userId, UserHandle.USER_SYSTEM, "runGetVerificationPolicy");
         try {
             final IPackageInstaller installer = mInterface.getPackageInstaller();
-            // TODO(b/360129657): global verification policy should be per user
             final int policy = installer.getVerificationPolicy(translatedUserId);
             pw.println(policy);
         } catch (Exception e) {
@@ -4734,12 +4735,28 @@ class PackageManagerShellCommand extends ShellCommand {
                 translateUserId(userId, UserHandle.USER_SYSTEM, "runSetVerificationPolicy");
         try {
             final IPackageInstaller installer = mInterface.getPackageInstaller();
-            // TODO(b/360129657): global verification policy should be per user
             final boolean success = installer.setVerificationPolicy(Integer.parseInt(policyStr),
                     translatedUserId);
             if (!success) {
                 pw.println("Failure setting verification policy.");
                 return 1;
+            }
+        } catch (Exception e) {
+            pw.println("Failure [" + e.getMessage() + "]");
+            return 1;
+        }
+        return 0;
+    }
+
+    private int runGetVerificationServiceProvider() {
+        final PrintWriter pw = getOutPrintWriter();
+        try {
+            final IPackageInstaller installer = mInterface.getPackageInstaller();
+            final String packageName = installer.getVerificationServiceProvider();
+            if (TextUtils.isEmpty(packageName)) {
+                pw.println("No verification service provider specified.");
+            } else {
+                pw.println(packageName);
             }
         } catch (Exception e) {
             pw.println("Failure [" + e.getMessage() + "]");

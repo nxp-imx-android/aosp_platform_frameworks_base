@@ -1650,6 +1650,22 @@ public class PackageInstaller {
     }
 
     /**
+     *  Return the package name of the verification service provider, for the
+     *  purpose of interacting with the specific verifier in relation to
+     *  extension parameters and response structure.  Return null if the system
+     *  verifier service provider is not available to the caller, or if there is no
+     *  such provider specified by the system.
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    public final @Nullable String getVerificationServiceProvider() {
+        try {
+            return mInstaller.getVerificationServiceProvider();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * An installation that is being actively staged. For an install to succeed,
      * all existing and new packages must have identical package names, version
      * codes, and signing certificates.
