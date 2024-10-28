@@ -234,9 +234,6 @@ object Flags {
 
     // 1700 - clipboard
     @JvmField val CLIPBOARD_REMOTE_BEHAVIOR = releasedFlag("clipboard_remote_behavior")
-    // TODO(b/278714186) Tracking Bug
-    @JvmField
-    val CLIPBOARD_IMAGE_TIMEOUT = unreleasedFlag("clipboard_image_timeout", teamfood = true)
 
     // 1900
     @JvmField val NOTE_TASKS = releasedFlag("keycode_flag")
