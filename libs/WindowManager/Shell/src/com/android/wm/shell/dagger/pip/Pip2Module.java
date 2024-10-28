@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.content.Context;
 import android.os.Handler;
 
+import com.android.internal.jank.InteractionJankMonitor;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
@@ -45,6 +46,7 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
 import com.android.wm.shell.pip2.phone.PhonePipMenuController;
 import com.android.wm.shell.pip2.phone.PipController;
+import com.android.wm.shell.pip2.phone.PipInteractionHandler;
 import com.android.wm.shell.pip2.phone.PipMotionHelper;
 import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTaskListener;
@@ -88,12 +90,13 @@ public abstract class Pip2Module {
             @NonNull PipUiStateChangeController pipUiStateChangeController,
             DisplayController displayController,
             Optional<SplitScreenController> splitScreenControllerOptional,
-            PipDesktopState pipDesktopState) {
+            PipDesktopState pipDesktopState,
+            PipInteractionHandler pipInteractionHandler) {
         return new PipTransition(context, shellInit, shellTaskOrganizer, transitions,
                 pipBoundsState, null, pipBoundsAlgorithm, pipTaskListener,
                 pipScheduler, pipStackListenerController, pipDisplayLayoutState,
                 pipUiStateChangeController, displayController, splitScreenControllerOptional,
-                pipDesktopState);
+                pipDesktopState, pipInteractionHandler);
     }
 
     @WMSingleton
@@ -249,4 +252,14 @@ public abstract class Pip2Module {
 
     @BindsOptionalOf
     abstract DragToDesktopTransitionHandler optionalDragToDesktopTransitionHandler();
+
+    @WMSingleton
+    @Provides
+    static PipInteractionHandler providePipInteractionHandler(
+            Context context,
+            @ShellMainThread Handler mainHandler
+    ) {
+        return new PipInteractionHandler(context, mainHandler,
+                InteractionJankMonitor.getInstance());
+    }
 }

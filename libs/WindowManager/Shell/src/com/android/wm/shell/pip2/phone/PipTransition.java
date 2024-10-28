@@ -113,6 +113,7 @@ public class PipTransition extends PipTransitionController implements
     private final DisplayController mDisplayController;
     private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
     private final PipDesktopState mPipDesktopState;
+    private final PipInteractionHandler mPipInteractionHandler;
 
     //
     // Transition caches
@@ -154,7 +155,8 @@ public class PipTransition extends PipTransitionController implements
             PipUiStateChangeController pipUiStateChangeController,
             DisplayController displayController,
             Optional<SplitScreenController> splitScreenControllerOptional,
-            PipDesktopState pipDesktopState) {
+            PipDesktopState pipDesktopState,
+            PipInteractionHandler pipInteractionHandler) {
         super(shellInit, shellTaskOrganizer, transitions, pipBoundsState, pipMenuController,
                 pipBoundsAlgorithm);
 
@@ -168,9 +170,11 @@ public class PipTransition extends PipTransitionController implements
         mDisplayController = displayController;
         mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(mContext);
         mPipDesktopState = pipDesktopState;
+        mPipInteractionHandler = pipInteractionHandler;
 
         mExpandHandler = new PipExpandHandler(mContext, pipBoundsState, pipBoundsAlgorithm,
-                pipTransitionState, pipDisplayLayoutState, splitScreenControllerOptional);
+                pipTransitionState, pipDisplayLayoutState, pipInteractionHandler,
+                splitScreenControllerOptional);
     }
 
     @Override
