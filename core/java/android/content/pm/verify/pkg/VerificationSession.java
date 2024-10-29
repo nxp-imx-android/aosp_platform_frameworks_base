@@ -19,6 +19,7 @@ package android.content.pm.verify.pkg;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.content.pm.Flags;
 import android.content.pm.PackageInstaller;
@@ -74,7 +75,7 @@ public final class VerificationSession implements Parcelable {
     private final SigningInfo mSigningInfo;
     @NonNull
     private final List<SharedLibraryInfo> mDeclaredLibraries;
-    @NonNull
+    @Nullable
     private final PersistableBundle mExtensionParams;
     @NonNull
     private final IVerificationSessionInterface mSession;
@@ -95,7 +96,7 @@ public final class VerificationSession implements Parcelable {
     public VerificationSession(int id, int installSessionId, @NonNull String packageName,
             @NonNull Uri stagedPackageUri, @NonNull SigningInfo signingInfo,
             @NonNull List<SharedLibraryInfo> declaredLibraries,
-            @NonNull PersistableBundle extensionParams,
+            @Nullable PersistableBundle extensionParams,
             @PackageInstaller.VerificationPolicy int defaultPolicy,
             @NonNull IVerificationSessionInterface session) {
         mId = id;
@@ -159,6 +160,9 @@ public final class VerificationSession implements Parcelable {
      */
     @NonNull
     public PersistableBundle getExtensionParams() {
+        if (mExtensionParams == null) {
+            return PersistableBundle.EMPTY;
+        }
         return mExtensionParams;
     }
 

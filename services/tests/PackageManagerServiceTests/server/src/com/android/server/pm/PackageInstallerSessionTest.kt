@@ -26,6 +26,7 @@ import android.content.pm.PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_OPEN
 import android.content.pm.PackageManager
 import android.content.pm.verify.domain.DomainSet
 import android.os.Parcel
+import android.os.PersistableBundle
 import android.os.Process
 import android.platform.test.annotations.Presubmit
 import android.util.AtomicFile
@@ -59,6 +60,8 @@ class PackageInstallerSessionTest {
 
     companion object {
         private const val TAG_SESSIONS = "sessions"
+        private const val TEST_KEY_FOR_EXTENSION_PARAMS = "testKey"
+        private const val TEST_VALUE_FOR_EXTENSION_PARAMS = "testValue"
     }
 
     @JvmField
@@ -156,9 +159,12 @@ class PackageInstallerSessionTest {
         childSessionIds: List<Int> = emptyList(),
         block: (SessionParams) -> Unit = {},
     ): PackageInstallerSession {
+        val bundle = PersistableBundle()
+        bundle.putString(TEST_KEY_FOR_EXTENSION_PARAMS, TEST_VALUE_FOR_EXTENSION_PARAMS)
         val params = SessionParams(SessionParams.MODE_FULL_INSTALL).apply {
             isStaged = staged
             isMultiPackage = multiPackage
+            extensionParams = bundle
             block(this)
         }
 
@@ -296,6 +302,10 @@ class PackageInstallerSessionTest {
         assertThat(expected.isMultiPackage).isEqualTo(actual.isMultiPackage)
         assertThat(expected.isStaged).isEqualTo(actual.isStaged)
         assertThat(expected.forceVerification).isEqualTo(actual.forceVerification)
+        // We can't directly test with PersistableBundle.equals() because the parceled bundle's
+        // structure is different, but all the key/value pairs should be preserved as before.
+        assertThat(expected.extensionParams!!.getString(TEST_KEY_FOR_EXTENSION_PARAMS))
+            .isEqualTo(TEST_VALUE_FOR_EXTENSION_PARAMS)
     }
 
     private fun assertEquals(
