@@ -36,9 +36,11 @@ import java.lang.annotation.RetentionPolicy;
 @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
 public final class  VerificationStatus implements Parcelable {
     /**
-     * The ASL status has not been determined.  This happens in situations where the verification
+     * The ASL status has not been determined.
+     * <p>This happens in situations where the verification
      * service is not monitoring ASLs, and means the ASL data in the app is not necessarily bad but
      * can't be trusted.
+     * </p>
      */
     public static final int VERIFIER_STATUS_ASL_UNDEFINED = 0;
 
@@ -48,8 +50,11 @@ public final class  VerificationStatus implements Parcelable {
     public static final int VERIFIER_STATUS_ASL_GOOD = 1;
 
     /**
-     * There is something bad in the app's ASL data; the user should be warned about this when shown
+     * There is something bad in the app's ASL data.
+     * <p>
+     * The user should be warned about this when shown
      * the ASL data and/or appropriate decisions made about the use of this data by the platform.
+     * </p>
      */
     public static final int VERIFIER_STATUS_ASL_BAD = 2;
 

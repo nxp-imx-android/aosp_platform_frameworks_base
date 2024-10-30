@@ -16,6 +16,8 @@
 
 package android.content.pm.verify.pkg;
 
+import android.annotation.CurrentTimeMillisLong;
+import android.annotation.DurationMillisLong;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -147,8 +149,8 @@ public final class VerificationSession implements Parcelable {
 
     /**
      * Returns a mapping of any shared libraries declared in the manifest
-     * to the {@link SharedLibraryInfo.Type} that is declared. This will be an empty
-     * map if no shared libraries are declared by the package.
+     * to the {@link SharedLibraryInfo.Type} that is declared.
+     * <p>This will be an empty map if no shared libraries are declared by the package.</p>
      */
     @NonNull
     public List<SharedLibraryInfo> getDeclaredLibraries() {
@@ -170,8 +172,11 @@ public final class VerificationSession implements Parcelable {
      * Get the value of Clock.elapsedRealtime() at which time this verification
      * will timeout as incomplete if no other verification response is provided.
      * @throws SecurityException if the caller is not the current verifier bound by the system.
+     * @throws IllegalStateException if this is called after the session has finished, because
+     * the {@link #reportVerificationComplete} or {@link #reportVerificationIncomplete} have
+     * been called, or because the session has timed out.
      */
-    public long getTimeoutTime() {
+    public @CurrentTimeMillisLong long getTimeoutTime() {
         try {
             return mSession.getTimeoutTime(mId);
         } catch (RemoteException e) {
@@ -194,6 +199,10 @@ public final class VerificationSession implements Parcelable {
      * Override the verification policy for this session.
      * @return True if the override was successful, False otherwise.
      * @throws SecurityException if the caller is not the current verifier bound by the system.
+     * @throws IllegalStateException if this is called after the session has finished, because
+     * the {@link #reportVerificationComplete} or {@link #reportVerificationIncomplete} have
+     * been called, or because the session has timed out, unless the new policy value is the same
+     * as the existing one.
      */
     public boolean setVerificationPolicy(@PackageInstaller.VerificationPolicy int policy) {
         if (mVerificationPolicy == policy) {
@@ -215,12 +224,14 @@ public final class VerificationSession implements Parcelable {
     /**
      * Extend the timeout for this session by the provided additionalMs to
      * fetch relevant information over the network or wait for the network.
+     * <p>
      * This may be called multiple times. If the request would bypass any max
      * duration by the system, the method will return a lower value than the
      * requested amount that indicates how much the time was extended.
+     * </p>
      * @throws SecurityException if the caller is not the current verifier bound by the system.
      */
-    public long extendTimeRemaining(long additionalMs) {
+    public @DurationMillisLong long extendTimeRemaining(@DurationMillisLong long additionalMs) {
         try {
             return mSession.extendTimeRemaining(mId, additionalMs);
         } catch (RemoteException e) {
@@ -230,8 +241,11 @@ public final class VerificationSession implements Parcelable {
 
     /**
      * Report to the system that verification could not be completed along
-     * with an approximate reason to pass on to the installer.]
+     * with an approximate reason to pass on to the installer.
      * @throws SecurityException if the caller is not the current verifier bound by the system.
+     * @throws IllegalStateException if this is called after the session has finished, because
+     * this API or {@link #reportVerificationComplete} have already been called once, or because the
+     * session has timed out.
      */
     public void reportVerificationIncomplete(@VerificationIncompleteReason int reason) {
         try {
@@ -246,6 +260,9 @@ public final class VerificationSession implements Parcelable {
      * install process may act on that status to either block in the case
      * of failure or continue to process the install in the case of success.
      * @throws SecurityException if the caller is not the current verifier bound by the system.
+     * @throws IllegalStateException if this is called after the session has finished, because
+     * this API or {@link #reportVerificationIncomplete} have already been called once, or because
+     * the session has timed out.
      */
     public void reportVerificationComplete(@NonNull VerificationStatus status) {
         try {
@@ -260,6 +277,9 @@ public final class VerificationSession implements Parcelable {
      * a result to the extension params provided in the request, which will be passed to the
      * installer in the installation result.
      * @throws SecurityException if the caller is not the current verifier bound by the system.
+     * @throws IllegalStateException if this is called after the session has finished, because
+     * this API or {@link #reportVerificationIncomplete} have already been called once, or because
+     * the session has timed out.
      */
     public void reportVerificationComplete(@NonNull VerificationStatus status,
             @NonNull PersistableBundle extensionResponse) {
