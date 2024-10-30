@@ -9218,6 +9218,7 @@ package android.app.job {
     field public static final int STOP_REASON_QUOTA = 10; // 0xa
     field public static final int STOP_REASON_SYSTEM_PROCESSING = 14; // 0xe
     field public static final int STOP_REASON_TIMEOUT = 3; // 0x3
+    field @FlaggedApi("android.app.job.handle_abandoned_jobs") public static final int STOP_REASON_TIMEOUT_ABANDONED = 16; // 0x10
     field public static final int STOP_REASON_UNDEFINED = 0; // 0x0
     field public static final int STOP_REASON_USER = 13; // 0xd
   }
@@ -9660,6 +9661,47 @@ package android.app.usage {
     field public static final int STANDBY_BUCKET_RARE = 40; // 0x28
     field public static final int STANDBY_BUCKET_RESTRICTED = 45; // 0x2d
     field public static final int STANDBY_BUCKET_WORKING_SET = 20; // 0x14
+  }
+
+}
+
+package android.app.wallpaper {
+
+  @FlaggedApi("android.app.live_wallpaper_content_handling") public final class WallpaperDescription implements android.os.Parcelable {
+    method public int describeContents();
+    method @Nullable public android.content.ComponentName getComponent();
+    method @NonNull public android.os.PersistableBundle getContent();
+    method @Nullable public CharSequence getContextDescription();
+    method @Nullable public android.net.Uri getContextUri();
+    method @NonNull public java.util.List<java.lang.CharSequence> getDescription();
+    method @Nullable public String getId();
+    method @Nullable public android.net.Uri getThumbnail();
+    method @Nullable public CharSequence getTitle();
+    method @NonNull public android.app.wallpaper.WallpaperDescription.Builder toBuilder();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @Nullable public static final android.os.Parcelable.Creator<android.app.wallpaper.WallpaperDescription> CREATOR;
+  }
+
+  public static final class WallpaperDescription.Builder {
+    ctor public WallpaperDescription.Builder();
+    method @NonNull public android.app.wallpaper.WallpaperDescription build();
+    method @NonNull public android.app.wallpaper.WallpaperDescription.Builder setContent(@NonNull android.os.PersistableBundle);
+    method @NonNull public android.app.wallpaper.WallpaperDescription.Builder setContextDescription(@Nullable CharSequence);
+    method @NonNull public android.app.wallpaper.WallpaperDescription.Builder setContextUri(@Nullable android.net.Uri);
+    method @NonNull public android.app.wallpaper.WallpaperDescription.Builder setDescription(@NonNull java.util.List<java.lang.CharSequence>);
+    method @NonNull public android.app.wallpaper.WallpaperDescription.Builder setId(@Nullable String);
+    method @NonNull public android.app.wallpaper.WallpaperDescription.Builder setThumbnail(@Nullable android.net.Uri);
+    method @NonNull public android.app.wallpaper.WallpaperDescription.Builder setTitle(@Nullable CharSequence);
+  }
+
+  @FlaggedApi("android.app.live_wallpaper_content_handling") public final class WallpaperInstance implements android.os.Parcelable {
+    ctor public WallpaperInstance(@Nullable android.app.WallpaperInfo, @NonNull android.app.wallpaper.WallpaperDescription);
+    method public int describeContents();
+    method @NonNull public android.app.wallpaper.WallpaperDescription getDescription();
+    method @NonNull public String getId();
+    method @Nullable public android.app.WallpaperInfo getInfo();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.wallpaper.WallpaperInstance> CREATOR;
   }
 
 }
@@ -10872,6 +10914,7 @@ package android.content {
     field public static final String MEDIA_COMMUNICATION_SERVICE = "media_communication";
     field public static final String MEDIA_METRICS_SERVICE = "media_metrics";
     field public static final String MEDIA_PROJECTION_SERVICE = "media_projection";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw") public static final String MEDIA_QUALITY_SERVICE = "media_quality";
     field public static final String MEDIA_ROUTER_SERVICE = "media_router";
     field public static final String MEDIA_SESSION_SERVICE = "media_session";
     field public static final String MIDI_SERVICE = "midi";
@@ -22625,7 +22668,6 @@ package android.media {
     method public void sendEvent(int, int, @Nullable byte[]) throws android.media.MediaCasException;
     method public void setEventListener(@Nullable android.media.MediaCas.EventListener, @Nullable android.os.Handler);
     method public void setPrivateData(@NonNull byte[]) throws android.media.MediaCasException;
-    method @FlaggedApi("com.android.media.flags.update_client_profile_priority") public boolean updateResourcePriority(int, int);
     field public static final int PLUGIN_STATUS_PHYSICAL_MODULE_CHANGED = 0; // 0x0
     field public static final int PLUGIN_STATUS_SESSION_NUMBER_CHANGED = 1; // 0x1
     field public static final int SCRAMBLING_MODE_AES128 = 9; // 0x9
@@ -34012,7 +34054,12 @@ package android.os {
   @FlaggedApi("android.os.binder_frozen_state_change_callback") public static final class RemoteCallbackList.Builder<E extends android.os.IInterface> {
     ctor public RemoteCallbackList.Builder(int);
     method @NonNull public android.os.RemoteCallbackList<E> build();
+    method @NonNull public android.os.RemoteCallbackList.Builder setInterfaceDiedCallback(@NonNull android.os.RemoteCallbackList.Builder.InterfaceDiedCallback<E>);
     method @NonNull public android.os.RemoteCallbackList.Builder setMaxQueueSize(int);
+  }
+
+  @FlaggedApi("android.os.binder_frozen_state_change_callback") public static interface RemoteCallbackList.Builder.InterfaceDiedCallback<E extends android.os.IInterface> {
+    method public void onInterfaceDied(@NonNull android.os.RemoteCallbackList<E>, E, @Nullable Object);
   }
 
   public class RemoteException extends android.util.AndroidException {
@@ -51030,6 +51077,7 @@ package android.view {
     method @NonNull public android.view.DisplayShape getShape();
     method @Deprecated public void getSize(android.graphics.Point);
     method public int getState();
+    method @FlaggedApi("com.android.server.display.feature.flags.enable_get_suggested_frame_rate") public float getSuggestedFrameRate(int);
     method public android.view.Display.Mode[] getSupportedModes();
     method @Deprecated public float[] getSupportedRefreshRates();
     method @Deprecated public int getWidth();
@@ -51047,6 +51095,8 @@ package android.view {
     field public static final int FLAG_ROUND = 16; // 0x10
     field public static final int FLAG_SECURE = 2; // 0x2
     field public static final int FLAG_SUPPORTS_PROTECTED_BUFFERS = 1; // 0x1
+    field @FlaggedApi("com.android.server.display.feature.flags.enable_get_suggested_frame_rate") public static final int FRAME_RATE_CATEGORY_HIGH = 1; // 0x1
+    field @FlaggedApi("com.android.server.display.feature.flags.enable_get_suggested_frame_rate") public static final int FRAME_RATE_CATEGORY_NORMAL = 0; // 0x0
     field public static final int INVALID_DISPLAY = -1; // 0xffffffff
     field public static final int STATE_DOZE = 3; // 0x3
     field public static final int STATE_DOZE_SUSPEND = 4; // 0x4
@@ -52606,6 +52656,7 @@ package android.view {
     method @NonNull public android.view.SurfaceControl.Transaction setExtendedRangeBrightness(@NonNull android.view.SurfaceControl, float, float);
     method @NonNull public android.view.SurfaceControl.Transaction setFrameRate(@NonNull android.view.SurfaceControl, @FloatRange(from=0.0) float, int);
     method @NonNull public android.view.SurfaceControl.Transaction setFrameRate(@NonNull android.view.SurfaceControl, @FloatRange(from=0.0) float, int, int);
+    method @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_surfacecontrol_setframerate_api") @NonNull public android.view.SurfaceControl.Transaction setFrameRate(@NonNull android.view.SurfaceControl, @NonNull android.view.Surface.FrameRateParams);
     method @FlaggedApi("com.android.window.flags.sdk_desired_present_time") @NonNull public android.view.SurfaceControl.Transaction setFrameTimeline(long);
     method @Deprecated @NonNull public android.view.SurfaceControl.Transaction setGeometry(@NonNull android.view.SurfaceControl, @Nullable android.graphics.Rect, @Nullable android.graphics.Rect, int);
     method @NonNull public android.view.SurfaceControl.Transaction setLayer(@NonNull android.view.SurfaceControl, @IntRange(from=java.lang.Integer.MIN_VALUE, to=java.lang.Integer.MAX_VALUE) int);
