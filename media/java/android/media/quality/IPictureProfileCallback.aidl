@@ -26,4 +26,5 @@ import android.media.quality.PictureProfile;
 oneway interface IPictureProfileCallback {
     void onPictureProfileAdded(in long id, in PictureProfile p);
     void onPictureProfileUpdated(in long id, in PictureProfile p);
+    void onPictureProfileRemoved(in long id, in PictureProfile p);
 }
