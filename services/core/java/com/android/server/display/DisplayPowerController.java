@@ -17,7 +17,6 @@
 package com.android.server.display;
 
 import static android.hardware.display.DisplayManagerInternal.DisplayPowerRequest.POLICY_DOZE;
-import static android.hardware.display.DisplayManagerInternal.DisplayPowerRequest.POLICY_OFF;
 
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DEFAULT;
@@ -1411,8 +1410,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             if (mScreenOffBrightnessSensorController != null) {
                 mScreenOffBrightnessSensorController
                         .setLightSensorEnabled(displayBrightnessState.getShouldUseAutoBrightness()
-                        && mIsEnabled && (mPowerRequest.policy == POLICY_OFF
-                        || (mPowerRequest.policy == POLICY_DOZE && !allowAutoBrightnessWhileDozing))
+                        && mIsEnabled && (state == Display.STATE_OFF
+                                || (mPowerRequest.policy == POLICY_DOZE
+                                && !allowAutoBrightnessWhileDozing))
                         && mLeadDisplayId == Layout.NO_LEAD_DISPLAY);
             }
         }
