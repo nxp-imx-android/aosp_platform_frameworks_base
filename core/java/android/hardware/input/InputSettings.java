@@ -23,6 +23,7 @@ import static com.android.hardware.input.Flags.mouseScrollingAcceleration;
 import static com.android.hardware.input.Flags.mouseReverseVerticalScrolling;
 import static com.android.hardware.input.Flags.mouseSwapPrimaryButton;
 import static com.android.hardware.input.Flags.pointerAcceleration;
+import static com.android.hardware.input.Flags.touchpadDisable;
 import static com.android.hardware.input.Flags.touchpadSystemGestureDisable;
 import static com.android.hardware.input.Flags.touchpadThreeFingerTapShortcut;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
@@ -435,6 +436,15 @@ public class InputSettings {
     }
 
     /**
+     * Returns true if the feature flag for disabling touchpads is enabled.
+     *
+     * @hide
+     */
+    public static boolean isTouchpadDisableFeatureFlagEnabled() {
+        return touchpadDisable();
+    }
+
+    /**
      * Returns true if the feature flag for touchpad visualizer is enabled.
      *
      * @hide
@@ -634,6 +644,39 @@ public class InputSettings {
         }
         Settings.System.putIntForUser(context.getContentResolver(),
                 Settings.System.TOUCHPAD_SYSTEM_GESTURES, enabled ? 1 : 0, UserHandle.USER_CURRENT);
+    }
+
+    /**
+     * Returns true if touchpads should be enabled.
+     *
+     * @param context The application context.
+     * @return Whether touchpads are enabled
+     *
+     * @hide
+     */
+    public static boolean useTouchpads(@NonNull Context context) {
+        if (!isTouchpadDisableFeatureFlagEnabled()) {
+            return true;
+        }
+        return Settings.System.getIntForUser(context.getContentResolver(),
+                Settings.System.TOUCHPAD_ENABLED, 1, UserHandle.USER_CURRENT) == 1;
+    }
+
+    /**
+     * Sets whether touchpads are enabled.
+     *
+     * @param context The application context.
+     * @param enabled True to enable touchpads.
+     *
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
+    public static void setTouchpadsEnabled(@NonNull Context context, boolean enabled) {
+        if (!isTouchpadDisableFeatureFlagEnabled()) {
+            return;
+        }
+        Settings.System.putIntForUser(context.getContentResolver(),
+                Settings.System.TOUCHPAD_ENABLED, enabled ? 1 : 0, UserHandle.USER_CURRENT);
     }
 
     /**

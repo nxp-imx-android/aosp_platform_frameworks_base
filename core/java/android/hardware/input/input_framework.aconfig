@@ -229,3 +229,10 @@ flag {
     description: "Enables shortcut for quick settings panel"
     bug: "423899230"
 }
+
+flag {
+    name: "touchpad_disable"
+    namespace: "input"
+    description: "Adds an accessibility setting to disable touchpads"
+    bug: "372857036"
+}
