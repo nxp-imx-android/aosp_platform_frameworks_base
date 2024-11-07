@@ -25,8 +25,8 @@ import static android.view.KeyEvent.KEYCODE_UNKNOWN;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
 import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
-import static com.android.hardware.input.Flags.touchpadVisualizer;
 import static com.android.hardware.input.Flags.keyEventActivityDetection;
+import static com.android.hardware.input.Flags.touchpadVisualizer;
 import static com.android.hardware.input.Flags.useKeyGestureEventHandler;
 import static com.android.server.policy.WindowManagerPolicy.ACTION_PASS_TO_USER;
 
@@ -459,6 +459,14 @@ public class InputManagerService extends IInputManager.Stub
     private FocusEventDebugView mFocusEventDebugView;
     private boolean mShowKeyPresses = false;
     private boolean mShowRotaryInput = false;
+
+    /**
+     * A lock for the accessibility pointer motion filter. Don't call native methods while holding
+     * this lock.
+     */
+    private final Object mAccessibilityPointerMotionFilterLock = new Object();
+    private InputManagerInternal.AccessibilityPointerMotionFilter
+            mAccessibilityPointerMotionFilter = null;
 
     /** Point of injection for test dependencies. */
     @VisibleForTesting
@@ -2593,6 +2601,23 @@ public class InputManagerService extends IInputManager.Stub
 
     // Native callback.
     @SuppressWarnings("unused")
+    final float[] filterPointerMotion(float dx, float dy, float currentX, float currentY,
+            int displayId) {
+        // This call happens on the input hot path and it is extremely performance sensitive.
+        // This must not call back into native code. This is called while the
+        // PointerChoreographer's lock is held.
+        synchronized (mAccessibilityPointerMotionFilterLock) {
+            if (mAccessibilityPointerMotionFilter == null) {
+                throw new IllegalStateException(
+                        "filterCursor is invoked but no callback is registered.");
+            }
+            return mAccessibilityPointerMotionFilter.filterPointerMotionEvent(dx, dy, currentX,
+                    currentY, displayId);
+        }
+    }
+
+    // Native callback.
+    @SuppressWarnings("unused")
     @VisibleForTesting
     public int interceptKeyBeforeQueueing(KeyEvent event, int policyFlags) {
         notifyKeyActivityListeners(event);
@@ -3828,6 +3853,12 @@ public class InputManagerService extends IInputManager.Stub
                         payload.get(BACKUP_CATEGORY_INPUT_GESTURES), userId);
             }
         }
+
+        @Override
+        public void registerAccessibilityPointerMotionFilter(
+                AccessibilityPointerMotionFilter filter) {
+            InputManagerService.this.registerAccessibilityPointerMotionFilter(filter);
+        }
     }
 
     @Override
@@ -4012,6 +4043,26 @@ public class InputManagerService extends IInputManager.Stub
 
     void setAccessibilityPointerIconScaleFactor(int displayId, float scaleFactor) {
         mPointerIconCache.setAccessibilityScaleFactor(displayId, scaleFactor);
+    }
+
+    void registerAccessibilityPointerMotionFilter(
+            InputManagerInternal.AccessibilityPointerMotionFilter filter) {
+        // `#filterPointerMotion` expects that when it's called, `mAccessibilityPointerMotionFilter`
+        // is not null.
+        // Also, to avoid potential lock contention, we shouldn't call native method while holding
+        // the lock here. Native code calls `#filterPointerMotion` while PointerChoreographer's
+        // lock is held.
+        // Thus, we must set filter before we enable the filter in native, and reset the filter
+        // after we disable the filter.
+        // This also ensures the previously installed filter isn't called after the filter is
+        // updated.
+        mNative.setAccessibilityPointerMotionFilterEnabled(false);
+        synchronized (mAccessibilityPointerMotionFilterLock) {
+            mAccessibilityPointerMotionFilter = filter;
+        }
+        if (filter != null) {
+            mNative.setAccessibilityPointerMotionFilterEnabled(true);
+        }
     }
 
     interface KeyboardBacklightControllerInterface {
