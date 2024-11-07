@@ -241,6 +241,7 @@ package android {
     field public static final String PROVIDE_REMOTE_CREDENTIALS = "android.permission.PROVIDE_REMOTE_CREDENTIALS";
     field @FlaggedApi("android.security.aapm_api") public static final String QUERY_ADVANCED_PROTECTION_MODE = "android.permission.QUERY_ADVANCED_PROTECTION_MODE";
     field public static final String QUERY_ALL_PACKAGES = "android.permission.QUERY_ALL_PACKAGES";
+    field @FlaggedApi("android.permission.flags.ranging_permission_enabled") public static final String RANGING = "android.permission.RANGING";
     field public static final String READ_ASSISTANT_APP_SEARCH_DATA = "android.permission.READ_ASSISTANT_APP_SEARCH_DATA";
     field public static final String READ_BASIC_PHONE_STATE = "android.permission.READ_BASIC_PHONE_STATE";
     field public static final String READ_CALENDAR = "android.permission.READ_CALENDAR";
@@ -8024,6 +8025,7 @@ package android.app.admin {
     field @FlaggedApi("android.view.contentprotection.flags.manage_device_policy_enabled") public static final String CONTENT_PROTECTION_POLICY = "contentProtection";
     field public static final String KEYGUARD_DISABLED_FEATURES_POLICY = "keyguardDisabledFeatures";
     field public static final String LOCK_TASK_POLICY = "lockTask";
+    field @FlaggedApi("android.app.admin.flags.set_mte_policy_coexistence") public static final String MEMORY_TAGGING_POLICY = "memoryTagging";
     field public static final String PACKAGES_SUSPENDED_POLICY = "packagesSuspended";
     field public static final String PACKAGE_UNINSTALL_BLOCKED_POLICY = "packageUninstallBlocked";
     field public static final String PASSWORD_COMPLEXITY_POLICY = "passwordComplexity";
@@ -9246,6 +9248,7 @@ package android.app.job {
     method @Nullable public String getNamespace();
     method @Nullable public abstract android.app.job.JobInfo getPendingJob(int);
     method public int getPendingJobReason(int);
+    method @FlaggedApi("android.app.job.get_pending_job_reasons_api") @NonNull public int[] getPendingJobReasons(int);
     method @NonNull public java.util.Map<java.lang.String,java.util.List<android.app.job.JobInfo>> getPendingJobsInAllNamespaces();
     method public abstract int schedule(@NonNull android.app.job.JobInfo);
     field public static final int PENDING_JOB_REASON_APP = 1; // 0x1
@@ -9255,6 +9258,7 @@ package android.app.job {
     field public static final int PENDING_JOB_REASON_CONSTRAINT_CHARGING = 5; // 0x5
     field public static final int PENDING_JOB_REASON_CONSTRAINT_CONNECTIVITY = 6; // 0x6
     field public static final int PENDING_JOB_REASON_CONSTRAINT_CONTENT_TRIGGER = 7; // 0x7
+    field @FlaggedApi("android.app.job.get_pending_job_reasons_api") public static final int PENDING_JOB_REASON_CONSTRAINT_DEADLINE = 16; // 0x10
     field public static final int PENDING_JOB_REASON_CONSTRAINT_DEVICE_IDLE = 8; // 0x8
     field public static final int PENDING_JOB_REASON_CONSTRAINT_MINIMUM_LATENCY = 9; // 0x9
     field public static final int PENDING_JOB_REASON_CONSTRAINT_PREFETCH = 10; // 0xa
@@ -9688,10 +9692,8 @@ package android.app.wallpaper {
     method @Nullable public String getId();
     method @Nullable public android.net.Uri getThumbnail();
     method @Nullable public CharSequence getTitle();
-    method @NonNull public static android.app.wallpaper.WallpaperDescription readFromStream(@NonNull java.io.InputStream) throws java.io.IOException;
     method @NonNull public android.app.wallpaper.WallpaperDescription.Builder toBuilder();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
-    method public void writeToStream(@NonNull java.io.OutputStream) throws java.io.IOException;
     field @NonNull public static final android.os.Parcelable.Creator<android.app.wallpaper.WallpaperDescription> CREATOR;
   }
 
@@ -12733,6 +12735,7 @@ package android.content.pm {
     method public abstract void onPackagesUnavailable(String[], android.os.UserHandle, boolean);
     method public void onPackagesUnsuspended(String[], android.os.UserHandle);
     method public void onShortcutsChanged(@NonNull String, @NonNull java.util.List<android.content.pm.ShortcutInfo>, @NonNull android.os.UserHandle);
+    method @FlaggedApi("android.multiuser.add_launcher_user_config") public void onUserConfigChanged(@NonNull android.content.pm.LauncherUserInfo);
   }
 
   public static final class LauncherApps.PinItemRequest implements android.os.Parcelable {
@@ -12768,10 +12771,12 @@ package android.content.pm {
 
   @FlaggedApi("android.os.allow_private_profile") public final class LauncherUserInfo implements android.os.Parcelable {
     method @FlaggedApi("android.os.allow_private_profile") public int describeContents();
+    method @FlaggedApi("android.multiuser.add_launcher_user_config") @NonNull public android.os.Bundle getUserConfig();
     method @FlaggedApi("android.os.allow_private_profile") public int getUserSerialNumber();
     method @FlaggedApi("android.os.allow_private_profile") @NonNull public String getUserType();
     method @FlaggedApi("android.os.allow_private_profile") public void writeToParcel(@NonNull android.os.Parcel, int);
     field @FlaggedApi("android.os.allow_private_profile") @NonNull public static final android.os.Parcelable.Creator<android.content.pm.LauncherUserInfo> CREATOR;
+    field @FlaggedApi("android.multiuser.add_launcher_user_config") public static final String PRIVATE_SPACE_ENTRYPOINT_HIDDEN = "private_space_entrypoint_hidden";
   }
 
   public final class ModuleInfo implements android.os.Parcelable {
@@ -13702,7 +13707,7 @@ package android.content.pm {
     field public static final int FLAG_STOP_WITH_TASK = 1; // 0x1
     field public static final int FLAG_USE_APP_ZYGOTE = 8; // 0x8
     field @RequiresPermission(allOf={android.Manifest.permission.FOREGROUND_SERVICE_CAMERA}, anyOf={android.Manifest.permission.CAMERA}, conditional=true) public static final int FOREGROUND_SERVICE_TYPE_CAMERA = 64; // 0x40
-    field @RequiresPermission(allOf={android.Manifest.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE}, anyOf={android.Manifest.permission.BLUETOOTH_ADVERTISE, android.Manifest.permission.BLUETOOTH_CONNECT, android.Manifest.permission.BLUETOOTH_SCAN, android.Manifest.permission.CHANGE_NETWORK_STATE, android.Manifest.permission.CHANGE_WIFI_STATE, android.Manifest.permission.CHANGE_WIFI_MULTICAST_STATE, android.Manifest.permission.NFC, android.Manifest.permission.TRANSMIT_IR, android.Manifest.permission.UWB_RANGING}, conditional=true) public static final int FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE = 16; // 0x10
+    field @RequiresPermission(allOf={android.Manifest.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE}, anyOf={android.Manifest.permission.BLUETOOTH_ADVERTISE, android.Manifest.permission.BLUETOOTH_CONNECT, android.Manifest.permission.BLUETOOTH_SCAN, android.Manifest.permission.CHANGE_NETWORK_STATE, android.Manifest.permission.CHANGE_WIFI_STATE, android.Manifest.permission.CHANGE_WIFI_MULTICAST_STATE, android.Manifest.permission.NFC, android.Manifest.permission.TRANSMIT_IR, android.Manifest.permission.UWB_RANGING, android.Manifest.permission.RANGING}, conditional=true) public static final int FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE = 16; // 0x10
     field @RequiresPermission(value=android.Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC, conditional=true) public static final int FOREGROUND_SERVICE_TYPE_DATA_SYNC = 1; // 0x1
     field @RequiresPermission(allOf={android.Manifest.permission.FOREGROUND_SERVICE_HEALTH}, anyOf={android.Manifest.permission.ACTIVITY_RECOGNITION, android.Manifest.permission.BODY_SENSORS, android.Manifest.permission.HIGH_SAMPLING_RATE_SENSORS}) public static final int FOREGROUND_SERVICE_TYPE_HEALTH = 256; // 0x100
     field @RequiresPermission(allOf={android.Manifest.permission.FOREGROUND_SERVICE_LOCATION}, anyOf={android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}, conditional=true) public static final int FOREGROUND_SERVICE_TYPE_LOCATION = 8; // 0x8
@@ -16419,6 +16424,7 @@ package android.graphics {
     field public static final int FLEX_RGBA_8888 = 42; // 0x2a
     field public static final int FLEX_RGB_888 = 41; // 0x29
     field public static final int HEIC = 1212500294; // 0x48454946
+    field @FlaggedApi("com.android.internal.camera.flags.camera_heif_gainmap") public static final int HEIC_ULTRAHDR = 4102; // 0x1006
     field public static final int JPEG = 256; // 0x100
     field public static final int JPEG_R = 4101; // 0x1005
     field public static final int NV16 = 16; // 0x10
@@ -16845,6 +16851,7 @@ package android.graphics {
     field @FlaggedApi("com.android.text.flags.letter_spacing_justification") public static final int TEXT_RUN_FLAG_LEFT_EDGE = 8192; // 0x2000
     field @FlaggedApi("com.android.text.flags.letter_spacing_justification") public static final int TEXT_RUN_FLAG_RIGHT_EDGE = 16384; // 0x4000
     field public static final int UNDERLINE_TEXT_FLAG = 8; // 0x8
+    field @FlaggedApi("com.android.text.flags.vertical_text_layout") public static final int VERTICAL_TEXT_FLAG = 4096; // 0x1000
   }
 
   public enum Paint.Align {
@@ -18709,6 +18716,7 @@ package android.hardware {
     field public static final int DATASPACE_DISPLAY_P3 = 143261696; // 0x88a0000
     field public static final int DATASPACE_DYNAMIC_DEPTH = 4098; // 0x1002
     field public static final int DATASPACE_HEIF = 4100; // 0x1004
+    field @FlaggedApi("com.android.internal.camera.flags.camera_heif_gainmap") public static final int DATASPACE_HEIF_ULTRAHDR = 4102; // 0x1006
     field public static final int DATASPACE_JFIF = 146931712; // 0x8c20000
     field public static final int DATASPACE_JPEG_R = 4101; // 0x1005
     field public static final int DATASPACE_SCRGB = 411107328; // 0x18810000
@@ -20987,7 +20995,6 @@ package android.inputmethodservice {
     method @Deprecated public android.inputmethodservice.AbstractInputMethodService.AbstractInputMethodSessionImpl onCreateInputMethodSessionInterface();
     method public android.view.View onCreateInputView();
     method protected void onCurrentInputMethodSubtypeChanged(android.view.inputmethod.InputMethodSubtype);
-    method @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") public void onCustomImeSwitcherButtonRequestedVisible(boolean);
     method public void onDisplayCompletions(android.view.inputmethod.CompletionInfo[]);
     method public boolean onEvaluateFullscreenMode();
     method @CallSuper public boolean onEvaluateInputViewShown();
@@ -32946,11 +32953,16 @@ package android.os {
 
   public class Build {
     ctor public Build();
+    method @FlaggedApi("android.os.api_for_backported_fixes") public static int getBackportedFixStatus(long);
     method @NonNull public static java.util.List<android.os.Build.Partition> getFingerprintedPartitions();
     method @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static int getMajorSdkVersion(int);
     method @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static int getMinorSdkVersion(int);
     method public static String getRadioVersion();
     method @RequiresPermission("android.permission.READ_PRIVILEGED_PHONE_STATE") public static String getSerial();
+    field @FlaggedApi("android.os.api_for_backported_fixes") public static final int BACKPORTED_FIX_STATUS_FIXED = 1; // 0x1
+    field @FlaggedApi("android.os.api_for_backported_fixes") public static final int BACKPORTED_FIX_STATUS_NOT_APPLICABLE = 2; // 0x2
+    field @FlaggedApi("android.os.api_for_backported_fixes") public static final int BACKPORTED_FIX_STATUS_NOT_FIXED = 3; // 0x3
+    field @FlaggedApi("android.os.api_for_backported_fixes") public static final int BACKPORTED_FIX_STATUS_UNKNOWN = 0; // 0x0
     field public static final String BOARD;
     field public static final String BOOTLOADER;
     field public static final String BRAND;
@@ -33967,12 +33979,14 @@ package android.os {
   }
 
   public final class PowerManager {
+    method @FlaggedApi("android.os.allow_thermal_thresholds_callback") public void addThermalHeadroomListener(@NonNull android.os.PowerManager.OnThermalHeadroomChangedListener);
+    method @FlaggedApi("android.os.allow_thermal_thresholds_callback") public void addThermalHeadroomListener(@NonNull java.util.concurrent.Executor, @NonNull android.os.PowerManager.OnThermalHeadroomChangedListener);
     method public void addThermalStatusListener(@NonNull android.os.PowerManager.OnThermalStatusChangedListener);
     method public void addThermalStatusListener(@NonNull java.util.concurrent.Executor, @NonNull android.os.PowerManager.OnThermalStatusChangedListener);
     method @Nullable public java.time.Duration getBatteryDischargePrediction();
     method public int getCurrentThermalStatus();
     method public int getLocationPowerSaveMode();
-    method public float getThermalHeadroom(@IntRange(from=0, to=60) int);
+    method @FloatRange(from=0.0f) public float getThermalHeadroom(@IntRange(from=0, to=60) int);
     method @FlaggedApi("android.os.allow_thermal_headroom_thresholds") @NonNull public java.util.Map<java.lang.Integer,java.lang.Float> getThermalHeadroomThresholds();
     method public boolean isAllowedInLowPowerStandby(int);
     method public boolean isAllowedInLowPowerStandby(@NonNull String);
@@ -33990,6 +34004,7 @@ package android.os {
     method public boolean isWakeLockLevelSupported(int);
     method public android.os.PowerManager.WakeLock newWakeLock(int, String);
     method @RequiresPermission(android.Manifest.permission.REBOOT) public void reboot(@Nullable String);
+    method @FlaggedApi("android.os.allow_thermal_thresholds_callback") public void removeThermalHeadroomListener(@NonNull android.os.PowerManager.OnThermalHeadroomChangedListener);
     method public void removeThermalStatusListener(@NonNull android.os.PowerManager.OnThermalStatusChangedListener);
     field @Deprecated @RequiresPermission(value=android.Manifest.permission.TURN_SCREEN_ON, conditional=true) public static final int ACQUIRE_CAUSES_WAKEUP = 268435456; // 0x10000000
     field public static final String ACTION_DEVICE_IDLE_MODE_CHANGED = "android.os.action.DEVICE_IDLE_MODE_CHANGED";
@@ -34020,6 +34035,10 @@ package android.os {
     field public static final int THERMAL_STATUS_NONE = 0; // 0x0
     field public static final int THERMAL_STATUS_SEVERE = 3; // 0x3
     field public static final int THERMAL_STATUS_SHUTDOWN = 6; // 0x6
+  }
+
+  @FlaggedApi("android.os.allow_thermal_thresholds_callback") public static interface PowerManager.OnThermalHeadroomChangedListener {
+    method public void onThermalHeadroomChanged(@FloatRange(from=0.0f) float, @FloatRange(from=0.0f) float, @IntRange(from=0) int, @NonNull java.util.Map<java.lang.Integer,java.lang.Float>);
   }
 
   public static interface PowerManager.OnThermalStatusChangedListener {
@@ -55575,6 +55594,7 @@ package android.view.accessibility {
     field public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH";
     field public static final int EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_MAX_LENGTH = 20000; // 0x4e20
     field public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX";
+    field @FlaggedApi("android.view.accessibility.a11y_character_in_window_api") public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_IN_WINDOW_KEY = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_IN_WINDOW_KEY";
     field public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_KEY";
     field public static final int FLAG_PREFETCH_ANCESTORS = 1; // 0x1
     field public static final int FLAG_PREFETCH_DESCENDANTS_BREADTH_FIRST = 16; // 0x10
