@@ -9660,6 +9660,14 @@
             android:exported="true">
         </provider>
 
+        <provider
+            android:name="com.android.server.bitmapoffload.BitmapOffloadProvider"
+            android:authorities="com.android.bitmapoffload"
+            android:singleUser="true"
+            android:enabled="true"
+            android:exported="true">
+        </provider>
+
         <meta-data
             android:name="com.android.server.patch.25239169"
             android:value="true" />

@@ -53,6 +53,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Looper;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -183,6 +184,11 @@ abstract public class ManagedServices {
     @GuardedBy("mApproved")
     protected final ArrayMap<Integer, ArrayMap<Boolean, ArraySet<String>>> mApproved =
             new ArrayMap<>();
+
+    // List of approved UIDs, by user
+    @GuardedBy("mApproved")
+    protected final SparseArray<HashSet<Integer>> mApprovedUids = new SparseArray<>();
+
     // List of packages or components (by user) that are configured to be enabled/disabled
     // explicitly by the user
     @GuardedBy("mApproved")
@@ -385,6 +391,8 @@ abstract public class ManagedServices {
                         }
                     }
                 }
+                final HashSet<Integer> uids = mApprovedUids.get(userId);
+                pw.println("    Approved uids for user " + userId + ": " + uids.toString());
             }
             pw.println("    Has user set:");
             Set<Integer> userIds = mUserSetServices.keySet();
@@ -846,11 +854,16 @@ abstract public class ManagedServices {
                 approvedByType = new ArrayMap<>();
                 mApproved.put(userId, approvedByType);
             }
-
             ArraySet<String> approvedList = approvedByType.get(isPrimary);
             if (approvedList == null) {
                 approvedList = new ArraySet<>();
                 approvedByType.put(isPrimary, approvedList);
+            }
+
+            HashSet<Integer> approvedUids = mApprovedUids.get(userId);
+            if (approvedUids == null) {
+                approvedUids = new HashSet<>();
+                mApprovedUids.put(userId, approvedUids);
             }
 
             String[] approvedArray = approved.split(ENABLED_SERVICES_SEPARATOR);
@@ -858,6 +871,10 @@ abstract public class ManagedServices {
                 String approvedItem = getApprovedValue(pkgOrComponent);
                 if (approvedItem != null) {
                     approvedList.add(approvedItem);
+                }
+                int uid = getUidForPackageOrComponent(pkgOrComponent, userId);
+                if (uid != Process.INVALID_UID) {
+                    approvedUids.add(uid);
                 }
             }
 
@@ -931,6 +948,11 @@ abstract public class ManagedServices {
                 allowedByType = new ArrayMap<>();
                 mApproved.put(userId, allowedByType);
             }
+            HashSet<Integer> approvedUids = mApprovedUids.get(userId);
+            if (approvedUids == null) {
+                approvedUids = new HashSet<>();
+                mApprovedUids.put(userId, approvedUids);
+            }
             ArraySet<String> approved = allowedByType.get(isPrimary);
             if (approved == null) {
                 approved = new ArraySet<>();
@@ -939,10 +961,17 @@ abstract public class ManagedServices {
             String approvedItem = getApprovedValue(pkgOrComponent);
 
             if (approvedItem != null) {
+                int uid = getUidForPackageOrComponent(pkgOrComponent, userId);
                 if (enabled) {
                     approved.add(approvedItem);
+                    if (uid != Process.INVALID_UID) {
+                        approvedUids.add(uid);
+                    }
                 } else {
                     approved.remove(approvedItem);
+                    if (uid != Process.INVALID_UID) {
+                        approvedUids.remove(uid);
+                    }
                 }
             }
             ArraySet<String> userSetServices = mUserSetServices.get(userId);
@@ -955,9 +984,20 @@ abstract public class ManagedServices {
             } else {
                 userSetServices.remove(pkgOrComponent);
             }
+
         }
 
         rebindServices(false, userId);
+    }
+
+    private int getUidForPackageOrComponent(String pkgOrComponent, int userId) {
+        String packageName = getPackageName(pkgOrComponent);
+
+        try {
+            return mContext.getPackageManager().getPackageUidAsUser(packageName, userId);
+        } catch (NameNotFoundException e) {
+            return Process.INVALID_UID;
+        }
     }
 
     private String getApprovedValue(String pkgOrComponent) {
@@ -1015,6 +1055,13 @@ abstract public class ManagedServices {
             }
         }
         return allowedPackages;
+    }
+
+    protected boolean isUidAllowed(int uid) {
+        synchronized (mApproved) {
+            HashSet<Integer> allowedUids = mApprovedUids.get(UserHandle.getUserId(uid));
+            return allowedUids != null && allowedUids.contains(uid);
+        }
     }
 
     protected boolean isPackageOrComponentAllowed(String pkgOrComponent, int userId) {
@@ -1138,6 +1185,7 @@ abstract public class ManagedServices {
         Slog.i(TAG, "Removing approved services for removed user " + user);
         synchronized (mApproved) {
             mApproved.remove(user);
+            mApprovedUids.remove(user);
         }
         synchronized (mSnoozing) {
             mSnoozing.remove(user);

@@ -73,3 +73,10 @@ flag {
   description: "This flag controls regrouping after notification classification"
   bug: "372775153"
 }
+
+flag {
+  name: "notification_bitmap_offloading"
+  namespace: "systemui"
+  description: "Enables offloading Bitmaps to disk"
+  bug: "398153219"
+}
