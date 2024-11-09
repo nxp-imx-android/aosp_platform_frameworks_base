@@ -314,6 +314,7 @@ package android {
     field public static final String SYSTEM_ALERT_WINDOW = "android.permission.SYSTEM_ALERT_WINDOW";
     field public static final String TRANSMIT_IR = "android.permission.TRANSMIT_IR";
     field public static final String TURN_SCREEN_ON = "android.permission.TURN_SCREEN_ON";
+    field @FlaggedApi("android.app.enable_tv_implicit_enter_pip_restriction") public static final String TV_IMPLICIT_ENTER_PIP = "android.permission.TV_IMPLICIT_ENTER_PIP";
     field public static final String UNINSTALL_SHORTCUT = "com.android.launcher.permission.UNINSTALL_SHORTCUT";
     field public static final String UPDATE_DEVICE_STATS = "android.permission.UPDATE_DEVICE_STATS";
     field public static final String UPDATE_PACKAGES_WITHOUT_USER_ACTION = "android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION";
@@ -477,6 +478,8 @@ package android {
     field public static final int alpha = 16843551; // 0x101031f
     field public static final int alphabeticModifiers = 16844110; // 0x101054e
     field public static final int alphabeticShortcut = 16843235; // 0x10101e3
+    field @FlaggedApi("android.content.pm.change_launcher_badging") public static final int alternateLauncherIcons;
+    field @FlaggedApi("android.content.pm.change_launcher_badging") public static final int alternateLauncherLabels;
     field public static final int alwaysDrawnWithCache = 16842991; // 0x10100ef
     field public static final int alwaysRetainTaskState = 16843267; // 0x1010203
     field @Deprecated public static final int amPmBackgroundColor = 16843941; // 0x10104a5
@@ -8789,8 +8792,31 @@ package android.app.admin {
 
 package android.app.appfunctions {
 
+  @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class AppFunctionException extends java.lang.Exception implements android.os.Parcelable {
+    ctor public AppFunctionException(int, @Nullable String);
+    ctor public AppFunctionException(int, @Nullable String, @NonNull android.os.Bundle);
+    method public int describeContents();
+    method public int getErrorCategory();
+    method public int getErrorCode();
+    method @Nullable public String getErrorMessage();
+    method @NonNull public android.os.Bundle getExtras();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionException> CREATOR;
+    field public static final int ERROR_APP_UNKNOWN_ERROR = 3000; // 0xbb8
+    field public static final int ERROR_CANCELLED = 2001; // 0x7d1
+    field public static final int ERROR_CATEGORY_APP = 3; // 0x3
+    field public static final int ERROR_CATEGORY_REQUEST_ERROR = 1; // 0x1
+    field public static final int ERROR_CATEGORY_SYSTEM = 2; // 0x2
+    field public static final int ERROR_CATEGORY_UNKNOWN = 0; // 0x0
+    field public static final int ERROR_DENIED = 1000; // 0x3e8
+    field public static final int ERROR_DISABLED = 1002; // 0x3ea
+    field public static final int ERROR_FUNCTION_NOT_FOUND = 1003; // 0x3eb
+    field public static final int ERROR_INVALID_ARGUMENT = 1001; // 0x3e9
+    field public static final int ERROR_SYSTEM_ERROR = 2000; // 0x7d0
+  }
+
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class AppFunctionManager {
-    method @RequiresPermission(anyOf={"android.permission.EXECUTE_APP_FUNCTIONS_TRUSTED", "android.permission.EXECUTE_APP_FUNCTIONS"}, conditional=true) public void executeAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.concurrent.Executor, @NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
+    method @RequiresPermission(anyOf={"android.permission.EXECUTE_APP_FUNCTIONS_TRUSTED", "android.permission.EXECUTE_APP_FUNCTIONS"}, conditional=true) public void executeAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.concurrent.Executor, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
     method @RequiresPermission(anyOf={"android.permission.EXECUTE_APP_FUNCTIONS_TRUSTED", "android.permission.EXECUTE_APP_FUNCTIONS"}, conditional=true) public void isAppFunctionEnabled(@NonNull String, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void isAppFunctionEnabled(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void setAppFunctionEnabled(@NonNull String, int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,java.lang.Exception>);
@@ -8802,7 +8828,7 @@ package android.app.appfunctions {
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public abstract class AppFunctionService extends android.app.Service {
     ctor public AppFunctionService();
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @MainThread public abstract void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull String, @NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<android.app.appfunctions.ExecuteAppFunctionResponse>);
+    method @MainThread public abstract void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull String, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
     field @NonNull public static final String SERVICE_INTERFACE = "android.app.appfunctions.AppFunctionService";
   }
 
@@ -8824,30 +8850,14 @@ package android.app.appfunctions {
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class ExecuteAppFunctionResponse implements android.os.Parcelable {
+    ctor public ExecuteAppFunctionResponse(@NonNull android.app.appsearch.GenericDocument);
+    ctor public ExecuteAppFunctionResponse(@NonNull android.app.appsearch.GenericDocument, @NonNull android.os.Bundle);
     method public int describeContents();
-    method public int getErrorCategory();
-    method @Nullable public String getErrorMessage();
     method @NonNull public android.os.Bundle getExtras();
-    method public int getResultCode();
     method @NonNull public android.app.appsearch.GenericDocument getResultDocument();
-    method public boolean isSuccess();
-    method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") @NonNull public static android.app.appfunctions.ExecuteAppFunctionResponse newFailure(int, @Nullable String, @Nullable android.os.Bundle);
-    method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") @NonNull public static android.app.appfunctions.ExecuteAppFunctionResponse newSuccess(@NonNull android.app.appsearch.GenericDocument, @Nullable android.os.Bundle);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.ExecuteAppFunctionResponse> CREATOR;
-    field public static final int ERROR_CATEGORY_APP = 3; // 0x3
-    field public static final int ERROR_CATEGORY_REQUEST_ERROR = 1; // 0x1
-    field public static final int ERROR_CATEGORY_SYSTEM = 2; // 0x2
-    field public static final int ERROR_CATEGORY_UNKNOWN = 0; // 0x0
-    field public static final String PROPERTY_RETURN_VALUE = "returnValue";
-    field public static final int RESULT_APP_UNKNOWN_ERROR = 3000; // 0xbb8
-    field public static final int RESULT_CANCELLED = 2001; // 0x7d1
-    field public static final int RESULT_DENIED = 1000; // 0x3e8
-    field public static final int RESULT_DISABLED = 1002; // 0x3ea
-    field public static final int RESULT_FUNCTION_NOT_FOUND = 1003; // 0x3eb
-    field public static final int RESULT_INVALID_ARGUMENT = 1001; // 0x3e9
-    field public static final int RESULT_OK = 0; // 0x0
-    field public static final int RESULT_SYSTEM_ERROR = 2000; // 0x7d0
+    field public static final String PROPERTY_RETURN_VALUE = "androidAppfunctionsReturnValue";
   }
 
 }
@@ -8870,6 +8880,7 @@ package android.app.assist {
     method public void setWebUri(android.net.Uri);
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.assist.AssistContent> CREATOR;
+    field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public static final String EXTRA_APP_FUNCTION_DATA = "android.app.assist.extra.APP_FUNCTION_DATA";
   }
 
   public class AssistStructure implements android.os.Parcelable {
@@ -44279,6 +44290,8 @@ package android.telephony {
     field public static final String ACTION_CARRIER_CONFIG_CHANGED = "android.telephony.action.CARRIER_CONFIG_CHANGED";
     field public static final int CARRIER_NR_AVAILABILITY_NSA = 1; // 0x1
     field public static final int CARRIER_NR_AVAILABILITY_SA = 2; // 0x2
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final int CARRIER_ROAMING_NTN_CONNECT_AUTOMATIC = 0; // 0x0
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final int CARRIER_ROAMING_NTN_CONNECT_MANUAL = 1; // 0x1
     field public static final int CROSS_SIM_SPN_FORMAT_CARRIER_NAME_ONLY = 0; // 0x0
     field public static final int CROSS_SIM_SPN_FORMAT_CARRIER_NAME_WITH_BRANDING = 1; // 0x1
     field public static final int DATA_CYCLE_THRESHOLD_DISABLED = -2; // 0xfffffffe
@@ -44349,11 +44362,14 @@ package android.telephony {
     field public static final String KEY_CARRIER_NR_AVAILABILITIES_INT_ARRAY = "carrier_nr_availabilities_int_array";
     field public static final String KEY_CARRIER_PROVISIONS_WIFI_MERGED_NETWORKS_BOOL = "carrier_provisions_wifi_merged_networks_bool";
     field public static final String KEY_CARRIER_RCS_PROVISIONING_REQUIRED_BOOL = "carrier_rcs_provisioning_required_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_CARRIER_ROAMING_NTN_CONNECT_TYPE_INT = "carrier_roaming_ntn_connect_type_int";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_CARRIER_ROAMING_NTN_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_INT = "carrier_roaming_ntn_emergency_call_to_satellite_handover_type_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_CARRIER_ROAMING_SATELLITE_DEFAULT_SERVICES_INT_ARRAY = "carrier_roaming_satellite_default_services_int_array";
     field public static final String KEY_CARRIER_SERVICE_NAME_STRING_ARRAY = "carrier_service_name_array";
     field public static final String KEY_CARRIER_SERVICE_NUMBER_STRING_ARRAY = "carrier_service_number_array";
     field public static final String KEY_CARRIER_SETTINGS_ACTIVITY_COMPONENT_NAME_STRING = "carrier_settings_activity_component_name_string";
     field public static final String KEY_CARRIER_SETTINGS_ENABLE_BOOL = "carrier_settings_enable_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_CARRIER_SUPPORTED_SATELLITE_NOTIFICATION_HYSTERESIS_SEC_INT = "carrier_supported_satellite_notification_hysteresis_sec_int";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_CARRIER_SUPPORTED_SATELLITE_SERVICES_PER_PROVIDER_BUNDLE = "carrier_supported_satellite_services_per_provider_bundle";
     field public static final String KEY_CARRIER_SUPPORTS_OPP_DATA_AUTO_PROVISIONING_BOOL = "carrier_supports_opp_data_auto_provisioning_bool";
     field public static final String KEY_CARRIER_SUPPORTS_SS_OVER_UT_BOOL = "carrier_supports_ss_over_ut_bool";
@@ -44404,6 +44420,7 @@ package android.telephony {
     field public static final String KEY_DIAL_STRING_REPLACE_STRING_ARRAY = "dial_string_replace_string_array";
     field public static final String KEY_DISABLE_CDMA_ACTIVATION_CODE_BOOL = "disable_cdma_activation_code_bool";
     field public static final String KEY_DISABLE_CHARGE_INDICATION_BOOL = "disable_charge_indication_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_DISABLE_DUN_APN_WHILE_ROAMING_WITH_PRESET_APN_BOOL = "disable_dun_apn_while_roaming_with_preset_apn_bool";
     field public static final String KEY_DISABLE_SUPPLEMENTARY_SERVICES_IN_AIRPLANE_MODE_BOOL = "disable_supplementary_services_in_airplane_mode_bool";
     field public static final String KEY_DISCONNECT_CAUSE_PLAY_BUSYTONE_INT_ARRAY = "disconnect_cause_play_busytone_int_array";
     field public static final String KEY_DISPLAY_CALL_STRENGTH_INDICATOR_BOOL = "display_call_strength_indicator_bool";
@@ -44416,6 +44433,8 @@ package android.telephony {
     field public static final String KEY_EDITABLE_VOICEMAIL_NUMBER_SETTING_BOOL = "editable_voicemail_number_setting_bool";
     field public static final String KEY_EDITABLE_WFC_MODE_BOOL = "editable_wfc_mode_bool";
     field public static final String KEY_EDITABLE_WFC_ROAMING_MODE_BOOL = "editable_wfc_roaming_mode_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_EMERGENCY_CALL_TO_SATELLITE_T911_HANDOVER_TIMEOUT_MILLIS_INT = "emergency_call_to_satellite_t911_handover_timeout_millis_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_EMERGENCY_MESSAGING_SUPPORTED_BOOL = "emergency_messaging_supported_bool";
     field public static final String KEY_EMERGENCY_NOTIFICATION_DELAY_INT = "emergency_notification_delay_int";
     field public static final String KEY_EMERGENCY_NUMBER_PREFIX_STRING_ARRAY = "emergency_number_prefix_string_array";
     field public static final String KEY_ENABLE_CROSS_SIM_CALLING_ON_OPPORTUNISTIC_DATA_BOOL = "enable_cross_sim_calling_on_opportunistic_data_bool";
@@ -44462,6 +44481,7 @@ package android.telephony {
     field public static final String KEY_MMS_MAX_IMAGE_HEIGHT_INT = "maxImageHeight";
     field public static final String KEY_MMS_MAX_IMAGE_WIDTH_INT = "maxImageWidth";
     field public static final String KEY_MMS_MAX_MESSAGE_SIZE_INT = "maxMessageSize";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_MMS_MAX_NTN_PAYLOAD_SIZE_BYTES_INT = "mms_max_ntn_payload_size_bytes_int";
     field public static final String KEY_MMS_MESSAGE_TEXT_MAX_SIZE_INT = "maxMessageTextSize";
     field public static final String KEY_MMS_MMS_DELIVERY_REPORT_ENABLED_BOOL = "enableMMSDeliveryReports";
     field public static final String KEY_MMS_MMS_ENABLED_BOOL = "enabledMMS";
@@ -44500,6 +44520,7 @@ package android.telephony {
     field public static final String KEY_OPPORTUNISTIC_NETWORK_EXIT_THRESHOLD_RSSNR_INT = "opportunistic_network_exit_threshold_rssnr_int";
     field public static final String KEY_OPPORTUNISTIC_NETWORK_MAX_BACKOFF_TIME_LONG = "opportunistic_network_max_backoff_time_long";
     field public static final String KEY_OPPORTUNISTIC_NETWORK_PING_PONG_TIME_LONG = "opportunistic_network_ping_pong_time_long";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_OVERRIDE_WFC_ROAMING_MODE_WHILE_USING_NTN_BOOL = "override_wfc_roaming_mode_while_using_ntn_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_PARAMETERS_USED_FOR_NTN_LTE_SIGNAL_BAR_INT = "parameters_used_for_ntn_lte_signal_bar_int";
     field public static final String KEY_PING_TEST_BEFORE_DATA_SWITCH_BOOL = "ping_test_before_data_switch_bool";
     field public static final String KEY_PREFER_2G_BOOL = "prefer_2g_bool";
@@ -44518,6 +44539,7 @@ package android.telephony {
     field public static final String KEY_RCS_CONFIG_SERVER_URL_STRING = "rcs_config_server_url_string";
     field public static final String KEY_READ_ONLY_APN_FIELDS_STRING_ARRAY = "read_only_apn_fields_string_array";
     field public static final String KEY_READ_ONLY_APN_TYPES_STRING_ARRAY = "read_only_apn_types_string_array";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_REMOVE_SATELLITE_PLMN_IN_MANUAL_NETWORK_SCAN_BOOL = "remove_satellite_plmn_in_manual_network_scan_bool";
     field public static final String KEY_REQUIRE_ENTITLEMENT_CHECKS_BOOL = "require_entitlement_checks_bool";
     field @Deprecated public static final String KEY_RESTART_RADIO_ON_PDP_FAIL_REGULAR_DEACTIVATION_BOOL = "restart_radio_on_pdp_fail_regular_deactivation_bool";
     field public static final String KEY_RTT_AUTO_UPGRADE_BOOL = "rtt_auto_upgrade_bool";
@@ -44529,13 +44551,18 @@ package android.telephony {
     field public static final String KEY_RTT_UPGRADE_SUPPORTED_FOR_DOWNGRADED_VT_CALL_BOOL = "rtt_upgrade_supported_for_downgraded_vt_call";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_ATTACH_SUPPORTED_BOOL = "satellite_attach_supported_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_CONNECTION_HYSTERESIS_SEC_INT = "satellite_connection_hysteresis_sec_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_DATA_SUPPORT_MODE_INT = "satellite_data_support_mode_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_ENTITLEMENT_APP_NAME_STRING = "satellite_entitlement_app_name_string";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_ENTITLEMENT_STATUS_REFRESH_DAYS_INT = "satellite_entitlement_status_refresh_days_int";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_ENTITLEMENT_SUPPORTED_BOOL = "satellite_entitlement_supported_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ESOS_SUPPORTED_BOOL = "satellite_esos_supported_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_INFORMATION_REDIRECT_URL_STRING = "satellite_information_redirect_url_string";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_NIDD_APN_NAME_STRING = "satellite_nidd_apn_name_string";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_ESOS_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_esos_inactivity_timeout_sec_int";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_P2P_SMS_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_p2p_sms_inactivity_timeout_sec_int";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_P2P_SMS_SUPPORTED_BOOL = "satellite_roaming_p2p_sms_supported_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_SCREEN_OFF_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_screen_off_inactivity_timeout_sec_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_ROAMING_TURN_OFF_SESSION_FOR_EMERGENCY_CALL_BOOL = "satellite_roaming_turn_off_session_for_emergency_call_bool";
     field public static final String KEY_SHOW_4G_FOR_3G_DATA_ICON_BOOL = "show_4g_for_3g_data_icon_bool";
     field public static final String KEY_SHOW_4G_FOR_LTE_DATA_ICON_BOOL = "show_4g_for_lte_data_icon_bool";
     field public static final String KEY_SHOW_APN_SETTING_CDMA_BOOL = "show_apn_setting_cdma_bool";
@@ -44605,6 +44632,9 @@ package android.telephony {
     field public static final String KEY_WORLD_MODE_ENABLED_BOOL = "world_mode_enabled_bool";
     field public static final String KEY_WORLD_PHONE_BOOL = "world_phone_bool";
     field public static final String REMOVE_GROUP_UUID_STRING = "00000000-0000-0000-0000-000000000000";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final int SATELLITE_DATA_SUPPORT_ALL = 2; // 0x2
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final int SATELLITE_DATA_SUPPORT_BANDWIDTH_CONSTRAINED = 1; // 0x1
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final int SATELLITE_DATA_SUPPORT_ONLY_RESTRICTED = 0; // 0x0
     field public static final int SERVICE_CLASS_NONE = 0; // 0x0
     field public static final int SERVICE_CLASS_VOICE = 1; // 0x1
     field public static final int USSD_OVER_CS_ONLY = 2; // 0x2
@@ -51974,6 +52004,7 @@ package android.view {
     field public static final int KEYCODE_CHANNEL_DOWN = 167; // 0xa7
     field public static final int KEYCODE_CHANNEL_UP = 166; // 0xa6
     field public static final int KEYCODE_CLEAR = 28; // 0x1c
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_CLOSE = 321; // 0x141
     field public static final int KEYCODE_COMMA = 55; // 0x37
     field public static final int KEYCODE_CONTACTS = 207; // 0xcf
     field public static final int KEYCODE_COPY = 278; // 0x116
@@ -51986,6 +52017,8 @@ package android.view {
     field public static final int KEYCODE_DEMO_APP_2 = 302; // 0x12e
     field public static final int KEYCODE_DEMO_APP_3 = 303; // 0x12f
     field public static final int KEYCODE_DEMO_APP_4 = 304; // 0x130
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_DICTATE = 319; // 0x13f
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_DO_NOT_DISTURB = 322; // 0x142
     field public static final int KEYCODE_DPAD_CENTER = 23; // 0x17
     field public static final int KEYCODE_DPAD_DOWN = 20; // 0x14
     field public static final int KEYCODE_DPAD_DOWN_LEFT = 269; // 0x10d
@@ -51998,7 +52031,7 @@ package android.view {
     field public static final int KEYCODE_DVR = 173; // 0xad
     field public static final int KEYCODE_E = 33; // 0x21
     field public static final int KEYCODE_EISU = 212; // 0xd4
-    field @FlaggedApi("com.android.hardware.input.emoji_and_screenshot_keycodes_available") public static final int KEYCODE_EMOJI_PICKER = 317; // 0x13d
+    field public static final int KEYCODE_EMOJI_PICKER = 317; // 0x13d
     field public static final int KEYCODE_ENDCALL = 6; // 0x6
     field public static final int KEYCODE_ENTER = 66; // 0x42
     field public static final int KEYCODE_ENVELOPE = 65; // 0x41
@@ -52010,7 +52043,19 @@ package android.view {
     field public static final int KEYCODE_F10 = 140; // 0x8c
     field public static final int KEYCODE_F11 = 141; // 0x8d
     field public static final int KEYCODE_F12 = 142; // 0x8e
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_F13 = 326; // 0x146
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_F14 = 327; // 0x147
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_F15 = 328; // 0x148
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_F16 = 329; // 0x149
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_F17 = 330; // 0x14a
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_F18 = 331; // 0x14b
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_F19 = 332; // 0x14c
     field public static final int KEYCODE_F2 = 132; // 0x84
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_F20 = 333; // 0x14d
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_F21 = 334; // 0x14e
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_F22 = 335; // 0x14f
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_F23 = 336; // 0x150
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_F24 = 337; // 0x151
     field public static final int KEYCODE_F3 = 133; // 0x85
     field public static final int KEYCODE_F4 = 134; // 0x86
     field public static final int KEYCODE_F5 = 135; // 0x87
@@ -52025,6 +52070,7 @@ package android.view {
     field public static final int KEYCODE_FOCUS = 80; // 0x50
     field public static final int KEYCODE_FORWARD = 125; // 0x7d
     field public static final int KEYCODE_FORWARD_DEL = 112; // 0x70
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_FULLSCREEN = 325; // 0x145
     field public static final int KEYCODE_FUNCTION = 119; // 0x77
     field public static final int KEYCODE_G = 35; // 0x23
     field public static final int KEYCODE_GRAVE = 68; // 0x44
@@ -52048,6 +52094,7 @@ package android.view {
     field public static final int KEYCODE_LANGUAGE_SWITCH = 204; // 0xcc
     field public static final int KEYCODE_LAST_CHANNEL = 229; // 0xe5
     field public static final int KEYCODE_LEFT_BRACKET = 71; // 0x47
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_LOCK = 324; // 0x144
     field public static final int KEYCODE_M = 41; // 0x29
     field public static final int KEYCODE_MACRO_1 = 313; // 0x139
     field public static final int KEYCODE_MACRO_2 = 314; // 0x13a
@@ -52085,6 +52132,7 @@ package android.view {
     field public static final int KEYCODE_NAVIGATE_NEXT = 261; // 0x105
     field public static final int KEYCODE_NAVIGATE_OUT = 263; // 0x107
     field public static final int KEYCODE_NAVIGATE_PREVIOUS = 260; // 0x104
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_NEW = 320; // 0x140
     field public static final int KEYCODE_NOTIFICATION = 83; // 0x53
     field public static final int KEYCODE_NUM = 78; // 0x4e
     field public static final int KEYCODE_NUMPAD_0 = 144; // 0x90
@@ -52119,6 +52167,7 @@ package android.view {
     field public static final int KEYCODE_PLUS = 81; // 0x51
     field public static final int KEYCODE_POUND = 18; // 0x12
     field public static final int KEYCODE_POWER = 26; // 0x1a
+    field @FlaggedApi("com.android.hardware.input.enable_new_25q2_keycodes") public static final int KEYCODE_PRINT = 323; // 0x143
     field public static final int KEYCODE_PROFILE_SWITCH = 288; // 0x120
     field public static final int KEYCODE_PROG_BLUE = 186; // 0xba
     field public static final int KEYCODE_PROG_GREEN = 184; // 0xb8
@@ -52131,7 +52180,7 @@ package android.view {
     field public static final int KEYCODE_RIGHT_BRACKET = 72; // 0x48
     field public static final int KEYCODE_RO = 217; // 0xd9
     field public static final int KEYCODE_S = 47; // 0x2f
-    field @FlaggedApi("com.android.hardware.input.emoji_and_screenshot_keycodes_available") public static final int KEYCODE_SCREENSHOT = 318; // 0x13e
+    field public static final int KEYCODE_SCREENSHOT = 318; // 0x13e
     field public static final int KEYCODE_SCROLL_LOCK = 116; // 0x74
     field public static final int KEYCODE_SEARCH = 84; // 0x54
     field public static final int KEYCODE_SEMICOLON = 74; // 0x4a
@@ -55585,7 +55634,7 @@ package android.view.accessibility {
     method public android.os.Bundle getExtras();
     method public CharSequence getHintText();
     method public int getInputType();
-    method public android.view.accessibility.AccessibilityNodeInfo getLabelFor();
+    method @Deprecated @FlaggedApi("android.view.accessibility.deprecate_ani_label_for_apis") public android.view.accessibility.AccessibilityNodeInfo getLabelFor();
     method @Deprecated @FlaggedApi("android.view.accessibility.support_multiple_labeledby") public android.view.accessibility.AccessibilityNodeInfo getLabeledBy();
     method @FlaggedApi("android.view.accessibility.support_multiple_labeledby") @NonNull public java.util.List<android.view.accessibility.AccessibilityNodeInfo> getLabeledByList();
     method public int getLiveRegion();
@@ -55684,8 +55733,8 @@ package android.view.accessibility {
     method public void setHintText(CharSequence);
     method public void setImportantForAccessibility(boolean);
     method public void setInputType(int);
-    method public void setLabelFor(android.view.View);
-    method public void setLabelFor(android.view.View, int);
+    method @Deprecated @FlaggedApi("android.view.accessibility.deprecate_ani_label_for_apis") public void setLabelFor(android.view.View);
+    method @Deprecated @FlaggedApi("android.view.accessibility.deprecate_ani_label_for_apis") public void setLabelFor(android.view.View, int);
     method @Deprecated @FlaggedApi("android.view.accessibility.support_multiple_labeledby") public void setLabeledBy(android.view.View);
     method @Deprecated @FlaggedApi("android.view.accessibility.support_multiple_labeledby") public void setLabeledBy(android.view.View, int);
     method public void setLiveRegion(int);
