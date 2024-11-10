@@ -16,7 +16,13 @@
 
 package android.media.quality;
 
+import android.media.quality.AmbientBacklightSettings;
+import android.media.quality.IAmbientBacklightCallback;
+import android.media.quality.IPictureProfileCallback;
+import android.media.quality.ISoundProfileCallback;
+import android.media.quality.ParamCapability;
 import android.media.quality.PictureProfile;
+import android.media.quality.SoundProfile;
 
 /**
  * Interface for Media Quality Manager
@@ -24,8 +30,37 @@ import android.media.quality.PictureProfile;
  */
 interface IMediaQualityManager {
     PictureProfile createPictureProfile(in PictureProfile pp);
-    PictureProfile getPictureProfileById(in long id);
+    void updatePictureProfile(in String id, in PictureProfile pp);
+    void removePictureProfile(in String id);
+    PictureProfile getPictureProfile(in int type, in String name);
     List<PictureProfile> getPictureProfilesByPackage(in String packageName);
     List<PictureProfile> getAvailablePictureProfiles();
-    List<PictureProfile> getAvailableAllPictureProfiles();
+    List<String> getPictureProfilePackageNames();
+    List<String> getPictureProfileAllowList();
+    void setPictureProfileAllowList(in List<String> packages);
+
+    SoundProfile createSoundProfile(in SoundProfile pp);
+    void updateSoundProfile(in String id, in SoundProfile pp);
+    void removeSoundProfile(in String id);
+    SoundProfile getSoundProfileById(in String id);
+    List<SoundProfile> getSoundProfilesByPackage(in String packageName);
+    List<SoundProfile> getAvailableSoundProfiles();
+    List<String> getSoundProfilePackageNames();
+
+    void registerPictureProfileCallback(in IPictureProfileCallback cb);
+    void registerSoundProfileCallback(in ISoundProfileCallback cb);
+    void registerAmbientBacklightCallback(in IAmbientBacklightCallback cb);
+
+    List<ParamCapability> getParamCapabilities(in List<String> names);
+
+    boolean isSupported();
+    void setAutoPictureQualityEnabled(in boolean enabled);
+    boolean isAutoPictureQualityEnabled();
+    void setSuperResolutionEnabled(in boolean enabled);
+    boolean isSuperResolutionEnabled();
+    void setAutoSoundQualityEnabled(in boolean enabled);
+    boolean isAutoSoundQualityEnabled();
+
+    void setAmbientBacklightSettings(in AmbientBacklightSettings settings);
+    void setAmbientBacklightEnabled(in boolean enabled);
 }

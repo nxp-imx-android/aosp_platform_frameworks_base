@@ -17,6 +17,8 @@
 package com.android.systemui.deviceentry.domain.interactor
 
 import android.content.pm.UserInfo
+import android.os.PowerManager
+import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
@@ -31,11 +33,8 @@ import com.android.systemui.flags.fakeSystemPropertiesHelper
 import com.android.systemui.keyguard.data.repository.fakeBiometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
-import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeTrustRepository
-import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.AuthenticationFlags
-import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
@@ -44,9 +43,12 @@ import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.user.domain.interactor.selectedUserInteractor
+import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -228,6 +230,12 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
     @Test
     fun deviceUnlockStatus_isResetToFalse_whenDeviceGoesToSleep() =
         testScope.runTest {
+            kosmos.fakeSettings.putIntForUser(
+                Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
+                0,
+                kosmos.selectedUserInteractor.getSelectedUserId(),
+            )
+            kosmos.fakeAuthenticationRepository.powerButtonInstantlyLocks = false
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
             kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
@@ -243,16 +251,67 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun deviceUnlockStatus_becomesUnlocked_whenFingerprintUnlocked_whileDeviceAsleepInAod() =
+    fun deviceUnlockStatus_isResetToFalse_whenDeviceGoesToSleep_afterDelay() =
         testScope.runTest {
+            val delay = 5000
+            kosmos.fakeSettings.putIntForUser(
+                Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
+                delay,
+                kosmos.selectedUserInteractor.getSelectedUserId(),
+            )
+            kosmos.fakeAuthenticationRepository.powerButtonInstantlyLocks = false
+            val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
+
+            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+            runCurrent()
+            assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
+
+            kosmos.powerInteractor.setAsleepForTest()
+            runCurrent()
+            assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
+
+            advanceTimeBy(delay.toLong())
+            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
+        }
+
+    @Test
+    fun deviceUnlockStatus_isResetToFalse_whenDeviceGoesToSleep_powerButtonLocksInstantly() =
+        testScope.runTest {
+            kosmos.fakeSettings.putIntForUser(
+                Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
+                5000,
+                kosmos.selectedUserInteractor.getSelectedUserId(),
+            )
+            kosmos.fakeAuthenticationRepository.powerButtonInstantlyLocks = true
+            val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
+
+            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+            runCurrent()
+            assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
+
+            kosmos.powerInteractor.setAsleepForTest(
+                sleepReason = PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON
+            )
+            runCurrent()
+
+            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
+        }
+
+    @Test
+    fun deviceUnlockStatus_becomesUnlocked_whenFingerprintUnlocked_whileDeviceAsleep() =
+        testScope.runTest {
+            kosmos.fakeSettings.putIntForUser(
+                Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
+                0,
+                kosmos.selectedUserInteractor.getSelectedUserId(),
+            )
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
             assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
 
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.AOD,
-                testScope = this,
-            )
             kosmos.powerInteractor.setAsleepForTest()
             runCurrent()
 
@@ -263,26 +322,6 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             )
             runCurrent()
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
-        }
-
-    @Test
-    fun deviceUnlockStatus_staysLocked_whenFingerprintUnlocked_whileDeviceAsleep() =
-        testScope.runTest {
-            val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
-            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
-            assertThat(kosmos.keyguardTransitionInteractor.getCurrentState())
-                .isEqualTo(KeyguardState.LOCKSCREEN)
-
-            kosmos.powerInteractor.setAsleepForTest()
-            runCurrent()
-
-            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
-
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
-            )
-            runCurrent()
-            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
         }
 
     @Test

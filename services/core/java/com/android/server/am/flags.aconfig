@@ -243,3 +243,21 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "oomadjuster_prev_laddering"
+    namespace: "system_performance"
+    is_fixed_read_only: true
+    description: "Add +X to the prev scores according to their positions in the process LRU list"
+    bug: "359912586"
+}
+
+flag {
+    name: "phantom_processes_fix"
+    namespace: "backstage_power"
+    description: "Make sure setProcessGroupForPhantomProcessOfApp deals with phantom processes properly"
+    bug: "375058190"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

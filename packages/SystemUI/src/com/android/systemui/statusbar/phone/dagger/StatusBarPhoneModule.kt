@@ -30,8 +30,9 @@ import com.android.systemui.statusbar.core.StatusBarInitializer
 import com.android.systemui.statusbar.core.StatusBarInitializerImpl
 import com.android.systemui.statusbar.core.StatusBarInitializerStore
 import com.android.systemui.statusbar.core.StatusBarOrchestrator
-import com.android.systemui.statusbar.core.StatusBarSimpleFragment
+import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.data.repository.PrivacyDotViewControllerStoreModule
+import com.android.systemui.statusbar.data.repository.PrivacyDotWindowControllerStoreModule
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
 import com.android.systemui.statusbar.events.PrivacyDotViewControllerModule
 import com.android.systemui.statusbar.phone.CentralSurfacesCommandQueueCallbacks
@@ -48,7 +49,12 @@ import kotlinx.coroutines.CoroutineScope
 
 /** Similar in purpose to [StatusBarModule], but scoped only to phones */
 @Module(
-    includes = [PrivacyDotViewControllerModule::class, PrivacyDotViewControllerStoreModule::class]
+    includes =
+        [
+            PrivacyDotViewControllerModule::class,
+            PrivacyDotWindowControllerStoreModule::class,
+            PrivacyDotViewControllerStoreModule::class,
+        ]
 )
 interface StatusBarPhoneModule {
 
@@ -81,7 +87,7 @@ interface StatusBarPhoneModule {
             return if (StatusBarConnectedDisplays.isEnabled) {
                 // Will be started through MultiDisplayStatusBarStarter
                 CoreStartable.NOP
-            } else if (StatusBarSimpleFragment.isEnabled) {
+            } else if (StatusBarRootModernization.isEnabled) {
                 defaultInitializerLazy.get()
             } else {
                 // Will be started through CentralSurfaces
@@ -97,8 +103,12 @@ interface StatusBarPhoneModule {
         fun statusBarInitializerImpl(
             implFactory: StatusBarInitializerImpl.Factory,
             statusBarWindowControllerStore: StatusBarWindowControllerStore,
+            statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
         ): StatusBarInitializerImpl {
-            return implFactory.create(statusBarWindowControllerStore.defaultDisplay)
+            return implFactory.create(
+                statusBarWindowControllerStore.defaultDisplay,
+                statusBarModeRepositoryStore.defaultDisplay,
+            )
         }
 
         @Provides

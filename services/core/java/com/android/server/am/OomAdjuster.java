@@ -114,6 +114,7 @@ import static com.android.server.am.ProcessList.PERCEPTIBLE_MEDIUM_APP_ADJ;
 import static com.android.server.am.ProcessList.PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ;
 import static com.android.server.am.ProcessList.PERSISTENT_SERVICE_ADJ;
 import static com.android.server.am.ProcessList.PREVIOUS_APP_ADJ;
+import static com.android.server.am.ProcessList.PREVIOUS_APP_MAX_ADJ;
 import static com.android.server.am.ProcessList.SCHED_GROUP_BACKGROUND;
 import static com.android.server.am.ProcessList.SCHED_GROUP_DEFAULT;
 import static com.android.server.am.ProcessList.SCHED_GROUP_FOREGROUND_WINDOW;
@@ -513,27 +514,11 @@ public class OomAdjuster {
         mLogger = new OomAdjusterDebugLogger(this, mService.mConstants);
 
         mProcessGroupHandler = new Handler(adjusterThread.getLooper(), msg -> {
-            final int pid = msg.arg1;
-            final int group = msg.arg2;
-            if (pid == ActivityManagerService.MY_PID) {
-                // Skip setting the process group for system_server, keep it as default.
-                return true;
-            }
-            final boolean traceEnabled = Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER);
-            if (traceEnabled) {
-                Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "setProcessGroup "
-                        + msg.obj + " to " + group);
-            }
-            try {
-                android.os.Process.setProcessGroup(pid, group);
-            } catch (Exception e) {
-                if (DEBUG_ALL) {
-                    Slog.w(TAG, "Failed setting process group of " + pid + " to " + group, e);
-                }
-            } finally {
-                if (traceEnabled) {
-                    Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
-                }
+            final int group = msg.what;
+            final ProcessRecord app = (ProcessRecord) msg.obj;
+            setProcessGroup(app.getPid(), group, app.processName);
+            if (Flags.phantomProcessesFix()) {
+                mService.mPhantomProcessList.setProcessGroupForPhantomProcessOfApp(app, group);
             }
             return true;
         });
@@ -544,8 +529,31 @@ public class OomAdjuster {
     }
 
     void setProcessGroup(int pid, int group, String processName) {
+        if (pid == ActivityManagerService.MY_PID) {
+            // Skip setting the process group for system_server, keep it as default.
+            return;
+        }
+        final boolean traceEnabled = Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+        if (traceEnabled) {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "setProcessGroup "
+                    + processName + " to " + group);
+        }
+        try {
+            android.os.Process.setProcessGroup(pid, group);
+        } catch (Exception e) {
+            if (DEBUG_ALL) {
+                Slog.w(TAG, "Failed setting process group of " + pid + " to " + group, e);
+            }
+        } finally {
+            if (traceEnabled) {
+                Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+            }
+        }
+    }
+
+    void setAppAndChildProcessGroup(ProcessRecord app, int group) {
         mProcessGroupHandler.sendMessage(mProcessGroupHandler.obtainMessage(
-                0 /* unused */, pid, group, processName));
+                group, app));
     }
 
     void initSettings() {
@@ -696,7 +704,7 @@ public class OomAdjuster {
             // In case the app goes from non-cached to cached but it doesn't have other reachable
             // processes, its adj could be still unknown as of now, assign one.
             processes.add(app);
-            assignCachedAdjIfNecessary(processes);
+            applyLruAdjust(processes);
             applyOomAdjLSP(app, false, mInjector.getUptimeMillis(),
                     mInjector.getElapsedRealtimeMillis(), oomAdjReason);
         }
@@ -1086,7 +1094,7 @@ public class OomAdjuster {
         }
         mProcessesInCycle.clear();
 
-        assignCachedAdjIfNecessary(mProcessList.getLruProcessesLOSP());
+        applyLruAdjust(mProcessList.getLruProcessesLOSP());
 
         postUpdateOomAdjInnerLSP(oomAdjReason, activeUids, now, nowElapsed, oldTime, true);
 
@@ -1148,8 +1156,9 @@ public class OomAdjuster {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    protected void assignCachedAdjIfNecessary(ArrayList<ProcessRecord> lruList) {
+    protected void applyLruAdjust(ArrayList<ProcessRecord> lruList) {
         final int numLru = lruList.size();
+        int nextPreviousAppAdj = PREVIOUS_APP_ADJ;
         if (mConstants.USE_TIERED_CACHED_ADJ) {
             final long now = mInjector.getUptimeMillis();
             int uiTargetAdj = 10;
@@ -1159,9 +1168,12 @@ public class OomAdjuster {
                 ProcessRecord app = lruList.get(i);
                 final ProcessStateRecord state = app.mState;
                 final ProcessCachedOptimizerRecord opt = app.mOptRecord;
-                if (!app.isKilledByAm() && app.getThread() != null
-                        && (state.getCurAdj() >= UNKNOWN_ADJ
-                            || (state.hasShownUi() && state.getCurAdj() >= CACHED_APP_MIN_ADJ))) {
+                final int curAdj = state.getCurAdj();
+                if (PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ) {
+                    state.setCurAdj(nextPreviousAppAdj);
+                    nextPreviousAppAdj = Math.min(nextPreviousAppAdj + 1, PREVIOUS_APP_MAX_ADJ);
+                } else if (!app.isKilledByAm() && app.getThread() != null && (curAdj >= UNKNOWN_ADJ
+                            || (state.hasShownUi() && curAdj >= CACHED_APP_MIN_ADJ))) {
                     final ProcessServiceRecord psr = app.mServices;
                     int targetAdj = CACHED_APP_MIN_ADJ;
 
@@ -1228,10 +1240,13 @@ public class OomAdjuster {
             for (int i = numLru - 1; i >= 0; i--) {
                 ProcessRecord app = lruList.get(i);
                 final ProcessStateRecord state = app.mState;
-                // If we haven't yet assigned the final cached adj
-                // to the process, do that now.
-                if (!app.isKilledByAm() && app.getThread() != null && state.getCurAdj()
-                    >= UNKNOWN_ADJ) {
+                final int curAdj = state.getCurAdj();
+                if (PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ) {
+                    state.setCurAdj(nextPreviousAppAdj);
+                    nextPreviousAppAdj = Math.min(nextPreviousAppAdj + 1, PREVIOUS_APP_MAX_ADJ);
+                } else if (!app.isKilledByAm() && app.getThread() != null
+                               && curAdj >= UNKNOWN_ADJ) {
+                    // If we haven't yet assigned the final cached adj to the process, do that now.
                     final ProcessServiceRecord psr = app.mServices;
                     switch (state.getCurProcState()) {
                         case PROCESS_STATE_LAST_ACTIVITY:
@@ -3495,8 +3510,7 @@ public class OomAdjuster {
                     processGroup = THREAD_GROUP_DEFAULT;
                     break;
             }
-            setProcessGroup(app.getPid(), processGroup, app.processName);
-            mService.mPhantomProcessList.setProcessGroupForPhantomProcessOfApp(app, processGroup);
+            setAppAndChildProcessGroup(app, processGroup);
             try {
                 final int renderThreadTid = app.getRenderThreadTid();
                 if (curSchedGroup == SCHED_GROUP_TOP_APP) {

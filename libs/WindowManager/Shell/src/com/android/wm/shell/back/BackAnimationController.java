@@ -21,6 +21,7 @@ import static android.view.RemoteAnimationTarget.MODE_CLOSING;
 import static android.view.RemoteAnimationTarget.MODE_OPENING;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE_PREPARE_BACK_NAVIGATION;
+import static android.window.BackEvent.EDGE_NONE;
 import static android.window.TransitionInfo.FLAG_BACK_GESTURE_ANIMATED;
 import static android.window.TransitionInfo.FLAG_IS_WALLPAPER;
 import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
@@ -29,6 +30,7 @@ import static android.window.TransitionInfo.FLAG_SHOW_WALLPAPER;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_PREDICTIVE_BACK_HOME;
 import static com.android.window.flags.Flags.migratePredictiveBackTransition;
 import static com.android.window.flags.Flags.predictiveBackSystemAnims;
+import static com.android.window.flags.Flags.unifyBackNavigationTransition;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BACK_PREVIEW;
 import static com.android.wm.shell.shared.ShellSharedConstants.KEY_EXTRA_SHELL_BACK_ANIMATION;
 
@@ -532,7 +534,15 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
 
         if (keyAction == MotionEvent.ACTION_DOWN) {
             if (!mBackGestureStarted) {
-                mShouldStartOnNextMoveEvent = true;
+                if (swipeEdge == EDGE_NONE) {
+                    // start animation immediately for non-gestural sources (without ACTION_MOVE
+                    // events)
+                    mThresholdCrossed = true;
+                    onGestureStarted(touchX, touchY, swipeEdge);
+                    mShouldStartOnNextMoveEvent = false;
+                } else {
+                    mShouldStartOnNextMoveEvent = true;
+                }
             }
         } else if (keyAction == MotionEvent.ACTION_MOVE) {
             if (!mBackGestureStarted && mShouldStartOnNextMoveEvent) {
@@ -1073,6 +1083,11 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             mCurrentTracker.updateStartLocation();
             BackMotionEvent startEvent = mCurrentTracker.createStartEvent(mApps[0]);
             dispatchOnBackStarted(mActiveCallback, startEvent);
+            // TODO(b/373544911): onBackStarted is dispatched here so that
+            //  WindowOnBackInvokedDispatcher knows about the back navigation and intercepts touch
+            //  events while it's active. It would be cleaner and safer to disable multitouch
+            //  altogether (same as in gesture-nav).
+            dispatchOnBackStarted(mBackNavigationInfo.getOnBackInvokedCallback(), startEvent);
         }
     }
 
@@ -1279,6 +1294,13 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             if (transition == mClosePrepareTransition && aborted) {
                 mClosePrepareTransition = null;
                 applyFinishOpenTransition();
+            } else if (!aborted && unifyBackNavigationTransition()) {
+                // Since the closing target participates in the predictive back transition, the
+                // merged transition must be applied with the first transition to ensure a seamless
+                // animation.
+                if (mFinishOpenTransaction != null && finishTransaction != null) {
+                    mFinishOpenTransaction.merge(finishTransaction);
+                }
             }
         }
 
