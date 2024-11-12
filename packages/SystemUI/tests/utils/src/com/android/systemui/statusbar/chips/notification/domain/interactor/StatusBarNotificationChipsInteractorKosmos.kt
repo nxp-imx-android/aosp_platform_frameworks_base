@@ -30,10 +30,3 @@ val Kosmos.statusBarNotificationChipsInteractor: StatusBarNotificationChipsInter
             logBuffer = statusBarChipsLogger,
         )
     }
-
-val Kosmos.singleNotificationChipInteractorFactory: SingleNotificationChipInteractor.Factory by
-    Kosmos.Fixture {
-        SingleNotificationChipInteractor.Factory { startingModel ->
-            SingleNotificationChipInteractor(startingModel, logBuffer = statusBarChipsLogger)
-        }
-    }
