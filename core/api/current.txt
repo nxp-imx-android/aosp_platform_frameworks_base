@@ -23,6 +23,7 @@ package android {
     field public static final String ACTIVITY_RECOGNITION = "android.permission.ACTIVITY_RECOGNITION";
     field public static final String ADD_VOICEMAIL = "com.android.voicemail.permission.ADD_VOICEMAIL";
     field public static final String ANSWER_PHONE_CALLS = "android.permission.ANSWER_PHONE_CALLS";
+    field @FlaggedApi("android.media.tv.flags.apply_picture_profiles") public static final String APPLY_PICTURE_PROFILE = "android.permission.APPLY_PICTURE_PROFILE";
     field public static final String BATTERY_STATS = "android.permission.BATTERY_STATS";
     field public static final String BIND_ACCESSIBILITY_SERVICE = "android.permission.BIND_ACCESSIBILITY_SERVICE";
     field public static final String BIND_APPWIDGET = "android.permission.BIND_APPWIDGET";
@@ -336,7 +337,7 @@ package android {
     field public static final String WRITE_SECURE_SETTINGS = "android.permission.WRITE_SECURE_SETTINGS";
     field public static final String WRITE_SETTINGS = "android.permission.WRITE_SETTINGS";
     field public static final String WRITE_SYNC_SETTINGS = "android.permission.WRITE_SYNC_SETTINGS";
-    field @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final String WRITE_SYSTEM_PREFERENCES = "android.permission.WRITE_SYSTEM_PREFERENCES";
+    field @FlaggedApi("com.android.settingslib.flags.write_system_preference_permission_enabled") public static final String WRITE_SYSTEM_PREFERENCES = "android.permission.WRITE_SYSTEM_PREFERENCES";
     field public static final String WRITE_VOICEMAIL = "com.android.voicemail.permission.WRITE_VOICEMAIL";
   }
 
@@ -17497,6 +17498,25 @@ package android.graphics {
     method public void setIntUniform(@NonNull String, @NonNull int[]);
   }
 
+  @FlaggedApi("com.android.graphics.hwui.flags.runtime_color_filters_blenders") public class RuntimeXfermode extends android.graphics.Xfermode {
+    ctor public RuntimeXfermode(@NonNull String);
+    method public void setColorUniform(@NonNull String, @ColorInt int);
+    method public void setColorUniform(@NonNull String, @ColorLong long);
+    method public void setColorUniform(@NonNull String, @NonNull android.graphics.Color);
+    method public void setFloatUniform(@NonNull String, float);
+    method public void setFloatUniform(@NonNull String, float, float);
+    method public void setFloatUniform(@NonNull String, float, float, float);
+    method public void setFloatUniform(@NonNull String, float, float, float, float);
+    method public void setFloatUniform(@NonNull String, @NonNull float[]);
+    method public void setInputColorFilter(@NonNull String, @NonNull android.graphics.ColorFilter);
+    method public void setInputShader(@NonNull String, @NonNull android.graphics.Shader);
+    method public void setIntUniform(@NonNull String, int);
+    method public void setIntUniform(@NonNull String, int, int);
+    method public void setIntUniform(@NonNull String, int, int, int);
+    method public void setIntUniform(@NonNull String, int, int, int, int);
+    method public void setIntUniform(@NonNull String, @NonNull int[]);
+  }
+
   public class Shader {
     ctor @Deprecated public Shader();
     method public boolean getLocalMatrix(@NonNull android.graphics.Matrix);
@@ -21050,7 +21070,6 @@ package android.inputmethodservice {
     method public abstract android.inputmethodservice.AbstractInputMethodService.AbstractInputMethodImpl onCreateInputMethodInterface();
     method public abstract android.inputmethodservice.AbstractInputMethodService.AbstractInputMethodSessionImpl onCreateInputMethodSessionInterface();
     method public boolean onGenericMotionEvent(android.view.MotionEvent);
-    method @FlaggedApi("android.view.inputmethod.verify_key_event") public boolean onShouldVerifyKeyEvent(@NonNull android.view.KeyEvent);
     method public boolean onTrackballEvent(android.view.MotionEvent);
   }
 
@@ -21068,7 +21087,6 @@ package android.inputmethodservice {
     method public void dispatchTrackballEvent(int, android.view.MotionEvent, android.view.inputmethod.InputMethodSession.EventCallback);
     method public boolean isEnabled();
     method public boolean isRevoked();
-    method @FlaggedApi("android.view.inputmethod.verify_key_event") public boolean onShouldVerifyKeyEvent(@NonNull android.view.KeyEvent);
     method public void revokeSelf();
     method public void setEnabled(boolean);
   }
@@ -28561,6 +28579,8 @@ package android.media.tv.ad {
     method public void setCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.tv.ad.TvAdView.TvAdCallback);
     method public void setOnUnhandledInputEventListener(@NonNull android.media.tv.ad.TvAdView.OnUnhandledInputEventListener);
     method public boolean setTvView(@Nullable android.media.tv.TvView);
+    method @FlaggedApi("android.media.tv.flags.enable_ad_service_fw") public void setZOrderMediaOverlay(boolean);
+    method @FlaggedApi("android.media.tv.flags.enable_ad_service_fw") public void setZOrderOnTop(boolean);
     method public void startAdService();
     method public void stopAdService();
     field public static final String ERROR_KEY_ERROR_CODE = "error_code";
@@ -28833,6 +28853,8 @@ package android.media.tv.interactive {
     method public void setOnUnhandledInputEventListener(@NonNull java.util.concurrent.Executor, @NonNull android.media.tv.interactive.TvInteractiveAppView.OnUnhandledInputEventListener);
     method public void setTeletextAppEnabled(boolean);
     method public int setTvView(@Nullable android.media.tv.TvView);
+    method @FlaggedApi("android.media.tv.flags.tiaf_v_apis") public void setZOrderMediaOverlay(boolean);
+    method @FlaggedApi("android.media.tv.flags.tiaf_v_apis") public void setZOrderOnTop(boolean);
     method public void startInteractiveApp();
     method public void stopInteractiveApp();
     field public static final String BI_INTERACTIVE_APP_KEY_ALIAS = "alias";
@@ -29872,6 +29894,7 @@ package android.net.vcn {
     method @NonNull public java.util.List<android.net.vcn.VcnUnderlyingNetworkTemplate> getVcnUnderlyingNetworkPriorities();
     method public boolean hasGatewayOption(int);
     method @FlaggedApi("android.net.vcn.safe_mode_config") public boolean isSafeModeEnabled();
+    field @FlaggedApi("android.net.vcn.mainline_vcn_module_api") public static final int MIN_UDP_PORT_4500_NAT_TIMEOUT_UNSET = -1; // 0xffffffff
     field public static final int VCN_GATEWAY_OPTION_ENABLE_DATA_STALL_RECOVERY_WITH_MOBILITY = 0; // 0x0
   }
 
@@ -40733,6 +40756,7 @@ package android.service.autofill {
     method public int describeContents();
     method @Deprecated @Nullable public android.os.Bundle getClientState();
     method @Nullable public java.util.List<android.service.autofill.FillEventHistory.Event> getEvents();
+    method @FlaggedApi("android.service.autofill.autofill_w_metrics") public int getSessionId();
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.autofill.FillEventHistory> CREATOR;
   }
@@ -40742,10 +40766,12 @@ package android.service.autofill {
     method @Nullable public android.os.Bundle getClientState();
     method @Nullable public String getDatasetId();
     method @NonNull public java.util.Map<android.view.autofill.AutofillId,android.service.autofill.FieldClassification> getFieldsClassification();
+    method @FlaggedApi("android.service.autofill.autofill_w_metrics") @Nullable public android.view.autofill.AutofillId getFocusedId();
     method @NonNull public java.util.Set<java.lang.String> getIgnoredDatasetIds();
     method @NonNull public java.util.Map<android.view.autofill.AutofillId,java.util.Set<java.lang.String>> getManuallyEnteredField();
     method public int getNoSaveUiReason();
     method @NonNull public java.util.Set<java.lang.String> getSelectedDatasetIds();
+    method @FlaggedApi("android.service.autofill.autofill_w_metrics") @NonNull public java.util.Set<java.lang.String> getShownDatasetIds();
     method public int getType();
     method public int getUiType();
     field public static final int NO_SAVE_UI_REASON_DATASET_MATCH = 6; // 0x6
@@ -40754,6 +40780,7 @@ package android.service.autofill {
     field public static final int NO_SAVE_UI_REASON_NONE = 0; // 0x0
     field public static final int NO_SAVE_UI_REASON_NO_SAVE_INFO = 1; // 0x1
     field public static final int NO_SAVE_UI_REASON_NO_VALUE_CHANGED = 4; // 0x4
+    field @FlaggedApi("android.service.autofill.autofill_w_metrics") public static final int NO_SAVE_UI_REASON_USING_CREDMAN = 7; // 0x7
     field public static final int NO_SAVE_UI_REASON_WITH_DELAY_SAVE_FLAG = 2; // 0x2
     field public static final int TYPE_AUTHENTICATION_SELECTED = 2; // 0x2
     field public static final int TYPE_CONTEXT_COMMITTED = 4; // 0x4
@@ -40762,6 +40789,7 @@ package android.service.autofill {
     field public static final int TYPE_DATASET_SELECTED = 0; // 0x0
     field public static final int TYPE_SAVE_SHOWN = 3; // 0x3
     field public static final int TYPE_VIEW_REQUESTED_AUTOFILL = 6; // 0x6
+    field @FlaggedApi("android.service.autofill.autofill_w_metrics") public static final int UI_TYPE_CREDMAN = 4; // 0x4
     field public static final int UI_TYPE_DIALOG = 3; // 0x3
     field public static final int UI_TYPE_INLINE = 2; // 0x2
     field public static final int UI_TYPE_MENU = 1; // 0x1
@@ -42047,6 +42075,7 @@ package android.service.quickaccesswallet {
 
   public abstract class QuickAccessWalletService extends android.app.Service {
     ctor public QuickAccessWalletService();
+    method @FlaggedApi("android.service.quickaccesswallet.launch_wallet_option_on_power_double_tap") @Nullable public android.app.PendingIntent getGestureTargetActivityPendingIntent();
     method @Nullable public android.app.PendingIntent getTargetActivityPendingIntent();
     method @Nullable public android.os.IBinder onBind(@NonNull android.content.Intent);
     method public abstract void onWalletCardSelected(@NonNull android.service.quickaccesswallet.SelectWalletCardRequest);
@@ -49732,6 +49761,14 @@ package android.text.style {
     method public abstract void updateMeasureState(@NonNull android.text.TextPaint);
   }
 
+  @FlaggedApi("android.view.inputmethod.writing_tools") public final class NoWritingToolsSpan implements android.text.ParcelableSpan {
+    ctor public NoWritingToolsSpan();
+    method public int describeContents();
+    method public int getSpanTypeId();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.text.style.NoWritingToolsSpan> CREATOR;
+  }
+
   public interface ParagraphStyle {
   }
 
@@ -54903,6 +54940,8 @@ package android.view {
     method public abstract void setTransformation(android.graphics.Matrix);
     method public abstract void setVisibility(int);
     method public abstract void setWebDomain(@Nullable String);
+    field @FlaggedApi("android.service.autofill.autofill_w_metrics") public static final String EXTRA_VIRTUAL_STRUCTURE_TYPE = "android.view.ViewStructure.extra.VIRTUAL_STRUCTURE_TYPE";
+    field @FlaggedApi("android.service.autofill.autofill_w_metrics") public static final String EXTRA_VIRTUAL_STRUCTURE_VERSION_NUMBER = "android.view.ViewStructure.extra.VIRTUAL_STRUCTURE_VERSION_NUMBER";
   }
 
   public abstract static class ViewStructure.HtmlInfo {
@@ -56625,6 +56664,11 @@ package android.view.autofill {
   public final class AutofillId implements android.os.Parcelable {
     method @NonNull public static android.view.autofill.AutofillId create(@NonNull android.view.View, int);
     method public int describeContents();
+    method @FlaggedApi("android.service.autofill.autofill_w_metrics") public int getAutofillVirtualId();
+    method @FlaggedApi("android.service.autofill.autofill_w_metrics") public int getSessionId();
+    method @FlaggedApi("android.service.autofill.autofill_w_metrics") public int getViewId();
+    method @FlaggedApi("android.service.autofill.autofill_w_metrics") public boolean isInAutofillSession();
+    method @FlaggedApi("android.service.autofill.autofill_w_metrics") public boolean isVirtual();
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.view.autofill.AutofillId> CREATOR;
   }
