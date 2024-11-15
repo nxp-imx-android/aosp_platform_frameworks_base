@@ -32,7 +32,6 @@ import static android.content.pm.PackageManager.DELETE_ARCHIVE;
 import static android.content.pm.PackageManager.INSTALL_UNARCHIVE_DRAFT;
 import static android.os.Process.INVALID_UID;
 import static android.os.Process.SYSTEM_UID;
-import static android.os.UserHandle.USER_SYSTEM;
 
 import static com.android.server.pm.PackageArchiver.isArchivingEnabled;
 import static com.android.server.pm.PackageInstallerSession.isValidVerificationPolicy;
@@ -350,7 +349,11 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
         mVerifierController = VerifierController.getInstance(context, mInstallHandler,
                 verifierPackageName);
         synchronized (mVerificationPolicyPerUser) {
-            mVerificationPolicyPerUser.put(USER_SYSTEM, DEFAULT_VERIFICATION_POLICY);
+            int[] users = mPm.mUserManager.getUserIds();
+            for (int i = 0; i < users.length; i++) {
+                // TODO(b/360129657): preserve the overridden policy across reboots.
+                mVerificationPolicyPerUser.put(users[i], DEFAULT_VERIFICATION_POLICY);
+            }
         }
         mInstallDependencyHelper = new InstallDependencyHelper(mContext,
                 mPm.mInjector.getSharedLibrariesImpl(), this);
