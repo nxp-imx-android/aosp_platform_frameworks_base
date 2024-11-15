@@ -643,6 +643,10 @@ public final class NotificationEntry extends ListEntry {
         return row.isMediaRow();
     }
 
+    public boolean containsCustomViews() {
+        return getSbn().getNotification().containsCustomViews();
+    }
+
     public void resetUserExpansion() {
         if (row != null) row.resetUserExpansion();
     }
