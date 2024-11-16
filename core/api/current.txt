@@ -2045,6 +2045,12 @@ package android {
     field public static final int system_error_container_light = 17170554; // 0x106007a
     field public static final int system_error_dark = 17170595; // 0x10600a3
     field public static final int system_error_light = 17170552; // 0x1060078
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_on_surface_dark;
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_on_surface_light;
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_primary_dark;
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_primary_light;
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_surface_dark;
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_surface_light;
     field public static final int system_neutral1_0 = 17170461; // 0x106001d
     field public static final int system_neutral1_10 = 17170462; // 0x106001e
     field public static final int system_neutral1_100 = 17170464; // 0x1060020
@@ -2121,12 +2127,16 @@ package android {
     field public static final int system_primary_fixed = 17170612; // 0x10600b4
     field public static final int system_primary_fixed_dim = 17170613; // 0x10600b5
     field public static final int system_primary_light = 17170528; // 0x1060060
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_scrim_dark;
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_scrim_light;
     field public static final int system_secondary_container_dark = 17170573; // 0x106008d
     field public static final int system_secondary_container_light = 17170530; // 0x1060062
     field public static final int system_secondary_dark = 17170575; // 0x106008f
     field public static final int system_secondary_fixed = 17170616; // 0x10600b8
     field public static final int system_secondary_fixed_dim = 17170617; // 0x10600b9
     field public static final int system_secondary_light = 17170532; // 0x1060064
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_shadow_dark;
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_shadow_light;
     field public static final int system_surface_bright_dark = 17170590; // 0x106009e
     field public static final int system_surface_bright_light = 17170547; // 0x1060073
     field public static final int system_surface_container_dark = 17170587; // 0x106009b
@@ -2144,6 +2154,8 @@ package android {
     field public static final int system_surface_dim_light = 17170548; // 0x1060074
     field public static final int system_surface_disabled = 17170626; // 0x10600c2
     field public static final int system_surface_light = 17170540; // 0x106006c
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_surface_tint_dark;
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_surface_tint_light;
     field public static final int system_surface_variant_dark = 17170592; // 0x10600a0
     field public static final int system_surface_variant_light = 17170549; // 0x1060075
     field public static final int system_tertiary_container_dark = 17170577; // 0x1060091
@@ -13569,6 +13581,7 @@ package android.content.pm {
     field public static final String PROPERTY_MEDIA_CAPABILITIES = "android.media.PROPERTY_MEDIA_CAPABILITIES";
     field public static final String PROPERTY_SELF_CERTIFIED_NETWORK_CAPABILITIES = "android.net.PROPERTY_SELF_CERTIFIED_NETWORK_CAPABILITIES";
     field public static final String PROPERTY_SPECIAL_USE_FGS_SUBTYPE = "android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE";
+    field @FlaggedApi("com.android.server.backup.enable_restricted_mode_changes") public static final String PROPERTY_USE_RESTRICTED_BACKUP_MODE = "android.app.backup.PROPERTY_USE_RESTRICTED_BACKUP_MODE";
     field public static final int SIGNATURE_FIRST_NOT_SIGNED = -1; // 0xffffffff
     field public static final int SIGNATURE_MATCH = 0; // 0x0
     field public static final int SIGNATURE_NEITHER_SIGNED = 1; // 0x1
@@ -13805,6 +13818,7 @@ package android.content.pm {
 
   public final class SharedLibraryInfo implements android.os.Parcelable {
     method public int describeContents();
+    method @FlaggedApi("android.content.pm.sdk_dependency_installer") @NonNull public java.util.List<java.lang.String> getCertDigests();
     method @NonNull public android.content.pm.VersionedPackage getDeclaringPackage();
     method @NonNull public java.util.List<android.content.pm.VersionedPackage> getDependentPackages();
     method @IntRange(from=0xffffffff) public long getLongVersion();
@@ -17472,6 +17486,7 @@ package android.graphics {
     method public void setFloatUniform(@NonNull String, @NonNull float[]);
     method public void setInputColorFilter(@NonNull String, @NonNull android.graphics.ColorFilter);
     method public void setInputShader(@NonNull String, @NonNull android.graphics.Shader);
+    method public void setInputXfermode(@NonNull String, @NonNull android.graphics.RuntimeXfermode);
     method public void setIntUniform(@NonNull String, int);
     method public void setIntUniform(@NonNull String, int, int);
     method public void setIntUniform(@NonNull String, int, int, int);
@@ -17490,7 +17505,9 @@ package android.graphics {
     method public void setFloatUniform(@NonNull String, float, float, float, float);
     method public void setFloatUniform(@NonNull String, @NonNull float[]);
     method public void setInputBuffer(@NonNull String, @NonNull android.graphics.BitmapShader);
+    method @FlaggedApi("com.android.graphics.hwui.flags.runtime_color_filters_blenders") public void setInputColorFilter(@NonNull String, @NonNull android.graphics.ColorFilter);
     method public void setInputShader(@NonNull String, @NonNull android.graphics.Shader);
+    method @FlaggedApi("com.android.graphics.hwui.flags.runtime_color_filters_blenders") public void setInputXfermode(@NonNull String, @NonNull android.graphics.RuntimeXfermode);
     method public void setIntUniform(@NonNull String, int);
     method public void setIntUniform(@NonNull String, int, int);
     method public void setIntUniform(@NonNull String, int, int, int);
@@ -17510,6 +17527,7 @@ package android.graphics {
     method public void setFloatUniform(@NonNull String, @NonNull float[]);
     method public void setInputColorFilter(@NonNull String, @NonNull android.graphics.ColorFilter);
     method public void setInputShader(@NonNull String, @NonNull android.graphics.Shader);
+    method public void setInputXfermode(@NonNull String, @NonNull android.graphics.RuntimeXfermode);
     method public void setIntUniform(@NonNull String, int);
     method public void setIntUniform(@NonNull String, int, int);
     method public void setIntUniform(@NonNull String, int, int, int);
@@ -21539,6 +21557,7 @@ package android.media {
     method public int getId();
     method public CharSequence getProductName();
     method @NonNull public int[] getSampleRates();
+    method @FlaggedApi("android.media.audio.speaker_layout_api") public int getSpeakerLayoutChannelMask();
     method public int getType();
     method public boolean isSink();
     method public boolean isSource();
@@ -34731,8 +34750,6 @@ package android.os {
     method public static android.os.VibrationEffect createWaveform(long[], int[], int);
     method public int describeContents();
     method @NonNull public static android.os.VibrationEffect.Composition startComposition();
-    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public static android.os.VibrationEffect.WaveformEnvelopeBuilder startWaveformEnvelope();
-    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public static android.os.VibrationEffect.WaveformEnvelopeBuilder startWaveformEnvelope(@FloatRange(from=0) float);
     field @NonNull public static final android.os.Parcelable.Creator<android.os.VibrationEffect> CREATOR;
     field public static final int DEFAULT_AMPLITUDE = -1; // 0xffffffff
     field public static final int EFFECT_CLICK = 0; // 0x0
@@ -34760,8 +34777,10 @@ package android.os {
   }
 
   @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public static final class VibrationEffect.WaveformEnvelopeBuilder {
+    ctor public VibrationEffect.WaveformEnvelopeBuilder();
     method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public android.os.VibrationEffect.WaveformEnvelopeBuilder addControlPoint(@FloatRange(from=0, to=1) float, @FloatRange(from=0) float, int);
     method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public android.os.VibrationEffect build();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public android.os.VibrationEffect.WaveformEnvelopeBuilder setInitialFrequencyHz(@FloatRange(from=0) float);
   }
 
   public abstract class Vibrator {
