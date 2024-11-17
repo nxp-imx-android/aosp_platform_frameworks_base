@@ -30,11 +30,14 @@ import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
 import com.android.systemui.flags.SystemPropertiesHelper
 import com.android.systemui.keyguard.KeyguardViewMediator
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.WakeSleepReason
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.util.settings.repository.UserAwareSecureSettingsRepository
+import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -49,6 +52,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -69,6 +73,7 @@ constructor(
     private val biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
     private val systemPropertiesHelper: SystemPropertiesHelper,
     private val userAwareSecureSettingsRepository: UserAwareSecureSettingsRepository,
+    private val keyguardInteractor: KeyguardInteractor,
 ) : ExclusiveActivatable() {
 
     private val deviceUnlockSource =
@@ -236,6 +241,21 @@ constructor(
                     .distinctUntilChanged()
                     .filter { it }
                     .map { LockImmediately("lockdown") },
+                // Started dreaming
+                powerInteractor.isInteractive.flatMapLatestConflated { isInteractive ->
+                    // Only respond to dream state changes while the device is interactive.
+                    if (isInteractive) {
+                        keyguardInteractor.isDreamingAny.distinctUntilChanged().map { isDreaming ->
+                            if (isDreaming) {
+                                LockWithDelay("started dreaming")
+                            } else {
+                                CancelDelayedLock("stopped dreaming")
+                            }
+                        }
+                    } else {
+                        emptyFlow()
+                    }
+                },
             )
             .collectLatest(::onLockEvent)
     }
@@ -344,6 +364,9 @@ constructor(
         private val interactor: DeviceUnlockedInteractor,
     ) : CoreStartable {
         override fun start() {
+            if (!SceneContainerFlag.isEnabled)
+                return
+
             applicationScope.launch { interactor.activate() }
         }
     }
