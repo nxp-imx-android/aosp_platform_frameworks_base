@@ -260,6 +260,16 @@ flag {
 }
 
 flag {
+    name: "pointer_up_motion_event_in_touch_exploration"
+    namespace: "accessibility"
+    description: "Allows POINTER_UP motionEvents to trigger during touch exploration."
+    bug: "374930391"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "proxy_use_apps_on_virtual_device_listener"
     namespace: "accessibility"
     description: "Fixes race condition described in b/286587811"

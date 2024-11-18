@@ -653,6 +653,14 @@ public class TouchExplorer extends BaseEventStreamTransformation
             case ACTION_UP:
                 handleActionUp(event, rawEvent, policyFlags);
                 break;
+            case ACTION_POINTER_UP:
+                if (com.android.server.accessibility.Flags
+                        .pointerUpMotionEventInTouchExploration()) {
+                    if (mState.isServiceDetectingGestures()) {
+                        mAms.sendMotionEventToListeningServices(rawEvent);
+                    }
+                }
+                break;
             default:
                 break;
         }
