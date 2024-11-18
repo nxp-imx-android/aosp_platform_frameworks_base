@@ -896,7 +896,6 @@ public class OomAdjusterImpl extends OomAdjuster {
         mProcessStateCurTop = mService.mAtmInternal.getTopProcessState();
         // Clear any pending ones because we are doing a full update now.
         mPendingProcessSet.clear();
-        mService.mAppProfiler.mHasPreviousProcess = mService.mAppProfiler.mHasHomeProcess = false;
 
         mLastReason = oomAdjReason;
         Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, oomAdjReasonToString(oomAdjReason));
