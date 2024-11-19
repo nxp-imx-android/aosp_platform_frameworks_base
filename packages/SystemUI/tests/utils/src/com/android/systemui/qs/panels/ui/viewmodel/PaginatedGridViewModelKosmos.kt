@@ -29,6 +29,7 @@ val Kosmos.paginatedGridViewModel by
             paginatedGridInteractor,
             inFirstPageViewModel,
             buildNumberViewModelFactory,
+            editModeButtonViewModelFactory,
             falsingInteractor,
         )
     }
