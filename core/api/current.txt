@@ -3830,7 +3830,7 @@ package android.accounts {
     method @RequiresPermission(value="android.permission.AUTHENTICATE_ACCOUNTS", apis="..22") public boolean notifyAccountAuthenticated(android.accounts.Account);
     method @RequiresPermission(value="android.permission.AUTHENTICATE_ACCOUNTS", apis="..22") public String peekAuthToken(android.accounts.Account, String);
     method @Deprecated @RequiresPermission(value="android.permission.MANAGE_ACCOUNTS", apis="..22") public android.accounts.AccountManagerFuture<java.lang.Boolean> removeAccount(android.accounts.Account, android.accounts.AccountManagerCallback<java.lang.Boolean>, android.os.Handler);
-    method @RequiresPermission(value="android.permission.MANAGE_ACCOUNTS", apis="..22") public android.accounts.AccountManagerFuture<android.os.Bundle> removeAccount(android.accounts.Account, android.app.Activity, android.accounts.AccountManagerCallback<android.os.Bundle>, android.os.Handler);
+    method @FlaggedApi("android.app.admin.flags.split_create_managed_profile_enabled") @RequiresPermission(value="android.permission.REMOVE_ACCOUNTS", conditional=true) public android.accounts.AccountManagerFuture<android.os.Bundle> removeAccount(android.accounts.Account, android.app.Activity, android.accounts.AccountManagerCallback<android.os.Bundle>, android.os.Handler);
     method @RequiresPermission(value="android.permission.AUTHENTICATE_ACCOUNTS", apis="..22") public boolean removeAccountExplicitly(android.accounts.Account);
     method public void removeOnAccountsUpdatedListener(android.accounts.OnAccountsUpdateListener);
     method @RequiresPermission(value="android.permission.AUTHENTICATE_ACCOUNTS", apis="..22") public android.accounts.AccountManagerFuture<android.accounts.Account> renameAccount(android.accounts.Account, @Size(min=1) String, android.accounts.AccountManagerCallback<android.accounts.Account>, android.os.Handler);
@@ -21098,6 +21098,7 @@ package android.inputmethodservice {
     method public abstract android.inputmethodservice.AbstractInputMethodService.AbstractInputMethodImpl onCreateInputMethodInterface();
     method public abstract android.inputmethodservice.AbstractInputMethodService.AbstractInputMethodSessionImpl onCreateInputMethodSessionInterface();
     method public boolean onGenericMotionEvent(android.view.MotionEvent);
+    method @FlaggedApi("android.view.inputmethod.verify_key_event") public boolean onShouldVerifyKeyEvent(@NonNull android.view.KeyEvent);
     method public boolean onTrackballEvent(android.view.MotionEvent);
   }
 
@@ -21115,6 +21116,7 @@ package android.inputmethodservice {
     method public void dispatchTrackballEvent(int, android.view.MotionEvent, android.view.inputmethod.InputMethodSession.EventCallback);
     method public boolean isEnabled();
     method public boolean isRevoked();
+    method @FlaggedApi("android.view.inputmethod.verify_key_event") public boolean onShouldVerifyKeyEvent(@NonNull android.view.KeyEvent);
     method public void revokeSelf();
     method public void setEnabled(boolean);
   }
@@ -21214,6 +21216,7 @@ package android.inputmethodservice {
     method public void setExtractView(android.view.View);
     method public void setExtractViewShown(boolean);
     method public void setInputView(android.view.View);
+    method @FlaggedApi("android.view.inputmethod.adaptive_handwriting_bounds") public final void setStylusHandwritingRegion(@NonNull android.graphics.Region);
     method public final void setStylusHandwritingSessionTimeout(@NonNull java.time.Duration);
     method public final boolean shouldOfferSwitchingToNextInputMethod();
     method public void showStatusIcon(@DrawableRes int);
@@ -34848,6 +34851,13 @@ package android.os {
     field public static final int EFFECT_TICK = 2; // 0x2
   }
 
+  @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public static final class VibrationEffect.BasicEnvelopeBuilder {
+    ctor public VibrationEffect.BasicEnvelopeBuilder();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public android.os.VibrationEffect.BasicEnvelopeBuilder addControlPoint(@FloatRange(from=0, to=1) float, @FloatRange(from=0, to=1) float, long);
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public android.os.VibrationEffect build();
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public android.os.VibrationEffect.BasicEnvelopeBuilder setInitialSharpness(@FloatRange(from=0, to=1) float);
+  }
+
   public static final class VibrationEffect.Composition {
     method @NonNull public android.os.VibrationEffect.Composition addPrimitive(int);
     method @NonNull public android.os.VibrationEffect.Composition addPrimitive(int, @FloatRange(from=0.0f, to=1.0f) float);
@@ -34868,7 +34878,7 @@ package android.os {
 
   @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public static final class VibrationEffect.WaveformEnvelopeBuilder {
     ctor public VibrationEffect.WaveformEnvelopeBuilder();
-    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public android.os.VibrationEffect.WaveformEnvelopeBuilder addControlPoint(@FloatRange(from=0, to=1) float, @FloatRange(from=0) float, int);
+    method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public android.os.VibrationEffect.WaveformEnvelopeBuilder addControlPoint(@FloatRange(from=0, to=1) float, @FloatRange(from=0) float, long);
     method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public android.os.VibrationEffect build();
     method @FlaggedApi("android.os.vibrator.normalized_pwle_effects") @NonNull public android.os.VibrationEffect.WaveformEnvelopeBuilder setInitialFrequencyHz(@FloatRange(from=0) float);
   }
@@ -37572,7 +37582,6 @@ package android.provider {
   }
 
   @FlaggedApi("android.provider.new_default_account_api_enabled") public static final class ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState {
-    ctor public ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState(int, @Nullable android.accounts.Account);
     method @Nullable public android.accounts.Account getAccount();
     method public int getState();
     method @NonNull public static android.provider.ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState ofCloud(@NonNull android.accounts.Account);
@@ -41180,6 +41189,18 @@ package android.service.carrier {
     method @Deprecated public void onSendTextSms(@NonNull String, int, @NonNull String, @NonNull android.service.carrier.CarrierMessagingService.ResultCallback<android.service.carrier.CarrierMessagingService.SendSmsResult>);
     method public void onSendTextSms(@NonNull String, int, @NonNull String, int, @NonNull android.service.carrier.CarrierMessagingService.ResultCallback<android.service.carrier.CarrierMessagingService.SendSmsResult>);
     field public static final int DOWNLOAD_STATUS_ERROR = 2; // 0x2
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int DOWNLOAD_STATUS_MMS_ERROR_CONFIGURATION_ERROR = 606; // 0x25e
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int DOWNLOAD_STATUS_MMS_ERROR_DATA_DISABLED = 610; // 0x262
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int DOWNLOAD_STATUS_MMS_ERROR_HTTP_FAILURE = 603; // 0x25b
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int DOWNLOAD_STATUS_MMS_ERROR_INACTIVE_SUBSCRIPTION = 609; // 0x261
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int DOWNLOAD_STATUS_MMS_ERROR_INVALID_APN = 601; // 0x259
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int DOWNLOAD_STATUS_MMS_ERROR_INVALID_SUBSCRIPTION_ID = 608; // 0x260
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int DOWNLOAD_STATUS_MMS_ERROR_IO_ERROR = 604; // 0x25c
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int DOWNLOAD_STATUS_MMS_ERROR_MMS_DISABLED_BY_CARRIER = 611; // 0x263
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int DOWNLOAD_STATUS_MMS_ERROR_NO_DATA_NETWORK = 607; // 0x25f
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int DOWNLOAD_STATUS_MMS_ERROR_RETRY = 605; // 0x25d
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int DOWNLOAD_STATUS_MMS_ERROR_UNABLE_CONNECT_MMS = 602; // 0x25a
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int DOWNLOAD_STATUS_MMS_ERROR_UNSPECIFIED = 600; // 0x258
     field public static final int DOWNLOAD_STATUS_OK = 0; // 0x0
     field public static final int DOWNLOAD_STATUS_RETRY_ON_CARRIER_NETWORK = 1; // 0x1
     field public static final int RECEIVE_OPTIONS_DEFAULT = 0; // 0x0
@@ -41187,7 +41208,38 @@ package android.service.carrier {
     field public static final int RECEIVE_OPTIONS_SKIP_NOTIFY_WHEN_CREDENTIAL_PROTECTED_STORAGE_UNAVAILABLE = 2; // 0x2
     field public static final int SEND_FLAG_REQUEST_DELIVERY_STATUS = 1; // 0x1
     field public static final int SEND_STATUS_ERROR = 2; // 0x2
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_MMS_ERROR_CONFIGURATION_ERROR = 406; // 0x196
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_MMS_ERROR_DATA_DISABLED = 410; // 0x19a
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_MMS_ERROR_HTTP_FAILURE = 403; // 0x193
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_MMS_ERROR_INACTIVE_SUBSCRIPTION = 409; // 0x199
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_MMS_ERROR_INVALID_APN = 401; // 0x191
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_MMS_ERROR_INVALID_SUBSCRIPTION_ID = 408; // 0x198
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_MMS_ERROR_IO_ERROR = 404; // 0x194
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_MMS_ERROR_MMS_DISABLED_BY_CARRIER = 411; // 0x19b
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_MMS_ERROR_NO_DATA_NETWORK = 407; // 0x197
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_MMS_ERROR_RETRY = 405; // 0x195
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_MMS_ERROR_UNABLE_CONNECT_MMS = 402; // 0x192
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_MMS_ERROR_UNSPECIFIED = 400; // 0x190
     field public static final int SEND_STATUS_OK = 0; // 0x0
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_CANCELLED = 215; // 0xd7
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_ENCODING_ERROR = 212; // 0xd4
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_ERROR_FDN_CHECK_FAILURE = 204; // 0xcc
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_ERROR_GENERIC_FAILURE = 200; // 0xc8
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_ERROR_LIMIT_EXCEEDED = 203; // 0xcb
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_ERROR_NO_SERVICE = 202; // 0xca
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_ERROR_NULL_PDU = 201; // 0xc9
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_ERROR_SHORT_CODE_NEVER_ALLOWED = 206; // 0xce
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_ERROR_SHORT_CODE_NOT_ALLOWED = 205; // 0xcd
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_INVALID_ARGUMENTS = 208; // 0xd0
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_INVALID_SMSC_ADDRESS = 213; // 0xd5
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_INVALID_SMS_FORMAT = 210; // 0xd2
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_INVALID_STATE = 209; // 0xd1
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_NETWORK_ERROR = 211; // 0xd3
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_NETWORK_REJECT = 207; // 0xcf
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_OPERATION_NOT_ALLOWED = 214; // 0xd6
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_REQUEST_NOT_SUPPORTED = 216; // 0xd8
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_SMS_BLOCKED_DURING_EMERGENCY = 217; // 0xd9
+    field @FlaggedApi("com.android.internal.telephony.flags.temporary_failures_in_carrier_messaging_service") public static final int SEND_STATUS_RESULT_SMS_SEND_RETRY_FAILED = 218; // 0xda
     field public static final int SEND_STATUS_RETRY_ON_CARRIER_NETWORK = 1; // 0x1
     field public static final String SERVICE_INTERFACE = "android.service.carrier.CarrierMessagingService";
   }
@@ -42411,7 +42463,7 @@ package android.service.settings.preferences {
     method @NonNull public java.util.List<java.lang.String> getBreadcrumbs();
     method @NonNull public android.os.Bundle getExtras();
     method @NonNull public String getKey();
-    method @Nullable public android.app.PendingIntent getLaunchIntent();
+    method @Nullable public android.content.Intent getLaunchIntent();
     method @NonNull public java.util.List<java.lang.String> getReadPermissions();
     method @NonNull public String getScreenKey();
     method @Nullable public String getSummary();
@@ -42436,7 +42488,7 @@ package android.service.settings.preferences {
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setBreadcrumbs(@NonNull java.util.List<java.lang.String>);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setEnabled(boolean);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setExtras(@NonNull android.os.Bundle);
-    method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setLaunchIntent(@Nullable android.app.PendingIntent);
+    method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setLaunchIntent(@Nullable android.content.Intent);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setReadPermissions(@NonNull java.util.List<java.lang.String>);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setRestricted(boolean);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setSummary(@Nullable String);
@@ -42456,19 +42508,18 @@ package android.service.settings.preferences {
   }
 
   @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public class SettingsPreferenceServiceClient implements java.lang.AutoCloseable {
-    ctor public SettingsPreferenceServiceClient(@NonNull android.content.Context, @NonNull String);
+    ctor public SettingsPreferenceServiceClient(@NonNull android.content.Context, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.service.settings.preferences.SettingsPreferenceServiceClient,java.lang.Exception>);
     method public void close();
     method public void getAllPreferenceMetadata(@NonNull android.service.settings.preferences.MetadataRequest, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.service.settings.preferences.MetadataResult,java.lang.Exception>);
     method public void getPreferenceValue(@NonNull android.service.settings.preferences.GetValueRequest, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.service.settings.preferences.GetValueResult,java.lang.Exception>);
     method public void setPreferenceValue(@NonNull android.service.settings.preferences.SetValueRequest, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.service.settings.preferences.SetValueResult,java.lang.Exception>);
-    method public void start();
-    method public void stop();
   }
 
   @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public final class SettingsPreferenceValue implements android.os.Parcelable {
     method public int describeContents();
     method public boolean getBooleanValue();
     method public double getDoubleValue();
+    method public int getIntValue();
     method public long getLongValue();
     method @Nullable public String getStringValue();
     method public int getType();
@@ -42476,6 +42527,7 @@ package android.service.settings.preferences {
     field @NonNull public static final android.os.Parcelable.Creator<android.service.settings.preferences.SettingsPreferenceValue> CREATOR;
     field public static final int TYPE_BOOLEAN = 0; // 0x0
     field public static final int TYPE_DOUBLE = 2; // 0x2
+    field public static final int TYPE_INT = 4; // 0x4
     field public static final int TYPE_LONG = 1; // 0x1
     field public static final int TYPE_STRING = 3; // 0x3
   }
@@ -42485,6 +42537,7 @@ package android.service.settings.preferences {
     method @NonNull public android.service.settings.preferences.SettingsPreferenceValue build();
     method @NonNull public android.service.settings.preferences.SettingsPreferenceValue.Builder setBooleanValue(boolean);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceValue.Builder setDoubleValue(double);
+    method @NonNull public android.service.settings.preferences.SettingsPreferenceValue.Builder setIntValue(int);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceValue.Builder setLongValue(long);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceValue.Builder setStringValue(@Nullable String);
   }
@@ -50268,9 +50321,9 @@ package android.text.style {
   public static class TtsSpan.TimeBuilder extends android.text.style.TtsSpan.SemioticClassBuilder<android.text.style.TtsSpan.TimeBuilder> {
     ctor public TtsSpan.TimeBuilder();
     ctor public TtsSpan.TimeBuilder(int, int);
-    method public android.text.style.TtsSpan.TimeBuilder setHours(int);
-    method public android.text.style.TtsSpan.TimeBuilder setMinutes(int);
-    method @FlaggedApi("com.android.text.flags.tts_span_duration") @NonNull public android.text.style.TtsSpan.TimeBuilder setSeconds(int);
+    method public android.text.style.TtsSpan.TimeBuilder setHours(@IntRange(from=0, to=24) int);
+    method public android.text.style.TtsSpan.TimeBuilder setMinutes(@IntRange(from=0, to=59) int);
+    method @FlaggedApi("com.android.text.flags.tts_span_duration") @NonNull public android.text.style.TtsSpan.TimeBuilder setSeconds(@IntRange(from=0, to=59) int);
   }
 
   public static class TtsSpan.VerbatimBuilder extends android.text.style.TtsSpan.SemioticClassBuilder<android.text.style.TtsSpan.VerbatimBuilder> {
@@ -53362,6 +53415,7 @@ package android.view {
     method @NonNull public android.view.SurfaceControl.Transaction setBuffer(@NonNull android.view.SurfaceControl, @Nullable android.hardware.HardwareBuffer, @Nullable android.hardware.SyncFence, @Nullable java.util.function.Consumer<android.hardware.SyncFence>);
     method @NonNull public android.view.SurfaceControl.Transaction setBufferSize(@NonNull android.view.SurfaceControl, @IntRange(from=0) int, @IntRange(from=0) int);
     method @NonNull public android.view.SurfaceControl.Transaction setBufferTransform(@NonNull android.view.SurfaceControl, int);
+    method @FlaggedApi("android.media.tv.flags.apply_picture_profiles") @NonNull public android.view.SurfaceControl.Transaction setContentPriority(@NonNull android.view.SurfaceControl, int);
     method @NonNull public android.view.SurfaceControl.Transaction setCrop(@NonNull android.view.SurfaceControl, @Nullable android.graphics.Rect);
     method @NonNull public android.view.SurfaceControl.Transaction setDamageRegion(@NonNull android.view.SurfaceControl, @Nullable android.graphics.Region);
     method @NonNull public android.view.SurfaceControl.Transaction setDataSpace(@NonNull android.view.SurfaceControl, int);
