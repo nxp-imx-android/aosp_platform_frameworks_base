@@ -21,7 +21,7 @@ import com.android.systemui.keyboard.shortcut.shared.model.ShortcutKey
 sealed interface ShortcutCustomizationUiState {
     data class AddShortcutDialog(
         val shortcutLabel: String,
-        val shouldShowErrorMessage: Boolean,
+        val errorMessage: String = "",
         val defaultCustomShortcutModifierKey: ShortcutKey.Icon.ResIdIcon,
         val isDialogShowing: Boolean,
         val pressedKeys: List<ShortcutKey> = emptyList(),
