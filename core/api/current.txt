@@ -20771,6 +20771,7 @@ package android.hardware.display {
     method public int describeContents();
     method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @FloatRange(from=0.0f, to=1.0f) public float getDefaultBrightness();
     method public int getDensityDpi();
+    method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @FloatRange(from=0.0f, to=1.0f) public float getDimBrightness();
     method @NonNull public java.util.Set<java.lang.String> getDisplayCategories();
     method public int getFlags();
     method public int getHeight();
@@ -20792,6 +20793,7 @@ package android.hardware.display {
     method @NonNull public android.hardware.display.VirtualDisplayConfig build();
     method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setBrightnessListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.display.VirtualDisplayConfig.BrightnessListener);
     method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setDefaultBrightness(@FloatRange(from=0.0f, to=1.0f) float);
+    method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setDimBrightness(@FloatRange(from=0.0f, to=1.0f) float);
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setDisplayCategories(@NonNull java.util.Set<java.lang.String>);
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setFlags(int);
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setRequestedRefreshRate(@FloatRange(from=0.0f) float);
