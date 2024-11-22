@@ -140,6 +140,7 @@ package android {
     field public static final String MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL = "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL";
     field public static final String MANAGE_DEVICE_POLICY_AIRPLANE_MODE = "android.permission.MANAGE_DEVICE_POLICY_AIRPLANE_MODE";
     field public static final String MANAGE_DEVICE_POLICY_APPS_CONTROL = "android.permission.MANAGE_DEVICE_POLICY_APPS_CONTROL";
+    field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public static final String MANAGE_DEVICE_POLICY_APP_FUNCTIONS = "android.permission.MANAGE_DEVICE_POLICY_APP_FUNCTIONS";
     field public static final String MANAGE_DEVICE_POLICY_APP_RESTRICTIONS = "android.permission.MANAGE_DEVICE_POLICY_APP_RESTRICTIONS";
     field public static final String MANAGE_DEVICE_POLICY_APP_USER_DATA = "android.permission.MANAGE_DEVICE_POLICY_APP_USER_DATA";
     field public static final String MANAGE_DEVICE_POLICY_ASSIST_CONTENT = "android.permission.MANAGE_DEVICE_POLICY_ASSIST_CONTENT";
@@ -8407,6 +8408,9 @@ package android.app.admin {
     field public static final String ACTION_SET_NEW_PASSWORD = "android.app.action.SET_NEW_PASSWORD";
     field public static final String ACTION_START_ENCRYPTION = "android.app.action.START_ENCRYPTION";
     field public static final String ACTION_SYSTEM_UPDATE_POLICY_CHANGED = "android.app.action.SYSTEM_UPDATE_POLICY_CHANGED";
+    field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public static final int APP_FUNCTIONS_DISABLED = 1; // 0x1
+    field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public static final int APP_FUNCTIONS_DISABLED_CROSS_PROFILE = 2; // 0x2
+    field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public static final int APP_FUNCTIONS_NOT_CONTROLLED_BY_POLICY = 0; // 0x0
     field @FlaggedApi("android.app.admin.flags.set_auto_time_enabled_coexistence") public static final int AUTO_TIME_DISABLED = 1; // 0x1
     field @FlaggedApi("android.app.admin.flags.set_auto_time_enabled_coexistence") public static final int AUTO_TIME_ENABLED = 2; // 0x2
     field @FlaggedApi("android.app.admin.flags.set_auto_time_enabled_coexistence") public static final int AUTO_TIME_NOT_CONTROLLED_BY_POLICY = 0; // 0x0
