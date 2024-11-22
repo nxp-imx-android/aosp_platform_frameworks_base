@@ -16,6 +16,7 @@
 
 package com.android.server.input;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
@@ -32,7 +33,11 @@ import android.view.inputmethod.InputMethodSubtype;
 import com.android.internal.inputmethod.InputMethodSubtypeHandle;
 import com.android.internal.policy.IShortcutService;
 
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Input manager local system service interface.
@@ -40,6 +45,15 @@ import java.util.List;
  * @hide Only for use within the system server.
  */
 public abstract class InputManagerInternal {
+
+    // Backup and restore information for custom input gestures.
+    public static final int BACKUP_CATEGORY_INPUT_GESTURES = 0;
+
+    // Backup and Restore categories for sending map of data back and forth to backup and restore
+    // infrastructure.
+    @IntDef({BACKUP_CATEGORY_INPUT_GESTURES})
+    public @interface BackupCategory {
+    }
 
     /**
      * Called by the display manager to set information about the displays as needed
@@ -312,4 +326,22 @@ public abstract class InputManagerInternal {
      * @return true if setting power wakeup was successful.
      */
     public abstract boolean setKernelWakeEnabled(int deviceId, boolean enabled);
+
+    /**
+     * Retrieves the input gestures backup payload data.
+     *
+     * @param userId the user ID of the backup data.
+     * @return byte array of UTF-8 encoded backup data.
+     */
+    public abstract Map<Integer, byte[]> getBackupPayload(int userId) throws IOException;
+
+    /**
+     * Applies the given UTF-8 encoded byte array payload to the given user's input data
+     * on a best effort basis.
+     *
+     * @param payload UTF-8 encoded map of byte arrays of restored data
+     * @param userId the user ID for which to apply the payload data
+     */
+    public abstract void applyBackupPayload(Map<Integer, byte[]> payload, int userId)
+            throws XmlPullParserException, IOException;
 }

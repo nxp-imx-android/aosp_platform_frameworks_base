@@ -1438,6 +1438,58 @@ class KeyGestureControllerTests {
         )
     }
 
+    @Test
+    @Parameters(method = "customInputGesturesTestArguments")
+    fun testCustomKeyGestureRestoredFromBackup(test: TestData) {
+        val userId = 10
+        setupKeyGestureController()
+        val builder = InputGestureData.Builder()
+            .setKeyGestureType(test.expectedKeyGestureType)
+            .setTrigger(
+                InputGestureData.createKeyTrigger(
+                    test.expectedKeys[0],
+                    test.expectedModifierState
+                )
+            )
+        if (test.expectedAppLaunchData != null) {
+            builder.setAppLaunchData(test.expectedAppLaunchData)
+        }
+        val inputGestureData = builder.build()
+
+        keyGestureController.setCurrentUserId(userId)
+        testLooper.dispatchAll()
+        keyGestureController.addCustomInputGesture(userId, inputGestureData.aidlData)
+        testLooper.dispatchAll()
+        val backupData = keyGestureController.getInputGestureBackupPayload(userId)
+
+        // Delete the old data and reinitialize the controller simulating a "fresh" install.
+        tempFile.delete()
+        setupKeyGestureController()
+        keyGestureController.setCurrentUserId(userId)
+        testLooper.dispatchAll()
+
+        // Initially there should be no gestures registered.
+        var savedInputGestures = keyGestureController.getCustomInputGestures(userId, null)
+        assertEquals(
+            "Test: $test doesn't produce correct number of saved input gestures",
+            0,
+            savedInputGestures.size
+        )
+
+        // After the restore, there should be the original gesture re-registered.
+        keyGestureController.applyInputGesturesBackupPayload(backupData, userId)
+        savedInputGestures = keyGestureController.getCustomInputGestures(userId, null)
+        assertEquals(
+            "Test: $test doesn't produce correct number of saved input gestures",
+            1,
+            savedInputGestures.size
+        )
+        assertEquals(
+            "Test: $test doesn't produce correct input gesture data", inputGestureData,
+            InputGestureData(savedInputGestures[0])
+        )
+    }
+
     class TouchpadTestData(
         val name: String,
         val touchpadGestureType: Int,
@@ -1538,6 +1590,53 @@ class KeyGestureControllerTests {
         keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()
         val savedInputGestures = keyGestureController.getCustomInputGestures(userId, null)
+        assertEquals(
+            "Test: $test doesn't produce correct number of saved input gestures",
+            1,
+            savedInputGestures.size
+        )
+        assertEquals(
+            "Test: $test doesn't produce correct input gesture data", inputGestureData,
+            InputGestureData(savedInputGestures[0])
+        )
+    }
+
+
+    @Test
+    @Parameters(method = "customTouchpadGesturesTestArguments")
+    fun testCustomTouchpadGesturesRestoredFromBackup(test: TouchpadTestData) {
+        val userId = 10
+        setupKeyGestureController()
+        val builder = InputGestureData.Builder()
+            .setKeyGestureType(test.expectedKeyGestureType)
+            .setTrigger(InputGestureData.createTouchpadTrigger(test.touchpadGestureType))
+        if (test.expectedAppLaunchData != null) {
+            builder.setAppLaunchData(test.expectedAppLaunchData)
+        }
+        val inputGestureData = builder.build()
+        keyGestureController.setCurrentUserId(userId)
+        testLooper.dispatchAll()
+        keyGestureController.addCustomInputGesture(userId, inputGestureData.aidlData)
+        testLooper.dispatchAll()
+        val backupData = keyGestureController.getInputGestureBackupPayload(userId)
+
+        // Delete the old data and reinitialize the controller simulating a "fresh" install.
+        tempFile.delete()
+        setupKeyGestureController()
+        keyGestureController.setCurrentUserId(userId)
+        testLooper.dispatchAll()
+
+        // Initially there should be no gestures registered.
+        var savedInputGestures = keyGestureController.getCustomInputGestures(userId, null)
+        assertEquals(
+            "Test: $test doesn't produce correct number of saved input gestures",
+            0,
+            savedInputGestures.size
+        )
+
+        // After the restore, there should be the original gesture re-registered.
+        keyGestureController.applyInputGesturesBackupPayload(backupData, userId)
+        savedInputGestures = keyGestureController.getCustomInputGestures(userId, null)
         assertEquals(
             "Test: $test doesn't produce correct number of saved input gestures",
             1,
