@@ -1502,6 +1502,7 @@ package android {
     field public static final int shadowRadius = 16843108; // 0x1010164
     field public static final int shape = 16843162; // 0x101019a
     field public static final int shareInterpolator = 16843195; // 0x10101bb
+    field @FlaggedApi("android.nfc.nfc_associated_role_services") public static final int shareRolePriority;
     field @Deprecated public static final int sharedUserId = 16842763; // 0x101000b
     field @Deprecated public static final int sharedUserLabel = 16843361; // 0x1010261
     field public static final int sharedUserMaxSdkVersion = 16844365; // 0x101064d
@@ -2451,6 +2452,7 @@ package android {
     field public static final int primary = 16908300; // 0x102000c
     field public static final int progress = 16908301; // 0x102000d
     field public static final int redo = 16908339; // 0x1020033
+    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final int remoteViewsMetricsId;
     field public static final int replaceText = 16908340; // 0x1020034
     field public static final int secondaryProgress = 16908303; // 0x102000f
     field public static final int selectAll = 16908319; // 0x102001f
@@ -9892,6 +9894,8 @@ package android.appwidget {
     field public static final String ACTION_APPWIDGET_PICK = "android.appwidget.action.APPWIDGET_PICK";
     field public static final String ACTION_APPWIDGET_RESTORED = "android.appwidget.action.APPWIDGET_RESTORED";
     field public static final String ACTION_APPWIDGET_UPDATE = "android.appwidget.action.APPWIDGET_UPDATE";
+    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final String EVENT_CATEGORY_APPWIDGET = "android.appwidget";
+    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final String EVENT_TYPE_WIDGET_INTERACTION = "widget_interaction";
     field public static final String EXTRA_APPWIDGET_ID = "appWidgetId";
     field public static final String EXTRA_APPWIDGET_IDS = "appWidgetIds";
     field public static final String EXTRA_APPWIDGET_OLD_IDS = "appWidgetOldIds";
@@ -9901,6 +9905,10 @@ package android.appwidget {
     field public static final String EXTRA_APPWIDGET_PROVIDER_PROFILE = "appWidgetProviderProfile";
     field public static final String EXTRA_CUSTOM_EXTRAS = "customExtras";
     field public static final String EXTRA_CUSTOM_INFO = "customInfo";
+    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final String EXTRA_EVENT_CLICKED_VIEWS = "android.appwidget.extra.EVENT_CLICKED_VIEWS";
+    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final String EXTRA_EVENT_DURATION_MS = "android.appwidget.extra.EVENT_DURATION_MS";
+    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final String EXTRA_EVENT_POSITION_RECT = "android.appwidget.extra.EVENT_POSITION_RECT";
+    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final String EXTRA_EVENT_SCROLLED_VIEWS = "android.appwidget.extra.EVENT_SCROLLED_VIEWS";
     field public static final String EXTRA_HOST_ID = "hostId";
     field public static final int INVALID_APPWIDGET_ID = 0; // 0x0
     field public static final String META_DATA_APPWIDGET_PROVIDER = "android.appwidget.provider";
@@ -18954,6 +18962,7 @@ package android.hardware {
     method @FlaggedApi("android.hardware.flags.luts_api") @NonNull public int[] getSamplingKeys();
     method @FlaggedApi("android.hardware.flags.luts_api") public int getSize();
     field @FlaggedApi("android.hardware.flags.luts_api") public static final int ONE_DIMENSION = 1; // 0x1
+    field @FlaggedApi("android.hardware.flags.luts_api") public static final int SAMPLING_KEY_CIE_Y = 2; // 0x2
     field @FlaggedApi("android.hardware.flags.luts_api") public static final int SAMPLING_KEY_MAX_RGB = 1; // 0x1
     field @FlaggedApi("android.hardware.flags.luts_api") public static final int SAMPLING_KEY_RGB = 0; // 0x0
     field @FlaggedApi("android.hardware.flags.luts_api") public static final int THREE_DIMENSION = 3; // 0x3
@@ -24166,6 +24175,8 @@ package android.media {
     field public static final String KEY_OPERATING_RATE = "operating-rate";
     field public static final String KEY_OUTPUT_REORDER_DEPTH = "output-reorder-depth";
     field public static final String KEY_PCM_ENCODING = "pcm-encoding";
+    field @FlaggedApi("android.media.tv.flags.apply_picture_profiles") public static final String KEY_PICTURE_PROFILE_ID = "picture-profile-id";
+    field @FlaggedApi("android.media.tv.flags.apply_picture_profiles") public static final String KEY_PICTURE_PROFILE_INSTANCE = "picture-profile-instance";
     field public static final String KEY_PICTURE_TYPE = "picture-type";
     field public static final String KEY_PIXEL_ASPECT_RATIO_HEIGHT = "sar-height";
     field public static final String KEY_PIXEL_ASPECT_RATIO_WIDTH = "sar-width";
@@ -25613,6 +25624,7 @@ package android.media {
     method public void addOnSpatializerStateChangedListener(@NonNull java.util.concurrent.Executor, @NonNull android.media.Spatializer.OnSpatializerStateChangedListener);
     method public boolean canBeSpatialized(@NonNull android.media.AudioAttributes, @NonNull android.media.AudioFormat);
     method public int getImmersiveAudioLevel();
+    method @FlaggedApi("android.media.audio.spatializer_capabilities") @NonNull public java.util.List<java.lang.Integer> getSpatializedChannelMasks();
     method public boolean isAvailable();
     method public boolean isEnabled();
     method public boolean isHeadTrackerAvailable();
@@ -51925,7 +51937,7 @@ package android.view {
     method public int getState();
     method @FlaggedApi("com.android.server.display.feature.flags.enable_get_suggested_frame_rate") public float getSuggestedFrameRate(int);
     method public android.view.Display.Mode[] getSupportedModes();
-    method @Deprecated public float[] getSupportedRefreshRates();
+    method @FlaggedApi("com.android.server.display.feature.flags.enable_get_supported_refresh_rates") @NonNull public float[] getSupportedRefreshRates();
     method @Deprecated public int getWidth();
     method @FlaggedApi("com.android.server.display.feature.flags.enable_has_arr_support") public boolean hasArrSupport();
     method public boolean isHdr();
@@ -56483,6 +56495,7 @@ package android.view.accessibility {
     method public float getMin();
     method public int getType();
     method @Deprecated public static android.view.accessibility.AccessibilityNodeInfo.RangeInfo obtain(int, float, float, float);
+    field @FlaggedApi("android.view.accessibility.indeterminate_range_info") @NonNull public static final android.view.accessibility.AccessibilityNodeInfo.RangeInfo INDETERMINATE;
     field public static final int RANGE_TYPE_FLOAT = 1; // 0x1
     field @FlaggedApi("android.view.accessibility.indeterminate_range_info") public static final int RANGE_TYPE_INDETERMINATE = 3; // 0x3
     field public static final int RANGE_TYPE_INT = 0; // 0x0
