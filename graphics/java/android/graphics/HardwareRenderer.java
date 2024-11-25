@@ -179,8 +179,9 @@ public class HardwareRenderer {
     /**
      * Name of the file that holds the shaders cache.
      */
-    private static final String CACHE_PATH_SHADERS = "com.android.opengl.shaders_cache";
-    private static final String CACHE_PATH_SKIASHADERS = "com.android.skia.shaders_cache";
+    private static final String CACHE_PATH_OPENGL_SHADERS = "com.android.opengl.shaders_cache";
+    private static final String CACHE_PATH_SKIA_SHADERS = "com.android.skia.shaders_cache";
+    private static final String CACHE_PATH_SKIA_PIPELINES = "com.android.skia.pipelines_cache";
 
     private static int sDensityDpi = 0;
 
@@ -1292,8 +1293,10 @@ public class HardwareRenderer {
      * @hide
      */
     public static void setupDiskCache(File cacheDir) {
-        setupShadersDiskCache(new File(cacheDir, CACHE_PATH_SHADERS).getAbsolutePath(),
-                new File(cacheDir, CACHE_PATH_SKIASHADERS).getAbsolutePath());
+        setupPersistentGraphicsCache(
+            new File(cacheDir, CACHE_PATH_OPENGL_SHADERS).getAbsolutePath(),
+            new File(cacheDir, CACHE_PATH_SKIA_SHADERS).getAbsolutePath(),
+            new File(cacheDir, CACHE_PATH_SKIA_PIPELINES).getAbsolutePath());
     }
 
     /** @hide */
@@ -1587,7 +1590,8 @@ public class HardwareRenderer {
     protected static native boolean isWebViewOverlaysEnabled();
 
     /** @hide */
-    protected static native void setupShadersDiskCache(String cacheFile, String skiaCacheFile);
+    protected static native void setupPersistentGraphicsCache(
+            String openglShaderCachePath, String skiaShaderCachePath, String skiaPipelineCachePath);
 
     private static native void nRotateProcessStatsBuffer();
 
