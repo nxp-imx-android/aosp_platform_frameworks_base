@@ -1203,6 +1203,7 @@ package android {
     field public static final int minResizeHeight = 16843670; // 0x1010396
     field public static final int minResizeWidth = 16843669; // 0x1010395
     field public static final int minSdkVersion = 16843276; // 0x101020c
+    field @FlaggedApi("android.content.pm.support_minor_versions_in_minsdkversion") public static final int minSdkVersionFull;
     field public static final int minWidth = 16843071; // 0x101013f
     field public static final int minimumHorizontalAngle = 16843901; // 0x101047d
     field public static final int minimumVerticalAngle = 16843902; // 0x101047e
@@ -10089,10 +10090,10 @@ package android.companion {
     method @FlaggedApi("android.companion.unpair_associated_device") @RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT) public boolean removeBond(int);
     method public void requestNotificationAccess(android.content.ComponentName);
     method @FlaggedApi("android.companion.association_tag") public void setAssociationTag(int, @NonNull String);
-    method @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
+    method @Deprecated @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
     method @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
     method public void startSystemDataTransfer(int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,android.companion.CompanionException>) throws android.companion.DeviceNotAssociatedException;
-    method @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
+    method @Deprecated @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
     method @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
     field public static final String EXTRA_ASSOCIATION = "android.companion.extra.ASSOCIATION";
     field @Deprecated public static final String EXTRA_DEVICE = "android.companion.extra.DEVICE";
@@ -10120,9 +10121,9 @@ package android.companion {
     method @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES) public final void detachSystemDataTransport(int) throws android.companion.DeviceNotAssociatedException;
     method @Nullable public final android.os.IBinder onBind(@NonNull android.content.Intent);
     method @Deprecated @MainThread public void onDeviceAppeared(@NonNull String);
-    method @MainThread public void onDeviceAppeared(@NonNull android.companion.AssociationInfo);
+    method @Deprecated @FlaggedApi("android.companion.device_presence") @MainThread public void onDeviceAppeared(@NonNull android.companion.AssociationInfo);
     method @Deprecated @MainThread public void onDeviceDisappeared(@NonNull String);
-    method @MainThread public void onDeviceDisappeared(@NonNull android.companion.AssociationInfo);
+    method @Deprecated @FlaggedApi("android.companion.device_presence") @MainThread public void onDeviceDisappeared(@NonNull android.companion.AssociationInfo);
     method @FlaggedApi("android.companion.device_presence") @MainThread public void onDevicePresenceEvent(@NonNull android.companion.DevicePresenceEvent);
     field public static final String SERVICE_INTERFACE = "android.companion.CompanionDeviceService";
   }
