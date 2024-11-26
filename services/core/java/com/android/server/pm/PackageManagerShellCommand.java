@@ -3610,6 +3610,9 @@ class PackageManagerShellCommand extends ShellCommand {
                             .setCompilerFilter(sessionParams.dexoptCompilerFilter)
                             .build();
                     break;
+                case "--force-verification":
+                    sessionParams.setForceVerification();
+                    break;
                 case "--disable-auto-install-dependencies":
                     if (Flags.sdkDependencyInstaller()) {
                         sessionParams.setAutoInstallDependenciesEnabled(false);
@@ -4821,6 +4824,7 @@ class PackageManagerShellCommand extends ShellCommand {
         pw.println("          https://source.android.com/docs/core/runtime/configure"
                 + "#compiler_filters");
         pw.println("          or 'skip'");
+        pw.println("      --force-verification: if set, enable the verification for this install");
         if (Flags.sdkDependencyInstaller()) {
             pw.println("      --disable-auto-install-dependencies: if set, any missing shared");
             pw.println("          library dependencies will not be auto-installed");

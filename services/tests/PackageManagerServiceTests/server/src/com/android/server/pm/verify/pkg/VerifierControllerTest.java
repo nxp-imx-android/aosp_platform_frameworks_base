@@ -121,7 +121,8 @@ public class VerifierControllerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        when(mInjector.isVerifierInstalled(any(Computer.class), anyInt())).thenReturn(true);
+        when(mInjector.getVerifierPackageName(any(Computer.class), anyInt())).thenReturn(
+                TEST_VERIFIER_COMPONENT_NAME.getPackageName());
         when(mInjector.getRemoteService(
                 any(Computer.class), any(Context.class), anyInt(), any(Handler.class)
         )).thenReturn(new Pair<>(mMockServiceConnector, TEST_VERIFIER_COMPONENT_NAME));
@@ -158,11 +159,11 @@ public class VerifierControllerTest {
 
     @Test
     public void testVerifierNotInstalled() {
-        when(mInjector.isVerifierInstalled(any(Computer.class), anyInt())).thenReturn(false);
+        when(mInjector.getVerifierPackageName(any(Computer.class), anyInt())).thenReturn(null);
         when(mInjector.getRemoteService(
                 any(Computer.class), any(Context.class), anyInt(), any(Handler.class)
         )).thenReturn(null);
-        assertThat(mVerifierController.isVerifierInstalled(mSnapshotSupplier, 0)).isFalse();
+        assertThat(mVerifierController.getVerifierPackageName(mSnapshotSupplier, 0)).isNull();
         assertThat(mVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier, 0))
                 .isFalse();
         assertThat(mVerifierController.startVerificationSession(
@@ -184,7 +185,7 @@ public class VerifierControllerTest {
 
     @Test
     public void testVerifierAvailableButNotConnected() {
-        assertThat(mVerifierController.isVerifierInstalled(mSnapshotSupplier, 0)).isTrue();
+        assertThat(mVerifierController.getVerifierPackageName(mSnapshotSupplier, 0)).isNotNull();
         when(mInjector.getRemoteService(
                 any(Computer.class), any(Context.class), anyInt(), any(Handler.class)
         )).thenReturn(null);
@@ -213,7 +214,7 @@ public class VerifierControllerTest {
         verify(mMockService, times(1)).onVerificationRequired(any(VerificationSession.class));
         callbacks.onBinderDied();
         // Test that nothing crashes if the service connection is lost
-        assertThat(mVerifierController.isVerifierInstalled(mSnapshotSupplier, 0)).isTrue();
+        assertThat(mVerifierController.getVerifierPackageName(mSnapshotSupplier, 0)).isNotNull();
         mVerifierController.notifyPackageNameAvailable(TEST_PACKAGE_NAME);
         mVerifierController.notifyVerificationCancelled(TEST_PACKAGE_NAME);
         mVerifierController.notifyVerificationTimeout(TEST_ID);
