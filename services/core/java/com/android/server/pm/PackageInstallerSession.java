@@ -2934,16 +2934,18 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         if (Flags.verificationService()) {
             final Supplier<Computer> snapshotSupplier = mPm::snapshotComputer;
             if (mVerifierController.isVerifierInstalled(snapshotSupplier, userId)) {
-                // TODO: extract shared library declarations
                 final SigningInfo signingInfo;
+                final List<SharedLibraryInfo> declaredLibraries;
                 synchronized (mLock) {
                     signingInfo = new SigningInfo(mSigningDetails);
+                    declaredLibraries =
+                            mPackageLite == null ? null : mPackageLite.getDeclaredLibraries();
                 }
                 // Send the request to the verifier and wait for its response before the rest of
                 // the installation can proceed.
                 if (!mVerifierController.startVerificationSession(snapshotSupplier, userId,
                         sessionId, getPackageName(), Uri.fromFile(stageDir), signingInfo,
-                        /* declaredLibraries= */null, /* extensionParams= */ null,
+                        declaredLibraries, /* extensionParams= */ null,
                         new VerifierCallback(), /* retry= */ false)) {
                     // A verifier is installed but cannot be connected. Installation disallowed.
                     onSessionVerificationFailure(INSTALL_FAILED_INTERNAL_ERROR,
