@@ -8917,6 +8917,7 @@ package android.app.assist {
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.assist.AssistContent> CREATOR;
     field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public static final String EXTRA_APP_FUNCTION_DATA = "android.app.assist.extra.APP_FUNCTION_DATA";
+    field @FlaggedApi("com.android.window.flags.enable_desktop_windowing_app_to_web_education") public static final String EXTRA_SESSION_TRANSFER_WEB_URI = "android.app.assist.extra.SESSION_TRANSFER_WEB_URI";
   }
 
   public class AssistStructure implements android.os.Parcelable {
