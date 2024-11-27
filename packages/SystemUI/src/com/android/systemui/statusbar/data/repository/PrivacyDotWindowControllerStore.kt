@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.data.repository
 
 import android.view.Display
 import android.view.WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -48,7 +47,6 @@ constructor(
     private val windowControllerFactory: PrivacyDotWindowController.Factory,
     private val displayWindowPropertiesRepository: DisplayWindowPropertiesRepository,
     private val privacyDotViewControllerStore: PrivacyDotViewControllerStore,
-    private val viewCaptureAwareWindowManagerFactory: ViewCaptureAwareWindowManager.Factory,
 ) :
     PrivacyDotWindowControllerStore,
     StatusBarPerDisplayStoreImpl<PrivacyDotWindowController>(
@@ -72,8 +70,7 @@ constructor(
         return windowControllerFactory.create(
             displayId = displayId,
             privacyDotViewController = privacyDotViewController,
-            viewCaptureAwareWindowManager =
-                viewCaptureAwareWindowManagerFactory.create(displayWindowProperties.windowManager),
+            windowManager = displayWindowProperties.windowManager,
             inflater = displayWindowProperties.layoutInflater,
         )
     }
