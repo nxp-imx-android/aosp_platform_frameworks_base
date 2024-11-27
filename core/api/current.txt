@@ -10000,12 +10000,12 @@ package android.companion {
     method public int describeContents();
     method @Nullable public android.companion.AssociatedDevice getAssociatedDevice();
     method @FlaggedApi("android.companion.association_device_icon") @Nullable public android.graphics.drawable.Icon getDeviceIcon();
+    method @FlaggedApi("android.companion.association_tag") @Nullable public android.companion.DeviceId getDeviceId();
     method @Nullable public android.net.MacAddress getDeviceMacAddress();
     method @Nullable public String getDeviceProfile();
     method @Nullable public CharSequence getDisplayName();
     method public int getId();
     method public int getSystemDataSyncFlags();
-    method @FlaggedApi("android.companion.association_tag") @Nullable public String getTag();
     method public boolean isSelfManaged();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.AssociationInfo> CREATOR;
@@ -10078,7 +10078,6 @@ package android.companion {
     method @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES) public void attachSystemDataTransport(int, @NonNull java.io.InputStream, @NonNull java.io.OutputStream) throws android.companion.DeviceNotAssociatedException;
     method @Nullable public android.content.IntentSender buildAssociationCancellationIntent();
     method @Nullable public android.content.IntentSender buildPermissionTransferUserConsentIntent(int) throws android.companion.DeviceNotAssociatedException;
-    method @FlaggedApi("android.companion.association_tag") public void clearAssociationTag(int);
     method @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES) public void detachSystemDataTransport(int) throws android.companion.DeviceNotAssociatedException;
     method public void disableSystemDataSyncForTypes(int, int);
     method @Deprecated public void disassociate(@NonNull String);
@@ -10090,7 +10089,7 @@ package android.companion {
     method @FlaggedApi("android.companion.perm_sync_user_consent") public boolean isPermissionTransferUserConsented(int);
     method @FlaggedApi("android.companion.unpair_associated_device") @RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT) public boolean removeBond(int);
     method public void requestNotificationAccess(android.content.ComponentName);
-    method @FlaggedApi("android.companion.association_tag") public void setAssociationTag(int, @NonNull String);
+    method @FlaggedApi("android.companion.association_tag") public void setDeviceId(int, @Nullable android.companion.DeviceId);
     method @Deprecated @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
     method @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
     method public void startSystemDataTransfer(int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,android.companion.CompanionException>) throws android.companion.DeviceNotAssociatedException;
@@ -10133,6 +10132,21 @@ package android.companion {
   }
 
   public interface DeviceFilter<D extends android.os.Parcelable> extends android.os.Parcelable {
+  }
+
+  @FlaggedApi("android.companion.association_tag") public final class DeviceId implements android.os.Parcelable {
+    method public int describeContents();
+    method @Nullable public String getCustomId();
+    method @Nullable public android.net.MacAddress getMacAddress();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.companion.DeviceId> CREATOR;
+  }
+
+  public static final class DeviceId.Builder {
+    ctor public DeviceId.Builder();
+    method @NonNull public android.companion.DeviceId build();
+    method @NonNull public android.companion.DeviceId.Builder setCustomId(@Nullable String);
+    method @NonNull public android.companion.DeviceId.Builder setMacAddress(@Nullable android.net.MacAddress);
   }
 
   public class DeviceNotAssociatedException extends java.lang.RuntimeException {
