@@ -24861,6 +24861,7 @@ package android.media {
     method @Nullable public android.net.Uri getIconUri();
     method @NonNull public String getId();
     method @NonNull public CharSequence getName();
+    method @FlaggedApi("com.android.media.flags.enable_route_visibility_control_api") @NonNull public java.util.Set<java.lang.String> getRequiredPermissions();
     method @FlaggedApi("com.android.media.flags.enable_built_in_speaker_route_suitability_statuses") public int getSuitabilityStatus();
     method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public int getSupportedRoutingTypes();
     method public int getType();
@@ -24929,6 +24930,7 @@ package android.media {
     method @NonNull public android.media.MediaRoute2Info.Builder setDescription(@Nullable CharSequence);
     method @NonNull public android.media.MediaRoute2Info.Builder setExtras(@Nullable android.os.Bundle);
     method @NonNull public android.media.MediaRoute2Info.Builder setIconUri(@Nullable android.net.Uri);
+    method @FlaggedApi("com.android.media.flags.enable_route_visibility_control_api") @NonNull public android.media.MediaRoute2Info.Builder setRequiredPermissions(@NonNull java.util.Set<java.lang.String>);
     method @FlaggedApi("com.android.media.flags.enable_built_in_speaker_route_suitability_statuses") @NonNull public android.media.MediaRoute2Info.Builder setSuitabilityStatus(int);
     method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @NonNull public android.media.MediaRoute2Info.Builder setSupportedRoutingTypes(int);
     method @NonNull public android.media.MediaRoute2Info.Builder setType(int);
