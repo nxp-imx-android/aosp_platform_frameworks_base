@@ -56,8 +56,8 @@ public class InsetsResizeAnimationRunner implements InsetsAnimationControlRunner
     private boolean mCancelled;
     private boolean mFinished;
 
-    public InsetsResizeAnimationRunner(Rect frame, InsetsState fromState, InsetsState toState,
-            Interpolator interpolator, long duration, @InsetsType int types,
+    public InsetsResizeAnimationRunner(Rect frame, Rect hostBounds, InsetsState fromState,
+            InsetsState toState, Interpolator interpolator, long duration, @InsetsType int types,
             InsetsAnimationControlCallbacks controller) {
         mFromState = fromState;
         mToState = toState;
@@ -66,9 +66,9 @@ public class InsetsResizeAnimationRunner implements InsetsAnimationControlRunner
         mAnimation = new WindowInsetsAnimation(types, interpolator, duration);
         mAnimation.setAlpha(1f);
         final Insets fromInsets = fromState.calculateInsets(
-                frame, types, false /* ignoreVisibility */);
+                frame, hostBounds, types, false /* ignoreVisibility */);
         final Insets toInsets = toState.calculateInsets(
-                frame, types, false /* ignoreVisibility */);
+                frame, hostBounds, types, false /* ignoreVisibility */);
         controller.startAnimation(this, this, types, mAnimation,
                 new Bounds(Insets.min(fromInsets, toInsets), Insets.max(fromInsets, toInsets)));
     }

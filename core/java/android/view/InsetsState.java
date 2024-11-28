@@ -122,9 +122,10 @@ public class InsetsState implements Parcelable {
      *        {@code null} to use this state to calculate that information.
      * @return The calculated insets.
      */
-    public WindowInsets calculateInsets(Rect frame, @Nullable InsetsState ignoringVisibilityState,
-            boolean isScreenRound, int legacySoftInputMode, int legacyWindowFlags,
-            int legacySystemUiFlags, int windowType, @ActivityType int activityType,
+    public WindowInsets calculateInsets(Rect frame, Rect hostBounds,
+            @Nullable InsetsState ignoringVisibilityState, boolean isScreenRound,
+            int legacySoftInputMode, int legacyWindowFlags, int legacySystemUiFlags, int windowType,
+            @ActivityType int activityType,
             @Nullable @InternalInsetsSide SparseIntArray idSideMap) {
         Insets[] typeInsetsMap = new Insets[Type.SIZE];
         Insets[] typeMaxInsetsMap = new Insets[Type.SIZE];
@@ -154,8 +155,8 @@ public class InsetsState implements Parcelable {
                 suppressScrimTypes |= type;
             }
 
-            processSource(source, relativeFrame, false /* ignoreVisibility */, typeInsetsMap,
-                    idSideMap, typeVisibilityMap, typeBoundingRectsMap);
+            processSource(source, relativeFrame, hostBounds, false /* ignoreVisibility */,
+                    typeInsetsMap, idSideMap, typeVisibilityMap, typeBoundingRectsMap);
 
             // IME won't be reported in max insets as the size depends on the EditorInfo of the IME
             // target.
@@ -166,7 +167,7 @@ public class InsetsState implements Parcelable {
                 if (ignoringVisibilitySource == null) {
                     continue;
                 }
-                processSource(ignoringVisibilitySource, relativeFrameMax,
+                processSource(ignoringVisibilitySource, relativeFrameMax, hostBounds,
                         true /* ignoreVisibility */, typeMaxInsetsMap, null /* idSideMap */,
                         null /* typeVisibilityMap */, typeMaxBoundingRectsMap);
             }
@@ -187,7 +188,7 @@ public class InsetsState implements Parcelable {
         return new WindowInsets(typeInsetsMap, typeMaxInsetsMap, typeVisibilityMap, isScreenRound,
                 forceConsumingTypes, forceConsumingOpaqueCaptionBar, suppressScrimTypes,
                 calculateRelativeCutout(frame),
-                calculateRelativeRoundedCorners(frame),
+                calculateRelativeRoundedCorners(frame, hostBounds),
                 calculateRelativePrivacyIndicatorBounds(frame),
                 calculateRelativeDisplayShape(frame),
                 compatInsetsTypes, (legacySystemUiFlags & SYSTEM_UI_FLAG_LAYOUT_STABLE) != 0,
@@ -215,7 +216,7 @@ public class InsetsState implements Parcelable {
         return raw.inset(insetLeft, insetTop, insetRight, insetBottom);
     }
 
-    private RoundedCorners calculateRelativeRoundedCorners(Rect frame) {
+    private RoundedCorners calculateRelativeRoundedCorners(Rect frame, Rect hostBounds) {
         if (frame == null) {
             return RoundedCorners.NO_ROUNDED_CORNERS;
         }
@@ -225,7 +226,8 @@ public class InsetsState implements Parcelable {
         for (int i = mSources.size() - 1; i >= 0; i--) {
             final InsetsSource source = mSources.valueAt(i);
             if (source.hasFlags(FLAG_INSETS_ROUNDED_CORNER)) {
-                final Insets insets = source.calculateInsets(roundedCornerFrame, false);
+                final Insets insets = source.calculateInsets(roundedCornerFrame, hostBounds,
+                        false /* ignoreVisibility */);
                 roundedCornerFrame.inset(insets);
             }
         }
@@ -266,19 +268,21 @@ public class InsetsState implements Parcelable {
         return mDisplayShape.setOffset(-frame.left, -frame.top);
     }
 
-    public Insets calculateInsets(Rect frame, @InsetsType int types, boolean ignoreVisibility) {
+    public Insets calculateInsets(Rect frame, Rect hostBounds, @InsetsType int types,
+            boolean ignoreVisibility) {
         Insets insets = Insets.NONE;
         for (int i = mSources.size() - 1; i >= 0; i--) {
             final InsetsSource source = mSources.valueAt(i);
             if ((source.getType() & types) == 0) {
                 continue;
             }
-            insets = Insets.max(source.calculateInsets(frame, ignoreVisibility), insets);
+            insets = Insets.max(source.calculateInsets(frame, hostBounds, ignoreVisibility),
+                    insets);
         }
         return insets;
     }
 
-    public Insets calculateInsets(Rect frame, @InsetsType int types,
+    public Insets calculateInsets(Rect frame, Rect hostBounds, @InsetsType int types,
             @InsetsType int requestedVisibleTypes) {
         Insets insets = Insets.NONE;
         for (int i = mSources.size() - 1; i >= 0; i--) {
@@ -286,13 +290,14 @@ public class InsetsState implements Parcelable {
             if ((source.getType() & types & requestedVisibleTypes) == 0) {
                 continue;
             }
-            insets = Insets.max(source.calculateInsets(frame, true), insets);
+            insets = Insets.max(source.calculateInsets(frame, hostBounds, true), insets);
         }
         return insets;
     }
 
-    public Insets calculateVisibleInsets(Rect frame, int windowType, @ActivityType int activityType,
-            @SoftInputModeFlags int softInputMode, int windowFlags) {
+    public Insets calculateVisibleInsets(Rect frame, Rect hostBounds, int windowType,
+            @ActivityType int activityType, @SoftInputModeFlags int softInputMode,
+            int windowFlags) {
         final int softInputAdjustMode = softInputMode & SOFT_INPUT_MASK_ADJUST;
         final int visibleInsetsTypes = softInputAdjustMode != SOFT_INPUT_ADJUST_NOTHING
                 ? systemBars() | displayCutout() | ime()
@@ -307,7 +312,7 @@ public class InsetsState implements Parcelable {
             if (source.hasFlags(FLAG_FORCE_CONSUMING)) {
                 forceConsumingTypes |= source.getType();
             }
-            insets = Insets.max(source.calculateVisibleInsets(frame), insets);
+            insets = Insets.max(source.calculateVisibleInsets(frame, hostBounds), insets);
         }
         return clearsCompatInsets(windowType, windowFlags, activityType, forceConsumingTypes)
                 ? Insets.NONE
@@ -322,19 +327,20 @@ public class InsetsState implements Parcelable {
      * little sense, as we don't deal with negative insets.
      */
     @InsetsType
-    public int calculateUncontrollableInsetsFromFrame(Rect frame) {
+    public int calculateUncontrollableInsetsFromFrame(Rect frame, Rect hostBounds) {
         int blocked = 0;
         for (int i = mSources.size() - 1; i >= 0; i--) {
             final InsetsSource source = mSources.valueAt(i);
-            if (!canControlSource(frame, source)) {
+            if (!canControlSource(frame, hostBounds, source)) {
                 blocked |= source.getType();
             }
         }
         return blocked;
     }
 
-    private static boolean canControlSource(Rect frame, InsetsSource source) {
-        final Insets insets = source.calculateInsets(frame, true /* ignoreVisibility */);
+    private static boolean canControlSource(Rect frame, Rect hostBounds, InsetsSource source) {
+        final Insets insets = source.calculateInsets(frame, hostBounds,
+                true /* ignoreVisibility */);
         final Rect sourceFrame = source.getFrame();
         final int sourceWidth = sourceFrame.width();
         final int sourceHeight = sourceFrame.height();
@@ -342,10 +348,11 @@ public class InsetsState implements Parcelable {
                 || insets.top == sourceHeight || insets.bottom == sourceHeight;
     }
 
-    private void processSource(InsetsSource source, Rect relativeFrame, boolean ignoreVisibility,
-            Insets[] typeInsetsMap, @Nullable @InternalInsetsSide SparseIntArray idSideMap,
+    private void processSource(InsetsSource source, Rect relativeFrame, Rect hostBounds,
+            boolean ignoreVisibility, Insets[] typeInsetsMap,
+            @Nullable @InternalInsetsSide SparseIntArray idSideMap,
             @Nullable boolean[] typeVisibilityMap, Rect[][] typeBoundingRectsMap) {
-        Insets insets = source.calculateInsets(relativeFrame, ignoreVisibility);
+        Insets insets = source.calculateInsets(relativeFrame, hostBounds, ignoreVisibility);
         final Rect[] boundingRects = source.calculateBoundingRects(relativeFrame, ignoreVisibility);
 
         final int type = source.getType();

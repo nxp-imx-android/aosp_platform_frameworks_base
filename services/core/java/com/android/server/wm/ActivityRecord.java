@@ -7784,6 +7784,7 @@ final class ActivityRecord extends WindowToken {
             navBarInsets = mDisplayContent.getInsetsStateController()
                     .getRawInsetsState().calculateInsets(
                             parentBounds,
+                            parentBounds,
                             WindowInsets.Type.navigationBars(),
                             true /* ignoreVisibility */);
         } else {
@@ -7861,8 +7862,10 @@ final class ActivityRecord extends WindowToken {
         final Insets navBarInsets = mDisplayContent.getInsetsStateController()
                 .getRawInsetsState().calculateInsets(
                         parentBounds,
+                        parentBounds,
                         WindowInsets.Type.navigationBars(),
-                        false /* ignoreVisibility */);
+                        false /* ignoreVisibility */
+                );
         return Insets.NONE.equals(navBarInsets);
     }
 

@@ -37,7 +37,8 @@ abstract class NavigationBarsListener(
 
     private fun getNavigationBarsInsets(insetsState: InsetsState): Insets {
         val layout = displayController.getDisplayLayout(displayId) ?: return Insets.NONE
-        return insetsState.calculateInsets(Rect(0, 0, layout.width(), layout.height()),
+        val displayBounds = Rect(0, 0, layout.width(), layout.height())
+        return insetsState.calculateInsets(displayBounds, displayBounds,
             Type.navigationBars(), /* ignoreVisibility= */true)
     }
 

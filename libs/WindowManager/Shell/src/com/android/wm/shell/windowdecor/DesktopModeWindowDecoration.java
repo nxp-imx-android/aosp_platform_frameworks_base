@@ -1021,8 +1021,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             }
             if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
                     && inFullImmersiveMode) {
+                final Rect taskBounds = taskInfo.getConfiguration().windowConfiguration.getBounds();
                 final Insets systemBarInsets = displayInsetsState.calculateInsets(
-                        taskInfo.getConfiguration().windowConfiguration.getBounds(),
+                        taskBounds, taskBounds,
                         WindowInsets.Type.systemBars() & ~WindowInsets.Type.captionBar(),
                         false /* ignoreVisibility */);
                 relayoutParams.mCaptionTopPadding = systemBarInsets.top;

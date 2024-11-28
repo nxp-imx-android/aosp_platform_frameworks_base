@@ -1827,7 +1827,7 @@ class BackNavigationController {
                 final WindowState mainWindow = r.findMainWindow();
                 final Rect insets = mainWindow != null
                         ? mainWindow.getInsetsStateWithVisibilityOverride().calculateInsets(
-                                mBounds, WindowInsets.Type.tappableElement(),
+                                mBounds, mBounds, WindowInsets.Type.tappableElement(),
                                 false /* ignoreVisibility */).toRect()
                         : new Rect();
                 final int mode = mIsOpen ? MODE_OPENING : MODE_CLOSING;

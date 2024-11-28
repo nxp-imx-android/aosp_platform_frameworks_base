@@ -67,6 +67,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Binder;
 import android.os.DeadObjectException;
@@ -929,7 +930,8 @@ public class WindowContainerTests extends WindowTestsBase {
         final InsetsFrameProvider provider =
                 new InsetsFrameProvider(owner, 1, captionBar())
                         .setArbitraryRectangle(insetsRect)
-                        .setFlags(flags);
+                        .setFlags(flags)
+                        .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE);
         task.addLocalInsetsFrameProvider(provider, owner);
 
         final int sourceFlags = task.mLocalInsetsSources.get(provider.getId()).getFlags();
@@ -941,7 +943,8 @@ public class WindowContainerTests extends WindowTestsBase {
         Rect genericOverlayInsetsRect1 = new Rect(0, 200, 1080, 700);
         final InsetsFrameProvider provider1 =
                 new InsetsFrameProvider(owner, 1, WindowInsets.Type.systemOverlays())
-                        .setArbitraryRectangle(genericOverlayInsetsRect1);
+                        .setArbitraryRectangle(genericOverlayInsetsRect1)
+                        .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE);
         wc.addLocalInsetsFrameProvider(provider1, owner);
     }
 
@@ -1234,10 +1237,12 @@ public class WindowContainerTests extends WindowTestsBase {
         Rect genericOverlayInsetsRect2 = new Rect(0, 0, 1080, 200);
         final InsetsFrameProvider provider1 =
                 new InsetsFrameProvider(owner, 1, WindowInsets.Type.systemOverlays())
-                        .setArbitraryRectangle(genericOverlayInsetsRect1);
+                        .setArbitraryRectangle(genericOverlayInsetsRect1)
+                        .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE);
         final InsetsFrameProvider provider2 =
                 new InsetsFrameProvider(owner, 2, WindowInsets.Type.systemOverlays())
-                        .setArbitraryRectangle(genericOverlayInsetsRect2);
+                        .setArbitraryRectangle(genericOverlayInsetsRect2)
+                        .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE);
         final int sourceId1 = provider1.getId();
         final int sourceId2 = provider2.getId();
 
@@ -1274,6 +1279,84 @@ public class WindowContainerTests extends WindowTestsBase {
     }
 
     @Test
+    public void testAddLocalInsetsFrameProvider_relativeInsets() {
+         /*
+                ___ rootTask _______________________________________________
+               |        |                |                                  |
+          activity0    container     navigationBarInsetsProvider1    navigationBarInsetsProvider2
+                       /       \
+               activity1    activity2
+         */
+        final Task rootTask = createTask(mDisplayContent);
+
+        final ActivityRecord activity0 = createActivityRecord(mDisplayContent,
+                createTaskInRootTask(rootTask, 0 /* userId */));
+        final WindowManager.LayoutParams attrs = new WindowManager.LayoutParams(
+                TYPE_BASE_APPLICATION);
+        attrs.setTitle("AppWindow0");
+        activity0.addWindow(createWindowState(attrs, activity0));
+
+        final Task container = createTaskInRootTask(rootTask, 0);
+        final ActivityRecord activity1 = createActivityRecord(mDisplayContent,
+                createTaskInRootTask(container, 0 /* userId */));
+        final WindowManager.LayoutParams attrs1 = new WindowManager.LayoutParams(
+                TYPE_BASE_APPLICATION);
+        attrs1.setTitle("AppWindow1");
+        activity1.addWindow(createWindowState(attrs1, activity1));
+
+        final ActivityRecord activity2 = createActivityRecord(mDisplayContent,
+                createTaskInRootTask(container, 0 /* userId */));
+        final WindowManager.LayoutParams attrs2 = new WindowManager.LayoutParams(
+                TYPE_BASE_APPLICATION);
+        attrs2.setTitle("AppWindow2");
+        activity2.addWindow(createWindowState(attrs2, activity2));
+        final Binder owner = new Binder();
+        Insets genericOverlayInsetsSize1 = Insets.of(0, 200, 0, 0);
+        Insets genericOverlayInsetsSize2 = Insets.of(0, 0, 0, 200);
+        final InsetsFrameProvider provider1 =
+                new InsetsFrameProvider(owner, 1, WindowInsets.Type.systemOverlays())
+                        .setInsetsSize(genericOverlayInsetsSize1)
+                        .setSource(InsetsFrameProvider.SOURCE_ATTACHED_CONTAINER_BOUNDS);
+        final InsetsFrameProvider provider2 =
+                new InsetsFrameProvider(owner, 2, WindowInsets.Type.systemOverlays())
+                        .setInsetsSize(genericOverlayInsetsSize2)
+                        .setSource(InsetsFrameProvider.SOURCE_ATTACHED_CONTAINER_BOUNDS);
+        final int sourceId1 = provider1.getId();
+        final int sourceId2 = provider2.getId();
+
+        rootTask.addLocalInsetsFrameProvider(provider1, owner);
+        container.addLocalInsetsFrameProvider(provider2, owner);
+
+        InsetsSource genericOverlayInsetsProvider1Source = new InsetsSource(
+                sourceId1, systemOverlays());
+        genericOverlayInsetsProvider1Source.setAttachedInsets(genericOverlayInsetsSize1);
+        genericOverlayInsetsProvider1Source.setVisible(true);
+        InsetsSource genericOverlayInsetsProvider2Source = new InsetsSource(
+                sourceId2, systemOverlays());
+        genericOverlayInsetsProvider2Source.setAttachedInsets(genericOverlayInsetsSize2);
+        genericOverlayInsetsProvider2Source.setVisible(true);
+
+        activity0.forAllWindows(window -> {
+            assertEquals(genericOverlayInsetsSize1,
+                    window.getInsetsState().peekSource(sourceId1).getAttachedInsets());
+            assertEquals(null,
+                    window.getInsetsState().peekSource(sourceId2));
+        }, true);
+        activity1.forAllWindows(window -> {
+            assertEquals(genericOverlayInsetsSize1,
+                    window.getInsetsState().peekSource(sourceId1).getAttachedInsets());
+            assertEquals(genericOverlayInsetsSize2,
+                    window.getInsetsState().peekSource(sourceId2).getAttachedInsets());
+        }, true);
+        activity2.forAllWindows(window -> {
+            assertEquals(genericOverlayInsetsSize1,
+                    window.getInsetsState().peekSource(sourceId1).getAttachedInsets());
+            assertEquals(genericOverlayInsetsSize2,
+                    window.getInsetsState().peekSource(sourceId2).getAttachedInsets());
+        }, true);
+    }
+
+    @Test
     public void testAddLocalInsetsFrameProvider_sameType_replacesInsets() {
          /*
                 ___ rootTask ________________________________________
@@ -1294,10 +1377,12 @@ public class WindowContainerTests extends WindowTestsBase {
         final Rect genericOverlayInsetsRect2 = new Rect(0, 0, 1080, 200);
         final InsetsFrameProvider provider1 =
                 new InsetsFrameProvider(owner, 1, WindowInsets.Type.systemOverlays())
-                        .setArbitraryRectangle(genericOverlayInsetsRect1);
+                        .setArbitraryRectangle(genericOverlayInsetsRect1)
+                        .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE);
         final InsetsFrameProvider provider2 =
                 new InsetsFrameProvider(owner, 1, WindowInsets.Type.systemOverlays())
-                        .setArbitraryRectangle(genericOverlayInsetsRect2);
+                        .setArbitraryRectangle(genericOverlayInsetsRect2)
+                        .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE);
         final int sourceId1 = provider1.getId();
         final int sourceId2 = provider2.getId();
 
@@ -1355,10 +1440,12 @@ public class WindowContainerTests extends WindowTestsBase {
         final Rect navigationBarInsetsRect2 = new Rect(0, 0, 1080, 200);
         final InsetsFrameProvider provider1 =
                 new InsetsFrameProvider(owner, 1, WindowInsets.Type.systemOverlays())
-                        .setArbitraryRectangle(navigationBarInsetsRect1);
+                        .setArbitraryRectangle(navigationBarInsetsRect1)
+                        .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE);
         final InsetsFrameProvider provider2 =
                 new InsetsFrameProvider(owner, 2, WindowInsets.Type.systemOverlays())
-                        .setArbitraryRectangle(navigationBarInsetsRect2);
+                        .setArbitraryRectangle(navigationBarInsetsRect2)
+                        .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE);
         final int sourceId1 = provider1.getId();
         final int sourceId2 = provider2.getId();
 
@@ -1396,7 +1483,8 @@ public class WindowContainerTests extends WindowTestsBase {
         final TestBinder owner = new TestBinder();
         final InsetsFrameProvider provider =
                 new InsetsFrameProvider(owner, 0, WindowInsets.Type.systemOverlays())
-                        .setArbitraryRectangle(new Rect());
+                        .setArbitraryRectangle(new Rect())
+                        .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE);
         task.addLocalInsetsFrameProvider(provider, owner);
 
         assertTrue("The death recipient must exist.", owner.hasDeathRecipient());
@@ -1419,7 +1507,8 @@ public class WindowContainerTests extends WindowTestsBase {
 
         final InsetsFrameProvider provider =
                 new InsetsFrameProvider(owner, 0, WindowInsets.Type.systemOverlays())
-                        .setArbitraryRectangle(new Rect());
+                        .setArbitraryRectangle(new Rect())
+                        .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE);
         task.addLocalInsetsFrameProvider(provider, owner);
 
         assertFalse("The death recipient must not exist.", owner.hasDeathRecipient());
@@ -1432,7 +1521,8 @@ public class WindowContainerTests extends WindowTestsBase {
         final TestBinder owner = new TestBinder();
         final InsetsFrameProvider provider =
                 new InsetsFrameProvider(owner, 0, WindowInsets.Type.systemOverlays())
-                        .setArbitraryRectangle(new Rect());
+                        .setArbitraryRectangle(new Rect())
+                        .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE);
         task.addLocalInsetsFrameProvider(provider, owner);
 
         assertTrue("The death recipient must exist.", owner.hasDeathRecipient());

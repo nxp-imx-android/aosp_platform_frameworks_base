@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.windowdecor
 
+import android.graphics.Insets
 import android.graphics.Rect
 import android.os.Binder
 import android.view.InsetsSource
@@ -38,24 +39,46 @@ data class WindowDecorationInsets(
     /** Updates the caption insets. */
     fun update(wct: WindowContainerTransaction) {
         if (!shouldAddCaptionInset) return
-        wct.addInsetsSource(
-            token,
-            owner,
-            INDEX,
-            WindowInsets.Type.captionBar(),
-            frame,
-            boundingRects,
-            flags,
-        )
-        wct.addInsetsSource(
-            token,
-            owner,
-            INDEX,
-            WindowInsets.Type.mandatorySystemGestures(),
-            frame,
-            boundingRects,
-            /* flags= */ 0,
-        )
+        if (com.android.window.flags.Flags.relativeInsets()) {
+            val insets = Insets.of(0, frame.height(), 0, 0)
+            wct.addInsetsSource(
+                token,
+                owner,
+                INDEX,
+                WindowInsets.Type.captionBar(),
+                insets,
+                boundingRects,
+                flags,
+            )
+            wct.addInsetsSource(
+                token,
+                owner,
+                INDEX,
+                WindowInsets.Type.mandatorySystemGestures(),
+                insets,
+                boundingRects,
+                /* flags= */ 0,
+            )
+        } else {
+            wct.addInsetsSource(
+                token,
+                owner,
+                INDEX,
+                WindowInsets.Type.captionBar(),
+                frame,
+                boundingRects,
+                flags,
+            )
+            wct.addInsetsSource(
+                token,
+                owner,
+                INDEX,
+                WindowInsets.Type.mandatorySystemGestures(),
+                frame,
+                boundingRects,
+                /* flags= */ 0,
+            )
+        }
         if (excludedFromAppBounds) {
             val appBounds = Rect(taskFrame)
             appBounds.top += frame.height()

@@ -1601,7 +1601,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
         bounds.set(mWindowFrames.mFrame);
         bounds.inset(getInsetsStateWithVisibilityOverride().calculateVisibleInsets(
-                bounds, mAttrs.type, getActivityType(), mAttrs.softInputMode, mAttrs.flags));
+                bounds, bounds, mAttrs.type, getActivityType(), mAttrs.softInputMode, mAttrs.flags
+        ));
         if (intersectWithRootTaskBounds) {
             bounds.intersect(mTmpRect);
         }
@@ -5486,11 +5487,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         } else {
             outFrame.set(getParentFrame());
         }
+        final Task task = getTask();
+        final Rect bounds = task == null ? getBounds() : task.getBounds();
         outSurfaceInsets.set(mAttrs.surfaceInsets);
         final InsetsState state = getInsetsStateWithVisibilityOverride();
-        outInsets.set(state.calculateInsets(outFrame, systemBars(),
+        outInsets.set(state.calculateInsets(outFrame, bounds, systemBars(),
                 false /* ignoreVisibility */).toRect());
-        outStableInsets.set(state.calculateInsets(outFrame, systemBars(),
+        outStableInsets.set(state.calculateInsets(outFrame, bounds, systemBars(),
                 true /* ignoreVisibility */).toRect());
     }
 

@@ -123,7 +123,8 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
 
     @VisibleForTesting(visibility = PACKAGE)
     public InsetsAnimationControlImpl(SparseArray<InsetsSourceControl> controls,
-            @Nullable Rect frame, InsetsState state, WindowInsetsAnimationControlListener listener,
+            @Nullable Rect frame, @Nullable Rect bounds, InsetsState state,
+            WindowInsetsAnimationControlListener listener,
             @InsetsType int types, InsetsAnimationControlCallbacks controller,
             SurfaceParamsApplier surfaceParamsApplier,
             InsetsAnimationSpec insetsAnimationSpec, @AnimationType int animationType,
@@ -136,13 +137,14 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
         mController = controller;
         mSurfaceParamsApplier = surfaceParamsApplier;
         mInitialInsetsState = new InsetsState(state, true /* copySources */);
-        if (frame != null) {
+        if (frame != null && bounds != null) {
             final SparseIntArray idSideMap = new SparseIntArray();
-            mCurrentInsets = getInsetsFromState(mInitialInsetsState, frame, null /* idSideMap */);
-            mHiddenInsets = calculateInsets(mInitialInsetsState, frame, controls, false /* shown */,
+            mCurrentInsets = getInsetsFromState(mInitialInsetsState, frame, bounds,
                     null /* idSideMap */);
-            mShownInsets = calculateInsets(mInitialInsetsState, frame, controls, true /* shown */,
-                    idSideMap);
+            mHiddenInsets = calculateInsets(mInitialInsetsState, frame, bounds, controls,
+                    false /* shown */, null /* idSideMap */);
+            mShownInsets = calculateInsets(mInitialInsetsState, frame, bounds, controls,
+                    true /* shown */, idSideMap);
             mHasZeroInsetsIme = mShownInsets.bottom == 0 && controlsType(WindowInsets.Type.ime());
             if (mHasZeroInsetsIme) {
                 // IME has shownInsets of ZERO, and can't map to a side by default.
@@ -151,8 +153,8 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
             }
             buildSideControlsMap(idSideMap, mSideControlsMap, controls);
         } else {
-            // Passing a null frame indicates the caller wants to play the insets animation anyway,
-            // no matter the source provides insets to the frame or not.
+            // Passing a null frame or bounds indicates the caller wants to play the insets
+            // animation anyway, no matter the source provides insets to the frame or not.
             mCurrentInsets = calculateInsets(mInitialInsetsState, controls, true /* shown */);
             mHiddenInsets = calculateInsets(null, controls, false /* shown */);
             mShownInsets = calculateInsets(null, controls, true /* shown */);
@@ -429,16 +431,16 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
         return mControls;
     }
 
-    private Insets getInsetsFromState(InsetsState state, Rect frame,
+    private Insets getInsetsFromState(InsetsState state, Rect frame, Rect bounds,
             @Nullable @InternalInsetsSide SparseIntArray idSideMap) {
-        return state.calculateInsets(frame, null /* ignoringVisibilityState */,
+        return state.calculateInsets(frame, bounds, null /* ignoringVisibilityState */,
                 false /* isScreenRound */, SOFT_INPUT_ADJUST_RESIZE /* legacySoftInputMode */,
                 0 /* legacyWindowFlags */, 0 /* legacySystemUiFlags */, TYPE_APPLICATION,
                 ACTIVITY_TYPE_UNDEFINED, idSideMap).getInsets(mTypes);
     }
 
     /** Computes the insets relative to the given frame. */
-    private Insets calculateInsets(InsetsState state, Rect frame,
+    private Insets calculateInsets(InsetsState state, Rect frame, Rect bounds,
             SparseArray<InsetsSourceControl> controls, boolean shown,
             @Nullable @InternalInsetsSide SparseIntArray idSideMap) {
         for (int i = controls.size() - 1; i >= 0; i--) {
@@ -449,7 +451,7 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
             }
             state.setSourceVisible(control.getId(), shown);
         }
-        return getInsetsFromState(state, frame, idSideMap);
+        return getInsetsFromState(state, frame, bounds, idSideMap);
     }
 
     /** Computes the insets from the insets hints of controls. */

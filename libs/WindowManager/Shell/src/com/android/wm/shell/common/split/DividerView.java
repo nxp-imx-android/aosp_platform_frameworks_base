@@ -268,7 +268,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 final InsetsSource source = insetsState.sourceAt(i);
                 if (source.getType() == WindowInsets.Type.navigationBars()
                         && source.hasFlags(InsetsSource.FLAG_INSETS_ROUNDED_CORNER)) {
-                    mTempRect.inset(source.calculateVisibleInsets(mTempRect));
+                    mTempRect.inset(source.calculateVisibleInsets(mTempRect, mTempRect));
                 }
             }
         }

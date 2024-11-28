@@ -721,7 +721,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             if (source.getType() == WindowInsets.Type.navigationBars()
                     && source.hasFlags(InsetsSource.FLAG_INSETS_ROUNDED_CORNER)) {
                 // Return Insets representing the pinned taskbar state.
-                return source.calculateVisibleInsets(mRootBounds);
+                return source.calculateVisibleInsets(mRootBounds, mRootBounds);
             }
         }
 

@@ -395,6 +395,21 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             return;
         }
 
+        final int id = provider.getId();
+        final InsetsSource source = new InsetsSource(id, provider.getType());
+        final int frameSource = provider.getSource();
+        if (frameSource == InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE) {
+            source.setFrame(provider.getArbitraryRectangle());
+        } else if (frameSource == InsetsFrameProvider.SOURCE_ATTACHED_CONTAINER_BOUNDS) {
+            source.setAttachedInsets(provider.getInsetsSize());
+        } else {
+            throw new IllegalArgumentException("The local insets source is using an unsupported"
+                    + " source: " + provider);
+        }
+        source.updateSideHint(getBounds()).setBoundingRects(provider.getBoundingRects());
+        if (ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue()) {
+            source.setFlags(provider.getFlags());
+        }
         if (mInsetsOwnerDeathRecipientMap == null) {
             mInsetsOwnerDeathRecipientMap = new ArrayMap<>();
         }
@@ -409,7 +424,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             }
             mInsetsOwnerDeathRecipientMap.put(owner, deathRecipient);
         }
-        final int id = provider.getId();
         deathRecipient.addSourceId(id);
         if (mLocalInsetsSources == null) {
             mLocalInsetsSources = new SparseArray<>();
@@ -419,13 +433,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
                 Slog.d(TAG, "The local insets source for this " + provider
                         + " already exists. Overwriting.");
             }
-        }
-        final InsetsSource source = new InsetsSource(id, provider.getType());
-        source.setFrame(provider.getArbitraryRectangle())
-                .updateSideHint(getBounds())
-                .setBoundingRects(provider.getBoundingRects());
-        if (ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue()) {
-            source.setFlags(provider.getFlags());
         }
         mLocalInsetsSources.put(id, source);
         mDisplayContent.getInsetsStateController().updateAboveInsetsState(true);

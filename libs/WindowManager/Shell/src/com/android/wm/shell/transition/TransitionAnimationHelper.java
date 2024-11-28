@@ -357,7 +357,8 @@ public class TransitionAnimationHelper {
                 if (!source.hasFlags(InsetsSource.FLAG_INSETS_ROUNDED_CORNER)) {
                     continue;
                 }
-                insets = Insets.max(source.calculateInsets(insetsState.getDisplayFrame(), false),
+                Rect displayFrame = insetsState.getDisplayFrame();
+                insets = Insets.max(source.calculateInsets(displayFrame, displayFrame, false),
                         insets);
             }
             mBounds.set(insetsState.getDisplayFrame());
