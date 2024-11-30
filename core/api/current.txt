@@ -1203,7 +1203,7 @@ package android {
     field public static final int minResizeHeight = 16843670; // 0x1010396
     field public static final int minResizeWidth = 16843669; // 0x1010395
     field public static final int minSdkVersion = 16843276; // 0x101020c
-    field @FlaggedApi("android.content.pm.support_minor_versions_in_minsdkversion") public static final int minSdkVersionFull;
+    field @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static final int minSdkVersionFull;
     field public static final int minWidth = 16843071; // 0x101013f
     field public static final int minimumHorizontalAngle = 16843901; // 0x101047d
     field public static final int minimumVerticalAngle = 16843902; // 0x101047e
