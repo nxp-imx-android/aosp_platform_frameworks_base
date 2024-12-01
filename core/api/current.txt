@@ -1203,6 +1203,7 @@ package android {
     field public static final int minResizeHeight = 16843670; // 0x1010396
     field public static final int minResizeWidth = 16843669; // 0x1010395
     field public static final int minSdkVersion = 16843276; // 0x101020c
+    field @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static final int minSdkVersionFull;
     field public static final int minWidth = 16843071; // 0x101013f
     field public static final int minimumHorizontalAngle = 16843901; // 0x101047d
     field public static final int minimumVerticalAngle = 16843902; // 0x101047e
@@ -2186,6 +2187,18 @@ package android {
   public static final class R.dimen {
     ctor public R.dimen();
     field public static final int app_icon_size = 17104896; // 0x1050000
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultEffectDamping;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultSpatialDamping;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastEffectDamping;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastSpatialDamping;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowEffectDamping;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowSpatialDamping;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultEffectDamping;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultSpatialDamping;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastEffectDamping;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastSpatialDamping;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowEffectDamping;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowSpatialDamping;
     field public static final int dialog_min_width_major = 17104899; // 0x1050003
     field public static final int dialog_min_width_minor = 17104900; // 0x1050004
     field public static final int notification_large_icon_height = 17104902; // 0x1050006
@@ -2482,6 +2495,18 @@ package android {
     ctor public R.integer();
     field public static final int config_longAnimTime = 17694722; // 0x10e0002
     field public static final int config_mediumAnimTime = 17694721; // 0x10e0001
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultEffectStiffness;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultSpatialStiffness;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastEffectStiffness;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastSpatialStiffness;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowEffectStiffness;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowSpatialStiffness;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultEffectStiffness;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultSpatialStiffness;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastEffectStiffness;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastSpatialStiffness;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowEffectStiffness;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowSpatialStiffness;
     field public static final int config_shortAnimTime = 17694720; // 0x10e0000
     field @Deprecated public static final int status_bar_notification_info_maxnum = 17694723; // 0x10e0003
   }
@@ -8916,6 +8941,7 @@ package android.app.assist {
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.assist.AssistContent> CREATOR;
     field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public static final String EXTRA_APP_FUNCTION_DATA = "android.app.assist.extra.APP_FUNCTION_DATA";
+    field @FlaggedApi("com.android.window.flags.enable_desktop_windowing_app_to_web_education") public static final String EXTRA_SESSION_TRANSFER_WEB_URI = "android.app.assist.extra.SESSION_TRANSFER_WEB_URI";
   }
 
   public class AssistStructure implements android.os.Parcelable {
@@ -9998,12 +10024,12 @@ package android.companion {
     method public int describeContents();
     method @Nullable public android.companion.AssociatedDevice getAssociatedDevice();
     method @FlaggedApi("android.companion.association_device_icon") @Nullable public android.graphics.drawable.Icon getDeviceIcon();
+    method @FlaggedApi("android.companion.association_tag") @Nullable public android.companion.DeviceId getDeviceId();
     method @Nullable public android.net.MacAddress getDeviceMacAddress();
     method @Nullable public String getDeviceProfile();
     method @Nullable public CharSequence getDisplayName();
     method public int getId();
     method public int getSystemDataSyncFlags();
-    method @FlaggedApi("android.companion.association_tag") @Nullable public String getTag();
     method public boolean isSelfManaged();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.AssociationInfo> CREATOR;
@@ -10076,7 +10102,6 @@ package android.companion {
     method @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES) public void attachSystemDataTransport(int, @NonNull java.io.InputStream, @NonNull java.io.OutputStream) throws android.companion.DeviceNotAssociatedException;
     method @Nullable public android.content.IntentSender buildAssociationCancellationIntent();
     method @Nullable public android.content.IntentSender buildPermissionTransferUserConsentIntent(int) throws android.companion.DeviceNotAssociatedException;
-    method @FlaggedApi("android.companion.association_tag") public void clearAssociationTag(int);
     method @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES) public void detachSystemDataTransport(int) throws android.companion.DeviceNotAssociatedException;
     method public void disableSystemDataSyncForTypes(int, int);
     method @Deprecated public void disassociate(@NonNull String);
@@ -10088,11 +10113,11 @@ package android.companion {
     method @FlaggedApi("android.companion.perm_sync_user_consent") public boolean isPermissionTransferUserConsented(int);
     method @FlaggedApi("android.companion.unpair_associated_device") @RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT) public boolean removeBond(int);
     method public void requestNotificationAccess(android.content.ComponentName);
-    method @FlaggedApi("android.companion.association_tag") public void setAssociationTag(int, @NonNull String);
-    method @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
+    method @FlaggedApi("android.companion.association_tag") public void setDeviceId(int, @Nullable android.companion.DeviceId);
+    method @Deprecated @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
     method @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
     method public void startSystemDataTransfer(int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,android.companion.CompanionException>) throws android.companion.DeviceNotAssociatedException;
-    method @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
+    method @Deprecated @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
     method @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
     field public static final String EXTRA_ASSOCIATION = "android.companion.extra.ASSOCIATION";
     field @Deprecated public static final String EXTRA_DEVICE = "android.companion.extra.DEVICE";
@@ -10120,9 +10145,9 @@ package android.companion {
     method @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES) public final void detachSystemDataTransport(int) throws android.companion.DeviceNotAssociatedException;
     method @Nullable public final android.os.IBinder onBind(@NonNull android.content.Intent);
     method @Deprecated @MainThread public void onDeviceAppeared(@NonNull String);
-    method @MainThread public void onDeviceAppeared(@NonNull android.companion.AssociationInfo);
+    method @Deprecated @FlaggedApi("android.companion.device_presence") @MainThread public void onDeviceAppeared(@NonNull android.companion.AssociationInfo);
     method @Deprecated @MainThread public void onDeviceDisappeared(@NonNull String);
-    method @MainThread public void onDeviceDisappeared(@NonNull android.companion.AssociationInfo);
+    method @Deprecated @FlaggedApi("android.companion.device_presence") @MainThread public void onDeviceDisappeared(@NonNull android.companion.AssociationInfo);
     method @FlaggedApi("android.companion.device_presence") @MainThread public void onDevicePresenceEvent(@NonNull android.companion.DevicePresenceEvent);
     field public static final String SERVICE_INTERFACE = "android.companion.CompanionDeviceService";
   }
@@ -10131,6 +10156,21 @@ package android.companion {
   }
 
   public interface DeviceFilter<D extends android.os.Parcelable> extends android.os.Parcelable {
+  }
+
+  @FlaggedApi("android.companion.association_tag") public final class DeviceId implements android.os.Parcelable {
+    method public int describeContents();
+    method @Nullable public String getCustomId();
+    method @Nullable public android.net.MacAddress getMacAddress();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.companion.DeviceId> CREATOR;
+  }
+
+  public static final class DeviceId.Builder {
+    ctor public DeviceId.Builder();
+    method @NonNull public android.companion.DeviceId build();
+    method @NonNull public android.companion.DeviceId.Builder setCustomId(@Nullable String);
+    method @NonNull public android.companion.DeviceId.Builder setMacAddress(@Nullable android.net.MacAddress);
   }
 
   public class DeviceNotAssociatedException extends java.lang.RuntimeException {
@@ -20767,6 +20807,7 @@ package android.hardware.display {
 
   public final class VirtualDisplayConfig implements android.os.Parcelable {
     method public int describeContents();
+    method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @FloatRange(from=0.0f, to=1.0f) public float getDefaultBrightness();
     method public int getDensityDpi();
     method @NonNull public java.util.Set<java.lang.String> getDisplayCategories();
     method public int getFlags();
@@ -20779,10 +20820,16 @@ package android.hardware.display {
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.display.VirtualDisplayConfig> CREATOR;
   }
 
+  @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") public static interface VirtualDisplayConfig.BrightnessListener {
+    method public void onBrightnessChanged(@FloatRange(from=0.0f, to=1.0f) float);
+  }
+
   public static final class VirtualDisplayConfig.Builder {
     ctor public VirtualDisplayConfig.Builder(@NonNull String, @IntRange(from=1) int, @IntRange(from=1) int, @IntRange(from=1) int);
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder addDisplayCategory(@NonNull String);
     method @NonNull public android.hardware.display.VirtualDisplayConfig build();
+    method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setBrightnessListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.display.VirtualDisplayConfig.BrightnessListener);
+    method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setDefaultBrightness(@FloatRange(from=0.0f, to=1.0f) float);
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setDisplayCategories(@NonNull java.util.Set<java.lang.String>);
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setFlags(int);
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setRequestedRefreshRate(@FloatRange(from=0.0f) float);
@@ -24852,7 +24899,9 @@ package android.media {
     method @Nullable public android.net.Uri getIconUri();
     method @NonNull public String getId();
     method @NonNull public CharSequence getName();
+    method @FlaggedApi("com.android.media.flags.enable_route_visibility_control_api") @NonNull public java.util.Set<java.lang.String> getRequiredPermissions();
     method @FlaggedApi("com.android.media.flags.enable_built_in_speaker_route_suitability_statuses") public int getSuitabilityStatus();
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public int getSupportedRoutingTypes();
     method public int getType();
     method public int getVolume();
     method public int getVolumeHandling();
@@ -24868,6 +24917,8 @@ package android.media {
     field public static final String FEATURE_REMOTE_AUDIO_PLAYBACK = "android.media.route.feature.REMOTE_AUDIO_PLAYBACK";
     field public static final String FEATURE_REMOTE_PLAYBACK = "android.media.route.feature.REMOTE_PLAYBACK";
     field public static final String FEATURE_REMOTE_VIDEO_PLAYBACK = "android.media.route.feature.REMOTE_VIDEO_PLAYBACK";
+    field @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final int FLAG_ROUTING_TYPE_REMOTE = 4; // 0x4
+    field @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final int FLAG_ROUTING_TYPE_SYSTEM_AUDIO = 1; // 0x1
     field public static final int PLAYBACK_VOLUME_FIXED = 0; // 0x0
     field public static final int PLAYBACK_VOLUME_VARIABLE = 1; // 0x1
     field @FlaggedApi("com.android.media.flags.enable_built_in_speaker_route_suitability_statuses") public static final int SUITABILITY_STATUS_NOT_SUITABLE_FOR_TRANSFER = 2; // 0x2
@@ -24917,7 +24968,9 @@ package android.media {
     method @NonNull public android.media.MediaRoute2Info.Builder setDescription(@Nullable CharSequence);
     method @NonNull public android.media.MediaRoute2Info.Builder setExtras(@Nullable android.os.Bundle);
     method @NonNull public android.media.MediaRoute2Info.Builder setIconUri(@Nullable android.net.Uri);
+    method @FlaggedApi("com.android.media.flags.enable_route_visibility_control_api") @NonNull public android.media.MediaRoute2Info.Builder setRequiredPermissions(@NonNull java.util.Set<java.lang.String>);
     method @FlaggedApi("com.android.media.flags.enable_built_in_speaker_route_suitability_statuses") @NonNull public android.media.MediaRoute2Info.Builder setSuitabilityStatus(int);
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @NonNull public android.media.MediaRoute2Info.Builder setSupportedRoutingTypes(int);
     method @NonNull public android.media.MediaRoute2Info.Builder setType(int);
     method @NonNull public android.media.MediaRoute2Info.Builder setVisibilityPublic();
     method @NonNull public android.media.MediaRoute2Info.Builder setVisibilityRestricted(@NonNull java.util.Set<java.lang.String>);
@@ -29836,6 +29889,7 @@ package android.net.http {
   public class X509TrustManagerExtensions {
     ctor public X509TrustManagerExtensions(javax.net.ssl.X509TrustManager) throws java.lang.IllegalArgumentException;
     method public java.util.List<java.security.cert.X509Certificate> checkServerTrusted(java.security.cert.X509Certificate[], String, String) throws java.security.cert.CertificateException;
+    method @FlaggedApi("android.net.platform.flags.x509_extensions_certificate_transparency") @NonNull public java.util.List<java.security.cert.X509Certificate> checkServerTrusted(@NonNull java.security.cert.X509Certificate[], @Nullable byte[], @Nullable byte[], @NonNull String, @NonNull String) throws java.security.cert.CertificateException;
     method public boolean isSameTrustConfiguration(String, String);
     method public boolean isUserAddedCertificate(java.security.cert.X509Certificate);
   }
@@ -33612,14 +33666,12 @@ package android.os {
   @FlaggedApi("android.os.cpu_gpu_headrooms") public final class CpuHeadroomParams {
     ctor public CpuHeadroomParams();
     method public int getCalculationType();
-    method @IntRange(from=android.os.CpuHeadroomParams.CPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MIN, to=android.os.CpuHeadroomParams.CPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MAX) public long getCalculationWindowMillis();
+    method @IntRange(from=0x32, to=0x2710) public long getCalculationWindowMillis();
     method public void setCalculationType(int);
-    method public void setCalculationWindowMillis(@IntRange(from=android.os.CpuHeadroomParams.CPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MIN, to=android.os.CpuHeadroomParams.CPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MAX) int);
+    method public void setCalculationWindowMillis(@IntRange(from=0x32, to=0x2710) int);
     method public void setTids(@NonNull int...);
     field public static final int CPU_HEADROOM_CALCULATION_TYPE_AVERAGE = 1; // 0x1
     field public static final int CPU_HEADROOM_CALCULATION_TYPE_MIN = 0; // 0x0
-    field public static final int CPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MAX = 10000; // 0x2710
-    field public static final int CPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MIN = 50; // 0x32
   }
 
   public final class CpuUsageInfo implements android.os.Parcelable {
@@ -33872,13 +33924,11 @@ package android.os {
   @FlaggedApi("android.os.cpu_gpu_headrooms") public final class GpuHeadroomParams {
     ctor public GpuHeadroomParams();
     method public int getCalculationType();
-    method @IntRange(from=android.os.GpuHeadroomParams.GPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MIN, to=android.os.GpuHeadroomParams.GPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MAX) public int getCalculationWindowMillis();
+    method @IntRange(from=0x32, to=0x2710) public int getCalculationWindowMillis();
     method public void setCalculationType(int);
-    method public void setCalculationWindowMillis(@IntRange(from=android.os.GpuHeadroomParams.GPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MIN, to=android.os.GpuHeadroomParams.GPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MAX) int);
+    method public void setCalculationWindowMillis(@IntRange(from=0x32, to=0x2710) int);
     field public static final int GPU_HEADROOM_CALCULATION_TYPE_AVERAGE = 1; // 0x1
     field public static final int GPU_HEADROOM_CALCULATION_TYPE_MIN = 0; // 0x0
-    field public static final int GPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MAX = 10000; // 0x2710
-    field public static final int GPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MIN = 50; // 0x32
   }
 
   public class Handler {
