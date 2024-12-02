@@ -27213,8 +27213,30 @@ package android.media.quality {
   }
 
   public static final class MediaQualityContract.PictureQuality {
+    field public static final String PARAMETER_AUTO_PICTURE_QUALITY_ENABLED = "auto_picture_quality_enabled";
+    field public static final String PARAMETER_AUTO_SUPER_RESOLUTION_ENABLED = "auto_super_resolution_enabled";
+    field public static final String PARAMETER_BLUE_STRETCH = "blue_stretch";
     field public static final String PARAMETER_BRIGHTNESS = "brightness";
+    field public static final String PARAMETER_COLOR_TEMPERATURE = "color_temperature";
+    field public static final String PARAMETER_COLOR_TUNE = "color_tune";
+    field public static final String PARAMETER_COLOR_TUNER_BLUE_GAIN = "color_tuner_blue_gain";
+    field public static final String PARAMETER_COLOR_TUNER_BLUE_OFFSET = "color_tuner_blue_offset";
+    field public static final String PARAMETER_COLOR_TUNER_BRIGHTNESS = "color_tuner_brightness";
+    field public static final String PARAMETER_COLOR_TUNER_GREEN_GAIN = "color_tuner_green_gain";
+    field public static final String PARAMETER_COLOR_TUNER_GREEN_OFFSET = "color_tuner_green_offset";
+    field public static final String PARAMETER_COLOR_TUNER_HUE = "color_tuner_hue";
+    field public static final String PARAMETER_COLOR_TUNER_RED_GAIN = "color_tuner_red_gain";
+    field public static final String PARAMETER_COLOR_TUNER_RED_OFFSET = "color_tuner_red_offset";
+    field public static final String PARAMETER_COLOR_TUNER_SATURATION = "color_tuner_saturation";
     field public static final String PARAMETER_CONTRAST = "contrast";
+    field public static final String PARAMETER_DECONTOUR = "decontour";
+    field public static final String PARAMETER_DYNAMIC_LUMA_CONTROL = "dynamic_luma_control";
+    field public static final String PARAMETER_FILM_MODE = "film_mode";
+    field public static final String PARAMETER_FLESH_TONE = "flesh_tone";
+    field public static final String PARAMETER_GLOBAL_DIMMING = "global_dimming";
+    field public static final String PARAMETER_HUE = "hue";
+    field public static final String PARAMETER_MPEG_NOISE_REDUCTION = "mpeg_noise_reduction";
+    field public static final String PARAMETER_NOISE_REDUCTION = "noise_reduction";
     field public static final String PARAMETER_SATURATION = "saturation";
     field public static final String PARAMETER_SHARPNESS = "sharpness";
   }
