@@ -21,7 +21,7 @@ import android.annotation.Nullable;
 import android.os.ParcelUuid;
 import android.os.PersistableBundle;
 
-import com.android.internal.util.HexDump;
+import com.android.net.module.util.HexDump;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

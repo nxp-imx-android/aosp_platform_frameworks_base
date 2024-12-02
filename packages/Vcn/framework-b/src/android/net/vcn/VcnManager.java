@@ -334,7 +334,7 @@ public class VcnManager {
      * @param executor the Executor that will be used for invoking all calls to the specified
      *     Listener
      * @param listener the VcnUnderlyingNetworkPolicyListener to be added
-     * @throws SecurityException if the caller does not have permission NETWORK_FACTORY
+     * @throws SecurityException if the caller does not have the required permission
      * @throws IllegalStateException if the specified VcnUnderlyingNetworkPolicyListener is already
      *     registered
      * @hide
@@ -423,7 +423,7 @@ public class VcnManager {
      * @param executor the Executor that will be used for invoking all calls to the specified
      *     Listener
      * @param listener the VcnNetworkPolicyChangeListener to be added
-     * @throws SecurityException if the caller does not have permission NETWORK_FACTORY
+     * @throws SecurityException if the caller does not have the required permission
      * @throws IllegalStateException if the specified VcnNetworkPolicyChangeListener is already
      *     registered
      * @hide
@@ -455,7 +455,7 @@ public class VcnManager {
      * <p>If the specified listener is not currently registered, this is a no-op.
      *
      * @param listener the VcnNetworkPolicyChangeListener that will be removed
-     * @throws SecurityException if the caller does not have permission NETWORK_FACTORY
+     * @throws SecurityException if the caller does not have the required permission
      * @hide
      */
     @SystemApi
@@ -489,7 +489,7 @@ public class VcnManager {
      *     policy result for this Network.
      * @param linkProperties the LinkProperties to be used in determining the Network policy result
      *     for this Network.
-     * @throws SecurityException if the caller does not have permission NETWORK_FACTORY
+     * @throws SecurityException if the caller does not have the required permission
      * @return the {@link VcnNetworkPolicyResult} to be used for this Network.
      * @hide
      */
