@@ -40810,13 +40810,14 @@ package android.service.autofill {
 
   public abstract class AutofillService extends android.app.Service {
     ctor public AutofillService();
-    method @Nullable public final android.service.autofill.FillEventHistory getFillEventHistory();
+    method @Deprecated @FlaggedApi("android.service.autofill.autofill_session_destroyed") @Nullable public final android.service.autofill.FillEventHistory getFillEventHistory();
     method public final android.os.IBinder onBind(android.content.Intent);
     method public void onConnected();
     method public void onDisconnected();
     method public abstract void onFillRequest(@NonNull android.service.autofill.FillRequest, @NonNull android.os.CancellationSignal, @NonNull android.service.autofill.FillCallback);
     method public abstract void onSaveRequest(@NonNull android.service.autofill.SaveRequest, @NonNull android.service.autofill.SaveCallback);
     method public void onSavedDatasetsInfoRequest(@NonNull android.service.autofill.SavedDatasetsInfoCallback);
+    method @FlaggedApi("android.service.autofill.autofill_session_destroyed") public void onSessionDestroyed(@Nullable android.service.autofill.FillEventHistory);
     field public static final String EXTRA_FILL_RESPONSE = "android.service.autofill.extra.FILL_RESPONSE";
     field public static final String SERVICE_INTERFACE = "android.service.autofill.AutofillService";
     field public static final String SERVICE_META_DATA = "android.autofill";
