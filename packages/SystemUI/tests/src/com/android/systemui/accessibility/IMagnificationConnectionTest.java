@@ -43,13 +43,13 @@ import android.view.accessibility.IRemoteMagnificationAnimationCallback;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.model.SysUiState;
 import com.android.systemui.recents.LauncherProxyService;
 import com.android.systemui.settings.FakeDisplayTracker;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.util.settings.SecureSettings;
+import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -94,7 +94,7 @@ public class IMagnificationConnectionTest extends SysuiTestCase {
     @Mock
     private IWindowManager mIWindowManager;
     @Mock
-    private ViewCaptureAwareWindowManager mViewCaptureAwareWindowManager;
+    private WindowManagerProvider mWindowManagerProvider;
 
     private IMagnificationConnection mIMagnificationConnection;
     private MagnificationImpl mMagnification;
@@ -116,8 +116,7 @@ public class IMagnificationConnectionTest extends SysuiTestCase {
                 mTestableLooper.getLooper(), mContext.getMainExecutor(), mCommandQueue,
                 mModeSwitchesController, mSysUiState, mLauncherProxyService, mSecureSettings,
                 mDisplayTracker, getContext().getSystemService(DisplayManager.class),
-                mA11yLogger, mIWindowManager, mAccessibilityManager,
-                mViewCaptureAwareWindowManager);
+                mA11yLogger, mIWindowManager, mAccessibilityManager, mWindowManagerProvider);
         mMagnification.mWindowMagnificationControllerSupplier =
                 new FakeWindowMagnificationControllerSupplier(
                         mContext.getSystemService(DisplayManager.class));

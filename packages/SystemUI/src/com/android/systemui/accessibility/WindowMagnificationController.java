@@ -249,7 +249,8 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
             @NonNull WindowMagnifierCallback callback,
             SysUiState sysUiState,
             SecureSettings secureSettings,
-            Supplier<SurfaceControlViewHost> scvhSupplier) {
+            Supplier<SurfaceControlViewHost> scvhSupplier,
+            WindowManager windowManager) {
         mContext = context;
         mHandler = handler;
         mAnimationController = animationController;
@@ -265,7 +266,7 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
         mDisplayId = mContext.getDisplayId();
         mRotation = display.getRotation();
 
-        mWm = context.getSystemService(WindowManager.class);
+        mWm = windowManager;
         mWindowBounds = new Rect(mWm.getCurrentWindowMetrics().getBounds());
 
         mResources = mContext.getResources();

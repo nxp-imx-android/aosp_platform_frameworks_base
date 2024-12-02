@@ -238,7 +238,8 @@ public class WindowMagnificationControllerTest extends SysuiTestCase {
                         mWindowMagnifierCallback,
                         mSysUiState,
                         mSecureSettings,
-                        scvhSupplier);
+                        scvhSupplier,
+                        mWindowManager);
 
         verify(mMirrorWindowControl).setWindowDelegate(
                 any(MirrorWindowControl.MirrorWindowDelegate.class));
