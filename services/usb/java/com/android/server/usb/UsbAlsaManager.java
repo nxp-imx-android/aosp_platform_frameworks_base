@@ -35,6 +35,7 @@ import android.util.Slog;
 import com.android.internal.alsa.AlsaCardsParser;
 import com.android.internal.util.dump.DualDumpOutputStream;
 import com.android.server.usb.descriptors.UsbDescriptorParser;
+import com.android.server.usb.flags.Flags;
 
 import libcore.io.IoUtils;
 
@@ -294,23 +295,41 @@ public final class UsbAlsaManager {
             UsbDescriptorParser parser) {
         if (DEBUG) {
             Slog.d(TAG, "usbDeviceAdded(): " + usbDevice.getManufacturerName()
-                    + " nm:" + usbDevice.getProductName());
+                    + " nm:" + usbDevice.getProductName()
+                    + " hasAudioInterface: " + parser.hasAudioInterface());
         }
 
-        // Scan the Alsa File Space
-        mCardsParser.scan();
+        AlsaCardsParser.AlsaCardRecord cardRec = null;
 
-        // Find the ALSA spec for this device address
-        AlsaCardsParser.AlsaCardRecord cardRec =
-                mCardsParser.findCardNumFor(deviceAddress);
-        if (cardRec == null) {
-            if (parser.hasAudioInterface()) {
-                Slog.e(TAG, "usbDeviceAdded(): cannot find sound card for " + deviceAddress);
+        if (Flags.waitForAlsaScanResultsIfHasAudioInterface()) {
+            if (!parser.hasAudioInterface()) {
+                return;
             }
-            return;
-        }
 
-        waitForAlsaDevice(cardRec.getCardNum(), true /*isAdded*/);
+            waitForAlsaDeviceAddress(deviceAddress, true /*isAdded*/);
+
+            // Find the ALSA spec for this device address
+            cardRec = mCardsParser.findCardNumFor(deviceAddress);
+
+            if (cardRec == null) {
+                Slog.e(TAG, "usbDeviceAdded(): cannot find sound card for " + deviceAddress);
+                return;
+            }
+        } else {
+            // Scan the Alsa File Space
+            mCardsParser.scan();
+
+            // Find the ALSA spec for this device address
+            cardRec = mCardsParser.findCardNumFor(deviceAddress);
+            if (cardRec == null) {
+                if (parser.hasAudioInterface()) {
+                    Slog.e(TAG, "usbDeviceAdded(): cannot find sound card for " + deviceAddress);
+                }
+                return;
+            }
+
+            waitForAlsaDevice(cardRec.getCardNum(), true /*isAdded*/);
+        }
 
         // Add it to the devices list
         boolean hasInput = parser.hasInput()
@@ -417,7 +436,11 @@ public final class UsbAlsaManager {
         UsbAlsaDevice alsaDevice = removeAlsaDevice(deviceAddress);
         Slog.i(TAG, "USB Audio Device Removed: " + alsaDevice);
         if (alsaDevice != null) {
-            waitForAlsaDevice(alsaDevice.getCardNum(), false /*isAdded*/);
+            if (Flags.waitForAlsaScanResultsIfHasAudioInterface()) {
+                waitForAlsaDeviceAddress(deviceAddress, false /*isAdded*/);
+            } else {
+                waitForAlsaDevice(alsaDevice.getCardNum(), false /*isAdded*/);
+            }
             deselectAlsaDevice(alsaDevice);
             if (IS_MULTI_MODE) {
                 selectDefaultDevice(alsaDevice.getOutputDeviceType());
@@ -463,6 +486,50 @@ public final class UsbAlsaManager {
             mPeripheralMidiDevice = null;
         }
    }
+
+    private boolean waitForAlsaDeviceAddress(String addr, boolean isAdded) {
+        if (DEBUG) {
+            Slog.e(TAG, "waitForAlsaDeviceAddress(" + addr + ")");
+        }
+
+        // This value was empirically determined.
+        final int kWaitTimeMs = 2500;
+
+        synchronized (mAlsaCards) {
+            final long timeoutMs = SystemClock.elapsedRealtime() + kWaitTimeMs;
+
+            do {
+                mCardsParser.scan();
+
+                AlsaCardsParser.AlsaCardRecord cardRec =
+                        mCardsParser.findCardNumFor(addr);
+
+                if (isAdded && (cardRec != null)) {
+                    if (mAlsaCards.contains(cardRec.getCardNum())) {
+                        return true;
+                    }
+                }
+
+                // Consider removed if can't be probed by the parser as
+                // it's not as time sensitive for the removal case.
+                if (!isAdded && (cardRec == null)) {
+                    return true;
+                }
+
+                long waitTimeMs = timeoutMs - SystemClock.elapsedRealtime();
+                if (waitTimeMs <= 0) {
+                    Slog.e(TAG, "waitForAlsaDeviceAddress(" + addr + ") timeout");
+                    return false;
+                }
+
+                try {
+                    mAlsaCards.wait(waitTimeMs);
+                } catch (InterruptedException e) {
+                    Slog.d(TAG, "usb: InterruptedException while waiting for ALSA file.");
+                }
+            } while (true);
+        }
+    }
 
     private boolean waitForAlsaDevice(int card, boolean isAdded) {
         if (DEBUG) {
