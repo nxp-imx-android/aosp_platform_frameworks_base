@@ -42550,9 +42550,10 @@ package android.service.settings.preferences {
     method public boolean isWritable();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.settings.preferences.SettingsPreferenceMetadata> CREATOR;
-    field public static final int INTENT_ONLY = 2; // 0x2
-    field public static final int NOT_SENSITIVE = 0; // 0x0
-    field public static final int SENSITIVE = 1; // 0x1
+    field public static final int EXPECT_POST_CONFIRMATION = 1; // 0x1
+    field public static final int EXPECT_PRE_CONFIRMATION = 2; // 0x2
+    field public static final int NO_DIRECT_ACCESS = 3; // 0x3
+    field public static final int NO_SENSITIVITY = 0; // 0x0
   }
 
   public static final class SettingsPreferenceMetadata.Builder {
