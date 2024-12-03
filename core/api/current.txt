@@ -17082,7 +17082,7 @@ package android.graphics {
     method public void arcTo(@NonNull android.graphics.RectF, float, float);
     method public void arcTo(float, float, float, float, float, float, boolean);
     method public void close();
-    method @Deprecated public void computeBounds(@NonNull android.graphics.RectF, boolean);
+    method public void computeBounds(@NonNull android.graphics.RectF, boolean);
     method @FlaggedApi("com.android.graphics.flags.exact_compute_bounds") public void computeBounds(@NonNull android.graphics.RectF);
     method public void conicTo(float, float, float, float, float);
     method public void cubicTo(float, float, float, float, float, float);
@@ -20809,6 +20809,7 @@ package android.hardware.display {
     method public int describeContents();
     method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @FloatRange(from=0.0f, to=1.0f) public float getDefaultBrightness();
     method public int getDensityDpi();
+    method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @FloatRange(from=0.0f, to=1.0f) public float getDimBrightness();
     method @NonNull public java.util.Set<java.lang.String> getDisplayCategories();
     method public int getFlags();
     method public int getHeight();
@@ -20830,6 +20831,7 @@ package android.hardware.display {
     method @NonNull public android.hardware.display.VirtualDisplayConfig build();
     method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setBrightnessListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.display.VirtualDisplayConfig.BrightnessListener);
     method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setDefaultBrightness(@FloatRange(from=0.0f, to=1.0f) float);
+    method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setDimBrightness(@FloatRange(from=0.0f, to=1.0f) float);
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setDisplayCategories(@NonNull java.util.Set<java.lang.String>);
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setFlags(int);
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setRequestedRefreshRate(@FloatRange(from=0.0f) float);
@@ -30128,128 +30130,6 @@ package android.net.sip {
     field @Deprecated public static final int PINGING = 9; // 0x9
     field @Deprecated public static final int READY_TO_CALL = 0; // 0x0
     field @Deprecated public static final int REGISTERING = 1; // 0x1
-  }
-
-}
-
-package android.net.vcn {
-
-  public final class VcnCellUnderlyingNetworkTemplate extends android.net.vcn.VcnUnderlyingNetworkTemplate {
-    method public int getCbs();
-    method public int getDun();
-    method public int getIms();
-    method public int getInternet();
-    method public int getMms();
-    method @NonNull public java.util.Set<java.lang.String> getOperatorPlmnIds();
-    method public int getOpportunistic();
-    method public int getRcs();
-    method public int getRoaming();
-    method @NonNull public java.util.Set<java.lang.Integer> getSimSpecificCarrierIds();
-  }
-
-  public static final class VcnCellUnderlyingNetworkTemplate.Builder {
-    ctor public VcnCellUnderlyingNetworkTemplate.Builder();
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate build();
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate.Builder setCbs(int);
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate.Builder setDun(int);
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate.Builder setIms(int);
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate.Builder setInternet(int);
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate.Builder setMetered(int);
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate.Builder setMinDownstreamBandwidthKbps(int, int);
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate.Builder setMinUpstreamBandwidthKbps(int, int);
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate.Builder setMms(int);
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate.Builder setOperatorPlmnIds(@NonNull java.util.Set<java.lang.String>);
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate.Builder setOpportunistic(int);
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate.Builder setRcs(int);
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate.Builder setRoaming(int);
-    method @NonNull public android.net.vcn.VcnCellUnderlyingNetworkTemplate.Builder setSimSpecificCarrierIds(@NonNull java.util.Set<java.lang.Integer>);
-  }
-
-  public final class VcnConfig implements android.os.Parcelable {
-    method public int describeContents();
-    method @NonNull public java.util.Set<android.net.vcn.VcnGatewayConnectionConfig> getGatewayConnectionConfigs();
-    method @NonNull public java.util.Set<java.lang.Integer> getRestrictedUnderlyingNetworkTransports();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.net.vcn.VcnConfig> CREATOR;
-  }
-
-  public static final class VcnConfig.Builder {
-    ctor public VcnConfig.Builder(@NonNull android.content.Context);
-    method @NonNull public android.net.vcn.VcnConfig.Builder addGatewayConnectionConfig(@NonNull android.net.vcn.VcnGatewayConnectionConfig);
-    method @NonNull public android.net.vcn.VcnConfig build();
-    method @NonNull public android.net.vcn.VcnConfig.Builder setRestrictedUnderlyingNetworkTransports(@NonNull java.util.Set<java.lang.Integer>);
-  }
-
-  public final class VcnGatewayConnectionConfig {
-    method @NonNull public int[] getExposedCapabilities();
-    method @NonNull public String getGatewayConnectionName();
-    method @IntRange(from=0x500) public int getMaxMtu();
-    method public int getMinUdpPort4500NatTimeoutSeconds();
-    method @NonNull public long[] getRetryIntervalsMillis();
-    method @NonNull public java.util.List<android.net.vcn.VcnUnderlyingNetworkTemplate> getVcnUnderlyingNetworkPriorities();
-    method public boolean hasGatewayOption(int);
-    method @FlaggedApi("android.net.vcn.safe_mode_config") public boolean isSafeModeEnabled();
-    field @FlaggedApi("android.net.vcn.mainline_vcn_module_api") public static final int MIN_UDP_PORT_4500_NAT_TIMEOUT_UNSET = -1; // 0xffffffff
-    field public static final int VCN_GATEWAY_OPTION_ENABLE_DATA_STALL_RECOVERY_WITH_MOBILITY = 0; // 0x0
-  }
-
-  public static final class VcnGatewayConnectionConfig.Builder {
-    ctor public VcnGatewayConnectionConfig.Builder(@NonNull String, @NonNull android.net.ipsec.ike.IkeTunnelConnectionParams);
-    method @NonNull public android.net.vcn.VcnGatewayConnectionConfig.Builder addExposedCapability(int);
-    method @NonNull public android.net.vcn.VcnGatewayConnectionConfig.Builder addGatewayOption(int);
-    method @NonNull public android.net.vcn.VcnGatewayConnectionConfig build();
-    method @NonNull public android.net.vcn.VcnGatewayConnectionConfig.Builder removeExposedCapability(int);
-    method @NonNull public android.net.vcn.VcnGatewayConnectionConfig.Builder removeGatewayOption(int);
-    method @NonNull public android.net.vcn.VcnGatewayConnectionConfig.Builder setMaxMtu(@IntRange(from=0x500) int);
-    method @NonNull public android.net.vcn.VcnGatewayConnectionConfig.Builder setMinUdpPort4500NatTimeoutSeconds(@IntRange(from=0x78) int);
-    method @NonNull public android.net.vcn.VcnGatewayConnectionConfig.Builder setRetryIntervalsMillis(@NonNull long[]);
-    method @FlaggedApi("android.net.vcn.safe_mode_config") @NonNull public android.net.vcn.VcnGatewayConnectionConfig.Builder setSafeModeEnabled(boolean);
-    method @NonNull public android.net.vcn.VcnGatewayConnectionConfig.Builder setVcnUnderlyingNetworkPriorities(@NonNull java.util.List<android.net.vcn.VcnUnderlyingNetworkTemplate>);
-  }
-
-  public class VcnManager {
-    method @RequiresPermission("carrier privileges") public void clearVcnConfig(@NonNull android.os.ParcelUuid) throws java.io.IOException;
-    method @NonNull public java.util.List<android.os.ParcelUuid> getConfiguredSubscriptionGroups();
-    method public void registerVcnStatusCallback(@NonNull android.os.ParcelUuid, @NonNull java.util.concurrent.Executor, @NonNull android.net.vcn.VcnManager.VcnStatusCallback);
-    method @RequiresPermission("carrier privileges") public void setVcnConfig(@NonNull android.os.ParcelUuid, @NonNull android.net.vcn.VcnConfig) throws java.io.IOException;
-    method public void unregisterVcnStatusCallback(@NonNull android.net.vcn.VcnManager.VcnStatusCallback);
-    field public static final int VCN_ERROR_CODE_CONFIG_ERROR = 1; // 0x1
-    field public static final int VCN_ERROR_CODE_INTERNAL_ERROR = 0; // 0x0
-    field public static final int VCN_ERROR_CODE_NETWORK_ERROR = 2; // 0x2
-    field public static final int VCN_STATUS_CODE_ACTIVE = 2; // 0x2
-    field public static final int VCN_STATUS_CODE_INACTIVE = 1; // 0x1
-    field public static final int VCN_STATUS_CODE_NOT_CONFIGURED = 0; // 0x0
-    field public static final int VCN_STATUS_CODE_SAFE_MODE = 3; // 0x3
-  }
-
-  public abstract static class VcnManager.VcnStatusCallback {
-    ctor public VcnManager.VcnStatusCallback();
-    method public abstract void onGatewayConnectionError(@NonNull String, int, @Nullable Throwable);
-    method public abstract void onStatusChanged(int);
-  }
-
-  public abstract class VcnUnderlyingNetworkTemplate {
-    method public int getMetered();
-    method public int getMinEntryDownstreamBandwidthKbps();
-    method public int getMinEntryUpstreamBandwidthKbps();
-    method public int getMinExitDownstreamBandwidthKbps();
-    method public int getMinExitUpstreamBandwidthKbps();
-    field public static final int MATCH_ANY = 0; // 0x0
-    field public static final int MATCH_FORBIDDEN = 2; // 0x2
-    field public static final int MATCH_REQUIRED = 1; // 0x1
-  }
-
-  public final class VcnWifiUnderlyingNetworkTemplate extends android.net.vcn.VcnUnderlyingNetworkTemplate {
-    method @NonNull public java.util.Set<java.lang.String> getSsids();
-  }
-
-  public static final class VcnWifiUnderlyingNetworkTemplate.Builder {
-    ctor public VcnWifiUnderlyingNetworkTemplate.Builder();
-    method @NonNull public android.net.vcn.VcnWifiUnderlyingNetworkTemplate build();
-    method @NonNull public android.net.vcn.VcnWifiUnderlyingNetworkTemplate.Builder setMetered(int);
-    method @NonNull public android.net.vcn.VcnWifiUnderlyingNetworkTemplate.Builder setMinDownstreamBandwidthKbps(int, int);
-    method @NonNull public android.net.vcn.VcnWifiUnderlyingNetworkTemplate.Builder setMinUpstreamBandwidthKbps(int, int);
-    method @NonNull public android.net.vcn.VcnWifiUnderlyingNetworkTemplate.Builder setSsids(@NonNull java.util.Set<java.lang.String>);
   }
 
 }
@@ -40930,13 +40810,14 @@ package android.service.autofill {
 
   public abstract class AutofillService extends android.app.Service {
     ctor public AutofillService();
-    method @Nullable public final android.service.autofill.FillEventHistory getFillEventHistory();
+    method @Deprecated @FlaggedApi("android.service.autofill.autofill_session_destroyed") @Nullable public final android.service.autofill.FillEventHistory getFillEventHistory();
     method public final android.os.IBinder onBind(android.content.Intent);
     method public void onConnected();
     method public void onDisconnected();
     method public abstract void onFillRequest(@NonNull android.service.autofill.FillRequest, @NonNull android.os.CancellationSignal, @NonNull android.service.autofill.FillCallback);
     method public abstract void onSaveRequest(@NonNull android.service.autofill.SaveRequest, @NonNull android.service.autofill.SaveCallback);
     method public void onSavedDatasetsInfoRequest(@NonNull android.service.autofill.SavedDatasetsInfoCallback);
+    method @FlaggedApi("android.service.autofill.autofill_session_destroyed") public void onSessionDestroyed(@Nullable android.service.autofill.FillEventHistory);
     field public static final String EXTRA_FILL_RESPONSE = "android.service.autofill.extra.FILL_RESPONSE";
     field public static final String SERVICE_INTERFACE = "android.service.autofill.AutofillService";
     field public static final String SERVICE_META_DATA = "android.autofill";
