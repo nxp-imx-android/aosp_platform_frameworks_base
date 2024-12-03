@@ -90,7 +90,6 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleRegistry;
 
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.colorextraction.ColorExtractor;
 import com.android.internal.logging.MetricsLogger;
@@ -233,6 +232,7 @@ import com.android.systemui.util.WallpaperController;
 import com.android.systemui.util.concurrency.DelayableExecutor;
 import com.android.systemui.util.concurrency.MessageRouter;
 import com.android.systemui.util.kotlin.JavaAdapter;
+import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 import com.android.systemui.volume.VolumeComponent;
 import com.android.systemui.wallet.controller.QuickAccessWalletController;
 import com.android.wm.shell.bubbles.Bubbles;
@@ -597,7 +597,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
     private final EmergencyGestureIntentFactory mEmergencyGestureIntentFactory;
 
-    private final ViewCaptureAwareWindowManager mViewCaptureAwareWindowManager;
     private final QuickAccessWalletController mWalletController;
 
     /**
@@ -713,8 +712,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             BrightnessMirrorShowingRepository brightnessMirrorShowingRepository,
             GlanceableHubContainerController glanceableHubContainerController,
             EmergencyGestureIntentFactory emergencyGestureIntentFactory,
-            ViewCaptureAwareWindowManager viewCaptureAwareWindowManager,
-            QuickAccessWalletController walletController
+            QuickAccessWalletController walletController,
+            WindowManager windowManager,
+            WindowManagerProvider windowManagerProvider
     ) {
         mContext = context;
         mNotificationsController = notificationsController;
@@ -852,7 +852,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
         mLightRevealScrim = lightRevealScrim;
 
-        mViewCaptureAwareWindowManager = viewCaptureAwareWindowManager;
+        mWindowManager = windowManager;
+        mWindowManagerProvider = windowManagerProvider;
     }
 
     private void initBubbles(Bubbles bubbles) {
@@ -879,8 +880,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         mKeyguardIndicationController.init();
 
         mColorExtractor.addOnColorsChangedListener(mOnColorsChangedListener);
-
-        mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
 
         mDisplay = mContext.getDisplay();
         mDisplayId = mDisplay.getDisplayId();
@@ -1716,7 +1715,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                         mNotificationShadeWindowController.setRequestTopUi(false, TAG);
                     }
                 }, /* isDozing= */ false, RippleShape.CIRCLE,
-                sUiEventLogger, mViewCaptureAwareWindowManager).show(animationDelay);
+                sUiEventLogger, mWindowManager, mWindowManagerProvider).show(animationDelay);
     }
 
     @Override
@@ -2875,6 +2874,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     protected WindowManager mWindowManager;
     protected IWindowManager mWindowManagerService;
     private final IDreamManager mDreamManager;
+    private final WindowManagerProvider mWindowManagerProvider;
 
     protected Display mDisplay;
     private int mDisplayId;
@@ -2911,9 +2911,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
     protected void toggleKeyboardShortcuts(int deviceId) {
         if (shouldUseTabletKeyboardShortcuts()) {
-            KeyboardShortcutListSearch.toggle(mContext, deviceId);
+            KeyboardShortcutListSearch.toggle(mContext, deviceId, mWindowManagerProvider);
         } else {
-            KeyboardShortcuts.toggle(mContext, deviceId);
+            KeyboardShortcuts.toggle(mContext, deviceId, mWindowManagerProvider);
         }
     }
 
@@ -2927,7 +2927,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
     private boolean shouldUseTabletKeyboardShortcuts() {
         return mFeatureFlags.isEnabled(SHORTCUT_LIST_SEARCH_LAYOUT)
-                && Utilities.isLargeScreen(mContext);
+                && Utilities.isLargeScreen(mWindowManager, mContext.getResources());
     }
 
     private void clearNotificationEffects() {

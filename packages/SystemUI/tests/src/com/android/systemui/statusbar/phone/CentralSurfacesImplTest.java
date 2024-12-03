@@ -93,7 +93,6 @@ import android.view.WindowMetrics;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.compose.animation.scene.ObservableTransitionState;
 import com.android.internal.colorextraction.ColorExtractor;
 import com.android.internal.logging.UiEventLogger;
@@ -214,6 +213,7 @@ import com.android.systemui.util.settings.FakeGlobalSettings;
 import com.android.systemui.util.settings.FakeSettings;
 import com.android.systemui.util.settings.SystemSettings;
 import com.android.systemui.util.time.FakeSystemClock;
+import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 import com.android.systemui.volume.VolumeComponent;
 import com.android.systemui.wallet.controller.QuickAccessWalletController;
 import com.android.wm.shell.bubbles.Bubbles;
@@ -372,9 +372,10 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     @Mock private GlanceableHubContainerController mGlanceableHubContainerController;
     @Mock private EmergencyGestureIntentFactory mEmergencyGestureIntentFactory;
     @Mock private NotificationSettingsInteractor mNotificationSettingsInteractor;
-    @Mock private ViewCaptureAwareWindowManager mViewCaptureAwareWindowManager;
     @Mock private StatusBarLongPressGestureDetector mStatusBarLongPressGestureDetector;
     @Mock private QuickAccessWalletController mQuickAccessWalletController;
+    @Mock private WindowManager mWindowManager;
+    @Mock private WindowManagerProvider mWindowManagerProvider;
     private ShadeController mShadeController;
     private final FakeSystemClock mFakeSystemClock = new FakeSystemClock();
     private final FakeGlobalSettings mFakeGlobalSettings = new FakeGlobalSettings();
@@ -642,8 +643,9 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                 mBrightnessMirrorShowingRepository,
                 mGlanceableHubContainerController,
                 mEmergencyGestureIntentFactory,
-                mViewCaptureAwareWindowManager,
-                mQuickAccessWalletController
+                mQuickAccessWalletController,
+                mWindowManager,
+                mWindowManagerProvider
         );
         mScreenLifecycle.addObserver(mCentralSurfaces.mScreenObserver);
         mCentralSurfaces.initShadeVisibilityListener();
@@ -1363,15 +1365,13 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
 
     private void switchToScreenSize(int widthDp, int heightDp) {
         WindowMetrics windowMetrics = Mockito.mock(WindowMetrics.class);
-        WindowManager windowManager = Mockito.mock(WindowManager.class);
 
         Configuration configuration = new Configuration();
         configuration.densityDpi = DisplayMetrics.DENSITY_DEFAULT;
         mContext.getOrCreateTestableResources().overrideConfiguration(configuration);
 
         when(windowMetrics.getBounds()).thenReturn(new Rect(0, 0, widthDp, heightDp));
-        when(windowManager.getCurrentWindowMetrics()).thenReturn(windowMetrics);
-        mContext.addMockSystemService(WindowManager.class, windowManager);
+        when(mWindowManager.getCurrentWindowMetrics()).thenReturn(windowMetrics);
     }
 
     /**
