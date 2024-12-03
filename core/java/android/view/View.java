@@ -34456,7 +34456,10 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      */
     @FlaggedApi(android.app.jank.Flags.FLAG_DETAILED_APP_JANK_METRICS_API)
     public void reportAppJankStats(@NonNull AppJankStats appJankStats) {
-        getRootView().reportAppJankStats(appJankStats);
+        View rootView = getRootView();
+        if (rootView == this) return;
+
+        rootView.reportAppJankStats(appJankStats);
     }
 
     /**
@@ -34464,6 +34467,10 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @hide
      */
     public @Nullable JankTracker getJankTracker() {
-        return getRootView().getJankTracker();
+        View rootView = getRootView();
+        if (rootView == this) {
+            return null;
+        }
+        return rootView.getJankTracker();
     }
 }
