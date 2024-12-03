@@ -19,6 +19,7 @@
 #include <SkCanvas.h>
 #include <SkPaintFilterCanvas.h>
 
+#include "hwui/Bitmap.h"
 #include "utils/Color.h"
 #include "utils/Macros.h"
 
@@ -67,6 +68,11 @@ public:
 
     /**
      * See [addArea(uint64_t, SkPaint&)]
+     */
+    void addArea(const SkRect& rect, const SkPaint& paint, android::BitmapPalette palette);
+
+    /**
+     * See [addArea(long, SkPaint&)]
      */
     void addArea(int32_t width, int32_t height, const SkPaint* paint);
 
