@@ -174,7 +174,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             SurfaceControl.Transaction finishT) {
         mTaskChangeListener.ifPresent(listener -> listener.onTaskChanging(change.getTaskInfo()));
         mWindowDecorViewModel.onTaskChanging(
-                change.getTaskInfo(), change.getLeash(), startT, finishT);
+                change.getTaskInfo(), change.getLeash(), startT, finishT, change.getMode());
     }
 
     private void onToFrontTransitionReady(
@@ -184,7 +184,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
         mTaskChangeListener.ifPresent(
                 listener -> listener.onTaskMovingToFront(change.getTaskInfo()));
         mWindowDecorViewModel.onTaskChanging(
-                change.getTaskInfo(), change.getLeash(), startT, finishT);
+                change.getTaskInfo(), change.getLeash(), startT, finishT, change.getMode());
     }
 
     private void onToBackTransitionReady(
@@ -194,7 +194,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
         mTaskChangeListener.ifPresent(
                 listener -> listener.onTaskMovingToBack(change.getTaskInfo()));
         mWindowDecorViewModel.onTaskChanging(
-                change.getTaskInfo(), change.getLeash(), startT, finishT);
+                change.getTaskInfo(), change.getLeash(), startT, finishT, change.getMode());
     }
 
     @Override
