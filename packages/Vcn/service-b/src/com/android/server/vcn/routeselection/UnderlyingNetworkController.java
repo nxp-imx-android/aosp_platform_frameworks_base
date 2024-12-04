@@ -41,7 +41,6 @@ import android.net.vcn.VcnGatewayConnectionConfig;
 import android.net.vcn.VcnUnderlyingNetworkTemplate;
 import android.net.vcn.util.LogUtils;
 import android.os.Handler;
-import android.os.HandlerExecutor;
 import android.os.ParcelUuid;
 import android.telephony.TelephonyCallback;
 import android.telephony.TelephonyManager;
@@ -52,6 +51,7 @@ import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.VisibleForTesting.Visibility;
+import com.android.modules.utils.HandlerExecutor;
 import com.android.server.vcn.TelephonySubscriptionTracker.TelephonySubscriptionSnapshot;
 import com.android.server.vcn.VcnContext;
 import com.android.server.vcn.routeselection.UnderlyingNetworkEvaluator.NetworkEvaluatorCallback;
