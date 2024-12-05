@@ -27268,11 +27268,11 @@ package android.media.quality {
     method public void addActiveProcessingPictureListener(@NonNull java.util.concurrent.Executor, @NonNull android.media.quality.MediaQualityManager.ActiveProcessingPictureListener);
     method public void createPictureProfile(@NonNull android.media.quality.PictureProfile);
     method public void createSoundProfile(@NonNull android.media.quality.SoundProfile);
-    method @NonNull public java.util.List<android.media.quality.PictureProfile> getAvailablePictureProfiles();
-    method @NonNull public java.util.List<android.media.quality.SoundProfile> getAvailableSoundProfiles();
+    method @NonNull public java.util.List<android.media.quality.PictureProfile> getAvailablePictureProfiles(boolean);
+    method @NonNull public java.util.List<android.media.quality.SoundProfile> getAvailableSoundProfiles(boolean);
     method @NonNull public java.util.List<android.media.quality.ParamCapability> getParamCapabilities(@NonNull java.util.List<java.lang.String>);
-    method @Nullable public android.media.quality.PictureProfile getPictureProfile(int, @NonNull String);
-    method @Nullable public android.media.quality.SoundProfile getSoundProfile(int, @NonNull String);
+    method @Nullable public android.media.quality.PictureProfile getPictureProfile(int, @NonNull String, boolean);
+    method @Nullable public android.media.quality.SoundProfile getSoundProfile(int, @NonNull String, boolean);
     method public boolean isAmbientBacklightEnabled();
     method public boolean isAutoPictureQualityEnabled();
     method public boolean isAutoSoundQualityEnabled();
@@ -27303,7 +27303,7 @@ package android.media.quality {
 
   public abstract static class MediaQualityManager.PictureProfileCallback {
     ctor public MediaQualityManager.PictureProfileCallback();
-    method public void onError(int);
+    method public void onError(@Nullable String, int);
     method public void onParamCapabilitiesChanged(@Nullable String, @NonNull java.util.List<android.media.quality.ParamCapability>);
     method public void onPictureProfileAdded(@NonNull String, @NonNull android.media.quality.PictureProfile);
     method public void onPictureProfileRemoved(@NonNull String, @NonNull android.media.quality.PictureProfile);
@@ -27312,7 +27312,7 @@ package android.media.quality {
 
   public abstract static class MediaQualityManager.SoundProfileCallback {
     ctor public MediaQualityManager.SoundProfileCallback();
-    method public void onError(int);
+    method public void onError(@Nullable String, int);
     method public void onParamCapabilitiesChanged(@Nullable String, @NonNull java.util.List<android.media.quality.ParamCapability>);
     method public void onSoundProfileAdded(@NonNull String, @NonNull android.media.quality.SoundProfile);
     method public void onSoundProfileRemoved(@NonNull String, @NonNull android.media.quality.SoundProfile);
