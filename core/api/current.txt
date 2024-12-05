@@ -6482,6 +6482,7 @@ package android.app {
     method public String getSortKey();
     method public long getTimeoutAfter();
     method public boolean hasImage();
+    method @FlaggedApi("android.app.api_rich_ongoing") public boolean hasPromotableCharacteristics();
     method public void writeToParcel(android.os.Parcel, int);
     field public static final android.media.AudioAttributes AUDIO_ATTRIBUTES_DEFAULT;
     field public static final int BADGE_ICON_LARGE = 2; // 0x2
