@@ -34765,6 +34765,7 @@ package android.os {
     method public android.os.MessageQueue getMessageQueue();
     method public boolean hasMessages(android.os.Handler, Object, int);
     method public boolean hasMessages(android.os.Handler, Object, Runnable);
+    method @FlaggedApi("android.os.message_queue_testability") public boolean isBlockedOnSyncBarrier();
     method public android.os.Message next();
     method @FlaggedApi("android.os.message_queue_testability") @Nullable public Long peekWhen();
     method @FlaggedApi("android.os.message_queue_testability") @Nullable public android.os.Message pop();
