@@ -6482,6 +6482,7 @@ package android.app {
     method public String getSortKey();
     method public long getTimeoutAfter();
     method public boolean hasImage();
+    method @FlaggedApi("android.app.api_rich_ongoing") public boolean hasPromotableCharacteristics();
     method public void writeToParcel(android.os.Parcel, int);
     field public static final android.media.AudioAttributes AUDIO_ATTRIBUTES_DEFAULT;
     field public static final int BADGE_ICON_LARGE = 2; // 0x2
@@ -8883,6 +8884,7 @@ package android.app.appfunctions {
     field public static final int ERROR_CATEGORY_UNKNOWN = 0; // 0x0
     field public static final int ERROR_DENIED = 1000; // 0x3e8
     field public static final int ERROR_DISABLED = 1002; // 0x3ea
+    field public static final int ERROR_ENTERPRISE_POLICY_DISALLOWED = 2002; // 0x7d2
     field public static final int ERROR_FUNCTION_NOT_FOUND = 1003; // 0x3eb
     field public static final int ERROR_INVALID_ARGUMENT = 1001; // 0x3e9
     field public static final int ERROR_SYSTEM_ERROR = 2000; // 0x7d0
@@ -27168,6 +27170,15 @@ package android.media.projection {
 
 package android.media.quality {
 
+  @FlaggedApi("android.media.tv.flags.media_quality_fw") public final class ActiveProcessingPicture implements android.os.Parcelable {
+    ctor public ActiveProcessingPicture(int, @NonNull String);
+    method public int describeContents();
+    method public int getId();
+    method @NonNull public String getProfileId();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.ActiveProcessingPicture> CREATOR;
+  }
+
   @FlaggedApi("android.media.tv.flags.media_quality_fw") public final class AmbientBacklightEvent implements android.os.Parcelable {
     ctor public AmbientBacklightEvent(int, @Nullable android.media.quality.AmbientBacklightMetadata);
     method public int describeContents();
@@ -27219,8 +27230,30 @@ package android.media.quality {
   }
 
   public static final class MediaQualityContract.PictureQuality {
+    field public static final String PARAMETER_AUTO_PICTURE_QUALITY_ENABLED = "auto_picture_quality_enabled";
+    field public static final String PARAMETER_AUTO_SUPER_RESOLUTION_ENABLED = "auto_super_resolution_enabled";
+    field public static final String PARAMETER_BLUE_STRETCH = "blue_stretch";
     field public static final String PARAMETER_BRIGHTNESS = "brightness";
+    field public static final String PARAMETER_COLOR_TEMPERATURE = "color_temperature";
+    field public static final String PARAMETER_COLOR_TUNE = "color_tune";
+    field public static final String PARAMETER_COLOR_TUNER_BLUE_GAIN = "color_tuner_blue_gain";
+    field public static final String PARAMETER_COLOR_TUNER_BLUE_OFFSET = "color_tuner_blue_offset";
+    field public static final String PARAMETER_COLOR_TUNER_BRIGHTNESS = "color_tuner_brightness";
+    field public static final String PARAMETER_COLOR_TUNER_GREEN_GAIN = "color_tuner_green_gain";
+    field public static final String PARAMETER_COLOR_TUNER_GREEN_OFFSET = "color_tuner_green_offset";
+    field public static final String PARAMETER_COLOR_TUNER_HUE = "color_tuner_hue";
+    field public static final String PARAMETER_COLOR_TUNER_RED_GAIN = "color_tuner_red_gain";
+    field public static final String PARAMETER_COLOR_TUNER_RED_OFFSET = "color_tuner_red_offset";
+    field public static final String PARAMETER_COLOR_TUNER_SATURATION = "color_tuner_saturation";
     field public static final String PARAMETER_CONTRAST = "contrast";
+    field public static final String PARAMETER_DECONTOUR = "decontour";
+    field public static final String PARAMETER_DYNAMIC_LUMA_CONTROL = "dynamic_luma_control";
+    field public static final String PARAMETER_FILM_MODE = "film_mode";
+    field public static final String PARAMETER_FLESH_TONE = "flesh_tone";
+    field public static final String PARAMETER_GLOBAL_DIMMING = "global_dimming";
+    field public static final String PARAMETER_HUE = "hue";
+    field public static final String PARAMETER_MPEG_NOISE_REDUCTION = "mpeg_noise_reduction";
+    field public static final String PARAMETER_NOISE_REDUCTION = "noise_reduction";
     field public static final String PARAMETER_SATURATION = "saturation";
     field public static final String PARAMETER_SHARPNESS = "sharpness";
   }
@@ -27232,13 +27265,14 @@ package android.media.quality {
   }
 
   @FlaggedApi("android.media.tv.flags.media_quality_fw") public final class MediaQualityManager {
+    method public void addActiveProcessingPictureListener(@NonNull java.util.concurrent.Executor, @NonNull android.media.quality.MediaQualityManager.ActiveProcessingPictureListener);
     method public void createPictureProfile(@NonNull android.media.quality.PictureProfile);
     method public void createSoundProfile(@NonNull android.media.quality.SoundProfile);
-    method @NonNull public java.util.List<android.media.quality.PictureProfile> getAvailablePictureProfiles();
-    method @NonNull public java.util.List<android.media.quality.SoundProfile> getAvailableSoundProfiles();
+    method @NonNull public java.util.List<android.media.quality.PictureProfile> getAvailablePictureProfiles(boolean);
+    method @NonNull public java.util.List<android.media.quality.SoundProfile> getAvailableSoundProfiles(boolean);
     method @NonNull public java.util.List<android.media.quality.ParamCapability> getParamCapabilities(@NonNull java.util.List<java.lang.String>);
-    method @Nullable public android.media.quality.PictureProfile getPictureProfile(int, @NonNull String);
-    method @Nullable public android.media.quality.SoundProfile getSoundProfile(int, @NonNull String);
+    method @Nullable public android.media.quality.PictureProfile getPictureProfile(int, @NonNull String, boolean);
+    method @Nullable public android.media.quality.SoundProfile getSoundProfile(int, @NonNull String, boolean);
     method public boolean isAmbientBacklightEnabled();
     method public boolean isAutoPictureQualityEnabled();
     method public boolean isAutoSoundQualityEnabled();
@@ -27246,6 +27280,7 @@ package android.media.quality {
     method public void registerAmbientBacklightCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.quality.MediaQualityManager.AmbientBacklightCallback);
     method public void registerPictureProfileCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.quality.MediaQualityManager.PictureProfileCallback);
     method public void registerSoundProfileCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.quality.MediaQualityManager.SoundProfileCallback);
+    method public void removeActiveProcessingPictureListener(@NonNull android.media.quality.MediaQualityManager.ActiveProcessingPictureListener);
     method public void removePictureProfile(@NonNull String);
     method public void removeSoundProfile(@NonNull String);
     method public void setAmbientBacklightEnabled(boolean);
@@ -27257,6 +27292,10 @@ package android.media.quality {
     method public void updateSoundProfile(@NonNull String, @NonNull android.media.quality.SoundProfile);
   }
 
+  public static interface MediaQualityManager.ActiveProcessingPictureListener {
+    method public void onActiveProcessingPicturesChanged(@NonNull java.util.List<android.media.quality.ActiveProcessingPicture>);
+  }
+
   public abstract static class MediaQualityManager.AmbientBacklightCallback {
     ctor public MediaQualityManager.AmbientBacklightCallback();
     method public void onAmbientBacklightEvent(@NonNull android.media.quality.AmbientBacklightEvent);
@@ -27264,7 +27303,7 @@ package android.media.quality {
 
   public abstract static class MediaQualityManager.PictureProfileCallback {
     ctor public MediaQualityManager.PictureProfileCallback();
-    method public void onError(int);
+    method public void onError(@Nullable String, int);
     method public void onParamCapabilitiesChanged(@Nullable String, @NonNull java.util.List<android.media.quality.ParamCapability>);
     method public void onPictureProfileAdded(@NonNull String, @NonNull android.media.quality.PictureProfile);
     method public void onPictureProfileRemoved(@NonNull String, @NonNull android.media.quality.PictureProfile);
@@ -27273,7 +27312,7 @@ package android.media.quality {
 
   public abstract static class MediaQualityManager.SoundProfileCallback {
     ctor public MediaQualityManager.SoundProfileCallback();
-    method public void onError(int);
+    method public void onError(@Nullable String, int);
     method public void onParamCapabilitiesChanged(@Nullable String, @NonNull java.util.List<android.media.quality.ParamCapability>);
     method public void onSoundProfileAdded(@NonNull String, @NonNull android.media.quality.SoundProfile);
     method public void onSoundProfileRemoved(@NonNull String, @NonNull android.media.quality.SoundProfile);
@@ -34727,6 +34766,8 @@ package android.os {
     method public boolean hasMessages(android.os.Handler, Object, int);
     method public boolean hasMessages(android.os.Handler, Object, Runnable);
     method public android.os.Message next();
+    method @FlaggedApi("android.os.message_queue_testability") @Nullable public Long peekWhen();
+    method @FlaggedApi("android.os.message_queue_testability") @Nullable public android.os.Message pop();
     method public void recycle(android.os.Message);
     method public void release();
   }
@@ -41006,7 +41047,7 @@ package android.service.autofill {
     field public static final int TYPE_DATASET_SELECTED = 0; // 0x0
     field public static final int TYPE_SAVE_SHOWN = 3; // 0x3
     field public static final int TYPE_VIEW_REQUESTED_AUTOFILL = 6; // 0x6
-    field @FlaggedApi("android.service.autofill.autofill_w_metrics") public static final int UI_TYPE_CREDMAN = 4; // 0x4
+    field @FlaggedApi("android.service.autofill.autofill_w_metrics") public static final int UI_TYPE_CREDENTIAL_MANAGER = 4; // 0x4
     field public static final int UI_TYPE_DIALOG = 3; // 0x3
     field public static final int UI_TYPE_INLINE = 2; // 0x2
     field public static final int UI_TYPE_MENU = 1; // 0x1
@@ -44998,6 +45039,7 @@ package android.telephony {
     field public static final String KEY_RCS_CONFIG_SERVER_URL_STRING = "rcs_config_server_url_string";
     field public static final String KEY_READ_ONLY_APN_FIELDS_STRING_ARRAY = "read_only_apn_fields_string_array";
     field public static final String KEY_READ_ONLY_APN_TYPES_STRING_ARRAY = "read_only_apn_types_string_array";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_REGIONAL_SATELLITE_EARFCN_BUNDLE = "regional_satellite_earfcn_bundle";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_REMOVE_SATELLITE_PLMN_IN_MANUAL_NETWORK_SCAN_BOOL = "remove_satellite_plmn_in_manual_network_scan_bool";
     field public static final String KEY_REQUIRE_ENTITLEMENT_CHECKS_BOOL = "require_entitlement_checks_bool";
     field @Deprecated public static final String KEY_RESTART_RADIO_ON_PDP_FAIL_REGULAR_DEACTIVATION_BOOL = "restart_radio_on_pdp_fail_regular_deactivation_bool";
@@ -45011,6 +45053,7 @@ package android.telephony {
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_ATTACH_SUPPORTED_BOOL = "satellite_attach_supported_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_CONNECTION_HYSTERESIS_SEC_INT = "satellite_connection_hysteresis_sec_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_DATA_SUPPORT_MODE_INT = "satellite_data_support_mode_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_DISPLAY_NAME_STRING = "satellite_display_name_string";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_ENTITLEMENT_APP_NAME_STRING = "satellite_entitlement_app_name_string";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_ENTITLEMENT_STATUS_REFRESH_DAYS_INT = "satellite_entitlement_status_refresh_days_int";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_ENTITLEMENT_SUPPORTED_BOOL = "satellite_entitlement_supported_bool";
@@ -45022,6 +45065,8 @@ package android.telephony {
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_P2P_SMS_SUPPORTED_BOOL = "satellite_roaming_p2p_sms_supported_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_SCREEN_OFF_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_screen_off_inactivity_timeout_sec_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_ROAMING_TURN_OFF_SESSION_FOR_EMERGENCY_CALL_BOOL = "satellite_roaming_turn_off_session_for_emergency_call_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_SOS_MAX_DATAGRAM_SIZE_BYTES_INT = "satellite_sos_max_datagram_size_bytes_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_SUPPORTED_MSG_APPS_STRING_ARRAY = "satellite_supported_msg_apps_string_array";
     field public static final String KEY_SHOW_4G_FOR_3G_DATA_ICON_BOOL = "show_4g_for_3g_data_icon_bool";
     field public static final String KEY_SHOW_4G_FOR_LTE_DATA_ICON_BOOL = "show_4g_for_lte_data_icon_bool";
     field public static final String KEY_SHOW_APN_SETTING_CDMA_BOOL = "show_apn_setting_cdma_bool";
@@ -55204,8 +55249,8 @@ package android.view {
     method public abstract void setTransformation(android.graphics.Matrix);
     method public abstract void setVisibility(int);
     method public abstract void setWebDomain(@Nullable String);
-    field @FlaggedApi("android.service.autofill.autofill_w_metrics") public static final String EXTRA_VIRTUAL_STRUCTURE_TYPE = "android.view.ViewStructure.extra.VIRTUAL_STRUCTURE_TYPE";
-    field @FlaggedApi("android.service.autofill.autofill_w_metrics") public static final String EXTRA_VIRTUAL_STRUCTURE_VERSION_NUMBER = "android.view.ViewStructure.extra.VIRTUAL_STRUCTURE_VERSION_NUMBER";
+    field @FlaggedApi("android.service.autofill.autofill_w_metrics") public static final String EXTRA_VIRTUAL_STRUCTURE_TYPE = "android.view.extra.VIRTUAL_STRUCTURE_TYPE";
+    field @FlaggedApi("android.service.autofill.autofill_w_metrics") public static final String EXTRA_VIRTUAL_STRUCTURE_VERSION_NUMBER = "android.view.extra.VIRTUAL_STRUCTURE_VERSION_NUMBER";
   }
 
   public abstract static class ViewStructure.HtmlInfo {
