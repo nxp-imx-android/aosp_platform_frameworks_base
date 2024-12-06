@@ -134,6 +134,7 @@ import com.android.wm.shell.recents.RecentsTransitionHandler;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.annotations.ShellAnimationThread;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
+import com.android.wm.shell.shared.annotations.ShellDesktopThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy;
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
@@ -750,6 +751,7 @@ public abstract class WMShellModule {
             MultiInstanceHelper multiInstanceHelper,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler,
+            @ShellDesktopThread ShellExecutor desktopExecutor,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             Optional<RecentTasksController> recentTasksController,
             InteractionJankMonitor interactionJankMonitor,
@@ -789,6 +791,7 @@ public abstract class WMShellModule {
                 recentsTransitionHandler,
                 multiInstanceHelper,
                 mainExecutor,
+                desktopExecutor,
                 desktopTasksLimiter,
                 recentTasksController.orElse(null),
                 interactionJankMonitor,

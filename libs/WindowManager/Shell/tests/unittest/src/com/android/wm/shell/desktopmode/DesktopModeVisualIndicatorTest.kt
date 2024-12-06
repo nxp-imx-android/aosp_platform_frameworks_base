@@ -23,6 +23,7 @@ import android.graphics.Rect
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
+import android.view.Display
 import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
 import com.android.internal.policy.SystemBarUtils
@@ -30,6 +31,7 @@ import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.SyncTransactionQueue
@@ -60,18 +62,22 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
     private lateinit var taskInfo: RunningTaskInfo
     @Mock private lateinit var syncQueue: SyncTransactionQueue
     @Mock private lateinit var displayController: DisplayController
+    @Mock private lateinit var display: Display
     @Mock private lateinit var taskSurface: SurfaceControl
     @Mock private lateinit var taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
     @Mock private lateinit var displayLayout: DisplayLayout
     @Mock private lateinit var bubbleBoundsProvider: BubbleDropTargetBoundsProvider
 
     private lateinit var visualIndicator: DesktopModeVisualIndicator
+    private val desktopExecutor = TestShellExecutor()
+    private val mainExecutor = TestShellExecutor()
 
     @Before
     fun setUp() {
         whenever(displayLayout.width()).thenReturn(DISPLAY_BOUNDS.width())
         whenever(displayLayout.height()).thenReturn(DISPLAY_BOUNDS.height())
         whenever(displayLayout.stableInsets()).thenReturn(STABLE_INSETS)
+        whenever(displayController.getDisplay(anyInt())).thenReturn(display)
         whenever(displayController.getDisplayLayout(anyInt())).thenReturn(displayLayout)
         whenever(displayController.getDisplay(anyInt())).thenReturn(mContext.display)
         whenever(bubbleBoundsProvider.getBubbleBarExpandedViewDropTargetBounds(any()))
@@ -305,7 +311,11 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
         whenever(bubbleBoundsProvider.getBubbleBarExpandedViewDropTargetBounds(/* onLeft= */ true))
             .thenReturn(dropTargetBounds)
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN)
+        desktopExecutor.flushAll()
+        mainExecutor.flushAll()
         visualIndicator.updateIndicatorType(PointF(100f, 1500f))
+        desktopExecutor.flushAll()
+        mainExecutor.flushAll()
 
         animatorTestRule.advanceTimeBy(200)
 
@@ -322,7 +332,11 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
         whenever(bubbleBoundsProvider.getBubbleBarExpandedViewDropTargetBounds(/* onLeft= */ false))
             .thenReturn(dropTargetBounds)
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN)
+        desktopExecutor.flushAll()
+        mainExecutor.flushAll()
         visualIndicator.updateIndicatorType(PointF(2300f, 1500f))
+        desktopExecutor.flushAll()
+        mainExecutor.flushAll()
 
         animatorTestRule.advanceTimeBy(200)
 
@@ -332,6 +346,8 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
     private fun createVisualIndicator(dragStartState: DesktopModeVisualIndicator.DragStartState) {
         visualIndicator =
             DesktopModeVisualIndicator(
+                desktopExecutor,
+                mainExecutor,
                 syncQueue,
                 taskInfo,
                 displayController,
