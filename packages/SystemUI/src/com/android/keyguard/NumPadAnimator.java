@@ -122,7 +122,11 @@ class NumPadAnimator {
 
         int[] customAttrs = {android.R.attr.colorControlNormal};
         ContextThemeWrapper ctw = new ContextThemeWrapper(context, mStyle);
-        mNormalBackgroundColor = ctw.getColor(NUM_PAD_BACKGROUND);
+        @SuppressLint("ResourceType") TypedArray a = ctw.obtainStyledAttributes(customAttrs);
+
+        mNormalBackgroundColor = a.getColor(0, context.getColor(NUM_PAD_BACKGROUND));
+
+        a.recycle();
 
         mPressedBackgroundColor = context.getColor(NUM_PAD_BACKGROUND_PRESSED);
         mTextColorPressed = context.getColor(NUM_PAD_PRESSED);
