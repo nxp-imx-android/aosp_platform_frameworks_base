@@ -72,6 +72,7 @@ class MixedLetterboxControllerTest : ShellTestCase() {
         val multipleLetterboxController: MultiSurfaceLetterboxController =
             mock<MultiSurfaceLetterboxController>()
         val controllerStrategy: LetterboxControllerStrategy = mock<LetterboxControllerStrategy>()
+        val inputController: LetterboxInputController = mock<LetterboxInputController>()
 
         fun configureStrategyFor(letterboxMode: LetterboxMode) {
             doReturn(letterboxMode).`when`(controllerStrategy).getLetterboxImplementationMode()
@@ -81,12 +82,14 @@ class MixedLetterboxControllerTest : ShellTestCase() {
             verify(singleLetterboxController, times(times)).createLetterboxSurface(
                 any(),
                 any(),
+                any(),
                 any()
             )
         }
 
         fun checkCreateInvokedOnMultiController(times: Int = 1) {
             verify(multipleLetterboxController, times(times)).createLetterboxSurface(
+                any(),
                 any(),
                 any(),
                 any()
@@ -104,7 +107,8 @@ class MixedLetterboxControllerTest : ShellTestCase() {
         override fun buildController(): LetterboxController = MixedLetterboxController(
             singleLetterboxController,
             multipleLetterboxController,
-            controllerStrategy
+            controllerStrategy,
+            inputController
         )
     }
 }

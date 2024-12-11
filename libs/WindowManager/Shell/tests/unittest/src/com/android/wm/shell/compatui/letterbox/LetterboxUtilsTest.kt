@@ -147,7 +147,7 @@ class LetterboxUtilsTest : ShellTestCase() {
             target: LetterboxController,
             times: Int = 1
         ) {
-            verify(target, times(times)).createLetterboxSurface(any(), any(), any())
+            verify(target, times(times)).createLetterboxSurface(any(), any(), any(), any())
         }
 
         fun verifyDestroySurfaceInvokedWithRequest(

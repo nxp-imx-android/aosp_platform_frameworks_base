@@ -19,14 +19,12 @@ package com.android.wm.shell.dagger;
 import android.annotation.NonNull;
 
 import com.android.wm.shell.common.transition.TransitionStateHolder;
-import com.android.wm.shell.compatui.letterbox.LetterboxController;
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy;
 import com.android.wm.shell.compatui.letterbox.LetterboxTransitionObserver;
 import com.android.wm.shell.compatui.letterbox.MixedLetterboxController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
-import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 
@@ -41,16 +39,11 @@ public abstract class LetterboxModule {
     static LetterboxTransitionObserver provideLetterboxTransitionObserver(
             @NonNull ShellInit shellInit,
             @NonNull Transitions transitions,
-            @NonNull LetterboxController letterboxController,
+            @NonNull MixedLetterboxController letterboxController,
             @NonNull TransitionStateHolder transitionStateHolder,
             @NonNull LetterboxControllerStrategy letterboxControllerStrategy
     ) {
         return new LetterboxTransitionObserver(shellInit, transitions, letterboxController,
                 transitionStateHolder, letterboxControllerStrategy);
     }
-
-    @WMSingleton
-    @Binds
-    abstract LetterboxController bindsLetterboxController(
-            MixedLetterboxController letterboxController);
 }

@@ -19,6 +19,7 @@ package com.android.wm.shell.compatui.letterbox
 import android.graphics.Rect
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
+import android.window.WindowContainerToken
 
 /**
  * Creates a [LetterboxController] which is the composition of other two [LetterboxController].
@@ -28,10 +29,11 @@ infix fun LetterboxController.append(other: LetterboxController) = object : Lett
     override fun createLetterboxSurface(
         key: LetterboxKey,
         transaction: Transaction,
-        parentLeash: SurfaceControl
+        parentLeash: SurfaceControl,
+        token: WindowContainerToken?
     ) {
-        this@append.createLetterboxSurface(key, transaction, parentLeash)
-        other.createLetterboxSurface(key, transaction, parentLeash)
+        this@append.createLetterboxSurface(key, transaction, parentLeash, token)
+        other.createLetterboxSurface(key, transaction, parentLeash, token)
     }
 
     override fun destroyLetterboxSurface(

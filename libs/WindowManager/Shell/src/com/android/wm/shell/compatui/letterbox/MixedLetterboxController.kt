@@ -18,6 +18,7 @@ package com.android.wm.shell.compatui.letterbox
 
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
+import android.window.WindowContainerToken
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode.MULTIPLE_SURFACES
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode.SINGLE_SURFACE
 import com.android.wm.shell.dagger.WMSingleton
@@ -31,24 +32,33 @@ import javax.inject.Inject
 class MixedLetterboxController @Inject constructor(
     private val singleSurfaceController: SingleSurfaceLetterboxController,
     private val multipleSurfaceController: MultiSurfaceLetterboxController,
-    private val controllerStrategy: LetterboxControllerStrategy
-) : LetterboxController by singleSurfaceController append multipleSurfaceController {
+    private val controllerStrategy: LetterboxControllerStrategy,
+    private val inputController: LetterboxInputController
+) : LetterboxController by singleSurfaceController.append(multipleSurfaceController)
+    .append(inputController) {
 
     override fun createLetterboxSurface(
         key: LetterboxKey,
         transaction: Transaction,
-        parentLeash: SurfaceControl
+        parentLeash: SurfaceControl,
+        token: WindowContainerToken?
     ) {
         when (controllerStrategy.getLetterboxImplementationMode()) {
             SINGLE_SURFACE -> {
                 multipleSurfaceController.destroyLetterboxSurface(key, transaction)
-                singleSurfaceController.createLetterboxSurface(key, transaction, parentLeash)
+                singleSurfaceController.createLetterboxSurface(key, transaction, parentLeash, token)
             }
 
             MULTIPLE_SURFACES -> {
                 singleSurfaceController.destroyLetterboxSurface(key, transaction)
-                multipleSurfaceController.createLetterboxSurface(key, transaction, parentLeash)
+                multipleSurfaceController.createLetterboxSurface(
+                    key,
+                    transaction,
+                    parentLeash,
+                    token
+                )
             }
         }
+        inputController.createLetterboxSurface(key, transaction, parentLeash, token)
     }
 }
