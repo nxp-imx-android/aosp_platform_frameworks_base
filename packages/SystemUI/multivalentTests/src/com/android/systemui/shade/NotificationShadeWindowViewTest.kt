@@ -43,7 +43,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.res.R
 import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository
-import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractor
+import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractorPassThrough
 import com.android.systemui.shade.NotificationShadeWindowView.InteractionEventHandler
 import com.android.systemui.shade.data.repository.ShadeAnimationRepository
 import com.android.systemui.shade.data.repository.ShadeRepositoryImpl
@@ -143,7 +143,7 @@ class NotificationShadeWindowViewTest : SysuiTestCase() {
 
     private val brightnessMirrorShowingRepository = BrightnessMirrorShowingRepository()
     private val brightnessMirrorShowingInteractor =
-        BrightnessMirrorShowingInteractor(brightnessMirrorShowingRepository)
+        BrightnessMirrorShowingInteractorPassThrough(brightnessMirrorShowingRepository)
 
     private lateinit var underTest: NotificationShadeWindowView
     private lateinit var controller: NotificationShadeWindowViewController

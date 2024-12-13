@@ -17,6 +17,7 @@
 package com.android.systemui.scene.domain.startable
 
 import androidx.annotation.VisibleForTesting
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
@@ -35,7 +36,7 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractor
+import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractorPassThrough
 import com.android.systemui.statusbar.phone.DozeServiceHost
 import com.android.systemui.statusbar.phone.ScrimController
 import com.android.systemui.statusbar.phone.ScrimState
@@ -49,7 +50,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import com.android.app.tracing.coroutines.launchTraced as launch
 
 @SysUISingleton
 class ScrimStartable
@@ -64,7 +64,7 @@ constructor(
     biometricUnlockInteractor: BiometricUnlockInteractor,
     private val statusBarKeyguardViewManager: StatusBarKeyguardViewManager,
     private val alternateBouncerInteractor: AlternateBouncerInteractor,
-    brightnessMirrorShowingInteractor: BrightnessMirrorShowingInteractor,
+    brightnessMirrorShowingInteractor: BrightnessMirrorShowingInteractorPassThrough,
     private val dozeServiceHost: DozeServiceHost,
 ) : CoreStartable {
 

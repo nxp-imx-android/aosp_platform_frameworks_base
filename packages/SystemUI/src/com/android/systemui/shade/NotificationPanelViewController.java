@@ -42,6 +42,8 @@ import static com.android.systemui.statusbar.notification.stack.StackStateAnimat
 import static com.android.systemui.util.DumpUtilsKt.asIndenting;
 import static com.android.systemui.util.kotlin.JavaAdapterKt.collectFlow;
 
+import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
+
 import static java.lang.Float.isNaN;
 
 import android.animation.Animator;
@@ -131,6 +133,7 @@ import com.android.systemui.power.shared.model.WakefulnessModel;
 import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
+import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository;
 import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractor;
 import com.android.systemui.shade.data.repository.FlingInfo;
 import com.android.systemui.shade.data.repository.ShadeRepository;
@@ -201,6 +204,7 @@ import kotlin.Unit;
 
 import kotlinx.coroutines.CoroutineDispatcher;
 import kotlinx.coroutines.flow.Flow;
+import kotlinx.coroutines.flow.MutableStateFlow;
 import kotlinx.coroutines.flow.StateFlow;
 
 import java.io.PrintWriter;
@@ -214,7 +218,8 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 @SysUISingleton
-public final class NotificationPanelViewController implements ShadeSurface, Dumpable {
+public final class NotificationPanelViewController implements
+        ShadeSurface, Dumpable, BrightnessMirrorShowingInteractor {
 
     public static final String TAG = NotificationPanelView.class.getSimpleName();
     private static final boolean DEBUG_LOGCAT = Compile.IS_DEBUG && Log.isLoggable(TAG, Log.DEBUG);
@@ -403,6 +408,18 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
             mTrackingHeadsUpListeners = new ArrayList<>();
     private HeadsUpAppearanceController mHeadsUpAppearanceController;
 
+    private final BrightnessMirrorShowingRepository mBrightnessMirrorShowingRepository;
+    /**
+     * This flow would track whether the brightness mirror should be showing, but aware of the
+     * alpha transitions of NPV.
+     *
+     * When the repository flow emits true, this will also emit true (and start the alpha animation
+     * of NPV to go to 0f). However, when the repository emits false, this will first animate the
+     * alpha to 1f, and then emit false. This guarantees that the mirror is always showing while
+     * the alpha of NPV is animating.
+     */
+    private final MutableStateFlow<Boolean> mIsBrightnessMirrorShowing = MutableStateFlow(false);
+
     private int mPanelAlpha;
     private Runnable mPanelAlphaEndAction;
     private final AnimatableProperty mPanelAlphaAnimator = AnimatableProperty.from("panelAlpha",
@@ -420,6 +437,9 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
                 if (mPanelAlphaEndAction != null) {
                     mPanelAlphaEndAction.run();
                 }
+                // Once the animation for the alpha has finished (NPV is visible again), dismiss
+                // the mirror
+                postToView(() -> mIsBrightnessMirrorShowing.setValue(false));
             }).setCustomInterpolator(
                     mPanelAlphaAnimator.getProperty(), Interpolators.ALPHA_IN);
 
@@ -530,7 +550,6 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
     };
 
     private final ActivityStarter mActivityStarter;
-    private final BrightnessMirrorShowingInteractor mBrightnessMirrorShowingInteractor;
 
     @Nullable
     private RenderEffect mBlurRenderEffect = null;
@@ -608,7 +627,7 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
             PowerInteractor powerInteractor,
             KeyguardClockPositionAlgorithm keyguardClockPositionAlgorithm,
             MSDLPlayer msdlPlayer,
-            BrightnessMirrorShowingInteractor brightnessMirrorShowingInteractor,
+            BrightnessMirrorShowingRepository brightnessMirrorShowingRepository,
             BlurConfig blurConfig) {
         mBlurConfig = blurConfig;
         SceneContainerFlag.assertInLegacyMode();
@@ -765,7 +784,10 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
                 },
                 mFalsingManager);
         mActivityStarter = activityStarter;
-        mBrightnessMirrorShowingInteractor = brightnessMirrorShowingInteractor;
+        mBrightnessMirrorShowingRepository = brightnessMirrorShowingRepository;
+        mIsBrightnessMirrorShowing.setValue(
+                mBrightnessMirrorShowingRepository.isShowing().getValue()
+        );
         onFinishInflate();
         keyguardUnlockAnimationController.addKeyguardUnlockAnimationListener(
                 new KeyguardUnlockAnimationController.KeyguardUnlockAnimationListener() {
@@ -893,10 +915,30 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
                 mMainDispatcher);
         if (QSComposeFragment.isEnabled()) {
             collectFlow(mView,
-                    mBrightnessMirrorShowingInteractor.isShowing(),
-                    isShowing -> setAlpha(isShowing ? 0 : 255, true)
+                    mBrightnessMirrorShowingRepository.isShowing(),
+                    this::onBrightnessMirrorShowingChanged
             );
         }
+    }
+
+    private void onBrightnessMirrorShowingChanged(boolean isShowing) {
+        if (!mIsBrightnessMirrorShowing.getValue()) {
+            // Immediately set the value of the mirror if we are not showing the mirror, and then
+            // start fading the shade.
+            mIsBrightnessMirrorShowing.setValue(isShowing);
+        }
+        setAlpha(isShowing ? 0 : 255, true);
+    }
+
+    @androidx.annotation.NonNull
+    @Override
+    public StateFlow<Boolean> isShowing() {
+        return mIsBrightnessMirrorShowing;
+    }
+
+    @Override
+    public void setMirrorShowing(boolean showing) {
+        mBrightnessMirrorShowingRepository.setMirrorShowing(showing);
     }
 
     @VisibleForTesting
