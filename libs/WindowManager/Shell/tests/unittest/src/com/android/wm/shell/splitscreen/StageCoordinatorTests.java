@@ -629,9 +629,9 @@ public class StageCoordinatorTests extends ShellTestCase {
     private Transitions createTestTransitions() {
         ShellInit shellInit = new ShellInit(mMainExecutor);
         final Transitions t = new Transitions(mContext, shellInit, mock(ShellController.class),
-                mTaskOrganizer, mTransactionPool, mock(DisplayController.class), mMainExecutor,
-                mMainHandler, mAnimExecutor, mock(HomeTransitionObserver.class),
-                mock(FocusTransitionObserver.class));
+                mTaskOrganizer, mTransactionPool, mock(DisplayController.class),
+                mDisplayInsetsController, mMainExecutor, mMainHandler, mAnimExecutor,
+                mock(HomeTransitionObserver.class), mock(FocusTransitionObserver.class));
         shellInit.init();
         return t;
     }
