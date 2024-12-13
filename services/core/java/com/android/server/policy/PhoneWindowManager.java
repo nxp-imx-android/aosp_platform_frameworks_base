@@ -86,6 +86,7 @@ import static android.view.contentprotection.flags.Flags.createAccessibilityOver
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
+import static com.android.hardware.input.Flags.fixSearchModifierFallbacks;
 import static com.android.hardware.input.Flags.inputManagerLifecycleSupport;
 import static com.android.hardware.input.Flags.keyboardA11yShortcutControl;
 import static com.android.hardware.input.Flags.modifierShortcutDump;
@@ -4179,6 +4180,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (isValidGlobalKey(keyCode)
                 && mGlobalKeyManager.handleGlobalKey(mContext, keyCode, event)) {
             return true;
+        }
+
+        if (fixSearchModifierFallbacks()) {
+            // Pass event as unhandled to give other services, e.g. InputManagerService, the
+            // opportunity to determine if the event can be modified, e.g. generating a fallback for
+            // meta/search events.
+            return false;
         }
 
         // Reserve all the META modifier combos for system behavior

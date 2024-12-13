@@ -53,14 +53,16 @@ import android.app.AppOpsManager;
 import android.content.Context;
 import android.hardware.input.InputManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManagerInternal;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.dreams.DreamManagerInternal;
 import android.testing.TestableContext;
-import android.view.contentprotection.flags.Flags;
+import android.view.KeyEvent;
 
 import androidx.test.filters.SmallTest;
 
@@ -102,6 +104,8 @@ public class PhoneWindowManagerTests {
     public final TestableContext mContext = spy(
             new TestableContext(getInstrumentation().getContext()));
 
+    @Mock private IBinder mInputToken;
+
     PhoneWindowManager mPhoneWindowManager;
     @Mock
     private ActivityTaskManagerInternal mAtmInternal;
@@ -124,6 +128,8 @@ public class PhoneWindowManagerTests {
     private KeyguardServiceDelegate mKeyguardServiceDelegate;
     @Mock
     private LockPatternUtils mLockPatternUtils;
+
+    private static final int INTERCEPT_SYSTEM_KEY_NOT_CONSUMED_DELAY = 0;
 
     @Before
     public void setUp() {
@@ -216,7 +222,7 @@ public class PhoneWindowManagerTests {
 
     @Test
     public void testCheckAddPermission_withoutAccessibilityOverlay_noAccessibilityAppOpLogged() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_CREATE_ACCESSIBILITY_OVERLAY_APP_OP_ENABLED);
+        mSetFlagsRule.enableFlags(android.view.contentprotection.flags.Flags.FLAG_CREATE_ACCESSIBILITY_OVERLAY_APP_OP_ENABLED);
         int[] outAppOp = new int[1];
         assertEquals(ADD_OKAY, mPhoneWindowManager.checkAddPermission(TYPE_WALLPAPER,
                 /* isRoundedCornerOverlay= */ false, "test.pkg", outAppOp, DEFAULT_DISPLAY));
@@ -225,7 +231,7 @@ public class PhoneWindowManagerTests {
 
     @Test
     public void testCheckAddPermission_withAccessibilityOverlay() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_CREATE_ACCESSIBILITY_OVERLAY_APP_OP_ENABLED);
+        mSetFlagsRule.enableFlags(android.view.contentprotection.flags.Flags.FLAG_CREATE_ACCESSIBILITY_OVERLAY_APP_OP_ENABLED);
         int[] outAppOp = new int[1];
         assertEquals(ADD_OKAY, mPhoneWindowManager.checkAddPermission(TYPE_ACCESSIBILITY_OVERLAY,
                 /* isRoundedCornerOverlay= */ false, "test.pkg", outAppOp, DEFAULT_DISPLAY));
@@ -234,7 +240,7 @@ public class PhoneWindowManagerTests {
 
     @Test
     public void testCheckAddPermission_withAccessibilityOverlay_flagDisabled() {
-        mSetFlagsRule.disableFlags(Flags.FLAG_CREATE_ACCESSIBILITY_OVERLAY_APP_OP_ENABLED);
+        mSetFlagsRule.disableFlags(android.view.contentprotection.flags.Flags.FLAG_CREATE_ACCESSIBILITY_OVERLAY_APP_OP_ENABLED);
         int[] outAppOp = new int[1];
         assertEquals(ADD_OKAY, mPhoneWindowManager.checkAddPermission(TYPE_ACCESSIBILITY_OVERLAY,
                 /* isRoundedCornerOverlay= */ false, "test.pkg", outAppOp, DEFAULT_DISPLAY));
@@ -399,6 +405,35 @@ public class PhoneWindowManagerTests {
 
         // Dream is requested.
         verify(mDreamManagerInternal).requestDream();
+    }
+
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_FIX_SEARCH_MODIFIER_FALLBACKS)
+    public void testInterceptKeyBeforeDispatching() {
+        // Handle sub-tasks of init().
+        doNothing().when(mPhoneWindowManager).updateSettings(any());
+        doNothing().when(mPhoneWindowManager).initializeHdmiState();
+        final DisplayPolicy displayPolicy = mock(DisplayPolicy.class);
+        mPhoneWindowManager.mDefaultDisplayPolicy = displayPolicy;
+        mPhoneWindowManager.mDefaultDisplayRotation = mock(DisplayRotation.class);
+        final PowerManager pm = mock(PowerManager.class);
+        doReturn(true).when(pm).isInteractive();
+        doReturn(pm).when(mContext).getSystemService(eq(Context.POWER_SERVICE));
+
+        mContext.getMainThreadHandler().runWithScissors(() -> mPhoneWindowManager.init(
+                new PhoneWindowManager.Injector(mContext,
+                        mock(WindowManagerPolicy.WindowManagerFuncs.class))), 0);
+
+        // Case: KeyNotConsumed with meta key.
+        KeyEvent keyEvent = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN,
+                KeyEvent.KEYCODE_A, 0, KeyEvent.META_META_ON);
+        long result = mPhoneWindowManager.interceptKeyBeforeDispatching(mInputToken, keyEvent, 0);
+        assertEquals(INTERCEPT_SYSTEM_KEY_NOT_CONSUMED_DELAY, result);
+
+        // Case: KeyNotConsumed without meta key.
+        KeyEvent keyEvent1 = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN,
+                KeyEvent.KEYCODE_ESCAPE, 0, 0);
+        long result1 = mPhoneWindowManager.interceptKeyBeforeDispatching(mInputToken, keyEvent1, 0);
+        assertEquals(INTERCEPT_SYSTEM_KEY_NOT_CONSUMED_DELAY, result1);
     }
 
     private void initPhoneWindowManager() {
