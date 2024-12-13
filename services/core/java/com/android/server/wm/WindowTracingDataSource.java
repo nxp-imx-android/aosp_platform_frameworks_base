@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.tracing.perfetto.DataSourceParams.PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_ABORT;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.internal.perfetto.protos.DataSourceConfigOuterClass.DataSourceConfig;
 import android.internal.perfetto.protos.WindowmanagerConfig.WindowManagerConfig;
@@ -34,18 +35,41 @@ import android.util.proto.ProtoInputStream;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class WindowTracingDataSource extends DataSource<WindowTracingDataSource.Instance,
         WindowTracingDataSource.TlsState, Void> {
+
+    @IntDef({
+            com.android.server.wm.WindowTracingDataSource.Status.WAITING_START_EVENT,
+            com.android.server.wm.WindowTracingDataSource.Status
+                    .WAITING_START_EVENT_WITH_DEFERRED_STOP,
+            com.android.server.wm.WindowTracingDataSource.Status.WRITING_START_EVENT,
+            com.android.server.wm.WindowTracingDataSource.Status
+                    .WRITING_START_EVENT_WITH_DEFERRED_STOP,
+            com.android.server.wm.WindowTracingDataSource.Status.STARTED,
+            com.android.server.wm.WindowTracingDataSource.Status.STOPPED,
+    })
+    @interface Status {
+        int WAITING_START_EVENT = 0;
+        int WAITING_START_EVENT_WITH_DEFERRED_STOP = 1;
+        int WRITING_START_EVENT = 2;
+        int WRITING_START_EVENT_WITH_DEFERRED_STOP = 3;
+        int STARTED_WITH_DEFERRED_STOP = 4;
+        int STARTED = 5;
+        int STOPPED = 6;
+    }
+
     public static class TlsState {
         public final Config mConfig;
-        public final AtomicBoolean mIsStarting = new AtomicBoolean(true);
+        public final AtomicInteger mStatus;
 
-        private TlsState(Config config) {
+        private TlsState(Config config, AtomicInteger status) {
             mConfig = config;
+            mStatus = status;
         }
     }
+
 
     public static class Config {
         public final @WindowTracingLogLevel int mLogLevel;
@@ -61,10 +85,12 @@ public final class WindowTracingDataSource extends DataSource<WindowTracingDataS
 
     public abstract static class Instance extends DataSourceInstance {
         public final Config mConfig;
+        public final AtomicInteger mStatus;
 
         public Instance(DataSource dataSource, int instanceIndex, Config config) {
             super(dataSource, instanceIndex);
             mConfig = config;
+            mStatus = new AtomicInteger(Status.WAITING_START_EVENT);
         }
     }
 
@@ -85,6 +111,7 @@ public final class WindowTracingDataSource extends DataSource<WindowTracingDataS
                 new DataSourceParams.Builder()
                         .setBufferExhaustedPolicy(
                                 PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_ABORT)
+                        .setPostponeStop(true)
                         .build();
         register(params);
         Log.i(TAG, "Registered with perfetto service");
@@ -101,13 +128,15 @@ public final class WindowTracingDataSource extends DataSource<WindowTracingDataS
                 if (windowTracing != null) {
                     windowTracing.onStart(mConfig);
                 }
+
+
             }
 
             @Override
             protected void onStop(StopCallbackArguments args) {
                 WindowTracingPerfetto windowTracing = mWindowTracing.get();
                 if (windowTracing != null) {
-                    windowTracing.onStop(mConfig);
+                    windowTracing.onStop(this);
                 }
             }
         };
@@ -119,9 +148,9 @@ public final class WindowTracingDataSource extends DataSource<WindowTracingDataS
         try (Instance dsInstance = args.getDataSourceInstanceLocked()) {
             if (dsInstance == null) {
                 // Datasource instance has been removed
-                return new TlsState(CONFIG_DEFAULT);
+                return new TlsState(CONFIG_DEFAULT,  new AtomicInteger(Status.WAITING_START_EVENT));
             }
-            return new TlsState(dsInstance.mConfig);
+            return new TlsState(dsInstance.mConfig, dsInstance.mStatus);
         }
     }
 
