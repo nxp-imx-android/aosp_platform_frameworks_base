@@ -22,7 +22,7 @@ import static android.view.InsetsSource.ID_IME;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IME;
 import static com.android.server.wm.DisplayContent.IME_TARGET_CONTROL;
 import static com.android.server.wm.DisplayContent.IME_TARGET_LAYERING;
-import static com.android.server.wm.ImeInsetsSourceProviderProto.IME_TARGET_FROM_IME;
+import static com.android.server.wm.ImeInsetsSourceProviderProto.IME_TARGET_FROM_IME_IDENTIFIER;
 import static com.android.server.wm.ImeInsetsSourceProviderProto.INSETS_SOURCE_PROVIDER;
 import static com.android.server.wm.WindowManagerService.H.UPDATE_MULTI_WINDOW_STACKS;
 
@@ -774,7 +774,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         final WindowState imeRequesterWindow =
                 mImeRequester != null ? mImeRequester.getWindow() : null;
         if (imeRequesterWindow != null) {
-            imeRequesterWindow.dumpDebug(proto, IME_TARGET_FROM_IME, logLevel);
+            imeRequesterWindow.writeIdentifierToProto(proto, IME_TARGET_FROM_IME_IDENTIFIER);
         }
         proto.end(token);
     }

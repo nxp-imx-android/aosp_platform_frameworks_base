@@ -108,7 +108,7 @@ import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_W
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON_CHANGE_DISPLAY;
 import static com.android.server.wm.DisplayContentProto.APP_TRANSITION;
-import static com.android.server.wm.DisplayContentProto.CURRENT_FOCUS;
+import static com.android.server.wm.DisplayContentProto.CURRENT_FOCUS_IDENTIFIER;
 import static com.android.server.wm.DisplayContentProto.DISPLAY_FRAMES;
 import static com.android.server.wm.DisplayContentProto.DISPLAY_INFO;
 import static com.android.server.wm.DisplayContentProto.DISPLAY_READY;
@@ -118,9 +118,9 @@ import static com.android.server.wm.DisplayContentProto.FOCUSED_APP;
 import static com.android.server.wm.DisplayContentProto.FOCUSED_ROOT_TASK_ID;
 import static com.android.server.wm.DisplayContentProto.ID;
 import static com.android.server.wm.DisplayContentProto.IME_POLICY;
-import static com.android.server.wm.DisplayContentProto.INPUT_METHOD_CONTROL_TARGET;
-import static com.android.server.wm.DisplayContentProto.INPUT_METHOD_INPUT_TARGET;
-import static com.android.server.wm.DisplayContentProto.INPUT_METHOD_TARGET;
+import static com.android.server.wm.DisplayContentProto.INPUT_METHOD_CONTROL_TARGET_IDENTIFIER;
+import static com.android.server.wm.DisplayContentProto.INPUT_METHOD_INPUT_TARGET_IDENTIFIER;
+import static com.android.server.wm.DisplayContentProto.INPUT_METHOD_LAYERING_TARGET_IDENTIFIER;
 import static com.android.server.wm.DisplayContentProto.IS_SLEEPING;
 import static com.android.server.wm.DisplayContentProto.KEEP_CLEAR_AREAS;
 import static com.android.server.wm.DisplayContentProto.MIN_SIZE_OF_RESIZEABLE_TASK_DP;
@@ -3569,18 +3569,20 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         if (mImeLayeringTarget != null) {
-            mImeLayeringTarget.dumpDebug(proto, INPUT_METHOD_TARGET, logLevel);
+            mImeLayeringTarget.writeIdentifierToProto(
+                    proto, INPUT_METHOD_LAYERING_TARGET_IDENTIFIER);
         }
-        if (mImeInputTarget != null) {
-            mImeInputTarget.dumpProto(proto, INPUT_METHOD_INPUT_TARGET, logLevel);
+        if (mImeInputTarget != null && mImeInputTarget.getWindowState() != null) {
+            mImeInputTarget.getWindowState().writeIdentifierToProto(
+                    proto, INPUT_METHOD_INPUT_TARGET_IDENTIFIER);
         }
         if (mImeControlTarget != null
                 && mImeControlTarget.getWindow() != null) {
-            mImeControlTarget.getWindow().dumpDebug(proto, INPUT_METHOD_CONTROL_TARGET,
-                    logLevel);
+            mImeControlTarget.getWindow().writeIdentifierToProto(
+                    proto, INPUT_METHOD_CONTROL_TARGET_IDENTIFIER);
         }
         if (mCurrentFocus != null) {
-            mCurrentFocus.dumpDebug(proto, CURRENT_FOCUS, logLevel);
+            mCurrentFocus.writeIdentifierToProto(proto, CURRENT_FOCUS_IDENTIFIER);
         }
         if (mInsetsStateController != null) {
             mInsetsStateController.dumpDebug(proto, logLevel);
