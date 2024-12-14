@@ -1723,9 +1723,16 @@ public final class PowerManagerService extends SystemService
         }
     }
 
-    @SuppressWarnings("deprecation")
     private static boolean isScreenLock(final WakeLock wakeLock) {
-        switch (wakeLock.mFlags & PowerManager.WAKE_LOCK_LEVEL_MASK) {
+        return isScreenLock(wakeLock.mFlags);
+    }
+
+    /**
+     * Returns if a wakelock flag corresponds to a screen wake lock.
+     */
+    @SuppressWarnings("deprecation")
+    public static boolean isScreenLock(int flags) {
+        switch (flags & PowerManager.WAKE_LOCK_LEVEL_MASK) {
             case PowerManager.FULL_WAKE_LOCK:
             case PowerManager.SCREEN_BRIGHT_WAKE_LOCK:
             case PowerManager.SCREEN_DIM_WAKE_LOCK:
