@@ -1491,7 +1491,6 @@ package android {
     field public static final int shadowRadius = 16843108; // 0x1010164
     field public static final int shape = 16843162; // 0x101019a
     field public static final int shareInterpolator = 16843195; // 0x10101bb
-    field @FlaggedApi("android.nfc.nfc_associated_role_services") public static final int shareRolePriority;
     field @Deprecated public static final int sharedUserId = 16842763; // 0x101000b
     field @Deprecated public static final int sharedUserLabel = 16843361; // 0x1010261
     field public static final int sharedUserMaxSdkVersion = 16844365; // 0x101064d
@@ -1855,6 +1854,7 @@ package android {
     field public static final int wallpaperIntraOpenExitAnimation = 16843416; // 0x1010298
     field public static final int wallpaperOpenEnterAnimation = 16843411; // 0x1010293
     field public static final int wallpaperOpenExitAnimation = 16843412; // 0x1010294
+    field @FlaggedApi("android.nfc.nfc_associated_role_services") public static final int wantsRoleHolderPriority;
     field public static final int webTextViewStyle = 16843449; // 0x10102b9
     field public static final int webViewStyle = 16842885; // 0x1010085
     field public static final int weekDayTextAppearance = 16843592; // 0x1010348
