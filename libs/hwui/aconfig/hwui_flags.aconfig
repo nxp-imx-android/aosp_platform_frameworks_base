@@ -90,6 +90,14 @@ flag {
 }
 
 flag {
+  name: "requested_formats_12_14"
+  is_exported: true
+  namespace: "core_graphics"
+  description: "Add new 12 & 14-bit formats in the SDK"
+  bug: "390471495"
+}
+
+flag {
   name: "draw_region"
   namespace: "core_graphics"
   description: "Add canvas#drawRegion API"
