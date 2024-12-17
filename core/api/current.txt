@@ -42521,7 +42521,7 @@ package android.service.settings.preferences {
     field @NonNull public static final android.os.Parcelable.Creator<android.service.settings.preferences.GetValueRequest> CREATOR;
   }
 
-  public static final class GetValueRequest.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class GetValueRequest.Builder {
     ctor public GetValueRequest.Builder(@NonNull String, @NonNull String);
     method @NonNull public android.service.settings.preferences.GetValueRequest build();
   }
@@ -42542,7 +42542,7 @@ package android.service.settings.preferences {
     field public static final int RESULT_UNSUPPORTED = 1; // 0x1
   }
 
-  public static final class GetValueResult.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class GetValueResult.Builder {
     ctor public GetValueResult.Builder(int);
     method @NonNull public android.service.settings.preferences.GetValueResult build();
     method @NonNull public android.service.settings.preferences.GetValueResult.Builder setMetadata(@Nullable android.service.settings.preferences.SettingsPreferenceMetadata);
@@ -42555,7 +42555,7 @@ package android.service.settings.preferences {
     field @NonNull public static final android.os.Parcelable.Creator<android.service.settings.preferences.MetadataRequest> CREATOR;
   }
 
-  public static final class MetadataRequest.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class MetadataRequest.Builder {
     ctor public MetadataRequest.Builder();
     method @NonNull public android.service.settings.preferences.MetadataRequest build();
   }
@@ -42571,7 +42571,7 @@ package android.service.settings.preferences {
     field public static final int RESULT_UNSUPPORTED = 1; // 0x1
   }
 
-  public static final class MetadataResult.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class MetadataResult.Builder {
     ctor public MetadataResult.Builder(int);
     method @NonNull public android.service.settings.preferences.MetadataResult build();
     method @NonNull public android.service.settings.preferences.MetadataResult.Builder setMetadataList(@NonNull java.util.List<android.service.settings.preferences.SettingsPreferenceMetadata>);
@@ -42586,7 +42586,7 @@ package android.service.settings.preferences {
     field @NonNull public static final android.os.Parcelable.Creator<android.service.settings.preferences.SetValueRequest> CREATOR;
   }
 
-  public static final class SetValueRequest.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class SetValueRequest.Builder {
     ctor public SetValueRequest.Builder(@NonNull String, @NonNull String, @NonNull android.service.settings.preferences.SettingsPreferenceValue);
     method @NonNull public android.service.settings.preferences.SetValueRequest build();
   }
@@ -42608,14 +42608,13 @@ package android.service.settings.preferences {
     field public static final int RESULT_UNSUPPORTED = 1; // 0x1
   }
 
-  public static final class SetValueResult.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class SetValueResult.Builder {
     ctor public SetValueResult.Builder(int);
     method @NonNull public android.service.settings.preferences.SetValueResult build();
   }
 
   @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public final class SettingsPreferenceMetadata implements android.os.Parcelable {
     method public int describeContents();
-    method @NonNull public java.util.List<java.lang.String> getBreadcrumbs();
     method @NonNull public android.os.Bundle getExtras();
     method @NonNull public String getKey();
     method @Nullable public android.content.Intent getLaunchIntent();
@@ -42631,17 +42630,16 @@ package android.service.settings.preferences {
     method public boolean isWritable();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.settings.preferences.SettingsPreferenceMetadata> CREATOR;
+    field public static final int DEEPLINK_ONLY = 2; // 0x2
     field public static final int EXPECT_POST_CONFIRMATION = 1; // 0x1
-    field public static final int EXPECT_PRE_CONFIRMATION = 2; // 0x2
     field public static final int NO_DIRECT_ACCESS = 3; // 0x3
     field public static final int NO_SENSITIVITY = 0; // 0x0
   }
 
-  public static final class SettingsPreferenceMetadata.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class SettingsPreferenceMetadata.Builder {
     ctor public SettingsPreferenceMetadata.Builder(@NonNull String, @NonNull String);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata build();
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setAvailable(boolean);
-    method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setBreadcrumbs(@NonNull java.util.List<java.lang.String>);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setEnabled(boolean);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setExtras(@NonNull android.os.Bundle);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setLaunchIntent(@Nullable android.content.Intent);
@@ -42688,7 +42686,7 @@ package android.service.settings.preferences {
     field public static final int TYPE_STRING = 3; // 0x3
   }
 
-  public static final class SettingsPreferenceValue.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class SettingsPreferenceValue.Builder {
     ctor public SettingsPreferenceValue.Builder(int);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceValue build();
     method @NonNull public android.service.settings.preferences.SettingsPreferenceValue.Builder setBooleanValue(boolean);
