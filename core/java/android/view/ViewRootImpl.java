@@ -3013,7 +3013,7 @@ public final class ViewRootImpl implements ViewParent,
      */
     public void notifyRendererOfExpensiveFrame() {
         if (mAttachInfo.mThreadedRenderer != null) {
-            mAttachInfo.mThreadedRenderer.notifyExpensiveFrame();
+            mAttachInfo.mThreadedRenderer.notifyExpensiveFrameWithRateLimit(null);
         }
     }
 
@@ -3023,11 +3023,8 @@ public final class ViewRootImpl implements ViewParent,
      * @hide
      */
     public void notifyRendererOfExpensiveFrame(String reason) {
-        Trace.traceBegin(Trace.TRACE_TAG_VIEW, reason);
-        try {
-            notifyRendererOfExpensiveFrame();
-        } finally {
-            Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+        if (mAttachInfo.mThreadedRenderer != null) {
+            mAttachInfo.mThreadedRenderer.notifyExpensiveFrameWithRateLimit(reason);
         }
     }
 
