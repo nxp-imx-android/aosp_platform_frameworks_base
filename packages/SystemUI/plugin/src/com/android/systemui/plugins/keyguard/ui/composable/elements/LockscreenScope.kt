@@ -137,7 +137,7 @@ interface LockscreenScope<out TScope : BaseContentScope> {
                 sceneState.setTargetScene(sceneKey, coroutineScope)
             }
 
-            contentScope.NestedSceneTransitionLayout(sceneState, modifier, debugName) {
+            contentScope.NestedSceneTransitionLayout(sceneState, debugName, modifier) {
                 NestedSceneScopeImpl(this@NestedScenes, this).content()
             }
         }

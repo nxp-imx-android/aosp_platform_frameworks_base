@@ -396,12 +396,13 @@ interface ContentScope : BaseContentScope {
      * A [NestedSceneTransitionLayout] will share its elements with its ancestor STLs therefore
      * enabling sharedElement transitions between them.
      */
-    // TODO(b/380070506): Add more parameters when default params are supported in Kotlin 2.0.21
     @Composable
     fun NestedSceneTransitionLayout(
         state: SceneTransitionLayoutState,
-        modifier: Modifier,
         debugName: String,
+        modifier: Modifier = Modifier,
+        swipeSourceDetector: SwipeSourceDetector = DefaultEdgeDetector,
+        swipeDetector: SwipeDetector = DefaultSwipeDetector,
         builder: SceneTransitionLayoutScope<ContentScope>.() -> Unit,
     )
 
@@ -430,9 +431,11 @@ internal interface InternalContentScope : ContentScope {
     @Composable
     fun NestedSceneTransitionLayoutForTesting(
         state: SceneTransitionLayoutState,
-        modifier: Modifier,
+        modifier: Modifier = Modifier,
         onLayoutImpl: ((SceneTransitionLayoutImpl) -> Unit)?,
         debugName: String,
+        swipeSourceDetector: SwipeSourceDetector = DefaultEdgeDetector,
+        swipeDetector: SwipeDetector = DefaultSwipeDetector,
         builder: SceneTransitionLayoutScope<InternalContentScope>.() -> Unit,
     )
 }

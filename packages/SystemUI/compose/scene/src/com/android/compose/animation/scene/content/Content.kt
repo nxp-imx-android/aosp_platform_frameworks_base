@@ -73,6 +73,8 @@ import com.android.compose.animation.scene.SceneTransitionLayoutImpl
 import com.android.compose.animation.scene.SceneTransitionLayoutScope
 import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.compose.animation.scene.SharedValueType
+import com.android.compose.animation.scene.SwipeDetector
+import com.android.compose.animation.scene.SwipeSourceDetector
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.ValueKey
@@ -389,11 +391,21 @@ internal class ContentScopeImpl(
     @Composable
     override fun NestedSceneTransitionLayout(
         state: SceneTransitionLayoutState,
-        modifier: Modifier,
         debugName: String,
+        modifier: Modifier,
+        swipeSourceDetector: SwipeSourceDetector,
+        swipeDetector: SwipeDetector,
         builder: SceneTransitionLayoutScope<ContentScope>.() -> Unit,
     ) {
-        NestedSceneTransitionLayoutForTesting(state, modifier, null, debugName, builder)
+        NestedSceneTransitionLayoutForTesting(
+            state,
+            modifier,
+            null,
+            debugName,
+            swipeSourceDetector,
+            swipeDetector,
+            builder,
+        )
     }
 
     @Composable
@@ -402,6 +414,8 @@ internal class ContentScopeImpl(
         modifier: Modifier,
         onLayoutImpl: ((SceneTransitionLayoutImpl) -> Unit)?,
         debugName: String,
+        swipeSourceDetector: SwipeSourceDetector,
+        swipeDetector: SwipeDetector,
         builder: SceneTransitionLayoutScope<InternalContentScope>.() -> Unit,
     ) {
         val ancestors =
@@ -411,6 +425,8 @@ internal class ContentScopeImpl(
         SceneTransitionLayoutForTesting(
             state,
             modifier,
+            swipeDetector = swipeDetector,
+            swipeSourceDetector = swipeSourceDetector,
             onLayoutImpl = onLayoutImpl,
             builder = builder,
             sharedElementMap = layoutImpl.elements,
