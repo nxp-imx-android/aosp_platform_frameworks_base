@@ -33623,14 +33623,21 @@ package android.os {
   }
 
   @FlaggedApi("android.os.cpu_gpu_headrooms") public final class CpuHeadroomParams {
-    ctor public CpuHeadroomParams();
     method public int getCalculationType();
-    method @IntRange(from=0x32, to=0x2710) public long getCalculationWindowMillis();
-    method public void setCalculationType(int);
-    method public void setCalculationWindowMillis(@IntRange(from=0x32, to=0x2710) int);
-    method public void setTids(@NonNull int...);
+    method public long getCalculationWindowMillis();
+    method @NonNull public int[] getTids();
+    method @NonNull public android.os.CpuHeadroomParams.Builder toBuilder();
     field public static final int CPU_HEADROOM_CALCULATION_TYPE_AVERAGE = 1; // 0x1
     field public static final int CPU_HEADROOM_CALCULATION_TYPE_MIN = 0; // 0x0
+  }
+
+  public static final class CpuHeadroomParams.Builder {
+    ctor public CpuHeadroomParams.Builder();
+    ctor public CpuHeadroomParams.Builder(@NonNull android.os.CpuHeadroomParams);
+    method @NonNull public android.os.CpuHeadroomParams build();
+    method @NonNull public android.os.CpuHeadroomParams.Builder setCalculationType(int);
+    method @NonNull public android.os.CpuHeadroomParams.Builder setCalculationWindowMillis(@IntRange(from=1) int);
+    method @NonNull public android.os.CpuHeadroomParams.Builder setTids(@NonNull int...);
   }
 
   public final class CpuUsageInfo implements android.os.Parcelable {
@@ -33881,13 +33888,20 @@ package android.os {
   }
 
   @FlaggedApi("android.os.cpu_gpu_headrooms") public final class GpuHeadroomParams {
-    ctor public GpuHeadroomParams();
     method public int getCalculationType();
-    method @IntRange(from=0x32, to=0x2710) public int getCalculationWindowMillis();
-    method public void setCalculationType(int);
-    method public void setCalculationWindowMillis(@IntRange(from=0x32, to=0x2710) int);
+    method public int getCalculationWindowMillis();
     field public static final int GPU_HEADROOM_CALCULATION_TYPE_AVERAGE = 1; // 0x1
     field public static final int GPU_HEADROOM_CALCULATION_TYPE_MIN = 0; // 0x0
+    field public static final int GPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MAX = 10000; // 0x2710
+    field public static final int GPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MIN = 50; // 0x32
+  }
+
+  public static final class GpuHeadroomParams.Builder {
+    ctor public GpuHeadroomParams.Builder();
+    ctor public GpuHeadroomParams.Builder(@NonNull android.os.GpuHeadroomParams);
+    method @NonNull public android.os.GpuHeadroomParams build();
+    method @NonNull public android.os.GpuHeadroomParams.Builder setCalculationType(int);
+    method @NonNull public android.os.GpuHeadroomParams.Builder setCalculationWindowMillis(@IntRange(from=1) int);
   }
 
   public class Handler {
@@ -35153,9 +35167,12 @@ package android.os.health {
 
   public class SystemHealthManager {
     method @FlaggedApi("android.os.cpu_gpu_headrooms") @FloatRange(from=0.0f, to=100.0f) public float getCpuHeadroom(@Nullable android.os.CpuHeadroomParams);
+    method @FlaggedApi("android.os.cpu_gpu_headrooms") @NonNull public android.util.Pair<java.lang.Integer,java.lang.Integer> getCpuHeadroomCalculationWindowRange();
     method @FlaggedApi("android.os.cpu_gpu_headrooms") public long getCpuHeadroomMinIntervalMillis();
     method @FlaggedApi("android.os.cpu_gpu_headrooms") @FloatRange(from=0.0f, to=100.0f) public float getGpuHeadroom(@Nullable android.os.GpuHeadroomParams);
+    method @FlaggedApi("android.os.cpu_gpu_headrooms") @NonNull public android.util.Pair<java.lang.Integer,java.lang.Integer> getGpuHeadroomCalculationWindowRange();
     method @FlaggedApi("android.os.cpu_gpu_headrooms") public long getGpuHeadroomMinIntervalMillis();
+    method @FlaggedApi("android.os.cpu_gpu_headrooms") @IntRange(from=1) public int getMaxCpuHeadroomTidsSize();
     method @FlaggedApi("com.android.server.power.optimization.power_monitor_api") public void getPowerMonitorReadings(@NonNull java.util.List<android.os.PowerMonitor>, @Nullable java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.os.PowerMonitorReadings,java.lang.RuntimeException>);
     method @FlaggedApi("com.android.server.power.optimization.power_monitor_api") public void getSupportedPowerMonitors(@Nullable java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.List<android.os.PowerMonitor>>);
     method public android.os.health.HealthStats takeMyUidSnapshot();
