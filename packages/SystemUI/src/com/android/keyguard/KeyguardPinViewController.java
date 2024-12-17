@@ -18,6 +18,7 @@ package com.android.keyguard;
 
 import static com.android.systemui.flags.Flags.LOCKSCREEN_ENABLE_LANDSCAPE;
 
+import android.hardware.input.InputManager;
 import android.view.View;
 
 import com.android.internal.logging.UiEvent;
@@ -63,11 +64,13 @@ public class KeyguardPinViewController
             SelectedUserInteractor selectedUserInteractor, UiEventLogger uiEventLogger,
             KeyguardKeyboardInteractor keyguardKeyboardInteractor,
             BouncerHapticPlayer bouncerHapticPlayer,
-            UserActivityNotifier userActivityNotifier) {
+            UserActivityNotifier userActivityNotifier,
+            InputManager inputManager) {
         super(view, keyguardUpdateMonitor, securityMode, lockPatternUtils, keyguardSecurityCallback,
                 messageAreaControllerFactory, latencyTracker,
                 emergencyButtonController, falsingCollector, featureFlags, selectedUserInteractor,
-                keyguardKeyboardInteractor, bouncerHapticPlayer, userActivityNotifier);
+                keyguardKeyboardInteractor, bouncerHapticPlayer, userActivityNotifier, inputManager
+        );
         mKeyguardUpdateMonitor = keyguardUpdateMonitor;
         mPostureController = postureController;
         mLockPatternUtils = lockPatternUtils;
