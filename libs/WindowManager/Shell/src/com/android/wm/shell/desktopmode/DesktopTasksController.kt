@@ -21,7 +21,6 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
 import android.app.KeyguardManager
 import android.app.PendingIntent
-import android.app.TaskInfo
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
@@ -84,6 +83,7 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SingleInstanceRemoteListener
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.compatui.isTopActivityExemptFromDesktopWindowing
+import com.android.wm.shell.compatui.isTransparentTask
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum
@@ -308,11 +308,23 @@ class DesktopTasksController(
         }
     }
 
-    /** Gets number of visible tasks in [displayId]. */
+    /** Gets number of visible freeform tasks in [displayId]. */
     fun visibleTaskCount(displayId: Int): Int = taskRepository.getVisibleTaskCount(displayId)
 
-    /** Returns true if any tasks are visible in Desktop Mode. */
-    fun isDesktopModeShowing(displayId: Int): Boolean = visibleTaskCount(displayId) > 0
+    /**
+     * Returns true if any freeform tasks are visible or if a transparent fullscreen task exists on
+     * top in Desktop Mode.
+     */
+    fun isDesktopModeShowing(displayId: Int): Boolean {
+        if (
+            DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
+                .isTrue() && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue()
+        ) {
+            return visibleTaskCount(displayId) > 0 ||
+                taskRepository.getTopTransparentFullscreenTaskId(displayId) != null
+        }
+        return visibleTaskCount(displayId) > 0
+    }
 
     /** Moves focused task to desktop mode for given [displayId]. */
     fun moveFocusedTaskToDesktop(displayId: Int, transitionSource: DesktopModeTransitionSource) {
@@ -863,7 +875,11 @@ class DesktopTasksController(
         }
 
         val wct = WindowContainerTransaction()
-        if (!task.isFreeform) addMoveToDesktopChanges(wct, task, displayId)
+        if (!task.isFreeform) {
+            addMoveToDesktopChanges(wct, task, displayId)
+        } else if (Flags.enableMoveToNextDisplayShortcut()) {
+            applyFreeformDisplayChange(wct, task, displayId)
+        }
         wct.reparent(task.token, displayAreaInfo.token, true /* onTop */)
 
         if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
@@ -1592,7 +1608,7 @@ class DesktopTasksController(
             TransitionUtil.isOpeningType(request.type) &&
             taskRepository.isActiveTask(triggerTask.taskId))
 
-    private fun isIncompatibleTask(task: TaskInfo) =
+    private fun isIncompatibleTask(task: RunningTaskInfo) =
         DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue() &&
             isTopActivityExemptFromDesktopWindowing(context, task)
 
@@ -1848,6 +1864,15 @@ class DesktopTasksController(
      * fullscreen.
      */
     private fun handleIncompatibleTaskLaunch(task: RunningTaskInfo): WindowContainerTransaction? {
+        logV("handleIncompatibleTaskLaunch")
+        if (!isDesktopModeShowing(task.displayId)) return null
+        // Only update task repository for transparent task.
+        if (
+            DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
+                .isTrue() && isTransparentTask(task)
+        ) {
+            taskRepository.setTopTransparentFullscreenTaskId(task.displayId, task.taskId)
+        }
         // Already fullscreen, no-op.
         if (task.isFullscreen) return null
         return WindowContainerTransaction().also { wct -> addMoveToFullscreenChanges(wct, task) }
@@ -1907,6 +1932,50 @@ class DesktopTasksController(
         if (useDesktopOverrideDensity()) {
             wct.setDensityDpi(taskInfo.token, DESKTOP_DENSITY_OVERRIDE)
         }
+    }
+
+    /**
+     * Apply changes to move a freeform task from one display to another, which includes handling
+     * density changes between displays.
+     */
+    private fun applyFreeformDisplayChange(
+        wct: WindowContainerTransaction,
+        taskInfo: RunningTaskInfo,
+        destDisplayId: Int,
+    ) {
+        val sourceLayout = displayController.getDisplayLayout(taskInfo.displayId) ?: return
+        val destLayout = displayController.getDisplayLayout(destDisplayId) ?: return
+        val bounds = taskInfo.configuration.windowConfiguration.bounds
+        val scaledWidth = bounds.width() * destLayout.densityDpi() / sourceLayout.densityDpi()
+        val scaledHeight = bounds.height() * destLayout.densityDpi() / sourceLayout.densityDpi()
+        val sourceWidthMargin = sourceLayout.width() - bounds.width()
+        val sourceHeightMargin = sourceLayout.height() - bounds.height()
+        val destWidthMargin = destLayout.width() - scaledWidth
+        val destHeightMargin = destLayout.height() - scaledHeight
+        val scaledLeft =
+            if (sourceWidthMargin != 0) {
+                bounds.left * destWidthMargin / sourceWidthMargin
+            } else {
+                destWidthMargin / 2
+            }
+        val scaledTop =
+            if (sourceHeightMargin != 0) {
+                bounds.top * destHeightMargin / sourceHeightMargin
+            } else {
+                destHeightMargin / 2
+            }
+        val boundsWithinDisplay =
+            if (destWidthMargin >= 0 && destHeightMargin >= 0) {
+                Rect(0, 0, scaledWidth, scaledHeight).apply {
+                    offsetTo(
+                        scaledLeft.coerceIn(0, destWidthMargin),
+                        scaledTop.coerceIn(0, destHeightMargin),
+                    )
+                }
+            } else {
+                getInitialBounds(destLayout, taskInfo, destDisplayId)
+            }
+        wct.setBounds(taskInfo.token, boundsWithinDisplay)
     }
 
     private fun getInitialBounds(
