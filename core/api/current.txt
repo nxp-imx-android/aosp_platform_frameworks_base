@@ -9190,8 +9190,9 @@ package android.app.blob {
 package android.app.jank {
 
   @FlaggedApi("android.app.jank.detailed_app_jank_metrics_api") public final class AppJankStats {
-    ctor public AppJankStats(int, @NonNull String, @Nullable String, @Nullable String, long, long, @NonNull android.app.jank.RelativeFrameTimeHistogram);
+    ctor public AppJankStats(int, @NonNull String, @Nullable String, @Nullable String, @Nullable String, long, long, @NonNull android.app.jank.RelativeFrameTimeHistogram);
     method public long getJankyFrameCount();
+    method @Nullable public String getNavigationComponent();
     method @NonNull public android.app.jank.RelativeFrameTimeHistogram getRelativeFrameTimeHistogram();
     method public long getTotalFrameCount();
     method public int getUid();
