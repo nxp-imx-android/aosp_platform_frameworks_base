@@ -298,17 +298,6 @@ flag {
 }
 
 flag {
-  name: "always_capture_activity_snapshot"
-  namespace: "windowing_frontend"
-  description: "Always capture activity snapshot regardless predictive back status"
-  bug: "362183912"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "ensure_keyguard_does_transition_starting"
   namespace: "windowing_frontend"
   description: "Ensure that keyguard is the one starting transitions, instead of delegating to Core"
@@ -349,17 +338,6 @@ flag {
   description: "Always create predictive back transition when start back gesture animation"
   bug: "372230928"
   is_fixed_read_only: true
-}
-
-flag {
-  name: "defer_predictive_animation_if_no_snapshot"
-  namespace: "windowing_frontend"
-  description: "If no snapshot for previous window, start animation until the client has draw."
-  bug: "374621014"
-  is_fixed_read_only: true
-  metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
