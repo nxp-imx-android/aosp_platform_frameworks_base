@@ -9190,37 +9190,37 @@ package android.app.blob {
 package android.app.jank {
 
   @FlaggedApi("android.app.jank.detailed_app_jank_metrics_api") public final class AppJankStats {
-    ctor public AppJankStats(int, @NonNull String, @Nullable String, @Nullable String, long, long, @NonNull android.app.jank.FrameOverrunHistogram);
-    method @NonNull public android.app.jank.FrameOverrunHistogram getFrameOverrunHistogram();
+    ctor public AppJankStats(int, @NonNull String, @Nullable String, @Nullable String, long, long, @NonNull android.app.jank.RelativeFrameTimeHistogram);
     method public long getJankyFrameCount();
+    method @NonNull public android.app.jank.RelativeFrameTimeHistogram getRelativeFrameTimeHistogram();
     method public long getTotalFrameCount();
     method public int getUid();
     method @NonNull public String getWidgetCategory();
     method @NonNull public String getWidgetId();
     method @NonNull public String getWidgetState();
-    field public static final String ANIMATING = "animating";
-    field public static final String ANIMATION = "animation";
-    field public static final String DRAGGING = "dragging";
-    field public static final String FLINGING = "flinging";
-    field public static final String KEYBOARD = "keyboard";
-    field public static final String MEDIA = "media";
-    field public static final String NAVIGATION = "navigation";
-    field public static final String NONE = "none";
-    field public static final String OTHER = "other";
-    field public static final String PLAYBACK = "playback";
-    field public static final String PREDICTIVE_BACK = "predictive_back";
-    field public static final String SCROLL = "scroll";
-    field public static final String SCROLLING = "scrolling";
-    field public static final String SWIPING = "swiping";
-    field public static final String TAPPING = "tapping";
-    field public static final String WIDGET_CATEGORY_UNSPECIFIED = "widget_category_unspecified";
-    field public static final String WIDGET_STATE_UNSPECIFIED = "widget_state_unspecified";
-    field public static final String ZOOMING = "zooming";
+    field public static final String WIDGET_CATEGORY_ANIMATION = "animation";
+    field public static final String WIDGET_CATEGORY_KEYBOARD = "keyboard";
+    field public static final String WIDGET_CATEGORY_MEDIA = "media";
+    field public static final String WIDGET_CATEGORY_NAVIGATION = "navigation";
+    field public static final String WIDGET_CATEGORY_OTHER = "other";
+    field public static final String WIDGET_CATEGORY_SCROLL = "scroll";
+    field public static final String WIDGET_CATEGORY_UNSPECIFIED = "unspecified";
+    field public static final String WIDGET_STATE_ANIMATING = "animating";
+    field public static final String WIDGET_STATE_DRAGGING = "dragging";
+    field public static final String WIDGET_STATE_FLINGING = "flinging";
+    field public static final String WIDGET_STATE_NONE = "none";
+    field public static final String WIDGET_STATE_PLAYBACK = "playback";
+    field public static final String WIDGET_STATE_PREDICTIVE_BACK = "predictive_back";
+    field public static final String WIDGET_STATE_SCROLLING = "scrolling";
+    field public static final String WIDGET_STATE_SWIPING = "swiping";
+    field public static final String WIDGET_STATE_TAPPING = "tapping";
+    field public static final String WIDGET_STATE_UNSPECIFIED = "unspecified";
+    field public static final String WIDGET_STATE_ZOOMING = "zooming";
   }
 
-  @FlaggedApi("android.app.jank.detailed_app_jank_metrics_api") public class FrameOverrunHistogram {
-    ctor public FrameOverrunHistogram();
-    method public void addFrameOverrunMillis(int);
+  @FlaggedApi("android.app.jank.detailed_app_jank_metrics_api") public class RelativeFrameTimeHistogram {
+    ctor public RelativeFrameTimeHistogram();
+    method public void addRelativeFrameTimeMillis(int);
     method @NonNull public int[] getBucketCounters();
     method @NonNull public int[] getBucketEndpointsMillis();
   }
@@ -42521,7 +42521,7 @@ package android.service.settings.preferences {
     field @NonNull public static final android.os.Parcelable.Creator<android.service.settings.preferences.GetValueRequest> CREATOR;
   }
 
-  public static final class GetValueRequest.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class GetValueRequest.Builder {
     ctor public GetValueRequest.Builder(@NonNull String, @NonNull String);
     method @NonNull public android.service.settings.preferences.GetValueRequest build();
   }
@@ -42542,7 +42542,7 @@ package android.service.settings.preferences {
     field public static final int RESULT_UNSUPPORTED = 1; // 0x1
   }
 
-  public static final class GetValueResult.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class GetValueResult.Builder {
     ctor public GetValueResult.Builder(int);
     method @NonNull public android.service.settings.preferences.GetValueResult build();
     method @NonNull public android.service.settings.preferences.GetValueResult.Builder setMetadata(@Nullable android.service.settings.preferences.SettingsPreferenceMetadata);
@@ -42555,7 +42555,7 @@ package android.service.settings.preferences {
     field @NonNull public static final android.os.Parcelable.Creator<android.service.settings.preferences.MetadataRequest> CREATOR;
   }
 
-  public static final class MetadataRequest.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class MetadataRequest.Builder {
     ctor public MetadataRequest.Builder();
     method @NonNull public android.service.settings.preferences.MetadataRequest build();
   }
@@ -42571,7 +42571,7 @@ package android.service.settings.preferences {
     field public static final int RESULT_UNSUPPORTED = 1; // 0x1
   }
 
-  public static final class MetadataResult.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class MetadataResult.Builder {
     ctor public MetadataResult.Builder(int);
     method @NonNull public android.service.settings.preferences.MetadataResult build();
     method @NonNull public android.service.settings.preferences.MetadataResult.Builder setMetadataList(@NonNull java.util.List<android.service.settings.preferences.SettingsPreferenceMetadata>);
@@ -42586,7 +42586,7 @@ package android.service.settings.preferences {
     field @NonNull public static final android.os.Parcelable.Creator<android.service.settings.preferences.SetValueRequest> CREATOR;
   }
 
-  public static final class SetValueRequest.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class SetValueRequest.Builder {
     ctor public SetValueRequest.Builder(@NonNull String, @NonNull String, @NonNull android.service.settings.preferences.SettingsPreferenceValue);
     method @NonNull public android.service.settings.preferences.SetValueRequest build();
   }
@@ -42608,14 +42608,13 @@ package android.service.settings.preferences {
     field public static final int RESULT_UNSUPPORTED = 1; // 0x1
   }
 
-  public static final class SetValueResult.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class SetValueResult.Builder {
     ctor public SetValueResult.Builder(int);
     method @NonNull public android.service.settings.preferences.SetValueResult build();
   }
 
   @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public final class SettingsPreferenceMetadata implements android.os.Parcelable {
     method public int describeContents();
-    method @NonNull public java.util.List<java.lang.String> getBreadcrumbs();
     method @NonNull public android.os.Bundle getExtras();
     method @NonNull public String getKey();
     method @Nullable public android.content.Intent getLaunchIntent();
@@ -42631,17 +42630,16 @@ package android.service.settings.preferences {
     method public boolean isWritable();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.settings.preferences.SettingsPreferenceMetadata> CREATOR;
+    field public static final int DEEPLINK_ONLY = 2; // 0x2
     field public static final int EXPECT_POST_CONFIRMATION = 1; // 0x1
-    field public static final int EXPECT_PRE_CONFIRMATION = 2; // 0x2
     field public static final int NO_DIRECT_ACCESS = 3; // 0x3
     field public static final int NO_SENSITIVITY = 0; // 0x0
   }
 
-  public static final class SettingsPreferenceMetadata.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class SettingsPreferenceMetadata.Builder {
     ctor public SettingsPreferenceMetadata.Builder(@NonNull String, @NonNull String);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata build();
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setAvailable(boolean);
-    method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setBreadcrumbs(@NonNull java.util.List<java.lang.String>);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setEnabled(boolean);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setExtras(@NonNull android.os.Bundle);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceMetadata.Builder setLaunchIntent(@Nullable android.content.Intent);
@@ -42688,7 +42686,7 @@ package android.service.settings.preferences {
     field public static final int TYPE_STRING = 3; // 0x3
   }
 
-  public static final class SettingsPreferenceValue.Builder {
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final class SettingsPreferenceValue.Builder {
     ctor public SettingsPreferenceValue.Builder(int);
     method @NonNull public android.service.settings.preferences.SettingsPreferenceValue build();
     method @NonNull public android.service.settings.preferences.SettingsPreferenceValue.Builder setBooleanValue(boolean);
@@ -53484,9 +53482,9 @@ package android.view {
     field public static final int CHANGE_FRAME_RATE_ALWAYS = 1; // 0x1
     field public static final int CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS = 0; // 0x0
     field @NonNull public static final android.os.Parcelable.Creator<android.view.Surface> CREATOR;
+    field @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_gte_enum") public static final int FRAME_RATE_COMPATIBILITY_AT_LEAST = 2; // 0x2
     field public static final int FRAME_RATE_COMPATIBILITY_DEFAULT = 0; // 0x0
     field public static final int FRAME_RATE_COMPATIBILITY_FIXED_SOURCE = 1; // 0x1
-    field @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_gte_enum") public static final int FRAME_RATE_COMPATIBILITY_GTE = 2; // 0x2
     field public static final int ROTATION_0 = 0; // 0x0
     field public static final int ROTATION_180 = 2; // 0x2
     field public static final int ROTATION_270 = 3; // 0x3
