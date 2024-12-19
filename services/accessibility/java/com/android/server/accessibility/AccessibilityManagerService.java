@@ -173,6 +173,7 @@ import android.view.accessibility.IAccessibilityManagerClient;
 import android.view.accessibility.IMagnificationConnection;
 import android.view.accessibility.IUserInitializationCompleteCallback;
 import android.view.inputmethod.EditorInfo;
+import android.window.ScreenCapture;
 
 import com.android.internal.R;
 import com.android.internal.accessibility.AccessibilityShortcutController;
@@ -6723,6 +6724,12 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                         displayId,
                         sc,
                         callback));
+    }
+
+    @Override
+    public int performScreenCapture(ScreenCapture.LayerCaptureArgs captureArgs,
+            ScreenCapture.ScreenCaptureListener captureListener) {
+        return ScreenCapture.captureLayers(captureArgs, captureListener);
     }
 
     @VisibleForTesting

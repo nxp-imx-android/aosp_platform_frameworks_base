@@ -254,6 +254,7 @@ import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.accessibility.IAccessibilityEmbeddedConnection;
 import android.view.accessibility.IAccessibilityInteractionConnection;
 import android.view.accessibility.IAccessibilityInteractionConnectionCallback;
+import android.view.accessibility.IWindowSurfaceInfoCallback;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.autofill.AutofillManager;
@@ -12282,6 +12283,15 @@ public final class ViewRootImpl implements ViewParent,
                 } catch (RemoteException re) {
                     /* best effort - ignore */
                 }
+            }
+        }
+
+        @Override
+        public void getWindowSurfaceInfo(IWindowSurfaceInfoCallback callback) {
+            ViewRootImpl viewRootImpl = mViewRootImpl.get();
+            if (viewRootImpl != null && viewRootImpl.mView != null) {
+                viewRootImpl.getAccessibilityInteractionController()
+                        .getWindowSurfaceInfoClientThread(callback);
             }
         }
 
