@@ -441,7 +441,7 @@ public final class SystemServer implements Dumpable {
             "/apex/com.android.uwb/javalib/service-uwb.jar";
     private static final String UWB_SERVICE_CLASS = "com.android.server.uwb.UwbService";
     private static final String BLUETOOTH_APEX_SERVICE_JAR_PATH =
-            "/apex/com.android.btservices/javalib/service-bluetooth.jar";
+            "/apex/com.android.bt/javalib/service-bluetooth.jar";
     private static final String BLUETOOTH_SERVICE_CLASS =
             "com.android.server.bluetooth.BluetoothService";
     private static final String DEVICE_LOCK_SERVICE_CLASS =
@@ -3121,10 +3121,10 @@ public final class SystemServer implements Dumpable {
         if (com.android.ranging.flags.Flags.rangingStackEnabled()) {
             if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_UWB)
                     || context.getPackageManager().hasSystemFeature(
-                            PackageManager.FEATURE_WIFI_RTT)
+                            PackageManager.FEATURE_WIFI_AWARE)
                     || (com.android.ranging.flags.Flags.rangingCsEnabled()
                             && context.getPackageManager().hasSystemFeature(
-                                    PackageManager.FEATURE_BLUETOOTH_LE_CHANNEL_SOUNDING))) {
+                                    PackageManager.FEATURE_BLUETOOTH_LE))) {
                 t.traceBegin("RangingService");
                 // TODO: b/375264320 - Remove after RELEASE_RANGING_STACK is ramped to next.
                 try {

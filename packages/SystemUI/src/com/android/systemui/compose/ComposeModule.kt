@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-package android.graphics;
+package com.android.systemui.compose
 
-import junit.framework.TestSuite;
+import com.android.systemui.CoreStartable
+import dagger.Binds
+import dagger.Module
+import dagger.multibindings.ClassKey
+import dagger.multibindings.IntoMap
 
-public class GraphicsTests {
-    public static TestSuite suite() {
-        TestSuite suite = new TestSuite(GraphicsTests.class.getName());
-
-        suite.addTestSuite(BitmapTest.class);
-        return suite;
-    }
+@Module
+interface ComposeModule {
+    @Binds
+    @IntoMap
+    @ClassKey(ComposeTracingStartable::class)
+    fun composeTracing(impl: ComposeTracingStartable): CoreStartable
 }

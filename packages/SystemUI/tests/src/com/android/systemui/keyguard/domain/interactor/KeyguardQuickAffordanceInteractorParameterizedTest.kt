@@ -20,7 +20,6 @@ package com.android.systemui.keyguard.domain.interactor
 import android.app.admin.DevicePolicyManager
 import android.content.Intent
 import android.os.UserHandle
-import androidx.test.filters.FlakyTest
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
 import com.android.keyguard.logging.KeyguardQuickAffordancesLogger
@@ -30,6 +29,7 @@ import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
 import com.android.systemui.dock.DockManagerFake
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.FakeFeatureFlags
@@ -64,6 +64,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
@@ -82,7 +83,7 @@ import platform.test.runner.parameterized.Parameters
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 @DisableSceneContainer
-@FlakyTest(bugId = 292574995, detail = "NullPointer on MockMakerTypeMockability.mockable()")
+@Ignore("b/292574995 NullPointer on MockMakerTypeMockability.mockable()")
 class KeyguardQuickAffordanceInteractorParameterizedTest : SysuiTestCase() {
 
     companion object {
@@ -270,6 +271,7 @@ class KeyguardQuickAffordanceInteractorParameterizedTest : SysuiTestCase() {
                             .thenReturn(FakeSharedPreferences())
                     },
                 userTracker = userTracker,
+                communalSettingsInteractor = kosmos.communalSettingsInteractor,
                 broadcastDispatcher = fakeBroadcastDispatcher,
             )
         val remoteUserSelectionManager =
@@ -320,6 +322,7 @@ class KeyguardQuickAffordanceInteractorParameterizedTest : SysuiTestCase() {
                 biometricSettingsRepository = biometricSettingsRepository,
                 backgroundDispatcher = testDispatcher,
                 appContext = mContext,
+                communalSettingsInteractor = kosmos.communalSettingsInteractor,
                 sceneInteractor = { kosmos.sceneInteractor },
             )
     }

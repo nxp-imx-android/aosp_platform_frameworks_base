@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.policy;
+package com.android.systemui.shade
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.widget.FrameLayout;
+import com.android.systemui.kosmos.Kosmos
+import org.mockito.kotlin.mock
 
-/**
- * The container for the user switcher on Keyguard.
- */
-public class KeyguardUserSwitcherView extends FrameLayout {
-
-    public KeyguardUserSwitcherView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-}
+var Kosmos.notificationShadeWindowView by Kosmos.Fixture { mock<NotificationShadeWindowView>() }
