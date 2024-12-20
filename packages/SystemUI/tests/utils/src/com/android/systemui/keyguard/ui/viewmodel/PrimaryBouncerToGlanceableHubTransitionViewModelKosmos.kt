@@ -17,11 +17,13 @@
 package com.android.systemui.keyguard.ui.viewmodel
 
 import com.android.systemui.keyguard.ui.keyguardTransitionAnimationFlow
+import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 
 val Kosmos.primaryBouncerToGlanceableHubTransitionViewModel by Fixture {
     PrimaryBouncerToGlanceableHubTransitionViewModel(
-        animationFlow = keyguardTransitionAnimationFlow
+        animationFlow = keyguardTransitionAnimationFlow,
+        blurConfig = blurConfig,
     )
 }
