@@ -572,14 +572,13 @@ public class AutomaticBrightnessController {
 
     public boolean setBrightnessConfiguration(BrightnessConfiguration configuration,
             boolean shouldResetShortTermModel) {
-        if (mBrightnessMappingStrategyMap.get(AUTO_BRIGHTNESS_MODE_DEFAULT)
-                .setBrightnessConfiguration(configuration)) {
-            if (!isInIdleMode() && shouldResetShortTermModel) {
-                resetShortTermModel();
-            }
-            return true;
+        boolean changed = mBrightnessMappingStrategyMap.get(AUTO_BRIGHTNESS_MODE_DEFAULT)
+                                  .setBrightnessConfiguration(configuration);
+        if (!isInIdleMode() && shouldResetShortTermModel) {
+            resetShortTermModel();
+            changed = true;
         }
-        return false;
+        return changed;
     }
 
     /**
