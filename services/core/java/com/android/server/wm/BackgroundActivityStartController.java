@@ -144,9 +144,9 @@ public class BackgroundActivityStartController {
                     .setPendingIntentCreatorBackgroundActivityStartMode(
                             MODE_BACKGROUND_ACTIVITY_START_SYSTEM_DEFINED);
 
-    private final ActivityTaskManagerService mService;
+    private ActivityTaskManagerService mService;
 
-    private final ActivityTaskSupervisor mSupervisor;
+    private ActivityTaskSupervisor mSupervisor;
     @GuardedBy("mStrictModeBalCallbacks")
     private final SparseArray<ArrayMap<IBinder, IBackgroundActivityLaunchCallback>>
             mStrictModeBalCallbacks = new SparseArray<>();
@@ -1026,11 +1026,21 @@ public class BackgroundActivityStartController {
         }
     }
 
-    /**
-     * @return A code denoting which BAL rule allows an activity to be started,
-     * or {@link #BAL_BLOCK} if the launch should be blocked
-     */
-    BalVerdict checkBackgroundActivityStartAllowedByCallerInForeground(BalState state) {
+    interface BalExemptionCheck {
+        BalVerdict evaluate(BalState state);
+    }
+
+    private BalVerdict evaluateChain(BalState state, BalExemptionCheck... checks) {
+        for (BalExemptionCheck check : checks) {
+            BalVerdict verdict = check.evaluate(state);
+            if (verdict != BalVerdict.BLOCK) {
+                return verdict;
+            }
+        }
+        return BalVerdict.BLOCK;
+    }
+
+    private final BalExemptionCheck mCheckCallerVisible = state -> {
         // This is used to block background activity launch even if the app is still
         // visible to user after user clicking home button.
 
@@ -1044,21 +1054,19 @@ public class BackgroundActivityStartController {
             return new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW,
                     /*background*/ false, "callingUid has visible window");
         }
+        return BalVerdict.BLOCK;
+    };
+
+    private final BalExemptionCheck mCheckCallerNonAppVisible = state -> {
         if (state.mCallingUidHasNonAppVisibleWindow) {
             return new BalVerdict(BAL_ALLOW_NON_APP_VISIBLE_WINDOW,
                     /*background*/ false, "callingUid has non-app visible window "
                     + mService.mActiveUids.getNonAppVisibleWindowDetails(state.mCallingUid));
         }
-        // Don't abort if the callerApp or other processes of that uid are considered to be in the
-        // foreground.
-        return checkProcessAllowsBal(state.mCallerApp, state, BAL_CHECK_FOREGROUND);
-    }
+        return BalVerdict.BLOCK;
+    };
 
-    /**
-     * @return A code denoting which BAL rule allows an activity to be started,
-     * or {@link #BAL_BLOCK} if the launch should be blocked
-     */
-    BalVerdict checkBackgroundActivityStartAllowedByCallerInBackground(BalState state) {
+    private final BalExemptionCheck mCheckCallerIsAllowlistedUid = state -> {
         // don't abort for the most important UIDs
         final int callingAppId = UserHandle.getAppId(state.mCallingUid);
         if (state.mCallingUid == Process.ROOT_UID
@@ -1066,9 +1074,12 @@ public class BackgroundActivityStartController {
                 || callingAppId == Process.NFC_UID) {
             return new BalVerdict(
                     BAL_ALLOW_ALLOWLISTED_UID, /*background*/ false,
-                     "Important callingUid");
+                    "Important callingUid");
         }
+        return BalVerdict.BLOCK;
+    };
 
+    private final BalExemptionCheck mCheckCallerIsAllowlistedComponent = state -> {
         // Always allow home application to start activities.
         if (isHomeApp(state.mCallingUid, state.mCallingPackage)) {
             return new BalVerdict(BAL_ALLOW_ALLOWLISTED_COMPONENT,
@@ -1076,6 +1087,7 @@ public class BackgroundActivityStartController {
                     "Home app");
         }
 
+        final int callingAppId = UserHandle.getAppId(state.mCallingUid);
         // IME should always be allowed to start activity, like IME settings.
         final WindowState imeWindow =
                 mService.mRootWindowContainer.getCurrentInputMethodWindow();
@@ -1091,12 +1103,6 @@ public class BackgroundActivityStartController {
                     /*background*/ false, "callingUid is persistent system process");
         }
 
-        // don't abort if the callingUid has START_ACTIVITIES_FROM_BACKGROUND permission
-        if (hasBalPermission(state.mCallingUid, state.mCallingPid)) {
-            return new BalVerdict(BAL_ALLOW_PERMISSION,
-                    /*background*/ true,
-                    "START_ACTIVITIES_FROM_BACKGROUND permission granted");
-        }
         // don't abort if the caller has the same uid as the recents component
         if (mSupervisor.mRecentTasks.isCallerRecents(state.mCallingUid)) {
             return new BalVerdict(BAL_ALLOW_ALLOWLISTED_COMPONENT,
@@ -1118,12 +1124,28 @@ public class BackgroundActivityStartController {
             return new BalVerdict(BAL_ALLOW_ALLOWLISTED_COMPONENT,
                     /*background*/ true, "Companion App");
         }
+        return BalVerdict.BLOCK;
+    };
+
+    private final BalExemptionCheck mCheckCallerHasBackgroundPermission = state -> {
+        // don't abort if the callingUid has START_ACTIVITIES_FROM_BACKGROUND permission
+        if (hasBalPermission(state.mCallingUid, state.mCallingPid)) {
+            return new BalVerdict(BAL_ALLOW_PERMISSION,
+                    /*background*/ true,
+                    "START_ACTIVITIES_FROM_BACKGROUND permission granted");
+        }
+        return BalVerdict.BLOCK;
+    };
+    private final BalExemptionCheck mCheckCallerHasSawPermission = state -> {
         // don't abort if the callingUid has SYSTEM_ALERT_WINDOW permission
         if (mService.hasSystemAlertWindowPermission(state.mCallingUid, state.mCallingPid,
                 state.mCallingPackage)) {
             return new BalVerdict(BAL_ALLOW_SAW_PERMISSION,
                     /*background*/ true, "SYSTEM_ALERT_WINDOW permission is granted");
         }
+        return BalVerdict.BLOCK;
+    };
+    private final BalExemptionCheck mCheckCallerHasBgStartAppOp = state -> {
         // don't abort if the callingUid and callingPackage have the
         // OP_SYSTEM_EXEMPT_FROM_ACTIVITY_BG_START_RESTRICTION appop
         if (isSystemExemptFlagEnabled() && mService.getAppOpsManager().checkOpNoThrow(
@@ -1132,9 +1154,36 @@ public class BackgroundActivityStartController {
             return new BalVerdict(BAL_ALLOW_PERMISSION, /*background*/ true,
                     "OP_SYSTEM_EXEMPT_FROM_ACTIVITY_BG_START_RESTRICTION appop is granted");
         }
+        return BalVerdict.BLOCK;
+    };
 
-        // Don't abort if the callerApp or other processes of that uid are allowed in any way.
-        return checkProcessAllowsBal(state.mCallerApp, state, BAL_CHECK_BACKGROUND);
+
+    // Don't abort if the callerApp or other processes of that uid are considered to be in the
+    // foreground.
+    private final BalExemptionCheck mCheckCallerProcessAllowsForeground =
+            state -> checkProcessAllowsBal(state.mCallerApp, state, BAL_CHECK_FOREGROUND);
+    // Don't abort if the callerApp or other processes of that uid are allowed in any way.
+    private final BalExemptionCheck mCheckCallerProcessAllowsBackground =
+            state -> checkProcessAllowsBal(state.mCallerApp, state, BAL_CHECK_BACKGROUND);
+
+    /**
+     * @return A code denoting which BAL rule allows an activity to be started,
+     * or {@link #BAL_BLOCK} if the launch should be blocked
+     */
+    BalVerdict checkBackgroundActivityStartAllowedByCallerInForeground(BalState state) {
+        return evaluateChain(state, mCheckCallerVisible, mCheckCallerNonAppVisible,
+                mCheckCallerProcessAllowsForeground);
+    }
+
+    /**
+     * @return A code denoting which BAL rule allows an activity to be started,
+     * or {@link #BAL_BLOCK} if the launch should be blocked
+     */
+    BalVerdict checkBackgroundActivityStartAllowedByCallerInBackground(BalState state) {
+        return evaluateChain(state, mCheckCallerIsAllowlistedUid,
+                mCheckCallerIsAllowlistedComponent, mCheckCallerHasBackgroundPermission,
+                mCheckCallerHasSawPermission, mCheckCallerHasBgStartAppOp,
+                mCheckCallerProcessAllowsBackground);
     }
 
     /**
