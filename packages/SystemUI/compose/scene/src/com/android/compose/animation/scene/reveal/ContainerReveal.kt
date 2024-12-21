@@ -156,12 +156,7 @@ private class VerticalContainerRevealSizeTransformation(
         // implement HasOverscrollProperties if the transition is triggered and not gesture based.
         val idleSize = checkNotNull(element.targetSize(content))
         val userActionDistance = idleSize.height
-        val progress =
-            when ((transition as? TransitionState.DirectionProperties)?.bouncingContent) {
-                null -> transition.progressTo(content)
-                content -> 1f
-                else -> 0f
-            }
+        val progress = transition.progressTo(content)
         val distance = (progress * userActionDistance).fastCoerceAtLeast(0f)
         val threshold = distanceThreshold.toPx()
 
@@ -256,19 +251,7 @@ private class ContainerRevealAlphaTransformation(
 
     private fun targetAlpha(transition: TransitionState.Transition, content: ContentKey): Float {
         if (transition.isUserInputOngoing) {
-            if (transition !is TransitionState.DirectionProperties) {
-                error(
-                    "Unsupported transition driven by user input but that does not have " +
-                        "overscroll properties: $transition"
-                )
-            }
-
-            val bouncingContent = transition.bouncingContent
-            return if (bouncingContent != null) {
-                if (bouncingContent == content) 1f else 0f
-            } else {
-                if (transition.progressTo(content) > 0f) 1f else 0f
-            }
+            return if (transition.progressTo(content) > 0f) 1f else 0f
         }
 
         // The transition was committed (the user released their finger), so the alpha depends on

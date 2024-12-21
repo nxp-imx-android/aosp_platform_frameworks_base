@@ -1488,7 +1488,7 @@
     <dimen name="screenrecord_spinner_height">72dp</dimen>
     <dimen name="screenrecord_spinner_margin">24dp</dimen>
     <dimen name="screenrecord_spinner_text_padding_start">20dp</dimen>
-    <dimen name="screenrecord_spinner_text_padding_end">80dp</dimen>
+    <dimen name="screenrecord_spinner_text_padding_end">20dp</dimen>
     <dimen name="screenrecord_spinner_arrow_size">24dp</dimen>
     <dimen name="screenrecord_spinner_background_radius">28dp</dimen>
 
@@ -1514,7 +1514,6 @@
     <dimen name="media_output_dialog_header_icon_padding">16dp</dimen>
     <dimen name="media_output_dialog_icon_corner_radius">16dp</dimen>
     <dimen name="media_output_dialog_title_anim_y_delta">12.5dp</dimen>
-    <dimen name="media_output_dialog_app_tier_icon_size">20dp</dimen>
     <dimen name="media_output_dialog_background_radius">16dp</dimen>
     <dimen name="media_output_dialog_active_background_radius">30dp</dimen>
     <dimen name="media_output_dialog_default_margin_end">16dp</dimen>

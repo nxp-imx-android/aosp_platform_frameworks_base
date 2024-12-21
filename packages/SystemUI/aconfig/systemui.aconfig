@@ -547,14 +547,6 @@ flag {
 }
 
 flag {
-   name: "migrate_clocks_to_blueprint"
-   namespace: "systemui"
-   description: "Move clock related views from KeyguardStatusView to KeyguardRootView, "
-        "and use modern architecture for lockscreen clocks"
-   bug: "301502635"
-}
-
-flag {
    name: "clock_reactive_variants"
    namespace: "systemui"
    description: "Add reactive variant fonts to some clocks"
@@ -1222,6 +1214,13 @@ flag {
 }
 
 flag {
+  name: "low_light_clock_dream"
+  namespace: "systemui"
+  description: "Enables low light clock dream experience on mobile phones"
+  bug: "378174125"
+}
+
+flag {
   name: "communal_standalone_support"
   namespace: "systemui"
   description: "Support communal features without a dock"
@@ -1804,6 +1803,15 @@ flag {
   bug: "371224114"
 }
 
+flag {
+  name: "disable_shade_expands_on_trackpad_two_finger_swipe"
+  namespace: "systemui"
+  description: "Disables expansion of the shade via two finger swipe on a trackpad"
+  bug: "356804470"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
 
 flag {
     name: "keyboard_shortcut_helper_shortcut_customizer"

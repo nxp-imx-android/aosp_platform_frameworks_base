@@ -35,7 +35,7 @@ import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
-import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
@@ -43,6 +43,7 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.back.BackAnimationController
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_TASK_DRAG
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
@@ -87,6 +88,9 @@ class DesktopTasksTransitionObserverTest {
     private val taskRepository = mock<DesktopRepository>()
     private val mixedHandler = mock<DesktopMixedTransitionHandler>()
     private val backAnimationController = mock<BackAnimationController>()
+    private val desktopWallpaperActivityTokenProvider =
+        mock<DesktopWallpaperActivityTokenProvider>()
+    private val wallpaperToken = MockToken().token()
 
     private lateinit var transitionObserver: DesktopTasksTransitionObserver
     private lateinit var shellInit: ShellInit
@@ -98,6 +102,7 @@ class DesktopTasksTransitionObserverTest {
 
         whenever(userRepositories.current).thenReturn(taskRepository)
         whenever(userRepositories.getProfile(anyInt())).thenReturn(taskRepository)
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(wallpaperToken)
 
         transitionObserver =
             DesktopTasksTransitionObserver(
@@ -107,6 +112,7 @@ class DesktopTasksTransitionObserverTest {
                 shellTaskOrganizer,
                 mixedHandler,
                 backAnimationController,
+                desktopWallpaperActivityTokenProvider,
                 shellInit,
             )
     }
@@ -233,12 +239,11 @@ class DesktopTasksTransitionObserverTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_ON_SYSTEM_USER)
     fun closeLastTask_wallpaperTokenExists_wallpaperIsRemoved() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val task = createTaskInfo(1, WINDOWING_MODE_FREEFORM)
-        val wallpaperToken = MockToken().token()
         whenever(taskRepository.getVisibleTaskCount(task.displayId)).thenReturn(0)
-        whenever(taskRepository.wallpaperActivityToken).thenReturn(wallpaperToken)
 
         transitionObserver.onTransitionReady(
             transition = mockTransition,
@@ -248,9 +253,9 @@ class DesktopTasksTransitionObserverTest {
         )
         transitionObserver.onTransitionFinished(mockTransition, false)
 
-        val wct = getLatestWct(type = TRANSIT_CLOSE)
+        val wct = getLatestWct(type = TRANSIT_TO_BACK)
         assertThat(wct.hierarchyOps).hasSize(1)
-        wct.assertRemoveAt(index = 0, wallpaperToken)
+        wct.assertReorderAt(index = 0, wallpaperToken, toTop = false)
     }
 
     @Test
@@ -377,11 +382,16 @@ class DesktopTasksTransitionObserverTest {
         return arg.value
     }
 
-    private fun WindowContainerTransaction.assertRemoveAt(index: Int, token: WindowContainerToken) {
+    private fun WindowContainerTransaction.assertReorderAt(
+        index: Int,
+        token: WindowContainerToken,
+        toTop: Boolean? = null,
+    ) {
         assertIndexInBounds(index)
         val op = hierarchyOps[index]
-        assertThat(op.type).isEqualTo(HIERARCHY_OP_TYPE_REMOVE_TASK)
+        assertThat(op.type).isEqualTo(HIERARCHY_OP_TYPE_REORDER)
         assertThat(op.container).isEqualTo(token.asBinder())
+        toTop?.let { assertThat(op.toTop).isEqualTo(it) }
     }
 
     private fun WindowContainerTransaction.assertIndexInBounds(index: Int) {

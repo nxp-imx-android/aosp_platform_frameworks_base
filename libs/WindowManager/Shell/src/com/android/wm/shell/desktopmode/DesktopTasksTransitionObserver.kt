@@ -29,9 +29,11 @@ import android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVI
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.back.BackAnimationController
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.isExitDesktopModeTransition
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
@@ -50,6 +52,7 @@ class DesktopTasksTransitionObserver(
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val desktopMixedTransitionHandler: DesktopMixedTransitionHandler,
     private val backAnimationController: BackAnimationController,
+    private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
     shellInit: ShellInit,
 ) : Transitions.TransitionObserver {
 
@@ -212,7 +215,7 @@ class DesktopTasksTransitionObserver(
                 desktopRepository.getVisibleTaskCount(taskInfo.displayId) == 0 &&
                     change.mode == TRANSIT_CLOSE &&
                     taskInfo.windowingMode == WINDOWING_MODE_FREEFORM &&
-                    desktopRepository.wallpaperActivityToken != null
+                    desktopWallpaperActivityTokenProvider.getToken() != null
             ) {
                 transitionToCloseWallpaper = transition
                 currentProfileId = taskInfo.userId
@@ -232,13 +235,21 @@ class DesktopTasksTransitionObserver(
         // TODO: b/332682201 Update repository state
         if (transitionToCloseWallpaper == transition) {
             // TODO: b/362469671 - Handle merging the animation when desktop is also closing.
-            val desktopRepository = desktopUserRepositories.getProfile(currentProfileId)
-            desktopRepository.wallpaperActivityToken?.let { wallpaperActivityToken ->
-                transitions.startTransition(
-                    TRANSIT_CLOSE,
-                    WindowContainerTransaction().removeTask(wallpaperActivityToken),
-                    null,
-                )
+            desktopWallpaperActivityTokenProvider.getToken()?.let { wallpaperActivityToken ->
+                if (Flags.enableDesktopWallpaperActivityOnSystemUser()) {
+                    transitions.startTransition(
+                        TRANSIT_TO_BACK,
+                        WindowContainerTransaction()
+                            .reorder(wallpaperActivityToken, /* onTop= */ false),
+                        null,
+                    )
+                } else {
+                    transitions.startTransition(
+                        TRANSIT_CLOSE,
+                        WindowContainerTransaction().removeTask(wallpaperActivityToken),
+                        null,
+                    )
+                }
             }
             transitionToCloseWallpaper = null
         }
@@ -251,10 +262,12 @@ class DesktopTasksTransitionObserver(
         info.changes.forEach { change ->
             change.taskInfo?.let { taskInfo ->
                 if (DesktopWallpaperActivity.isWallpaperTask(taskInfo)) {
-                    val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
                     when (change.mode) {
                         WindowManager.TRANSIT_OPEN -> {
-                            desktopRepository.wallpaperActivityToken = taskInfo.token
+                            desktopWallpaperActivityTokenProvider.setToken(
+                                taskInfo.token,
+                                taskInfo.displayId,
+                            )
                             // After the task for the wallpaper is created, set it non-trimmable.
                             // This is important to prevent recents from trimming and removing the
                             // task.
@@ -263,7 +276,8 @@ class DesktopTasksTransitionObserver(
                                     .setTaskTrimmableFromRecents(taskInfo.token, false)
                             )
                         }
-                        TRANSIT_CLOSE -> desktopRepository.wallpaperActivityToken = null
+                        TRANSIT_CLOSE ->
+                            desktopWallpaperActivityTokenProvider.removeToken(taskInfo.displayId)
                         else -> {}
                     }
                 }
