@@ -305,7 +305,7 @@ public class BackgroundActivityStartControllerTests {
     @Test
     public void testRegularActivityStart_allowedByCaller_isAllowed() {
         // setup state
-        BalVerdict callerVerdict = new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW, false,
+        BalVerdict callerVerdict = new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW,
                 "CallerIsVisible");
         mController.setCallerVerdict(callerVerdict);
         mController.setRealCallerVerdict(BalVerdict.BLOCK);
@@ -340,7 +340,7 @@ public class BackgroundActivityStartControllerTests {
     @Test
     public void testRegularActivityStart_allowedByRealCaller_isAllowed() {
         // setup state
-        BalVerdict realCallerVerdict = new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW, false,
+        BalVerdict realCallerVerdict = new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW,
                 "RealCallerIsVisible");
         mController.setCallerVerdict(BalVerdict.BLOCK);
         mController.setRealCallerVerdict(realCallerVerdict);
@@ -373,9 +373,9 @@ public class BackgroundActivityStartControllerTests {
     public void testRegularActivityStart_allowedByCallerAndRealCaller_returnsCallerVerdict() {
         // setup state
         BalVerdict callerVerdict =
-                new BalVerdict(BAL_ALLOW_PERMISSION, false, "CallerHasPermission");
+                new BalVerdict(BAL_ALLOW_PERMISSION, "CallerHasPermission");
         BalVerdict realCallerVerdict =
-                new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW, false, "RealCallerIsVisible");
+                new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW, "RealCallerIsVisible");
         mController.setCallerVerdict(callerVerdict);
         mController.setRealCallerVerdict(realCallerVerdict);
 
@@ -411,9 +411,9 @@ public class BackgroundActivityStartControllerTests {
     public void testPendingIntent_allowedByCallerAndRealCallerButOptOut_isBlocked() {
         // setup state
         BalVerdict callerVerdict =
-                new BalVerdict(BAL_ALLOW_PERMISSION, false, "CallerhasPermission");
+                new BalVerdict(BAL_ALLOW_PERMISSION, "CallerhasPermission");
         BalVerdict realCallerVerdict =
-                new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW, false, "RealCallerIsVisible");
+                new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW, "RealCallerIsVisible");
         mController.setCallerVerdict(callerVerdict);
         mController.setRealCallerVerdict(realCallerVerdict);
 
@@ -452,7 +452,7 @@ public class BackgroundActivityStartControllerTests {
     public void testPendingIntent_allowedByCallerAndOptIn_isAllowed() {
         // setup state
         BalVerdict callerVerdict =
-                new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW, false, "CallerIsVisible");
+                new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW, "CallerIsVisible");
         mController.setCallerVerdict(callerVerdict);
         mController.setRealCallerVerdict(BalVerdict.BLOCK);
 
@@ -489,7 +489,7 @@ public class BackgroundActivityStartControllerTests {
     public void testPendingIntent_allowedByRealCallerAndOptIn_isAllowed() {
         // setup state
         BalVerdict realCallerVerdict =
-                new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW, false, "RealCallerIsVisible");
+                new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW, "RealCallerIsVisible");
         mController.setCallerVerdict(BalVerdict.BLOCK);
         mController.setRealCallerVerdict(realCallerVerdict);
 
