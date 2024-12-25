@@ -17,13 +17,13 @@
 package com.android.systemui.statusbar.featurepods.media.domain.interactor
 
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 
 val Kosmos.mediaControlChipInteractor: MediaControlChipInteractor by
     Kosmos.Fixture {
         MediaControlChipInteractor(
-            applicationScope = applicationCoroutineScope,
+            backgroundScope = backgroundScope,
             mediaFilterRepository = mediaFilterRepository,
         )
     }
