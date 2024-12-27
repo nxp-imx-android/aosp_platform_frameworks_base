@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 /**
  * Class that holds information about single font variation axis.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class FontVariationAxis {
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     private final int mTag;

@@ -69,6 +69,7 @@ import java.util.Locale;
  * which will be updated as the text changes.
  * For text that will not change, use a {@link StaticLayout}.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public abstract class Layout {
 
     // These should match the constants in framework/base/libs/hwui/hwui/DrawTextFunctor.h

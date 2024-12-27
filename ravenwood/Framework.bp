@@ -419,11 +419,13 @@ java_genrule {
         "--out-impl-jar $(location ravenwood.jar) " +
         "--in-jar $(location :framework-graphics.impl{.jar}) " +
 
-        "--policy-override-file $(location :ravenwood-common-policies) ",
+        "--policy-override-file $(location :ravenwood-common-policies) " +
+        "--policy-override-file $(location :framework-graphics-ravenwood-policies) ",
     srcs: [
         ":framework-graphics.impl{.jar}",
 
         ":ravenwood-common-policies",
+        ":framework-graphics-ravenwood-policies",
         ":ravenwood-standard-options",
     ],
     out: [

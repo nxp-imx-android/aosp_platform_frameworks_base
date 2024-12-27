@@ -249,8 +249,14 @@ android_library {
 android_ravenwood_test {
     name: "FrameworksCoreTestsRavenwood",
     libs: [
-        "android.test.base.stubs.system",
-        "android.test.runner.stubs.system",
+        "android.test.base.stubs",
+        "android.test.mock.stubs",
+        "android.test.runner.stubs",
+        "android.view.flags-aconfig-java",
+        "ext",
+        "framework",
+        "framework-res",
+        "org.apache.http.legacy.stubs",
     ],
     static_libs: [
         "androidx.annotation_annotation",
@@ -264,6 +270,7 @@ android_ravenwood_test {
         "flag-junit",
         "flag-junit",
         "perfetto_trace_java_protos",
+        "platform-compat-test-rules",
         "platform-test-annotations",
         "testng",
     ],
@@ -278,8 +285,12 @@ android_ravenwood_test {
         "src/android/content/res/*.java",
         "src/android/content/res/*.kt",
         "src/android/database/CursorWindowTest.java",
+        "src/android/graphics/*.java",
+        "src/android/graphics/*.kt",
         "src/android/os/**/*.java",
         "src/android/telephony/PinResultTest.java",
+        "src/android/text/**/*.java",
+        "src/android/text/**/*.kt",
         "src/android/util/**/*.java",
         "src/android/view/DisplayAdjustmentsTests.java",
         "src/android/view/DisplayInfoTest.java",
@@ -288,20 +299,21 @@ android_ravenwood_test {
         "src/com/android/internal/os/**/*.java",
         "src/com/android/internal/power/EnergyConsumerStatsTest.java",
         "src/com/android/internal/ravenwood/**/*.java",
-
-        // Pull in R.java from FrameworksCoreTests-resonly, not from FrameworksCoreTests,
-        // to avoid having a dependency to FrameworksCoreTests.
-        // This way, when updating source files and running this test, we don't need to
-        // rebuild the entire FrameworksCoreTests, which would be slow.
         "src/com/android/internal/util/**/*.java",
 
         ":FrameworksCoreTestDoubles-sources",
         ":FrameworksCoreTests-aidl",
         ":FrameworksCoreTests-helpers",
+
+        // Pull in R.java from FrameworksCoreTests-resonly, not from FrameworksCoreTests,
+        // to avoid having a dependency to FrameworksCoreTests.
+        // This way, when updating source files and running this test, we don't need to
+        // rebuild the entire FrameworksCoreTests, which would be slow.
         ":FrameworksCoreTests-resonly{.aapt.srcjar}",
     ],
     exclude_srcs: [
         "src/android/content/res/FontScaleConverterActivityTest.java",
+        "src/android/graphics/GraphicsPerformanceTests.java",
     ],
     resource_apk: "FrameworksCoreTests-resonly",
     aidl: {
@@ -313,6 +325,7 @@ android_ravenwood_test {
         "res/xml/power_profile_test_cpu_legacy.xml",
         "res/xml/power_profile_test_modem.xml",
     ],
+    sdk_version: "core_platform",
     auto_gen_config: true,
     team: "trendy_team_ravenwood",
 }

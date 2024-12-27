@@ -23,6 +23,7 @@ import android.annotation.NonNull;
  * A color filter that can be used to tint the source pixels using a single
  * color and a specific {@link BlendMode}.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class BlendModeColorFilter extends ColorFilter {
 
     @ColorInt final int mColor;

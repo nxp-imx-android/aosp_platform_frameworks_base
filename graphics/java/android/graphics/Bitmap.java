@@ -51,6 +51,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.WeakHashMap;
 
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class Bitmap implements Parcelable {
     private static final String TAG = "Bitmap";
 

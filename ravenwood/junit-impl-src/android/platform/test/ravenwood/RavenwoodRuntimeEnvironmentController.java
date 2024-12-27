@@ -43,6 +43,7 @@ import android.app.UiAutomation;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Resources;
+import android.graphics.Typeface;
 import android.icu.util.ULocale;
 import android.os.Binder;
 import android.os.Build;
@@ -246,6 +247,13 @@ public class RavenwoodRuntimeEnvironmentController {
         // Do the basic set up for the android sysprops.
         RavenwoodSystemProperties.initialize();
 
+        // Set ICU data file
+        String icuData = RavenwoodCommonUtils.getRavenwoodRuntimePath()
+                + "ravenwood-data/"
+                + RavenwoodRuntimeNative.getIcuDataName()
+                + ".dat";
+        RavenwoodRuntimeNative.setSystemProperty("ro.icu.data.path", icuData);
+
         // Enable all log levels for native logging, until we'll have a way to change the native
         // side log level at runtime.
         // Do this after loading RAVENWOOD_NATIVE_RUNTIME_NAME (which backs Os.setenv()),
@@ -267,6 +275,11 @@ public class RavenwoodRuntimeEnvironmentController {
         // Touch some references early to ensure they're <clinit>'ed
         Objects.requireNonNull(Build.TYPE);
         Objects.requireNonNull(Build.VERSION.SDK);
+
+        // Fonts can only be initialized once
+        Typeface.init();
+        Typeface.loadPreinstalledSystemFontMap();
+        Typeface.loadNativeSystemFonts();
 
         System.setProperty(RAVENWOOD_VERSION_JAVA_SYSPROP, "1");
         // This will let AndroidJUnit4 use the original runner.

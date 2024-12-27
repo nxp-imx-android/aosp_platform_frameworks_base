@@ -20,7 +20,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import android.os.MemoryFile;
 import android.os.ParcelFileDescriptor;
+import android.platform.test.annotations.DisabledOnRavenwood;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -37,6 +39,7 @@ public class BitmapFactoryTest {
     // tests that we can decode bitmaps from MemoryFiles
     @SmallTest
     @Test
+    @DisabledOnRavenwood(blockedBy = MemoryFile.class)
     public void testBitmapParcelFileDescriptor() throws Exception {
         Bitmap bitmap1 = Bitmap.createBitmap(
                 new int[] { Color.BLUE }, 1, 1, Bitmap.Config.RGB_565);

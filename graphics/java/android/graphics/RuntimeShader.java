@@ -248,6 +248,7 @@ import libcore.util.NativeAllocationRegistry;
  * the bitmap), remember that the coordinates are local to the canvas.</p>
  *
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class RuntimeShader extends Shader {
 
     private static class NoImagePreloadHolder {

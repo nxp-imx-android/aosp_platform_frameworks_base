@@ -8,7 +8,11 @@ ro.soc.manufacturer=Android
 ro.soc.model=Ravenwood
 ro.debuggable=1
 
-# The ones starting with "ro.product" or "ro.bild" will be copied to all "partitions" too.
+# For the graphics stack
+ro.hwui.max_texture_allocation_size=104857600
+persist.sys.locale=en-US
+
+# The ones starting with "ro.product" or "ro.build" will be copied to all "partitions" too.
 # See RavenwoodSystemProperties.
 ro.product.brand=Android
 ro.product.device=Ravenwood
