@@ -27,10 +27,12 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.DisplayMetrics;
 import android.util.IndentingPrintWriter;
 import android.util.MathUtils;
 import android.util.Pair;
 import android.util.Slog;
+import android.util.SparseArray;
 import android.view.Display;
 
 import androidx.annotation.NonNull;
@@ -73,6 +75,24 @@ public final class DisplayTopology implements Parcelable {
                     return new DisplayTopology[size];
                 }
             };
+
+    /**
+     * @param px The value in logical pixels
+     * @param dpi The logical density of the display
+     * @return The value in density-independent pixels
+     */
+    public static float pxToDp(float px, int dpi) {
+        return px * DisplayMetrics.DENSITY_DEFAULT / dpi;
+    }
+
+    /**
+     * @param dp The value in density-independent pixels
+     * @param dpi The logical density of the display
+     * @return The value in logical pixels
+     */
+    public static float dpToPx(float dp, int dpi) {
+        return dp * dpi / DisplayMetrics.DENSITY_DEFAULT;
+    }
 
     /**
      * The topology tree
@@ -226,10 +246,9 @@ public final class DisplayTopology implements Parcelable {
         // The optimal pair is the pair which has the smallest deviation. The deviation consists of
         // an x-axis component and a y-axis component, called xDeviation and yDeviation.
         //
-        // The deviations are like distances but a little different. They are calculated in two
-        // steps. The first step calculates both axes in a similar way. The next step compares the
-        // two values and chooses which axis to attach along. Depending on which axis is chosen,
-        // the deviation for one axis is updated. See below for details.
+        // The deviations are like distances but a little different. When they are calculated, each
+        // dimension is treated differently, depending on which edges (left+right or top+bottom) are
+        // attached.
         while (!needsParent.isEmpty()) {
             double bestDist = Double.POSITIVE_INFINITY;
             TreeNode bestChild = null, bestParent = null;
@@ -243,33 +262,32 @@ public final class DisplayTopology implements Parcelable {
                     float parentRight = parentPos.x + parent.getWidth();
                     float parentBottom = parentPos.y + parent.getHeight();
 
-                    // This is the smaller of the two ranges minus the amount of overlap shared
-                    // between them. The "amount of overlap" is negative if there is no overlap, but
-                    // this does not make a parenting ineligible, because we allow for attaching at
-                    // the corner and for floating point error. The overlap is more negative the
-                    // farther apart the closest corner pair is.
-                    //
-                    // For each axis, this calculates (SmallerRange - Overlap). If one range lies
-                    // completely in the other (or they are equal), the axis' deviation will be
-                    // zero.
-                    //
-                    // The "SmallerRange," which refers to smaller of the widths of the two rects,
-                    // or smaller of the heights of the two rects, is added to the deviation so that
-                    // a maximum overlap results in a deviation of zero.
-                    float xSmallerRange = Math.min(child.getWidth(), parent.getWidth());
-                    float ySmallerRange = Math.min(child.getHeight(), parent.getHeight());
-                    float xOverlap
-                            = Math.min(parentRight, childRight)
-                            - Math.max(parentPos.x, childPos.x);
-                    float yOverlap
-                            = Math.min(parentBottom, childBottom)
-                            - Math.max(parentPos.y, childPos.y);
-                    float xDeviation = xSmallerRange - xOverlap;
-                    float yDeviation = ySmallerRange - yOverlap;
+                    // The "amount of overlap" indicates how much of one display is within the other
+                    // (considering one axis only). It's zero if they only share an edge and
+                    // negative if they're away from each other.
+                    // A zero or negative overlap does not make a parenting ineligible, because we
+                    // allow for attaching at the corner and for floating point error.
+                    float xOverlap =
+                            Math.min(parentRight, childRight) - Math.max(parentPos.x, childPos.x);
+                    float yOverlap =
+                            Math.min(parentBottom, childBottom) - Math.max(parentPos.y, childPos.y);
+                    float xDeviation, yDeviation;
 
                     float offset;
                     int pos;
-                    if (xDeviation <= yDeviation) {
+                    if (Math.abs(xOverlap) > Math.abs(yOverlap)) {
+                        // Deviation in each dimension is a penalty in the potential parenting. To
+                        // get the X deviation, overlap is subtracted from the lesser width so that
+                        // a maximum overlap results in a deviation of zero.
+                        // Note that because xOverlap is *subtracted* from the lesser width, no
+                        // overlap in X becomes a *penalty* if we are attaching on the top+bottom
+                        // edges.
+                        //
+                        // The Y deviation is simply the distance from the clamping edges.
+                        //
+                        // Treatment of the X and Y deviations are swapped for
+                        // POSITION_LEFT/POSITION_RIGHT attachments in the "else" block below.
+                        xDeviation = Math.min(child.getWidth(), parent.getWidth()) - xOverlap;
                         if (childPos.y < parentPos.y) {
                             yDeviation = childBottom - parentPos.y;
                             pos = POSITION_TOP;
@@ -279,6 +297,7 @@ public final class DisplayTopology implements Parcelable {
                         }
                         offset = childPos.x - parentPos.x;
                     } else {
+                        yDeviation = Math.min(child.getHeight(), parent.getHeight()) - yOverlap;
                         if (childPos.x < parentPos.x) {
                             xDeviation = childRight - parentPos.x;
                             pos = POSITION_LEFT;
@@ -474,6 +493,22 @@ public final class DisplayTopology implements Parcelable {
         return new DisplayTopology(rootCopy, mPrimaryDisplayId);
     }
 
+    /**
+     * Assign absolute bounds to each display. The top-left corner of the root is at position
+     * (0, 0).
+     * @return Map from logical display ID to the display's absolute bounds
+     */
+    public SparseArray<RectF> getAbsoluteBounds() {
+        Map<TreeNode, RectF> bounds = new HashMap<>();
+        getInfo(bounds, /* depths= */ null, /* parents= */ null, mRoot, /* x= */ 0, /* y= */ 0,
+                /* depth= */ 0);
+        SparseArray<RectF> boundsById = new SparseArray<>();
+        for (Map.Entry<TreeNode, RectF> entry : bounds.entrySet()) {
+            boundsById.append(entry.getKey().mDisplayId, entry.getValue());
+        }
+        return boundsById;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -575,7 +610,7 @@ public final class DisplayTopology implements Parcelable {
     }
 
     @Nullable
-    private static TreeNode findDisplay(int displayId, TreeNode startingNode) {
+    private static TreeNode findDisplay(int displayId, @Nullable TreeNode startingNode) {
         if (startingNode == null) {
             return null;
         }
@@ -592,8 +627,8 @@ public final class DisplayTopology implements Parcelable {
     }
 
     /**
-     * Get information about the topology that will be used for the normalization algorithm.
-     * Assigns origins to each display to compute the bounds.
+     * Get information about the topology.
+     * Assigns positions to each display to compute the bounds. The root is at position (0, 0).
      * @param bounds The map where the bounds of each display will be put
      * @param depths The map where the depths of each display in the tree will be put
      * @param parents The map where the parent of each display will be put
@@ -602,12 +637,22 @@ public final class DisplayTopology implements Parcelable {
      * @param y The starting y position
      * @param depth The starting depth
      */
-    private static void getInfo(Map<TreeNode, RectF> bounds, Map<TreeNode, Integer> depths,
-            Map<TreeNode, TreeNode> parents, TreeNode display, float x, float y, int depth) {
-        bounds.put(display, new RectF(x, y, x + display.mWidth, y + display.mHeight));
-        depths.put(display, depth);
+    private static void getInfo(@Nullable Map<TreeNode, RectF> bounds,
+            @Nullable Map<TreeNode, Integer> depths, @Nullable Map<TreeNode, TreeNode> parents,
+            @Nullable TreeNode display, float x, float y, int depth) {
+        if (display == null) {
+            return;
+        }
+        if (bounds != null) {
+            bounds.put(display, new RectF(x, y, x + display.mWidth, y + display.mHeight));
+        }
+        if (depths != null) {
+            depths.put(display, depth);
+        }
         for (TreeNode child : display.mChildren) {
-            parents.put(child, display);
+            if (parents != null) {
+                parents.put(child, display);
+            }
             if (child.mPosition == POSITION_LEFT) {
                 getInfo(bounds, depths, parents, child, x - child.mWidth, y + child.mOffset,
                         depth + 1);
@@ -662,7 +707,7 @@ public final class DisplayTopology implements Parcelable {
      * Ensure that the offsets of all displays within the given tree are within bounds.
      * @param display The starting node
      */
-    private void clampOffsets(TreeNode display) {
+    private void clampOffsets(@Nullable TreeNode display) {
         if (display == null) {
             return;
         }

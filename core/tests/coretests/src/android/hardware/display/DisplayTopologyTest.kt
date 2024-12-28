@@ -22,6 +22,7 @@ import android.hardware.display.DisplayTopology.TreeNode.POSITION_BOTTOM
 import android.hardware.display.DisplayTopology.TreeNode.POSITION_LEFT
 import android.hardware.display.DisplayTopology.TreeNode.POSITION_TOP
 import android.hardware.display.DisplayTopology.TreeNode.POSITION_RIGHT
+import android.util.SparseArray
 import android.view.Display
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -642,10 +643,62 @@ class DisplayTopologyTest {
         verifyDisplay(
                 root.children[0], id = 1, width = 30f, height = 30f, POSITION_RIGHT, offset = 10f,
                 noOfChildren = 1)
-        // In the case of corner adjacency, we prefer a left/right attachment.
         verifyDisplay(
                 root.children[0].children[0], id = 2, width = 29.5f, height = 30f, POSITION_BOTTOM,
                 offset = 30f, noOfChildren = 0)
+    }
+
+    @Test
+    fun rearrange_preferLessShiftInOverlapDimension() {
+        val root = rearrangeRects(
+            // '*' represents overlap
+            // Clamping requires moving display 2 and 1 slightly to avoid overlap with 0. We should
+            // shift the minimal amount to avoid overlap - e.g. display 2 shifts left (10 pixels)
+            // rather than up (20 pixels).
+            // 222
+            // 22*00
+            // 22*00
+            //   0**1
+            //    111
+            //    111
+            RectF(20f, 10f, 50f, 40f),
+            RectF(30f, 30f, 60f, 60f),
+            RectF(0f, 0f, 30f, 30f),
+        )
+
+        verifyDisplay(root, id = 0, width = 30f, height = 30f, noOfChildren = 2)
+        verifyDisplay(
+                root.children[0], id = 1, width = 30f, height = 30f, POSITION_BOTTOM, offset = 10f,
+                noOfChildren = 0)
+        verifyDisplay(
+                root.children[1], id = 2, width = 30f, height = 30f, POSITION_LEFT, offset = -10f,
+                noOfChildren = 0)
+    }
+
+    @Test
+    fun rearrange_doNotAttachCornerForShortOverlapOnLongEdgeBottom() {
+        val root = rearrangeRects(
+            RectF(0f, 0f, 1920f, 1080f),
+            RectF(1850f, 1070f, 3770f, 2150f),
+        )
+
+        verifyDisplay(root, id = 0, width = 1920f, height = 1080f, noOfChildren = 1)
+        verifyDisplay(
+                root.children[0], id = 1, width = 1920f, height = 1080f, POSITION_BOTTOM,
+                offset = 1850f, noOfChildren = 0)
+    }
+
+    @Test
+    fun rearrange_doNotAttachCornerForShortOverlapOnLongEdgeLeft() {
+        val root = rearrangeRects(
+            RectF(0f, 0f, 1080f, 1920f),
+            RectF(-1070f, -1880f, 10f, 40f),
+        )
+
+        verifyDisplay(root, id = 0, width = 1080f, height = 1920f, noOfChildren = 1)
+        verifyDisplay(
+                root.children[0], id = 1, width = 1080f, height = 1920f, POSITION_LEFT,
+                offset = -1880f, noOfChildren = 0)
     }
 
     @Test
@@ -685,6 +738,34 @@ class DisplayTopologyTest {
         val actualDisplay4 = actualDisplay2.children[0]
         verifyDisplay(actualDisplay4, id = 4, width = 200f, height = 600f, POSITION_RIGHT,
             offset = 0f, noOfChildren = 0)
+    }
+
+    @Test
+    fun coordinates() {
+        val display1 = DisplayTopology.TreeNode(/* displayId= */ 1, /* width= */ 200f,
+            /* height= */ 600f, /* position= */ 0, /* offset= */ 0f)
+
+        val display2 = DisplayTopology.TreeNode(/* displayId= */ 2, /* width= */ 600f,
+            /* height= */ 200f, POSITION_RIGHT, /* offset= */ 0f)
+        display1.addChild(display2)
+
+        val display3 = DisplayTopology.TreeNode(/* displayId= */ 3, /* width= */ 600f,
+            /* height= */ 200f, POSITION_RIGHT, /* offset= */ 400f)
+        display1.addChild(display3)
+
+        val display4 = DisplayTopology.TreeNode(/* displayId= */ 4, /* width= */ 200f,
+            /* height= */ 600f, POSITION_RIGHT, /* offset= */ 0f)
+        display2.addChild(display4)
+
+        topology = DisplayTopology(display1, /* primaryDisplayId= */ 1)
+        val coords = topology.absoluteBounds
+
+        val expectedCoords = SparseArray<RectF>()
+        expectedCoords.append(1, RectF(0f, 0f, 200f, 600f))
+        expectedCoords.append(2, RectF(200f, 0f, 800f, 200f))
+        expectedCoords.append(3, RectF(200f, 400f, 800f, 600f))
+        expectedCoords.append(4, RectF(800f, 0f, 1000f, 600f))
+        assertThat(coords.contentEquals(expectedCoords)).isTrue()
     }
 
     /**
