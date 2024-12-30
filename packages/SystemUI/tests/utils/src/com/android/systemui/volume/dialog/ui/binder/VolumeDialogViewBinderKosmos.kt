@@ -32,8 +32,10 @@ val Kosmos.volumeDialogViewBinder by
             volumeDialogViewModel,
             jankListenerFactory,
             volumeTracer,
-            volumeDialogRingerViewBinder,
-            volumeDialogSlidersViewBinder,
-            volumeDialogSettingsButtonViewBinder,
+            listOf(
+                volumeDialogSlidersViewBinder,
+                volumeDialogRingerViewBinder,
+                volumeDialogSettingsButtonViewBinder,
+            ),
         )
     }

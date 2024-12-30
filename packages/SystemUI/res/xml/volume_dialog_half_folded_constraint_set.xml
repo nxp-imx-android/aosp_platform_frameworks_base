@@ -8,7 +8,7 @@
         android:layout_width="@dimen/volume_dialog_slider_width"
         android:layout_height="0dp"
         android:layout_marginTop="@dimen/volume_dialog_slider_vertical_margin"
-        android:layout_marginEnd="@dimen/volume_dialog_components_spacing"
+        android:layout_marginEnd="@dimen/volume_dialog_window_margin"
         android:layout_marginBottom="@dimen/volume_dialog_slider_vertical_margin"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

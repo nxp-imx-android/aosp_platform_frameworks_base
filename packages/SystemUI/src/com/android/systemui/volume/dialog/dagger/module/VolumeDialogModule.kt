@@ -18,8 +18,13 @@ package com.android.systemui.volume.dialog.dagger.module
 
 import com.android.systemui.volume.dialog.ringer.data.repository.VolumeDialogRingerFeedbackRepository
 import com.android.systemui.volume.dialog.ringer.data.repository.VolumeDialogRingerFeedbackRepositoryImpl
+import com.android.systemui.volume.dialog.ringer.ui.binder.VolumeDialogRingerViewBinder
+import com.android.systemui.volume.dialog.settings.ui.binder.VolumeDialogSettingsButtonViewBinder
+import com.android.systemui.volume.dialog.sliders.ui.VolumeDialogSlidersViewBinder
+import com.android.systemui.volume.dialog.ui.binder.ViewBinder
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 
 /** Dagger module for volume dialog code in the volume package */
 @Module
@@ -29,4 +34,14 @@ interface VolumeDialogModule {
     fun bindVolumeDialogRingerFeedbackRepository(
         ringerFeedbackRepository: VolumeDialogRingerFeedbackRepositoryImpl
     ): VolumeDialogRingerFeedbackRepository
+
+    companion object {
+
+        @Provides
+        fun provideViewBinders(
+            slidersViewBinder: VolumeDialogSlidersViewBinder,
+            ringerViewBinder: VolumeDialogRingerViewBinder,
+            settingsButtonViewBinder: VolumeDialogSettingsButtonViewBinder,
+        ): List<ViewBinder> = listOf(slidersViewBinder, ringerViewBinder, settingsButtonViewBinder)
+    }
 }

@@ -30,10 +30,7 @@ import com.android.systemui.res.R
 import com.android.systemui.util.kotlin.awaitCancellationThenDispose
 import com.android.systemui.volume.SystemUIInterpolators
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
-import com.android.systemui.volume.dialog.ringer.ui.binder.VolumeDialogRingerViewBinder
-import com.android.systemui.volume.dialog.settings.ui.binder.VolumeDialogSettingsButtonViewBinder
 import com.android.systemui.volume.dialog.shared.model.VolumeDialogVisibilityModel
-import com.android.systemui.volume.dialog.sliders.ui.VolumeDialogSlidersViewBinder
 import com.android.systemui.volume.dialog.ui.utils.JankListenerFactory
 import com.android.systemui.volume.dialog.ui.utils.suspendAnimate
 import com.android.systemui.volume.dialog.ui.viewmodel.VolumeDialogViewModel
@@ -60,9 +57,7 @@ constructor(
     private val viewModel: VolumeDialogViewModel,
     private val jankListenerFactory: JankListenerFactory,
     private val tracer: VolumeTracer,
-    private val volumeDialogRingerViewBinder: VolumeDialogRingerViewBinder,
-    private val slidersViewBinder: VolumeDialogSlidersViewBinder,
-    private val settingsButtonViewBinder: VolumeDialogSettingsButtonViewBinder,
+    private val viewBinders: List<@JvmSuppressWildcards ViewBinder>,
 ) {
 
     private val dialogShowAnimationDurationMs =
@@ -105,9 +100,9 @@ constructor(
                 .awaitCancellationThenDispose()
         }
 
-        with(volumeDialogRingerViewBinder) { bind(root) }
-        with(slidersViewBinder) { bind(root) }
-        with(settingsButtonViewBinder) { bind(root) }
+        for (viewBinder in viewBinders) {
+            with(viewBinder) { bind(root) }
+        }
     }
 
     private fun CoroutineScope.animateVisibility(
