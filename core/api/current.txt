@@ -27202,7 +27202,7 @@ package android.media.quality {
     field public static final int AMBIENT_BACKLIGHT_EVENT_DISABLED = 2; // 0x2
     field public static final int AMBIENT_BACKLIGHT_EVENT_ENABLED = 1; // 0x1
     field public static final int AMBIENT_BACKLIGHT_EVENT_INTERRUPTED = 4; // 0x4
-    field public static final int AMBIENT_BACKLIGHT_EVENT_METADATA = 3; // 0x3
+    field public static final int AMBIENT_BACKLIGHT_EVENT_METADATA_AVAILABLE = 3; // 0x3
     field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.AmbientBacklightEvent> CREATOR;
   }
 
@@ -27210,13 +27210,15 @@ package android.media.quality {
     ctor public AmbientBacklightMetadata(@NonNull String, int, int, int, int, int, @NonNull int[]);
     method public int describeContents();
     method public int getColorFormat();
-    method public int getCompressAlgorithm();
-    method @IntRange(from=0, to=128) public int getHorizontalZonesNumber();
+    method public int getCompressionAlgorithm();
+    method @IntRange(from=0, to=128) public int getHorizontalZonesCount();
     method @NonNull public String getPackageName();
     method public int getSource();
-    method @IntRange(from=0, to=80) public int getVerticalZonesNumber();
-    method @NonNull public int[] getZonesColors();
+    method @IntRange(from=0, to=80) public int getVerticalZonesCount();
+    method @NonNull public int[] getZoneColors();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field public static final int ALGORITHM_NONE = 0; // 0x0
+    field public static final int ALGORITHM_RLE = 1; // 0x1
     field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.AmbientBacklightMetadata> CREATOR;
   }
 
@@ -27224,15 +27226,13 @@ package android.media.quality {
     ctor public AmbientBacklightSettings(int, int, int, int, int, boolean, int);
     method public int describeContents();
     method public int getColorFormat();
-    method @IntRange(from=0) public int getHorizontalZonesNumber();
+    method @IntRange(from=0) public int getHorizontalZonesCount();
     method @IntRange(from=1) public int getMaxFps();
     method public int getSource();
     method public int getThreshold();
-    method @IntRange(from=0) public int getVerticalZonesNumber();
+    method @IntRange(from=0) public int getVerticalZonesCount();
     method public boolean isLetterboxOmitted();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field public static final int ALGORITHM_NONE = 0; // 0x0
-    field public static final int ALGORITHM_RLE = 1; // 0x1
     field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.AmbientBacklightSettings> CREATOR;
     field public static final int SOURCE_AUDIO = 1; // 0x1
     field public static final int SOURCE_AUDIO_VIDEO = 3; // 0x3
@@ -27306,8 +27306,7 @@ package android.media.quality {
     method public void updateSoundProfile(@NonNull String, @NonNull android.media.quality.SoundProfile);
   }
 
-  public abstract static class MediaQualityManager.AmbientBacklightCallback {
-    ctor public MediaQualityManager.AmbientBacklightCallback();
+  public static interface MediaQualityManager.AmbientBacklightCallback {
     method public void onAmbientBacklightEvent(@NonNull android.media.quality.AmbientBacklightEvent);
   }
 
