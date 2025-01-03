@@ -570,6 +570,14 @@ public abstract class UserManagerInternal {
     public abstract @UserIdInt int getUserAssignedToDisplay(int displayId);
 
     /**
+     * Returns the user to switch to, when logging out current user. If in HSUM and has interactive
+     * system user, then logout would switch to the system user. Otherwise, logout would switch to
+     * the previous foreground user. Will return USER_NULL if the current user is the SYSTEM or if
+     * no suitable user can be found.
+     */
+    public abstract @UserIdInt int getUserToLogoutCurrentUserTo();
+
+    /**
      * Gets the user-friendly representation of the {@code result} of a
      * {@link #assignUserToDisplayOnStart(int, int, boolean, int)} call.
      */
