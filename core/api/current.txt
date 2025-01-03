@@ -27279,7 +27279,7 @@ package android.media.quality {
   }
 
   @FlaggedApi("android.media.tv.flags.media_quality_fw") public final class MediaQualityManager {
-    method public void addActiveProcessingPictureListener(@NonNull java.util.concurrent.Executor, @NonNull android.media.quality.MediaQualityManager.ActiveProcessingPictureListener);
+    method public void addActiveProcessingPictureListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.List<android.media.quality.ActiveProcessingPicture>>);
     method public void createPictureProfile(@NonNull android.media.quality.PictureProfile);
     method public void createSoundProfile(@NonNull android.media.quality.SoundProfile);
     method @NonNull public java.util.List<android.media.quality.PictureProfile> getAvailablePictureProfiles(boolean);
@@ -27294,7 +27294,7 @@ package android.media.quality {
     method public void registerAmbientBacklightCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.quality.MediaQualityManager.AmbientBacklightCallback);
     method public void registerPictureProfileCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.quality.MediaQualityManager.PictureProfileCallback);
     method public void registerSoundProfileCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.quality.MediaQualityManager.SoundProfileCallback);
-    method public void removeActiveProcessingPictureListener(@NonNull android.media.quality.MediaQualityManager.ActiveProcessingPictureListener);
+    method public void removeActiveProcessingPictureListener(@NonNull java.util.function.Consumer<java.util.List<android.media.quality.ActiveProcessingPicture>>);
     method public void removePictureProfile(@NonNull String);
     method public void removeSoundProfile(@NonNull String);
     method public void setAmbientBacklightEnabled(boolean);
@@ -27304,10 +27304,6 @@ package android.media.quality {
     method public void unregisterSoundProfileCallback(@NonNull android.media.quality.MediaQualityManager.SoundProfileCallback);
     method public void updatePictureProfile(@NonNull String, @NonNull android.media.quality.PictureProfile);
     method public void updateSoundProfile(@NonNull String, @NonNull android.media.quality.SoundProfile);
-  }
-
-  public static interface MediaQualityManager.ActiveProcessingPictureListener {
-    method public void onActiveProcessingPicturesChanged(@NonNull java.util.List<android.media.quality.ActiveProcessingPicture>);
   }
 
   public abstract static class MediaQualityManager.AmbientBacklightCallback {
