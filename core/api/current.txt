@@ -27202,7 +27202,7 @@ package android.media.quality {
     field public static final int AMBIENT_BACKLIGHT_EVENT_DISABLED = 2; // 0x2
     field public static final int AMBIENT_BACKLIGHT_EVENT_ENABLED = 1; // 0x1
     field public static final int AMBIENT_BACKLIGHT_EVENT_INTERRUPTED = 4; // 0x4
-    field public static final int AMBIENT_BACKLIGHT_EVENT_METADATA = 3; // 0x3
+    field public static final int AMBIENT_BACKLIGHT_EVENT_METADATA_AVAILABLE = 3; // 0x3
     field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.AmbientBacklightEvent> CREATOR;
   }
 
@@ -27210,13 +27210,15 @@ package android.media.quality {
     ctor public AmbientBacklightMetadata(@NonNull String, int, int, int, int, int, @NonNull int[]);
     method public int describeContents();
     method public int getColorFormat();
-    method public int getCompressAlgorithm();
-    method @IntRange(from=0, to=128) public int getHorizontalZonesNumber();
+    method public int getCompressionAlgorithm();
+    method @IntRange(from=0, to=128) public int getHorizontalZonesCount();
     method @NonNull public String getPackageName();
     method public int getSource();
-    method @IntRange(from=0, to=80) public int getVerticalZonesNumber();
-    method @NonNull public int[] getZonesColors();
+    method @IntRange(from=0, to=80) public int getVerticalZonesCount();
+    method @NonNull public int[] getZoneColors();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field public static final int ALGORITHM_NONE = 0; // 0x0
+    field public static final int ALGORITHM_RLE = 1; // 0x1
     field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.AmbientBacklightMetadata> CREATOR;
   }
 
@@ -27224,15 +27226,13 @@ package android.media.quality {
     ctor public AmbientBacklightSettings(int, int, int, int, int, boolean, int);
     method public int describeContents();
     method public int getColorFormat();
-    method @IntRange(from=0) public int getHorizontalZonesNumber();
+    method @IntRange(from=0) public int getHorizontalZonesCount();
     method @IntRange(from=1) public int getMaxFps();
     method public int getSource();
     method public int getThreshold();
-    method @IntRange(from=0) public int getVerticalZonesNumber();
+    method @IntRange(from=0) public int getVerticalZonesCount();
     method public boolean isLetterboxOmitted();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field public static final int ALGORITHM_NONE = 0; // 0x0
-    field public static final int ALGORITHM_RLE = 1; // 0x1
     field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.AmbientBacklightSettings> CREATOR;
     field public static final int SOURCE_AUDIO = 1; // 0x1
     field public static final int SOURCE_AUDIO_VIDEO = 3; // 0x3
@@ -27241,6 +27241,10 @@ package android.media.quality {
   }
 
   @FlaggedApi("android.media.tv.flags.media_quality_fw") public class MediaQualityContract {
+    field public static final String LEVEL_HIGH = "level_high";
+    field public static final String LEVEL_LOW = "level_low";
+    field public static final String LEVEL_MEDIUM = "level_medium";
+    field public static final String LEVEL_OFF = "level_off";
   }
 
   public static final class MediaQualityContract.PictureQuality {
@@ -27273,13 +27277,34 @@ package android.media.quality {
   }
 
   public static final class MediaQualityContract.SoundQuality {
+    field public static final String PARAMETER_AUTO_VOLUME_CONTROL = "auto_volume_control";
     field public static final String PARAMETER_BALANCE = "balance";
     field public static final String PARAMETER_BASS = "bass";
+    field public static final String PARAMETER_DIALOGUE_ENHANCER = "dialogue_enhancer";
+    field public static final String PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS = "digital_output_delay_millis";
+    field public static final String PARAMETER_DIGITAL_OUTPUT_MODE = "digital_output_mode";
+    field public static final String PARAMETER_DOLBY_AUDIO_PROCESSING_DOLBY_ATMOS = "dolby_audio_processing_dolby_atmos";
+    field public static final String PARAMETER_DOLBY_AUDIO_PROCESSING_SOUND_MODE = "dolby_audio_processing_sound_mode";
+    field public static final String PARAMETER_DOLBY_AUDIO_PROCESSING_SURROUND_VIRTUALIZER = "dolby_audio_processing_surround_virtualizer";
+    field public static final String PARAMETER_DOLBY_AUDIO_PROCESSING_VOLUME_LEVELER = "dolby_audio_processing_volume_leveler";
+    field public static final String PARAMETER_DOWN_MIX_MODE = "down_mix_mode";
+    field public static final String PARAMETER_DTS_DRC = "dts_drc";
+    field public static final String PARAMETER_DTS_VIRTUAL_X_DEFINITION = "dts_virtual_x_definition";
+    field public static final String PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY = "dts_virtual_x_dialog_clarity";
+    field public static final String PARAMETER_DTS_VIRTUAL_X_HEIGHT = "dts_virtual_x_height";
+    field public static final String PARAMETER_DTS_VIRTUAL_X_LIMITER = "dts_virtual_x_limiter";
+    field public static final String PARAMETER_DTS_VIRTUAL_X_TBHDX = "dts_virtual_x_tbhdx";
+    field public static final String PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X = "dts_virtual_x_tru_surround_x";
+    field public static final String PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD = "dts_virtual_x_tru_volume_hd";
+    field public static final String PARAMETER_EARC = "earc";
+    field public static final String PARAMETER_SPEAKERS = "speakers";
+    field public static final String PARAMETER_SPEAKERS_DELAY_MILLIS = "speakers_delay_millis";
+    field public static final String PARAMETER_SURROUND_SOUND = "surround_sound";
     field public static final String PARAMETER_TREBLE = "treble";
   }
 
   @FlaggedApi("android.media.tv.flags.media_quality_fw") public final class MediaQualityManager {
-    method public void addActiveProcessingPictureListener(@NonNull java.util.concurrent.Executor, @NonNull android.media.quality.MediaQualityManager.ActiveProcessingPictureListener);
+    method public void addActiveProcessingPictureListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.List<android.media.quality.ActiveProcessingPicture>>);
     method public void createPictureProfile(@NonNull android.media.quality.PictureProfile);
     method public void createSoundProfile(@NonNull android.media.quality.SoundProfile);
     method @NonNull public java.util.List<android.media.quality.PictureProfile> getAvailablePictureProfiles(boolean);
@@ -27294,7 +27319,7 @@ package android.media.quality {
     method public void registerAmbientBacklightCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.quality.MediaQualityManager.AmbientBacklightCallback);
     method public void registerPictureProfileCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.quality.MediaQualityManager.PictureProfileCallback);
     method public void registerSoundProfileCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.quality.MediaQualityManager.SoundProfileCallback);
-    method public void removeActiveProcessingPictureListener(@NonNull android.media.quality.MediaQualityManager.ActiveProcessingPictureListener);
+    method public void removeActiveProcessingPictureListener(@NonNull java.util.function.Consumer<java.util.List<android.media.quality.ActiveProcessingPicture>>);
     method public void removePictureProfile(@NonNull String);
     method public void removeSoundProfile(@NonNull String);
     method public void setAmbientBacklightEnabled(boolean);
@@ -27306,12 +27331,7 @@ package android.media.quality {
     method public void updateSoundProfile(@NonNull String, @NonNull android.media.quality.SoundProfile);
   }
 
-  public static interface MediaQualityManager.ActiveProcessingPictureListener {
-    method public void onActiveProcessingPicturesChanged(@NonNull java.util.List<android.media.quality.ActiveProcessingPicture>);
-  }
-
-  public abstract static class MediaQualityManager.AmbientBacklightCallback {
-    ctor public MediaQualityManager.AmbientBacklightCallback();
+  public static interface MediaQualityManager.AmbientBacklightCallback {
     method public void onAmbientBacklightEvent(@NonNull android.media.quality.AmbientBacklightEvent);
   }
 

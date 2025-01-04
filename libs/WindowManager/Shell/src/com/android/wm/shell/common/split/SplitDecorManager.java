@@ -33,14 +33,12 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.ActivityManager;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Binder;
-import android.os.Trace;
 import android.view.IWindow;
 import android.view.LayoutInflater;
 import android.view.SurfaceControl;
@@ -52,12 +50,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.android.launcher3.icons.IconProvider;
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.ScreenshotUtils;
-import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SurfaceUtils;
 
 import java.util.function.Consumer;
@@ -83,19 +79,9 @@ public class SplitDecorManager extends WindowlessWindowManager {
     private static final String RESIZING_BACKGROUND_SURFACE_NAME = "ResizingBackground";
     private static final String GAP_BACKGROUND_SURFACE_NAME = "GapBackground";
 
-    // Indicates the loading state of mIcon
-    enum IconLoadState {
-        NOT_LOADED,
-        LOADING,
-        LOADED
-    }
-
     private final IconProvider mIconProvider;
-    private final ShellExecutor mMainExecutor;
-    private final ShellExecutor mBgExecutor;
 
     private Drawable mIcon;
-    private IconLoadState mIconLoadState = IconLoadState.NOT_LOADED;
     private ImageView mVeilIconView;
     private SurfaceControlViewHost mViewHost;
     /** The parent surface that this is attached to. Should be the stage root. */
@@ -123,14 +109,9 @@ public class SplitDecorManager extends WindowlessWindowManager {
     private int mOffsetY;
     private int mRunningAnimationCount = 0;
 
-    public SplitDecorManager(Configuration configuration,
-            IconProvider iconProvider,
-            ShellExecutor mainExecutor,
-            ShellExecutor bgExecutor) {
+    public SplitDecorManager(Configuration configuration, IconProvider iconProvider) {
         super(configuration, null /* rootSurface */, null /* hostInputToken */);
         mIconProvider = iconProvider;
-        mMainExecutor = mainExecutor;
-        mBgExecutor = bgExecutor;
     }
 
     @Override
@@ -218,7 +199,6 @@ public class SplitDecorManager extends WindowlessWindowManager {
         }
         mHostLeash = null;
         mIcon = null;
-        mIconLoadState = IconLoadState.NOT_LOADED;
         mVeilIconView = null;
         mIsCurrentlyChanging = false;
         mShown = false;
@@ -227,10 +207,37 @@ public class SplitDecorManager extends WindowlessWindowManager {
         mInstantaneousBounds.setEmpty();
     }
 
-    /** Showing resizing hint. */
+    /**
+     * Called on every frame when an app is getting resized, and controls the showing & hiding of
+     * the app veil. IMPORTANT: There is one SplitDecorManager for each task, so if two tasks are
+     * getting resized simultaneously, this method is called in parallel on the other
+     * SplitDecorManager too. In general, we want to hide the app behind a veil when:
+     *   a) the app is stretching past its original bounds (because app content layout doesn't
+     *      update mid-stretch).
+     *   b) the app is resizing down from fullscreen (because there is no parallax effect that
+     *      makes every app look good in this scenario).
+     * In the world of flexible split, where apps can go offscreen, there is an exception to this:
+     *   - We do NOT hide the app when it is going offscreen, even though it is technically
+     *     getting larger and would qualify for condition (a). Instead, we use parallax to give
+     *     the illusion that the app is getting pushed offscreen by the divider.
+     *
+     * @param resizingTask The task that is getting resized.
+     * @param newBounds The bounds that that we are updating this surface to. This can be an
+     *                  instantaneous bounds, just for a frame, during a drag or animation.
+     * @param sideBounds The bounds of the OPPOSITE task in the split layout. This is used just for
+     *                   reference/calculation, the surface of the other app won't be set here.
+     * @param displayBounds The bounds of the entire display.
+     * @param t The transaction on which these changes will be bundled.
+     * @param offsetX The x-translation applied to the task surface for parallax. Will be used to
+     *                position the task screenshot and/or icon veil.
+     * @param offsetY The x-translation applied to the task surface for parallax. Will be used to
+     *                position the task screenshot and/or icon veil.
+     * @param immediately {@code true} if the veil should transition in/out instantly, with no
+     *                                animation.
+     */
     public void onResizing(ActivityManager.RunningTaskInfo resizingTask, Rect newBounds,
-            Rect sideBounds, SurfaceControl.Transaction t, int offsetX, int offsetY,
-            boolean immediately) {
+            Rect sideBounds, Rect displayBounds, SurfaceControl.Transaction t, int offsetX,
+            int offsetY, boolean immediately) {
         if (mVeilIconView == null) {
             return;
         }
@@ -252,7 +259,10 @@ public class SplitDecorManager extends WindowlessWindowManager {
         final boolean isStretchingPastOriginalBounds =
                 newBounds.width() > mOldMainBounds.width()
                         || newBounds.height() > mOldMainBounds.height();
-        final boolean showVeil = isResizingDownFromFullscreen || isStretchingPastOriginalBounds;
+        final boolean isFullyOnscreen = displayBounds.contains(newBounds);
+        boolean showVeil = isFullyOnscreen
+                && (isResizingDownFromFullscreen || isStretchingPastOriginalBounds);
+
         final boolean update = showVeil != mShown;
         if (update && mFadeAnimator != null && mFadeAnimator.isRunning()) {
             // If we need to animate and animator still running, cancel it before we ensure both
@@ -280,11 +290,10 @@ public class SplitDecorManager extends WindowlessWindowManager {
                     .setWindowCrop(mGapBackgroundLeash, sideBounds.width(), sideBounds.height());
         }
 
-        if (mIconLoadState == IconLoadState.NOT_LOADED && resizingTask.topActivityInfo != null) {
-            loadIconInBackground(resizingTask.topActivityInfo, () -> {
-                mVeilIconView.setImageDrawable(mIcon);
-                mVeilIconView.setVisibility(View.VISIBLE);
-            });
+        if (mIcon == null && resizingTask.topActivityInfo != null) {
+            mIcon = mIconProvider.getIcon(resizingTask.topActivityInfo);
+            mVeilIconView.setImageDrawable(mIcon);
+            mVeilIconView.setVisibility(View.VISIBLE);
 
             WindowManager.LayoutParams lp =
                     (WindowManager.LayoutParams) mViewHost.getView().getLayoutParams();
@@ -438,10 +447,10 @@ public class SplitDecorManager extends WindowlessWindowManager {
         }
 
         if (mIcon == null && resizingTask.topActivityInfo != null) {
-            loadIconInBackground(resizingTask.topActivityInfo, () -> {
-                mVeilIconView.setImageDrawable(mIcon);
-                mVeilIconView.setVisibility(View.VISIBLE);
-            });
+            // Initialize icon
+            mIcon = mIconProvider.getIcon(resizingTask.topActivityInfo);
+            mVeilIconView.setImageDrawable(mIcon);
+            mVeilIconView.setVisibility(View.VISIBLE);
 
             WindowManager.LayoutParams lp =
                     (WindowManager.LayoutParams) mViewHost.getView().getLayoutParams();
@@ -474,7 +483,7 @@ public class SplitDecorManager extends WindowlessWindowManager {
             return;
         }
 
-        // Re-center icon
+        // Recenter icon
         t.setPosition(mIconLeash,
                 mInstantaneousBounds.width() / 2f - mIconSize / 2f,
                 mInstantaneousBounds.height() / 2f - mIconSize / 2f);
@@ -617,36 +626,7 @@ public class SplitDecorManager extends WindowlessWindowManager {
             mVeilIconView.setImageDrawable(null);
             t.hide(mIconLeash);
             mIcon = null;
-            mIconLoadState = IconLoadState.NOT_LOADED;
         }
-    }
-
-    /**
-     * Loads the icon for the given {@param info}, calling {@param postLoadCb} on the main thread
-     * if provided.
-     */
-    private void loadIconInBackground(@NonNull ActivityInfo info, @Nullable Runnable postLoadCb) {
-        mIconLoadState = IconLoadState.LOADING;
-        mBgExecutor.setBoost();
-        mBgExecutor.execute(() -> {
-            Trace.beginSection("SplitDecorManager.loadIconInBackground("
-                    + info.applicationInfo.packageName + ")");
-            final Drawable icon = mIconProvider.getIcon(info);
-            Trace.endSection();
-            mMainExecutor.execute(() -> {
-                if (mIconLoadState != IconLoadState.LOADING) {
-                    // The request was canceled while loading in the background, just drop the
-                    // result
-                    return;
-                }
-                mIcon = icon;
-                mIconLoadState = IconLoadState.LOADED;
-                if (postLoadCb != null) {
-                    postLoadCb.run();
-                }
-            });
-            mBgExecutor.resetBoost();
-        });
     }
 
     private static float[] getResizingBackgroundColor(ActivityManager.RunningTaskInfo taskInfo) {
