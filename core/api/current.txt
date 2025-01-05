@@ -27309,7 +27309,7 @@ package android.media.quality {
     method public void createSoundProfile(@NonNull android.media.quality.SoundProfile);
     method @NonNull public java.util.List<android.media.quality.PictureProfile> getAvailablePictureProfiles(@Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method @NonNull public java.util.List<android.media.quality.SoundProfile> getAvailableSoundProfiles(@Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
-    method @NonNull public java.util.List<android.media.quality.ParamCapability> getParamCapabilities(@NonNull java.util.List<java.lang.String>);
+    method @NonNull public java.util.List<android.media.quality.ParameterCapability> getParameterCapabilities(@NonNull java.util.List<java.lang.String>);
     method @Nullable public android.media.quality.PictureProfile getPictureProfile(int, @NonNull String, @Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method @Nullable public android.media.quality.SoundProfile getSoundProfile(int, @NonNull String, @Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method public boolean isAmbientBacklightEnabled();
@@ -27338,7 +27338,7 @@ package android.media.quality {
   public abstract static class MediaQualityManager.PictureProfileCallback {
     ctor public MediaQualityManager.PictureProfileCallback();
     method public void onError(@Nullable String, int);
-    method public void onParamCapabilitiesChanged(@Nullable String, @NonNull java.util.List<android.media.quality.ParamCapability>);
+    method public void onParameterCapabilitiesChanged(@Nullable String, @NonNull java.util.List<android.media.quality.ParameterCapability>);
     method public void onPictureProfileAdded(@NonNull String, @NonNull android.media.quality.PictureProfile);
     method public void onPictureProfileRemoved(@NonNull String, @NonNull android.media.quality.PictureProfile);
     method public void onPictureProfileUpdated(@NonNull String, @NonNull android.media.quality.PictureProfile);
@@ -27360,27 +27360,28 @@ package android.media.quality {
   public abstract static class MediaQualityManager.SoundProfileCallback {
     ctor public MediaQualityManager.SoundProfileCallback();
     method public void onError(@Nullable String, int);
-    method public void onParamCapabilitiesChanged(@Nullable String, @NonNull java.util.List<android.media.quality.ParamCapability>);
+    method public void onParameterCapabilitiesChanged(@Nullable String, @NonNull java.util.List<android.media.quality.ParameterCapability>);
     method public void onSoundProfileAdded(@NonNull String, @NonNull android.media.quality.SoundProfile);
     method public void onSoundProfileRemoved(@NonNull String, @NonNull android.media.quality.SoundProfile);
     method public void onSoundProfileUpdated(@NonNull String, @NonNull android.media.quality.SoundProfile);
   }
 
-  @FlaggedApi("android.media.tv.flags.media_quality_fw") public final class ParamCapability implements android.os.Parcelable {
+  @FlaggedApi("android.media.tv.flags.media_quality_fw") public final class ParameterCapability implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public android.os.Bundle getCapabilities();
-    method @NonNull public String getParamName();
-    method public int getParamType();
+    method @NonNull public String getParameterName();
+    method public int getParameterType();
     method public boolean isSupported();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field public static final String CAPABILITY_DEFAULT = "default";
     field public static final String CAPABILITY_ENUM = "enum";
     field public static final String CAPABILITY_MAX = "max";
     field public static final String CAPABILITY_MIN = "min";
-    field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.ParamCapability> CREATOR;
+    field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.ParameterCapability> CREATOR;
     field public static final int TYPE_DOUBLE = 3; // 0x3
     field public static final int TYPE_INT = 1; // 0x1
     field public static final int TYPE_LONG = 2; // 0x2
+    field public static final int TYPE_NONE = 0; // 0x0
     field public static final int TYPE_STRING = 4; // 0x4
   }
 
