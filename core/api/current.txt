@@ -8947,18 +8947,19 @@ package android.app.assist {
     method public android.content.ClipData getClipData();
     method public android.os.Bundle getExtras();
     method public android.content.Intent getIntent();
+    method @FlaggedApi("com.android.window.flags.enable_desktop_windowing_app_to_web_education") @Nullable public android.net.Uri getSessionTransferUri();
     method public String getStructuredData();
     method public android.net.Uri getWebUri();
     method public boolean isAppProvidedIntent();
     method public boolean isAppProvidedWebUri();
     method public void setClipData(android.content.ClipData);
     method public void setIntent(android.content.Intent);
+    method @FlaggedApi("com.android.window.flags.enable_desktop_windowing_app_to_web_education") public void setSessionTransferUri(@Nullable android.net.Uri);
     method public void setStructuredData(String);
     method public void setWebUri(android.net.Uri);
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.assist.AssistContent> CREATOR;
     field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public static final String EXTRA_APP_FUNCTION_DATA = "android.app.assist.extra.APP_FUNCTION_DATA";
-    field @FlaggedApi("com.android.window.flags.enable_desktop_windowing_app_to_web_education") public static final String EXTRA_SESSION_TRANSFER_WEB_URI = "android.app.assist.extra.SESSION_TRANSFER_WEB_URI";
   }
 
   public class AssistStructure implements android.os.Parcelable {
