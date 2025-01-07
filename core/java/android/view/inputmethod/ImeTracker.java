@@ -30,8 +30,6 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
-import android.os.Binder;
-import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Process;
@@ -43,7 +41,6 @@ import android.view.SurfaceControl;
 import android.view.View;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.annotations.VisibleForTesting.Visibility;
 import com.android.internal.inputmethod.InputMethodDebug;
 import com.android.internal.inputmethod.SoftInputShowHideReason;
 import com.android.internal.jank.InteractionJankMonitor;
@@ -58,6 +55,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /** @hide */
@@ -73,12 +71,15 @@ public interface ImeTracker {
 
     /** The type of the IME request. */
     @IntDef(prefix = { "TYPE_" }, value = {
+            TYPE_NOT_SET,
             TYPE_SHOW,
             TYPE_HIDE,
             TYPE_USER,
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface Type {}
+
+    int TYPE_NOT_SET = ImeProtoEnums.TYPE_NOT_SET;
 
     /**
      * IME show request type.
@@ -112,28 +113,29 @@ public interface ImeTracker {
     @Retention(RetentionPolicy.SOURCE)
     @interface Status {}
 
-    /** IME request running. */
+    /** The IME request is running. */
     int STATUS_RUN = ImeProtoEnums.STATUS_RUN;
 
-    /** IME request cancelled. */
+    /** The IME request is cancelled. */
     int STATUS_CANCEL = ImeProtoEnums.STATUS_CANCEL;
 
-    /** IME request failed. */
+    /** The IME request failed. */
     int STATUS_FAIL = ImeProtoEnums.STATUS_FAIL;
 
-    /** IME request succeeded. */
+    /** The IME request succeeded. */
     int STATUS_SUCCESS = ImeProtoEnums.STATUS_SUCCESS;
 
-    /** IME request timed out. */
+    /** The IME request timed out. */
     int STATUS_TIMEOUT = ImeProtoEnums.STATUS_TIMEOUT;
 
     /**
-     * The origin of the IME request
+     * The origin of the IME request.
      *
      * <p> The name follows the format {@code ORIGIN_x_...} where {@code x} denotes
      * where the origin is (i.e. {@code ORIGIN_SERVER} occurs in the server).
      */
     @IntDef(prefix = { "ORIGIN_" }, value = {
+            ORIGIN_NOT_SET,
             ORIGIN_CLIENT,
             ORIGIN_SERVER,
             ORIGIN_IME,
@@ -141,6 +143,8 @@ public interface ImeTracker {
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface Origin {}
+
+    int ORIGIN_NOT_SET = ImeProtoEnums.ORIGIN_NOT_SET;
 
     /** The IME request originated in the client. */
     int ORIGIN_CLIENT = ImeProtoEnums.ORIGIN_CLIENT;
@@ -490,46 +494,46 @@ public interface ImeTracker {
     /**
      * Called when an IME request progresses to a further phase.
      *
-     * @param token the token tracking the current IME request or {@code null} otherwise.
-     * @param phase the new phase the IME request reached.
+     * @param token the token tracking the request or {@code null} otherwise.
+     * @param phase the new phase the request reached.
      */
     void onProgress(@Nullable Token token, @Phase int phase);
 
     /**
      * Called when an IME request fails.
      *
-     * @param token the token tracking the current IME request or {@code null} otherwise.
-     * @param phase the phase the IME request failed at.
+     * @param token the token tracking the request or {@code null} otherwise.
+     * @param phase the phase the request failed at.
      */
     void onFailed(@Nullable Token token, @Phase int phase);
 
     /**
      * Called when an IME request reached a flow that is not yet implemented.
      *
-     * @param token the token tracking the current IME request or {@code null} otherwise.
-     * @param phase the phase the IME request was currently at.
+     * @param token the token tracking the request or {@code null} otherwise.
+     * @param phase the phase the request was currently at.
      */
     void onTodo(@Nullable Token token, @Phase int phase);
 
     /**
      * Called when an IME request is cancelled.
      *
-     * @param token the token tracking the current IME request or {@code null} otherwise.
-     * @param phase the phase the IME request was cancelled at.
+     * @param token the token tracking the request or {@code null} otherwise.
+     * @param phase the phase the request was cancelled at.
      */
     void onCancelled(@Nullable Token token, @Phase int phase);
 
     /**
      * Called when the show IME request is successful.
      *
-     * @param token the token tracking the current IME request or {@code null} otherwise.
+     * @param token the token tracking the request or {@code null} otherwise.
      */
     void onShown(@Nullable Token token);
 
     /**
      * Called when the hide IME request is successful.
      *
-     * @param token the token tracking the current IME request or {@code null} otherwise.
+     * @param token the token tracking the request or {@code null} otherwise.
      */
     void onHidden(@Nullable Token token);
 
@@ -537,14 +541,14 @@ public interface ImeTracker {
      * Called when the user-controlled IME request was dispatched to the requesting app. The
      * user animation can take an undetermined amount of time, so it shouldn't be tracked.
      *
-     * @param token the token tracking the current IME request or {@code null} otherwise.
+     * @param token the token tracking the request or {@code null} otherwise.
      */
     void onDispatched(@Nullable Token token);
 
     /**
      * Called when the animation of the user-controlled IME request finished.
      *
-     * @param token the token tracking the current IME request or {@code null} otherwise.
+     * @param token the token tracking the request or {@code null} otherwise.
      * @param shown whether the end state of the animation was shown or hidden.
      */
     void onUserFinished(@Nullable Token token, boolean shown);
@@ -626,9 +630,10 @@ public interface ImeTracker {
         @Override
         public Token onStart(@NonNull String component, int uid, @Type int type, @Origin int origin,
                 @SoftInputShowHideReason int reason, boolean fromUser) {
-            final var tag = Token.createTag(component);
-            final var token = IInputMethodManagerGlobalInvoker.onStart(tag, uid, type,
-                    origin, reason, fromUser);
+            final var token = Token.createToken(component);
+            final long startTime = System.currentTimeMillis();
+            IInputMethodManagerGlobalInvoker.onStart(token, uid, type,
+                    origin, reason, fromUser, startTime);
 
             log("%s: %s at %s reason %s fromUser %s%s", token.mTag,
                     getOnStartPrefix(type), Debug.originToString(origin),
@@ -641,7 +646,7 @@ public interface ImeTracker {
         @Override
         public void onProgress(@Nullable Token token, @Phase int phase) {
             if (token == null) return;
-            IInputMethodManagerGlobalInvoker.onProgress(token.mBinder, phase);
+            IInputMethodManagerGlobalInvoker.onProgress(token.mId, phase);
 
             if (mLogProgress) {
                 log("%s: onProgress at %s", token.mTag, Debug.phaseToString(phase));
@@ -735,32 +740,29 @@ public interface ImeTracker {
     /** A token that tracks the progress of an IME request. */
     final class Token implements Parcelable {
 
-        /** Empty binder, lazily initialized, used for empty token instantiation. */
-        @Nullable
-        private static IBinder sEmptyBinder;
+        private static final AtomicInteger sCounter = new AtomicInteger();
 
-        /** The binder used to identify this token. */
-        @NonNull
-        private final IBinder mBinder;
+        /** The id used to identify this token. */
+        private final long mId;
 
         /** Logging tag, of the shape "component:random_hexadecimal". */
         @NonNull
         private final String mTag;
 
-        public Token(@NonNull IBinder binder, @NonNull String tag) {
-            mBinder = binder;
+        @VisibleForTesting
+        public Token(long id, @NonNull String tag) {
+            mId = id;
             mTag = tag;
         }
 
         private Token(@NonNull Parcel in) {
-            mBinder = in.readStrongBinder();
+            mId = in.readLong();
             mTag = in.readString8();
         }
 
-        /** Returns the binder used to identify this token. */
-        @NonNull
-        public IBinder getBinder() {
-            return mBinder;
+        /** Returns the id used to identify this token. */
+        public long getId() {
+            return mId;
         }
 
         /** Returns the logging tag of this token. */
@@ -769,37 +771,37 @@ public interface ImeTracker {
             return mTag;
         }
 
+        @NonNull
+        private static Token createToken(@NonNull String component) {
+            // Unique 64 bit ID, composed of process ID and process local counter. When a process
+            // dies, its ID is generally re-used only after the other possible values are exhausted.
+            // Thus the collision chance is very low, (virtually) towards zero.
+            final long id = ((long) Process.myPid()) << 32 | sCounter.getAndIncrement();
+            return new Token(id, createTag(component));
+        }
+
         /**
          * Creates a logging tag.
          *
-         * @param component the name of the component that created the IME request.
+         * @param component the name of the component that created the request.
          */
         @NonNull
         private static String createTag(@NonNull String component) {
             return component + ":" + Integer.toHexString(ThreadLocalRandom.current().nextInt());
         }
 
-        /** Returns a new token with an empty binder. */
+        /** Returns a new token with an empty id. */
         @NonNull
-        @VisibleForTesting(visibility = Visibility.PACKAGE)
+        @VisibleForTesting
         public static Token empty() {
             final var tag = createTag(Process.myProcessName());
             return empty(tag);
         }
 
-        /** Returns a new token with an empty binder and the given logging tag. */
+        /** Returns a new token with an empty id and the given logging tag. */
         @NonNull
         static Token empty(@NonNull String tag) {
-            return new Token(getEmptyBinder(), tag);
-        }
-
-        /** Returns the empty binder instance for empty token creation, lazily initializing it. */
-        @NonNull
-        private static IBinder getEmptyBinder() {
-            if (sEmptyBinder == null) {
-                sEmptyBinder = new Binder();
-            }
-            return sEmptyBinder;
+            return new Token(0 /* id */, tag);
         }
 
         @Override
@@ -815,7 +817,7 @@ public interface ImeTracker {
 
         @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
-            dest.writeStrongBinder(mBinder);
+            dest.writeLong(mId);
             dest.writeString8(mTag);
         }
 

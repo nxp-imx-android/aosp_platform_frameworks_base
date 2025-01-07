@@ -615,16 +615,15 @@ final class IInputMethodManagerGlobalInvoker {
 
     /** @see com.android.server.inputmethod.ImeTrackerService#onStart */
     @AnyThread
-    @NonNull
-    static ImeTracker.Token onStart(@NonNull String tag, int uid, @ImeTracker.Type int type,
-            @ImeTracker.Origin int origin, @SoftInputShowHideReason int reason, boolean fromUser) {
+    static void onStart(@NonNull ImeTracker.Token statsToken, int uid, @ImeTracker.Type int type,
+            @ImeTracker.Origin int origin, @SoftInputShowHideReason int reason, boolean fromUser,
+            long startTime) {
         final var service = getImeTrackerService();
         if (service == null) {
-            // Create token with "empty" binder if the service was not found.
-            return ImeTracker.Token.empty(tag);
+            return;
         }
         try {
-            return service.onStart(tag, uid, type, origin, reason, fromUser);
+            service.onStart(statsToken, uid, type, origin, reason, fromUser, startTime);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -632,13 +631,13 @@ final class IInputMethodManagerGlobalInvoker {
 
     /** @see com.android.server.inputmethod.ImeTrackerService#onProgress */
     @AnyThread
-    static void onProgress(@NonNull IBinder binder, @ImeTracker.Phase int phase) {
+    static void onProgress(long id, @ImeTracker.Phase int phase) {
         final IImeTracker service = getImeTrackerService();
         if (service == null) {
             return;
         }
         try {
-            service.onProgress(binder, phase);
+            service.onProgress(id, phase);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
