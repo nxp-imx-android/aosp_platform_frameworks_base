@@ -5015,7 +5015,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         return showDialogs;
     }
 
-    private void updateFontScaleIfNeeded(@UserIdInt int userId) {
+    void updateFontScaleIfNeeded(@UserIdInt int userId) {
         if (userId != getCurrentUserId()) {
             return;
         }
@@ -7175,7 +7175,23 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         @Override
         public void onHandleAppCrash(@NonNull WindowProcessController wpc) {
             synchronized (mGlobalLock) {
-                wpc.handleAppCrash();
+                final boolean hasVisibleActivity;
+                mTaskSupervisor.beginDeferResume();
+                try {
+                    hasVisibleActivity = wpc.handleAppCrash();
+                } finally {
+                    mTaskSupervisor.endDeferResume();
+                }
+
+                if (hasVisibleActivity) {
+                    deferWindowLayout();
+                    try {
+                        mRootWindowContainer.ensureVisibilityOnVisibleActivityDiedOrCrashed(
+                                "onHandleAppCrash");
+                    } finally {
+                        continueWindowLayout();
+                    }
+                }
             }
         }
 

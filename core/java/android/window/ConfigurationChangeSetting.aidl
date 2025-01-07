@@ -14,20 +14,25 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.phone
+package android.window;
 
-import android.content.Context
-import com.android.systemui.SysUICutoutProvider
-import com.android.systemui.statusbar.policy.ConfigurationController
-import org.mockito.kotlin.mock
+/**
+ * Represents a setting request that can be applied as part of a batch to avoid multiple
+ * configuration updates.
+ *
+ * @see IWindowManager#setConfigurationChangeSettingsForUser
+ * @hide
+ */
+parcelable ConfigurationChangeSetting;
 
-class FakeStatusBarContentInsetsProviderFactory : StatusBarContentInsetsProviderImpl.Factory {
+/**
+ * Represents a request to change the display density.
+ * @hide
+ */
+parcelable DensitySetting;
 
-    override fun create(
-        context: Context,
-        configurationController: ConfigurationController,
-        sysUICutoutProvider: SysUICutoutProvider,
-    ): StatusBarContentInsetsProviderImpl {
-        return mock<StatusBarContentInsetsProviderImpl>()
-    }
-}
+/**
+ * Represents a request to change the font scale.
+ * @hide
+ */
+parcelable FontScaleSetting;

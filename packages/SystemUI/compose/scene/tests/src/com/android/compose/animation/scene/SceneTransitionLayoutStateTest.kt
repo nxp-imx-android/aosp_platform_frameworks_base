@@ -198,23 +198,30 @@ class SceneTransitionLayoutStateTest {
         assertThat(state.currentTransitions).containsExactly(aToB, bToC).inOrder()
 
         // C => A. This should automatically call freezeAndAnimateToCurrentState() on bToC.
-        state.startTransitionImmediately(animationScope = backgroundScope, cToA)
+        val cToAJob = state.startTransitionImmediately(animationScope = backgroundScope, cToA)
         assertThat(frozenTransitions).containsExactly(aToB, bToC)
         assertThat(state.finishedTransitions).isEmpty()
         assertThat(state.currentTransitions).containsExactly(aToB, bToC, cToA).inOrder()
 
-        // Mark bToC as finished. The list of current transitions does not change because aToB is
-        // still not marked as finished.
-        bToC.finish()
-        bToCJob.join()
-        assertThat(state.finishedTransitions).containsExactly(bToC)
-        assertThat(state.currentTransitions).containsExactly(aToB, bToC, cToA).inOrder()
-
-        // Mark aToB as finished. This will remove both aToB and bToC from the list of transitions.
+        // Mark aToB and bToC as finished. The list of current transitions does not change because
+        // cToA is still running.
         aToB.finish()
         aToBJob.join()
+        assertThat(state.finishedTransitions).containsExactly(aToB)
+        assertThat(state.currentTransitions).containsExactly(aToB, bToC, cToA).inOrder()
+
+        bToC.finish()
+        bToCJob.join()
+        assertThat(state.finishedTransitions).containsExactly(aToB, bToC)
+        assertThat(state.currentTransitions).containsExactly(aToB, bToC, cToA).inOrder()
+
+        // Mark cToA as finished. This should clear all transitions and settle to idle.
+        cToA.finish()
+        cToAJob.join()
         assertThat(state.finishedTransitions).isEmpty()
-        assertThat(state.currentTransitions).containsExactly(cToA).inOrder()
+        assertThat(state.currentTransitions).isEmpty()
+        assertThat(state.transitionState).isIdle()
+        assertThat(state.transitionState).hasCurrentScene(SceneA)
     }
 
     @Test
@@ -472,5 +479,78 @@ class SceneTransitionLayoutStateTest {
                 "Found multiple transition specs for transition SceneKey(debugName=SceneA) => " +
                     "SceneKey(debugName=SceneB)"
             )
+    }
+
+    @Test
+    fun snapToScene_multipleTransitions() = runMonotonicClockTest {
+        val state = MutableSceneTransitionLayoutState(SceneA)
+        state.startTransitionImmediately(this, transition(SceneA, SceneB))
+        state.startTransitionImmediately(this, transition(SceneB, SceneC))
+        state.snapToScene(SceneC)
+
+        assertThat(state.transitionState).isIdle()
+        assertThat(state.transitionState).hasCurrentScene(SceneC)
+    }
+
+    @Test
+    fun trackTransitionCujs() = runTest {
+        val started = mutableSetOf<TransitionState.Transition>()
+        val finished = mutableSetOf<TransitionState.Transition>()
+        val cujWhenStarting = mutableMapOf<TransitionState.Transition, Int?>()
+        val state =
+            MutableSceneTransitionLayoutState(
+                SceneA,
+                transitions {
+                    // A <=> B.
+                    from(SceneA, to = SceneB, cuj = 1)
+
+                    // A <=> C.
+                    from(SceneA, to = SceneC, cuj = 2)
+                    from(SceneC, to = SceneA, cuj = 3)
+                },
+                onTransitionStart = { transition ->
+                    started.add(transition)
+                    cujWhenStarting[transition] = transition.cuj
+                },
+                onTransitionEnd = { finished.add(it) },
+            )
+
+        val aToB = transition(SceneA, SceneB)
+        val bToA = transition(SceneB, SceneA)
+        val aToC = transition(SceneA, SceneC)
+        val cToA = transition(SceneC, SceneA)
+
+        val animationScope = this
+        state.startTransitionImmediately(animationScope, aToB)
+        assertThat(started).containsExactly(aToB)
+        assertThat(finished).isEmpty()
+
+        state.startTransitionImmediately(animationScope, bToA)
+        assertThat(started).containsExactly(aToB, bToA)
+        assertThat(finished).isEmpty()
+
+        aToB.finish()
+        runCurrent()
+        assertThat(finished).containsExactly(aToB)
+
+        state.startTransitionImmediately(animationScope, aToC)
+        assertThat(started).containsExactly(aToB, bToA, aToC)
+        assertThat(finished).containsExactly(aToB)
+
+        state.startTransitionImmediately(animationScope, cToA)
+        assertThat(started).containsExactly(aToB, bToA, aToC, cToA)
+        assertThat(finished).containsExactly(aToB)
+
+        bToA.finish()
+        aToC.finish()
+        cToA.finish()
+        runCurrent()
+        assertThat(started).containsExactly(aToB, bToA, aToC, cToA)
+        assertThat(finished).containsExactly(aToB, bToA, aToC, cToA)
+
+        assertThat(cujWhenStarting[aToB]).isEqualTo(1)
+        assertThat(cujWhenStarting[bToA]).isEqualTo(1)
+        assertThat(cujWhenStarting[aToC]).isEqualTo(2)
+        assertThat(cujWhenStarting[cToA]).isEqualTo(3)
     }
 }
