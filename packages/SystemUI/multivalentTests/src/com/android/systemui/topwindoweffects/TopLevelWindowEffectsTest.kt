@@ -20,8 +20,6 @@ import android.view.View
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.app.viewcapture.ViewCapture
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.keyevent.data.repository.fakeKeyEventRepository
 import com.android.systemui.keyevent.data.repository.keyEventRepository
@@ -58,20 +56,13 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     private lateinit var windowManager: WindowManager
 
     @Mock
-    private lateinit var viewCapture: Lazy<ViewCapture>
-
-    @Mock
     private lateinit var viewModelFactory: SqueezeEffectViewModel.Factory
 
     private val Kosmos.underTest by Kosmos.Fixture {
         TopLevelWindowEffects(
             context = mContext,
             applicationScope = testScope.backgroundScope,
-            windowManager = ViewCaptureAwareWindowManager(
-                windowManager = windowManager,
-                lazyViewCapture = viewCapture,
-                isViewCaptureEnabled = false
-            ),
+            windowManager = windowManager,
             keyEventInteractor = keyEventInteractor,
             viewModelFactory = viewModelFactory,
             squeezeEffectInteractor = SqueezeEffectInteractor(

@@ -72,7 +72,7 @@ public class DragToInteractAnimationControllerTest extends SysuiTestCase {
                 stubWindowManager);
         final MenuView stubMenuView = spy(new MenuView(mContext, stubMenuViewModel,
                 stubMenuViewAppearance, mockSecureSettings));
-        mInteractView = spy(new DragToInteractView(mContext));
+        mInteractView = spy(new DragToInteractView(mContext, stubWindowManager));
         mDismissView = spy(new DismissView(mContext));
 
         if (Flags.floatingMenuDragToEdit()) {
