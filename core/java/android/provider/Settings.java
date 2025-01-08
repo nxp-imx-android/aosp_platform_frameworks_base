@@ -6372,6 +6372,19 @@ public final class Settings {
                 "mouse_pointer_acceleration_enabled";
 
         /**
+         * Mouse scrolling speed setting.
+         *
+         * This is an integer value in a range between -7 and +7, so there are 15 possible values.
+         * The setting only applies when mouse scrolling acceleration is not enabled.
+         *   -7 = slowest
+         *    0 = default speed
+         *   +7 = fastest
+         *
+         * @hide
+         */
+        public static final String MOUSE_SCROLLING_SPEED = "mouse_scrolling_speed";
+
+        /**
          * Pointer fill style, specified by
          * {@link android.view.PointerIcon.PointerIconVectorStyleFill} constants.
          *
@@ -6623,6 +6636,7 @@ public final class Settings {
             PRIVATE_SETTINGS.add(MOUSE_POINTER_ACCELERATION_ENABLED);
             PRIVATE_SETTINGS.add(PREFERRED_REGION);
             PRIVATE_SETTINGS.add(MOUSE_SCROLLING_ACCELERATION);
+            PRIVATE_SETTINGS.add(MOUSE_SCROLLING_SPEED);
         }
 
         /**
@@ -17393,13 +17407,6 @@ public final class Settings {
          */
         public static final String DEVICE_CONFIG_SYNC_DISABLED = "device_config_sync_disabled";
 
-
-        /**
-         * Whether back preview animations are played when user does a back gesture or presses
-         * the back button.
-         * @hide
-         */
-        public static final String ENABLE_BACK_ANIMATION = "enable_back_animation";
 
         /**
          * An allow list of packages for which the user has granted the permission to communicate

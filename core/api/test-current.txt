@@ -2,7 +2,7 @@
 package android {
 
   public static final class Manifest.permission {
-    field @FlaggedApi("com.android.server.accessibility.motion_event_observing") public static final String ACCESSIBILITY_MOTION_EVENT_OBSERVING = "android.permission.ACCESSIBILITY_MOTION_EVENT_OBSERVING";
+    field public static final String ACCESSIBILITY_MOTION_EVENT_OBSERVING = "android.permission.ACCESSIBILITY_MOTION_EVENT_OBSERVING";
     field public static final String ACCESS_NOTIFICATIONS = "android.permission.ACCESS_NOTIFICATIONS";
     field public static final String ACTIVITY_EMBEDDING = "android.permission.ACTIVITY_EMBEDDING";
     field public static final String ADJUST_RUNTIME_PERMISSIONS_POLICY = "android.permission.ADJUST_RUNTIME_PERMISSIONS_POLICY";
@@ -536,6 +536,7 @@ package android.app {
     method @Nullable public android.graphics.Bitmap getBitmap();
     method @Nullable public android.graphics.Bitmap getBitmapAsUser(int, boolean, int);
     method @FlaggedApi("com.android.window.flags.multi_crop") @NonNull @RequiresPermission(android.Manifest.permission.READ_WALLPAPER_INTERNAL) public java.util.List<android.graphics.Rect> getBitmapCrops(@NonNull java.util.List<android.graphics.Point>, int, boolean);
+    method @FlaggedApi("android.app.customization_packs_apis") @NonNull @RequiresPermission(android.Manifest.permission.READ_WALLPAPER_INTERNAL) public android.util.SparseArray<android.graphics.Rect> getBitmapCrops(int);
     method @FlaggedApi("com.android.window.flags.multi_crop") @NonNull public java.util.List<android.graphics.Rect> getBitmapCrops(@NonNull android.graphics.Point, @NonNull java.util.List<android.graphics.Point>, @Nullable java.util.Map<android.graphics.Point,android.graphics.Rect>);
     method public boolean isLockscreenLiveWallpaperEnabled();
     method @Nullable public android.graphics.Rect peekBitmapDimensions();
@@ -2111,6 +2112,11 @@ package android.media {
 
   public final class MediaDescrambler implements java.lang.AutoCloseable {
     method public boolean isAidlHal();
+  }
+
+  public static final class MediaMuxer.OutputFormat {
+    field public static final int MUXER_OUTPUT_FIRST = 0; // 0x0
+    field public static final int MUXER_OUTPUT_LAST = 4; // 0x4
   }
 
   public final class MediaRoute2Info implements android.os.Parcelable {
@@ -4532,7 +4538,6 @@ package android.window {
     field public final int displayId;
     field public final boolean isDuplicateTouchToWallpaper;
     field public final boolean isFocusable;
-    field public final boolean isPreventSplitting;
     field public final boolean isTouchable;
     field public final boolean isTrustedOverlay;
     field public final boolean isVisible;

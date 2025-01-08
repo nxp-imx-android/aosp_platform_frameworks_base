@@ -17,6 +17,7 @@
 package com.android.server.wm;
 
 import android.annotation.NonNull;
+import android.content.pm.PackageManager;
 
 import com.android.server.wm.utils.OptPropFactory;
 
@@ -34,13 +35,14 @@ public class AppCompatOverrides {
     @NonNull
     private final AppCompatFocusOverrides mAppCompatFocusOverrides;
     @NonNull
-    private final AppCompatResizeOverrides mAppCompatResizeOverrides;
+    private final AppCompatResizeOverrides mResizeOverrides;
     @NonNull
     private final AppCompatReachabilityOverrides mAppCompatReachabilityOverrides;
     @NonNull
     private final AppCompatLetterboxOverrides mAppCompatLetterboxOverrides;
 
     AppCompatOverrides(@NonNull ActivityRecord activityRecord,
+            @NonNull PackageManager packageManager,
             @NonNull AppCompatConfiguration appCompatConfiguration,
             @NonNull OptPropFactory optPropBuilder,
             @NonNull AppCompatDeviceStateQuery appCompatDeviceStateQuery) {
@@ -55,7 +57,8 @@ public class AppCompatOverrides {
                 mAppCompatReachabilityOverrides);
         mAppCompatFocusOverrides = new AppCompatFocusOverrides(activityRecord,
                 appCompatConfiguration, optPropBuilder);
-        mAppCompatResizeOverrides = new AppCompatResizeOverrides(activityRecord, optPropBuilder);
+        mResizeOverrides = new AppCompatResizeOverrides(activityRecord, packageManager,
+                optPropBuilder);
         mAppCompatLetterboxOverrides = new AppCompatLetterboxOverrides(activityRecord,
                 appCompatConfiguration);
     }
@@ -81,8 +84,8 @@ public class AppCompatOverrides {
     }
 
     @NonNull
-    AppCompatResizeOverrides getAppCompatResizeOverrides() {
-        return mAppCompatResizeOverrides;
+    AppCompatResizeOverrides getResizeOverrides() {
+        return mResizeOverrides;
     }
 
     @NonNull
