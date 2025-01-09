@@ -1351,10 +1351,15 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 return interpolator;
             }
         };
-        // TODO(b/342111149): Create statsToken here once ImeTracker#onStart becomes async.
+        final var statsToken = (types & ime()) == 0
+                ? null
+                : ImeTracker.forLogging().onStart(ImeTracker.TYPE_USER,
+                        ImeTracker.ORIGIN_CLIENT,
+                        SoftInputShowHideReason.CONTROL_WINDOW_INSETS_ANIMATION,
+                        mHost.isHandlingPointerEvent() /* fromUser */);
         controlAnimationUnchecked(types, cancellationSignal, listener, mFrame, mBounds, spec,
                 animationType, getLayoutInsetsDuringAnimationMode(types, fromPredictiveBack),
-                false /* useInsetsAnimationThread */, null, fromPredictiveBack);
+                false /* useInsetsAnimationThread */, statsToken, fromPredictiveBack);
     }
 
     private void controlAnimationUnchecked(@InsetsType int types,
