@@ -64,14 +64,6 @@ flag {
 }
 
 flag {
-    namespace: "virtual_devices"
-    name: "device_aware_drm"
-    description: "Makes MediaDrm APIs device-aware"
-    bug: "303535376"
-    is_fixed_read_only: true
-}
-
-flag {
      namespace: "virtual_devices"
      name: "enforce_remote_device_opt_out_on_all_virtual_displays"
      description: "Respect canDisplayOnRemoteDevices on all virtual displays"
