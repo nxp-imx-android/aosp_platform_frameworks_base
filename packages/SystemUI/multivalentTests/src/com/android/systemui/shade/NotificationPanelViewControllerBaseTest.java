@@ -85,7 +85,6 @@ import com.android.systemui.keyguard.data.repository.FakeKeyguardClockRepository
 import com.android.systemui.keyguard.data.repository.FakeKeyguardRepository;
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
-import com.android.systemui.keyguard.domain.interactor.KeyguardInteractorFactory;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.keyguard.domain.interactor.NaturalScrollingSettingObserver;
 import com.android.systemui.keyguard.ui.viewmodel.DreamingToLockscreenTransitionViewModel;
@@ -335,16 +334,14 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
         mFeatureFlags.set(Flags.QS_USER_DETAIL_SHORTCUT, false);
 
         mMainDispatcher = getMainDispatcher();
-        KeyguardInteractorFactory.WithDependencies keyguardInteractorDeps =
-                KeyguardInteractorFactory.create();
-        mFakeKeyguardRepository = keyguardInteractorDeps.getRepository();
+        mFakeKeyguardRepository = mKosmos.getKeyguardRepository();
         mFakeKeyguardClockRepository = new FakeKeyguardClockRepository();
         mKeyguardClockInteractor = mKosmos.getKeyguardClockInteractor();
-        mKeyguardInteractor = keyguardInteractorDeps.getKeyguardInteractor();
+        mKeyguardInteractor = mKosmos.getKeyguardInteractor();
         mShadeRepository = new FakeShadeRepository();
         mShadeAnimationInteractor = new ShadeAnimationInteractorLegacyImpl(
                 new ShadeAnimationRepository(), mShadeRepository);
-        mPowerInteractor = keyguardInteractorDeps.getPowerInteractor();
+        mPowerInteractor = mKosmos.getPowerInteractor();
         when(mKeyguardTransitionInteractor.isInTransitionWhere(any(), any())).thenReturn(
                 MutableStateFlow(false));
         when(mKeyguardTransitionInteractor.isInTransition(any(), any()))
@@ -531,9 +528,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
 
         mNotificationPanelViewController = new NotificationPanelViewController(
                 mView,
-                mMainHandler,
-                mLayoutInflater,
-                mFeatureFlags,
                 coordinator, expansionHandler, mDynamicPrivacyController, mKeyguardBypassController,
                 mFalsingManager, new FalsingCollectorFake(),
                 mKeyguardStateController,
@@ -553,7 +547,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 mKeyguardStatusBarViewComponentFactory,
                 mLockscreenShadeTransitionController,
                 mScrimController,
-                mUserManager,
                 mMediaDataManager,
                 mNotificationShadeDepthController,
                 mAmbientState,
@@ -564,7 +557,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 mQsController,
                 mFragmentService,
                 mStatusBarService,
-                mContentResolver,
                 mShadeHeaderController,
                 mScreenOffAnimationController,
                 mLockscreenGestureLogger,
@@ -575,7 +567,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 mKeyguardUnlockAnimationController,
                 mKeyguardIndicationController,
                 mNotificationListContainer,
-                mNotificationStackSizeCalculator,
                 mUnlockedScreenOffAnimationController,
                 systemClock,
                 mKeyguardClockInteractor,
@@ -594,7 +585,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 new ResourcesSplitShadeStateController(),
                 mPowerInteractor,
                 mKeyguardClockPositionAlgorithm,
-                mNaturalScrollingSettingObserver,
                 mMSDLPlayer,
                 mBrightnessMirrorShowingInteractor);
         mNotificationPanelViewController.initDependencies(

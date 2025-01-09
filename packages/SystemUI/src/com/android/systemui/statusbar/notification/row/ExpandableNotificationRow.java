@@ -1267,6 +1267,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         if (mExpandedWhenPinned) {
             return Math.max(getMaxExpandHeight(), getHeadsUpHeight());
+        } else if (android.app.Flags.compactHeadsUpNotification()
+                && getShowingLayout().isHUNCompact()) {
+            return getHeadsUpHeight();
         } else if (atLeastMinHeight) {
             return Math.max(getCollapsedHeight(), getHeadsUpHeight());
         } else {
@@ -3680,6 +3683,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         return super.disallowSingleClick(event);
     }
 
+    // TODO: b/388470175 - Although this does get triggered when a notification
+    // is expanded by the system (e.g. the first notication in the shade), it
+    // will not be when a notification is collapsed by the system (such as when
+    // the shade is closed).
     private void onExpansionChanged(boolean userAction, boolean wasExpanded) {
         boolean nowExpanded = isExpanded();
         if (mIsSummaryWithChildren && (!mIsMinimized || wasExpanded)) {

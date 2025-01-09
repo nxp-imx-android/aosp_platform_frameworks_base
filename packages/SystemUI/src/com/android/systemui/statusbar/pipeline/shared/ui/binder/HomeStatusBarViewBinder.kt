@@ -41,6 +41,7 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore
 import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
 import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
+import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.VisibilityModel
 import javax.inject.Inject
@@ -106,16 +107,19 @@ constructor(
                 }
 
                 if (NotificationsLiveDataStoreRefactor.isEnabled) {
-                    val displayId = view.display.displayId
                     val lightsOutView: View = view.requireViewById(R.id.notification_lights_out)
                     launch {
-                        viewModel.areNotificationsLightsOut(displayId).collect { show ->
+                        viewModel.areNotificationsLightsOut.collect { show ->
                             animateLightsOutView(lightsOutView, show)
                         }
                     }
                 }
 
-                if (Flags.statusBarScreenSharingChips() && !StatusBarNotifChips.isEnabled) {
+                if (
+                    Flags.statusBarScreenSharingChips() &&
+                        !StatusBarNotifChips.isEnabled &&
+                        !StatusBarChipsModernization.isEnabled
+                ) {
                     val primaryChipView: View =
                         view.requireViewById(R.id.ongoing_activity_chip_primary)
                     launch {
@@ -157,7 +161,11 @@ constructor(
                     }
                 }
 
-                if (Flags.statusBarScreenSharingChips() && StatusBarNotifChips.isEnabled) {
+                if (
+                    Flags.statusBarScreenSharingChips() &&
+                        StatusBarNotifChips.isEnabled &&
+                        !StatusBarChipsModernization.isEnabled
+                ) {
                     val primaryChipView: View =
                         view.requireViewById(R.id.ongoing_activity_chip_primary)
                     val secondaryChipView: View =
@@ -209,7 +217,7 @@ constructor(
                     StatusBarOperatorNameViewBinder.bind(
                         operatorNameView,
                         viewModel.operatorNameViewModel,
-                        viewModel::areaTint,
+                        viewModel.areaTint,
                     )
                     launch {
                         viewModel.shouldShowOperatorNameView.collect {

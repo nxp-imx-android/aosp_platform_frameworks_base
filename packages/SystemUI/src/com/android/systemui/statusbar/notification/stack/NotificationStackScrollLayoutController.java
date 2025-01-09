@@ -35,6 +35,8 @@ import static com.android.systemui.statusbar.notification.stack.StackStateAnimat
 import android.animation.ObjectAnimator;
 import android.content.res.Configuration;
 import android.graphics.Point;
+import android.graphics.RenderEffect;
+import android.graphics.Shader;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -103,9 +105,7 @@ import com.android.systemui.statusbar.notification.collection.notifcollection.Di
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
 import com.android.systemui.statusbar.notification.collection.provider.VisibilityLocationProviderDelegator;
-import com.android.systemui.statusbar.notification.collection.render.DefaultNotifStackController;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
-import com.android.systemui.statusbar.notification.collection.render.NotifStackController;
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpNotificationViewControllerEmptyImpl;
@@ -211,9 +211,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
 
     private final NotificationListContainerImpl mNotificationListContainer =
             new NotificationListContainerImpl();
-    // TODO: b/293167744 - Remove this.
-    private final NotifStackController mNotifStackController =
-            new DefaultNotifStackController();
 
     @VisibleForTesting
     final View.OnAttachStateChangeListener mOnAttachStateChangeListener =
@@ -1242,6 +1239,22 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         updateAlpha();
     }
 
+    /**
+     * Applies a blur effect to the view.
+     *
+     * @param blurRadius Radius of blur
+     */
+    public void setBlurRadius(float blurRadius) {
+        if (blurRadius > 0.0f) {
+            mView.setRenderEffect(RenderEffect.createBlurEffect(
+                    blurRadius,
+                    blurRadius,
+                    Shader.TileMode.CLAMP));
+        } else {
+            mView.setRenderEffect(null);
+        }
+    }
+
     private void updateAlpha() {
         if (mView != null) {
             mView.setAlpha(Math.min(Math.min(mMaxAlphaFromView, mMaxAlphaForKeyguard),
@@ -1467,10 +1480,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
 
     public NotificationListContainer getNotificationListContainer() {
         return mNotificationListContainer;
-    }
-
-    public NotifStackController getNotifStackController() {
-        return mNotifStackController;
     }
 
     public void resetCheckSnoozeLeavebehind() {

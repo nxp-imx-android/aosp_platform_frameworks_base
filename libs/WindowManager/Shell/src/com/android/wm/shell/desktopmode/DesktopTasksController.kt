@@ -310,6 +310,11 @@ class DesktopTasksController(
         transitions.startTransition(transitionType, wct, handler).also { t ->
             handler?.setTransition(t)
         }
+
+        // launch from recent DesktopTaskView
+        desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+            FREEFORM_ANIMATION_DURATION
+        )
     }
 
     /** Gets number of visible freeform tasks in [displayId]. */
@@ -1344,7 +1349,7 @@ class DesktopTasksController(
 
     private fun addWallpaperActivity(displayId: Int, wct: WindowContainerTransaction) {
         logV("addWallpaperActivity")
-        if (Flags.enableDesktopWallpaperActivityOnSystemUser()) {
+        if (Flags.enableDesktopWallpaperActivityForSystemUser()) {
             val intent = Intent(context, DesktopWallpaperActivity::class.java)
             val options =
                 ActivityOptions.makeBasic().apply {
@@ -1393,7 +1398,7 @@ class DesktopTasksController(
     private fun removeWallpaperActivity(wct: WindowContainerTransaction) {
         desktopWallpaperActivityTokenProvider.getToken()?.let { token ->
             logV("removeWallpaperActivity")
-            if (Flags.enableDesktopWallpaperActivityOnSystemUser()) {
+            if (Flags.enableDesktopWallpaperActivityForSystemUser()) {
                 wct.reorder(token, /* onTop= */ false)
             } else {
                 wct.removeTask(token)

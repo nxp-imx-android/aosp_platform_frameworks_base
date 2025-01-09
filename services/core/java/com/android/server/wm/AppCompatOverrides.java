@@ -27,7 +27,7 @@ import com.android.server.wm.utils.OptPropFactory;
 public class AppCompatOverrides {
 
     @NonNull
-    private final AppCompatOrientationOverrides mAppCompatOrientationOverrides;
+    private final AppCompatOrientationOverrides mOrientationOverrides;
     @NonNull
     private final AppCompatCameraOverrides mAppCompatCameraOverrides;
     @NonNull
@@ -37,7 +37,7 @@ public class AppCompatOverrides {
     @NonNull
     private final AppCompatResizeOverrides mResizeOverrides;
     @NonNull
-    private final AppCompatReachabilityOverrides mAppCompatReachabilityOverrides;
+    private final AppCompatReachabilityOverrides mReachabilityOverrides;
     @NonNull
     private final AppCompatLetterboxOverrides mAppCompatLetterboxOverrides;
 
@@ -48,13 +48,13 @@ public class AppCompatOverrides {
             @NonNull AppCompatDeviceStateQuery appCompatDeviceStateQuery) {
         mAppCompatCameraOverrides = new AppCompatCameraOverrides(activityRecord,
                 appCompatConfiguration, optPropBuilder);
-        mAppCompatOrientationOverrides = new AppCompatOrientationOverrides(activityRecord,
+        mOrientationOverrides = new AppCompatOrientationOverrides(activityRecord,
                 appCompatConfiguration, optPropBuilder, mAppCompatCameraOverrides);
-        mAppCompatReachabilityOverrides = new AppCompatReachabilityOverrides(activityRecord,
+        mReachabilityOverrides = new AppCompatReachabilityOverrides(activityRecord,
                 appCompatConfiguration, appCompatDeviceStateQuery);
         mAppCompatAspectRatioOverrides = new AppCompatAspectRatioOverrides(activityRecord,
                 appCompatConfiguration, optPropBuilder, appCompatDeviceStateQuery,
-                mAppCompatReachabilityOverrides);
+                mReachabilityOverrides);
         mAppCompatFocusOverrides = new AppCompatFocusOverrides(activityRecord,
                 appCompatConfiguration, optPropBuilder);
         mResizeOverrides = new AppCompatResizeOverrides(activityRecord, packageManager,
@@ -64,8 +64,8 @@ public class AppCompatOverrides {
     }
 
     @NonNull
-    AppCompatOrientationOverrides getAppCompatOrientationOverrides() {
-        return mAppCompatOrientationOverrides;
+    AppCompatOrientationOverrides getOrientationOverrides() {
+        return mOrientationOverrides;
     }
 
     @NonNull
@@ -89,8 +89,8 @@ public class AppCompatOverrides {
     }
 
     @NonNull
-    AppCompatReachabilityOverrides getAppCompatReachabilityOverrides() {
-        return mAppCompatReachabilityOverrides;
+    AppCompatReachabilityOverrides getReachabilityOverrides() {
+        return mReachabilityOverrides;
     }
 
     @NonNull

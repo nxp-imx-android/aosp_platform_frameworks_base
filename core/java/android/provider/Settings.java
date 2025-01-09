@@ -9319,6 +9319,16 @@ public final class Settings {
                 "accessibility_autoclick_delay";
 
         /**
+         * Integer setting specifying the autoclick cursor area size (the radius of the autoclick
+         * ring indicator) when {@link #ACCESSIBILITY_AUTOCLICK_ENABLED} is set.
+         *
+         * @see #ACCESSIBILITY_AUTOCLICK_ENABLED
+         * @hide
+         */
+        public static final String ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE =
+                "accessibility_autoclick_cursor_area_size";
+
+        /**
          * Whether or not larger size icons are used for the pointer of mouse/trackpad for
          * accessibility.
          * (0 = false, 1 = true)
@@ -13316,6 +13326,16 @@ public final class Settings {
          * @hide
          */
         public static final String AUTO_TIME_ZONE_EXPLICIT = "auto_time_zone_explicit";
+
+        /**
+         * Value to specify if the device should send notifications when {@link #AUTO_TIME_ZONE} is
+         * on and the device's time zone changes.
+         *
+         * <p>1=yes, 0=no.
+         *
+         * @hide
+         */
+        public static final String TIME_ZONE_NOTIFICATIONS = "time_zone_notifications";
 
         /**
          * URI for the car dock "in" event sound.
