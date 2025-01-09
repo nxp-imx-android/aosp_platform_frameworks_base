@@ -631,13 +631,13 @@ final class IInputMethodManagerGlobalInvoker {
 
     /** @see com.android.server.inputmethod.ImeTrackerService#onProgress */
     @AnyThread
-    static void onProgress(long id, @ImeTracker.Phase int phase) {
+    static void onProgress(@NonNull ImeTracker.Token statsToken, @ImeTracker.Phase int phase) {
         final IImeTracker service = getImeTrackerService();
         if (service == null) {
             return;
         }
         try {
-            service.onProgress(id, phase);
+            service.onProgress(statsToken, phase);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
