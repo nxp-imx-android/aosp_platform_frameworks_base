@@ -203,3 +203,14 @@ flag {
   description: "Adding animating insets types and report IME visibility at the beginning of hiding"
   bug: "393049691"
 }
+
+flag {
+    name: "lower_ime_oom_importance"
+    namespace: "input_method"
+    description: "Lower keyboard app process oom importance to PERCEPTIBLE_APP_ADJ + 1."
+    bug: "372511805"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
