@@ -35,6 +35,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.MainThread;
 import android.annotation.Nullable;
+import android.app.Notification;
 import android.os.Trace;
 import android.service.notification.StatusBarNotification;
 import android.util.ArrayMap;
@@ -682,13 +683,23 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
                     } else {
                         mLogger.logDuplicateSummary(mIterationCount, group, existingSummary, entry);
 
-                        // Use whichever one was posted most recently
-                        if (entry.getSbn().getPostTime()
-                                > existingSummary.getSbn().getPostTime()) {
-                            group.setSummary(entry);
-                            annulAddition(existingSummary, out);
+                        NotificationEntry autogroupSummary = getAutogroupSummary(entry,
+                                existingSummary);
+                        if (autogroupSummary != null) {
+                            // Prioritize the autogroup summary if duplicate summaries found
+                            group.setSummary(autogroupSummary);
+                            NotificationEntry otherEntry =
+                                    autogroupSummary.equals(entry) ? existingSummary : entry;
+                            annulAddition(otherEntry, out);
                         } else {
-                            annulAddition(entry, out);
+                            // Use whichever one was posted most recently
+                            if (entry.getSbn().getPostTime()
+                                    > existingSummary.getSbn().getPostTime()) {
+                                group.setSummary(entry);
+                                annulAddition(existingSummary, out);
+                            } else {
+                                annulAddition(entry, out);
+                            }
                         }
                     }
                 } else {
@@ -707,6 +718,18 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             }
         }
         Trace.endSection();
+    }
+
+    private @Nullable NotificationEntry getAutogroupSummary(NotificationEntry newSummary,
+            NotificationEntry existingSummary) {
+        if ((newSummary.getSbn().getNotification().flags
+                & Notification.FLAG_AUTOGROUP_SUMMARY) != 0) {
+            return newSummary;
+        } else if ((existingSummary.getSbn().getNotification().flags
+                & Notification.FLAG_AUTOGROUP_SUMMARY) != 0) {
+            return existingSummary;
+        }
+        return null;
     }
 
     @Nullable
