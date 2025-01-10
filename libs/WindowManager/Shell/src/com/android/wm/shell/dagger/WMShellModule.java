@@ -50,6 +50,7 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController;
 import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser;
 import com.android.wm.shell.apptoweb.AssistContentRequester;
+import com.android.wm.shell.appzoomout.AppZoomOutController;
 import com.android.wm.shell.back.BackAnimationController;
 import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.bubbles.BubbleData;
@@ -945,7 +946,8 @@ public abstract class WMShellModule {
             FocusTransitionObserver focusTransitionObserver,
             DesktopModeEventLogger desktopModeEventLogger,
             DesktopModeUiEventLogger desktopModeUiEventLogger,
-            WindowDecorTaskResourceLoader taskResourceLoader
+            WindowDecorTaskResourceLoader taskResourceLoader,
+            RecentsTransitionHandler recentsTransitionHandler
     ) {
         if (!DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)) {
             return Optional.empty();
@@ -961,7 +963,7 @@ public abstract class WMShellModule {
                 desktopTasksLimiter, appHandleEducationController, appToWebEducationController,
                 windowDecorCaptionHandleRepository, activityOrientationChangeHandler,
                 focusTransitionObserver, desktopModeEventLogger, desktopModeUiEventLogger,
-                taskResourceLoader));
+                taskResourceLoader, recentsTransitionHandler));
     }
 
     @WMSingleton
@@ -1312,10 +1314,21 @@ public abstract class WMShellModule {
         return new DesktopModeUiEventLogger(uiEventLogger, packageManager);
     }
 
+    //
+    // App zoom out
+    //
+
     @WMSingleton
     @Provides
-    static DesktopWallpaperActivityTokenProvider provideDesktopWallpaperActivityTokenProvider() {
-        return new DesktopWallpaperActivityTokenProvider();
+    static AppZoomOutController provideAppZoomOutController(
+            Context context,
+            ShellInit shellInit,
+            ShellTaskOrganizer shellTaskOrganizer,
+            DisplayController displayController,
+            DisplayLayout displayLayout,
+            @ShellMainThread ShellExecutor mainExecutor) {
+        return AppZoomOutController.create(context, shellInit, shellTaskOrganizer,
+                displayController, displayLayout, mainExecutor);
     }
 
     //

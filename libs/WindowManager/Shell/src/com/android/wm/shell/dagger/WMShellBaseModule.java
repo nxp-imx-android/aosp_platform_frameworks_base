@@ -91,6 +91,7 @@ import com.android.wm.shell.compatui.impl.DefaultComponentIdGenerator;
 import com.android.wm.shell.desktopmode.DesktopMode;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
 import com.android.wm.shell.displayareahelper.DisplayAreaHelper;
 import com.android.wm.shell.displayareahelper.DisplayAreaHelperController;
 import com.android.wm.shell.freeform.FreeformComponents;
@@ -111,6 +112,8 @@ import com.android.wm.shell.shared.annotations.ShellAnimationThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.annotations.ShellSplashscreenThread;
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.appzoomout.AppZoomOut;
+import com.android.wm.shell.appzoomout.AppZoomOutController;
 import com.android.wm.shell.splitscreen.SplitScreen;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.startingsurface.StartingSurface;
@@ -1031,6 +1034,38 @@ public abstract class WMShellBaseModule {
         });
     }
 
+    @WMSingleton
+    @Provides
+    static DesktopWallpaperActivityTokenProvider provideDesktopWallpaperActivityTokenProvider() {
+        return new DesktopWallpaperActivityTokenProvider();
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<DesktopWallpaperActivityTokenProvider>
+            provideOptionalDesktopWallpaperActivityTokenProvider(
+            Context context,
+            DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider) {
+        if (DesktopModeStatus.canEnterDesktopMode(context)) {
+            return Optional.of(desktopWallpaperActivityTokenProvider);
+        }
+        return Optional.empty();
+    }
+
+    //
+    // App zoom out (optional feature)
+    //
+
+    @WMSingleton
+    @Provides
+    static Optional<AppZoomOut> provideAppZoomOut(
+            Optional<AppZoomOutController> appZoomOutController) {
+        return appZoomOutController.map((controller) -> controller.asAppZoomOut());
+    }
+
+    @BindsOptionalOf
+    abstract AppZoomOutController optionalAppZoomOutController();
+
     //
     // Task Stack
     //
@@ -1075,6 +1110,7 @@ public abstract class WMShellBaseModule {
             Optional<RecentTasksController> recentTasksOptional,
             Optional<RecentsTransitionHandler> recentsTransitionHandlerOptional,
             Optional<OneHandedController> oneHandedControllerOptional,
+            Optional<AppZoomOutController> appZoomOutControllerOptional,
             Optional<HideDisplayCutoutController> hideDisplayCutoutControllerOptional,
             Optional<ActivityEmbeddingController> activityEmbeddingOptional,
             Optional<MixedTransitionHandler> mixedTransitionHandler,

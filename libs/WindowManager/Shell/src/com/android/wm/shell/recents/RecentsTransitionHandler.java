@@ -411,10 +411,12 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             mInstanceId = System.identityHashCode(this);
             mListener = listener;
             mDeathHandler = () -> {
-                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                        "[%d] RecentsController.DeathRecipient: binder died", mInstanceId);
-                finishInner(mWillFinishToHome, false /* leaveHint */, null /* finishCb */,
-                        "deathRecipient");
+                mExecutor.execute(() -> {
+                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                            "[%d] RecentsController.DeathRecipient: binder died", mInstanceId);
+                    finishInner(mWillFinishToHome, false /* leaveHint */, null /* finishCb */,
+                            "deathRecipient");
+                });
             };
             try {
                 mListener.asBinder().linkToDeath(mDeathHandler, 0 /* flags */);
@@ -585,7 +587,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 mListener.onAnimationStart(this,
                         apps.toArray(new RemoteAnimationTarget[apps.size()]),
                         new RemoteAnimationTarget[0],
-                        new Rect(0, 0, 0, 0), new Rect(), new Bundle());
+                        new Rect(0, 0, 0, 0), new Rect(), new Bundle(),
+                        null);
                 for (int i = 0; i < mStateListeners.size(); i++) {
                     mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_ANIMATING);
                 }
@@ -816,7 +819,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 mListener.onAnimationStart(this,
                         apps.toArray(new RemoteAnimationTarget[apps.size()]),
                         wallpapers.toArray(new RemoteAnimationTarget[wallpapers.size()]),
-                        new Rect(0, 0, 0, 0), new Rect(), b);
+                        new Rect(0, 0, 0, 0), new Rect(), b, info);
                 for (int i = 0; i < mStateListeners.size(); i++) {
                     mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_ANIMATING);
                 }
@@ -1273,6 +1276,11 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     "requested"));
         }
 
+        /**
+         * @param runnerFinishCb The remote finish callback to run after finish is complete, this is
+         *                       not the same as mFinishCb which reports the transition is finished
+         *                       to WM.
+         */
         private void finishInner(boolean toHome, boolean sendUserLeaveHint,
                 IResultReceiver runnerFinishCb, String reason) {
             if (finishSyntheticTransition(runnerFinishCb, reason)) {

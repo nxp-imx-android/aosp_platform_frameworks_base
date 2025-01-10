@@ -2330,6 +2330,7 @@
   <java-symbol type="bool" name="config_dreamsEnabledOnBattery" />
   <java-symbol type="bool" name="config_dreamsActivatedOnDockByDefault" />
   <java-symbol type="bool" name="config_dreamsActivatedOnSleepByDefault" />
+  <java-symbol type="bool" name="config_dreamsActivatedOnPosturedByDefault" />
   <java-symbol type="integer" name="config_dreamsBatteryLevelMinimumWhenPowered" />
   <java-symbol type="integer" name="config_dreamsBatteryLevelMinimumWhenNotPowered" />
   <java-symbol type="integer" name="config_dreamsBatteryLevelDrainCutoff" />
@@ -3950,6 +3951,7 @@
   <java-symbol type="dimen" name="notification_progress_tracker_height" />
   <java-symbol type="dimen" name="notification_progress_segSeg_gap" />
   <java-symbol type="dimen" name="notification_progress_segPoint_gap" />
+  <java-symbol type="dimen" name="notification_progress_segments_min_width" />
   <java-symbol type="dimen" name="notification_progress_segments_height" />
   <java-symbol type="dimen" name="notification_progress_segments_faded_height" />
   <java-symbol type="dimen" name="notification_progress_segments_corner_radius" />
