@@ -23,6 +23,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.PowerManager
+import com.android.app.tracing.coroutines.flow.traceAs
 import com.android.keyguard.UserActivityNotifier
 import com.android.systemui.Flags
 import com.android.systemui.broadcast.BroadcastDispatcher
@@ -139,7 +140,7 @@ constructor(
             }
             .stateIn(scope, SharingStarted.Eagerly, false)
 
-    private val _wakefulness = MutableStateFlow(WakefulnessModel())
+    private val _wakefulness = MutableStateFlow(WakefulnessModel()).traceAs("wakefulness")
     override val wakefulness = _wakefulness.asStateFlow()
 
     override fun updateWakefulness(
@@ -157,7 +158,8 @@ constructor(
             )
     }
 
-    private val _screenPowerState = MutableStateFlow(ScreenPowerState.SCREEN_OFF)
+    private val _screenPowerState =
+        MutableStateFlow(ScreenPowerState.SCREEN_OFF).traceAs("screenPowerState")
     override val screenPowerState = _screenPowerState.asStateFlow()
 
     override fun setScreenPowerState(state: ScreenPowerState) {
