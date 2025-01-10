@@ -42,6 +42,7 @@ import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_P
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_PREFERENCES__FSI_STATE__DENIED;
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_PREFERENCES__FSI_STATE__GRANTED;
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_PREFERENCES__FSI_STATE__NOT_REQUESTED;
+import static com.android.server.notification.PreferencesHelper.LockableAppFields.USER_LOCKED_BUBBLE;
 import static com.android.server.notification.PreferencesHelper.LockableAppFields.USER_LOCKED_PROMOTABLE;
 
 import android.annotation.FlaggedApi;
@@ -286,7 +287,7 @@ public class PreferencesHelper implements RankingConfig {
         if (!TAG_RANKING.equals(tag)) return;
 
         final int xmlVersion = parser.getAttributeInt(null, ATT_VERSION, -1);
-        boolean upgradeForBubbles = xmlVersion == XML_VERSION_BUBBLES_UPGRADE;
+        boolean upgradeForBubbles = xmlVersion >= XML_VERSION_BUBBLES_UPGRADE;
         boolean migrateToPermission = (xmlVersion < XML_VERSION_NOTIF_PERMISSION);
         if (mShowReviewPermissionsNotification
                 && (xmlVersion < XML_VERSION_REVIEW_PERMISSIONS_NOTIFICATION)) {
@@ -337,15 +338,19 @@ public class PreferencesHelper implements RankingConfig {
             }
             boolean skipWarningLogged = false;
             boolean skipGroupWarningLogged = false;
-            boolean hasSAWPermission = false;
-            if (upgradeForBubbles && uid != UNKNOWN_UID) {
-                hasSAWPermission = mAppOps.noteOpNoThrow(
-                        OP_SYSTEM_ALERT_WINDOW, uid, name, null,
-                        "check-notif-bubble") == AppOpsManager.MODE_ALLOWED;
+            int bubblePref = parser.getAttributeInt(null, ATT_ALLOW_BUBBLE,
+                    DEFAULT_BUBBLE_PREFERENCE);
+            boolean bubbleLocked = (parser.getAttributeInt(null,
+                    ATT_APP_USER_LOCKED_FIELDS, DEFAULT_LOCKED_APP_FIELDS) & USER_LOCKED_BUBBLE)
+                    != 0;
+            if (!bubbleLocked
+                    && upgradeForBubbles
+                    && uid != UNKNOWN_UID
+                    && mAppOps.noteOpNoThrow(OP_SYSTEM_ALERT_WINDOW, uid, name, null,
+                    "check-notif-bubble") == AppOpsManager.MODE_ALLOWED) {
+                // User hasn't changed bubble pref & the app has SAW, so allow all bubbles.
+                bubblePref = BUBBLE_PREFERENCE_ALL;
             }
-            int bubblePref = hasSAWPermission
-                    ? BUBBLE_PREFERENCE_ALL
-                    : parser.getAttributeInt(null, ATT_ALLOW_BUBBLE, DEFAULT_BUBBLE_PREFERENCE);
             int appImportance = parser.getAttributeInt(null, ATT_IMPORTANCE, DEFAULT_IMPORTANCE);
 
             // when data is loaded from disk it's loaded as USER_ALL, but restored data that

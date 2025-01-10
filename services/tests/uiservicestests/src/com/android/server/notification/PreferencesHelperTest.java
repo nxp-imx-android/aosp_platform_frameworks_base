@@ -4495,6 +4495,27 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
+    public void testBubblePreference_sameVersionWithSAWPermission() throws Exception {
+        when(mAppOpsManager.noteOpNoThrow(eq(OP_SYSTEM_ALERT_WINDOW), anyInt(),
+                anyString(), eq(null), anyString())).thenReturn(MODE_ALLOWED);
+
+        final String xml = "<ranking version=\"4\">\n"
+                + "<package name=\"" + PKG_O + "\" uid=\"" + UID_O + "\">\n"
+                + "<channel id=\"someId\" name=\"hi\""
+                + " importance=\"3\"/>"
+                + "</package>"
+                + "</ranking>";
+        TypedXmlPullParser parser = Xml.newFastPullParser();
+        parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xml.getBytes())),
+                null);
+        parser.nextTag();
+        mHelper.readXml(parser, false, UserHandle.USER_ALL);
+
+        assertEquals(BUBBLE_PREFERENCE_ALL, mHelper.getBubblePreference(PKG_O, UID_O));
+        assertEquals(0, mHelper.getAppLockedFields(PKG_O, UID_O));
+    }
+
+    @Test
     public void testBubblePreference_upgradeWithSAWThenUserOverride() throws Exception {
         when(mAppOpsManager.noteOpNoThrow(eq(OP_SYSTEM_ALERT_WINDOW), anyInt(),
                 anyString(), eq(null), anyString())).thenReturn(MODE_ALLOWED);
