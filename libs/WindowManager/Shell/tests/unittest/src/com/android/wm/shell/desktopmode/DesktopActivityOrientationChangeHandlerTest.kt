@@ -113,7 +113,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
                 .strictness(Strictness.LENIENT)
                 .spyStatic(DesktopModeStatus::class.java)
                 .startMocking()
-        doReturn(true).`when` { DesktopModeStatus.isDeviceEligibleForDesktopMode(any()) }
+        doReturn(true).`when` { DesktopModeStatus.canEnterDesktopMode(any()) }
 
         testScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
         shellInit = spy(ShellInit(testExecutor))
