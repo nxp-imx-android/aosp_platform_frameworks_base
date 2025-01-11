@@ -373,15 +373,6 @@ sealed interface TransitionState {
             }
         }
 
-        /**
-         * Checks if the given [progress] value is within the valid range for this transition.
-         *
-         * The valid range is between 0f and 1f, inclusive.
-         */
-        internal fun isWithinProgressRange(progress: Float): Boolean {
-            return progress >= 0f && progress <= 1f
-        }
-
         internal open fun interruptionProgress(layoutImpl: SceneTransitionLayoutImpl): Float {
             if (replacedTransition != null) {
                 return replacedTransition.interruptionProgress(layoutImpl)
@@ -390,10 +381,10 @@ sealed interface TransitionState {
             fun create(): Animatable<Float, AnimationVector1D> {
                 val animatable = Animatable(1f, visibilityThreshold = ProgressVisibilityThreshold)
                 layoutImpl.animationScope.launch {
-                    val swipeSpec = layoutImpl.state.transitions.defaultSwipeSpec
+                    val motionSpatialSpec = layoutImpl.state.transitions.defaultMotionSpatialSpec
                     val progressSpec =
                         spring(
-                            stiffness = swipeSpec.stiffness,
+                            stiffness = motionSpatialSpec.stiffness,
                             dampingRatio = Spring.DampingRatioNoBouncy,
                             visibilityThreshold = ProgressVisibilityThreshold,
                         )

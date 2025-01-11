@@ -16896,6 +16896,7 @@ package android.graphics {
     method public android.graphics.Paint.FontMetricsInt getFontMetricsInt();
     method @FlaggedApi("com.android.text.flags.fix_line_height_for_locale") public void getFontMetricsIntForLocale(@NonNull android.graphics.Paint.FontMetricsInt);
     method public float getFontSpacing();
+    method @FlaggedApi("com.android.text.flags.typeface_redesign_readonly") @Nullable public String getFontVariationOverride();
     method public String getFontVariationSettings();
     method public int getHinting();
     method public float getLetterSpacing();
@@ -16974,6 +16975,7 @@ package android.graphics {
     method public void setFilterBitmap(boolean);
     method public void setFlags(int);
     method public void setFontFeatureSettings(String);
+    method @FlaggedApi("com.android.text.flags.typeface_redesign_readonly") public boolean setFontVariationOverride(@Nullable String);
     method public boolean setFontVariationSettings(String);
     method public void setHinting(int);
     method public void setLetterSpacing(float);

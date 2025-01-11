@@ -444,7 +444,7 @@ private class NestedDraggableNode(
         val left = available - consumed
         val postConsumed =
             nestedScrollDispatcher.dispatchPostScroll(
-                consumed = preConsumed + consumed,
+                consumed = consumed,
                 available = left,
                 source = NestedScrollSource.UserInput,
             )
@@ -482,10 +482,9 @@ private class NestedDraggableNode(
         val available = velocity - preConsumed
         val consumed = performFling(available)
         val left = available - consumed
-        return nestedScrollDispatcher.dispatchPostFling(
-            consumed = consumed + preConsumed,
-            available = left,
-        )
+        val postConsumed =
+            nestedScrollDispatcher.dispatchPostFling(consumed = consumed, available = left)
+        return preConsumed + consumed + postConsumed
     }
 
     /*
@@ -549,9 +548,10 @@ private class NestedDraggableNode(
             nestedScrollController == null &&
                 // TODO(b/388231324): Remove this.
                 !lastEventWasScrollWheel &&
-                draggable.shouldConsumeNestedScroll(sign)
+                draggable.shouldConsumeNestedScroll(sign) &&
+                lastFirstDown != null
         ) {
-            val startedPosition = checkNotNull(lastFirstDown) { "lastFirstDown is not set" }
+            val startedPosition = checkNotNull(lastFirstDown)
 
             // TODO(b/382665591): Ensure that there is at least one pointer down.
             val pointersDownCount = pointersDown.size.coerceAtLeast(1)

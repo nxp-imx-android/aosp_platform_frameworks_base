@@ -344,11 +344,7 @@ public class SystemHealthManager {
                 || !mHintManagerClientData.supportInfo.headroom.isCpuSupported) {
             throw new UnsupportedOperationException();
         }
-        try {
-            return mHintManager.getCpuHeadroomMinIntervalMillis();
-        } catch (RemoteException re) {
-            throw re.rethrowFromSystemServer();
-        }
+        return mHintManagerClientData.supportInfo.headroom.cpuMinIntervalMillis;
     }
 
     /**
@@ -366,11 +362,7 @@ public class SystemHealthManager {
                 || !mHintManagerClientData.supportInfo.headroom.isGpuSupported) {
             throw new UnsupportedOperationException();
         }
-        try {
-            return mHintManager.getGpuHeadroomMinIntervalMillis();
-        } catch (RemoteException re) {
-            throw re.rethrowFromSystemServer();
-        }
+        return mHintManagerClientData.supportInfo.headroom.gpuMinIntervalMillis;
     }
 
     /**
@@ -588,7 +580,8 @@ public class SystemHealthManager {
                     if (resultCode == IPowerStatsService.RESULT_SUCCESS) {
                         PowerMonitorReadings result = new PowerMonitorReadings(powerMonitorsArray,
                                 resultData.getLongArray(IPowerStatsService.KEY_ENERGY),
-                                resultData.getLongArray(IPowerStatsService.KEY_TIMESTAMPS));
+                                resultData.getLongArray(IPowerStatsService.KEY_TIMESTAMPS),
+                                resultData.getInt(IPowerStatsService.KEY_GRANULARITY));
                         if (executor != null) {
                             executor.execute(() -> onResult.onResult(result));
                         } else {
