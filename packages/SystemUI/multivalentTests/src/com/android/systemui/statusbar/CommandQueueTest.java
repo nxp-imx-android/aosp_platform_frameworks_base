@@ -23,8 +23,8 @@ import static android.service.quickaccesswallet.Flags.FLAG_LAUNCH_WALLET_VIA_SYS
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowInsetsController.BEHAVIOR_DEFAULT;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -35,14 +35,12 @@ import android.hardware.biometrics.IBiometricSysuiReceiver;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.fingerprint.IUdfpsRefreshRateRequestCallback;
 import android.os.Bundle;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.view.KeyEvent;
 import android.view.WindowInsets;
 import android.view.WindowInsets.Type.InsetsType;
 import android.view.WindowInsetsController.Appearance;
 import android.view.WindowInsetsController.Behavior;
-import android.view.accessibility.Flags;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -385,30 +383,7 @@ public class CommandQueueTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_A11Y_QS_SHORTCUT)
-    public void addQsTile_withA11yQsShortcutFlagOff() {
-        ComponentName c = new ComponentName("testpkg", "testcls");
-
-        mCommandQueue.addQsTile(c);
-        waitForIdleSync();
-
-        verify(mCallbacks).addQsTile(eq(c));
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_A11Y_QS_SHORTCUT)
-    public void addQsTileToFrontOrEnd_withA11yQsShortcutFlagOff_doNothing() {
-        ComponentName c = new ComponentName("testpkg", "testcls");
-
-        mCommandQueue.addQsTileToFrontOrEnd(c, true);
-        waitForIdleSync();
-
-        verifyNoMoreInteractions(mCallbacks);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_A11Y_QS_SHORTCUT)
-    public void addQsTile_withA11yQsShortcutFlagOn() {
+    public void addQsTile() {
         ComponentName c = new ComponentName("testpkg", "testcls");
 
         mCommandQueue.addQsTile(c);
@@ -418,8 +393,7 @@ public class CommandQueueTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_A11Y_QS_SHORTCUT)
-    public void addQsTileAtTheEnd_withA11yQsShortcutFlagOn() {
+    public void addQsTileAtTheEnd() {
         ComponentName c = new ComponentName("testpkg", "testcls");
 
         mCommandQueue.addQsTileToFrontOrEnd(c, true);
