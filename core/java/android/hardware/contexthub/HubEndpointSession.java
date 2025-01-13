@@ -27,6 +27,7 @@ import android.hardware.location.ContextHubTransactionHelper;
 import android.hardware.location.IContextHubTransactionCallback;
 import android.util.CloseGuard;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -158,6 +159,32 @@ public class HubEndpointSession implements AutoCloseable {
         stringBuilder.append(mDestination);
         stringBuilder.append("]");
         return stringBuilder.toString();
+    }
+
+    @Override
+    public boolean equals(@Nullable Object object) {
+        if (object == this) {
+            return true;
+        }
+
+        boolean isEqual = false;
+        if (object instanceof HubEndpointSession other) {
+            isEqual = (other.getId() == mId);
+            if (mServiceDescriptor != null) {
+                isEqual &= mServiceDescriptor.equals(other.getServiceDescriptor());
+            } else {
+                isEqual &= (other.getServiceDescriptor() == null);
+            }
+            isEqual &=
+                    mInitiator.equals(other.mInitiator) && mDestination.equals(other.mDestination);
+        }
+
+        return isEqual;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mId, mServiceDescriptor, mInitiator, mDestination);
     }
 
     /** @hide */
