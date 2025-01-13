@@ -10025,9 +10025,15 @@ public class WindowManagerService extends IWindowManager.Stub
             if (imeTargetWindowTask == null) {
                 return false;
             }
-            if (imeTargetWindow.mActivityRecord != null
-                    && imeTargetWindow.mActivityRecord.mLastImeShown) {
-                return true;
+            if (android.view.inputmethod.Flags.disableImeRestoreOnActivityCreate()) {
+                if (imeTargetWindow.isRequestedVisible(WindowInsets.Type.ime())) {
+                    return true;
+                }
+            } else {
+                if (imeTargetWindow.mActivityRecord != null
+                        && imeTargetWindow.mActivityRecord.mLastImeShown) {
+                    return true;
+                }
             }
             final TaskSnapshot snapshot = mTaskSnapshotController.getSnapshot(
                     imeTargetWindowTask.mTaskId, false /* isLowResolution */);
