@@ -10249,23 +10249,23 @@ package android.companion.virtual {
   public final class VirtualDevice implements android.os.Parcelable {
     method public int describeContents();
     method public int getDeviceId();
-    method @FlaggedApi("android.companion.virtual.flags.vdm_public_apis") @NonNull public int[] getDisplayIds();
-    method @FlaggedApi("android.companion.virtual.flags.vdm_public_apis") @Nullable public CharSequence getDisplayName();
+    method @NonNull public int[] getDisplayIds();
+    method @Nullable public CharSequence getDisplayName();
     method @Nullable public String getName();
-    method @FlaggedApi("android.companion.virtual.flags.vdm_public_apis") @Nullable public String getPersistentDeviceId();
-    method @FlaggedApi("android.companion.virtual.flags.vdm_public_apis") public boolean hasCustomSensorSupport();
+    method @Nullable public String getPersistentDeviceId();
+    method public boolean hasCustomSensorSupport();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.VirtualDevice> CREATOR;
   }
 
   public final class VirtualDeviceManager {
-    method @FlaggedApi("android.companion.virtual.flags.vdm_public_apis") @Nullable public android.companion.virtual.VirtualDevice getVirtualDevice(int);
+    method @Nullable public android.companion.virtual.VirtualDevice getVirtualDevice(int);
     method @NonNull public java.util.List<android.companion.virtual.VirtualDevice> getVirtualDevices();
-    method @FlaggedApi("android.companion.virtual.flags.vdm_public_apis") public void registerVirtualDeviceListener(@NonNull java.util.concurrent.Executor, @NonNull android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener);
-    method @FlaggedApi("android.companion.virtual.flags.vdm_public_apis") public void unregisterVirtualDeviceListener(@NonNull android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener);
+    method public void registerVirtualDeviceListener(@NonNull java.util.concurrent.Executor, @NonNull android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener);
+    method public void unregisterVirtualDeviceListener(@NonNull android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener);
   }
 
-  @FlaggedApi("android.companion.virtual.flags.vdm_public_apis") public static interface VirtualDeviceManager.VirtualDeviceListener {
+  public static interface VirtualDeviceManager.VirtualDeviceListener {
     method public default void onVirtualDeviceClosed(int);
     method public default void onVirtualDeviceCreated(int);
   }
