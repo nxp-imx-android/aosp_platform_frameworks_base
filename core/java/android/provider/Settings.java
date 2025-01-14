@@ -1254,21 +1254,6 @@ public final class Settings {
             "android.settings.TEMPERATURE_UNIT_SETTINGS";
 
     /**
-     * Activity Action: Show numbering system configuration settings.
-     * <p>
-     * Input: Nothing.
-     * <p>
-     * Output: After calling {@link android.app.Activity#startActivityForResult}, the callback
-     * {@code onActivityResult} will have resultCode {@link android.app.Activity#RESULT_OK} if
-     * the numbering system settings page is suitable to show on the UI. Otherwise, the result is
-     * set to {@link android.app.Activity#RESULT_CANCELED}.
-     */
-    @FlaggedApi(Flags.FLAG_SYSTEM_REGIONAL_PREFERENCES_API_ENABLED)
-    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
-    public static final String ACTION_NUMBERING_SYSTEM_SETTINGS =
-            "android.settings.NUMBERING_SYSTEM_SETTINGS";
-
-    /**
      * Activity Action: Show measurement system configuration settings.
      * <p>
      * Input: Nothing.
@@ -12883,6 +12868,19 @@ public final class Settings {
          * @hide
          */
         public static final String DISABLE_SECURE_WINDOWS = "disable_secure_windows";
+
+        /**
+         * Controls if the adaptive authentication feature should be disabled, which
+         * will attempt to lock the device after a number of consecutive authentication
+         * attempts fail.
+         *
+         * This can only be disabled on debuggable builds. Set to 1 to disable or 0 for the
+         * normal behavior.
+         *
+         * @hide
+         */
+        public static final String DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK =
+                "disable_adaptive_auth_limit_lock";
 
         /** @hide */
         public static final int PRIVATE_SPACE_AUTO_LOCK_ON_DEVICE_LOCK = 0;

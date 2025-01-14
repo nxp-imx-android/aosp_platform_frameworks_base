@@ -156,7 +156,7 @@ final class AppCompatUtils {
                 .getAppCompatLetterboxOverrides().isLetterboxEducationEnabled());
 
         final AppCompatAspectRatioOverrides aspectRatioOverrides =
-                top.mAppCompatController.getAppCompatAspectRatioOverrides();
+                top.mAppCompatController.getAspectRatioOverrides();
         appCompatTaskInfo.setUserFullscreenOverrideEnabled(
                 aspectRatioOverrides.shouldApplyUserFullscreenOverride());
         appCompatTaskInfo.setSystemFullscreenOverrideEnabled(
@@ -206,7 +206,7 @@ final class AppCompatUtils {
         appCompatTaskInfo.cameraCompatTaskInfo.freeformCameraCompatMode =
                 AppCompatCameraPolicy.getCameraCompatFreeformMode(top);
         appCompatTaskInfo.setHasMinAspectRatioOverride(top.mAppCompatController
-                .getDesktopAppCompatAspectRatioPolicy().hasMinAspectRatioOverride(task));
+                .getDesktopAspectRatioPolicy().hasMinAspectRatioOverride(task));
     }
 
     /**
@@ -222,7 +222,7 @@ final class AppCompatUtils {
             return "SIZE_COMPAT_MODE";
         }
         final AppCompatAspectRatioPolicy aspectRatioPolicy = activityRecord.mAppCompatController
-                .getAppCompatAspectRatioPolicy();
+                .getAspectRatioPolicy();
         if (aspectRatioPolicy.isLetterboxedForFixedOrientationAndAspectRatio()) {
             return "FIXED_ORIENTATION";
         }

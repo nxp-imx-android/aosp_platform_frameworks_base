@@ -463,6 +463,13 @@ flag {
 }
 
 flag {
+    name: "enable_connected_displays_pip"
+    namespace: "lse_desktop_experience"
+    description: "Enables PiP features in connected displays."
+    bug: "362721131"
+}
+
+flag {
     name: "reparent_window_token_api"
     namespace: "lse_desktop_experience"
     description: "Allows to reparent a window token to a different display"
@@ -528,6 +535,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables having a DesktopWallpaperActivity at a per-display level."
     bug: "381935663"
+}
+
+flag {
+    name: "enable_per_display_package_context_cache_in_statusbar_notif"
+    namespace: "lse_desktop_experience"
+    description: "Enables per-display package context caching in StatusBarNotification"
+    bug: "388886443"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

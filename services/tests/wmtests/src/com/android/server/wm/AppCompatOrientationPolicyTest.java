@@ -555,8 +555,8 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
         @Override
         void onPostActivityCreation(@NonNull ActivityRecord activity) {
             super.onPostActivityCreation(activity);
-            spyOn(activity.mAppCompatController.getAppCompatAspectRatioOverrides());
-            spyOn(activity.mAppCompatController.getAppCompatAspectRatioPolicy());
+            spyOn(activity.mAppCompatController.getAspectRatioOverrides());
+            spyOn(activity.mAppCompatController.getAspectRatioPolicy());
         }
 
         @Override

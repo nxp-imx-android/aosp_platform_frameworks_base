@@ -76,7 +76,7 @@ class AppCompatAspectRatioPolicy {
     private float getDesiredAspectRatio(@NonNull Configuration newParentConfig,
             @NonNull Rect parentBounds) {
         final float letterboxAspectRatioOverride =
-                mAppCompatOverrides.getAppCompatAspectRatioOverrides()
+                mAppCompatOverrides.getAspectRatioOverrides()
                         .getFixedOrientationLetterboxAspectRatio(newParentConfig);
         // Aspect ratio as suggested by the system. Apps requested mix/max aspect ratio will
         // be respected in #applyAspectRatio.
@@ -127,7 +127,7 @@ class AppCompatAspectRatioPolicy {
         }
 
         final AppCompatAspectRatioOverrides aspectRatioOverrides =
-                mAppCompatOverrides.getAppCompatAspectRatioOverrides();
+                mAppCompatOverrides.getAspectRatioOverrides();
         if (aspectRatioOverrides.shouldApplyUserMinAspectRatioOverride()) {
             return aspectRatioOverrides.getUserMinAspectRatio();
         }
@@ -213,6 +213,13 @@ class AppCompatAspectRatioPolicy {
 
     void setLetterboxBoundsForAspectRatio(@NonNull Rect bounds) {
         mAppCompatAspectRatioState.mLetterboxBoundsForAspectRatio = bounds;
+    }
+
+    /**
+     * Returns true if the activity has maximum or minimum aspect ratio.
+     */
+    boolean hasFixedAspectRatio() {
+        return getMaxAspectRatio() != 0 || getMinAspectRatio() != 0;
     }
 
     private boolean isParentFullscreenPortrait() {

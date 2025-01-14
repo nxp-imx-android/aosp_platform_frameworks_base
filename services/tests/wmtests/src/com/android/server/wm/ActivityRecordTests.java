@@ -692,7 +692,7 @@ public class ActivityRecordTests extends WindowTestsBase {
 
         // Asserts fixed orientation request is not ignored, and the orientation is changed.
         assertNotEquals(activityCurOrientation, activity.getConfiguration().orientation);
-        assertTrue(activity.mAppCompatController.getAppCompatAspectRatioPolicy()
+        assertTrue(activity.mAppCompatController.getAspectRatioPolicy()
                 .isLetterboxedForFixedOrientationAndAspectRatio());
     }
 
@@ -721,13 +721,13 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertEquals(ORIENTATION_PORTRAIT, activity.getConfiguration().orientation);
 
         // Clear size compat.
-        activity.mAppCompatController.getAppCompatSizeCompatModePolicy().clearSizeCompatMode();
+        activity.mAppCompatController.getSizeCompatModePolicy().clearSizeCompatMode();
         activity.ensureActivityConfiguration();
         mDisplayContent.sendNewConfiguration();
 
         // Relaunching the app should still respect the orientation request.
         assertEquals(ORIENTATION_PORTRAIT, activity.getConfiguration().orientation);
-        assertTrue(activity.mAppCompatController.getAppCompatAspectRatioPolicy()
+        assertTrue(activity.mAppCompatController.getAspectRatioPolicy()
                 .isLetterboxedForFixedOrientationAndAspectRatio());
     }
 
@@ -742,7 +742,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertEquals(ORIENTATION_LANDSCAPE, activity.getTask().getConfiguration().orientation);
         // The app should be letterboxed.
         assertEquals(ORIENTATION_PORTRAIT, activity.getConfiguration().orientation);
-        assertTrue(activity.mAppCompatController.getAppCompatAspectRatioPolicy()
+        assertTrue(activity.mAppCompatController.getAspectRatioPolicy()
                 .isLetterboxedForFixedOrientationAndAspectRatio());
     }
 
@@ -755,7 +755,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertEquals(ORIENTATION_LANDSCAPE, activity.getTask().getConfiguration().orientation);
         // Activity is not letterboxed.
         assertEquals(ORIENTATION_LANDSCAPE, activity.getConfiguration().orientation);
-        assertFalse(activity.mAppCompatController.getAppCompatAspectRatioPolicy()
+        assertFalse(activity.mAppCompatController.getAspectRatioPolicy()
                 .isLetterboxedForFixedOrientationAndAspectRatio());
     }
 
@@ -770,7 +770,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertEquals(ORIENTATION_LANDSCAPE, activity.getTask().getConfiguration().orientation);
         // Activity is not letterboxed.
         assertEquals(ORIENTATION_LANDSCAPE, activity.getConfiguration().orientation);
-        assertFalse(activity.mAppCompatController.getAppCompatAspectRatioPolicy()
+        assertFalse(activity.mAppCompatController.getAspectRatioPolicy()
                 .isLetterboxedForFixedOrientationAndAspectRatio());
     }
 
@@ -785,7 +785,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertEquals(ORIENTATION_LANDSCAPE, activity.getTask().getConfiguration().orientation);
         // Activity is not letterboxed.
         assertEquals(ORIENTATION_LANDSCAPE, activity.getConfiguration().orientation);
-        assertFalse(activity.mAppCompatController.getAppCompatAspectRatioPolicy()
+        assertFalse(activity.mAppCompatController.getAspectRatioPolicy()
                 .isLetterboxedForFixedOrientationAndAspectRatio());
     }
 
@@ -3800,7 +3800,7 @@ public class ActivityRecordTests extends WindowTestsBase {
                 .setResizeMode(RESIZE_MODE_RESIZEABLE)
                 .setScreenOrientation(SCREEN_ORIENTATION_PORTRAIT)
                 .build();
-        activity.mAppCompatController.getAppCompatSizeCompatModePolicy().clearSizeCompatMode();
+        activity.mAppCompatController.getSizeCompatModePolicy().clearSizeCompatMode();
         return activity;
     }
 
