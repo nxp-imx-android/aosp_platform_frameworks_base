@@ -555,22 +555,17 @@ public class BluetoothUtils {
      * connected 2) is Hearing Aid or LE Audio OR 3) connected profile matches currentAudioProfile
      *
      * @param cachedDevice the CachedBluetoothDevice
-     * @param audioManager audio manager to get the current audio profile
+     * @param isOngoingCall get the current audio profile based on if in phone call
      * @return if the device is AvailableMediaBluetoothDevice
      */
     @WorkerThread
     public static boolean isAvailableMediaBluetoothDevice(
-            CachedBluetoothDevice cachedDevice, AudioManager audioManager) {
-        int audioMode = audioManager.getMode();
+            CachedBluetoothDevice cachedDevice, boolean isOngoingCall) {
         int currentAudioProfile;
 
-        if (audioMode == AudioManager.MODE_RINGTONE
-                || audioMode == AudioManager.MODE_IN_CALL
-                || audioMode == AudioManager.MODE_IN_COMMUNICATION) {
-            // in phone call
+        if (isOngoingCall) {
             currentAudioProfile = BluetoothProfile.HEADSET;
         } else {
-            // without phone call
             currentAudioProfile = BluetoothProfile.A2DP;
         }
 
@@ -859,22 +854,17 @@ public class BluetoothUtils {
      * currentAudioProfile
      *
      * @param cachedDevice the CachedBluetoothDevice
-     * @param audioManager audio manager to get the current audio profile
+     * @param isOngoingCall get the current audio profile based on if in phone call
      * @return if the device is AvailableMediaBluetoothDevice
      */
     @WorkerThread
     public static boolean isConnectedBluetoothDevice(
-            CachedBluetoothDevice cachedDevice, AudioManager audioManager) {
-        int audioMode = audioManager.getMode();
+            CachedBluetoothDevice cachedDevice, boolean isOngoingCall) {
         int currentAudioProfile;
 
-        if (audioMode == AudioManager.MODE_RINGTONE
-                || audioMode == AudioManager.MODE_IN_CALL
-                || audioMode == AudioManager.MODE_IN_COMMUNICATION) {
-            // in phone call
+        if (isOngoingCall) {
             currentAudioProfile = BluetoothProfile.HEADSET;
         } else {
-            // without phone call
             currentAudioProfile = BluetoothProfile.A2DP;
         }
 

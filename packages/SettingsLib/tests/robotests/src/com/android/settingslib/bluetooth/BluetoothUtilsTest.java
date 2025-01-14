@@ -87,7 +87,6 @@ public class BluetoothUtilsTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private BluetoothDevice mBluetoothDevice;
 
-    @Mock private AudioManager mAudioManager;
     @Mock private PackageManager mPackageManager;
     @Mock private LeAudioProfile mA2dpProfile;
     @Mock private LeAudioProfile mLeAudioProfile;
@@ -446,13 +445,12 @@ public class BluetoothUtilsTest {
 
         assertThat(
                         BluetoothUtils.isAvailableMediaBluetoothDevice(
-                                mCachedBluetoothDevice, mAudioManager))
+                                mCachedBluetoothDevice, /* isOngoingCall= */ false))
                 .isTrue();
     }
 
     @Test
     public void isAvailableMediaBluetoothDevice_isHeadset_isConnectedA2dpDevice_returnFalse() {
-        when(mAudioManager.getMode()).thenReturn(AudioManager.MODE_RINGTONE);
         when(mCachedBluetoothDevice.isConnectedA2dpDevice()).thenReturn(true);
         when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
         when(mBluetoothDevice.getBondState()).thenReturn(BluetoothDevice.BOND_BONDED);
@@ -460,13 +458,12 @@ public class BluetoothUtilsTest {
 
         assertThat(
                         BluetoothUtils.isAvailableMediaBluetoothDevice(
-                                mCachedBluetoothDevice, mAudioManager))
+                                mCachedBluetoothDevice,  /* isOngoingCall= */ true))
                 .isFalse();
     }
 
     @Test
     public void isAvailableMediaBluetoothDevice_isA2dp_isConnectedA2dpDevice_returnTrue() {
-        when(mAudioManager.getMode()).thenReturn(AudioManager.MODE_NORMAL);
         when(mCachedBluetoothDevice.isConnectedA2dpDevice()).thenReturn(true);
         when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
         when(mBluetoothDevice.getBondState()).thenReturn(BluetoothDevice.BOND_BONDED);
@@ -474,13 +471,12 @@ public class BluetoothUtilsTest {
 
         assertThat(
                         BluetoothUtils.isAvailableMediaBluetoothDevice(
-                                mCachedBluetoothDevice, mAudioManager))
+                                mCachedBluetoothDevice,  /* isOngoingCall= */ false))
                 .isTrue();
     }
 
     @Test
     public void isAvailableMediaBluetoothDevice_isHeadset_isConnectedHfpDevice_returnTrue() {
-        when(mAudioManager.getMode()).thenReturn(AudioManager.MODE_RINGTONE);
         when(mCachedBluetoothDevice.isConnectedHfpDevice()).thenReturn(true);
         when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
         when(mBluetoothDevice.getBondState()).thenReturn(BluetoothDevice.BOND_BONDED);
@@ -488,7 +484,7 @@ public class BluetoothUtilsTest {
 
         assertThat(
                         BluetoothUtils.isAvailableMediaBluetoothDevice(
-                                mCachedBluetoothDevice, mAudioManager))
+                                mCachedBluetoothDevice, /* isOngoingCall= */ true))
                 .isTrue();
     }
 
@@ -499,56 +495,52 @@ public class BluetoothUtilsTest {
         when(mBluetoothDevice.getBondState()).thenReturn(BluetoothDevice.BOND_BONDED);
         when(mBluetoothDevice.isConnected()).thenReturn(true);
 
-        assertThat(BluetoothUtils.isConnectedBluetoothDevice(mCachedBluetoothDevice, mAudioManager))
-                .isFalse();
+        assertThat(BluetoothUtils.isConnectedBluetoothDevice(
+                mCachedBluetoothDevice, /* isOngoingCall= */ false)).isFalse();
     }
 
     @Test
     public void isConnectedBluetoothDevice_isHeadset_isConnectedA2dpDevice_returnTrue() {
-        when(mAudioManager.getMode()).thenReturn(AudioManager.MODE_RINGTONE);
         when(mCachedBluetoothDevice.isConnectedA2dpDevice()).thenReturn(true);
         when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
         when(mBluetoothDevice.getBondState()).thenReturn(BluetoothDevice.BOND_BONDED);
         when(mBluetoothDevice.isConnected()).thenReturn(true);
 
-        assertThat(BluetoothUtils.isConnectedBluetoothDevice(mCachedBluetoothDevice, mAudioManager))
-                .isTrue();
+        assertThat(BluetoothUtils.isConnectedBluetoothDevice(
+                mCachedBluetoothDevice,  /* isOngoingCall= */ true)).isTrue();
     }
 
     @Test
     public void isConnectedBluetoothDevice_isA2dp_isConnectedA2dpDevice_returnFalse() {
-        when(mAudioManager.getMode()).thenReturn(AudioManager.MODE_NORMAL);
         when(mCachedBluetoothDevice.isConnectedA2dpDevice()).thenReturn(true);
         when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
         when(mBluetoothDevice.getBondState()).thenReturn(BluetoothDevice.BOND_BONDED);
         when(mBluetoothDevice.isConnected()).thenReturn(true);
 
-        assertThat(BluetoothUtils.isConnectedBluetoothDevice(mCachedBluetoothDevice, mAudioManager))
-                .isFalse();
+        assertThat(BluetoothUtils.isConnectedBluetoothDevice(
+                mCachedBluetoothDevice, /* isOngoingCall= */ false)).isFalse();
     }
 
     @Test
     public void isConnectedBluetoothDevice_isHeadset_isConnectedHfpDevice_returnFalse() {
-        when(mAudioManager.getMode()).thenReturn(AudioManager.MODE_RINGTONE);
         when(mCachedBluetoothDevice.isConnectedHfpDevice()).thenReturn(true);
         when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
         when(mBluetoothDevice.getBondState()).thenReturn(BluetoothDevice.BOND_BONDED);
         when(mBluetoothDevice.isConnected()).thenReturn(true);
 
-        assertThat(BluetoothUtils.isConnectedBluetoothDevice(mCachedBluetoothDevice, mAudioManager))
-                .isFalse();
+        assertThat(BluetoothUtils.isConnectedBluetoothDevice(
+                mCachedBluetoothDevice,  /* isOngoingCall= */ true)).isFalse();
     }
 
     @Test
     public void isConnectedBluetoothDevice_isNotConnected_returnFalse() {
-        when(mAudioManager.getMode()).thenReturn(AudioManager.MODE_RINGTONE);
         when(mCachedBluetoothDevice.isConnectedA2dpDevice()).thenReturn(true);
         when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
         when(mBluetoothDevice.getBondState()).thenReturn(BluetoothDevice.BOND_BONDED);
         when(mBluetoothDevice.isConnected()).thenReturn(false);
 
-        assertThat(BluetoothUtils.isConnectedBluetoothDevice(mCachedBluetoothDevice, mAudioManager))
-                .isFalse();
+        assertThat(BluetoothUtils.isConnectedBluetoothDevice(
+                mCachedBluetoothDevice,  /* isOngoingCall= */ true)).isFalse();
     }
 
     @Test
