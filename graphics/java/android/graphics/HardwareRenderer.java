@@ -1467,6 +1467,18 @@ public class HardwareRenderer {
     public static native void preload();
 
     /**
+     * Initialize the Buffer Allocator singleton
+     *
+     * This takes 10-20ms on low-resourced devices, so doing it on-demand when an app
+     * tries to render its first frame causes drawFrames to be blocked for buffer
+     * allocation due to just initializing the allocator.
+     *
+     * Should only be called when a buffer is expected to be used.
+     * @hide
+     */
+    public static native void preInitBufferAllocator();
+
+    /**
      * @hide
      */
     protected static native boolean isWebViewOverlaysEnabled();
