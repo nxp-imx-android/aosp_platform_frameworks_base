@@ -171,12 +171,12 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:elevation="7dp"
-        android:padding="8dp"
+        android:padding="12dp"
         app:layout_constraintBottom_toTopOf="@id/indication_container"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="@dimen/overlay_action_container_margin_horizontal"
-        android:layout_marginBottom="@dimen/overlay_action_container_margin_bottom"
-        android:background="@drawable/clipboard_minimized_background">
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="2dp"
+        android:background="@drawable/clipboard_minimized_background_inset">
         <ImageView
             android:src="@drawable/ic_content_paste"
             android:tint="?attr/overlayButtonTextColor"
