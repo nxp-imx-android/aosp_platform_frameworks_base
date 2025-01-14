@@ -1643,6 +1643,19 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     public static final long OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION = 327313645L;
 
     /**
+     * When the override is enabled, the activity receives configuration coupled with caption bar
+     * insets. Normally, caption bar insets are decoupled from configuration.
+     *
+     * <p>Override applies only if the activity targets SDK level 34 or earlier version.
+     *
+     * @hide
+     */
+    @ChangeId
+    @Overridable
+    @Disabled
+    public static final long OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS = 388014743L;
+
+    /**
      * Optional set of a certificates identifying apps that are allowed to embed this activity. From
      * the "knownActivityEmbeddingCerts" attribute.
      */

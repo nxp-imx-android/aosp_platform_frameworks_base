@@ -21,6 +21,7 @@ import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.pm.ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED
 import android.content.pm.ActivityInfo.OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION
+import android.content.pm.ActivityInfo.OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS
 import android.window.DesktopModeFlags
 import com.android.internal.R
 import com.android.window.flags.Flags
@@ -59,13 +60,16 @@ class DesktopModeCompatPolicy(private val context: Context) {
      * The treatment is enabled when all the of the following is true:
      * * Any flags to forcibly consume caption insets are enabled.
      * * Top activity have configuration coupled with insets.
-     * * Task is not resizeable.
+     * * Task is not resizeable or [ActivityInfo.OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS]
+     * is enabled.
      */
     fun shouldExcludeCaptionFromAppBounds(taskInfo: TaskInfo): Boolean =
         Flags.excludeCaptionFromAppBounds()
                 && isAnyForceConsumptionFlagsEnabled()
                 && taskInfo.topActivityInfo?.let {
-            isInsetsCoupledWithConfiguration(it) && !taskInfo.isResizeable
+            isInsetsCoupledWithConfiguration(it) && (!taskInfo.isResizeable || it.isChangeEnabled(
+                OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS
+            ))
         } ?: false
 
     /**
