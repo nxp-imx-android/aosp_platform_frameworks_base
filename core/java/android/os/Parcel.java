@@ -648,7 +648,7 @@ public final class Parcel {
                 + Log.getStackTraceString(new Throwable())
                 + " Original recycle call (if DEBUG_RECYCLE): ", mStack;
         Log.wtf(TAG, error);
-        // TODO(b/381155347): harder error
+        throw new BadParcelableException(error);
     }
 
     // TODO: call in more places, it costs a _lot_ to use this in many
