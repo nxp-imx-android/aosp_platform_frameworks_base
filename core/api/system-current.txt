@@ -2934,6 +2934,14 @@ package android.app.smartspace.uitemplatedata {
 
 }
 
+package android.app.supervision {
+
+  @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public class SupervisionManager {
+    method @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.QUERY_USERS}) public boolean isSupervisionEnabled();
+  }
+
+}
+
 package android.app.time {
 
   public final class Capabilities {
@@ -3797,6 +3805,7 @@ package android.content {
     field public static final String SHARED_CONNECTIVITY_SERVICE = "shared_connectivity";
     field public static final String SMARTSPACE_SERVICE = "smartspace";
     field public static final String STATS_MANAGER = "stats";
+    field @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public static final String SUPERVISION_SERVICE = "supervision";
     field public static final String SYSTEM_CONFIG_SERVICE = "system_config";
     field public static final String SYSTEM_UPDATE_SERVICE = "system_update";
     field @FlaggedApi("com.android.net.thread.platform.flags.thread_enabled_platform") public static final String THREAD_NETWORK_SERVICE = "thread_network";

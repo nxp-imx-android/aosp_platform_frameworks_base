@@ -17,8 +17,8 @@
 package android.content;
 
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
-import static android.content.flags.Flags.FLAG_ENABLE_BIND_PACKAGE_ISOLATED_PROCESS;
 import static android.app.ondeviceintelligence.flags.Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE_MODULE;
+import static android.content.flags.Flags.FLAG_ENABLE_BIND_PACKAGE_ISOLATED_PROCESS;
 import static android.security.Flags.FLAG_SECURE_LOCKDOWN;
 
 import android.annotation.AttrRes;
@@ -6858,6 +6858,8 @@ public abstract class Context {
      * @see android.app.supervision.SupervisionManager
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(android.app.supervision.flags.Flags.FLAG_SUPERVISION_MANAGER_APIS)
     public static final String SUPERVISION_SERVICE = "supervision";
 
     /**

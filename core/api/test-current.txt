@@ -850,6 +850,14 @@ package android.app.prediction {
 
 }
 
+package android.app.supervision {
+
+  @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public class SupervisionManager {
+    method public void setSupervisionEnabled(boolean);
+  }
+
+}
+
 package android.app.usage {
 
   public class StorageStatsManager {

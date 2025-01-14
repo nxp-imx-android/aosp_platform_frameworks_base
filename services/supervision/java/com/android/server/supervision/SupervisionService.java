@@ -17,6 +17,8 @@
 package com.android.server.supervision;
 
 import static android.Manifest.permission.INTERACT_ACROSS_USERS;
+import static android.Manifest.permission.MANAGE_USERS;
+import static android.Manifest.permission.QUERY_USERS;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import static com.android.internal.util.Preconditions.checkCallAuthorization;
@@ -86,6 +88,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
      */
     @Override
     public boolean isSupervisionEnabledForUser(@UserIdInt int userId) {
+        enforceAnyPermission(QUERY_USERS, MANAGE_USERS);
         if (UserHandle.getUserId(Binder.getCallingUid()) != userId) {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
@@ -96,6 +99,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     @Override
     public void setSupervisionEnabledForUser(@UserIdInt int userId, boolean enabled) {
+        // TODO(b/395630828): Ensure that this method can only be called by the system.
         if (UserHandle.getUserId(Binder.getCallingUid()) != userId) {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
@@ -181,8 +185,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
      * Ensures that supervision is enabled when the supervision app is the profile owner.
      *
      * <p>The state syncing with the DevicePolicyManager can only enable supervision and never
-     * disable. Supervision can only be disabled explicitly via calls to the
-     * {@link #setSupervisionEnabledForUser} method.
+     * disable. Supervision can only be disabled explicitly via calls to the {@link
+     * #setSupervisionEnabledForUser} method.
      */
     private void syncStateWithDevicePolicyManager(@UserIdInt int userId) {
         final DevicePolicyManagerInternal dpmInternal = mInjector.getDpmInternal();
@@ -219,6 +223,17 @@ public class SupervisionService extends ISupervisionManager.Stub {
     private void enforcePermission(String permission) {
         checkCallAuthorization(
                 mContext.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED);
+    }
+
+    /** Enforces that the caller has at least one of the given permission. */
+    private void enforceAnyPermission(String... permissions) {
+        boolean authorized = false;
+        for (String permission : permissions) {
+            if (mContext.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED) {
+                authorized = true;
+            }
+        }
+        checkCallAuthorization(authorized);
     }
 
     /** Provides local services in a lazy manner. */
@@ -280,7 +295,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
 
         @VisibleForTesting
-        @SuppressLint("MissingPermission")  // not needed for a system service
+        @SuppressLint("MissingPermission")
         void registerProfileOwnerListener() {
             IntentFilter poIntentFilter = new IntentFilter();
             poIntentFilter.addAction(DevicePolicyManager.ACTION_PROFILE_OWNER_CHANGED);
