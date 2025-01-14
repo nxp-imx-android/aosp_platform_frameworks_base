@@ -851,6 +851,12 @@ public final class DisplayManager {
      * Registers a display listener to receive notifications about when
      * displays are added, removed or changed.
      *
+     * Because of the high frequency at which the refresh rate can change, clients will be
+     * registered for refresh rate change callbacks only when they request for refresh rate
+     * data({@link Display#getRefreshRate()}. Or alternately, you can consider using
+     * {@link #registerDisplayListener(Executor, long, DisplayListener)} and explicitly subscribe to
+     * {@link #EVENT_TYPE_DISPLAY_REFRESH_RATE} event
+     *
      * We encourage to use {@link #registerDisplayListener(Executor, long, DisplayListener)}
      * instead to subscribe for explicit events of interest
      *
@@ -863,8 +869,8 @@ public final class DisplayManager {
     public void registerDisplayListener(DisplayListener listener, Handler handler) {
         registerDisplayListener(listener, handler, EVENT_TYPE_DISPLAY_ADDED
                 | EVENT_TYPE_DISPLAY_CHANGED
-                | EVENT_TYPE_DISPLAY_REFRESH_RATE
-                | EVENT_TYPE_DISPLAY_REMOVED);
+                | EVENT_TYPE_DISPLAY_REMOVED, 0,
+                ActivityThread.currentPackageName(), /* isEventFilterExplicit */ false);
     }
 
     /**
@@ -882,9 +888,8 @@ public final class DisplayManager {
      */
     public void registerDisplayListener(@NonNull DisplayListener listener,
             @Nullable Handler handler, @EventType long eventFilter) {
-        mGlobal.registerDisplayListener(listener, handler,
-                mGlobal.mapFiltersToInternalEventFlag(eventFilter, 0),
-                ActivityThread.currentPackageName());
+        registerDisplayListener(listener, handler, eventFilter, 0,
+                ActivityThread.currentPackageName(), /* isEventFilterExplicit */ true);
     }
 
     /**
@@ -901,9 +906,8 @@ public final class DisplayManager {
     @FlaggedApi(FLAG_DISPLAY_LISTENER_PERFORMANCE_IMPROVEMENTS)
     public void registerDisplayListener(@NonNull Executor executor, @EventType long eventFilter,
             @NonNull DisplayListener listener) {
-        mGlobal.registerDisplayListener(listener, executor,
-                mGlobal.mapFiltersToInternalEventFlag(eventFilter, 0),
-                ActivityThread.currentPackageName());
+        registerDisplayListener(listener, executor, eventFilter, 0,
+                ActivityThread.currentPackageName(), /* isEventFilterExplicit */ true);
     }
 
     /**
@@ -924,9 +928,39 @@ public final class DisplayManager {
     public void registerDisplayListener(@NonNull DisplayListener listener,
             @Nullable Handler handler, @EventType long eventFilter,
             @PrivateEventType long privateEventFilter) {
+        registerDisplayListener(listener, handler, eventFilter, privateEventFilter,
+                ActivityThread.currentPackageName(), /* isEventFilterExplicit */ true);
+    }
+
+    /**
+     * Registers a display listener to receive notifications about given display event types.
+     *
+     * @param listener The listener to register.
+     * @param handler The handler on which the listener should be invoked, or null
+     * if the listener should be invoked on the calling thread's looper.
+     * @param eventFilter A bitmask of the event types for which this listener is subscribed.
+     * @param privateEventFilter A bitmask of the private event types for which this listener
+     *                          is subscribed.
+     * @param isEventFilterExplicit Indicates if the client explicitly supplied the display events
+     *                          to be subscribed to.
+     *
+     */
+    private void registerDisplayListener(@NonNull DisplayListener listener,
+            @Nullable Handler handler, @EventType long eventFilter,
+            @PrivateEventType long privateEventFilter, String packageName,
+            boolean isEventFilterExplicit) {
         mGlobal.registerDisplayListener(listener, handler,
                 mGlobal.mapFiltersToInternalEventFlag(eventFilter, privateEventFilter),
-                ActivityThread.currentPackageName());
+                packageName, /* isEventFilterExplicit */ isEventFilterExplicit);
+    }
+
+    private void registerDisplayListener(@NonNull DisplayListener listener,
+            Executor executor, @EventType long eventFilter,
+            @PrivateEventType long privateEventFilter, String packageName,
+            boolean isEventFilterExplicit) {
+        mGlobal.registerDisplayListener(listener, executor,
+                mGlobal.mapFiltersToInternalEventFlag(eventFilter, privateEventFilter),
+                packageName, /* isEventFilterExplicit */ isEventFilterExplicit);
     }
 
     /**
@@ -1143,6 +1177,28 @@ public final class DisplayManager {
     @TestApi
     public @NonNull int[] getUserDisabledHdrTypes() {
         return mGlobal.getUserDisabledHdrTypes();
+    }
+
+    /**
+     * Resets the behavior that automatically registers clients for refresh rate change callbacks
+     * when they register via {@link #registerDisplayListener(DisplayListener, Handler)}
+     *
+     * <p>By default, clients are not registered for refresh rate change callbacks via
+     * {@link #registerDisplayListener(DisplayListener, Handler)}. However, calling
+     * {@link Display#getRefreshRate()} triggers automatic registration for existing and future
+     * {@link DisplayListener} instances. This method reverts this behavior, preventing new
+     * clients from being automatically registered for refresh rate change callbacks. Note that the
+     * existing ones will continue to stay registered
+     *
+     * <p>In essence, this method returns the system to its initial state, where explicit calls to
+     * {{@link Display#getRefreshRate()} are required to receive refresh rate change notifications.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_DELAY_IMPLICIT_RR_REGISTRATION_UNTIL_RR_ACCESSED)
+    @TestApi
+    public void resetImplicitRefreshRateCallbackStatus() {
+        mGlobal.resetImplicitRefreshRateCallbackStatus();
     }
 
     /**

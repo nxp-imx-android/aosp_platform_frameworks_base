@@ -285,6 +285,11 @@ public class DisplayManagerFlags {
             Flags::committedStateSeparateEvent
     );
 
+    private final FlagState mDelayImplicitRrRegistrationUntilRrAccessed = new FlagState(
+            Flags.FLAG_DELAY_IMPLICIT_RR_REGISTRATION_UNTIL_RR_ACCESSED,
+            Flags::delayImplicitRrRegistrationUntilRrAccessed
+    );
+
     /**
      * @return {@code true} if 'port' is allowed in display layout configuration file.
      */
@@ -598,7 +603,6 @@ public class DisplayManagerFlags {
         return mFramerateOverrideTriggersRrCallbacks.isEnabled();
     }
 
-
     /**
      * @return {@code true} if the flag for sending refresh rate events only for the apps in
      * foreground is enabled
@@ -613,6 +617,13 @@ public class DisplayManagerFlags {
      */
     public boolean isCommittedStateSeparateEventEnabled() {
         return mCommittedStateSeparateEvent.isEnabled();
+    }
+
+    /**
+     * @return {@code true} if the flag for only explicit subscription for RR changes is enabled
+     */
+    public boolean isDelayImplicitRrRegistrationUntilRrAccessedEnabled() {
+        return mDelayImplicitRrRegistrationUntilRrAccessed.isEnabled();
     }
 
     /**
@@ -673,6 +684,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mFramerateOverrideTriggersRrCallbacks);
         pw.println(" " + mRefreshRateEventForForegroundApps);
         pw.println(" " + mCommittedStateSeparateEvent);
+        pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
     }
 
     private static class FlagState {
