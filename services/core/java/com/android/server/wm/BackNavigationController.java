@@ -479,21 +479,16 @@ class BackNavigationController {
                 }
             } else {
                 // If adjacent TF has companion to current TF, those two TF will be closed together.
-                final TaskFragment adjacentTF;
-                if (Flags.allowMultipleAdjacentTaskFragments()) {
-                    if (currTF.getAdjacentTaskFragments().size() > 2) {
-                        throw new IllegalStateException(
-                                "Not yet support 3+ adjacent for non-Task TFs");
-                    }
-                    final TaskFragment[] tmpAdjacent = new TaskFragment[1];
-                    currTF.forOtherAdjacentTaskFragments(tf -> {
-                        tmpAdjacent[0] = tf;
-                        return true;
-                    });
-                    adjacentTF = tmpAdjacent[0];
-                } else {
-                    adjacentTF = currTF.getAdjacentTaskFragment();
+                if (currTF.getAdjacentTaskFragments().size() > 2) {
+                    throw new IllegalStateException(
+                            "Not yet support 3+ adjacent for non-Task TFs");
                 }
+                final TaskFragment[] tmpAdjacent = new TaskFragment[1];
+                currTF.forOtherAdjacentTaskFragments(tf -> {
+                    tmpAdjacent[0] = tf;
+                    return true;
+                });
+                final TaskFragment adjacentTF = tmpAdjacent[0];
                 if (isSecondCompanionToFirst(currTF, adjacentTF)) {
                     // The two TFs are adjacent (visually displayed side-by-side), search if any
                     // activity below the lowest one.
@@ -553,15 +548,6 @@ class BackNavigationController {
         if (!prevTF.hasAdjacentTaskFragment()) {
             return;
         }
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            final TaskFragment prevTFAdjacent = prevTF.getAdjacentTaskFragment();
-            final ActivityRecord prevActivityAdjacent =
-                    prevTFAdjacent.getTopNonFinishingActivity();
-            if (prevActivityAdjacent != null) {
-                outPrevActivities.add(prevActivityAdjacent);
-            }
-            return;
-        }
         prevTF.forOtherAdjacentTaskFragments(prevTFAdjacent -> {
             final ActivityRecord prevActivityAdjacent =
                     prevTFAdjacent.getTopNonFinishingActivity();
@@ -575,14 +561,6 @@ class BackNavigationController {
             @NonNull ArrayList<ActivityRecord> outList) {
         final TaskFragment mainTF = mainActivity.getTaskFragment();
         if (mainTF == null || !mainTF.hasAdjacentTaskFragment()) {
-            return;
-        }
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            final TaskFragment adjacentTF = mainTF.getAdjacentTaskFragment();
-            final ActivityRecord topActivity = adjacentTF.getTopNonFinishingActivity();
-            if (topActivity != null) {
-                outList.add(topActivity);
-            }
             return;
         }
         mainTF.forOtherAdjacentTaskFragments(adjacentTF -> {

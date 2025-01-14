@@ -488,14 +488,13 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
                 WINDOWING_MODE_MULTI_WINDOW, /* opaque */ true, /* filling */ false);
         final TaskFragment tf2 = createChildTaskFragment(/* parent */ rootTask,
                 WINDOWING_MODE_MULTI_WINDOW, /* opaque */ true, /* filling */ false);
-        tf1.setAdjacentTaskFragment(tf2);
+        tf1.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf1, tf2));
 
         assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(rootTask)).isTrue();
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-            Flags.FLAG_ALLOW_MULTIPLE_ADJACENT_TASK_FRAGMENTS})
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testOpaque_rootTask_nonFillingOpaqueAdjacentChildren_multipleAdjacent_isOpaque() {
         final Task rootTask = new TaskBuilder(mSupervisor).setOnTop(true).build();
         final TaskFragment tf1 = createChildTaskFragment(/* parent */ rootTask,

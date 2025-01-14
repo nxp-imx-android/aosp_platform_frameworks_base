@@ -343,8 +343,7 @@ public class BackNavigationControllerTests extends WindowTestsBase {
 
         // Adjacent + no companion => unable to predict
         // TF1 | TF2
-        tf1.setAdjacentTaskFragment(tf2);
-        tf2.setAdjacentTaskFragment(tf1);
+        tf1.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf1, tf2));
         predictable = BackNavigationController.getAnimatablePrevActivities(task, topAr,
                 outPrevActivities);
         assertTrue(outPrevActivities.isEmpty());
@@ -393,8 +392,7 @@ public class BackNavigationControllerTests extends WindowTestsBase {
         // Adjacent => predict for previous activity.
         // TF2 | TF3
         // TF1
-        tf2.setAdjacentTaskFragment(tf3);
-        tf3.setAdjacentTaskFragment(tf2);
+        tf2.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf2, tf3));
         predictable = BackNavigationController.getAnimatablePrevActivities(task, topAr,
                 outPrevActivities);
         assertTrue(outPrevActivities.contains(prevAr));
@@ -657,8 +655,7 @@ public class BackNavigationControllerTests extends WindowTestsBase {
         final TaskFragment secondaryTf = createTaskFragmentWithEmbeddedActivity(task, organizer);
         final ActivityRecord primaryActivity = primaryTf.getTopMostActivity();
         final ActivityRecord secondaryActivity = secondaryTf.getTopMostActivity();
-        primaryTf.setAdjacentTaskFragment(secondaryTf);
-        secondaryTf.setAdjacentTaskFragment(primaryTf);
+        primaryTf.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(primaryTf, secondaryTf));
 
         final WindowState primaryWindow = mock(WindowState.class);
         final WindowState secondaryWindow = mock(WindowState.class);

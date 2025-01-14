@@ -2461,21 +2461,6 @@ class Task extends TaskFragment {
         return parentTask == null ? null : parentTask.getCreatedByOrganizerTask();
     }
 
-    /** @deprecated b/373709676 replace with {@link #forOtherAdjacentTasks(Consumer)} ()}. */
-    @Deprecated
-    @Nullable
-    Task getAdjacentTask() {
-        if (Flags.allowMultipleAdjacentTaskFragments()) {
-            throw new IllegalStateException("allowMultipleAdjacentTaskFragments is enabled. "
-                    + "Use #forOtherAdjacentTasks instead");
-        }
-        final Task taskWithAdjacent = getTaskWithAdjacent();
-        if (taskWithAdjacent == null) {
-            return null;
-        }
-        return taskWithAdjacent.getAdjacentTaskFragment().asTask();
-    }
-
     /** Finds the first Task parent (or itself) that has adjacent. */
     @Nullable
     Task getTaskWithAdjacent() {
@@ -2499,11 +2484,6 @@ class Task extends TaskFragment {
      * Tasks. The invoke order is not guaranteed.
      */
     void forOtherAdjacentTasks(@NonNull Consumer<Task> callback) {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            throw new IllegalStateException("allowMultipleAdjacentTaskFragments is not enabled. "
-                    + "Use #getAdjacentTask instead");
-        }
-
         final Task taskWithAdjacent = getTaskWithAdjacent();
         if (taskWithAdjacent == null) {
             return;
@@ -2521,10 +2501,6 @@ class Task extends TaskFragment {
      * guaranteed.
      */
     boolean forOtherAdjacentTasks(@NonNull Predicate<Task> callback) {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            throw new IllegalStateException("allowMultipleAdjacentTaskFragments is not enabled. "
-                    + "Use getAdjacentTask instead");
-        }
         final Task taskWithAdjacent = getTaskWithAdjacent();
         if (taskWithAdjacent == null) {
             return false;
@@ -3651,20 +3627,13 @@ class Task extends TaskFragment {
                 final TaskFragment taskFragment = wc.asTaskFragment();
                 if (taskFragment != null && taskFragment.isEmbedded()
                         && taskFragment.hasAdjacentTaskFragment()) {
-                    if (Flags.allowMultipleAdjacentTaskFragments()) {
-                        final int[] nextLayer = { layer };
-                        taskFragment.forOtherAdjacentTaskFragments(adjacentTf -> {
-                            if (adjacentTf.shouldBoostDimmer()) {
-                                adjacentTf.assignLayer(t, nextLayer[0]++);
-                            }
-                        });
-                        layer = nextLayer[0];
-                    } else {
-                        final TaskFragment adjacentTf = taskFragment.getAdjacentTaskFragment();
+                    final int[] nextLayer = { layer };
+                    taskFragment.forOtherAdjacentTaskFragments(adjacentTf -> {
                         if (adjacentTf.shouldBoostDimmer()) {
-                            adjacentTf.assignLayer(t, layer++);
+                            adjacentTf.assignLayer(t, nextLayer[0]++);
                         }
-                    }
+                    });
+                    layer = nextLayer[0];
                 }
 
                 // Place the decor surface just above the owner TaskFragment.

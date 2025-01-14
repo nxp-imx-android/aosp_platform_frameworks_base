@@ -1731,26 +1731,14 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     activityAssistInfos.clear();
                     activityAssistInfos.add(new ActivityAssistInfo(top));
                     // Check if the activity on the split screen.
-                    if (Flags.allowMultipleAdjacentTaskFragments()) {
-                        top.getTask().forOtherAdjacentTasks(task -> {
-                            final ActivityRecord adjacentActivityRecord =
-                                    task.getTopNonFinishingActivity();
-                            if (adjacentActivityRecord != null) {
-                                activityAssistInfos.add(
-                                        new ActivityAssistInfo(adjacentActivityRecord));
-                            }
-                        });
-                    } else {
-                        final Task adjacentTask = top.getTask().getAdjacentTask();
-                        if (adjacentTask != null) {
-                            final ActivityRecord adjacentActivityRecord =
-                                    adjacentTask.getTopNonFinishingActivity();
-                            if (adjacentActivityRecord != null) {
-                                activityAssistInfos.add(
-                                        new ActivityAssistInfo(adjacentActivityRecord));
-                            }
+                    top.getTask().forOtherAdjacentTasks(task -> {
+                        final ActivityRecord adjacentActivityRecord =
+                                task.getTopNonFinishingActivity();
+                        if (adjacentActivityRecord != null) {
+                            activityAssistInfos.add(
+                                    new ActivityAssistInfo(adjacentActivityRecord));
                         }
-                    }
+                    });
                     if (rootTask == topFocusedRootTask) {
                         topVisibleActivities.addAll(0, activityAssistInfos);
                     } else {

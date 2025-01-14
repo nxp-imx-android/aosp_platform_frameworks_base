@@ -1671,13 +1671,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 }
                 if (!taskFragment.isAdjacentTo(secondaryTaskFragment)) {
                     // Only have lifecycle effect if the adjacent changed.
-                    if (Flags.allowMultipleAdjacentTaskFragments()) {
-                        // Activity Embedding only set two TFs adjacent.
-                        taskFragment.setAdjacentTaskFragments(
-                                new TaskFragment.AdjacentSet(taskFragment, secondaryTaskFragment));
-                    } else {
-                        taskFragment.setAdjacentTaskFragment(secondaryTaskFragment);
-                    }
+                    // Activity Embedding only set two TFs adjacent.
+                    taskFragment.setAdjacentTaskFragments(
+                            new TaskFragment.AdjacentSet(taskFragment, secondaryTaskFragment));
                     effects |= TRANSACT_EFFECTS_LIFECYCLE;
                 }
 
@@ -2220,30 +2216,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
     }
 
     private int setAdjacentRootsHierarchyOp(WindowContainerTransaction.HierarchyOp hop) {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            final WindowContainer wc1 = WindowContainer.fromBinder(hop.getContainer());
-            if (wc1 == null || !wc1.isAttached()) {
-                Slog.e(TAG, "Attempt to operate on unknown or detached container: " + wc1);
-                return TRANSACT_EFFECTS_NONE;
-            }
-            final TaskFragment root1 = wc1.asTaskFragment();
-            final WindowContainer wc2 = WindowContainer.fromBinder(hop.getAdjacentRoot());
-            if (wc2 == null || !wc2.isAttached()) {
-                Slog.e(TAG, "Attempt to operate on unknown or detached container: " + wc2);
-                return TRANSACT_EFFECTS_NONE;
-            }
-            final TaskFragment root2 = wc2.asTaskFragment();
-            if (!root1.mCreatedByOrganizer || !root2.mCreatedByOrganizer) {
-                throw new IllegalArgumentException("setAdjacentRootsHierarchyOp: Not created by"
-                        + " organizer root1=" + root1 + " root2=" + root2);
-            }
-            if (root1.isAdjacentTo(root2)) {
-                return TRANSACT_EFFECTS_NONE;
-            }
-            root1.setAdjacentTaskFragment(root2);
-            return TRANSACT_EFFECTS_LIFECYCLE;
-        }
-
         final IBinder[] containers = hop.getContainers();
         final ArraySet<TaskFragment> adjacentRoots = new ArraySet<>();
         for (IBinder container : containers) {
