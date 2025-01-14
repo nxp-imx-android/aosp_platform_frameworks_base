@@ -1011,6 +1011,16 @@
     <!-- Description of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=NONE]-->
     <string name="permgroupdesc_notifications">show notifications</string>
 
+    <!-- Title of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=40]-->
+    <string name="permgrouplab_xr_tracking">XR tracking data</string>
+    <!-- Description of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=NONE]-->
+    <string name="permgroupdesc_xr_tracking">access XR data about you and the environment around you</string>
+
+    <!-- Title of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=40]-->
+    <string name="permgrouplab_xr_tracking_sensitive">sensitive XR tracking data</string>
+    <!-- Description of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=NONE]-->
+    <string name="permgroupdesc_xr_tracking_sensitive">access sensitive tracking data, such as eye gaze</string>
+
     <!-- Title for the capability of an accessibility service to retrieve window content. -->
     <string name="capability_title_canRetrieveWindowContent">Retrieve window content</string>
     <!-- Description for the capability of an accessibility service to retrieve window content. -->
@@ -1874,6 +1884,45 @@
     <string name="permlab_mediaLocation">read locations from your media collection</string>
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permdesc_mediaLocation">Allows the app to read locations from your media collection.</string>
+
+    <string name="permlab_eye_tracking_coarse">track your approximate eye gaze</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_eye_tracking_coarse">Allows the app to track your approximate eye gaze.</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_eye_tracking_fine">track where you are looking</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_eye_tracking_fine">Allows the app to access precise eye gaze data.</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_face_tracking">track your face</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_face_tracking">Allows the app to access face tracking data.</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_hand_tracking">track your hands</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_hand_tracking">Allows the app to access hand tracking data.</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_head_tracking">track your head</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_head_tracking">Allows the app to access head tracking data.</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_scene_understanding_coarse">understand your immediate environment</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_scene_understanding_coarse">Allows the app to access tracking data about the environment directly around you.</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_scene_understanding_fine">understand your immediate environment at high detail</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_scene_understanding_fine">Allows the app to access tracking data about the environment directly around you with very high detail.</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_xr_tracking_in_background">access XR data while not in the foreground</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_xr_tracking_in_background">Allows the app to access XR data while not in the foreground.</string>
 
     <!-- Name for an app setting that lets the user authenticate for that app using biometrics (e.g. fingerprint or face). [CHAR LIMIT=30] -->
     <string name="biometric_app_setting_name">Use biometrics</string>
