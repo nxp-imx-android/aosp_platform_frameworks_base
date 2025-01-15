@@ -164,6 +164,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
+import android.content.ComponentCallbacks;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
@@ -470,6 +471,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     private DisplayInfo mLastDisplayInfoOverride;
 
     private final DisplayMetrics mDisplayMetrics = new DisplayMetrics();
+    @NonNull
     private final DisplayPolicy mDisplayPolicy;
     private final DisplayRotation mDisplayRotation;
 
@@ -556,6 +558,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     /** Remove this display when animation on it has completed. */
     private boolean mDeferredRemoval;
 
+    @NonNull
     final PinnedTaskController mPinnedTaskController;
 
     private final LinkedList<ActivityRecord> mTmpUpdateAllDrawn = new LinkedList();
@@ -1113,6 +1116,29 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         w.updateResizingWindowIfNeeded();
+    };
+
+    /**
+     * Called to update fields retrieve from {@link #getDisplayUiContext()} resources when
+     * there's a configuration update on {@link #getDisplayUiContext()}.
+     */
+    @NonNull
+    private final ComponentCallbacks mSysUiContextConfigCallback = new ComponentCallbacks() {
+
+        @Override
+        public void onConfigurationChanged(@NonNull Configuration newConfig) {
+            synchronized (mWmService.mGlobalLock) {
+                if (mDisplayReady) {
+                    mDisplayPolicy.onConfigurationChanged();
+                    mMinSizeOfResizeableTaskDp = getMinimalTaskSizeDp();
+                }
+            }
+        }
+
+        @Override
+        public void onLowMemory() {
+            // Do nothing.
+        }
     };
 
     /**
@@ -2823,11 +2849,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         final int lastOrientation = getConfiguration().orientation;
         final int lastWindowingMode = getWindowingMode();
         super.onConfigurationChanged(newParentConfig);
-        if (mDisplayPolicy != null) {
-            mDisplayPolicy.onConfigurationChanged();
-            mPinnedTaskController.onPostDisplayConfigurationChanged();
-            mMinSizeOfResizeableTaskDp = getMinimalTaskSizeDp();
+        if (!Flags.trackSystemUiContextBeforeWms()) {
+            mSysUiContextConfigCallback.onConfigurationChanged(newParentConfig);
         }
+        mPinnedTaskController.onPostDisplayConfigurationChanged();
         // Update IME parent if needed.
         updateImeParent();
 
@@ -3388,6 +3413,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     .getKeyguardController().onDisplayRemoved(mDisplayId);
             mWallpaperController.resetLargestDisplay(mDisplay);
             mWmService.mDisplayWindowSettings.onDisplayRemoved(this);
+            if (Flags.trackSystemUiContextBeforeWms()) {
+                getDisplayUiContext().unregisterComponentCallbacks(mSysUiContextConfigCallback);
+            }
         } finally {
             mDisplayReady = false;
         }
@@ -5484,7 +5512,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             reconfigureDisplayLocked();
             onRequestedOverrideConfigurationChanged(getRequestedOverrideConfiguration());
             mWmService.mDisplayNotificationController.dispatchDisplayAdded(this);
-            // Attach the SystemUiContext to this DisplayContent the get latest configuration.
+            // Attach the SystemUiContext to this DisplayContent to get latest configuration.
             // Note that the SystemUiContext will be removed automatically if this DisplayContent
             // is detached.
             registerSystemUiContext();
@@ -5492,11 +5520,15 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     private void registerSystemUiContext() {
+        final Context systemUiContext = getDisplayUiContext();
         final WindowProcessController wpc = mAtmService.getProcessController(
-                getDisplayUiContext().getIApplicationThread());
+                systemUiContext.getIApplicationThread());
         mWmService.mWindowContextListenerController.registerWindowContainerListener(
-                wpc, getDisplayUiContext().getWindowContextToken(), this,
+                wpc, systemUiContext.getWindowContextToken(), this,
                 INVALID_WINDOW_TYPE, null /* options */);
+        if (Flags.trackSystemUiContextBeforeWms()) {
+            systemUiContext.registerComponentCallbacks(mSysUiContextConfigCallback);
+        }
     }
 
     @Override
@@ -6689,6 +6721,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         forAllTasks((t) -> { t.getRootTask().removeChild(t, "removeAllTasks"); });
     }
 
+    @NonNull
     Context getDisplayUiContext() {
         return mDisplayPolicy.getSystemUiContext();
     }
