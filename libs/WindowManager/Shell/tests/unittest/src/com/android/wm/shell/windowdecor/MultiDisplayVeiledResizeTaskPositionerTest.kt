@@ -41,6 +41,7 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.common.MultiDisplayTestUtil
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
@@ -62,8 +63,8 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when` as whenever
 import org.mockito.Mockito.`when`
+import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
 
 /**
@@ -93,7 +94,8 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     @Mock private lateinit var mockTransitions: Transitions
     @Mock private lateinit var mockInteractionJankMonitor: InteractionJankMonitor
     @Mock private lateinit var mockSurfaceControl: SurfaceControl
-
+    @Mock private lateinit var mockMultiDisplayDragMoveIndicatorController:
+            MultiDisplayDragMoveIndicatorController
     private lateinit var resources: TestableResources
     private lateinit var spyDisplayLayout0: DisplayLayout
     private lateinit var spyDisplayLayout1: DisplayLayout
@@ -170,10 +172,11 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 mockDesktopWindowDecoration,
                 mockDisplayController,
                 mockDragEventListener,
-                mockTransactionFactory,
+                { mockTransaction },
                 mockTransitions,
                 mockInteractionJankMonitor,
                 mainHandler,
+                mockMultiDisplayDragMoveIndicatorController,
             )
     }
 
