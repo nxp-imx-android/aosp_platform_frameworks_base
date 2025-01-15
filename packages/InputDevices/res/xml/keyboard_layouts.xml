@@ -367,4 +367,11 @@
         android:keyboardLayout="@raw/keyboard_layout_romanian"
         android:keyboardLocale="ro-Latn-RO"
         android:keyboardLayoutType="qwerty" />
+
+    <keyboard-layout
+        android:name="keyboard_layout_english_india"
+        android:label="@string/keyboard_layout_english_india"
+        android:keyboardLayout="@raw/keyboard_layout_english_india"
+        android:keyboardLocale="en-Latn-IN"
+        android:keyboardLayoutType="qwerty" />
 </keyboard-layouts>
