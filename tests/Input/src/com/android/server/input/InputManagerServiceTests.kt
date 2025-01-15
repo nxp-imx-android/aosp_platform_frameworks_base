@@ -358,6 +358,34 @@ class InputManagerServiceTests {
         verifyNoMoreInteractions(listener)
     }
 
+    @Test
+    fun testKeyEventsForwardedToFocusedWindow_whenWmAllows() {
+        service.systemRunning()
+        overrideSendActionKeyEventsToFocusedWindow(
+            /* hasPermission = */false,
+            /* hasPrivateFlag = */false
+        )
+        whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(0)
+
+        val event = KeyEvent( /* downTime= */0, /* eventTime= */0, KeyEvent.ACTION_DOWN,
+            KeyEvent.KEYCODE_SPACE, /* repeat= */0, KeyEvent.META_CTRL_ON)
+        assertEquals(0, service.interceptKeyBeforeDispatching(null, event, 0))
+    }
+
+    @Test
+    fun testKeyEventsNotForwardedToFocusedWindow_whenWmConsumes() {
+        service.systemRunning()
+        overrideSendActionKeyEventsToFocusedWindow(
+            /* hasPermission = */false,
+            /* hasPrivateFlag = */false
+        )
+        whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(-1)
+
+        val event = KeyEvent( /* downTime= */0, /* eventTime= */0, KeyEvent.ACTION_DOWN,
+            KeyEvent.KEYCODE_SPACE, /* repeat= */0, KeyEvent.META_CTRL_ON)
+        assertEquals(-1, service.interceptKeyBeforeDispatching(null, event, 0))
+    }
+
     private class AutoClosingVirtualDisplays(val displays: List<VirtualDisplay>) : AutoCloseable {
         operator fun get(i: Int): VirtualDisplay = displays[i]
 
