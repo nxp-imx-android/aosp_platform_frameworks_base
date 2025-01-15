@@ -482,6 +482,7 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
     final String launchedFromPackage; // always the package who started the activity.
     @Nullable
     final String launchedFromFeatureId; // always the feature in launchedFromPackage
+    @LaunchSourceType
     int mLaunchSourceType; // latest launch source type
     final Intent intent;    // the original intent that generated us
     final String shortComponentName; // the short component name of the intent
@@ -2330,6 +2331,7 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
         mLaunchSourceType = determineLaunchSourceType(launchFromUid, caller);
     }
 
+    @LaunchSourceType
     private int determineLaunchSourceType(int launchFromUid, WindowProcessController caller) {
         if (launchFromUid == Process.SYSTEM_UID || launchFromUid == Process.ROOT_UID) {
             return LAUNCH_SOURCE_TYPE_SYSTEM;
@@ -5474,7 +5476,9 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
     }
 
     boolean canAffectSystemUiFlags() {
-        return task != null && task.canAffectSystemUiFlags() && isVisible()
+        final TaskFragment taskFragment = getTaskFragment();
+        return taskFragment != null && taskFragment.canAffectSystemUiFlags()
+                && isVisible()
                 && !mWaitForEnteringPinnedMode && !inPinnedWindowingMode();
     }
 
@@ -10384,7 +10388,7 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
      * game engines wait to get focus before drawing the content of the app.
      */
     boolean shouldSendCompatFakeFocus() {
-        return mAppCompatController.getAppCompatFocusOverrides().shouldSendFakeFocus();
+        return mAppCompatController.getFocusOverrides().shouldSendFakeFocus();
     }
 
     boolean canCaptureSnapshot() {

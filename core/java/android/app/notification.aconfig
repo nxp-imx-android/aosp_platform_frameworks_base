@@ -13,6 +13,13 @@ flag {
 }
 
 flag {
+  name: "notifications_redesign_themed_app_icons"
+  namespace: "systemui"
+  description: "Notifications Redesign: Experiment to make app icons in notifications themed"
+  bug: "371174789"
+}
+
+flag {
   name: "notifications_redesign_templates"
   namespace: "systemui"
   description: "Notifications Redesign: Update notification templates"
@@ -168,16 +175,6 @@ flag {
   namespace: "systemui"
   description: "Prevents allowlist_token from leaking out and foreign tokens from being accepted"
   bug: "328254922"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "update_ranking_time"
-  namespace: "systemui"
-  description: "Updates notification sorting criteria to highlight new content while maintaining stability"
-  bug: "326016985"
   metadata {
     purpose: PURPOSE_BUGFIX
   }
