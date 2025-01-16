@@ -254,9 +254,6 @@
     <!-- Reference width used when validating notification layouts -->
     <dimen name="notification_validation_reference_width">320dp</dimen>
 
-    <!-- Increased height of a small notification in the status bar -->
-    <dimen name="notification_min_height_increased">146dp</dimen>
-
     <!-- Height of a small notification in the status bar which was used before android N -->
     <dimen name="notification_min_height_legacy">64dp</dimen>
 
@@ -280,9 +277,6 @@
 
     <!-- Height of a heads up notification in the status bar -->
     <dimen name="notification_max_heads_up_height">136dp</dimen>
-
-    <!-- Height of a heads up notification in the status bar -->
-    <dimen name="notification_max_heads_up_height_increased">188dp</dimen>
 
     <!-- Side padding on the side of notifications -->
     <dimen name="notification_side_paddings">16dp</dimen>
@@ -1128,6 +1122,7 @@
     <dimen name="smart_reply_button_corner_radius">8dp</dimen>
     <dimen name="smart_action_button_icon_size">18dp</dimen>
     <dimen name="smart_action_button_icon_padding">8dp</dimen>
+    <dimen name="smart_action_button_outline_stroke_width">2dp</dimen>
 
     <!-- A reasonable upper bound for the height of the smart reply button. The measuring code
             needs to start with a guess for the maximum size. Currently two-line smart reply buttons

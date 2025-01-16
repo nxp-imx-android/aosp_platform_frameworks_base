@@ -41,7 +41,6 @@ import static android.window.ConfigurationHelper.shouldUpdateResources;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.internal.os.SafeZipPathValidatorCallback.VALIDATE_ZIP_PATH_FOR_PATH_TRAVERSAL;
-import static com.android.sdksandbox.flags.Flags.sandboxActivitySdkBasedContext;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -4072,9 +4071,7 @@ public final class ActivityThread extends ClientTransactionHandler
                     r.activityInfo.targetActivity);
         }
 
-        boolean isSandboxActivityContext =
-                sandboxActivitySdkBasedContext()
-                        && SdkSandboxActivityAuthority.isSdkSandboxActivityIntent(
+        boolean isSandboxActivityContext = SdkSandboxActivityAuthority.isSdkSandboxActivityIntent(
                                 mSystemContext, r.intent);
         boolean isSandboxedSdkContextUsed = false;
         ContextImpl activityBaseContext;
@@ -4734,6 +4731,7 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     private void reportSplashscreenViewShown(IBinder token, SplashScreenView view) {
+        Trace.instant(Trace.TRACE_TAG_VIEW, "reportSplashscreenViewShown");
         ActivityClient.getInstance().reportSplashScreenAttached(token);
         synchronized (this) {
             if (mSplashScreenGlobal != null) {
@@ -4751,10 +4749,32 @@ public final class ActivityThread extends ClientTransactionHandler
         final SurfaceControl.Transaction transaction = new SurfaceControl.Transaction();
         transaction.hide(startingWindowLeash);
 
-        decorView.getViewRootImpl().applyTransactionOnDraw(transaction);
         view.syncTransferSurfaceOnDraw();
-        // Tell server we can remove the starting window
-        decorView.postOnAnimation(() -> reportSplashscreenViewShown(token, view));
+
+        if (com.android.window.flags.Flags.useRtFrameCallbackForSplashScreenTransfer()
+                && decorView.isHardwareAccelerated()) {
+            decorView.getViewRootImpl().registerRtFrameCallback(
+                    new HardwareRenderer.FrameDrawingCallback() {
+                        @Override
+                        public void onFrameDraw(long frame) { }
+                        @Override
+                        public HardwareRenderer.FrameCommitCallback onFrameDraw(
+                                int syncResult, long frame) {
+                            return didProduceBuffer -> {
+                                Trace.instant(Trace.TRACE_TAG_VIEW, "transferSplashscreenView");
+                                transaction.apply();
+                                // Tell server we can remove the starting window after frame commit.
+                                decorView.postOnAnimation(() ->
+                                        reportSplashscreenViewShown(token, view));
+                            };
+                        }
+                    });
+        } else {
+            Trace.instant(Trace.TRACE_TAG_VIEW, "transferSplashscreenView_software");
+            decorView.getViewRootImpl().applyTransactionOnDraw(transaction);
+            // Tell server we can remove the starting window after frame commit.
+            decorView.postOnAnimation(() -> reportSplashscreenViewShown(token, view));
+        }
     }
 
     /**

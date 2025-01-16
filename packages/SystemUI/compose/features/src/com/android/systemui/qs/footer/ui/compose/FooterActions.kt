@@ -72,7 +72,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.compose.animation.Expandable
-import com.android.compose.animation.scene.SceneScope
+import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.fadingBackground
 import com.android.compose.theme.colorAttr
 import com.android.systemui.Flags.notificationShadeBlur
@@ -91,7 +91,7 @@ import com.android.systemui.res.R
 import kotlinx.coroutines.launch
 
 @Composable
-fun SceneScope.FooterActionsWithAnimatedVisibility(
+fun ContentScope.FooterActionsWithAnimatedVisibility(
     viewModel: FooterActionsViewModel,
     isCustomizing: Boolean,
     customizingAnimationDuration: Int,
@@ -256,6 +256,7 @@ private fun RowScope.ForegroundServicesButton(
     } else {
         NumberButton(
             model.foregroundServicesCount,
+            contentDescription = model.text,
             showNewDot = model.hasNewChanges,
             onClick = model.onClick,
         )
@@ -284,6 +285,7 @@ fun IconButton(model: FooterActionsButtonViewModel, modifier: Modifier = Modifie
 @Composable
 private fun NumberButton(
     number: Int,
+    contentDescription: String,
     showNewDot: Boolean,
     onClick: (Expandable) -> Unit,
     modifier: Modifier = Modifier,
@@ -308,14 +310,16 @@ private fun NumberButton(
     ) {
         Box(Modifier.size(40.dp)) {
             Box(
-                Modifier
-                    .fillMaxSize()
+                Modifier.fillMaxSize()
                     .clip(CircleShape)
                     .indication(interactionSource, LocalIndication.current)
             ) {
                 Text(
                     number.toString(),
-                    modifier = Modifier.align(Alignment.Center),
+                    modifier =
+                        Modifier.align(Alignment.Center).semantics {
+                            this.contentDescription = contentDescription
+                        },
                     style = MaterialTheme.typography.bodyLarge,
                     color = colorAttr(R.attr.onShadeInactiveVariant),
                     // TODO(b/242040009): This should only use a standard text style instead and
@@ -337,9 +341,7 @@ private fun NewChangesDot(modifier: Modifier = Modifier) {
     val contentDescription = stringResource(R.string.fgs_dot_content_description)
     val color = MaterialTheme.colorScheme.tertiary
 
-    Canvas(modifier
-        .size(12.dp)
-        .semantics { this.contentDescription = contentDescription }) {
+    Canvas(modifier.size(12.dp).semantics { this.contentDescription = contentDescription }) {
         drawCircle(color)
     }
 }
@@ -368,9 +370,7 @@ private fun TextButton(
             Modifier.padding(horizontal = dimensionResource(R.dimen.qs_footer_padding)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(icon, Modifier
-                .padding(end = 12.dp)
-                .size(20.dp))
+            Icon(icon, Modifier.padding(end = 12.dp).size(20.dp))
 
             Text(
                 text,
@@ -391,9 +391,7 @@ private fun TextButton(
                 Icon(
                     painterResource(com.android.internal.R.drawable.ic_chevron_end),
                     contentDescription = null,
-                    Modifier
-                        .padding(start = 8.dp)
-                        .size(20.dp),
+                    Modifier.padding(start = 8.dp).size(20.dp),
                 )
             }
         }
