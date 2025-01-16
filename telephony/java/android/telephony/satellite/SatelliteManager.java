@@ -821,6 +821,25 @@ public final class SatelliteManager {
             "android.telephony.METADATA_SATELLITE_MANUAL_CONNECT_P2P_SUPPORT";
 
     /**
+     * A boolean value indicating whether application is optimized to utilize low bandwidth
+     * satellite data.
+     * The applications that are optimized for low bandwidth satellite data should set this
+     * property to {@code true} in the manifest to indicate to platform about the same.
+     * {@code
+     * <application>
+     *   <meta-data
+     *     android:name="android.telephony.PROPERTY_SATELLITE_DATA_OPTIMIZED"
+     *     android:value="true"/>
+     * </application>
+     * }
+     * <p>
+     * When {@code true}, satellite data optimized network is available for applications.
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_25Q4_APIS)
+    public static final String PROPERTY_SATELLITE_DATA_OPTIMIZED =
+            "android.telephony.PROPERTY_SATELLITE_DATA_OPTIMIZED";
+
+    /**
      * Registers a {@link SatelliteStateChangeListener} to receive callbacks when the satellite
      * state may have changed.
      *
@@ -3838,6 +3857,35 @@ public final class SatelliteManager {
             loge("setNtnSmsSupported() RemoteException:" + ex);
             ex.rethrowAsRuntimeException();
         }
+    }
+
+    /**
+     * Get list of application packages name that are optimized for low bandwidth satellite data.
+     *
+     * @return List of application packages name with data optimized network property.
+     *
+     * {@link #PROPERTY_SATELLITE_DATA_OPTIMIZED}
+     *
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    @FlaggedApi(Flags.FLAG_SATELLITE_25Q4_APIS)
+    public @NonNull List<String> getSatelliteDataOptimizedApps() {
+        List<String> appsNames = new ArrayList<>();
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                appsNames = telephony.getSatelliteDataOptimizedApps();
+            } else {
+                throw new IllegalStateException("telephony service is null.");
+            }
+        } catch (RemoteException ex) {
+            loge("getSatelliteDataOptimizedApps() RemoteException:" + ex);
+            ex.rethrowAsRuntimeException();
+        }
+
+        return appsNames;
     }
 
     @Nullable
