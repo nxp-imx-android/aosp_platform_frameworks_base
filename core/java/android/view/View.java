@@ -66,6 +66,7 @@ import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFI
 import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__UNKNOWN_CLASSIFICATION;
 import static com.android.window.flags.Flags.FLAG_DELEGATE_UNHANDLED_DRAGS;
 import static com.android.window.flags.Flags.FLAG_SUPPORTS_DRAG_ASSISTANT_TO_MULTIWINDOW;
+import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 
 import static java.lang.Math.max;
 
@@ -247,6 +248,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12888,15 +12890,20 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         if (rects.isEmpty() && mListenerInfo == null) return;
 
         final ListenerInfo info = getListenerInfo();
+        final boolean rectsChanged = !reduceChangedExclusionRectsMsgs()
+                || !Objects.equals(info.mSystemGestureExclusionRects, rects);
         if (info.mSystemGestureExclusionRects != null) {
-            info.mSystemGestureExclusionRects.clear();
-            info.mSystemGestureExclusionRects.addAll(rects);
+            if (rectsChanged) {
+                info.mSystemGestureExclusionRects.clear();
+                info.mSystemGestureExclusionRects.addAll(rects);
+            }
         } else {
             info.mSystemGestureExclusionRects = new ArrayList<>(rects);
         }
-
-        updatePositionUpdateListener();
-        postUpdate(this::updateSystemGestureExclusionRects);
+        if (rectsChanged) {
+            updatePositionUpdateListener();
+            postUpdate(this::updateSystemGestureExclusionRects);
+        }
     }
 
     private void updatePositionUpdateListener() {

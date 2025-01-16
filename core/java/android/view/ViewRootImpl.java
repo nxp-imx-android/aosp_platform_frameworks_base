@@ -133,6 +133,7 @@ import static com.android.internal.annotations.VisibleForTesting.Visibility.PACK
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.enableBufferTransformHintFromDisplay;
 import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
+import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
 import android.Manifest;
@@ -6027,8 +6028,12 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     void updateSystemGestureExclusionRectsForView(View view) {
+        boolean msgInQueue = reduceChangedExclusionRectsMsgs()
+                && mGestureExclusionTracker.isWaitingForComputeChanges();
         mGestureExclusionTracker.updateRectsForView(view);
-        mHandler.sendEmptyMessage(MSG_SYSTEM_GESTURE_EXCLUSION_CHANGED);
+        if (!msgInQueue) {
+            mHandler.sendEmptyMessage(MSG_SYSTEM_GESTURE_EXCLUSION_CHANGED);
+        }
     }
 
     void systemGestureExclusionChanged() {
@@ -6072,8 +6077,12 @@ public final class ViewRootImpl implements ViewParent,
      * the root's view hierarchy.
      */
     public void setRootSystemGestureExclusionRects(@NonNull List<Rect> rects) {
+        boolean msgInQueue = reduceChangedExclusionRectsMsgs()
+                && mGestureExclusionTracker.isWaitingForComputeChanges();
         mGestureExclusionTracker.setRootRects(rects);
-        mHandler.sendEmptyMessage(MSG_SYSTEM_GESTURE_EXCLUSION_CHANGED);
+        if (!msgInQueue) {
+            mHandler.sendEmptyMessage(MSG_SYSTEM_GESTURE_EXCLUSION_CHANGED);
+        }
     }
 
     /**
