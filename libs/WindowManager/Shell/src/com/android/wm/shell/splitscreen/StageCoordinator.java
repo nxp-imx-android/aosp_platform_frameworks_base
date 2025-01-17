@@ -93,6 +93,7 @@ import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.IActivityTaskManager;
 import android.app.PendingIntent;
+import android.app.PictureInPictureParams;
 import android.app.TaskInfo;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -2880,6 +2881,16 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     prepareEnterSplitScreen(out);
                     mSplitTransitions.setEnterTransition(transition, request.getRemoteTransition(),
                             TRANSIT_SPLIT_SCREEN_PAIR_OPEN, !mIsDropEntering);
+                } else if (isSplitScreenVisible() && isOpening) {
+                    // launching into an existing split stage; possibly launchAdjacent
+                    // If we're replacing a pip-able app, we need to let mixed handler take care of
+                    // it. Otherwise we'll just treat it as an enter+resize
+                    if (mSplitLayout.calculateCurrentSnapPosition() != SNAP_TO_2_50_50) {
+                        // updated layout will get applied in startAnimation pendingResize
+                        mSplitTransitions.setEnterTransition(transition,
+                                request.getRemoteTransition(),
+                                TRANSIT_SPLIT_SCREEN_OPEN_TO_SIDE, true /*resizeAnim*/);
+                    }
                 } else if (inFullscreen && isSplitScreenVisible()) {
                     // If the trigger task is in fullscreen and in split, exit split and place
                     // task on top
