@@ -40,6 +40,7 @@
     </style>
 
     <style name="SettingsLibPreference.Category.Expressive">
+        <item name="layout">@layout/settingslib_expressive_preference_category</item>
     </style>
 
     <style name="SettingsLibPreference.CheckBoxPreference.Expressive">
