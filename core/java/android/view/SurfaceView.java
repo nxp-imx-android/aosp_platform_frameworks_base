@@ -2232,6 +2232,27 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
         t.reparent(sc, mBlastSurfaceControl).show(sc);
     }
 
+    /**
+     * Populates a {@link ViewStructure} for content capture.
+     *
+     * <p>If {@link #setSecure(boolean)} has been enabled, will add a property to the
+     * {@link android.app.assist.AssistStructure.ViewNode} to indicate that content will not
+     * be available for this part of the screen.
+     *
+     * @hide
+     */
+    @Override
+    protected void onProvideStructure(@NonNull ViewStructure structure,
+            @ViewStructureType int viewFor, int flags) {
+        super.onProvideStructure(structure, viewFor, flags);
+        if (android.app.contextualsearch.flags.Flags.reportSecureSurfacesInAssistStructure()) {
+            if ((mSurfaceFlags & SurfaceControl.SECURE) != 0) {
+                structure.getExtras().putBoolean(
+                        ViewStructure.EXTRA_CONTAINS_SECURE_LAYERS, true);
+            }
+        }
+    }
+
     /** @hide */
     @Override
     public void onInitializeAccessibilityNodeInfoInternal(AccessibilityNodeInfo info) {
