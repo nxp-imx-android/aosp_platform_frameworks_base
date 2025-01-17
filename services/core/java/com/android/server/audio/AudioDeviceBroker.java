@@ -340,15 +340,6 @@ public class AudioDeviceBroker {
                     + ", uid: " + attributionSource.getUid());
         }
 
-        if (device == null) {
-            synchronized (mDeviceStateLock) {
-                CommunicationRouteClient client =
-                        getCommunicationRouteClientForUid(attributionSource.getUid());
-                if (client == null) {
-                    return false;
-                }
-            }
-        }
         synchronized (mCommunicationDeviceLock) {
             mCommunicationDeviceUpdateCount++;
             AudioDeviceAttributes deviceAttr =
