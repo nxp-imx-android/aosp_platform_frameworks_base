@@ -81,16 +81,16 @@ public final class StorageSessionController {
      */
     public int getConnectionUserIdForVolume(VolumeInfo vol) {
         final Context volumeUserContext = mContext.createContextAsUser(
-                UserHandle.of(vol.mountUserId), 0);
+                UserHandle.of(vol.getMountUserId()), 0);
         boolean isMediaSharedWithParent = volumeUserContext.getSystemService(
                 UserManager.class).isMediaSharedWithParent();
 
-        UserInfo userInfo = mUserManager.getUserInfo(vol.mountUserId);
+        UserInfo userInfo = mUserManager.getUserInfo(vol.getMountUserId());
         if (userInfo != null && isMediaSharedWithParent) {
             // Clones use the same connection as their parent
             return userInfo.profileGroupId;
         } else {
-            return vol.mountUserId;
+            return vol.getMountUserId();
         }
     }
 
@@ -144,7 +144,8 @@ public final class StorageSessionController {
      *
      * @throws ExternalStorageServiceException if it fails to connect to ExternalStorageService
      */
-    public void notifyVolumeStateChanged(VolumeInfo vol) throws ExternalStorageServiceException {
+    public void notifyVolumeStateChanged(VolumeInfo vol)
+            throws ExternalStorageServiceException {
         if (!shouldHandle(vol)) {
             return;
         }
@@ -458,8 +459,8 @@ public final class StorageSessionController {
      * {@code false} otherwise
      **/
     public static boolean isEmulatedOrPublic(VolumeInfo vol) {
-        return vol.type == VolumeInfo.TYPE_EMULATED
-                || (vol.type == VolumeInfo.TYPE_PUBLIC && vol.isVisible());
+        return vol.getType() == VolumeInfo.TYPE_EMULATED
+                || (vol.getType() == VolumeInfo.TYPE_PUBLIC && vol.isVisible());
     }
 
     /** Exception thrown when communication with the {@link ExternalStorageService} fails. */
@@ -478,7 +479,7 @@ public final class StorageSessionController {
     }
 
     private static boolean isSupportedVolume(VolumeInfo vol) {
-        return isEmulatedOrPublic(vol) || vol.type == VolumeInfo.TYPE_STUB;
+        return isEmulatedOrPublic(vol) || vol.getType() == VolumeInfo.TYPE_STUB;
     }
 
     private boolean shouldHandle(@Nullable VolumeInfo vol) {
