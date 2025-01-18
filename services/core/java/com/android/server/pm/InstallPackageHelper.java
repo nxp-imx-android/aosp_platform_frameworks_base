@@ -856,39 +856,45 @@ final class InstallPackageHelper {
         if (DEBUG_INSTALL) Log.v(TAG, "+ starting restore round-trip " + token);
 
         final boolean succeeded = request.getReturnCode() == PackageManager.INSTALL_SUCCEEDED;
-        if (succeeded && doRestore) {
-            // Pass responsibility to the Backup Manager.  It will perform a
-            // restore if appropriate, then pass responsibility back to the
-            // Package Manager to run the post-install observer callbacks
-            // and broadcasts.
-            request.closeFreezer();
-            doRestore = performBackupManagerRestore(userId, token, request);
-        }
+        if (succeeded) {
+            request.onRestoreStarted();
+            if (doRestore) {
+                // Pass responsibility to the Backup Manager.  It will perform a
+                // restore if appropriate, then pass responsibility back to the
+                // Package Manager to run the post-install observer callbacks
+                // and broadcasts.
+                // Note: MUST close freezer before backup/restore, otherwise test
+                // of CtsBackupHostTestCases will fail.
+                request.closeFreezer();
+                doRestore = performBackupManagerRestore(userId, token, request);
+            }
 
-        // If this is an update to a package that might be potentially downgraded, then we
-        // need to check with the rollback manager whether there's any userdata that might
-        // need to be snapshotted or restored for the package.
-        //
-        // TODO(narayan): Get this working for cases where userId == UserHandle.USER_ALL.
-        if (succeeded && !doRestore && update) {
-            doRestore = performRollbackManagerRestore(userId, token, request);
-        }
+            // If this is an update to a package that might be potentially downgraded, then we
+            // need to check with the rollback manager whether there's any userdata that might
+            // need to be snapshotted or restored for the package.
+            //
+            // TODO(narayan): Get this working for cases where userId == UserHandle.USER_ALL.
+            if (!doRestore && update) {
+                doRestore = performRollbackManagerRestore(userId, token, request);
+            }
 
-        if (succeeded && doRestore && !request.hasPostInstallRunnable()) {
-            boolean hasNeverBeenRestored =
-                    packageSetting != null && packageSetting.isPendingRestore();
-            request.setPostInstallRunnable(() -> {
-                // Permissions should be restored on each user that has the app installed for the
-                // first time, unless it's an unarchive install for an archived app, in which case
-                // the permissions should be restored on each user that has the app updated.
-                int[] userIdsToRestorePermissions = hasNeverBeenRestored
-                        ? request.getUpdateBroadcastUserIds()
-                        : request.getFirstTimeBroadcastUserIds();
-                for (int restorePermissionUserId : userIdsToRestorePermissions) {
-                    mPm.restorePermissionsAndUpdateRolesForNewUserInstall(request.getName(),
-                            restorePermissionUserId);
-                }
-            });
+            if (doRestore && !request.hasPostInstallRunnable()) {
+                boolean hasNeverBeenRestored =
+                        packageSetting != null && packageSetting.isPendingRestore();
+                request.setPostInstallRunnable(() -> {
+                    // Permissions should be restored on each user that has the app installed for
+                    // the first time, unless it's an unarchive install for an archived app, in
+                    // which case the permissions should be restored on each user that has the
+                    // app updated.
+                    int[] userIdsToRestorePermissions = hasNeverBeenRestored
+                            ? request.getUpdateBroadcastUserIds()
+                            : request.getFirstTimeBroadcastUserIds();
+                    for (int restorePermissionUserId : userIdsToRestorePermissions) {
+                        mPm.restorePermissionsAndUpdateRolesForNewUserInstall(request.getName(),
+                                restorePermissionUserId);
+                    }
+                });
+            }
         }
 
         if (doRestore) {
@@ -898,8 +904,11 @@ final class InstallPackageHelper {
                 }
             }
         } else {
-            // No restore possible, or the Backup Manager was mysteriously not
-            // available -- just fire the post-install work request directly.
+            // No restore possible, or the Backup Manager was mysteriously not available.
+            // we don't need to wait for restore to complete before closing the freezer,
+            // so we can close the freezer right away.
+            // Also just fire the post-install work request directly.
+            request.closeFreezer();
             if (DEBUG_INSTALL) Log.v(TAG, "No restore - queue post-install for " + token);
 
             Trace.asyncTraceBegin(TRACE_TAG_PACKAGE_MANAGER, "postInstall", token);

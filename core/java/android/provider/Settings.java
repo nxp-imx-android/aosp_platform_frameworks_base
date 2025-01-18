@@ -353,6 +353,18 @@ public final class Settings {
      */
     public static final String ACTION_ONE_HANDED_SETTINGS =
             "android.settings.action.ONE_HANDED_SETTINGS";
+
+    /**
+     * Activity Action: Show Double tap power gesture Settings page.
+     * <p>
+     * Input: Nothing
+     * <p>
+     * Output: Nothing
+     * @hide
+     */
+    public static final String ACTION_DOUBLE_TAP_POWER_SETTINGS =
+            "android.settings.action.DOUBLE_TAP_POWER_SETTINGS";
+
     /**
      * The return values for {@link Settings.Config#set}
      * @hide
@@ -9314,6 +9326,16 @@ public final class Settings {
                 "accessibility_autoclick_cursor_area_size";
 
         /**
+         * Setting that specifies whether minor cursor movement will be ignored when
+         * {@link #ACCESSIBILITY_AUTOCLICK_ENABLED} is set.
+         *
+         * @see #ACCESSIBILITY_AUTOCLICK_ENABLED
+         * @hide
+         */
+        public static final String ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT =
+                "accessibility_autoclick_ignore_minor_cursor_movement";
+
+        /**
          * Whether or not larger size icons are used for the pointer of mouse/trackpad for
          * accessibility.
          * (0 = false, 1 = true)
@@ -12344,12 +12366,6 @@ public final class Settings {
          */
         @Readable
         public static final String CAMERA_EXTENSIONS_FALLBACK = "camera_extensions_fallback";
-
-        /**
-         * Controls whether contextual suggestions can be shown in the media controls.
-         * @hide
-         */
-        public static final String MEDIA_CONTROLS_RECOMMENDATION = "qs_media_recommend";
 
         /**
          * Controls magnification mode when magnification is enabled via a system-wide triple tap

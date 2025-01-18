@@ -133,6 +133,7 @@ import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
+import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.DefaultMixedHandler;
 import com.android.wm.shell.transition.FocusTransitionObserver;
@@ -247,6 +248,7 @@ public abstract class WMShellModule {
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler,
             @ShellBackgroundThread ShellExecutor bgExecutor,
+            TaskViewRepository taskViewRepository,
             TaskViewTransitions taskViewTransitions,
             Transitions transitions,
             SyncTransactionQueue syncQueue,
@@ -280,6 +282,7 @@ public abstract class WMShellModule {
                 mainExecutor,
                 mainHandler,
                 bgExecutor,
+                taskViewRepository,
                 taskViewTransitions,
                 transitions,
                 syncQueue,
@@ -1028,8 +1031,9 @@ public abstract class WMShellModule {
     static CloseDesktopTaskTransitionHandler provideCloseDesktopTaskTransitionHandler(
             Context context,
             @ShellMainThread ShellExecutor mainExecutor,
-            @ShellAnimationThread ShellExecutor animExecutor) {
-        return new CloseDesktopTaskTransitionHandler(context, mainExecutor, animExecutor);
+            @ShellAnimationThread ShellExecutor animExecutor,
+            @ShellMainThread Handler handler) {
+        return new CloseDesktopTaskTransitionHandler(context, mainExecutor, animExecutor, handler);
     }
 
     @WMSingleton

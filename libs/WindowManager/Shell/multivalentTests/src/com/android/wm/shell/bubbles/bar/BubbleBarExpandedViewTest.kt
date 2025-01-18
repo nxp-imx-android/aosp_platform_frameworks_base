@@ -46,6 +46,7 @@ import com.android.wm.shell.bubbles.UiEventSubject.Companion.assertThat
 import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.shared.handles.RegionSamplingHelper
 import com.android.wm.shell.taskview.TaskView
+import com.android.wm.shell.taskview.TaskViewController
 import com.android.wm.shell.taskview.TaskViewTaskController
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
@@ -356,7 +357,7 @@ class BubbleBarExpandedViewTest {
     private inner class FakeBubbleTaskViewFactory : BubbleTaskViewFactory {
         override fun create(): BubbleTaskView {
             val taskViewTaskController = mock<TaskViewTaskController>()
-            val taskView = TaskView(context, taskViewTaskController)
+            val taskView = TaskView(context, mock<TaskViewController>(), taskViewTaskController)
             val taskInfo = mock<ActivityManager.RunningTaskInfo>()
             whenever(taskViewTaskController.taskInfo).thenReturn(taskInfo)
             return BubbleTaskView(taskView, mainExecutor)

@@ -30,8 +30,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.annotation.Nullable;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
 import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
@@ -263,6 +265,38 @@ public class NotificationManagerTest {
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY,
+            Flags.FLAG_NM_BINDER_PERF_LOG_NM_THROTTLING})
+    public void notify_rapidUpdate_logsOncePerSecond() throws Exception {
+        Notification n = exampleNotification();
+
+        for (int i = 0; i < 650; i++) {
+            mNotificationManager.notify(1, n);
+            mClock.advanceByMillis(10);
+        }
+
+        // Runs for a total of 6.5 seconds, so should log once (when RateEstimator catches up) + 6
+        // more times (after 1 second each).
+        verify(mNotificationManager.mBackendService, times(7)).incrementCounter(
+                eq("notifications.value_client_throttled_notify_update"));
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY,
+            Flags.FLAG_NM_BINDER_PERF_LOG_NM_THROTTLING})
+    public void cancel_unnecessaryAndRapid_logsOncePerSecond() throws Exception {
+        for (int i = 0; i < 650; i++) {
+            mNotificationManager.cancel(1);
+            mClock.advanceByMillis(10);
+        }
+
+        // Runs for a total of 6.5 seconds, so should log once (when RateEstimator catches up) + 6
+        // more times (after 1 second each).
+        verify(mNotificationManager.mBackendService, times(7)).incrementCounter(
+                eq("notifications.value_client_throttled_cancel_duplicate"));
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS)
     public void getNotificationChannel_cachedUntilInvalidated() throws Exception {
         // Invalidate the cache first because the cache won't do anything until then
@@ -409,6 +443,46 @@ public class NotificationManagerTest {
                 .getOrCreateNotificationChannels(any(), any(), anyInt(), anyBoolean());
     }
 
+    @Test
+    @EnableFlags({Flags.FLAG_MODES_API, Flags.FLAG_MODES_UI})
+    public void areAutomaticZenRulesUserManaged_handheld_isTrue() {
+        PackageManager pm = mock(PackageManager.class);
+        when(pm.hasSystemFeature(any())).thenReturn(false);
+        mContext.setPackageManager(pm);
+
+        assertThat(mNotificationManager.areAutomaticZenRulesUserManaged()).isTrue();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_MODES_API, Flags.FLAG_MODES_UI})
+    public void areAutomaticZenRulesUserManaged_auto_isFalse() {
+        PackageManager pm = mock(PackageManager.class);
+        when(pm.hasSystemFeature(eq(PackageManager.FEATURE_AUTOMOTIVE))).thenReturn(true);
+        mContext.setPackageManager(pm);
+
+        assertThat(mNotificationManager.areAutomaticZenRulesUserManaged()).isFalse();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_MODES_API, Flags.FLAG_MODES_UI})
+    public void areAutomaticZenRulesUserManaged_tv_isFalse() {
+        PackageManager pm = mock(PackageManager.class);
+        when(pm.hasSystemFeature(eq(PackageManager.FEATURE_LEANBACK))).thenReturn(true);
+        mContext.setPackageManager(pm);
+
+        assertThat(mNotificationManager.areAutomaticZenRulesUserManaged()).isFalse();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_MODES_API, Flags.FLAG_MODES_UI})
+    public void areAutomaticZenRulesUserManaged_watch_isFalse() {
+        PackageManager pm = mock(PackageManager.class);
+        when(pm.hasSystemFeature(eq(PackageManager.FEATURE_WATCH))).thenReturn(true);
+        mContext.setPackageManager(pm);
+
+        assertThat(mNotificationManager.areAutomaticZenRulesUserManaged()).isFalse();
+    }
+
     private Notification exampleNotification() {
         return new Notification.Builder(mContext, "channel")
                 .setSmallIcon(android.R.drawable.star_big_on)
@@ -438,6 +512,7 @@ public class NotificationManagerTest {
     // Helper context wrapper class where we can control just the return values of getPackageName,
     // getOpPackageName, and getUserId (used in getNotificationChannels).
     private static class PackageTestableContext extends ContextWrapper {
+        private PackageManager mPm;
         private String mPackage;
         private String mOpPackage;
         private Integer mUserId;
@@ -446,10 +521,20 @@ public class NotificationManagerTest {
             super(base);
         }
 
+        void setPackageManager(@Nullable PackageManager pm) {
+            mPm = pm;
+        }
+
         void setParameters(String packageName, String opPackageName, int userId) {
             mPackage = packageName;
             mOpPackage = opPackageName;
             mUserId = userId;
+        }
+
+        @Override
+        public PackageManager getPackageManager() {
+            if (mPm != null) return mPm;
+            return super.getPackageManager();
         }
 
         @Override

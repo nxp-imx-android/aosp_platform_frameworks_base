@@ -59,6 +59,8 @@ import com.android.internal.util.Preconditions;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.ComponentUtils;
+import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
@@ -112,6 +114,7 @@ public class PipTransition extends PipTransitionController implements
     private final PipScheduler mPipScheduler;
     private final PipTransitionState mPipTransitionState;
     private final PipDisplayLayoutState mPipDisplayLayoutState;
+    private final DisplayController mDisplayController;
     private final Optional<DesktopUserRepositories> mDesktopUserRepositoriesOptional;
     private final Optional<DesktopWallpaperActivityTokenProvider>
             mDesktopWallpaperActivityTokenProviderOptional;
@@ -151,6 +154,7 @@ public class PipTransition extends PipTransitionController implements
             PipTransitionState pipTransitionState,
             PipDisplayLayoutState pipDisplayLayoutState,
             PipUiStateChangeController pipUiStateChangeController,
+            DisplayController displayController,
             Optional<DesktopUserRepositories> desktopUserRepositoriesOptional,
             Optional<DesktopWallpaperActivityTokenProvider>
                     desktopWallpaperActivityTokenProviderOptional) {
@@ -164,6 +168,7 @@ public class PipTransition extends PipTransitionController implements
         mPipTransitionState = pipTransitionState;
         mPipTransitionState.addPipTransitionStateChangedListener(this);
         mPipDisplayLayoutState = pipDisplayLayoutState;
+        mDisplayController = displayController;
         mDesktopUserRepositoriesOptional = desktopUserRepositoriesOptional;
         mDesktopWallpaperActivityTokenProviderOptional =
                 desktopWallpaperActivityTokenProviderOptional;
@@ -513,7 +518,7 @@ public class PipTransition extends PipTransitionController implements
     private void startOverlayFadeoutAnimation(@NonNull SurfaceControl overlayLeash,
             @NonNull Runnable onAnimationEnd) {
         PipAlphaAnimator animator = new PipAlphaAnimator(mContext, overlayLeash,
-                null /* startTx */, PipAlphaAnimator.FADE_OUT);
+                null /* startTx */, null /* finishTx */, PipAlphaAnimator.FADE_OUT);
         animator.setDuration(CONTENT_OVERLAY_FADE_OUT_DELAY_MS);
         animator.setAnimationEndCallback(onAnimationEnd);
         animator.start();
@@ -604,7 +609,7 @@ public class PipTransition extends PipTransitionController implements
                 .setAlpha(pipLeash, 0f);
 
         PipAlphaAnimator animator = new PipAlphaAnimator(mContext, pipLeash, startTransaction,
-                PipAlphaAnimator.FADE_IN);
+                finishTransaction, PipAlphaAnimator.FADE_IN);
         // This should update the pip transition state accordingly after we stop playing.
         animator.setAnimationEndCallback(this::finishTransition);
         cacheAndStartTransitionAnimator(animator);
@@ -699,7 +704,7 @@ public class PipTransition extends PipTransitionController implements
         finishTransaction.setAlpha(pipChange.getLeash(), 0f);
         if (mPendingRemoveWithFadeout) {
             PipAlphaAnimator animator = new PipAlphaAnimator(mContext, pipChange.getLeash(),
-                    startTransaction, PipAlphaAnimator.FADE_OUT);
+                    startTransaction, finishTransaction, PipAlphaAnimator.FADE_OUT);
             animator.setAnimationEndCallback(this::finishTransition);
             animator.start();
         } else {
@@ -823,6 +828,17 @@ public class PipTransition extends PipTransitionController implements
         mPipTaskListener.setPictureInPictureParams(pipParams);
         mPipBoundsState.setBoundsStateForEntry(pipTask.topActivity, pipTask.topActivityInfo,
                 pipParams, mPipBoundsAlgorithm);
+
+        // If PiP is enabled on Connected Displays, update PipDisplayLayoutState to have the correct
+        // display info that PiP is entering in.
+        if (Flags.enableConnectedDisplaysPip()) {
+            final DisplayLayout displayLayout = mDisplayController.getDisplayLayout(
+                    pipTask.displayId);
+            if (displayLayout != null) {
+                mPipDisplayLayoutState.setDisplayId(pipTask.displayId);
+                mPipDisplayLayoutState.setDisplayLayout(displayLayout);
+            }
+        }
 
         // calculate the entry bounds and notify core to move task to pinned with final bounds
         final Rect entryBounds = mPipBoundsAlgorithm.getEntryDestinationBounds();

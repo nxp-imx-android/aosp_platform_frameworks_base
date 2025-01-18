@@ -176,13 +176,6 @@ flag {
 }
 
 flag {
-    name: "notifications_dismiss_pruned_summaries"
-    namespace: "systemui"
-    description: "NotifCollection.dismissNotifications will now dismiss summaries that are pruned from the shade."
-    bug: "355967751"
-}
-
-flag {
    name: "notification_transparent_header_fix"
    namespace: "systemui"
    description: "fix the transparent group header issue for async header inflation."
@@ -1939,4 +1932,18 @@ flag {
    metadata {
         purpose: PURPOSE_BUGFIX
    }
+}
+
+flag {
+    name: "ui_rich_ongoing_force_expanded"
+    namespace: "systemui"
+    description: "Force promoted notifications to always be expanded"
+    bug: "380901479"
+}
+
+flag {
+    name: "aod_ui_rich_ongoing"
+    namespace: "systemui"
+    description: "Show a rich ongoing notification on the always-on display (depends on ui_rich_ongoing)"
+    bug: "369151941"
 }

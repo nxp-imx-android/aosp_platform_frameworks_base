@@ -29,6 +29,7 @@ import static android.Manifest.permission.MODIFY_HDR_CONVERSION_MODE;
 import static android.Manifest.permission.RESTRICT_DISPLAY_MODES;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE;
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE;
 import static android.hardware.display.DisplayManagerGlobal.InternalEventFlag;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
@@ -379,6 +380,8 @@ public final class DisplayManagerService extends SystemService {
     /** All {@link DisplayPowerController}s indexed by {@link LogicalDisplay} ID. */
     private final SparseArray<DisplayPowerController> mDisplayPowerControllers =
             new SparseArray<>();
+
+    private int mMaxImportanceForRRCallbacks = IMPORTANCE_VISIBLE;
 
     /** {@link DisplayBlanker} used by all {@link DisplayPowerController}s. */
     private final DisplayBlanker mDisplayBlanker = new DisplayBlanker() {
@@ -3445,8 +3448,11 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private void sendDisplayEventFrameRateOverrideLocked(int displayId) {
+        int event = (mFlags.isFramerateOverrideTriggersRrCallbacksEnabled())
+                ? DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED
+                : DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED;
         Message msg = mHandler.obtainMessage(MSG_DELIVER_DISPLAY_EVENT_FRAME_RATE_OVERRIDE,
-                displayId, DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
+                displayId, event);
         mHandler.sendMessage(msg);
     }
 
@@ -3633,6 +3639,7 @@ public final class DisplayManagerService extends SystemService {
             pw.println("  mWifiDisplayScanRequestCount=" + mWifiDisplayScanRequestCount);
             pw.println("  mStableDisplaySize=" + mStableDisplaySize);
             pw.println("  mMinimumBrightnessCurve=" + mMinimumBrightnessCurve);
+            pw.println("  mMaxImportanceForRRCallbacks=" + mMaxImportanceForRRCallbacks);
 
             if (mUserPreferredMode != null) {
                 pw.println(" mUserPreferredMode=" + mUserPreferredMode);
@@ -3759,6 +3766,10 @@ public final class DisplayManagerService extends SystemService {
                 mLogicalDisplayMapper.setDisplayEnabledLocked(logicalDisplay, enabled);
             }
         }
+    }
+
+    void overrideMaxImportanceForRRCallbacks(int importance) {
+        mMaxImportanceForRRCallbacks = importance;
     }
 
     boolean requestDisplayPower(int displayId, int requestedState) {
@@ -4144,6 +4155,18 @@ public final class DisplayManagerService extends SystemService {
             mPackageName = packageNames == null ? null : packageNames[0];
         }
 
+        public boolean shouldReceiveRefreshRateWithChangeUpdate(int event) {
+            if (mFlags.isRefreshRateEventForForegroundAppsEnabled()
+                    && event == DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED) {
+                int procState = mActivityManagerInternal.getUidProcessState(mUid);
+                int importance = ActivityManager.RunningAppProcessInfo
+                        .procStateToImportance(procState);
+                return importance <= mMaxImportanceForRRCallbacks || mUid <= Process.SYSTEM_UID;
+            }
+
+            return true;
+        }
+
         public void updateEventFlagsMask(@InternalEventFlag long internalEventFlag) {
             mInternalEventFlagsMask.set(internalEventFlag);
         }
@@ -4249,6 +4272,11 @@ public final class DisplayManagerService extends SystemService {
                         return true;
                     }
                 }
+            }
+
+            if (!shouldReceiveRefreshRateWithChangeUpdate(event)) {
+                // The client is not visible to the user and is not a system service, so do nothing.
+                return true;
             }
 
             try {
@@ -4402,6 +4430,11 @@ public final class DisplayManagerService extends SystemService {
                                 + displayEvent.displayId + "/"
                                 + displayEvent.event + " to " + mUid + "/" + mPid);
                     }
+
+                    if (!shouldReceiveRefreshRateWithChangeUpdate(displayEvent.event)) {
+                        continue;
+                    }
+
                     transmitDisplayEvent(displayEvent.displayId, displayEvent.event);
                 }
                 return true;

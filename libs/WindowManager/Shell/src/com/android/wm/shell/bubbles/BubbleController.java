@@ -117,6 +117,8 @@ import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.taskview.TaskView;
+import com.android.wm.shell.taskview.TaskViewController;
+import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTaskController;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.Transitions;
@@ -192,7 +194,7 @@ public class BubbleController implements ConfigurationChangeListener,
     private final TaskStackListenerImpl mTaskStackListener;
     private final ShellTaskOrganizer mTaskOrganizer;
     private final DisplayController mDisplayController;
-    private final TaskViewTransitions mTaskViewTransitions;
+    private final TaskViewController mTaskViewController;
     private final Transitions mTransitions;
     private final SyncTransactionQueue mSyncQueue;
     private final ShellController mShellController;
@@ -309,6 +311,7 @@ public class BubbleController implements ConfigurationChangeListener,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler,
             @ShellBackgroundThread ShellExecutor bgExecutor,
+            TaskViewRepository taskViewRepository,
             TaskViewTransitions taskViewTransitions,
             Transitions transitions,
             SyncTransactionQueue syncQueue,
@@ -347,7 +350,12 @@ public class BubbleController implements ConfigurationChangeListener,
                 context.getResources().getDimensionPixelSize(
                         com.android.internal.R.dimen.importance_ring_stroke_width));
         mDisplayController = displayController;
-        mTaskViewTransitions = taskViewTransitions;
+        if (TaskViewTransitions.useRepo()) {
+            mTaskViewController = new TaskViewTransitions(transitions, taskViewRepository,
+                    organizer, syncQueue);
+        } else {
+            mTaskViewController = taskViewTransitions;
+        }
         mTransitions = transitions;
         mOneHandedOptional = oneHandedOptional;
         mDragAndDropController = dragAndDropController;
@@ -359,8 +367,9 @@ public class BubbleController implements ConfigurationChangeListener,
             @Override
             public BubbleTaskView create() {
                 TaskViewTaskController taskViewTaskController = new TaskViewTaskController(
-                        context, organizer, taskViewTransitions, syncQueue);
-                TaskView taskView = new TaskView(context, taskViewTaskController);
+                        context, organizer, mTaskViewController, syncQueue);
+                TaskView taskView = new TaskView(context, mTaskViewController,
+                        taskViewTaskController);
                 return new BubbleTaskView(taskView, mainExecutor);
             }
         };
@@ -841,14 +850,6 @@ public class BubbleController implements ConfigurationChangeListener,
     /** The task listener for events in bubble tasks. */
     public ShellTaskOrganizer getTaskOrganizer() {
         return mTaskOrganizer;
-    }
-
-    SyncTransactionQueue getSyncTransactionQueue() {
-        return mSyncQueue;
-    }
-
-    TaskViewTransitions getTaskViewTransitions() {
-        return mTaskViewTransitions;
     }
 
     /** Contains information to help position things on the screen. */
@@ -1439,9 +1440,9 @@ public class BubbleController implements ConfigurationChangeListener,
      *
      * @param intent the intent for the bubble.
      */
-    public void expandStackAndSelectBubble(Intent intent) {
+    public void expandStackAndSelectBubble(Intent intent, UserHandle user) {
         if (!Flags.enableBubbleAnything()) return;
-        Bubble b = mBubbleData.getOrCreateBubble(intent); // Removes from overflow
+        Bubble b = mBubbleData.getOrCreateBubble(intent, user); // Removes from overflow
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - intent=%s", intent);
         if (b.isInflated()) {
             mBubbleData.setSelectedBubbleAndExpandStack(b);
@@ -2648,8 +2649,8 @@ public class BubbleController implements ConfigurationChangeListener,
         }
 
         @Override
-        public void showAppBubble(Intent intent) {
-            mMainExecutor.execute(() -> mController.expandStackAndSelectBubble(intent));
+        public void showAppBubble(Intent intent, UserHandle user) {
+            mMainExecutor.execute(() -> mController.expandStackAndSelectBubble(intent, user));
         }
 
         @Override

@@ -23,6 +23,7 @@ import static android.Manifest.permission.CAPTURE_VIDEO_OUTPUT;
 import static android.Manifest.permission.CONTROL_DISPLAY_BRIGHTNESS;
 import static android.Manifest.permission.MANAGE_DISPLAYS;
 import static android.Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE;
+import static android.app.ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND;
 import static android.hardware.display.DisplayManager.SWITCHING_TYPE_NONE;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
@@ -2123,16 +2124,14 @@ public class DisplayManagerServiceTest {
         }
     }
 
-    /**
-     * Tests that there is a display change notification if the frame rate override
-     * list is updated.
-     */
     @Test
-    public void testShouldNotifyChangeWhenDisplayInfoFrameRateOverrideChanged() {
+    public void test_displayChangedNotified_displayInfoFramerateOverridden() {
         DisplayManagerService displayManager =
                 new DisplayManagerService(mContext, mShortMockedInjector);
         DisplayManagerService.BinderService displayManagerBinderService =
                 displayManager.new BinderService();
+        when(mMockFlags.isFramerateOverrideTriggersRrCallbacksEnabled()).thenReturn(false);
+
         registerDefaultDisplays(displayManager);
         displayManager.onBootPhase(SystemService.PHASE_WAIT_FOR_DEFAULT_DISPLAY);
 
@@ -2148,6 +2147,35 @@ public class DisplayManagerServiceTest {
         waitForIdleHandler(displayManager.getDisplayHandler());
         assertThat(callback.receivedEvents()).contains(EVENT_DISPLAY_BASIC_CHANGED);
         callback.clear();
+    }
+
+    /**
+     * Tests that there is a display change notification if the frame rate override
+     * list is updated.
+     */
+    @Test
+    public void test_refreshRateChangedNotified_displayInfoFramerateOverridden() {
+        when(mMockFlags.isFramerateOverrideTriggersRrCallbacksEnabled()).thenReturn(true);
+
+        DisplayManagerService displayManager =
+                new DisplayManagerService(mContext, mBasicInjector);
+        DisplayManagerService.BinderService displayManagerBinderService =
+                displayManager.new BinderService();
+        registerDefaultDisplays(displayManager);
+        displayManager.onBootPhase(SystemService.PHASE_WAIT_FOR_DEFAULT_DISPLAY);
+
+        FakeDisplayDevice displayDevice = createFakeDisplayDevice(displayManager, new float[]{60f});
+        FakeDisplayManagerCallback callback = registerDisplayListenerCallback(displayManager,
+                displayManagerBinderService, displayDevice);
+
+        int myUid = Process.myUid();
+        updateFrameRateOverride(displayManager, displayDevice,
+                new DisplayEventReceiver.FrameRateOverride[]{
+                        new DisplayEventReceiver.FrameRateOverride(myUid, 30f),
+                });
+        waitForIdleHandler(displayManager.getDisplayHandler());
+        assertThat(callback.receivedEvents()).contains(EVENT_DISPLAY_REFRESH_RATE_CHANGED);
+        callback.clear();
 
         updateFrameRateOverride(displayManager, displayDevice,
                 new DisplayEventReceiver.FrameRateOverride[]{
@@ -2155,7 +2183,7 @@ public class DisplayManagerServiceTest {
                         new DisplayEventReceiver.FrameRateOverride(1234, 30f),
                 });
         waitForIdleHandler(displayManager.getDisplayHandler());
-        assertThat(callback.receivedEvents()).doesNotContain(EVENT_DISPLAY_BASIC_CHANGED);
+        assertThat(callback.receivedEvents()).doesNotContain(EVENT_DISPLAY_REFRESH_RATE_CHANGED);
 
         updateFrameRateOverride(displayManager, displayDevice,
                 new DisplayEventReceiver.FrameRateOverride[]{
@@ -2164,7 +2192,7 @@ public class DisplayManagerServiceTest {
                         new DisplayEventReceiver.FrameRateOverride(5678, 30f),
                 });
         waitForIdleHandler(displayManager.getDisplayHandler());
-        assertThat(callback.receivedEvents()).contains(EVENT_DISPLAY_BASIC_CHANGED);
+        assertThat(callback.receivedEvents()).contains(EVENT_DISPLAY_REFRESH_RATE_CHANGED);
         callback.clear();
 
         updateFrameRateOverride(displayManager, displayDevice,
@@ -2173,7 +2201,7 @@ public class DisplayManagerServiceTest {
                         new DisplayEventReceiver.FrameRateOverride(5678, 30f),
                 });
         waitForIdleHandler(displayManager.getDisplayHandler());
-        assertThat(callback.receivedEvents()).contains(EVENT_DISPLAY_BASIC_CHANGED);
+        assertThat(callback.receivedEvents()).contains(EVENT_DISPLAY_REFRESH_RATE_CHANGED);
         callback.clear();
 
         updateFrameRateOverride(displayManager, displayDevice,
@@ -2181,7 +2209,7 @@ public class DisplayManagerServiceTest {
                         new DisplayEventReceiver.FrameRateOverride(5678, 30f),
                 });
         waitForIdleHandler(displayManager.getDisplayHandler());
-        assertThat(callback.receivedEvents()).doesNotContain(EVENT_DISPLAY_BASIC_CHANGED);
+        assertThat(callback.receivedEvents()).doesNotContain(EVENT_DISPLAY_REFRESH_RATE_CHANGED);
     }
 
     /**
@@ -2314,6 +2342,29 @@ public class DisplayManagerServiceTest {
         updateRenderFrameRate(displayManager, displayDevice, 20f);
         waitForIdleHandler(displayManager.getDisplayHandler());
         assertThat(callback.receivedEvents()).contains(EVENT_DISPLAY_REFRESH_RATE_CHANGED);
+        callback.clear();
+    }
+
+    @Test
+    public void test_doesNotNotifyRefreshRateChanged_whenAppInBackground() {
+        when(mMockFlags.isRefreshRateEventForForegroundAppsEnabled()).thenReturn(true);
+        DisplayManagerService displayManager =
+                new DisplayManagerService(mContext, mBasicInjector);
+        DisplayManagerService.BinderService displayManagerBinderService =
+                displayManager.new BinderService();
+        displayManager.windowManagerAndInputReady();
+        registerDefaultDisplays(displayManager);
+        displayManager.onBootPhase(SystemService.PHASE_WAIT_FOR_DEFAULT_DISPLAY);
+
+        FakeDisplayDevice displayDevice = createFakeDisplayDevice(displayManager, new float[]{60f});
+        FakeDisplayManagerCallback callback = registerDisplayListenerCallback(displayManager,
+                displayManagerBinderService, displayDevice);
+
+        when(mMockActivityManagerInternal.getUidProcessState(Process.myUid()))
+                .thenReturn(PROCESS_STATE_TRANSIENT_BACKGROUND);
+        updateRenderFrameRate(displayManager, displayDevice, 30f);
+        waitForIdleHandler(displayManager.getDisplayHandler());
+        assertEquals(0, callback.receivedEvents().size());
         callback.clear();
     }
 

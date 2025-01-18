@@ -356,6 +356,7 @@ import com.android.internal.util.Preconditions;
 import com.android.internal.util.XmlUtils;
 import com.android.internal.util.function.TriPredicate;
 import com.android.internal.widget.LockPatternUtils;
+import com.android.modules.expresslog.Counter;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.DeviceIdleInternal;
@@ -762,7 +763,7 @@ public class NotificationManagerService extends SystemService {
 
     private int mWarnRemoteViewsSizeBytes;
     private int mStripRemoteViewsSizeBytes;
-    private String[] mDefaultUnsupportedAdjustments;
+    protected String[] mDefaultUnsupportedAdjustments;
 
     @VisibleForTesting
     protected boolean mShowReviewPermissionsNotification;
@@ -4377,8 +4378,8 @@ public class NotificationManagerService extends SystemService {
         public @NonNull List<String> getUnsupportedAdjustmentTypes() {
             checkCallerIsSystemOrSystemUiOrShell();
             synchronized (mNotificationLock) {
-                return new ArrayList(mAssistants.mNasUnsupported.getOrDefault(
-                        UserHandle.getUserId(Binder.getCallingUid()), new HashSet<>()));
+                return new ArrayList(mAssistants.getUnsupportedAdjustments(
+                        UserHandle.getUserId(Binder.getCallingUid())));
             }
         }
 
@@ -7136,6 +7137,13 @@ public class NotificationManagerService extends SystemService {
             Slog.e(TAG, "exiting pullStats: bad request");
             return 0;
         }
+
+        @Override
+        public void incrementCounter(String metricId) {
+            if (android.app.Flags.nmBinderPerfLogNmThrottling() && metricId != null) {
+                Counter.logIncrementWithUid(metricId, Binder.getCallingUid());
+            }
+        }
     };
 
     private void handleNotificationPermissionChange(String pkg, @UserIdInt int userId) {
@@ -7214,6 +7222,7 @@ public class NotificationManagerService extends SystemService {
                     toRemove.add(potentialKey);
                 }
                 if (notificationClassification() && adjustments.containsKey(KEY_TYPE)) {
+                    mAssistants.setNasUnsupportedDefaults(r.getSbn().getNormalizedUserId());
                     if (!mAssistants.isAdjustmentKeyTypeAllowed(adjustments.getInt(KEY_TYPE))) {
                         toRemove.add(potentialKey);
                     } else if (notificationClassificationUi()
@@ -11867,9 +11876,9 @@ public class NotificationManagerService extends SystemService {
         static final String TAG_ENABLED_NOTIFICATION_ASSISTANTS = "enabled_assistants";
 
         private static final String ATT_TYPES = "types";
-        private static final String ATT_DENIED = "denied_adjustments";
+        private static final String ATT_DENIED = "user_denied_adjustments";
         private static final String ATT_ENABLED_TYPES = "enabled_key_types";
-        private static final String ATT_NAS_UNSUPPORTED = "unsupported_adjustments";
+        private static final String ATT_NAS_UNSUPPORTED = "nas_unsupported_adjustments";
         private static final String ATT_TYPES_DENIED_APPS = "types_denied_apps";
 
         private final Object mLock = new Object();
@@ -11965,9 +11974,6 @@ public class NotificationManagerService extends SystemService {
                 }
             } else {
                 mAllowedAdjustmentKeyTypes.addAll(List.of(DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES));
-                if (mDefaultUnsupportedAdjustments != null) {
-                    mAllowedAdjustments.removeAll(List.of(mDefaultUnsupportedAdjustments));
-                }
             }
         }
 
@@ -12487,7 +12493,7 @@ public class NotificationManagerService extends SystemService {
                 }
             } else {
                 if (android.service.notification.Flags.notificationClassification()) {
-                    mNasUnsupported.put(userId, new HashSet<>());
+                    setNasUnsupportedDefaults(userId);
                 }
             }
             super.setPackageOrComponentEnabled(pkgOrComponent, userId, isPrimary, enabled, userSet);
@@ -12528,8 +12534,8 @@ public class NotificationManagerService extends SystemService {
             if (!android.service.notification.Flags.notificationClassification()) {
                 return;
             }
-            HashSet<String> disabledAdjustments =
-                    mNasUnsupported.getOrDefault(info.userid, new HashSet<>());
+            setNasUnsupportedDefaults(info.userid);
+            HashSet<String> disabledAdjustments = mNasUnsupported.get(info.userid);
             if (supported) {
                 disabledAdjustments.remove(key);
             } else {
@@ -12545,7 +12551,15 @@ public class NotificationManagerService extends SystemService {
             if (!android.service.notification.Flags.notificationClassification()) {
                 return new HashSet<>();
             }
-            return mNasUnsupported.getOrDefault(userId, new HashSet<>());
+            setNasUnsupportedDefaults(userId);
+            return mNasUnsupported.get(userId);
+        }
+
+        private void setNasUnsupportedDefaults(@UserIdInt int userId) {
+            if (mNasUnsupported != null && !mNasUnsupported.containsKey(userId)) {
+                mNasUnsupported.put(userId, new HashSet(List.of(mDefaultUnsupportedAdjustments)));
+                handleSavePolicyFile();
+            }
         }
 
         @Override
@@ -12658,7 +12672,7 @@ public class NotificationManagerService extends SystemService {
                 List<String> unsupportedAdjustments = new ArrayList(
                         mNasUnsupported.getOrDefault(
                                 UserHandle.getUserId(Binder.getCallingUid()),
-                                new HashSet<>())
+                                new HashSet(List.of(mDefaultUnsupportedAdjustments)))
                 );
                 bundlesAllowed = !unsupportedAdjustments.contains(Adjustment.KEY_TYPE);
             }
