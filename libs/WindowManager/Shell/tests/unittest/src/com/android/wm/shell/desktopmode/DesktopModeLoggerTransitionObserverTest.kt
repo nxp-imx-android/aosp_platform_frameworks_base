@@ -38,6 +38,7 @@ import android.view.WindowManager.TRANSIT_WAKE
 import android.window.IWindowContainerToken
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
+import android.window.TransitionInfo.FLAG_MOVED_TO_TOP
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito
@@ -47,8 +48,10 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.FocusReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.TaskUpdate
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER_DESKTOP_FROM_APP_FROM_OVERVIEW
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER_DESKTOP_FROM_APP_HANDLE_MENU_BUTTON
@@ -174,7 +177,7 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
 
         verifyTaskAddedAndEnterLogging(
             EnterReason.APP_FREEFORM_INTENT,
-            DEFAULT_TASK_UPDATE.copy(visibleTaskCount = 1),
+            DEFAULT_TASK_UPDATE.copy(visibleTaskCount = 1, focusReason = FocusReason.UNKNOWN),
         )
     }
 
@@ -634,7 +637,15 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
         callOnTransitionReady(transitionInfo)
 
         verify(desktopModeEventLogger, times(1))
-            .logTaskAdded(eq(DEFAULT_TASK_UPDATE.copy(instanceId = 2, visibleTaskCount = 2)))
+            .logTaskAdded(
+                eq(
+                    DEFAULT_TASK_UPDATE.copy(
+                        instanceId = 2,
+                        visibleTaskCount = 2,
+                        focusReason = FocusReason.UNKNOWN,
+                    )
+                )
+            )
         verify(desktopModeEventLogger, never()).logSessionEnter(any())
     }
 
@@ -687,6 +698,34 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
                         taskWidth = DEFAULT_TASK_WIDTH + 100,
                         taskHeight = DEFAULT_TASK_HEIGHT - 100,
                         visibleTaskCount = 1,
+                    )
+                )
+            )
+        verifyZeroInteractions(desktopModeEventLogger)
+    }
+
+    @Test
+    fun sessionAlreadyStarted_taskFocusChanged_logsTaskUpdate() {
+        val taskInfo1 = createTaskInfo(WINDOWING_MODE_FREEFORM, id = 1)
+        val taskInfo2 = createTaskInfo(WINDOWING_MODE_FREEFORM, id = 2)
+        transitionObserver.addTaskInfosToCachedMap(taskInfo1)
+        transitionObserver.addTaskInfosToCachedMap(taskInfo2)
+        transitionObserver.isSessionActive = true
+        transitionObserver.setFocusedTaskForTesting(taskInfo1)
+
+        val task2FocusedChange = createChange(TRANSIT_CHANGE, taskInfo2)
+        task2FocusedChange.flags = FLAG_MOVED_TO_TOP
+        val transitionInfo =
+            TransitionInfoBuilder(TRANSIT_CHANGE, 0).addChange(task2FocusedChange).build()
+        callOnTransitionReady(transitionInfo)
+
+        verify(desktopModeEventLogger, times(1))
+            .logTaskInfoChanged(
+                eq(
+                    DEFAULT_TASK_UPDATE.copy(
+                        instanceId = 2,
+                        visibleTaskCount = 2,
+                        focusReason = FocusReason.UNKNOWN,
                     )
                 )
             )
@@ -790,6 +829,38 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
                         instanceId = 2,
                         visibleTaskCount = 1,
                         minimizeReason = MinimizeReason.TASK_LIMIT,
+                    )
+                )
+            )
+    }
+
+    @Test
+    fun onTransitionReady_taskIsBeingUnminimized_logsTaskUnminimized() {
+        transitionObserver.isSessionActive = true
+        transitionObserver.addTaskInfosToCachedMap(createTaskInfo(WINDOWING_MODE_FREEFORM, id = 1))
+        val taskInfo2 = createTaskInfo(WINDOWING_MODE_FREEFORM, id = 2)
+        val transitionInfo =
+            TransitionInfoBuilder(TRANSIT_TO_FRONT, /* flags= */ 0)
+                .addChange(createChange(TRANSIT_TO_FRONT, taskInfo2))
+                .build()
+        `when`(desktopTasksLimiter.getUnminimizingTask(any()))
+            .thenReturn(
+                DesktopTasksLimiter.TaskDetails(
+                    taskInfo2.displayId,
+                    taskInfo2.taskId,
+                    unminimizeReason = UnminimizeReason.TASKBAR_MANAGE_WINDOW,
+                )
+            )
+
+        callOnTransitionReady(transitionInfo)
+
+        verify(desktopModeEventLogger, times(1))
+            .logTaskAdded(
+                eq(
+                    DEFAULT_TASK_UPDATE.copy(
+                        instanceId = 2,
+                        visibleTaskCount = 2,
+                        unminimizeReason = UnminimizeReason.TASKBAR_MANAGE_WINDOW,
                     )
                 )
             )

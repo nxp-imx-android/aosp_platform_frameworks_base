@@ -311,9 +311,9 @@ public class SizeCompatTests extends WindowTestsBase {
                 .build();
         mTask.addChild(translucentActivity);
 
-        spyOn(translucentActivity.mAppCompatController.getAppCompatLetterboxPolicy());
+        spyOn(translucentActivity.mAppCompatController.getLetterboxPolicy());
         doReturn(true).when(translucentActivity.mAppCompatController
-                .getAppCompatLetterboxPolicy()).shouldShowLetterboxUi(any());
+                .getLetterboxPolicy()).shouldShowLetterboxUi(any());
 
         addWindowToActivity(translucentActivity);
         translucentActivity.mRootWindowContainer.performSurfacePlacement();
@@ -695,12 +695,12 @@ public class SizeCompatTests extends WindowTestsBase {
 
         doReturn(true).when(mActivity).isVisibleRequested();
 
-        assertTrue(mActivity.mAppCompatController.getAppCompatLetterboxPolicy()
+        assertTrue(mActivity.mAppCompatController.getLetterboxPolicy()
                 .shouldShowLetterboxUi(mActivity.findMainWindow()));
 
         window.mAttrs.flags |= FLAG_SHOW_WALLPAPER;
 
-        assertFalse(mActivity.mAppCompatController.getAppCompatLetterboxPolicy()
+        assertFalse(mActivity.mAppCompatController.getLetterboxPolicy()
                 .shouldShowLetterboxUi(mActivity.findMainWindow()));
     }
 
@@ -1788,7 +1788,7 @@ public class SizeCompatTests extends WindowTestsBase {
         mActivity.mRootWindowContainer.performSurfacePlacement();
 
         LetterboxDetails letterboxDetails = mActivity.mAppCompatController
-                .getAppCompatLetterboxPolicy().getLetterboxDetails();
+                .getLetterboxPolicy().getLetterboxDetails();
 
         assertEquals(dh / scale, letterboxDetails.getLetterboxInnerBounds().width());
         assertEquals(dw / scale, letterboxDetails.getLetterboxInnerBounds().height());
@@ -3827,7 +3827,7 @@ public class SizeCompatTests extends WindowTestsBase {
         mActivity.mRootWindowContainer.performSurfacePlacement();
 
         LetterboxDetails letterboxDetails = mActivity.mAppCompatController
-                .getAppCompatLetterboxPolicy().getLetterboxDetails();
+                .getLetterboxPolicy().getLetterboxDetails();
 
         // Letterboxed activity at bottom
         assertEquals(new Rect(0, 2100, 1400, 2800), mActivity.getBounds());
@@ -4683,7 +4683,7 @@ public class SizeCompatTests extends WindowTestsBase {
 
         prepareUnresizable(mActivity, SCREEN_ORIENTATION_PORTRAIT);
 
-        assertFalse(mActivity.mAppCompatController.getAppCompatLetterboxPolicy()
+        assertFalse(mActivity.mAppCompatController.getLetterboxPolicy()
                 .isEligibleForLetterboxEducation());
     }
 
@@ -4695,7 +4695,7 @@ public class SizeCompatTests extends WindowTestsBase {
 
         prepareUnresizable(mActivity, SCREEN_ORIENTATION_PORTRAIT);
 
-        assertFalse(mActivity.mAppCompatController.getAppCompatLetterboxPolicy()
+        assertFalse(mActivity.mAppCompatController.getLetterboxPolicy()
                 .isEligibleForLetterboxEducation());
     }
 
@@ -4718,7 +4718,7 @@ public class SizeCompatTests extends WindowTestsBase {
                 false /*moveParents*/, "test");
         organizer.mPrimary.setBounds(0, 0, 1000, 600);
 
-        assertFalse(mActivity.mAppCompatController.getAppCompatLetterboxPolicy()
+        assertFalse(mActivity.mAppCompatController.getLetterboxPolicy()
                 .isEligibleForLetterboxEducation());
         assertEquals(WINDOWING_MODE_MULTI_WINDOW, mActivity.getWindowingMode());
     }
@@ -4731,7 +4731,7 @@ public class SizeCompatTests extends WindowTestsBase {
 
         prepareUnresizable(mActivity, SCREEN_ORIENTATION_LANDSCAPE);
 
-        assertFalse(mActivity.mAppCompatController.getAppCompatLetterboxPolicy()
+        assertFalse(mActivity.mAppCompatController.getLetterboxPolicy()
                 .isEligibleForLetterboxEducation());
         assertTrue(mActivity.mAppCompatController.getAspectRatioPolicy()
                 .isLetterboxedForFixedOrientationAndAspectRatio());
@@ -4749,7 +4749,7 @@ public class SizeCompatTests extends WindowTestsBase {
                 createWindowState(new WindowManager.LayoutParams(TYPE_APPLICATION_STARTING),
                         mActivity));
 
-        assertFalse(mActivity.mAppCompatController.getAppCompatLetterboxPolicy()
+        assertFalse(mActivity.mAppCompatController.getLetterboxPolicy()
                 .isEligibleForLetterboxEducation());
 
         // Verify that after removing the starting window isEligibleForLetterboxEducation returns
@@ -4757,7 +4757,7 @@ public class SizeCompatTests extends WindowTestsBase {
         spyOn(mTask);
         mActivity.removeStartingWindow();
 
-        assertTrue(mActivity.mAppCompatController.getAppCompatLetterboxPolicy()
+        assertTrue(mActivity.mAppCompatController.getLetterboxPolicy()
                 .isEligibleForLetterboxEducation());
         verify(mTask).dispatchTaskInfoChangedIfNeeded(true);
     }
@@ -4774,7 +4774,7 @@ public class SizeCompatTests extends WindowTestsBase {
                 createWindowState(new WindowManager.LayoutParams(TYPE_APPLICATION_STARTING),
                         mActivity));
 
-        assertFalse(mActivity.mAppCompatController.getAppCompatLetterboxPolicy()
+        assertFalse(mActivity.mAppCompatController.getLetterboxPolicy()
                 .isEligibleForLetterboxEducation());
 
         // Verify that after removing the starting window isEligibleForLetterboxEducation still
@@ -4782,7 +4782,7 @@ public class SizeCompatTests extends WindowTestsBase {
         spyOn(mTask);
         mActivity.removeStartingWindow();
 
-        assertFalse(mActivity.mAppCompatController.getAppCompatLetterboxPolicy()
+        assertFalse(mActivity.mAppCompatController.getLetterboxPolicy()
                 .isEligibleForLetterboxEducation());
         verify(mTask, never()).dispatchTaskInfoChangedIfNeeded(true);
     }
@@ -4795,7 +4795,7 @@ public class SizeCompatTests extends WindowTestsBase {
 
         prepareUnresizable(mActivity, SCREEN_ORIENTATION_PORTRAIT);
 
-        assertTrue(mActivity.mAppCompatController.getAppCompatLetterboxPolicy()
+        assertTrue(mActivity.mAppCompatController.getLetterboxPolicy()
                 .isEligibleForLetterboxEducation());
         assertTrue(mActivity.mAppCompatController.getAspectRatioPolicy()
                 .isLetterboxedForFixedOrientationAndAspectRatio());
@@ -4811,7 +4811,7 @@ public class SizeCompatTests extends WindowTestsBase {
 
         rotateDisplay(mActivity.mDisplayContent, ROTATION_90);
 
-        assertTrue(mActivity.mAppCompatController.getAppCompatLetterboxPolicy()
+        assertTrue(mActivity.mAppCompatController.getLetterboxPolicy()
                 .isEligibleForLetterboxEducation());
         assertFalse(mActivity.mAppCompatController.getAspectRatioPolicy()
                 .isLetterboxedForFixedOrientationAndAspectRatio());
@@ -4834,6 +4834,29 @@ public class SizeCompatTests extends WindowTestsBase {
         assertEquals(mActivity.getState(), PAUSED);
         assertTrue(mActivity.isVisible());
         assertTrue(mTask.getTaskInfo().appCompatTaskInfo.isTopActivityInSizeCompat());
+    }
+
+    @Test
+    public void testParentRotationIgnoredForSCMActivityInDesktopMode() {
+        final TaskBuilder taskBuilder =
+                new TaskBuilder(mSupervisor).setWindowingMode(WINDOWING_MODE_FREEFORM);
+        setUpDisplaySizeWithApp(2500, 1600, taskBuilder);
+        prepareUnresizable(mActivity, SCREEN_ORIENTATION_PORTRAIT);
+        assertFitted();
+
+        // Simulate entering desktop mode by changing app to freeform and reducing size.
+        mTask.getWindowConfiguration().setWindowingMode(WINDOWING_MODE_FREEFORM);
+        mTask.getWindowConfiguration().setAppBounds(new Rect(0, 0, 500, 1250));
+        mActivity.onConfigurationChanged(mTask.getConfiguration());
+        // Activity should now be in SCM mode.
+        assertDownScaled();
+
+        final int originalRotation =
+                mActivity.getResolvedOverrideConfiguration().windowConfiguration.getRotation();
+        rotateDisplay(mActivity.mDisplayContent, ROTATION_180);
+        // Resolved orientation should match original orientation before device was rotated.
+        assertEquals(originalRotation,
+                mActivity.getResolvedOverrideConfiguration().windowConfiguration.getRotation());
     }
 
     /**
