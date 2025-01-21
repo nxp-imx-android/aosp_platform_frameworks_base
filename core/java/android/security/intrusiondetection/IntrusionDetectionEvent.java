@@ -19,10 +19,10 @@ package android.security.intrusiondetection;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.app.admin.ConnectEvent;
 import android.app.admin.DnsEvent;
 import android.app.admin.SecurityLog.SecurityEvent;
-import android.annotation.SystemApi;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.security.Flags;
@@ -223,13 +223,13 @@ public final class IntrusionDetectionEvent implements Parcelable {
         out.writeInt(mType);
         switch (mType) {
             case SECURITY_EVENT:
-                out.writeParcelable(mSecurityEvent, flags);
+                mSecurityEvent.writeToParcel(out, flags);
                 break;
             case NETWORK_EVENT_DNS:
-                out.writeParcelable(mNetworkEventDns, flags);
+                mNetworkEventDns.writeToParcel(out, flags);
                 break;
             case NETWORK_EVENT_CONNECT:
-                out.writeParcelable(mNetworkEventConnect, flags);
+                mNetworkEventConnect.writeToParcel(out, flags);
                 break;
             default:
                 throw new IllegalArgumentException("Invalid event type: " + mType);
