@@ -1358,7 +1358,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             // Gets summary for the buds which are in the audio sharing.
             int groupId = BluetoothUtils.getGroupId(this);
             int primaryGroupId = BluetoothUtils.getPrimaryGroupIdForBroadcast(
-                    mContext.getContentResolver());
+                    mContext.getContentResolver(), mBluetoothManager);
             if ((primaryGroupId != BluetoothCsipSetCoordinator.GROUP_ID_INVALID)
                     ? (groupId == primaryGroupId) : isActiveDevice(BluetoothProfile.LE_AUDIO)) {
                 // The buds are primary buds
