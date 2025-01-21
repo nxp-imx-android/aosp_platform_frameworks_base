@@ -59,6 +59,16 @@ void DumpChunksToString(LoadedApk* loaded_apk, std::string* output) {
   output_stream.Flush();
 }
 
+void DumpXmlTreeToString(LoadedApk* loaded_apk, std::string file, std::string* output) {
+  StringOutputStream output_stream(output);
+  Printer printer(&output_stream);
+
+  auto xml = loaded_apk->LoadXml(file, &noop_diag);
+  ASSERT_NE(xml, nullptr);
+  Debug::DumpXml(*xml, &printer);
+  output_stream.Flush();
+}
+
 TEST_F(FlaggedResourcesTest, DisabledStringRemovedFromPool) {
   auto apk_path = file::BuildPath({android::base::GetExecutableDirectory(), "resapp.apk"});
   auto loaded_apk = LoadedApk::LoadApkFromPath(apk_path, &noop_diag);
@@ -146,6 +156,17 @@ TEST_F(FlaggedResourcesTest, TwoValuesSameDisabledFlagDifferentFiles) {
 
   ASSERT_FALSE(Link(link_args, compiled_files_dir, &diag));
   ASSERT_TRUE(diag.GetLog().contains("duplicate value for resource 'bool1'"));
+}
+
+TEST_F(FlaggedResourcesTest, EnabledXmlELementAttributeRemoved) {
+  auto apk_path = file::BuildPath({android::base::GetExecutableDirectory(), "resapp.apk"});
+  auto loaded_apk = LoadedApk::LoadApkFromPath(apk_path, &noop_diag);
+
+  std::string output;
+  DumpXmlTreeToString(loaded_apk.get(), "res/layout-v22/layout1.xml", &output);
+  ASSERT_FALSE(output.contains("test.package.trueFlag"));
+  ASSERT_TRUE(output.contains("FIND_ME"));
+  ASSERT_TRUE(output.contains("test.package.readWriteFlag"));
 }
 
 }  // namespace aapt
