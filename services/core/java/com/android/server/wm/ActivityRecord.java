@@ -762,13 +762,6 @@ final class ActivityRecord extends WindowToken {
     boolean mLastImeShown;
 
     /**
-     * When set to true, the IME insets will be frozen until the next app becomes IME input target.
-     * @see InsetsPolicy#adjustVisibilityForIme
-     * @see ImeInsetsSourceProvider#updateClientVisibility
-     */
-    boolean mImeInsetsFrozenUntilStartInput;
-
-    /**
      * A flag to determine if this AR is in the process of closing or entering PIP. This is needed
      * to help AR know that the app is in the process of closing but hasn't yet started closing on
      * the WM side.
@@ -1173,8 +1166,6 @@ final class ActivityRecord extends WindowToken {
                 pw.print(" launchMode="); pw.println(launchMode);
         pw.print(prefix); pw.print("mActivityType=");
                 pw.println(activityTypeToString(getActivityType()));
-        pw.print(prefix); pw.print("mImeInsetsFrozenUntilStartInput=");
-                pw.println(mImeInsetsFrozenUntilStartInput);
         if (requestedVrComponent != null) {
             pw.print(prefix);
             pw.print("requestedVrComponent=");
@@ -5876,10 +5867,6 @@ final class ActivityRecord extends WindowToken {
         }
 
         final DisplayContent displayContent = getDisplayContent();
-        if (!visible) {
-            mImeInsetsFrozenUntilStartInput = true;
-        }
-
         if (!displayContent.mClosingApps.contains(this)
                 && !displayContent.mOpeningApps.contains(this)
                 && !fromTransition) {
@@ -6945,14 +6932,6 @@ final class ActivityRecord extends WindowToken {
             // closing activity having to wait until idle timeout to be stopped or destroyed if the
             // next activity won't report idle (e.g. repeated view animation).
             mTaskSupervisor.scheduleProcessStoppingAndFinishingActivitiesIfNeeded();
-
-            // If the activity is visible, but no windows are eligible to start input, unfreeze
-            // to avoid permanently frozen IME insets.
-            if (mImeInsetsFrozenUntilStartInput && getWindow(
-                    win -> WindowManager.LayoutParams.mayUseInputMethod(win.mAttrs.flags))
-                    == null) {
-                mImeInsetsFrozenUntilStartInput = false;
-            }
         }
     }
 

@@ -49,17 +49,13 @@ import static android.content.res.Configuration.UI_MODE_TYPE_DESK;
 import static android.os.InputConstants.DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
 import static android.os.Process.NOBODY_UID;
 import static android.view.Display.DEFAULT_DISPLAY;
-import static android.view.InsetsSource.ID_IME;
-import static android.view.WindowInsets.Type.ime;
 import static android.view.WindowManager.LayoutParams.FIRST_APPLICATION_WINDOW;
 import static android.view.WindowManager.LayoutParams.FIRST_SUB_WINDOW;
-import static android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
 import static android.view.WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD;
 import static android.view.WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_STARTING;
 import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
-import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OLD_ACTIVITY_OPEN;
 import static android.view.WindowManager.TRANSIT_PIP;
@@ -125,7 +121,6 @@ import android.app.servertransaction.ClientTransaction;
 import android.app.servertransaction.ClientTransactionItem;
 import android.app.servertransaction.DestroyActivityItem;
 import android.app.servertransaction.PauseActivityItem;
-import android.app.servertransaction.WindowStateResizeItem;
 import android.compat.testing.PlatformCompatChangeRule;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -149,8 +144,6 @@ import android.view.DisplayInfo;
 import android.view.IRemoteAnimationFinishedCallback;
 import android.view.IRemoteAnimationRunner.Stub;
 import android.view.IWindowManager;
-import android.view.InsetsSource;
-import android.view.InsetsState;
 import android.view.RemoteAnimationAdapter;
 import android.view.RemoteAnimationTarget;
 import android.view.Surface;
@@ -171,7 +164,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 
 import java.util.ArrayList;
@@ -3368,178 +3360,6 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertFalse(activity.isVisibleRequested());
         assertFalse(activity.mDisplayContent.mOpeningApps.contains(activity));
         assertFalse(activity.mDisplayContent.mClosingApps.contains(activity));
-    }
-
-    @SetupWindows(addWindows = W_INPUT_METHOD)
-    @Test
-    public void testImeInsetsFrozenFlag_resetWhenNoImeFocusableInActivity() {
-        final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
-        makeWindowVisibleAndDrawn(app, mImeWindow);
-        mDisplayContent.setImeLayeringTarget(app);
-        mDisplayContent.setImeInputTarget(app);
-
-        // Simulate app is closing and expect the last IME is shown and IME insets is frozen.
-        mDisplayContent.mOpeningApps.clear();
-        app.mActivityRecord.commitVisibility(false, false);
-        app.mActivityRecord.onWindowsGone();
-
-        assertTrue(app.mActivityRecord.mLastImeShown);
-        assertTrue(app.mActivityRecord.mImeInsetsFrozenUntilStartInput);
-
-        // Expect IME insets frozen state will reset when the activity has no IME focusable window.
-        app.mActivityRecord.forAllWindows(w -> {
-            w.mAttrs.flags |= FLAG_ALT_FOCUSABLE_IM;
-            return true;
-        }, true);
-
-        app.mActivityRecord.commitVisibility(true, false);
-        app.mActivityRecord.onWindowsVisible();
-
-        assertFalse(app.mActivityRecord.mImeInsetsFrozenUntilStartInput);
-    }
-
-    @SetupWindows(addWindows = W_INPUT_METHOD)
-    @Test
-    public void testImeInsetsFrozenFlag_resetWhenReportedToBeImeInputTarget() {
-        final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
-
-        mDisplayContent.getInsetsStateController().getImeSourceProvider().setWindowContainer(
-                mImeWindow, null, null);
-        mImeWindow.getControllableInsetProvider().setServerVisible(true);
-
-        InsetsSource imeSource = new InsetsSource(ID_IME, ime());
-        app.mAboveInsetsState.addSource(imeSource);
-        mDisplayContent.setImeLayeringTarget(app);
-        mDisplayContent.updateImeInputAndControlTarget(app);
-
-        InsetsState state = app.getInsetsState();
-        assertFalse(state.getOrCreateSource(imeSource.getId(), ime()).isVisible());
-        assertTrue(state.getOrCreateSource(imeSource.getId(), ime()).getFrame().isEmpty());
-
-        // Simulate app is closing and expect IME insets is frozen.
-        mDisplayContent.mOpeningApps.clear();
-        app.mActivityRecord.commitVisibility(false, false);
-        app.mActivityRecord.onWindowsGone();
-        assertTrue(app.mActivityRecord.mImeInsetsFrozenUntilStartInput);
-
-        // Simulate app re-start input or turning screen off/on then unlocked by un-secure
-        // keyguard to back to the app, expect IME insets is not frozen
-        app.mActivityRecord.commitVisibility(true, false);
-        mDisplayContent.updateImeInputAndControlTarget(app);
-        performSurfacePlacementAndWaitForWindowAnimator();
-
-        assertFalse(app.mActivityRecord.mImeInsetsFrozenUntilStartInput);
-
-        imeSource.setVisible(true);
-        imeSource.setFrame(new Rect(100, 400, 500, 500));
-        app.mAboveInsetsState.addSource(imeSource);
-
-        // Verify when IME is visible and the app can receive the right IME insets from policy.
-        makeWindowVisibleAndDrawn(app, mImeWindow);
-        state = app.getInsetsState();
-        assertTrue(state.peekSource(ID_IME).isVisible());
-        assertEquals(state.peekSource(ID_IME).getFrame(), imeSource.getFrame());
-    }
-
-    @SetupWindows(addWindows = { W_ACTIVITY, W_INPUT_METHOD })
-    @Test
-    public void testImeInsetsFrozenFlag_noDispatchVisibleInsetsWhenAppNotRequest()
-            throws RemoteException {
-        final WindowState app1 = newWindowBuilder("app1", TYPE_APPLICATION).build();
-        final WindowState app2 = newWindowBuilder("app2", TYPE_APPLICATION).build();
-
-        mDisplayContent.getInsetsStateController().getImeSourceProvider().setWindowContainer(
-                mImeWindow, null, null);
-        mImeWindow.getControllableInsetProvider().setServerVisible(true);
-
-        // Simulate app2 is closing and let app1 is visible to be IME targets.
-        makeWindowVisibleAndDrawn(app1, mImeWindow);
-        mDisplayContent.setImeLayeringTarget(app1);
-        mDisplayContent.updateImeInputAndControlTarget(app1);
-        app2.mActivityRecord.commitVisibility(false, false);
-
-        // app1 requests IME visible.
-        app1.setRequestedVisibleTypes(ime(), ime());
-        mDisplayContent.getInsetsStateController().onRequestedVisibleTypesChanged(app1,
-                null /* statsToken */);
-
-        // Verify app1's IME insets is visible and app2's IME insets frozen flag set.
-        assertTrue(app1.getInsetsState().peekSource(ID_IME).isVisible());
-        assertTrue(app2.mActivityRecord.mImeInsetsFrozenUntilStartInput);
-
-        // Simulate switching to app2 to make it visible to be IME targets.
-        spyOn(app2);
-        spyOn(app2.mClient);
-        spyOn(app2.getProcess());
-        ArgumentCaptor<InsetsState> insetsStateCaptor = ArgumentCaptor.forClass(InsetsState.class);
-        doReturn(true).when(app2).isReadyToDispatchInsetsState();
-        mDisplayContent.setImeLayeringTarget(app2);
-        app2.mActivityRecord.commitVisibility(true, false);
-        mDisplayContent.updateImeInputAndControlTarget(app2);
-        performSurfacePlacementAndWaitForWindowAnimator();
-
-        // Verify after unfreezing app2's IME insets state, we won't dispatch visible IME insets
-        // to client if the app didn't request IME visible.
-        assertFalse(app2.mActivityRecord.mImeInsetsFrozenUntilStartInput);
-
-        verify(app2.getProcess(), atLeastOnce()).scheduleClientTransactionItem(
-                isA(WindowStateResizeItem.class));
-        assertFalse(app2.getInsetsState().isSourceOrDefaultVisible(ID_IME, ime()));
-    }
-
-    @Test
-    public void testImeInsetsFrozenFlag_multiWindowActivities() {
-        final WindowToken imeToken = createTestWindowToken(TYPE_INPUT_METHOD, mDisplayContent);
-        final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).setWindowToken(
-                imeToken).build();
-        makeWindowVisibleAndDrawn(ime);
-
-        // Create a split-screen root task with activity1 and activity 2.
-        final Task task = new TaskBuilder(mSupervisor)
-                .setCreateParentTask(true).setCreateActivity(true).build();
-        task.getRootTask().setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
-        final ActivityRecord activity1 = task.getTopNonFinishingActivity();
-        activity1.getTask().setResumedActivity(activity1, "testApp1");
-
-        final ActivityRecord activity2 = new TaskBuilder(mSupervisor)
-                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
-                .setCreateActivity(true).build().getTopMostActivity();
-        activity2.getTask().setResumedActivity(activity2, "testApp2");
-        activity2.getTask().setParent(task.getRootTask());
-
-        // Simulate activity1 and activity2 both have set mImeInsetsFrozenUntilStartInput when
-        // invisible to user.
-        activity1.mImeInsetsFrozenUntilStartInput = true;
-        activity2.mImeInsetsFrozenUntilStartInput = true;
-
-        final WindowState app1 = newWindowBuilder("app1", TYPE_APPLICATION).setWindowToken(
-                activity1).build();
-        final WindowState app2 = newWindowBuilder("app2", TYPE_APPLICATION).setWindowToken(
-                activity2).build();
-        makeWindowVisibleAndDrawn(app1, app2);
-
-        final InsetsStateController controller = mDisplayContent.getInsetsStateController();
-        controller.getImeSourceProvider().setWindowContainer(
-                ime, null, null);
-        ime.getControllableInsetProvider().setServerVisible(true);
-
-        // app1 starts input and expect IME insets for all activities in split-screen will be
-        // frozen until the input started.
-        mDisplayContent.setImeLayeringTarget(app1);
-        mDisplayContent.updateImeInputAndControlTarget(app1);
-        mDisplayContent.computeImeTarget(true /* updateImeTarget */);
-        performSurfacePlacementAndWaitForWindowAnimator();
-
-        assertEquals(app1, mDisplayContent.getImeInputTarget());
-        assertFalse(activity1.mImeInsetsFrozenUntilStartInput);
-        assertFalse(activity2.mImeInsetsFrozenUntilStartInput);
-
-        app1.setRequestedVisibleTypes(ime());
-        controller.onRequestedVisibleTypesChanged(app1, null /* statsToken */);
-
-        // Expect all activities in split-screen will get IME insets visible state
-        assertTrue(app1.getInsetsState().peekSource(ID_IME).isVisible());
-        assertTrue(app2.getInsetsState().peekSource(ID_IME).isVisible());
     }
 
     @Test
