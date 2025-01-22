@@ -45,9 +45,12 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
 import androidx.compose.ui.zIndex
+import com.android.compose.animation.scene.UserActionResult.ShowOverlay.HideCurrentOverlays
 import com.android.compose.animation.scene.content.Content
 import com.android.compose.animation.scene.content.Overlay
 import com.android.compose.animation.scene.content.Scene
@@ -78,7 +81,7 @@ internal class SceneTransitionLayoutImpl(
     internal var swipeSourceDetector: SwipeSourceDetector,
     internal var swipeDetector: SwipeDetector,
     internal var transitionInterceptionThreshold: Float,
-    builder: SceneTransitionLayoutScope.() -> Unit,
+    builder: SceneTransitionLayoutScope<InternalContentScope>.() -> Unit,
 
     /**
      * The scope that should be used by *animations started by this layout only*, i.e. animations
@@ -221,19 +224,30 @@ internal class SceneTransitionLayoutImpl(
         state.checkThread()
     }
 
-    internal fun scene(key: SceneKey): Scene {
-        return scenes[key] ?: error("Scene $key is not configured")
+    private fun sceneOrNull(key: SceneKey): Scene? {
+        return scenes[key]
+            ?: ancestors
+                .fastFirstOrNull { it.layoutImpl.scenes[key] != null }
+                ?.layoutImpl
+                ?.scenes
+                ?.get(key)
     }
 
-    internal fun contentOrNull(key: ContentKey): Content? {
-        return when (key) {
-            is SceneKey -> scenes[key]
-            is OverlayKey -> overlays[key]
-        }
+    private fun overlayOrNull(key: OverlayKey): Overlay? {
+        return overlays[key]
+            ?: ancestors
+                .fastFirstOrNull { it.layoutImpl.overlays[key] != null }
+                ?.layoutImpl
+                ?.overlays
+                ?.get(key)
+    }
+
+    internal fun scene(key: SceneKey): Scene {
+        return sceneOrNull(key) ?: error("Scene $key is not configured")
     }
 
     internal fun overlay(key: OverlayKey): Overlay {
-        return overlays[key] ?: error("Overlay $key is not configured")
+        return overlayOrNull(key) ?: error("Overlay $key is not configured")
     }
 
     internal fun content(key: ContentKey): Content {
@@ -241,6 +255,10 @@ internal class SceneTransitionLayoutImpl(
             is SceneKey -> scene(key)
             is OverlayKey -> overlay(key)
         }
+    }
+
+    internal fun isAncestorContent(content: ContentKey): Boolean {
+        return ancestors.fastAny { it.inContent == content }
     }
 
     internal fun contentForUserActions(): Content {
@@ -266,7 +284,7 @@ internal class SceneTransitionLayoutImpl(
     }
 
     internal fun updateContents(
-        builder: SceneTransitionLayoutScope.() -> Unit,
+        builder: SceneTransitionLayoutScope<InternalContentScope>.() -> Unit,
         layoutDirection: LayoutDirection,
     ) {
         // Keep a reference of the current contents. After processing [builder], the contents that
@@ -275,15 +293,17 @@ internal class SceneTransitionLayoutImpl(
         val overlaysToRemove =
             if (_overlays == null) mutableSetOf() else overlays.keys.toMutableSet()
 
+        val parentZIndex =
+            if (ancestors.isEmpty()) 0L else content(ancestors.last().inContent).globalZIndex
         // The incrementing zIndex of each scene.
-        var zIndex = 0f
+        var zIndex = 0
         var overlaysDefined = false
 
-        object : SceneTransitionLayoutScope {
+        object : SceneTransitionLayoutScope<InternalContentScope> {
                 override fun scene(
                     key: SceneKey,
                     userActions: Map<UserAction, UserActionResult>,
-                    content: @Composable ContentScope.() -> Unit,
+                    content: @Composable InternalContentScope.() -> Unit,
                 ) {
                     require(!overlaysDefined) { "all scenes must be defined before overlays" }
 
@@ -291,11 +311,14 @@ internal class SceneTransitionLayoutImpl(
 
                     val resolvedUserActions = resolveUserActions(key, userActions, layoutDirection)
                     val scene = scenes[key]
+                    val globalZIndex =
+                        Content.calculateGlobalZIndex(parentZIndex, ++zIndex, ancestors.size)
                     if (scene != null) {
                         // Update an existing scene.
                         scene.content = content
                         scene.userActions = resolvedUserActions
-                        scene.zIndex = zIndex
+                        scene.zIndex = zIndex.toFloat()
+                        scene.globalZIndex = globalZIndex
                     } else {
                         // New scene.
                         scenes[key] =
@@ -304,11 +327,10 @@ internal class SceneTransitionLayoutImpl(
                                 this@SceneTransitionLayoutImpl,
                                 content,
                                 resolvedUserActions,
-                                zIndex,
+                                zIndex.toFloat(),
+                                globalZIndex,
                             )
                     }
-
-                    zIndex++
                 }
 
                 override fun overlay(
@@ -316,17 +338,20 @@ internal class SceneTransitionLayoutImpl(
                     userActions: Map<UserAction, UserActionResult>,
                     alignment: Alignment,
                     isModal: Boolean,
-                    content: @Composable (ContentScope.() -> Unit),
+                    content: @Composable (InternalContentScope.() -> Unit),
                 ) {
                     overlaysDefined = true
                     overlaysToRemove.remove(key)
 
                     val overlay = overlays[key]
                     val resolvedUserActions = resolveUserActions(key, userActions, layoutDirection)
+                    val globalZIndex =
+                        Content.calculateGlobalZIndex(parentZIndex, ++zIndex, ancestors.size)
                     if (overlay != null) {
                         // Update an existing overlay.
                         overlay.content = content
-                        overlay.zIndex = zIndex
+                        overlay.zIndex = zIndex.toFloat()
+                        overlay.globalZIndex = globalZIndex
                         overlay.userActions = resolvedUserActions
                         overlay.alignment = alignment
                         overlay.isModal = isModal
@@ -338,13 +363,12 @@ internal class SceneTransitionLayoutImpl(
                                 this@SceneTransitionLayoutImpl,
                                 content,
                                 resolvedUserActions,
-                                zIndex,
+                                zIndex.toFloat(),
+                                globalZIndex,
                                 alignment,
                                 isModal,
                             )
                     }
-
-                    zIndex++
                 }
             }
             .builder()
@@ -537,13 +561,27 @@ internal class SceneTransitionLayoutImpl(
             .sortedBy { it.zIndex }
     }
 
+    internal fun hideOverlays(hide: HideCurrentOverlays) {
+        fun maybeHide(overlay: OverlayKey) {
+            if (state.canHideOverlay(overlay)) {
+                state.hideOverlay(overlay, animationScope = this.animationScope)
+            }
+        }
+
+        when (hide) {
+            HideCurrentOverlays.None -> {}
+            HideCurrentOverlays.All -> HashSet(state.currentOverlays).forEach { maybeHide(it) }
+            is HideCurrentOverlays.Some -> hide.overlays.forEach { maybeHide(it) }
+        }
+    }
+
     @VisibleForTesting
     internal fun setContentsAndLayoutTargetSizeForTest(size: IntSize) {
         lastSize = size
         (scenes.values + overlays.values).forEach { it.targetSize = size }
     }
 
-    internal fun overlaysOrNullForTest(): Map<OverlayKey, Overlay>? = _overlays
+    @VisibleForTesting internal fun overlaysOrNullForTest(): Map<OverlayKey, Overlay>? = _overlays
 }
 
 private data class LayoutElement(private val layoutImpl: SceneTransitionLayoutImpl) :
