@@ -452,7 +452,7 @@ package android {
     field public static final int activityCloseExitAnimation = 16842939; // 0x10100bb
     field public static final int activityOpenEnterAnimation = 16842936; // 0x10100b8
     field public static final int activityOpenExitAnimation = 16842937; // 0x10100b9
-    field @FlaggedApi("android.media.tv.flags.enable_ad_service_fw") public static final int adServiceTypes;
+    field @FlaggedApi("android.media.tv.flags.enable_ad_service_fw") public static final int adServiceTypes = 16844452; // 0x10106a4
     field public static final int addPrintersActivity = 16843750; // 0x10103e6
     field public static final int addStatesFromChildren = 16842992; // 0x10100f0
     field public static final int adjustViewBounds = 16843038; // 0x101011e
@@ -1017,7 +1017,7 @@ package android {
     field public static final int insetRight = 16843192; // 0x10101b8
     field public static final int insetTop = 16843193; // 0x10101b9
     field public static final int installLocation = 16843447; // 0x10102b7
-    field @FlaggedApi("android.security.enable_intent_matching_flags") public static final int intentMatchingFlags;
+    field @FlaggedApi("android.security.enable_intent_matching_flags") public static final int intentMatchingFlags = 16844457; // 0x10106a9
     field public static final int interactiveUiTimeout = 16844181; // 0x1010595
     field public static final int interpolator = 16843073; // 0x1010141
     field public static final int intro = 16844395; // 0x101066b
@@ -1072,7 +1072,7 @@ package android {
     field public static final int label = 16842753; // 0x1010001
     field public static final int labelFor = 16843718; // 0x10103c6
     field @Deprecated public static final int labelTextSize = 16843317; // 0x1010235
-    field @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") public static final int languageSettingsActivity;
+    field @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") public static final int languageSettingsActivity = 16844453; // 0x10106a5
     field public static final int languageTag = 16844040; // 0x1010508
     field public static final int largeHeap = 16843610; // 0x101035a
     field public static final int largeScreens = 16843398; // 0x1010286
@@ -1085,7 +1085,7 @@ package android {
     field public static final int layout = 16842994; // 0x10100f2
     field public static final int layoutAnimation = 16842988; // 0x10100ec
     field public static final int layoutDirection = 16843698; // 0x10103b2
-    field @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") public static final int layoutLabel;
+    field @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") public static final int layoutLabel = 16844458; // 0x10106aa
     field public static final int layoutMode = 16843738; // 0x10103da
     field public static final int layout_above = 16843140; // 0x1010184
     field public static final int layout_alignBaseline = 16843142; // 0x1010186
@@ -1207,7 +1207,7 @@ package android {
     field public static final int minResizeHeight = 16843670; // 0x1010396
     field public static final int minResizeWidth = 16843669; // 0x1010395
     field public static final int minSdkVersion = 16843276; // 0x101020c
-    field @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static final int minSdkVersionFull;
+    field @FlaggedApi("android.sdk.major_minor_versioning_scheme") public static final int minSdkVersionFull = 16844461; // 0x10106ad
     field public static final int minWidth = 16843071; // 0x101013f
     field public static final int minimumHorizontalAngle = 16843901; // 0x101047d
     field public static final int minimumVerticalAngle = 16843902; // 0x101047e
@@ -1282,7 +1282,7 @@ package android {
     field public static final int paddingStart = 16843699; // 0x10103b3
     field public static final int paddingTop = 16842967; // 0x10100d7
     field public static final int paddingVertical = 16844094; // 0x101053e
-    field @FlaggedApi("android.content.pm.app_compat_option_16kb") public static final int pageSizeCompat;
+    field @FlaggedApi("android.content.pm.app_compat_option_16kb") public static final int pageSizeCompat = 16844459; // 0x10106ab
     field public static final int panelBackground = 16842846; // 0x101005e
     field public static final int panelColorBackground = 16842849; // 0x1010061
     field public static final int panelColorForeground = 16842848; // 0x1010060
@@ -1624,7 +1624,7 @@ package android {
     field public static final int summaryColumn = 16843426; // 0x10102a2
     field public static final int summaryOff = 16843248; // 0x10101f0
     field public static final int summaryOn = 16843247; // 0x10101ef
-    field @FlaggedApi("android.view.accessibility.supplemental_description") public static final int supplementalDescription;
+    field @FlaggedApi("android.view.accessibility.supplemental_description") public static final int supplementalDescription = 16844456; // 0x10106a8
     field public static final int supportedTypes = 16844369; // 0x1010651
     field public static final int supportsAssist = 16844016; // 0x10104f0
     field public static final int supportsBatteryGameMode = 16844374; // 0x1010656
@@ -1871,7 +1871,7 @@ package android {
     field public static final int wallpaperIntraOpenExitAnimation = 16843416; // 0x1010298
     field public static final int wallpaperOpenEnterAnimation = 16843411; // 0x1010293
     field public static final int wallpaperOpenExitAnimation = 16843412; // 0x1010294
-    field @FlaggedApi("android.nfc.nfc_associated_role_services") public static final int wantsRoleHolderPriority;
+    field @FlaggedApi("android.nfc.nfc_associated_role_services") public static final int wantsRoleHolderPriority = 16844460; // 0x10106ac
     field public static final int webTextViewStyle = 16843449; // 0x10102b9
     field public static final int webViewStyle = 16842885; // 0x1010085
     field public static final int weekDayTextAppearance = 16843592; // 0x1010348
