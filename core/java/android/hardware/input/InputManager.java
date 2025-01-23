@@ -19,7 +19,6 @@ package android.hardware.input;
 import static com.android.input.flags.Flags.FLAG_INPUT_DEVICE_VIEW_BEHAVIOR_API;
 import static com.android.input.flags.Flags.FLAG_DEVICE_ASSOCIATIONS;
 import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
-import static com.android.hardware.input.Flags.keyboardLayoutPreviewFlag;
 import static com.android.hardware.input.Flags.keyboardGlyphMap;
 
 import android.Manifest;
@@ -966,9 +965,6 @@ public final class InputManager {
     @Nullable
     public Drawable getKeyboardLayoutPreview(@Nullable KeyboardLayout keyboardLayout, int width,
             int height) {
-        if (!keyboardLayoutPreviewFlag()) {
-            return null;
-        }
         PhysicalKeyLayout keyLayout = new PhysicalKeyLayout(
                 mGlobal.getKeyCharacterMap(keyboardLayout), keyboardLayout);
         return new KeyboardLayoutPreviewDrawable(mContext, keyLayout, width, height);
