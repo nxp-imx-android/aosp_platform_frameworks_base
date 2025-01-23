@@ -1399,9 +1399,6 @@ public final class InputManager {
     @RequiresPermission(Manifest.permission.MONITOR_STICKY_MODIFIER_STATE)
     public void registerStickyModifierStateListener(@NonNull Executor executor,
             @NonNull StickyModifierStateListener listener) throws IllegalArgumentException {
-        if (!InputSettings.isAccessibilityStickyKeysFeatureEnabled()) {
-            return;
-        }
         mGlobal.registerStickyModifierStateListener(executor, listener);
     }
 
@@ -1415,9 +1412,6 @@ public final class InputManager {
     @RequiresPermission(Manifest.permission.MONITOR_STICKY_MODIFIER_STATE)
     public void unregisterStickyModifierStateListener(
             @NonNull StickyModifierStateListener listener) {
-        if (!InputSettings.isAccessibilityStickyKeysFeatureEnabled()) {
-            return;
-        }
         mGlobal.unregisterStickyModifierStateListener(listener);
     }
 

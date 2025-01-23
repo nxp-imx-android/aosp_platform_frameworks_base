@@ -16,15 +16,9 @@
 
 package android.hardware.input;
 
-import static com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_BOUNCE_KEYS_FLAG;
 import static com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_MOUSE_KEYS;
-import static com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_SLOW_KEYS_FLAG;
-import static com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_STICKY_KEYS_FLAG;
 import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
-import static com.android.hardware.input.Flags.keyboardA11yBounceKeysFlag;
 import static com.android.hardware.input.Flags.keyboardA11yMouseKeys;
-import static com.android.hardware.input.Flags.keyboardA11ySlowKeysFlag;
-import static com.android.hardware.input.Flags.keyboardA11yStickyKeysFlag;
 import static com.android.hardware.input.Flags.mouseScrollingAcceleration;
 import static com.android.hardware.input.Flags.mouseReverseVerticalScrolling;
 import static com.android.hardware.input.Flags.mouseSwapPrimaryButton;
@@ -871,21 +865,6 @@ public class InputSettings {
     }
 
     /**
-     * Whether Accessibility bounce keys feature is enabled.
-     *
-     * <p>
-     * Bounce keys’ is an accessibility feature to aid users who have physical disabilities,
-     * that allows the user to configure the device to ignore rapid, repeated keypresses of the
-     * same key.
-     * </p>
-     *
-     * @hide
-     */
-    public static boolean isAccessibilityBounceKeysFeatureEnabled() {
-        return keyboardA11yBounceKeysFlag();
-    }
-
-    /**
      * Whether Accessibility bounce keys is enabled.
      *
      * <p>
@@ -912,11 +891,7 @@ public class InputSettings {
      * @hide
      */
     @TestApi
-    @FlaggedApi(FLAG_KEYBOARD_A11Y_BOUNCE_KEYS_FLAG)
     public static int getAccessibilityBounceKeysThreshold(@NonNull Context context) {
-        if (!isAccessibilityBounceKeysFeatureEnabled()) {
-            return 0;
-        }
         return Settings.Secure.getIntForUser(context.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_BOUNCE_KEYS, 0, UserHandle.USER_CURRENT);
     }
@@ -936,13 +911,9 @@ public class InputSettings {
      * @hide
      */
     @TestApi
-    @FlaggedApi(FLAG_KEYBOARD_A11Y_BOUNCE_KEYS_FLAG)
     @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public static void setAccessibilityBounceKeysThreshold(@NonNull Context context,
             int thresholdTimeMillis) {
-        if (!isAccessibilityBounceKeysFeatureEnabled()) {
-            return;
-        }
         if (thresholdTimeMillis < 0
                 || thresholdTimeMillis > MAX_ACCESSIBILITY_BOUNCE_KEYS_THRESHOLD_MILLIS) {
             throw new IllegalArgumentException(
@@ -952,21 +923,6 @@ public class InputSettings {
         Settings.Secure.putIntForUser(context.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_BOUNCE_KEYS, thresholdTimeMillis,
                 UserHandle.USER_CURRENT);
-    }
-
-    /**
-     * Whether Accessibility slow keys feature flags is enabled.
-     *
-     * <p>
-     * 'Slow keys' is an accessibility feature to aid users who have physical disabilities, that
-     * allows the user to specify the duration for which one must press-and-hold a key before the
-     * system accepts the keypress.
-     * </p>
-     *
-     * @hide
-     */
-    public static boolean isAccessibilitySlowKeysFeatureFlagEnabled() {
-        return keyboardA11ySlowKeysFlag();
     }
 
     /**
@@ -996,11 +952,7 @@ public class InputSettings {
      * @hide
      */
     @TestApi
-    @FlaggedApi(FLAG_KEYBOARD_A11Y_SLOW_KEYS_FLAG)
     public static int getAccessibilitySlowKeysThreshold(@NonNull Context context) {
-        if (!isAccessibilitySlowKeysFeatureFlagEnabled()) {
-            return 0;
-        }
         return Settings.Secure.getIntForUser(context.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_SLOW_KEYS, 0, UserHandle.USER_CURRENT);
     }
@@ -1020,13 +972,9 @@ public class InputSettings {
      * @hide
      */
     @TestApi
-    @FlaggedApi(FLAG_KEYBOARD_A11Y_SLOW_KEYS_FLAG)
     @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public static void setAccessibilitySlowKeysThreshold(@NonNull Context context,
             int thresholdTimeMillis) {
-        if (!isAccessibilitySlowKeysFeatureFlagEnabled()) {
-            return;
-        }
         if (thresholdTimeMillis < 0
                 || thresholdTimeMillis > MAX_ACCESSIBILITY_SLOW_KEYS_THRESHOLD_MILLIS) {
             throw new IllegalArgumentException(
@@ -1036,23 +984,6 @@ public class InputSettings {
         Settings.Secure.putIntForUser(context.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_SLOW_KEYS, thresholdTimeMillis,
                 UserHandle.USER_CURRENT);
-    }
-
-    /**
-     * Whether Accessibility sticky keys feature is enabled.
-     *
-     * <p>
-     * 'Sticky keys' is an accessibility feature that assists users who have physical
-     * disabilities or help users reduce repetitive strain injury. It serializes keystrokes
-     * instead of pressing multiple keys at a time, allowing the user to press and release a
-     * modifier key, such as Shift, Ctrl, Alt, or any other modifier key, and have it remain
-     * active until any other key is pressed.
-     * </p>
-     *
-     * @hide
-     */
-    public static boolean isAccessibilityStickyKeysFeatureEnabled() {
-        return keyboardA11yStickyKeysFlag();
     }
 
     /**
@@ -1069,11 +1000,7 @@ public class InputSettings {
      * @hide
      */
     @TestApi
-    @FlaggedApi(FLAG_KEYBOARD_A11Y_STICKY_KEYS_FLAG)
     public static boolean isAccessibilityStickyKeysEnabled(@NonNull Context context) {
-        if (!isAccessibilityStickyKeysFeatureEnabled()) {
-            return false;
-        }
         return Settings.Secure.getIntForUser(context.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_STICKY_KEYS, 0, UserHandle.USER_CURRENT) != 0;
     }
@@ -1092,13 +1019,9 @@ public class InputSettings {
      * @hide
      */
     @TestApi
-    @FlaggedApi(FLAG_KEYBOARD_A11Y_STICKY_KEYS_FLAG)
     @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public static void setAccessibilityStickyKeysEnabled(@NonNull Context context,
             boolean enabled) {
-        if (!isAccessibilityStickyKeysFeatureEnabled()) {
-            return;
-        }
         Settings.Secure.putIntForUser(context.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_STICKY_KEYS, enabled ? 1 : 0,
                 UserHandle.USER_CURRENT);

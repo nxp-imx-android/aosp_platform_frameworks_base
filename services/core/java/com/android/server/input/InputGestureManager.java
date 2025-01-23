@@ -256,13 +256,11 @@ final class InputGestureManager {
             ));
         }
         if (keyboardA11yShortcutControl()) {
-            if (InputSettings.isAccessibilityBounceKeysFeatureEnabled()) {
-                systemShortcuts.add(createKeyGesture(
-                        KeyEvent.KEYCODE_3,
-                        KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
-                        KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS
-                ));
-            }
+            systemShortcuts.add(createKeyGesture(
+                    KeyEvent.KEYCODE_3,
+                    KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS
+            ));
             if (InputSettings.isAccessibilityMouseKeysFeatureFlagEnabled()) {
                 systemShortcuts.add(createKeyGesture(
                         KeyEvent.KEYCODE_4,
@@ -270,20 +268,16 @@ final class InputGestureManager {
                         KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS
                 ));
             }
-            if (InputSettings.isAccessibilityStickyKeysFeatureEnabled()) {
-                systemShortcuts.add(createKeyGesture(
-                        KeyEvent.KEYCODE_5,
-                        KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
-                        KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS
-                ));
-            }
-            if (InputSettings.isAccessibilitySlowKeysFeatureFlagEnabled()) {
-                systemShortcuts.add(createKeyGesture(
-                        KeyEvent.KEYCODE_6,
-                        KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
-                        KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS
-                ));
-            }
+            systemShortcuts.add(createKeyGesture(
+                    KeyEvent.KEYCODE_5,
+                    KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS
+            ));
+            systemShortcuts.add(createKeyGesture(
+                    KeyEvent.KEYCODE_6,
+                    KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS
+            ));
         }
         synchronized (mGestureLock) {
             for (InputGestureData systemShortcut : systemShortcuts) {

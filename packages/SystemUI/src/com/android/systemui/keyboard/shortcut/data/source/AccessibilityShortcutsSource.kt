@@ -52,17 +52,15 @@ class AccessibilityShortcutsSource @Inject constructor(@Main private val resourc
         val shortcuts = mutableListOf<KeyboardShortcutInfo>()
 
         if (keyboardA11yShortcutControl()) {
-            if (InputSettings.isAccessibilityBounceKeysFeatureEnabled()) {
-                shortcuts.add(
-                    // Toggle bounce keys:
-                    //  - Meta + Alt + 3
-                    shortcutInfo(
-                        resources.getString(R.string.group_accessibility_toggle_bounce_keys)
-                    ) {
-                        command(META_META_ON or META_ALT_ON, KEYCODE_3)
-                    }
-                )
-            }
+            shortcuts.add(
+                // Toggle bounce keys:
+                //  - Meta + Alt + 3
+                shortcutInfo(
+                    resources.getString(R.string.group_accessibility_toggle_bounce_keys)
+                ) {
+                    command(META_META_ON or META_ALT_ON, KEYCODE_3)
+                }
+            )
             if (InputSettings.isAccessibilityMouseKeysFeatureFlagEnabled()) {
                 shortcuts.add(
                     // Toggle mouse keys:
@@ -74,28 +72,24 @@ class AccessibilityShortcutsSource @Inject constructor(@Main private val resourc
                     }
                 )
             }
-            if (InputSettings.isAccessibilityStickyKeysFeatureEnabled()) {
-                shortcuts.add(
-                    // Toggle sticky keys:
-                    //  - Meta + Alt + 5
-                    shortcutInfo(
-                        resources.getString(R.string.group_accessibility_toggle_sticky_keys)
-                    ) {
-                        command(META_META_ON or META_ALT_ON, KEYCODE_5)
-                    }
-                )
-            }
-            if (InputSettings.isAccessibilitySlowKeysFeatureFlagEnabled()) {
-                shortcuts.add(
-                    // Toggle slow keys:
-                    //  - Meta + Alt + 6
-                    shortcutInfo(
-                        resources.getString(R.string.group_accessibility_toggle_slow_keys)
-                    ) {
-                        command(META_META_ON or META_ALT_ON, KEYCODE_6)
-                    }
-                )
-            }
+            shortcuts.add(
+                // Toggle sticky keys:
+                //  - Meta + Alt + 5
+                shortcutInfo(
+                    resources.getString(R.string.group_accessibility_toggle_sticky_keys)
+                ) {
+                    command(META_META_ON or META_ALT_ON, KEYCODE_5)
+                }
+            )
+            shortcuts.add(
+                // Toggle slow keys:
+                //  - Meta + Alt + 6
+                shortcutInfo(
+                    resources.getString(R.string.group_accessibility_toggle_slow_keys)
+                ) {
+                    command(META_META_ON or META_ALT_ON, KEYCODE_6)
+                }
+            )
         }
 
         if (enableVoiceAccessKeyGestures()) {
