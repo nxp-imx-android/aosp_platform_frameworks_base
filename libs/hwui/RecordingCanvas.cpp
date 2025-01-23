@@ -106,6 +106,13 @@ enum class Type : uint8_t {
 struct Op {
     uint32_t type : 8;
     uint32_t skip : 24;
+
+    // Note: add this function to your Op if it can be rendered as a background within some bounds.
+    //  It is not a virtual function because we use templates to find it instead, for efficiency.
+    // Sets the given Rect to a conservative estimate of the bounds of the draw call. Returns true
+    // if outRect was modified, false if the bounds are unknown.
+    // Do not implement if the Op doesn't have bounds, or cannot reasonably be used as a background.
+    // std::optional<SkRect> getConservativeBounds() const { return false; }
 };
 static_assert(sizeof(Op) == 4, "");
 
@@ -137,6 +144,8 @@ struct SaveLayer final : Op {
     void draw(SkCanvas* c, const SkMatrix&) const {
         c->saveLayer({maybe_unset(bounds), &paint, backdrop.get(), flags});
     }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return bounds; }
 };
 struct SaveBehind final : Op {
     static const auto kType = Type::SaveBehind;
@@ -147,6 +156,8 @@ struct SaveBehind final : Op {
     void draw(SkCanvas* c, const SkMatrix&) const {
         SkAndroidFrameworkUtils::SaveBehind(c, &subset);
     }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return subset; }
 };
 
 struct Concat final : Op {
@@ -183,6 +194,8 @@ struct ClipPath final : Op {
     SkClipOp op;
     bool aa;
     void draw(SkCanvas* c, const SkMatrix&) const { c->clipPath(path, op, aa); }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return path.getBounds(); }
 };
 struct ClipRect final : Op {
     static const auto kType = Type::ClipRect;
@@ -191,6 +204,8 @@ struct ClipRect final : Op {
     SkClipOp op;
     bool aa;
     void draw(SkCanvas* c, const SkMatrix&) const { c->clipRect(rect, op, aa); }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return rect; }
 };
 struct ClipRRect final : Op {
     static const auto kType = Type::ClipRRect;
@@ -199,6 +214,8 @@ struct ClipRRect final : Op {
     SkClipOp op;
     bool aa;
     void draw(SkCanvas* c, const SkMatrix&) const { c->clipRRect(rrect, op, aa); }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return rrect.getBounds(); }
 };
 struct ClipRegion final : Op {
     static const auto kType = Type::ClipRegion;
@@ -206,6 +223,12 @@ struct ClipRegion final : Op {
     SkRegion region;
     SkClipOp op;
     void draw(SkCanvas* c, const SkMatrix&) const { c->clipRegion(region, op); }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const {
+        SkRect result;
+        result.set(region.getBounds());
+        return result;
+    }
 };
 struct ClipShader final : Op {
     static const auto kType = Type::ClipShader;
@@ -238,6 +261,8 @@ struct DrawPath final : Op {
     SkPath path;
     SkPaint paint;
     void draw(SkCanvas* c, const SkMatrix&) const { c->drawPath(path, paint); }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return path.getBounds(); }
 };
 struct DrawRect final : Op {
     static const auto kType = Type::DrawRect;
@@ -245,6 +270,8 @@ struct DrawRect final : Op {
     SkRect rect;
     SkPaint paint;
     void draw(SkCanvas* c, const SkMatrix&) const { c->drawRect(rect, paint); }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return rect; }
 };
 struct DrawRegion final : Op {
     static const auto kType = Type::DrawRegion;
@@ -252,6 +279,12 @@ struct DrawRegion final : Op {
     SkRegion region;
     SkPaint paint;
     void draw(SkCanvas* c, const SkMatrix&) const { c->drawRegion(region, paint); }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const {
+        SkRect result;
+        result.set(region.getBounds());
+        return result;
+    }
 };
 struct DrawOval final : Op {
     static const auto kType = Type::DrawOval;
@@ -259,6 +292,8 @@ struct DrawOval final : Op {
     SkRect oval;
     SkPaint paint;
     void draw(SkCanvas* c, const SkMatrix&) const { c->drawOval(oval, paint); }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return oval; }
 };
 struct DrawArc final : Op {
     static const auto kType = Type::DrawArc;
@@ -277,6 +312,8 @@ struct DrawArc final : Op {
     void draw(SkCanvas* c, const SkMatrix&) const {
         c->drawArc(oval, startAngle, sweepAngle, useCenter, paint);
     }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return oval; }
 };
 struct DrawRRect final : Op {
     static const auto kType = Type::DrawRRect;
@@ -284,6 +321,8 @@ struct DrawRRect final : Op {
     SkRRect rrect;
     SkPaint paint;
     void draw(SkCanvas* c, const SkMatrix&) const { c->drawRRect(rrect, paint); }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return rrect.getBounds(); }
 };
 struct DrawDRRect final : Op {
     static const auto kType = Type::DrawDRRect;
@@ -292,6 +331,8 @@ struct DrawDRRect final : Op {
     SkRRect outer, inner;
     SkPaint paint;
     void draw(SkCanvas* c, const SkMatrix&) const { c->drawDRRect(outer, inner, paint); }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return outer.getBounds(); }
 };
 struct DrawAnnotation final : Op {
     static const auto kType = Type::DrawAnnotation;
@@ -301,6 +342,8 @@ struct DrawAnnotation final : Op {
     void draw(SkCanvas* c, const SkMatrix&) const {
         c->drawAnnotation(rect, pod<char>(this), value.get());
     }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return rect; }
 };
 struct DrawDrawable final : Op {
     static const auto kType = Type::DrawDrawable;
@@ -336,6 +379,10 @@ struct DrawPicture final : Op {
     bool has_paint = false;  // TODO: why is a default paint not the same?
     void draw(SkCanvas* c, const SkMatrix&) const {
         c->drawPicture(picture.get(), &matrix, has_paint ? &paint : nullptr);
+    }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const {
+        return picture->cullRect();
     }
 };
 
@@ -374,6 +421,12 @@ struct DrawImage final : Op {
             c->drawImage(image.get(), x, y, sampling, &newPaint);
         }
     }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const {
+        SkRect result;
+        result.setLTRB(x, y, x + image->width(), y + image->height());
+        return result;
+    }
 };
 struct DrawImageRect final : Op {
     static const auto kType = Type::DrawImageRect;
@@ -411,6 +464,8 @@ struct DrawImageRect final : Op {
             c->drawImageRect(image.get(), src, dst, sampling, &newPaint, constraint);
         }
     }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return dst; }
 };
 struct DrawImageLattice final : Op {
     static const auto kType = Type::DrawImageLattice;
@@ -448,6 +503,8 @@ struct DrawImageLattice final : Op {
         c->drawImageLattice(image.get(), {xdivs, ydivs, flags, xs, ys, &src, colors}, dst, filter,
                             &newPaint);
     }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return dst; }
 };
 
 struct DrawTextBlob final : Op {
@@ -487,6 +544,8 @@ struct DrawPatch final : Op {
         c->drawPatch(cubics, has_colors ? colors : nullptr, has_texs ? texs : nullptr, xfermode,
                      paint);
     }
+
+    // Note: drawPatch isn't actually used by Android, so we don't need getConservativeBounds()
 };
 struct DrawPoints final : Op {
     static const auto kType = Type::DrawPoints;
@@ -521,6 +580,8 @@ struct DrawVertices final : Op {
     void draw(SkCanvas* c, const SkMatrix&) const {
         c->drawVertices(vertices, mode, paint);
     }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return vertices->bounds(); }
 };
 struct DrawSkMesh final : Op {
     static const auto kType = Type::DrawSkMesh;
@@ -568,6 +629,8 @@ struct DrawSkMesh final : Op {
         c->drawMesh(cpuMesh, blender, paint);
 #endif
     }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return cpuMesh.bounds(); }
 };
 
 struct DrawMesh final : Op {
@@ -580,6 +643,8 @@ struct DrawMesh final : Op {
     SkPaint paint;
 
     void draw(SkCanvas* c, const SkMatrix&) const { c->drawMesh(mesh.getSkMesh(), blender, paint); }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return mesh.getBounds(); }
 };
 struct DrawAtlas final : Op {
     static const auto kType = Type::DrawAtlas;
@@ -609,6 +674,15 @@ struct DrawAtlas final : Op {
         c->drawAtlas(atlas.get(), xforms, texs, colors, count, mode, sampling, maybe_unset(cull),
                      &paint);
     }
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const {
+        auto bounds = maybe_unset(cull);
+        if (bounds) {
+            return *bounds;
+        }
+
+        return std::nullopt;
+    }
 };
 struct DrawShadowRec final : Op {
     static const auto kType = Type::DrawShadowRec;
@@ -636,6 +710,8 @@ struct DrawVectorDrawable final : Op {
     SkRect mBounds;
     Paint paint;
     BitmapPalette palette;
+
+    [[nodiscard]] std::optional<SkRect> getConservativeBounds() const { return mBounds; }
 };
 
 struct DrawRippleDrawable final : Op {
