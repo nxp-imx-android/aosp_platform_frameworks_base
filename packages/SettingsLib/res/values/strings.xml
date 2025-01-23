@@ -889,6 +889,9 @@
     <!-- Preference category for monitoring debugging development settings. [CHAR LIMIT=25] -->
     <string name="debug_monitoring_category">Monitoring</string>
 
+    <!-- Preference category to alter window management settings, [CHAR LIMIT=50] -->
+    <string name="window_management_category">Window Management</string>
+
     <!-- UI debug setting: always enable strict mode? [CHAR LIMIT=25] -->
     <string name="strict_mode">Strict mode enabled</string>
     <!-- UI debug setting: show strict mode summary [CHAR LIMIT=50] -->
