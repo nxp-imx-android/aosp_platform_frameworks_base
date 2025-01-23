@@ -37,10 +37,12 @@ import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_CAN_S
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_DEVICE_DISPLAY_GROUP;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP;
+import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_FOCUS;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_SECURE;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
+import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED;
 import static android.hardware.display.DisplayManagerGlobal.DisplayEvent;
 import static android.hardware.display.DisplayViewport.VIEWPORT_EXTERNAL;
@@ -70,6 +72,7 @@ import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.AppOpsManager;
+import android.app.backup.BackupManager;
 import android.app.compat.CompatChanges;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
@@ -676,9 +679,10 @@ public final class DisplayManagerService extends SystemService {
                 mExternalDisplayStatsService);
         mExternalDisplayPolicy = new ExternalDisplayPolicy(new ExternalDisplayPolicyInjector());
         if (mFlags.isDisplayTopologyEnabled()) {
-            mDisplayTopologyCoordinator =
-                    new DisplayTopologyCoordinator(this::isExtendedDisplayEnabled,
-                            this::deliverTopologyUpdate, new HandlerExecutor(mHandler), mSyncRoot);
+            final var backupManager = new BackupManager(mContext);
+            mDisplayTopologyCoordinator = new DisplayTopologyCoordinator(
+                    this::isExtendedDisplayEnabled, this::deliverTopologyUpdate,
+                    new HandlerExecutor(mHandler), mSyncRoot, backupManager::dataChanged);
         } else {
             mDisplayTopologyCoordinator = null;
         }
@@ -758,6 +762,11 @@ public final class DisplayManagerService extends SystemService {
     }
 
     @Override
+    public void onUserUnlocked(@NonNull final TargetUser to) {
+        scheduleTopologiesReload(to.getUserIdentifier(), /*isUserSwitching=*/ true);
+    }
+
+    @Override
     public void onUserSwitching(@Nullable TargetUser from, @NonNull TargetUser to) {
         final int newUserId = to.getUserIdentifier();
         final int userSerial = getUserManager().getUserSerialNumber(newUserId);
@@ -795,6 +804,11 @@ public final class DisplayManagerService extends SystemService {
 
             if (mFlags.isDisplayContentModeManagementEnabled()) {
                 updateMirrorBuiltInDisplaySettingLocked();
+            }
+
+            final UserManager userManager = getUserManager();
+            if (null != userManager && userManager.isUserUnlockingOrUnlocked(mCurrentUserId)) {
+                scheduleTopologiesReload(mCurrentUserId, /*isUserSwitching=*/ true);
             }
         }
     }
@@ -873,6 +887,8 @@ public final class DisplayManagerService extends SystemService {
 
         mSmallAreaDetectionController = (mFlags.isSmallAreaDetectionEnabled())
                 ? SmallAreaDetectionController.create(mContext) : null;
+
+        scheduleTopologiesReload(mCurrentUserId, /*isUserSwitching=*/ false);
     }
 
     @VisibleForTesting
@@ -923,6 +939,15 @@ public final class DisplayManagerService extends SystemService {
 
     DisplayNotificationManager getDisplayNotificationManager() {
         return mDisplayNotificationManager;
+    }
+
+    private void scheduleTopologiesReload(final int userId, final boolean isUserSwitching) {
+        if (mDisplayTopologyCoordinator != null) {
+            // Need background thread due to xml files read operations not allowed on Display thread
+            BackgroundThread.getHandler().post(() ->
+                    mDisplayTopologyCoordinator.reloadTopologies(
+                            userId, isUserSwitching));
+        }
     }
 
     private void loadStableDisplayValuesLocked() {
@@ -1800,7 +1825,11 @@ public final class DisplayManagerService extends SystemService {
         }
 
         if ((flags & VIRTUAL_DISPLAY_FLAG_PUBLIC) != 0) {
-            flags |= VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
+            if ((flags & VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY) == 0) {
+                Slog.d(TAG, "Public virtual displays are auto mirror by default, hence adding "
+                        + "VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR.");
+                flags |= VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
+            }
 
             // Public displays can't be allowed to show content when locked.
             if ((flags & VIRTUAL_DISPLAY_FLAG_CAN_SHOW_WITH_INSECURE_KEYGUARD) != 0) {
@@ -1808,10 +1837,16 @@ public final class DisplayManagerService extends SystemService {
                         "Public display must not be marked as SHOW_WHEN_LOCKED_INSECURE");
             }
         }
-        if ((flags & VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY) != 0) {
+        if ((flags & VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY) != 0
+                && (flags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) != 0) {
+            Slog.d(TAG, "Own content displays cannot auto mirror other displays, hence ignoring "
+                    + "VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR.");
             flags &= ~VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
         }
-        if ((flags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) != 0) {
+        if ((flags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) != 0
+                && (flags & VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP) != 0) {
+            Slog.d(TAG, "Auto mirror displays must be in the default display group, hence ignoring "
+                    + "VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP.");
             flags &= ~VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP;
         }
         // Put the display in the virtual device's display group only if it's not a mirror display,
@@ -1821,6 +1856,8 @@ public final class DisplayManagerService extends SystemService {
                 && (flags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) == 0
                 && (flags & VIRTUAL_DISPLAY_FLAG_TRUSTED) == VIRTUAL_DISPLAY_FLAG_TRUSTED
                 && virtualDevice != null) {
+            Slog.d(TAG, "Own content displays owned by virtual devices are put in that device's "
+                    + "display group, hence adding VIRTUAL_DISPLAY_FLAG_DEVICE_DISPLAY_GROUP.");
             flags |= VIRTUAL_DISPLAY_FLAG_DEVICE_DISPLAY_GROUP;
         }
 
@@ -1852,8 +1889,7 @@ public final class DisplayManagerService extends SystemService {
             Binder.restoreCallingIdentity(firstToken);
         }
 
-        if (callingUid != Process.SYSTEM_UID
-                && (flags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) != 0) {
+        if (callingUid != Process.SYSTEM_UID && (flags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) != 0) {
             // Only a valid media projection or a virtual device can create a mirror virtual
             // display.
             if (!canProjectVideo(projection) && !canCreateMirrorDisplays(virtualDevice)
@@ -1901,6 +1937,14 @@ public final class DisplayManagerService extends SystemService {
             }
         }
 
+        if ((flags & VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED) != 0
+                && (flags & VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP) == 0
+                && (flags & VIRTUAL_DISPLAY_FLAG_DEVICE_DISPLAY_GROUP) == 0) {
+            Slog.d(TAG, "Always unlocked displays cannot be in the default display group, hence "
+                    + "ignoring flag VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED.");
+            flags &= ~VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
+        }
+
         if ((flags & VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED) != 0) {
             if (callingUid != Process.SYSTEM_UID
                     && !checkCallingPermission(ADD_ALWAYS_UNLOCKED_DISPLAY,
@@ -1911,7 +1955,24 @@ public final class DisplayManagerService extends SystemService {
             }
         }
 
-        if ((flags & VIRTUAL_DISPLAY_FLAG_TRUSTED) == 0) {
+        if ((flags & VIRTUAL_DISPLAY_FLAG_OWN_FOCUS) != 0
+                && (flags & VIRTUAL_DISPLAY_FLAG_TRUSTED) == 0) {
+            Slog.d(TAG, "Untrusted displays cannot have own focus, hence ignoring flag "
+                    + "VIRTUAL_DISPLAY_FLAG_OWN_FOCUS.");
+            flags &= ~VIRTUAL_DISPLAY_FLAG_OWN_FOCUS;
+        }
+
+        if ((flags & VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED) != 0
+                && (flags & VIRTUAL_DISPLAY_FLAG_OWN_FOCUS) == 0) {
+            Slog.d(TAG, "Virtual displays that cannot steal top focus must have their own "
+                    + " focus, hence ignoring flag VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED.");
+            flags &= ~VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED;
+        }
+
+        if ((flags & VIRTUAL_DISPLAY_FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS) != 0
+                && (flags & VIRTUAL_DISPLAY_FLAG_TRUSTED) == 0) {
+            Slog.d(TAG, "Untrusted displays cannot show system decorations, hence ignoring flag "
+                    + "VIRTUAL_DISPLAY_FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS.");
             flags &= ~VIRTUAL_DISPLAY_FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
         }
 
@@ -4157,7 +4218,8 @@ public final class DisplayManagerService extends SystemService {
 
         public boolean shouldReceiveRefreshRateWithChangeUpdate(int event) {
             if (mFlags.isRefreshRateEventForForegroundAppsEnabled()
-                    && event == DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED) {
+                    && event == DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED
+                    && mActivityManagerInternal != null) {
                 int procState = mActivityManagerInternal.getUidProcessState(mUid);
                 int importance = ActivityManager.RunningAppProcessInfo
                         .procStateToImportance(procState);
@@ -5936,6 +5998,14 @@ public final class DisplayManagerService extends SystemService {
         @Override
         public boolean isDisplayReadyForMirroring(int displayId) {
             return mExternalDisplayPolicy.isDisplayReadyForMirroring(displayId);
+        }
+
+        @Override
+        public void reloadTopologies(final int userId) {
+            // Reload topologies only if the userId matches the current user id.
+            if (userId == mCurrentUserId) {
+                scheduleTopologiesReload(mCurrentUserId, /*isUserSwitching=*/ false);
+            }
         }
     }
 

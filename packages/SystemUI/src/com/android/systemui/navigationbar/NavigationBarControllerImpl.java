@@ -18,6 +18,7 @@ package com.android.systemui.navigationbar;
 
 import static com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler.DEBUG_MISSING_GESTURE_TAG;
 import static com.android.systemui.shared.recents.utilities.Utilities.isLargeScreen;
+import static com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement;
 import static com.android.wm.shell.Flags.enableTaskbarNavbarUnification;
 import static com.android.wm.shell.Flags.enableTaskbarOnPhones;
 
@@ -273,6 +274,11 @@ public class NavigationBarControllerImpl implements
     private final CommandQueue.Callbacks mCommandQueueCallbacks = new CommandQueue.Callbacks() {
         @Override
         public void onDisplayRemoved(int displayId) {
+            onDisplayRemoveSystemDecorations(displayId);
+        }
+
+        @Override
+        public void onDisplayRemoveSystemDecorations(int displayId) {
             removeNavigationBar(displayId);
             mHasNavBar.delete(displayId);
         }
@@ -307,6 +313,13 @@ public class NavigationBarControllerImpl implements
             final NavigationBarView navBarView = getNavigationBarView(displayId);
             if (navBarView != null) {
                 navBarView.showPinningEscapeToast();
+            }
+        }
+
+        @Override
+        public void setHasNavigationBar(int displayId, boolean hasNavigationBar) {
+            if (enableDisplayContentModeManagement()) {
+                mHasNavBar.put(displayId, hasNavigationBar);
             }
         }
     };

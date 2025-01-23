@@ -177,6 +177,13 @@ public interface StatusBarManagerInternal {
      */
     void onDisplayReady(int displayId);
 
+    /**
+     * Notifies System UI that the system decorations should be removed from the display.
+     *
+     * @param displayId display ID
+     */
+    void onDisplayRemoveSystemDecorations(int displayId);
+
     /** @see com.android.internal.statusbar.IStatusBar#onSystemBarAttributesChanged */
     void onSystemBarAttributesChanged(int displayId, @Appearance int appearance,
             AppearanceRegion[] appearanceRegions, boolean navbarColorManagedByIme,
@@ -275,7 +282,13 @@ public interface StatusBarManagerInternal {
      */
     void moveFocusedTaskToDesktop(int displayId);
 
-
     /** Passes through the given shell commands to SystemUI */
     void passThroughShellCommand(String[] args, FileDescriptor fd);
+
+    /**
+     * Set whether the display should have a navigation bar.
+     *
+     * TODO(b/390591772): Refactor this method
+     */
+    void setHasNavigationBar(int displayId, boolean hasNavigationBar);
 }

@@ -214,6 +214,11 @@ oneway interface IStatusBar
     void onDisplayReady(int displayId);
 
     /**
+     * Notifies System UI that the system decorations should be removed from the display.
+     */
+    void onDisplayRemoveSystemDecorations(int displayId);
+
+    /**
      * Notifies System UI side of system bar attribute change on the specified display.
      *
      * @param displayId the ID of the display to notify.
@@ -395,4 +400,7 @@ oneway interface IStatusBar
     * @param displayId the id of the current display.
     */
     void moveFocusedTaskToDesktop(int displayId);
+
+    /** Set whether the display should have a navigation bar. */
+    void setHasNavigationBar(int displayId, boolean hasNavigationBar);
 }
