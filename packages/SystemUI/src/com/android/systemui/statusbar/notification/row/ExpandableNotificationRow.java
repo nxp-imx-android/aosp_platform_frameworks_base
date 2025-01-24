@@ -2689,7 +2689,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             top = params.getTop();
         }
         int actualHeight = params.getBottom() - top;
-        setActualHeight(actualHeight);
+        setFinalActualHeight(actualHeight);
 
         int notificationStackTop = params.getNotificationParentTop();
         top -= notificationStackTop;

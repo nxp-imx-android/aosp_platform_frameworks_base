@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.row;
 
 import static com.android.systemui.Flags.notificationColorUpdateLogger;
+import static com.android.systemui.Flags.physicalNotificationMovement;
 
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
@@ -24,6 +25,7 @@ import android.content.res.Configuration;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.FloatProperty;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 import android.view.View;
@@ -41,6 +43,7 @@ import com.android.app.animation.Interpolators;
 import com.android.systemui.Dumpable;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.StatusBarIconView;
+import com.android.systemui.statusbar.notification.PhysicsProperty;
 import com.android.systemui.statusbar.notification.Roundable;
 import com.android.systemui.statusbar.notification.RoundableState;
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
@@ -58,6 +61,20 @@ import java.util.List;
  * An abstract view for expandable views.
  */
 public abstract class ExpandableView extends FrameLayout implements Dumpable, Roundable {
+    public static final int TAG_ANIMATOR_HEIGHT = R.id.height_animator_tag;
+    public static final PhysicsProperty HEIGHT_PROPERTY = new PhysicsProperty(TAG_ANIMATOR_HEIGHT,
+            new FloatProperty<>("ActualHeight") {
+
+                @Override
+                public Float get(View view) {
+                    return (float) ((ExpandableView) view).getActualHeight();
+                }
+
+                @Override
+                public void setValue(@NonNull View view, float value) {
+                    ((ExpandableView) view).setActualHeight((int) value);
+                }
+            });
     private static final String TAG = "ExpandableView";
     /** whether the dump() for this class should include verbose details */
     protected static final boolean DUMP_VERBOSE = Compile.IS_DEBUG
@@ -84,7 +101,8 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
     protected float mContentTransformationAmount;
     protected boolean mIsLastChild;
     protected int mContentShift;
-    @NonNull private final ExpandableViewState mViewState;
+    @NonNull
+    private final ExpandableViewState mViewState;
     private float mContentTranslation;
     protected boolean mLastInSection;
     protected boolean mFirstInSection;
@@ -205,7 +223,7 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
                             MeasureSpec.EXACTLY);
                 }
                 child.measure(getChildMeasureSpec(
-                        widthMeasureSpec, viewHorizontalPadding, layoutParams.width),
+                                widthMeasureSpec, viewHorizontalPadding, layoutParams.width),
                         childHeightSpec);
                 int childHeight = child.getMeasuredHeight();
                 maxChildHeight = Math.max(maxChildHeight, childHeight);
@@ -223,7 +241,7 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
         // Now that we know our own height, measure the children that are MATCH_PARENT
         for (View child : mMatchParentViews) {
             child.measure(getChildMeasureSpec(
-                    widthMeasureSpec, viewHorizontalPadding, child.getLayoutParams().width),
+                            widthMeasureSpec, viewHorizontalPadding, child.getLayoutParams().width),
                     exactlyOwnHeightSpec);
         }
         mMatchParentViews.clear();
@@ -269,12 +287,29 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
     }
 
     /**
+     * Sets the final value of the actual height, which is to be applied immediately without
+     * animation. This may be different than the current value if we're animating away an offset.
+     */
+    public void setFinalActualHeight(int childHeight) {
+        if (physicalNotificationMovement()) {
+            HEIGHT_PROPERTY.setFinalValue(this, childHeight);
+        } else {
+            setActualHeight(childHeight);
+        }
+    }
+
+    /**
+     * Once the physical notification movement flag is enabled, don't use
+     * this directly as a public method since it may not update the property values and misbehave
+     * during animations. Use #setFinalActualHeight instead.
+     *
      * Sets the actual height of this notification. This is different than the laid out
      * {@link View#getHeight()}, as we want to avoid layouting during scrolling and expanding.
      *
-     * @param actualHeight The height of this notification.
+     * @param actualHeight    The height of this notification.
      * @param notifyListeners Whether the listener should be informed about the change.
      */
+    @Deprecated
     public void setActualHeight(int actualHeight, boolean notifyListeners) {
         if (mActualHeight != actualHeight) {
             mActualHeight = actualHeight;
@@ -285,7 +320,7 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
         }
     }
 
-    public void setActualHeight(int actualHeight) {
+    protected void setActualHeight(int actualHeight) {
         setActualHeight(actualHeight, true /* notifyListeners */);
     }
 
@@ -748,7 +783,8 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
      *
      * @return the ExpandableView's view state.
      */
-    @NonNull public ExpandableViewState getViewState() {
+    @NonNull
+    public ExpandableViewState getViewState() {
         return mViewState;
     }
 
@@ -840,9 +876,10 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
      * Set how much this notification is transformed into the shelf.
      *
      * @param contentTransformationAmount A value from 0 to 1 indicating how much we are transformed
-     *                                 to the content away
-     * @param isLastChild is this the last child in the list. If true, then the transformation is
-     *                    different since its content fades out.
+     *                                    to the content away
+     * @param isLastChild                 is this the last child in the list. If true, then the
+     *                                    transformation is
+     *                                    different since its content fades out.
      */
     public void setContentTransformationAmount(float contentTransformationAmount,
             boolean isLastChild) {
@@ -971,8 +1008,9 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
     public interface OnHeightChangedListener {
 
         /**
-         * @param view the view for which the height changed, or {@code null} if just the top
-         *             padding or the padding between the elements changed
+         * @param view           the view for which the height changed, or {@code null} if just the
+         *                       top
+         *                       padding or the padding between the elements changed
          * @param needsAnimation whether the view height needs to be animated
          */
         void onHeightChanged(ExpandableView view, boolean needsAnimation);
