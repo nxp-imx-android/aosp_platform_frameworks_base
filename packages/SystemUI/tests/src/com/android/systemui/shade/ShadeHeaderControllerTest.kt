@@ -53,6 +53,7 @@ import com.android.systemui.shade.ShadeHeaderController.Companion.QQS_HEADER_CON
 import com.android.systemui.shade.ShadeHeaderController.Companion.QS_HEADER_CONSTRAINT
 import com.android.systemui.shade.carrier.ShadeCarrierGroup
 import com.android.systemui.shade.carrier.ShadeCarrierGroupController
+import com.android.systemui.shade.data.repository.shadeDisplaysRepository
 import com.android.systemui.statusbar.data.repository.fakeStatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.phone.StatusOverlayHoverListenerFactory
@@ -96,7 +97,7 @@ class ShadeHeaderControllerTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private val insetsProviderStore = kosmos.fakeStatusBarContentInsetsProviderStore
-    private val insetsProvider = insetsProviderStore.defaultDisplay
+    private val insetsProvider = insetsProviderStore.forDisplay(context.displayId)
 
     @Mock(answer = Answers.RETURNS_MOCKS) private lateinit var view: MotionLayout
     @Mock private lateinit var statusIcons: StatusIconContainer
@@ -196,6 +197,7 @@ class ShadeHeaderControllerTest : SysuiTestCase() {
                 privacyIconsController,
                 insetsProviderStore,
                 configurationController,
+                kosmos.shadeDisplaysRepository,
                 variableDateViewControllerFactory,
                 batteryMeterViewController,
                 dumpManager,
@@ -806,6 +808,43 @@ class ShadeHeaderControllerTest : SysuiTestCase() {
         verify(mockConstraintsChanges.qqsConstraintsChanges)!!.invoke(any())
         verify(mockConstraintsChanges.qsConstraintsChanges)!!.invoke(any())
         verify(mockConstraintsChanges.largeScreenConstraintsChanges)!!.invoke(any())
+    }
+
+    @Test
+    fun sameInsetsTwice_listenerCallsOnApplyWindowInsetsOnlyOnce() {
+        val windowInsets = createWindowInsets()
+
+        val captor = ArgumentCaptor.forClass(View.OnApplyWindowInsetsListener::class.java)
+        verify(view).setOnApplyWindowInsetsListener(capture(captor))
+
+        val listener = captor.value
+
+        listener.onApplyWindowInsets(view, windowInsets)
+
+        verify(view, times(1)).onApplyWindowInsets(any())
+
+        listener.onApplyWindowInsets(view, windowInsets)
+
+        verify(view, times(1)).onApplyWindowInsets(any())
+    }
+
+    @Test
+    fun twoDifferentInsets_listenerCallsOnApplyWindowInsetsTwice() {
+        val windowInsets1 = WindowInsets(Rect(1, 2, 3, 4))
+        val windowInsets2 = WindowInsets(Rect(5, 6, 7, 8))
+
+        val captor = ArgumentCaptor.forClass(View.OnApplyWindowInsetsListener::class.java)
+        verify(view).setOnApplyWindowInsetsListener(capture(captor))
+
+        val listener = captor.value
+
+        listener.onApplyWindowInsets(view, windowInsets1)
+
+        verify(view, times(1)).onApplyWindowInsets(any())
+
+        listener.onApplyWindowInsets(view, windowInsets2)
+
+        verify(view, times(2)).onApplyWindowInsets(any())
     }
 
     @Test

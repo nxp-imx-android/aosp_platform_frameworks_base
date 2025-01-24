@@ -57,6 +57,7 @@ import com.android.systemui.shade.ShadeHeaderController.Companion.QS_HEADER_CONS
 import com.android.systemui.shade.ShadeViewProviderModule.Companion.SHADE_HEADER
 import com.android.systemui.shade.carrier.ShadeCarrierGroup
 import com.android.systemui.shade.carrier.ShadeCarrierGroupController
+import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
@@ -90,8 +91,9 @@ constructor(
     private val statusBarIconController: StatusBarIconController,
     private val tintedIconManagerFactory: TintedIconManager.Factory,
     private val privacyIconsController: HeaderPrivacyIconsController,
-    private val insetsProviderStore: StatusBarContentInsetsProviderStore,
+    private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
     @ShadeDisplayAware private val configurationController: ConfigurationController,
+    private val shadeDisplaysRepository: ShadeDisplaysRepository,
     private val variableDateViewControllerFactory: VariableDateViewController.Factory,
     @Named(SHADE_HEADER) private val batteryMeterViewController: BatteryMeterViewController,
     private val dumpManager: DumpManager,
@@ -104,7 +106,9 @@ constructor(
     private val statusOverlayHoverListenerFactory: StatusOverlayHoverListenerFactory,
 ) : ViewController<View>(header), Dumpable {
 
-    private val insetsProvider = insetsProviderStore.defaultDisplay
+    private val statusBarContentInsetsProvider
+        get() =
+            statusBarContentInsetsProviderStore.forDisplay(shadeDisplaysRepository.displayId.value)
 
     companion object {
         /** IDs for transitions and constraints for the [MotionLayout]. */
@@ -222,10 +226,14 @@ constructor(
 
     private val insetListener =
         View.OnApplyWindowInsetsListener { view, insets ->
-            updateConstraintsForInsets(view as MotionLayout, insets)
-            lastInsets = WindowInsets(insets)
-
-            view.onApplyWindowInsets(insets)
+            val windowInsets = WindowInsets(insets)
+            if (windowInsets != lastInsets) {
+                updateConstraintsForInsets(view as MotionLayout, insets)
+                lastInsets = windowInsets
+                view.onApplyWindowInsets(insets)
+            } else {
+                insets
+            }
         }
 
     private var singleCarrier = false
@@ -414,6 +422,7 @@ constructor(
     }
 
     private fun updateConstraintsForInsets(view: MotionLayout, insets: WindowInsets) {
+        val insetsProvider = statusBarContentInsetsProvider ?: return
         val cutout = insets.displayCutout.also { this.cutout = it }
 
         val sbInsets: Insets = insetsProvider.getStatusBarContentInsetsForCurrentRotation()
@@ -508,6 +517,9 @@ constructor(
             systemIconsHoverContainer.setOnClickListener(null)
             systemIconsHoverContainer.isClickable = false
         }
+
+        lastInsets?.let { updateConstraintsForInsets(header, it) }
+
         header.jumpToState(header.startState)
         updatePosition()
         updateScrollY()

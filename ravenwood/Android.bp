@@ -175,9 +175,9 @@ java_library {
 }
 
 java_device_for_host {
-    name: "ravenwood-junit-impl-for-ravenizer",
+    name: "ravenwood-junit-for-ravenizer",
     libs: [
-        "ravenwood-junit-impl",
+        "ravenwood-junit",
     ],
     visibility: [":__subpackages__"],
 }
@@ -660,6 +660,9 @@ android_ravenwood_libgroup {
 
         // StatsD
         "framework-statsd.ravenwood",
+
+        // Graphics
+        "framework-graphics.ravenwood",
 
         // Provide runtime versions of utils linked in below
         "junit",

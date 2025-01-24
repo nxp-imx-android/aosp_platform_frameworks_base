@@ -2009,6 +2009,10 @@
     <!-- Component name of the built in wallpaper used to display bitmap wallpapers. This must not be null. -->
     <string name="image_wallpaper_component" translatable="false">com.android.systemui/com.android.systemui.wallpapers.ImageWallpaper</string>
 
+    <!-- Component name of the built in wallpaper that is used when the user-selected wallpaper is
+         incompatible with the display's resolution or aspect ratio. -->
+    <string name="fallback_wallpaper_component" translatable="false">com.android.systemui/com.android.systemui.wallpapers.GradientColorWallpaper</string>
+
     <!-- True if WallpaperService is enabled -->
     <bool name="config_enableWallpaperService">true</bool>
 
@@ -2889,7 +2893,7 @@
     <bool name="config_dozeAlwaysOnEnabled">true</bool>
 
     <!-- If AOD can show an ambient version of the wallpaper -->
-    <bool name="config_dozeSupportsAodWallpaper">true</bool>
+    <bool name="config_dozeSupportsAodWallpaper">false</bool>
 
     <!-- Whether the display blanks itself when transitioning from a doze to a non-doze state -->
     <bool name="config_displayBlanksAfterDoze">false</bool>

@@ -16,7 +16,10 @@
 
 package com.android.server.accessibility;
 
-import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+import static android.view.MotionEvent.BUTTON_PRIMARY;
+import static android.view.accessibility.AccessibilityManager.AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT;
+import static android.view.accessibility.AccessibilityManager.AUTOCLICK_DELAY_DEFAULT;
+import static android.view.accessibility.AccessibilityManager.AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT_DEFAULT;
 
 import static com.android.server.accessibility.AutoclickIndicatorView.SHOW_INDICATOR_DELAY_TIME;
 
@@ -26,7 +29,6 @@ import android.annotation.Nullable;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
-import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -37,9 +39,10 @@ import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
 import android.view.WindowManager;
-import android.view.accessibility.AccessibilityManager;
 
 import androidx.annotation.VisibleForTesting;
+
+import com.android.internal.accessibility.util.AccessibilityUtils;
 
 /**
  * Implements "Automatically click on mouse stop" feature.
@@ -96,8 +99,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                     initiateAutoclickIndicator(handler);
                 }
 
-                mClickScheduler =
-                        new ClickScheduler(handler, AccessibilityManager.AUTOCLICK_DELAY_DEFAULT);
+                mClickScheduler = new ClickScheduler(handler, AUTOCLICK_DELAY_DEFAULT);
                 mAutoclickSettingsObserver = new AutoclickSettingsObserver(mUserId, handler);
                 mAutoclickSettingsObserver.start(
                         mContext.getContentResolver(),
@@ -117,21 +119,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
         mAutoclickIndicatorScheduler = new AutoclickIndicatorScheduler(handler);
         mAutoclickIndicatorView = new AutoclickIndicatorView(mContext);
 
-        final WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-        layoutParams.type = WindowManager.LayoutParams.TYPE_SECURE_SYSTEM_OVERLAY;
-        layoutParams.flags =
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
-        layoutParams.privateFlags |= WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS;
-        layoutParams.setFitInsetsTypes(0);
-        layoutParams.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-        layoutParams.format = PixelFormat.TRANSLUCENT;
-        layoutParams.setTitle(AutoclickIndicatorView.class.getSimpleName());
-        layoutParams.inputFeatures |= WindowManager.LayoutParams.INPUT_FEATURE_NO_INPUT_CHANNEL;
-
         mWindowManager = mContext.getSystemService(WindowManager.class);
-        mWindowManager.addView(mAutoclickIndicatorView, layoutParams);
+        mWindowManager.addView(mAutoclickIndicatorView, mAutoclickIndicatorView.getLayoutParams());
     }
 
     @Override
@@ -209,6 +198,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
         private final Uri mAutoclickCursorAreaSizeSettingUri =
                 Settings.Secure.getUriFor(Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE);
 
+        /** URI used to identify ignore minor cursor movement setting with content resolver. */
+        private final Uri mAutoclickIgnoreMinorCursorMovementSettingUri =
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT);
+
         private ContentResolver mContentResolver;
         private ClickScheduler mClickScheduler;
         private AutoclickIndicatorScheduler mAutoclickIndicatorScheduler;
@@ -247,18 +241,32 @@ public class AutoclickController extends BaseEventStreamTransformation {
             mContentResolver = contentResolver;
             mClickScheduler = clickScheduler;
             mAutoclickIndicatorScheduler = autoclickIndicatorScheduler;
-            mContentResolver.registerContentObserver(mAutoclickDelaySettingUri, false, this,
+            mContentResolver.registerContentObserver(
+                    mAutoclickDelaySettingUri,
+                    /* notifyForDescendants= */ false,
+                    /* observer= */ this,
                     mUserId);
 
             // Initialize mClickScheduler's initial delay value.
-            onChange(true, mAutoclickDelaySettingUri);
+            onChange(/* selfChange= */ true, mAutoclickDelaySettingUri);
 
             if (Flags.enableAutoclickIndicator()) {
                 // Register observer to listen to cursor area size setting change.
                 mContentResolver.registerContentObserver(
-                        mAutoclickCursorAreaSizeSettingUri, false, this, mUserId);
+                        mAutoclickCursorAreaSizeSettingUri,
+                        /* notifyForDescendants= */ false,
+                        /* observer= */ this,
+                        mUserId);
                 // Initialize mAutoclickIndicatorView's initial size.
-                onChange(true, mAutoclickCursorAreaSizeSettingUri);
+                onChange(/* selfChange= */ true, mAutoclickCursorAreaSizeSettingUri);
+
+                // Register observer to listen to ignore minor cursor movement setting change.
+                mContentResolver.registerContentObserver(
+                        mAutoclickIgnoreMinorCursorMovementSettingUri,
+                        /* notifyForDescendants= */ false,
+                        /* observer= */ this,
+                        mUserId);
+                onChange(/* selfChange= */ true, mAutoclickIgnoreMinorCursorMovementSettingUri);
             }
         }
 
@@ -279,21 +287,41 @@ public class AutoclickController extends BaseEventStreamTransformation {
         @Override
         public void onChange(boolean selfChange, Uri uri) {
             if (mAutoclickDelaySettingUri.equals(uri)) {
-                int delay = Settings.Secure.getIntForUser(
-                        mContentResolver, Settings.Secure.ACCESSIBILITY_AUTOCLICK_DELAY,
-                        AccessibilityManager.AUTOCLICK_DELAY_DEFAULT, mUserId);
-                mClickScheduler.updateDelay(delay);
-            }
-            if (Flags.enableAutoclickIndicator()
-                    && mAutoclickCursorAreaSizeSettingUri.equals(uri)) {
-                int size =
+                int delay =
                         Settings.Secure.getIntForUser(
                                 mContentResolver,
-                                Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE,
-                                AccessibilityManager.AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT,
+                                Settings.Secure.ACCESSIBILITY_AUTOCLICK_DELAY,
+                                AUTOCLICK_DELAY_DEFAULT,
                                 mUserId);
-                if (mAutoclickIndicatorScheduler != null) {
-                    mAutoclickIndicatorScheduler.updateCursorAreaSize(size);
+                mClickScheduler.updateDelay(delay);
+            }
+
+            if (Flags.enableAutoclickIndicator()) {
+                if (mAutoclickCursorAreaSizeSettingUri.equals(uri)) {
+                    int size =
+                            Settings.Secure.getIntForUser(
+                                    mContentResolver,
+                                    Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE,
+                                    AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT,
+                                    mUserId);
+                    if (mAutoclickIndicatorScheduler != null) {
+                        mAutoclickIndicatorScheduler.updateCursorAreaSize(size);
+                    }
+                    mClickScheduler.updateMovementSlope(size);
+                }
+
+                if (mAutoclickIgnoreMinorCursorMovementSettingUri.equals(uri)) {
+                    boolean ignoreMinorCursorMovement =
+                            Settings.Secure.getIntForUser(
+                                    mContentResolver,
+                                    Settings.Secure
+                                            .ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT,
+                                    AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT_DEFAULT
+                                            ? AccessibilityUtils.State.ON
+                                            : AccessibilityUtils.State.OFF,
+                                    mUserId)
+                            == AccessibilityUtils.State.ON;
+                    mClickScheduler.setIgnoreMinorCursorMovement(ignoreMinorCursorMovement);
                 }
             }
         }
@@ -365,11 +393,16 @@ public class AutoclickController extends BaseEventStreamTransformation {
     @VisibleForTesting
     final class ClickScheduler implements Runnable {
         /**
-         * Minimal distance pointer has to move relative to anchor in order for movement not to be
-         * discarded as noise. Anchor is the position of the last MOVE event that was not considered
-         * noise.
+         * Default minimal distance pointer has to move relative to anchor in order for movement not
+         * to be discarded as noise. Anchor is the position of the last MOVE event that was not
+         * considered noise.
          */
-        private static final double MOVEMENT_SLOPE = 20f;
+        private static final double DEFAULT_MOVEMENT_SLOPE = 20f;
+
+        private double mMovementSlope = DEFAULT_MOVEMENT_SLOPE;
+
+        /** Whether the minor cursor movement should be ignored. */
+        private boolean mIgnoreMinorCursorMovement = AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT_DEFAULT;
 
         /** Whether there is pending click. */
         private boolean mActive;
@@ -553,7 +586,19 @@ public class AutoclickController extends BaseEventStreamTransformation {
             float deltaX = mAnchorCoords.x - event.getX(pointerIndex);
             float deltaY = mAnchorCoords.y - event.getY(pointerIndex);
             double delta = Math.hypot(deltaX, deltaY);
-            return delta > MOVEMENT_SLOPE;
+            double slope =
+                    ((Flags.enableAutoclickIndicator() && mIgnoreMinorCursorMovement)
+                            ? mMovementSlope
+                            : DEFAULT_MOVEMENT_SLOPE);
+            return delta > slope;
+        }
+
+        public void setIgnoreMinorCursorMovement(boolean ignoreMinorCursorMovement) {
+            mIgnoreMinorCursorMovement = ignoreMinorCursorMovement;
+        }
+
+        private void updateMovementSlope(double slope) {
+            mMovementSlope = slope;
         }
 
         /**
@@ -581,18 +626,30 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
             final long now = SystemClock.uptimeMillis();
 
-            MotionEvent downEvent = MotionEvent.obtain(now, now, MotionEvent.ACTION_DOWN, 1,
-                    mTempPointerProperties, mTempPointerCoords, mMetaState,
-                    MotionEvent.BUTTON_PRIMARY, 1.0f, 1.0f, mLastMotionEvent.getDeviceId(), 0,
-                    mLastMotionEvent.getSource(), mLastMotionEvent.getFlags());
+            MotionEvent downEvent =
+                    MotionEvent.obtain(
+                            /* downTime= */ now,
+                            /* eventTime= */ now,
+                            MotionEvent.ACTION_DOWN,
+                            /* pointerCount= */ 1,
+                            mTempPointerProperties,
+                            mTempPointerCoords,
+                            mMetaState,
+                            BUTTON_PRIMARY,
+                            /* xPrecision= */ 1.0f,
+                            /* yPrecision= */ 1.0f,
+                            mLastMotionEvent.getDeviceId(),
+                            /* edgeFlags= */ 0,
+                            mLastMotionEvent.getSource(),
+                            mLastMotionEvent.getFlags());
 
             MotionEvent pressEvent = MotionEvent.obtain(downEvent);
             pressEvent.setAction(MotionEvent.ACTION_BUTTON_PRESS);
-            pressEvent.setActionButton(MotionEvent.BUTTON_PRIMARY);
+            pressEvent.setActionButton(BUTTON_PRIMARY);
 
             MotionEvent releaseEvent = MotionEvent.obtain(downEvent);
             releaseEvent.setAction(MotionEvent.ACTION_BUTTON_RELEASE);
-            releaseEvent.setActionButton(MotionEvent.BUTTON_PRIMARY);
+            releaseEvent.setActionButton(BUTTON_PRIMARY);
             releaseEvent.setButtonState(0);
 
             MotionEvent upEvent = MotionEvent.obtain(downEvent);

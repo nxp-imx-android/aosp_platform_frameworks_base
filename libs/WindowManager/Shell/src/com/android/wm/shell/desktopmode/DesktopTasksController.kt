@@ -85,6 +85,7 @@ import com.android.wm.shell.common.RemoteCallable
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SingleInstanceRemoteListener
 import com.android.wm.shell.common.SyncTransactionQueue
+import com.android.wm.shell.common.UserProfileContexts
 import com.android.wm.shell.compatui.isTopActivityExemptFromDesktopWindowing
 import com.android.wm.shell.compatui.isTransparentTask
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
@@ -102,6 +103,8 @@ import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCR
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.desktopmode.minimize.DesktopWindowLimitRemoteHandler
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
+import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
 import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -179,6 +182,9 @@ class DesktopTasksController(
     private val desktopTilingDecorViewModel: DesktopTilingDecorViewModel,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
     private val bubbleController: Optional<BubbleController>,
+    private val overviewToDesktopTransitionObserver: OverviewToDesktopTransitionObserver,
+    private val desksOrganizer: DesksOrganizer,
+    private val userProfileContexts: UserProfileContexts,
 ) :
     RemoteCallable<DesktopTasksController>,
     Transitions.TransitionHandler,
@@ -230,6 +236,9 @@ class DesktopTasksController(
     // Launch cookie used to identify a drag and drop transition to fullscreen after it has begun.
     // Used to prevent handleRequest from moving the new fullscreen task to freeform.
     private var dragAndDropFullscreenCookie: Binder? = null
+
+    // A listener that is invoked after a desk has been remove from the system. */
+    var onDeskRemovedListener: OnDeskRemovedListener? = null
 
     init {
         desktopMode = DesktopModeImpl()
@@ -414,18 +423,38 @@ class DesktopTasksController(
         return isFreeformDisplay
     }
 
+    /** Creates a new desk in the given display. */
+    fun createDesk(displayId: Int) {
+        if (Flags.enableMultipleDesktopsBackend()) {
+            desksOrganizer.createDesk(displayId) { deskId ->
+                taskRepository.addDesk(displayId = displayId, deskId = deskId)
+            }
+        } else {
+            // In single-desk, the desk reuses the display id.
+            taskRepository.addDesk(displayId = displayId, deskId = displayId)
+        }
+    }
+
     /** Moves task to desktop mode if task is running, else launches it in desktop mode. */
+    @JvmOverloads
     fun moveTaskToDesktop(
         taskId: Int,
         wct: WindowContainerTransaction = WindowContainerTransaction(),
         transitionSource: DesktopModeTransitionSource,
         remoteTransition: RemoteTransition? = null,
+        callback: IMoveToDesktopCallback? = null,
     ): Boolean {
         val runningTask = shellTaskOrganizer.getRunningTaskInfo(taskId)
         if (runningTask == null) {
-            return moveBackgroundTaskToDesktop(taskId, wct, transitionSource, remoteTransition)
+            return moveBackgroundTaskToDesktop(
+                taskId,
+                wct,
+                transitionSource,
+                remoteTransition,
+                callback,
+            )
         }
-        moveRunningTaskToDesktop(runningTask, wct, transitionSource, remoteTransition)
+        moveRunningTaskToDesktop(runningTask, wct, transitionSource, remoteTransition, callback)
         return true
     }
 
@@ -434,6 +463,7 @@ class DesktopTasksController(
         wct: WindowContainerTransaction,
         transitionSource: DesktopModeTransitionSource,
         remoteTransition: RemoteTransition? = null,
+        callback: IMoveToDesktopCallback? = null,
     ): Boolean {
         if (recentTasksController?.findTaskInBackground(taskId) == null) {
             logW("moveBackgroundTaskToDesktop taskId=%d not found", taskId)
@@ -466,6 +496,7 @@ class DesktopTasksController(
         } else {
             // TODO(343149901): Add DPI changes for task launch
             transition = enterDesktopTaskTransitionHandler.moveToDesktop(wct, transitionSource)
+            invokeCallbackToOverview(transition, callback)
         }
         desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
             FREEFORM_ANIMATION_DURATION
@@ -483,6 +514,7 @@ class DesktopTasksController(
         wct: WindowContainerTransaction = WindowContainerTransaction(),
         transitionSource: DesktopModeTransitionSource,
         remoteTransition: RemoteTransition? = null,
+        callback: IMoveToDesktopCallback? = null,
     ) {
         if (
             DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue() &&
@@ -514,6 +546,7 @@ class DesktopTasksController(
             remoteTransitionHandler.setTransition(transition)
         } else {
             transition = enterDesktopTaskTransitionHandler.moveToDesktop(wct, transitionSource)
+            invokeCallbackToOverview(transition, callback)
         }
         desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
             FREEFORM_ANIMATION_DURATION
@@ -522,6 +555,15 @@ class DesktopTasksController(
             addPendingMinimizeTransition(transition, it, MinimizeReason.TASK_LIMIT)
         }
         exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
+    }
+
+    private fun invokeCallbackToOverview(transition: IBinder, callback: IMoveToDesktopCallback?) {
+        // TODO: b/333524374 - Remove this later.
+        // This is a temporary implementation for adding CUJ end and
+        // should be removed when animation is moved to launcher through remote transition.
+        if (callback != null) {
+            overviewToDesktopTransitionObserver.addPendingOverviewTransition(transition, callback)
+        }
     }
 
     /**
@@ -1446,6 +1488,7 @@ class DesktopTasksController(
     }
 
     private fun addLaunchHomePendingIntent(wct: WindowContainerTransaction, displayId: Int) {
+        val userHandle = UserHandle.of(userId)
         val launchHomeIntent =
             Intent(Intent.ACTION_MAIN).apply {
                 if (displayId != DEFAULT_DISPLAY) {
@@ -1461,11 +1504,13 @@ class DesktopTasksController(
                     ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
             }
         val pendingIntent =
-            PendingIntent.getActivity(
+            PendingIntent.getActivityAsUser(
                 context,
-                /* requestCode = */ 0,
+                /* requestCode= */ 0,
                 launchHomeIntent,
                 PendingIntent.FLAG_IMMUTABLE,
+                /* options= */ null,
+                userHandle,
             )
         wct.sendPendingIntent(pendingIntent, launchHomeIntent, options.toBundle())
     }
@@ -1819,7 +1864,9 @@ class DesktopTasksController(
         //  need updates in some cases.
         val baseActivity = callingTaskInfo.baseActivity ?: return
         val fillIn: Intent =
-            context.packageManager.getLaunchIntentForPackage(baseActivity.packageName) ?: return
+            userProfileContexts[callingTaskInfo.userId]
+                ?.packageManager
+                ?.getLaunchIntentForPackage(baseActivity.packageName) ?: return
         fillIn.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
         val launchIntent =
             PendingIntent.getActivity(
@@ -2967,6 +3014,14 @@ class DesktopTasksController(
             controller = null
         }
 
+        override fun createDesk(displayId: Int) {
+            // TODO: b/362720497 - Implement this API.
+        }
+
+        override fun activateDesk(deskId: Int, remoteTransition: RemoteTransition?) {
+            // TODO: b/362720497 - Implement this API.
+        }
+
         override fun showDesktopApps(displayId: Int, remoteTransition: RemoteTransition?) {
             executeRemoteCallWithTaskPermission(controller, "showDesktopApps") { c ->
                 c.showDesktopApps(displayId, remoteTransition)
@@ -2994,17 +3049,6 @@ class DesktopTasksController(
             )
         }
 
-        override fun getVisibleTaskCount(displayId: Int): Int {
-            val result = IntArray(1)
-            executeRemoteCallWithTaskPermission(
-                controller,
-                "visibleTaskCount",
-                { controller -> result[0] = controller.visibleTaskCount(displayId) },
-                /* blocking= */ true,
-            )
-            return result[0]
-        }
-
         override fun onDesktopSplitSelectAnimComplete(taskInfo: RunningTaskInfo) {
             executeRemoteCallWithTaskPermission(controller, "onDesktopSplitSelectAnimComplete") { c
                 ->
@@ -3023,12 +3067,14 @@ class DesktopTasksController(
             taskId: Int,
             transitionSource: DesktopModeTransitionSource,
             remoteTransition: RemoteTransition?,
+            callback: IMoveToDesktopCallback?,
         ) {
             executeRemoteCallWithTaskPermission(controller, "moveTaskToDesktop") { c ->
                 c.moveTaskToDesktop(
                     taskId,
                     transitionSource = transitionSource,
                     remoteTransition = remoteTransition,
+                    callback = callback,
                 )
             }
         }

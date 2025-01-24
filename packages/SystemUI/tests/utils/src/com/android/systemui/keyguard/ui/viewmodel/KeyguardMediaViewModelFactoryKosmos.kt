@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shade.ui.viewmodel
+package com.android.systemui.keyguard.ui.viewmodel
 
+import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeUserActionsViewModel
+import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
 
-val Kosmos.notificationsShadeUserActionsViewModel:
-    NotificationsShadeUserActionsViewModel by Fixture { NotificationsShadeUserActionsViewModel() }
+val Kosmos.keyguardMediaViewModelFactory by
+    Kosmos.Fixture {
+        object : KeyguardMediaViewModel.Factory {
+            override fun create(): KeyguardMediaViewModel {
+                return KeyguardMediaViewModel(mediaCarouselInteractor, keyguardInteractor)
+            }
+        }
+    }

@@ -51,6 +51,7 @@ import static android.app.NotificationChannel.RECS_ID;
 import static android.app.NotificationChannel.SOCIAL_MEDIA_ID;
 import static android.app.NotificationChannel.USER_LOCKED_ALLOW_BUBBLE;
 import static android.app.NotificationManager.ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED;
+import static android.app.NotificationManager.ACTION_EFFECTS_SUPPRESSOR_CHANGED;
 import static android.app.NotificationManager.ACTION_INTERRUPTION_FILTER_CHANGED;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_ACTIVATED;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_ALL;
@@ -123,7 +124,9 @@ import static android.service.notification.Flags.FLAG_REDACT_SENSITIVE_NOTIFICAT
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ALERTING;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_CONVERSATIONS;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ONGOING;
+import static android.service.notification.NotificationListenerService.HINT_HOST_DISABLE_CALL_EFFECTS;
 import static android.service.notification.NotificationListenerService.HINT_HOST_DISABLE_EFFECTS;
+import static android.service.notification.NotificationListenerService.HINT_HOST_DISABLE_NOTIFICATION_EFFECTS;
 import static android.service.notification.NotificationListenerService.REASON_APP_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_LOCKDOWN;
@@ -163,6 +166,7 @@ import static junit.framework.Assert.fail;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyLong;
@@ -253,7 +257,6 @@ import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.session.MediaSession;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Binder;
@@ -361,13 +364,15 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -383,9 +388,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
-
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -571,6 +573,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Mock
     NotificationAttentionHelper mAttentionHelper;
 
+    @Mock
+    NetworkCapabilities mWifiNetworkCapabilities;
+
     private NotificationManagerService.WorkerHandler mWorkerHandler;
 
     private class TestableToastCallback extends ITransientNotification.Stub {
@@ -598,7 +603,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf();
+        return FlagsParameterization.allCombinationsOf(
+            FLAG_NOTIFICATION_CLASSIFICATION);
     }
 
     public NotificationManagerServiceTest(FlagsParameterization flags) {
@@ -771,7 +777,14 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mActivityIntentImmutable = spy(PendingIntent.getActivity(mContext, 0,
                 new Intent().setPackage(mPkg), FLAG_IMMUTABLE));
 
-        when(mConnectivityManager.getActiveNetwork()).thenReturn(null);
+        when(mWifiNetworkCapabilities.hasTransport(eq(NetworkCapabilities.TRANSPORT_WIFI)))
+                .thenReturn(true);
+        when(mWifiNetworkCapabilities
+                .hasCapability(eq(NetworkCapabilities.NET_CAPABILITY_VALIDATED)))
+                .thenReturn(true);
+        when(mWifiNetworkCapabilities
+                .hasCapability(eq(NetworkCapabilities.NET_CAPABILITY_TRUSTED)))
+                .thenReturn(true);
 
         initNMS();
     }
@@ -10880,6 +10893,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         Bundle signals = new Bundle();
         signals.putInt(KEY_IMPORTANCE, IMPORTANCE_LOW);
         signals.putInt(KEY_USER_SENTIMENT, USER_SENTIMENT_NEGATIVE);
+        signals.putInt(KEY_TYPE, TYPE_PROMOTION);
         Adjustment adjustment = new Adjustment(r.getSbn().getPackageName(), r.getKey(), signals,
                "", r.getUser().getIdentifier());
 
@@ -11404,8 +11418,14 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         verify(mContext).sendBroadcastAsUser(eqIntent(expected), eq(UserHandle.of(mUserId)));
     }
 
+    private static Intent isIntentWithAction(String wantedAction) {
+        return argThat(
+                intent -> intent != null && wantedAction.equals(intent.getAction())
+        );
+    }
+
     private static Intent eqIntent(Intent wanted) {
-        return ArgumentMatchers.argThat(
+        return argThat(
                 new ArgumentMatcher<Intent>() {
                     @Override
                     public boolean matches(Intent argument) {
@@ -14391,13 +14411,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     public void testMakeRankingUpdate_clearsHasSensitiveContentIfConnectedToWifi() {
         mSetFlagsRule.enableFlags(FLAG_REDACT_SENSITIVE_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS,
                 FLAG_REDACT_SENSITIVE_CONTENT_NOTIFICATIONS_ON_LOCKSCREEN);
-        when(mConnectivityManager.getActiveNetwork()).thenReturn(mock(Network.class));
-        when(mConnectivityManager.getNetworkCapabilities(any())).thenReturn(
-                new NetworkCapabilities.Builder()
-                        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                        .build()
-        );
-        mService.updateWifiConnectionState();
+        mService.updateWifiConnectionState(mWifiNetworkCapabilities);
         when(mListeners.hasSensitiveContent(any())).thenReturn(true);
         NotificationRecord pkgA = new NotificationRecord(mContext,
                 generateSbn("a", 1000, 9, 0), mTestNotificationChannel);
@@ -14416,13 +14430,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     public void testMakeRankingUpdate_doesntClearHasSensitiveContentIfNotConnectedToWifi() {
         mSetFlagsRule.enableFlags(FLAG_REDACT_SENSITIVE_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS,
                 FLAG_REDACT_SENSITIVE_CONTENT_NOTIFICATIONS_ON_LOCKSCREEN);
-        when(mConnectivityManager.getActiveNetwork()).thenReturn(mock(Network.class));
-        when(mConnectivityManager.getNetworkCapabilities(any())).thenReturn(
-                new NetworkCapabilities.Builder()
-                        .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
-                        .build()
-        );
-        mService.updateWifiConnectionState();
+        mService.updateWifiConnectionState(mock(NetworkCapabilities.class));
         when(mListeners.hasSensitiveContent(any())).thenReturn(true);
         NotificationRecord record = getSensitiveNotificationRecord();
         mService.addNotification(record);
@@ -14440,13 +14448,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     public void testMakeRankingUpdate_doesntClearHasSensitiveContentIfNotSysUi() {
         mSetFlagsRule.enableFlags(FLAG_REDACT_SENSITIVE_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS);
         mSetFlagsRule.disableFlags(FLAG_REDACT_SENSITIVE_CONTENT_NOTIFICATIONS_ON_LOCKSCREEN);
-        when(mConnectivityManager.getActiveNetwork()).thenReturn(mock(Network.class));
-        when(mConnectivityManager.getNetworkCapabilities(any())).thenReturn(
-                new NetworkCapabilities.Builder()
-                        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                        .build()
-        );
-        mService.updateWifiConnectionState();
+        mService.updateWifiConnectionState(mWifiNetworkCapabilities);
         when(mListeners.hasSensitiveContent(any())).thenReturn(true);
         NotificationRecord record = getSensitiveNotificationRecord();
         mService.addNotification(record);
@@ -14463,13 +14465,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     public void testMakeRankingUpdate_doesntClearHasSensitiveContentIfFlagDisabled() {
         mSetFlagsRule.enableFlags(FLAG_REDACT_SENSITIVE_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS);
         mSetFlagsRule.disableFlags(FLAG_REDACT_SENSITIVE_CONTENT_NOTIFICATIONS_ON_LOCKSCREEN);
-        when(mConnectivityManager.getActiveNetwork()).thenReturn(mock(Network.class));
-        when(mConnectivityManager.getNetworkCapabilities(any())).thenReturn(
-                new NetworkCapabilities.Builder()
-                        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                        .build()
-        );
-        mService.updateWifiConnectionState();
+        mService.updateWifiConnectionState(mWifiNetworkCapabilities);
         when(mListeners.hasSensitiveContent(any())).thenReturn(true);
         NotificationRecord record = getSensitiveNotificationRecord();
         mService.addNotification(record);
@@ -17503,6 +17499,66 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 HINT_HOST_DISABLE_EFFECTS);
         when(mPackageManagerInternal.isSameApp(anyString(), anyInt(), anyInt())).thenReturn(false);
         assertThat(mBinderService.getEffectsSuppressor()).isEqualTo(mListener.component);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_EFFECTS_SUPPRESSOR_BROADCAST,
+            Flags.FLAG_NM_BINDER_PERF_REDUCE_ZEN_BROADCASTS})
+    public void requestHintsFromListener_changingEffectsButNotSuppressor_noBroadcast()
+            throws Exception {
+        // Note that NM_BINDER_PERF_REDUCE_ZEN_BROADCASTS is not strictly necessary; however each
+        // path will do slightly different calls so we force one of them to simplify the test.
+        when(mUmInternal.getProfileIds(anyInt(), anyBoolean())).thenReturn(new int[]{mUserId});
+        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
+        INotificationListener token = mock(INotificationListener.class);
+        mService.isSystemUid = true;
+
+        mBinderService.requestHintsFromListener(token, HINT_HOST_DISABLE_CALL_EFFECTS);
+        mTestableLooper.moveTimeForward(500); // more than ZEN_BROADCAST_DELAY
+        waitForIdle();
+
+        verify(mContext, times(1)).sendBroadcastMultiplePermissions(
+                isIntentWithAction(ACTION_EFFECTS_SUPPRESSOR_CHANGED), any(), any(), any());
+
+        // Same suppressor suppresses something else.
+        mBinderService.requestHintsFromListener(token, HINT_HOST_DISABLE_NOTIFICATION_EFFECTS);
+        mTestableLooper.moveTimeForward(500); // more than ZEN_BROADCAST_DELAY
+        waitForIdle();
+
+        // Still 1 total calls (the previous one).
+        verify(mContext, times(1)).sendBroadcastMultiplePermissions(
+                isIntentWithAction(ACTION_EFFECTS_SUPPRESSOR_CHANGED), any(), any(), any());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_EFFECTS_SUPPRESSOR_BROADCAST,
+            Flags.FLAG_NM_BINDER_PERF_REDUCE_ZEN_BROADCASTS})
+    public void requestHintsFromListener_changingSuppressor_throttlesBroadcast() throws Exception {
+        // Note that NM_BINDER_PERF_REDUCE_ZEN_BROADCASTS is not strictly necessary; however each
+        // path will do slightly different calls so we force one of them to simplify the test.
+        when(mUmInternal.getProfileIds(anyInt(), anyBoolean())).thenReturn(new int[]{mUserId});
+        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
+        INotificationListener token = mock(INotificationListener.class);
+        mService.isSystemUid = true;
+
+        // Several updates in quick succession.
+        mBinderService.requestHintsFromListener(token, HINT_HOST_DISABLE_CALL_EFFECTS);
+        mBinderService.clearRequestedListenerHints(token);
+        mBinderService.requestHintsFromListener(token, HINT_HOST_DISABLE_NOTIFICATION_EFFECTS);
+        mBinderService.clearRequestedListenerHints(token);
+        mBinderService.requestHintsFromListener(token, HINT_HOST_DISABLE_CALL_EFFECTS);
+        mBinderService.clearRequestedListenerHints(token);
+        mBinderService.requestHintsFromListener(token, HINT_HOST_DISABLE_NOTIFICATION_EFFECTS);
+
+        // No broadcasts yet!
+        verify(mContext, never()).sendBroadcastMultiplePermissions(any(), any(), any(), any());
+
+        mTestableLooper.moveTimeForward(500); // more than ZEN_BROADCAST_DELAY
+        waitForIdle();
+
+        // Only one broadcast after idle time.
+        verify(mContext, times(1)).sendBroadcastMultiplePermissions(
+                isIntentWithAction(ACTION_EFFECTS_SUPPRESSOR_CHANGED), any(), any(), any());
     }
 
     @Test
