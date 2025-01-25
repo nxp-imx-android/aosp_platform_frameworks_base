@@ -237,6 +237,13 @@ flag {
 }
 
 flag {
+  name: "notification_bundle_ui"
+  namespace: "systemui"
+  description: "Three-level group UI for notification bundles"
+  bug: "367996732"
+}
+
+flag {
     name: "notification_background_tint_optimization"
     namespace: "systemui"
     description: "Re-enable the codepath that removed tinting of notifications when the"
@@ -1942,16 +1949,6 @@ flag {
 }
 
 flag {
-    name: "stabilize_heads_up_group"
-    namespace: "systemui"
-    description: "Stabilize heads up groups in VisualStabilityCoordinator"
-    bug: "381864715"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "magnetic_notification_horizontal_swipe"
    namespace: "systemui"
    description: "Add support for magnetic behavior on horizontal notification swipes."
@@ -1969,6 +1966,13 @@ flag {
 }
 
 flag {
+  name: "permission_helper_ui_rich_ongoing"
+  namespace: "systemui"
+  description: "[RONs] Guards inline permission helper for demoting RONs"
+  bug: "379186372"
+}
+
+flag {
     name: "aod_ui_rich_ongoing"
     namespace: "systemui"
     description: "Show a rich ongoing notification on the always-on display (depends on ui_rich_ongoing)"
@@ -1983,4 +1987,14 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+   name: "shade_launch_accessibility"
+   namespace: "systemui"
+   description: "Intercept accessibility focus events for the Shade during launch animations to avoid stray TalkBack events."
+   bug: "379222226"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
 }

@@ -129,6 +129,7 @@ import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED
+import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.UNKNOWN
 import com.android.wm.shell.shared.split.SplitScreenConstants
@@ -261,6 +262,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private lateinit var desktopTasksLimiter: DesktopTasksLimiter
     private lateinit var recentsTransitionStateListener: RecentsTransitionStateListener
     private lateinit var testScope: CoroutineScope
+    private lateinit var desktopModeCompatPolicy: DesktopModeCompatPolicy
 
     private val shellExecutor = TestShellExecutor()
 
@@ -311,6 +313,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 mContext,
                 mockHandler,
             )
+        desktopModeCompatPolicy = DesktopModeCompatPolicy(context)
 
         whenever(shellTaskOrganizer.getRunningTasks(anyInt())).thenAnswer { runningTasks }
         whenever(transitions.startTransition(anyInt(), any(), isNull())).thenAnswer { Binder() }
@@ -406,6 +409,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             overviewToDesktopTransitionObserver,
             desksOrganizer,
             userProfileContexts,
+            desktopModeCompatPolicy,
         )
 
     @After

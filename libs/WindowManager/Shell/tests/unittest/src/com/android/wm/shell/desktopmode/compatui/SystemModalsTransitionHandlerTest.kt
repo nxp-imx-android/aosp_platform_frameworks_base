@@ -33,6 +33,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createSystemModalTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createSystemModalTaskBuilder
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.DesktopWallpaperActivity
+import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.TransitionInfoBuilder
 import com.android.wm.shell.transition.Transitions
@@ -63,12 +64,14 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
     private val finishT = mock<SurfaceControl.Transaction>()
 
     private lateinit var transitionHandler: SystemModalsTransitionHandler
+    private lateinit var desktopModeCompatPolicy: DesktopModeCompatPolicy
 
     @Before
     fun setUp() {
         // Simulate having one Desktop task so that we see Desktop Mode as active
         whenever(desktopUserRepositories.current).thenReturn(desktopRepository)
         whenever(desktopRepository.getVisibleTaskCount(anyInt())).thenReturn(1)
+        desktopModeCompatPolicy = DesktopModeCompatPolicy(context)
         transitionHandler = createTransitionHandler()
     }
 
@@ -80,6 +83,7 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
             shellInit,
             transitions,
             desktopUserRepositories,
+            desktopModeCompatPolicy,
         )
 
     @Test

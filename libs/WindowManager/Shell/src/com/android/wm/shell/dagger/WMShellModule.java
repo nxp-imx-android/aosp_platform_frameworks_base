@@ -132,6 +132,7 @@ import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.annotations.ShellAnimationThread;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy;
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
@@ -758,7 +759,8 @@ public abstract class WMShellModule {
             Optional<BubbleController> bubbleController,
             OverviewToDesktopTransitionObserver overviewToDesktopTransitionObserver,
             DesksOrganizer desksOrganizer,
-            UserProfileContexts userProfileContexts) {
+            UserProfileContexts userProfileContexts,
+            DesktopModeCompatPolicy desktopModeCompatPolicy) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -794,7 +796,8 @@ public abstract class WMShellModule {
                 bubbleController,
                 overviewToDesktopTransitionObserver,
                 desksOrganizer,
-                userProfileContexts);
+                userProfileContexts,
+                desktopModeCompatPolicy);
     }
 
     @WMSingleton
@@ -972,7 +975,8 @@ public abstract class WMShellModule {
             DesktopModeEventLogger desktopModeEventLogger,
             DesktopModeUiEventLogger desktopModeUiEventLogger,
             WindowDecorTaskResourceLoader taskResourceLoader,
-            RecentsTransitionHandler recentsTransitionHandler
+            RecentsTransitionHandler recentsTransitionHandler,
+            DesktopModeCompatPolicy desktopModeCompatPolicy
     ) {
         if (!DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)) {
             return Optional.empty();
@@ -988,7 +992,7 @@ public abstract class WMShellModule {
                 desktopTasksLimiter, appHandleEducationController, appToWebEducationController,
                 windowDecorCaptionHandleRepository, activityOrientationChangeHandler,
                 focusTransitionObserver, desktopModeEventLogger, desktopModeUiEventLogger,
-                taskResourceLoader, recentsTransitionHandler));
+                taskResourceLoader, recentsTransitionHandler, desktopModeCompatPolicy));
     }
 
     @WMSingleton
@@ -1010,7 +1014,8 @@ public abstract class WMShellModule {
             @ShellAnimationThread ShellExecutor animExecutor,
             ShellInit shellInit,
             Transitions transitions,
-            @DynamicOverride DesktopUserRepositories desktopUserRepositories) {
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories,
+            DesktopModeCompatPolicy desktopModeCompatPolicy) {
         if (!DesktopModeStatus.canEnterDesktopMode(context)
                 || !ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue()
                 || !Flags.enableDesktopSystemDialogsTransitions()) {
@@ -1019,7 +1024,7 @@ public abstract class WMShellModule {
         return Optional.of(
                 new SystemModalsTransitionHandler(
                         context, mainExecutor, animExecutor, shellInit, transitions,
-                        desktopUserRepositories));
+                        desktopUserRepositories, desktopModeCompatPolicy));
     }
 
     @WMSingleton

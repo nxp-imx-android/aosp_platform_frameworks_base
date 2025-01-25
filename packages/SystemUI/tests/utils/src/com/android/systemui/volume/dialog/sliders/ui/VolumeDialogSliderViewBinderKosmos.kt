@@ -16,14 +16,16 @@
 
 package com.android.systemui.volume.dialog.sliders.ui
 
+import com.android.systemui.haptics.slider.sliderHapticsViewModelFactory
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.volume.dialog.sliders.ui.viewmodel.volumeDialogSliderInputEventsViewModel
+import com.android.systemui.volume.dialog.sliders.ui.viewmodel.volumeDialogOverscrollViewModel
 import com.android.systemui.volume.dialog.sliders.ui.viewmodel.volumeDialogSliderViewModel
 
 val Kosmos.volumeDialogSliderViewBinder by
     Kosmos.Fixture {
         VolumeDialogSliderViewBinder(
             volumeDialogSliderViewModel,
-            volumeDialogSliderInputEventsViewModel,
+            volumeDialogOverscrollViewModel,
+            sliderHapticsViewModelFactory,
         )
     }

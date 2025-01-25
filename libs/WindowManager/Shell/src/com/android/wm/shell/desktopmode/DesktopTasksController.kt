@@ -86,8 +86,6 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SingleInstanceRemoteListener
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.common.UserProfileContexts
-import com.android.wm.shell.compatui.isTopActivityExemptFromDesktopWindowing
-import com.android.wm.shell.compatui.isTransparentTask
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
@@ -116,6 +114,7 @@ import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_ST
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.annotations.ExternalThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus.DESKTOP_DENSITY_OVERRIDE
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus.useDesktopOverrideDensity
@@ -185,6 +184,7 @@ class DesktopTasksController(
     private val overviewToDesktopTransitionObserver: OverviewToDesktopTransitionObserver,
     private val desksOrganizer: DesksOrganizer,
     private val userProfileContexts: UserProfileContexts,
+    private val desktopModeCompatPolicy: DesktopModeCompatPolicy,
 ) :
     RemoteCallable<DesktopTasksController>,
     Transitions.TransitionHandler,
@@ -516,10 +516,7 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
     ) {
-        if (
-            DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue() &&
-                isTopActivityExemptFromDesktopWindowing(context, task)
-        ) {
+        if (desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(task)) {
             logW("Cannot enter desktop for taskId %d, ineligible top activity found", task.taskId)
             return
         }
@@ -1821,8 +1818,7 @@ class DesktopTasksController(
             taskRepository.isActiveTask(triggerTask.taskId))
 
     private fun isIncompatibleTask(task: RunningTaskInfo) =
-        DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue() &&
-            isTopActivityExemptFromDesktopWindowing(context, task)
+        desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(task)
 
     private fun shouldHandleTaskClosing(request: TransitionRequestInfo): Boolean =
         ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY.isTrue() &&
@@ -2097,7 +2093,7 @@ class DesktopTasksController(
         // Only update task repository for transparent task.
         if (
             DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
-                .isTrue() && isTransparentTask(task)
+                .isTrue() && desktopModeCompatPolicy.isTransparentTask(task)
         ) {
             taskRepository.setTopTransparentFullscreenTaskId(task.displayId, task.taskId)
         }

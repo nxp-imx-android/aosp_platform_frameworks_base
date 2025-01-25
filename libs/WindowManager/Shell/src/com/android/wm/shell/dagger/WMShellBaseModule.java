@@ -43,6 +43,8 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.WindowManagerShellWrapper;
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController;
+import com.android.wm.shell.appzoomout.AppZoomOut;
+import com.android.wm.shell.appzoomout.AppZoomOutController;
 import com.android.wm.shell.back.BackAnimation;
 import com.android.wm.shell.back.BackAnimationBackground;
 import com.android.wm.shell.back.BackAnimationController;
@@ -112,9 +114,8 @@ import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.annotations.ShellAnimationThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.annotations.ShellSplashscreenThread;
+import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy;
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
-import com.android.wm.shell.appzoomout.AppZoomOut;
-import com.android.wm.shell.appzoomout.AppZoomOutController;
 import com.android.wm.shell.splitscreen.SplitScreen;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.startingsurface.StartingSurface;
@@ -254,6 +255,12 @@ public abstract class WMShellBaseModule {
                 unfoldAnimationController,
                 recentTasksOptional,
                 mainExecutor);
+    }
+
+    @WMSingleton
+    @Provides
+    static DesktopModeCompatPolicy provideDesktopModeCompatPolicy(Context context) {
+        return new DesktopModeCompatPolicy(context);
     }
 
     @WMSingleton

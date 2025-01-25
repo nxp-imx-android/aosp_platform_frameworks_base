@@ -16,6 +16,9 @@
 
 package com.android.systemui.volume.dialog.sliders.ui.viewmodel
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventType
 import com.android.systemui.util.time.SystemClock
 import com.android.systemui.volume.Events
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialog
@@ -23,20 +26,23 @@ import com.android.systemui.volume.dialog.domain.interactor.VolumeDialogVisibili
 import com.android.systemui.volume.dialog.shared.VolumeDialogLogger
 import com.android.systemui.volume.dialog.shared.model.VolumeDialogStreamModel
 import com.android.systemui.volume.dialog.sliders.dagger.VolumeDialogSliderScope
+import com.android.systemui.volume.dialog.sliders.domain.interactor.VolumeDialogSliderInputEventsInteractor
 import com.android.systemui.volume.dialog.sliders.domain.interactor.VolumeDialogSliderInteractor
 import com.android.systemui.volume.dialog.sliders.domain.model.VolumeDialogSliderType
+import com.android.systemui.volume.dialog.sliders.shared.model.SliderInputEvent
 import javax.inject.Inject
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 
@@ -62,6 +68,7 @@ constructor(
     private val visibilityInteractor: VolumeDialogVisibilityInteractor,
     @VolumeDialog private val coroutineScope: CoroutineScope,
     private val volumeDialogSliderIconProvider: VolumeDialogSliderIconProvider,
+    private val inputEventsInteractor: VolumeDialogSliderInputEventsInteractor,
     private val systemClock: SystemClock,
     private val logger: VolumeDialogLogger,
 ) {
@@ -77,11 +84,12 @@ constructor(
             .stateIn(coroutineScope, SharingStarted.Eagerly, null)
             .filterNotNull()
 
-    val isDisabledByZenMode: Flow<Boolean> = interactor.isDisabledByZenMode
     val state: Flow<VolumeDialogSliderStateModel> =
-        model
-            .flatMapLatest { streamModel ->
-                with(streamModel) {
+        combine(
+                interactor.isDisabledByZenMode,
+                model,
+                model.flatMapLatest { streamModel ->
+                    with(streamModel) {
                         val isMuted = muteSupported && muted
                         when (sliderType) {
                             is VolumeDialogSliderType.Stream ->
@@ -101,7 +109,9 @@ constructor(
                             }
                         }
                     }
-                    .map { icon -> streamModel.toStateModel(icon) }
+                },
+            ) { isDisabledByZenMode, model, icon ->
+                model.toStateModel(icon = icon, isDisabled = isDisabledByZenMode)
             }
             .stateIn(coroutineScope, SharingStarted.Eagerly, null)
             .filterNotNull()
@@ -116,16 +126,41 @@ constructor(
             .launchIn(coroutineScope)
     }
 
-    fun setStreamVolume(volume: Int, fromUser: Boolean) {
+    fun setStreamVolume(volume: Float, fromUser: Boolean) {
         if (fromUser) {
             visibilityInteractor.resetDismissTimeout()
             userVolumeUpdates.value =
-                VolumeUpdate(newVolumeLevel = volume, timestampMillis = getTimestampMillis())
+                VolumeUpdate(
+                    newVolumeLevel = volume.roundToInt(),
+                    timestampMillis = getTimestampMillis(),
+                )
         }
     }
 
     fun onStreamChangeFinished(volume: Int) {
         logger.onVolumeSliderAdjustmentFinished(volume = volume, stream = sliderType.audioStream)
+    }
+
+    fun onTouchEvent(pointerEvent: PointerEvent) {
+        val position: Offset = pointerEvent.changes.first().position
+        when (pointerEvent.type) {
+            PointerEventType.Press ->
+                inputEventsInteractor.onTouchEvent(
+                    SliderInputEvent.Touch.Start(position.x, position.y)
+                )
+            PointerEventType.Move ->
+                inputEventsInteractor.onTouchEvent(
+                    SliderInputEvent.Touch.Move(position.x, position.y)
+                )
+            PointerEventType.Scroll ->
+                inputEventsInteractor.onTouchEvent(
+                    SliderInputEvent.Touch.Move(position.x, position.y)
+                )
+            PointerEventType.Release ->
+                inputEventsInteractor.onTouchEvent(
+                    SliderInputEvent.Touch.End(position.x, position.y)
+                )
+        }
     }
 
     private fun getTimestampMillis(): Long = systemClock.uptimeMillis()

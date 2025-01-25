@@ -14,29 +14,38 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.compatui
+package com.android.wm.shell.shared.desktopmode
 
 import android.content.ComponentName
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.internal.R
+import com.android.wm.shell.compatui.CompatUIShellTestCase
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Tests for [@link AppCompatUtils].
+ * Tests for [@link DesktopModeCompatPolicy].
  *
- * Build/Install/Run: atest WMShellUnitTests:AppCompatUtilsTest
+ * Build/Install/Run: atest WMShellUnitTests:DesktopModeCompatPolicyTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
-class AppCompatUtilsTest : CompatUIShellTestCase() {
+class DesktopModeCompatPolicyTest : CompatUIShellTestCase() {
+    private lateinit var desktopModeCompatPolicy: DesktopModeCompatPolicy
+
+    @Before
+    fun setUp() {
+        desktopModeCompatPolicy = DesktopModeCompatPolicy(mContext)
+    }
+
     @Test
     fun testIsTopActivityExemptFromDesktopWindowing_onlyTransparentActivitiesInStack() {
-        assertTrue(isTopActivityExemptFromDesktopWindowing(mContext,
+        assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask(/* displayId */ 0)
                     .apply {
                         isActivityStackTransparent = true
@@ -47,7 +56,7 @@ class AppCompatUtilsTest : CompatUIShellTestCase() {
 
     @Test
     fun testIsTopActivityExemptFromDesktopWindowing_noActivitiesInStack() {
-        assertFalse(isTopActivityExemptFromDesktopWindowing(mContext,
+        assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask(/* displayId */ 0)
                 .apply {
                     isActivityStackTransparent = true
@@ -58,7 +67,7 @@ class AppCompatUtilsTest : CompatUIShellTestCase() {
 
     @Test
     fun testIsTopActivityExemptFromDesktopWindowing_nonTransparentActivitiesInStack() {
-        assertFalse(isTopActivityExemptFromDesktopWindowing(mContext,
+        assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask(/* displayId */ 0)
                 .apply {
                     isActivityStackTransparent = false
@@ -69,7 +78,7 @@ class AppCompatUtilsTest : CompatUIShellTestCase() {
 
     @Test
     fun testIsTopActivityExemptFromDesktopWindowing_transparentActivityStack_notDisplayed() {
-        assertFalse(isTopActivityExemptFromDesktopWindowing(mContext,
+        assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask(/* displayId */ 0)
                 .apply {
                     isActivityStackTransparent = true
@@ -82,7 +91,7 @@ class AppCompatUtilsTest : CompatUIShellTestCase() {
     fun testIsTopActivityExemptFromDesktopWindowing_systemUiTask() {
         val systemUIPackageName = context.resources.getString(R.string.config_systemUi)
         val baseComponent = ComponentName(systemUIPackageName, /* class */ "")
-        assertTrue(isTopActivityExemptFromDesktopWindowing(mContext,
+        assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask(/* displayId */ 0)
                     .apply {
                         baseActivity = baseComponent
@@ -94,7 +103,7 @@ class AppCompatUtilsTest : CompatUIShellTestCase() {
     fun testIsTopActivityExemptFromDesktopWindowing_systemUiTask_notDisplayed() {
         val systemUIPackageName = context.resources.getString(R.string.config_systemUi)
         val baseComponent = ComponentName(systemUIPackageName, /* class */ "")
-        assertFalse(isTopActivityExemptFromDesktopWindowing(mContext,
+        assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask(/* displayId */ 0)
                 .apply {
                     baseActivity = baseComponent

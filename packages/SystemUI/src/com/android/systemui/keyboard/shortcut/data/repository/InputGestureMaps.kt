@@ -39,10 +39,14 @@ import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_SNAP_RIGHT_FREEFO
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_LEFT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_RIGHT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAXIMIZE_FREEFORM_WINDOW
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS
-import com.android.hardware.input.Flags.enableVoiceAccessKeyGestures
+import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.Accessibility
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.AppCategories
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.MultiTasking
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.System
@@ -65,7 +69,6 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_LAUNCH_ASSISTANT to System,
             KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT to System,
             KEY_GESTURE_TYPE_ALL_APPS to System,
-            KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to System,
 
             // Multitasking Category
             KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER to MultiTasking,
@@ -82,6 +85,13 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
 
             // App Category
             KEY_GESTURE_TYPE_LAUNCH_APPLICATION to AppCategories,
+
+            // Accessibility Category
+            KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS to Accessibility,
+            KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS to Accessibility,
+            KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS to Accessibility,
+            KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS to Accessibility,
+            KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to Accessibility,
         )
 
     val gestureToInternalKeyboardShortcutGroupLabelResIdMap =
@@ -103,7 +113,6 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_LAUNCH_ASSISTANT to R.string.shortcut_helper_category_system_apps,
             KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT to
                 R.string.shortcut_helper_category_system_apps,
-            KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to R.string.shortcut_helper_category_system_apps,
 
             // Multitasking Category
             KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_LEFT to
@@ -128,6 +137,13 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
 
             // App Category
             KEY_GESTURE_TYPE_LAUNCH_APPLICATION to R.string.keyboard_shortcut_group_applications,
+
+            // Accessibility Category
+            KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS to R.string.shortcutHelper_category_accessibility,
+            KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS to R.string.shortcutHelper_category_accessibility,
+            KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS to R.string.shortcutHelper_category_accessibility,
+            KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS to R.string.shortcutHelper_category_accessibility,
+            KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to R.string.shortcutHelper_category_accessibility,
         )
 
     /**
@@ -152,7 +168,6 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_LAUNCH_ASSISTANT to R.string.group_system_access_google_assistant,
             KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT to
                 R.string.group_system_access_google_assistant,
-            KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to R.string.group_system_toggle_voice_access,
 
             // Multitasking Category
             KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER to R.string.group_system_cycle_forward,
@@ -169,6 +184,14 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
                 R.string.system_desktop_mode_toggle_maximize_window,
             KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY to
                 R.string.system_multitasking_move_to_next_display,
+
+            // Accessibility Category
+            KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS to R.string.group_accessibility_toggle_bounce_keys,
+            KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS to R.string.group_accessibility_toggle_mouse_keys,
+            KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS to R.string.group_accessibility_toggle_sticky_keys,
+            KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS to R.string.group_accessibility_toggle_slow_keys,
+            KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to
+                R.string.group_accessibility_toggle_voice_access,
         )
 
     val shortcutLabelToKeyGestureTypeMap: Map<String, Int>

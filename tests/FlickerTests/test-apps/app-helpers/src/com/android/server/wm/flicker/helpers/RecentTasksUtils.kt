@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.systemui.volume.dialog.sliders.ui.viewmodel
+package com.android.server.wm.flicker.helpers
 
-import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.applicationCoroutineScope
-import com.android.systemui.volume.dialog.sliders.domain.interactor.volumeDialogSliderInputEventsInteractor
+import android.app.Instrumentation
 
-val Kosmos.volumeDialogSliderInputEventsViewModel by
-    Kosmos.Fixture {
-        VolumeDialogSliderInputEventsViewModel(
-            applicationCoroutineScope,
-            volumeDialogSliderInputEventsInteractor,
+object RecentTasksUtils {
+    fun clearAllVisibleRecentTasks(instrumentation: Instrumentation) {
+        instrumentation.uiAutomation.executeShellCommand(
+            "dumpsys activity service SystemUIService WMShell recents clearAll"
         )
     }
+}
