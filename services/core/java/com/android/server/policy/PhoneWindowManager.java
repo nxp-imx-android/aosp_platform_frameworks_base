@@ -1163,6 +1163,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
+    private boolean shouldShowHub() {
+        final boolean hubEnabled = Settings.Secure.getIntForUser(
+                mContext.getContentResolver(), Settings.Secure.GLANCEABLE_HUB_ENABLED,
+                1, mCurrentUserId) == 1;
+
+        return mUserManagerInternal.isUserUnlocked(mCurrentUserId) && hubEnabled
+                && mDreamManagerInternal.dreamConditionActive();
+    }
+
     @VisibleForTesting
     void powerPress(long eventTime, int count, int displayId) {
         // SideFPS still needs to know about suppressed power buttons, in case it needs to block
@@ -1261,9 +1270,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     // show hub.
                     boolean keyguardAvailable = !mLockPatternUtils.isLockScreenDisabled(
                             mCurrentUserId);
-                    if (mUserManagerInternal.isUserUnlocked(mCurrentUserId) && hubEnabled
-                            && keyguardAvailable && mDreamManagerInternal.dreamConditionActive()) {
-                        // If the hub can be launched, send a message to keyguard.
+                    if (shouldShowHub() && keyguardAvailable) {
+                        // If the hub can be launched, send a message to keyguard. We do not know if
+                        // the hub is already running or not, keyguard handles turning screen off if
+                        // it is.
                         Bundle options = new Bundle();
                         options.putBoolean(EXTRA_TRIGGER_HUB, true);
                         lockNow(options);
@@ -1324,14 +1334,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
      * @param isScreenOn Whether the screen is currently on.
      * @param noDreamAction The action to perform if dreaming is not possible.
      */
-    private void attemptToDreamFromShortPowerButtonPress(
+    private boolean attemptToDreamFromShortPowerButtonPress(
             boolean isScreenOn, Runnable noDreamAction) {
         if (mShortPressOnPowerBehavior != SHORT_PRESS_POWER_DREAM_OR_SLEEP
                 && mShortPressOnPowerBehavior != SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP) {
             // If the power button behavior isn't one that should be able to trigger the dream, give
             // up.
             noDreamAction.run();
-            return;
+            return false;
         }
 
         final DreamManagerInternal dreamManagerInternal = getDreamManagerInternal();
@@ -1339,7 +1349,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             Slog.d(TAG, "Can't start dreaming when attempting to dream from short power"
                     + " press (isScreenOn=" + isScreenOn + ")");
             noDreamAction.run();
-            return;
+            return false;
         }
 
         synchronized (mLock) {
@@ -1350,6 +1360,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         dreamManagerInternal.requestDream();
+
+        return true;
     }
 
     /**
@@ -6401,6 +6413,17 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 event.getDisplayId(), event.getKeyCode(), "wakeUpFromWakeKey")) {
             return;
         }
+
+        if (!shouldShowHub()
+                && mShortPressOnPowerBehavior == SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP
+                && event.getKeyCode() == KEYCODE_POWER
+                && attemptToDreamFromShortPowerButtonPress(false, () -> {})) {
+            // In the case that we should wake to dream and successfully initiate dreaming, do not
+            // continue waking up. Doing so will exit the dream state and cause UI to react
+            // accordingly.
+            return;
+        }
+
         wakeUpFromWakeKey(
                 event.getEventTime(),
                 event.getKeyCode(),
