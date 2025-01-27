@@ -738,6 +738,26 @@ public class MediaQualityService extends SystemService {
             }
         }
 
+        public void unregisterAmbientBacklightCallback(IAmbientBacklightCallback callback) {
+            if (DEBUG) {
+                Slogf.d(TAG, "unregisterAmbientBacklightCallback");
+            }
+
+            if (!hasReadColorZonesPermission()) {
+                //TODO: error handling
+            }
+
+            synchronized (mCallbackRecords) {
+                for (AmbientBacklightCallbackRecord record : mCallbackRecords.values()) {
+                    if (record.mCallback.asBinder().equals(callback.asBinder())) {
+                        record.release();
+                        mCallbackRecords.remove(record.mPackageName);
+                        return;
+                    }
+                }
+            }
+        }
+
         @GuardedBy("mAmbientBacklightLock")
         @Override
         public void setAmbientBacklightSettings(
