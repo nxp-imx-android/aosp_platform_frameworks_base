@@ -35,7 +35,7 @@ import android.os.IBinder;
  *     <service android:name=".MyVerifierService"
  *         permission="android.permission.BIND_VERIFICATION_AGENT">
  *       <intent-filter>
- *         <action android:name="android.intent.action.VERIFICATION_AGENT" />
+ *         <action android:name="android.content.pm.action.VERIFY_PACKAGE" />
  *       </intent-filter>
  *     </service>
  * }</pre>
