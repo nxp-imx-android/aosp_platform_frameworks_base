@@ -1549,7 +1549,7 @@ class StorageManagerService extends IStorageManager.Stub
             }
 
             if (vol != null) {
-                mStorageSessionController.onVolumeRemove(vol.getVolumeInfo());
+                mStorageSessionController.onVolumeRemove(vol.getImmutableVolumeInfo());
                 try {
                     if (vol.getType() == VolumeInfo.TYPE_PRIVATE) {
                         mInstaller.onPrivateVolumeRemoved(vol.getFsUuid());
@@ -1787,7 +1787,7 @@ class StorageManagerService extends IStorageManager.Stub
         // before notifying other listeners.
         // Intentionally called without the mLock to avoid deadlocking from the Storage Service.
         try {
-            mStorageSessionController.notifyVolumeStateChanged(vol.getVolumeInfo());
+            mStorageSessionController.notifyVolumeStateChanged(vol.getImmutableVolumeInfo());
         } catch (ExternalStorageServiceException e) {
             Log.e(TAG, "Failed to notify volume state changed to the Storage Service", e);
         }
@@ -2388,7 +2388,7 @@ class StorageManagerService extends IStorageManager.Stub
                     try {
                         Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER,
                                 "SMS.startFuseFileSystem: " + vol.getId());
-                        mStorageSessionController.onVolumeMount(pfd, vol.getVolumeInfo());
+                        mStorageSessionController.onVolumeMount(pfd, vol.getImmutableVolumeInfo());
                         return true;
                     } catch (ExternalStorageServiceException e) {
                         Slog.e(TAG, "Failed to mount volume " + vol, e);
@@ -2437,7 +2437,7 @@ class StorageManagerService extends IStorageManager.Stub
                 Slog.e(TAG, "Failed unmount mirror data", e);
             }
             mVold.unmount(vol.getId());
-            mStorageSessionController.onVolumeUnmount(vol.getVolumeInfo());
+            mStorageSessionController.onVolumeUnmount(vol.getImmutableVolumeInfo());
         } catch (Exception e) {
             Slog.wtf(TAG, e);
         }

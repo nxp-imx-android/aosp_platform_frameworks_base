@@ -45,6 +45,7 @@ import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.server.storage.ImmutableVolumeInfo;
 
 import java.util.Objects;
 
@@ -79,7 +80,7 @@ public final class StorageSessionController {
      * @param vol for which the storage session has to be started
      * @return userId for connection for this volume
      */
-    public int getConnectionUserIdForVolume(VolumeInfo vol) {
+    public int getConnectionUserIdForVolume(ImmutableVolumeInfo vol) {
         final Context volumeUserContext = mContext.createContextAsUser(
                 UserHandle.of(vol.getMountUserId()), 0);
         boolean isMediaSharedWithParent = volumeUserContext.getSystemService(
@@ -108,7 +109,7 @@ public final class StorageSessionController {
      * @throws ExternalStorageServiceException if the session fails to start
      * @throws IllegalStateException if a session has already been created for {@code vol}
      */
-    public void onVolumeMount(ParcelFileDescriptor deviceFd, VolumeInfo vol)
+    public void onVolumeMount(ParcelFileDescriptor deviceFd, ImmutableVolumeInfo vol)
             throws ExternalStorageServiceException {
         if (!shouldHandle(vol)) {
             return;
@@ -144,7 +145,7 @@ public final class StorageSessionController {
      *
      * @throws ExternalStorageServiceException if it fails to connect to ExternalStorageService
      */
-    public void notifyVolumeStateChanged(VolumeInfo vol)
+    public void notifyVolumeStateChanged(ImmutableVolumeInfo vol)
             throws ExternalStorageServiceException {
         if (!shouldHandle(vol)) {
             return;
@@ -215,7 +216,7 @@ public final class StorageSessionController {
      * @return the connection that was removed or {@code null} if nothing was removed
      */
     @Nullable
-    public StorageUserConnection onVolumeRemove(VolumeInfo vol) {
+    public StorageUserConnection onVolumeRemove(ImmutableVolumeInfo vol) {
         if (!shouldHandle(vol)) {
             return null;
         }
@@ -247,7 +248,7 @@ public final class StorageSessionController {
      *
      * Call {@link #onVolumeRemove} to remove the connection without waiting for exit
      */
-    public void onVolumeUnmount(VolumeInfo vol) {
+    public void onVolumeUnmount(ImmutableVolumeInfo vol) {
         String sessionId = vol.getId();
         final long token = Binder.clearCallingIdentity();
         try {
@@ -458,7 +459,7 @@ public final class StorageSessionController {
      * Returns {@code true} if {@code vol} is an emulated or visible public volume,
      * {@code false} otherwise
      **/
-    public static boolean isEmulatedOrPublic(VolumeInfo vol) {
+    public static boolean isEmulatedOrPublic(ImmutableVolumeInfo vol) {
         return vol.getType() == VolumeInfo.TYPE_EMULATED
                 || (vol.getType() == VolumeInfo.TYPE_PUBLIC && vol.isVisible());
     }
@@ -478,11 +479,11 @@ public final class StorageSessionController {
         }
     }
 
-    private static boolean isSupportedVolume(VolumeInfo vol) {
+    private static boolean isSupportedVolume(ImmutableVolumeInfo vol) {
         return isEmulatedOrPublic(vol) || vol.getType() == VolumeInfo.TYPE_STUB;
     }
 
-    private boolean shouldHandle(@Nullable VolumeInfo vol) {
+    private boolean shouldHandle(@Nullable ImmutableVolumeInfo vol) {
         return !mIsResetting && (vol == null || isSupportedVolume(vol));
     }
 

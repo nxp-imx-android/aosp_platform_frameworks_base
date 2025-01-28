@@ -64,6 +64,10 @@ public class WatchedVolumeInfo extends WatchableImpl {
         return fromVolumeInfo(mVolumeInfo.clone());
     }
 
+    public ImmutableVolumeInfo getImmutableVolumeInfo() {
+        return ImmutableVolumeInfo.fromVolumeInfo(mVolumeInfo);
+    }
+
     public StorageVolume buildStorageVolume(Context context, int userId, boolean reportUnmounted) {
         return mVolumeInfo.buildStorageVolume(context, userId, reportUnmounted);
     }
