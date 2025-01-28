@@ -16,9 +16,9 @@
 
 package com.android.systemui.navigationbar.views;
 
-import static android.app.StatusBarManager.NAVIGATION_HINT_BACK_ALT;
-import static android.app.StatusBarManager.NAVIGATION_HINT_IME_SHOWN;
-import static android.app.StatusBarManager.NAVIGATION_HINT_IME_SWITCHER_BUTTON_SHOWN;
+import static android.app.StatusBarManager.NAVIGATION_HINT_BACK_DISMISS_IME;
+import static android.app.StatusBarManager.NAVIGATION_HINT_IME_VISIBLE;
+import static android.app.StatusBarManager.NAVIGATION_HINT_IME_SWITCHER_BUTTON_VISIBLE;
 import static android.inputmethodservice.InputMethodService.BACK_DISPOSITION_ADJUST_NOTHING;
 import static android.inputmethodservice.InputMethodService.BACK_DISPOSITION_DEFAULT;
 import static android.inputmethodservice.InputMethodService.IME_VISIBLE;
@@ -31,8 +31,9 @@ import static com.android.systemui.assist.AssistManager.INVOCATION_TYPE_HOME_BUT
 import static com.android.systemui.navigationbar.views.NavigationBar.NavBarActionEvent.NAVBAR_ASSIST_LONGPRESS;
 import static com.android.systemui.navigationbar.views.buttons.KeyButtonView.NavBarButtonEvent.NAVBAR_IME_SWITCHER_BUTTON_LONGPRESS;
 import static com.android.systemui.navigationbar.views.buttons.KeyButtonView.NavBarButtonEvent.NAVBAR_IME_SWITCHER_BUTTON_TAP;
-import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_IME_SHOWING;
-import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_IME_SWITCHER_BUTTON_SHOWING;
+import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_BACK_DISMISS_IME;
+import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_IME_VISIBLE;
+import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_IME_SWITCHER_BUTTON_VISIBLE;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_SCREEN_PINNING;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -500,8 +501,9 @@ public class NavigationBarTest extends SysuiTestCase {
 
         mNavigationBar.setImeWindowStatus(DEFAULT_DISPLAY, IME_VISIBLE,
                 BACK_DISPOSITION_DEFAULT, true /* showImeSwitcher */);
-        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_SHOWING), eq(true));
-        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_SWITCHER_BUTTON_SHOWING), eq(true));
+        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_VISIBLE), eq(true));
+        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_SWITCHER_BUTTON_VISIBLE), eq(true));
+        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_BACK_DISMISS_IME), eq(true));
     }
 
     /**
@@ -514,8 +516,9 @@ public class NavigationBarTest extends SysuiTestCase {
 
         mNavigationBar.setImeWindowStatus(DEFAULT_DISPLAY, IME_VISIBLE,
                 BACK_DISPOSITION_DEFAULT, false /* showImeSwitcher */);
-        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_SHOWING), eq(true));
-        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_SWITCHER_BUTTON_SHOWING), eq(false));
+        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_VISIBLE), eq(true));
+        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_SWITCHER_BUTTON_VISIBLE), eq(false));
+        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_BACK_DISMISS_IME), eq(true));
     }
 
     /**
@@ -531,8 +534,9 @@ public class NavigationBarTest extends SysuiTestCase {
 
         mNavigationBar.setImeWindowStatus(DEFAULT_DISPLAY, 0 /* vis */,
                 BACK_DISPOSITION_DEFAULT, true /* showImeSwitcher */);
-        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_SHOWING), eq(false));
-        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_SWITCHER_BUTTON_SHOWING), eq(false));
+        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_VISIBLE), eq(false));
+        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_SWITCHER_BUTTON_VISIBLE), eq(false));
+        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_BACK_DISMISS_IME), eq(false));
     }
 
     /**
@@ -545,8 +549,9 @@ public class NavigationBarTest extends SysuiTestCase {
 
         mNavigationBar.setImeWindowStatus(DEFAULT_DISPLAY, IME_VISIBLE,
                 BACK_DISPOSITION_ADJUST_NOTHING, true /* showImeSwitcher */);
-        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_SHOWING), eq(true));
-        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_SWITCHER_BUTTON_SHOWING), eq(true));
+        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_VISIBLE), eq(true));
+        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_IME_SWITCHER_BUTTON_VISIBLE), eq(true));
+        verify(mMockSysUiState).setFlag(eq(SYSUI_STATE_BACK_DISMISS_IME), eq(false));
     }
 
     @Test
@@ -567,26 +572,28 @@ public class NavigationBarTest extends SysuiTestCase {
                 BACK_DISPOSITION_DEFAULT, true);
 
         // Verify IME window state will be updated in default NavBar & external NavBar state reset.
-        assertEquals(NAVIGATION_HINT_BACK_ALT | NAVIGATION_HINT_IME_SHOWN
-                        | NAVIGATION_HINT_IME_SWITCHER_BUTTON_SHOWN,
+        assertEquals(NAVIGATION_HINT_BACK_DISMISS_IME | NAVIGATION_HINT_IME_VISIBLE
+                        | NAVIGATION_HINT_IME_SWITCHER_BUTTON_VISIBLE,
                 defaultNavBar.getNavigationIconHints());
-        assertFalse((externalNavBar.getNavigationIconHints() & NAVIGATION_HINT_BACK_ALT) != 0);
-        assertFalse((externalNavBar.getNavigationIconHints() & NAVIGATION_HINT_IME_SHOWN) != 0);
         assertFalse((externalNavBar.getNavigationIconHints()
-                & NAVIGATION_HINT_IME_SWITCHER_BUTTON_SHOWN) != 0);
+                & NAVIGATION_HINT_BACK_DISMISS_IME) != 0);
+        assertFalse((externalNavBar.getNavigationIconHints() & NAVIGATION_HINT_IME_VISIBLE) != 0);
+        assertFalse((externalNavBar.getNavigationIconHints()
+                & NAVIGATION_HINT_IME_SWITCHER_BUTTON_VISIBLE) != 0);
 
         externalNavBar.setImeWindowStatus(EXTERNAL_DISPLAY_ID, IME_VISIBLE,
                 BACK_DISPOSITION_DEFAULT, true);
         defaultNavBar.setImeWindowStatus(DEFAULT_DISPLAY, 0 /* vis */,
                 BACK_DISPOSITION_DEFAULT, false);
         // Verify IME window state will be updated in external NavBar & default NavBar state reset.
-        assertEquals(NAVIGATION_HINT_BACK_ALT | NAVIGATION_HINT_IME_SHOWN
-                        | NAVIGATION_HINT_IME_SWITCHER_BUTTON_SHOWN,
+        assertEquals(NAVIGATION_HINT_BACK_DISMISS_IME | NAVIGATION_HINT_IME_VISIBLE
+                        | NAVIGATION_HINT_IME_SWITCHER_BUTTON_VISIBLE,
                 externalNavBar.getNavigationIconHints());
-        assertFalse((defaultNavBar.getNavigationIconHints() & NAVIGATION_HINT_BACK_ALT) != 0);
-        assertFalse((defaultNavBar.getNavigationIconHints() & NAVIGATION_HINT_IME_SHOWN) != 0);
         assertFalse((defaultNavBar.getNavigationIconHints()
-                & NAVIGATION_HINT_IME_SWITCHER_BUTTON_SHOWN) != 0);
+                & NAVIGATION_HINT_BACK_DISMISS_IME) != 0);
+        assertFalse((defaultNavBar.getNavigationIconHints() & NAVIGATION_HINT_IME_VISIBLE) != 0);
+        assertFalse((defaultNavBar.getNavigationIconHints()
+                & NAVIGATION_HINT_IME_SWITCHER_BUTTON_VISIBLE) != 0);
     }
 
     @Test
@@ -602,20 +609,22 @@ public class NavigationBarTest extends SysuiTestCase {
         // Verify navbar altered back icon when an app is showing IME
         mNavigationBar.setImeWindowStatus(DEFAULT_DISPLAY, IME_VISIBLE,
                 BACK_DISPOSITION_DEFAULT, true);
-        assertTrue((mNavigationBar.getNavigationIconHints() & NAVIGATION_HINT_BACK_ALT) != 0);
-        assertTrue((mNavigationBar.getNavigationIconHints() & NAVIGATION_HINT_IME_SHOWN) != 0);
         assertTrue((mNavigationBar.getNavigationIconHints()
-                & NAVIGATION_HINT_IME_SWITCHER_BUTTON_SHOWN) != 0);
+                & NAVIGATION_HINT_BACK_DISMISS_IME) != 0);
+        assertTrue((mNavigationBar.getNavigationIconHints() & NAVIGATION_HINT_IME_VISIBLE) != 0);
+        assertTrue((mNavigationBar.getNavigationIconHints()
+                & NAVIGATION_HINT_IME_SWITCHER_BUTTON_VISIBLE) != 0);
 
         // Verify navbar didn't alter and showing back icon when the keyguard is showing without
         // requesting IME insets visible.
         doReturn(true).when(mKeyguardStateController).isShowing();
         mNavigationBar.setImeWindowStatus(DEFAULT_DISPLAY, IME_VISIBLE,
                 BACK_DISPOSITION_DEFAULT, true);
-        assertFalse((mNavigationBar.getNavigationIconHints() & NAVIGATION_HINT_BACK_ALT) != 0);
-        assertFalse((mNavigationBar.getNavigationIconHints() & NAVIGATION_HINT_IME_SHOWN) != 0);
         assertFalse((mNavigationBar.getNavigationIconHints()
-                & NAVIGATION_HINT_IME_SWITCHER_BUTTON_SHOWN) != 0);
+                & NAVIGATION_HINT_BACK_DISMISS_IME) != 0);
+        assertFalse((mNavigationBar.getNavigationIconHints() & NAVIGATION_HINT_IME_VISIBLE) != 0);
+        assertFalse((mNavigationBar.getNavigationIconHints()
+                & NAVIGATION_HINT_IME_SWITCHER_BUTTON_VISIBLE) != 0);
 
         // Verify navbar altered and showing back icon when the keyguard is showing and
         // requesting IME insets visible.
@@ -623,10 +632,11 @@ public class NavigationBarTest extends SysuiTestCase {
         doReturn(windowInsets).when(mockShadeWindowView).getRootWindowInsets();
         mNavigationBar.setImeWindowStatus(DEFAULT_DISPLAY, IME_VISIBLE,
                 BACK_DISPOSITION_DEFAULT, true);
-        assertTrue((mNavigationBar.getNavigationIconHints() & NAVIGATION_HINT_BACK_ALT) != 0);
-        assertTrue((mNavigationBar.getNavigationIconHints() & NAVIGATION_HINT_IME_SHOWN) != 0);
         assertTrue((mNavigationBar.getNavigationIconHints()
-                & NAVIGATION_HINT_IME_SWITCHER_BUTTON_SHOWN) != 0);
+                & NAVIGATION_HINT_BACK_DISMISS_IME) != 0);
+        assertTrue((mNavigationBar.getNavigationIconHints() & NAVIGATION_HINT_IME_VISIBLE) != 0);
+        assertTrue((mNavigationBar.getNavigationIconHints()
+                & NAVIGATION_HINT_IME_SWITCHER_BUTTON_VISIBLE) != 0);
     }
 
     @Test

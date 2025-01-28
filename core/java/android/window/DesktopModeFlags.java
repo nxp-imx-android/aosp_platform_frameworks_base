@@ -35,10 +35,6 @@ import java.util.function.BooleanSupplier;
  * windowing features which are aiming for developer preview before their release. It allows
  * developer option to override the default behavior of these flags.
  *
- * <p> The flags here will be controlled by either {@link
- * Settings.Global#DEVELOPMENT_OVERRIDE_DESKTOP_MODE_FEATURES} or the {@code
- * persyst.wm.debug.desktop_experience_devopts} system property.
- *
  * <p>NOTE: Flags should only be added to this enum when they have received Product and UX
  * alignment that the feature is ready for developer preview, otherwise just do a flag check.
  *
@@ -85,16 +81,24 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_WINDOWING_PERSISTENCE(Flags::enableDesktopWindowingPersistence, false),
     ENABLE_HANDLE_INPUT_FIX(Flags::enableHandleInputFix, true),
     ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX(
-            Flags::enableDesktopWindowingEnterTransitionBugfix, false),
+            Flags::enableDesktopWindowingEnterTransitionBugfix, true),
     ENABLE_DESKTOP_WINDOWING_EXIT_TRANSITIONS_BUGFIX(
-            Flags::enableDesktopWindowingExitTransitionsBugfix, false),
+            Flags::enableDesktopWindowingExitTransitionsBugfix, true),
     ENABLE_DESKTOP_APP_LAUNCH_ALTTAB_TRANSITIONS_BUGFIX(
-            Flags::enableDesktopAppLaunchAlttabTransitionsBugfix, false),
+            Flags::enableDesktopAppLaunchAlttabTransitionsBugfix, true),
     ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX(
-            Flags::enableDesktopAppLaunchTransitionsBugfix, false),
+            Flags::enableDesktopAppLaunchTransitionsBugfix, true),
     INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC(
             Flags::includeTopTransparentFullscreenTaskInDesktopHeuristic, true),
-    ENABLE_MINIMIZE_BUTTON(Flags::enableMinimizeButton, true);
+    ENABLE_DESKTOP_WINDOWING_HSUM(Flags::enableDesktopWindowingHsum, true),
+    ENABLE_MINIMIZE_BUTTON(Flags::enableMinimizeButton, true),
+    ENABLE_RESIZING_METRICS(Flags::enableResizingMetrics, true),
+    ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS(Flags::enableTaskResizingKeyboardShortcuts, true),
+    ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER(
+        Flags::enableDesktopWallpaperActivityForSystemUser, true),
+    ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX(
+            Flags::enableDesktopRecentsTransitionsCornersBugfix, false),
+    ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS(Flags::enableDesktopSystemDialogsTransitions, true);
 
     /**
      * Flag class, to be used in case the enum cannot be used because the flag is not accessible.
@@ -114,7 +118,7 @@ public enum DesktopModeFlags {
 
         /**
          * Determines state of flag based on the actual flag and desktop mode developer option
-         * or desktop experience developer option overrides.
+         * overrides.
          */
         public boolean isTrue() {
             return isFlagTrue(mFlagFunction, mShouldOverrideByDevOption);

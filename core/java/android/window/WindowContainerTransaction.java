@@ -112,6 +112,12 @@ public final class WindowContainerTransaction implements Parcelable {
         mTaskFragmentOrganizer = null;
     }
 
+    /*
+     * ===========================================================================================
+     * Window container properties
+     * ===========================================================================================
+     */
+
     /**
      * Resize a container.
      */
@@ -170,20 +176,6 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
-     * Notify {@link com.android.server.wm.PinnedTaskController} that the picture-in-picture task
-     * has finished the enter animation with the given bounds.
-     */
-    @NonNull
-    public WindowContainerTransaction scheduleFinishEnterPip(
-            @NonNull WindowContainerToken container, @NonNull Rect bounds) {
-        final Change chg = getOrCreateChange(container.asBinder());
-        chg.mPinnedBounds = new Rect(bounds);
-        chg.mChangeMask |= Change.CHANGE_PIP_CALLBACK;
-
-        return this;
-    }
-
-    /**
      * Send a SurfaceControl transaction to the server, which the server will apply in sync with
      * the next bounds change. As this uses deferred transaction and not BLAST it is only
      * able to sync with a single window, and the first visible window in this hierarchy of type
@@ -200,36 +192,6 @@ public final class WindowContainerTransaction implements Parcelable {
         final Change chg = getOrCreateChange(container.asBinder());
         chg.mBoundsChangeTransaction = t;
         chg.mChangeMask |= Change.CHANGE_BOUNDS_TRANSACTION;
-        return this;
-    }
-
-    /**
-     * Like {@link #setBoundsChangeTransaction} but instead queues up a setPosition/WindowCrop
-     * on a container's surface control. This is useful when a boundsChangeTransaction needs to be
-     * queued up on a Task that won't be organized until the end of this window-container
-     * transaction.
-     *
-     * This requires that, at the end of this transaction, `task` will be organized; otherwise
-     * the server will throw an IllegalArgumentException.
-     *
-     * WARNING: Use this carefully. Whatever is set here should match the expected bounds after
-     *          the transaction completes since it will likely be replaced by it. This call is
-     *          intended to pre-emptively set bounds on a surface in sync with a buffer when
-     *          otherwise the new bounds and the new buffer would update on different frames.
-     *
-     * TODO(b/134365562): remove once TaskOrg drives full-screen or BLAST is enabled.
-     *
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction setBoundsChangeTransaction(
-            @NonNull WindowContainerToken task, @NonNull Rect surfaceBounds) {
-        Change chg = getOrCreateChange(task.asBinder());
-        if (chg.mBoundsChangeSurfaceBounds == null) {
-            chg.mBoundsChangeSurfaceBounds = new Rect();
-        }
-        chg.mBoundsChangeSurfaceBounds.set(surfaceBounds);
-        chg.mChangeMask |= Change.CHANGE_BOUNDS_TRANSACTION_RECT;
         return this;
     }
 
@@ -381,20 +343,113 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
-     * Reparents a container into another one. The effect of a {@code null} parent can vary. For
-     * example, reparenting a stack to {@code null} will reparent it to its display.
+     * Sets whether a container is being drag-resized.
+     * When {@code true}, the client will reuse a single (larger) surface size to avoid
+     * continuous allocations on every size change.
      *
-     * @param onTop When {@code true}, the child goes to the top of parent; otherwise it goes to
-     *              the bottom.
+     * @param container WindowContainerToken of the task that changed its drag resizing state
+     * @hide
      */
     @NonNull
-    public WindowContainerTransaction reparent(@NonNull WindowContainerToken child,
-            @Nullable WindowContainerToken parent, boolean onTop) {
-        mHierarchyOps.add(HierarchyOp.createForReparent(child.asBinder(),
-                parent == null ? null : parent.asBinder(),
-                onTop));
+    public WindowContainerTransaction setDragResizing(@NonNull WindowContainerToken container,
+            boolean dragResizing) {
+        final Change change = getOrCreateChange(container.asBinder());
+        change.mChangeMask |= Change.CHANGE_DRAG_RESIZING;
+        change.mDragResizing = dragResizing;
         return this;
     }
+
+    /**
+     * Sets/removes the always on top flag for this {@code windowContainer}. See
+     * {@link com.android.server.wm.ConfigurationContainer#setAlwaysOnTop(boolean)}.
+     * Please note that this method is only intended to be used for a
+     * {@link com.android.server.wm.Task} or {@link com.android.server.wm.DisplayArea}.
+     *
+     * <p>
+     *     Setting always on top to {@code True} will also make the {@code windowContainer} to move
+     *     to the top.
+     * </p>
+     * <p>
+     *     Setting always on top to {@code False} will make this {@code windowContainer} to move
+     *     below the other always on top sibling containers.
+     * </p>
+     *
+     * @param windowContainer the container which the flag need to be updated for.
+     * @param alwaysOnTop denotes whether or not always on top flag should be set.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setAlwaysOnTop(
+            @NonNull WindowContainerToken windowContainer, boolean alwaysOnTop) {
+        final HierarchyOp hierarchyOp =
+                new HierarchyOp.Builder(
+                        HierarchyOp.HIERARCHY_OP_TYPE_SET_ALWAYS_ON_TOP)
+                        .setContainer(windowContainer.asBinder())
+                        .setAlwaysOnTop(alwaysOnTop)
+                        .build();
+        mHierarchyOps.add(hierarchyOp);
+        return this;
+    }
+
+    /**
+     * Sets/removes the reparent leaf task flag for this {@code windowContainer}.
+     * When this is set, the server side will try to reparent the leaf task to task display area
+     * if there is an existing activity in history during the activity launch. This operation only
+     * support on the organized root task.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setReparentLeafTaskIfRelaunch(
+            @NonNull WindowContainerToken windowContainer, boolean reparentLeafTaskIfRelaunch) {
+        final HierarchyOp hierarchyOp =
+                new HierarchyOp.Builder(
+                        HierarchyOp.HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH)
+                        .setContainer(windowContainer.asBinder())
+                        .setReparentLeafTaskIfRelaunch(reparentLeafTaskIfRelaunch)
+                        .build();
+        mHierarchyOps.add(hierarchyOp);
+        return this;
+    }
+
+    /**
+     * Defers client-facing configuration changes for activities in `container` until the end of
+     * the transition animation. The configuration will still be applied to the WMCore hierarchy
+     * at the normal time (beginning); so, special consideration must be made for this in the
+     * animation.
+     *
+     * @param container WindowContainerToken who's children should defer config notification.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction deferConfigToTransitionEnd(
+            @NonNull WindowContainerToken container) {
+        final Change change = getOrCreateChange(container.asBinder());
+        change.mConfigAtTransitionEnd = true;
+        return this;
+    }
+
+    /**
+     * Sets the task as trimmable or not. This can be used to prevent the task from being trimmed by
+     * recents. This attribute is set to true on task creation by default.
+     *
+     * @param isTrimmableFromRecents When {@code true}, task is set as trimmable from recents.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setTaskTrimmableFromRecents(
+            @NonNull WindowContainerToken container,
+            boolean isTrimmableFromRecents) {
+        mHierarchyOps.add(
+                HierarchyOp.createForSetTaskTrimmableFromRecents(container.asBinder(),
+                        isTrimmableFromRecents));
+        return this;
+    }
+
+    /*
+     * ===========================================================================================
+     * Hierarchy updates (create/destroy/reorder/reparent containers)
+     * ===========================================================================================
+     */
 
     /**
      * Reorders a container within its parent.
@@ -421,6 +476,22 @@ public final class WindowContainerTransaction implements Parcelable {
     public WindowContainerTransaction reorder(@NonNull WindowContainerToken child, boolean onTop,
             boolean includingParents) {
         mHierarchyOps.add(HierarchyOp.createForReorder(child.asBinder(), onTop, includingParents));
+        return this;
+    }
+
+    /**
+     * Reparents a container into another one. The effect of a {@code null} parent can vary. For
+     * example, reparenting a stack to {@code null} will reparent it to its display.
+     *
+     * @param onTop When {@code true}, the child goes to the top of parent; otherwise it goes to
+     *              the bottom.
+     */
+    @NonNull
+    public WindowContainerTransaction reparent(@NonNull WindowContainerToken child,
+            @Nullable WindowContainerToken parent, boolean onTop) {
+        mHierarchyOps.add(HierarchyOp.createForReparent(child.asBinder(),
+                parent == null ? null : parent.asBinder(),
+                onTop));
         return this;
     }
 
@@ -478,6 +549,116 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
+     * Finds and removes a task and its children using its container token. The task is removed
+     * from recents.
+     *
+     * If the task is a root task, its leaves are removed but the root task is not. Use
+     * {@link #removeRootTask(WindowContainerToken)} to remove the root task.
+     *
+     * @param containerToken ContainerToken of Task to be removed
+     */
+    @NonNull
+    public WindowContainerTransaction removeTask(@NonNull WindowContainerToken containerToken) {
+        mHierarchyOps.add(HierarchyOp.createForRemoveTask(containerToken.asBinder()));
+        return this;
+    }
+
+    /**
+     * Finds and removes a root task created by an organizer and its leaves using its container
+     * token.
+     *
+     * @param containerToken ContainerToken of the root task to be removed
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction removeRootTask(@NonNull WindowContainerToken containerToken) {
+        mHierarchyOps.add(HierarchyOp.createForRemoveRootTask(containerToken.asBinder()));
+        return this;
+    }
+
+    /**
+     * If `container` was brought to front as a transient-launch (eg. recents), this will reorder
+     * the container back to where it was prior to the transient-launch. This way if a transient
+     * launch is "aborted", the z-ordering of containers in WM should be restored to before the
+     * launch.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction restoreTransientOrder(
+            @NonNull WindowContainerToken container) {
+        final HierarchyOp hierarchyOp =
+                new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_RESTORE_TRANSIENT_ORDER)
+                        .setContainer(container.asBinder())
+                        .build();
+        mHierarchyOps.add(hierarchyOp);
+        return this;
+    }
+
+    /**
+     * Restore the back navigation target from visible to invisible for canceling gesture animation.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction restoreBackNavi() {
+        final HierarchyOp hierarchyOp =
+                new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_RESTORE_BACK_NAVIGATION)
+                        .build();
+        mHierarchyOps.add(hierarchyOp);
+        return this;
+    }
+
+    /*
+     * ===========================================================================================
+     * Activity launch
+     * ===========================================================================================
+     */
+
+    /**
+     * Starts a task by id. The task is expected to already exist (eg. as a recent task).
+     * @param taskId Id of task to start.
+     * @param options bundle containing ActivityOptions for the task's top activity.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction startTask(int taskId, @Nullable Bundle options) {
+        mHierarchyOps.add(HierarchyOp.createForTaskLaunch(taskId, options));
+        return this;
+    }
+
+    /**
+     * Sends a pending intent in sync.
+     * @param sender The PendingIntent sender.
+     * @param intent The fillIn intent to patch over the sender's base intent.
+     * @param options bundle containing ActivityOptions for the task's top activity.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction sendPendingIntent(@Nullable PendingIntent sender,
+            @Nullable Intent intent, @Nullable Bundle options) {
+        mHierarchyOps.add(new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_PENDING_INTENT)
+                .setLaunchOptions(options)
+                .setPendingIntent(sender)
+                .setActivityIntent(intent)
+                .build());
+        return this;
+    }
+
+    /**
+     * Starts activity(s) from a shortcut.
+     * @param callingPackage The package launching the shortcut.
+     * @param shortcutInfo Information about the shortcut to start
+     * @param options bundle containing ActivityOptions for the task's top activity.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction startShortcut(@NonNull String callingPackage,
+            @NonNull ShortcutInfo shortcutInfo, @Nullable Bundle options) {
+        mHierarchyOps.add(HierarchyOp.createForStartShortcut(
+                callingPackage, shortcutInfo, options));
+        return this;
+    }
+
+    /**
      * Sets whether a container should be the launch root for the specified windowing mode and
      * activity type. This currently only applies to Task containers created by organizer.
      */
@@ -490,6 +671,12 @@ public final class WindowContainerTransaction implements Parcelable {
                 activityTypes));
         return this;
     }
+
+    /*
+     * ===========================================================================================
+     * Multitasking
+     * ===========================================================================================
+     */
 
     /**
      * Sets two containers adjacent to each other. Containers below two visible adjacent roots will
@@ -599,93 +786,162 @@ public final class WindowContainerTransaction implements Parcelable {
         return this;
     }
 
+    /*
+     * ===========================================================================================
+     * PIP
+     * ===========================================================================================
+     */
+
     /**
-     * Starts a task by id. The task is expected to already exist (eg. as a recent task).
-     * @param taskId Id of task to start.
-     * @param options bundle containing ActivityOptions for the task's top activity.
+     * Moves the PiP activity of a parent task to a pinned root task.
+     * @param parentToken the parent task of the PiP activity
+     * @param bounds the entry bounds
      * @hide
      */
     @NonNull
-    public WindowContainerTransaction startTask(int taskId, @Nullable Bundle options) {
-        mHierarchyOps.add(HierarchyOp.createForTaskLaunch(taskId, options));
-        return this;
-    }
-
-    /**
-     * Finds and removes a task and its children using its container token. The task is removed
-     * from recents.
-     *
-     * If the task is a root task, its leaves are removed but the root task is not. Use
-     * {@link #removeRootTask(WindowContainerToken)} to remove the root task.
-     *
-     * @param containerToken ContainerToken of Task to be removed
-     */
-    @NonNull
-    public WindowContainerTransaction removeTask(@NonNull WindowContainerToken containerToken) {
-        mHierarchyOps.add(HierarchyOp.createForRemoveTask(containerToken.asBinder()));
-        return this;
-    }
-
-    /**
-     * Finds and removes a root task created by an organizer and its leaves using its container
-     * token.
-     *
-     * @param containerToken ContainerToken of the root task to be removed
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction removeRootTask(@NonNull WindowContainerToken containerToken) {
-        mHierarchyOps.add(HierarchyOp.createForRemoveRootTask(containerToken.asBinder()));
-        return this;
-    }
-
-    /**
-     * Sets whether a container is being drag-resized.
-     * When {@code true}, the client will reuse a single (larger) surface size to avoid
-     * continuous allocations on every size change.
-     *
-     * @param container WindowContainerToken of the task that changed its drag resizing state
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction setDragResizing(@NonNull WindowContainerToken container,
-            boolean dragResizing) {
-        final Change change = getOrCreateChange(container.asBinder());
-        change.mChangeMask |= Change.CHANGE_DRAG_RESIZING;
-        change.mDragResizing = dragResizing;
-        return this;
-    }
-
-    /**
-     * Sends a pending intent in sync.
-     * @param sender The PendingIntent sender.
-     * @param intent The fillIn intent to patch over the sender's base intent.
-     * @param options bundle containing ActivityOptions for the task's top activity.
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction sendPendingIntent(@Nullable PendingIntent sender,
-            @Nullable Intent intent, @Nullable Bundle options) {
-        mHierarchyOps.add(new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_PENDING_INTENT)
-                .setLaunchOptions(options)
-                .setPendingIntent(sender)
-                .setActivityIntent(intent)
+    public WindowContainerTransaction movePipActivityToPinnedRootTask(
+            @NonNull WindowContainerToken parentToken, @NonNull Rect bounds) {
+        mHierarchyOps.add(new HierarchyOp
+                .Builder(HierarchyOp.HIERARCHY_OP_TYPE_MOVE_PIP_ACTIVITY_TO_PINNED_TASK)
+                .setContainer(parentToken.asBinder())
+                .setBounds(bounds)
                 .build());
         return this;
     }
 
     /**
-     * Starts activity(s) from a shortcut.
-     * @param callingPackage The package launching the shortcut.
-     * @param shortcutInfo Information about the shortcut to start
-     * @param options bundle containing ActivityOptions for the task's top activity.
+     * Notify {@link com.android.server.wm.PinnedTaskController} that the picture-in-picture task
+     * has finished the enter animation with the given bounds.
+     */
+    @NonNull
+    public WindowContainerTransaction scheduleFinishEnterPip(
+            @NonNull WindowContainerToken container, @NonNull Rect bounds) {
+        final Change chg = getOrCreateChange(container.asBinder());
+        chg.mPinnedBounds = new Rect(bounds);
+        chg.mChangeMask |= Change.CHANGE_PIP_CALLBACK;
+
+        return this;
+    }
+
+    /*
+     * ===========================================================================================
+     * Insets
+     * ===========================================================================================
+     */
+
+    /**
+     * Adds a given {@code Rect} as an insets source frame on the {@code receiver}.
+     *
+     * @param receiver The window container that the insets source is added to.
+     * @param owner    The owner of the insets source. An insets source can only be modified by its
+     *                 owner.
+     * @param index    An owner might add multiple insets sources with the same type.
+     *                 This identifies them.
+     * @param type     The {@link InsetsType} of the insets source.
+     * @param frame    The rectangle area of the insets source.
+     * @param boundingRects The bounding rects within this inset, relative to the |frame|.
      * @hide
      */
     @NonNull
-    public WindowContainerTransaction startShortcut(@NonNull String callingPackage,
-            @NonNull ShortcutInfo shortcutInfo, @Nullable Bundle options) {
-        mHierarchyOps.add(HierarchyOp.createForStartShortcut(
-                callingPackage, shortcutInfo, options));
+    public WindowContainerTransaction addInsetsSource(
+            @NonNull WindowContainerToken receiver,
+            @Nullable IBinder owner, int index, @InsetsType int type, @Nullable Rect frame,
+            @Nullable Rect[] boundingRects, @InsetsSource.Flags int flags) {
+        final HierarchyOp hierarchyOp =
+                new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_ADD_INSETS_FRAME_PROVIDER)
+                        .setContainer(receiver.asBinder())
+                        .setInsetsFrameProvider(new InsetsFrameProvider(owner, index, type)
+                                .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE)
+                                .setArbitraryRectangle(frame)
+                                .setBoundingRects(boundingRects)
+                                .setFlags(flags))
+                        .setInsetsFrameOwner(owner)
+                        .build();
+        mHierarchyOps.add(hierarchyOp);
+        return this;
+    }
+
+    /**
+     * Removes the insets source from the {@code receiver}.
+     *
+     * @param receiver The window container that the insets source was added to.
+     * @param owner    The owner of the insets source. An insets source can only be modified by its
+     *                 owner.
+     * @param index    An owner might add multiple insets sources with the same type.
+     *                 This identifies them.
+     * @param type     The {@link InsetsType} of the insets source.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction removeInsetsSource(@NonNull WindowContainerToken receiver,
+            @Nullable IBinder owner, int index, @InsetsType int type) {
+        final HierarchyOp hierarchyOp =
+                new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_INSETS_FRAME_PROVIDER)
+                        .setContainer(receiver.asBinder())
+                        .setInsetsFrameProvider(new InsetsFrameProvider(owner, index, type))
+                        .setInsetsFrameOwner(owner)
+                        .build();
+        mHierarchyOps.add(hierarchyOp);
+        return this;
+    }
+
+    /*
+     * ===========================================================================================
+     * Keyguard
+     * ===========================================================================================
+     */
+
+    /**
+     * Adds a {@link KeyguardState} to apply to the given displays.
+     *
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction addKeyguardState(@NonNull KeyguardState keyguardState) {
+        Objects.requireNonNull(keyguardState);
+        final HierarchyOp hierarchyOp =
+                new HierarchyOp.Builder(
+                        HierarchyOp.HIERARCHY_OP_TYPE_SET_KEYGUARD_STATE)
+                        .setKeyguardState(keyguardState)
+                        .build();
+        mHierarchyOps.add(hierarchyOp);
+        return this;
+    }
+
+    /*
+     * ===========================================================================================
+     * Task fragments
+     * ===========================================================================================
+     */
+
+    /**
+     * Sets the {@link TaskFragmentOrganizer} that applies this {@link WindowContainerTransaction}.
+     * When this is set, the server side will not check for the permission of
+     * {@link android.Manifest.permission#MANAGE_ACTIVITY_TASKS}, but will ensure this WCT only
+     * contains operations that are allowed for this organizer, such as modifying TaskFragments that
+     * are organized by this organizer.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setTaskFragmentOrganizer(
+            @NonNull ITaskFragmentOrganizer organizer) {
+        mTaskFragmentOrganizer = organizer;
+        return this;
+    }
+
+    /**
+     * When this {@link WindowContainerTransaction} failed to finish on the server side, it will
+     * trigger callback with this {@param errorCallbackToken}.
+     * @param errorCallbackToken    client provided token that will be passed back as parameter in
+     *                              the callback if there is an error on the server side.
+     * @see ITaskFragmentOrganizer#onTaskFragmentError
+     */
+    @NonNull
+    public WindowContainerTransaction setErrorCallbackToken(@NonNull IBinder errorCallbackToken) {
+        if (mErrorCallbackToken != null) {
+            throw new IllegalStateException("Can't set multiple error token for one transaction.");
+        }
+        mErrorCallbackToken = errorCallbackToken;
         return this;
     }
 
@@ -793,93 +1049,6 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
-     * If `container` was brought to front as a transient-launch (eg. recents), this will reorder
-     * the container back to where it was prior to the transient-launch. This way if a transient
-     * launch is "aborted", the z-ordering of containers in WM should be restored to before the
-     * launch.
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction restoreTransientOrder(
-            @NonNull WindowContainerToken container) {
-        final HierarchyOp hierarchyOp =
-                new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_RESTORE_TRANSIENT_ORDER)
-                        .setContainer(container.asBinder())
-                        .build();
-        mHierarchyOps.add(hierarchyOp);
-        return this;
-    }
-
-    /**
-     * Restore the back navigation target from visible to invisible for canceling gesture animation.
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction restoreBackNavi() {
-        final HierarchyOp hierarchyOp =
-                new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_RESTORE_BACK_NAVIGATION)
-                        .build();
-        mHierarchyOps.add(hierarchyOp);
-        return this;
-    }
-
-    /**
-     * Adds a given {@code Rect} as an insets source frame on the {@code receiver}.
-     *
-     * @param receiver The window container that the insets source is added to.
-     * @param owner    The owner of the insets source. An insets source can only be modified by its
-     *                 owner.
-     * @param index    An owner might add multiple insets sources with the same type.
-     *                 This identifies them.
-     * @param type     The {@link InsetsType} of the insets source.
-     * @param frame    The rectangle area of the insets source.
-     * @param boundingRects The bounding rects within this inset, relative to the |frame|.
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction addInsetsSource(
-            @NonNull WindowContainerToken receiver,
-            @Nullable IBinder owner, int index, @InsetsType int type, @Nullable Rect frame,
-            @Nullable Rect[] boundingRects, @InsetsSource.Flags int flags) {
-        final HierarchyOp hierarchyOp =
-                new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_ADD_INSETS_FRAME_PROVIDER)
-                        .setContainer(receiver.asBinder())
-                        .setInsetsFrameProvider(new InsetsFrameProvider(owner, index, type)
-                                .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE)
-                                .setArbitraryRectangle(frame)
-                                .setBoundingRects(boundingRects)
-                                .setFlags(flags))
-                        .setInsetsFrameOwner(owner)
-                        .build();
-        mHierarchyOps.add(hierarchyOp);
-        return this;
-    }
-
-    /**
-     * Removes the insets source from the {@code receiver}.
-     *
-     * @param receiver The window container that the insets source was added to.
-     * @param owner    The owner of the insets source. An insets source can only be modified by its
-     *                 owner.
-     * @param index    An owner might add multiple insets sources with the same type.
-     *                 This identifies them.
-     * @param type     The {@link InsetsType} of the insets source.
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction removeInsetsSource(@NonNull WindowContainerToken receiver,
-            @Nullable IBinder owner, int index, @InsetsType int type) {
-        final HierarchyOp hierarchyOp =
-                new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_INSETS_FRAME_PROVIDER)
-                        .setContainer(receiver.asBinder())
-                        .setInsetsFrameProvider(new InsetsFrameProvider(owner, index, type))
-                        .setInsetsFrameOwner(owner)
-                        .build();
-        mHierarchyOps.add(hierarchyOp);
-        return this;
-    }
-
-    /**
      * Requests focus on the top running Activity in the given TaskFragment. This will only take
      * effect if there is no focus, or if the current focus is in the same Task as the requested
      * TaskFragment.
@@ -957,157 +1126,6 @@ public final class WindowContainerTransaction implements Parcelable {
                         .setTaskFragmentOperation(taskFragmentOperation)
                         .build();
         mHierarchyOps.add(hierarchyOp);
-        return this;
-    }
-
-    /**
-     * Adds a {@link KeyguardState} to apply to the given displays.
-     *
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction addKeyguardState(@NonNull KeyguardState keyguardState) {
-        Objects.requireNonNull(keyguardState);
-        final HierarchyOp hierarchyOp =
-                new HierarchyOp.Builder(
-                        HierarchyOp.HIERARCHY_OP_TYPE_SET_KEYGUARD_STATE)
-                        .setKeyguardState(keyguardState)
-                        .build();
-        mHierarchyOps.add(hierarchyOp);
-        return this;
-    }
-
-    /**
-     * Sets/removes the always on top flag for this {@code windowContainer}. See
-     * {@link com.android.server.wm.ConfigurationContainer#setAlwaysOnTop(boolean)}.
-     * Please note that this method is only intended to be used for a
-     * {@link com.android.server.wm.Task} or {@link com.android.server.wm.DisplayArea}.
-     *
-     * <p>
-     *     Setting always on top to {@code True} will also make the {@code windowContainer} to move
-     *     to the top.
-     * </p>
-     * <p>
-     *     Setting always on top to {@code False} will make this {@code windowContainer} to move
-     *     below the other always on top sibling containers.
-     * </p>
-     *
-     * @param windowContainer the container which the flag need to be updated for.
-     * @param alwaysOnTop denotes whether or not always on top flag should be set.
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction setAlwaysOnTop(
-            @NonNull WindowContainerToken windowContainer, boolean alwaysOnTop) {
-        final HierarchyOp hierarchyOp =
-                new HierarchyOp.Builder(
-                        HierarchyOp.HIERARCHY_OP_TYPE_SET_ALWAYS_ON_TOP)
-                        .setContainer(windowContainer.asBinder())
-                        .setAlwaysOnTop(alwaysOnTop)
-                        .build();
-        mHierarchyOps.add(hierarchyOp);
-        return this;
-    }
-
-    /**
-     * When this {@link WindowContainerTransaction} failed to finish on the server side, it will
-     * trigger callback with this {@param errorCallbackToken}.
-     * @param errorCallbackToken    client provided token that will be passed back as parameter in
-     *                              the callback if there is an error on the server side.
-     * @see ITaskFragmentOrganizer#onTaskFragmentError
-     */
-    @NonNull
-    public WindowContainerTransaction setErrorCallbackToken(@NonNull IBinder errorCallbackToken) {
-        if (mErrorCallbackToken != null) {
-            throw new IllegalStateException("Can't set multiple error token for one transaction.");
-        }
-        mErrorCallbackToken = errorCallbackToken;
-        return this;
-    }
-
-    /**
-     * Sets the {@link TaskFragmentOrganizer} that applies this {@link WindowContainerTransaction}.
-     * When this is set, the server side will not check for the permission of
-     * {@link android.Manifest.permission#MANAGE_ACTIVITY_TASKS}, but will ensure this WCT only
-     * contains operations that are allowed for this organizer, such as modifying TaskFragments that
-     * are organized by this organizer.
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction setTaskFragmentOrganizer(
-            @NonNull ITaskFragmentOrganizer organizer) {
-        mTaskFragmentOrganizer = organizer;
-        return this;
-    }
-
-    /**
-     * Sets/removes the reparent leaf task flag for this {@code windowContainer}.
-     * When this is set, the server side will try to reparent the leaf task to task display area
-     * if there is an existing activity in history during the activity launch. This operation only
-     * support on the organized root task.
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction setReparentLeafTaskIfRelaunch(
-            @NonNull WindowContainerToken windowContainer, boolean reparentLeafTaskIfRelaunch) {
-        final HierarchyOp hierarchyOp =
-                new HierarchyOp.Builder(
-                        HierarchyOp.HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH)
-                        .setContainer(windowContainer.asBinder())
-                        .setReparentLeafTaskIfRelaunch(reparentLeafTaskIfRelaunch)
-                        .build();
-        mHierarchyOps.add(hierarchyOp);
-        return this;
-    }
-
-    /**
-     * Moves the PiP activity of a parent task to a pinned root task.
-     * @param parentToken the parent task of the PiP activity
-     * @param bounds the entry bounds
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction movePipActivityToPinnedRootTask(
-            @NonNull WindowContainerToken parentToken, @NonNull Rect bounds) {
-        mHierarchyOps.add(new HierarchyOp
-                .Builder(HierarchyOp.HIERARCHY_OP_TYPE_MOVE_PIP_ACTIVITY_TO_PINNED_TASK)
-                .setContainer(parentToken.asBinder())
-                .setBounds(bounds)
-                .build());
-        return this;
-    }
-
-    /**
-     * Defers client-facing configuration changes for activities in `container` until the end of
-     * the transition animation. The configuration will still be applied to the WMCore hierarchy
-     * at the normal time (beginning); so, special consideration must be made for this in the
-     * animation.
-     *
-     * @param container WindowContainerToken who's children should defer config notification.
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction deferConfigToTransitionEnd(
-            @NonNull WindowContainerToken container) {
-        final Change change = getOrCreateChange(container.asBinder());
-        change.mConfigAtTransitionEnd = true;
-        return this;
-    }
-
-    /**
-     * Sets the task as trimmable or not. This can be used to prevent the task from being trimmed by
-     * recents. This attribute is set to true on task creation by default.
-     *
-     * @param isTrimmableFromRecents When {@code true}, task is set as trimmable from recents.
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction setTaskTrimmableFromRecents(
-            @NonNull WindowContainerToken container,
-            boolean isTrimmableFromRecents) {
-        mHierarchyOps.add(
-                HierarchyOp.createForSetTaskTrimmableFromRecents(container.asBinder(),
-                        isTrimmableFromRecents));
         return this;
     }
 
@@ -1206,7 +1224,7 @@ public final class WindowContainerTransaction implements Parcelable {
 
     @NonNull
     public static final Creator<WindowContainerTransaction> CREATOR =
-            new Creator<WindowContainerTransaction>() {
+            new Creator<>() {
                 @Override
                 public WindowContainerTransaction createFromParcel(@NonNull Parcel in) {
                     return new WindowContainerTransaction(in);
@@ -1227,19 +1245,17 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int CHANGE_BOUNDS_TRANSACTION = 1 << 1;
         public static final int CHANGE_PIP_CALLBACK = 1 << 2;
         public static final int CHANGE_HIDDEN = 1 << 3;
-        public static final int CHANGE_BOUNDS_TRANSACTION_RECT = 1 << 4;
-        public static final int CHANGE_IGNORE_ORIENTATION_REQUEST = 1 << 5;
-        public static final int CHANGE_FORCE_NO_PIP = 1 << 6;
-        public static final int CHANGE_FORCE_TRANSLUCENT = 1 << 7;
-        public static final int CHANGE_DRAG_RESIZING = 1 << 8;
-        public static final int CHANGE_RELATIVE_BOUNDS = 1 << 9;
+        public static final int CHANGE_IGNORE_ORIENTATION_REQUEST = 1 << 4;
+        public static final int CHANGE_FORCE_NO_PIP = 1 << 5;
+        public static final int CHANGE_FORCE_TRANSLUCENT = 1 << 6;
+        public static final int CHANGE_DRAG_RESIZING = 1 << 7;
+        public static final int CHANGE_RELATIVE_BOUNDS = 1 << 8;
 
         @IntDef(flag = true, prefix = { "CHANGE_" }, value = {
                 CHANGE_FOCUSABLE,
                 CHANGE_BOUNDS_TRANSACTION,
                 CHANGE_PIP_CALLBACK,
                 CHANGE_HIDDEN,
-                CHANGE_BOUNDS_TRANSACTION_RECT,
                 CHANGE_IGNORE_ORIENTATION_REQUEST,
                 CHANGE_FORCE_NO_PIP,
                 CHANGE_FORCE_TRANSLUCENT,
@@ -1262,7 +1278,6 @@ public final class WindowContainerTransaction implements Parcelable {
 
         private Rect mPinnedBounds = null;
         private SurfaceControl.Transaction mBoundsChangeTransaction = null;
-        private Rect mBoundsChangeSurfaceBounds = null;
         @Nullable
         private Rect mRelativeBounds = null;
         private boolean mConfigAtTransitionEnd = false;
@@ -1289,10 +1304,6 @@ public final class WindowContainerTransaction implements Parcelable {
             if ((mChangeMask & Change.CHANGE_BOUNDS_TRANSACTION) != 0) {
                 mBoundsChangeTransaction =
                     SurfaceControl.Transaction.CREATOR.createFromParcel(in);
-            }
-            if ((mChangeMask & Change.CHANGE_BOUNDS_TRANSACTION_RECT) != 0) {
-                mBoundsChangeSurfaceBounds = new Rect();
-                mBoundsChangeSurfaceBounds.readFromParcel(in);
             }
             if ((mChangeMask & Change.CHANGE_RELATIVE_BOUNDS) != 0) {
                 mRelativeBounds = new Rect();
@@ -1341,10 +1352,6 @@ public final class WindowContainerTransaction implements Parcelable {
             }
             if (other.mWindowingMode >= WINDOWING_MODE_UNDEFINED) {
                 mWindowingMode = other.mWindowingMode;
-            }
-            if (other.mBoundsChangeSurfaceBounds != null) {
-                mBoundsChangeSurfaceBounds = transfer ? other.mBoundsChangeSurfaceBounds
-                        : new Rect(other.mBoundsChangeSurfaceBounds);
             }
             if (other.mRelativeBounds != null) {
                 mRelativeBounds = transfer
@@ -1446,11 +1453,6 @@ public final class WindowContainerTransaction implements Parcelable {
         }
 
         @Nullable
-        public Rect getBoundsChangeSurfaceBounds() {
-            return mBoundsChangeSurfaceBounds;
-        }
-
-        @Nullable
         public Rect getRelativeBounds() {
             return mRelativeBounds;
         }
@@ -1528,9 +1530,6 @@ public final class WindowContainerTransaction implements Parcelable {
             }
             if (mBoundsChangeTransaction != null) {
                 mBoundsChangeTransaction.writeToParcel(dest, flags);
-            }
-            if (mBoundsChangeSurfaceBounds != null) {
-                mBoundsChangeSurfaceBounds.writeToParcel(dest, flags);
             }
             if (mRelativeBounds != null) {
                 mRelativeBounds.writeToParcel(dest, flags);

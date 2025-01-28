@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.systemui.scene.ui.composable.transitions
+package com.android.systemui.lowlightclock.dagger
 
-import androidx.compose.animation.core.tween
-import com.android.compose.animation.scene.TransitionBuilder
-import kotlin.time.Duration.Companion.milliseconds
+import javax.inject.Qualifier
 
-fun TransitionBuilder.notificationsShadeToQuickSettingsShadeTransition(
-    durationScale: Double = 1.0
-) {
-    spec = tween(durationMillis = (DefaultDuration * durationScale).inWholeMilliseconds.toInt())
-}
-
-private val DefaultDuration = 300.milliseconds
+/** A [com.android.systemui.log.LogBuffer] for logging related to low light features. */
+@Qualifier @MustBeDocumented @Retention(AnnotationRetention.RUNTIME) annotation class LowLightLog

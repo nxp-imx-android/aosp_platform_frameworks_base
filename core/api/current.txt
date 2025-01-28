@@ -11134,6 +11134,7 @@ package android.content {
     field public static final String TELEPHONY_IMS_SERVICE = "telephony_ims";
     field public static final String TELEPHONY_SERVICE = "phone";
     field public static final String TELEPHONY_SUBSCRIPTION_SERVICE = "telephony_subscription_service";
+    field public static final String TETHERING_SERVICE = "tethering";
     field public static final String TEXT_CLASSIFICATION_SERVICE = "textclassification";
     field public static final String TEXT_SERVICES_MANAGER_SERVICE = "textservices";
     field @FlaggedApi("android.media.tv.flags.enable_ad_service_fw") public static final String TV_AD_SERVICE = "tv_ad";

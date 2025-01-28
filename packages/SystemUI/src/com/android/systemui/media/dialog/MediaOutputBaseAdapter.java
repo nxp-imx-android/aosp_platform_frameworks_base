@@ -23,7 +23,6 @@ import android.animation.ValueAnimator;
 import android.app.WallpaperColors;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.Typeface;
 import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -93,10 +92,6 @@ public abstract class MediaOutputBaseAdapter extends
 
     void updateColorScheme(WallpaperColors wallpaperColors, boolean isDarkTheme) {
         mController.setCurrentColorScheme(wallpaperColors, isDarkTheme);
-    }
-
-    CharSequence getItemTitle(MediaDevice device) {
-        return device.getName();
     }
 
     boolean isCurrentlyConnected(MediaDevice device) {
@@ -188,6 +183,7 @@ public abstract class MediaOutputBaseAdapter extends
             mSubTitleText.setSelected(true);
             mTwoLineTitleText.setTextColor(mController.getColorItemContent());
             mVolumeValueText.setTextColor(mController.getColorItemContent());
+            mIconAreaLayout.setBackground(null);
             mSeekBar.setProgressTintList(
                     ColorStateList.valueOf(mController.getColorSeekbarProgress()));
         }
@@ -216,10 +212,6 @@ public abstract class MediaOutputBaseAdapter extends
             mItemLayout.setBackgroundTintList(
                     ColorStateList.valueOf(isActive ? mController.getColorConnectedItemBackground()
                             : mController.getColorItemBackground()));
-            mIconAreaLayout.setBackgroundTintList(
-                    ColorStateList.valueOf(showSeekBar ? mController.getColorSeekbarProgress()
-                            : showProgressBar ? mController.getColorConnectedItemBackground()
-                                    : mController.getColorItemBackground()));
             mProgressBar.setVisibility(showProgressBar ? View.VISIBLE : View.GONE);
             mSeekBar.setAlpha(1);
             mSeekBar.setVisibility(showSeekBar ? View.VISIBLE : View.GONE);
@@ -236,16 +228,14 @@ public abstract class MediaOutputBaseAdapter extends
                     : mController.getItemMarginEndDefault();
         }
 
-        void setTwoLineLayout(MediaDevice device, boolean bFocused, boolean showSeekBar,
-                boolean showProgressBar, boolean showSubtitle, boolean showStatus,
-                boolean isFakeActive) {
-            setTwoLineLayout(device, null, bFocused, showSeekBar, showProgressBar, showSubtitle,
-                    showStatus, false, isFakeActive);
+        void setTwoLineLayout(CharSequence title, boolean showSeekBar,
+                boolean showProgressBar, boolean showSubtitle, boolean showStatus) {
+            setTwoLineLayout(title, showSeekBar, showProgressBar, showSubtitle, showStatus, false);
         }
 
-        void setTwoLineLayout(MediaDevice device, CharSequence title, boolean bFocused,
+        void setTwoLineLayout(CharSequence title,
                 boolean showSeekBar, boolean showProgressBar, boolean showSubtitle,
-                boolean showStatus , boolean showEndTouchArea, boolean isFakeActive) {
+                boolean showStatus , boolean showEndTouchArea) {
             mTitleText.setVisibility(View.GONE);
             mTwoLineLayout.setVisibility(View.VISIBLE);
             mStatusIcon.setVisibility(showStatus ? View.VISIBLE : View.GONE);
@@ -253,17 +243,12 @@ public abstract class MediaOutputBaseAdapter extends
             mSeekBar.setVisibility(showSeekBar ? View.VISIBLE : View.GONE);
             final Drawable backgroundDrawable;
             backgroundDrawable = mContext.getDrawable(
-                    showSeekBar || isFakeActive ? R.drawable.media_output_item_background_active
+                    showSeekBar ? R.drawable.media_output_item_background_active
                             : R.drawable.media_output_item_background).mutate();
             mItemLayout.setBackgroundTintList(ColorStateList.valueOf(
-                    showSeekBar || isFakeActive ? mController.getColorConnectedItemBackground()
+                    showSeekBar ? mController.getColorConnectedItemBackground()
                             : mController.getColorItemBackground()
             ));
-            mIconAreaLayout.setBackgroundTintList(
-                    ColorStateList.valueOf(showProgressBar || isFakeActive
-                            ? mController.getColorConnectedItemBackground()
-                            : showSeekBar ? mController.getColorSeekbarProgress()
-                                    : mController.getColorItemBackground()));
             if (showSeekBar) {
                 updateSeekbarProgressBackground();
             }
@@ -277,12 +262,7 @@ public abstract class MediaOutputBaseAdapter extends
             mItemLayout.setBackground(backgroundDrawable);
             mProgressBar.setVisibility(showProgressBar ? View.VISIBLE : View.GONE);
             mSubTitleText.setVisibility(showSubtitle ? View.VISIBLE : View.GONE);
-            mTwoLineTitleText.setTranslationY(0);
-            mTwoLineTitleText.setText(device == null ? title : getItemTitle(device));
-            mTwoLineTitleText.setTypeface(Typeface.create(mContext.getString(
-                            bFocused ? com.android.internal.R.string.config_headlineFontFamilyMedium
-                                    : com.android.internal.R.string.config_headlineFontFamily),
-                    Typeface.NORMAL));
+            mTwoLineTitleText.setText(title);
         }
 
         void updateSeekbarProgressBackground() {
@@ -443,8 +423,7 @@ public abstract class MediaOutputBaseAdapter extends
             mItemLayout.setBackground(backgroundDrawable);
             mItemLayout.setBackgroundTintList(
                     ColorStateList.valueOf(mController.getColorConnectedItemBackground()));
-            mIconAreaLayout.setBackgroundTintList(
-                    ColorStateList.valueOf(mController.getColorConnectedItemBackground()));
+            mIconAreaLayout.setBackground(null);
         }
 
         private void initAnimator() {

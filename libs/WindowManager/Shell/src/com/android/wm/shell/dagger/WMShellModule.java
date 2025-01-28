@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.dagger;
 
+import static android.window.DesktopModeFlags.ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY;
@@ -37,6 +38,7 @@ import android.os.UserManager;
 import android.view.Choreographer;
 import android.view.IWindowManager;
 import android.view.WindowManager;
+import android.window.DesktopModeFlags;
 
 import androidx.annotation.OptIn;
 
@@ -814,7 +816,9 @@ public abstract class WMShellModule {
             ReturnToDragStartAnimator returnToDragStartAnimator,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             DesktopModeEventLogger desktopModeEventLogger,
-            WindowDecorTaskResourceLoader windowDecorTaskResourceLoader) {
+            WindowDecorTaskResourceLoader windowDecorTaskResourceLoader,
+            FocusTransitionObserver focusTransitionObserver,
+            @ShellMainThread ShellExecutor mainExecutor) {
         return new DesktopTilingDecorViewModel(
                 context,
                 mainDispatcher,
@@ -828,7 +832,9 @@ public abstract class WMShellModule {
                 returnToDragStartAnimator,
                 desktopUserRepositories,
                 desktopModeEventLogger,
-                windowDecorTaskResourceLoader
+                windowDecorTaskResourceLoader,
+                focusTransitionObserver,
+                mainExecutor
         );
     }
 
@@ -929,7 +935,7 @@ public abstract class WMShellModule {
         if (DesktopModeStatus.canEnterDesktopMode(context) && useKeyGestureEventHandler()
                 && manageKeyGestures()
                 && (Flags.enableMoveToNextDisplayShortcut()
-                || Flags.enableTaskResizingKeyboardShortcuts())) {
+                || DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue())) {
             return Optional.of(new DesktopModeKeyGestureHandler(context,
                     desktopModeWindowDecorViewModel, desktopTasksController,
                     inputManager, shellTaskOrganizer, focusTransitionObserver,
@@ -1018,7 +1024,7 @@ public abstract class WMShellModule {
             DesktopModeCompatPolicy desktopModeCompatPolicy) {
         if (!DesktopModeStatus.canEnterDesktopMode(context)
                 || !ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue()
-                || !Flags.enableDesktopSystemDialogsTransitions()) {
+                || !ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS.isTrue()) {
             return Optional.empty();
         }
         return Optional.of(
@@ -1210,7 +1216,8 @@ public abstract class WMShellModule {
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             IWindowManager windowManager,
             Optional<DesktopUserRepositories> desktopUserRepositories,
-            Optional<DesktopTasksController> desktopTasksController
+            Optional<DesktopTasksController> desktopTasksController,
+            ShellTaskOrganizer shellTaskOrganizer
     ) {
         if (!DesktopModeStatus.canEnterDesktopMode(context)) {
             return Optional.empty();
@@ -1224,7 +1231,8 @@ public abstract class WMShellModule {
                         rootTaskDisplayAreaOrganizer,
                         windowManager,
                         desktopUserRepositories.get(),
-                        desktopTasksController.get()));
+                        desktopTasksController.get(),
+                        shellTaskOrganizer));
     }
 
     @WMSingleton

@@ -16,9 +16,9 @@
 
 package com.android.systemui.shared.recents.utilities;
 
-import static android.app.StatusBarManager.NAVIGATION_HINT_BACK_ALT;
-import static android.app.StatusBarManager.NAVIGATION_HINT_IME_SHOWN;
-import static android.app.StatusBarManager.NAVIGATION_HINT_IME_SWITCHER_BUTTON_SHOWN;
+import static android.app.StatusBarManager.NAVIGATION_HINT_BACK_DISMISS_IME;
+import static android.app.StatusBarManager.NAVIGATION_HINT_IME_VISIBLE;
+import static android.app.StatusBarManager.NAVIGATION_HINT_IME_SWITCHER_BUTTON_VISIBLE;
 
 import android.annotation.TargetApi;
 import android.app.StatusBarManager.NavigationHint;
@@ -108,38 +108,39 @@ public class Utilities {
      *
      * @param oldHints        current navigation icon hints.
      * @param backDisposition the IME back disposition mode. Only takes effect if
-     *                        {@code imeShown} is {@code true}.
-     * @param imeShown        whether the IME is currently visible.
+     *                        {@code isImeVisible} is {@code true}.
+     * @param isImeVisible    whether the IME is currently visible.
      * @param showImeSwitcher whether the IME Switcher button should be shown. Only takes effect if
-     *                        {@code imeShown} is {@code true}.
+     *                        {@code isImeVisible} is {@code true}.
      */
     @NavigationHint
     public static int calculateNavigationIconHints(@NavigationHint int oldHints,
-            @BackDispositionMode int backDisposition, boolean imeShown, boolean showImeSwitcher) {
+            @BackDispositionMode int backDisposition, boolean isImeVisible,
+            boolean showImeSwitcher) {
         int hints = oldHints;
         switch (backDisposition) {
             case InputMethodService.BACK_DISPOSITION_DEFAULT:
             case InputMethodService.BACK_DISPOSITION_WILL_NOT_DISMISS:
             case InputMethodService.BACK_DISPOSITION_WILL_DISMISS:
-                if (imeShown) {
-                    hints |= NAVIGATION_HINT_BACK_ALT;
+                if (isImeVisible) {
+                    hints |= NAVIGATION_HINT_BACK_DISMISS_IME;
                 } else {
-                    hints &= ~NAVIGATION_HINT_BACK_ALT;
+                    hints &= ~NAVIGATION_HINT_BACK_DISMISS_IME;
                 }
                 break;
             case InputMethodService.BACK_DISPOSITION_ADJUST_NOTHING:
-                hints &= ~NAVIGATION_HINT_BACK_ALT;
+                hints &= ~NAVIGATION_HINT_BACK_DISMISS_IME;
                 break;
         }
-        if (imeShown) {
-            hints |= NAVIGATION_HINT_IME_SHOWN;
+        if (isImeVisible) {
+            hints |= NAVIGATION_HINT_IME_VISIBLE;
         } else {
-            hints &= ~NAVIGATION_HINT_IME_SHOWN;
+            hints &= ~NAVIGATION_HINT_IME_VISIBLE;
         }
-        if (showImeSwitcher && imeShown) {
-            hints |= NAVIGATION_HINT_IME_SWITCHER_BUTTON_SHOWN;
+        if (showImeSwitcher && isImeVisible) {
+            hints |= NAVIGATION_HINT_IME_SWITCHER_BUTTON_VISIBLE;
         } else {
-            hints &= ~NAVIGATION_HINT_IME_SWITCHER_BUTTON_SHOWN;
+            hints &= ~NAVIGATION_HINT_IME_SWITCHER_BUTTON_VISIBLE;
         }
 
         return hints;
