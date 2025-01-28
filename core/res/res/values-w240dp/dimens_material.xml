@@ -21,4 +21,8 @@
     <dimen name="screen_percentage_12">28.8dp</dimen>
     <dimen name="screen_percentage_15">36dp</dimen>
     <dimen name="screen_percentage_3646">87.5dp</dimen>
+
+    <!--  watch's indeterminate progress bar dimens based on the current screen size -->
+    <dimen name="progress_indeterminate_horizontal_min_width_watch">80dp</dimen>
+    <dimen name="progress_indeterminate_horizontal_min_height_watch">17dp</dimen>
 </resources>
