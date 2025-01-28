@@ -389,7 +389,9 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
             } else if (id == R.id.back_button) {
                 mTaskOperations.injectBackKey(mDisplayId);
             } else if (id == R.id.minimize_window) {
-                mTaskOperations.minimizeTask(mTaskToken);
+                // This minimize button uses the same effect for any minimization. The last argument
+                // doesn't matter.
+                mTaskOperations.minimizeTask(mTaskToken, mTaskId, /* isLastTask= */ false);
             } else if (id == R.id.maximize_window) {
                 RunningTaskInfo taskInfo = mTaskOrganizer.getRunningTaskInfo(mTaskId);
                 final DisplayAreaInfo rootDisplayAreaInfo =

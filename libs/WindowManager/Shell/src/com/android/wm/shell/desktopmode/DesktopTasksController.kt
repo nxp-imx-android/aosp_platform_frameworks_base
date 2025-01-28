@@ -843,7 +843,9 @@ class DesktopTasksController(
             )
 
         wct.reorder(taskInfo.token, false)
-        val transition = freeformTaskTransitionStarter.startMinimizedModeTransition(wct)
+        val isLastTask = taskRepository.isOnlyVisibleNonClosingTask(taskId, displayId)
+        val transition: IBinder =
+            freeformTaskTransitionStarter.startMinimizedModeTransition(wct, taskId, isLastTask)
         desktopTasksLimiter.ifPresent {
             it.addPendingMinimizeChange(
                 transition = transition,
