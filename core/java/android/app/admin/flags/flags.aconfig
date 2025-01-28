@@ -442,3 +442,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "enterprise_esim_using_carrier_privileges"
+  namespace: "enterprise"
+  description: "Check for enterprise management indicator in carrier privileges of an eSIM profile"
+  bug: "373466339"
+}

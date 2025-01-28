@@ -489,6 +489,7 @@ import android.telecom.TelecomManager;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
+import android.telephony.UiccAccessRule;
 import android.telephony.data.ApnSetting;
 import android.telephony.euicc.EuiccManager;
 import android.text.TextUtils;
@@ -1038,6 +1039,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private final DevicePolicyEngine mDevicePolicyEngine;
 
     private static final boolean ENABLE_LOCK_GUARD = true;
+
+    /**
+     * Pair of magic hash and package name strings used as an enterprise management marker in the
+     * access rules of a subscription. The hash is a SHA-256 hash of the package name.
+     */
+    private static final String ENTERPRISE_SIM_MAGIC_PACKAGE_NAME =
+            "com.android.notanapp.enterprise_sim";
+
+    private static final String ENTERPRISE_SIM_MAGIC_HASH =
+                    "5715E84E9FEFDD8CEB019F3CE2DC5B73A24D155363D3731D40CA1852F41A5059";
 
     /**
      * Profile off deadline is not set or more than MANAGED_PROFILE_OFF_WARNING_PERIOD away, or the
@@ -24086,6 +24097,26 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
     }
 
+    @Override
+    public boolean isSubscriptionEnterpriseManaged(
+            @NonNull SubscriptionInfo info, @NonNull String packageName) {
+        boolean result = info.getGroupOwner().equals(packageName);
+        if (Flags.enterpriseEsimUsingCarrierPrivileges()) {
+            result |= enterpriseMarkerExistsInAccessRules(info);
+        }
+        return result;
+    }
+
+    private static boolean enterpriseMarkerExistsInAccessRules(@NonNull SubscriptionInfo info) {
+        if (info.getAccessRules() == null) {
+            return false;
+        }
+        return info.getAccessRules().stream().anyMatch((UiccAccessRule accessRule) ->
+                accessRule.hasMatchingCertificateHashAndPackageName(
+                        ENTERPRISE_SIM_MAGIC_HASH, ENTERPRISE_SIM_MAGIC_PACKAGE_NAME)
+        );
+    }
+
     private void installOemDefaultDialerAndSmsApp(int targetUserId) {
         try {
             String defaultDialerPackageName = getOemDefaultDialerPackage();
@@ -24812,20 +24843,20 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private IntArray getSubscriptionIdsInternal(String callerPackageName) {
         SubscriptionManager subscriptionManager =
                 mContext.getSystemService(SubscriptionManager.class);
-        return mInjector.binderWithCleanCallingIdentity(() -> {
-            IntArray adminOwnedSubscriptions = new IntArray();
-            List<SubscriptionInfo> subs = subscriptionManager.getAvailableSubscriptionInfoList();
-            int subCount = (subs != null) ? subs.size() : 0;
-            for (int i = 0; i < subCount; i++) {
-                SubscriptionInfo sub = subs.get(i);
-                if (sub.getGroupOwner()
-                        .equals(callerPackageName)) {
-                    adminOwnedSubscriptions.add(sub.getSubscriptionId());
-                }
-            }
-            return adminOwnedSubscriptions;
-        });
-
+        return mInjector.binderWithCleanCallingIdentity(
+                () -> {
+                    IntArray adminOwnedSubscriptions = new IntArray();
+                    List<SubscriptionInfo> subs =
+                            subscriptionManager.getAvailableSubscriptionInfoList();
+                    int subCount = (subs != null) ? subs.size() : 0;
+                    for (int i = 0; i < subCount; i++) {
+                        SubscriptionInfo sub = subs.get(i);
+                        if (isSubscriptionEnterpriseManaged(sub, callerPackageName)) {
+                            adminOwnedSubscriptions.add(sub.getSubscriptionId());
+                        }
+                    }
+                    return adminOwnedSubscriptions;
+                });
     }
 
     @Override
