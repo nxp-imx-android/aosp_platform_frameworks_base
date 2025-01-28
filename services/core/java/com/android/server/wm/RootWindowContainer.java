@@ -2067,13 +2067,17 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         try {
             // This will change the root pinned task's windowing mode to its original mode, ensuring
             // we only have one root task that is in pinned mode.
-            final Task rootPinnedTask = taskDisplayArea.getRootPinnedTask();
-            if (rootPinnedTask != null) {
-                transitionController.collect(rootPinnedTask);
-                // The new ActivityRecord should replace the existing PiP, so it's more desirable
-                // that the old PiP disappears instead of turning to full-screen at the same time,
-                // as the Task#dismissPip is trying to do.
+            // The new ActivityRecord should replace the existing PiP, so it's more desirable
+            // that the old PiP disappears instead of turning to full-screen at the same time,
+            // as the Task#dismissPip is trying to do.
+            if (ActivityTaskManagerService.isPip2ExperimentEnabled()) {
                 removeRootTasksInWindowingModes(WINDOWING_MODE_PINNED);
+            } else {
+                final Task rootPinnedTask = taskDisplayArea.getRootPinnedTask();
+                if (rootPinnedTask != null) {
+                    transitionController.collect(rootPinnedTask);
+                    removeRootTasksInWindowingModes(WINDOWING_MODE_PINNED);
+                }
             }
 
             transitionController.collect(task);
