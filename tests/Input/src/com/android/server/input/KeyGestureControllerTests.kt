@@ -207,7 +207,7 @@ class KeyGestureControllerTests {
 
     private fun setupKeyGestureController() {
         keyGestureController =
-            KeyGestureController(context, testLooper.looper, inputDataStore)
+            KeyGestureController(context, testLooper.looper, testLooper.looper, inputDataStore)
         Mockito.`when`(iInputManager.getAppLaunchBookmarks())
             .thenReturn(keyGestureController.appLaunchBookmarks)
         keyGestureController.systemRunning()

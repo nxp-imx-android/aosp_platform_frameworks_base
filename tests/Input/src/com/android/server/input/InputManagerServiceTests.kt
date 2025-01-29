@@ -160,7 +160,7 @@ class InputManagerServiceTests {
         testLooper = TestLooper()
         service =
             InputManagerService(object : InputManagerService.Injector(
-                    context, testLooper.looper, uEventManager) {
+                    context, testLooper.looper, testLooper.looper, uEventManager) {
                 override fun getNativeService(
                     service: InputManagerService?
                 ): NativeInputManagerService {
