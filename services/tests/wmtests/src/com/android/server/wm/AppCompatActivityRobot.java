@@ -151,6 +151,10 @@ class AppCompatActivityRobot {
         doReturn(taskBounds).when(mTaskStack.top()).getBounds();
     }
 
+    void configureTaskAppBounds(@NonNull Rect appBounds) {
+        mTaskStack.top().getWindowConfiguration().setAppBounds(appBounds);
+    }
+
     void configureTopActivityBounds(@NonNull Rect activityBounds) {
         doReturn(activityBounds).when(mActivityStack.top()).getBounds();
     }

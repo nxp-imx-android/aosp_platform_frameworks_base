@@ -33,6 +33,7 @@ import android.util.Size
 import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
+import kotlin.math.ceil
 
 val DESKTOP_MODE_INITIAL_BOUNDS_SCALE: Float =
     SystemProperties.getInt("persist.wm.debug.desktop_mode_initial_bounds_scale", 75) / 100f
@@ -190,22 +191,22 @@ fun maximizeSizeGivenAspectRatio(
     val finalWidth: Int
     // Get orientation either through top activity or task's orientation
     if (taskInfo.hasPortraitTopActivity()) {
-        val tempWidth = (targetHeight / aspectRatio).toInt()
+        val tempWidth = ceil(targetHeight / aspectRatio).toInt()
         if (tempWidth <= targetWidth) {
             finalHeight = targetHeight
             finalWidth = tempWidth
         } else {
             finalWidth = targetWidth
-            finalHeight = (finalWidth * aspectRatio).toInt()
+            finalHeight = ceil(finalWidth * aspectRatio).toInt()
         }
     } else {
-        val tempWidth = (targetHeight * aspectRatio).toInt()
+        val tempWidth = ceil(targetHeight * aspectRatio).toInt()
         if (tempWidth <= targetWidth) {
             finalHeight = targetHeight
             finalWidth = tempWidth
         } else {
             finalWidth = targetWidth
-            finalHeight = (finalWidth / aspectRatio).toInt()
+            finalHeight = ceil(finalWidth / aspectRatio).toInt()
         }
     }
     return Size(finalWidth, finalHeight + captionInsets)

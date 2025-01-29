@@ -35,12 +35,12 @@ class AppCompatRoundedCorners {
     @NonNull
     private final ActivityRecord mActivityRecord;
     @NonNull
-    private final Predicate<WindowState> mIsLetterboxedNotForDisplayCutout;
+    private final Predicate<WindowState> mRoundedCornersWindowCondition;
 
     AppCompatRoundedCorners(@NonNull ActivityRecord  activityRecord,
-            @NonNull Predicate<WindowState> isLetterboxedNotForDisplayCutout) {
+            @NonNull Predicate<WindowState> roundedCornersWindowCondition) {
         mActivityRecord = activityRecord;
-        mIsLetterboxedNotForDisplayCutout = isLetterboxedNotForDisplayCutout;
+        mRoundedCornersWindowCondition = roundedCornersWindowCondition;
     }
 
     void updateRoundedCornersIfNeeded(@NonNull final WindowState mainWindow) {
@@ -136,7 +136,7 @@ class AppCompatRoundedCorners {
     private boolean requiresRoundedCorners(@NonNull final WindowState mainWindow) {
         final AppCompatLetterboxOverrides letterboxOverrides = mActivityRecord
                 .mAppCompatController.getLetterboxOverrides();
-        return mIsLetterboxedNotForDisplayCutout.test(mainWindow)
+        return mRoundedCornersWindowCondition.test(mainWindow)
                 && letterboxOverrides.isLetterboxActivityCornersRounded();
     }
 

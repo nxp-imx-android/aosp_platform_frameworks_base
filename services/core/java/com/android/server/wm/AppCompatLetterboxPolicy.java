@@ -17,6 +17,7 @@
 package com.android.server.wm;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.view.WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER;
@@ -48,6 +49,8 @@ import java.io.PrintWriter;
  */
 class AppCompatLetterboxPolicy {
 
+    private static final int DIFF_TOLERANCE_PX = 1;
+
     @NonNull
     private final ActivityRecord mActivityRecord;
     @NonNull
@@ -56,6 +59,9 @@ class AppCompatLetterboxPolicy {
     private final AppCompatRoundedCorners mAppCompatRoundedCorners;
     @NonNull
     private final AppCompatConfiguration mAppCompatConfiguration;
+    // Convenience temporary object to save allocation when calculating Rect.
+    @NonNull
+    private final Rect mTmpRect = new Rect();
 
     private boolean mLastShouldShowLetterboxUi;
 
@@ -71,7 +77,7 @@ class AppCompatLetterboxPolicy {
                 : new LegacyLetterboxPolicyState();
         // TODO (b/358334569) Improve cutout logic dependency on app compat.
         mAppCompatRoundedCorners = new AppCompatRoundedCorners(mActivityRecord,
-                this::isLetterboxedNotForDisplayCutout);
+                this::ieEligibleForRoundedCorners);
         mAppCompatConfiguration = appCompatConfiguration;
     }
 
@@ -84,7 +90,7 @@ class AppCompatLetterboxPolicy {
         mLetterboxPolicyState.stop();
     }
 
-    /** @return {@value true} if the letterbox policy is running and the activity letterboxed. */
+    /** @return {@code true} if the letterbox policy is running and the activity letterboxed. */
     boolean isRunning() {
         return mLetterboxPolicyState.isRunning();
     }
@@ -130,7 +136,7 @@ class AppCompatLetterboxPolicy {
      *     <li>The activity is in fullscreen.
      *     <li>The activity is portrait-only.
      *     <li>The activity doesn't have a starting window (education should only be displayed
-     *     once the starting window is removed in {@link #removeStartingWindow}).
+     *     once the starting window is removed in {@link ActivityRecord#removeStartingWindow}).
      * </ul>
      */
     boolean isEligibleForLetterboxEducation() {
@@ -294,16 +300,40 @@ class AppCompatLetterboxPolicy {
         }
     }
 
+    private boolean ieEligibleForRoundedCorners(@NonNull WindowState mainWindow) {
+        return isLetterboxedNotForDisplayCutout(mainWindow)
+                && !isFreeformActivityMatchParentAppBoundsHeight();
+    }
+
     private boolean isLetterboxedNotForDisplayCutout(@NonNull WindowState mainWindow) {
         return shouldShowLetterboxUi(mainWindow)
                 && !mainWindow.isLetterboxedForDisplayCutout();
+    }
+
+    private boolean isFreeformActivityMatchParentAppBoundsHeight() {
+        if (!Flags.excludeCaptionFromAppBounds()) {
+            return false;
+        }
+        final Task task = mActivityRecord.getTask();
+        if (task == null) {
+            return false;
+        }
+        final Rect parentAppBounds = task.getWindowConfiguration().getAppBounds();
+        if (parentAppBounds == null) {
+            return false;
+        }
+
+        mLetterboxPolicyState.getLetterboxInnerBounds(mTmpRect);
+        final int diff = parentAppBounds.height() - mTmpRect.height();
+        // Compare bounds with tolerance of 1 px to account for rounding error calculations.
+        return task.getWindowingMode() == WINDOWING_MODE_FREEFORM && diff <= DIFF_TOLERANCE_PX;
     }
 
     private static boolean shouldNotLayoutLetterbox(@Nullable WindowState w) {
         if (w == null) {
             return true;
         }
-        final int type = w.mAttrs.type;
+        final int type = w.getAttrs().type;
         // Allow letterbox to be displayed early for base application or application starting
         // windows even if it is not on the top z order to prevent flickering when the
         // letterboxed window is brought to the top
