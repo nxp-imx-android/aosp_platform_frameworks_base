@@ -25,7 +25,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
-import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModel
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModelImpl
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarViewBinding
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIcon
 import com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStatusBarComposeIconView
@@ -34,7 +34,7 @@ object StackedMobileIconBinder {
     fun bind(
         view: SingleBindableStatusBarComposeIconView,
         mobileIconsViewModel: MobileIconsViewModel,
-        viewModelFactory: StackedMobileIconViewModel.Factory,
+        viewModelFactory: StackedMobileIconViewModelImpl.Factory,
     ): ModernStatusBarViewBinding {
         return SingleBindableStatusBarComposeIconView.withDefaultBinding(
             view = view,

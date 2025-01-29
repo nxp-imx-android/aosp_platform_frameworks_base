@@ -16,81 +16,71 @@
 
 package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import com.android.systemui.KairosBuilder
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.State as KairosState
+import com.android.systemui.kairos.combine
+import com.android.systemui.kairos.flatMap
+import com.android.systemui.kairos.stateOf
+import com.android.systemui.kairosBuilder
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModel.DualSim
+import com.android.systemui.util.composable.kairos.hydratedComposeStateOf
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalKairosApi::class)
 class StackedMobileIconViewModelKairos
 @AssistedInject
-constructor(mobileIconsViewModel: MobileIconsViewModel) : ExclusiveActivatable() {
-    private val hydrator = Hydrator("StackedMobileIconViewModel")
+constructor(mobileIcons: MobileIconsViewModelKairos) :
+    KairosBuilder by kairosBuilder(), StackedMobileIconViewModel {
 
     private val isStackable: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isStackable",
-            source = mobileIconsViewModel.isStackable,
-            initialValue = false,
-        )
+        hydratedComposeStateOf(mobileIcons.isStackable, initialValue = false)
 
-    private val iconViewModelFlow: Flow<List<MobileIconViewModelCommon>> =
-        combine(
-            mobileIconsViewModel.mobileSubViewModels,
-            mobileIconsViewModel.activeMobileDataSubscriptionId,
-        ) { viewModels, activeSubId ->
-            // Sort to get the active subscription first, if it's set
-            viewModels.sortedByDescending { it.subscriptionId == activeSubId }
+    private val iconList: KairosState<List<MobileIconViewModelKairos>> =
+        combine(mobileIcons.icons, mobileIcons.activeSubscriptionId) { iconsBySubId, activeSubId ->
+            buildList {
+                activeSubId?.let { iconsBySubId[activeSubId]?.let { add(it) } }
+                addAll(iconsBySubId.values.asSequence().filter { it.subscriptionId != activeSubId })
+            }
         }
 
-    val dualSim: DualSim? by
-        hydrator.hydratedStateOf(
-            traceName = "dualSim",
-            source =
-                iconViewModelFlow.flatMapLatest { viewModels ->
-                    combine(viewModels.map { it.icon }) { icons ->
-                        icons
-                            .toList()
-                            .filterIsInstance<SignalIconModel.Cellular>()
-                            .takeIf { it.size == 2 }
-                            ?.let { DualSim(it[0], it[1]) }
-                    }
-                },
+    override val dualSim: DualSim? by
+        hydratedComposeStateOf(
+            iconList.flatMap { icons ->
+                icons.map { it.icon }.combine { signalIcons -> tryParseDualSim(signalIcons) }
+            },
             initialValue = null,
         )
 
-    val networkTypeIcon: Icon.Resource? by
-        hydrator.hydratedStateOf(
-            traceName = "networkTypeIcon",
-            source =
-                iconViewModelFlow.flatMapLatest { viewModels ->
-                    viewModels.firstOrNull()?.networkTypeIcon ?: flowOf(null)
-                },
+    override val networkTypeIcon: Icon.Resource? by
+        hydratedComposeStateOf(
+            iconList.flatMap { icons -> icons.firstOrNull()?.networkTypeIcon ?: stateOf(null) },
             initialValue = null,
         )
 
-    val isIconVisible: Boolean by derivedStateOf { isStackable && dualSim != null }
+    override val isIconVisible: Boolean
+        get() = isStackable && dualSim != null
 
-    override suspend fun onActivated(): Nothing {
-        hydrator.activate()
+    private fun tryParseDualSim(icons: List<SignalIconModel>): DualSim? {
+        var first: SignalIconModel.Cellular? = null
+        var second: SignalIconModel.Cellular? = null
+        for (icon in icons) {
+            when {
+                icon !is SignalIconModel.Cellular -> continue
+                first == null -> first = icon
+                second == null -> second = icon
+                else -> return null
+            }
+        }
+        return first?.let { second?.let { DualSim(first, second) } }
     }
 
     @AssistedFactory
     interface Factory {
         fun create(): StackedMobileIconViewModelKairos
     }
-
-    data class DualSim(
-        val primary: SignalIconModel.Cellular,
-        val secondary: SignalIconModel.Cellular,
-    )
 }

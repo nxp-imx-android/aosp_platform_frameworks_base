@@ -22,6 +22,7 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModel.DualSim
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,10 +31,22 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 
+interface StackedMobileIconViewModel {
+    val dualSim: DualSim?
+    val networkTypeIcon: Icon.Resource?
+    val isIconVisible: Boolean
+
+    data class DualSim(
+        val primary: SignalIconModel.Cellular,
+        val secondary: SignalIconModel.Cellular,
+    )
+}
+
 @OptIn(ExperimentalCoroutinesApi::class)
-class StackedMobileIconViewModel
+class StackedMobileIconViewModelImpl
 @AssistedInject
-constructor(mobileIconsViewModel: MobileIconsViewModel) : ExclusiveActivatable() {
+constructor(mobileIconsViewModel: MobileIconsViewModel) :
+    ExclusiveActivatable(), StackedMobileIconViewModel {
     private val hydrator = Hydrator("StackedMobileIconViewModel")
 
     private val isStackable: Boolean by
@@ -52,7 +65,7 @@ constructor(mobileIconsViewModel: MobileIconsViewModel) : ExclusiveActivatable()
             viewModels.sortedByDescending { it.subscriptionId == activeSubId }
         }
 
-    val dualSim: DualSim? by
+    override val dualSim: DualSim? by
         hydrator.hydratedStateOf(
             traceName = "dualSim",
             source =
@@ -68,7 +81,7 @@ constructor(mobileIconsViewModel: MobileIconsViewModel) : ExclusiveActivatable()
             initialValue = null,
         )
 
-    val networkTypeIcon: Icon.Resource? by
+    override val networkTypeIcon: Icon.Resource? by
         hydrator.hydratedStateOf(
             traceName = "networkTypeIcon",
             source =
@@ -78,7 +91,7 @@ constructor(mobileIconsViewModel: MobileIconsViewModel) : ExclusiveActivatable()
             initialValue = null,
         )
 
-    val isIconVisible: Boolean by derivedStateOf { isStackable && dualSim != null }
+    override val isIconVisible: Boolean by derivedStateOf { isStackable && dualSim != null }
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()
@@ -86,11 +99,6 @@ constructor(mobileIconsViewModel: MobileIconsViewModel) : ExclusiveActivatable()
 
     @AssistedFactory
     interface Factory {
-        fun create(): StackedMobileIconViewModel
+        fun create(): StackedMobileIconViewModelImpl
     }
-
-    data class DualSim(
-        val primary: SignalIconModel.Cellular,
-        val secondary: SignalIconModel.Cellular,
-    )
 }

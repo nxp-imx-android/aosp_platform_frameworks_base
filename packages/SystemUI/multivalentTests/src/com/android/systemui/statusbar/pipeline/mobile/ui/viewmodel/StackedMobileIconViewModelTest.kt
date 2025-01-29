@@ -45,8 +45,8 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testScope = kosmos.testScope
 
-    private val Kosmos.underTest: StackedMobileIconViewModel by Fixture {
-        stackedMobileIconViewModel
+    private val Kosmos.underTest: StackedMobileIconViewModelImpl by Fixture {
+        stackedMobileIconViewModelImpl
     }
 
     @Before

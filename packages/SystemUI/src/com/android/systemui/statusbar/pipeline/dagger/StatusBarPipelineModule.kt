@@ -49,6 +49,7 @@ import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIc
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorKairosImpl
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileUiAdapter
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairos
 import com.android.systemui.statusbar.pipeline.mobile.util.MobileMappingsProxy
 import com.android.systemui.statusbar.pipeline.mobile.util.MobileMappingsProxyImpl
 import com.android.systemui.statusbar.pipeline.mobile.util.SubscriptionManagerProxy
@@ -94,6 +95,7 @@ import kotlinx.coroutines.flow.Flow
             MobileRepositorySwitcherKairos.Module::class,
             MobileConnectionsRepositoryKairosImpl.Module::class,
             MobileIconsInteractorKairosImpl.Module::class,
+            MobileIconsViewModelKairos.Module::class,
             MobileConnectionRepositoryKairosFactoryImpl.Module::class,
             MobileConnectionsRepositoryKairosAdapter.Module::class,
             MobileIconsInteractorKairosAdapter.Module::class,
@@ -217,6 +219,7 @@ abstract class StatusBarPipelineModule {
         fun provideFirstMobileSubShowingNetworkTypeIconProvider(
             mobileIconsViewModel: MobileIconsViewModel
         ): Supplier<Flow<Boolean>> {
+            // TODO: kairos-ify
             return Supplier<Flow<Boolean>> {
                 mobileIconsViewModel.firstMobileSubShowingNetworkTypeIcon
             }
