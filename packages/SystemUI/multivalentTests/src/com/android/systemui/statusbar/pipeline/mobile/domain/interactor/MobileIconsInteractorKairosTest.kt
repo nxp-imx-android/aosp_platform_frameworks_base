@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,186 +28,164 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fake
 import com.android.systemui.flags.featureFlagsClassic
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.KairosTestScope
+import com.android.systemui.kairos.runKairosTest
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepository
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepositoryLogbufferName
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepositoryKairos
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepositoryKairos
 import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlot
 import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
 import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
-import com.android.systemui.statusbar.policy.data.repository.FakeUserSetupRepository
 import com.android.systemui.testKosmos
-import com.android.systemui.util.CarrierConfigTracker
+import com.android.systemui.util.carrierConfigTracker
 import com.google.common.truth.Truth.assertThat
 import java.util.UUID
 import kotlinx.coroutines.test.advanceTimeBy
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
+@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MobileIconsInteractorKairosTest : SysuiTestCase() {
-    private val kosmos by lazy {
+
+    private val kosmos =
         testKosmos().apply {
-            mobileConnectionsRepositoryLogbufferName = "MobileIconsInteractorTest"
-            mobileConnectionsRepository.fake.run {
-                setMobileConnectionRepositoryMap(
-                    mapOf(
-                        SUB_1_ID to FakeMobileConnectionRepository(SUB_1_ID, mock()),
-                        SUB_2_ID to FakeMobileConnectionRepository(SUB_2_ID, mock()),
-                        SUB_3_ID to FakeMobileConnectionRepository(SUB_3_ID, mock()),
-                        SUB_4_ID to FakeMobileConnectionRepository(SUB_4_ID, mock()),
-                    )
-                )
-                setActiveMobileDataSubscriptionId(SUB_1_ID)
-            }
+            useUnconfinedTestDispatcher()
+            mobileConnectionsRepositoryKairos =
+                fakeMobileConnectionsRepositoryKairos.apply {
+                    setActiveMobileDataSubscriptionId(SUB_1_ID)
+                    subscriptions.setValue(listOf(SUB_1, SUB_2, SUB_3_OPP, SUB_4_OPP))
+                }
             featureFlagsClassic.fake.set(Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS, true)
         }
-    }
 
-    // shortcut rename
-    private val Kosmos.connectionsRepository by Fixture { mobileConnectionsRepository.fake }
+    private val Kosmos.underTest
+        get() = mobileIconsInteractorKairos
 
-    private val Kosmos.carrierConfigTracker by Fixture { mock<CarrierConfigTracker>() }
-
-    private val Kosmos.underTest by Fixture {
-        MobileIconsInteractorKairosImpl(
-            mobileConnectionsRepository,
-            carrierConfigTracker,
-            tableLogger = mock(),
-            connectivityRepository,
-            FakeUserSetupRepository(),
-            testScope.backgroundScope,
-            context,
-            featureFlagsClassic,
-        )
-    }
+    private fun runTest(block: suspend KairosTestScope.() -> Unit) =
+        kosmos.run { runKairosTest { block() } }
 
     @Test
-    fun filteredSubscriptions_default() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+    fun filteredSubscriptions_default() = runTest {
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(emptyList())
+        val latest by underTest.filteredSubscriptions.collectLastValue()
 
-            assertThat(latest).isEqualTo(listOf<SubscriptionModel>())
-        }
+        assertThat(latest).isEqualTo(emptyList<SubscriptionModel>())
+    }
 
     // Based on the logic from the old pipeline, we'll never filter subs when there are more than 2
     @Test
-    fun filteredSubscriptions_moreThanTwo_doesNotFilter() =
-        kosmos.runTest {
-            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_3_OPP, SUB_4_OPP))
-            connectionsRepository.setActiveMobileDataSubscriptionId(SUB_4_ID)
+    fun filteredSubscriptions_moreThanTwo_doesNotFilter() = runTest {
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(
+            listOf(SUB_1, SUB_3_OPP, SUB_4_OPP)
+        )
+        mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(SUB_4_ID)
 
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+        val latest by underTest.filteredSubscriptions.collectLastValue()
 
-            assertThat(latest).isEqualTo(listOf(SUB_1, SUB_3_OPP, SUB_4_OPP))
-        }
-
-    @Test
-    fun filteredSubscriptions_nonOpportunistic_updatesWithMultipleSubs() =
-        kosmos.runTest {
-            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2))
-
-            val latest by collectLastValue(underTest.filteredSubscriptions)
-
-            assertThat(latest).isEqualTo(listOf(SUB_1, SUB_2))
-        }
+        assertThat(latest).isEqualTo(listOf(SUB_1, SUB_3_OPP, SUB_4_OPP))
+    }
 
     @Test
-    fun filteredSubscriptions_opportunistic_differentGroups_doesNotFilter() =
-        kosmos.runTest {
-            connectionsRepository.setSubscriptions(listOf(SUB_3_OPP, SUB_4_OPP))
-            connectionsRepository.setActiveMobileDataSubscriptionId(SUB_3_ID)
+    fun filteredSubscriptions_nonOpportunistic_updatesWithMultipleSubs() = runTest {
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(SUB_1, SUB_2))
 
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+        val latest by underTest.filteredSubscriptions.collectLastValue()
 
-            assertThat(latest).isEqualTo(listOf(SUB_3_OPP, SUB_4_OPP))
-        }
+        assertThat(latest).isEqualTo(listOf(SUB_1, SUB_2))
+    }
 
     @Test
-    fun filteredSubscriptions_opportunistic_nonGrouped_doesNotFilter() =
-        kosmos.runTest {
-            val (sub1, sub2) =
-                createSubscriptionPair(
-                    subscriptionIds = Pair(SUB_1_ID, SUB_2_ID),
-                    opportunistic = Pair(true, true),
-                    grouped = false,
-                )
-            connectionsRepository.setSubscriptions(listOf(sub1, sub2))
-            connectionsRepository.setActiveMobileDataSubscriptionId(SUB_1_ID)
+    fun filteredSubscriptions_opportunistic_differentGroups_doesNotFilter() = runTest {
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(SUB_3_OPP, SUB_4_OPP))
+        mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(SUB_3_ID)
 
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+        val latest by underTest.filteredSubscriptions.collectLastValue()
 
-            assertThat(latest).isEqualTo(listOf(sub1, sub2))
-        }
+        assertThat(latest).isEqualTo(listOf(SUB_3_OPP, SUB_4_OPP))
+    }
 
     @Test
-    fun filteredSubscriptions_opportunistic_grouped_configFalse_showsActive_3() =
-        kosmos.runTest {
-            val (sub3, sub4) =
-                createSubscriptionPair(
-                    subscriptionIds = Pair(SUB_3_ID, SUB_4_ID),
-                    opportunistic = Pair(true, true),
-                    grouped = true,
-                )
-            connectionsRepository.setSubscriptions(listOf(sub3, sub4))
-            connectionsRepository.setActiveMobileDataSubscriptionId(SUB_3_ID)
-            whenever(carrierConfigTracker.alwaysShowPrimarySignalBarInOpportunisticNetworkDefault)
-                .thenReturn(false)
+    fun filteredSubscriptions_opportunistic_nonGrouped_doesNotFilter() = runTest {
+        val (sub1, sub2) =
+            createSubscriptionPair(
+                subscriptionIds = Pair(SUB_1_ID, SUB_2_ID),
+                opportunistic = Pair(true, true),
+                grouped = false,
+            )
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(sub1, sub2))
+        mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(SUB_1_ID)
 
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+        val latest by underTest.filteredSubscriptions.collectLastValue()
 
-            // Filtered subscriptions should show the active one when the config is false
-            assertThat(latest).isEqualTo(listOf(sub3))
-        }
+        assertThat(latest).isEqualTo(listOf(sub1, sub2))
+    }
 
     @Test
-    fun filteredSubscriptions_opportunistic_grouped_configFalse_showsActive_4() =
-        kosmos.runTest {
-            val (sub3, sub4) =
-                createSubscriptionPair(
-                    subscriptionIds = Pair(SUB_3_ID, SUB_4_ID),
-                    opportunistic = Pair(true, true),
-                    grouped = true,
-                )
-            connectionsRepository.setSubscriptions(listOf(sub3, sub4))
-            connectionsRepository.setActiveMobileDataSubscriptionId(SUB_4_ID)
-            whenever(carrierConfigTracker.alwaysShowPrimarySignalBarInOpportunisticNetworkDefault)
-                .thenReturn(false)
+    fun filteredSubscriptions_opportunistic_grouped_configFalse_showsActive_3() = runTest {
+        val (sub3, sub4) =
+            createSubscriptionPair(
+                subscriptionIds = Pair(SUB_3_ID, SUB_4_ID),
+                opportunistic = Pair(true, true),
+                grouped = true,
+            )
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(sub3, sub4))
+        mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(SUB_3_ID)
+        whenever(carrierConfigTracker.alwaysShowPrimarySignalBarInOpportunisticNetworkDefault)
+            .thenReturn(false)
 
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+        val latest by underTest.filteredSubscriptions.collectLastValue()
 
-            // Filtered subscriptions should show the active one when the config is false
-            assertThat(latest).isEqualTo(listOf(sub4))
-        }
+        // Filtered subscriptions should show the active one when the config is false
+        assertThat(latest).isEqualTo(listOf(sub3))
+    }
+
+    @Test
+    fun filteredSubscriptions_opportunistic_grouped_configFalse_showsActive_4() = runTest {
+        val (sub3, sub4) =
+            createSubscriptionPair(
+                subscriptionIds = Pair(SUB_3_ID, SUB_4_ID),
+                opportunistic = Pair(true, true),
+                grouped = true,
+            )
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(sub3, sub4))
+        mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(SUB_4_ID)
+        whenever(carrierConfigTracker.alwaysShowPrimarySignalBarInOpportunisticNetworkDefault)
+            .thenReturn(false)
+
+        val latest by underTest.filteredSubscriptions.collectLastValue()
+
+        // Filtered subscriptions should show the active one when the config is false
+        assertThat(latest).isEqualTo(listOf(sub4))
+    }
 
     @Test
     fun filteredSubscriptions_oneOpportunistic_grouped_configTrue_showsPrimary_active_1() =
-        kosmos.runTest {
+        runTest {
             val (sub1, sub3) =
                 createSubscriptionPair(
                     subscriptionIds = Pair(SUB_1_ID, SUB_3_ID),
                     opportunistic = Pair(false, true),
                     grouped = true,
                 )
-            connectionsRepository.setSubscriptions(listOf(sub1, sub3))
-            connectionsRepository.setActiveMobileDataSubscriptionId(SUB_1_ID)
+            mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(sub1, sub3))
+            mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(SUB_1_ID)
             whenever(carrierConfigTracker.alwaysShowPrimarySignalBarInOpportunisticNetworkDefault)
                 .thenReturn(true)
 
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+            val latest by underTest.filteredSubscriptions.collectLastValue()
 
             // Filtered subscriptions should show the primary (non-opportunistic) if the config is
             // true
@@ -216,19 +194,19 @@ class MobileIconsInteractorKairosTest : SysuiTestCase() {
 
     @Test
     fun filteredSubscriptions_oneOpportunistic_grouped_configTrue_showsPrimary_nonActive_1() =
-        kosmos.runTest {
+        runTest {
             val (sub1, sub3) =
                 createSubscriptionPair(
                     subscriptionIds = Pair(SUB_1_ID, SUB_3_ID),
                     opportunistic = Pair(false, true),
                     grouped = true,
                 )
-            connectionsRepository.setSubscriptions(listOf(sub1, sub3))
-            connectionsRepository.setActiveMobileDataSubscriptionId(SUB_3_ID)
+            mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(sub1, sub3))
+            mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(SUB_3_ID)
             whenever(carrierConfigTracker.alwaysShowPrimarySignalBarInOpportunisticNetworkDefault)
                 .thenReturn(true)
 
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+            val latest by underTest.filteredSubscriptions.collectLastValue()
 
             // Filtered subscriptions should show the primary (non-opportunistic) if the config is
             // true
@@ -236,135 +214,130 @@ class MobileIconsInteractorKairosTest : SysuiTestCase() {
         }
 
     @Test
-    fun filteredSubscriptions_vcnSubId_agreesWithActiveSubId_usesActiveAkaVcnSub() =
-        kosmos.runTest {
-            val (sub1, sub3) =
-                createSubscriptionPair(
-                    subscriptionIds = Pair(SUB_1_ID, SUB_3_ID),
-                    opportunistic = Pair(true, true),
-                    grouped = true,
-                )
-            connectionsRepository.setSubscriptions(listOf(sub1, sub3))
-            connectionsRepository.setActiveMobileDataSubscriptionId(SUB_3_ID)
-            kosmos.connectivityRepository.fake.vcnSubId.value = SUB_3_ID
-            whenever(carrierConfigTracker.alwaysShowPrimarySignalBarInOpportunisticNetworkDefault)
-                .thenReturn(false)
+    fun filteredSubscriptions_vcnSubId_agreesWithActiveSubId_usesActiveAkaVcnSub() = runTest {
+        val (sub1, sub3) =
+            createSubscriptionPair(
+                subscriptionIds = Pair(SUB_1_ID, SUB_3_ID),
+                opportunistic = Pair(true, true),
+                grouped = true,
+            )
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(sub1, sub3))
+        mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(SUB_3_ID)
+        kosmos.connectivityRepository.fake.vcnSubId.value = SUB_3_ID
+        whenever(carrierConfigTracker.alwaysShowPrimarySignalBarInOpportunisticNetworkDefault)
+            .thenReturn(false)
 
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+        val latest by underTest.filteredSubscriptions.collectLastValue()
 
-            assertThat(latest).isEqualTo(listOf(sub3))
-        }
-
-    @Test
-    fun filteredSubscriptions_vcnSubId_disagreesWithActiveSubId_usesVcnSub() =
-        kosmos.runTest {
-            val (sub1, sub3) =
-                createSubscriptionPair(
-                    subscriptionIds = Pair(SUB_1_ID, SUB_3_ID),
-                    opportunistic = Pair(true, true),
-                    grouped = true,
-                )
-            connectionsRepository.setSubscriptions(listOf(sub1, sub3))
-            connectionsRepository.setActiveMobileDataSubscriptionId(SUB_3_ID)
-            kosmos.connectivityRepository.fake.vcnSubId.value = SUB_1_ID
-            whenever(carrierConfigTracker.alwaysShowPrimarySignalBarInOpportunisticNetworkDefault)
-                .thenReturn(false)
-
-            val latest by collectLastValue(underTest.filteredSubscriptions)
-
-            assertThat(latest).isEqualTo(listOf(sub1))
-        }
+        assertThat(latest).isEqualTo(listOf(sub3))
+    }
 
     @Test
-    fun filteredSubscriptions_doesNotFilterProvisioningWhenFlagIsFalse() =
-        kosmos.runTest {
-            // GIVEN the flag is false
-            featureFlagsClassic.fake.set(Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS, false)
+    fun filteredSubscriptions_vcnSubId_disagreesWithActiveSubId_usesVcnSub() = runTest {
+        val (sub1, sub3) =
+            createSubscriptionPair(
+                subscriptionIds = Pair(SUB_1_ID, SUB_3_ID),
+                opportunistic = Pair(true, true),
+                grouped = true,
+            )
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(sub1, sub3))
+        mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(SUB_3_ID)
+        kosmos.connectivityRepository.fake.vcnSubId.value = SUB_1_ID
+        whenever(carrierConfigTracker.alwaysShowPrimarySignalBarInOpportunisticNetworkDefault)
+            .thenReturn(false)
 
-            // GIVEN 1 sub that is in PROFILE_CLASS_PROVISIONING
-            val sub1 =
-                SubscriptionModel(
-                    subscriptionId = SUB_1_ID,
-                    isOpportunistic = false,
-                    carrierName = "Carrier 1",
-                    profileClass = PROFILE_CLASS_PROVISIONING,
-                )
+        val latest by underTest.filteredSubscriptions.collectLastValue()
 
-            connectionsRepository.setSubscriptions(listOf(sub1))
-
-            // WHEN filtering is applied
-            val latest by collectLastValue(underTest.filteredSubscriptions)
-
-            // THEN the provisioning sub is still present (unfiltered)
-            assertThat(latest).isEqualTo(listOf(sub1))
-        }
+        assertThat(latest).isEqualTo(listOf(sub1))
+    }
 
     @Test
-    fun filteredSubscriptions_filtersOutProvisioningSubs() =
-        kosmos.runTest {
-            val sub1 =
-                SubscriptionModel(
-                    subscriptionId = SUB_1_ID,
-                    isOpportunistic = false,
-                    carrierName = "Carrier 1",
-                    profileClass = PROFILE_CLASS_UNSET,
-                )
-            val sub2 =
-                SubscriptionModel(
-                    subscriptionId = SUB_2_ID,
-                    isOpportunistic = false,
-                    carrierName = "Carrier 2",
-                    profileClass = PROFILE_CLASS_PROVISIONING,
-                )
+    fun filteredSubscriptions_doesNotFilterProvisioningWhenFlagIsFalse() = runTest {
+        // GIVEN the flag is false
+        featureFlagsClassic.fake.set(Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS, false)
 
-            connectionsRepository.setSubscriptions(listOf(sub1, sub2))
+        // GIVEN 1 sub that is in PROFILE_CLASS_PROVISIONING
+        val sub1 =
+            SubscriptionModel(
+                subscriptionId = SUB_1_ID,
+                isOpportunistic = false,
+                carrierName = "Carrier 1",
+                profileClass = PROFILE_CLASS_PROVISIONING,
+            )
 
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(sub1))
 
-            assertThat(latest).isEqualTo(listOf(sub1))
-        }
+        // WHEN filtering is applied
+        val latest by underTest.filteredSubscriptions.collectLastValue()
+
+        // THEN the provisioning sub is still present (unfiltered)
+        assertThat(latest).isEqualTo(listOf(sub1))
+    }
+
+    @Test
+    fun filteredSubscriptions_filtersOutProvisioningSubs() = runTest {
+        val sub1 =
+            SubscriptionModel(
+                subscriptionId = SUB_1_ID,
+                isOpportunistic = false,
+                carrierName = "Carrier 1",
+                profileClass = PROFILE_CLASS_UNSET,
+            )
+        val sub2 =
+            SubscriptionModel(
+                subscriptionId = SUB_2_ID,
+                isOpportunistic = false,
+                carrierName = "Carrier 2",
+                profileClass = PROFILE_CLASS_PROVISIONING,
+            )
+
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(sub1, sub2))
+
+        val latest by underTest.filteredSubscriptions.collectLastValue()
+
+        assertThat(latest).isEqualTo(listOf(sub1))
+    }
 
     /** Note: I'm not sure if this will ever be the case, but we can test it at least */
     @Test
-    fun filteredSubscriptions_filtersOutProvisioningSubsBeforeOpportunistic() =
-        kosmos.runTest {
-            // This is a contrived test case, where the active subId is the one that would
-            // also be filtered by opportunistic filtering.
+    fun filteredSubscriptions_filtersOutProvisioningSubsBeforeOpportunistic() = runTest {
+        // This is a contrived test case, where the active subId is the one that would
+        // also be filtered by opportunistic filtering.
 
-            // GIVEN grouped, opportunistic subscriptions
-            val groupUuid = ParcelUuid(UUID.randomUUID())
-            val sub1 =
-                SubscriptionModel(
-                    subscriptionId = 1,
-                    isOpportunistic = true,
-                    groupUuid = groupUuid,
-                    carrierName = "Carrier 1",
-                    profileClass = PROFILE_CLASS_PROVISIONING,
-                )
+        // GIVEN grouped, opportunistic subscriptions
+        val groupUuid = ParcelUuid(UUID.randomUUID())
+        val sub1 =
+            SubscriptionModel(
+                subscriptionId = 1,
+                isOpportunistic = true,
+                groupUuid = groupUuid,
+                carrierName = "Carrier 1",
+                profileClass = PROFILE_CLASS_PROVISIONING,
+            )
 
-            val sub2 =
-                SubscriptionModel(
-                    subscriptionId = 2,
-                    isOpportunistic = true,
-                    groupUuid = groupUuid,
-                    carrierName = "Carrier 2",
-                    profileClass = PROFILE_CLASS_UNSET,
-                )
+        val sub2 =
+            SubscriptionModel(
+                subscriptionId = 2,
+                isOpportunistic = true,
+                groupUuid = groupUuid,
+                carrierName = "Carrier 2",
+                profileClass = PROFILE_CLASS_UNSET,
+            )
 
-            // GIVEN active subId is 1
-            connectionsRepository.setSubscriptions(listOf(sub1, sub2))
-            connectionsRepository.setActiveMobileDataSubscriptionId(1)
+        // GIVEN active subId is 1
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(sub1, sub2))
+        mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(1)
 
-            // THEN filtering of provisioning subs takes place first, and we result in sub2
+        // THEN filtering of provisioning subs takes place first, and we result in sub2
 
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+        val latest by underTest.filteredSubscriptions.collectLastValue()
 
-            assertThat(latest).isEqualTo(listOf(sub2))
-        }
+        assertThat(latest).isEqualTo(listOf(sub2))
+    }
 
     @Test
     fun filteredSubscriptions_groupedPairAndNonProvisioned_groupedFilteringStillHappens() =
-        kosmos.runTest {
+        runTest {
             // Grouped filtering only happens when the list of subs is length 2. In this case
             // we'll show that filtering of provisioning subs happens before, and thus grouped
             // filtering happens even though the unfiltered list is length 3
@@ -384,87 +357,88 @@ class MobileIconsInteractorKairosTest : SysuiTestCase() {
                     profileClass = PROFILE_CLASS_PROVISIONING,
                 )
 
-            connectionsRepository.setSubscriptions(listOf(sub1, sub2, sub3))
-            connectionsRepository.setActiveMobileDataSubscriptionId(1)
+            mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(sub1, sub2, sub3))
+            mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(1)
 
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+            val latest by underTest.filteredSubscriptions.collectLastValue()
 
             assertThat(latest).isEqualTo(listOf(sub1))
         }
 
     @Test
-    fun filteredSubscriptions_subNotExclusivelyNonTerrestrial_hasSub() =
-        kosmos.runTest {
-            val notExclusivelyNonTerrestrialSub =
-                SubscriptionModel(
-                    isExclusivelyNonTerrestrial = false,
-                    subscriptionId = 5,
-                    carrierName = "Carrier 5",
-                    profileClass = PROFILE_CLASS_UNSET,
-                )
-
-            connectionsRepository.setSubscriptions(listOf(notExclusivelyNonTerrestrialSub))
-
-            val latest by collectLastValue(underTest.filteredSubscriptions)
-
-            assertThat(latest).isEqualTo(listOf(notExclusivelyNonTerrestrialSub))
-        }
-
-    @Test
-    fun filteredSubscriptions_subExclusivelyNonTerrestrial_doesNotHaveSub() =
-        kosmos.runTest {
-            val exclusivelyNonTerrestrialSub =
-                SubscriptionModel(
-                    isExclusivelyNonTerrestrial = true,
-                    subscriptionId = 5,
-                    carrierName = "Carrier 5",
-                    profileClass = PROFILE_CLASS_UNSET,
-                )
-
-            connectionsRepository.setSubscriptions(listOf(exclusivelyNonTerrestrialSub))
-
-            val latest by collectLastValue(underTest.filteredSubscriptions)
-
-            assertThat(latest).isEmpty()
-        }
-
-    @Test
-    fun filteredSubscription_mixOfExclusivelyNonTerrestrialAndOther_hasOtherSubsOnly() =
-        kosmos.runTest {
-            val exclusivelyNonTerrestrialSub =
-                SubscriptionModel(
-                    isExclusivelyNonTerrestrial = true,
-                    subscriptionId = 5,
-                    carrierName = "Carrier 5",
-                    profileClass = PROFILE_CLASS_UNSET,
-                )
-            val otherSub1 =
-                SubscriptionModel(
-                    isExclusivelyNonTerrestrial = false,
-                    subscriptionId = 1,
-                    carrierName = "Carrier 1",
-                    profileClass = PROFILE_CLASS_UNSET,
-                )
-            val otherSub2 =
-                SubscriptionModel(
-                    isExclusivelyNonTerrestrial = false,
-                    subscriptionId = 2,
-                    carrierName = "Carrier 2",
-                    profileClass = PROFILE_CLASS_UNSET,
-                )
-
-            connectionsRepository.setSubscriptions(
-                listOf(otherSub1, exclusivelyNonTerrestrialSub, otherSub2)
+    fun filteredSubscriptions_subNotExclusivelyNonTerrestrial_hasSub() = runTest {
+        val notExclusivelyNonTerrestrialSub =
+            SubscriptionModel(
+                isExclusivelyNonTerrestrial = false,
+                subscriptionId = 5,
+                carrierName = "Carrier 5",
+                profileClass = PROFILE_CLASS_UNSET,
             )
 
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(
+            listOf(notExclusivelyNonTerrestrialSub)
+        )
 
-            assertThat(latest).isEqualTo(listOf(otherSub1, otherSub2))
-        }
+        val latest by underTest.filteredSubscriptions.collectLastValue()
+
+        assertThat(latest).isEqualTo(listOf(notExclusivelyNonTerrestrialSub))
+    }
+
+    @Test
+    fun filteredSubscriptions_subExclusivelyNonTerrestrial_doesNotHaveSub() = runTest {
+        val exclusivelyNonTerrestrialSub =
+            SubscriptionModel(
+                isExclusivelyNonTerrestrial = true,
+                subscriptionId = 5,
+                carrierName = "Carrier 5",
+                profileClass = PROFILE_CLASS_UNSET,
+            )
+
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(
+            listOf(exclusivelyNonTerrestrialSub)
+        )
+
+        val latest by underTest.filteredSubscriptions.collectLastValue()
+
+        assertThat(latest).isEmpty()
+    }
+
+    @Test
+    fun filteredSubscription_mixOfExclusivelyNonTerrestrialAndOther_hasOtherSubsOnly() = runTest {
+        val exclusivelyNonTerrestrialSub =
+            SubscriptionModel(
+                isExclusivelyNonTerrestrial = true,
+                subscriptionId = 5,
+                carrierName = "Carrier 5",
+                profileClass = PROFILE_CLASS_UNSET,
+            )
+        val otherSub1 =
+            SubscriptionModel(
+                isExclusivelyNonTerrestrial = false,
+                subscriptionId = 1,
+                carrierName = "Carrier 1",
+                profileClass = PROFILE_CLASS_UNSET,
+            )
+        val otherSub2 =
+            SubscriptionModel(
+                isExclusivelyNonTerrestrial = false,
+                subscriptionId = 2,
+                carrierName = "Carrier 2",
+                profileClass = PROFILE_CLASS_UNSET,
+            )
+
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(
+            listOf(otherSub1, exclusivelyNonTerrestrialSub, otherSub2)
+        )
+
+        val latest by underTest.filteredSubscriptions.collectLastValue()
+
+        assertThat(latest).isEqualTo(listOf(otherSub1, otherSub2))
+    }
 
     @Test
     fun filteredSubscriptions_exclusivelyNonTerrestrialSub_andOpportunistic_bothFiltersHappen() =
-        kosmos.runTest {
+        runTest {
             // Exclusively non-terrestrial sub
             val exclusivelyNonTerrestrialSub =
                 SubscriptionModel(
@@ -483,10 +457,12 @@ class MobileIconsInteractorKairosTest : SysuiTestCase() {
                 )
 
             // WHEN both an exclusively non-terrestrial sub and opportunistic sub pair is included
-            connectionsRepository.setSubscriptions(listOf(sub3, sub4, exclusivelyNonTerrestrialSub))
-            connectionsRepository.setActiveMobileDataSubscriptionId(SUB_3_ID)
+            mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(
+                listOf(sub3, sub4, exclusivelyNonTerrestrialSub)
+            )
+            mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(SUB_3_ID)
 
-            val latest by collectLastValue(underTest.filteredSubscriptions)
+            val latest by underTest.filteredSubscriptions.collectLastValue()
 
             // THEN both the only-non-terrestrial sub and the non-active sub are filtered out,
             // leaving only sub3.
@@ -494,484 +470,427 @@ class MobileIconsInteractorKairosTest : SysuiTestCase() {
         }
 
     @Test
-    fun activeDataConnection_turnedOn() =
-        kosmos.runTest {
-            (fakeMobileConnectionsRepository.getRepoForSubId(SUB_1_ID)
-                    as FakeMobileConnectionRepository)
-                .dataEnabled
-                .value = true
+    fun activeDataConnection_turnedOn() = runTest {
+        val connection1 =
+            mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId.sample()[SUB_1_ID]!!
 
-            val latest by collectLastValue(underTest.activeDataConnectionHasDataEnabled)
+        connection1.dataEnabled.setValue(true)
 
-            assertThat(latest).isTrue()
-        }
+        val latest by underTest.activeDataConnectionHasDataEnabled.collectLastValue()
 
-    @Test
-    fun activeDataConnection_turnedOff() =
-        kosmos.runTest {
-            (fakeMobileConnectionsRepository.getRepoForSubId(SUB_1_ID)
-                    as FakeMobileConnectionRepository)
-                .dataEnabled
-                .value = true
-
-            val latest by collectLastValue(underTest.activeDataConnectionHasDataEnabled)
-
-            (fakeMobileConnectionsRepository.getRepoForSubId(SUB_1_ID)
-                    as FakeMobileConnectionRepository)
-                .dataEnabled
-                .value = false
-
-            assertThat(latest).isFalse()
-        }
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun activeDataConnection_invalidSubId() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.activeDataConnectionHasDataEnabled)
+    fun activeDataConnection_turnedOff() = runTest {
+        val connection1 =
+            mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId.sample()[SUB_1_ID]!!
 
-            connectionsRepository.setActiveMobileDataSubscriptionId(INVALID_SUBSCRIPTION_ID)
+        connection1.dataEnabled.setValue(true)
+        val latest by underTest.activeDataConnectionHasDataEnabled.collectLastValue()
 
-            // An invalid active subId should tell us that data is off
-            assertThat(latest).isFalse()
-        }
+        connection1.dataEnabled.setValue(false)
 
-    @Test
-    fun failedConnection_default_validated_notFailed() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isDefaultConnectionFailed)
-
-            connectionsRepository.mobileIsDefault.value = true
-            connectionsRepository.defaultConnectionIsValidated.value = true
-
-            assertThat(latest).isFalse()
-        }
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun failedConnection_notDefault_notValidated_notFailed() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isDefaultConnectionFailed)
+    fun activeDataConnection_invalidSubId() = runTest {
+        val latest by underTest.activeDataConnectionHasDataEnabled.collectLastValue()
 
-            connectionsRepository.mobileIsDefault.value = false
-            connectionsRepository.defaultConnectionIsValidated.value = false
+        mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(
+            INVALID_SUBSCRIPTION_ID
+        )
 
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun failedConnection_default_notValidated_failed() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isDefaultConnectionFailed)
-
-            connectionsRepository.mobileIsDefault.value = true
-            connectionsRepository.defaultConnectionIsValidated.value = false
-
-            assertThat(latest).isTrue()
-        }
+        // An invalid active subId should tell us that data is off
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun failedConnection_carrierMergedDefault_notValidated_failed() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isDefaultConnectionFailed)
+    fun failedConnection_default_validated_notFailed() = runTest {
+        val latest by underTest.isDefaultConnectionFailed.collectLastValue()
 
-            connectionsRepository.hasCarrierMergedConnection.value = true
-            connectionsRepository.defaultConnectionIsValidated.value = false
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(true)
 
-            assertThat(latest).isTrue()
-        }
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun failedConnection_notDefault_notValidated_notFailed() = runTest {
+        val latest by underTest.isDefaultConnectionFailed.collectLastValue()
+
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(false)
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(false)
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun failedConnection_default_notValidated_failed() = runTest {
+        val latest by underTest.isDefaultConnectionFailed.collectLastValue()
+
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(false)
+
+        assertThat(latest).isTrue()
+    }
+
+    @Test
+    fun failedConnection_carrierMergedDefault_notValidated_failed() = runTest {
+        val latest by underTest.isDefaultConnectionFailed.collectLastValue()
+
+        mobileConnectionsRepositoryKairos.fake.hasCarrierMergedConnection.setValue(true)
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(false)
+
+        assertThat(latest).isTrue()
+    }
 
     /** Regression test for b/275076959. */
     @Test
-    fun failedConnection_dataSwitchInSameGroup_notFailed() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isDefaultConnectionFailed)
+    fun failedConnection_dataSwitchInSameGroup_notFailed() = runTest {
+        val latest by underTest.isDefaultConnectionFailed.collectLastValue()
 
-            connectionsRepository.mobileIsDefault.value = true
-            connectionsRepository.defaultConnectionIsValidated.value = true
-            runCurrent()
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(true)
+        runCurrent()
 
-            // WHEN there's a data change in the same subscription group
-            connectionsRepository.activeSubChangedInGroupEvent.emit(Unit)
-            connectionsRepository.defaultConnectionIsValidated.value = false
-            runCurrent()
+        // WHEN there's a data change in the same subscription group
+        mobileConnectionsRepositoryKairos.fake.activeSubChangedInGroupEvent.emit(Unit)
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(false)
+        runCurrent()
 
-            // THEN the default connection is *not* marked as failed because of forced validation
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun failedConnection_dataSwitchNotInSameGroup_isFailed() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isDefaultConnectionFailed)
-
-            connectionsRepository.mobileIsDefault.value = true
-            connectionsRepository.defaultConnectionIsValidated.value = true
-            runCurrent()
-
-            // WHEN the connection is invalidated without a activeSubChangedInGroupEvent
-            connectionsRepository.defaultConnectionIsValidated.value = false
-
-            // THEN the connection is immediately marked as failed
-            assertThat(latest).isTrue()
-        }
+        // THEN the default connection is *not* marked as failed because of forced validation
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun alwaysShowDataRatIcon_configHasTrue() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.alwaysShowDataRatIcon)
+    fun failedConnection_dataSwitchNotInSameGroup_isFailed() = runTest {
+        val latest by underTest.isDefaultConnectionFailed.collectLastValue()
 
-            val config = MobileMappings.Config()
-            config.alwaysShowDataRatIcon = true
-            connectionsRepository.defaultDataSubRatConfig.value = config
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(true)
+        runCurrent()
 
-            assertThat(latest).isTrue()
-        }
+        // WHEN the connection is invalidated without a activeSubChangedInGroupEvent
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(false)
 
-    @Test
-    fun alwaysShowDataRatIcon_configHasFalse() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.alwaysShowDataRatIcon)
-
-            val config = MobileMappings.Config()
-            config.alwaysShowDataRatIcon = false
-            connectionsRepository.defaultDataSubRatConfig.value = config
-
-            assertThat(latest).isFalse()
-        }
+        // THEN the connection is immediately marked as failed
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun alwaysUseCdmaLevel_configHasTrue() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.alwaysUseCdmaLevel)
+    fun alwaysShowDataRatIcon_configHasTrue() = runTest {
+        val latest by underTest.alwaysShowDataRatIcon.collectLastValue()
 
-            val config = MobileMappings.Config()
-            config.alwaysShowCdmaRssi = true
-            connectionsRepository.defaultDataSubRatConfig.value = config
+        val config = MobileMappings.Config()
+        config.alwaysShowDataRatIcon = true
+        mobileConnectionsRepositoryKairos.fake.defaultDataSubRatConfig.setValue(config)
 
-            assertThat(latest).isTrue()
-        }
-
-    @Test
-    fun alwaysUseCdmaLevel_configHasFalse() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.alwaysUseCdmaLevel)
-
-            val config = MobileMappings.Config()
-            config.alwaysShowCdmaRssi = false
-            connectionsRepository.defaultDataSubRatConfig.value = config
-
-            assertThat(latest).isFalse()
-        }
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun isSingleCarrier_zeroSubscriptions_false() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isSingleCarrier)
+    fun alwaysShowDataRatIcon_configHasFalse() = runTest {
+        val latest by underTest.alwaysShowDataRatIcon.collectLastValue()
 
-            connectionsRepository.setSubscriptions(emptyList())
+        val config = MobileMappings.Config()
+        config.alwaysShowDataRatIcon = false
+        mobileConnectionsRepositoryKairos.fake.defaultDataSubRatConfig.setValue(config)
 
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun isSingleCarrier_oneSubscription_true() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isSingleCarrier)
-
-            connectionsRepository.setSubscriptions(listOf(SUB_1))
-
-            assertThat(latest).isTrue()
-        }
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun isSingleCarrier_twoSubscriptions_false() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isSingleCarrier)
+    fun alwaysUseCdmaLevel_configHasTrue() = runTest {
+        val latest by underTest.alwaysUseCdmaLevel.collectLastValue()
 
-            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2))
+        val config = MobileMappings.Config()
+        config.alwaysShowCdmaRssi = true
+        mobileConnectionsRepositoryKairos.fake.defaultDataSubRatConfig.setValue(config)
 
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun isSingleCarrier_updates() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isSingleCarrier)
-
-            connectionsRepository.setSubscriptions(listOf(SUB_1))
-            assertThat(latest).isTrue()
-
-            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2))
-            assertThat(latest).isFalse()
-        }
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun mobileIsDefault_mobileFalseAndCarrierMergedFalse_false() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.mobileIsDefault)
+    fun alwaysUseCdmaLevel_configHasFalse() = runTest {
+        val latest by underTest.alwaysUseCdmaLevel.collectLastValue()
 
-            connectionsRepository.mobileIsDefault.value = false
-            connectionsRepository.hasCarrierMergedConnection.value = false
+        val config = MobileMappings.Config()
+        config.alwaysShowCdmaRssi = false
+        mobileConnectionsRepositoryKairos.fake.defaultDataSubRatConfig.setValue(config)
 
-            assertThat(latest).isFalse()
-        }
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun mobileIsDefault_mobileTrueAndCarrierMergedFalse_true() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.mobileIsDefault)
+    fun isSingleCarrier_zeroSubscriptions_false() = runTest {
+        val latest by underTest.isSingleCarrier.collectLastValue()
 
-            connectionsRepository.mobileIsDefault.value = true
-            connectionsRepository.hasCarrierMergedConnection.value = false
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(emptyList())
 
-            assertThat(latest).isTrue()
-        }
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun isSingleCarrier_oneSubscription_true() = runTest {
+        val latest by underTest.isSingleCarrier.collectLastValue()
+
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(SUB_1))
+
+        assertThat(latest).isTrue()
+    }
+
+    @Test
+    fun isSingleCarrier_twoSubscriptions_false() = runTest {
+        val latest by underTest.isSingleCarrier.collectLastValue()
+
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(SUB_1, SUB_2))
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun isSingleCarrier_updates() = runTest {
+        val latest by underTest.isSingleCarrier.collectLastValue()
+
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(SUB_1))
+        assertThat(latest).isTrue()
+
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(SUB_1, SUB_2))
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun mobileIsDefault_mobileFalseAndCarrierMergedFalse_false() = runTest {
+        val latest by underTest.mobileIsDefault.collectLastValue()
+
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(false)
+        mobileConnectionsRepositoryKairos.fake.hasCarrierMergedConnection.setValue(false)
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun mobileIsDefault_mobileTrueAndCarrierMergedFalse_true() = runTest {
+        val latest by underTest.mobileIsDefault.collectLastValue()
+
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
+        mobileConnectionsRepositoryKairos.fake.hasCarrierMergedConnection.setValue(false)
+
+        assertThat(latest).isTrue()
+    }
 
     /** Regression test for b/272586234. */
     @Test
-    fun mobileIsDefault_mobileFalseAndCarrierMergedTrue_true() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.mobileIsDefault)
+    fun mobileIsDefault_mobileFalseAndCarrierMergedTrue_true() = runTest {
+        val latest by underTest.mobileIsDefault.collectLastValue()
 
-            connectionsRepository.mobileIsDefault.value = false
-            connectionsRepository.hasCarrierMergedConnection.value = true
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(false)
+        mobileConnectionsRepositoryKairos.fake.hasCarrierMergedConnection.setValue(true)
 
-            assertThat(latest).isTrue()
-        }
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun mobileIsDefault_updatesWhenRepoUpdates() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.mobileIsDefault)
+    fun mobileIsDefault_updatesWhenRepoUpdates() = runTest {
+        val latest by underTest.mobileIsDefault.collectLastValue()
 
-            connectionsRepository.mobileIsDefault.value = true
-            assertThat(latest).isTrue()
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
+        assertThat(latest).isTrue()
 
-            connectionsRepository.mobileIsDefault.value = false
-            assertThat(latest).isFalse()
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(false)
+        assertThat(latest).isFalse()
 
-            connectionsRepository.hasCarrierMergedConnection.value = true
-            assertThat(latest).isTrue()
-        }
+        mobileConnectionsRepositoryKairos.fake.hasCarrierMergedConnection.setValue(true)
+        assertThat(latest).isTrue()
+    }
 
     // The data switch tests are mostly testing the [forcingCellularValidation] flow, but that flow
     // is private and can only be tested by looking at [isDefaultConnectionFailed].
 
     @Test
-    fun dataSwitch_inSameGroup_validatedMatchesPreviousValue_expiresAfter2s() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isDefaultConnectionFailed)
+    fun dataSwitch_inSameGroup_validatedMatchesPreviousValue_expiresAfter2s() = runTest {
+        val latest by underTest.isDefaultConnectionFailed.collectLastValue()
 
-            connectionsRepository.mobileIsDefault.value = true
-            connectionsRepository.defaultConnectionIsValidated.value = true
-            runCurrent()
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(true)
+        runCurrent()
 
-            // Trigger a data change in the same subscription group that's not yet validated
-            connectionsRepository.activeSubChangedInGroupEvent.emit(Unit)
-            connectionsRepository.defaultConnectionIsValidated.value = false
-            runCurrent()
+        // Trigger a data change in the same subscription group that's not yet validated
+        mobileConnectionsRepositoryKairos.fake.activeSubChangedInGroupEvent.emit(Unit)
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(false)
+        runCurrent()
 
-            // After 1s, the force validation bit is still present, so the connection is not marked
-            // as failed
-            testScope.advanceTimeBy(1000)
-            assertThat(latest).isFalse()
+        // After 1s, the force validation bit is still present, so the connection is not marked
+        // as failed
+        testScope.advanceTimeBy(1000)
+        assertThat(latest).isFalse()
 
-            // After 2s, the force validation expires so the connection updates to failed
-            testScope.advanceTimeBy(1001)
-            assertThat(latest).isTrue()
-        }
-
-    @Test
-    fun dataSwitch_inSameGroup_notValidated_immediatelyMarkedAsFailed() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isDefaultConnectionFailed)
-
-            connectionsRepository.mobileIsDefault.value = true
-            connectionsRepository.defaultConnectionIsValidated.value = false
-            runCurrent()
-
-            connectionsRepository.activeSubChangedInGroupEvent.emit(Unit)
-
-            assertThat(latest).isTrue()
-        }
+        // After 2s, the force validation expires so the connection updates to failed
+        testScope.advanceTimeBy(1001)
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun dataSwitch_loseValidation_thenSwitchHappens_clearsForcedBit() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isDefaultConnectionFailed)
+    fun dataSwitch_inSameGroup_notValidated_immediatelyMarkedAsFailed() = runTest {
+        val latest by underTest.isDefaultConnectionFailed.collectLastValue()
 
-            // GIVEN the network starts validated
-            connectionsRepository.mobileIsDefault.value = true
-            connectionsRepository.defaultConnectionIsValidated.value = true
-            runCurrent()
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(false)
+        runCurrent()
 
-            // WHEN a data change happens in the same group
-            connectionsRepository.activeSubChangedInGroupEvent.emit(Unit)
+        mobileConnectionsRepositoryKairos.fake.activeSubChangedInGroupEvent.emit(Unit)
 
-            // WHEN the validation bit is lost
-            connectionsRepository.defaultConnectionIsValidated.value = false
-            runCurrent()
-
-            // WHEN another data change happens in the same group
-            connectionsRepository.activeSubChangedInGroupEvent.emit(Unit)
-
-            // THEN the forced validation bit is still used...
-            assertThat(latest).isFalse()
-
-            testScope.advanceTimeBy(1000)
-            assertThat(latest).isFalse()
-
-            // ... but expires after 2s
-            testScope.advanceTimeBy(1001)
-            assertThat(latest).isTrue()
-        }
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun dataSwitch_whileAlreadyForcingValidation_resetsClock() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isDefaultConnectionFailed)
-            connectionsRepository.mobileIsDefault.value = true
-            connectionsRepository.defaultConnectionIsValidated.value = true
-            runCurrent()
+    fun dataSwitch_loseValidation_thenSwitchHappens_clearsForcedBit() = runTest {
+        val latest by underTest.isDefaultConnectionFailed.collectLastValue()
 
-            connectionsRepository.activeSubChangedInGroupEvent.emit(Unit)
+        // GIVEN the network starts validated
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(true)
+        runCurrent()
 
-            testScope.advanceTimeBy(1000)
+        // WHEN a data change happens in the same group
+        mobileConnectionsRepositoryKairos.fake.activeSubChangedInGroupEvent.emit(Unit)
 
-            // WHEN another change in same group event happens
-            connectionsRepository.activeSubChangedInGroupEvent.emit(Unit)
-            connectionsRepository.defaultConnectionIsValidated.value = false
-            runCurrent()
+        // WHEN the validation bit is lost
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(false)
+        runCurrent()
 
-            // THEN the forced validation remains for exactly 2 more seconds from now
+        // WHEN another data change happens in the same group
+        mobileConnectionsRepositoryKairos.fake.activeSubChangedInGroupEvent.emit(Unit)
 
-            // 1.500s from second event
-            testScope.advanceTimeBy(1500)
-            assertThat(latest).isFalse()
+        // THEN the forced validation bit is still used...
+        assertThat(latest).isFalse()
 
-            // 2.001s from the second event
-            testScope.advanceTimeBy(501)
-            assertThat(latest).isTrue()
-        }
+        testScope.advanceTimeBy(1000)
+        assertThat(latest).isFalse()
 
-    @Test
-    fun isForceHidden_repoHasMobileHidden_true() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isForceHidden)
-
-            kosmos.connectivityRepository.fake.setForceHiddenIcons(setOf(ConnectivitySlot.MOBILE))
-
-            assertThat(latest).isTrue()
-        }
+        // ... but expires after 2s
+        testScope.advanceTimeBy(1001)
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun isForceHidden_repoDoesNotHaveMobileHidden_false() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isForceHidden)
+    fun dataSwitch_whileAlreadyForcingValidation_resetsClock() = runTest {
+        val latest by underTest.isDefaultConnectionFailed.collectLastValue()
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(true)
+        runCurrent()
 
-            kosmos.connectivityRepository.fake.setForceHiddenIcons(setOf(ConnectivitySlot.WIFI))
+        mobileConnectionsRepositoryKairos.fake.activeSubChangedInGroupEvent.emit(Unit)
 
-            assertThat(latest).isFalse()
-        }
+        testScope.advanceTimeBy(1000)
 
-    @Test
-    fun iconInteractor_cachedPerSubId() =
-        kosmos.runTest {
-            val interactor1 = underTest.getMobileConnectionInteractorForSubId(SUB_1_ID)
-            val interactor2 = underTest.getMobileConnectionInteractorForSubId(SUB_1_ID)
+        // WHEN another change in same group event happens
+        mobileConnectionsRepositoryKairos.fake.activeSubChangedInGroupEvent.emit(Unit)
+        mobileConnectionsRepositoryKairos.fake.defaultConnectionIsValidated.setValue(false)
+        runCurrent()
 
-            assertThat(interactor1).isNotNull()
-            assertThat(interactor1).isSameInstanceAs(interactor2)
-        }
+        // THEN the forced validation remains for exactly 2 more seconds from now
 
-    @Test
-    fun deviceBasedEmergencyMode_emergencyCallsOnly_followsDeviceServiceStateFromRepo() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isDeviceInEmergencyCallsOnlyMode)
+        // 1.500s from second event
+        testScope.advanceTimeBy(1500)
+        assertThat(latest).isFalse()
 
-            connectionsRepository.isDeviceEmergencyCallCapable.value = true
-
-            assertThat(latest).isTrue()
-
-            connectionsRepository.isDeviceEmergencyCallCapable.value = false
-
-            assertThat(latest).isFalse()
-        }
+        // 2.001s from the second event
+        testScope.advanceTimeBy(501)
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun defaultDataSubId_tracksRepo() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.defaultDataSubId)
+    fun isForceHidden_repoHasMobileHidden_true() = runTest {
+        val latest by underTest.isForceHidden.collectLastValue()
 
-            connectionsRepository.defaultDataSubId.value = 1
+        kosmos.connectivityRepository.fake.setForceHiddenIcons(setOf(ConnectivitySlot.MOBILE))
 
-            assertThat(latest).isEqualTo(1)
+        assertThat(latest).isTrue()
+    }
 
-            connectionsRepository.defaultDataSubId.value = 2
+    @Test
+    fun isForceHidden_repoDoesNotHaveMobileHidden_false() = runTest {
+        val latest by underTest.isForceHidden.collectLastValue()
 
-            assertThat(latest).isEqualTo(2)
-        }
+        kosmos.connectivityRepository.fake.setForceHiddenIcons(setOf(ConnectivitySlot.WIFI))
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun deviceBasedEmergencyMode_emergencyCallsOnly_followsDeviceServiceStateFromRepo() = runTest {
+        val latest by underTest.isDeviceInEmergencyCallsOnlyMode.collectLastValue()
+
+        mobileConnectionsRepositoryKairos.fake.isDeviceEmergencyCallCapable.setValue(true)
+
+        assertThat(latest).isTrue()
+
+        mobileConnectionsRepositoryKairos.fake.isDeviceEmergencyCallCapable.setValue(false)
+
+        assertThat(latest).isFalse()
+    }
 
     @Test
     @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
-    fun isStackable_tracksNumberOfSubscriptions() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isStackable)
+    fun isStackable_tracksNumberOfSubscriptions() = runTest {
+        val latest by underTest.isStackable.collectLastValue()
 
-            connectionsRepository.setSubscriptions(listOf(SUB_1))
-            assertThat(latest).isFalse()
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(SUB_1))
+        assertThat(latest).isFalse()
 
-            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2))
-            assertThat(latest).isTrue()
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(SUB_1, SUB_2))
+        assertThat(latest).isTrue()
 
-            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2, SUB_3_OPP))
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
-    fun isStackable_checksForTerrestrialConnections() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isStackable)
-
-            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2))
-            setNumberOfLevelsForSubId(SUB_1_ID, 5)
-            setNumberOfLevelsForSubId(SUB_2_ID, 5)
-            assertThat(latest).isTrue()
-
-            (fakeMobileConnectionsRepository.getRepoForSubId(SUB_1_ID)
-                    as FakeMobileConnectionRepository)
-                .isNonTerrestrial
-                .value = true
-
-            assertThat(latest).isFalse()
-        }
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(
+            listOf(SUB_1, SUB_2, SUB_3_OPP)
+        )
+        assertThat(latest).isFalse()
+    }
 
     @Test
     @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
-    fun isStackable_checksForNumberOfBars() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isStackable)
+    fun isStackable_checksForTerrestrialConnections() = runTest {
+        val latest by underTest.isStackable.collectLastValue()
 
-            // Number of levels is the same for both
-            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2))
-            setNumberOfLevelsForSubId(SUB_1_ID, 5)
-            setNumberOfLevelsForSubId(SUB_2_ID, 5)
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(SUB_1, SUB_2))
+        setNumberOfLevelsForSubId(SUB_1_ID, 5)
+        setNumberOfLevelsForSubId(SUB_2_ID, 5)
+        assertThat(latest).isTrue()
 
-            assertThat(latest).isTrue()
+        mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId
+            .sample()[SUB_1_ID]!!
+            .isNonTerrestrial
+            .setValue(true)
 
-            // Change the number of levels to be different than SUB_2
-            setNumberOfLevelsForSubId(SUB_1_ID, 6)
+        assertThat(latest).isFalse()
+    }
 
-            assertThat(latest).isFalse()
-        }
+    @Test
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    fun isStackable_checksForNumberOfBars() = runTest {
+        val latest by underTest.isStackable.collectLastValue()
 
-    private fun setNumberOfLevelsForSubId(subId: Int, numberOfLevels: Int) {
-        with(kosmos) {
-            (fakeMobileConnectionsRepository.getRepoForSubId(subId)
-                    as FakeMobileConnectionRepository)
-                .numberOfLevels
-                .value = numberOfLevels
-        }
+        // Number of levels is the same for both
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(listOf(SUB_1, SUB_2))
+        setNumberOfLevelsForSubId(SUB_1_ID, 5)
+        setNumberOfLevelsForSubId(SUB_2_ID, 5)
+
+        assertThat(latest).isTrue()
+
+        // Change the number of levels to be different than SUB_2
+        setNumberOfLevelsForSubId(SUB_1_ID, 6)
+
+        assertThat(latest).isFalse()
+    }
+
+    private suspend fun KairosTestScope.setNumberOfLevelsForSubId(subId: Int, numberOfLevels: Int) {
+        mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId
+            .sample()[subId]!!
+            .numberOfLevels
+            .setValue(numberOfLevels)
     }
 
     /**

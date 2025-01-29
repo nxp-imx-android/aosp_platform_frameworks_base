@@ -45,6 +45,7 @@ import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.Mobil
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileConnectionsRepositoryKairosImpl
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorImpl
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorKairosAdapter
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorKairosImpl
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileUiAdapter
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
@@ -92,8 +93,10 @@ import kotlinx.coroutines.flow.Flow
             DemoModeMobileConnectionDataSourceKairosImpl.Module::class,
             MobileRepositorySwitcherKairos.Module::class,
             MobileConnectionsRepositoryKairosImpl.Module::class,
+            MobileIconsInteractorKairosImpl.Module::class,
             MobileConnectionRepositoryKairosFactoryImpl.Module::class,
             MobileConnectionsRepositoryKairosAdapter.Module::class,
+            MobileIconsInteractorKairosAdapter.Module::class,
         ]
 )
 abstract class StatusBarPipelineModule {
@@ -171,7 +174,7 @@ abstract class StatusBarPipelineModule {
         @Provides
         fun mobileIconsInteractor(
             impl: Provider<MobileIconsInteractorImpl>,
-            kairosImpl: Provider<MobileIconsInteractorKairosImpl>,
+            kairosImpl: Provider<MobileIconsInteractorKairosAdapter>,
         ): MobileIconsInteractor {
             return if (Flags.statusBarMobileIconKairos()) {
                 kairosImpl.get()
