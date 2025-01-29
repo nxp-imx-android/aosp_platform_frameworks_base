@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.pipeline.dagger
 
 import android.net.wifi.WifiManager
 import com.android.systemui.CoreStartable
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
@@ -36,6 +37,7 @@ import com.android.systemui.statusbar.pipeline.mobile.data.repository.CarrierCon
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.CarrierConfigRepositoryImpl
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileRepositorySwitcher
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileRepositorySwitcherKairos
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorImpl
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileUiAdapter
@@ -74,6 +76,7 @@ import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import java.util.function.Supplier
 import javax.inject.Named
+import javax.inject.Provider
 import kotlinx.coroutines.flow.Flow
 
 @Module
@@ -117,11 +120,6 @@ abstract class StatusBarPipelineModule {
 
     @Binds abstract fun wifiInteractor(impl: WifiInteractorImpl): WifiInteractor
 
-    @Binds
-    abstract fun mobileConnectionsRepository(
-        impl: MobileRepositorySwitcher
-    ): MobileConnectionsRepository
-
     @Binds abstract fun userSetupRepository(impl: UserSetupRepositoryImpl): UserSetupRepository
 
     @Binds abstract fun mobileMappingsProxy(impl: MobileMappingsProxyImpl): MobileMappingsProxy
@@ -156,6 +154,18 @@ abstract class StatusBarPipelineModule {
     abstract fun homeStatusBarViewBinder(impl: HomeStatusBarViewBinderImpl): HomeStatusBarViewBinder
 
     companion object {
+
+        @Provides
+        fun mobileConnectionsRepository(
+            impl: Provider<MobileRepositorySwitcher>,
+            kairosImpl: Provider<MobileRepositorySwitcherKairos>,
+        ): MobileConnectionsRepository {
+            return if (Flags.statusBarMobileIconKairos()) {
+                kairosImpl.get()
+            } else {
+                impl.get()
+            }
+        }
 
         @Provides
         @SysUISingleton
