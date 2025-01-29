@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package com.android.systemui.scene.domain.startable
 
 import android.app.StatusBarManager
@@ -67,6 +65,7 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.VibratorHelper
@@ -86,7 +85,6 @@ import java.io.PrintWriter
 import java.util.Optional
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.SharingStarted
@@ -109,7 +107,6 @@ import kotlinx.coroutines.launch
  * Hooks up business logic that manipulates the state of the [SceneInteractor] for the system UI
  * scene container based on state from other systems.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
 class SceneContainerStartable
 @Inject
@@ -147,6 +144,7 @@ constructor(
     private val msdlPlayer: MSDLPlayer,
     private val disabledContentInteractor: DisabledContentInteractor,
     private val activityTransitionAnimator: ActivityTransitionAnimator,
+    private val shadeModeInteractor: ShadeModeInteractor,
 ) : CoreStartable {
     private val centralSurfaces: CentralSurfaces?
         get() = centralSurfacesOptLazy.get().getOrNull()
@@ -179,15 +177,52 @@ constructor(
         }
     }
 
-    override fun dump(pw: PrintWriter, args: Array<out String>) =
-        pw.asIndenting().run {
+    override fun dump(pw: PrintWriter, args: Array<out String>) {
+        with(pw.asIndenting()) {
             printSection("SceneContainerFlag") {
-                println("isEnabled", SceneContainerFlag.isEnabled)
-                printSection("requirementDescription") {
+                printSection("Framework availability") {
+                    println("isEnabled", SceneContainerFlag.isEnabled)
                     println(SceneContainerFlag.requirementDescription())
+                }
+
+                if (!SceneContainerFlag.isEnabled) {
+                    return
+                }
+
+                printSection("Scene state") {
+                    println("currentScene", sceneInteractor.currentScene.value.debugName)
+                    println(
+                        "currentOverlays",
+                        sceneInteractor.currentOverlays.value.joinToString(", ") { overlay ->
+                            overlay.debugName
+                        },
+                    )
+                    println("backStack", sceneBackInteractor.backStack.value)
+                    println("shadeMode", shadeModeInteractor.shadeMode.value)
+                }
+
+                printSection("Authentication state") {
+                    println("isKeyguardEnabled", keyguardEnabledInteractor.isKeyguardEnabled.value)
+                    println(
+                        "isUnlocked",
+                        deviceUnlockedInteractor.deviceUnlockStatus.value.isUnlocked,
+                    )
+                    println("isDeviceEntered", deviceEntryInteractor.isDeviceEntered.value)
+                    println(
+                        "isFaceAuthEnabledAndEnrolled",
+                        faceUnlockInteractor.isFaceAuthEnabledAndEnrolled(),
+                    )
+                    println("canSwipeToEnter", deviceEntryInteractor.canSwipeToEnter.value)
+                }
+
+                printSection("Power state") {
+                    println("detailedWakefulness", powerInteractor.detailedWakefulness.value)
+                    println("isDozing", keyguardInteractor.isDozing.value)
+                    println("isAodAvailable", keyguardInteractor.isAodAvailable.value)
                 }
             }
         }
+    }
 
     private fun resetShadeSessions() {
         applicationScope.launch {

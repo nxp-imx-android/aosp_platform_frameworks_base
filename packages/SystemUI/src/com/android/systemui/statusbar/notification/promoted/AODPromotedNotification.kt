@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.isVisible
+import com.android.app.tracing.traceSection
 import com.android.internal.R
 import com.android.internal.widget.BigPictureNotificationImageView
 import com.android.internal.widget.CachingIconView
@@ -51,44 +52,57 @@ fun AODPromotedNotification(viewModelFactory: AODPromotedNotificationViewModel.F
         return
     }
 
-    val viewModel =
-        rememberViewModel(traceName = "AODPromotedNotification") { viewModelFactory.create() }
+    val viewModel = rememberViewModel(traceName = "$TAG.viewModel") { viewModelFactory.create() }
 
     val content = viewModel.content ?: return
 
     key(content.identity) {
+        val layoutResource = content.layoutResource ?: return
+
         AndroidView(
             factory = { context ->
-                LayoutInflater.from(context)
-                    .inflate(content.layoutResource, /* root= */ null)
-                    .apply { setTag(viewUpdaterTagId, AODPromotedNotificationViewUpdater(this)) }
+                traceSection("$TAG.inflate") {
+                        LayoutInflater.from(context).inflate(layoutResource, /* root= */ null)
+                    }
+                    .apply {
+                        setTag(
+                            viewUpdaterTagId,
+                            traceSection("$TAG.findViews") {
+                                AODPromotedNotificationViewUpdater(this)
+                            },
+                        )
+                    }
             },
             update = { view ->
-                (view.getTag(viewUpdaterTagId) as AODPromotedNotificationViewUpdater).update(
-                    content
-                )
+                traceSection("$TAG.update") {
+                    (view.getTag(viewUpdaterTagId) as AODPromotedNotificationViewUpdater).update(
+                        content
+                    )
+                }
             },
         )
     }
 }
 
-private val PromotedNotificationContentModel.layoutResource: Int
+private val PromotedNotificationContentModel.layoutResource: Int?
     get() {
         return if (Flags.notificationsRedesignTemplates()) {
             when (style) {
+                Style.Base -> R.layout.notification_2025_template_expanded_base
                 Style.BigPicture -> R.layout.notification_2025_template_expanded_big_picture
                 Style.BigText -> R.layout.notification_2025_template_expanded_big_text
                 Style.Call -> R.layout.notification_2025_template_expanded_call
                 Style.Progress -> R.layout.notification_2025_template_expanded_progress
-                Style.Ineligible -> 0
+                Style.Ineligible -> null
             }
         } else {
             when (style) {
+                Style.Base -> R.layout.notification_template_material_big_base
                 Style.BigPicture -> R.layout.notification_template_material_big_picture
                 Style.BigText -> R.layout.notification_template_material_big_text
                 Style.Call -> R.layout.notification_template_material_big_call
                 Style.Progress -> R.layout.notification_template_material_progress
-                Style.Ineligible -> 0
+                Style.Ineligible -> null
             }
         }
     }
@@ -131,6 +145,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
     fun update(content: PromotedNotificationContentModel) {
         when (content.style) {
+            Style.Base -> updateBase(content)
             Style.BigPicture -> updateBigPicture(content)
             Style.BigText -> updateBigText(content)
             Style.Call -> updateCall(content)
@@ -139,20 +154,24 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         }
     }
 
-    private fun updateBigPicture(content: PromotedNotificationContentModel) {
+    private fun updateBase(
+        content: PromotedNotificationContentModel,
+        textView: ImageFloatingTextView? = null,
+    ) {
         updateHeader(content)
 
         updateTitle(title, content)
-        updateText(text, content)
+        updateText(textView ?: text, content)
+    }
+
+    private fun updateBigPicture(content: PromotedNotificationContentModel) {
+        updateBase(content)
 
         bigPicture?.visibility = GONE
     }
 
     private fun updateBigText(content: PromotedNotificationContentModel) {
-        updateHeader(content)
-
-        updateTitle(title, content)
-        updateText(bigText, content)
+        updateBase(content, textView = bigText)
     }
 
     private fun updateCall(content: PromotedNotificationContentModel) {
@@ -162,10 +181,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     }
 
     private fun updateProgress(content: PromotedNotificationContentModel) {
-        updateHeader(content)
-
-        updateTitle(title, content)
-        updateText(text, content)
+        updateBase(content)
 
         updateNewProgressBar(content)
     }
@@ -318,3 +334,5 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 }
 
 private val viewUpdaterTagId = systemuiR.id.aod_promoted_notification_view_updater_tag
+
+private const val TAG = "AODPromotedNotification"

@@ -31,7 +31,6 @@ import android.window.TransitionInfo.Change
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import androidx.annotation.VisibleForTesting
-import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags
@@ -83,10 +82,7 @@ class DesktopMixedTransitionHandler(
 
     /** Starts close transition and handles or delegates desktop task close animation. */
     override fun startRemoveTransition(wct: WindowContainerTransaction?): IBinder {
-        if (
-            !DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_EXIT_TRANSITIONS.isTrue &&
-                !DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_EXIT_TRANSITIONS_BUGFIX.isTrue
-        ) {
+        if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_EXIT_TRANSITIONS_BUGFIX.isTrue) {
             return freeformTaskTransitionHandler.startRemoveTransition(wct)
         }
         requireNotNull(wct)
@@ -110,7 +106,6 @@ class DesktopMixedTransitionHandler(
     ): IBinder {
         if (
             !Flags.enableFullyImmersiveInDesktop() &&
-                !DesktopModeFlags.ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS.isTrue &&
                 !DesktopModeFlags.ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX.isTrue
         ) {
             return transitions.startTransition(transitionType, wct, /* handler= */ null)
@@ -208,7 +203,6 @@ class DesktopMixedTransitionHandler(
             return dispatchCloseLastDesktopTaskAnimation(
                 transition,
                 info,
-                closeChange,
                 startTransaction,
                 finishTransaction,
                 finishCallback,
@@ -259,10 +253,7 @@ class DesktopMixedTransitionHandler(
             minimizeChange?.taskInfo?.taskId,
             immersiveExitChange?.taskInfo?.taskId,
         )
-        if (
-            DesktopModeFlags.ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS.isTrue ||
-                DesktopModeFlags.ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX.isTrue
-        ) {
+        if (DesktopModeFlags.ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX.isTrue) {
             // Only apply minimize change reparenting here if we implement the new app launch
             // transitions, otherwise this reparenting is handled in the default handler.
             minimizeChange?.let {
@@ -352,18 +343,10 @@ class DesktopMixedTransitionHandler(
     private fun dispatchCloseLastDesktopTaskAnimation(
         transition: IBinder,
         info: TransitionInfo,
-        change: TransitionInfo.Change,
         startTransaction: SurfaceControl.Transaction,
         finishTransaction: SurfaceControl.Transaction,
         finishCallback: TransitionFinishCallback,
     ): Boolean {
-        // Starting the jank trace if closing the last window in desktop mode.
-        interactionJankMonitor.begin(
-            change.leash,
-            context,
-            handler,
-            CUJ_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE,
-        )
         // Dispatch the last desktop task closing animation.
         return dispatchToLeftoverHandler(
             transition = transition,
@@ -371,10 +354,6 @@ class DesktopMixedTransitionHandler(
             startTransaction = startTransaction,
             finishTransaction = finishTransaction,
             finishCallback = finishCallback,
-            doOnFinishCallback = {
-                // Finish the jank trace when closing the last window in desktop mode.
-                interactionJankMonitor.end(CUJ_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE)
-            },
         )
     }
 

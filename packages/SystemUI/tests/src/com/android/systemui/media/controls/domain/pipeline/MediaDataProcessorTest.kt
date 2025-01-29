@@ -57,7 +57,6 @@ import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags.MEDIA_REMOTE_RESUME
 import com.android.systemui.flags.Flags.MEDIA_RESUME_PROGRESS
-import com.android.systemui.flags.Flags.MEDIA_RETAIN_RECOMMENDATIONS
 import com.android.systemui.flags.Flags.MEDIA_RETAIN_SESSIONS
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.kosmos.testDispatcher
@@ -316,7 +315,6 @@ class MediaDataProcessorTest(flags: FlagsParameterization) : SysuiTestCase() {
         fakeFeatureFlags.set(MEDIA_RETAIN_SESSIONS, false)
         fakeFeatureFlags.set(MEDIA_RESUME_PROGRESS, false)
         fakeFeatureFlags.set(MEDIA_REMOTE_RESUME, false)
-        fakeFeatureFlags.set(MEDIA_RETAIN_RECOMMENDATIONS, false)
         whenever(logger.getNewInstanceId()).thenReturn(instanceIdSequence.newInstanceId())
         whenever(keyguardUpdateMonitor.isUserInLockdown(any())).thenReturn(false)
     }
@@ -1524,7 +1522,7 @@ class MediaDataProcessorTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE)
+    @EnableFlags(Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE_BUGFIX)
     fun postWithPlaybackActions_drawablesReused() {
         whenever(notificationLockscreenUserManager.isCurrentProfile(USER_ID)).thenReturn(true)
         whenever(notificationLockscreenUserManager.isProfileAvailable(USER_ID)).thenReturn(true)
@@ -1557,7 +1555,7 @@ class MediaDataProcessorTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE)
+    @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE_BUGFIX)
     fun postWithPlaybackActions_drawablesNotReused() {
         whenever(notificationLockscreenUserManager.isCurrentProfile(USER_ID)).thenReturn(true)
         whenever(notificationLockscreenUserManager.isProfileAvailable(USER_ID)).thenReturn(true)

@@ -106,7 +106,6 @@ import javax.inject.Inject
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
@@ -127,7 +126,6 @@ private val DEBUG = Log.isLoggable(TAG, Log.DEBUG)
  * Class that is responsible for keeping the view carousel up to date. This also handles changes in
  * state and applies them to the media carousel like the expansion.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
 class MediaCarouselController
 @Inject
@@ -616,12 +614,8 @@ constructor(
                             logSmartspaceImpression(mediaCarouselScrollHandler.qsExpanded)
                         }
                     } else {
-                        if (!mediaFlags.isPersistentSsCardEnabled()) {
-                            // Handle update to inactive as a removal
-                            onSmartspaceMediaDataRemoved(data.targetId, immediately = true)
-                        } else {
-                            addSmartspaceMediaRecommendations(key, data, shouldPrioritize)
-                        }
+                        // Handle update to inactive as a removal
+                        onSmartspaceMediaDataRemoved(data.targetId, immediately = true)
                     }
                     MediaPlayerData.isSwipedAway = false
                 }
@@ -1127,18 +1121,6 @@ constructor(
         traceSection("MediaCarouselController#addSmartspaceMediaRecommendations") {
             if (DEBUG) Log.d(TAG, "Updating smartspace target in carousel")
             MediaPlayerData.getMediaPlayer(key)?.let {
-                if (mediaFlags.isPersistentSsCardEnabled()) {
-                    // The card exists, but could have changed active state, so update for sorting
-                    MediaPlayerData.addMediaRecommendation(
-                        key,
-                        data,
-                        it,
-                        shouldPrioritize,
-                        systemClock,
-                        debugLogger,
-                        update = true,
-                    )
-                }
                 Log.w(TAG, "Skip adding smartspace target in carousel")
                 return
             }

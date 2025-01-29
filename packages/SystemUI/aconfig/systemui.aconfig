@@ -541,6 +541,16 @@ flag {
 }
 
 flag {
+   name: "face_scanning_animation_npe_fix"
+   namespace: "systemui"
+   description: "Fix for the face scanning animation NPE"
+   bug: "392032258"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "indication_text_a11y_fix"
     namespace: "systemui"
     description: "add double shadow to the indication text at the bottom of the lock screen"
@@ -1197,6 +1207,13 @@ flag {
 }
 
 flag {
+  name: "glanceable_hub_blurred_background"
+  namespace: "systemui"
+  description: "Allow blurred background on glanceable hub"
+  bug: "389788272"
+}
+
+flag {
   name: "communal_widget_resizing"
   namespace: "systemui"
   description: "Allow resizing of widgets on glanceable hub"
@@ -1318,10 +1335,13 @@ flag {
 }
 
 flag {
-  name: "media_controls_drawables_reuse"
+  name: "media_controls_drawables_reuse_bugfix"
   namespace: "systemui"
   description: "Re-use created media drawables for media controls"
   bug: "358402034"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }
 
 flag {
@@ -1942,13 +1962,10 @@ flag {
 }
 
 flag {
-   name: "magnetic_notification_horizontal_swipe"
+   name: "magnetic_notification_swipes"
    namespace: "systemui"
    description: "Add support for magnetic behavior on horizontal notification swipes."
    bug: "390179908"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
 }
 
 flag {

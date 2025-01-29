@@ -26,9 +26,11 @@ import android.app.Notification.EXTRA_TEXT
 import android.app.Notification.EXTRA_TITLE
 import android.app.Notification.ProgressStyle
 import android.content.Context
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
+import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_AUTOMATICALLY_EXTRACTED_SHORT_CRITICAL_TEXT
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_WAS_AUTOMATICALLY_PROMOTED
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Companion.isPromotedForStatusBarChip
@@ -96,8 +98,7 @@ constructor(
                 primaryTextColor = colorsFromNotif.primaryTextColor,
             )
 
-        recoveredBuilder.style?.extractContent(contentBuilder)
-            ?: run { contentBuilder.style = Style.Ineligible }
+        recoveredBuilder.extractStyleContent(contentBuilder)
 
         return contentBuilder.build().also { logger.logExtractionSucceeded(entry, it) }
     }
@@ -113,7 +114,13 @@ private fun Notification.shortCriticalText(): String? {
     if (!android.app.Flags.apiRichOngoing()) {
         return null
     }
-    return this.shortCriticalText
+    if (this.shortCriticalText != null) {
+        return this.shortCriticalText
+    }
+    if (Flags.promoteNotificationsAutomatically()) {
+        return this.extras?.getString(EXTRA_AUTOMATICALLY_EXTRACTED_SHORT_CRITICAL_TEXT)
+    }
+    return null
 }
 
 private fun Notification.chronometerCountDown(): Boolean =
@@ -132,28 +139,32 @@ private fun Notification.extractWhen(): When? {
     }
 }
 
-private fun Notification.Style.extractContent(
+private fun Notification.Builder.extractStyleContent(
     contentBuilder: PromotedNotificationContentModel.Builder
 ) {
+    val style = this.style
+
     contentBuilder.style =
-        when (this) {
+        when (style) {
+            null -> Style.Base
+
             is BigPictureStyle -> {
-                extractContent(contentBuilder)
+                style.extractContent(contentBuilder)
                 Style.BigPicture
             }
 
             is BigTextStyle -> {
-                extractContent(contentBuilder)
+                style.extractContent(contentBuilder)
                 Style.BigText
             }
 
             is CallStyle -> {
-                extractContent(contentBuilder)
+                style.extractContent(contentBuilder)
                 Style.Call
             }
 
             is ProgressStyle -> {
-                extractContent(contentBuilder)
+                style.extractContent(contentBuilder)
                 Style.Progress
             }
 

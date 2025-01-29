@@ -20,8 +20,8 @@ import static android.app.Flags.notificationsRedesignTemplates;
 import static android.app.Notification.Action.SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
 
-import static com.android.systemui.flags.Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE;
 import static com.android.systemui.Flags.notificationsPinnedHunInShade;
+import static com.android.systemui.flags.Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE;
 import static com.android.systemui.statusbar.notification.collection.NotificationEntry.DismissState.PARENT_DISMISSED;
 import static com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_HEADSUP;
 import static com.android.systemui.statusbar.policy.RemoteInputView.FOCUS_ANIMATION_MIN_SCALE;
@@ -69,6 +69,9 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.dynamicanimation.animation.FloatPropertyCompat;
+import androidx.dynamicanimation.animation.SpringAnimation;
+import androidx.dynamicanimation.animation.SpringForce;
 
 import com.android.app.animation.Interpolators;
 import com.android.internal.annotations.VisibleForTesting;
@@ -119,6 +122,7 @@ import com.android.systemui.statusbar.notification.shared.TransparentHeaderFix;
 import com.android.systemui.statusbar.notification.stack.AmbientState;
 import com.android.systemui.statusbar.notification.stack.AnimationProperties;
 import com.android.systemui.statusbar.notification.stack.ExpandableViewState;
+import com.android.systemui.statusbar.notification.stack.MagneticRowListener;
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainer;
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout;
@@ -131,6 +135,7 @@ import com.android.systemui.statusbar.policy.dagger.RemoteInputViewSubcomponent;
 import com.android.systemui.util.Compile;
 import com.android.systemui.util.DumpUtilsKt;
 import com.android.systemui.util.ListenerSet;
+import com.android.wm.shell.shared.animation.PhysicsAnimator;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -355,6 +360,45 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             toggleExpansionState(v, /* shouldLogExpandClickMetric = */true);
         }
     };
+
+    private final SpringAnimation mMagneticAnimator = new SpringAnimation(
+            this, FloatPropertyCompat.createFloatPropertyCompat(TRANSLATE_CONTENT));
+
+    private final MagneticRowListener mMagneticRowListener = new MagneticRowListener() {
+
+        @Override
+        public void setMagneticTranslation(float translation) {
+            if (mMagneticAnimator.isRunning()) {
+                mMagneticAnimator.animateToFinalPosition(translation);
+            } else {
+                setTranslation(translation);
+            }
+        }
+
+        @Override
+        public void triggerMagneticForce(float endTranslation, @NonNull SpringForce springForce,
+                float startVelocity) {
+            cancelMagneticAnimations();
+            mMagneticAnimator.setSpring(springForce);
+            mMagneticAnimator.setStartVelocity(startVelocity);
+            mMagneticAnimator.animateToFinalPosition(endTranslation);
+        }
+
+        @Override
+        public void cancelMagneticAnimations() {
+            cancelSnapBackAnimation();
+            cancelTranslateAnimation();
+            mMagneticAnimator.cancel();
+        }
+    };
+
+    private void cancelSnapBackAnimation() {
+        PhysicsAnimator<ExpandableNotificationRow> animator =
+                PhysicsAnimator.getInstanceIfExists(this /* target */);
+        if (animator != null) {
+            animator.cancel();
+        }
+    }
 
     /**
      * Toggles expansion state.
@@ -4284,5 +4328,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             return;
         }
         mLogger.logRemoveTransientRow(row.getEntry(), getEntry());
+    }
+
+    public MagneticRowListener getMagneticRowListener() {
+        return mMagneticRowListener;
     }
 }

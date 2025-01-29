@@ -22,6 +22,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Point
 import android.os.SystemProperties
+import android.view.View.LAYOUT_DIRECTION_RTL
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.CaptionState
@@ -36,6 +37,7 @@ import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationToolt
 import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationTooltipController.TooltipEducationViewConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
@@ -88,6 +90,8 @@ class AppHandleEducationController(
                         showEducation(captionState)
                         appHandleEducationDatastoreRepository
                             .updateAppHandleHintViewedTimestampMillis(true)
+                        delay(TOOLTIP_VISIBLE_DURATION_MILLIS)
+                        windowingEducationViewController.hideEducationTooltip()
                     }
             }
 
@@ -109,6 +113,8 @@ class AppHandleEducationController(
                         showWindowingImageButtonTooltip(captionState as CaptionState.AppHandle)
                         appHandleEducationDatastoreRepository
                             .updateEnterDesktopModeHintViewedTimestampMillis(true)
+                        delay(TOOLTIP_VISIBLE_DURATION_MILLIS)
+                        windowingEducationViewController.hideEducationTooltip()
                     }
             }
 
@@ -130,6 +136,8 @@ class AppHandleEducationController(
                         showExitWindowingTooltip(captionState as CaptionState.AppHeader)
                         appHandleEducationDatastoreRepository
                             .updateExitDesktopModeHintViewedTimestampMillis(true)
+                        delay(TOOLTIP_VISIBLE_DURATION_MILLIS)
+                        windowingEducationViewController.hideEducationTooltip()
                     }
             }
         }
@@ -144,8 +152,6 @@ class AppHandleEducationController(
         val appHandleBounds = (captionState as CaptionState.AppHandle).globalAppHandleBounds
         val tooltipGlobalCoordinates =
             Point(appHandleBounds.left + appHandleBounds.width() / 2, appHandleBounds.bottom)
-        // TODO: b/370546801 - Differentiate between user dismissing the tooltip vs following the
-        // cue.
         // Populate information important to inflate app handle education tooltip.
         val appHandleTooltipConfig =
             TooltipEducationViewConfig(
@@ -187,9 +193,14 @@ class AppHandleEducationController(
                 getSize(R.dimen.desktop_mode_handle_menu_pill_spacing_margin)
 
         val appHandleBounds = captionState.globalAppHandleBounds
+        val appHandleCenterX = appHandleBounds.left + appHandleBounds.width() / 2
         val tooltipGlobalCoordinates =
             Point(
-                appHandleBounds.left + appHandleBounds.width() / 2 + appHandleMenuWidth / 2,
+                if (isRtl()) {
+                    appHandleCenterX - appHandleMenuWidth / 2
+                } else {
+                    appHandleCenterX + appHandleMenuWidth / 2
+                },
                 appHandleBounds.top +
                     appHandleMenuMargins +
                     appInfoPillHeight +
@@ -199,7 +210,7 @@ class AppHandleEducationController(
         // tooltip.
         val windowingImageButtonTooltipConfig =
             TooltipEducationViewConfig(
-                tooltipViewLayout = R.layout.desktop_windowing_education_left_arrow_tooltip,
+                tooltipViewLayout = R.layout.desktop_windowing_education_horizontal_arrow_tooltip,
                 tooltipColorScheme =
                     TooltipColorScheme(
                         tertiaryFixedColor,
@@ -210,7 +221,7 @@ class AppHandleEducationController(
                 tooltipText =
                     getString(R.string.windowing_desktop_mode_image_button_education_tooltip),
                 arrowDirection =
-                    DesktopWindowingEducationTooltipController.TooltipArrowDirection.LEFT,
+                    DesktopWindowingEducationTooltipController.TooltipArrowDirection.HORIZONTAL,
                 onEducationClickAction = {
                     toDesktopModeCallback(
                         captionState.runningTaskInfo.taskId,
@@ -233,13 +244,17 @@ class AppHandleEducationController(
         val globalAppChipBounds = captionState.globalAppChipBounds
         val tooltipGlobalCoordinates =
             Point(
-                globalAppChipBounds.right,
+                if (isRtl()) {
+                    globalAppChipBounds.left
+                } else {
+                    globalAppChipBounds.right
+                },
                 globalAppChipBounds.top + globalAppChipBounds.height() / 2,
             )
         // Populate information important to inflate exit desktop mode education tooltip.
         val exitWindowingTooltipConfig =
             TooltipEducationViewConfig(
-                tooltipViewLayout = R.layout.desktop_windowing_education_left_arrow_tooltip,
+                tooltipViewLayout = R.layout.desktop_windowing_education_horizontal_arrow_tooltip,
                 tooltipColorScheme =
                     TooltipColorScheme(
                         tertiaryFixedColor,
@@ -249,7 +264,7 @@ class AppHandleEducationController(
                 tooltipViewGlobalCoordinates = tooltipGlobalCoordinates,
                 tooltipText = getString(R.string.windowing_desktop_mode_exit_education_tooltip),
                 arrowDirection =
-                    DesktopWindowingEducationTooltipController.TooltipArrowDirection.LEFT,
+                    DesktopWindowingEducationTooltipController.TooltipArrowDirection.HORIZONTAL,
                 onDismissAction = {
                     // TODO: b/341320146 - Log previous tooltip was dismissed
                 },
@@ -299,6 +314,8 @@ class AppHandleEducationController(
 
     private fun getString(@StringRes resId: Int): String = context.resources.getString(resId)
 
+    private fun isRtl() = context.resources.configuration.layoutDirection == LAYOUT_DIRECTION_RTL
+
     companion object {
         const val TAG = "AppHandleEducationController"
         val APP_HANDLE_EDUCATION_DELAY_MILLIS: Long
@@ -310,6 +327,9 @@ class AppHandleEducationController(
                     "persist.windowing_enter_desktop_mode_education_timeout",
                     400L,
                 )
+
+        val TOOLTIP_VISIBLE_DURATION_MILLIS: Long
+            get() = SystemProperties.getLong("persist.windowing_tooltip_visible_duration", 12000L)
 
         val FORCE_SHOW_DESKTOP_MODE_EDUCATION: Boolean
             get() =
