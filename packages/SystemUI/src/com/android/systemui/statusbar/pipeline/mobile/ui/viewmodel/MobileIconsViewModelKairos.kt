@@ -17,7 +17,7 @@
 package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
 import androidx.compose.runtime.State as ComposeState
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import com.android.systemui.Flags
 import com.android.systemui.KairosActivatable
 import com.android.systemui.KairosBuilder
@@ -31,7 +31,6 @@ import com.android.systemui.kairos.Incremental
 import com.android.systemui.kairos.State as KairosState
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.buildSpec
-import com.android.systemui.kairos.changes
 import com.android.systemui.kairos.combine
 import com.android.systemui.kairos.flatten
 import com.android.systemui.kairos.map
@@ -46,6 +45,7 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.MobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.ui.VerboseMobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.ui.view.ModernStatusBarMobileView
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
+import com.android.systemui.util.composable.kairos.toComposeState
 import dagger.Provides
 import dagger.multibindings.ElementsIntoSet
 import javax.inject.Inject
@@ -53,7 +53,7 @@ import javax.inject.Provider
 
 /**
  * View model for describing the system's current mobile cellular connections. The result is a list
- * of [MobileIconViewModel]s which describe the individual icons and can be bound to
+ * of [MobileIconViewModelKairos]s which describe the individual icons and can be bound to
  * [ModernStatusBarMobileView].
  */
 @ExperimentalKairosApi
@@ -145,20 +145,16 @@ constructor(
 
 @ExperimentalKairosApi
 class MobileIconsViewModelKairosComposeWrapper(
-    val icons: ComposeState<Map<Int, MobileIconViewModelKairos>>
-)
-
-@ExperimentalKairosApi
-fun composeWrapper(
-    viewModel: MobileIconsViewModelKairos
-): BuildSpec<MobileIconsViewModelKairosComposeWrapper> = buildSpec {
-    MobileIconsViewModelKairosComposeWrapper(icons = toComposeState(viewModel.icons))
+    icons: ComposeState<Map<Int, MobileIconViewModelKairos>>,
+    val logger: MobileViewLogger,
+) {
+    val icons: Map<Int, MobileIconViewModelKairos> by icons
 }
 
 @ExperimentalKairosApi
-fun <T> BuildScope.toComposeState(state: KairosState<T>): ComposeState<T> {
-    val initial = state.sample()
-    val cState = mutableStateOf(initial)
-    state.changes.observe { cState.value = it }
-    return cState
+fun MobileIconsViewModelKairos.composeWrapper(): BuildSpec<MobileIconsViewModelKairosComposeWrapper> = buildSpec {
+    MobileIconsViewModelKairosComposeWrapper(
+        icons = toComposeState(icons),
+        logger = logger,
+    )
 }

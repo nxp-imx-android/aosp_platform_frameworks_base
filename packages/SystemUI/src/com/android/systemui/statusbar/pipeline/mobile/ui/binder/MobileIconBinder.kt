@@ -50,7 +50,7 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-private data class Colors(@ColorInt val tint: Int, @ColorInt val contrast: Int)
+data class MobileIconColors(@ColorInt val tint: Int, @ColorInt val contrast: Int)
 
 object MobileIconBinder {
     /** Binds the view to the view-model, continuing to update the former based on the latter */
@@ -80,9 +80,9 @@ object MobileIconBinder {
         @StatusBarIconView.VisibleState
         val visibilityState: MutableStateFlow<Int> = MutableStateFlow(initialVisibilityState)
 
-        val iconTint: MutableStateFlow<Colors> =
+        val iconTint: MutableStateFlow<MobileIconColors> =
             MutableStateFlow(
-                Colors(
+                MobileIconColors(
                     tint = DarkIconDispatcher.DEFAULT_ICON_TINT,
                     contrast = DarkIconDispatcher.DEFAULT_INVERSE_ICON_TINT,
                 )
@@ -291,7 +291,7 @@ object MobileIconBinder {
             }
 
             override fun onIconTintChanged(newTint: Int, contrastTint: Int) {
-                iconTint.value = Colors(tint = newTint, contrast = contrastTint)
+                iconTint.value = MobileIconColors(tint = newTint, contrast = contrastTint)
             }
 
             override fun onDecorTintChanged(newTint: Int) {

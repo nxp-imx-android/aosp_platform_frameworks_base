@@ -43,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -67,12 +68,15 @@ import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.thenIf
 import com.android.compose.theme.colorAttr
 import com.android.settingslib.Utils
+import com.android.systemui.Flags
 import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadius
 import com.android.systemui.compose.modifiers.sysuiResTag
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.buildSpec
 import com.android.systemui.privacy.OngoingPrivacyChip
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Scenes
@@ -86,8 +90,12 @@ import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel.HeaderChipHi
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.pipeline.mobile.ui.view.ModernShadeCarrierGroupMobileView
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairosComposeWrapper
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierGroupMobileIconViewModel
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierGroupMobileIconViewModelKairos
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.composeWrapper
 import com.android.systemui.statusbar.policy.Clock
+import com.android.systemui.util.composable.kairos.ActivatedKairosSpec
 
 object ShadeHeader {
     object Elements {
@@ -520,8 +528,14 @@ private fun BatteryIcon(
     )
 }
 
+@OptIn(ExperimentalKairosApi::class)
 @Composable
 private fun ShadeCarrierGroup(viewModel: ShadeHeaderViewModel, modifier: Modifier = Modifier) {
+    if (Flags.statusBarMobileIconKairos()) {
+        ShadeCarrierGroupKairos(viewModel, modifier)
+        return
+    }
+
     Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
         for (subId in viewModel.mobileSubIds) {
             AndroidView(
@@ -539,6 +553,49 @@ private fun ShadeCarrierGroup(viewModel: ShadeHeaderViewModel, modifier: Modifie
                         .also { it.setOnClickListener { viewModel.onShadeCarrierGroupClicked() } }
                 }
             )
+        }
+    }
+}
+
+@ExperimentalKairosApi
+@Composable
+private fun ShadeCarrierGroupKairos(
+    viewModel: ShadeHeaderViewModel,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier = modifier) {
+        ActivatedKairosSpec(
+            buildSpec = viewModel.mobileIconsViewModelKairos.get().composeWrapper(),
+            kairosNetwork = viewModel.kairosNetwork,
+        ) { iconsViewModel: MobileIconsViewModelKairosComposeWrapper ->
+            for ((subId, icon) in iconsViewModel.icons) {
+                Spacer(modifier = Modifier.width(5.dp))
+                val scope = rememberCoroutineScope()
+                AndroidView(
+                    factory = { context ->
+                        ModernShadeCarrierGroupMobileView.constructAndBind(
+                                context = context,
+                                logger = iconsViewModel.logger,
+                                slot = "mobile_carrier_shade_group",
+                                viewModel =
+                                    buildSpec {
+                                        ShadeCarrierGroupMobileIconViewModelKairos(
+                                            icon,
+                                            icon.iconInteractor,
+                                        )
+                                    },
+                                scope = scope,
+                                subscriptionId = subId,
+                                location = StatusBarLocation.SHADE_CARRIER_GROUP,
+                                kairosNetwork = viewModel.kairosNetwork,
+                            )
+                            .first
+                            .also {
+                                it.setOnClickListener { viewModel.onShadeCarrierGroupClicked() }
+                            }
+                    }
+                )
+            }
         }
     }
 }
