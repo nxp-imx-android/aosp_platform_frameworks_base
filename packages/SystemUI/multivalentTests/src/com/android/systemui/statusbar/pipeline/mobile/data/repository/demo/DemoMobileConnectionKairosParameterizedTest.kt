@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,156 +23,116 @@ import androidx.test.filters.SmallTest
 import com.android.settingslib.SignalIcon
 import com.android.settingslib.mobile.TelephonyIcons
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.log.table.tableLogBufferFactory
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.KairosTestScope
+import com.android.systemui.kairos.kairos
+import com.android.systemui.kairos.map
+import com.android.systemui.kairos.runKairosTest
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.model.FakeNetworkEventModel
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.demoMobileConnectionsRepositoryKairos
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.demoModeMobileConnectionDataSourceKairos
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.wifiDataSource
 import com.android.systemui.statusbar.pipeline.shared.data.model.toMobileDataActivityModel
-import com.android.systemui.statusbar.pipeline.wifi.data.repository.demo.DemoModeWifiDataSource
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.demo.model.FakeWifiEventModel
 import com.android.systemui.testKosmos
-import com.android.systemui.util.mockito.mock
-import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
-import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.stub
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
 /**
  * Parameterized test for all of the common values of [FakeNetworkEventModel]. This test simply
- * verifies that passing the given model to [DemoMobileConnectionsRepository] results in the correct
- * flows emitting from the given connection.
+ * verifies that passing the given model to [DemoMobileConnectionsRepositoryKairos] results in the
+ * correct flows emitting from the given connection.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 internal class DemoMobileConnectionKairosParameterizedTest(private val testCase: TestCase) :
     SysuiTestCase() {
-    private val kosmos = testKosmos()
 
-    private val testDispatcher = UnconfinedTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
+    private val Kosmos.fakeWifiEventFlow by Fixture { MutableStateFlow<FakeWifiEventModel?>(null) }
 
-    private val fakeNetworkEventFlow = MutableStateFlow<FakeNetworkEventModel?>(null)
-    private val fakeWifiEventFlow = MutableStateFlow<FakeWifiEventModel?>(null)
+    private val kosmos =
+        testKosmos().apply {
+            useUnconfinedTestDispatcher()
+            wifiDataSource.stub { on { wifiEvents } doReturn fakeWifiEventFlow }
+        }
 
-    private lateinit var connectionsRepo: DemoMobileConnectionsRepositoryKairos
-    private lateinit var underTest: DemoMobileConnectionRepository
-    private lateinit var mockDataSource: DemoModeMobileConnectionDataSource
-    private lateinit var mockWifiDataSource: DemoModeWifiDataSource
-
-    @Before
-    fun setUp() {
-        // The data source only provides one API, so we can mock it with a flow here for convenience
-        mockDataSource =
-            mock<DemoModeMobileConnectionDataSource>().also {
-                whenever(it.mobileEvents).thenReturn(fakeNetworkEventFlow)
-            }
-        mockWifiDataSource =
-            mock<DemoModeWifiDataSource>().also {
-                whenever(it.wifiEvents).thenReturn(fakeWifiEventFlow)
-            }
-
-        connectionsRepo =
-            DemoMobileConnectionsRepositoryKairos(
-                mobileDataSource = mockDataSource,
-                wifiDataSource = mockWifiDataSource,
-                scope = testScope.backgroundScope,
-                context = context,
-                logFactory = kosmos.tableLogBufferFactory,
-            )
-
-        connectionsRepo.startProcessingCommands()
-    }
-
-    @After
-    fun tearDown() {
-        testScope.cancel()
-    }
+    private fun runTest(block: suspend KairosTestScope.() -> Unit) =
+        kosmos.run { runKairosTest { block() } }
 
     @Test
-    fun demoNetworkData() =
-        testScope.runTest {
-            val networkModel =
-                FakeNetworkEventModel.Mobile(
-                    level = testCase.level,
-                    dataType = testCase.dataType,
-                    subId = testCase.subId,
-                    carrierId = testCase.carrierId,
-                    inflateStrength = testCase.inflateStrength,
-                    activity = testCase.activity,
-                    carrierNetworkChange = testCase.carrierNetworkChange,
-                    roaming = testCase.roaming,
-                    name = "demo name",
-                    slice = testCase.slice,
-                )
-
-            fakeNetworkEventFlow.value = networkModel
-            underTest = connectionsRepo.getRepoForSubId(subId)
-
-            assertConnection(underTest, networkModel)
-        }
-
-    private fun TestScope.startCollection(conn: DemoMobileConnectionRepository): Job {
-        val job = launch {
-            launch { conn.cdmaLevel.collect {} }
-            launch { conn.primaryLevel.collect {} }
-            launch { conn.dataActivityDirection.collect {} }
-            launch { conn.carrierNetworkChangeActive.collect {} }
-            launch { conn.isRoaming.collect {} }
-            launch { conn.networkName.collect {} }
-            launch { conn.carrierName.collect {} }
-            launch { conn.isEmergencyOnly.collect {} }
-            launch { conn.dataConnectionState.collect {} }
-            launch { conn.hasPrioritizedNetworkCapabilities.collect {} }
-        }
-        return job
+    fun demoNetworkData() = runTest {
+        val underTest by
+            demoMobileConnectionsRepositoryKairos.mobileConnectionsBySubId
+                .map { it[subId] }
+                .collectLastValue()
+        val networkModel =
+            FakeNetworkEventModel.Mobile(
+                level = testCase.level,
+                dataType = testCase.dataType,
+                subId = testCase.subId,
+                carrierId = testCase.carrierId,
+                inflateStrength = testCase.inflateStrength,
+                activity = testCase.activity,
+                carrierNetworkChange = testCase.carrierNetworkChange,
+                roaming = testCase.roaming,
+                name = "demo name",
+                slice = testCase.slice,
+            )
+        demoModeMobileConnectionDataSourceKairos.fake.mobileEvents.emit(networkModel)
+        assertConnection(underTest!!, networkModel)
     }
 
-    private fun TestScope.assertConnection(
-        conn: DemoMobileConnectionRepository,
+    private suspend fun KairosTestScope.assertConnection(
+        conn: DemoMobileConnectionRepositoryKairos,
         model: FakeNetworkEventModel,
     ) {
-        val job = startCollection(underTest)
         when (model) {
             is FakeNetworkEventModel.Mobile -> {
-                assertThat(conn.subId).isEqualTo(model.subId)
-                assertThat(conn.cdmaLevel.value).isEqualTo(model.level)
-                assertThat(conn.primaryLevel.value).isEqualTo(model.level)
-                assertThat(conn.dataActivityDirection.value)
-                    .isEqualTo((model.activity ?: DATA_ACTIVITY_NONE).toMobileDataActivityModel())
-                assertThat(conn.carrierNetworkChangeActive.value)
-                    .isEqualTo(model.carrierNetworkChange)
-                assertThat(conn.isRoaming.value).isEqualTo(model.roaming)
-                assertThat(conn.networkName.value)
-                    .isEqualTo(NetworkNameModel.IntentDerived(model.name))
-                assertThat(conn.carrierName.value)
-                    .isEqualTo(NetworkNameModel.SubscriptionDerived("${model.name} ${model.subId}"))
-                assertThat(conn.hasPrioritizedNetworkCapabilities.value).isEqualTo(model.slice)
-                assertThat(conn.isNonTerrestrial.value).isEqualTo(model.ntn)
+                kairos.transact {
+                    assertThat(conn.subId).isEqualTo(model.subId)
+                    assertThat(conn.cdmaLevel.sample()).isEqualTo(model.level)
+                    assertThat(conn.primaryLevel.sample()).isEqualTo(model.level)
+                    assertThat(conn.dataActivityDirection.sample())
+                        .isEqualTo(
+                            (model.activity ?: DATA_ACTIVITY_NONE).toMobileDataActivityModel()
+                        )
+                    assertThat(conn.carrierNetworkChangeActive.sample())
+                        .isEqualTo(model.carrierNetworkChange)
+                    assertThat(conn.isRoaming.sample()).isEqualTo(model.roaming)
+                    assertThat(conn.networkName.sample())
+                        .isEqualTo(NetworkNameModel.IntentDerived(model.name))
+                    assertThat(conn.carrierName.sample())
+                        .isEqualTo(
+                            NetworkNameModel.SubscriptionDerived("${model.name} ${model.subId}")
+                        )
+                    assertThat(conn.hasPrioritizedNetworkCapabilities.sample())
+                        .isEqualTo(model.slice)
+                    assertThat(conn.isNonTerrestrial.sample()).isEqualTo(model.ntn)
 
-                // TODO(b/261029387): check these once we start handling them
-                assertThat(conn.isEmergencyOnly.value).isFalse()
-                assertThat(conn.isGsm.value).isFalse()
-                assertThat(conn.dataConnectionState.value).isEqualTo(DataConnectionState.Connected)
+                    // TODO(b/261029387): check these once we start handling them
+                    assertThat(conn.isEmergencyOnly.sample()).isFalse()
+                    assertThat(conn.isGsm.sample()).isFalse()
+                    assertThat(conn.dataConnectionState.sample())
+                        .isEqualTo(DataConnectionState.Connected)
+                }
             }
             // MobileDisabled isn't combinatorial in nature, and is tested in
             // DemoMobileConnectionsRepositoryTest.kt
             else -> {}
         }
-
-        job.cancel()
     }
 
     /** Matches [FakeNetworkEventModel] */

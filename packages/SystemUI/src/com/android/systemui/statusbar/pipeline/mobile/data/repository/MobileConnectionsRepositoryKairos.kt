@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,35 +21,42 @@ import android.telephony.SubscriptionManager
 import com.android.settingslib.SignalIcon.MobileIconGroup
 import com.android.settingslib.mobile.MobileMappings
 import com.android.settingslib.mobile.MobileMappings.Config
+import com.android.systemui.kairos.Events
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.Incremental
+import com.android.systemui.kairos.State
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Repo for monitoring the complete active subscription info list, to be consumed and filtered based
  * on various policy
  */
+@ExperimentalKairosApi
 interface MobileConnectionsRepositoryKairos {
+
+    /** All active mobile connections. */
+    val mobileConnectionsBySubId: Incremental<Int, MobileConnectionRepositoryKairos>
+
     /** Observable list of current mobile subscriptions */
-    val subscriptions: StateFlow<List<SubscriptionModel>>
+    val subscriptions: State<Collection<SubscriptionModel>>
 
     /**
      * Observable for the subscriptionId of the current mobile data connection. Null if we don't
      * have a valid subscription id
      */
-    val activeMobileDataSubscriptionId: StateFlow<Int?>
+    val activeMobileDataSubscriptionId: State<Int?>
 
     /** Repo that tracks the current [activeMobileDataSubscriptionId] */
-    val activeMobileDataRepository: StateFlow<MobileConnectionRepository?>
+    val activeMobileDataRepository: State<MobileConnectionRepositoryKairos?>
 
     /**
      * Observable event for when the active data sim switches but the group stays the same. E.g.,
      * CBRS switching would trigger this
      */
-    val activeSubChangedInGroupEvent: Flow<Unit>
+    val activeSubChangedInGroupEvent: Events<Unit>
 
-    /** Tracks [SubscriptionManager.getDefaultDataSubscriptionId]. Null if there is no default */
-    val defaultDataSubId: StateFlow<Int?>
+    /** Tracks [SubscriptionManager.getDefaultDataSubscriptionId]. `null` if there is no default. */
+    val defaultDataSubId: State<Int?>
 
     /**
      * True if the default network connection is a mobile-like connection and false otherwise.
@@ -58,20 +65,17 @@ interface MobileConnectionsRepositoryKairos {
      * there are edge cases (like carrier merged wifi) that could also result in the default
      * connection being mobile-like.
      */
-    val mobileIsDefault: StateFlow<Boolean>
+    val mobileIsDefault: State<Boolean>
 
     /**
      * True if the device currently has a carrier merged connection.
      *
      * See [CarrierMergedConnectionRepository] for more info.
      */
-    val hasCarrierMergedConnection: Flow<Boolean>
+    val hasCarrierMergedConnection: State<Boolean>
 
     /** True if the default network connection is validated and false otherwise. */
-    val defaultConnectionIsValidated: StateFlow<Boolean>
-
-    /** Get or create a repository for the line of service for the given subscription ID */
-    fun getRepoForSubId(subId: Int): MobileConnectionRepository
+    val defaultConnectionIsValidated: State<Boolean>
 
     /**
      * [Config] is an object that tracks relevant configuration flags for a given subscription ID.
@@ -83,13 +87,13 @@ interface MobileConnectionsRepositoryKairos {
      *
      * This flow will produce whenever the default data subscription or the carrier config changes.
      */
-    val defaultDataSubRatConfig: StateFlow<Config>
+    val defaultDataSubRatConfig: State<Config>
 
     /** The icon mapping from network type to [MobileIconGroup] for the default subscription */
-    val defaultMobileIconMapping: Flow<Map<String, MobileIconGroup>>
+    val defaultMobileIconMapping: State<Map<String, MobileIconGroup>>
 
     /** Fallback [MobileIconGroup] in the case where there is no icon in the mapping */
-    val defaultMobileIconGroup: Flow<MobileIconGroup>
+    val defaultMobileIconGroup: State<MobileIconGroup>
 
     /**
      * Can the device make emergency calls using the device-based service state? This field is only
@@ -100,7 +104,7 @@ interface MobileConnectionsRepositoryKairos {
      *
      * This is an eager flow, and re-evaluates whenever ACTION_SERVICE_STATE is sent for subId = -1.
      */
-    val isDeviceEmergencyCallCapable: StateFlow<Boolean>
+    val isDeviceEmergencyCallCapable: State<Boolean>
 
     /**
      * If any active SIM on the device is in
@@ -108,22 +112,11 @@ interface MobileConnectionsRepositoryKairos {
      * [android.telephony.TelephonyManager.SIM_STATE_PUK_REQUIRED] or
      * [android.telephony.TelephonyManager.SIM_STATE_PERM_DISABLED]
      */
-    val isAnySimSecure: Flow<Boolean>
-
-    /**
-     * Returns whether any active SIM on the device is in
-     * [android.telephony.TelephonyManager.SIM_STATE_PIN_REQUIRED] or
-     * [android.telephony.TelephonyManager.SIM_STATE_PUK_REQUIRED] or
-     * [android.telephony.TelephonyManager.SIM_STATE_PERM_DISABLED].
-     *
-     * Note: Unfortunately, we cannot name this [isAnySimSecure] due to a conflict with the flow
-     * name above (Java code-gen is having issues with it).
-     */
-    fun getIsAnySimSecure(): Boolean
+    val isAnySimSecure: State<Boolean>
 
     /**
      * Checks if any subscription has [android.telephony.TelephonyManager.getEmergencyCallbackMode]
      * == true
      */
-    suspend fun isInEcmMode(): Boolean
+    val isInEcmMode: State<Boolean>
 }

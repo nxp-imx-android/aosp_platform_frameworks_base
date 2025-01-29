@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.android.systemui.statusbar.pipeline.mobile.data.repository.prod
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.applicationContext
+import android.content.testableContext
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -25,6 +27,7 @@ import android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED
 import android.net.NetworkCapabilities.TRANSPORT_CELLULAR
 import android.net.NetworkCapabilities.TRANSPORT_ETHERNET
 import android.net.NetworkCapabilities.TRANSPORT_WIFI
+import android.net.connectivityManager
 import android.net.vcn.VcnTransportInfo
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
@@ -34,1154 +37,894 @@ import android.telephony.ServiceState
 import android.telephony.SubscriptionInfo
 import android.telephony.SubscriptionManager
 import android.telephony.SubscriptionManager.INVALID_SUBSCRIPTION_ID
+import android.telephony.SubscriptionManager.OnSubscriptionsChangedListener
 import android.telephony.SubscriptionManager.PROFILE_CLASS_UNSET
-import android.telephony.TelephonyCallback
 import android.telephony.TelephonyCallback.ActiveDataSubscriptionIdListener
+import android.telephony.TelephonyCallback.EmergencyCallbackModeListener
 import android.telephony.TelephonyManager
+import android.telephony.telephonyManager
 import android.testing.TestableLooper
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.telephony.PhoneConstants
-import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
+import com.android.keyguard.keyguardUpdateMonitor
 import com.android.settingslib.R
 import com.android.settingslib.mobile.MobileMappings
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.flags.FakeFeatureFlagsClassic
+import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.broadcast.broadcastDispatcherContext
 import com.android.systemui.flags.Flags
+import com.android.systemui.flags.fakeFeatureFlagsClassic
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.KairosTestScope
+import com.android.systemui.kairos.combine
+import com.android.systemui.kairos.kairos
+import com.android.systemui.kairos.map
+import com.android.systemui.kairos.runKairosTest
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.LogBuffer
-import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.statusbar.connectivity.WifiPickerTrackerFactory
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
-import com.android.systemui.statusbar.pipeline.mobile.data.MobileInputLogger
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.CarrierConfigRepository
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.carrierConfigRepository
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Factory.Companion.tableBufferLogName
-import com.android.systemui.statusbar.pipeline.mobile.util.FakeMobileMappingsProxy
-import com.android.systemui.statusbar.pipeline.mobile.util.FakeSubscriptionManagerProxy
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepositoryKairos
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepositoryKairosImpl
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileTelephonyHelpers.getTelephonyCallbackForType
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.subscriptionManager
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.subscriptionManagerProxy
+import com.android.systemui.statusbar.pipeline.mobile.util.fake
 import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlots
-import com.android.systemui.statusbar.pipeline.shared.data.repository.ConnectivityRepository
 import com.android.systemui.statusbar.pipeline.shared.data.repository.ConnectivityRepositoryImpl
-import com.android.systemui.statusbar.pipeline.wifi.data.repository.WifiRepository
+import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.prod.WifiRepositoryImpl
+import com.android.systemui.statusbar.pipeline.wifi.data.repository.wifiRepository
 import com.android.systemui.testKosmos
-import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.user.data.repository.userRepository
 import com.android.systemui.util.concurrency.FakeExecutor
-import com.android.systemui.util.mockito.argumentCaptor
-import com.android.systemui.util.mockito.capture
-import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.wifitrackerlib.MergedCarrierEntry
 import com.android.wifitrackerlib.WifiEntry
 import com.android.wifitrackerlib.WifiPickerTracker
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import java.util.UUID
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.Mockito.verify
-import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.whenever
 
-@Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
+@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 // This is required because our [SubscriptionManager.OnSubscriptionsChangedListener] uses a looper
 // to run the callback and this makes the looper place nicely with TestScope etc.
 @TestableLooper.RunWithLooper
+@RunWith(AndroidJUnit4::class)
 class MobileConnectionsRepositoryKairosTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
 
-    private val flags =
-        FakeFeatureFlagsClassic().also { it.set(Flags.ROAMING_INDICATOR_VIA_DISPLAY_INFO, true) }
+    private val Kosmos.wifiManager: WifiManager by Fixture { mock {} }
+    private val Kosmos.wifiPickerTrackerFactory: WifiPickerTrackerFactory by Fixture {
+        mock {
+            on { create(any(), any(), wifiPickerTrackerCallback.capture(), any()) } doReturn
+                wifiPickerTracker
+        }
+    }
+    private val Kosmos.wifiPickerTracker: WifiPickerTracker by Fixture { mock {} }
+    private val Kosmos.wifiTableLogBuffer by Fixture { logcatTableLogBuffer(this, "wifiTableLog") }
 
-    private lateinit var connectionFactory: MobileConnectionRepositoryImpl.Factory
-    private lateinit var carrierMergedFactory: CarrierMergedConnectionRepository.Factory
-    private lateinit var fullConnectionFactory: FullMobileConnectionRepository.Factory
-    private lateinit var connectivityRepository: ConnectivityRepository
-    private lateinit var airplaneModeRepository: FakeAirplaneModeRepository
-    private lateinit var wifiRepository: WifiRepository
-    private lateinit var carrierConfigRepository: CarrierConfigRepository
-
-    @Mock private lateinit var connectivityManager: ConnectivityManager
-    @Mock private lateinit var subscriptionManager: SubscriptionManager
-    @Mock private lateinit var telephonyManager: TelephonyManager
-    @Mock private lateinit var logger: MobileInputLogger
-    private val summaryLogger = logcatTableLogBuffer(kosmos, "summaryLogger")
-    @Mock private lateinit var logBufferFactory: TableLogBufferFactory
-    @Mock private lateinit var updateMonitor: KeyguardUpdateMonitor
-    @Mock private lateinit var wifiManager: WifiManager
-    @Mock private lateinit var wifiPickerTrackerFactory: WifiPickerTrackerFactory
-    @Mock private lateinit var wifiPickerTracker: WifiPickerTracker
-    private val wifiTableLogBuffer = logcatTableLogBuffer(kosmos, "wifiTableLog")
-
-    private val mobileMappings = FakeMobileMappingsProxy()
-    private val subscriptionManagerProxy = FakeSubscriptionManagerProxy()
     private val mainExecutor = FakeExecutor(FakeSystemClock())
     private val wifiLogBuffer = LogBuffer("wifi", maxSize = 100, logcatEchoTracker = mock())
     private val wifiPickerTrackerCallback =
         argumentCaptor<WifiPickerTracker.WifiPickerTrackerCallback>()
     private val vcnTransportInfo = VcnTransportInfo.Builder().build()
-    private val userRepository = kosmos.fakeUserRepository
 
-    private val testDispatcher = StandardTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
+    private val Kosmos.underTest
+        get() = mobileConnectionsRepositoryKairosImpl
 
-    private lateinit var underTest: MobileConnectionsRepositoryKairosImpl
+    private val kosmos =
+        testKosmos().apply {
+            fakeFeatureFlagsClassic.set(Flags.ROAMING_INDICATOR_VIA_DISPLAY_INFO, true)
+            broadcastDispatcherContext = testableContext
+            connectivityRepository =
+                ConnectivityRepositoryImpl(
+                    connectivityManager,
+                    ConnectivitySlots(applicationContext),
+                    applicationContext,
+                    mock(),
+                    mock(),
+                    applicationCoroutineScope,
+                    mock(),
+                )
+            wifiRepository =
+                WifiRepositoryImpl(
+                    applicationContext,
+                    userRepository,
+                    applicationCoroutineScope,
+                    mainExecutor,
+                    testDispatcher,
+                    wifiPickerTrackerFactory,
+                    wifiManager,
+                    wifiLogBuffer,
+                    wifiTableLogBuffer,
+                )
+            subscriptionManager.stub {
+                // For convenience, set up the subscription info callbacks
+                on { getActiveSubscriptionInfo(anyInt()) } doAnswer
+                    { invocation ->
+                        when (invocation.getArgument(0) as Int) {
+                            1 -> SUB_1
+                            2 -> SUB_2
+                            3 -> SUB_3
+                            4 -> SUB_4
+                            else -> null
+                        }
+                    }
+            }
+            telephonyManager.stub {
+                on { simOperatorName } doReturn ""
+                // Set up so the individual connection repositories
+                on { createForSubscriptionId(anyInt()) } doAnswer
+                    { invocation ->
+                        telephonyManager.stub {
+                            on { subscriptionId } doReturn invocation.getArgument(0)
+                        }
+                    }
+            }
+            testScope.runCurrent()
+        }
 
-    @Before
-    fun setUp() {
-        MockitoAnnotations.initMocks(this)
-        whenever(telephonyManager.simOperatorName).thenReturn("")
+    private fun runTest(block: suspend KairosTestScope.() -> Unit) =
+        kosmos.run { runKairosTest { block() } }
 
-        // Set up so the individual connection repositories
-        whenever(telephonyManager.createForSubscriptionId(anyInt())).thenAnswer { invocation ->
-            telephonyManager.also {
-                whenever(it.subscriptionId).thenReturn(invocation.getArgument(0))
+    @Test
+    fun testSubscriptions_initiallyEmpty() = runTest {
+        assertThat(underTest.subscriptions.collectLastValue().value)
+            .isEqualTo(listOf<SubscriptionModel>())
+    }
+
+    @Test
+    fun testSubscriptions_listUpdates() = runTest {
+        val latest by underTest.subscriptions.collectLastValue()
+
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_1, SUB_2)
+        }
+        getSubscriptionCallback().onSubscriptionsChanged()
+
+        assertThat(latest).isEqualTo(listOf(MODEL_1, MODEL_2))
+    }
+
+    @Test
+    fun testSubscriptions_removingSub_updatesList() = runTest {
+        val latest by underTest.subscriptions.collectLastValue()
+
+        // WHEN 2 networks show up
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_1, SUB_2)
+        }
+        getSubscriptionCallback().onSubscriptionsChanged()
+
+        // WHEN one network is removed
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_2)
+        }
+        getSubscriptionCallback().onSubscriptionsChanged()
+
+        // THEN the subscriptions list represents the newest change
+        assertThat(latest).isEqualTo(listOf(MODEL_2))
+    }
+
+    @Test
+    fun subscriptions_subIsOnlyNtn_modelHasExclusivelyNtnTrue() = runTest {
+        val latest by underTest.subscriptions.collectLastValue()
+
+        val onlyNtnSub =
+            mock<SubscriptionInfo> {
+                on { isOnlyNonTerrestrialNetwork } doReturn true
+                on { subscriptionId } doReturn 45
+                on { groupUuid } doReturn GROUP_1
+                on { carrierName } doReturn "NTN only"
+                on { profileClass } doReturn PROFILE_CLASS_UNSET
+            }
+
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(onlyNtnSub)
+        }
+        getSubscriptionCallback().onSubscriptionsChanged()
+
+        assertThat(latest).hasSize(1)
+        assertThat(latest!![0].isExclusivelyNonTerrestrial).isTrue()
+    }
+
+    @Test
+    fun subscriptions_subIsNotOnlyNtn_modelHasExclusivelyNtnFalse() = runTest {
+        val latest by underTest.subscriptions.collectLastValue()
+
+        val notOnlyNtnSub =
+            mock<SubscriptionInfo> {
+                on { isOnlyNonTerrestrialNetwork } doReturn false
+                on { subscriptionId } doReturn 45
+                on { groupUuid } doReturn GROUP_1
+                on { carrierName } doReturn "NTN only"
+                on { profileClass } doReturn PROFILE_CLASS_UNSET
+            }
+
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(notOnlyNtnSub)
+        }
+        getSubscriptionCallback().onSubscriptionsChanged()
+
+        assertThat(latest).hasSize(1)
+        assertThat(latest!![0].isExclusivelyNonTerrestrial).isFalse()
+    }
+
+    @Test
+    fun testSubscriptions_carrierMergedOnly_listHasCarrierMerged() = runTest {
+        val latest by underTest.subscriptions.collectLastValue()
+
+        setWifiState(isCarrierMerged = true)
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_CM)
+        }
+        getSubscriptionCallback().onSubscriptionsChanged()
+
+        assertThat(latest).isEqualTo(listOf(MODEL_CM))
+    }
+
+    @Test
+    fun testSubscriptions_carrierMergedAndOther_listHasBothWithCarrierMergedLast() = runTest {
+        val latest by underTest.subscriptions.collectLastValue()
+
+        setWifiState(isCarrierMerged = true)
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_1, SUB_2, SUB_CM)
+        }
+        getSubscriptionCallback().onSubscriptionsChanged()
+
+        assertThat(latest).isEqualTo(listOf(MODEL_1, MODEL_2, MODEL_CM))
+    }
+
+    @Test
+    fun testActiveDataSubscriptionId_initialValueIsNull() = runTest {
+        assertThat(underTest.activeMobileDataSubscriptionId.collectLastValue().value)
+            .isEqualTo(null)
+    }
+
+    @Test
+    fun testActiveDataSubscriptionId_updates() = runTest {
+        val active by underTest.activeMobileDataSubscriptionId.collectLastValue()
+        testScope.runCurrent()
+
+        getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>(telephonyManager)
+            .onActiveDataSubscriptionIdChanged(SUB_2_ID)
+
+        assertThat(active).isEqualTo(SUB_2_ID)
+    }
+
+    @Test
+    fun activeSubId_nullIfInvalidSubIdIsReceived() = runTest {
+        val latest by underTest.activeMobileDataSubscriptionId.collectLastValue()
+        testScope.runCurrent()
+
+        getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>(telephonyManager)
+            .onActiveDataSubscriptionIdChanged(SUB_2_ID)
+
+        assertThat(latest).isNotNull()
+
+        getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>(telephonyManager)
+            .onActiveDataSubscriptionIdChanged(INVALID_SUBSCRIPTION_ID)
+
+        assertThat(latest).isNull()
+    }
+
+    @Test
+    fun activeRepo_initiallyNull() = runTest {
+        assertThat(underTest.activeMobileDataRepository.collectLastValue().value).isNull()
+    }
+
+    @Test
+    fun activeRepo_updatesWithActiveDataId() = runTest {
+        val latest by underTest.activeMobileDataRepository.collectLastValue()
+        testScope.runCurrent()
+
+        // GIVEN the subscription list is then updated which includes the active data sub id
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_2)
+        }
+        getSubscriptionCallback().onSubscriptionsChanged()
+        testScope.runCurrent()
+
+        getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>(telephonyManager)
+            .onActiveDataSubscriptionIdChanged(SUB_2_ID)
+
+        assertThat(latest?.subId).isEqualTo(SUB_2_ID)
+    }
+
+    @Test
+    fun activeRepo_nullIfActiveDataSubIdBecomesInvalid() = runTest {
+        val latest by underTest.activeMobileDataRepository.collectLastValue()
+        testScope.runCurrent()
+
+        // GIVEN the subscription list is then updated which includes the active data sub id
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_2)
+        }
+        getSubscriptionCallback().onSubscriptionsChanged()
+        testScope.runCurrent()
+
+        getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>(telephonyManager)
+            .onActiveDataSubscriptionIdChanged(SUB_2_ID)
+        testScope.runCurrent()
+
+        assertThat(latest).isNotNull()
+
+        getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>(telephonyManager)
+            .onActiveDataSubscriptionIdChanged(INVALID_SUBSCRIPTION_ID)
+        testScope.runCurrent()
+
+        assertThat(latest).isNull()
+    }
+
+    @Test
+    /** Regression test for b/268146648. */
+    fun activeSubIdIsSetBeforeSubscriptionsAreUpdated_doesNotThrow() = runTest {
+        val activeRepo by underTest.activeMobileDataRepository.collectLastValue()
+        val subscriptions by underTest.subscriptions.collectLastValue()
+        testScope.runCurrent()
+
+        getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>(telephonyManager)
+            .onActiveDataSubscriptionIdChanged(SUB_2_ID)
+        testScope.runCurrent()
+
+        assertThat(subscriptions).isEmpty()
+        assertThat(activeRepo).isNull()
+    }
+
+    @Test
+    fun getRepoForSubId_activeDataSubIdIsRequestedBeforeSubscriptionsUpdate() = runTest {
+        underTest
+
+        var latestActiveRepo: MobileConnectionRepositoryKairos? = null
+        testScope.backgroundScope.launch {
+            kairos.activateSpec {
+                underTest.activeMobileDataSubscriptionId
+                    .combine(underTest.mobileConnectionsBySubId) { id, conns ->
+                        id?.let { conns[id] }
+                    }
+                    .observe {
+                        if (it != null) {
+                            latestActiveRepo = it
+                        }
+                    }
             }
         }
 
-        whenever(logBufferFactory.getOrCreate(anyString(), anyInt())).thenAnswer { _ ->
-            logcatTableLogBuffer(kosmos, "test")
+        val latestSubscriptions by underTest.subscriptions.collectLastValue()
+        testScope.runCurrent()
+
+        // Active data subscription id is sent, but no subscription change has been posted yet
+        getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>(telephonyManager)
+            .onActiveDataSubscriptionIdChanged(SUB_2_ID)
+        testScope.runCurrent()
+
+        // Subscriptions list is empty
+        assertThat(latestSubscriptions).isEmpty()
+
+        // getRepoForSubId does not throw
+        assertThat(latestActiveRepo).isNull()
+    }
+
+    @Test
+    fun activeDataSentBeforeSubscriptionList_subscriptionReusesActiveDataRepo() = runTest {
+        val activeRepo by underTest.activeMobileDataRepository.collectLastValue()
+        testScope.runCurrent()
+
+        // GIVEN active repo is updated before the subscription list updates
+        getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>(telephonyManager)
+            .onActiveDataSubscriptionIdChanged(SUB_2_ID)
+        testScope.runCurrent()
+
+        assertThat(activeRepo).isNull()
+
+        // GIVEN the subscription list is then updated which includes the active data sub id
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_2)
+        }
+        getSubscriptionCallback().onSubscriptionsChanged()
+        testScope.runCurrent()
+
+        // WHEN requesting a connection repository for the subscription
+        val newRepo =
+            kairos.transact { underTest.mobileConnectionsBySubId.map { it[SUB_2_ID] }.sample() }
+
+        // THEN the newly request repo has been cached and reused
+        assertThat(activeRepo).isSameInstanceAs(newRepo)
+    }
+
+    @Test
+    fun testConnectionRepository_validSubId_isCached() = runTest {
+        underTest
+
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_1)
+        }
+        getSubscriptionCallback().onSubscriptionsChanged()
+
+        val repo1 by underTest.mobileConnectionsBySubId.map { it[SUB_1_ID] }.collectLastValue()
+        val repo2 by underTest.mobileConnectionsBySubId.map { it[SUB_1_ID] }.collectLastValue()
+
+        assertThat(repo1).isNotNull()
+        assertThat(repo1).isSameInstanceAs(repo2)
+    }
+
+    @Test
+    fun testConnectionRepository_carrierMergedSubId_isCached() = runTest {
+        underTest
+
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, WIFI_NETWORK_CAPS_CM)
+        setWifiState(isCarrierMerged = true)
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_CM)
+        }
+        getSubscriptionCallback().onSubscriptionsChanged()
+
+        val repo1 by underTest.mobileConnectionsBySubId.map { it[SUB_CM_ID] }.collectLastValue()
+        val repo2 by underTest.mobileConnectionsBySubId.map { it[SUB_CM_ID] }.collectLastValue()
+
+        assertThat(repo1).isNotNull()
+        assertThat(repo1).isSameInstanceAs(repo2)
+    }
+
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    @Test
+    fun testDeviceEmergencyCallState_eagerlyChecksState() = runTest {
+        val latest by underTest.isDeviceEmergencyCallCapable.collectLastValue()
+
+        // Value starts out false
+        assertThat(latest).isFalse()
+        telephonyManager.stub { on { activeModemCount } doReturn 1 }
+        whenever(telephonyManager.getServiceStateForSlot(any())).thenAnswer { _ ->
+            ServiceState().apply { isEmergencyOnly = true }
         }
 
-        whenever(
-                wifiPickerTrackerFactory.create(
-                    any(),
-                    any(),
-                    capture(wifiPickerTrackerCallback),
-                    any(),
-                )
-            )
-            .thenReturn(wifiPickerTracker)
+        // WHEN an appropriate intent gets sent out
+        val intent = serviceStateIntent(subId = -1)
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(applicationContext, intent)
+        testScope.runCurrent()
 
-        // For convenience, set up the subscription info callbacks
-        whenever(subscriptionManager.getActiveSubscriptionInfo(anyInt())).thenAnswer { invocation ->
+        // THEN the repo's state is updated despite no listeners
+        assertThat(latest).isEqualTo(true)
+    }
+
+    @Test
+    fun testDeviceEmergencyCallState_aggregatesAcrossSlots_oneTrue() = runTest {
+        val latest by underTest.isDeviceEmergencyCallCapable.collectLastValue()
+
+        // GIVEN there are multiple slots
+        telephonyManager.stub { on { activeModemCount } doReturn 4 }
+        // GIVEN only one of them reports ECM
+        whenever(telephonyManager.getServiceStateForSlot(any())).thenAnswer { invocation ->
             when (invocation.getArgument(0) as Int) {
-                1 -> SUB_1
-                2 -> SUB_2
-                3 -> SUB_3
-                4 -> SUB_4
+                0 -> ServiceState().apply { isEmergencyOnly = false }
+                1 -> ServiceState().apply { isEmergencyOnly = false }
+                2 -> ServiceState().apply { isEmergencyOnly = true }
+                3 -> ServiceState().apply { isEmergencyOnly = false }
                 else -> null
             }
         }
 
-        connectivityRepository =
-            ConnectivityRepositoryImpl(
-                connectivityManager,
-                ConnectivitySlots(context),
-                context,
-                mock(),
-                mock(),
-                testScope.backgroundScope,
-                mock(),
-            )
-
-        airplaneModeRepository = FakeAirplaneModeRepository()
-
-        wifiRepository =
-            WifiRepositoryImpl(
-                mContext,
-                userRepository,
-                testScope.backgroundScope,
-                mainExecutor,
-                testDispatcher,
-                wifiPickerTrackerFactory,
-                wifiManager,
-                wifiLogBuffer,
-                wifiTableLogBuffer,
-            )
-
-        carrierConfigRepository = kosmos.carrierConfigRepository
-
-        connectionFactory =
-            MobileConnectionRepositoryImpl.Factory(
-                context,
-                fakeBroadcastDispatcher,
-                connectivityManager,
-                telephonyManager = telephonyManager,
-                bgDispatcher = testDispatcher,
-                logger = logger,
-                mobileMappingsProxy = mobileMappings,
-                scope = testScope.backgroundScope,
-                flags = flags,
-                carrierConfigRepository = carrierConfigRepository,
-            )
-        carrierMergedFactory =
-            CarrierMergedConnectionRepository.Factory(
-                telephonyManager,
-                testScope.backgroundScope.coroutineContext,
-                testScope.backgroundScope,
-                wifiRepository,
-            )
-        fullConnectionFactory =
-            FullMobileConnectionRepository.Factory(
-                scope = testScope.backgroundScope,
-                logFactory = logBufferFactory,
-                mobileRepoFactory = connectionFactory,
-                carrierMergedRepoFactory = carrierMergedFactory,
-            )
-
-        underTest =
-            MobileConnectionsRepositoryKairosImpl(
-                connectivityRepository,
-                subscriptionManager,
-                subscriptionManagerProxy,
-                telephonyManager,
-                logger,
-                summaryLogger,
-                mobileMappings,
-                fakeBroadcastDispatcher,
-                context,
-                /* bgDispatcher = */ testDispatcher,
-                testScope.backgroundScope,
-                /* mainDispatcher = */ testDispatcher,
-                airplaneModeRepository,
-                wifiRepository,
-                fullConnectionFactory,
-                updateMonitor,
-                mock(),
-            )
-
+        // GIVEN a broadcast goes out for the appropriate subID
+        val intent = serviceStateIntent(subId = -1)
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(applicationContext, intent)
         testScope.runCurrent()
+
+        // THEN the device is in ECM, because one of the service states is
+        assertThat(latest).isTrue()
     }
 
     @Test
-    fun testSubscriptions_initiallyEmpty() =
-        testScope.runTest {
-            assertThat(underTest.subscriptions.value).isEqualTo(listOf<SubscriptionModel>())
+    fun testDeviceEmergencyCallState_aggregatesAcrossSlots_allFalse() = runTest {
+        val latest by underTest.isDeviceEmergencyCallCapable.collectLastValue()
+
+        // GIVEN there are multiple slots
+        telephonyManager.stub { on { activeModemCount } doReturn 4 }
+        // GIVEN only one of them reports ECM
+        whenever(telephonyManager.getServiceStateForSlot(any())).thenAnswer { invocation ->
+            when (invocation.getArgument(0) as Int) {
+                0 -> ServiceState().apply { isEmergencyOnly = false }
+                1 -> ServiceState().apply { isEmergencyOnly = false }
+                2 -> ServiceState().apply { isEmergencyOnly = false }
+                3 -> ServiceState().apply { isEmergencyOnly = false }
+                else -> null
+            }
         }
 
-    @Test
-    fun testSubscriptions_listUpdates() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.subscriptions)
+        // GIVEN a broadcast goes out for the appropriate subID
+        val intent = serviceStateIntent(subId = -1)
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(applicationContext, intent)
+        testScope.runCurrent()
 
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1, SUB_2))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            assertThat(latest).isEqualTo(listOf(MODEL_1, MODEL_2))
-        }
-
-    @Test
-    fun testSubscriptions_removingSub_updatesList() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.subscriptions)
-
-            // WHEN 2 networks show up
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1, SUB_2))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            // WHEN one network is removed
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_2))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            // THEN the subscriptions list represents the newest change
-            assertThat(latest).isEqualTo(listOf(MODEL_2))
-        }
-
-    @Test
-    fun subscriptions_subIsOnlyNtn_modelHasExclusivelyNtnTrue() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.subscriptions)
-
-            val onlyNtnSub =
-                mock<SubscriptionInfo>().also {
-                    whenever(it.isOnlyNonTerrestrialNetwork).thenReturn(true)
-                    whenever(it.subscriptionId).thenReturn(45)
-                    whenever(it.groupUuid).thenReturn(GROUP_1)
-                    whenever(it.carrierName).thenReturn("NTN only")
-                    whenever(it.profileClass).thenReturn(PROFILE_CLASS_UNSET)
-                }
-
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(onlyNtnSub))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            assertThat(latest).hasSize(1)
-            assertThat(latest!![0].isExclusivelyNonTerrestrial).isTrue()
-        }
-
-    @Test
-    fun subscriptions_subIsNotOnlyNtn_modelHasExclusivelyNtnFalse() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.subscriptions)
-
-            val notOnlyNtnSub =
-                mock<SubscriptionInfo>().also {
-                    whenever(it.isOnlyNonTerrestrialNetwork).thenReturn(false)
-                    whenever(it.subscriptionId).thenReturn(45)
-                    whenever(it.groupUuid).thenReturn(GROUP_1)
-                    whenever(it.carrierName).thenReturn("NTN only")
-                    whenever(it.profileClass).thenReturn(PROFILE_CLASS_UNSET)
-                }
-
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(notOnlyNtnSub))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            assertThat(latest).hasSize(1)
-            assertThat(latest!![0].isExclusivelyNonTerrestrial).isFalse()
-        }
-
-    @Test
-    fun testSubscriptions_carrierMergedOnly_listHasCarrierMerged() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.subscriptions)
-
-            setWifiState(isCarrierMerged = true)
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_CM))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            assertThat(latest).isEqualTo(listOf(MODEL_CM))
-        }
-
-    @Test
-    fun testSubscriptions_carrierMergedAndOther_listHasBothWithCarrierMergedLast() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.subscriptions)
-
-            setWifiState(isCarrierMerged = true)
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1, SUB_2, SUB_CM))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            assertThat(latest).isEqualTo(listOf(MODEL_1, MODEL_2, MODEL_CM))
-        }
-
-    @Test
-    fun testActiveDataSubscriptionId_initialValueIsNull() =
-        testScope.runTest {
-            assertThat(underTest.activeMobileDataSubscriptionId.value).isEqualTo(null)
-        }
-
-    @Test
-    fun testActiveDataSubscriptionId_updates() =
-        testScope.runTest {
-            val active by collectLastValue(underTest.activeMobileDataSubscriptionId)
-
-            getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>()
-                .onActiveDataSubscriptionIdChanged(SUB_2_ID)
-
-            assertThat(active).isEqualTo(SUB_2_ID)
-        }
-
-    @Test
-    fun activeSubId_nullIfInvalidSubIdIsReceived() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.activeMobileDataSubscriptionId)
-
-            getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>()
-                .onActiveDataSubscriptionIdChanged(SUB_2_ID)
-
-            assertThat(latest).isNotNull()
-
-            getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>()
-                .onActiveDataSubscriptionIdChanged(INVALID_SUBSCRIPTION_ID)
-
-            assertThat(latest).isNull()
-        }
-
-    @Test
-    fun activeRepo_initiallyNull() {
-        assertThat(underTest.activeMobileDataRepository.value).isNull()
+        // THEN the device is in ECM, because one of the service states is
+        assertThat(latest).isFalse()
     }
 
     @Test
-    fun activeRepo_updatesWithActiveDataId() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.activeMobileDataRepository)
+    fun testConnectionCache_clearsInvalidSubscriptions() = runTest {
+        underTest
 
-            getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>()
-                .onActiveDataSubscriptionIdChanged(SUB_2_ID)
-
-            assertThat(latest?.subId).isEqualTo(SUB_2_ID)
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_1, SUB_2)
         }
+        getSubscriptionCallback().onSubscriptionsChanged()
+
+        val repoCache by underTest.mobileConnectionsBySubId.collectLastValue()
+
+        assertThat(repoCache?.keys).containsExactly(SUB_1_ID, SUB_2_ID)
+
+        // SUB_2 disappears
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_1)
+        }
+        getSubscriptionCallback().onSubscriptionsChanged()
+
+        assertThat(repoCache?.keys).containsExactly(SUB_1_ID)
+    }
 
     @Test
-    fun activeRepo_nullIfActiveDataSubIdBecomesInvalid() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.activeMobileDataRepository)
+    fun testConnectionCache_clearsInvalidSubscriptions_includingCarrierMerged() = runTest {
+        underTest
 
-            getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>()
-                .onActiveDataSubscriptionIdChanged(SUB_2_ID)
-
-            assertThat(latest).isNotNull()
-
-            getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>()
-                .onActiveDataSubscriptionIdChanged(INVALID_SUBSCRIPTION_ID)
-
-            assertThat(latest).isNull()
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, WIFI_NETWORK_CAPS_CM)
+        setWifiState(isCarrierMerged = true)
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_1, SUB_2, SUB_CM)
         }
+        getSubscriptionCallback().onSubscriptionsChanged()
 
-    @Test
-    /** Regression test for b/268146648. */
-    fun activeSubIdIsSetBeforeSubscriptionsAreUpdated_doesNotThrow() =
-        testScope.runTest {
-            val activeRepo by collectLastValue(underTest.activeMobileDataRepository)
-            val subscriptions by collectLastValue(underTest.subscriptions)
+        val repoCache by underTest.mobileConnectionsBySubId.collectLastValue()
 
-            getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>()
-                .onActiveDataSubscriptionIdChanged(SUB_2_ID)
+        assertThat(repoCache?.keys).containsExactly(SUB_1_ID, SUB_2_ID, SUB_CM_ID)
 
-            assertThat(subscriptions).isEmpty()
-            assertThat(activeRepo).isNotNull()
+        // SUB_2 and SUB_CM disappear
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_1)
         }
+        getSubscriptionCallback().onSubscriptionsChanged()
 
-    @Test
-    fun getRepoForSubId_activeDataSubIdIsRequestedBeforeSubscriptionsUpdate() =
-        testScope.runTest {
-            var latestActiveRepo: MobileConnectionRepository? = null
-            collectLastValue(
-                underTest.activeMobileDataSubscriptionId.filterNotNull().onEach {
-                    latestActiveRepo = underTest.getRepoForSubId(it)
-                }
-            )
-
-            val latestSubscriptions by collectLastValue(underTest.subscriptions)
-
-            // Active data subscription id is sent, but no subscription change has been posted yet
-            getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>()
-                .onActiveDataSubscriptionIdChanged(SUB_2_ID)
-
-            // Subscriptions list is empty
-            assertThat(latestSubscriptions).isEmpty()
-            // getRepoForSubId does not throw
-            assertThat(latestActiveRepo).isNotNull()
-        }
-
-    @Test
-    fun activeDataSentBeforeSubscriptionList_subscriptionReusesActiveDataRepo() =
-        testScope.runTest {
-            val activeRepo by collectLastValue(underTest.activeMobileDataRepository)
-            collectLastValue(underTest.subscriptions)
-
-            // GIVEN active repo is updated before the subscription list updates
-            getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>()
-                .onActiveDataSubscriptionIdChanged(SUB_2_ID)
-
-            assertThat(activeRepo).isNotNull()
-
-            // GIVEN the subscription list is then updated which includes the active data sub id
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_2))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            // WHEN requesting a connection repository for the subscription
-            val newRepo = underTest.getRepoForSubId(SUB_2_ID)
-
-            // THEN the newly request repo has been cached and reused
-            assertThat(activeRepo).isSameInstanceAs(newRepo)
-        }
-
-    @Test
-    fun testConnectionRepository_validSubId_isCached() =
-        testScope.runTest {
-            collectLastValue(underTest.subscriptions)
-
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            val repo1 = underTest.getRepoForSubId(SUB_1_ID)
-            val repo2 = underTest.getRepoForSubId(SUB_1_ID)
-
-            assertThat(repo1).isSameInstanceAs(repo2)
-        }
-
-    @Test
-    fun testConnectionRepository_carrierMergedSubId_isCached() =
-        testScope.runTest {
-            collectLastValue(underTest.subscriptions)
-
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, WIFI_NETWORK_CAPS_CM)
-            setWifiState(isCarrierMerged = true)
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_CM))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            val repo1 = underTest.getRepoForSubId(SUB_CM_ID)
-            val repo2 = underTest.getRepoForSubId(SUB_CM_ID)
-
-            assertThat(repo1).isSameInstanceAs(repo2)
-        }
-
-    @Test
-    fun testConnectionRepository_carrierMergedAndMobileSubs_usesCorrectRepos() =
-        testScope.runTest {
-            collectLastValue(underTest.subscriptions)
-
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, WIFI_NETWORK_CAPS_CM)
-            setWifiState(isCarrierMerged = true)
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1, SUB_CM))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            val carrierMergedRepo = underTest.getRepoForSubId(SUB_CM_ID)
-            val mobileRepo = underTest.getRepoForSubId(SUB_1_ID)
-            assertThat(carrierMergedRepo.getIsCarrierMerged()).isTrue()
-            assertThat(mobileRepo.getIsCarrierMerged()).isFalse()
-        }
-
-    @Test
-    fun testSubscriptions_subNoLongerCarrierMerged_repoUpdates() =
-        testScope.runTest {
-            collectLastValue(underTest.subscriptions)
-
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, WIFI_NETWORK_CAPS_CM)
-            setWifiState(isCarrierMerged = true)
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1, SUB_CM))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            val carrierMergedRepo = underTest.getRepoForSubId(SUB_CM_ID)
-            var mobileRepo = underTest.getRepoForSubId(SUB_1_ID)
-            assertThat(carrierMergedRepo.getIsCarrierMerged()).isTrue()
-            assertThat(mobileRepo.getIsCarrierMerged()).isFalse()
-
-            // WHEN the wifi network updates to be not carrier merged
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, WIFI_NETWORK_CAPS_ACTIVE)
-            setWifiState(isCarrierMerged = false)
-            runCurrent()
-
-            // THEN the repos update
-            val noLongerCarrierMergedRepo = underTest.getRepoForSubId(SUB_CM_ID)
-            mobileRepo = underTest.getRepoForSubId(SUB_1_ID)
-            assertThat(noLongerCarrierMergedRepo.getIsCarrierMerged()).isFalse()
-            assertThat(mobileRepo.getIsCarrierMerged()).isFalse()
-        }
-
-    @Test
-    fun testSubscriptions_subBecomesCarrierMerged_repoUpdates() =
-        testScope.runTest {
-            collectLastValue(underTest.subscriptions)
-
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, WIFI_NETWORK_CAPS_ACTIVE)
-            setWifiState(isCarrierMerged = false)
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1, SUB_CM))
-            getSubscriptionCallback().onSubscriptionsChanged()
-            runCurrent()
-
-            val notYetCarrierMergedRepo = underTest.getRepoForSubId(SUB_CM_ID)
-            var mobileRepo = underTest.getRepoForSubId(SUB_1_ID)
-            assertThat(notYetCarrierMergedRepo.getIsCarrierMerged()).isFalse()
-            assertThat(mobileRepo.getIsCarrierMerged()).isFalse()
-
-            // WHEN the wifi network updates to be carrier merged
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, WIFI_NETWORK_CAPS_CM)
-            setWifiState(isCarrierMerged = true)
-            runCurrent()
-
-            // THEN the repos update
-            val carrierMergedRepo = underTest.getRepoForSubId(SUB_CM_ID)
-            mobileRepo = underTest.getRepoForSubId(SUB_1_ID)
-            assertThat(carrierMergedRepo.getIsCarrierMerged()).isTrue()
-            assertThat(mobileRepo.getIsCarrierMerged()).isFalse()
-        }
-
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
-    @Test
-    fun testDeviceEmergencyCallState_eagerlyChecksState() =
-        testScope.runTest {
-            // Value starts out false
-            assertThat(underTest.isDeviceEmergencyCallCapable.value).isFalse()
-            whenever(telephonyManager.activeModemCount).thenReturn(1)
-            whenever(telephonyManager.getServiceStateForSlot(any())).thenAnswer { _ ->
-                ServiceState().apply { isEmergencyOnly = true }
-            }
-
-            // WHEN an appropriate intent gets sent out
-            val intent = serviceStateIntent(subId = -1)
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(context, intent)
-            runCurrent()
-
-            // THEN the repo's state is updated despite no listeners
-            assertThat(underTest.isDeviceEmergencyCallCapable.value).isEqualTo(true)
-        }
-
-    @Test
-    fun testDeviceEmergencyCallState_aggregatesAcrossSlots_oneTrue() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.isDeviceEmergencyCallCapable)
-
-            // GIVEN there are multiple slots
-            whenever(telephonyManager.activeModemCount).thenReturn(4)
-            // GIVEN only one of them reports ECM
-            whenever(telephonyManager.getServiceStateForSlot(any())).thenAnswer { invocation ->
-                when (invocation.getArgument(0) as Int) {
-                    0 -> ServiceState().apply { isEmergencyOnly = false }
-                    1 -> ServiceState().apply { isEmergencyOnly = false }
-                    2 -> ServiceState().apply { isEmergencyOnly = true }
-                    3 -> ServiceState().apply { isEmergencyOnly = false }
-                    else -> null
-                }
-            }
-
-            // GIVEN a broadcast goes out for the appropriate subID
-            val intent = serviceStateIntent(subId = -1)
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(context, intent)
-            runCurrent()
-
-            // THEN the device is in ECM, because one of the service states is
-            assertThat(latest).isTrue()
-        }
-
-    @Test
-    fun testDeviceEmergencyCallState_aggregatesAcrossSlots_allFalse() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.isDeviceEmergencyCallCapable)
-
-            // GIVEN there are multiple slots
-            whenever(telephonyManager.activeModemCount).thenReturn(4)
-            // GIVEN only one of them reports ECM
-            whenever(telephonyManager.getServiceStateForSlot(any())).thenAnswer { invocation ->
-                when (invocation.getArgument(0) as Int) {
-                    0 -> ServiceState().apply { isEmergencyOnly = false }
-                    1 -> ServiceState().apply { isEmergencyOnly = false }
-                    2 -> ServiceState().apply { isEmergencyOnly = false }
-                    3 -> ServiceState().apply { isEmergencyOnly = false }
-                    else -> null
-                }
-            }
-
-            // GIVEN a broadcast goes out for the appropriate subID
-            val intent = serviceStateIntent(subId = -1)
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(context, intent)
-            runCurrent()
-
-            // THEN the device is in ECM, because one of the service states is
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    @Ignore("b/333912012")
-    fun testConnectionCache_clearsInvalidSubscriptions() =
-        testScope.runTest {
-            collectLastValue(underTest.subscriptions)
-
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1, SUB_2))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            // Get repos to trigger caching
-            val repo1 = underTest.getRepoForSubId(SUB_1_ID)
-            val repo2 = underTest.getRepoForSubId(SUB_2_ID)
-
-            assertThat(underTest.getSubIdRepoCache())
-                .containsExactly(SUB_1_ID, repo1, SUB_2_ID, repo2)
-
-            // SUB_2 disappears
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            assertThat(underTest.getSubIdRepoCache()).containsExactly(SUB_1_ID, repo1)
-        }
-
-    @Test
-    @Ignore("b/333912012")
-    fun testConnectionCache_clearsInvalidSubscriptions_includingCarrierMerged() =
-        testScope.runTest {
-            collectLastValue(underTest.subscriptions)
-
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, WIFI_NETWORK_CAPS_CM)
-            setWifiState(isCarrierMerged = true)
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1, SUB_2, SUB_CM))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            // Get repos to trigger caching
-            val repo1 = underTest.getRepoForSubId(SUB_1_ID)
-            val repo2 = underTest.getRepoForSubId(SUB_2_ID)
-            val repoCarrierMerged = underTest.getRepoForSubId(SUB_CM_ID)
-
-            assertThat(underTest.getSubIdRepoCache())
-                .containsExactly(SUB_1_ID, repo1, SUB_2_ID, repo2, SUB_CM_ID, repoCarrierMerged)
-
-            // SUB_2 and SUB_CM disappear
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            assertThat(underTest.getSubIdRepoCache()).containsExactly(SUB_1_ID, repo1)
-        }
+        assertThat(repoCache?.keys).containsExactly(SUB_1_ID)
+    }
 
     /** Regression test for b/261706421 */
     @Test
-    @Ignore("b/333912012")
-    fun testConnectionsCache_clearMultipleSubscriptionsAtOnce_doesNotThrow() =
-        testScope.runTest {
-            collectLastValue(underTest.subscriptions)
+    fun testConnectionsCache_clearMultipleSubscriptionsAtOnce_doesNotThrow() = runTest {
+        underTest
 
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1, SUB_2))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            // Get repos to trigger caching
-            val repo1 = underTest.getRepoForSubId(SUB_1_ID)
-            val repo2 = underTest.getRepoForSubId(SUB_2_ID)
-
-            assertThat(underTest.getSubIdRepoCache())
-                .containsExactly(SUB_1_ID, repo1, SUB_2_ID, repo2)
-
-            // All subscriptions disappear
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList).thenReturn(listOf())
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            assertThat(underTest.getSubIdRepoCache()).isEmpty()
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_1, SUB_2)
         }
+        getSubscriptionCallback().onSubscriptionsChanged()
 
-    @Test
-    fun testConnectionsCache_keepsReposCached() =
-        testScope.runTest {
-            // Collect subscriptions to start the job
-            collectLastValue(underTest.subscriptions)
+        val repoCache by underTest.mobileConnectionsBySubId.collectLastValue()
 
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1))
-            getSubscriptionCallback().onSubscriptionsChanged()
+        assertThat(repoCache?.keys).containsExactly(SUB_1_ID, SUB_2_ID)
 
-            val repo1_1 = underTest.getRepoForSubId(SUB_1_ID)
+        // All subscriptions disappear
+        subscriptionManager.stub { on { completeActiveSubscriptionInfoList } doReturn listOf() }
+        getSubscriptionCallback().onSubscriptionsChanged()
 
-            // All subscriptions disappear
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList).thenReturn(listOf())
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            // Sub1 comes back
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            val repo1_2 = underTest.getRepoForSubId(SUB_1_ID)
-
-            assertThat(repo1_1).isSameInstanceAs(repo1_2)
-        }
-
-    @Test
-    fun testConnectionsCache_doesNotDropReferencesThatHaveBeenRealized() =
-        testScope.runTest {
-            // Collect subscriptions to start the job
-            collectLastValue(underTest.subscriptions)
-
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            // Client grabs a reference to a repository, but doesn't keep it around
-            underTest.getRepoForSubId(SUB_1_ID)
-
-            // All subscriptions disappear
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList).thenReturn(listOf())
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            val repo1 = underTest.getRepoForSubId(SUB_1_ID)
-
-            assertThat(repo1).isNotNull()
-        }
-
-    @Test
-    fun testConnectionRepository_invalidSubId_doesNotThrow() =
-        testScope.runTest {
-            underTest.getRepoForSubId(SUB_1_ID)
-            // No exception
-        }
-
-    @Test
-    fun connectionRepository_logBufferContainsSubIdInItsName() =
-        testScope.runTest {
-            collectLastValue(underTest.subscriptions)
-
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1, SUB_2))
-            getSubscriptionCallback().onSubscriptionsChanged()
-
-            // Get repos to trigger creation
-            underTest.getRepoForSubId(SUB_1_ID)
-            verify(logBufferFactory).getOrCreate(eq(tableBufferLogName(SUB_1_ID)), anyInt())
-            underTest.getRepoForSubId(SUB_2_ID)
-            verify(logBufferFactory).getOrCreate(eq(tableBufferLogName(SUB_2_ID)), anyInt())
-        }
-
-    @Test
-    fun testDefaultDataSubId_updatesOnBroadcast() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.defaultDataSubId)
-
-            assertThat(latest).isEqualTo(null)
-
-            val intent2 =
-                Intent(TelephonyManager.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED)
-                    .putExtra(PhoneConstants.SUBSCRIPTION_KEY, SUB_2_ID)
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(context, intent2)
-
-            assertThat(latest).isEqualTo(SUB_2_ID)
-
-            val intent1 =
-                Intent(TelephonyManager.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED)
-                    .putExtra(PhoneConstants.SUBSCRIPTION_KEY, SUB_1_ID)
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(context, intent1)
-
-            assertThat(latest).isEqualTo(SUB_1_ID)
-        }
-
-    @Test
-    fun defaultDataSubId_fetchesInitialValueOnStart() =
-        testScope.runTest {
-            subscriptionManagerProxy.defaultDataSubId = 2
-            val latest by collectLastValue(underTest.defaultDataSubId)
-
-            assertThat(latest).isEqualTo(2)
-        }
-
-    @Test
-    fun defaultDataSubId_filtersOutInvalidSubIds() =
-        testScope.runTest {
-            subscriptionManagerProxy.defaultDataSubId = INVALID_SUBSCRIPTION_ID
-            val latest by collectLastValue(underTest.defaultDataSubId)
-
-            assertThat(latest).isNull()
-        }
-
-    @Test
-    fun defaultDataSubId_filtersOutInvalidSubIds_fromValidToInvalid() =
-        testScope.runTest {
-            subscriptionManagerProxy.defaultDataSubId = 2
-            val latest by collectLastValue(underTest.defaultDataSubId)
-
-            assertThat(latest).isEqualTo(2)
-
-            val intent =
-                Intent(TelephonyManager.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED)
-                    .putExtra(PhoneConstants.SUBSCRIPTION_KEY, INVALID_SUBSCRIPTION_ID)
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(context, intent)
-
-            assertThat(latest).isNull()
-        }
-
-    @Test
-    fun defaultDataSubId_fetchesCurrentOnRestart() =
-        testScope.runTest {
-            subscriptionManagerProxy.defaultDataSubId = 2
-            var latest: Int? = null
-            var job = underTest.defaultDataSubId.onEach { latest = it }.launchIn(this)
-            runCurrent()
-
-            assertThat(latest).isEqualTo(2)
-
-            job.cancel()
-
-            // Collectors go away but come back later
-
-            latest = null
-
-            subscriptionManagerProxy.defaultDataSubId = 1
-
-            job = underTest.defaultDataSubId.onEach { latest = it }.launchIn(this)
-            runCurrent()
-
-            assertThat(latest).isEqualTo(1)
-
-            job.cancel()
-        }
-
-    @Test
-    fun mobileIsDefault_startsAsFalse() {
-        assertThat(underTest.mobileIsDefault.value).isFalse()
+        assertThat(repoCache).isEmpty()
     }
 
     @Test
-    fun mobileIsDefault_capsHaveCellular_isDefault() =
-        testScope.runTest {
-            val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_CELLULAR)).thenReturn(true)
-                }
+    fun testDefaultDataSubId_updatesOnBroadcast() = runTest {
+        val latest by underTest.defaultDataSubId.collectLastValue()
 
-            val latest by collectLastValue(underTest.mobileIsDefault)
+        assertThat(latest).isEqualTo(null)
 
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
+        val intent2 =
+            Intent(TelephonyManager.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED)
+                .putExtra(PhoneConstants.SUBSCRIPTION_KEY, SUB_2_ID)
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(applicationContext, intent2)
 
-            assertThat(latest).isTrue()
-        }
+        assertThat(latest).isEqualTo(SUB_2_ID)
 
-    @Test
-    fun mobileIsDefault_capsDoNotHaveCellular_isNotDefault() =
-        testScope.runTest {
-            val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_CELLULAR)).thenReturn(false)
-                }
+        val intent1 =
+            Intent(TelephonyManager.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED)
+                .putExtra(PhoneConstants.SUBSCRIPTION_KEY, SUB_1_ID)
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(applicationContext, intent1)
 
-            val latest by collectLastValue(underTest.mobileIsDefault)
-
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
-
-            assertThat(latest).isFalse()
-        }
+        assertThat(latest).isEqualTo(SUB_1_ID)
+    }
 
     @Test
-    fun mobileIsDefault_carrierMergedViaMobile_isDefault() =
-        testScope.runTest {
-            val carrierMergedInfo =
-                mock<WifiInfo>().apply { whenever(this.isCarrierMerged).thenReturn(true) }
-            val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_CELLULAR)).thenReturn(true)
-                    whenever(it.transportInfo).thenReturn(carrierMergedInfo)
-                }
+    fun defaultDataSubId_fetchesInitialValueOnStart() = runTest {
+        subscriptionManagerProxy.fake.defaultDataSubId = 2
+        val latest by underTest.defaultDataSubId.collectLastValue()
 
-            val latest by collectLastValue(underTest.mobileIsDefault)
-
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
-
-            assertThat(latest).isTrue()
-        }
+        assertThat(latest).isEqualTo(2)
+    }
 
     @Test
-    fun mobileIsDefault_wifiDefault_mobileNotDefault() =
-        testScope.runTest {
-            val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_WIFI)).thenReturn(true)
-                }
-
-            val latest by collectLastValue(underTest.mobileIsDefault)
-
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
-
-            assertThat(latest).isFalse()
-        }
+    fun mobileIsDefault_startsAsFalse() = runTest {
+        assertThat(underTest.mobileIsDefault.collectLastValue().value).isFalse()
+    }
 
     @Test
-    fun mobileIsDefault_ethernetDefault_mobileNotDefault() =
-        testScope.runTest {
-            val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_ETHERNET)).thenReturn(true)
-                }
+    fun mobileIsDefault_capsHaveCellular_isDefault() = runTest {
+        val caps =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_CELLULAR) } doReturn true
+            }
 
-            val latest by collectLastValue(underTest.mobileIsDefault)
+        val latest by underTest.mobileIsDefault.collectLastValue()
 
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
 
-            assertThat(latest).isFalse()
-        }
+        assertThat(latest).isTrue()
+    }
+
+    @Test
+    fun mobileIsDefault_capsDoNotHaveCellular_isNotDefault() = runTest {
+        val caps =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_CELLULAR) } doReturn false
+            }
+
+        val latest by underTest.mobileIsDefault.collectLastValue()
+
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun mobileIsDefault_carrierMergedViaMobile_isDefault() = runTest {
+        val carrierMergedInfo = mock<WifiInfo> { on { isCarrierMerged } doReturn true }
+        val caps =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_CELLULAR) } doReturn true
+                on { transportInfo } doReturn carrierMergedInfo
+            }
+
+        val latest by underTest.mobileIsDefault.collectLastValue()
+
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
+
+        assertThat(latest).isTrue()
+    }
+
+    @Test
+    fun mobileIsDefault_wifiDefault_mobileNotDefault() = runTest {
+        val caps =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_WIFI) } doReturn true
+            }
+
+        val latest by underTest.mobileIsDefault.collectLastValue()
+
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun mobileIsDefault_ethernetDefault_mobileNotDefault() = runTest {
+        val caps =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_ETHERNET) } doReturn true
+            }
+
+        val latest by underTest.mobileIsDefault.collectLastValue()
+
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
+
+        assertThat(latest).isFalse()
+    }
 
     /** Regression test for b/272586234. */
     @Test
-    fun hasCarrierMergedConnection_carrierMergedViaWifi_isTrue() =
-        testScope.runTest {
-            val carrierMergedInfo =
-                mock<WifiInfo>().apply {
-                    whenever(this.isCarrierMerged).thenReturn(true)
-                    whenever(this.isPrimary).thenReturn(true)
-                }
-            val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_WIFI)).thenReturn(true)
-                    whenever(it.transportInfo).thenReturn(carrierMergedInfo)
-                }
+    fun hasCarrierMergedConnection_carrierMergedViaWifi_isTrue() = runTest {
+        val carrierMergedInfo =
+            mock<WifiInfo> {
+                on { isCarrierMerged } doReturn true
+                on { isPrimary } doReturn true
+            }
+        val caps =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_WIFI) } doReturn true
+                on { transportInfo } doReturn carrierMergedInfo
+            }
 
-            val latest by collectLastValue(underTest.hasCarrierMergedConnection)
+        val latest by underTest.hasCarrierMergedConnection.collectLastValue()
 
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
-            setWifiState(isCarrierMerged = true)
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
+        setWifiState(isCarrierMerged = true)
 
-            assertThat(latest).isTrue()
-        }
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun hasCarrierMergedConnection_carrierMergedViaMobile_isTrue() =
-        testScope.runTest {
-            val carrierMergedInfo =
-                mock<WifiInfo>().apply {
-                    whenever(this.isCarrierMerged).thenReturn(true)
-                    whenever(this.isPrimary).thenReturn(true)
-                }
-            val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_CELLULAR)).thenReturn(true)
-                    whenever(it.transportInfo).thenReturn(carrierMergedInfo)
-                }
+    fun hasCarrierMergedConnection_carrierMergedViaMobile_isTrue() = runTest {
+        val carrierMergedInfo =
+            mock<WifiInfo> {
+                on { isCarrierMerged } doReturn true
+                on { isPrimary } doReturn true
+            }
+        val caps =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_CELLULAR) } doReturn true
+                on { transportInfo } doReturn carrierMergedInfo
+            }
 
-            val latest by collectLastValue(underTest.hasCarrierMergedConnection)
+        val latest by underTest.hasCarrierMergedConnection.collectLastValue()
 
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
-            setWifiState(isCarrierMerged = true)
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
+        setWifiState(isCarrierMerged = true)
 
-            assertThat(latest).isTrue()
-        }
+        assertThat(latest).isTrue()
+    }
 
-    private fun newWifiNetwork(wifiInfo: WifiInfo): Network {
+    private fun KairosTestScope.newWifiNetwork(wifiInfo: WifiInfo): Network {
         val network = mock<Network>()
         val capabilities =
-            mock<NetworkCapabilities>().also {
-                whenever(it.hasTransport(TRANSPORT_WIFI)).thenReturn(true)
-                whenever(it.transportInfo).thenReturn(wifiInfo)
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_WIFI) } doReturn true
+                on { transportInfo } doReturn wifiInfo
             }
-        whenever(connectivityManager.getNetworkCapabilities(network)).thenReturn(capabilities)
-
+        connectivityManager.stub { on { getNetworkCapabilities(network) } doReturn capabilities }
         return network
     }
 
     /** Regression test for b/272586234. */
     @Test
-    fun hasCarrierMergedConnection_carrierMergedViaWifiWithVcnTransport_isTrue() =
-        testScope.runTest {
-            val carrierMergedInfo =
-                mock<WifiInfo>().apply {
-                    whenever(this.isCarrierMerged).thenReturn(true)
-                    whenever(this.isPrimary).thenReturn(true)
-                }
-            val underlyingWifi = newWifiNetwork(carrierMergedInfo)
-            val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_WIFI)).thenReturn(true)
-                    whenever(it.transportInfo).thenReturn(vcnTransportInfo)
-                    whenever(it.underlyingNetworks).thenReturn(listOf(underlyingWifi))
-                }
+    fun hasCarrierMergedConnection_carrierMergedViaWifiWithVcnTransport_isTrue() = runTest {
+        val carrierMergedInfo =
+            mock<WifiInfo> {
+                on { isCarrierMerged } doReturn true
+                on { isPrimary } doReturn true
+            }
+        val underlyingWifi = newWifiNetwork(carrierMergedInfo)
+        val caps =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_WIFI) } doReturn true
+                on { transportInfo } doReturn vcnTransportInfo
+                on { underlyingNetworks } doReturn listOf(underlyingWifi)
+            }
 
-            val latest by collectLastValue(underTest.hasCarrierMergedConnection)
+        val latest by underTest.hasCarrierMergedConnection.collectLastValue()
 
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
-            setWifiState(isCarrierMerged = true)
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
+        setWifiState(isCarrierMerged = true)
 
-            assertThat(latest).isTrue()
-        }
-
-    @Test
-    fun hasCarrierMergedConnection_carrierMergedViaMobileWithVcnTransport_isTrue() =
-        testScope.runTest {
-            val carrierMergedInfo =
-                mock<WifiInfo>().apply {
-                    whenever(this.isCarrierMerged).thenReturn(true)
-                    whenever(this.isPrimary).thenReturn(true)
-                }
-            val underlyingWifi = newWifiNetwork(carrierMergedInfo)
-            val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_CELLULAR)).thenReturn(true)
-                    whenever(it.transportInfo).thenReturn(vcnTransportInfo)
-                    whenever(it.underlyingNetworks).thenReturn(listOf(underlyingWifi))
-                }
-
-            val latest by collectLastValue(underTest.hasCarrierMergedConnection)
-
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
-            setWifiState(isCarrierMerged = true)
-
-            assertThat(latest).isTrue()
-        }
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun hasCarrierMergedConnection_isCarrierMergedViaUnderlyingWifi_isTrue() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.hasCarrierMergedConnection)
+    fun hasCarrierMergedConnection_carrierMergedViaMobileWithVcnTransport_isTrue() = runTest {
+        val carrierMergedInfo =
+            mock<WifiInfo> {
+                on { isCarrierMerged } doReturn true
+                on { isPrimary } doReturn true
+            }
+        val underlyingWifi = newWifiNetwork(carrierMergedInfo)
+        val caps =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_CELLULAR) } doReturn true
+                on { transportInfo } doReturn vcnTransportInfo
+                on { underlyingNetworks } doReturn listOf(underlyingWifi)
+            }
 
-            val underlyingNetwork = mock<Network>()
-            val carrierMergedInfo =
-                mock<WifiInfo>().apply {
-                    whenever(this.isCarrierMerged).thenReturn(true)
-                    whenever(this.isPrimary).thenReturn(true)
-                }
-            val underlyingWifiCapabilities =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_WIFI)).thenReturn(true)
-                    whenever(it.transportInfo).thenReturn(carrierMergedInfo)
-                }
-            whenever(connectivityManager.getNetworkCapabilities(underlyingNetwork))
-                .thenReturn(underlyingWifiCapabilities)
+        val latest by underTest.hasCarrierMergedConnection.collectLastValue()
 
-            // WHEN the main capabilities have an underlying carrier merged network via WIFI
-            // transport and WifiInfo
-            val mainCapabilities =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_CELLULAR)).thenReturn(true)
-                    whenever(it.transportInfo).thenReturn(null)
-                    whenever(it.underlyingNetworks).thenReturn(listOf(underlyingNetwork))
-                }
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
+        setWifiState(isCarrierMerged = true)
 
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, mainCapabilities)
-            setWifiState(isCarrierMerged = true)
-
-            // THEN there's a carrier merged connection
-            assertThat(latest).isTrue()
-        }
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun hasCarrierMergedConnection_isCarrierMergedViaUnderlyingCellular_isTrue() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.hasCarrierMergedConnection)
+    fun hasCarrierMergedConnection_isCarrierMergedViaUnderlyingWifi_isTrue() = runTest {
+        val latest by underTest.hasCarrierMergedConnection.collectLastValue()
 
-            val underlyingCarrierMergedNetwork = mock<Network>()
-            val carrierMergedInfo =
-                mock<WifiInfo>().apply {
-                    whenever(this.isCarrierMerged).thenReturn(true)
-                    whenever(this.isPrimary).thenReturn(true)
-                }
-
-            // The Wifi network that is under the VCN network
-            val physicalWifiNetwork = newWifiNetwork(carrierMergedInfo)
-
-            val underlyingCapabilities =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_CELLULAR)).thenReturn(true)
-                    whenever(it.transportInfo).thenReturn(vcnTransportInfo)
-                    whenever(it.underlyingNetworks).thenReturn(listOf(physicalWifiNetwork))
-                }
-            whenever(connectivityManager.getNetworkCapabilities(underlyingCarrierMergedNetwork))
-                .thenReturn(underlyingCapabilities)
-
-            // WHEN the main capabilities have an underlying carrier merged network via CELLULAR
-            // transport and VcnTransportInfo
-            val mainCapabilities =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_CELLULAR)).thenReturn(true)
-                    whenever(it.transportInfo).thenReturn(null)
-                    whenever(it.underlyingNetworks)
-                        .thenReturn(listOf(underlyingCarrierMergedNetwork))
-                }
-
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, mainCapabilities)
-            setWifiState(isCarrierMerged = true)
-
-            // THEN there's a carrier merged connection
-            assertThat(latest).isTrue()
+        val underlyingNetwork = mock<Network>()
+        val carrierMergedInfo =
+            mock<WifiInfo> {
+                on { isCarrierMerged } doReturn true
+                on { isPrimary } doReturn true
+            }
+        val underlyingWifiCapabilities =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_WIFI) } doReturn true
+                on { transportInfo } doReturn carrierMergedInfo
+            }
+        connectivityManager.stub {
+            on { getNetworkCapabilities(underlyingNetwork) } doReturn underlyingWifiCapabilities
         }
+
+        // WHEN the main capabilities have an underlying carrier merged network via WIFI
+        // transport and WifiInfo
+        val mainCapabilities =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_CELLULAR) } doReturn true
+                on { transportInfo } doReturn null
+                on { underlyingNetworks } doReturn listOf(underlyingNetwork)
+            }
+
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, mainCapabilities)
+        setWifiState(isCarrierMerged = true)
+
+        // THEN there's a carrier merged connection
+        assertThat(latest).isTrue()
+    }
+
+    @Test
+    fun hasCarrierMergedConnection_isCarrierMergedViaUnderlyingCellular_isTrue() = runTest {
+        val latest by underTest.hasCarrierMergedConnection.collectLastValue()
+
+        val underlyingCarrierMergedNetwork = mock<Network>()
+        val carrierMergedInfo =
+            mock<WifiInfo> {
+                on { isCarrierMerged } doReturn true
+                on { isPrimary } doReturn true
+            }
+
+        // The Wifi network that is under the VCN network
+        val physicalWifiNetwork = newWifiNetwork(carrierMergedInfo)
+
+        val underlyingCapabilities =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_CELLULAR) } doReturn true
+                on { transportInfo } doReturn vcnTransportInfo
+                on { underlyingNetworks } doReturn listOf(physicalWifiNetwork)
+            }
+        connectivityManager.stub {
+            on { getNetworkCapabilities(underlyingCarrierMergedNetwork) } doReturn
+                underlyingCapabilities
+        }
+
+        // WHEN the main capabilities have an underlying carrier merged network via CELLULAR
+        // transport and VcnTransportInfo
+        val mainCapabilities =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_CELLULAR) } doReturn true
+                on { transportInfo } doReturn null
+                on { underlyingNetworks } doReturn listOf(underlyingCarrierMergedNetwork)
+            }
+
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, mainCapabilities)
+        setWifiState(isCarrierMerged = true)
+
+        // THEN there's a carrier merged connection
+        assertThat(latest).isTrue()
+    }
 
     /** Regression test for b/272586234. */
     @Test
     fun hasCarrierMergedConnection_defaultIsWifiNotCarrierMerged_wifiRepoIsCarrierMerged_isTrue() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.hasCarrierMergedConnection)
+        runTest {
+            val latest by underTest.hasCarrierMergedConnection.collectLastValue()
 
             // WHEN the default callback is TRANSPORT_WIFI but not carrier merged
-            val carrierMergedInfo =
-                mock<WifiInfo>().apply { whenever(this.isCarrierMerged).thenReturn(false) }
+            val carrierMergedInfo = mock<WifiInfo> { on { isCarrierMerged } doReturn false }
             val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_WIFI)).thenReturn(true)
-                    whenever(it.transportInfo).thenReturn(carrierMergedInfo)
+                Mockito.mock(NetworkCapabilities::class.java).stub {
+                    on { hasTransport(TRANSPORT_WIFI) } doReturn true
+                    on { transportInfo } doReturn carrierMergedInfo
                 }
             getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
 
@@ -1194,37 +937,36 @@ class MobileConnectionsRepositoryKairosTest : SysuiTestCase() {
 
     /** Regression test for b/278618530. */
     @Test
-    fun hasCarrierMergedConnection_defaultIsCellular_wifiRepoIsCarrierMerged_isFalse() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.hasCarrierMergedConnection)
+    fun hasCarrierMergedConnection_defaultIsCellular_wifiRepoIsCarrierMerged_isFalse() = runTest {
+        val latest by underTest.hasCarrierMergedConnection.collectLastValue()
 
-            // WHEN the default callback is TRANSPORT_CELLULAR and not carrier merged
-            val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_CELLULAR)).thenReturn(true)
-                    whenever(it.transportInfo).thenReturn(null)
-                }
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
+        // WHEN the default callback is TRANSPORT_CELLULAR and not carrier merged
+        val caps =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_CELLULAR) } doReturn true
+                on { transportInfo } doReturn null
+            }
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
 
-            // BUT the wifi repo has gotten updates that it *is* carrier merged
-            setWifiState(isCarrierMerged = true)
+        // BUT the wifi repo has gotten updates that it *is* carrier merged
+        setWifiState(isCarrierMerged = true)
 
-            // THEN hasCarrierMergedConnection is **false** (The default network being CELLULAR
-            // takes precedence over the wifi network being carrier merged.)
-            assertThat(latest).isFalse()
-        }
+        // THEN hasCarrierMergedConnection is **false** (The default network being CELLULAR
+        // takes precedence over the wifi network being carrier merged.)
+        assertThat(latest).isFalse()
+    }
 
     /** Regression test for b/278618530. */
     @Test
     fun hasCarrierMergedConnection_defaultCellular_wifiIsCarrierMerged_airplaneMode_isTrue() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.hasCarrierMergedConnection)
+        runTest {
+            val latest by underTest.hasCarrierMergedConnection.collectLastValue()
 
             // WHEN the default callback is TRANSPORT_CELLULAR and not carrier merged
             val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasTransport(TRANSPORT_CELLULAR)).thenReturn(true)
-                    whenever(it.transportInfo).thenReturn(null)
+                Mockito.mock(NetworkCapabilities::class.java).stub {
+                    on { hasTransport(TRANSPORT_CELLULAR) } doReturn true
+                    on { transportInfo } doReturn null
                 }
             getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
 
@@ -1238,269 +980,254 @@ class MobileConnectionsRepositoryKairosTest : SysuiTestCase() {
         }
 
     @Test
-    fun defaultConnectionIsValidated_startsAsFalse() {
-        assertThat(underTest.defaultConnectionIsValidated.value).isFalse()
+    fun defaultConnectionIsValidated_startsAsFalse() = runTest {
+        assertThat(underTest.defaultConnectionIsValidated.collectLastValue().value).isFalse()
     }
 
     @Test
-    fun defaultConnectionIsValidated_capsHaveValidated_isValidated() =
-        testScope.runTest {
-            val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasCapability(NET_CAPABILITY_VALIDATED)).thenReturn(true)
-                }
+    fun defaultConnectionIsValidated_capsHaveValidated_isValidated() = runTest {
+        val caps =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasCapability(NET_CAPABILITY_VALIDATED) } doReturn true
+            }
 
-            val latest by collectLastValue(underTest.defaultConnectionIsValidated)
+        val latest by underTest.defaultConnectionIsValidated.collectLastValue()
 
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
 
-            assertThat(latest).isTrue()
-        }
-
-    @Test
-    fun defaultConnectionIsValidated_capsHaveNotValidated_isNotValidated() =
-        testScope.runTest {
-            val caps =
-                mock<NetworkCapabilities>().also {
-                    whenever(it.hasCapability(NET_CAPABILITY_VALIDATED)).thenReturn(false)
-                }
-
-            val latest by collectLastValue(underTest.defaultConnectionIsValidated)
-
-            getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
-
-            assertThat(latest).isFalse()
-        }
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun config_initiallyFromContext() =
-        testScope.runTest {
-            overrideResource(R.bool.config_showMin3G, true)
-            val configFromContext = MobileMappings.Config.readConfig(context)
-            assertThat(configFromContext.showAtLeast3G).isTrue()
+    fun defaultConnectionIsValidated_capsHaveNotValidated_isNotValidated() = runTest {
+        val caps =
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasCapability(NET_CAPABILITY_VALIDATED) } doReturn false
+            }
 
-            // The initial value will be fetched when the repo is created, so we need to override
-            // the resources and then re-create the repo.
-            underTest =
-                MobileConnectionsRepositoryKairosImpl(
-                    connectivityRepository,
-                    subscriptionManager,
-                    subscriptionManagerProxy,
-                    telephonyManager,
-                    logger,
-                    summaryLogger,
-                    mobileMappings,
-                    fakeBroadcastDispatcher,
-                    context,
-                    testDispatcher,
-                    testScope.backgroundScope,
-                    testDispatcher,
-                    airplaneModeRepository,
-                    wifiRepository,
-                    fullConnectionFactory,
-                    updateMonitor,
-                    mock(),
-                )
+        val latest by underTest.defaultConnectionIsValidated.collectLastValue()
 
-            val latest by collectLastValue(underTest.defaultDataSubRatConfig)
+        getDefaultNetworkCallback().onCapabilitiesChanged(NETWORK, caps)
 
-            assertTrue(latest!!.areEqual(configFromContext))
-            assertTrue(latest!!.showAtLeast3G)
-        }
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun config_subIdChangeEvent_updated() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.defaultDataSubRatConfig)
+    fun config_initiallyFromContext() = runTest {
+        overrideResource(R.bool.config_showMin3G, true)
+        val configFromContext = MobileMappings.Config.readConfig(applicationContext)
+        assertThat(configFromContext.showAtLeast3G).isTrue()
 
-            assertThat(latest!!.showAtLeast3G).isFalse()
+        val latest by underTest.defaultDataSubRatConfig.collectLastValue()
 
-            overrideResource(R.bool.config_showMin3G, true)
-            val configFromContext = MobileMappings.Config.readConfig(context)
-            assertThat(configFromContext.showAtLeast3G).isTrue()
-
-            // WHEN the change event is fired
-            val intent =
-                Intent(TelephonyManager.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED)
-                    .putExtra(PhoneConstants.SUBSCRIPTION_KEY, SUB_1_ID)
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(context, intent)
-
-            // THEN the config is updated
-            assertTrue(latest!!.areEqual(configFromContext))
-            assertTrue(latest!!.showAtLeast3G)
-        }
+        assertTrue(latest!!.areEqual(configFromContext))
+        assertTrue(latest!!.showAtLeast3G)
+    }
 
     @Test
-    fun config_carrierConfigChangeEvent_updated() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.defaultDataSubRatConfig)
+    fun config_subIdChangeEvent_updated() = runTest {
+        val latest by underTest.defaultDataSubRatConfig.collectLastValue()
 
-            assertThat(latest!!.showAtLeast3G).isFalse()
+        assertThat(latest!!.showAtLeast3G).isFalse()
 
-            overrideResource(R.bool.config_showMin3G, true)
-            val configFromContext = MobileMappings.Config.readConfig(context)
-            assertThat(configFromContext.showAtLeast3G).isTrue()
+        overrideResource(R.bool.config_showMin3G, true)
+        val configFromContext = MobileMappings.Config.readConfig(applicationContext)
+        assertThat(configFromContext.showAtLeast3G).isTrue()
 
-            // WHEN the change event is fired
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(
-                context,
-                Intent(CarrierConfigManager.ACTION_CARRIER_CONFIG_CHANGED),
-            )
+        // WHEN the change event is fired
+        val intent =
+            Intent(TelephonyManager.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED)
+                .putExtra(PhoneConstants.SUBSCRIPTION_KEY, SUB_1_ID)
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(applicationContext, intent)
 
-            // THEN the config is updated
-            assertThat(latest!!.areEqual(configFromContext)).isTrue()
-            assertThat(latest!!.showAtLeast3G).isTrue()
-        }
-
-    @Test
-    fun carrierConfig_initialValueIsFetched() =
-        testScope.runTest {
-            // Value starts out false
-            assertThat(underTest.defaultDataSubRatConfig.value.showAtLeast3G).isFalse()
-
-            overrideResource(R.bool.config_showMin3G, true)
-            val configFromContext = MobileMappings.Config.readConfig(context)
-            assertThat(configFromContext.showAtLeast3G).isTrue()
-
-            // WHEN the change event is fired
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(
-                context,
-                Intent(CarrierConfigManager.ACTION_CARRIER_CONFIG_CHANGED),
-            )
-
-            // WHEN collection starts AFTER the broadcast is sent out
-            val latest by collectLastValue(underTest.defaultDataSubRatConfig)
-
-            // THEN the config has the updated value
-            assertThat(latest!!.areEqual(configFromContext)).isTrue()
-            assertThat(latest!!.showAtLeast3G).isTrue()
-        }
+        // THEN the config is updated
+        assertThat(latest?.areEqual(configFromContext)).isEqualTo(true)
+        assertThat(latest?.showAtLeast3G).isEqualTo(true)
+    }
 
     @Test
-    fun activeDataChange_inSameGroup_emitsUnit() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.activeSubChangedInGroupEvent)
+    fun config_carrierConfigChangeEvent_updated() = runTest {
+        val latest by underTest.defaultDataSubRatConfig.collectLastValue()
 
-            getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>()
-                .onActiveDataSubscriptionIdChanged(SUB_3_ID_GROUPED)
-            getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>()
-                .onActiveDataSubscriptionIdChanged(SUB_4_ID_GROUPED)
+        assertThat(latest!!.showAtLeast3G).isFalse()
 
-            assertThat(latest).isEqualTo(Unit)
-        }
+        overrideResource(R.bool.config_showMin3G, true)
+        val configFromContext = MobileMappings.Config.readConfig(applicationContext)
+        assertThat(configFromContext.showAtLeast3G).isTrue()
 
-    @Test
-    fun activeDataChange_notInSameGroup_doesNotEmit() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.activeSubChangedInGroupEvent)
+        // WHEN the change event is fired
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+            applicationContext,
+            Intent(CarrierConfigManager.ACTION_CARRIER_CONFIG_CHANGED),
+        )
 
-            getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>()
-                .onActiveDataSubscriptionIdChanged(SUB_3_ID_GROUPED)
-            getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>()
-                .onActiveDataSubscriptionIdChanged(SUB_1_ID)
-
-            assertThat(latest).isEqualTo(null)
-        }
+        // THEN the config is updated
+        assertThat(latest?.areEqual(configFromContext)).isEqualTo(true)
+        assertThat(latest?.showAtLeast3G).isEqualTo(true)
+    }
 
     @Test
-    fun anySimSecure_propagatesStateFromKeyguardUpdateMonitor() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.isAnySimSecure)
-            assertThat(latest).isFalse()
+    fun carrierConfig_initialValueIsFetched() = runTest {
+        underTest
+        testScope.runCurrent()
 
-            val updateMonitorCallback = argumentCaptor<KeyguardUpdateMonitorCallback>()
-            verify(updateMonitor).registerCallback(updateMonitorCallback.capture())
+        // Value starts out false
+        assertThat(underTest.defaultDataSubRatConfig.sample().showAtLeast3G).isFalse()
 
-            whenever(updateMonitor.isSimPinSecure).thenReturn(true)
-            updateMonitorCallback.value.onSimStateChanged(0, 0, 0)
+        overrideResource(R.bool.config_showMin3G, true)
+        val configFromContext = MobileMappings.Config.readConfig(applicationContext)
+        assertThat(configFromContext.showAtLeast3G).isTrue()
 
-            assertThat(latest).isTrue()
+        assertThat(broadcastDispatcher.numReceiversRegistered).isAtLeast(1)
 
-            whenever(updateMonitor.isSimPinSecure).thenReturn(false)
-            updateMonitorCallback.value.onSimStateChanged(0, 0, 0)
+        // WHEN the change event is fired
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+            applicationContext,
+            Intent(CarrierConfigManager.ACTION_CARRIER_CONFIG_CHANGED),
+        )
+        testScope.runCurrent()
 
-            assertThat(latest).isFalse()
-        }
+        // WHEN collection starts AFTER the broadcast is sent out
+        val latest by underTest.defaultDataSubRatConfig.collectLastValue()
 
-    @Test
-    fun getIsAnySimSecure_delegatesCallToKeyguardUpdateMonitor() =
-        testScope.runTest {
-            assertThat(underTest.getIsAnySimSecure()).isFalse()
-
-            whenever(updateMonitor.isSimPinSecure).thenReturn(true)
-
-            assertThat(underTest.getIsAnySimSecure()).isTrue()
-        }
-
-    @Test
-    fun noSubscriptionsInEcmMode_notInEcmMode() =
-        testScope.runTest {
-            whenever(telephonyManager.emergencyCallbackMode).thenReturn(false)
-
-            runCurrent()
-
-            assertThat(underTest.isInEcmMode()).isFalse()
-        }
+        // THEN the config has the updated value
+        assertWithMessage("showAtLeast3G is false").that(latest!!.showAtLeast3G).isTrue()
+        assertWithMessage("not equal").that(latest!!.areEqual(configFromContext)).isTrue()
+    }
 
     @Test
-    fun someSubscriptionsInEcmMode_inEcmMode() =
-        testScope.runTest {
-            whenever(telephonyManager.emergencyCallbackMode).thenReturn(true)
-
-            runCurrent()
-
-            assertThat(underTest.isInEcmMode()).isTrue()
+    fun activeDataChange_inSameGroup_emitsUnit() = runTest {
+        var eventCount = 0
+        underTest
+        testScope.backgroundScope.launch {
+            kairos.activateSpec { underTest.activeSubChangedInGroupEvent.observe { eventCount++ } }
         }
+        testScope.runCurrent()
 
-    private fun TestScope.getDefaultNetworkCallback(): ConnectivityManager.NetworkCallback {
-        runCurrent()
+        getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>(telephonyManager)
+            .onActiveDataSubscriptionIdChanged(SUB_3_ID_GROUPED)
+        testScope.runCurrent()
+
+        getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>(telephonyManager)
+            .onActiveDataSubscriptionIdChanged(SUB_4_ID_GROUPED)
+        testScope.runCurrent()
+
+        assertThat(eventCount).isEqualTo(1)
+    }
+
+    @Test
+    fun activeDataChange_notInSameGroup_doesNotEmit() = runTest {
+        var eventCount = 0
+        underTest
+        testScope.backgroundScope.launch {
+            kairos.activateSpec { underTest.activeSubChangedInGroupEvent.observe { eventCount++ } }
+        }
+        testScope.runCurrent()
+
+        getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>(telephonyManager)
+            .onActiveDataSubscriptionIdChanged(SUB_3_ID_GROUPED)
+        testScope.runCurrent()
+
+        getTelephonyCallbackForType<ActiveDataSubscriptionIdListener>(telephonyManager)
+            .onActiveDataSubscriptionIdChanged(SUB_1_ID)
+        testScope.runCurrent()
+
+        assertThat(eventCount).isEqualTo(0)
+    }
+
+    @Test
+    fun anySimSecure_propagatesStateFromKeyguardUpdateMonitor() = runTest {
+        val latest by underTest.isAnySimSecure.collectLastValue()
+        assertThat(latest).isFalse()
+
+        val updateMonitorCallback = argumentCaptor<KeyguardUpdateMonitorCallback>()
+        verify(keyguardUpdateMonitor).registerCallback(updateMonitorCallback.capture())
+
+        keyguardUpdateMonitor.stub { on { isSimPinSecure } doReturn true }
+        updateMonitorCallback.lastValue.onSimStateChanged(0, 0, 0)
+
+        assertThat(latest).isTrue()
+
+        keyguardUpdateMonitor.stub { on { isSimPinSecure } doReturn false }
+        updateMonitorCallback.lastValue.onSimStateChanged(0, 0, 0)
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun getIsAnySimSecure_delegatesCallToKeyguardUpdateMonitor() = runTest {
+        val anySimSecure by underTest.isAnySimSecure.collectLastValue()
+
+        assertThat(anySimSecure).isFalse()
+
+        keyguardUpdateMonitor.stub { on { isSimPinSecure } doReturn true }
+        argumentCaptor<KeyguardUpdateMonitorCallback>()
+            .apply { verify(keyguardUpdateMonitor).registerCallback(capture()) }
+            .lastValue
+            .onSimStateChanged(0, 0, 0)
+
+        assertThat(anySimSecure).isTrue()
+    }
+
+    @Test
+    fun noSubscriptionsInEcmMode_notInEcmMode() = runTest {
+        val latest by underTest.isInEcmMode.collectLastValue()
+        testScope.runCurrent()
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun someSubscriptionsInEcmMode_inEcmMode() = runTest {
+        val latest by underTest.isInEcmMode.collectLastValue()
+        testScope.runCurrent()
+
+        getTelephonyCallbackForType<EmergencyCallbackModeListener>(telephonyManager)
+            .onCallbackModeStarted(0, mock(), 0)
+
+        assertThat(latest).isTrue()
+    }
+
+    private fun KairosTestScope.getDefaultNetworkCallback(): ConnectivityManager.NetworkCallback {
+        testScope.runCurrent()
         val callbackCaptor = argumentCaptor<ConnectivityManager.NetworkCallback>()
         verify(connectivityManager).registerDefaultNetworkCallback(callbackCaptor.capture())
-        return callbackCaptor.value!!
+        return callbackCaptor.lastValue
     }
 
-    private fun setWifiState(isCarrierMerged: Boolean) {
+    private fun KairosTestScope.setWifiState(isCarrierMerged: Boolean) {
         if (isCarrierMerged) {
             val mergedEntry =
-                mock<MergedCarrierEntry>().apply {
-                    whenever(this.isPrimaryNetwork).thenReturn(true)
-                    whenever(this.isDefaultNetwork).thenReturn(true)
-                    whenever(this.subscriptionId).thenReturn(SUB_CM_ID)
+                mock<MergedCarrierEntry> {
+                    on { isPrimaryNetwork } doReturn true
+                    on { isDefaultNetwork } doReturn true
+                    on { subscriptionId } doReturn SUB_CM_ID
                 }
-            whenever(wifiPickerTracker.mergedCarrierEntry).thenReturn(mergedEntry)
-            whenever(wifiPickerTracker.connectedWifiEntry).thenReturn(null)
+            wifiPickerTracker.stub {
+                on { mergedCarrierEntry } doReturn mergedEntry
+                on { connectedWifiEntry } doReturn null
+            }
         } else {
             val wifiEntry =
-                mock<WifiEntry>().apply {
-                    whenever(this.isPrimaryNetwork).thenReturn(true)
-                    whenever(this.isDefaultNetwork).thenReturn(true)
+                mock<WifiEntry> {
+                    on { isPrimaryNetwork } doReturn true
+                    on { isDefaultNetwork } doReturn true
                 }
-            whenever(wifiPickerTracker.connectedWifiEntry).thenReturn(wifiEntry)
-            whenever(wifiPickerTracker.mergedCarrierEntry).thenReturn(null)
+            wifiPickerTracker.stub {
+                on { connectedWifiEntry } doReturn wifiEntry
+                on { mergedCarrierEntry } doReturn null
+            }
         }
-        wifiPickerTrackerCallback.value.onWifiEntriesChanged()
+        wifiPickerTrackerCallback.allValues.forEach { it.onWifiEntriesChanged() }
     }
 
-    private fun TestScope.getSubscriptionCallback():
-        SubscriptionManager.OnSubscriptionsChangedListener {
-        runCurrent()
-        val callbackCaptor = argumentCaptor<SubscriptionManager.OnSubscriptionsChangedListener>()
-        verify(subscriptionManager)
-            .addOnSubscriptionsChangedListener(any(), callbackCaptor.capture())
-        return callbackCaptor.value!!
-    }
-
-    private fun TestScope.getTelephonyCallbacks(): List<TelephonyCallback> {
-        runCurrent()
-        val callbackCaptor = argumentCaptor<TelephonyCallback>()
-        verify(telephonyManager).registerTelephonyCallback(any(), callbackCaptor.capture())
-        return callbackCaptor.allValues
-    }
-
-    private inline fun <reified T> TestScope.getTelephonyCallbackForType(): T {
-        val cbs = this.getTelephonyCallbacks().filterIsInstance<T>()
-        assertThat(cbs.size).isEqualTo(1)
-        return cbs[0]
+    private fun KairosTestScope.getSubscriptionCallback(): OnSubscriptionsChangedListener {
+        testScope.runCurrent()
+        return argumentCaptor<OnSubscriptionsChangedListener>()
+            .apply {
+                verify(subscriptionManager).addOnSubscriptionsChangedListener(any(), capture())
+            }
+            .lastValue
     }
 
     companion object {
@@ -1509,11 +1236,11 @@ class MobileConnectionsRepositoryKairosTest : SysuiTestCase() {
         private const val SUB_1_NAME = "Carrier $SUB_1_ID"
         private val GROUP_1 = ParcelUuid(UUID.randomUUID())
         private val SUB_1 =
-            mock<SubscriptionInfo>().also {
-                whenever(it.subscriptionId).thenReturn(SUB_1_ID)
-                whenever(it.groupUuid).thenReturn(GROUP_1)
-                whenever(it.carrierName).thenReturn(SUB_1_NAME)
-                whenever(it.profileClass).thenReturn(PROFILE_CLASS_UNSET)
+            mock<SubscriptionInfo> {
+                on { subscriptionId } doReturn SUB_1_ID
+                on { groupUuid } doReturn GROUP_1
+                on { carrierName } doReturn SUB_1_NAME
+                on { profileClass } doReturn PROFILE_CLASS_UNSET
             }
         private val MODEL_1 =
             SubscriptionModel(
@@ -1528,11 +1255,11 @@ class MobileConnectionsRepositoryKairosTest : SysuiTestCase() {
         private const val SUB_2_NAME = "Carrier $SUB_2_ID"
         private val GROUP_2 = ParcelUuid(UUID.randomUUID())
         private val SUB_2 =
-            mock<SubscriptionInfo>().also {
-                whenever(it.subscriptionId).thenReturn(SUB_2_ID)
-                whenever(it.groupUuid).thenReturn(GROUP_2)
-                whenever(it.carrierName).thenReturn(SUB_2_NAME)
-                whenever(it.profileClass).thenReturn(PROFILE_CLASS_UNSET)
+            mock<SubscriptionInfo> {
+                on { subscriptionId } doReturn SUB_2_ID
+                on { groupUuid } doReturn GROUP_2
+                on { carrierName } doReturn SUB_2_NAME
+                on { profileClass } doReturn PROFILE_CLASS_UNSET
             }
         private val MODEL_2 =
             SubscriptionModel(
@@ -1548,34 +1275,34 @@ class MobileConnectionsRepositoryKairosTest : SysuiTestCase() {
         // Subscription 3
         private const val SUB_3_ID_GROUPED = 3
         private val SUB_3 =
-            mock<SubscriptionInfo>().also {
-                whenever(it.subscriptionId).thenReturn(SUB_3_ID_GROUPED)
-                whenever(it.groupUuid).thenReturn(GROUP_ID_3_4)
-                whenever(it.profileClass).thenReturn(PROFILE_CLASS_UNSET)
+            mock<SubscriptionInfo> {
+                on { subscriptionId } doReturn SUB_3_ID_GROUPED
+                on { groupUuid } doReturn GROUP_ID_3_4
+                on { profileClass } doReturn PROFILE_CLASS_UNSET
             }
 
         // Subscription 4
         private const val SUB_4_ID_GROUPED = 4
         private val SUB_4 =
-            mock<SubscriptionInfo>().also {
-                whenever(it.subscriptionId).thenReturn(SUB_4_ID_GROUPED)
-                whenever(it.groupUuid).thenReturn(GROUP_ID_3_4)
-                whenever(it.profileClass).thenReturn(PROFILE_CLASS_UNSET)
+            mock<SubscriptionInfo> {
+                on { subscriptionId } doReturn SUB_4_ID_GROUPED
+                on { groupUuid } doReturn GROUP_ID_3_4
+                on { profileClass } doReturn PROFILE_CLASS_UNSET
             }
 
         // Subs 3 and 4 are considered to be in the same group ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
         private const val NET_ID = 123
-        private val NETWORK = mock<Network>().apply { whenever(getNetId()).thenReturn(NET_ID) }
+        private val NETWORK = mock<Network> { on { getNetId() } doReturn NET_ID }
 
         // Carrier merged subscription
         private const val SUB_CM_ID = 5
         private const val SUB_CM_NAME = "Carrier $SUB_CM_ID"
         private val SUB_CM =
-            mock<SubscriptionInfo>().also {
-                whenever(it.subscriptionId).thenReturn(SUB_CM_ID)
-                whenever(it.carrierName).thenReturn(SUB_CM_NAME)
-                whenever(it.profileClass).thenReturn(PROFILE_CLASS_UNSET)
+            mock<SubscriptionInfo> {
+                on { subscriptionId } doReturn SUB_CM_ID
+                on { carrierName } doReturn SUB_CM_NAME
+                on { profileClass } doReturn PROFILE_CLASS_UNSET
             }
         private val MODEL_CM =
             SubscriptionModel(
@@ -1585,28 +1312,29 @@ class MobileConnectionsRepositoryKairosTest : SysuiTestCase() {
             )
 
         private val WIFI_INFO_CM =
-            mock<WifiInfo>().apply {
-                whenever(this.isPrimary).thenReturn(true)
-                whenever(this.isCarrierMerged).thenReturn(true)
-                whenever(this.subscriptionId).thenReturn(SUB_CM_ID)
+            mock<WifiInfo> {
+                on { isPrimary } doReturn true
+                on { isCarrierMerged } doReturn true
+                on { subscriptionId } doReturn SUB_CM_ID
             }
         private val WIFI_NETWORK_CAPS_CM =
-            mock<NetworkCapabilities>().also {
-                whenever(it.hasTransport(TRANSPORT_WIFI)).thenReturn(true)
-                whenever(it.transportInfo).thenReturn(WIFI_INFO_CM)
-                whenever(it.hasCapability(NET_CAPABILITY_VALIDATED)).thenReturn(true)
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_WIFI) } doReturn true
+                on { transportInfo } doReturn WIFI_INFO_CM
+                on { hasCapability(NET_CAPABILITY_VALIDATED) } doReturn true
             }
 
         private val WIFI_INFO_ACTIVE =
-            mock<WifiInfo>().apply {
-                whenever(this.isPrimary).thenReturn(true)
-                whenever(this.isCarrierMerged).thenReturn(false)
+            mock<WifiInfo> {
+                on { isPrimary } doReturn true
+                on { isCarrierMerged } doReturn false
             }
+
         private val WIFI_NETWORK_CAPS_ACTIVE =
-            mock<NetworkCapabilities>().also {
-                whenever(it.hasTransport(TRANSPORT_WIFI)).thenReturn(true)
-                whenever(it.transportInfo).thenReturn(WIFI_INFO_ACTIVE)
-                whenever(it.hasCapability(NET_CAPABILITY_VALIDATED)).thenReturn(true)
+            Mockito.mock(NetworkCapabilities::class.java).stub {
+                on { hasTransport(TRANSPORT_WIFI) } doReturn true
+                on { transportInfo } doReturn WIFI_INFO_ACTIVE
+                on { hasCapability(NET_CAPABILITY_VALIDATED) } doReturn true
             }
 
         /**

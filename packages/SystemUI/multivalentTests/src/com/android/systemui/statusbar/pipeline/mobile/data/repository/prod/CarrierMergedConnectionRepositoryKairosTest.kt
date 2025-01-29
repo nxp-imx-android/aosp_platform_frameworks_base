@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,281 +20,223 @@ import android.telephony.TelephonyManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.kairos.ActivatedKairosFixture
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.KairosTestScope
+import com.android.systemui.kairos.runKairosTest
+import com.android.systemui.kairos.stateOf
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
-import com.android.systemui.statusbar.pipeline.wifi.data.repository.FakeWifiRepository
+import com.android.systemui.statusbar.pipeline.wifi.data.repository.fakeWifiRepository
+import com.android.systemui.statusbar.pipeline.wifi.data.repository.wifiRepository
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
-import com.android.systemui.util.mockito.whenever
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
 
+@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class CarrierMergedConnectionRepositoryKairosTest : SysuiTestCase() {
 
-    private lateinit var underTest: CarrierMergedConnectionRepositoryKairos
+    private val Kosmos.underTest by ActivatedKairosFixture {
+        CarrierMergedConnectionRepositoryKairos(
+            subId = SUB_ID,
+            tableLogBuffer = logcatTableLogBuffer(this),
+            telephonyManager = telephonyManager,
+            wifiRepository = wifiRepository,
+            isInEcmMode = stateOf(false),
+        )
+    }
 
-    private lateinit var wifiRepository: FakeWifiRepository
-    @Mock private lateinit var logger: TableLogBuffer
-    @Mock private lateinit var telephonyManager: TelephonyManager
+    private val Kosmos.telephonyManager: TelephonyManager by Fixture {
+        mock {
+            on { subscriptionId } doReturn SUB_ID
+            on { simOperatorName } doReturn ""
+        }
+    }
 
-    private val testDispatcher = UnconfinedTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
+    private fun runTest(block: suspend KairosTestScope.() -> Unit) =
+        testKosmos().run {
+            useUnconfinedTestDispatcher()
+            runKairosTest { block() }
+        }
 
-    @Before
-    fun setUp() {
-        MockitoAnnotations.initMocks(this)
-        whenever(telephonyManager.subscriptionId).thenReturn(SUB_ID)
-        whenever(telephonyManager.simOperatorName).thenReturn("")
+    @Test
+    fun inactiveWifi_isDefault() = runTest {
+        val latestConnState by underTest.dataConnectionState.collectLastValue()
+        val latestNetType by underTest.resolvedNetworkType.collectLastValue()
 
-        wifiRepository = FakeWifiRepository()
+        fakeWifiRepository.setWifiNetwork(WifiNetworkModel.Inactive())
 
-        underTest =
-            CarrierMergedConnectionRepositoryKairos(
-                SUB_ID,
-                logger,
-                telephonyManager,
-                testScope.backgroundScope.coroutineContext,
-                testScope.backgroundScope,
-                wifiRepository,
-            )
+        assertThat(latestConnState).isEqualTo(DataConnectionState.Disconnected)
+        assertThat(latestNetType).isNotEqualTo(ResolvedNetworkType.CarrierMergedNetworkType)
     }
 
     @Test
-    fun inactiveWifi_isDefault() =
-        testScope.runTest {
-            var latestConnState: DataConnectionState? = null
-            var latestNetType: ResolvedNetworkType? = null
+    fun activeWifi_isDefault() = runTest {
+        val latestConnState by underTest.dataConnectionState.collectLastValue()
+        val latestNetType by underTest.resolvedNetworkType.collectLastValue()
 
-            val dataJob =
-                underTest.dataConnectionState.onEach { latestConnState = it }.launchIn(this)
-            val netJob = underTest.resolvedNetworkType.onEach { latestNetType = it }.launchIn(this)
+        fakeWifiRepository.setWifiNetwork(WifiNetworkModel.Active.of(level = 1))
 
-            wifiRepository.setWifiNetwork(WifiNetworkModel.Inactive())
-
-            assertThat(latestConnState).isEqualTo(DataConnectionState.Disconnected)
-            assertThat(latestNetType).isNotEqualTo(ResolvedNetworkType.CarrierMergedNetworkType)
-
-            dataJob.cancel()
-            netJob.cancel()
-        }
+        assertThat(latestConnState).isEqualTo(DataConnectionState.Disconnected)
+        assertThat(latestNetType).isNotEqualTo(ResolvedNetworkType.CarrierMergedNetworkType)
+    }
 
     @Test
-    fun activeWifi_isDefault() =
-        testScope.runTest {
-            var latestConnState: DataConnectionState? = null
-            var latestNetType: ResolvedNetworkType? = null
+    fun carrierMergedWifi_isValidAndFieldsComeFromWifiNetwork() = runTest {
+        val latest by underTest.primaryLevel.collectLastValue()
 
-            val dataJob =
-                underTest.dataConnectionState.onEach { latestConnState = it }.launchIn(this)
-            val netJob = underTest.resolvedNetworkType.onEach { latestNetType = it }.launchIn(this)
+        fakeWifiRepository.setIsWifiEnabled(true)
+        fakeWifiRepository.setIsWifiDefault(true)
 
-            wifiRepository.setWifiNetwork(WifiNetworkModel.Active.of(level = 1))
+        fakeWifiRepository.setWifiNetwork(
+            WifiNetworkModel.CarrierMerged.of(subscriptionId = SUB_ID, level = 3)
+        )
 
-            assertThat(latestConnState).isEqualTo(DataConnectionState.Disconnected)
-            assertThat(latestNetType).isNotEqualTo(ResolvedNetworkType.CarrierMergedNetworkType)
-
-            dataJob.cancel()
-            netJob.cancel()
-        }
+        assertThat(latest).isEqualTo(3)
+    }
 
     @Test
-    fun carrierMergedWifi_isValidAndFieldsComeFromWifiNetwork() =
-        testScope.runTest {
-            var latest: Int? = null
-            val job = underTest.primaryLevel.onEach { latest = it }.launchIn(this)
+    fun activity_comesFromWifiActivity() = runTest {
+        val latest by underTest.dataActivityDirection.collectLastValue()
 
-            wifiRepository.setIsWifiEnabled(true)
-            wifiRepository.setIsWifiDefault(true)
+        fakeWifiRepository.setIsWifiEnabled(true)
+        fakeWifiRepository.setIsWifiDefault(true)
+        fakeWifiRepository.setWifiNetwork(
+            WifiNetworkModel.CarrierMerged.of(subscriptionId = SUB_ID, level = 3)
+        )
+        fakeWifiRepository.setWifiActivity(
+            DataActivityModel(hasActivityIn = true, hasActivityOut = false)
+        )
 
-            wifiRepository.setWifiNetwork(
-                WifiNetworkModel.CarrierMerged.of(subscriptionId = SUB_ID, level = 3)
-            )
+        assertThat(latest!!.hasActivityIn).isTrue()
+        assertThat(latest!!.hasActivityOut).isFalse()
 
-            assertThat(latest).isEqualTo(3)
+        fakeWifiRepository.setWifiActivity(
+            DataActivityModel(hasActivityIn = false, hasActivityOut = true)
+        )
 
-            job.cancel()
-        }
-
-    @Test
-    fun activity_comesFromWifiActivity() =
-        testScope.runTest {
-            var latest: DataActivityModel? = null
-            val job = underTest.dataActivityDirection.onEach { latest = it }.launchIn(this)
-
-            wifiRepository.setIsWifiEnabled(true)
-            wifiRepository.setIsWifiDefault(true)
-            wifiRepository.setWifiNetwork(
-                WifiNetworkModel.CarrierMerged.of(subscriptionId = SUB_ID, level = 3)
-            )
-            wifiRepository.setWifiActivity(
-                DataActivityModel(hasActivityIn = true, hasActivityOut = false)
-            )
-
-            assertThat(latest!!.hasActivityIn).isTrue()
-            assertThat(latest!!.hasActivityOut).isFalse()
-
-            wifiRepository.setWifiActivity(
-                DataActivityModel(hasActivityIn = false, hasActivityOut = true)
-            )
-
-            assertThat(latest!!.hasActivityIn).isFalse()
-            assertThat(latest!!.hasActivityOut).isTrue()
-
-            job.cancel()
-        }
+        assertThat(latest!!.hasActivityIn).isFalse()
+        assertThat(latest!!.hasActivityOut).isTrue()
+    }
 
     @Test
-    fun carrierMergedWifi_wrongSubId_isDefault() =
-        testScope.runTest {
-            var latestLevel: Int? = null
-            var latestType: ResolvedNetworkType? = null
-            val levelJob = underTest.primaryLevel.onEach { latestLevel = it }.launchIn(this)
-            val typeJob = underTest.resolvedNetworkType.onEach { latestType = it }.launchIn(this)
+    fun carrierMergedWifi_wrongSubId_isDefault() = runTest {
+        val latestLevel by underTest.primaryLevel.collectLastValue()
+        val latestType by underTest.resolvedNetworkType.collectLastValue()
 
-            wifiRepository.setWifiNetwork(
-                WifiNetworkModel.CarrierMerged.of(subscriptionId = SUB_ID + 10, level = 3)
-            )
+        fakeWifiRepository.setWifiNetwork(
+            WifiNetworkModel.CarrierMerged.of(subscriptionId = SUB_ID + 10, level = 3)
+        )
 
-            assertThat(latestLevel).isNotEqualTo(3)
-            assertThat(latestType).isNotEqualTo(ResolvedNetworkType.CarrierMergedNetworkType)
-
-            levelJob.cancel()
-            typeJob.cancel()
-        }
+        assertThat(latestLevel).isNotEqualTo(3)
+        assertThat(latestType).isNotEqualTo(ResolvedNetworkType.CarrierMergedNetworkType)
+    }
 
     // This scenario likely isn't possible, but write a test for it anyway
     @Test
-    fun carrierMergedButNotEnabled_isDefault() =
-        testScope.runTest {
-            var latest: Int? = null
-            val job = underTest.primaryLevel.onEach { latest = it }.launchIn(this)
+    fun carrierMergedButNotEnabled_isDefault() = runTest {
+        val latest by underTest.primaryLevel.collectLastValue()
 
-            wifiRepository.setWifiNetwork(
-                WifiNetworkModel.CarrierMerged.of(subscriptionId = SUB_ID, level = 3)
-            )
-            wifiRepository.setIsWifiEnabled(false)
+        fakeWifiRepository.setWifiNetwork(
+            WifiNetworkModel.CarrierMerged.of(subscriptionId = SUB_ID, level = 3)
+        )
+        fakeWifiRepository.setIsWifiEnabled(false)
 
-            assertThat(latest).isNotEqualTo(3)
-
-            job.cancel()
-        }
+        assertThat(latest).isNotEqualTo(3)
+    }
 
     // This scenario likely isn't possible, but write a test for it anyway
     @Test
-    fun carrierMergedButWifiNotDefault_isDefault() =
-        testScope.runTest {
-            var latest: Int? = null
-            val job = underTest.primaryLevel.onEach { latest = it }.launchIn(this)
+    fun carrierMergedButWifiNotDefault_isDefault() = runTest {
+        val latest by underTest.primaryLevel.collectLastValue()
 
-            wifiRepository.setWifiNetwork(
-                WifiNetworkModel.CarrierMerged.of(subscriptionId = SUB_ID, level = 3)
+        fakeWifiRepository.setWifiNetwork(
+            WifiNetworkModel.CarrierMerged.of(subscriptionId = SUB_ID, level = 3)
+        )
+        fakeWifiRepository.setIsWifiDefault(false)
+
+        assertThat(latest).isNotEqualTo(3)
+    }
+
+    @Test
+    fun numberOfLevels_comesFromCarrierMerged() = runTest {
+        val latest by underTest.numberOfLevels.collectLastValue()
+
+        fakeWifiRepository.setWifiNetwork(
+            WifiNetworkModel.CarrierMerged.of(
+                subscriptionId = SUB_ID,
+                level = 1,
+                numberOfLevels = 6,
             )
-            wifiRepository.setIsWifiDefault(false)
+        )
 
-            assertThat(latest).isNotEqualTo(3)
-
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(6)
+    }
 
     @Test
-    fun numberOfLevels_comesFromCarrierMerged() =
-        testScope.runTest {
-            var latest: Int? = null
-            val job = underTest.numberOfLevels.onEach { latest = it }.launchIn(this)
+    fun dataEnabled_matchesWifiEnabled() = runTest {
+        val latest by underTest.dataEnabled.collectLastValue()
 
-            wifiRepository.setWifiNetwork(
-                WifiNetworkModel.CarrierMerged.of(
-                    subscriptionId = SUB_ID,
-                    level = 1,
-                    numberOfLevels = 6,
-                )
-            )
+        fakeWifiRepository.setIsWifiEnabled(true)
+        assertThat(latest).isTrue()
 
-            assertThat(latest).isEqualTo(6)
-
-            job.cancel()
-        }
+        fakeWifiRepository.setIsWifiEnabled(false)
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun dataEnabled_matchesWifiEnabled() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.dataEnabled.onEach { latest = it }.launchIn(this)
-
-            wifiRepository.setIsWifiEnabled(true)
-            assertThat(latest).isTrue()
-
-            wifiRepository.setIsWifiEnabled(false)
-            assertThat(latest).isFalse()
-
-            job.cancel()
-        }
+    fun cdmaRoaming_alwaysFalse() = runTest {
+        val latest by underTest.cdmaRoaming.collectLastValue()
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun cdmaRoaming_alwaysFalse() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.cdmaRoaming.onEach { latest = it }.launchIn(this)
+    fun networkName_usesSimOperatorNameAsInitial() = runTest {
+        telephonyManager.stub { on { simOperatorName } doReturn "Test SIM name" }
 
-            assertThat(latest).isFalse()
+        val latest by underTest.networkName.collectLastValue()
 
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(NetworkNameModel.SimDerived("Test SIM name"))
+    }
 
     @Test
-    fun networkName_usesSimOperatorNameAsInitial() =
-        testScope.runTest {
-            whenever(telephonyManager.simOperatorName).thenReturn("Test SIM name")
+    fun networkName_updatesOnNetworkUpdate() = runTest {
+        fakeWifiRepository.setIsWifiEnabled(true)
+        fakeWifiRepository.setIsWifiDefault(true)
 
-            var latest: NetworkNameModel? = null
-            val job = underTest.networkName.onEach { latest = it }.launchIn(this)
+        telephonyManager.stub { on { simOperatorName } doReturn "Test SIM name" }
 
-            assertThat(latest).isEqualTo(NetworkNameModel.SimDerived("Test SIM name"))
+        val latest by underTest.networkName.collectLastValue()
 
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(NetworkNameModel.SimDerived("Test SIM name"))
 
-    @Test
-    fun networkName_updatesOnNetworkUpdate() =
-        testScope.runTest {
-            whenever(telephonyManager.simOperatorName).thenReturn("Test SIM name")
+        telephonyManager.stub { on { simOperatorName } doReturn "New SIM name" }
+        fakeWifiRepository.setWifiNetwork(
+            WifiNetworkModel.CarrierMerged.of(subscriptionId = SUB_ID, level = 3)
+        )
 
-            var latest: NetworkNameModel? = null
-            val job = underTest.networkName.onEach { latest = it }.launchIn(this)
-
-            assertThat(latest).isEqualTo(NetworkNameModel.SimDerived("Test SIM name"))
-
-            whenever(telephonyManager.simOperatorName).thenReturn("New SIM name")
-            wifiRepository.setWifiNetwork(
-                WifiNetworkModel.CarrierMerged.of(subscriptionId = SUB_ID, level = 3)
-            )
-
-            assertThat(latest).isEqualTo(NetworkNameModel.SimDerived("New SIM name"))
-
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(NetworkNameModel.SimDerived("New SIM name"))
+    }
 
     @Test
-    fun isAllowedDuringAirplaneMode_alwaysTrue() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.isAllowedDuringAirplaneMode)
+    fun isAllowedDuringAirplaneMode_alwaysTrue() = runTest {
+        val latest by underTest.isAllowedDuringAirplaneMode.collectLastValue()
 
-            assertThat(latest).isTrue()
-        }
+        assertThat(latest).isTrue()
+    }
 
     private companion object {
         const val SUB_ID = 123

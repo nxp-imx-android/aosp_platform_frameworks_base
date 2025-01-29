@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,23 +20,32 @@ import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 import com.android.settingslib.SignalIcon
 import com.android.settingslib.mobile.MobileMappings
+import com.android.systemui.Flags
+import com.android.systemui.KairosActivatable
+import com.android.systemui.KairosBuilder
+import com.android.systemui.activated
+import com.android.systemui.common.coroutine.ConflatedCallbackFlow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.demomode.DemoMode
 import com.android.systemui.demomode.DemoModeController
+import com.android.systemui.kairos.Events
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.Incremental
+import com.android.systemui.kairos.State
+import com.android.systemui.kairos.flatMap
+import com.android.systemui.kairos.map
+import com.android.systemui.kairos.switchEvents
+import com.android.systemui.kairos.switchIncremental
+import com.android.systemui.kairosBuilder
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.DemoMobileConnectionsRepository
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileConnectionsRepositoryImpl
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.DemoMobileConnectionsRepositoryKairos
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileConnectionsRepositoryKairosImpl
+import dagger.Binds
+import dagger.Provides
+import dagger.multibindings.ElementsIntoSet
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
+import javax.inject.Provider
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
 
 /**
  * A provider for the [MobileConnectionsRepository] interface that can choose between the Demo and
@@ -60,18 +69,17 @@ import kotlinx.coroutines.flow.stateIn
  * a change (due to `distinctUntilChanged`) and will not refresh their data providers to the demo
  * implementation.
  */
-@Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
+@ExperimentalKairosApi
 @SysUISingleton
 class MobileRepositorySwitcherKairos
 @Inject
 constructor(
-    @Background scope: CoroutineScope,
-    val realRepository: MobileConnectionsRepositoryImpl,
-    val demoMobileConnectionsRepository: DemoMobileConnectionsRepository,
+    private val realRepository: MobileConnectionsRepositoryKairosImpl,
+    private val demoRepositoryFactory: DemoMobileConnectionsRepositoryKairos.Factory,
     demoModeController: DemoModeController,
-) : MobileConnectionsRepository {
+) : MobileConnectionsRepositoryKairos, KairosBuilder by kairosBuilder() {
 
-    val isDemoMode: StateFlow<Boolean> =
+    private val isDemoMode: State<Boolean> = buildState {
         conflatedCallbackFlow {
                 val callback =
                     object : DemoMode {
@@ -80,12 +88,10 @@ constructor(
                         }
 
                         override fun onDemoModeStarted() {
-                            demoMobileConnectionsRepository.startProcessingCommands()
                             trySend(true)
                         }
 
                         override fun onDemoModeFinished() {
-                            demoMobileConnectionsRepository.stopProcessingCommands()
                             trySend(false)
                         }
                     }
@@ -93,114 +99,73 @@ constructor(
                 demoModeController.addCallback(callback)
                 awaitClose { demoModeController.removeCallback(callback) }
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), demoModeController.isInDemoMode)
+            .toState(demoModeController.isInDemoMode)
+    }
 
     // Convenient definition flow for the currently active repo (based on demo mode or not)
     @VisibleForTesting
-    val activeRepo: StateFlow<MobileConnectionsRepository> =
-        isDemoMode
-            .mapLatest { demoMode ->
-                if (demoMode) {
-                    demoMobileConnectionsRepository
-                } else {
-                    realRepository
-                }
+    val activeRepo: State<MobileConnectionsRepositoryKairos> = buildState {
+        isDemoMode.mapLatestBuild { demoMode ->
+            if (demoMode) {
+                activated { demoRepositoryFactory.create() }
+            } else {
+                realRepository
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), realRepository)
-
-    override val subscriptions: StateFlow<List<SubscriptionModel>> =
-        activeRepo
-            .flatMapLatest { it.subscriptions }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), realRepository.subscriptions.value)
-
-    override val activeMobileDataSubscriptionId: StateFlow<Int?> =
-        activeRepo
-            .flatMapLatest { it.activeMobileDataSubscriptionId }
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                realRepository.activeMobileDataSubscriptionId.value,
-            )
-
-    override val activeMobileDataRepository: StateFlow<MobileConnectionRepository?> =
-        activeRepo
-            .flatMapLatest { it.activeMobileDataRepository }
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                realRepository.activeMobileDataRepository.value,
-            )
-
-    override val activeSubChangedInGroupEvent: Flow<Unit> =
-        activeRepo.flatMapLatest { it.activeSubChangedInGroupEvent }
-
-    override val defaultDataSubRatConfig: StateFlow<MobileMappings.Config> =
-        activeRepo
-            .flatMapLatest { it.defaultDataSubRatConfig }
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                realRepository.defaultDataSubRatConfig.value,
-            )
-
-    override val defaultMobileIconMapping: Flow<Map<String, SignalIcon.MobileIconGroup>> =
-        activeRepo.flatMapLatest { it.defaultMobileIconMapping }
-
-    override val defaultMobileIconGroup: Flow<SignalIcon.MobileIconGroup> =
-        activeRepo.flatMapLatest { it.defaultMobileIconGroup }
-
-    override val isDeviceEmergencyCallCapable: StateFlow<Boolean> =
-        activeRepo
-            .flatMapLatest { it.isDeviceEmergencyCallCapable }
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                realRepository.isDeviceEmergencyCallCapable.value,
-            )
-
-    override val isAnySimSecure: Flow<Boolean> = activeRepo.flatMapLatest { it.isAnySimSecure }
-
-    override fun getIsAnySimSecure(): Boolean = activeRepo.value.getIsAnySimSecure()
-
-    override val defaultDataSubId: StateFlow<Int?> =
-        activeRepo
-            .flatMapLatest { it.defaultDataSubId }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), realRepository.defaultDataSubId.value)
-
-    override val mobileIsDefault: StateFlow<Boolean> =
-        activeRepo
-            .flatMapLatest { it.mobileIsDefault }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), realRepository.mobileIsDefault.value)
-
-    override val hasCarrierMergedConnection: StateFlow<Boolean> =
-        activeRepo
-            .flatMapLatest { it.hasCarrierMergedConnection }
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                realRepository.hasCarrierMergedConnection.value,
-            )
-
-    override val defaultConnectionIsValidated: StateFlow<Boolean> =
-        activeRepo
-            .flatMapLatest { it.defaultConnectionIsValidated }
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                realRepository.defaultConnectionIsValidated.value,
-            )
-
-    override fun getRepoForSubId(subId: Int): MobileConnectionRepository {
-        if (isDemoMode.value) {
-            return demoMobileConnectionsRepository.getRepoForSubId(subId)
         }
-        return realRepository.getRepoForSubId(subId)
     }
 
-    override suspend fun isInEcmMode(): Boolean =
-        if (isDemoMode.value) {
-            demoMobileConnectionsRepository.isInEcmMode()
-        } else {
-            realRepository.isInEcmMode()
+    override val mobileConnectionsBySubId: Incremental<Int, MobileConnectionRepositoryKairos> =
+        activeRepo.map { it.mobileConnectionsBySubId }.switchIncremental()
+
+    override val subscriptions: State<Collection<SubscriptionModel>> =
+        activeRepo.flatMap { it.subscriptions }
+
+    override val activeMobileDataSubscriptionId: State<Int?> =
+        activeRepo.flatMap { it.activeMobileDataSubscriptionId }
+
+    override val activeMobileDataRepository: State<MobileConnectionRepositoryKairos?> =
+        activeRepo.flatMap { it.activeMobileDataRepository }
+
+    override val activeSubChangedInGroupEvent: Events<Unit> =
+        activeRepo.map { it.activeSubChangedInGroupEvent }.switchEvents()
+
+    override val defaultDataSubRatConfig: State<MobileMappings.Config> =
+        activeRepo.flatMap { it.defaultDataSubRatConfig }
+
+    override val defaultMobileIconMapping: State<Map<String, SignalIcon.MobileIconGroup>> =
+        activeRepo.flatMap { it.defaultMobileIconMapping }
+
+    override val defaultMobileIconGroup: State<SignalIcon.MobileIconGroup> =
+        activeRepo.flatMap { it.defaultMobileIconGroup }
+
+    override val isDeviceEmergencyCallCapable: State<Boolean> =
+        activeRepo.flatMap { it.isDeviceEmergencyCallCapable }
+
+    override val isAnySimSecure: State<Boolean> = activeRepo.flatMap { it.isAnySimSecure }
+
+    override val defaultDataSubId: State<Int?> = activeRepo.flatMap { it.defaultDataSubId }
+
+    override val mobileIsDefault: State<Boolean> = activeRepo.flatMap { it.mobileIsDefault }
+
+    override val hasCarrierMergedConnection: State<Boolean> =
+        activeRepo.flatMap { it.hasCarrierMergedConnection }
+
+    override val defaultConnectionIsValidated: State<Boolean> =
+        activeRepo.flatMap { it.defaultConnectionIsValidated }
+
+    override val isInEcmMode: State<Boolean> = activeRepo.flatMap { it.isInEcmMode }
+
+    @dagger.Module
+    interface Module {
+        @Binds fun bindImpl(impl: MobileRepositorySwitcherKairos): MobileConnectionsRepositoryKairos
+
+        companion object {
+            @Provides
+            @ElementsIntoSet
+            fun kairosActivatable(
+                impl: Provider<MobileRepositorySwitcherKairos>
+            ): Set<@JvmSuppressWildcards KairosActivatable> =
+                if (Flags.statusBarMobileIconKairos()) setOf(impl.get()) else emptySet()
         }
+    }
 }

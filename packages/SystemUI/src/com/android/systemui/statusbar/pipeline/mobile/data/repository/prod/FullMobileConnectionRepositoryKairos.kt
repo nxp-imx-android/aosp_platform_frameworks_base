@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,24 +18,23 @@ package com.android.systemui.statusbar.pipeline.mobile.data.repository.prod
 
 import android.util.IndentingPrintWriter
 import androidx.annotation.VisibleForTesting
-import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.KairosBuilder
+import com.android.systemui.kairos.BuildSpec
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.State
+import com.android.systemui.kairos.flatMap
+import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
-import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.log.table.logDiffsForTable
+import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
-import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository
+import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepositoryKairos
+import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import java.io.PrintWriter
-import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
 
 /**
  * A repository that fully implements a mobile connection.
@@ -43,383 +42,200 @@ import kotlinx.coroutines.flow.stateIn
  * This connection could either be a typical mobile connection (see [MobileConnectionRepositoryImpl]
  * or a carrier merged connection (see [CarrierMergedConnectionRepository]). This repository
  * switches between the two types of connections based on whether the connection is currently
- * carrier merged (see [setIsCarrierMerged]).
+ * carrier merged.
  */
-@Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
-class FullMobileConnectionRepositoryKairos(
-    override val subId: Int,
-    startingIsCarrierMerged: Boolean,
-    override val tableLogBuffer: TableLogBuffer,
-    subscriptionModel: Flow<SubscriptionModel?>,
-    private val defaultNetworkName: NetworkNameModel,
-    private val networkNameSeparator: String,
-    @Background scope: CoroutineScope,
-    private val mobileRepoFactory: MobileConnectionRepositoryImpl.Factory,
-    private val carrierMergedRepoFactory: CarrierMergedConnectionRepository.Factory,
-) : MobileConnectionRepository, MobileConnectionRepositoryKairos {
-    /**
-     * Sets whether this connection is a typical mobile connection or a carrier merged connection.
-     */
-    fun setIsCarrierMerged(isCarrierMerged: Boolean) {
-        _isCarrierMerged.value = isCarrierMerged
-    }
+@ExperimentalKairosApi
+class FullMobileConnectionRepositoryKairos
+@AssistedInject
+constructor(
+    @Assisted override val subId: Int,
+    @Assisted override val tableLogBuffer: TableLogBuffer,
+    @Assisted private val mobileRepo: MobileConnectionRepositoryKairos,
+    @Assisted private val carrierMergedRepoSpec: BuildSpec<MobileConnectionRepositoryKairos>,
+    @Assisted private val isCarrierMerged: State<Boolean>,
+) : MobileConnectionRepositoryKairos, KairosBuilder by kairosBuilder() {
 
-    /**
-     * Returns true if this repo is currently for a carrier merged connection and false otherwise.
-     */
-    @VisibleForTesting fun getIsCarrierMerged() = _isCarrierMerged.value
-
-    private val _isCarrierMerged = MutableStateFlow(startingIsCarrierMerged)
-    private val isCarrierMerged: StateFlow<Boolean> =
-        _isCarrierMerged
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = "isCarrierMerged",
-                initialValue = startingIsCarrierMerged,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), startingIsCarrierMerged)
-
-    private val mobileRepo: MobileConnectionRepository by lazy {
-        mobileRepoFactory.build(
-            subId,
-            tableLogBuffer,
-            subscriptionModel,
-            defaultNetworkName,
-            networkNameSeparator,
-        )
-    }
-
-    private val carrierMergedRepo: MobileConnectionRepository by lazy {
-        carrierMergedRepoFactory.build(subId, tableLogBuffer)
+    init {
+        onActivated {
+            logDiffsForTable(isCarrierMerged, tableLogBuffer, columnName = "isCarrierMerged")
+        }
     }
 
     @VisibleForTesting
-    val activeRepo: StateFlow<MobileConnectionRepository> = run {
-        val initial =
-            if (startingIsCarrierMerged) {
-                carrierMergedRepo
+    val activeRepo: State<MobileConnectionRepositoryKairos> = buildState {
+        isCarrierMerged.mapLatestBuild { merged ->
+            if (merged) {
+                carrierMergedRepoSpec.applySpec()
             } else {
                 mobileRepo
             }
-
-        this.isCarrierMerged
-            .mapLatest { isCarrierMerged ->
-                if (isCarrierMerged) {
-                    carrierMergedRepo
-                } else {
-                    mobileRepo
-                }
-            }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), initial)
+        }
     }
 
-    override val carrierId =
-        activeRepo
-            .flatMapLatest { it.carrierId }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), activeRepo.value.carrierId.value)
+    override val carrierId: State<Int> = activeRepo.flatMap { it.carrierId }
 
-    override val cdmaRoaming =
-        activeRepo
-            .flatMapLatest { it.cdmaRoaming }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), activeRepo.value.cdmaRoaming.value)
+    override val cdmaRoaming: State<Boolean> = activeRepo.flatMap { it.cdmaRoaming }
 
-    override val isEmergencyOnly =
+    override val isEmergencyOnly: State<Boolean> =
         activeRepo
-            .flatMapLatest { it.isEmergencyOnly }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_EMERGENCY,
-                initialValue = activeRepo.value.isEmergencyOnly.value,
-            )
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                activeRepo.value.isEmergencyOnly.value,
-            )
+            .flatMap { it.isEmergencyOnly }
+            .also {
+                onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_EMERGENCY) }
+            }
 
-    override val isRoaming =
+    override val isRoaming: State<Boolean> =
         activeRepo
-            .flatMapLatest { it.isRoaming }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_ROAMING,
-                initialValue = activeRepo.value.isRoaming.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), activeRepo.value.isRoaming.value)
+            .flatMap { it.isRoaming }
+            .also { onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_ROAMING) } }
 
-    override val operatorAlphaShort =
+    override val operatorAlphaShort: State<String?> =
         activeRepo
-            .flatMapLatest { it.operatorAlphaShort }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_OPERATOR,
-                initialValue = activeRepo.value.operatorAlphaShort.value,
-            )
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                activeRepo.value.operatorAlphaShort.value,
-            )
+            .flatMap { it.operatorAlphaShort }
+            .also {
+                onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_OPERATOR) }
+            }
 
-    override val isInService =
+    override val isInService: State<Boolean> =
         activeRepo
-            .flatMapLatest { it.isInService }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_IS_IN_SERVICE,
-                initialValue = activeRepo.value.isInService.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), activeRepo.value.isInService.value)
+            .flatMap { it.isInService }
+            .also {
+                onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_IS_IN_SERVICE) }
+            }
 
-    override val isNonTerrestrial =
+    override val isNonTerrestrial: State<Boolean> =
         activeRepo
-            .flatMapLatest { it.isNonTerrestrial }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_IS_NTN,
-                initialValue = activeRepo.value.isNonTerrestrial.value,
-            )
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                activeRepo.value.isNonTerrestrial.value,
-            )
+            .flatMap { it.isNonTerrestrial }
+            .also { onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_IS_NTN) } }
 
-    override val isGsm =
+    override val isGsm: State<Boolean> =
         activeRepo
-            .flatMapLatest { it.isGsm }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_IS_GSM,
-                initialValue = activeRepo.value.isGsm.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), activeRepo.value.isGsm.value)
+            .flatMap { it.isGsm }
+            .also { onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_IS_GSM) } }
 
-    override val cdmaLevel =
+    override val cdmaLevel: State<Int> =
         activeRepo
-            .flatMapLatest { it.cdmaLevel }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_CDMA_LEVEL,
-                initialValue = activeRepo.value.cdmaLevel.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), activeRepo.value.cdmaLevel.value)
+            .flatMap { it.cdmaLevel }
+            .also {
+                onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_CDMA_LEVEL) }
+            }
 
-    override val primaryLevel =
+    override val primaryLevel: State<Int> =
         activeRepo
-            .flatMapLatest { it.primaryLevel }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_PRIMARY_LEVEL,
-                initialValue = activeRepo.value.primaryLevel.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), activeRepo.value.primaryLevel.value)
+            .flatMap { it.primaryLevel }
+            .also {
+                onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_PRIMARY_LEVEL) }
+            }
 
-    override val satelliteLevel: StateFlow<Int> =
+    override val satelliteLevel: State<Int> =
         activeRepo
-            .flatMapLatest { it.satelliteLevel }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_SATELLITE_LEVEL,
-                initialValue = activeRepo.value.satelliteLevel.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), activeRepo.value.satelliteLevel.value)
+            .flatMap { it.satelliteLevel }
+            .also {
+                onActivated {
+                    logDiffsForTable(it, tableLogBuffer, columnName = COL_SATELLITE_LEVEL)
+                }
+            }
 
-    override val dataConnectionState =
+    override val dataConnectionState: State<DataConnectionState> =
         activeRepo
-            .flatMapLatest { it.dataConnectionState }
-            .logDiffsForTable(
-                tableLogBuffer,
-                initialValue = activeRepo.value.dataConnectionState.value,
-            )
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                activeRepo.value.dataConnectionState.value,
-            )
+            .flatMap { it.dataConnectionState }
+            .also { onActivated { logDiffsForTable(it, tableLogBuffer, columnPrefix = "") } }
 
-    override val dataActivityDirection =
+    override val dataActivityDirection: State<DataActivityModel> =
         activeRepo
-            .flatMapLatest { it.dataActivityDirection }
-            .logDiffsForTable(
-                tableLogBuffer,
-                initialValue = activeRepo.value.dataActivityDirection.value,
-            )
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                activeRepo.value.dataActivityDirection.value,
-            )
+            .flatMap { it.dataActivityDirection }
+            .also { onActivated { logDiffsForTable(it, tableLogBuffer, columnPrefix = "") } }
 
-    override val carrierNetworkChangeActive =
+    override val carrierNetworkChangeActive: State<Boolean> =
         activeRepo
-            .flatMapLatest { it.carrierNetworkChangeActive }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_CARRIER_NETWORK_CHANGE,
-                initialValue = activeRepo.value.carrierNetworkChangeActive.value,
-            )
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                activeRepo.value.carrierNetworkChangeActive.value,
-            )
+            .flatMap { it.carrierNetworkChangeActive }
+            .also {
+                onActivated {
+                    logDiffsForTable(it, tableLogBuffer, columnName = COL_CARRIER_NETWORK_CHANGE)
+                }
+            }
 
-    override val resolvedNetworkType =
+    override val resolvedNetworkType: State<ResolvedNetworkType> =
         activeRepo
-            .flatMapLatest { it.resolvedNetworkType }
-            .logDiffsForTable(
-                tableLogBuffer,
-                initialValue = activeRepo.value.resolvedNetworkType.value,
-            )
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                activeRepo.value.resolvedNetworkType.value,
-            )
+            .flatMap { it.resolvedNetworkType }
+            .also { onActivated { logDiffsForTable(it, tableLogBuffer, columnPrefix = "") } }
 
-    override val dataEnabled =
+    override val dataEnabled: State<Boolean> =
         activeRepo
-            .flatMapLatest { it.dataEnabled }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = "dataEnabled",
-                initialValue = activeRepo.value.dataEnabled.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), activeRepo.value.dataEnabled.value)
+            .flatMap { it.dataEnabled }
+            .also {
+                onActivated { logDiffsForTable(it, tableLogBuffer, columnName = "dataEnabled") }
+            }
 
-    override val inflateSignalStrength =
+    override val inflateSignalStrength: State<Boolean> =
         activeRepo
-            .flatMapLatest { it.inflateSignalStrength }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = "inflate",
-                initialValue = activeRepo.value.inflateSignalStrength.value,
-            )
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                activeRepo.value.inflateSignalStrength.value,
-            )
+            .flatMap { it.inflateSignalStrength }
+            .also { onActivated { logDiffsForTable(it, tableLogBuffer, columnName = "inflate") } }
 
-    override val allowNetworkSliceIndicator =
+    override val allowNetworkSliceIndicator: State<Boolean> =
         activeRepo
-            .flatMapLatest { it.allowNetworkSliceIndicator }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = "allowSlice",
-                initialValue = activeRepo.value.allowNetworkSliceIndicator.value,
-            )
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                activeRepo.value.allowNetworkSliceIndicator.value,
-            )
+            .flatMap { it.allowNetworkSliceIndicator }
+            .also {
+                onActivated { logDiffsForTable(it, tableLogBuffer, columnName = "allowSlice") }
+            }
 
-    override val numberOfLevels =
+    override val numberOfLevels: State<Int> = activeRepo.flatMap { it.numberOfLevels }
+
+    override val networkName: State<NetworkNameModel> =
         activeRepo
-            .flatMapLatest { it.numberOfLevels }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), activeRepo.value.numberOfLevels.value)
+            .flatMap { it.networkName }
+            .also { onActivated { logDiffsForTable(it, tableLogBuffer, columnPrefix = "intent") } }
 
-    override val networkName =
+    override val carrierName: State<NetworkNameModel> =
         activeRepo
-            .flatMapLatest { it.networkName }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnPrefix = "intent",
-                initialValue = activeRepo.value.networkName.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), activeRepo.value.networkName.value)
+            .flatMap { it.carrierName }
+            .also { onActivated { logDiffsForTable(it, tableLogBuffer, columnPrefix = "sub") } }
 
-    override val carrierName =
-        activeRepo
-            .flatMapLatest { it.carrierName }
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnPrefix = "sub",
-                initialValue = activeRepo.value.carrierName.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), activeRepo.value.carrierName.value)
+    override val isAllowedDuringAirplaneMode: State<Boolean> =
+        activeRepo.flatMap { it.isAllowedDuringAirplaneMode }
 
-    override val isAllowedDuringAirplaneMode =
-        activeRepo
-            .flatMapLatest { it.isAllowedDuringAirplaneMode }
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                activeRepo.value.isAllowedDuringAirplaneMode.value,
-            )
+    override val hasPrioritizedNetworkCapabilities: State<Boolean> =
+        activeRepo.flatMap { it.hasPrioritizedNetworkCapabilities }
 
-    override val hasPrioritizedNetworkCapabilities =
-        activeRepo
-            .flatMapLatest { it.hasPrioritizedNetworkCapabilities }
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                activeRepo.value.hasPrioritizedNetworkCapabilities.value,
-            )
+    override val isInEcmMode: State<Boolean> = activeRepo.flatMap { it.isInEcmMode }
 
-    override suspend fun isInEcmMode(): Boolean = activeRepo.value.isInEcmMode()
+    private var dumpCache: DumpCache? = null
+
+    private data class DumpCache(
+        val isCarrierMerged: Boolean,
+        val activeRepo: MobileConnectionRepositoryKairos,
+    )
 
     fun dump(pw: PrintWriter) {
+        val cache = dumpCache ?: return
         val ipw = IndentingPrintWriter(pw, "  ")
 
         ipw.println("MobileConnectionRepository[$subId]")
         ipw.increaseIndent()
 
-        ipw.println("carrierMerged=${_isCarrierMerged.value}")
+        ipw.println("carrierMerged=${cache.isCarrierMerged}")
 
         ipw.print("Type (cellular or carrier merged): ")
-        when (activeRepo.value) {
-            is CarrierMergedConnectionRepository -> ipw.println("Carrier merged")
-            is MobileConnectionRepositoryImpl -> ipw.println("Cellular")
+        when (cache.activeRepo) {
+            is CarrierMergedConnectionRepositoryKairos -> ipw.println("Carrier merged")
+            is MobileConnectionRepositoryKairosImpl -> ipw.println("Cellular")
         }
 
         ipw.increaseIndent()
-        ipw.println("Provider: ${activeRepo.value}")
+        ipw.println("Provider: ${cache.activeRepo}")
         ipw.decreaseIndent()
 
         ipw.decreaseIndent()
     }
 
-    class Factory
-    @Inject
-    constructor(
-        @Background private val scope: CoroutineScope,
-        private val logFactory: TableLogBufferFactory,
-        private val mobileRepoFactory: MobileConnectionRepositoryImpl.Factory,
-        private val carrierMergedRepoFactory: CarrierMergedConnectionRepository.Factory,
-    ) {
-        fun build(
+    @AssistedFactory
+    interface Factory {
+        fun create(
             subId: Int,
-            startingIsCarrierMerged: Boolean,
-            subscriptionModel: Flow<SubscriptionModel?>,
-            defaultNetworkName: NetworkNameModel,
-            networkNameSeparator: String,
-        ): FullMobileConnectionRepositoryKairos {
-            val mobileLogger =
-                logFactory.getOrCreate(tableBufferLogName(subId), MOBILE_CONNECTION_BUFFER_SIZE)
-
-            return FullMobileConnectionRepositoryKairos(
-                subId,
-                startingIsCarrierMerged,
-                mobileLogger,
-                subscriptionModel,
-                defaultNetworkName,
-                networkNameSeparator,
-                scope,
-                mobileRepoFactory,
-                carrierMergedRepoFactory,
-            )
-        }
-
-        companion object {
-            /** The buffer size to use for logging. */
-            const val MOBILE_CONNECTION_BUFFER_SIZE = 100
-
-            /** Returns a log buffer name for a mobile connection with the given [subId]. */
-            fun tableBufferLogName(subId: Int): String = "MobileConnectionLog[$subId]"
-        }
+            mobileLogger: TableLogBuffer,
+            isCarrierMerged: State<Boolean>,
+            mobileRepo: MobileConnectionRepositoryKairos,
+            mergedRepoSpec: BuildSpec<MobileConnectionRepositoryKairos>,
+        ): FullMobileConnectionRepositoryKairos
     }
 
     companion object {

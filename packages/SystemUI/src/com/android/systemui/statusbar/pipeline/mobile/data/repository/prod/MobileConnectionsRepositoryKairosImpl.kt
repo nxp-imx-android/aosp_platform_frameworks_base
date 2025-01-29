@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,21 +27,52 @@ import android.telephony.SubscriptionManager
 import android.telephony.SubscriptionManager.INVALID_SUBSCRIPTION_ID
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyCallback.ActiveDataSubscriptionIdListener
+import android.telephony.TelephonyCallback.EmergencyCallbackModeListener
 import android.telephony.TelephonyManager
 import android.util.IndentingPrintWriter
-import androidx.annotation.VisibleForTesting
 import com.android.internal.telephony.PhoneConstants
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.settingslib.SignalIcon.MobileIconGroup
 import com.android.settingslib.mobile.MobileMappings.Config
 import com.android.systemui.Dumpable
+import com.android.systemui.Flags
+import com.android.systemui.KairosActivatable
+import com.android.systemui.KairosBuilder
+import com.android.systemui.activated
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
+import com.android.systemui.kairos.BuildSpec
+import com.android.systemui.kairos.Events
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.Incremental
+import com.android.systemui.kairos.State
+import com.android.systemui.kairos.StateSelector
+import com.android.systemui.kairos.asIncremental
+import com.android.systemui.kairos.asyncEvent
+import com.android.systemui.kairos.buildSpec
+import com.android.systemui.kairos.changes
+import com.android.systemui.kairos.combine
+import com.android.systemui.kairos.effect
+import com.android.systemui.kairos.filterNotNull
+import com.android.systemui.kairos.flatMap
+import com.android.systemui.kairos.map
+import com.android.systemui.kairos.mapNotNull
+import com.android.systemui.kairos.mapValues
+import com.android.systemui.kairos.mergeLeft
+import com.android.systemui.kairos.onEach
+import com.android.systemui.kairos.rebuildOn
+import com.android.systemui.kairos.selector
+import com.android.systemui.kairos.stateOf
+import com.android.systemui.kairos.switchEvents
+import com.android.systemui.kairos.transitions
+import com.android.systemui.kairos.util.WithPrev
+import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository
@@ -49,39 +80,32 @@ import com.android.systemui.statusbar.pipeline.dagger.MobileSummaryLog
 import com.android.systemui.statusbar.pipeline.mobile.data.MobileInputLogger
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepository
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.CarrierConfigRepository
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepositoryKairos
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepositoryKairos
 import com.android.systemui.statusbar.pipeline.mobile.util.MobileMappingsProxy
 import com.android.systemui.statusbar.pipeline.mobile.util.SubscriptionManagerProxy
+import com.android.systemui.statusbar.pipeline.shared.data.model.DefaultConnectionModel
 import com.android.systemui.statusbar.pipeline.shared.data.repository.ConnectivityRepository
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.WifiRepository
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
-import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import dagger.Binds
+import dagger.Lazy
+import dagger.Provides
+import dagger.multibindings.ElementsIntoSet
 import java.io.PrintWriter
-import java.lang.ref.WeakReference
-import java.util.concurrent.ConcurrentHashMap
+import java.time.Duration
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
-@Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
+@ExperimentalKairosApi
 @SysUISingleton
 class MobileConnectionsRepositoryKairosImpl
 @Inject
@@ -96,39 +120,26 @@ constructor(
     broadcastDispatcher: BroadcastDispatcher,
     private val context: Context,
     @Background private val bgDispatcher: CoroutineDispatcher,
-    @Background private val scope: CoroutineScope,
     @Main private val mainDispatcher: CoroutineDispatcher,
     airplaneModeRepository: AirplaneModeRepository,
     // Some "wifi networks" should be rendered as a mobile connection, which is why the wifi
     // repository is an input to the mobile repository.
-    // See [CarrierMergedConnectionRepository] for details.
+    // See [CarrierMergedConnectionRepositoryKairos] for details.
     wifiRepository: WifiRepository,
-    private val fullMobileRepoFactory: FullMobileConnectionRepository.Factory,
     private val keyguardUpdateMonitor: KeyguardUpdateMonitor,
-    private val dumpManager: DumpManager,
-) : MobileConnectionsRepository, MobileConnectionsRepositoryKairos, Dumpable {
-
-    // TODO(b/333912012): for now, we are never invalidating the cache. We can do better though
-    private var subIdRepositoryCache =
-        ConcurrentHashMap<Int, WeakReference<FullMobileConnectionRepository>>()
-
-    private val defaultNetworkName =
-        NetworkNameModel.Default(
-            context.getString(com.android.internal.R.string.lockscreen_carrier_default)
-        )
-
-    private val networkNameSeparator: String =
-        context.getString(R.string.status_bar_network_name_separator)
+    dumpManager: DumpManager,
+    private val mobileRepoFactory: Lazy<ConnectionRepoFactory>,
+) : MobileConnectionsRepositoryKairos, Dumpable, KairosBuilder by kairosBuilder() {
 
     init {
-        dumpManager.registerNormalDumpable("MobileConnectionsRepository", this)
+        dumpManager.registerNormalDumpable("MobileConnectionsRepositoryKairos", this)
     }
 
-    private val carrierMergedSubId: StateFlow<Int?> =
+    private val carrierMergedSubId: State<Int?> = buildState {
         combine(
-                wifiRepository.wifiNetwork,
-                connectivityRepository.defaultConnections,
-                airplaneModeRepository.isAirplaneMode,
+                wifiRepository.wifiNetwork.toState(),
+                connectivityRepository.defaultConnections.toState(),
+                airplaneModeRepository.isAirplaneMode.toState(),
             ) { wifiNetwork, defaultConnections, isAirplaneMode ->
                 // The carrier merged connection should only be used if it's also the default
                 // connection or mobile connections aren't available because of airplane mode.
@@ -143,16 +154,12 @@ constructor(
                     null
                 }
             }
-            .distinctUntilChanged()
-            .logDiffsForTable(
-                tableLogger,
-                LOGGING_PREFIX,
-                columnName = "carrierMergedSubId",
-                initialValue = null,
-            )
-            .stateIn(scope, started = SharingStarted.WhileSubscribed(), null)
+            .also {
+                logDiffsForTable(it, tableLogger, LOGGING_PREFIX, columnName = "carrierMergedSubId")
+            }
+    }
 
-    private val mobileSubscriptionsChangeEvent: Flow<Unit> =
+    private val mobileSubscriptionsChangeEvent: Events<Unit> = buildEvents {
         conflatedCallbackFlow {
                 val callback =
                     object : SubscriptionManager.OnSubscriptionsChangedListener() {
@@ -161,18 +168,15 @@ constructor(
                             trySend(Unit)
                         }
                     }
-
-                subscriptionManager.addOnSubscriptionsChangedListener(
-                    bgDispatcher.asExecutor(),
-                    callback,
-                )
-
+                subscriptionManager.addOnSubscriptionsChangedListener(Runnable::run, callback)
                 awaitClose { subscriptionManager.removeOnSubscriptionsChangedListener(callback) }
             }
             .flowOn(bgDispatcher)
+            .toEvents()
+    }
 
     /** Turn ACTION_SERVICE_STATE (for subId = -1) into an event */
-    private val serviceStateChangedEvent: Flow<Unit> =
+    private val serviceStateChangedEvent: Events<Unit> = buildEvents {
         broadcastDispatcher
             .broadcastFlow(IntentFilter(Intent.ACTION_SERVICE_STATE)) { intent, _ ->
                 val subId =
@@ -186,219 +190,235 @@ constructor(
                     Unit
                 }
             }
-            // Emit on start so that we always check the state at least once
-            .onStart { emit(Unit) }
+            .toEvents()
+    }
 
     /** Eager flow to determine the device-based emergency calls only state */
-    override val isDeviceEmergencyCallCapable: StateFlow<Boolean> =
-        serviceStateChangedEvent
-            .mapLatest {
-                val modems = telephonyManager.activeModemCount
-
-                // Assume false for automotive devices which don't have the calling feature.
-                // TODO: b/398045526 to revisit the below.
-                val isAutomotive: Boolean =
-                    context.packageManager.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
-                val hasFeatureCalling: Boolean =
-                    context.packageManager.hasSystemFeature(
-                        PackageManager.FEATURE_TELEPHONY_CALLING
-                    )
-                if (isAutomotive && !hasFeatureCalling) {
-                    return@mapLatest false
-                }
-
-                // Check the service state for every modem. If any state reports emergency calling
-                // capable, then consider the device to have emergency call capabilities
-                (0..<modems)
-                    .map { telephonyManager.getServiceStateForSlot(it) }
-                    .any { it?.isEmergencyOnly == true }
+    override val isDeviceEmergencyCallCapable: State<Boolean> = buildState {
+        rebuildOn(serviceStateChangedEvent) { asyncEvent { doAnyModemsSupportEmergencyCalls() } }
+            .switchEvents()
+            .holdState(false)
+            .also {
+                logDiffsForTable(
+                    it,
+                    tableLogger,
+                    LOGGING_PREFIX,
+                    columnName = "deviceEmergencyOnly",
+                )
             }
-            .flowOn(bgDispatcher)
-            .distinctUntilChanged()
-            .logDiffsForTable(
-                tableLogger,
-                columnPrefix = LOGGING_PREFIX,
-                columnName = "deviceEmergencyOnly",
-                initialValue = false,
-            )
-            .stateIn(scope, SharingStarted.Eagerly, false)
+    }
+
+    private suspend fun doAnyModemsSupportEmergencyCalls(): Boolean =
+        withContext(bgDispatcher) {
+            val modems = telephonyManager.activeModemCount
+
+            // Assume false for automotive devices which don't have the calling feature.
+            // TODO: b/398045526 to revisit the below.
+            val isAutomotive: Boolean =
+                context.packageManager.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
+            val hasFeatureCalling: Boolean =
+                context.packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+            if (isAutomotive && !hasFeatureCalling) {
+                return@withContext false
+            }
+
+            // Check the service state for every modem. If any state reports emergency calling
+            // capable, then consider the device to have emergency call capabilities
+            (0..<modems)
+                .map { telephonyManager.getServiceStateForSlot(it) }
+                .any { it?.isEmergencyOnly == true }
+        }
 
     /**
      * State flow that emits the set of mobile data subscriptions, each represented by its own
      * [SubscriptionModel].
      */
-    override val subscriptions: StateFlow<List<SubscriptionModel>> =
-        merge(mobileSubscriptionsChangeEvent, carrierMergedSubId)
-            .mapLatest { fetchSubscriptionsList().map { it.toSubscriptionModel() } }
-            .onEach { infos -> updateRepos(infos) }
-            .distinctUntilChanged()
-            .logDiffsForTable(
-                tableLogger,
-                LOGGING_PREFIX,
-                columnName = "subscriptions",
-                initialValue = listOf(),
-            )
-            .stateIn(scope, started = SharingStarted.WhileSubscribed(), listOf())
+    override val subscriptions: State<List<SubscriptionModel>> = buildState {
+        rebuildOn(mergeLeft(mobileSubscriptionsChangeEvent, carrierMergedSubId.changes)) {
+                asyncEvent { fetchSubscriptionModels() }
+            }
+            .switchEvents()
+            .holdState(emptyList())
+            .also {
+                logDiffsForTable(it, tableLogger, LOGGING_PREFIX, columnName = "subscriptions")
+            }
+    }
 
-    override val activeMobileDataSubscriptionId: StateFlow<Int?> =
-        conflatedCallbackFlow {
+    val subscriptionsById: State<Map<Int, SubscriptionModel>> =
+        subscriptions.map { subs -> subs.associateBy { it.subscriptionId } }
+
+    override val mobileConnectionsBySubId: Incremental<Int, MobileConnectionRepositoryKairos> =
+        buildIncremental {
+            subscriptionsById
+                .asIncremental()
+                .mapValues { (subId, sub) -> mobileRepoFactory.get().create(subId) }
+                .applyLatestSpecForKey()
+        }
+
+    private val telephonyManagerState: State<Pair<Int?, Set<Int>>> = buildState {
+        callbackFlow {
                 val callback =
-                    object : TelephonyCallback(), ActiveDataSubscriptionIdListener {
+                    object :
+                        TelephonyCallback(),
+                        ActiveDataSubscriptionIdListener,
+                        EmergencyCallbackModeListener {
                         override fun onActiveDataSubscriptionIdChanged(subId: Int) {
                             if (subId != INVALID_SUBSCRIPTION_ID) {
-                                trySend(subId)
+                                trySend { (_, set): Pair<Int?, Set<Int>> -> subId to set }
                             } else {
-                                trySend(null)
+                                trySend { (_, set): Pair<Int?, Set<Int>> -> null to set }
                             }
                         }
-                    }
 
-                telephonyManager.registerTelephonyCallback(bgDispatcher.asExecutor(), callback)
+                        override fun onCallbackModeStarted(
+                            type: Int,
+                            timerDuration: Duration,
+                            subId: Int,
+                        ) {
+                            trySend { (id, set): Pair<Int?, Set<Int>> -> id to (set + type) }
+                        }
+
+                        override fun onCallbackModeRestarted(
+                            type: Int,
+                            timerDuration: Duration,
+                            subId: Int,
+                        ) {
+                            // no-op
+                        }
+
+                        override fun onCallbackModeStopped(type: Int, reason: Int, subId: Int) {
+                            trySend { (id, set): Pair<Int?, Set<Int>> -> id to (set - type) }
+                        }
+                    }
+                telephonyManager.registerTelephonyCallback(Runnable::run, callback)
                 awaitClose { telephonyManager.unregisterTelephonyCallback(callback) }
             }
             .flowOn(bgDispatcher)
-            .distinctUntilChanged()
-            .logDiffsForTable(
-                tableLogger,
-                LOGGING_PREFIX,
-                columnName = "activeSubId",
-                initialValue = null,
-            )
-            .stateIn(scope, started = SharingStarted.WhileSubscribed(), null)
+            .scanToState(null to emptySet())
+    }
 
-    override val activeMobileDataRepository =
-        activeMobileDataSubscriptionId
-            .map { activeSubId ->
-                if (activeSubId == null) {
-                    null
-                } else {
-                    getOrCreateRepoForSubId(activeSubId)
+    override val activeMobileDataSubscriptionId: State<Int?> =
+        telephonyManagerState
+            .map { it.first }
+            .also {
+                onActivated {
+                    logDiffsForTable(it, tableLogger, LOGGING_PREFIX, columnName = "activeSubId")
                 }
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
 
-    override val defaultDataSubId: StateFlow<Int?> =
+    override val activeMobileDataRepository: State<MobileConnectionRepositoryKairos?> =
+        combine(activeMobileDataSubscriptionId, mobileConnectionsBySubId) { id, cache -> cache[id] }
+
+    override val defaultDataSubId: State<Int?> = buildState {
         broadcastDispatcher
             .broadcastFlow(
                 IntentFilter(TelephonyManager.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED)
             ) { intent, _ ->
-                val subId =
-                    intent.getIntExtra(PhoneConstants.SUBSCRIPTION_KEY, INVALID_SUBSCRIPTION_ID)
-                if (subId == INVALID_SUBSCRIPTION_ID) {
-                    null
-                } else {
-                    subId
-                }
+                intent
+                    .getIntExtra(PhoneConstants.SUBSCRIPTION_KEY, INVALID_SUBSCRIPTION_ID)
+                    .takeIf { it != INVALID_SUBSCRIPTION_ID }
             }
-            .distinctUntilChanged()
-            .logDiffsForTable(
-                tableLogger,
-                LOGGING_PREFIX,
-                columnName = "defaultSubId",
-                initialValue = null,
-            )
             .onStart {
-                val subId = subscriptionManagerProxy.getDefaultDataSubscriptionId()
-                emit(if (subId == INVALID_SUBSCRIPTION_ID) null else subId)
+                emit(
+                    subscriptionManagerProxy.getDefaultDataSubscriptionId().takeIf {
+                        it != INVALID_SUBSCRIPTION_ID
+                    }
+                )
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+            .toState(initialValue = null)
+            .also { logDiffsForTable(it, tableLogger, LOGGING_PREFIX, columnName = "defaultSubId") }
+    }
 
-    private val carrierConfigChangedEvent =
-        broadcastDispatcher
-            .broadcastFlow(IntentFilter(CarrierConfigManager.ACTION_CARRIER_CONFIG_CHANGED))
+    private val carrierConfigChangedEvent: Events<Unit> =
+        buildEvents {
+                broadcastDispatcher
+                    .broadcastFlow(IntentFilter(CarrierConfigManager.ACTION_CARRIER_CONFIG_CHANGED))
+                    .toEvents()
+            }
             .onEach { logger.logActionCarrierConfigChanged() }
 
-    override val defaultDataSubRatConfig: StateFlow<Config> =
-        merge(defaultDataSubId, carrierConfigChangedEvent)
-            .onStart { emit(Unit) }
-            .mapLatest { Config.readConfig(context) }
-            .distinctUntilChanged()
-            .onEach { logger.logDefaultDataSubRatConfig(it) }
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                initialValue = Config.readConfig(context),
-            )
+    override val defaultDataSubRatConfig: State<Config> = buildState {
+        rebuildOn(mergeLeft(defaultDataSubId.changes, carrierConfigChangedEvent)) {
+            Config.readConfig(context).also { effect { logger.logDefaultDataSubRatConfig(it) } }
+        }
+    }
 
-    override val defaultMobileIconMapping: Flow<Map<String, MobileIconGroup>> =
+    override val defaultMobileIconMapping: State<Map<String, MobileIconGroup>> = buildState {
         defaultDataSubRatConfig
             .map { mobileMappingsProxy.mapIconSets(it) }
-            .distinctUntilChanged()
-            .onEach { logger.logDefaultMobileIconMapping(it) }
+            .apply { observe { logger.logDefaultMobileIconMapping(it) } }
+    }
 
-    override val defaultMobileIconGroup: Flow<MobileIconGroup> =
+    override val defaultMobileIconGroup: State<MobileIconGroup> = buildState {
         defaultDataSubRatConfig
             .map { mobileMappingsProxy.getDefaultIcons(it) }
-            .distinctUntilChanged()
-            .onEach { logger.logDefaultMobileIconGroup(it) }
+            .apply { observe { logger.logDefaultMobileIconGroup(it) } }
+    }
 
-    override val isAnySimSecure: Flow<Boolean> =
+    override val isAnySimSecure: State<Boolean> = buildState {
         conflatedCallbackFlow {
                 val callback =
                     object : KeyguardUpdateMonitorCallback() {
                         override fun onSimStateChanged(subId: Int, slotId: Int, simState: Int) {
                             logger.logOnSimStateChanged()
-                            trySend(getIsAnySimSecure())
+                            trySend(keyguardUpdateMonitor.isSimPinSecure)
                         }
                     }
                 keyguardUpdateMonitor.registerCallback(callback)
-                trySend(false)
                 awaitClose { keyguardUpdateMonitor.removeCallback(callback) }
             }
             .flowOn(mainDispatcher)
-            .logDiffsForTable(
-                tableLogger,
-                LOGGING_PREFIX,
-                columnName = "isAnySimSecure",
-                initialValue = false,
-            )
-            .distinctUntilChanged()
+            .toState(false)
+            .also {
+                logDiffsForTable(it, tableLogger, LOGGING_PREFIX, columnName = "isAnySimSecure")
+            }
+    }
 
-    override fun getIsAnySimSecure() = keyguardUpdateMonitor.isSimPinSecure
+    private val defaultConnections: State<DefaultConnectionModel> = buildState {
+        connectivityRepository.defaultConnections.toState()
+    }
 
-    override fun getRepoForSubId(subId: Int): FullMobileConnectionRepository =
-        getOrCreateRepoForSubId(subId)
-
-    private fun getOrCreateRepoForSubId(subId: Int) =
-        subIdRepositoryCache[subId]?.get()
-            ?: createRepositoryForSubId(subId).also {
-                subIdRepositoryCache[subId] = WeakReference(it)
+    override val mobileIsDefault: State<Boolean> =
+        defaultConnections
+            .map { it.mobile.isDefault }
+            .also {
+                onActivated {
+                    logDiffsForTable(
+                        it,
+                        tableLogger,
+                        columnPrefix = LOGGING_PREFIX,
+                        columnName = "mobileIsDefault",
+                    )
+                }
             }
 
-    override val mobileIsDefault: StateFlow<Boolean> =
-        connectivityRepository.defaultConnections
-            .map { it.mobile.isDefault }
-            .distinctUntilChanged()
-            .logDiffsForTable(
-                tableLogger,
-                columnPrefix = LOGGING_PREFIX,
-                columnName = "mobileIsDefault",
-                initialValue = false,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
-
-    override val hasCarrierMergedConnection: StateFlow<Boolean> =
+    override val hasCarrierMergedConnection: State<Boolean> =
         carrierMergedSubId
             .map { it != null }
-            .distinctUntilChanged()
-            .logDiffsForTable(
-                tableLogger,
-                columnPrefix = LOGGING_PREFIX,
-                columnName = "hasCarrierMergedConnection",
-                initialValue = false,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+            .also {
+                onActivated {
+                    logDiffsForTable(
+                        it,
+                        tableLogger,
+                        columnPrefix = LOGGING_PREFIX,
+                        columnName = "hasCarrierMergedConnection",
+                    )
+                }
+            }
 
-    override val defaultConnectionIsValidated: StateFlow<Boolean> =
-        connectivityRepository.defaultConnections
+    override val defaultConnectionIsValidated: State<Boolean> =
+        defaultConnections
             .map { it.isValidated }
-            .distinctUntilChanged()
-            .logDiffsForTable(
-                tableLogger,
-                columnName = "defaultConnectionIsValidated",
-                initialValue = false,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+            .also {
+                onActivated {
+                    logDiffsForTable(
+                        it,
+                        tableLogger,
+                        columnPrefix = LOGGING_PREFIX,
+                        columnName = "defaultConnectionIsValidated",
+                    )
+                }
+            }
 
     /**
      * Flow that tracks the active mobile data subscriptions. Emits `true` whenever the active data
@@ -409,79 +429,45 @@ constructor(
      * TODO(b/265164432): we should probably expose all change events, not just same group
      */
     @SuppressLint("MissingPermission")
-    override val activeSubChangedInGroupEvent =
-        activeMobileDataSubscriptionId
-            .pairwise()
-            .mapNotNull { (prevVal: Int?, newVal: Int?) ->
-                if (prevVal == null || newVal == null) return@mapNotNull null
-
-                val prevSub = subscriptionManager.getActiveSubscriptionInfo(prevVal)?.groupUuid
-                val nextSub = subscriptionManager.getActiveSubscriptionInfo(newVal)?.groupUuid
-
-                if (prevSub != null && prevSub == nextSub) Unit else null
+    override val activeSubChangedInGroupEvent: Events<Unit> = buildEvents {
+        activeMobileDataSubscriptionId.transitions
+            .mapNotNull { (prevVal, newVal) ->
+                prevVal?.let { newVal?.let { WithPrev(prevVal, newVal) } }
             }
-            .flowOn(bgDispatcher)
+            .mapAsyncLatest { (prevVal, newVal) ->
+                if (isActiveSubChangeInGroup(prevVal, newVal)) Unit else null
+            }
+            .filterNotNull()
+    }
 
-    override suspend fun isInEcmMode(): Boolean {
-        if (telephonyManager.emergencyCallbackMode) {
-            return true
+    private suspend fun isActiveSubChangeInGroup(prevId: Int, newId: Int): Boolean =
+        withContext(bgDispatcher) {
+            val prevSub = subscriptionManager.getActiveSubscriptionInfo(prevId)?.groupUuid
+            val nextSub = subscriptionManager.getActiveSubscriptionInfo(newId)?.groupUuid
+            prevSub != null && prevSub == nextSub
         }
-        return with(subscriptions.value) {
-            any { getOrCreateRepoForSubId(it.subscriptionId).isInEcmMode() }
-        }
-    }
 
-    private fun isValidSubId(subId: Int): Boolean = checkSub(subId, subscriptions.value)
+    private val isInEcmModeTopLevel: State<Boolean> =
+        telephonyManagerState.map { it.second.isNotEmpty() }
 
-    @VisibleForTesting fun getSubIdRepoCache() = subIdRepositoryCache
-
-    private fun subscriptionModelForSubId(subId: Int): Flow<SubscriptionModel?> {
-        return subscriptions.map { list ->
-            list.firstOrNull { model -> model.subscriptionId == subId }
-        }
-    }
-
-    private fun createRepositoryForSubId(subId: Int): FullMobileConnectionRepository {
-        return fullMobileRepoFactory.build(
-            subId,
-            isCarrierMerged(subId),
-            subscriptionModelForSubId(subId),
-            defaultNetworkName,
-            networkNameSeparator,
-        )
-    }
-
-    private fun updateRepos(newInfos: List<SubscriptionModel>) {
-        subIdRepositoryCache.forEach { (subId, repo) ->
-            repo.get()?.setIsCarrierMerged(isCarrierMerged(subId))
-        }
-    }
-
-    private fun isCarrierMerged(subId: Int): Boolean {
-        return subId == carrierMergedSubId.value
-    }
-
-    /**
-     * True if the checked subId is in the list of current subs or the active mobile data subId
-     *
-     * @param checkedSubs the list to validate [subId] against. To invalidate the cache, pass in the
-     *   new subscription list. Otherwise use [subscriptions.value] to validate a subId against the
-     *   current known subscriptions
-     */
-    private fun checkSub(subId: Int, checkedSubs: List<SubscriptionModel>): Boolean {
-        if (activeMobileDataSubscriptionId.value == subId) return true
-
-        checkedSubs.forEach {
-            if (it.subscriptionId == subId) {
-                return true
+    override val isInEcmMode: State<Boolean> =
+        isInEcmModeTopLevel.flatMap { isInEcm ->
+            if (isInEcm) {
+                stateOf(true)
+            } else {
+                mobileConnectionsBySubId.flatMap {
+                    it.mapValues { it.value.isInEcmMode }.combine().map { it.values.any { it } }
+                }
             }
         }
 
-        return false
-    }
+    /** Determines which subId is currently carrier-merged. */
+    val carrierMergedSelector: StateSelector<Int?> = carrierMergedSubId.selector()
 
-    private suspend fun fetchSubscriptionsList(): List<SubscriptionInfo> =
-        withContext(bgDispatcher) { subscriptionManager.completeActiveSubscriptionInfoList }
+    private suspend fun fetchSubscriptionModels(): List<SubscriptionModel> =
+        withContext(bgDispatcher) {
+            subscriptionManager.completeActiveSubscriptionInfoList.map { it.toSubscriptionModel() }
+        }
 
     private fun SubscriptionInfo.toSubscriptionModel(): SubscriptionModel =
         SubscriptionModel(
@@ -493,23 +479,106 @@ constructor(
             profileClass = profileClass,
         )
 
+    private var dumpCache: DumpCache? = null
+
+    private data class DumpCache(val repos: Map<Int, FullMobileConnectionRepositoryKairos>)
+
     override fun dump(pw: PrintWriter, args: Array<String>) {
+        val cache = dumpCache ?: return
         val ipw = IndentingPrintWriter(pw, " ")
         ipw.println("Connection cache:")
 
         ipw.increaseIndent()
-        subIdRepositoryCache.entries.forEach { (subId, repo) ->
-            ipw.println("$subId: ${repo.get()}")
-        }
+        cache.repos.forEach { (subId, repo) -> ipw.println("$subId: $repo") }
         ipw.decreaseIndent()
 
-        ipw.println("Connections (${subIdRepositoryCache.size} total):")
+        ipw.println("Connections (${cache.repos.size} total):")
         ipw.increaseIndent()
-        subIdRepositoryCache.values.forEach { it.get()?.dump(ipw) }
+        cache.repos.values.forEach { it.dump(ipw) }
         ipw.decreaseIndent()
+    }
+
+    fun interface ConnectionRepoFactory {
+        fun create(subId: Int): BuildSpec<MobileConnectionRepositoryKairos>
+    }
+
+    @dagger.Module
+    object Module {
+        @Provides
+        @ElementsIntoSet
+        fun kairosActivatable(
+            impl: Provider<MobileConnectionsRepositoryKairosImpl>
+        ): Set<@JvmSuppressWildcards KairosActivatable> =
+            if (Flags.statusBarMobileIconKairos()) setOf(impl.get()) else emptySet()
     }
 
     companion object {
         private const val LOGGING_PREFIX = "Repo"
+    }
+}
+
+@ExperimentalKairosApi
+class MobileConnectionRepositoryKairosFactoryImpl
+@Inject
+constructor(
+    context: Context,
+    private val connectionsRepo: MobileConnectionsRepositoryKairosImpl,
+    private val logFactory: TableLogBufferFactory,
+    private val carrierConfigRepo: CarrierConfigRepository,
+    private val telephonyManager: TelephonyManager,
+    private val mobileRepoFactory: MobileConnectionRepositoryKairosImpl.Factory,
+    private val mergedRepoFactory: CarrierMergedConnectionRepositoryKairos.Factory,
+) : MobileConnectionsRepositoryKairosImpl.ConnectionRepoFactory {
+
+    private val networkNameSeparator: String =
+        context.getString(R.string.status_bar_network_name_separator)
+
+    private val defaultNetworkName =
+        NetworkNameModel.Default(
+            context.getString(com.android.internal.R.string.lockscreen_carrier_default)
+        )
+
+    override fun create(subId: Int): BuildSpec<MobileConnectionRepositoryKairos> = buildSpec {
+        activated {
+            val mobileLogger =
+                logFactory.getOrCreate(tableBufferLogName(subId), MOBILE_CONNECTION_BUFFER_SIZE)
+            val mobileRepo = activated {
+                mobileRepoFactory.create(
+                    subId,
+                    mobileLogger,
+                    connectionsRepo.subscriptionsById.map { subs -> subs[subId] },
+                    defaultNetworkName,
+                    networkNameSeparator,
+                    carrierConfigRepo.getOrCreateConfigForSubId(subId),
+                    telephonyManager.createForSubscriptionId(subId),
+                )
+            }
+            FullMobileConnectionRepositoryKairos(
+                subId = subId,
+                tableLogBuffer = mobileLogger,
+                mobileRepo = mobileRepo,
+                carrierMergedRepoSpec =
+                    buildSpec {
+                        activated { mergedRepoFactory.build(subId, mobileLogger, mobileRepo) }
+                    },
+                isCarrierMerged = connectionsRepo.carrierMergedSelector[subId],
+            )
+        }
+    }
+
+    companion object {
+        /** The buffer size to use for logging. */
+        private const val MOBILE_CONNECTION_BUFFER_SIZE = 100
+
+        /** Returns a log buffer name for a mobile connection with the given [subId]. */
+        fun tableBufferLogName(subId: Int): String = "MobileConnectionLog[$subId]"
+    }
+
+    @dagger.Module
+    interface Module {
+        @Binds
+        fun bindImpl(
+            impl: MobileConnectionRepositoryKairosFactoryImpl
+        ): MobileConnectionsRepositoryKairosImpl.ConnectionRepoFactory
     }
 }

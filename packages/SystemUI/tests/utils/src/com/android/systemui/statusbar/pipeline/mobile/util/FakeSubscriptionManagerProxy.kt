@@ -41,3 +41,6 @@ class FakeSubscriptionManagerProxy(
             SubscriptionInfo.Builder().setId(subId).setEmbedded(isEmbedded).build()
     }
 }
+
+val SubscriptionManagerProxy.fake
+    get() = this as FakeSubscriptionManagerProxy

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,38 +16,46 @@
 
 package com.android.systemui.statusbar.pipeline.mobile.data.repository.demo
 
-import android.telephony.CellSignalStrength
 import android.telephony.SubscriptionManager.INVALID_SUBSCRIPTION_ID
 import android.telephony.TelephonyManager
+import com.android.settingslib.SignalIcon
+import com.android.systemui.KairosBuilder
+import com.android.systemui.kairos.Events
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.State
+import com.android.systemui.kairos.TransactionScope
+import com.android.systemui.kairos.map
+import com.android.systemui.kairos.mapCheap
+import com.android.systemui.kairos.mergeLeft
+import com.android.systemui.kairos.stateOf
+import com.android.systemui.kairos.util.Either
+import com.android.systemui.kairos.util.Either.First
+import com.android.systemui.kairos.util.Either.Second
+import com.android.systemui.kairos.util.firstOrNull
+import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
+import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.DefaultNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository.Companion.DEFAULT_NUM_LEVELS
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepositoryKairos
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.model.FakeNetworkEventModel
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Companion.COL_CARRIER_ID
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Companion.COL_CARRIER_NETWORK_CHANGE
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Companion.COL_CDMA_LEVEL
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Companion.COL_EMERGENCY
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Companion.COL_IS_GSM
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Companion.COL_IS_IN_SERVICE
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Companion.COL_IS_NTN
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Companion.COL_OPERATOR
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Companion.COL_PRIMARY_LEVEL
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Companion.COL_ROAMING
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Companion.COL_SATELLITE_LEVEL
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.model.FakeNetworkEventModel.Mobile as FakeMobileEvent
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepositoryKairos.Companion.COL_CARRIER_ID
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepositoryKairos.Companion.COL_CARRIER_NETWORK_CHANGE
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepositoryKairos.Companion.COL_CDMA_LEVEL
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepositoryKairos.Companion.COL_IS_IN_SERVICE
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepositoryKairos.Companion.COL_IS_NTN
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepositoryKairos.Companion.COL_OPERATOR
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepositoryKairos.Companion.COL_PRIMARY_LEVEL
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepositoryKairos.Companion.COL_ROAMING
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepositoryKairos.Companion.COL_SATELLITE_LEVEL
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
 import com.android.systemui.statusbar.pipeline.shared.data.model.toMobileDataActivityModel
-import com.android.systemui.statusbar.pipeline.wifi.data.repository.demo.model.FakeWifiEventModel
-import kotlinx.coroutines.CoroutineScope
+import com.android.systemui.statusbar.pipeline.wifi.data.repository.demo.model.FakeWifiEventModel.CarrierMerged as FakeCarrierMergedEvent
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 
 /**
  * Demo version of [MobileConnectionRepository]. Note that this class shares all of its flows using
@@ -55,240 +63,205 @@ import kotlinx.coroutines.flow.stateIn
  * [MutableStateFlow] while still logging all of the inputs in the same manor as the production
  * repos.
  */
+@ExperimentalKairosApi
 class DemoMobileConnectionRepositoryKairos(
     override val subId: Int,
     override val tableLogBuffer: TableLogBuffer,
-    val scope: CoroutineScope,
-) : MobileConnectionRepository, MobileConnectionRepositoryKairos {
-    private val _carrierId = MutableStateFlow(INVALID_SUBSCRIPTION_ID)
-    override val carrierId =
-        _carrierId
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_CARRIER_ID,
-                initialValue = _carrierId.value,
+    mobileEvents: Events<FakeMobileEvent>,
+    carrierMergedResetEvents: Events<Any?>,
+    wifiEvents: Events<FakeCarrierMergedEvent>,
+    private val mobileMappingsReverseLookup: State<Map<SignalIcon.MobileIconGroup, String>>,
+) : MobileConnectionRepositoryKairos, KairosBuilder by kairosBuilder() {
+
+    private val initialState =
+        FakeMobileEvent(
+            level = null,
+            dataType = null,
+            subId = subId,
+            carrierId = null,
+            activity = null,
+            carrierNetworkChange = false,
+            roaming = false,
+            name = DEMO_CARRIER_NAME,
+        )
+
+    private val lastMobileEvent: State<FakeMobileEvent> = buildState {
+        mobileEvents.holdState(initialState)
+    }
+
+    private val lastEvent: State<Either<FakeMobileEvent, FakeCarrierMergedEvent>> = buildState {
+        mergeLeft(
+                mobileEvents.mapCheap { First(it) },
+                wifiEvents.mapCheap { Second(it) },
+                carrierMergedResetEvents.mapCheap { First(lastMobileEvent.sample()) },
             )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _carrierId.value)
+            .holdState(First(initialState))
+    }
 
-    private val _inflateSignalStrength: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    override val inflateSignalStrength =
-        _inflateSignalStrength
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = "inflate",
-                initialValue = _inflateSignalStrength.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _inflateSignalStrength.value)
-
-    // I don't see a reason why we would turn the config off for demo mode.
-    override val allowNetworkSliceIndicator = MutableStateFlow(true)
-
-    private val _isEmergencyOnly = MutableStateFlow(false)
-    override val isEmergencyOnly =
-        _isEmergencyOnly
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_EMERGENCY,
-                initialValue = _isEmergencyOnly.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _isEmergencyOnly.value)
-
-    private val _isRoaming = MutableStateFlow(false)
-    override val isRoaming =
-        _isRoaming
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_ROAMING,
-                initialValue = _isRoaming.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _isRoaming.value)
-
-    private val _operatorAlphaShort: MutableStateFlow<String?> = MutableStateFlow(null)
-    override val operatorAlphaShort =
-        _operatorAlphaShort
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_OPERATOR,
-                initialValue = _operatorAlphaShort.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _operatorAlphaShort.value)
-
-    private val _isInService = MutableStateFlow(false)
-    override val isInService =
-        _isInService
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_IS_IN_SERVICE,
-                initialValue = _isInService.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _isInService.value)
-
-    private val _isNonTerrestrial = MutableStateFlow(false)
-    override val isNonTerrestrial =
-        _isNonTerrestrial
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_IS_NTN,
-                initialValue = _isNonTerrestrial.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _isNonTerrestrial.value)
-
-    private val _isGsm = MutableStateFlow(false)
-    override val isGsm =
-        _isGsm
-            .logDiffsForTable(tableLogBuffer, columnName = COL_IS_GSM, initialValue = _isGsm.value)
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _isGsm.value)
-
-    private val _cdmaLevel = MutableStateFlow(CellSignalStrength.SIGNAL_STRENGTH_NONE_OR_UNKNOWN)
-    override val cdmaLevel =
-        _cdmaLevel
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_CDMA_LEVEL,
-                initialValue = _cdmaLevel.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _cdmaLevel.value)
-
-    private val _primaryLevel = MutableStateFlow(CellSignalStrength.SIGNAL_STRENGTH_NONE_OR_UNKNOWN)
-    override val primaryLevel =
-        _primaryLevel
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_PRIMARY_LEVEL,
-                initialValue = _primaryLevel.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _primaryLevel.value)
-
-    private val _satelliteLevel = MutableStateFlow(0)
-    override val satelliteLevel: StateFlow<Int> =
-        _satelliteLevel
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_SATELLITE_LEVEL,
-                initialValue = _satelliteLevel.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _satelliteLevel.value)
-
-    private val _dataConnectionState = MutableStateFlow(DataConnectionState.Disconnected)
-    override val dataConnectionState =
-        _dataConnectionState
-            .logDiffsForTable(tableLogBuffer, initialValue = _dataConnectionState.value)
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _dataConnectionState.value)
-
-    private val _dataActivityDirection =
-        MutableStateFlow(DataActivityModel(hasActivityIn = false, hasActivityOut = false))
-    override val dataActivityDirection =
-        _dataActivityDirection
-            .logDiffsForTable(tableLogBuffer, initialValue = _dataActivityDirection.value)
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _dataActivityDirection.value)
-
-    private val _carrierNetworkChangeActive = MutableStateFlow(false)
-    override val carrierNetworkChangeActive =
-        _carrierNetworkChangeActive
-            .logDiffsForTable(
-                tableLogBuffer,
-                columnName = COL_CARRIER_NETWORK_CHANGE,
-                initialValue = _carrierNetworkChangeActive.value,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _carrierNetworkChangeActive.value)
-
-    private val _resolvedNetworkType: MutableStateFlow<ResolvedNetworkType> =
-        MutableStateFlow(ResolvedNetworkType.UnknownNetworkType)
-    override val resolvedNetworkType =
-        _resolvedNetworkType
-            .logDiffsForTable(tableLogBuffer, initialValue = _resolvedNetworkType.value)
-            .stateIn(scope, SharingStarted.WhileSubscribed(), _resolvedNetworkType.value)
-
-    override val numberOfLevels =
-        _inflateSignalStrength
-            .map { shouldInflate ->
-                if (shouldInflate) {
-                    DEFAULT_NUM_LEVELS + 1
-                } else {
-                    DEFAULT_NUM_LEVELS
+    override val carrierId: State<Int> =
+        lastEvent
+            .map { it.firstOrNull()?.carrierId ?: INVALID_SUBSCRIPTION_ID }
+            .also {
+                onActivated {
+                    logDiffsForTable(
+                        intState = it,
+                        tableLogBuffer = tableLogBuffer,
+                        columnName = COL_CARRIER_ID,
+                    )
                 }
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), DEFAULT_NUM_LEVELS)
 
-    override val dataEnabled = MutableStateFlow(true)
-
-    override val cdmaRoaming = MutableStateFlow(false)
-
-    override val networkName = MutableStateFlow(NetworkNameModel.IntentDerived(DEMO_CARRIER_NAME))
-
-    override val carrierName =
-        MutableStateFlow(NetworkNameModel.SubscriptionDerived(DEMO_CARRIER_NAME))
-
-    override val isAllowedDuringAirplaneMode = MutableStateFlow(false)
-
-    override val hasPrioritizedNetworkCapabilities = MutableStateFlow(false)
-
-    override suspend fun isInEcmMode(): Boolean = false
-
-    /**
-     * Process a new demo mobile event. Note that [resolvedNetworkType] must be passed in separately
-     * from the event, due to the requirement to reverse the mobile mappings lookup in the top-level
-     * repository.
-     */
-    fun processDemoMobileEvent(
-        event: FakeNetworkEventModel.Mobile,
-        resolvedNetworkType: ResolvedNetworkType,
-    ) {
-        // This is always true here, because we split out disabled states at the data-source level
-        dataEnabled.value = true
-        networkName.value = NetworkNameModel.IntentDerived(event.name)
-        carrierName.value = NetworkNameModel.SubscriptionDerived("${event.name} ${event.subId}")
-
-        _carrierId.value = event.carrierId ?: INVALID_SUBSCRIPTION_ID
-
-        _inflateSignalStrength.value = event.inflateStrength
-
-        cdmaRoaming.value = event.roaming
-        _isRoaming.value = event.roaming
-        // TODO(b/261029387): not yet supported
-        _isEmergencyOnly.value = false
-        _operatorAlphaShort.value = event.name
-        _isInService.value = (event.level ?: 0) > 0
-        // TODO(b/261029387): not yet supported
-        _isGsm.value = false
-        _cdmaLevel.value = event.level ?: 0
-        _primaryLevel.value = event.level ?: 0
-        // TODO(b/261029387): not yet supported
-        _dataConnectionState.value = DataConnectionState.Connected
-        _dataActivityDirection.value =
-            (event.activity ?: TelephonyManager.DATA_ACTIVITY_NONE).toMobileDataActivityModel()
-        _carrierNetworkChangeActive.value = event.carrierNetworkChange
-        _resolvedNetworkType.value = resolvedNetworkType
-        _isNonTerrestrial.value = event.ntn
-
-        isAllowedDuringAirplaneMode.value = false
-        hasPrioritizedNetworkCapabilities.value = event.slice
+    override val inflateSignalStrength: State<Boolean> = buildState {
+        mobileEvents
+            .map { ev -> ev.inflateStrength }
+            .holdState(false)
+            .also { logDiffsForTable(it, tableLogBuffer, "", columnName = "inflate") }
     }
 
-    fun processCarrierMergedEvent(event: FakeWifiEventModel.CarrierMerged) {
-        // This is always true here, because we split out disabled states at the data-source level
-        dataEnabled.value = true
-        networkName.value = NetworkNameModel.IntentDerived(CARRIER_MERGED_NAME)
-        carrierName.value = NetworkNameModel.SubscriptionDerived(CARRIER_MERGED_NAME)
-        // TODO(b/276943904): is carrierId a thing with carrier merged networks?
-        _carrierId.value = INVALID_SUBSCRIPTION_ID
-        cdmaRoaming.value = false
-        _primaryLevel.value = event.level
-        _cdmaLevel.value = event.level
-        _dataActivityDirection.value = event.activity.toMobileDataActivityModel()
+    // I don't see a reason why we would turn the config off for demo mode.
+    override val allowNetworkSliceIndicator: State<Boolean> = stateOf(true)
 
-        // These fields are always the same for carrier-merged networks
-        _resolvedNetworkType.value = ResolvedNetworkType.CarrierMergedNetworkType
-        _dataConnectionState.value = DataConnectionState.Connected
-        _isRoaming.value = false
-        _isEmergencyOnly.value = false
-        _operatorAlphaShort.value = null
-        _isInService.value = true
-        _isGsm.value = false
-        _carrierNetworkChangeActive.value = false
-        isAllowedDuringAirplaneMode.value = true
-        hasPrioritizedNetworkCapabilities.value = false
+    // TODO(b/261029387): not yet supported
+    override val isEmergencyOnly: State<Boolean> = stateOf(false)
+
+    override val isRoaming: State<Boolean> =
+        lastEvent
+            .map { it.firstOrNull()?.roaming ?: false }
+            .also { onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_ROAMING) } }
+
+    override val operatorAlphaShort: State<String?> =
+        lastEvent
+            .map { it.firstOrNull()?.name }
+            .also {
+                onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_OPERATOR) }
+            }
+
+    override val isInService: State<Boolean> =
+        lastEvent
+            .map {
+                when (it) {
+                    is First -> it.value.level?.let { level -> level > 0 } ?: false
+                    is Second -> true
+                }
+            }
+            .also {
+                onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_IS_IN_SERVICE) }
+            }
+
+    override val isNonTerrestrial: State<Boolean> = buildState {
+        mobileEvents
+            .map { it.ntn }
+            .holdState(false)
+            .also { logDiffsForTable(it, tableLogBuffer, columnName = COL_IS_NTN) }
     }
+
+    // TODO(b/261029387): not yet supported
+    override val isGsm: State<Boolean> = stateOf(false)
+
+    override val cdmaLevel: State<Int> =
+        lastEvent
+            .map {
+                when (it) {
+                    is First -> it.value.level ?: 0
+                    is Second -> it.value.level
+                }
+            }
+            .also {
+                onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_CDMA_LEVEL) }
+            }
+
+    override val primaryLevel: State<Int> =
+        lastEvent
+            .map {
+                when (it) {
+                    is First -> it.value.level ?: 0
+                    is Second -> it.value.level
+                }
+            }
+            .also {
+                onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_PRIMARY_LEVEL) }
+            }
+
+    override val satelliteLevel: State<Int> =
+        stateOf(0).also {
+            onActivated { logDiffsForTable(it, tableLogBuffer, columnName = COL_SATELLITE_LEVEL) }
+        }
+
+    // TODO(b/261029387): not yet supported
+    override val dataConnectionState: State<DataConnectionState> =
+        buildState {
+                mergeLeft(mobileEvents, wifiEvents)
+                    .map { DataConnectionState.Connected }
+                    .holdState(DataConnectionState.Disconnected)
+            }
+            .also {
+                onActivated {
+                    logDiffsForTable(diffableState = it, tableLogBuffer = tableLogBuffer)
+                }
+            }
+
+    override val dataActivityDirection: State<DataActivityModel> =
+        lastEvent
+            .map {
+                val activity =
+                    when (it) {
+                        is First -> it.value.activity ?: TelephonyManager.DATA_ACTIVITY_NONE
+                        is Second -> it.value.activity
+                    }
+                activity.toMobileDataActivityModel()
+            }
+            .also { onActivated { logDiffsForTable(it, tableLogBuffer, columnPrefix = "") } }
+
+    override val carrierNetworkChangeActive: State<Boolean> =
+        lastEvent
+            .map { it.firstOrNull()?.carrierNetworkChange ?: false }
+            .also {
+                onActivated {
+                    logDiffsForTable(it, tableLogBuffer, columnName = COL_CARRIER_NETWORK_CHANGE)
+                }
+            }
+
+    override val resolvedNetworkType: State<ResolvedNetworkType> = buildState {
+        lastEvent
+            .mapTransactionally {
+                it.firstOrNull()?.dataType?.let { resolvedNetworkTypeForIconGroup(it) }
+                    ?: ResolvedNetworkType.CarrierMergedNetworkType
+            }
+            .also { logDiffsForTable(it, tableLogBuffer, columnPrefix = "") }
+    }
+
+    override val numberOfLevels: State<Int> =
+        inflateSignalStrength.map { shouldInflate ->
+            if (shouldInflate) DEFAULT_NUM_LEVELS + 1 else DEFAULT_NUM_LEVELS
+        }
+
+    override val dataEnabled: State<Boolean> = stateOf(true)
+
+    override val cdmaRoaming: State<Boolean> = lastEvent.map { it.firstOrNull()?.roaming ?: false }
+
+    override val networkName: State<NetworkNameModel.IntentDerived> =
+        lastEvent.map {
+            NetworkNameModel.IntentDerived(it.firstOrNull()?.name ?: CARRIER_MERGED_NAME)
+        }
+
+    override val carrierName: State<NetworkNameModel.SubscriptionDerived> =
+        lastEvent.map {
+            NetworkNameModel.SubscriptionDerived(
+                it.firstOrNull()?.let { event -> "${event.name} ${event.subId}" }
+                    ?: CARRIER_MERGED_NAME
+            )
+        }
+
+    override val isAllowedDuringAirplaneMode: State<Boolean> = lastEvent.map { it is Second }
+
+    override val hasPrioritizedNetworkCapabilities: State<Boolean> =
+        lastEvent.map { it.firstOrNull()?.slice ?: false }
+
+    override val isInEcmMode: State<Boolean> = stateOf(false)
+
+    private fun TransactionScope.resolvedNetworkTypeForIconGroup(
+        iconGroup: SignalIcon.MobileIconGroup?
+    ) = DefaultNetworkType(mobileMappingsReverseLookup.sample()[iconGroup] ?: "dis")
 
     companion object {
         private const val DEMO_CARRIER_NAME = "Demo Carrier"

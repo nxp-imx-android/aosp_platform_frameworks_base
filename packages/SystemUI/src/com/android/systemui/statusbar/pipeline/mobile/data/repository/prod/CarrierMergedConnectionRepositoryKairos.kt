@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,29 +20,24 @@ import android.telephony.CellSignalStrength.SIGNAL_STRENGTH_NONE_OR_UNKNOWN
 import android.telephony.SubscriptionManager.INVALID_SUBSCRIPTION_ID
 import android.telephony.TelephonyManager
 import android.util.Log
+import com.android.systemui.KairosBuilder
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.State
+import com.android.systemui.kairos.combine
+import com.android.systemui.kairos.map
+import com.android.systemui.kairos.stateOf
+import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepositoryKairos
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepositoryKairos.Companion.DEFAULT_NUM_LEVELS
+import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.WifiRepository
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.withContext
 
 /**
  * A repository implementation for a carrier merged (aka VCN) network. A carrier merged network is
@@ -54,33 +49,40 @@ import kotlinx.coroutines.withContext
  * See [MobileConnectionRepositoryImpl] for a repository implementation of a typical mobile
  * connection.
  */
+@ExperimentalKairosApi
 class CarrierMergedConnectionRepositoryKairos(
     override val subId: Int,
     override val tableLogBuffer: TableLogBuffer,
     private val telephonyManager: TelephonyManager,
-    private val bgContext: CoroutineContext,
-    @Background private val scope: CoroutineScope,
     val wifiRepository: WifiRepository,
-) : MobileConnectionRepository, MobileConnectionRepositoryKairos {
+    override val isInEcmMode: State<Boolean>,
+) : MobileConnectionRepositoryKairos, KairosBuilder by kairosBuilder() {
     init {
         if (telephonyManager.subscriptionId != subId) {
-            throw IllegalStateException(
-                "CarrierMergedRepo: TelephonyManager should be created with subId($subId). " +
-                    "Found ${telephonyManager.subscriptionId} instead."
+            error(
+                """CarrierMergedRepo: TelephonyManager should be created with subId($subId).
+                    | Found ${telephonyManager.subscriptionId} instead."""
+                    .trimMargin()
             )
         }
+    }
+
+    private val isWifiEnabled: State<Boolean> = buildState {
+        wifiRepository.isWifiEnabled.toState()
+    }
+    private val isWifiDefault: State<Boolean> = buildState {
+        wifiRepository.isWifiDefault.toState()
+    }
+    private val wifiNetwork: State<WifiNetworkModel> = buildState {
+        wifiRepository.wifiNetwork.toState()
     }
 
     /**
      * Outputs the carrier merged network to use, or null if we don't have a valid carrier merged
      * network.
      */
-    private val network: Flow<WifiNetworkModel.CarrierMerged?> =
-        combine(
-            wifiRepository.isWifiEnabled,
-            wifiRepository.isWifiDefault,
-            wifiRepository.wifiNetwork,
-        ) { isEnabled, isDefault, network ->
+    private val network: State<WifiNetworkModel.CarrierMerged?> =
+        combine(isWifiEnabled, isWifiDefault, wifiNetwork) { isEnabled, isDefault, network ->
             when {
                 !isEnabled -> null
                 !isDefault -> null
@@ -88,9 +90,9 @@ class CarrierMergedConnectionRepositoryKairos(
                 network.subscriptionId != subId -> {
                     Log.w(
                         TAG,
-                        "Connection repo subId=$subId " +
-                            "does not equal wifi repo subId=${network.subscriptionId}; " +
-                            "not showing carrier merged",
+                        """Connection repo subId=$subId does not equal wifi repo
+                            | subId=${network.subscriptionId}; not showing carrier merged"""
+                            .trimMargin(),
                     )
                     null
                 }
@@ -98,101 +100,82 @@ class CarrierMergedConnectionRepositoryKairos(
             }
         }
 
-    override val cdmaRoaming: StateFlow<Boolean> = MutableStateFlow(ROAMING).asStateFlow()
+    override val cdmaRoaming: State<Boolean> = stateOf(ROAMING)
 
-    override val networkName: StateFlow<NetworkNameModel> =
-        network
-            // The SIM operator name should be the same throughout the lifetime of a subId, **but**
-            // it may not be available when this repo is created because it takes time to load. To
-            // be safe, we re-fetch it each time the network has changed.
-            .map { NetworkNameModel.SimDerived(telephonyManager.simOperatorName) }
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                NetworkNameModel.SimDerived(telephonyManager.simOperatorName),
-            )
+    override val networkName: State<NetworkNameModel> =
+        // The SIM operator name should be the same throughout the lifetime of a subId, **but**
+        // it may not be available when this repo is created because it takes time to load. To
+        // be safe, we re-fetch it each time the network has changed.
+        network.map { NetworkNameModel.SimDerived(telephonyManager.simOperatorName) }
 
-    override val carrierName: StateFlow<NetworkNameModel> = networkName
+    override val carrierName: State<NetworkNameModel>
+        get() = networkName
 
-    override val numberOfLevels: StateFlow<Int> =
-        wifiRepository.wifiNetwork
-            .map {
-                if (it is WifiNetworkModel.CarrierMerged) {
-                    it.numberOfLevels
-                } else {
-                    DEFAULT_NUM_LEVELS
-                }
+    override val numberOfLevels: State<Int> =
+        wifiNetwork.map {
+            if (it is WifiNetworkModel.CarrierMerged) {
+                it.numberOfLevels
+            } else {
+                DEFAULT_NUM_LEVELS
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), DEFAULT_NUM_LEVELS)
+        }
 
-    override val primaryLevel =
-        network
-            .map { it?.level ?: SIGNAL_STRENGTH_NONE_OR_UNKNOWN }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), SIGNAL_STRENGTH_NONE_OR_UNKNOWN)
+    override val primaryLevel: State<Int> =
+        network.map { it?.level ?: SIGNAL_STRENGTH_NONE_OR_UNKNOWN }
 
-    override val cdmaLevel =
-        network
-            .map { it?.level ?: SIGNAL_STRENGTH_NONE_OR_UNKNOWN }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), SIGNAL_STRENGTH_NONE_OR_UNKNOWN)
+    override val cdmaLevel: State<Int> =
+        network.map { it?.level ?: SIGNAL_STRENGTH_NONE_OR_UNKNOWN }
 
-    override val dataActivityDirection = wifiRepository.wifiActivity
+    override val dataActivityDirection: State<DataActivityModel> = buildState {
+        wifiRepository.wifiActivity.toState()
+    }
 
-    override val resolvedNetworkType =
-        network
-            .map {
-                if (it != null) {
-                    ResolvedNetworkType.CarrierMergedNetworkType
-                } else {
-                    ResolvedNetworkType.UnknownNetworkType
-                }
+    override val resolvedNetworkType: State<ResolvedNetworkType> =
+        network.map {
+            if (it != null) {
+                ResolvedNetworkType.CarrierMergedNetworkType
+            } else {
+                ResolvedNetworkType.UnknownNetworkType
             }
-            .stateIn(
-                scope,
-                SharingStarted.WhileSubscribed(),
-                ResolvedNetworkType.UnknownNetworkType,
-            )
+        }
 
-    override val dataConnectionState =
-        network
-            .map {
-                if (it != null) {
-                    DataConnectionState.Connected
-                } else {
-                    DataConnectionState.Disconnected
-                }
+    override val dataConnectionState: State<DataConnectionState> =
+        network.map {
+            if (it != null) {
+                DataConnectionState.Connected
+            } else {
+                DataConnectionState.Disconnected
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), DataConnectionState.Disconnected)
+        }
 
-    override val isRoaming = MutableStateFlow(false).asStateFlow()
-    override val carrierId = MutableStateFlow(INVALID_SUBSCRIPTION_ID).asStateFlow()
-    override val inflateSignalStrength = MutableStateFlow(false).asStateFlow()
-    override val allowNetworkSliceIndicator = MutableStateFlow(false).asStateFlow()
-    override val isEmergencyOnly = MutableStateFlow(false).asStateFlow()
-    override val operatorAlphaShort = MutableStateFlow(null).asStateFlow()
-    override val isInService = MutableStateFlow(true).asStateFlow()
-    override val isNonTerrestrial = MutableStateFlow(false).asStateFlow()
-    override val isGsm = MutableStateFlow(false).asStateFlow()
-    override val carrierNetworkChangeActive = MutableStateFlow(false).asStateFlow()
-    override val satelliteLevel = MutableStateFlow(0)
+    override val isRoaming: State<Boolean> = stateOf(false)
+    override val carrierId: State<Int> = stateOf(INVALID_SUBSCRIPTION_ID)
+    override val inflateSignalStrength: State<Boolean> = stateOf(false)
+    override val allowNetworkSliceIndicator: State<Boolean> = stateOf(false)
+    override val isEmergencyOnly: State<Boolean> = stateOf(false)
+    override val operatorAlphaShort: State<String?> = stateOf(null)
+    override val isInService: State<Boolean> = stateOf(true)
+    override val isNonTerrestrial: State<Boolean> = stateOf(false)
+    override val isGsm: State<Boolean> = stateOf(false)
+    override val carrierNetworkChangeActive: State<Boolean> = stateOf(false)
+    override val satelliteLevel: State<Int> = stateOf(0)
 
     /**
      * Carrier merged connections happen over wifi but are displayed as a mobile triangle. Because
      * they occur over wifi, it's possible to have a valid carrier merged connection even during
      * airplane mode. See b/291993542.
      */
-    override val isAllowedDuringAirplaneMode = MutableStateFlow(true).asStateFlow()
+    override val isAllowedDuringAirplaneMode: State<Boolean> = stateOf(true)
 
     /**
      * It's not currently considered possible that a carrier merged network can have these
      * prioritized capabilities. If we need to track them, we can add the same check as is in
      * [MobileConnectionRepositoryImpl].
      */
-    override val hasPrioritizedNetworkCapabilities = MutableStateFlow(false).asStateFlow()
+    override val hasPrioritizedNetworkCapabilities: State<Boolean> = stateOf(false)
 
-    override val dataEnabled: StateFlow<Boolean> = wifiRepository.isWifiEnabled
-
-    override suspend fun isInEcmMode(): Boolean =
-        withContext(bgContext) { telephonyManager.emergencyCallbackMode }
+    override val dataEnabled: State<Boolean>
+        get() = isWifiEnabled
 
     companion object {
         // Carrier merged is never roaming
@@ -204,18 +187,19 @@ class CarrierMergedConnectionRepositoryKairos(
     @Inject
     constructor(
         private val telephonyManager: TelephonyManager,
-        @Background private val bgContext: CoroutineContext,
-        @Background private val scope: CoroutineScope,
         private val wifiRepository: WifiRepository,
     ) {
-        fun build(subId: Int, mobileLogger: TableLogBuffer): MobileConnectionRepository {
-            return CarrierMergedConnectionRepository(
+        fun build(
+            subId: Int,
+            mobileLogger: TableLogBuffer,
+            mobileRepo: MobileConnectionRepositoryKairos,
+        ): CarrierMergedConnectionRepositoryKairos {
+            return CarrierMergedConnectionRepositoryKairos(
                 subId,
                 mobileLogger,
                 telephonyManager.createForSubscriptionId(subId),
-                bgContext,
-                scope,
                 wifiRepository,
+                mobileRepo.isInEcmMode,
             )
         }
     }

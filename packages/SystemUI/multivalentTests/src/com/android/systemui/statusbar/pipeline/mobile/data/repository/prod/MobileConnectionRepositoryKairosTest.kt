@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package com.android.systemui.statusbar.pipeline.mobile.data.repository.prod
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
 import android.net.ConnectivityManager.NetworkCallback
+import android.net.connectivityManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.telephony.AccessNetworkConstants.TRANSPORT_TYPE_WLAN
@@ -68,19 +68,32 @@ import android.telephony.TelephonyManager.EXTRA_SPN
 import android.telephony.TelephonyManager.EXTRA_SUBSCRIPTION_ID
 import android.telephony.TelephonyManager.NETWORK_TYPE_LTE
 import android.telephony.TelephonyManager.NETWORK_TYPE_UNKNOWN
+import android.telephony.telephonyManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.mobile.MobileMappings
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.flags.FakeFeatureFlagsClassic
 import com.android.systemui.flags.Flags.ROAMING_INDICATOR_VIA_DISPLAY_INFO
+import com.android.systemui.flags.fake
+import com.android.systemui.flags.featureFlagsClassic
+import com.android.systemui.kairos.ActivatedKairosFixture
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.KairosTestScope
+import com.android.systemui.kairos.MutableState
+import com.android.systemui.kairos.kairos
+import com.android.systemui.kairos.runKairosTest
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.LogcatEchoTrackerAlways
 import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.log.table.tableLogBufferFactory
 import com.android.systemui.statusbar.pipeline.mobile.data.MobileInputLogger
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
-import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.DefaultNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.OverrideNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.UnknownNetworkType
@@ -89,53 +102,495 @@ import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrier
 import com.android.systemui.statusbar.pipeline.mobile.data.model.testCarrierConfig
 import com.android.systemui.statusbar.pipeline.mobile.data.model.testCarrierConfigWithOverride
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository.Companion.DEFAULT_NUM_LEVELS
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileMappingsProxy
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileTelephonyHelpers.signalStrength
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileTelephonyHelpers.telephonyDisplayInfo
-import com.android.systemui.statusbar.pipeline.mobile.util.FakeMobileMappingsProxy
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
 import com.android.systemui.statusbar.pipeline.shared.data.model.toMobileDataActivityModel
-import com.android.systemui.util.mockito.mock
-import com.android.systemui.util.mockito.whenever
-import com.android.systemui.util.mockito.withArgCaptor
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
 import org.mockito.Mockito.verify
-import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
+import org.mockito.kotlin.whenever
 
-@Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
+@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MobileConnectionRepositoryKairosTest : SysuiTestCase() {
-    private lateinit var underTest: MobileConnectionRepositoryKairosImpl
 
-    private val flags =
-        FakeFeatureFlagsClassic().also { it.set(ROAMING_INDICATOR_VIA_DISPLAY_INFO, true) }
+    private val Kosmos.underTest by ActivatedKairosFixture {
+        MobileConnectionRepositoryKairosImpl(
+            SUB_1_ID,
+            context,
+            subscriptionModel,
+            DEFAULT_NAME_MODEL,
+            SEP,
+            connectivityManager,
+            telephonyManager,
+            systemUiCarrierConfig,
+            fakeBroadcastDispatcher,
+            mobileMappingsProxy,
+            testDispatcher,
+            logger,
+            tableLogger,
+            featureFlagsClassic,
+        )
+    }
 
-    @Mock private lateinit var connectivityManager: ConnectivityManager
-    @Mock private lateinit var telephonyManager: TelephonyManager
-    @Mock private lateinit var logger: MobileInputLogger
-    @Mock private lateinit var tableLogger: TableLogBuffer
-    @Mock private lateinit var context: Context
+    private val Kosmos.logger: MobileInputLogger by Fixture {
+        MobileInputLogger(LogBuffer("test_buffer", 1, LogcatEchoTrackerAlways()))
+    }
 
-    private val mobileMappings = FakeMobileMappingsProxy()
+    private val Kosmos.tableLogger: TableLogBuffer by Fixture {
+        tableLogBufferFactory.getOrCreate("test_buffer", 1)
+    }
+
+    private val Kosmos.context: Context by Fixture { mock() }
+
     private val systemUiCarrierConfig = SystemUiCarrierConfig(SUB_1_ID, testCarrierConfig())
 
-    private val testDispatcher = UnconfinedTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
+    private val Kosmos.subscriptionModel: MutableState<SubscriptionModel?> by Fixture {
+        MutableState(
+            kairos,
+            SubscriptionModel(
+                subscriptionId = SUB_1_ID,
+                carrierName = DEFAULT_NAME,
+                profileClass = PROFILE_CLASS_UNSET,
+            ),
+        )
+    }
 
-    private val subscriptionModel: MutableStateFlow<SubscriptionModel?> =
-        MutableStateFlow(
+    private val kosmos =
+        testKosmos().apply {
+            useUnconfinedTestDispatcher()
+            featureFlagsClassic.fake.set(ROAMING_INDICATOR_VIA_DISPLAY_INFO, true)
+            telephonyManager.stub { on { subscriptionId } doReturn SUB_1_ID }
+        }
+
+    private fun runTest(block: suspend KairosTestScope.() -> Unit) =
+        kosmos.run { runKairosTest { block() } }
+
+    @Test
+    fun emergencyOnly() = runTest {
+        val latest by underTest.isEmergencyOnly.collectLastValue()
+
+        val serviceState = ServiceState().apply { isEmergencyOnly = true }
+
+        getTelephonyCallbackForType<ServiceStateListener>().onServiceStateChanged(serviceState)
+
+        assertThat(latest).isEqualTo(true)
+    }
+
+    @Test
+    fun emergencyOnly_toggles() = runTest {
+        val latest by underTest.isEmergencyOnly.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<ServiceStateListener>()
+        callback.onServiceStateChanged(ServiceState().apply { isEmergencyOnly = true })
+
+        assertThat(latest).isTrue()
+
+        callback.onServiceStateChanged(ServiceState().apply { isEmergencyOnly = false })
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun cdmaLevelUpdates() = runTest {
+        val latest by underTest.cdmaLevel.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.SignalStrengthsListener>()
+        var strength = signalStrength(gsmLevel = 1, cdmaLevel = 2, isGsm = true)
+        callback.onSignalStrengthsChanged(strength)
+
+        assertThat(latest).isEqualTo(2)
+
+        // gsmLevel updates, no change to cdmaLevel
+        strength = signalStrength(gsmLevel = 3, cdmaLevel = 2, isGsm = true)
+        callback.onSignalStrengthsChanged(strength)
+
+        assertThat(latest).isEqualTo(2)
+    }
+
+    @Test
+    fun gsmLevelUpdates() = runTest {
+        val latest by underTest.primaryLevel.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.SignalStrengthsListener>()
+        var strength = signalStrength(gsmLevel = 1, cdmaLevel = 2, isGsm = true)
+        callback.onSignalStrengthsChanged(strength)
+
+        assertThat(latest).isEqualTo(1)
+
+        strength = signalStrength(gsmLevel = 3, cdmaLevel = 2, isGsm = true)
+        callback.onSignalStrengthsChanged(strength)
+
+        assertThat(latest).isEqualTo(3)
+    }
+
+    @Test
+    fun isGsm() = runTest {
+        val latest by underTest.isGsm.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.SignalStrengthsListener>()
+        var strength = signalStrength(gsmLevel = 1, cdmaLevel = 2, isGsm = true)
+        callback.onSignalStrengthsChanged(strength)
+
+        assertThat(latest).isTrue()
+
+        strength = signalStrength(gsmLevel = 1, cdmaLevel = 2, isGsm = false)
+        callback.onSignalStrengthsChanged(strength)
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun dataConnectionState_connected() = runTest {
+        val latest by underTest.dataConnectionState.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
+        callback.onDataConnectionStateChanged(DATA_CONNECTED, 200 /* unused */)
+
+        assertThat(latest).isEqualTo(DataConnectionState.Connected)
+    }
+
+    @Test
+    fun dataConnectionState_connecting() = runTest {
+        val latest by underTest.dataConnectionState.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
+        callback.onDataConnectionStateChanged(DATA_CONNECTING, 200 /* unused */)
+
+        assertThat(latest).isEqualTo(DataConnectionState.Connecting)
+    }
+
+    @Test
+    fun dataConnectionState_disconnected() = runTest {
+        val latest by underTest.dataConnectionState.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
+        callback.onDataConnectionStateChanged(DATA_DISCONNECTED, 200 /* unused */)
+
+        assertThat(latest).isEqualTo(DataConnectionState.Disconnected)
+    }
+
+    @Test
+    fun dataConnectionState_disconnecting() = runTest {
+        val latest by underTest.dataConnectionState.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
+        callback.onDataConnectionStateChanged(DATA_DISCONNECTING, 200 /* unused */)
+
+        assertThat(latest).isEqualTo(DataConnectionState.Disconnecting)
+    }
+
+    @Test
+    fun dataConnectionState_suspended() = runTest {
+        val latest by underTest.dataConnectionState.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
+        callback.onDataConnectionStateChanged(DATA_SUSPENDED, 200 /* unused */)
+
+        assertThat(latest).isEqualTo(DataConnectionState.Suspended)
+    }
+
+    @Test
+    fun dataConnectionState_handoverInProgress() = runTest {
+        val latest by underTest.dataConnectionState.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
+        callback.onDataConnectionStateChanged(DATA_HANDOVER_IN_PROGRESS, 200 /* unused */)
+
+        assertThat(latest).isEqualTo(DataConnectionState.HandoverInProgress)
+    }
+
+    @Test
+    fun dataConnectionState_unknown() = runTest {
+        val latest by underTest.dataConnectionState.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
+        callback.onDataConnectionStateChanged(DATA_UNKNOWN, 200 /* unused */)
+
+        assertThat(latest).isEqualTo(DataConnectionState.Unknown)
+    }
+
+    @Test
+    fun dataConnectionState_invalid() = runTest {
+        val latest by underTest.dataConnectionState.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
+        callback.onDataConnectionStateChanged(45, 200 /* unused */)
+
+        assertThat(latest).isEqualTo(DataConnectionState.Invalid)
+    }
+
+    @Test
+    fun dataActivity() = runTest {
+        val latest by underTest.dataActivityDirection.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<DataActivityListener>()
+        callback.onDataActivity(DATA_ACTIVITY_INOUT)
+
+        assertThat(latest).isEqualTo(DATA_ACTIVITY_INOUT.toMobileDataActivityModel())
+    }
+
+    @Test
+    fun carrierId_initialValueCaptured() = runTest {
+        whenever(telephonyManager.simCarrierId).thenReturn(1234)
+
+        val latest by underTest.carrierId.collectLastValue()
+
+        assertThat(latest).isEqualTo(1234)
+    }
+
+    @Test
+    fun carrierId_updatesOnBroadcast() = runTest {
+        whenever(telephonyManager.simCarrierId).thenReturn(1234)
+
+        val latest by underTest.carrierId.collectLastValue()
+
+        fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(
+            context,
+            carrierIdIntent(carrierId = 4321),
+        )
+
+        assertThat(latest).isEqualTo(4321)
+    }
+
+    @Test
+    fun carrierNetworkChange() = runTest {
+        val latest by underTest.carrierNetworkChangeActive.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.CarrierNetworkListener>()
+        callback.onCarrierNetworkChange(true)
+
+        assertThat(latest).isEqualTo(true)
+    }
+
+    @Test
+    fun networkType_default() = runTest {
+        val latest by underTest.resolvedNetworkType.collectLastValue()
+
+        val expected = UnknownNetworkType
+
+        assertThat(latest).isEqualTo(expected)
+    }
+
+    @Test
+    fun networkType_unknown_hasCorrectKey() = runTest {
+        val latest by underTest.resolvedNetworkType.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.DisplayInfoListener>()
+        val ti =
+            telephonyDisplayInfo(
+                networkType = NETWORK_TYPE_UNKNOWN,
+                overrideNetworkType = NETWORK_TYPE_UNKNOWN,
+            )
+
+        callback.onDisplayInfoChanged(ti)
+
+        val expected = UnknownNetworkType
+        assertThat(latest).isEqualTo(expected)
+        assertThat(latest!!.lookupKey).isEqualTo(MobileMappings.toIconKey(NETWORK_TYPE_UNKNOWN))
+    }
+
+    @Test
+    fun networkType_updatesUsingDefault() = runTest {
+        val latest by underTest.resolvedNetworkType.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.DisplayInfoListener>()
+        val overrideType = OVERRIDE_NETWORK_TYPE_NONE
+        val type = NETWORK_TYPE_LTE
+        val ti = telephonyDisplayInfo(networkType = type, overrideNetworkType = overrideType)
+        callback.onDisplayInfoChanged(ti)
+
+        val expected = DefaultNetworkType(mobileMappingsProxy.toIconKey(type))
+        assertThat(latest).isEqualTo(expected)
+    }
+
+    @Test
+    fun networkType_updatesUsingOverride() = runTest {
+        val latest by underTest.resolvedNetworkType.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.DisplayInfoListener>()
+        val type = OVERRIDE_NETWORK_TYPE_LTE_CA
+        val ti = telephonyDisplayInfo(networkType = type, overrideNetworkType = type)
+        callback.onDisplayInfoChanged(ti)
+
+        val expected = OverrideNetworkType(mobileMappingsProxy.toIconKeyOverride(type))
+        assertThat(latest).isEqualTo(expected)
+    }
+
+    @Test
+    fun networkType_unknownNetworkWithOverride_usesOverrideKey() = runTest {
+        val latest by underTest.resolvedNetworkType.collectLastValue()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.DisplayInfoListener>()
+        val unknown = NETWORK_TYPE_UNKNOWN
+        val type = OVERRIDE_NETWORK_TYPE_LTE_CA
+        val ti = telephonyDisplayInfo(unknown, type)
+        callback.onDisplayInfoChanged(ti)
+
+        val expected = OverrideNetworkType(mobileMappingsProxy.toIconKeyOverride(type))
+        assertThat(latest).isEqualTo(expected)
+    }
+
+    @Test
+    fun dataEnabled_initial_false() = runTest {
+        whenever(telephonyManager.isDataConnectionAllowed).thenReturn(false)
+
+        val latest by underTest.dataEnabled.collectLastValue()
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun isDataEnabled_tracksTelephonyCallback() = runTest {
+        val latest by underTest.dataEnabled.collectLastValue()
+
+        whenever(telephonyManager.isDataConnectionAllowed).thenReturn(false)
+        assertThat(latest).isFalse()
+
+        val callback = getTelephonyCallbackForType<TelephonyCallback.DataEnabledListener>()
+
+        callback.onDataEnabledChanged(true, 1)
+        assertThat(latest).isTrue()
+
+        callback.onDataEnabledChanged(false, 1)
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun numberOfLevels_isDefault() = runTest {
+        val latest by underTest.numberOfLevels.collectLastValue()
+
+        assertThat(latest).isEqualTo(DEFAULT_NUM_LEVELS)
+    }
+
+    @Test
+    fun roaming_cdma_queriesTelephonyManager() = runTest {
+        val latest by underTest.cdmaRoaming.collectLastValue()
+
+        val cb = getTelephonyCallbackForType<ServiceStateListener>()
+
+        // CDMA roaming is off, GSM roaming is on
+        whenever(telephonyManager.cdmaEnhancedRoamingIndicatorDisplayNumber).thenReturn(ERI_OFF)
+        cb.onServiceStateChanged(ServiceState().also { it.roaming = true })
+
+        assertThat(latest).isFalse()
+
+        // CDMA roaming is on, GSM roaming is off
+        whenever(telephonyManager.cdmaEnhancedRoamingIndicatorDisplayNumber).thenReturn(ERI_ON)
+        cb.onServiceStateChanged(ServiceState().also { it.roaming = false })
+
+        assertThat(latest).isTrue()
+    }
+
+    /**
+     * [TelephonyManager.getCdmaEnhancedRoamingIndicatorDisplayNumber] returns -1 if the service is
+     * not running or if there is an error while retrieving the cdma ERI
+     */
+    @Test
+    fun cdmaRoaming_ignoresNegativeOne() = runTest {
+        val latest by underTest.cdmaRoaming.collectLastValue()
+
+        val serviceState = ServiceState()
+        serviceState.roaming = false
+
+        val cb = getTelephonyCallbackForType<ServiceStateListener>()
+
+        // CDMA roaming is unavailable (-1), GSM roaming is off
+        whenever(telephonyManager.cdmaEnhancedRoamingIndicatorDisplayNumber).thenReturn(-1)
+        cb.onServiceStateChanged(serviceState)
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun roaming_gsm_queriesDisplayInfo_viaDisplayInfo() = runTest {
+        // GIVEN flag is true
+        featureFlagsClassic.fake.set(ROAMING_INDICATOR_VIA_DISPLAY_INFO, true)
+
+        val latest by underTest.isRoaming.collectLastValue()
+
+        val cb = getTelephonyCallbackForType<DisplayInfoListener>()
+
+        // CDMA roaming is off, GSM roaming is off
+        whenever(telephonyManager.cdmaEnhancedRoamingIndicatorDisplayNumber).thenReturn(ERI_OFF)
+        cb.onDisplayInfoChanged(TelephonyDisplayInfo(NETWORK_TYPE_LTE, NETWORK_TYPE_UNKNOWN, false))
+
+        assertThat(latest).isFalse()
+
+        // CDMA roaming is off, GSM roaming is on
+        cb.onDisplayInfoChanged(TelephonyDisplayInfo(NETWORK_TYPE_LTE, NETWORK_TYPE_UNKNOWN, true))
+
+        assertThat(latest).isTrue()
+    }
+
+    @Test
+    fun roaming_gsm_queriesDisplayInfo_viaServiceState() = runTest {
+        // GIVEN flag is false
+        featureFlagsClassic.fake.set(ROAMING_INDICATOR_VIA_DISPLAY_INFO, false)
+
+        val latest by underTest.isRoaming.collectLastValue()
+
+        val cb = getTelephonyCallbackForType<ServiceStateListener>()
+
+        // CDMA roaming is off, GSM roaming is off
+        whenever(telephonyManager.cdmaEnhancedRoamingIndicatorDisplayNumber).thenReturn(ERI_OFF)
+        cb.onServiceStateChanged(ServiceState().also { it.roaming = false })
+
+        assertThat(latest).isFalse()
+
+        // CDMA roaming is off, GSM roaming is on
+        cb.onServiceStateChanged(ServiceState().also { it.roaming = true })
+
+        assertThat(latest).isTrue()
+    }
+
+    @Test
+    fun activity_updatesFromCallback() = runTest {
+        val latest by underTest.dataActivityDirection.collectLastValue()
+
+        assertThat(latest)
+            .isEqualTo(DataActivityModel(hasActivityIn = false, hasActivityOut = false))
+
+        val cb = getTelephonyCallbackForType<DataActivityListener>()
+        cb.onDataActivity(DATA_ACTIVITY_IN)
+        assertThat(latest)
+            .isEqualTo(DataActivityModel(hasActivityIn = true, hasActivityOut = false))
+
+        cb.onDataActivity(DATA_ACTIVITY_OUT)
+        assertThat(latest)
+            .isEqualTo(DataActivityModel(hasActivityIn = false, hasActivityOut = true))
+
+        cb.onDataActivity(DATA_ACTIVITY_INOUT)
+        assertThat(latest).isEqualTo(DataActivityModel(hasActivityIn = true, hasActivityOut = true))
+
+        cb.onDataActivity(DATA_ACTIVITY_NONE)
+        assertThat(latest)
+            .isEqualTo(DataActivityModel(hasActivityIn = false, hasActivityOut = false))
+
+        cb.onDataActivity(DATA_ACTIVITY_DORMANT)
+        assertThat(latest)
+            .isEqualTo(DataActivityModel(hasActivityIn = false, hasActivityOut = false))
+
+        cb.onDataActivity(1234)
+        assertThat(latest)
+            .isEqualTo(DataActivityModel(hasActivityIn = false, hasActivityOut = false))
+    }
+
+    @Test
+    fun networkNameForSubId_updates() = runTest {
+        val latest by underTest.carrierName.collectLastValue()
+
+        subscriptionModel.setValue(
             SubscriptionModel(
                 subscriptionId = SUB_1_ID,
                 carrierName = DEFAULT_NAME,
@@ -143,1277 +598,596 @@ class MobileConnectionRepositoryKairosTest : SysuiTestCase() {
             )
         )
 
-    @Before
-    fun setUp() {
-        MockitoAnnotations.initMocks(this)
-        whenever(telephonyManager.subscriptionId).thenReturn(SUB_1_ID)
+        assertThat(latest?.name).isEqualTo(DEFAULT_NAME)
 
-        underTest =
-            MobileConnectionRepositoryKairosImpl(
-                SUB_1_ID,
-                context,
-                subscriptionModel,
-                DEFAULT_NAME_MODEL,
-                SEP,
-                connectivityManager,
-                telephonyManager,
-                systemUiCarrierConfig,
-                fakeBroadcastDispatcher,
-                mobileMappings,
-                testDispatcher,
-                logger,
-                tableLogger,
-                flags,
-                testScope.backgroundScope,
+        val updatedName = "Derived Carrier"
+        subscriptionModel.setValue(
+            SubscriptionModel(
+                subscriptionId = SUB_1_ID,
+                carrierName = updatedName,
+                profileClass = PROFILE_CLASS_UNSET,
             )
+        )
+
+        assertThat(latest?.name).isEqualTo(updatedName)
     }
 
     @Test
-    fun emergencyOnly() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.isEmergencyOnly.onEach { latest = it }.launchIn(this)
+    fun networkNameForSubId_defaultWhenSubscriptionModelNull() = runTest {
+        val latest by underTest.carrierName.collectLastValue()
 
-            val serviceState = ServiceState()
-            serviceState.isEmergencyOnly = true
+        subscriptionModel.setValue(null)
 
-            getTelephonyCallbackForType<ServiceStateListener>().onServiceStateChanged(serviceState)
-
-            assertThat(latest).isEqualTo(true)
-
-            job.cancel()
-        }
+        assertThat(latest?.name).isEqualTo(DEFAULT_NAME)
+    }
 
     @Test
-    fun emergencyOnly_toggles() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.isEmergencyOnly.onEach { latest = it }.launchIn(this)
+    fun networkName_default() = runTest {
+        val latest by underTest.networkName.collectLastValue()
 
-            val callback = getTelephonyCallbackForType<ServiceStateListener>()
-            callback.onServiceStateChanged(ServiceState().also { it.isEmergencyOnly = true })
-            assertThat(latest).isTrue()
-
-            callback.onServiceStateChanged(ServiceState().also { it.isEmergencyOnly = false })
-
-            assertThat(latest).isFalse()
-
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(DEFAULT_NAME_MODEL)
+    }
 
     @Test
-    fun cdmaLevelUpdates() =
-        testScope.runTest {
-            var latest: Int? = null
-            val job = underTest.cdmaLevel.onEach { latest = it }.launchIn(this)
+    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_usesBroadcastInfo_returnsDerived() = runTest {
+        val latest by underTest.networkName.collectLastValue()
 
-            val callback = getTelephonyCallbackForType<TelephonyCallback.SignalStrengthsListener>()
-            var strength = signalStrength(gsmLevel = 1, cdmaLevel = 2, isGsm = true)
-            callback.onSignalStrengthsChanged(strength)
+        val intent = spnIntent()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        captor.lastValue.onReceive(context, intent)
 
-            assertThat(latest).isEqualTo(2)
-
-            // gsmLevel updates, no change to cdmaLevel
-            strength = signalStrength(gsmLevel = 3, cdmaLevel = 2, isGsm = true)
-            callback.onSignalStrengthsChanged(strength)
-
-            assertThat(latest).isEqualTo(2)
-
-            job.cancel()
-        }
+        // spnIntent() sets all values to true and test strings
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
+    }
 
     @Test
-    fun gsmLevelUpdates() =
-        testScope.runTest {
-            var latest: Int? = null
-            val job = underTest.primaryLevel.onEach { latest = it }.launchIn(this)
+    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_usesBroadcastInfo_returnsDerived_flagOff() = runTest {
+        val latest by underTest.networkName.collectLastValue()
 
-            val callback = getTelephonyCallbackForType<TelephonyCallback.SignalStrengthsListener>()
-            var strength = signalStrength(gsmLevel = 1, cdmaLevel = 2, isGsm = true)
-            callback.onSignalStrengthsChanged(strength)
+        val intent = spnIntent()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        captor.lastValue.onReceive(context, intent)
 
-            assertThat(latest).isEqualTo(1)
-
-            strength = signalStrength(gsmLevel = 3, cdmaLevel = 2, isGsm = true)
-            callback.onSignalStrengthsChanged(strength)
-
-            assertThat(latest).isEqualTo(3)
-
-            job.cancel()
-        }
+        // spnIntent() sets all values to true and test strings
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
+    }
 
     @Test
-    fun isGsm() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.isGsm.onEach { latest = it }.launchIn(this)
+    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_broadcastNotForThisSubId_keepsOldValue() = runTest {
+        val latest by underTest.networkName.collectLastValue()
 
-            val callback = getTelephonyCallbackForType<TelephonyCallback.SignalStrengthsListener>()
-            var strength = signalStrength(gsmLevel = 1, cdmaLevel = 2, isGsm = true)
-            callback.onSignalStrengthsChanged(strength)
+        val intent = spnIntent()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        captor.lastValue.onReceive(context, intent)
 
-            assertThat(latest).isTrue()
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
 
-            strength = signalStrength(gsmLevel = 1, cdmaLevel = 2, isGsm = false)
-            callback.onSignalStrengthsChanged(strength)
+        // WHEN an intent with a different subId is sent
+        val wrongSubIntent = spnIntent(subId = 101)
 
-            assertThat(latest).isFalse()
+        captor.lastValue.onReceive(context, wrongSubIntent)
 
-            job.cancel()
-        }
-
-    @Test
-    fun dataConnectionState_connected() =
-        testScope.runTest {
-            var latest: DataConnectionState? = null
-            val job = underTest.dataConnectionState.onEach { latest = it }.launchIn(this)
-
-            val callback =
-                getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
-            callback.onDataConnectionStateChanged(DATA_CONNECTED, 200 /* unused */)
-
-            assertThat(latest).isEqualTo(DataConnectionState.Connected)
-
-            job.cancel()
-        }
+        // THEN the previous intent's name is still used
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
+    }
 
     @Test
-    fun dataConnectionState_connecting() =
-        testScope.runTest {
-            var latest: DataConnectionState? = null
-            val job = underTest.dataConnectionState.onEach { latest = it }.launchIn(this)
+    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_broadcastNotForThisSubId_keepsOldValue_flagOff() = runTest {
+        val latest by underTest.networkName.collectLastValue()
 
-            val callback =
-                getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
-            callback.onDataConnectionStateChanged(DATA_CONNECTING, 200 /* unused */)
+        val intent = spnIntent()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        captor.lastValue.onReceive(context, intent)
 
-            assertThat(latest).isEqualTo(DataConnectionState.Connecting)
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
 
-            job.cancel()
-        }
+        // WHEN an intent with a different subId is sent
+        val wrongSubIntent = spnIntent(subId = 101)
 
-    @Test
-    fun dataConnectionState_disconnected() =
-        testScope.runTest {
-            var latest: DataConnectionState? = null
-            val job = underTest.dataConnectionState.onEach { latest = it }.launchIn(this)
+        captor.lastValue.onReceive(context, wrongSubIntent)
 
-            val callback =
-                getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
-            callback.onDataConnectionStateChanged(DATA_DISCONNECTED, 200 /* unused */)
-
-            assertThat(latest).isEqualTo(DataConnectionState.Disconnected)
-
-            job.cancel()
-        }
+        // THEN the previous intent's name is still used
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
+    }
 
     @Test
-    fun dataConnectionState_disconnecting() =
-        testScope.runTest {
-            var latest: DataConnectionState? = null
-            val job = underTest.dataConnectionState.onEach { latest = it }.launchIn(this)
+    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_broadcastHasNoData_updatesToDefault() = runTest {
+        val latest by underTest.networkName.collectLastValue()
 
-            val callback =
-                getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
-            callback.onDataConnectionStateChanged(DATA_DISCONNECTING, 200 /* unused */)
+        val intent = spnIntent()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        captor.lastValue.onReceive(context, intent)
 
-            assertThat(latest).isEqualTo(DataConnectionState.Disconnecting)
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
 
-            job.cancel()
-        }
+        val intentWithoutInfo = spnIntent(showSpn = false, showPlmn = false)
 
-    @Test
-    fun dataConnectionState_suspended() =
-        testScope.runTest {
-            var latest: DataConnectionState? = null
-            val job = underTest.dataConnectionState.onEach { latest = it }.launchIn(this)
+        captor.lastValue.onReceive(context, intentWithoutInfo)
 
-            val callback =
-                getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
-            callback.onDataConnectionStateChanged(DATA_SUSPENDED, 200 /* unused */)
-
-            assertThat(latest).isEqualTo(DataConnectionState.Suspended)
-
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(DEFAULT_NAME_MODEL)
+    }
 
     @Test
-    fun dataConnectionState_handoverInProgress() =
-        testScope.runTest {
-            var latest: DataConnectionState? = null
-            val job = underTest.dataConnectionState.onEach { latest = it }.launchIn(this)
+    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_broadcastHasNoData_updatesToDefault_flagOff() = runTest {
+        val latest by underTest.networkName.collectLastValue()
 
-            val callback =
-                getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
-            callback.onDataConnectionStateChanged(DATA_HANDOVER_IN_PROGRESS, 200 /* unused */)
+        val intent = spnIntent()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        captor.lastValue.onReceive(context, intent)
 
-            assertThat(latest).isEqualTo(DataConnectionState.HandoverInProgress)
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
 
-            job.cancel()
-        }
+        val intentWithoutInfo = spnIntent(showSpn = false, showPlmn = false)
 
-    @Test
-    fun dataConnectionState_unknown() =
-        testScope.runTest {
-            var latest: DataConnectionState? = null
-            val job = underTest.dataConnectionState.onEach { latest = it }.launchIn(this)
+        captor.lastValue.onReceive(context, intentWithoutInfo)
 
-            val callback =
-                getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
-            callback.onDataConnectionStateChanged(DATA_UNKNOWN, 200 /* unused */)
-
-            assertThat(latest).isEqualTo(DataConnectionState.Unknown)
-
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(DEFAULT_NAME_MODEL)
+    }
 
     @Test
-    fun dataConnectionState_invalid() =
-        testScope.runTest {
-            var latest: DataConnectionState? = null
-            val job = underTest.dataConnectionState.onEach { latest = it }.launchIn(this)
+    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_usingEagerStrategy_retainsNameBetweenSubscribers() = runTest {
+        // Use the [StateFlow.value] getter so we can prove that the collection happens
+        // even when there is no [Job]
 
-            val callback =
-                getTelephonyCallbackForType<TelephonyCallback.DataConnectionStateListener>()
-            callback.onDataConnectionStateChanged(45, 200 /* unused */)
+        // Starts out default
+        val latest by underTest.networkName.collectLastValue()
+        assertThat(latest).isEqualTo(DEFAULT_NAME_MODEL)
 
-            assertThat(latest).isEqualTo(DataConnectionState.Invalid)
+        val intent = spnIntent()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        captor.lastValue.onReceive(context, intent)
 
-            job.cancel()
-        }
-
-    @Test
-    fun dataActivity() =
-        testScope.runTest {
-            var latest: DataActivityModel? = null
-            val job = underTest.dataActivityDirection.onEach { latest = it }.launchIn(this)
-
-            val callback = getTelephonyCallbackForType<DataActivityListener>()
-            callback.onDataActivity(DATA_ACTIVITY_INOUT)
-
-            assertThat(latest).isEqualTo(DATA_ACTIVITY_INOUT.toMobileDataActivityModel())
-
-            job.cancel()
-        }
+        // The value is still there despite no active subscribers
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
+    }
 
     @Test
-    fun carrierId_initialValueCaptured() =
-        testScope.runTest {
-            whenever(telephonyManager.simCarrierId).thenReturn(1234)
+    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_usingEagerStrategy_retainsNameBetweenSubscribers_flagOff() = runTest {
+        // Use the [StateFlow.value] getter so we can prove that the collection happens
+        // even when there is no [Job]
 
-            var latest: Int? = null
-            val job = underTest.carrierId.onEach { latest = it }.launchIn(this)
+        // Starts out default
+        val latest by underTest.networkName.collectLastValue()
+        assertThat(latest).isEqualTo(DEFAULT_NAME_MODEL)
 
-            assertThat(latest).isEqualTo(1234)
+        val intent = spnIntent()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        captor.lastValue.onReceive(context, intent)
 
-            job.cancel()
-        }
+        // The value is still there despite no active subscribers
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
+    }
 
     @Test
-    fun carrierId_updatesOnBroadcast() =
-        testScope.runTest {
-            whenever(telephonyManager.simCarrierId).thenReturn(1234)
+    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_allFieldsSet_prioritizesDataSpnOverSpn() = runTest {
+        val latest by underTest.networkName.collectLastValue()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
 
-            var latest: Int? = null
-            val job = underTest.carrierId.onEach { latest = it }.launchIn(this)
+        val intent =
+            spnIntent(
+                subId = SUB_1_ID,
+                showSpn = true,
+                spn = SPN,
+                dataSpn = DATA_SPN,
+                showPlmn = true,
+                plmn = PLMN,
+            )
+        captor.lastValue.onReceive(context, intent)
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
+    }
 
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(
-                context,
-                carrierIdIntent(carrierId = 4321),
+    @Test
+    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_spnAndPlmn_fallbackToSpnWhenNullDataSpn() = runTest {
+        val latest by underTest.networkName.collectLastValue()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+
+        val intent =
+            spnIntent(
+                subId = SUB_1_ID,
+                showSpn = true,
+                spn = SPN,
+                dataSpn = null,
+                showPlmn = true,
+                plmn = PLMN,
+            )
+        captor.lastValue.onReceive(context, intent)
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$SPN"))
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_allFieldsSet_flagOff() = runTest {
+        val latest by underTest.networkName.collectLastValue()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+
+        val intent =
+            spnIntent(
+                subId = SUB_1_ID,
+                showSpn = true,
+                spn = SPN,
+                dataSpn = DATA_SPN,
+                showPlmn = true,
+                plmn = PLMN,
+            )
+        captor.lastValue.onReceive(context, intent)
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_showPlmn_plmnNotNull_showSpn_spnNull_dataSpnNotNull() = runTest {
+        val latest by underTest.networkName.collectLastValue()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        val intent =
+            spnIntent(
+                subId = SUB_1_ID,
+                showSpn = true,
+                spn = null,
+                dataSpn = DATA_SPN,
+                showPlmn = true,
+                plmn = PLMN,
+            )
+        captor.lastValue.onReceive(context, intent)
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_showPlmn_plmnNotNull_showSpn_spnNotNull_dataSpnNull() = runTest {
+        val latest by underTest.networkName.collectLastValue()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        val intent =
+            spnIntent(
+                subId = SUB_1_ID,
+                showSpn = true,
+                spn = SPN,
+                dataSpn = null,
+                showPlmn = true,
+                plmn = PLMN,
+            )
+        captor.lastValue.onReceive(context, intent)
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$SPN"))
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_showPlmn_plmnNotNull_showSpn_spnNull_dataSpnNotNull_flagOff() = runTest {
+        val latest by underTest.networkName.collectLastValue()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        val intent =
+            spnIntent(
+                subId = SUB_1_ID,
+                showSpn = true,
+                spn = null,
+                dataSpn = DATA_SPN,
+                showPlmn = true,
+                plmn = PLMN,
+            )
+        captor.lastValue.onReceive(context, intent)
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
+    }
+
+    @Test
+    fun networkName_showPlmn_noShowSPN() = runTest {
+        val latest by underTest.networkName.collectLastValue()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        val intent =
+            spnIntent(
+                subId = SUB_1_ID,
+                showSpn = false,
+                spn = SPN,
+                dataSpn = DATA_SPN,
+                showPlmn = true,
+                plmn = PLMN,
+            )
+        captor.lastValue.onReceive(context, intent)
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN"))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_showPlmn_plmnNull_showSpn() = runTest {
+        val latest by underTest.networkName.collectLastValue()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        val intent =
+            spnIntent(
+                subId = SUB_1_ID,
+                showSpn = true,
+                spn = SPN,
+                dataSpn = DATA_SPN,
+                showPlmn = true,
+                plmn = null,
+            )
+        captor.lastValue.onReceive(context, intent)
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$DATA_SPN"))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_showPlmn_plmnNull_showSpn_dataSpnNull() = runTest {
+        val latest by underTest.networkName.collectLastValue()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        val intent =
+            spnIntent(
+                subId = SUB_1_ID,
+                showSpn = true,
+                spn = SPN,
+                dataSpn = null,
+                showPlmn = true,
+                plmn = null,
+            )
+        captor.lastValue.onReceive(context, intent)
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$SPN"))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_showPlmn_plmnNull_showSpn_bothSpnNull() = runTest {
+        val latest by underTest.networkName.collectLastValue()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        val intent =
+            spnIntent(
+                subId = SUB_1_ID,
+                showSpn = true,
+                spn = null,
+                dataSpn = null,
+                showPlmn = true,
+                plmn = null,
+            )
+        captor.lastValue.onReceive(context, intent)
+        assertThat(latest).isEqualTo(DEFAULT_NAME_MODEL)
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
+    fun networkName_showPlmn_plmnNull_showSpn_flagOff() = runTest {
+        val latest by underTest.networkName.collectLastValue()
+        val captor = argumentCaptor<BroadcastReceiver>()
+        verify(context).registerReceiver(captor.capture(), any())
+        val intent =
+            spnIntent(
+                subId = SUB_1_ID,
+                showSpn = true,
+                spn = SPN,
+                dataSpn = DATA_SPN,
+                showPlmn = true,
+                plmn = null,
+            )
+        captor.lastValue.onReceive(context, intent)
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$DATA_SPN"))
+    }
+
+    @Test
+    fun operatorAlphaShort_tracked() = runTest {
+        val latest by underTest.operatorAlphaShort.collectLastValue()
+
+        val shortName = "short name"
+        val serviceState = ServiceState()
+        serviceState.setOperatorName(
+            /* longName */ "long name",
+            /* shortName */ shortName,
+            /* numeric */ "12345",
+        )
+
+        getTelephonyCallbackForType<ServiceStateListener>().onServiceStateChanged(serviceState)
+
+        assertThat(latest).isEqualTo(shortName)
+    }
+
+    @Test
+    fun isInService_notIwlan() = runTest {
+        val latest by underTest.isInService.collectLastValue()
+
+        val nriInService =
+            NetworkRegistrationInfo.Builder()
+                .setDomain(DOMAIN_PS)
+                .setTransportType(TRANSPORT_TYPE_WWAN)
+                .setRegistrationState(REGISTRATION_STATE_HOME)
+                .build()
+
+        getTelephonyCallbackForType<ServiceStateListener>()
+            .onServiceStateChanged(
+                ServiceState().also {
+                    it.voiceRegState = STATE_IN_SERVICE
+                    it.addNetworkRegistrationInfo(nriInService)
+                }
             )
 
-            assertThat(latest).isEqualTo(4321)
+        assertThat(latest).isTrue()
 
-            job.cancel()
-        }
-
-    @Test
-    fun carrierNetworkChange() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.carrierNetworkChangeActive.onEach { latest = it }.launchIn(this)
-
-            val callback = getTelephonyCallbackForType<TelephonyCallback.CarrierNetworkListener>()
-            callback.onCarrierNetworkChange(true)
-
-            assertThat(latest).isEqualTo(true)
-
-            job.cancel()
-        }
-
-    @Test
-    fun networkType_default() =
-        testScope.runTest {
-            var latest: ResolvedNetworkType? = null
-            val job = underTest.resolvedNetworkType.onEach { latest = it }.launchIn(this)
-
-            val expected = UnknownNetworkType
-
-            assertThat(latest).isEqualTo(expected)
-
-            job.cancel()
-        }
-
-    @Test
-    fun networkType_unknown_hasCorrectKey() =
-        testScope.runTest {
-            var latest: ResolvedNetworkType? = null
-            val job = underTest.resolvedNetworkType.onEach { latest = it }.launchIn(this)
-
-            val callback = getTelephonyCallbackForType<TelephonyCallback.DisplayInfoListener>()
-            val ti =
-                telephonyDisplayInfo(
-                    networkType = NETWORK_TYPE_UNKNOWN,
-                    overrideNetworkType = NETWORK_TYPE_UNKNOWN,
-                )
-
-            callback.onDisplayInfoChanged(ti)
-
-            val expected = UnknownNetworkType
-            assertThat(latest).isEqualTo(expected)
-            assertThat(latest!!.lookupKey).isEqualTo(MobileMappings.toIconKey(NETWORK_TYPE_UNKNOWN))
-
-            job.cancel()
-        }
-
-    @Test
-    fun networkType_updatesUsingDefault() =
-        testScope.runTest {
-            var latest: ResolvedNetworkType? = null
-            val job = underTest.resolvedNetworkType.onEach { latest = it }.launchIn(this)
-
-            val callback = getTelephonyCallbackForType<TelephonyCallback.DisplayInfoListener>()
-            val overrideType = OVERRIDE_NETWORK_TYPE_NONE
-            val type = NETWORK_TYPE_LTE
-            val ti = telephonyDisplayInfo(networkType = type, overrideNetworkType = overrideType)
-            callback.onDisplayInfoChanged(ti)
-
-            val expected = DefaultNetworkType(mobileMappings.toIconKey(type))
-            assertThat(latest).isEqualTo(expected)
-
-            job.cancel()
-        }
-
-    @Test
-    fun networkType_updatesUsingOverride() =
-        testScope.runTest {
-            var latest: ResolvedNetworkType? = null
-            val job = underTest.resolvedNetworkType.onEach { latest = it }.launchIn(this)
-
-            val callback = getTelephonyCallbackForType<TelephonyCallback.DisplayInfoListener>()
-            val type = OVERRIDE_NETWORK_TYPE_LTE_CA
-            val ti = telephonyDisplayInfo(networkType = type, overrideNetworkType = type)
-            callback.onDisplayInfoChanged(ti)
-
-            val expected = OverrideNetworkType(mobileMappings.toIconKeyOverride(type))
-            assertThat(latest).isEqualTo(expected)
-
-            job.cancel()
-        }
-
-    @Test
-    fun networkType_unknownNetworkWithOverride_usesOverrideKey() =
-        testScope.runTest {
-            var latest: ResolvedNetworkType? = null
-            val job = underTest.resolvedNetworkType.onEach { latest = it }.launchIn(this)
-
-            val callback = getTelephonyCallbackForType<TelephonyCallback.DisplayInfoListener>()
-            val unknown = NETWORK_TYPE_UNKNOWN
-            val type = OVERRIDE_NETWORK_TYPE_LTE_CA
-            val ti = telephonyDisplayInfo(unknown, type)
-            callback.onDisplayInfoChanged(ti)
-
-            val expected = OverrideNetworkType(mobileMappings.toIconKeyOverride(type))
-            assertThat(latest).isEqualTo(expected)
-
-            job.cancel()
-        }
-
-    @Test
-    fun dataEnabled_initial_false() =
-        testScope.runTest {
-            whenever(telephonyManager.isDataConnectionAllowed).thenReturn(false)
-
-            assertThat(underTest.dataEnabled.value).isFalse()
-        }
-
-    @Test
-    fun isDataEnabled_tracksTelephonyCallback() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.dataEnabled.onEach { latest = it }.launchIn(this)
-
-            whenever(telephonyManager.isDataConnectionAllowed).thenReturn(false)
-            assertThat(underTest.dataEnabled.value).isFalse()
-
-            val callback = getTelephonyCallbackForType<TelephonyCallback.DataEnabledListener>()
-
-            callback.onDataEnabledChanged(true, 1)
-            assertThat(latest).isTrue()
-
-            callback.onDataEnabledChanged(false, 1)
-            assertThat(latest).isFalse()
-
-            job.cancel()
-        }
-
-    @Test
-    fun numberOfLevels_isDefault() =
-        testScope.runTest {
-            var latest: Int? = null
-            val job = underTest.numberOfLevels.onEach { latest = it }.launchIn(this)
-
-            assertThat(latest).isEqualTo(DEFAULT_NUM_LEVELS)
-
-            job.cancel()
-        }
-
-    @Test
-    fun roaming_cdma_queriesTelephonyManager() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.cdmaRoaming.onEach { latest = it }.launchIn(this)
-
-            val cb = getTelephonyCallbackForType<ServiceStateListener>()
-
-            // CDMA roaming is off, GSM roaming is on
-            whenever(telephonyManager.cdmaEnhancedRoamingIndicatorDisplayNumber).thenReturn(ERI_OFF)
-            cb.onServiceStateChanged(ServiceState().also { it.roaming = true })
-
-            assertThat(latest).isFalse()
-
-            // CDMA roaming is on, GSM roaming is off
-            whenever(telephonyManager.cdmaEnhancedRoamingIndicatorDisplayNumber).thenReturn(ERI_ON)
-            cb.onServiceStateChanged(ServiceState().also { it.roaming = false })
-
-            assertThat(latest).isTrue()
-
-            job.cancel()
-        }
-
-    /**
-     * [TelephonyManager.getCdmaEnhancedRoamingIndicatorDisplayNumber] returns -1 if the service is
-     * not running or if there is an error while retrieving the cdma ERI
-     */
-    @Test
-    fun cdmaRoaming_ignoresNegativeOne() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.cdmaRoaming.onEach { latest = it }.launchIn(this)
-
-            val serviceState = ServiceState()
-            serviceState.roaming = false
-
-            val cb = getTelephonyCallbackForType<ServiceStateListener>()
-
-            // CDMA roaming is unavailable (-1), GSM roaming is off
-            whenever(telephonyManager.cdmaEnhancedRoamingIndicatorDisplayNumber).thenReturn(-1)
-            cb.onServiceStateChanged(serviceState)
-
-            assertThat(latest).isFalse()
-
-            job.cancel()
-        }
-
-    @Test
-    fun roaming_gsm_queriesDisplayInfo_viaDisplayInfo() =
-        testScope.runTest {
-            // GIVEN flag is true
-            flags.set(ROAMING_INDICATOR_VIA_DISPLAY_INFO, true)
-
-            // Re-create the repository, because the flag is read at init
-            underTest =
-                MobileConnectionRepositoryKairosImpl(
-                    SUB_1_ID,
-                    context,
-                    subscriptionModel,
-                    DEFAULT_NAME_MODEL,
-                    SEP,
-                    connectivityManager,
-                    telephonyManager,
-                    systemUiCarrierConfig,
-                    fakeBroadcastDispatcher,
-                    mobileMappings,
-                    testDispatcher,
-                    logger,
-                    tableLogger,
-                    flags,
-                    testScope.backgroundScope,
-                )
-
-            var latest: Boolean? = null
-            val job = underTest.isRoaming.onEach { latest = it }.launchIn(this)
-
-            val cb = getTelephonyCallbackForType<DisplayInfoListener>()
-
-            // CDMA roaming is off, GSM roaming is off
-            whenever(telephonyManager.cdmaEnhancedRoamingIndicatorDisplayNumber).thenReturn(ERI_OFF)
-            cb.onDisplayInfoChanged(
-                TelephonyDisplayInfo(NETWORK_TYPE_LTE, NETWORK_TYPE_UNKNOWN, false, false, false)
-            )
-
-            assertThat(latest).isFalse()
-
-            // CDMA roaming is off, GSM roaming is on
-            cb.onDisplayInfoChanged(
-                TelephonyDisplayInfo(NETWORK_TYPE_LTE, NETWORK_TYPE_UNKNOWN, true, false, false)
-            )
-
-            assertThat(latest).isTrue()
-
-            job.cancel()
-        }
-
-    @Test
-    fun roaming_gsm_queriesDisplayInfo_viaServiceState() =
-        testScope.runTest {
-            // GIVEN flag is false
-            flags.set(ROAMING_INDICATOR_VIA_DISPLAY_INFO, false)
-
-            // Re-create the repository, because the flag is read at init
-            underTest =
-                MobileConnectionRepositoryKairosImpl(
-                    SUB_1_ID,
-                    context,
-                    subscriptionModel,
-                    DEFAULT_NAME_MODEL,
-                    SEP,
-                    connectivityManager,
-                    telephonyManager,
-                    systemUiCarrierConfig,
-                    fakeBroadcastDispatcher,
-                    mobileMappings,
-                    testDispatcher,
-                    logger,
-                    tableLogger,
-                    flags,
-                    testScope.backgroundScope,
-                )
-
-            var latest: Boolean? = null
-            val job = underTest.isRoaming.onEach { latest = it }.launchIn(this)
-
-            val cb = getTelephonyCallbackForType<ServiceStateListener>()
-
-            // CDMA roaming is off, GSM roaming is off
-            whenever(telephonyManager.cdmaEnhancedRoamingIndicatorDisplayNumber).thenReturn(ERI_OFF)
-            cb.onServiceStateChanged(ServiceState().also { it.roaming = false })
-
-            assertThat(latest).isFalse()
-
-            // CDMA roaming is off, GSM roaming is on
-            cb.onServiceStateChanged(ServiceState().also { it.roaming = true })
-
-            assertThat(latest).isTrue()
-
-            job.cancel()
-        }
-
-    @Test
-    fun activity_updatesFromCallback() =
-        testScope.runTest {
-            var latest: DataActivityModel? = null
-            val job = underTest.dataActivityDirection.onEach { latest = it }.launchIn(this)
-
-            assertThat(latest)
-                .isEqualTo(DataActivityModel(hasActivityIn = false, hasActivityOut = false))
-
-            val cb = getTelephonyCallbackForType<DataActivityListener>()
-            cb.onDataActivity(DATA_ACTIVITY_IN)
-            assertThat(latest)
-                .isEqualTo(DataActivityModel(hasActivityIn = true, hasActivityOut = false))
-
-            cb.onDataActivity(DATA_ACTIVITY_OUT)
-            assertThat(latest)
-                .isEqualTo(DataActivityModel(hasActivityIn = false, hasActivityOut = true))
-
-            cb.onDataActivity(DATA_ACTIVITY_INOUT)
-            assertThat(latest)
-                .isEqualTo(DataActivityModel(hasActivityIn = true, hasActivityOut = true))
-
-            cb.onDataActivity(DATA_ACTIVITY_NONE)
-            assertThat(latest)
-                .isEqualTo(DataActivityModel(hasActivityIn = false, hasActivityOut = false))
-
-            cb.onDataActivity(DATA_ACTIVITY_DORMANT)
-            assertThat(latest)
-                .isEqualTo(DataActivityModel(hasActivityIn = false, hasActivityOut = false))
-
-            cb.onDataActivity(1234)
-            assertThat(latest)
-                .isEqualTo(DataActivityModel(hasActivityIn = false, hasActivityOut = false))
-
-            job.cancel()
-        }
-
-    @Test
-    fun networkNameForSubId_updates() =
-        testScope.runTest {
-            var latest: NetworkNameModel? = null
-            val job = underTest.carrierName.onEach { latest = it }.launchIn(this)
-
-            subscriptionModel.value =
-                SubscriptionModel(
-                    subscriptionId = SUB_1_ID,
-                    carrierName = DEFAULT_NAME,
-                    profileClass = PROFILE_CLASS_UNSET,
-                )
-
-            assertThat(latest?.name).isEqualTo(DEFAULT_NAME)
-
-            val updatedName = "Derived Carrier"
-            subscriptionModel.value =
-                SubscriptionModel(
-                    subscriptionId = SUB_1_ID,
-                    carrierName = updatedName,
-                    profileClass = PROFILE_CLASS_UNSET,
-                )
-
-            assertThat(latest?.name).isEqualTo(updatedName)
-
-            job.cancel()
-        }
-
-    @Test
-    fun networkNameForSubId_defaultWhenSubscriptionModelNull() =
-        testScope.runTest {
-            var latest: NetworkNameModel? = null
-            val job = underTest.carrierName.onEach { latest = it }.launchIn(this)
-
-            subscriptionModel.value = null
-
-            assertThat(latest?.name).isEqualTo(DEFAULT_NAME)
-
-            job.cancel()
-        }
-
-    @Test
-    fun networkName_default() =
-        testScope.runTest {
-            var latest: NetworkNameModel? = null
-            val job = underTest.networkName.onEach { latest = it }.launchIn(this)
-
-            assertThat(latest).isEqualTo(DEFAULT_NAME_MODEL)
-
-            job.cancel()
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_usesBroadcastInfo_returnsDerived() =
-        testScope.runTest {
-            var latest: NetworkNameModel? = null
-            val job = underTest.networkName.onEach { latest = it }.launchIn(this)
-
-            val intent = spnIntent()
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            captor.lastValue.onReceive(context, intent)
-
-            // spnIntent() sets all values to true and test strings
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-
-            job.cancel()
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_usesBroadcastInfo_returnsDerived_flagOff() =
-        testScope.runTest {
-            var latest: NetworkNameModel? = null
-            val job = underTest.networkName.onEach { latest = it }.launchIn(this)
-
-            val intent = spnIntent()
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            captor.lastValue.onReceive(context, intent)
-
-            // spnIntent() sets all values to true and test strings
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-
-            job.cancel()
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_broadcastNotForThisSubId_keepsOldValue() =
-        testScope.runTest {
-            var latest: NetworkNameModel? = null
-            val job = underTest.networkName.onEach { latest = it }.launchIn(this)
-
-            val intent = spnIntent()
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            captor.lastValue.onReceive(context, intent)
-
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-
-            // WHEN an intent with a different subId is sent
-            val wrongSubIntent = spnIntent(subId = 101)
-
-            captor.lastValue.onReceive(context, wrongSubIntent)
-
-            // THEN the previous intent's name is still used
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-
-            job.cancel()
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_broadcastNotForThisSubId_keepsOldValue_flagOff() =
-        testScope.runTest {
-            var latest: NetworkNameModel? = null
-            val job = underTest.networkName.onEach { latest = it }.launchIn(this)
-
-            val intent = spnIntent()
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            captor.lastValue.onReceive(context, intent)
-
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-
-            // WHEN an intent with a different subId is sent
-            val wrongSubIntent = spnIntent(subId = 101)
-
-            captor.lastValue.onReceive(context, wrongSubIntent)
-
-            // THEN the previous intent's name is still used
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-
-            job.cancel()
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_broadcastHasNoData_updatesToDefault() =
-        testScope.runTest {
-            var latest: NetworkNameModel? = null
-            val job = underTest.networkName.onEach { latest = it }.launchIn(this)
-
-            val intent = spnIntent()
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            captor.lastValue.onReceive(context, intent)
-
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-
-            val intentWithoutInfo = spnIntent(showSpn = false, showPlmn = false)
-
-            captor.lastValue.onReceive(context, intentWithoutInfo)
-
-            assertThat(latest).isEqualTo(DEFAULT_NAME_MODEL)
-
-            job.cancel()
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_broadcastHasNoData_updatesToDefault_flagOff() =
-        testScope.runTest {
-            var latest: NetworkNameModel? = null
-            val job = underTest.networkName.onEach { latest = it }.launchIn(this)
-
-            val intent = spnIntent()
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            captor.lastValue.onReceive(context, intent)
-
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-
-            val intentWithoutInfo = spnIntent(showSpn = false, showPlmn = false)
-
-            captor.lastValue.onReceive(context, intentWithoutInfo)
-
-            assertThat(latest).isEqualTo(DEFAULT_NAME_MODEL)
-
-            job.cancel()
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_usingEagerStrategy_retainsNameBetweenSubscribers() =
-        testScope.runTest {
-            // Use the [StateFlow.value] getter so we can prove that the collection happens
-            // even when there is no [Job]
-
-            // Starts out default
-            assertThat(underTest.networkName.value).isEqualTo(DEFAULT_NAME_MODEL)
-
-            val intent = spnIntent()
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            captor.lastValue.onReceive(context, intent)
-
-            // The value is still there despite no active subscribers
-            assertThat(underTest.networkName.value)
-                .isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_usingEagerStrategy_retainsNameBetweenSubscribers_flagOff() =
-        testScope.runTest {
-            // Use the [StateFlow.value] getter so we can prove that the collection happens
-            // even when there is no [Job]
-
-            // Starts out default
-            assertThat(underTest.networkName.value).isEqualTo(DEFAULT_NAME_MODEL)
-
-            val intent = spnIntent()
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            captor.lastValue.onReceive(context, intent)
-
-            // The value is still there despite no active subscribers
-            assertThat(underTest.networkName.value)
-                .isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_allFieldsSet_prioritizesDataSpnOverSpn() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.networkName)
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-
-            val intent =
-                spnIntent(
-                    subId = SUB_1_ID,
-                    showSpn = true,
-                    spn = SPN,
-                    dataSpn = DATA_SPN,
-                    showPlmn = true,
-                    plmn = PLMN,
-                )
-            captor.lastValue.onReceive(context, intent)
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_spnAndPlmn_fallbackToSpnWhenNullDataSpn() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.networkName)
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-
-            val intent =
-                spnIntent(
-                    subId = SUB_1_ID,
-                    showSpn = true,
-                    spn = SPN,
-                    dataSpn = null,
-                    showPlmn = true,
-                    plmn = PLMN,
-                )
-            captor.lastValue.onReceive(context, intent)
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$SPN"))
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_allFieldsSet_flagOff() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.networkName)
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-
-            val intent =
-                spnIntent(
-                    subId = SUB_1_ID,
-                    showSpn = true,
-                    spn = SPN,
-                    dataSpn = DATA_SPN,
-                    showPlmn = true,
-                    plmn = PLMN,
-                )
-            captor.lastValue.onReceive(context, intent)
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_showPlmn_plmnNotNull_showSpn_spnNull_dataSpnNotNull() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.networkName)
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            val intent =
-                spnIntent(
-                    subId = SUB_1_ID,
-                    showSpn = true,
-                    spn = null,
-                    dataSpn = DATA_SPN,
-                    showPlmn = true,
-                    plmn = PLMN,
-                )
-            captor.lastValue.onReceive(context, intent)
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_showPlmn_plmnNotNull_showSpn_spnNotNull_dataSpnNull() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.networkName)
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            val intent =
-                spnIntent(
-                    subId = SUB_1_ID,
-                    showSpn = true,
-                    spn = SPN,
-                    dataSpn = null,
-                    showPlmn = true,
-                    plmn = PLMN,
-                )
-            captor.lastValue.onReceive(context, intent)
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$SPN"))
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_showPlmn_plmnNotNull_showSpn_spnNull_dataSpnNotNull_flagOff() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.networkName)
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            val intent =
-                spnIntent(
-                    subId = SUB_1_ID,
-                    showSpn = true,
-                    spn = null,
-                    dataSpn = DATA_SPN,
-                    showPlmn = true,
-                    plmn = PLMN,
-                )
-            captor.lastValue.onReceive(context, intent)
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN$SEP$DATA_SPN"))
-        }
-
-    @Test
-    fun networkName_showPlmn_noShowSPN() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.networkName)
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            val intent =
-                spnIntent(
-                    subId = SUB_1_ID,
-                    showSpn = false,
-                    spn = SPN,
-                    dataSpn = DATA_SPN,
-                    showPlmn = true,
-                    plmn = PLMN,
-                )
-            captor.lastValue.onReceive(context, intent)
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$PLMN"))
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_showPlmn_plmnNull_showSpn() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.networkName)
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            val intent =
-                spnIntent(
-                    subId = SUB_1_ID,
-                    showSpn = true,
-                    spn = SPN,
-                    dataSpn = DATA_SPN,
-                    showPlmn = true,
-                    plmn = null,
-                )
-            captor.lastValue.onReceive(context, intent)
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$DATA_SPN"))
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_showPlmn_plmnNull_showSpn_dataSpnNull() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.networkName)
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            val intent =
-                spnIntent(
-                    subId = SUB_1_ID,
-                    showSpn = true,
-                    spn = SPN,
-                    dataSpn = null,
-                    showPlmn = true,
-                    plmn = null,
-                )
-            captor.lastValue.onReceive(context, intent)
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$SPN"))
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_showPlmn_plmnNull_showSpn_bothSpnNull() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.networkName)
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            val intent =
-                spnIntent(
-                    subId = SUB_1_ID,
-                    showSpn = true,
-                    spn = null,
-                    dataSpn = null,
-                    showPlmn = true,
-                    plmn = null,
-                )
-            captor.lastValue.onReceive(context, intent)
-            assertThat(latest).isEqualTo(DEFAULT_NAME_MODEL)
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_STATUS_BAR_SWITCH_TO_SPN_FROM_DATA_SPN)
-    fun networkName_showPlmn_plmnNull_showSpn_flagOff() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.networkName)
-            val captor = argumentCaptor<BroadcastReceiver>()
-            verify(context).registerReceiver(captor.capture(), any())
-            val intent =
-                spnIntent(
-                    subId = SUB_1_ID,
-                    showSpn = true,
-                    spn = SPN,
-                    dataSpn = DATA_SPN,
-                    showPlmn = true,
-                    plmn = null,
-                )
-            captor.lastValue.onReceive(context, intent)
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived("$DATA_SPN"))
-        }
-
-    @Test
-    fun operatorAlphaShort_tracked() =
-        testScope.runTest {
-            var latest: String? = null
-
-            val job = underTest.operatorAlphaShort.onEach { latest = it }.launchIn(this)
-
-            val shortName = "short name"
-            val serviceState = ServiceState()
-            serviceState.setOperatorName(
-                /* longName */ "long name",
-                /* shortName */ shortName,
-                /* numeric */ "12345",
-            )
-
-            getTelephonyCallbackForType<ServiceStateListener>().onServiceStateChanged(serviceState)
-
-            assertThat(latest).isEqualTo(shortName)
-
-            job.cancel()
-        }
-
-    @Test
-    fun isInService_notIwlan() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.isInService.onEach { latest = it }.launchIn(this)
-
-            val nriInService =
-                NetworkRegistrationInfo.Builder()
-                    .setDomain(DOMAIN_PS)
-                    .setTransportType(TRANSPORT_TYPE_WWAN)
-                    .setRegistrationState(REGISTRATION_STATE_HOME)
-                    .build()
-
-            getTelephonyCallbackForType<ServiceStateListener>()
-                .onServiceStateChanged(
-                    ServiceState().also {
-                        it.voiceRegState = STATE_IN_SERVICE
-                        it.addNetworkRegistrationInfo(nriInService)
-                    }
-                )
-
-            assertThat(latest).isTrue()
-
-            getTelephonyCallbackForType<ServiceStateListener>()
-                .onServiceStateChanged(
-                    ServiceState().also {
-                        it.voiceRegState = STATE_OUT_OF_SERVICE
-                        it.addNetworkRegistrationInfo(nriInService)
-                    }
-                )
-            assertThat(latest).isTrue()
-
-            val nriNotInService =
-                NetworkRegistrationInfo.Builder()
-                    .setDomain(DOMAIN_PS)
-                    .setTransportType(TRANSPORT_TYPE_WWAN)
-                    .setRegistrationState(REGISTRATION_STATE_DENIED)
-                    .build()
-            getTelephonyCallbackForType<ServiceStateListener>()
-                .onServiceStateChanged(
-                    ServiceState().also {
-                        it.voiceRegState = STATE_OUT_OF_SERVICE
-                        it.addNetworkRegistrationInfo(nriNotInService)
-                    }
-                )
-            assertThat(latest).isFalse()
-
-            job.cancel()
-        }
-
-    @Test
-    fun isInService_isIwlan_voiceOutOfService_dataInService() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.isInService.onEach { latest = it }.launchIn(this)
-
-            val iwlanData =
-                NetworkRegistrationInfo.Builder()
-                    .setDomain(DOMAIN_PS)
-                    .setTransportType(TRANSPORT_TYPE_WLAN)
-                    .setRegistrationState(REGISTRATION_STATE_HOME)
-                    .build()
-            val serviceState =
+        getTelephonyCallbackForType<ServiceStateListener>()
+            .onServiceStateChanged(
                 ServiceState().also {
                     it.voiceRegState = STATE_OUT_OF_SERVICE
-                    it.addNetworkRegistrationInfo(iwlanData)
+                    it.addNetworkRegistrationInfo(nriInService)
                 }
-
-            getTelephonyCallbackForType<ServiceStateListener>().onServiceStateChanged(serviceState)
-            assertThat(latest).isFalse()
-
-            job.cancel()
-        }
-
-    @Test
-    fun isNonTerrestrial_updatesFromCallback0() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.isNonTerrestrial)
-
-            // Starts out false
-            assertThat(latest).isFalse()
-
-            val callback = getTelephonyCallbackForType<CarrierRoamingNtnListener>()
-
-            callback.onCarrierRoamingNtnModeChanged(true)
-            assertThat(latest).isTrue()
-
-            callback.onCarrierRoamingNtnModeChanged(false)
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun numberOfLevels_usesCarrierConfig() =
-        testScope.runTest {
-            var latest: Int? = null
-            val job = underTest.numberOfLevels.onEach { latest = it }.launchIn(this)
-
-            assertThat(latest).isEqualTo(DEFAULT_NUM_LEVELS)
-
-            systemUiCarrierConfig.processNewCarrierConfig(
-                testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
             )
+        assertThat(latest).isTrue()
 
-            assertThat(latest).isEqualTo(DEFAULT_NUM_LEVELS + 1)
-
-            systemUiCarrierConfig.processNewCarrierConfig(
-                testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, false)
+        val nriNotInService =
+            NetworkRegistrationInfo.Builder()
+                .setDomain(DOMAIN_PS)
+                .setTransportType(TRANSPORT_TYPE_WWAN)
+                .setRegistrationState(REGISTRATION_STATE_DENIED)
+                .build()
+        getTelephonyCallbackForType<ServiceStateListener>()
+            .onServiceStateChanged(
+                ServiceState().also {
+                    it.voiceRegState = STATE_OUT_OF_SERVICE
+                    it.addNetworkRegistrationInfo(nriNotInService)
+                }
             )
-
-            assertThat(latest).isEqualTo(DEFAULT_NUM_LEVELS)
-
-            job.cancel()
-        }
-
-    @Test
-    fun inflateSignalStrength_usesCarrierConfig() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.inflateSignalStrength)
-
-            assertThat(latest).isEqualTo(false)
-
-            systemUiCarrierConfig.processNewCarrierConfig(
-                testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
-            )
-
-            assertThat(latest).isEqualTo(true)
-
-            systemUiCarrierConfig.processNewCarrierConfig(
-                testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, false)
-            )
-
-            assertThat(latest).isEqualTo(false)
-        }
-
-    @Test
-    fun allowNetworkSliceIndicator_exposesCarrierConfigValue() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.allowNetworkSliceIndicator)
-
-            systemUiCarrierConfig.processNewCarrierConfig(
-                testCarrierConfigWithOverride(KEY_SHOW_5G_SLICE_ICON_BOOL, true)
-            )
-
-            assertThat(latest).isTrue()
-
-            systemUiCarrierConfig.processNewCarrierConfig(
-                testCarrierConfigWithOverride(KEY_SHOW_5G_SLICE_ICON_BOOL, false)
-            )
-
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun isAllowedDuringAirplaneMode_alwaysFalse() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.isAllowedDuringAirplaneMode)
-
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun hasPrioritizedCaps_defaultFalse() {
-        assertThat(underTest.hasPrioritizedNetworkCapabilities.value).isFalse()
+        assertThat(latest).isFalse()
     }
 
     @Test
-    fun hasPrioritizedCaps_trueWhenAvailable() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.hasPrioritizedNetworkCapabilities)
+    fun isInService_isIwlan_voiceOutOfService_dataInService() = runTest {
+        val latest by underTest.isInService.collectLastValue()
 
-            val callback: NetworkCallback =
-                withArgCaptor<NetworkCallback> {
-                    verify(connectivityManager).registerNetworkCallback(any(), capture())
-                }
+        val iwlanData =
+            NetworkRegistrationInfo.Builder()
+                .setDomain(DOMAIN_PS)
+                .setTransportType(TRANSPORT_TYPE_WLAN)
+                .setRegistrationState(REGISTRATION_STATE_HOME)
+                .build()
+        val serviceState =
+            ServiceState().also {
+                it.voiceRegState = STATE_OUT_OF_SERVICE
+                it.addNetworkRegistrationInfo(iwlanData)
+            }
 
-            callback.onAvailable(mock())
-
-            assertThat(latest).isTrue()
-        }
+        getTelephonyCallbackForType<ServiceStateListener>().onServiceStateChanged(serviceState)
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun hasPrioritizedCaps_becomesFalseWhenNetworkLost() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.hasPrioritizedNetworkCapabilities)
+    fun isNonTerrestrial_updatesFromCallback0() = runTest {
+        val latest by underTest.isNonTerrestrial.collectLastValue()
 
-            val callback: NetworkCallback =
-                withArgCaptor<NetworkCallback> {
-                    verify(connectivityManager).registerNetworkCallback(any(), capture())
-                }
+        // Starts out false
+        assertThat(latest).isFalse()
 
-            callback.onAvailable(mock())
+        val callback = getTelephonyCallbackForType<CarrierRoamingNtnListener>()
 
-            assertThat(latest).isTrue()
+        callback.onCarrierRoamingNtnModeChanged(true)
+        assertThat(latest).isTrue()
 
-            callback.onLost(mock())
+        callback.onCarrierRoamingNtnModeChanged(false)
+        assertThat(latest).isFalse()
+    }
 
-            assertThat(latest).isFalse()
-        }
+    @Test
+    fun numberOfLevels_usesCarrierConfig() = runTest {
+        val latest by underTest.numberOfLevels.collectLastValue()
 
-    private inline fun <reified T> getTelephonyCallbackForType(): T {
+        assertThat(latest).isEqualTo(DEFAULT_NUM_LEVELS)
+
+        systemUiCarrierConfig.processNewCarrierConfig(
+            testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
+        )
+
+        assertThat(latest).isEqualTo(DEFAULT_NUM_LEVELS + 1)
+
+        systemUiCarrierConfig.processNewCarrierConfig(
+            testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, false)
+        )
+
+        assertThat(latest).isEqualTo(DEFAULT_NUM_LEVELS)
+    }
+
+    @Test
+    fun inflateSignalStrength_usesCarrierConfig() = runTest {
+        val latest by underTest.inflateSignalStrength.collectLastValue()
+
+        assertThat(latest).isEqualTo(false)
+
+        systemUiCarrierConfig.processNewCarrierConfig(
+            testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
+        )
+
+        assertThat(latest).isEqualTo(true)
+
+        systemUiCarrierConfig.processNewCarrierConfig(
+            testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, false)
+        )
+
+        assertThat(latest).isEqualTo(false)
+    }
+
+    @Test
+    fun allowNetworkSliceIndicator_exposesCarrierConfigValue() = runTest {
+        val latest by underTest.allowNetworkSliceIndicator.collectLastValue()
+
+        systemUiCarrierConfig.processNewCarrierConfig(
+            testCarrierConfigWithOverride(KEY_SHOW_5G_SLICE_ICON_BOOL, true)
+        )
+
+        assertThat(latest).isTrue()
+
+        systemUiCarrierConfig.processNewCarrierConfig(
+            testCarrierConfigWithOverride(KEY_SHOW_5G_SLICE_ICON_BOOL, false)
+        )
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun isAllowedDuringAirplaneMode_alwaysFalse() = runTest {
+        val latest by underTest.isAllowedDuringAirplaneMode.collectLastValue()
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun hasPrioritizedCaps_defaultFalse() = runTest {
+        // stand up under-test to kick-off activation
+        underTest
+
+        assertThat(kairos.transact { underTest.hasPrioritizedNetworkCapabilities.sample() })
+            .isFalse()
+    }
+
+    @Test
+    fun hasPrioritizedCaps_trueWhenAvailable() = runTest {
+        val latest by underTest.hasPrioritizedNetworkCapabilities.collectLastValue()
+
+        val callback: NetworkCallback =
+            argumentCaptor<NetworkCallback>()
+                .apply { verify(connectivityManager).registerNetworkCallback(any(), capture()) }
+                .lastValue
+
+        callback.onAvailable(mock())
+
+        assertThat(latest).isTrue()
+    }
+
+    @Test
+    fun hasPrioritizedCaps_becomesFalseWhenNetworkLost() = runTest {
+        val latest by underTest.hasPrioritizedNetworkCapabilities.collectLastValue()
+
+        val callback: NetworkCallback =
+            argumentCaptor<NetworkCallback>()
+                .apply { verify(connectivityManager).registerNetworkCallback(any(), capture()) }
+                .lastValue
+
+        callback.onAvailable(mock())
+
+        assertThat(latest).isTrue()
+
+        callback.onLost(mock())
+
+        assertThat(latest).isFalse()
+    }
+
+    private inline fun <reified T> Kosmos.getTelephonyCallbackForType(): T {
         return MobileTelephonyHelpers.getTelephonyCallbackForType(telephonyManager)
     }
 

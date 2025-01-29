@@ -20,6 +20,7 @@ import android.net.wifi.WifiManager
 import com.android.systemui.CoreStartable
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.log.table.TableLogBuffer
@@ -36,8 +37,12 @@ import com.android.systemui.statusbar.pipeline.mobile.data.repository.CarrierCon
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.CarrierConfigRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.CarrierConfigRepositoryImpl
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepository
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepositoryKairosAdapter
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileRepositorySwitcher
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileRepositorySwitcherKairos
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.DemoModeMobileConnectionDataSourceKairosImpl
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileConnectionRepositoryKairosFactoryImpl
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileConnectionsRepositoryKairosImpl
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorImpl
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileUiAdapter
@@ -79,7 +84,17 @@ import javax.inject.Named
 import javax.inject.Provider
 import kotlinx.coroutines.flow.Flow
 
-@Module
+@OptIn(ExperimentalKairosApi::class)
+@Module(
+    includes =
+        [
+            DemoModeMobileConnectionDataSourceKairosImpl.Module::class,
+            MobileRepositorySwitcherKairos.Module::class,
+            MobileConnectionsRepositoryKairosImpl.Module::class,
+            MobileConnectionRepositoryKairosFactoryImpl.Module::class,
+            MobileConnectionsRepositoryKairosAdapter.Module::class,
+        ]
+)
 abstract class StatusBarPipelineModule {
     @Binds
     abstract fun airplaneModeRepository(impl: AirplaneModeRepositoryImpl): AirplaneModeRepository
@@ -158,7 +173,7 @@ abstract class StatusBarPipelineModule {
         @Provides
         fun mobileConnectionsRepository(
             impl: Provider<MobileRepositorySwitcher>,
-            kairosImpl: Provider<MobileRepositorySwitcherKairos>,
+            kairosImpl: Provider<MobileConnectionsRepositoryKairosAdapter>,
         ): MobileConnectionsRepository {
             return if (Flags.statusBarMobileIconKairos()) {
                 kairosImpl.get()

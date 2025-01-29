@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,235 +19,136 @@ package com.android.systemui.statusbar.pipeline.mobile.data.repository
 import android.telephony.SubscriptionInfo
 import android.telephony.SubscriptionManager
 import android.telephony.SubscriptionManager.PROFILE_CLASS_UNSET
-import android.telephony.TelephonyManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.demoModeController
 import com.android.systemui.demomode.DemoMode
-import com.android.systemui.demomode.DemoModeController
-import com.android.systemui.dump.DumpManager
-import com.android.systemui.log.table.TableLogBuffer
-import com.android.systemui.log.table.tableLogBufferFactory
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
-import com.android.systemui.statusbar.pipeline.mobile.data.MobileInputLogger
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.KairosTestScope
+import com.android.systemui.kairos.runKairosTest
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.DemoMobileConnectionsRepository
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.DemoModeMobileConnectionDataSource
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.model.FakeNetworkEventModel
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.DemoMobileConnectionsRepositoryKairos
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.validMobileEvent
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileConnectionsRepositoryImpl
-import com.android.systemui.statusbar.pipeline.mobile.util.FakeMobileMappingsProxy
-import com.android.systemui.statusbar.pipeline.mobile.util.FakeSubscriptionManagerProxy
-import com.android.systemui.statusbar.pipeline.shared.data.repository.ConnectivityRepository
-import com.android.systemui.statusbar.pipeline.shared.data.repository.FakeConnectivityRepository
-import com.android.systemui.statusbar.pipeline.wifi.data.repository.FakeWifiRepository
-import com.android.systemui.statusbar.pipeline.wifi.data.repository.demo.DemoModeWifiDataSource
 import com.android.systemui.testKosmos
-import com.android.systemui.util.mockito.any
-import com.android.systemui.util.mockito.kotlinArgumentCaptor
-import com.android.systemui.util.mockito.mock
-import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.runBlocking
-import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
 import org.mockito.Mockito.verify
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
 
 /**
  * The switcher acts as a dispatcher to either the `prod` or `demo` versions of the repository
  * interface it's switching on. These tests just need to verify that the entire interface properly
  * switches over when the value of `demoMode` changes
  */
-@Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
+@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MobileRepositorySwitcherKairosTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
-
-    private lateinit var underTest: MobileRepositorySwitcherKairos
-    private lateinit var realRepo: MobileConnectionsRepositoryImpl
-    private lateinit var demoRepo: DemoMobileConnectionsRepository
-    private lateinit var mobileDataSource: DemoModeMobileConnectionDataSource
-    private lateinit var wifiDataSource: DemoModeWifiDataSource
-    private lateinit var wifiRepository: FakeWifiRepository
-    private lateinit var connectivityRepository: ConnectivityRepository
-
-    @Mock private lateinit var subscriptionManager: SubscriptionManager
-    @Mock private lateinit var telephonyManager: TelephonyManager
-    @Mock private lateinit var logger: MobileInputLogger
-    @Mock private lateinit var summaryLogger: TableLogBuffer
-    @Mock private lateinit var demoModeController: DemoModeController
-    @Mock private lateinit var dumpManager: DumpManager
-
-    private val fakeNetworkEventsFlow = MutableStateFlow<FakeNetworkEventModel?>(null)
-    private val mobileMappings = FakeMobileMappingsProxy()
-    private val subscriptionManagerProxy = FakeSubscriptionManagerProxy()
-
-    private val scope = CoroutineScope(IMMEDIATE)
-
-    @Before
-    fun setUp() {
-        MockitoAnnotations.initMocks(this)
-
-        // Never start in demo mode
-        whenever(demoModeController.isInDemoMode).thenReturn(false)
-
-        mobileDataSource =
-            mock<DemoModeMobileConnectionDataSource>().also {
-                whenever(it.mobileEvents).thenReturn(fakeNetworkEventsFlow)
+    private val kosmos =
+        testKosmos().apply {
+            useUnconfinedTestDispatcher()
+            demoModeController.stub {
+                // Never start in demo mode
+                on { isInDemoMode } doReturn false
             }
-        wifiDataSource =
-            mock<DemoModeWifiDataSource>().also {
-                whenever(it.wifiEvents).thenReturn(MutableStateFlow(null))
-            }
-        wifiRepository = FakeWifiRepository()
+            wifiDataSource.stub { on { wifiEvents } doReturn MutableStateFlow(null) }
+        }
 
-        connectivityRepository = FakeConnectivityRepository()
+    private val Kosmos.underTest
+        get() = mobileRepositorySwitcherKairos
 
-        realRepo =
-            MobileConnectionsRepositoryImpl(
-                connectivityRepository,
-                subscriptionManager,
-                subscriptionManagerProxy,
-                telephonyManager,
-                logger,
-                summaryLogger,
-                mobileMappings,
-                fakeBroadcastDispatcher,
-                context,
-                /* bgDispatcher = */ IMMEDIATE,
-                scope,
-                /* mainDispatcher = */ IMMEDIATE,
-                FakeAirplaneModeRepository(),
-                wifiRepository,
-                mock(),
-                mock(),
-                mock(),
-            )
+    private val Kosmos.realRepo
+        get() = mobileConnectionsRepositoryKairosImpl
 
-        demoRepo =
-            DemoMobileConnectionsRepository(
-                mobileDataSource = mobileDataSource,
-                wifiDataSource = wifiDataSource,
-                scope = scope,
-                context = context,
-                logFactory = kosmos.tableLogBufferFactory,
-            )
+    private fun runTest(block: suspend KairosTestScope.() -> Unit) =
+        kosmos.run { runKairosTest { block() } }
 
-        underTest =
-            MobileRepositorySwitcherKairos(
-                scope = scope,
-                realRepository = realRepo,
-                demoMobileConnectionsRepository = demoRepo,
-                demoModeController = demoModeController,
-            )
-    }
+    @Test
+    fun activeRepoMatchesDemoModeSetting() = runTest {
+        demoModeController.stub { on { isInDemoMode } doReturn false }
 
-    @After
-    fun tearDown() {
-        scope.cancel()
+        val latest by underTest.activeRepo.collectLastValue()
+
+        assertThat(latest).isEqualTo(realRepo)
+
+        startDemoMode()
+
+        assertThat(latest).isInstanceOf(DemoMobileConnectionsRepositoryKairos::class.java)
+
+        finishDemoMode()
+
+        assertThat(latest).isEqualTo(realRepo)
     }
 
     @Test
-    fun activeRepoMatchesDemoModeSetting() =
-        runBlocking(IMMEDIATE) {
-            whenever(demoModeController.isInDemoMode).thenReturn(false)
+    fun subscriptionListUpdatesWhenDemoModeChanges() = runTest {
+        demoModeController.stub { on { isInDemoMode } doReturn false }
 
-            var latest: MobileConnectionsRepository? = null
-            val job = underTest.activeRepo.onEach { latest = it }.launchIn(this)
-
-            assertThat(latest).isEqualTo(realRepo)
-
-            startDemoMode()
-
-            assertThat(latest).isEqualTo(demoRepo)
-
-            finishDemoMode()
-
-            assertThat(latest).isEqualTo(realRepo)
-
-            job.cancel()
+        subscriptionManager.stub {
+            on { completeActiveSubscriptionInfoList } doReturn listOf(SUB_1, SUB_2)
         }
 
-    @Test
-    fun subscriptionListUpdatesWhenDemoModeChanges() =
-        runBlocking(IMMEDIATE) {
-            whenever(demoModeController.isInDemoMode).thenReturn(false)
+        val latest by underTest.subscriptions.collectLastValue()
 
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1, SUB_2))
+        // The real subscriptions has 2 subs
+        getSubscriptionCallback().onSubscriptionsChanged()
 
-            var latest: List<SubscriptionModel>? = null
-            val job = underTest.subscriptions.onEach { latest = it }.launchIn(this)
+        assertThat(latest).isEqualTo(listOf(MODEL_1, MODEL_2))
 
-            // The real subscriptions has 2 subs
-            whenever(subscriptionManager.completeActiveSubscriptionInfoList)
-                .thenReturn(listOf(SUB_1, SUB_2))
-            getSubscriptionCallback().onSubscriptionsChanged()
+        // Demo mode turns on, and we should see only the demo subscriptions
+        startDemoMode()
+        demoModeMobileConnectionDataSourceKairos.fake.mobileEvents.emit(validMobileEvent(subId = 3))
 
-            assertThat(latest).isEqualTo(listOf(MODEL_1, MODEL_2))
+        // Demo mobile connections repository makes arbitrarily-formed subscription info
+        // objects, so just validate the data we care about
+        assertThat(latest).hasSize(1)
+        assertThat(latest!!.first().subscriptionId).isEqualTo(3)
 
-            // Demo mode turns on, and we should see only the demo subscriptions
-            startDemoMode()
-            fakeNetworkEventsFlow.value = validMobileEvent(subId = 3)
+        finishDemoMode()
 
-            // Demo mobile connections repository makes arbitrarily-formed subscription info
-            // objects, so just validate the data we care about
-            assertThat(latest).hasSize(1)
-            assertThat(latest!![0].subscriptionId).isEqualTo(3)
+        assertThat(latest).isEqualTo(listOf(MODEL_1, MODEL_2))
+    }
 
-            finishDemoMode()
-
-            assertThat(latest).isEqualTo(listOf(MODEL_1, MODEL_2))
-
-            job.cancel()
-        }
-
-    private fun startDemoMode() {
-        whenever(demoModeController.isInDemoMode).thenReturn(true)
+    private fun KairosTestScope.startDemoMode() {
+        demoModeController.stub { on { isInDemoMode } doReturn true }
         getDemoModeCallback().onDemoModeStarted()
     }
 
-    private fun finishDemoMode() {
-        whenever(demoModeController.isInDemoMode).thenReturn(false)
+    private fun KairosTestScope.finishDemoMode() {
+        demoModeController.stub { on { isInDemoMode } doReturn false }
         getDemoModeCallback().onDemoModeFinished()
     }
 
-    private fun getSubscriptionCallback(): SubscriptionManager.OnSubscriptionsChangedListener {
-        val callbackCaptor =
-            kotlinArgumentCaptor<SubscriptionManager.OnSubscriptionsChangedListener>()
-        verify(subscriptionManager)
-            .addOnSubscriptionsChangedListener(any(), callbackCaptor.capture())
-        return callbackCaptor.value
-    }
+    private fun KairosTestScope.getSubscriptionCallback():
+        SubscriptionManager.OnSubscriptionsChangedListener =
+        argumentCaptor<SubscriptionManager.OnSubscriptionsChangedListener>()
+            .apply {
+                verify(subscriptionManager).addOnSubscriptionsChangedListener(any(), capture())
+            }
+            .lastValue
 
-    private fun getDemoModeCallback(): DemoMode {
-        val captor = kotlinArgumentCaptor<DemoMode>()
-        verify(demoModeController).addCallback(captor.capture())
-        return captor.value
-    }
+    private fun KairosTestScope.getDemoModeCallback(): DemoMode =
+        argumentCaptor<DemoMode>()
+            .apply { verify(demoModeController).addCallback(capture()) }
+            .lastValue
 
     companion object {
-        private val IMMEDIATE = Dispatchers.Main.immediate
-
         private const val SUB_1_ID = 1
         private const val SUB_1_NAME = "Carrier $SUB_1_ID"
-        private val SUB_1 =
-            mock<SubscriptionInfo>().also {
-                whenever(it.subscriptionId).thenReturn(SUB_1_ID)
-                whenever(it.carrierName).thenReturn(SUB_1_NAME)
-                whenever(it.profileClass).thenReturn(PROFILE_CLASS_UNSET)
-            }
+        private val SUB_1: SubscriptionInfo = mock {
+            on { subscriptionId } doReturn SUB_1_ID
+            on { carrierName } doReturn SUB_1_NAME
+            on { profileClass } doReturn PROFILE_CLASS_UNSET
+        }
         private val MODEL_1 =
             SubscriptionModel(
                 subscriptionId = SUB_1_ID,
@@ -257,12 +158,11 @@ class MobileRepositorySwitcherKairosTest : SysuiTestCase() {
 
         private const val SUB_2_ID = 2
         private const val SUB_2_NAME = "Carrier $SUB_2_ID"
-        private val SUB_2 =
-            mock<SubscriptionInfo>().also {
-                whenever(it.subscriptionId).thenReturn(SUB_2_ID)
-                whenever(it.carrierName).thenReturn(SUB_2_NAME)
-                whenever(it.profileClass).thenReturn(PROFILE_CLASS_UNSET)
-            }
+        private val SUB_2: SubscriptionInfo = mock {
+            on { subscriptionId } doReturn SUB_2_ID
+            on { carrierName } doReturn SUB_2_NAME
+            on { profileClass } doReturn PROFILE_CLASS_UNSET
+        }
         private val MODEL_2 =
             SubscriptionModel(
                 subscriptionId = SUB_2_ID,

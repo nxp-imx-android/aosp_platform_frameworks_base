@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,33 +24,51 @@ import android.telephony.TelephonyManager.DATA_ACTIVITY_NONE
 import android.telephony.TelephonyManager.DATA_ACTIVITY_OUT
 import com.android.settingslib.SignalIcon.MobileIconGroup
 import com.android.settingslib.mobile.TelephonyIcons
+import com.android.systemui.Flags
+import com.android.systemui.KairosActivatable
+import com.android.systemui.KairosBuilder
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.demomode.DemoMode.COMMAND_NETWORK
 import com.android.systemui.demomode.DemoModeController
+import com.android.systemui.kairos.Events
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairosBuilder
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.model.FakeNetworkEventModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.model.FakeNetworkEventModel.Mobile
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.model.FakeNetworkEventModel.MobileDisabled
+import dagger.Binds
+import dagger.Provides
+import dagger.multibindings.ElementsIntoSet
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.SharingStarted
+import javax.inject.Provider
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.shareIn
 
 /**
  * Data source that can map from demo mode commands to inputs into the
- * [DemoMobileConnectionsRepository]'s flows
+ * [DemoMobileConnectionsRepositoryKairos]
  */
+@ExperimentalKairosApi
+interface DemoModeMobileConnectionDataSourceKairos {
+    val mobileEvents: Events<FakeNetworkEventModel?>
+}
+
+@ExperimentalKairosApi
 @SysUISingleton
-class DemoModeMobileConnectionDataSourceKairos
+class DemoModeMobileConnectionDataSourceKairosImpl
 @Inject
-constructor(demoModeController: DemoModeController, @Background scope: CoroutineScope) {
-    private val demoCommandStream = demoModeController.demoFlowForCommand(COMMAND_NETWORK)
+constructor(demoModeController: DemoModeController) :
+    KairosBuilder by kairosBuilder(), DemoModeMobileConnectionDataSourceKairos {
+    private val demoCommandStream: Flow<Bundle> =
+        demoModeController.demoFlowForCommand(COMMAND_NETWORK)
 
     // If the args contains "mobile", then all of the args are relevant. It's just the way demo mode
     // commands work and it's a little silly
-    private val _mobileCommands = demoCommandStream.map { args -> args.toMobileEvent() }
-    val mobileEvents = _mobileCommands.shareIn(scope, SharingStarted.WhileSubscribed())
+    private val _mobileCommands: Flow<FakeNetworkEventModel?> =
+        demoCommandStream.map { args -> args.toMobileEvent() }
+    override val mobileEvents: Events<FakeNetworkEventModel?> = buildEvents {
+        _mobileCommands.toEvents()
+    }
 
     private fun Bundle.toMobileEvent(): FakeNetworkEventModel? {
         val mobile = getString("mobile") ?: return null
@@ -89,6 +107,23 @@ constructor(demoModeController: DemoModeController, @Background scope: Coroutine
             slice = slice,
             ntn = ntn,
         )
+    }
+
+    @dagger.Module
+    interface Module {
+        @Binds
+        fun bindImpl(
+            impl: DemoModeMobileConnectionDataSourceKairosImpl
+        ): DemoModeMobileConnectionDataSourceKairos
+
+        companion object {
+            @Provides
+            @ElementsIntoSet
+            fun kairosActivatable(
+                impl: Provider<DemoModeMobileConnectionDataSourceKairosImpl>
+            ): Set<@JvmSuppressWildcards KairosActivatable> =
+                if (Flags.statusBarMobileIconKairos()) setOf(impl.get()) else emptySet()
+        }
     }
 }
 
