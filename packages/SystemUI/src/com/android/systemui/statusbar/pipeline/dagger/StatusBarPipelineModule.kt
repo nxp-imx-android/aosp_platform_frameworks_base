@@ -45,6 +45,7 @@ import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.Mobil
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileConnectionsRepositoryKairosImpl
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorImpl
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorKairosImpl
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileUiAdapter
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
 import com.android.systemui.statusbar.pipeline.mobile.util.MobileMappingsProxy
@@ -148,9 +149,6 @@ abstract class StatusBarPipelineModule {
     ): SubscriptionManagerProxy
 
     @Binds
-    abstract fun mobileIconsInteractor(impl: MobileIconsInteractorImpl): MobileIconsInteractor
-
-    @Binds
     @IntoMap
     @ClassKey(MobileUiAdapter::class)
     abstract fun bindFeature(impl: MobileUiAdapter): CoreStartable
@@ -169,6 +167,18 @@ abstract class StatusBarPipelineModule {
     abstract fun homeStatusBarViewBinder(impl: HomeStatusBarViewBinderImpl): HomeStatusBarViewBinder
 
     companion object {
+
+        @Provides
+        fun mobileIconsInteractor(
+            impl: Provider<MobileIconsInteractorImpl>,
+            kairosImpl: Provider<MobileIconsInteractorKairosImpl>,
+        ): MobileIconsInteractor {
+            return if (Flags.statusBarMobileIconKairos()) {
+                kairosImpl.get()
+            } else {
+                impl.get()
+            }
+        }
 
         @Provides
         fun mobileConnectionsRepository(
