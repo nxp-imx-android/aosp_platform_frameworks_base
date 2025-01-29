@@ -37,8 +37,8 @@ import android.companion.virtual.audio.VirtualAudioDevice;
 import android.companion.virtual.audio.VirtualAudioDevice.AudioConfigurationChangeCallback;
 import android.companion.virtual.camera.VirtualCamera;
 import android.companion.virtual.camera.VirtualCameraConfig;
-import android.companion.virtual.flags.Flags;
 import android.companion.virtual.sensor.VirtualSensor;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -624,7 +624,7 @@ public final class VirtualDeviceManager {
          * @see DisplayManager#VIRTUAL_DISPLAY_FLAG_TRUSTED
          * @see DisplayManager#VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
+        @FlaggedApi(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
         public void goToSleep() {
             mVirtualDeviceInternal.goToSleep();
         }
@@ -642,7 +642,7 @@ public final class VirtualDeviceManager {
          * @see DisplayManager#VIRTUAL_DISPLAY_FLAG_TRUSTED
          * @see DisplayManager#VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
+        @FlaggedApi(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
         public void wakeUp() {
             mVirtualDeviceInternal.wakeUp();
         }
@@ -838,7 +838,7 @@ public final class VirtualDeviceManager {
          * @see #removeActivityPolicyExemption(ActivityPolicyExemption)
          * @see #setDevicePolicy
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_ACTIVITY_CONTROL_API)
+        @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
         public void addActivityPolicyExemption(@NonNull ActivityPolicyExemption exemption) {
             mVirtualDeviceInternal.addActivityPolicyExemption(Objects.requireNonNull(exemption));
         }
@@ -853,7 +853,7 @@ public final class VirtualDeviceManager {
          * @see #addActivityPolicyExemption(ActivityPolicyExemption)
          * @see #setDevicePolicy
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_ACTIVITY_CONTROL_API)
+        @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
         public void removeActivityPolicyExemption(@NonNull ActivityPolicyExemption exemption) {
             mVirtualDeviceInternal.removeActivityPolicyExemption(Objects.requireNonNull(exemption));
         }
@@ -875,7 +875,7 @@ public final class VirtualDeviceManager {
          * @see VirtualDeviceParams#POLICY_TYPE_RECENTS
          * @see VirtualDeviceParams#POLICY_TYPE_ACTIVITY
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_ACTIVITY_CONTROL_API)
+        @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
         public void setDevicePolicy(
                 @VirtualDeviceParams.DynamicDisplayPolicyType int policyType,
                 @VirtualDeviceParams.DevicePolicy int devicePolicy,
@@ -1037,10 +1037,10 @@ public final class VirtualDeviceManager {
          * @see android.view.InputDevice#SOURCE_ROTARY_ENCODER
          */
         @NonNull
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_VIRTUAL_ROTARY)
+        @FlaggedApi(Flags.FLAG_VIRTUAL_ROTARY)
         public VirtualRotaryEncoder createVirtualRotaryEncoder(
                 @NonNull VirtualRotaryEncoderConfig config) {
-            if (!android.companion.virtualdevice.flags.Flags.virtualRotary()) {
+            if (!Flags.virtualRotary()) {
                 throw new UnsupportedOperationException("Virtual rotary support not enabled");
             }
             return mVirtualDeviceInternal.createVirtualRotaryEncoder(config);
@@ -1084,12 +1084,7 @@ public final class VirtualDeviceManager {
          * @see VirtualDeviceParams#POLICY_TYPE_CAMERA
          */
         @NonNull
-        @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA)
         public VirtualCamera createVirtualCamera(@NonNull VirtualCameraConfig config) {
-            if (!Flags.virtualCamera()) {
-                throw new UnsupportedOperationException(
-                        "Flag is not enabled: %s".formatted(Flags.FLAG_VIRTUAL_CAMERA));
-            }
             return mVirtualDeviceInternal.createVirtualCamera(Objects.requireNonNull(config));
         }
 
@@ -1252,7 +1247,7 @@ public final class VirtualDeviceManager {
          * @see VirtualDeviceParams#POLICY_TYPE_ACTIVITY
          * @see VirtualDevice#addActivityPolicyExemption(ActivityPolicyExemption)
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_ACTIVITY_CONTROL_API)
+        @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
         default void onActivityLaunchBlocked(int displayId, @NonNull ComponentName componentName,
                 @NonNull UserHandle user, @Nullable IntentSender intentSender) {}
 
@@ -1268,7 +1263,7 @@ public final class VirtualDeviceManager {
          * @see Display#FLAG_SECURE
          * @see WindowManager.LayoutParams#FLAG_SECURE
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_ACTIVITY_CONTROL_API)
+        @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
         default void onSecureWindowShown(int displayId, @NonNull ComponentName componentName,
                 @NonNull UserHandle user) {}
 
@@ -1284,7 +1279,7 @@ public final class VirtualDeviceManager {
          * @see Display#FLAG_SECURE
          * @see WindowManager.LayoutParams#FLAG_SECURE
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_ACTIVITY_CONTROL_API)
+        @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
         default void onSecureWindowHidden(int displayId) {}
     }
 
