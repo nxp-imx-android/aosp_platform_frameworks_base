@@ -12660,6 +12660,16 @@ public class NotificationManagerService extends SystemService {
             return Log.isLoggable("notification_assistant", Log.VERBOSE);
         }
 
+        private void addDefaultClassificationTypes() {
+            // Add the default classification types if the list is empty
+            synchronized (mLock) {
+                if (mAllowedClassificationTypes.isEmpty()) {
+                    mAllowedClassificationTypes.addAll(
+                            List.of(DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES));
+                }
+            }
+        }
+
         @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
         @GuardedBy("mNotificationLock")
         public void allowAdjustmentType(@Adjustment.Keys String key) {
@@ -12669,6 +12679,9 @@ public class NotificationManagerService extends SystemService {
             mDeniedAdjustments.remove(key);
             for (final ManagedServiceInfo info : NotificationAssistants.this.getServices()) {
                 mHandler.post(() -> notifyCapabilitiesChanged(info));
+            }
+            if (KEY_TYPE.equals(key)) {
+                addDefaultClassificationTypes();
             }
         }
 
