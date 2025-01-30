@@ -2715,6 +2715,8 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                     addPrebakedToComposition(composition);
                 } else if ("primitives".equals(nextArg)) {
                     addPrimitivesToComposition(composition);
+                } else if ("envelope".equals(nextArg)) {
+                    addEnvelopeToComposition(composition);
                 } else {
                     // nextArg is not an effect, finish reading.
                     break;
@@ -2743,6 +2745,121 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                     : VibrationEffect.DEFAULT_AMPLITUDE;
             composition.addOffDuration(Duration.ofMillis(delay));
             composition.addEffect(VibrationEffect.createOneShot(duration, amplitude));
+        }
+
+        private interface EnvelopeBuilder {
+            void setInitialSharpness(float sharpness);
+            void addControlPoint(float intensity, float sharpness, long duration);
+            void reset(float initialSharpness);
+            VibrationEffect build();
+        }
+
+        private static class BasicEnveloperBuilderWrapper implements EnvelopeBuilder {
+            private VibrationEffect.BasicEnvelopeBuilder mBuilder =
+                    new VibrationEffect.BasicEnvelopeBuilder();
+
+            @Override
+            public void setInitialSharpness(float sharpness) {
+                mBuilder.setInitialSharpness(sharpness);
+            }
+
+            @Override
+            public void addControlPoint(float intensity, float sharpness, long duration) {
+                mBuilder.addControlPoint(intensity, sharpness, duration);
+            }
+
+            @Override
+            public void reset(float initialSharpness) {
+                mBuilder = new VibrationEffect.BasicEnvelopeBuilder();
+                mBuilder.setInitialSharpness(initialSharpness);
+            }
+
+            @Override
+            public VibrationEffect build() {
+                return mBuilder.build();
+            }
+        }
+
+        private static class AdvancedEnveloperBuilderWrapper implements EnvelopeBuilder {
+            private VibrationEffect.WaveformEnvelopeBuilder mBuilder =
+                    new VibrationEffect.WaveformEnvelopeBuilder();
+
+            @Override
+            public void setInitialSharpness(float sharpness) {
+                mBuilder.setInitialFrequencyHz(sharpness);
+            }
+
+            @Override
+            public void addControlPoint(float intensity, float sharpness, long duration) {
+                mBuilder.addControlPoint(intensity, sharpness, duration);
+            }
+
+            @Override
+            public void reset(float initialSharpness) {
+                mBuilder = new VibrationEffect.WaveformEnvelopeBuilder();
+                mBuilder.setInitialFrequencyHz(initialSharpness);
+            }
+
+            @Override
+            public VibrationEffect build() {
+                return mBuilder.build();
+            }
+        }
+
+        private void addEnvelopeToComposition(VibrationEffect.Composition composition) {
+            getNextArgRequired(); // consume "envelope"
+            int repeat = -1;
+            float initialSharpness = Float.NaN;
+            VibrationEffect preamble = null;
+            boolean isAdvanced = false;
+            String nextOption;
+            while ((nextOption = getNextOption()) != null) {
+                switch (nextOption) {
+                    case "-a" -> isAdvanced = true;
+                    case "-i" -> initialSharpness = Float.parseFloat(getNextArgRequired());
+                    case "-r" -> repeat = Integer.parseInt(getNextArgRequired());
+                }
+            }
+
+            EnvelopeBuilder builder = isAdvanced ? new AdvancedEnveloperBuilderWrapper()
+                    : new BasicEnveloperBuilderWrapper();
+
+            if (!Float.isNaN(initialSharpness)) {
+                builder.setInitialSharpness(initialSharpness);
+            }
+
+            int duration, pos = 0;
+            float intensity, sharpness = 0f;
+            String nextArg;
+            while ((nextArg = peekNextArg()) != null) {
+                if (pos > 0 && pos == repeat) {
+                    preamble = builder.build();
+                    builder.reset(sharpness);
+                }
+                try {
+                    duration = Integer.parseInt(nextArg);
+                    getNextArgRequired(); // consume the duration
+                } catch (NumberFormatException e) {
+                    // nextArg is not a duration, finish reading.
+                    break;
+                }
+                intensity = Float.parseFloat(getNextArgRequired());
+                sharpness = Float.parseFloat(getNextArgRequired());
+                builder.addControlPoint(intensity, sharpness, duration);
+                pos++;
+            }
+
+            if (repeat >= 0) {
+                if (preamble == null) {
+                    composition.addEffect(VibrationEffect.createRepeatingEffect(builder.build()));
+                } else {
+                    composition.addEffect(
+                            VibrationEffect.createRepeatingEffect(preamble, builder.build()));
+                }
+                return;
+            }
+
+            composition.addEffect(builder.build());
         }
 
         private void addWaveformToComposition(VibrationEffect.Composition composition) {
@@ -2979,6 +3096,20 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 pw.println("    between values; otherwise each entry is a fixed step.");
                 pw.println("    Duration is in milliseconds; amplitude is a scale of 1-255;");
                 pw.println("    frequency is an absolute value in hertz;");
+                pw.print("  envelope [-a] [-i initial sharpness] [-r index]  ");
+                pw.println("[<duration1> <intensity1> <sharpness1>]...");
+                pw.println("    Generates a vibration pattern based on a series of duration, ");
+                pw.println("    intensity, and sharpness values. The total vibration time is ");
+                pw.println("    the sum of all durations; Ignored when device is on ");
+                pw.println("    DND (Do Not Disturb) mode; touch feedback strength user setting ");
+                pw.println("    will be used to scale amplitude.");
+                pw.println("    If -a is provided, the waveform will use the advanced APIs to ");
+                pw.println("    generate the vibration pattern and the input parameters ");
+                pw.println("    become [<duration1> <amplitude1> <frequency1>].");
+                pw.println("    If -i is provided, the waveform will have an initial sharpness ");
+                pw.println("    it will start from.");
+                pw.println("    If -r is provided, the waveform loops back to the specified index");
+                pw.println("    (e.g. 0 loops from the beginning).");
                 pw.println("  prebaked [-w delay] [-b] <effect-id>");
                 pw.println("    Vibrates with prebaked effect; ignored when device is on DND ");
                 pw.println("    (Do Not Disturb) mode; touch feedback strength user setting ");
