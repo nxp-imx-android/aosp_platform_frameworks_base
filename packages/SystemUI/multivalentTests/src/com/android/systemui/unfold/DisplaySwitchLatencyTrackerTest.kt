@@ -20,9 +20,12 @@ import android.content.Context
 import android.content.res.Resources
 import android.hardware.devicestate.DeviceStateManager
 import android.os.PowerManager.GO_TO_SLEEP_REASON_DEVICE_FOLD
+import android.os.PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.R
+import com.android.internal.util.LatencyTracker
+import com.android.internal.util.LatencyTracker.ACTION_SWITCH_DISPLAY_UNFOLD
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.ui.data.repository.ConfigurationRepositoryImpl
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractorImpl
@@ -44,8 +47,10 @@ import com.android.systemui.power.shared.model.ScreenPowerState.SCREEN_OFF
 import com.android.systemui.power.shared.model.ScreenPowerState.SCREEN_ON
 import com.android.systemui.shared.system.SysUiStatsLog
 import com.android.systemui.statusbar.policy.FakeConfigurationController
+import com.android.systemui.unfold.DisplaySwitchLatencyTracker.Companion.COOL_DOWN_DURATION
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.Companion.FOLDABLE_DEVICE_STATE_CLOSED
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.Companion.FOLDABLE_DEVICE_STATE_HALF_OPEN
+import com.android.systemui.unfold.DisplaySwitchLatencyTracker.Companion.SCREEN_EVENT_TIMEOUT
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.DisplaySwitchLatencyEvent
 import com.android.systemui.unfold.data.repository.UnfoldTransitionRepositoryImpl
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
@@ -56,11 +61,13 @@ import com.android.systemui.util.mockito.capture
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -73,6 +80,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
@@ -88,6 +96,7 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
     private val animationStatusRepository = kosmos.fakeAnimationStatusRepository
     private val keyguardInteractor = mock<KeyguardInteractor>()
     private val displaySwitchLatencyLogger = mock<DisplaySwitchLatencyLogger>()
+    private val latencyTracker = mock<LatencyTracker>()
 
     private val deviceStateManager = kosmos.deviceStateManager
     private val closedDeviceState = kosmos.foldedDeviceStateList.first()
@@ -142,6 +151,7 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
                 displaySwitchLatencyLogger,
                 systemClock,
                 deviceStateManager,
+                latencyTracker,
             )
     }
 
@@ -195,6 +205,7 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
                     displaySwitchLatencyLogger,
                     systemClock,
                     deviceStateManager,
+                    latencyTracker,
                 )
 
             displaySwitchLatencyTracker.start()
@@ -368,6 +379,256 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
                 )
             assertThat(loggedEvent).isEqualTo(expectedLoggedEvent)
         }
+    }
+
+    @Test
+    fun unfoldingDevice_startsLatencyTracking() {
+        testScope.runTest {
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            startUnfolding()
+
+            verify(latencyTracker).onActionStart(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun foldingDevice_doesntTrackLatency() {
+        testScope.runTest {
+            setDeviceState(UNFOLDED)
+            displaySwitchLatencyTracker.start()
+            runCurrent()
+
+            startFolding()
+
+            verify(latencyTracker, never()).onActionStart(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun foldedState_doesntStartTrackingOnScreenOn() {
+        testScope.runTest {
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            powerInteractor.setScreenPowerState(SCREEN_ON)
+            runCurrent()
+
+            verify(latencyTracker, never()).onActionStart(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun unfoldingDevice_endsLatencyTrackingWhenTransitionStarts() {
+        testScope.runTest {
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            startUnfolding()
+            unfoldTransitionProgressProvider.onTransitionStarted()
+            runCurrent()
+
+            verify(latencyTracker).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun unfoldingDevice_animationsDisabled_endsLatencyTrackingWhenScreenOn() {
+        testScope.runTest {
+            animationStatusRepository.onAnimationStatusChanged(enabled = false)
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            startUnfolding()
+            powerInteractor.setScreenPowerState(SCREEN_ON)
+            runCurrent()
+
+            verify(latencyTracker).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun unfoldingDevice_doesntEndLatencyTrackingWhenScreenOn() {
+        testScope.runTest {
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            startUnfolding()
+            powerInteractor.setScreenPowerState(SCREEN_ON)
+            runCurrent()
+
+            verify(latencyTracker, never()).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun unfoldingDevice_animationsDisabled_endsLatencyTrackingWhenDeviceGoesToSleep() {
+        testScope.runTest {
+            animationStatusRepository.onAnimationStatusChanged(enabled = false)
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            startUnfolding()
+            powerInteractor.setAsleepForTest(sleepReason = GO_TO_SLEEP_REASON_POWER_BUTTON)
+            runCurrent()
+
+            verify(latencyTracker).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun displaySwitchInterrupted_cancelsTrackingWhenNewDeviceStateEmitted() {
+        testScope.runTest {
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            startUnfolding()
+            startFolding()
+            finishFolding()
+
+            verify(latencyTracker).onActionCancel(ACTION_SWITCH_DISPLAY_UNFOLD)
+            verify(latencyTracker, never()).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun displaySwitchInterrupted_cancelsTrackingForManyStateChanges() {
+        testScope.runTest {
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            startUnfolding()
+            startFolding()
+            startUnfolding()
+            startFolding()
+            startUnfolding()
+            finishUnfolding()
+
+            verify(latencyTracker).onActionCancel(ACTION_SWITCH_DISPLAY_UNFOLD)
+            verify(latencyTracker, never()).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun displaySwitchInterrupted_startsOneTrackingForManyStateChanges() {
+        testScope.runTest {
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            startUnfolding()
+            startFolding()
+            startUnfolding()
+            startFolding()
+            startUnfolding()
+
+            verify(latencyTracker, times(1)).onActionStart(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun interruptedDisplaySwitchFinished_inCoolDownPeriod_trackingDisabled() {
+        testScope.runTest {
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            startUnfolding()
+            startFolding()
+            finishFolding()
+
+            advanceTimeBy(COOL_DOWN_DURATION.minus(10.milliseconds))
+            startUnfolding()
+            finishUnfolding()
+
+            verify(latencyTracker, times(1)).onActionStart(ACTION_SWITCH_DISPLAY_UNFOLD)
+            verify(latencyTracker, never()).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun interruptedDisplaySwitchFinished_coolDownPassed_trackingWorksAsUsual() {
+        testScope.runTest {
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            startUnfolding()
+            startFolding()
+            finishFolding()
+
+            advanceTimeBy(COOL_DOWN_DURATION.plus(10.milliseconds))
+            startUnfolding()
+            finishUnfolding()
+
+            verify(latencyTracker, times(2)).onActionStart(ACTION_SWITCH_DISPLAY_UNFOLD)
+            verify(latencyTracker).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun displaySwitchInterrupted_coolDownExtendedByStartEvents() {
+        testScope.runTest {
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            startUnfolding()
+            startFolding()
+            advanceTimeBy(COOL_DOWN_DURATION.minus(10.milliseconds))
+            startUnfolding()
+            advanceTimeBy(20.milliseconds)
+
+            startFolding()
+            finishUnfolding()
+
+            verify(latencyTracker, never()).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun displaySwitchInterrupted_coolDownExtendedByAnyEndEvent() {
+        testScope.runTest {
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            startUnfolding()
+            startFolding()
+            startUnfolding()
+            advanceTimeBy(COOL_DOWN_DURATION - 10.milliseconds)
+            powerInteractor.setScreenPowerState(SCREEN_ON)
+            advanceTimeBy(20.milliseconds)
+
+            startFolding()
+            finishUnfolding()
+
+            verify(latencyTracker, never()).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun displaySwitchTimedOut_trackingCancelled() {
+        testScope.runTest {
+            startInFoldedState(displaySwitchLatencyTracker)
+
+            startUnfolding()
+            advanceTimeBy(SCREEN_EVENT_TIMEOUT + 10.milliseconds)
+            finishUnfolding()
+
+            verify(latencyTracker).onActionCancel(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    private suspend fun TestScope.startInFoldedState(tracker: DisplaySwitchLatencyTracker) {
+        setDeviceState(FOLDED)
+        tracker.start()
+        runCurrent()
+    }
+
+    private suspend fun TestScope.startUnfolding() {
+        setDeviceState(HALF_FOLDED)
+        powerInteractor.setScreenPowerState(SCREEN_OFF)
+        runCurrent()
+    }
+
+    private suspend fun TestScope.startFolding() {
+        setDeviceState(FOLDED)
+        powerInteractor.setScreenPowerState(SCREEN_OFF)
+        runCurrent()
+    }
+
+    private fun TestScope.finishFolding() {
+        powerInteractor.setScreenPowerState(SCREEN_ON)
+        runCurrent()
+    }
+
+    private fun TestScope.finishUnfolding() {
+        unfoldTransitionProgressProvider.onTransitionStarted()
+        runCurrent()
     }
 
     private suspend fun setDeviceState(state: DeviceState) {
