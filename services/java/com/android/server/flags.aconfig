@@ -88,3 +88,10 @@ flag {
     description: "Move VoiceInteractionManagerService getResources away from the boot critical path"
     bug: "406841419"
 }
+
+flag {
+     name: "remove_ad_services_manager_service_from_wear"
+     namespace: "wear_frameworks"
+     description: "Remove AdServicesManagerService from Wear"
+     bug: "340928611"
+}
