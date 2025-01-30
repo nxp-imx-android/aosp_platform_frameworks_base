@@ -111,6 +111,7 @@ public enum DesktopModeFlags {
     ENABLE_WINDOWING_SCALED_RESIZING(Flags::enableWindowingScaledResizing, true),
     ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS(
             Flags::enableWindowingTransitionHandlersObservers, false),
+    EXCLUDE_CAPTION_FROM_APP_BOUNDS(Flags::excludeCaptionFromAppBounds, false),
     INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC(
             Flags::includeTopTransparentFullscreenTaskInDesktopHeuristic, true)
     // go/keep-sorted end
