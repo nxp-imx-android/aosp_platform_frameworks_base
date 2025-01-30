@@ -56,7 +56,7 @@ import java.util.function.Supplier;
 import javax.inject.Inject;
 
 /** Expanded view of a bubble when it's part of the bubble bar. */
-public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskViewHelper.Listener {
+public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskViewHelper.Callback {
     /**
      * The expanded view listener notifying the {@link BubbleBarLayerView} about the internal
      * actions and events
@@ -110,7 +110,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     private BubbleExpandedViewManager mManager;
     private BubblePositioner mPositioner;
     private boolean mIsOverflow;
-    private BubbleTaskViewHelper mBubbleTaskViewHelper;
+    private BubbleTaskViewHelper mBubbleTaskViewListener;
     private BubbleBarMenuViewController mMenuViewController;
     @Nullable
     private Supplier<Rect> mLayerBoundsSupplier;
@@ -246,9 +246,10 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
             mHandleView.setVisibility(View.GONE);
         } else {
             mTaskView = bubbleTaskView.getTaskView();
-            mBubbleTaskViewHelper = new BubbleTaskViewHelper(mContext, expandedViewManager,
-                    /* listener= */ this, bubbleTaskView,
-                    /* viewParent= */ this);
+            mBubbleTaskViewListener = new BubbleTaskViewHelper(mContext, bubbleTaskView,
+                    /* viewParent= */ this,
+                    expandedViewManager,
+                    /* callback= */ this);
 
             // if the task view is already attached to a parent we need to remove it
             if (mTaskView.getParent() != null) {
@@ -535,13 +536,15 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     /** Updates the bubble shown in the expanded view. */
     public void update(Bubble bubble) {
         mBubble = bubble;
-        mBubbleTaskViewHelper.update(bubble);
+        mBubbleTaskViewListener.setBubble(bubble);
         mMenuViewController.updateMenu(bubble);
     }
 
     /** The task id of the activity shown in the task view, if it exists. */
     public int getTaskId() {
-        return mBubbleTaskViewHelper != null ? mBubbleTaskViewHelper.getTaskId() : INVALID_TASK_ID;
+        return mBubbleTaskViewListener != null
+                ? mBubbleTaskViewListener.getTaskId()
+                : INVALID_TASK_ID;
     }
 
     /** Sets layer bounds supplier used for obscured touchable region of task view */
