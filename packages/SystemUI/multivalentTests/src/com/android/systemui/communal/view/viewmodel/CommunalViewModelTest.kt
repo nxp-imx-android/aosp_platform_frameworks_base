@@ -203,7 +203,7 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             // Keyguard showing, storage unlocked, main user, and tutorial not started.
             keyguardRepository.setKeyguardShowing(true)
             keyguardRepository.setKeyguardOccluded(false)
-            keyguardRepository.setIsEncryptedOrLockdown(false)
+            userRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
             setIsMainUser(true)
             tutorialRepository.setTutorialSettingState(
                 Settings.Secure.HUB_MODE_TUTORIAL_NOT_STARTED
