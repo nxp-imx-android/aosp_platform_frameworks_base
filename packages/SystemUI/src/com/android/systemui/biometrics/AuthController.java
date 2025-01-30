@@ -163,7 +163,7 @@ public class AuthController implements
     // TODO: These should just be saved from onSaveState
     private SomeArgs mCurrentDialogArgs;
     @VisibleForTesting
-    AuthDialog mCurrentDialog;
+    AuthContainerView mCurrentDialog;
 
     @NonNull private final WindowManager mWindowManager;
     @NonNull private final DisplayManager mDisplayManager;
@@ -222,7 +222,7 @@ public class AuthController implements
         closeDialog(BiometricPrompt.DISMISSED_REASON_USER_CANCEL, reasonString);
     }
 
-    private void closeDialog(@DismissedReason int reason, String reasonString) {
+    private void closeDialog(@BiometricPrompt.DismissedReason int reason, String reasonString) {
         if (isShowing()) {
             Log.i(TAG, "Close BP, reason :" + reasonString);
             mCurrentDialog.dismissWithoutCallback(true /* animate */);
@@ -511,60 +511,14 @@ public class AuthController implements
     }
 
     @Override
-    public void onDismissed(@DismissedReason int reason,
-                            @Nullable byte[] credentialAttestation, long requestId) {
-
+    public void onDismissed(@BiometricPrompt.DismissedReason int reason,
+            @Nullable byte[] credentialAttestation, long requestId) {
         if (mCurrentDialog != null && requestId != mCurrentDialog.getRequestId()) {
             Log.w(TAG, "requestId doesn't match, skip onDismissed");
             return;
         }
 
-        switch (reason) {
-            case AuthDialogCallback.DISMISSED_USER_CANCELED:
-                sendResultAndCleanUp(BiometricPrompt.DISMISSED_REASON_USER_CANCEL,
-                        credentialAttestation);
-                break;
-
-            case AuthDialogCallback.DISMISSED_BUTTON_NEGATIVE:
-                sendResultAndCleanUp(BiometricPrompt.DISMISSED_REASON_NEGATIVE,
-                        credentialAttestation);
-                break;
-
-            case AuthDialogCallback.DISMISSED_BUTTON_POSITIVE:
-                sendResultAndCleanUp(BiometricPrompt.DISMISSED_REASON_BIOMETRIC_CONFIRMED,
-                        credentialAttestation);
-                break;
-
-            case AuthDialogCallback.DISMISSED_BIOMETRIC_AUTHENTICATED:
-                sendResultAndCleanUp(
-                        BiometricPrompt.DISMISSED_REASON_BIOMETRIC_CONFIRM_NOT_REQUIRED,
-                        credentialAttestation);
-                break;
-
-            case AuthDialogCallback.DISMISSED_ERROR:
-                sendResultAndCleanUp(BiometricPrompt.DISMISSED_REASON_ERROR,
-                        credentialAttestation);
-                break;
-
-            case AuthDialogCallback.DISMISSED_BY_SYSTEM_SERVER:
-                sendResultAndCleanUp(BiometricPrompt.DISMISSED_REASON_SERVER_REQUESTED,
-                        credentialAttestation);
-                break;
-
-            case AuthDialogCallback.DISMISSED_CREDENTIAL_AUTHENTICATED:
-                sendResultAndCleanUp(BiometricPrompt.DISMISSED_REASON_CREDENTIAL_CONFIRMED,
-                        credentialAttestation);
-                break;
-
-            case AuthDialogCallback.DISMISSED_BUTTON_CONTENT_VIEW_MORE_OPTIONS:
-                sendResultAndCleanUp(
-                        BiometricPrompt.DISMISSED_REASON_CONTENT_VIEW_MORE_OPTIONS,
-                        credentialAttestation);
-                break;
-            default:
-                Log.e(TAG, "Unhandled reason: " + reason);
-                break;
-        }
+        sendResultAndCleanUp(reason, credentialAttestation);
     }
 
     @Override
@@ -699,7 +653,7 @@ public class AuthController implements
         mUdfpsController.onAodInterrupt(screenX, screenY, major, minor);
     }
 
-    private void sendResultAndCleanUp(@DismissedReason int reason,
+    private void sendResultAndCleanUp(@BiometricPrompt.DismissedReason int reason,
             @Nullable byte[] credentialAttestation) {
         if (mReceiver == null) {
             Log.e(TAG, "sendResultAndCleanUp: Receiver is null");
@@ -1244,7 +1198,7 @@ public class AuthController implements
         final long requestId = args.argl2;
 
         // Create a new dialog but do not replace the current one yet.
-        final AuthDialog newDialog = buildDialog(
+        final AuthContainerView newDialog = buildDialog(
                 mBackgroundExecutor,
                 promptInfo,
                 requireConfirmation,
@@ -1327,7 +1281,7 @@ public class AuthController implements
         return mContext.createDisplayContext(display).getSystemService(WindowManager.class);
     }
 
-    private void onDialogDismissed(@DismissedReason int reason) {
+    private void onDialogDismissed(@BiometricPrompt.DismissedReason int reason) {
         if (DEBUG) Log.d(TAG, "onDialogDismissed: " + reason);
         if (mCurrentDialog == null) {
             Log.w(TAG, "Dialog already dismissed");
@@ -1361,7 +1315,7 @@ public class AuthController implements
         }
     }
 
-    protected AuthDialog buildDialog(@Background DelayableExecutor bgExecutor,
+    protected AuthContainerView buildDialog(@Background DelayableExecutor bgExecutor,
             PromptInfo promptInfo, boolean requireConfirmation, int userId, int[] sensorIds,
             String opPackageName, boolean skipIntro, long operationId, long requestId,
             @NonNull WakefulnessLifecycle wakefulnessLifecycle,
@@ -1389,7 +1343,7 @@ public class AuthController implements
 
     @Override
     public void dump(@NonNull PrintWriter pw, @NonNull String[] args) {
-        final AuthDialog dialog = mCurrentDialog;
+        final AuthContainerView dialog = mCurrentDialog;
         pw.println("  mCachedDisplayInfo=" + mCachedDisplayInfo);
         pw.println("  mScaleFactor=" + mScaleFactor);
         pw.println("  fingerprintSensorLocationInNaturalOrientation="
