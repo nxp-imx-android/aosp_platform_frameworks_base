@@ -775,6 +775,12 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
         addMoveToFullscreenChanges(wct, task)
 
+        // We are moving a freeform task to fullscreen, put the home task under the fullscreen task.
+        if (!forceEnterDesktop(task.displayId)) {
+            moveHomeTask(wct, toTop = true, task.displayId)
+            wct.reorder(task.token, /* onTop= */ true)
+        }
+
         exitDesktopTaskTransitionHandler.startTransition(
             transitionSource,
             wct,
@@ -970,11 +976,13 @@ class DesktopTasksController(
             cascadeWindow(bounds, displayLayout, displayId)
         }
         val pendingIntent =
-            PendingIntent.getActivity(
+            PendingIntent.getActivityAsUser(
                 context,
                 /* requestCode= */ 0,
                 intent,
                 PendingIntent.FLAG_IMMUTABLE,
+                /* options= */ null,
+                UserHandle.of(userId),
             )
         val ops =
             ActivityOptions.fromBundle(options).apply {
@@ -1517,11 +1525,16 @@ class DesktopTasksController(
     private fun addWallpaperActivity(displayId: Int, wct: WindowContainerTransaction) {
         logV("addWallpaperActivity")
         if (ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER.isTrue()) {
+
+            // If the wallpaper activity for this display already exists, let's reorder it to top.
+            val wallpaperActivityToken = desktopWallpaperActivityTokenProvider.getToken(displayId)
+            if (wallpaperActivityToken != null) {
+                wct.reorder(wallpaperActivityToken, /* onTop= */ true)
+                return
+            }
+
             val intent = Intent(context, DesktopWallpaperActivity::class.java)
-            if (
-                desktopWallpaperActivityTokenProvider.getToken(displayId) == null &&
-                    Flags.enablePerDisplayDesktopWallpaperActivity()
-            ) {
+            if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
             }

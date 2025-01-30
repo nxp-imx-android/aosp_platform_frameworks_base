@@ -286,9 +286,6 @@ public abstract class ContentCaptureSession implements AutoCloseable {
     abstract void start(@NonNull IBinder token, @NonNull IBinder shareableActivityToken,
             @NonNull ComponentName component, int flags);
 
-    /** @hide */
-    public void performStart() {}
-
     abstract boolean isDisabled();
 
     /**
@@ -342,7 +339,7 @@ public abstract class ContentCaptureSession implements AutoCloseable {
     /**
      * Flushes the buffered events to the service.
      */
-    abstract void internalFlush(@FlushReason int reason);
+    abstract void flush(@FlushReason int reason);
 
     /**
      * Sets the {@link ContentCaptureContext} associated with the session.

@@ -24,6 +24,7 @@ import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.NOT_
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.SHOW_IMMEDIATELY;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.Flags.FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS;
+import static android.app.Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS;
 import static android.app.Flags.FLAG_REDACT_SENSITIVE_CONTENT_NOTIFICATIONS_ON_LOCKSCREEN;
 import static android.app.Flags.FLAG_SORT_SECTION_BY_TIME;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
@@ -603,8 +604,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(
-            FLAG_NOTIFICATION_CLASSIFICATION);
+        return FlagsParameterization.allCombinationsOf();
     }
 
     public NotificationManagerServiceTest(FlagsParameterization flags) {
@@ -825,6 +825,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         mService.setAttentionHelper(mAttentionHelper);
         mService.setLockPatternUtils(mock(LockPatternUtils.class));
+
+        // make sure PreferencesHelper doesn't try to interact with any real caches
+        PreferencesHelper prefHelper = spy(mService.mPreferencesHelper);
+        doNothing().when(prefHelper).invalidateNotificationChannelCache();
+        mService.setPreferencesHelper(prefHelper);
 
         // Return first true for RoleObserver main-thread check
         when(mMainLooper.isCurrentThread()).thenReturn(true).thenReturn(false);
@@ -12007,7 +12012,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     @DisableFlags(android.app.Flags.FLAG_REMOVE_REMOTE_VIEWS)
     public void testRemoveLargeRemoteViews() throws Exception {
-        int removeSize = mContext.getResources().getInteger(
+        // Cast to long to mock RemoteViews.estimateMemoryUsage which returns long.
+        long removeSize = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_notificationStripRemoteViewSizeBytes);
 
         RemoteViews rv = mock(RemoteViews.class);

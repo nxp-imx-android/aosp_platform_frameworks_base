@@ -49,7 +49,6 @@ constructor(
             .flatMapLatest { user -> repository.isCtaDismissed(user) }
             .logDiffsForTable(
                 tableLogBuffer = tableLogBuffer,
-                columnPrefix = "",
                 columnName = "isCtaDismissed",
                 initialValue = false,
             )
@@ -67,7 +66,6 @@ constructor(
             .flatMapLatest { user -> repository.isHubOnboardingDismissed(user) }
             .logDiffsForTable(
                 tableLogBuffer = tableLogBuffer,
-                columnPrefix = "",
                 columnName = "isHubOnboardingDismissed",
                 initialValue = false,
             )
@@ -79,6 +77,24 @@ constructor(
 
     fun setHubOnboardingDismissed(user: UserInfo = userTracker.userInfo) =
         bgScope.launch { repository.setHubOnboardingDismissed(user) }
+
+    val isDreamButtonTooltipDismissed: Flow<Boolean> =
+        userInteractor.selectedUserInfo
+            .flatMapLatest { user -> repository.isDreamButtonTooltipDismissed(user) }
+            .logDiffsForTable(
+                tableLogBuffer = tableLogBuffer,
+                columnPrefix = "",
+                columnName = "isDreamButtonTooltipDismissed",
+                initialValue = false,
+            )
+            .stateIn(
+                scope = bgScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
+
+    fun setDreamButtonTooltipDismissed(user: UserInfo = userTracker.userInfo) =
+        bgScope.launch { repository.setDreamButtonTooltipDismissed(user) }
 
     private companion object {
         const val TAG = "CommunalPrefsInteractor"
