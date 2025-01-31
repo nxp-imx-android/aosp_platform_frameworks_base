@@ -290,11 +290,11 @@ static bool assertIdmapHeader(const void* idmap, size_t size) {
     }
 
     const uint32_t version = htodl(*(reinterpret_cast<const uint32_t*>(idmap) + 1));
-    if (version != ResTable::IDMAP_CURRENT_VERSION) {
+    if (version != kIdmapCurrentVersion) {
         // We are strict about versions because files with this format are
         // auto-generated and don't need backwards compatibility.
         ALOGW("idmap: version mismatch in header (is 0x%08x, expected 0x%08x)",
-                version, ResTable::IDMAP_CURRENT_VERSION);
+                version, kIdmapCurrentVersion);
         return false;
     }
     return true;
@@ -400,14 +400,18 @@ status_t parseIdmap(const void* idmap, size_t size, uint8_t* outPackageId, Keyed
         return UNKNOWN_ERROR;
     }
 
-    size -= ResTable::IDMAP_HEADER_SIZE_BYTES;
+    size_t sizeOfHeaderAndConstraints = ResTable::IDMAP_HEADER_SIZE_BYTES +
+            // This accounts for zero constraints, and hence takes only 4 bytes for
+            // the constraints count.
+            ResTable::IDMAP_CONSTRAINTS_COUNT_SIZE_BYTES;
+    size -= sizeOfHeaderAndConstraints;
     if (size < sizeof(uint16_t) * 2) {
         ALOGE("idmap: too small to contain any mapping");
         return UNKNOWN_ERROR;
     }
 
     const uint16_t* data = reinterpret_cast<const uint16_t*>(
-            reinterpret_cast<const uint8_t*>(idmap) + ResTable::IDMAP_HEADER_SIZE_BYTES);
+            reinterpret_cast<const uint8_t*>(idmap) + sizeOfHeaderAndConstraints);
 
     uint16_t targetPackageId = dtohs(*(data++));
     if (targetPackageId == 0 || targetPackageId > 255) {
@@ -7492,7 +7496,7 @@ status_t ResTable::createIdmap(const ResTable& targetResTable,
     // write idmap header
     uint32_t* data = reinterpret_cast<uint32_t*>(*outData);
     *data++ = htodl(IDMAP_MAGIC); // write: magic
-    *data++ = htodl(ResTable::IDMAP_CURRENT_VERSION); // write: version
+    *data++ = htodl(kIdmapCurrentVersion); // write: version
     *data++ = htodl(targetCrc); // write: target crc
     *data++ = htodl(overlayCrc); // write: overlay crc
 
@@ -7506,6 +7510,9 @@ status_t ResTable::createIdmap(const ResTable& targetResTable,
         *charData++ = i < pathLen ? overlayPath[i] : '\0'; // write: overlay path
     }
     data += (2 * 256) / sizeof(uint32_t);
+
+    // write zero constraints count (no constraints)
+    *data++ = htodl(0);
 
     // write idmap data header
     uint16_t* typeData = reinterpret_cast<uint16_t*>(data);

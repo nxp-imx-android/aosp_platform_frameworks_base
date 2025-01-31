@@ -48,7 +48,7 @@
 namespace android {
 
 constexpr const uint32_t kIdmapMagic = 0x504D4449u;
-constexpr const uint32_t kIdmapCurrentVersion = 0x0000000Au;
+constexpr const uint32_t kIdmapCurrentVersion = 0x0000000Bu;
 
 // This must never change.
 constexpr const uint32_t kFabricatedOverlayMagic = 0x4f525246; // FRRO (big endian)
@@ -2267,7 +2267,7 @@ public:
             void** outData, size_t* outSize) const;
 
     static const size_t IDMAP_HEADER_SIZE_BYTES = 4 * sizeof(uint32_t) + 2 * 256;
-    static const uint32_t IDMAP_CURRENT_VERSION = 0x00000001;
+    static const size_t IDMAP_CONSTRAINTS_COUNT_SIZE_BYTES = sizeof(uint32_t);
 
     // Retrieve idmap meta-data.
     //
