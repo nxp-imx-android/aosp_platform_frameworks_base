@@ -419,6 +419,22 @@ inline bool RenderNode::shouldEnableForceDark(TreeInfo* info) {
     return CC_UNLIKELY(info && !info->disableForceDark);
 }
 
+void RenderNode::gatherColorAreasForSubtree(ColorArea& target, bool isModeFull) {
+    SkiaDisplayListWrapper* displayList = &mDisplayList;
+    if (isModeFull && mNeedsDisplayListSync) {
+        displayList = &mStagingDisplayList;
+    }
+
+    if (displayList && displayList->isValid() && !(displayList->isEmpty())) {
+        displayList->findFillAreas(target);
+        displayList->updateChildren([&target, &isModeFull](RenderNode* node) {
+            if (!node) return;
+
+            node->gatherColorAreasForSubtree(target, isModeFull);
+        });
+    }
+}
+
 void RenderNode::handleForceDark(TreeInfo *info) {
     if (CC_UNLIKELY(view_accessibility_flags::force_invert_color() && info &&
                     isForceInvertDark(*info))) {
