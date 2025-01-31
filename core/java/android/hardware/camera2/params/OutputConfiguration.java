@@ -29,7 +29,6 @@ import android.annotation.TestApi;
 import android.graphics.ColorSpace;
 import android.graphics.ImageFormat;
 import android.graphics.ImageFormat.Format;
-import android.hardware.DataSpace.NamedDataSpace;
 import android.hardware.HardwareBuffer;
 import android.hardware.HardwareBuffer.Usage;
 import android.hardware.camera2.CameraCaptureSession;
@@ -588,6 +587,8 @@ public final class OutputConfiguration implements Parcelable {
         mConfiguredFormat = SurfaceUtils.getSurfaceFormat(surface);
         mConfiguredDataspace = SurfaceUtils.getSurfaceDataspace(surface);
         mConfiguredGenerationId = surface.getGenerationId();
+        mPublicFormat = StreamConfigurationMap.internalFormatAndDataspaceToImageFormat(
+                mConfiguredFormat, mConfiguredDataspace);
         mIsDeferredConfig = false;
         mIsShared = false;
         mPhysicalCameraId = null;
@@ -834,6 +835,7 @@ public final class OutputConfiguration implements Parcelable {
         mMirrorModeForSurfaces = new IntArray();
         mRotation = ROTATION_0;
         mConfiguredSize = surfaceSize;
+        mPublicFormat = ImageFormat.PRIVATE;
         mConfiguredFormat = StreamConfigurationMap.imageFormatToInternal(ImageFormat.PRIVATE);
         mConfiguredDataspace = StreamConfigurationMap.imageFormatToDataspace(ImageFormat.PRIVATE);
         mConfiguredGenerationId = 0;
@@ -963,6 +965,7 @@ public final class OutputConfiguration implements Parcelable {
         mConfiguredSize = surfaceSize;
         mConfiguredFormat = StreamConfigurationMap.imageFormatToInternal(format);
         mConfiguredDataspace = StreamConfigurationMap.imageFormatToDataspace(format);
+        mPublicFormat = format;
         mConfiguredGenerationId = 0;
         mIsDeferredConfig = false;
         mIsShared = false;
@@ -1567,6 +1570,7 @@ public final class OutputConfiguration implements Parcelable {
         this.mSurfaceType = other.mSurfaceType;
         this.mConfiguredDataspace = other.mConfiguredDataspace;
         this.mConfiguredFormat = other.mConfiguredFormat;
+        this.mPublicFormat = other.mPublicFormat;
         this.mConfiguredSize = other.mConfiguredSize;
         this.mConfiguredGenerationId = other.mConfiguredGenerationId;
         this.mIsDeferredConfig = other.mIsDeferredConfig;
@@ -1641,6 +1645,8 @@ public final class OutputConfiguration implements Parcelable {
             }
             mConfiguredGenerationId = 0;
         }
+        mPublicFormat = StreamConfigurationMap.internalFormatAndDataspaceToImageFormat(
+                mConfiguredFormat, mConfiguredDataspace);
         mPhysicalCameraId = physicalCameraId;
         mIsMultiResolution = isMultiResolutionOutput;
         mSensorPixelModesUsed = convertIntArrayToIntegerList(sensorPixelModesUsed);
@@ -1716,27 +1722,39 @@ public final class OutputConfiguration implements Parcelable {
      * Get the configured size associated with this {@link OutputConfiguration}.
      *
      * @return The configured size associated with this {@link OutputConfiguration}.
-     *
-     * @hide
      */
-    public Size getConfiguredSize() {
+    @FlaggedApi(Flags.FLAG_OUTPUT_CONFIGURATION_GETTER)
+    public @NonNull Size getConfiguredSize() {
         return mConfiguredSize;
     }
 
     /**
      * Get the configured format associated with this {@link OutputConfiguration}.
      *
+     * <p>This function handles all ImageFormats and output targets supported by
+     * the camera APIs, and isn't designed for all possible OS supported formats and
+     * surfaces. For example, an ImageReader can be created using any combinations of
+     * HardwareBuffer format and dataspace. If the combination is not supported
+     * by the camera APIs, this function returns ImageFormat.UNKNOWN.</p>
+     *
      * @return {@link android.graphics.ImageFormat#Format} associated with this
      *         {@link OutputConfiguration}.
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_OUTPUT_CONFIGURATION_GETTER)
     public @Format int getConfiguredFormat() {
-        return mConfiguredFormat;
+        // The public facing configured format is the combination of internal
+        // mConfiguredFormat and mConfiguredDataSpace.
+        return mPublicFormat;
     }
 
     /**
      * Get the usage flag associated with this {@link OutputConfiguration}.
+     *
+     * <p>Return the application specified usage flag if the OutputConfiguration is created
+     * with an Image format.</p>
+     *
+     * <p>If the OutputConfiguration is created using an output surface, or using a class,
+     * this function returns 0.</p>
      *
      * @return {@link HardwareBuffer#Usage} associated with this {@link OutputConfiguration}.
      *
@@ -1744,23 +1762,6 @@ public final class OutputConfiguration implements Parcelable {
      */
     public @Usage long getUsage() {
         return mUsage;
-    }
-
-    /**
-     * Get the surface type associated with this {@link OutputConfiguration}.
-     *
-     * @return The surface type associated with this {@link OutputConfiguration}.
-     *
-     * @see #SURFACE_TYPE_SURFACE_VIEW
-     * @see #SURFACE_TYPE_SURFACE_TEXTURE
-     * @see #SURFACE_TYPE_MEDIA_RECORDER
-     * @see #SURFACE_TYPE_MEDIA_CODEC
-     * @see #SURFACE_TYPE_IMAGE_READER
-     * @see #SURFACE_TYPE_UNKNOWN
-     * @hide
-     */
-    public int getSurfaceType() {
-        return mSurfaceType;
     }
 
     /**
@@ -1783,17 +1784,6 @@ public final class OutputConfiguration implements Parcelable {
      */
     public boolean isShared() {
         return mIsShared;
-    }
-
-    /**
-     * Get the dataspace associated with this {@link OutputConfiguration}.
-     *
-     * @return {@link Dataspace#NamedDataSpace} for this {@link OutputConfiguration}.
-     *
-     * @hide
-     */
-    public @NamedDataSpace int getConfiguredDataspace() {
-        return mConfiguredDataspace;
     }
 
     /**
@@ -2019,6 +2009,8 @@ public final class OutputConfiguration implements Parcelable {
     private final Size mConfiguredSize;
     private final int mConfiguredFormat;
     private final int mConfiguredDataspace;
+    // The public facing format, a combination of mConfiguredFormat and mConfiguredDataspace
+    private final int mPublicFormat;
     // Surface generation ID to distinguish changes to Surface native internals
     private final int mConfiguredGenerationId;
     // Flag indicating if this config has deferred surface.
