@@ -1727,10 +1727,12 @@
   <java-symbol type="style" name="PointerIconVectorStyleFillBlue" />
   <java-symbol type="style" name="PointerIconVectorStyleFillPurple" />
   <java-symbol type="attr" name="pointerIconVectorFill" />
+  <java-symbol type="attr" name="pointerIconVectorFillInverse" />
   <java-symbol type="style" name="PointerIconVectorStyleStrokeWhite" />
   <java-symbol type="style" name="PointerIconVectorStyleStrokeBlack" />
   <java-symbol type="style" name="PointerIconVectorStyleStrokeNone" />
   <java-symbol type="attr" name="pointerIconVectorStroke" />
+  <java-symbol type="attr" name="pointerIconVectorStrokeInverse" />
   <java-symbol type="style" name="TextAppearance.DeviceDefault.Notification.Title" />
   <java-symbol type="style" name="TextAppearance.DeviceDefault.Notification.Info" />
 
