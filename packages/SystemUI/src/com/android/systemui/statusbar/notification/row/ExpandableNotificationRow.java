@@ -21,6 +21,7 @@ import static android.app.Notification.Action.SEMANTIC_ACTION_MARK_CONVERSATION_
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
 
 import static com.android.systemui.Flags.notificationsPinnedHunInShade;
+import static com.android.systemui.Flags.notificationRowTransparency;
 import static com.android.systemui.flags.Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE;
 import static com.android.systemui.statusbar.notification.collection.NotificationEntry.DismissState.PARENT_DISMISSED;
 import static com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_HEADSUP;
@@ -1615,6 +1616,12 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         NotificationContentView view = getShowingLayout();
         if (view != null) {
             view.setBackgroundTintColor(color);
+        }
+        if (notificationRowTransparency()
+                && (mBackgroundNormal != null)
+                && (mEntry != null)) {
+            mBackgroundNormal.setBgIsColorized(
+                    mEntry.getSbn().getNotification().isColorized());
         }
     }
 
