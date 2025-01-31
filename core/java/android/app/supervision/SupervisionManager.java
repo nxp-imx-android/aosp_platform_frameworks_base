@@ -23,6 +23,7 @@ import android.annotation.UserHandleAware;
 import android.annotation.UserIdInt;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
+import android.content.Intent;
 import android.os.RemoteException;
 
 /**
@@ -69,6 +70,38 @@ public class SupervisionManager {
     public SupervisionManager(Context context, ISupervisionManager service) {
         mContext = context;
         mService = service;
+    }
+
+    /**
+     * Creates an {@link Intent} that can be used with {@link Context#startActivity(Intent)} to
+     * launch the activity to verify supervision credentials.
+     *
+     * <p>A valid {@link Intent} is always returned if supervision is enabled at the time this API
+     * is called, the launched activity still need to perform validity checks as the supervision
+     * state can change when the activity is launched. A null intent is returned if supervision is
+     * disabled at the time of this API call.
+     *
+     * <p>A result code of {@link android.app.Activity#RESULT_OK} indicates successful verification
+     * of the supervision credentials.
+     *
+     * @hide
+     */
+    @RequiresPermission(value = android.Manifest.permission.QUERY_USERS)
+    @Nullable
+    public Intent createConfirmSupervisionCredentialsIntent() {
+        if (mService != null) {
+            try {
+                Intent result = mService.createConfirmSupervisionCredentialsIntent();
+                if (result != null) {
+                    result.prepareToEnterProcess(
+                            Intent.LOCAL_FLAG_FROM_SYSTEM, mContext.getAttributionSource());
+                }
+                return result;
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        return null;
     }
 
     /**

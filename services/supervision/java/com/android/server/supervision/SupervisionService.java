@@ -79,6 +79,25 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     /**
+     * Creates an {@link Intent} that can be used with {@link Context#startActivity(Intent)} to
+     * launch the activity to verify supervision credentials.
+     *
+     * <p>A valid {@link Intent} is always returned if supervision is enabled at the time this
+     * method is called, the launched activity still need to perform validity checks as the
+     * supervision state can change when it's launched. A null intent is returned if supervision is
+     * disabled at the time of this method call.
+     *
+     * <p>A result code of {@link android.app.Activity#RESULT_OK} indicates successful verification
+     * of the supervision credentials.
+     */
+    @Override
+    @Nullable
+    public Intent createConfirmSupervisionCredentialsIntent() {
+        // TODO(b/392961554): Implement createAuthenticationIntent API
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Returns whether supervision is enabled for the given user.
      *
      * <p>Supervision is automatically enabled when the supervision app becomes the profile owner or
