@@ -37,6 +37,7 @@
 #ifdef __ANDROID__
 #include "include/gpu/ganesh/SkImageGanesh.h"
 #endif
+#include "FeatureFlags.h"
 #include "utils/ForceDark.h"
 #include "utils/MathUtils.h"
 #include "utils/StringUtils.h"
@@ -409,8 +410,10 @@ void RenderNode::syncDisplayList(TreeObserver& observer, TreeInfo* info) {
 // Return true if the tree should use the force invert feature that inverts
 // the entire tree to darken it.
 inline bool RenderNode::isForceInvertDark(TreeInfo& info) {
-    return CC_UNLIKELY(info.forceDarkType ==
-                       android::uirenderer::ForceDarkType::FORCE_INVERT_COLOR_DARK);
+    return CC_UNLIKELY(view_accessibility_flags::force_invert_color() &&
+                       info.forceDarkType ==
+                               android::uirenderer::ForceDarkType::FORCE_INVERT_COLOR_DARK &&
+                       info.colorArea && info.colorArea->getPolarity() == Polarity::Light);
 }
 
 // Return true if the tree should use the force dark feature that selectively
@@ -435,12 +438,15 @@ void RenderNode::gatherColorAreasForSubtree(ColorArea& target, bool isModeFull) 
     }
 }
 
-void RenderNode::handleForceDark(TreeInfo *info) {
-    if (CC_UNLIKELY(view_accessibility_flags::force_invert_color() && info &&
-                    isForceInvertDark(*info))) {
+void RenderNode::handleForceDark(android::uirenderer::TreeInfo* info) {
+    if (CC_UNLIKELY(info && isForceInvertDark(*info))) {
+        // TODO(b/391959649): what about apps who have opted in to force dark, but only partially?
+        //  will this mess them up? e.g. if they set disableForceDark but only on a few nodes.
+        // The app is too bright, captain! Reverse the polarity!
         mDisplayList.applyColorTransform(ColorTransform::Invert);
         return;
     }
+
     if (!shouldEnableForceDark(info)) {
         return;
     }
