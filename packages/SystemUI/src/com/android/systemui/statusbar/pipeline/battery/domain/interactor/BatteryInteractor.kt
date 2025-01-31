@@ -29,7 +29,7 @@ class BatteryInteractor @Inject constructor(repo: BatteryRepository) {
     val level = repo.level.filterNotNull()
 
     /** Whether the battery has been fully charged */
-    val isFull = level.map { it >= 100 }
+    val isFull = level.map { isBatteryFull(it) }
 
     /**
      * For the sake of battery views, consider it to be "charging" if plugged in. This allows users
@@ -82,6 +82,8 @@ class BatteryInteractor @Inject constructor(repo: BatteryRepository) {
     companion object {
         /** Level below which we consider to be critically low */
         private const val CRITICAL_LEVEL = 20
+
+        fun isBatteryFull(level: Int) = level >= 100
     }
 }
 
