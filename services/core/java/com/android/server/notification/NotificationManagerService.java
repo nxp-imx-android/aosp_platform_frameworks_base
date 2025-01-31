@@ -346,6 +346,7 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.messages.nano.SystemMessageProto;
+import com.android.internal.notification.NotificationChannelGroupsHelper;
 import com.android.internal.notification.SystemNotificationChannels;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.os.SomeArgs;
@@ -679,6 +680,8 @@ public class NotificationManagerService extends SystemService {
     WorkerHandler mHandler;
     private final HandlerThread mRankingThread = new HandlerThread("ranker",
             Process.THREAD_PRIORITY_BACKGROUND);
+    @FlaggedApi(Flags.FLAG_NM_BINDER_PERF_THROTTLE_EFFECTS_SUPPRESSOR_BROADCAST)
+    private Handler mBroadcastsHandler;
 
     private final SparseArray<ArraySet<ComponentName>> mListenersDisablingEffects =
             new SparseArray<>();
@@ -1927,27 +1930,17 @@ public class NotificationManagerService extends SystemService {
         if (DBG) {
             Slog.v(TAG, "unclassifyNotification: " + r);
         }
-
-        boolean hasOriginalSummary = false;
-        if (r.getSbn().isAppGroup() && r.getNotification().isGroupChild()) {
-            final String oldGroupKey = GroupHelper.getFullAggregateGroupKey(
-                    r.getSbn().getPackageName(), r.getOriginalGroupKey(), r.getUserId());
-            NotificationRecord groupSummary = mSummaryByGroupKey.get(oldGroupKey);
-            // We only care about app-provided valid groups
-            hasOriginalSummary = (groupSummary != null
-                    && !GroupHelper.isAggregatedGroup(groupSummary));
-        }
-
         // Only NotificationRecord's mChannel is updated when bundled, the Notification
         // mChannelId will always be the original channel.
         String origChannelId = r.getNotification().getChannelId();
         NotificationChannel originalChannel = mPreferencesHelper.getNotificationChannel(
                 r.getSbn().getPackageName(), r.getUid(), origChannelId, false);
         String currChannelId = r.getChannel().getId();
-        boolean isBundled = NotificationChannel.SYSTEM_RESERVED_IDS.contains(currChannelId);
-        if (originalChannel != null && !origChannelId.equals(currChannelId) && isBundled) {
+        boolean isClassified = NotificationChannel.SYSTEM_RESERVED_IDS.contains(currChannelId);
+        if (originalChannel != null && !origChannelId.equals(currChannelId) && isClassified) {
             r.updateNotificationChannel(originalChannel);
-            mGroupHelper.onNotificationUnbundled(r, hasOriginalSummary);
+            mGroupHelper.onNotificationUnbundled(r,
+                    GroupHelper.isOriginalGroupSummaryPresent(r, mSummaryByGroupKey));
         }
     }
 
@@ -2032,9 +2025,9 @@ public class NotificationManagerService extends SystemService {
             Slog.v(TAG, "reclassifyNotification: " + r);
         }
 
-        boolean isBundled = NotificationChannel.SYSTEM_RESERVED_IDS.contains(
+        boolean isClassified = NotificationChannel.SYSTEM_RESERVED_IDS.contains(
                 r.getChannel().getId());
-        if (r.getBundleType() != Adjustment.TYPE_OTHER && !isBundled) {
+        if (r.getBundleType() != Adjustment.TYPE_OTHER && !isClassified) {
             final Bundle classifBundle = new Bundle();
             classifBundle.putInt(KEY_TYPE, r.getBundleType());
             Adjustment adj = new Adjustment(r.getSbn().getPackageName(), r.getKey(),
@@ -2682,7 +2675,7 @@ public class NotificationManagerService extends SystemService {
 
     // TODO: All tests should use this init instead of the one-off setters above.
     @VisibleForTesting
-    void init(WorkerHandler handler, RankingHandler rankingHandler,
+    void init(WorkerHandler handler, RankingHandler rankingHandler, Handler broadcastsHandler,
             IPackageManager packageManager, PackageManager packageManagerClient,
             LightsManager lightsManager, NotificationListeners notificationListeners,
             NotificationAssistants notificationAssistants, ConditionProviders conditionProviders,
@@ -2702,6 +2695,9 @@ public class NotificationManagerService extends SystemService {
             ConnectivityManager connectivityManager,
             PostNotificationTrackerFactory postNotificationTrackerFactory) {
         mHandler = handler;
+        if (Flags.nmBinderPerfThrottleEffectsSuppressorBroadcast()) {
+            mBroadcastsHandler = broadcastsHandler;
+        }
         Resources resources = getContext().getResources();
         mMaxPackageEnqueueRate = Settings.Global.getFloat(getContext().getContentResolver(),
                 Settings.Global.MAX_NOTIFICATION_ENQUEUE_RATE,
@@ -3045,13 +3041,22 @@ public class NotificationManagerService extends SystemService {
 
         WorkerHandler handler = new WorkerHandler(Looper.myLooper());
 
+        Handler broadcastsHandler;
+        if (Flags.nmBinderPerfThrottleEffectsSuppressorBroadcast()) {
+            HandlerThread broadcastsThread = new HandlerThread("NMS Broadcasts");
+            broadcastsThread.start();
+            broadcastsHandler = new Handler(broadcastsThread.getLooper());
+        } else {
+            broadcastsHandler = null;
+        }
+
         mShowReviewPermissionsNotification = getContext().getResources().getBoolean(
                 R.bool.config_notificationReviewPermissions);
 
         mDefaultUnsupportedAdjustments = getContext().getResources().getStringArray(
                 R.array.config_notificationDefaultUnsupportedAdjustments);
 
-        init(handler, new RankingHandlerWorker(mRankingThread.getLooper()),
+        init(handler, new RankingHandlerWorker(mRankingThread.getLooper()), broadcastsHandler,
                 AppGlobals.getPackageManager(), getContext().getPackageManager(),
                 getLocalService(LightsManager.class),
                 new NotificationListeners(getContext(), mNotificationLock, mUserProfiles,
@@ -3297,10 +3302,11 @@ public class NotificationManagerService extends SystemService {
      * so that e.g. rapidly changing some value A -> B -> C will only produce a broadcast for C
      * (instead of every time because the extras are different).
      */
+    @FlaggedApi(Flags.FLAG_NM_BINDER_PERF_THROTTLE_EFFECTS_SUPPRESSOR_BROADCAST)
     private void sendZenBroadcastWithDelay(Intent intent) {
         String token = "zen_broadcast:" + intent.getAction();
-        mHandler.removeCallbacksAndEqualMessages(token);
-        mHandler.postDelayed(() -> sendRegisteredOnlyBroadcast(intent), token,
+        mBroadcastsHandler.removeCallbacksAndEqualMessages(token);
+        mBroadcastsHandler.postDelayed(() -> sendRegisteredOnlyBroadcast(intent), token,
                 ZEN_BROADCAST_DELAY.toMillis());
     }
 
@@ -3568,7 +3574,7 @@ public class NotificationManagerService extends SystemService {
                 synchronized (mNotificationLock) {
                     mGroupHelper.onChannelUpdated(
                             UserHandle.getUserHandleForUid(uid).getIdentifier(), pkg,
-                            updatedChannel, mNotificationList);
+                            updatedChannel, mNotificationList, mSummaryByGroupKey);
                 }
             }, DELAY_FORCE_REGROUP_TIME);
         }
@@ -5005,8 +5011,8 @@ public class NotificationManagerService extends SystemService {
         public ParceledListSlice<NotificationChannelGroup> getNotificationChannelGroups(
                 String pkg) {
             checkCallerIsSystemOrSameApp(pkg);
-            return mPreferencesHelper.getNotificationChannelGroups(
-                    pkg, Binder.getCallingUid(), false, false, true, true, null);
+            return mPreferencesHelper.getNotificationChannelGroups(pkg, Binder.getCallingUid(),
+                    NotificationChannelGroupsHelper.Params.forAllGroups());
         }
 
         @Override
@@ -5126,8 +5132,9 @@ public class NotificationManagerService extends SystemService {
         public ParceledListSlice<NotificationChannelGroup> getNotificationChannelGroupsForPackage(
                 String pkg, int uid, boolean includeDeleted) {
             enforceSystemOrSystemUI("getNotificationChannelGroupsForPackage");
-            return mPreferencesHelper.getNotificationChannelGroups(
-                    pkg, uid, includeDeleted, true, false, true, null);
+            return mPreferencesHelper.getNotificationChannelGroups(pkg, uid,
+                    new NotificationChannelGroupsHelper.Params(includeDeleted, true, false, true,
+                            null));
         }
 
         @Override
@@ -5155,8 +5162,9 @@ public class NotificationManagerService extends SystemService {
                 }
             }
 
-            return mPreferencesHelper.getNotificationChannelGroups(
-                    pkg, uid, false, true, false, true, recentlySentChannels);
+            return mPreferencesHelper.getNotificationChannelGroups(pkg, uid,
+                    NotificationChannelGroupsHelper.Params.onlySpecifiedOrBlockedChannels(
+                            recentlySentChannels));
         }
 
         @Override

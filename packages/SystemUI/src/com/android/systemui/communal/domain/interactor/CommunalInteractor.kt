@@ -186,28 +186,32 @@ constructor(
      * Whether communal hub should be shown automatically, depending on the user's [WhenToDream]
      * state.
      */
-    val shouldShowCommunal: Flow<Boolean> =
+    val shouldShowCommunal: StateFlow<Boolean> =
         allOf(
-            isCommunalAvailable,
-            communalSettingsInteractor.whenToDream
-                .flatMapLatest { whenToDream ->
-                    when (whenToDream) {
-                        WhenToDream.NEVER -> flowOf(false)
+                isCommunalAvailable,
+                communalSettingsInteractor.whenToDream
+                    .flatMapLatest { whenToDream ->
+                        when (whenToDream) {
+                            WhenToDream.NEVER -> flowOf(false)
 
-                        WhenToDream.WHILE_CHARGING -> batteryInteractor.isDevicePluggedIn
+                            WhenToDream.WHILE_CHARGING -> batteryInteractor.isDevicePluggedIn
 
-                        WhenToDream.WHILE_DOCKED ->
-                            allOf(
-                                batteryInteractor.isDevicePluggedIn,
-                                dockManager.retrieveIsDocked(),
-                            )
+                            WhenToDream.WHILE_DOCKED ->
+                                allOf(
+                                    batteryInteractor.isDevicePluggedIn,
+                                    dockManager.retrieveIsDocked(),
+                                )
 
-                        WhenToDream.WHILE_POSTURED ->
-                            allOf(batteryInteractor.isDevicePluggedIn, posturingInteractor.postured)
+                            WhenToDream.WHILE_POSTURED ->
+                                allOf(
+                                    batteryInteractor.isDevicePluggedIn,
+                                    posturingInteractor.postured,
+                                )
+                        }
                     }
-                }
-                .flowOn(bgDispatcher),
-        )
+                    .flowOn(bgDispatcher),
+            )
+            .stateIn(scope = bgScope, started = SharingStarted.Eagerly, initialValue = false)
 
     private val _isDisclaimerDismissed = MutableStateFlow(false)
     val isDisclaimerDismissed: Flow<Boolean> = _isDisclaimerDismissed.asStateFlow()
@@ -541,10 +545,16 @@ constructor(
         }
 
     /** CTA tile to be displayed in the glanceable hub (view mode). */
-    val ctaTileContent: Flow<List<CommunalContentModel.CtaTileInViewMode>> =
-        communalPrefsInteractor.isCtaDismissed.map { isDismissed ->
-            if (isDismissed) emptyList() else listOf(CommunalContentModel.CtaTileInViewMode())
+    val ctaTileContent: Flow<List<CommunalContentModel.CtaTileInViewMode>> by lazy {
+        if (communalSettingsInteractor.isV2FlagEnabled()) {
+            flowOf(listOf<CommunalContentModel.CtaTileInViewMode>())
+        } else {
+            communalPrefsInteractor.isCtaDismissed.map { isDismissed ->
+                if (isDismissed) listOf<CommunalContentModel.CtaTileInViewMode>()
+                else listOf(CommunalContentModel.CtaTileInViewMode())
+            }
         }
+    }
 
     /** A list of tutorial content to be displayed in the communal hub in tutorial mode. */
     val tutorialContent: List<CommunalContentModel.Tutorial> =

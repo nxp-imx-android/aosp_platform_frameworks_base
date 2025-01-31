@@ -25,9 +25,6 @@ import android.graphics.Rect
 import android.hardware.input.InputManager
 import android.os.Handler
 import android.os.UserHandle
-import android.platform.test.flag.junit.CheckFlagsRule
-import android.platform.test.flag.junit.DeviceFlagsValueProvider
-import android.platform.test.flag.junit.SetFlagsRule
 import android.testing.TestableContext
 import android.util.SparseArray
 import android.view.Choreographer
@@ -84,7 +81,6 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import org.junit.After
-import org.junit.Rule
 import org.mockito.Mockito
 import org.mockito.Mockito.anyInt
 import org.mockito.kotlin.any
@@ -105,14 +101,6 @@ import kotlinx.coroutines.MainCoroutineDispatcher
  */
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
-    @JvmField
-    @Rule
-    val setFlagsRule = SetFlagsRule()
-
-    @JvmField
-    @Rule
-    val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-
     private val mockDesktopModeWindowDecorFactory = mock<DesktopModeWindowDecoration.Factory>()
     protected val mockMainHandler = mock<Handler>()
     protected val mockMainChoreographer = mock<Choreographer>()
@@ -162,7 +150,6 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     val display = mock<Display>()
     protected lateinit var spyContext: TestableContext
     private lateinit var desktopModeEventLogger: DesktopModeEventLogger
-    private lateinit var desktopModeCompatPolicy: DesktopModeCompatPolicy
 
     private val transactionFactory = Supplier<SurfaceControl.Transaction> {
         SurfaceControl.Transaction()
@@ -177,6 +164,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             DisplayChangeController.OnDisplayChangingListener
     internal lateinit var desktopModeOnKeyguardChangedListener: DesktopModeKeyguardChangeListener
     protected lateinit var desktopModeWindowDecorViewModel: DesktopModeWindowDecorViewModel
+    protected lateinit var desktopModeCompatPolicy: DesktopModeCompatPolicy
 
     fun setUpCommon() {
         spyContext = spy(mContext)

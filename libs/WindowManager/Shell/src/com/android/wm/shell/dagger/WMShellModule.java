@@ -59,7 +59,7 @@ import com.android.wm.shell.bubbles.BubbleDataRepository;
 import com.android.wm.shell.bubbles.BubbleEducationController;
 import com.android.wm.shell.bubbles.BubbleLogger;
 import com.android.wm.shell.bubbles.BubblePositioner;
-import com.android.wm.shell.bubbles.properties.ProdBubbleProperties;
+import com.android.wm.shell.bubbles.BubbleResizabilityChecker;
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
@@ -111,6 +111,7 @@ import com.android.wm.shell.desktopmode.education.AppToWebEducationFilter;
 import com.android.wm.shell.desktopmode.education.data.AppHandleEducationDatastoreRepository;
 import com.android.wm.shell.desktopmode.education.data.AppToWebEducationDatastoreRepository;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
+import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer;
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository;
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer;
@@ -293,7 +294,7 @@ public abstract class WMShellModule {
                 transitions,
                 syncQueue,
                 wmService,
-                ProdBubbleProperties.INSTANCE);
+                new BubbleResizabilityChecker());
     }
 
     //
@@ -760,6 +761,7 @@ public abstract class WMShellModule {
             Optional<BubbleController> bubbleController,
             OverviewToDesktopTransitionObserver overviewToDesktopTransitionObserver,
             DesksOrganizer desksOrganizer,
+            DesksTransitionObserver desksTransitionObserver,
             UserProfileContexts userProfileContexts,
             DesktopModeCompatPolicy desktopModeCompatPolicy) {
         return new DesktopTasksController(
@@ -797,6 +799,7 @@ public abstract class WMShellModule {
                 bubbleController,
                 overviewToDesktopTransitionObserver,
                 desksOrganizer,
+                desksTransitionObserver,
                 userProfileContexts,
                 desktopModeCompatPolicy);
     }
@@ -1134,6 +1137,7 @@ public abstract class WMShellModule {
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
             Optional<BackAnimationController> backAnimationController,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
+            @NonNull DesksTransitionObserver desksTransitionObserver,
             ShellInit shellInit) {
         return desktopUserRepositories.flatMap(
                 repository ->
@@ -1146,7 +1150,16 @@ public abstract class WMShellModule {
                                         desktopMixedTransitionHandler.get(),
                                         backAnimationController.get(),
                                         desktopWallpaperActivityTokenProvider,
+                                        desksTransitionObserver,
                                         shellInit)));
+    }
+
+    @WMSingleton
+    @Provides
+    static DesksTransitionObserver provideDesksTransitionObserver(
+            @NonNull @DynamicOverride DesktopUserRepositories desktopUserRepositories
+    ) {
+        return new DesksTransitionObserver(desktopUserRepositories);
     }
 
     @WMSingleton

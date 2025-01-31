@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package android.service.watchdog;
+package com.android.wm.shell.common
 
-import android.os.RemoteCallback;
+class TestSyncExecutor : ShellExecutor {
+    override fun execute(runnable: Runnable) {
+        runnable.run()
+    }
 
-/**
- * @hide
- */
-@PermissionManuallyEnforced
-oneway interface IExplicitHealthCheckService
-{
-    void setCallback(in @nullable RemoteCallback callback);
-    void request(String packageName);
-    void cancel(String packageName);
-    void getSupportedPackages(in RemoteCallback callback);
-    void getRequestedPackages(in RemoteCallback callback);
+    override fun executeDelayed(runnable: Runnable, delayMillis: Long) {
+        runnable.run()
+    }
+
+    override fun removeCallbacks(runnable: Runnable) {
+    }
+
+    override fun hasCallback(runnable: Runnable): Boolean {
+        return false
+    }
 }

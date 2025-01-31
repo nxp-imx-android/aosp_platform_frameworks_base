@@ -60,7 +60,6 @@ import android.os.IBinder;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.view.IRemoteAnimationRunner;
@@ -91,7 +90,6 @@ import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -151,9 +149,6 @@ public class BackAnimationControllerTest extends ShellTestCase {
     private Rect mTouchableRegion;
 
     private BackAnimationController.BackTransitionHandler mBackTransitionHandler;
-
-    @Rule
-    public SetFlagsRule mSetflagsRule = new SetFlagsRule();
 
     @Before
     public void setUp() throws Exception {
@@ -671,7 +666,7 @@ public class BackAnimationControllerTest extends ShellTestCase {
         Transitions.TransitionFinishCallback mergeCallback =
                 mock(Transitions.TransitionFinishCallback.class);
         mBackTransitionHandler.mergeAnimation(
-                mock(IBinder.class), tInfo2, st, mock(IBinder.class), mergeCallback);
+                mock(IBinder.class), tInfo2, st, ft, mock(IBinder.class), mergeCallback);
         mBackTransitionHandler.onAnimationFinished();
         verify(callback).onTransitionFinished(any());
         verify(mergeCallback).onTransitionFinished(any());
@@ -706,7 +701,7 @@ public class BackAnimationControllerTest extends ShellTestCase {
         mBackTransitionHandler.mClosePrepareTransition = mock(IBinder.class);
         mergeCallback = mock(Transitions.TransitionFinishCallback.class);
         mBackTransitionHandler.mergeAnimation(mBackTransitionHandler.mClosePrepareTransition,
-                tInfo2, st, mock(IBinder.class), mergeCallback);
+                tInfo2, st, ft, mock(IBinder.class), mergeCallback);
         assertTrue("Change should be consumed", tInfo2.getChanges().isEmpty());
         verify(callback).onTransitionFinished(any());
     }
@@ -752,7 +747,7 @@ public class BackAnimationControllerTest extends ShellTestCase {
         final TransitionInfo closeInfo = createTransitionInfo(TRANSIT_CLOSE, close);
         Transitions.TransitionFinishCallback mergeCallback =
                 mock(Transitions.TransitionFinishCallback.class);
-        mBackTransitionHandler.mergeAnimation(mock(IBinder.class), closeInfo, ft,
+        mBackTransitionHandler.mergeAnimation(mock(IBinder.class), closeInfo, st, ft,
                 mock(IBinder.class), mergeCallback);
         verify(callback2).onTransitionFinished(any());
         verify(mergeCallback, never()).onTransitionFinished(any());
@@ -771,7 +766,7 @@ public class BackAnimationControllerTest extends ShellTestCase {
                 openTaskId2, TRANSIT_OPEN, FLAG_MOVED_TO_TOP);
         final TransitionInfo openInfo = createTransitionInfo(TRANSIT_OPEN, open2, close);
         mergeCallback = mock(Transitions.TransitionFinishCallback.class);
-        mBackTransitionHandler.mergeAnimation(mock(IBinder.class), openInfo, ft,
+        mBackTransitionHandler.mergeAnimation(mock(IBinder.class), openInfo, st, ft,
                 mock(IBinder.class), mergeCallback);
         verify(callback3).onTransitionFinished(any());
         verify(mergeCallback, never()).onTransitionFinished(any());

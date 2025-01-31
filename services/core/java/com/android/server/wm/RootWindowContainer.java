@@ -1948,7 +1948,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         final IntArray rootTaskIdsToRestore = mUserVisibleRootTasks.get(userId);
         boolean homeInFront = false;
         if (Flags.enableTopVisibleRootTaskPerUserTracking()) {
-            if (rootTaskIdsToRestore == null) {
+            if (rootTaskIdsToRestore == null || rootTaskIdsToRestore.size() == 0) {
                 // If there are no root tasks saved, try restore id 0 which should create and launch
                 // the home task.
                 handleRootTaskLaunchOnUserSwitch(/* restoreRootTaskId */INVALID_TASK_ID);
@@ -1958,11 +1958,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     handleRootTaskLaunchOnUserSwitch(rootTaskIdsToRestore.get(i));
                 }
                 // Check if the top task is type home
-                if (rootTaskIdsToRestore.size() > 0) {
-                    final int topRootTaskId = rootTaskIdsToRestore.get(
-                            rootTaskIdsToRestore.size() - 1);
-                    homeInFront = isHomeTask(topRootTaskId);
-                }
+                final int topRootTaskId = rootTaskIdsToRestore.get(rootTaskIdsToRestore.size() - 1);
+                homeInFront = isHomeTask(topRootTaskId);
             }
         } else {
             handleRootTaskLaunchOnUserSwitch(restoreRootTaskId);
@@ -2845,7 +2842,13 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         }
 
         startHomeOnDisplay(mCurrentUser, reason, displayContent.getDisplayId());
-        displayContent.getDisplayPolicy().notifyDisplayReady();
+        if (enableDisplayContentModeManagement()) {
+            if (displayContent.isSystemDecorationsSupported()) {
+                displayContent.getDisplayPolicy().notifyDisplayAddSystemDecorations();
+            }
+        } else {
+            displayContent.getDisplayPolicy().notifyDisplayAddSystemDecorations();
+        }
     }
 
     @Override

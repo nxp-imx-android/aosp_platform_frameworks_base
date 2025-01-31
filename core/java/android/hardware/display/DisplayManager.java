@@ -146,6 +146,22 @@ public final class DisplayManager {
             "android.hardware.display.category.PRESENTATION";
 
     /**
+     * Display category: Built in displays.
+     *
+     * <p>
+     *     This category can be used to identify displays that are built into the device. The
+     *     displays that are returned may be inactive or disabled at the current moment. The
+     *     returned displays are useful in identifying the various sizes of built-in displays. The
+     *     id from {@link Display#getDisplayId()} is not guaranteed to be stable and may change
+     *     when the display becomes active.
+     * </p>
+     * @see #getDisplays(String)
+     */
+    @FlaggedApi(com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_CATEGORY_BUILT_IN)
+    public static final String DISPLAY_CATEGORY_BUILT_IN_DISPLAYS =
+            "android.hardware.display.category.BUILT_IN_DISPLAYS";
+
+    /**
      * Display category: Rear displays.
      * <p>
      * This category can be used to identify complementary internal displays that are facing away
@@ -171,6 +187,8 @@ public final class DisplayManager {
      * @see #getDisplays(String)
      * @hide
      */
+    @TestApi
+    @SuppressLint("UnflaggedApi")
     public static final String DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED =
             "android.hardware.display.category.ALL_INCLUDING_DISABLED";
 
@@ -623,9 +641,6 @@ public final class DisplayManager {
      * is triggered whenever the properties of a {@link android.view.Display}, such as size,
      * state, density are modified.
      *
-     * This event is not triggered for refresh rate changes as they can change very often.
-     * To monitor refresh rate changes, subscribe to {@link EVENT_TYPE_DISPLAY_REFRESH_RATE}.
-     *
      * @see #registerDisplayListener(DisplayListener, Handler, long)
      *
      */
@@ -732,10 +747,13 @@ public final class DisplayManager {
      * @see #DISPLAY_CATEGORY_PRESENTATION
      */
     public Display[] getDisplays(String category) {
-        boolean includeDisabled = (category != null
-                && category.equals(DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED));
+        boolean includeDisabled = shouldIncludeDisabledDisplays(category);
         final int[] displayIds = mGlobal.getDisplayIds(includeDisabled);
-        if (DISPLAY_CATEGORY_PRESENTATION.equals(category)) {
+        if (Flags.displayCategoryBuiltIn()
+                && DISPLAY_CATEGORY_BUILT_IN_DISPLAYS.equals(category)) {
+            Display[] value = getDisplays(displayIds, DisplayManager::isBuiltInDisplay);
+            return value;
+        } else if (DISPLAY_CATEGORY_PRESENTATION.equals(category)) {
             return getDisplays(displayIds, DisplayManager::isPresentationDisplay);
         } else if (DISPLAY_CATEGORY_REAR.equals(category)) {
             return getDisplays(displayIds, DisplayManager::isRearDisplay);
@@ -743,6 +761,16 @@ public final class DisplayManager {
             return getDisplays(displayIds, Objects::nonNull);
         }
         return new Display[0];
+    }
+
+    private boolean shouldIncludeDisabledDisplays(@Nullable String category) {
+        if (DISPLAY_CATEGORY_BUILT_IN_DISPLAYS.equals(category)) {
+            return true;
+        }
+        if (DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED.equals(category)) {
+            return true;
+        }
+        return false;
     }
 
     private Display[] getDisplays(int[] displayIds, Predicate<Display> predicate) {
@@ -754,6 +782,13 @@ public final class DisplayManager {
             }
         }
         return tmpDisplays.toArray(new Display[tmpDisplays.size()]);
+    }
+
+    private static boolean isBuiltInDisplay(@Nullable Display display) {
+        if (display == null) {
+            return false;
+        }
+        return display.getType() == Display.TYPE_INTERNAL;
     }
 
     private static boolean isPresentationDisplay(@Nullable Display display) {
@@ -804,9 +839,6 @@ public final class DisplayManager {
      * Registers a display listener to receive notifications about when
      * displays are added, removed or changed.
      *
-     * We encourage to use {@link #registerDisplayListener(Executor, long, DisplayListener)}
-     * instead to subscribe for explicit events of interest
-     *
      * @param listener The listener to register.
      * @param handler The handler on which the listener should be invoked, or null
      * if the listener should be invoked on the calling thread's looper.
@@ -815,9 +847,7 @@ public final class DisplayManager {
      */
     public void registerDisplayListener(DisplayListener listener, Handler handler) {
         registerDisplayListener(listener, handler, EVENT_TYPE_DISPLAY_ADDED
-                | EVENT_TYPE_DISPLAY_CHANGED
-                | EVENT_TYPE_DISPLAY_REFRESH_RATE
-                | EVENT_TYPE_DISPLAY_REMOVED);
+                | EVENT_TYPE_DISPLAY_CHANGED | EVENT_TYPE_DISPLAY_REMOVED);
     }
 
     /**

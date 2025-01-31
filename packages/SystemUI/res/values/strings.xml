@@ -588,6 +588,12 @@
     <!-- Content description of the cast label showing what we are connected to. [CHAR LIMIT=NONE] -->
     <string name="accessibility_cast_name">Connected to <xliff:g id="cast" example="TV">%s</xliff:g>.</string>
 
+    <!-- Content description of the button to expand the group of devices. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_expand_group">Expand group.</string>
+
+    <!-- Content description of the button to open the application . [CHAR LIMIT=NONE] -->
+    <string name="accessibility_open_application">Open application.</string>
+
     <!-- Content description of an item with no signal and no connection for accessibility (not shown on the screen) [CHAR LIMIT=NONE] -->
     <string name="accessibility_not_connected">Not connected.</string>
     <!-- Content description of the roaming data connection type. [CHAR LIMIT=NONE] -->
@@ -3395,6 +3401,8 @@
 
     <!-- Content description for a chip in the status bar showing that the user is currently on a call. [CHAR LIMIT=NONE] -->
     <string name="ongoing_call_content_description">Ongoing call</string>
+    <!-- Content description for a chip in the status bar showing that the user currently has an ongoing activity. [CHAR LIMIT=NONE]-->
+    <string name="ongoing_notification_extra_content_description">Ongoing</string>
 
     <!-- Provider Model: Default title of the mobile network in the mobile layout. [CHAR LIMIT=50] -->
     <string name="mobile_data_settings_title">Mobile data</string>

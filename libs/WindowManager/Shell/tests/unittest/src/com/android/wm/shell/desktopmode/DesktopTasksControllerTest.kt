@@ -35,6 +35,7 @@ import android.content.pm.ActivityInfo.CONFIG_DENSITY
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+import android.content.pm.PackageManager
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.content.res.Resources
@@ -49,7 +50,6 @@ import android.os.UserManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
-import android.platform.test.flag.junit.SetFlagsRule
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DragEvent
 import android.view.Gravity
@@ -118,7 +118,9 @@ import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCR
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.desktopmode.minimize.DesktopWindowLimitRemoteHandler
+import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
+import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.persistence.Desktop
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
@@ -165,7 +167,6 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
@@ -181,6 +182,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.capture
@@ -200,8 +202,6 @@ import platform.test.runner.parameterized.Parameters
 @ExperimentalCoroutinesApi
 @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
 class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase() {
-
-    @JvmField @Rule val setFlagsRule = SetFlagsRule(flags)
 
     @Mock lateinit var testExecutor: ShellExecutor
     @Mock lateinit var shellCommandHandler: ShellCommandHandler
@@ -254,6 +254,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private lateinit var overviewToDesktopTransitionObserver: OverviewToDesktopTransitionObserver
     @Mock private lateinit var desksOrganizer: DesksOrganizer
     @Mock private lateinit var userProfileContexts: UserProfileContexts
+    @Mock private lateinit var desksTransitionsObserver: DesksTransitionObserver
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -351,6 +352,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .thenReturn(ExitResult.NoExit)
         whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(wallpaperToken)
         whenever(userProfileContexts[anyInt()]).thenReturn(context)
+        whenever(userProfileContexts.getOrCreate(anyInt())).thenReturn(context)
 
         controller = createController()
         controller.setSplitScreenController(splitScreenController)
@@ -408,6 +410,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             Optional.of(bubbleController),
             overviewToDesktopTransitionObserver,
             desksOrganizer,
+            desksTransitionsObserver,
             userProfileContexts,
             desktopModeCompatPolicy,
         )
@@ -1450,6 +1453,41 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 baseActivity = baseComponent
                 isTopActivityNoDisplay = true
             }
+
+        controller.moveRunningTaskToDesktop(task, transitionSource = UNKNOWN)
+
+        val wct = getLatestEnterDesktopWct()
+        assertThat(wct.changes[task.token.asBinder()]?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_FREEFORM)
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
+    fun moveRunningTaskToDesktop_defaultHomePackageWithDisplay_doesNothing() {
+        val packageManager: PackageManager = org.mockito.kotlin.mock()
+        val homeActivities = ComponentName("defaultHomePackage", /* class */ "")
+        val task =
+            setUpFullscreenTask().apply {
+                baseActivity = homeActivities
+                isTopActivityNoDisplay = false
+            }
+        mContext.setMockPackageManager(packageManager)
+        whenever(packageManager.getHomeActivities(any())).thenReturn(homeActivities)
+
+        controller.moveRunningTaskToDesktop(task, transitionSource = UNKNOWN)
+        verifyEnterDesktopWCTNotExecuted()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
+    fun moveRunningTaskToDesktop_defaultHomePackageWithoutDisplay_doesNothing() {
+        val packageManager: PackageManager = org.mockito.kotlin.mock()
+        val homeActivities = ComponentName("defaultHomePackage", /* class */ "")
+        val task =
+            setUpFullscreenTask().apply {
+                baseActivity = homeActivities
+                isTopActivityNoDisplay = false
+            }
+        mContext.setMockPackageManager(packageManager)
+        whenever(packageManager.getHomeActivities(any())).thenReturn(homeActivities)
 
         controller.moveRunningTaskToDesktop(task, transitionSource = UNKNOWN)
 
@@ -3095,6 +3133,46 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .isEqualTo(WINDOWING_MODE_FREEFORM)
     }
 
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
+    fun handleRequest_defaultHomePackageWithDisplay_returnSwitchToFullscreenWCT() {
+        val freeformTask = setUpFreeformTask()
+        markTaskVisible(freeformTask)
+
+        val packageManager: PackageManager = org.mockito.kotlin.mock()
+        val homeActivities = ComponentName("defaultHomePackage", /* class */ "")
+        val task =
+            setUpFullscreenTask().apply {
+                baseActivity = homeActivities
+                isTopActivityNoDisplay = false
+            }
+        mContext.setMockPackageManager(packageManager)
+        whenever(packageManager.getHomeActivities(any())).thenReturn(homeActivities)
+
+        val result = controller.handleRequest(Binder(), createTransition(task))
+        assertThat(result?.changes?.get(task.token.asBinder())?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_FREEFORM)
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
+    fun handleRequest_defaultHomePackageWithoutDisplay_returnSwitchToFreeformWCT() {
+        val freeformTask = setUpFreeformTask()
+        markTaskVisible(freeformTask)
+
+        val packageManager: PackageManager = org.mockito.kotlin.mock()
+        val homeActivities = ComponentName("defaultHomePackage", /* class */ "")
+        val task =
+            setUpFullscreenTask().apply {
+                baseActivity = homeActivities
+                isTopActivityNoDisplay = false
+            }
+        mContext.setMockPackageManager(packageManager)
+        whenever(packageManager.getHomeActivities(any())).thenReturn(homeActivities)
+
+        val result = controller.handleRequest(Binder(), createTransition(task))
+        assertThat(result?.changes?.get(task.token.asBinder())?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_FREEFORM)
+    }
+
     @Test
     fun handleRequest_systemUIActivityWithDisplay_returnSwitchToFullscreenWCT_enforcedDesktop() {
         whenever(DesktopModeStatus.enterDesktopByDefaultOnFreeformDisplay(context)).thenReturn(true)
@@ -3546,13 +3624,14 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
-    fun removeDesktop_multipleTasks_removesAll() {
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun removeDesk_multipleTasks_removesAll() {
         val task1 = setUpFreeformTask()
         val task2 = setUpFreeformTask()
         val task3 = setUpFreeformTask()
         taskRepository.minimizeTask(DEFAULT_DISPLAY, task2.taskId)
 
-        controller.removeDesktop(displayId = DEFAULT_DISPLAY)
+        controller.removeDefaultDeskInDisplay(displayId = DEFAULT_DISPLAY)
 
         val wct = getLatestWct(TRANSIT_CLOSE)
         assertThat(wct.hierarchyOps).hasSize(3)
@@ -3563,20 +3642,45 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
-    fun removeDesktop_multipleTasksWithBackgroundTask_removesAll() {
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun removeDesk_multipleTasksWithBackgroundTask_removesAll() {
         val task1 = setUpFreeformTask()
         val task2 = setUpFreeformTask()
         val task3 = setUpFreeformTask()
         taskRepository.minimizeTask(DEFAULT_DISPLAY, task2.taskId)
         whenever(shellTaskOrganizer.getRunningTaskInfo(task3.taskId)).thenReturn(null)
 
-        controller.removeDesktop(displayId = DEFAULT_DISPLAY)
+        controller.removeDefaultDeskInDisplay(displayId = DEFAULT_DISPLAY)
 
         val wct = getLatestWct(TRANSIT_CLOSE)
         assertThat(wct.hierarchyOps).hasSize(2)
         wct.assertRemoveAt(index = 0, task1.token)
         wct.assertRemoveAt(index = 1, task2.token)
         verify(recentTasksController).removeBackgroundTask(task3.taskId)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun removeDesk_multipleDesks_addsPendingTransition() {
+        val transition = Binder()
+        whenever(transitions.startTransition(eq(TRANSIT_CLOSE), any(), anyOrNull()))
+            .thenReturn(transition)
+        taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 2)
+
+        controller.removeDesk(deskId = 2)
+
+        verify(desksOrganizer).removeDesk(any(), eq(2))
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.RemoveDesk &&
+                        this.token == transition &&
+                        this.deskId == 2
+                }
+            )
     }
 
     @Test

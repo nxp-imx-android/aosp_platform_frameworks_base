@@ -263,6 +263,7 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Parcel;
@@ -578,6 +579,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     NetworkCapabilities mWifiNetworkCapabilities;
 
     private NotificationManagerService.WorkerHandler mWorkerHandler;
+    private Handler mBroadcastsHandler;
 
     private class TestableToastCallback extends ITransientNotification.Stub {
         @Override
@@ -814,14 +816,16 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         when(mUmInternal.isUserInitialized(anyInt())).thenReturn(true);
 
         mWorkerHandler = spy(mService.new WorkerHandler(mTestableLooper.getLooper()));
-        mService.init(mWorkerHandler, mRankingHandler, mPackageManager, mPackageManagerClient,
-                mLightsManager, mListeners, mAssistants, mConditionProviders, mCompanionMgr,
-                mSnoozeHelper, mUsageStats, mPolicyFile, mActivityManager, mGroupHelper, mAm, mAtm,
-                mAppUsageStats, mDevicePolicyManager, mUgm, mUgmInternal,
-                mAppOpsManager, mUm, mHistoryManager, mStatsManager,
-                mAmi, mToastRateLimiter, mPermissionHelper, mock(UsageStatsManagerInternal.class),
-                mTelecomManager, mLogger, mTestFlagResolver, mPermissionManager,
-                mPowerManager, mConnectivityManager, mPostNotificationTrackerFactory);
+        mBroadcastsHandler = new Handler(mTestableLooper.getLooper());
+
+        mService.init(mWorkerHandler, mRankingHandler, mBroadcastsHandler, mPackageManager,
+                mPackageManagerClient, mLightsManager, mListeners, mAssistants, mConditionProviders,
+                mCompanionMgr, mSnoozeHelper, mUsageStats, mPolicyFile, mActivityManager,
+                mGroupHelper, mAm, mAtm, mAppUsageStats, mDevicePolicyManager, mUgm, mUgmInternal,
+                mAppOpsManager, mUm, mHistoryManager, mStatsManager, mAmi, mToastRateLimiter,
+                mPermissionHelper, mock(UsageStatsManagerInternal.class), mTelecomManager, mLogger,
+                mTestFlagResolver, mPermissionManager, mPowerManager, mConnectivityManager,
+                mPostNotificationTrackerFactory);
 
         mService.setAttentionHelper(mAttentionHelper);
         mService.setLockPatternUtils(mock(LockPatternUtils.class));
@@ -1002,6 +1006,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             // could cause issues, for example, messages that remove/cancel shown toasts (this causes
             // problematic interactions with mocks when they're no longer working as expected).
             mWorkerHandler.removeCallbacksAndMessages(null);
+        }
+        if (mBroadcastsHandler != null) {
+            mBroadcastsHandler.removeCallbacksAndMessages(null);
         }
 
         if (mTestableLooper != null) {
@@ -2877,7 +2884,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         waitForIdle();
 
         verify(mGroupHelper, times(1)).onChannelUpdated(eq(Process.myUserHandle().getIdentifier()),
-                eq(mPkg), eq(mTestNotificationChannel), any());
+                eq(mPkg), eq(mTestNotificationChannel), any(), any());
     }
 
     @Test
@@ -17647,8 +17654,19 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_API_RICH_ONGOING)
-    public void testSetCanBePromoted_granted() throws Exception {
+    @EnableFlags({android.app.Flags.FLAG_API_RICH_ONGOING})
+    public void testSetCanBePromoted_granted_noui() throws Exception {
+        testSetCanBePromoted_granted();
+    }
+
+    @Test
+    @EnableFlags({android.app.Flags.FLAG_API_RICH_ONGOING,
+            android.app.Flags.FLAG_UI_RICH_ONGOING })
+    public void testSetCanBePromoted_granted_ui() throws Exception {
+        testSetCanBePromoted_granted();
+    }
+
+    private void testSetCanBePromoted_granted() throws Exception {
         // qualifying posted notification
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -17703,6 +17721,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.addNotification(r);
         mService.addEnqueuedNotification(r1);
 
+        // GIVEN - make sure the promoted value does not depend on the default value.
+        mBinderService.setCanBePromoted(mPkg, mUid, false, true);
+        waitForIdle();
+        clearInvocations(mListeners);
+
         mBinderService.setCanBePromoted(mPkg, mUid, true, true);
 
         waitForIdle();
@@ -17725,7 +17748,18 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags(android.app.Flags.FLAG_API_RICH_ONGOING)
-    public void testSetCanBePromoted_granted_onlyNotifiesOnce() throws Exception {
+    public void testSetCanBePromoted_granted_onlyNotifiesOnce_noui() throws Exception {
+        testSetCanBePromoted_granted_onlyNotifiesOnce();
+    }
+
+    @Test
+    @EnableFlags({android.app.Flags.FLAG_API_RICH_ONGOING,
+            android.app.Flags.FLAG_UI_RICH_ONGOING})
+    public void testSetCanBePromoted_granted_onlyNotifiesOnce_ui() throws Exception {
+        testSetCanBePromoted_granted_onlyNotifiesOnce();
+    }
+
+    private void testSetCanBePromoted_granted_onlyNotifiesOnce() throws Exception {
         // qualifying posted notification
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -17741,6 +17775,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         NotificationRecord r = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
 
         mService.addNotification(r);
+        // GIVEN - make sure the promoted value does not depend on the default value.
+        mBinderService.setCanBePromoted(mPkg, mUid, false, true);
+        waitForIdle();
+        clearInvocations(mListeners);
 
         mBinderService.setCanBePromoted(mPkg, mUid, true, true);
         waitForIdle();
