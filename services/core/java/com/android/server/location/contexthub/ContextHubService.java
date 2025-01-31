@@ -259,6 +259,9 @@ public class ContextHubService extends IContextHubService.Stub {
             if (mHubInfoRegistry != null) {
                 mHubInfoRegistry.onHalRestart();
             }
+            if (mEndpointManager != null) {
+                mEndpointManager.onHalRestart();
+            }
             resetSettings();
             if (Flags.reconnectHostEndpointsAfterHalRestart()) {
                 mClientManager.forEachClientOfHub(mContextHubId,
