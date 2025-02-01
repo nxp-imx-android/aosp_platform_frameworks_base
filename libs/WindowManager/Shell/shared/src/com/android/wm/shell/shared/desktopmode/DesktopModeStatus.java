@@ -18,6 +18,8 @@ package com.android.wm.shell.shared.desktopmode;
 
 import static android.hardware.display.DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED;
 
+import static com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper.enableBubbleToFullscreen;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
@@ -230,7 +232,7 @@ public class DesktopModeStatus {
      * Return {@code true} if desktop mode dev option should be shown on current device
      */
     public static boolean canShowDesktopExperienceDevOption(@NonNull Context context) {
-        return Flags.showDesktopExperienceDevOption();
+        return Flags.showDesktopExperienceDevOption() && isDeviceEligibleForDesktopMode(context);
     }
 
     /** Returns if desktop mode dev option should be enabled if there is no user override. */
@@ -270,7 +272,8 @@ public class DesktopModeStatus {
      * necessarily enabling desktop mode
      */
     public static boolean overridesShowAppHandle(@NonNull Context context) {
-        return Flags.showAppHandleLargeScreens() && deviceHasLargeScreen(context);
+        return (Flags.showAppHandleLargeScreens() || enableBubbleToFullscreen())
+                && deviceHasLargeScreen(context);
     }
 
     /**

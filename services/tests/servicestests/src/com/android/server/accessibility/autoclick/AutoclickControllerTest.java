@@ -20,11 +20,11 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 
 import static com.android.server.testutils.MockitoUtilsKt.eq;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertNotNull;
-import static org.testng.AssertJUnit.assertNull;
 
 import android.content.Context;
 import android.platform.test.annotations.DisableFlags;
@@ -35,6 +35,7 @@ import android.testing.AndroidTestingRunner;
 import android.testing.TestableContext;
 import android.testing.TestableLooper;
 import android.view.InputDevice;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
@@ -82,69 +83,89 @@ public class AutoclickControllerTest {
 
     @Test
     public void onMotionEvent_lazyInitClickScheduler() {
-        assertNull(mController.mClickScheduler);
+        assertThat(mController.mClickScheduler).isNull();
 
         injectFakeMouseActionDownEvent();
 
-        assertNotNull(mController.mClickScheduler);
+        assertThat(mController.mClickScheduler).isNotNull();
     }
 
     @Test
     public void onMotionEvent_nonMouseSource_notInitClickScheduler() {
-        assertNull(mController.mClickScheduler);
+        assertThat(mController.mClickScheduler).isNull();
 
         injectFakeNonMouseActionDownEvent();
 
-        assertNull(mController.mClickScheduler);
+        assertThat(mController.mClickScheduler).isNull();
     }
 
     @Test
     public void onMotionEvent_lazyInitAutoclickSettingsObserver() {
-        assertNull(mController.mAutoclickSettingsObserver);
+        assertThat(mController.mAutoclickSettingsObserver).isNull();
 
         injectFakeMouseActionDownEvent();
 
-        assertNotNull(mController.mAutoclickSettingsObserver);
+        assertThat(mController.mAutoclickSettingsObserver).isNotNull();
     }
 
     @Test
     @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
     public void onMotionEvent_flagOn_lazyInitAutoclickIndicatorScheduler() {
-        assertNull(mController.mAutoclickIndicatorScheduler);
+        assertThat(mController.mAutoclickIndicatorScheduler).isNull();
 
         injectFakeMouseActionDownEvent();
 
-        assertNotNull(mController.mAutoclickIndicatorScheduler);
+        assertThat(mController.mAutoclickIndicatorScheduler).isNotNull();
     }
 
     @Test
     @DisableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
     public void onMotionEvent_flagOff_notInitAutoclickIndicatorScheduler() {
-        assertNull(mController.mAutoclickIndicatorScheduler);
+        assertThat(mController.mAutoclickIndicatorScheduler).isNull();
 
         injectFakeMouseActionDownEvent();
 
-        assertNull(mController.mAutoclickIndicatorScheduler);
+        assertThat(mController.mAutoclickIndicatorScheduler).isNull();
     }
 
     @Test
     @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
     public void onMotionEvent_flagOn_lazyInitAutoclickIndicatorView() {
-        assertNull(mController.mAutoclickIndicatorView);
+        assertThat(mController.mAutoclickIndicatorView).isNull();
 
         injectFakeMouseActionDownEvent();
 
-        assertNotNull(mController.mAutoclickIndicatorView);
+        assertThat(mController.mAutoclickIndicatorView).isNotNull();
     }
 
     @Test
     @DisableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
     public void onMotionEvent_flagOff_notInitAutoclickIndicatorView() {
-        assertNull(mController.mAutoclickIndicatorView);
+        assertThat(mController.mAutoclickIndicatorView).isNull();
 
         injectFakeMouseActionDownEvent();
 
-        assertNull(mController.mAutoclickIndicatorView);
+        assertThat(mController.mAutoclickIndicatorView).isNull();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onMotionEvent_flagOn_lazyInitAutoclickTypePanelView() {
+        assertThat(mController.mAutoclickTypePanel).isNull();
+
+        injectFakeMouseActionDownEvent();
+
+        assertThat(mController.mAutoclickTypePanel).isNotNull();
+    }
+
+    @Test
+    @DisableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onMotionEvent_flagOff_notInitAutoclickTypePanelView() {
+        assertThat(mController.mAutoclickTypePanel).isNull();
+
+        injectFakeMouseActionDownEvent();
+
+        assertThat(mController.mAutoclickTypePanel).isNull();
     }
 
     @Test
@@ -166,6 +187,18 @@ public class AutoclickControllerTest {
     }
 
     @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onDestroy_flagOn_removeAutoclickTypePanelViewToWindowManager() {
+        injectFakeMouseActionDownEvent();
+        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
+        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
+
+        mController.onDestroy();
+
+        verify(mockAutoclickTypePanel).hide();
+    }
+
+    @Test
     public void onMotionEvent_initClickSchedulerDelayFromSetting() {
         injectFakeMouseActionDownEvent();
 
@@ -175,7 +208,7 @@ public class AutoclickControllerTest {
                         Settings.Secure.ACCESSIBILITY_AUTOCLICK_DELAY,
                         AccessibilityManager.AUTOCLICK_DELAY_DEFAULT,
                         mTestableContext.getUserId());
-        assertEquals(delay, mController.mClickScheduler.getDelayForTesting());
+        assertThat(mController.mClickScheduler.getDelayForTesting()).isEqualTo(delay);
     }
 
     @Test
@@ -189,7 +222,40 @@ public class AutoclickControllerTest {
                         Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE,
                         AccessibilityManager.AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT,
                         mTestableContext.getUserId());
-        assertEquals(size, mController.mAutoclickIndicatorView.getRadiusForTesting());
+        assertThat(mController.mAutoclickIndicatorView.getRadiusForTesting()).isEqualTo(size);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onKeyEvent_modifierKey_doNotUpdateMetaStateWhenControllerIsNull() {
+        assertThat(mController.mClickScheduler).isNull();
+
+        injectFakeKeyEvent(KeyEvent.KEYCODE_ALT_LEFT, KeyEvent.META_ALT_ON);
+
+        assertThat(mController.mClickScheduler).isNull();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onKeyEvent_modifierKey_updateMetaStateWhenControllerNotNull() {
+        injectFakeMouseActionDownEvent();
+
+        int metaState = KeyEvent.META_ALT_ON | KeyEvent.META_META_ON;
+        injectFakeKeyEvent(KeyEvent.KEYCODE_ALT_LEFT, metaState);
+
+        assertThat(mController.mClickScheduler).isNotNull();
+        assertThat(mController.mClickScheduler.getMetaStateForTesting()).isEqualTo(metaState);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onKeyEvent_modifierKey_cancelAutoClickWhenAdditionalRegularKeyPresssed() {
+        injectFakeMouseActionDownEvent();
+
+        injectFakeKeyEvent(KeyEvent.KEYCODE_J, KeyEvent.META_ALT_ON);
+
+        assertThat(mController.mClickScheduler).isNotNull();
+        assertThat(mController.mClickScheduler.getMetaStateForTesting()).isEqualTo(0);
     }
 
     @Test
@@ -198,7 +264,7 @@ public class AutoclickControllerTest {
 
         mController.onDestroy();
 
-        assertNull(mController.mClickScheduler);
+        assertThat(mController.mClickScheduler).isNull();
     }
 
     @Test
@@ -207,7 +273,7 @@ public class AutoclickControllerTest {
 
         mController.onDestroy();
 
-        assertNull(mController.mAutoclickSettingsObserver);
+        assertThat(mController.mAutoclickSettingsObserver).isNull();
     }
 
     @Test
@@ -217,7 +283,7 @@ public class AutoclickControllerTest {
 
         mController.onDestroy();
 
-        assertNull(mController.mAutoclickIndicatorScheduler);
+        assertThat(mController.mAutoclickIndicatorScheduler).isNull();
     }
 
     private void injectFakeMouseActionDownEvent() {
@@ -230,6 +296,17 @@ public class AutoclickControllerTest {
         MotionEvent event = getFakeMotionDownEvent();
         event.setSource(InputDevice.SOURCE_KEYBOARD);
         mController.onMotionEvent(event, event, /* policyFlags= */ 0);
+    }
+
+    private void injectFakeKeyEvent(int keyCode, int modifiers) {
+        KeyEvent keyEvent = new KeyEvent(
+                /* downTime= */ 0,
+                /* eventTime= */ 0,
+                /* action= */ KeyEvent.ACTION_DOWN,
+                /* code= */ keyCode,
+                /* repeat= */ 0,
+                /* metaState= */ modifiers);
+        mController.onKeyEvent(keyEvent, /* policyFlags= */ 0);
     }
 
     private MotionEvent getFakeMotionDownEvent() {

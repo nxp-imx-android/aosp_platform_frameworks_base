@@ -2412,6 +2412,8 @@
   <java-symbol type="layout" name="notification_2025_template_collapsed_base" />
   <java-symbol type="layout" name="notification_2025_template_expanded_base" />
   <java-symbol type="layout" name="notification_2025_template_heads_up_base" />
+  <java-symbol type="layout" name="notification_2025_template_compact_heads_up_base" />
+  <java-symbol type="layout" name="notification_2025_template_compact_heads_up_messaging" />
   <java-symbol type="layout" name="notification_2025_template_header" />
   <java-symbol type="layout" name="notification_2025_template_collapsed_messaging" />
   <java-symbol type="layout" name="notification_2025_template_collapsed_media" />
@@ -4615,6 +4617,7 @@
   <java-symbol type="string" name="config_rawContactsLocalAccountName" />
   <java-symbol type="string" name="config_rawContactsLocalAccountType" />
   <java-symbol type="array" name="config_rawContactsEligibleDefaultAccountTypes" />
+  <java-symbol type="bool" name="config_rawContactsAccountRestrictionEnabled" />
 
   <!-- For App Standby -->
   <java-symbol type="string" name="as_app_forced_to_restricted_bucket" />
@@ -5604,6 +5607,24 @@
   <java-symbol type="bool" name="config_enable_a11y_magnification_single_panning" />
   <java-symbol type="bool" name="config_enable_a11y_fullscreen_magnification_overscroll_handler" />
   <java-symbol type="dimen" name="accessibility_fullscreen_magnification_gesture_edge_slop" />
+
+  <!-- Accessibility autoclick related -->
+  <java-symbol type="layout" name="accessibility_autoclick_type_panel" />
+  <java-symbol type="string" name="accessibility_autoclick_type_settings_panel_title" />
+  <java-symbol type="string" name="accessibility_autoclick_left_click" />
+  <java-symbol type="string" name="accessibility_autoclick_pause" />
+  <java-symbol type="string" name="accessibility_autoclick_position" />
+  <java-symbol type="dimen" name="accessibility_autoclick_type_panel_button_spacing" />
+  <java-symbol type="dimen" name="accessibility_autoclick_type_panel_button_size" />
+  <java-symbol type="dimen" name="accessibility_autoclick_type_panel_divider_height" />
+  <java-symbol type="dimen" name="accessibility_autoclick_type_panel_divider_width" />
+  <java-symbol type="id" name="accessibility_autoclick_type_panel" />
+  <java-symbol type="id" name="accessibility_autoclick_left_click_layout" />
+  <java-symbol type="id" name="accessibility_autoclick_left_click_button" />
+  <java-symbol type="id" name="accessibility_autoclick_pause_layout" />
+  <java-symbol type="id" name="accessibility_autoclick_pause_button" />
+  <java-symbol type="id" name="accessibility_autoclick_position_layout" />
+  <java-symbol type="id" name="accessibility_autoclick_position_button" />
 
   <!-- For HapticFeedbackConstants configurability defined at HapticFeedbackCustomization -->
   <java-symbol type="string" name="config_hapticFeedbackCustomizationFile" />

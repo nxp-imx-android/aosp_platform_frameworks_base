@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.compatui;
+package com.android.wm.shell.functional
 
-import com.android.wm.shell.ShellTestCase;
+import android.platform.test.annotations.Postsubmit
+import com.android.wm.shell.scenarios.OpenAppWithExternalDisplayConnected
+import org.junit.runner.RunWith
+import org.junit.runners.BlockJUnit4ClassRunner
 
-/**
- * Base class for CompatUI tests.
- */
-public class CompatUIShellTestCase extends ShellTestCase {
-}
+/* Functional test for [OpenAppWithExternalDisplayConnected]. */
+@RunWith(BlockJUnit4ClassRunner::class)
+@Postsubmit
+class OpenAppWithExternalDisplayConnectedTest : OpenAppWithExternalDisplayConnected()

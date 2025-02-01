@@ -781,7 +781,8 @@ public class AudioService extends IAudioService.Stub
     private int mRingerModeExternal = -1;  // reported ringer mode to outside clients (AudioManager)
 
     /** @see System#MODE_RINGER_STREAMS_AFFECTED */
-    private int mRingerModeAffectedStreams = 0;
+    @VisibleForTesting
+    protected int mRingerModeAffectedStreams = 0;
 
     private int mZenModeAffectedStreams = 0;
 
@@ -1191,6 +1192,11 @@ public class AudioService extends IAudioService.Stub
     private @AttributeSystemUsage int[] mSupportedSystemUsages =
             new int[]{AudioAttributes.USAGE_CALL_ASSISTANT};
 
+    // Tracks the API/shell override of hardening enforcement used for debugging
+    // When this is set to true, enforcement is on regardless of flag state and any specific
+    // exemptions in place for compat purposes.
+    private final AtomicBoolean mShouldEnableAllHardening = new AtomicBoolean(false);
+
     // Defines the format for the connection "address" for ALSA devices
     public static String makeAlsaAddressString(int card, int device) {
         return "card=" + card + ";device=" + device;
@@ -1334,6 +1340,10 @@ public class AudioService extends IAudioService.Stub
         mAudioVolumeGroupHelper = audioVolumeGroupHelper;
         mSettings = settings;
         mAudioPolicy = audioPolicy;
+        mAudioPolicy.registerOnStartTask(() -> {
+            mAudioPolicy.setEnableHardening(mShouldEnableAllHardening.get());
+        });
+
         mPlatformType = AudioSystem.getPlatformType(context);
 
         mBroadcastHandlerThread = new HandlerThread("AudioService Broadcast");
@@ -6315,17 +6325,15 @@ public class AudioService extends IAudioService.Stub
                     }
                 }
                 sRingerAndZenModeMutedStreams &= ~(1 << streamType);
-                sMuteLogger.enqueue(new AudioServiceEvents.RingerZenMutedStreamsEvent(
-                        sRingerAndZenModeMutedStreams, "muteRingerModeStreams"));
                 vss.mute(false, "muteRingerModeStreams");
             } else {
                 // mute
                 sRingerAndZenModeMutedStreams |= (1 << streamType);
-                sMuteLogger.enqueue(new AudioServiceEvents.RingerZenMutedStreamsEvent(
-                        sRingerAndZenModeMutedStreams, "muteRingerModeStreams"));
                 vss.mute(true, "muteRingerModeStreams");
             }
         }
+        sMuteLogger.enqueue(new AudioServiceEvents.RingerZenMutedStreamsEvent(
+                sRingerAndZenModeMutedStreams, "muteRingerModeStreams"));
     }
 
     private boolean isAlarm(int streamType) {
@@ -10045,12 +10053,14 @@ public class AudioService extends IAudioService.Stub
                             new AudioServiceEvents.StreamMuteEvent(mStreamType, state, src));
                     // check to see if unmuting should not have happened due to ringer muted streams
                     if (!state && isStreamMutedByRingerOrZenMode(mStreamType)) {
-                        Log.e(TAG, "Unmuting stream " + mStreamType
+                        Slog.e(TAG, "Attempt to unmute stream " + mStreamType
                                 + " despite ringer-zen muted stream 0x"
                                 + Integer.toHexString(AudioService.sRingerAndZenModeMutedStreams),
                                 new Exception()); // this will put a stack trace in the logs
                         sMuteLogger.enqueue(new AudioServiceEvents.StreamUnmuteErrorEvent(
                                 mStreamType, AudioService.sRingerAndZenModeMutedStreams));
+                        // do not change mute state
+                        return false;
                     }
                     mIsMuted = state;
                     if (apply) {
@@ -15017,6 +15027,16 @@ public class AudioService extends IAudioService.Stub
             return false;
         }
         return true;
+    }
+
+    /**
+     * @see AudioManager#setEnableHardening(boolean)
+     */
+    @android.annotation.EnforcePermission(MODIFY_AUDIO_SETTINGS_PRIVILEGED)
+    public void setEnableHardening(boolean shouldEnable) {
+        super.setEnableHardening_enforcePermission();
+        mShouldEnableAllHardening.set(shouldEnable);
+        mAudioPolicy.setEnableHardening(shouldEnable);
     }
 
     //======================
