@@ -29,6 +29,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardQuickAffordanceIn
 import com.android.systemui.keyguard.domain.interactor.pulseExpansionInteractor
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.testKosmos
@@ -147,10 +148,11 @@ class KeyguardBypassInteractorTest : SysuiTestCase() {
     }
 
     private fun setScene(bouncerShowing: Boolean, onLockscreenScene: Boolean) {
-        if (bouncerShowing) {
-            kosmos.sceneInteractor.changeScene(Scenes.Bouncer, "reason")
-        } else if (onLockscreenScene) {
+        if (onLockscreenScene) {
             kosmos.sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
+            if (bouncerShowing) {
+                kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
+            }
         } else {
             kosmos.sceneInteractor.changeScene(Scenes.Shade, "reason")
         }

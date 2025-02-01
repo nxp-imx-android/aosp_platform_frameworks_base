@@ -63,6 +63,7 @@ import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.setTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableDualShade
@@ -597,7 +598,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             assertThat(isOnLockscreen).isTrue()
 
             kosmos.setTransition(
-                sceneTransition = Idle(Scenes.Bouncer),
+                sceneTransition = Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer)),
                 stateTransition = TransitionStep(from = LOCKSCREEN, to = PRIMARY_BOUNCER),
             )
             assertThat(isOnLockscreen).isTrue()
@@ -611,7 +612,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             val isOnLockscreen by collectLastValue(underTest.isOnLockscreen)
 
             setTransition(
-                sceneTransition = Idle(Scenes.Bouncer),
+                sceneTransition = Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer)),
                 stateTransition = TransitionStep(from = LOCKSCREEN, to = PRIMARY_BOUNCER),
             )
             assertThat(isOnLockscreen).isTrue()

@@ -60,7 +60,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.MediaInRowInLandscapeViewMode
 import com.android.systemui.qs.panels.ui.viewmodel.QuickQuickSettingsViewModel
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
 import com.android.systemui.res.R
-import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.shade.LargeScreenHeaderHelper
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -434,7 +434,7 @@ constructor(
             initialValue = false,
             source =
                 keyguardTransitionInteractor.isInTransition(
-                    Edge.create(to = Scenes.Bouncer),
+                    Edge.create(to = Overlays.Bouncer),
                     Edge.create(to = KeyguardState.PRIMARY_BOUNCER),
                 ),
         )

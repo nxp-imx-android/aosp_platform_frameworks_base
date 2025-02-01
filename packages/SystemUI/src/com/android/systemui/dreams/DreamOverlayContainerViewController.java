@@ -51,7 +51,7 @@ import com.android.systemui.dreams.dagger.DreamOverlayModule;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.keyguard.shared.model.KeyguardState;
 import com.android.systemui.res.R;
-import com.android.systemui.scene.shared.model.Scenes;
+import com.android.systemui.scene.shared.model.Overlays;
 import com.android.systemui.shade.ShadeExpansionChangeEvent;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.statusbar.BlurUtils;
@@ -281,7 +281,7 @@ public class DreamOverlayContainerViewController extends
                     mView,
                     FlowKt.distinctUntilChanged(combineFlows(
                             mKeyguardTransitionInteractor.isFinishedIn(
-                                    Scenes.Bouncer, KeyguardState.PRIMARY_BOUNCER),
+                                    Overlays.Bouncer, KeyguardState.PRIMARY_BOUNCER),
                             mKeyguardTransitionInteractor.isFinishedIn(
                                     KeyguardState.ALTERNATE_BOUNCER),
                             mShadeInteractor.isAnyExpanded(),

@@ -84,7 +84,7 @@ import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
-import com.android.systemui.scene.shared.model.Scenes;
+import com.android.systemui.scene.shared.model.Overlays;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeExpansionChangeEvent;
 import com.android.systemui.shade.ShadeExpansionListener;
@@ -724,8 +724,10 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
             if (!primaryBouncerIsShowing()) {
                 if (SceneContainerFlag.isEnabled()) {
                     mCentralSurfaces.hideKeyguard();
-                    mSceneInteractorLazy.get().changeScene(
-                            Scenes.Bouncer, "StatusBarKeyguardViewManager.showBouncerOrKeyguard");
+                    mSceneInteractorLazy.get().showOverlay(
+                            Overlays.Bouncer,
+                            "StatusBarKeyguardViewManager.showBouncerOrKeyguard"
+                    );
                 } else {
                     if (Flags.simPinRaceConditionOnRestart()) {
                         if (mPrimaryBouncerInteractor.show(/* isScrimmed= */ true)) {
@@ -816,8 +818,8 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
                 /* clearDismissAction= */ !SceneContainerFlag.isEnabled());
         if (mKeyguardStateController.isShowing() && !isBouncerShowing()) {
             if (SceneContainerFlag.isEnabled()) {
-                mSceneInteractorLazy.get().changeScene(
-                        Scenes.Bouncer,
+                mSceneInteractorLazy.get().showOverlay(
+                        Overlays.Bouncer,
                         "primary bouncer requested"
                 );
             } else {
@@ -915,8 +917,10 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
                     // we'll handle the dismiss action after keyguard is gone, so just show the
                     // bouncer
                     if (SceneContainerFlag.isEnabled()) {
-                        mSceneInteractorLazy.get().changeScene(
-                                Scenes.Bouncer, "StatusBarKeyguardViewManager.dismissWithAction");
+                        mSceneInteractorLazy.get().showOverlay(
+                                Overlays.Bouncer,
+                                "StatusBarKeyguardViewManager.dismissWithAction"
+                        );
                     } else {
                         mPrimaryBouncerInteractor.show(/* isScrimmed= */ true);
                     }
@@ -926,8 +930,10 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
                     mPrimaryBouncerInteractor.setDismissAction(
                             mAfterKeyguardGoneAction, mKeyguardGoneCancelAction);
                     if (SceneContainerFlag.isEnabled()) {
-                        mSceneInteractorLazy.get().changeScene(
-                                Scenes.Bouncer, "StatusBarKeyguardViewManager.dismissWithAction");
+                        mSceneInteractorLazy.get().showOverlay(
+                                Overlays.Bouncer,
+                                "StatusBarKeyguardViewManager.dismissWithAction"
+                        );
                     } else {
                         mPrimaryBouncerInteractor.show(/* isScrimmed= */ true);
                     }

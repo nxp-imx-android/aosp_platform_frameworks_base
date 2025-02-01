@@ -103,7 +103,7 @@ constructor(
                         it.scene == Scenes.QuickSettings ||
                             Overlays.QuickSettingsShade in it.overlays
                     },
-                SYSUI_STATE_BOUNCER_SHOWING to { it.scene == Scenes.Bouncer },
+                SYSUI_STATE_BOUNCER_SHOWING to { Overlays.Bouncer in it.overlays },
                 SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING to
                     {
                         it.scene == Scenes.Lockscreen && !it.invisibleDueToOcclusion

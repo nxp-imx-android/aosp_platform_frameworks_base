@@ -42,6 +42,7 @@ import com.android.systemui.util.kotlin.pairwise
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -203,20 +204,30 @@ constructor(
         repository.isSceneContainerUserInputOngoing
 
     /**
-     * The amount of transition into or out of the given [scene].
+     * The amount of transition into or out of the given [content].
      *
      * The value will be `0` if not in this scene or `1` when fully in the given scene.
      */
-    fun transitionProgress(scene: SceneKey): Flow<Float> {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun transitionProgress(content: ContentKey): Flow<Float> {
         return transitionState.flatMapLatest { transition ->
             when (transition) {
                 is ObservableTransitionState.Idle -> {
-                    flowOf(if (transition.currentScene == scene) 1f else 0f)
+                    flowOf(
+                        if (
+                            transition.currentScene == content ||
+                                content in transition.currentOverlays
+                        ) {
+                            1f
+                        } else {
+                            0f
+                        }
+                    )
                 }
                 is ObservableTransitionState.Transition -> {
                     when {
-                        transition.toContent == scene -> transition.progress
-                        transition.fromContent == scene -> transition.progress.map { 1f - it }
+                        transition.toContent == content -> transition.progress
+                        transition.fromContent == content -> transition.progress.map { 1f - it }
                         else -> flowOf(0f)
                     }
                 }
@@ -238,6 +249,9 @@ constructor(
      * If [forceSettleToTargetScene] is `true` and the target scene is the same as the current
      * scene, any current transition will be canceled and an animation to the target scene will be
      * started.
+     *
+     * If [Overlays.Bouncer] is showing, we trigger an instant scene change as it will not be user-
+     * visible, and trigger a transition to hide the bouncer.
      */
     @JvmOverloads
     fun changeScene(
@@ -249,6 +263,7 @@ constructor(
     ) {
         val currentSceneKey = currentScene.value
         val resolvedScene = sceneFamilyResolvers.get()[toScene]?.resolvedScene?.value ?: toScene
+        val bouncerShowing = Overlays.Bouncer in currentOverlays.value
 
         if (resolvedScene == currentSceneKey && forceSettleToTargetScene) {
             logger.logSceneChangeCancellation(scene = resolvedScene, sceneState = sceneState)
@@ -265,6 +280,12 @@ constructor(
                 loggingReason = loggingReason,
             )
         ) {
+            if (bouncerShowing) {
+                hideOverlay(
+                    Overlays.Bouncer,
+                    "Scene change cancelled but hiding bouncer for: ($loggingReason)",
+                )
+            }
             return
         }
 
@@ -278,14 +299,20 @@ constructor(
             isInstant = false,
         )
 
-        repository.changeScene(resolvedScene, transitionKey)
+        if (bouncerShowing) {
+            repository.snapToScene(resolvedScene)
+            hideOverlay(Overlays.Bouncer, "Hiding on changeScene for: ($loggingReason)")
+        } else {
+            repository.changeScene(resolvedScene, transitionKey)
+        }
     }
 
     /**
      * Requests a scene change to the given scene.
      *
      * The change is instantaneous and not animated; it will be observable in the next frame and
-     * there will be no transition animation.
+     * there will be no transition animation. If [Overlays.Bouncer] is showing, it will instantly be
+     * hidden.
      */
     fun snapToScene(toScene: SceneKey, loggingReason: String) {
         val currentSceneKey = currentScene.value
@@ -316,6 +343,7 @@ constructor(
         )
 
         repository.snapToScene(resolvedScene)
+        instantlyHideOverlay(Overlays.Bouncer, "Hiding on snapToScene for: ($loggingReason)")
     }
 
     /**
@@ -658,6 +686,16 @@ constructor(
                     to = to,
                     originalChangeReason = loggingReason,
                     rejectionReason = "${to.debugName} is already a current overlay",
+                )
+                false
+            }
+
+            to == Overlays.Bouncer && currentScene.value == Scenes.Gone -> {
+                logger.logSceneChangeRejection(
+                    from = from,
+                    to = to,
+                    originalChangeReason = loggingReason,
+                    rejectionReason = "Cannot show Bouncer over Gone scene",
                 )
                 false
             }

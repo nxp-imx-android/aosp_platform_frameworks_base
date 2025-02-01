@@ -147,7 +147,7 @@ constructor(
         sceneInteractor.transitionState.map { transition: ObservableTransitionState ->
             transition is Transition &&
                 transition.fromContent == Scenes.Lockscreen &&
-                (transition.toContent == Scenes.Bouncer || transition.toContent == Scenes.Gone)
+                (transition.toContent == Overlays.Bouncer || transition.toContent == Scenes.Gone)
         }
 
     /**

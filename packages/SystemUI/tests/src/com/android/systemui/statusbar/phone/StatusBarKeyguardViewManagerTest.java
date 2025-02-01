@@ -93,7 +93,7 @@ import com.android.systemui.navigationbar.TaskbarDelegate;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
-import com.android.systemui.scene.shared.model.Scenes;
+import com.android.systemui.scene.shared.model.Overlays;
 import com.android.systemui.shade.NotificationShadeWindowView;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeExpansionChangeEvent;
@@ -927,7 +927,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     @EnableSceneContainer
     public void showPrimaryBouncer() {
         mStatusBarKeyguardViewManager.showPrimaryBouncer(false);
-        verify(mSceneInteractor).changeScene(eq(Scenes.Bouncer), anyString());
+        verify(mSceneInteractor).showOverlay(eq(Overlays.Bouncer), anyString());
     }
 
     @Test

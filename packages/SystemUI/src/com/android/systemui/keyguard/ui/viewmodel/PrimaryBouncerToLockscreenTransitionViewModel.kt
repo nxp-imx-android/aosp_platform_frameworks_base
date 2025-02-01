@@ -28,7 +28,7 @@ import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
 import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import com.android.systemui.keyguard.ui.transitions.PrimaryBouncerTransition
-import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.Overlays
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.Flow
@@ -50,7 +50,7 @@ constructor(
         animationFlow
             .setup(
                 duration = FromPrimaryBouncerTransitionInteractor.TO_LOCKSCREEN_DURATION,
-                edge = Edge.create(from = Scenes.Bouncer, to = LOCKSCREEN),
+                edge = Edge.create(from = Overlays.Bouncer, to = LOCKSCREEN),
             )
             .setupWithoutSceneContainer(edge = Edge.create(from = PRIMARY_BOUNCER, to = LOCKSCREEN))
 

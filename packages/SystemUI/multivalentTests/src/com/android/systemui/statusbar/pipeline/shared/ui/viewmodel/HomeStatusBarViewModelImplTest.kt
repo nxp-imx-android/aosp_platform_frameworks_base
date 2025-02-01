@@ -522,11 +522,12 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneBouncer_false() =
+    fun isHomeStatusBarAllowedByScene_overlayBouncer_false() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
 
-            kosmos.sceneContainerRepository.snapToScene(Scenes.Bouncer)
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
+            kosmos.sceneContainerRepository.showOverlay(Overlays.Bouncer)
 
             assertThat(latest).isFalse()
         }
@@ -1052,7 +1053,8 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
             val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
             val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
 
-            kosmos.sceneContainerRepository.snapToScene(Scenes.Bouncer)
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
+            kosmos.sceneContainerRepository.showOverlay(Overlays.Bouncer)
 
             assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
             assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)

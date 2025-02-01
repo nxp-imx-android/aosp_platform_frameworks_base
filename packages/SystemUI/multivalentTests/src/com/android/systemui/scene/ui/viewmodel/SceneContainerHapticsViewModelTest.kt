@@ -164,7 +164,7 @@ class SceneContainerHapticsViewModelTest : SysuiTestCase() {
             kosmos.enableDualShade()
             // GIVEN an invalid scene transition to play haptics
             val invalidTransition =
-                createTransitionState(from = Scenes.Bouncer, to = Overlays.NotificationsShade)
+                createTransitionState(from = Scenes.QuickSettings, to = Scenes.Gone)
 
             // WHEN the transition occurs
             sceneInteractor.setTransitionState(MutableStateFlow(invalidTransition))
@@ -199,7 +199,7 @@ class SceneContainerHapticsViewModelTest : SysuiTestCase() {
             kosmos.enableDualShade()
             // GIVEN an invalid scene transition to play haptics
             val invalidTransition =
-                createTransitionState(from = Scenes.Bouncer, to = Overlays.NotificationsShade)
+                createTransitionState(from = Scenes.QuickSettings, to = Scenes.Gone)
 
             // WHEN the transition occurs
             sceneInteractor.setTransitionState(MutableStateFlow(invalidTransition))

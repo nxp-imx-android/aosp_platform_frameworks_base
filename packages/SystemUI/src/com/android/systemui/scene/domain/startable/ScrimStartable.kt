@@ -17,6 +17,7 @@
 package com.android.systemui.scene.domain.startable
 
 import androidx.annotation.VisibleForTesting
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
@@ -49,7 +50,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import com.android.app.tracing.coroutines.launchTraced as launch
 
 @SysUISingleton
 class ScrimStartable
@@ -108,12 +108,12 @@ constructor(
                 // This is true when the lockscreen scene is either the current scene or somewhere
                 // in the navigation back stack of scenes.
                 val isOnKeyguard = !isDeviceEntered
-                val isCurrentSceneBouncer = currentScene == Scenes.Bouncer
-                // This is true when moving away from one of the keyguard scenes to the gone scene.
+                val isOnBouncer = Overlays.Bouncer in currentOverlays
+                // This is true when moving away from the lockscreen scene to the gone scene.
                 // It happens only when unlocking or when dismissing a dismissible lockscreen.
                 val isTransitioningAwayFromKeyguard =
                     transitionState is ObservableTransitionState.Transition.ChangeScene &&
-                        transitionState.fromScene.isKeyguard() &&
+                        transitionState.fromScene == Scenes.Lockscreen &&
                         transitionState.toScene == Scenes.Gone
 
                 // This is true when any of the shade scenes or overlays is the current content.
@@ -144,7 +144,7 @@ constructor(
                         // Assume scrim state for shade is already correct and do nothing
                         null
                     }
-                } else if (isCurrentSceneBouncer && !unlocking) {
+                } else if (isOnBouncer && !unlocking) {
                     // Bouncer needs the front scrim when it's on top of an activity, tapping on a
                     // notification, editing QS or being dismissed by
                     // FLAG_DISMISS_KEYGUARD_ACTIVITY.
@@ -213,10 +213,6 @@ constructor(
         if (isKeyguardGoingAway) {
             statusBarKeyguardViewManager.onKeyguardFadedAway()
         }
-    }
-
-    private fun SceneKey.isKeyguard(): Boolean {
-        return this == Scenes.Lockscreen || this == Scenes.Bouncer
     }
 
     private fun ContentKey.isShade(): Boolean {

@@ -47,7 +47,7 @@ import androidx.lifecycle.ServiceLifecycleDispatcher;
 import androidx.lifecycle.ViewModelStore;
 
 import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
-import com.android.compose.animation.scene.SceneKey;
+import com.android.compose.animation.scene.OverlayKey;
 import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.policy.PhoneWindow;
@@ -72,6 +72,7 @@ import com.android.systemui.navigationbar.gestural.domain.GestureInteractor;
 import com.android.systemui.navigationbar.gestural.domain.TaskMatcher;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
+import com.android.systemui.scene.shared.model.Overlays;
 import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.shade.ShadeExpansionChangeEvent;
 import com.android.systemui.touch.TouchInsetManager;
@@ -82,6 +83,7 @@ import kotlinx.coroutines.Job;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.function.Consumer;
 
@@ -221,10 +223,11 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         }
     };
 
-    private final Consumer<SceneKey> mCurrentSceneConsumer = new Consumer<>() {
+    private final Consumer<Set<OverlayKey>> mCurrentOverlaysConsumer = new Consumer<>() {
         @Override
-        public void accept(SceneKey currentScene) {
-            mExecutor.execute(() -> updateBouncerShowingLocked(currentScene == Scenes.Bouncer));
+        public void accept(Set<OverlayKey> currentOverlays) {
+            mExecutor.execute(() ->
+                    updateBouncerShowingLocked(currentOverlays.contains(Overlays.Bouncer)));
         }
     };
 
@@ -430,8 +433,8 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         mFlows.add(collectFlow(getLifecycle(), communalInteractor.isCommunalVisible(),
                 mCommunalVisibleConsumer));
         if (SceneContainerFlag.isEnabled()) {
-            mFlows.add(collectFlow(getLifecycle(), sceneInteractor.getCurrentScene(),
-                    mCurrentSceneConsumer));
+            mFlows.add(collectFlow(getLifecycle(), sceneInteractor.getCurrentOverlays(),
+                    mCurrentOverlaysConsumer));
         } else {
             mFlows.add(collectFlow(getLifecycle(), keyguardInteractor.primaryBouncerShowing,
                     mBouncerShowingConsumer));

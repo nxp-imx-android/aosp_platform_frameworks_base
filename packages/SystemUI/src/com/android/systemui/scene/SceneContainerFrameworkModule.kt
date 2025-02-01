@@ -39,7 +39,7 @@ import dagger.multibindings.IntoMap
 @Module(
     includes =
         [
-            BouncerSceneModule::class,
+            BouncerOverlayModule::class,
             CommunalSceneModule::class,
             DreamSceneModule::class,
             EmptySceneModule::class,
@@ -98,13 +98,16 @@ interface SceneContainerFrameworkModule {
                         Scenes.Communal,
                         Scenes.Dream,
                         Scenes.Lockscreen,
-                        Scenes.Bouncer,
                         Scenes.QuickSettings,
                         Scenes.Shade,
                     ),
                 initialSceneKey = Scenes.Lockscreen,
                 overlayKeys =
-                    listOfNotNull(Overlays.NotificationsShade, Overlays.QuickSettingsShade),
+                    listOfNotNull(
+                        Overlays.NotificationsShade,
+                        Overlays.QuickSettingsShade,
+                        Overlays.Bouncer,
+                    ),
                 navigationDistances =
                     mapOf(
                         Scenes.Gone to 0,
@@ -113,7 +116,6 @@ interface SceneContainerFrameworkModule {
                         Scenes.Dream to 2,
                         Scenes.Shade to 3,
                         Scenes.QuickSettings to 4,
-                        Scenes.Bouncer to 5,
                     ),
                 transitionsBuilder = SceneContainerTransitions(),
             )

@@ -65,6 +65,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static java.util.Collections.emptySet;
+
 import android.app.Activity;
 import android.app.ActivityTaskManager;
 import android.app.IActivityTaskManager;
@@ -155,6 +157,7 @@ import com.android.systemui.log.SessionTracker;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
+import com.android.systemui.scene.shared.model.Overlays;
 import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shared.system.TaskStackChangeListener;
@@ -190,6 +193,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -2775,7 +2779,7 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
         private void setPrimaryBouncerVisibility(boolean isVisible) {
             if (SceneContainerFlag.isEnabled()) {
                 ObservableTransitionState transitionState = new ObservableTransitionState.Idle(
-                        isVisible ? Scenes.Bouncer : Scenes.Lockscreen);
+                        Scenes.Lockscreen, isVisible ? Set.of(Overlays.Bouncer) : emptySet());
                 when(mSceneInteractor.getTransitionState()).thenReturn(
                         MutableStateFlow(transitionState));
                 onTransitionStateChanged(transitionState);

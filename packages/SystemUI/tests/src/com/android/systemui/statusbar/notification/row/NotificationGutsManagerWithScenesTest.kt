@@ -549,7 +549,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
             if (isVisible) {
                 Scenes.Lockscreen
             } else {
-                Scenes.Bouncer
+                Scenes.Communal
             }
         sceneInteractor.changeScene(key, "test")
         sceneInteractor.setTransitionState(

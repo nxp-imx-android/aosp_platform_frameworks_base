@@ -39,6 +39,7 @@ import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.testKosmos
@@ -125,14 +126,15 @@ class LockscreenToPrimaryBouncerTransitionViewModelTest(flags: FlagsParameteriza
 
             kosmos.sceneContainerRepository.setTransitionState(transitionState)
             transitionState.value =
-                ObservableTransitionState.Transition(
+                ObservableTransitionState.Transition.showOverlay(
+                    overlay = Overlays.Bouncer,
                     fromScene = Scenes.Lockscreen,
-                    toScene = Scenes.Bouncer,
-                    emptyFlow(),
-                    emptyFlow(),
-                    false,
-                    emptyFlow(),
+                    currentOverlays = emptyFlow(),
+                    progress = emptyFlow(),
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = emptyFlow(),
                 )
+
             runCurrent()
             // fade out
             repository.sendTransitionStep(step(0f, TransitionState.STARTED))

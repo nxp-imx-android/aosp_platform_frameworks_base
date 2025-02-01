@@ -10,7 +10,7 @@ import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
 import com.android.systemui.bouncer.shared.flag.ComposeBouncerFlags
 import com.android.systemui.bouncer.ui.BouncerDialogFactory
 import com.android.systemui.bouncer.ui.viewmodel.BouncerContainerViewModel
-import com.android.systemui.bouncer.ui.viewmodel.BouncerSceneContentViewModel
+import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.bouncer.ui.viewmodel.KeyguardBouncerViewModel
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -46,7 +46,7 @@ constructor(
     val keyguardInteractor: KeyguardInteractor,
     val selectedUserInteractor: SelectedUserInteractor,
     val legacyInteractor: PrimaryBouncerInteractor,
-    val viewModelFactory: BouncerSceneContentViewModel.Factory,
+    val viewModelFactory: BouncerOverlayContentViewModel.Factory,
     val dialogFactory: BouncerDialogFactory,
     val bouncerContainerViewModelFactory: BouncerContainerViewModel.Factory,
 )

@@ -27,7 +27,7 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
-import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.Overlays
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
@@ -95,7 +95,7 @@ constructor(
     private fun calculatedCuj(from: ContentKey, to: ContentKey): Int? {
         val isDeviceUnlocked = deviceUnlockedInteractor.deviceUnlockStatus.value.isUnlocked
         return when {
-            to == Scenes.Bouncer ->
+            to == Overlays.Bouncer ->
                 when (authMethod) {
                     is AuthenticationMethodModel.Pin,
                     is AuthenticationMethodModel.Sim -> Cuj.CUJ_LOCKSCREEN_PIN_APPEAR
@@ -104,7 +104,7 @@ constructor(
                     is AuthenticationMethodModel.None -> null
                     null -> null
                 }
-            from == Scenes.Bouncer && isDeviceUnlocked ->
+            from == Overlays.Bouncer && isDeviceUnlocked ->
                 when (authMethod) {
                     is AuthenticationMethodModel.Pin,
                     is AuthenticationMethodModel.Sim -> Cuj.CUJ_LOCKSCREEN_PIN_DISAPPEAR
