@@ -15,9 +15,11 @@
  */
 package com.android.wm.shell.desktopmode.multidesks
 
+import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.testing.AndroidTestingRunner
 import android.view.Display
 import android.view.SurfaceControl
+import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.HierarchyOp
@@ -216,6 +218,13 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                 }
             )
             .isTrue()
+        assertThat(
+                wct.changes.any { change ->
+                    change.key == desktopTask.token.asBinder() &&
+                        change.value.windowingMode == WINDOWING_MODE_UNDEFINED
+                }
+            )
+            .isTrue()
     }
 
     @Test
@@ -242,6 +251,26 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
             )
 
         assertThat(endDesk).isEqualTo(freeformRoot.taskId)
+    }
+
+    @Test
+    fun testIsDeskActiveAtEnd() {
+        organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
+        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
+        freeformRoot.isVisibleRequested = true
+        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
+
+        val isActive =
+            organizer.isDeskActiveAtEnd(
+                change =
+                    TransitionInfo.Change(freeformRoot.token, SurfaceControl()).apply {
+                        taskInfo = freeformRoot
+                        mode = TRANSIT_TO_FRONT
+                    },
+                deskId = freeformRoot.taskId,
+            )
+
+        assertThat(isActive).isTrue()
     }
 
     private class FakeOnCreateCallback : DesksOrganizer.OnCreateCallback {
