@@ -47,6 +47,7 @@ class SystemUIIssueRegistry : IssueRegistry() {
                 TestFunctionNameViolationDetector.ISSUE,
                 MissingApacheLicenseDetector.ISSUE,
                 ShadeDisplayAwareDetector.ISSUE,
+                ShadeDisplayAwareDialogDetector.ISSUE,
                 RegisterContentObserverSyncViaSettingsProxyDetector.SYNC_WARNING,
                 RegisterContentObserverViaContentResolverDetector.CONTENT_RESOLVER_ERROR,
             )
