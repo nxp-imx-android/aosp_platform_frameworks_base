@@ -34,6 +34,7 @@ import android.hardware.input.KeyboardLayoutSelectionResult;
 import android.hardware.input.TouchCalibration;
 import android.os.CombinedVibration;
 import android.hardware.input.IInputSensorEventListener;
+import android.hardware.input.IKeyEventActivityListener;
 import android.hardware.input.InputSensorInfo;
 import android.hardware.input.KeyGlyphMap;
 import android.hardware.lights.Light;
@@ -212,6 +213,16 @@ interface IInputManager {
     void registerBatteryListener(int deviceId, IInputDeviceBatteryListener listener);
 
     void unregisterBatteryListener(int deviceId, IInputDeviceBatteryListener listener);
+
+    @EnforcePermission("LISTEN_FOR_KEY_ACTIVITY")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.LISTEN_FOR_KEY_ACTIVITY)")
+    boolean registerKeyEventActivityListener(IKeyEventActivityListener listener);
+
+    @EnforcePermission("LISTEN_FOR_KEY_ACTIVITY")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.LISTEN_FOR_KEY_ACTIVITY)")
+    boolean unregisterKeyEventActivityListener(IKeyEventActivityListener listener);
 
     // Get the bluetooth address of an input device if known, returning null if it either is not
     // connected via bluetooth or if the address cannot be determined.

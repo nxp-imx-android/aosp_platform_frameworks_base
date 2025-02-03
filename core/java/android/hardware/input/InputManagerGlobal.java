@@ -26,6 +26,7 @@ import android.hardware.SensorManager;
 import android.hardware.input.InputManager.InputDeviceBatteryListener;
 import android.hardware.input.InputManager.InputDeviceListener;
 import android.hardware.input.InputManager.KeyGestureEventHandler;
+import android.hardware.input.InputManager.KeyEventActivityListener;
 import android.hardware.input.InputManager.KeyGestureEventListener;
 import android.hardware.input.InputManager.KeyboardBacklightListener;
 import android.hardware.input.InputManager.OnTabletModeChangedListener;
@@ -123,6 +124,13 @@ public final class InputManagerGlobal {
     @GuardedBy("mKeyGestureEventListenerLock")
     @Nullable
     private IKeyGestureEventListener mKeyGestureEventListener;
+
+    private final Object mKeyEventActivityLock = new Object();
+    @GuardedBy("mKeyEventActivityLock")
+    private ArrayList<KeyEventActivityListener> mKeyEventActivityListeners;
+    @GuardedBy("mKeyEventActivityLock")
+    @Nullable
+    private IKeyEventActivityListener mKeyEventActivityListener;
 
     private final Object mKeyGestureEventHandlerLock = new Object();
     @GuardedBy("mKeyGestureEventHandlerLock")
@@ -1255,6 +1263,63 @@ public final class InputManagerGlobal {
                 mKeyGestureHandler = null;
             }
         }
+    }
+
+    private class LocalKeyEventActivityListener extends IKeyEventActivityListener.Stub {
+        @Override
+        public void onKeyEventActivity() {
+            synchronized (mKeyEventActivityLock) {
+                final int numListeners = mKeyEventActivityListeners.size();
+                for (int i = 0; i < numListeners; i++) {
+                    KeyEventActivityListener listener = mKeyEventActivityListeners.get(i);
+                    listener.onKeyEventActivity();
+                }
+            }
+        }
+    }
+
+    boolean registerKeyEventActivityListener(@NonNull KeyEventActivityListener listener) {
+        Objects.requireNonNull(listener, "listener should not be null");
+        boolean success = false;
+        synchronized (mKeyEventActivityLock) {
+            if (mKeyEventActivityListener == null) {
+                mKeyEventActivityListeners = new ArrayList<>();
+                mKeyEventActivityListener = new LocalKeyEventActivityListener();
+
+                try {
+                    success = mIm.registerKeyEventActivityListener(mKeyEventActivityListener);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+            }
+            if (mKeyEventActivityListeners.contains(listener)) {
+                throw new IllegalArgumentException("Listener has already been registered!");
+            }
+            mKeyEventActivityListeners.add(listener);
+            return success;
+        }
+    }
+
+    boolean unregisterKeyEventActivityListener(@NonNull KeyEventActivityListener listener) {
+        Objects.requireNonNull(listener, "listener should not be null");
+
+        boolean success = true;
+        synchronized (mKeyEventActivityLock) {
+            if (mKeyEventActivityListeners == null) {
+                return success;
+            }
+            mKeyEventActivityListeners.remove(listener);
+            if (mKeyEventActivityListeners.isEmpty()) {
+                try {
+                    success = mIm.unregisterKeyEventActivityListener(mKeyEventActivityListener);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+                mKeyEventActivityListeners = null;
+                mKeyEventActivityListener = null;
+            }
+        }
+        return success;
     }
 
     /**

@@ -1776,4 +1776,41 @@ public final class InputManager {
          */
         boolean isKeyGestureSupported(@KeyGestureEvent.KeyGestureType int gestureType);
     }
+
+    /** @hide */
+    public interface KeyEventActivityListener {
+        /**
+         * Reports a change for user activeness.
+         *
+         * This listener will be triggered any time a user presses a key.
+         */
+        void onKeyEventActivity();
+    }
+
+
+    /**
+     * Registers a listener for updates to key event activeness
+     *
+     * @param listener to be registered
+     * @return true if listener registered successfully
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.LISTEN_FOR_KEY_ACTIVITY)
+    public boolean registerKeyEventActivityListener(@NonNull KeyEventActivityListener listener) {
+        return mGlobal.registerKeyEventActivityListener(listener);
+    }
+
+    /**
+     * Unregisters a listener for updates to key event activeness
+     *
+     * @param listener to be unregistered
+     * @return true if listener unregistered successfully, also returns true if
+     * invoked but listener was not present
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.LISTEN_FOR_KEY_ACTIVITY)
+    public boolean unregisterKeyEventActivityListener(@NonNull KeyEventActivityListener listener) {
+        return mGlobal.unregisterKeyEventActivityListener(listener);
+    }
+
 }

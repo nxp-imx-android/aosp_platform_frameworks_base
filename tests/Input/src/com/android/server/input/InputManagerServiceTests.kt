@@ -31,9 +31,12 @@ import android.hardware.input.InputManagerGlobal
 import android.hardware.input.InputSettings
 import android.hardware.input.KeyGestureEvent
 import android.os.InputEventInjectionSync
+import android.os.PermissionEnforcer
 import android.os.SystemClock
+import android.os.test.FakePermissionEnforcer
 import android.os.test.TestLooper
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import android.provider.Settings
 import android.view.View.OnKeyListener
@@ -66,11 +69,13 @@ import org.mockito.ArgumentMatchers.anyFloat
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
+import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.verifyZeroInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.stubbing.OngoingStubbing
@@ -136,10 +141,19 @@ class InputManagerServiceTests {
     private lateinit var testLooper: TestLooper
     private lateinit var contentResolver: MockContentResolver
     private lateinit var inputManagerGlobalSession: InputManagerGlobal.TestSession
+    private lateinit var fakePermissionEnforcer: FakePermissionEnforcer
 
     @Before
     fun setup() {
         context = spy(ContextWrapper(InstrumentationRegistry.getInstrumentation().getContext()))
+        fakePermissionEnforcer = FakePermissionEnforcer()
+        doReturn(Context.PERMISSION_ENFORCER_SERVICE).`when`(context).getSystemServiceName(
+            eq(PermissionEnforcer::class.java)
+        )
+        doReturn(fakePermissionEnforcer).`when`(context).getSystemService(
+            eq(Context.PERMISSION_ENFORCER_SERVICE)
+        )
+
         contentResolver = MockContentResolver(context)
         contentResolver.addProvider(Settings.AUTHORITY, FakeSettingsProvider())
         whenever(context.contentResolver).thenReturn(contentResolver)
@@ -162,7 +176,7 @@ class InputManagerServiceTests {
                 ): InputManagerService.KeyboardBacklightControllerInterface {
                     return kbdController
                 }
-            })
+            }, fakePermissionEnforcer)
         inputManagerGlobalSession = InputManagerGlobal.createTestSession(service)
         val inputManager = InputManager(context)
         whenever(context.getSystemService(InputManager::class.java)).thenReturn(inputManager)
@@ -312,6 +326,36 @@ class InputManagerServiceTests {
         for (event in ACTION_KEY_EVENTS) {
             assertNotEquals(0, service.interceptKeyBeforeDispatching(null, event, 0))
         }
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_KEY_EVENT_ACTIVITY_DETECTION)
+    fun testKeyActivenessNotifyEventsLifecycle() {
+        service.systemRunning()
+
+        fakePermissionEnforcer.grant(android.Manifest.permission.LISTEN_FOR_KEY_ACTIVITY);
+
+        val inputManager = context.getSystemService(InputManager::class.java)
+
+        /* register for key event activeness */
+        var listener = mock(InputManager.KeyEventActivityListener::class.java)
+        assertEquals(true, inputManager.registerKeyEventActivityListener(listener))
+
+        /* mimic key event pressed */
+        val event = createKeycodeAEvent(createInputDevice(), KeyEvent.ACTION_DOWN)
+        service.interceptKeyBeforeQueueing(event, 0)
+
+        /* verify onKeyEventActivity callback called */
+        verify(listener, times(1)).onKeyEventActivity()
+
+        /* unregister for key event activeness */
+        assertEquals(true, inputManager.unregisterKeyEventActivityListener(listener))
+
+        /* mimic key event pressed */
+        service.interceptKeyBeforeQueueing(event, /* policyFlags */ 0)
+
+        /* verify onKeyEventActivity callback not called */
+        verifyNoMoreInteractions(listener)
     }
 
     private class AutoClosingVirtualDisplays(val displays: List<VirtualDisplay>) : AutoCloseable {
