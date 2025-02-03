@@ -22,6 +22,7 @@ import android.util.ArrayMap
 import android.util.ArraySet
 import android.util.SparseArray
 import android.view.Display.INVALID_DISPLAY
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import androidx.core.util.forEach
 import androidx.core.util.valueIterator
@@ -137,7 +138,7 @@ class DesktopRepository(
     private var desktopGestureExclusionExecutor: Executor? = null
 
     private val desktopData: DesktopData =
-        if (Flags.enableMultipleDesktopsBackend()) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             MultiDesktopData()
         } else {
             SingleDesktopData()

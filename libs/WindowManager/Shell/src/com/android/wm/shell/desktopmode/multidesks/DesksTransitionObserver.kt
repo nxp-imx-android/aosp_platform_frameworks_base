@@ -17,8 +17,8 @@ package com.android.wm.shell.desktopmode.multidesks
 
 import android.os.IBinder
 import android.view.WindowManager.TRANSIT_CLOSE
+import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
-import com.android.window.flags.Flags
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 
 /**
@@ -33,7 +33,7 @@ class DesksTransitionObserver(
 
     /** Adds a pending desk transition to be tracked. */
     fun addPendingTransition(transition: DeskTransition) {
-        if (!Flags.enableMultipleDesktopsBackend()) return
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         deskTransitions[transition.token] = transition
     }
 
@@ -42,7 +42,7 @@ class DesksTransitionObserver(
      * observer.
      */
     fun onTransitionReady(transition: IBinder, info: TransitionInfo) {
-        if (!Flags.enableMultipleDesktopsBackend()) return
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         val deskTransition = deskTransitions.remove(transition) ?: return
         val desktopRepository = desktopUserRepositories.current
         when (deskTransition) {
