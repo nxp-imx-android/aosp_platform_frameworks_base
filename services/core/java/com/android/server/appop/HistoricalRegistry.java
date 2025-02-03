@@ -750,6 +750,7 @@ final class HistoricalRegistry {
         }
         // Do not call persistPendingHistory inside the memory lock, due to possible deadlock
         persistPendingHistory();
+        mDiscreteRegistry.shutdown();
     }
 
     void persistPendingHistory() {
