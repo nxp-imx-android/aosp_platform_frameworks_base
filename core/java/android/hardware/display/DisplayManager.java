@@ -612,6 +612,7 @@ public final class DisplayManager {
             PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS,
             PRIVATE_EVENT_TYPE_HDR_SDR_RATIO_CHANGED,
             PRIVATE_EVENT_TYPE_DISPLAY_CONNECTION_CHANGED,
+            PRIVATE_EVENT_TYPE_DISPLAY_COMMITTED_STATE_CHANGED
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface PrivateEventType {}
@@ -677,7 +678,7 @@ public final class DisplayManager {
      * through the {@link DisplayListener#onDisplayChanged} callback method. New brightness
      * values can be retrieved via {@link android.view.Display#getBrightnessInfo()}.
      *
-     * @see #registerDisplayListener(DisplayListener, Handler, long)
+     * @see #registerDisplayListener(DisplayListener, Handler, long, long)
      *
      * @hide
      */
@@ -690,7 +691,7 @@ public final class DisplayManager {
      *
      * Requires that {@link Display#isHdrSdrRatioAvailable()} is true.
      *
-     * @see #registerDisplayListener(DisplayListener, Handler, long)
+     * @see #registerDisplayListener(DisplayListener, Handler, long, long)
      *
      * @hide
      */
@@ -699,10 +700,18 @@ public final class DisplayManager {
     /**
      * Event type to register for a display's connection changed.
      *
-     * @see #registerDisplayListener(DisplayListener, Handler, long)
+     * @see #registerDisplayListener(DisplayListener, Handler, long, long)
      * @hide
      */
     public static final long PRIVATE_EVENT_TYPE_DISPLAY_CONNECTION_CHANGED = 1L << 2;
+
+    /**
+     * Event type to register for a display's committed state changes.
+     *
+     * @see #registerDisplayListener(DisplayListener, Handler, long, long)
+     * @hide
+     */
+    public static final long PRIVATE_EVENT_TYPE_DISPLAY_COMMITTED_STATE_CHANGED = 1L << 3;
 
 
     /** @hide */

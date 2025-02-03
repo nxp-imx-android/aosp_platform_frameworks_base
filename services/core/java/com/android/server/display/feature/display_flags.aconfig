@@ -509,3 +509,14 @@ flag {
     bug: "293651324"
     is_fixed_read_only: false
 }
+
+flag {
+    name: "committed_state_separate_event"
+    namespace: "display_manager"
+    description: "Move Display committed state into a separate event"
+    bug: "342192387"
+    is_fixed_read_only: true
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

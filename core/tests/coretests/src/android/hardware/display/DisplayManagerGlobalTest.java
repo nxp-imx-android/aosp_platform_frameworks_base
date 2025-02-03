@@ -33,6 +33,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -346,6 +347,26 @@ public class DisplayManagerGlobalTest {
                         .mapFiltersToInternalEventFlag(
                                 DisplayManager.EVENT_TYPE_DISPLAY_REFRESH_RATE,
                                 DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_COMMITTED_STATE_SEPARATE_EVENT)
+    public void test_mapPrivateEventCommittedStateChanged_flagEnabled() {
+        // Test public flags mapping
+        assertEquals(DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_COMMITTED_STATE_CHANGED,
+                mDisplayManagerGlobal
+                        .mapFiltersToInternalEventFlag(0,
+                                DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_COMMITTED_STATE_CHANGED));
+    }
+
+    @Test
+    @RequiresFlagsDisabled(Flags.FLAG_COMMITTED_STATE_SEPARATE_EVENT)
+    public void test_mapPrivateEventCommittedStateChanged_flagDisabled() {
+        // Test public flags mapping
+        assertEquals(0,
+                mDisplayManagerGlobal
+                        .mapFiltersToInternalEventFlag(0,
+                                DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_COMMITTED_STATE_CHANGED));
     }
 
     private void waitForHandler() {

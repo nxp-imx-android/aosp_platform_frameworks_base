@@ -44,6 +44,7 @@ import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.display.BrightnessSynchronizer;
+import com.android.server.display.feature.flags.Flags;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -447,18 +448,20 @@ public final class DisplayInfo implements Parcelable {
     }
 
     public boolean equals(DisplayInfo other) {
-        return equals(other, /* compareRefreshRate */ true);
+        return equals(other, /* compareOnlyBasicChanges */ false);
     }
 
     /**
      * Compares if the two DisplayInfo objects are equal or not
      * @param other The other DisplayInfo against which the comparison is to be done
-     * @param compareRefreshRate Indicates if the refresh rate is also to be considered in
-     *                           comparison
+     * @param compareOnlyBasicChanges Indicates if the changes to be compared are the ones which
+     *                               could lead to an emission of
+     *                    {@link android.hardware.display.DisplayManager.EVENT_TYPE_DISPLAY_CHANGED}
+     *                                event
      * @return
      */
-    public boolean equals(DisplayInfo other, boolean compareRefreshRate) {
-        boolean isEqualWithoutRefreshRate =  other != null
+    public boolean equals(DisplayInfo other, boolean compareOnlyBasicChanges) {
+        boolean isEqualWithOnlyBasicChanges =  other != null
                 && layerStack == other.layerStack
                 && flags == other.flags
                 && type == other.type
@@ -494,7 +497,6 @@ public final class DisplayInfo implements Parcelable {
                 && physicalXDpi == other.physicalXDpi
                 && physicalYDpi == other.physicalYDpi
                 && state == other.state
-                && committedState == other.committedState
                 && ownerUid == other.ownerUid
                 && Objects.equals(ownerPackageName, other.ownerPackageName)
                 && removeMode == other.removeMode
@@ -512,14 +514,19 @@ public final class DisplayInfo implements Parcelable {
                 thermalBrightnessThrottlingDataId, other.thermalBrightnessThrottlingDataId)
                 && canHostTasks == other.canHostTasks;
 
-        if (compareRefreshRate) {
-            return isEqualWithoutRefreshRate
+        if (!Flags.committedStateSeparateEvent()) {
+            isEqualWithOnlyBasicChanges = isEqualWithOnlyBasicChanges
+                    && (committedState == other.committedState);
+        }
+        if (!compareOnlyBasicChanges) {
+            return isEqualWithOnlyBasicChanges
                     && (getRefreshRate() == other.getRefreshRate())
                     && appVsyncOffsetNanos == other.appVsyncOffsetNanos
                     && presentationDeadlineNanos == other.presentationDeadlineNanos
-                    && (modeId == other.modeId);
+                    && (modeId == other.modeId)
+                    && (committedState == other.committedState);
         }
-        return isEqualWithoutRefreshRate;
+        return isEqualWithOnlyBasicChanges;
     }
 
     @Override

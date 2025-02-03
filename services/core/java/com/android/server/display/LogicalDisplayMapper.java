@@ -91,6 +91,8 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
     public static final int LOGICAL_DISPLAY_EVENT_DISCONNECTED = 1 << 8;
     public static final int LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED = 1 << 9;
     public static final int LOGICAL_DISPLAY_EVENT_STATE_CHANGED = 1 << 10;
+    public static final int LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED = 1 << 11;
+
 
     public static final int DISPLAY_GROUP_EVENT_ADDED = 1;
     public static final int DISPLAY_GROUP_EVENT_CHANGED = 2;
@@ -810,7 +812,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             int logicalDisplayEventMask = mLogicalDisplaysToUpdate
                     .get(displayId, LOGICAL_DISPLAY_EVENT_BASE);
             boolean hasBasicInfoChanged =
-                    !mTempDisplayInfo.equals(newDisplayInfo, /* compareRefreshRate */ false);
+                    !mTempDisplayInfo.equals(newDisplayInfo, /* compareOnlyBasicChanges */ true);
             // The display is no longer valid and needs to be removed.
             if (!display.isValidLocked()) {
                 // Remove from group
@@ -930,6 +932,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_BASIC_CHANGED);
         sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED);
         sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_STATE_CHANGED);
+        sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED);
         sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_FRAME_RATE_OVERRIDES_CHANGED);
         sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_SWAPPED);
         sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_CONNECTED);
@@ -960,6 +963,11 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         if (mFlags.isDisplayListenerPerformanceImprovementsEnabled()
                 && mTempDisplayInfo.state != newDisplayInfo.state) {
             mask |= LOGICAL_DISPLAY_EVENT_STATE_CHANGED;
+        }
+
+        if (mFlags.isCommittedStateSeparateEventEnabled()
+                && mTempDisplayInfo.committedState != newDisplayInfo.committedState) {
+            mask |= LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED;
         }
         return mask;
     }
@@ -1359,6 +1367,8 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
                 return "disconnected";
             case LOGICAL_DISPLAY_EVENT_STATE_CHANGED:
                 return "state_changed";
+            case LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED:
+                return "committed_state_changed";
             case LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED:
                 return "refresh_rate_changed";
             case LOGICAL_DISPLAY_EVENT_BASIC_CHANGED:
