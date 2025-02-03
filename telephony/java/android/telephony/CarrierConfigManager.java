@@ -10207,6 +10207,17 @@ public class CarrierConfigManager {
             "carrier_supported_satellite_notification_hysteresis_sec_int";
 
     /**
+     * Satellite notification display restriction reset time in seconds.
+     *
+     * The device shows a notification when it connects to a satellite.  If the user interacts
+     * with the notification, it won't be shown again immediately.  Instead, the notification
+     * will only reappear after below key mentioned amount of time has passed.
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_25Q4_APIS)
+    public static final String KEY_SATELLITE_CONNECTED_NOTIFICATION_THROTTLE_MILLIS_INT =
+            "satellite_connected_notification_throttle_millis_int";
+
+    /**
      * An integer key holds the timeout duration in seconds used to determine whether to exit
      * carrier-roaming NB-IOT satellite mode.
      *
@@ -11428,6 +11439,10 @@ public class CarrierConfigManager {
         sDefaults.putInt(KEY_CARRIER_ROAMING_NTN_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_INT,
                 SatelliteManager.EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_T911);
         sDefaults.putInt(KEY_CARRIER_SUPPORTED_SATELLITE_NOTIFICATION_HYSTERESIS_SEC_INT, 180);
+        if (Flags.starlinkDataBugfix()) {
+            sDefaults.putLong(KEY_SATELLITE_CONNECTED_NOTIFICATION_THROTTLE_MILLIS_INT,
+                    TimeUnit.DAYS.toMillis(7));
+        }
         sDefaults.putInt(KEY_SATELLITE_ROAMING_SCREEN_OFF_INACTIVITY_TIMEOUT_SEC_INT, 30);
         sDefaults.putInt(KEY_SATELLITE_ROAMING_P2P_SMS_INACTIVITY_TIMEOUT_SEC_INT, 180);
         sDefaults.putInt(KEY_SATELLITE_ROAMING_ESOS_INACTIVITY_TIMEOUT_SEC_INT, 600);
