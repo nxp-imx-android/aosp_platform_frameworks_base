@@ -100,6 +100,13 @@ flag {
 }
 
 flag {
+    name: "enable_low_vision_generic_feedback"
+    namespace: "accessibility"
+    description: "Use generic feedback for low vision."
+    bug: "393981463"
+}
+
+flag {
     name: "enable_low_vision_hats"
     namespace: "accessibility"
     description: "Use HaTS for low vision feedback."
