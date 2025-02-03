@@ -58,7 +58,7 @@ import java.util.Map;
  */
 @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
 class ThemeSettingsManager {
-    private static final String TAG = ThemeSettingsManager.class.getSimpleName();
+    private static final String TAG = "ThemeSettingsManager";
 
     public static final String TIMESTAMP = "_applied_timestamp";
     private static final String KEY_PREFIX = "android.theme.customization.";

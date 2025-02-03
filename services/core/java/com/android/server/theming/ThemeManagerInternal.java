@@ -16,25 +16,40 @@
 
 package com.android.server.theming;
 
+import static com.android.server.theming.ThemeOverlayHelper.createDynamicOverlay;
+
 import android.annotation.UserIdInt;
 import android.content.Context;
 import android.content.theming.IThemeSettingsCallback;
+import android.content.theming.ThemeInfo;
 import android.content.theming.ThemeSettings;
+import android.content.theming.ThemeStyle;
+import android.graphics.Color;
+import android.os.FabricatedOverlayInternal;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.systemui.monet.ColorScheme;
+
+import java.io.PrintWriter;
+import java.util.Optional;
 
 /**
  * Internal API implementation for {@link ThemeManagerService}.
  *
  * <p>Provides methods for other system services to interact with the theming
  * functionality.
+ *
+ * @hide
  */
 public class ThemeManagerInternal {
+    private static final String TAG = "ThemeManagerInternal";
+
     private final Context mContext;
+    private final ThemeStateManager mStateManager;
     private final ThemeSettingsManager mThemeSettingsManager;
     private final SystemPropertiesReader mSystemPropertiesReader;
 
@@ -48,10 +63,49 @@ public class ThemeManagerInternal {
     private final SparseArray<ThemeSettings> mCurrentSettings = new SparseArray<>();
 
     ThemeManagerInternal(Context context, ThemeSettingsManager themeSettingsManager,
-            SystemPropertiesReader systemPropertiesReader) {
+            SystemPropertiesReader systemPropertiesReader, ThemeStateManager stateManager) {
         mContext = context;
+        mStateManager = stateManager;
         mThemeSettingsManager = themeSettingsManager;
         mSystemPropertiesReader = systemPropertiesReader;
+    }
+
+    /**
+     * Generates dynamic overlays based on the current theme state of the user.
+     *
+     * <p>This method allows other system services to generate dynamic overlays
+     * with specific seed color, style, and contrast values. If any of these
+     * parameters are null, the current values from the user's theme state
+     * will be used.
+     *
+     * @param userId  The ID of the user whose current theme state will be used as a base
+     *                for any unspecified theme properties in {@code options}.
+     * @param options The {@link ThemeInfo} with the desired seed color, style, and contrast.
+     * @return The generated {@link FabricatedOverlayInternal}.
+     */
+    public FabricatedOverlayInternal generateDynamicColorOverlay(int userId,
+            ThemeInfo options) {
+        ThemeState state = mStateManager.getState(userId).getCurrentState();
+
+        int newSeed = Optional.ofNullable(options.seedColor).orElse(state.seedColor());
+        @ThemeStyle.Type int newStyle = Optional.ofNullable(options.style).orElse(state.style());
+        float newContrast = Optional.ofNullable(options.contrast).orElse(state.contrast());
+
+        ColorScheme newDarkScheme = new ColorScheme(newSeed, true, newStyle, newContrast);
+        ColorScheme newLightScheme = new ColorScheme(newSeed, false, newStyle, newContrast);
+
+        return createDynamicOverlay(newLightScheme, newDarkScheme).getInternal();
+    }
+
+    /**
+     * Returns the current {@link ThemeInfo} for a given user.
+     *
+     * @param userId The ID of the user for whom to retrieve the theme information.
+     * @return The {@link ThemeInfo} containing the user's current theme settings.
+     */
+    public ThemeInfo getUserThemeInfo(int userId) {
+        ThemeState state = mStateManager.getState(userId).getCurrentState();
+        return ThemeInfo.build(Color.valueOf(state.seedColor()), state.style(), state.contrast());
     }
 
     void notifySettingsChange(@UserIdInt int userId, ThemeSettings newSettings) {
@@ -198,5 +252,16 @@ public class ThemeManagerInternal {
         }
         return mThemeSettingsManager.createDefaultThemeSettings(mContext.getResources(),
                 mSystemPropertiesReader, userId);
+    }
+
+    /**
+     * Dumps the current state of the ThemeManagerInternal to the provided PrintWriter.
+     *
+     * @param pw The PrintWriter to dump the state to.
+     */
+    public void dump(PrintWriter pw) {
+        pw.println("--- " + TAG + " ---");
+        mStateManager.dump(pw);
+        pw.println("--- " + TAG + " ---");
     }
 }

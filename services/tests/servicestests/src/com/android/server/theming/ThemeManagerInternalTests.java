@@ -21,13 +21,17 @@ import static android.content.theming.FieldColorSource.VALUE_PRESET;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import android.app.WallpaperColors;
 import android.content.theming.IThemeSettingsCallback;
+import android.content.theming.ThemeInfo;
 import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeStyle;
 import android.graphics.Color;
+import android.os.FabricatedOverlayInternal;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.testing.TestableContext;
 
@@ -36,6 +40,9 @@ import androidx.annotation.Nullable;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.server.LocalServices;
+import com.android.server.om.OverlayManagerInternal;
+import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
 import org.junit.Before;
@@ -57,17 +64,39 @@ public class ThemeManagerInternalTests {
     private TestableContext mContext;
     private SystemPropertiesReader mSystemPropertiesReader;
     private ThemeSettingsManager mThemeSettingsManager;
+
+    private static final int TEST_SEED_COLOR = Color.BLUE;
+    private static final float TEST_CONTRAST = 0.5f;
+    private static final int TEST_STYLE = ThemeStyle.VIBRANT;
+
+    @Mock
+    private UserManagerInternal mUserManager;
+    @Mock
+    private OverlayManagerInternal mOverlayManager;
     @Mock
     private WallpaperManagerInternal mWallpaperManagerInternal;
+
+    private FakeScheduledExecutorService mSchedulerExecutor;
+    private ThemeStateManager mStateManager;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
+        LocalServices.removeServiceForTest(OverlayManagerInternal.class);
+        LocalServices.removeServiceForTest(UserManagerInternal.class);
+        LocalServices.removeServiceForTest(WallpaperManagerInternal.class);
+
+        LocalServices.addService(OverlayManagerInternal.class, mOverlayManager);
+        LocalServices.addService(UserManagerInternal.class, mUserManager);
+        LocalServices.addService(WallpaperManagerInternal.class, mWallpaperManagerInternal);
+
         mContext = new TestableContext(InstrumentationRegistry.getTargetContext(), null);
 
         Settings.Secure.putStringForUser(mContext.getContentResolver(),
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
+
+        when(mUserManager.getProfileParentId(eq(mUserId))).thenReturn(mUserId);
 
         mThemeSettingsManager = new ThemeSettingsManager(mWallpaperManagerInternal);
         mSystemPropertiesReader = new SystemPropertiesReader() {
@@ -77,8 +106,16 @@ public class ThemeManagerInternalTests {
                 return "";
             }
         };
+        mSchedulerExecutor = new FakeScheduledExecutorService();
+        mStateManager = new ThemeStateManager(mContext, mSchedulerExecutor);
         mUnderTest = new ThemeManagerInternal(mContext, mThemeSettingsManager,
-                mSystemPropertiesReader);
+                mSystemPropertiesReader, mStateManager);
+        mStateManager.onServicesReady();
+    }
+
+    private void startUser(int userId, boolean isSetup, int seedColor, float contrast, int style) {
+        mStateManager.onUserStart(UserHandle.of(userId), isSetup, seedColor, contrast, style);
+        mSchedulerExecutor.fastForwardTime(ThemeStateManager.DEBOUNCE_MS + 100L);
     }
 
     @Test
@@ -253,5 +290,50 @@ public class ThemeManagerInternalTests {
                 storedSettings.timeStamp().toEpochMilli());
         assertThat(returnedPreset.themeStyle()).isEqualTo(storedSettings.themeStyle());
         assertThat(returnedPreset.systemPalette()).isEqualTo(storedSettings.systemPalette());
+    }
+
+    @Test
+    public void getUserThemeInfo_returnsCorrectInfo() {
+        startUser(mUserId, true, TEST_SEED_COLOR, TEST_CONTRAST, TEST_STYLE);
+
+        ThemeInfo info = mUnderTest.getUserThemeInfo(mUserId);
+
+        assertThat(info).isNotNull();
+        assertThat(info.seedColor).isEqualTo(TEST_SEED_COLOR);
+        assertThat(info.style).isEqualTo(TEST_STYLE);
+        assertThat(info.contrast).isEqualTo(TEST_CONTRAST);
+    }
+
+    @Test
+    public void generateDynamicColorOverlay_withAllOptions_isNotNull() {
+        startUser(mUserId, true, Color.RED, 0.0f, ThemeStyle.TONAL_SPOT);
+        ThemeInfo options = ThemeInfo.build(Color.valueOf(Color.GREEN), ThemeStyle.VIBRANT, 0.8f);
+
+        FabricatedOverlayInternal overlay = mUnderTest.generateDynamicColorOverlay(mUserId,
+                options);
+
+        assertThat(overlay).isNotNull();
+    }
+
+    @Test
+    public void generateDynamicColorOverlay_withNullOptions_isNotNull() {
+        startUser(mUserId, true, Color.RED, 0.0f, ThemeStyle.TONAL_SPOT);
+        ThemeInfo options = ThemeInfo.build(null, null, null);
+
+        FabricatedOverlayInternal overlay = mUnderTest.generateDynamicColorOverlay(mUserId,
+                options);
+
+        assertThat(overlay).isNotNull();
+    }
+
+    @Test
+    public void generateDynamicColorOverlay_withMixedOptions_isNotNull() {
+        startUser(mUserId, true, Color.RED, 0.0f, ThemeStyle.TONAL_SPOT);
+        ThemeInfo options = ThemeInfo.build(Color.valueOf(Color.GREEN), null, 0.8f);
+
+        FabricatedOverlayInternal overlay = mUnderTest.generateDynamicColorOverlay(mUserId,
+                options);
+
+        assertThat(overlay).isNotNull();
     }
 }
