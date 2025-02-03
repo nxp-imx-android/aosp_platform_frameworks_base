@@ -8028,6 +8028,13 @@
     <permission android:name="android.permission.MODIFY_THEME_OVERLAY"
                 android:protectionLevel="signature" />
 
+    <!-- Allows an app to update settings in ThemeService.
+         @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
+         @hide  <p>Not for use by third-party applications.</p> -->
+    <permission android:name="android.permission.UPDATE_THEME_SETTINGS"
+        android:featureFlag="android.server.enable_theme_service"
+        android:protectionLevel="signature" />
+
     <!-- Allows an instant app to create foreground services.
          <p>Protection level: signature|development|instant|appop -->
     <permission android:name="android.permission.INSTANT_APP_FOREGROUND_SERVICE"
