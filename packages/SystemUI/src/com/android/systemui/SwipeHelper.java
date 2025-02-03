@@ -133,6 +133,8 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
 
     private final ArrayMap<View, Animator> mDismissPendingMap = new ArrayMap<>();
 
+    private float mSnapBackDirection = 0;
+
     public SwipeHelper(
             Callback callback, Resources resources, ViewConfiguration viewConfiguration,
             FalsingManager falsingManager, FeatureFlags featureFlags) {
@@ -523,17 +525,24 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
      */
     protected void snapChild(final View animView, final float targetLeft, float velocity) {
         final boolean canBeDismissed = mCallback.canChildBeDismissed(animView);
+        mSnapBackDirection = getTranslation(animView) - targetLeft;
 
         cancelTranslateAnimation(animView);
 
         PhysicsAnimator<? extends View> anim =
                 createSnapBackAnimation(animView, targetLeft, velocity);
         anim.addUpdateListener((target, values) -> {
-            onTranslationUpdate(target, getTranslation(target), canBeDismissed);
+            float translation = getTranslation(target);
+            onTranslationUpdate(target, translation, canBeDismissed);
+            if ((mSnapBackDirection > 0 && translation < targetLeft)
+                    || (mSnapBackDirection < 0 && translation > targetLeft)) {
+                mCallback.onChildSnapBackOvershoots();
+                mSnapBackDirection = 0;
+            }
         });
         anim.addEndListener((t, p, wasFling, cancelled, finalValue, finalVelocity, allEnded) -> {
             mSnappingChild = false;
-
+            mSnapBackDirection = 0;
             if (!cancelled) {
                 updateSwipeProgressFromOffset(animView, canBeDismissed);
                 resetViewIfSwiping(animView);
@@ -945,6 +954,11 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
          * @param v the view that was long pressed.
          */
         void onLongPressSent(View v);
+
+        /**
+         * The snap back animation on a view overshoots for the first time.
+         */
+        void onChildSnapBackOvershoots();
 
         /**
          * Called when the child is snapped to a position.
