@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package com.android.systemui.qs.tiles.impl.modes.domain.interactor
 
 import android.graphics.drawable.TestStubDrawable
@@ -30,6 +28,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.kosmos.mainCoroutineContext
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.tiles.base.actions.QSTileIntentUserInputHandlerSubject
 import com.android.systemui.qs.tiles.base.actions.qsTileIntentUserInputHandler
@@ -41,7 +40,6 @@ import com.android.systemui.statusbar.policy.ui.dialog.mockModesDialogDelegate
 import com.android.systemui.statusbar.policy.ui.dialog.modesDialogEventLogger
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -62,6 +60,7 @@ class ModesTileUserActionInteractorTest : SysuiTestCase() {
 
     private val underTest =
         ModesTileUserActionInteractor(
+            kosmos.mainCoroutineContext,
             inputHandler,
             mockDialogDelegate,
             zenModeInteractor,

@@ -6,6 +6,7 @@ import android.platform.test.flag.junit.FlagsParameterization
 import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
 import com.android.keyguard.BouncerPanelExpansionCalculator.aboutToShowBouncerProgress
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.ShadeInterpolation.getContentAlpha
 import com.android.systemui.dump.DumpManager
@@ -30,7 +31,6 @@ import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assume
 import org.junit.Before
 import org.junit.Rule
@@ -58,7 +58,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val notificationRow = mock<ExpandableNotificationRow>()
     private val notificationEntry = mock<NotificationEntry>()
     private val dumpManager = mock<DumpManager>()
-    @OptIn(ExperimentalCoroutinesApi::class)
     private val mStatusBarKeyguardViewManager = mock<StatusBarKeyguardViewManager>()
     private val notificationShelf = mock<NotificationShelf>()
     private val emptyShadeView =
@@ -66,7 +65,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
             layout(/* l= */ 0, /* t= */ 0, /* r= */ 100, /* b= */ 100)
         }
     private val footerView = FooterView(context, /* attrs= */ null)
-    @OptIn(ExperimentalCoroutinesApi::class)
     private val ambientState =
         AmbientState(
             context,
@@ -481,7 +479,11 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         stackScrollAlgorithm.resetViewStates(ambientState, /* speedBumpIndex= */ 0)
 
         val marginBottom =
-            context.resources.getDimensionPixelSize(R.dimen.notification_panel_margin_bottom)
+            context.resources.getDimensionPixelSize(
+                if (Flags.notificationsRedesignFooterView())
+                    R.dimen.notification_2025_panel_margin_bottom
+                else R.dimen.notification_panel_margin_bottom
+            )
         val fullHeight = ambientState.layoutMaxHeight + marginBottom - ambientState.stackY
         val centeredY = ambientState.stackY + fullHeight / 2f - emptyShadeView.height / 2f
         assertThat(emptyShadeView.viewState.yTranslation).isEqualTo(centeredY)
@@ -499,7 +501,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         assertThat(notificationRow.viewState.alpha).isEqualTo(1f)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun resetViewStates_expansionChanging_notificationBecomesTransparent() {
         whenever(mStatusBarKeyguardViewManager.isPrimaryBouncerInTransit).thenReturn(false)
@@ -509,7 +510,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         )
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun resetViewStates_expansionChangingWhileBouncerInTransit_viewBecomesTransparent() {
         whenever(mStatusBarKeyguardViewManager.isPrimaryBouncerInTransit).thenReturn(true)
@@ -519,7 +519,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         )
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun resetViewStates_expansionChanging_notificationAlphaUpdated() {
         whenever(mStatusBarKeyguardViewManager.isPrimaryBouncerInTransit).thenReturn(false)
@@ -529,7 +528,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         )
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun resetViewStates_largeScreen_expansionChanging_alphaUpdated_largeScreenValue() {
         val expansionFraction = 0.6f
@@ -545,7 +543,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         )
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun expansionChanging_largeScreen_bouncerInTransit_alphaUpdated_bouncerValues() {
         ambientState.isSmallScreen = false

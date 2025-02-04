@@ -904,8 +904,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
          * Whether to pilfer the next motion event to send cancellations to the windows below.
          * Useful when the caption window is spy and the gesture should be handled by the system
          * instead of by the app for their custom header content.
-         * Should not have any effect when {@link Flags#enableAccessibleCustomHeaders()}, because
-         * a spy window is not used then.
+         * Should not have any effect when
+         * {@link DesktopModeFlags#ENABLE_ACCESSIBLE_CUSTOM_HEADERS}, because a spy window is not
+         * used then.
          */
         private boolean mIsCustomHeaderGesture;
         private boolean mIsResizeGesture;
@@ -974,7 +975,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 //  should shared with the maximize menu's maximize/restore actions.
                 final DesktopRepository desktopRepository = mDesktopUserRepositories.getProfile(
                         decoration.mTaskInfo.userId);
-                if (Flags.enableFullyImmersiveInDesktop()
+                if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
                         && desktopRepository.isTaskInFullImmersiveState(
                                 decoration.mTaskInfo.taskId)) {
                     // Task is in immersive and should exit.
@@ -1047,7 +1048,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 return false;
             }
             if (mInputManager != null
-                    && !Flags.enableAccessibleCustomHeaders()) {
+                    && !DesktopModeFlags.ENABLE_ACCESSIBLE_CUSTOM_HEADERS.isTrue()) {
                 ViewRootImpl viewRootImpl = v.getViewRootImpl();
                 if (viewRootImpl != null) {
                     // Pilfer so that windows below receive cancellations for this gesture.
@@ -1658,8 +1659,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         if (mDesktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(taskInfo)) {
             return false;
         }
-        final boolean isOnLargeScreen = taskInfo.getConfiguration().smallestScreenWidthDp
-                >= WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP;
+        final boolean isOnLargeScreen =
+                mDisplayController.getDisplay(taskInfo.displayId).getMinSizeDimensionDp()
+                        >= WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP;
         if (!DesktopModeStatus.canEnterDesktopMode(mContext)
                 && DesktopModeStatus.overridesShowAppHandle(mContext) && !isOnLargeScreen) {
             // Devices with multiple screens may enable the app handle but it should not show on

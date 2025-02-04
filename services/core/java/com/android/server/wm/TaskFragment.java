@@ -1195,10 +1195,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         if (!isAttached() || isForceHidden() || isForceTranslucent()) {
             return true;
         }
-        // A TaskFragment isn't translucent if it has at least one visible activity that occludes
-        // this TaskFragment.
-        return mTaskSupervisor.mOpaqueActivityHelper.getVisibleOpaqueActivity(this,
-                starting, true /* ignoringKeyguard */) == null;
+        return !mTaskSupervisor.mOpaqueContainerHelper.isOpaque(
+                this, starting, true /* ignoringKeyguard */, true /* ignoringInvisibleActivity */);
     }
 
     /**
@@ -1211,7 +1209,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             return true;
         }
         // Including finishing Activity if the TaskFragment is becoming invisible in the transition.
-        return mTaskSupervisor.mOpaqueActivityHelper.getOpaqueActivity(this) == null;
+        return !mTaskSupervisor.mOpaqueContainerHelper.isOpaque(this);
     }
 
     /**
@@ -1222,8 +1220,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         if (!isAttached() || isForceHidden() || isForceTranslucent()) {
             return true;
         }
-        return mTaskSupervisor.mOpaqueActivityHelper.getVisibleOpaqueActivity(this, null,
-                false /* ignoringKeyguard */) == null;
+        return !mTaskSupervisor.mOpaqueContainerHelper.isOpaque(this, /* starting */ null,
+                false /* ignoringKeyguard */, true /* ignoringInvisibleActivity */);
     }
 
     ActivityRecord getTopNonFinishingActivity() {
@@ -2758,7 +2756,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             // We only want to update for organized TaskFragment. Task will handle itself.
             return;
         }
-        if (mSurfaceControl == null || mSurfaceAnimator.hasLeash() || mSurfaceFreezer.hasLeash()) {
+        if (mSurfaceControl == null || mSurfaceAnimator.hasLeash()) {
             return;
         }
 
@@ -2898,20 +2896,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         final Task task = getTask();
         // Skip change transition when the Task is drag resizing.
         return task != null && !task.isDragResizing() && super.canStartChangeTransition();
-    }
-
-    /**
-     * Returns {@code true} if the starting bounds of the closing organized TaskFragment is
-     * recorded. Otherwise, return {@code false}.
-     */
-    boolean setClosingChangingStartBoundsIfNeeded() {
-        if (isOrganizedTaskFragment() && mDisplayContent != null
-                && mDisplayContent.mChangingContainers.remove(this)) {
-            mDisplayContent.mClosingChangingContainers.put(
-                    this, new Rect(mSurfaceFreezer.mFreezeBounds));
-            return true;
-        }
-        return false;
     }
 
     @Override

@@ -15,13 +15,14 @@
  *
  */
 
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.systemui.Flags.FLAG_NOTIFICATIONS_REDESIGN_FOOTER_VIEW
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.common.shared.model.NotificationContainerBounds
@@ -74,7 +75,6 @@ import com.android.systemui.window.ui.viewmodel.fakeBouncerTransitions
 import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertIs
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
@@ -298,9 +298,23 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
         }
 
     @Test
+    @DisableFlags(FLAG_NOTIFICATIONS_REDESIGN_FOOTER_VIEW)
     fun validateMarginBottom() =
         testScope.runTest {
             overrideResource(R.dimen.notification_panel_margin_bottom, 50)
+
+            val dimens by collectLastValue(underTest.configurationBasedDimensions)
+
+            configurationRepository.onAnyConfigurationChange()
+
+            assertThat(dimens!!.marginBottom).isEqualTo(50)
+        }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATIONS_REDESIGN_FOOTER_VIEW)
+    fun validateMarginBottom_footerRedesign() =
+        testScope.runTest {
+            overrideResource(R.dimen.notification_2025_panel_margin_bottom, 50)
 
             val dimens by collectLastValue(underTest.configurationBasedDimensions)
 

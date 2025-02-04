@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License
  */
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package com.android.systemui.statusbar.notification.row
 
 import android.R
@@ -81,7 +79,6 @@ import com.android.systemui.wmshell.BubblesManager
 import java.util.Optional
 import kotlin.test.assertNotNull
 import kotlin.test.fail
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -522,6 +519,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 eq(entry),
                 any<NotificationInfo.OnSettingsClickListener>(),
                 any<NotificationInfo.OnAppSettingsClickListener>(),
+                any<NotificationInfo.OnFeedbackClickListener>(),
                 any<UiEventLogger>(),
                 /* isDeviceProvisioned = */ eq(false),
                 /* isNonblockable = */ eq(false),
@@ -559,6 +557,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 eq(entry),
                 any<NotificationInfo.OnSettingsClickListener>(),
                 any<NotificationInfo.OnAppSettingsClickListener>(),
+                any<NotificationInfo.OnFeedbackClickListener>(),
                 any<UiEventLogger>(),
                 /* isDeviceProvisioned = */ eq(true),
                 /* isNonblockable = */ eq(false),
@@ -594,44 +593,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 eq(entry),
                 any<NotificationInfo.OnSettingsClickListener>(),
                 any<NotificationInfo.OnAppSettingsClickListener>(),
-                any<UiEventLogger>(),
-                /* isDeviceProvisioned = */ eq(false),
-                /* isNonblockable = */ eq(false),
-                /* wasShownHighPriority = */ eq(false),
-                eq(assistantFeedbackController),
-                eq(metricsLogger),
-                any<View.OnClickListener>(),
-            )
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun testInitializeBundleNotificationInfoView() {
-        val infoView: BundleNotificationInfo = mock()
-        val row = spy(helper.createRow())
-        val entry = row.entry
-
-        // Modify the notification entry to have a channel that is in SYSTEM_RESERVED_IDS
-        val channel = NotificationChannel(NotificationChannel.NEWS_ID, "name", 2)
-        NotificationEntryHelper.modifyRanking(entry).setChannel(channel).build()
-
-        whenever(row.isNonblockable).thenReturn(false)
-        val statusBarNotification = entry.sbn
-        // Can we change this to a call to bindGuts instead? We have the row,
-        // we need a MenuItem that we can put the infoView into.
-        gutsManager.initializeBundleNotificationInfo(row, infoView)
-
-        verify(infoView)
-            .bindNotification(
-                any<PackageManager>(),
-                any<INotificationManager>(),
-                eq(onUserInteractionCallback),
-                eq(channelEditorDialogController),
-                eq(statusBarNotification.packageName),
-                any<NotificationChannel>(),
-                eq(entry),
-                any<NotificationInfo.OnSettingsClickListener>(),
-                any<NotificationInfo.OnAppSettingsClickListener>(),
+                any<NotificationInfo.OnFeedbackClickListener>(),
                 any<UiEventLogger>(),
                 /* isDeviceProvisioned = */ eq(false),
                 /* isNonblockable = */ eq(false),

@@ -574,6 +574,8 @@
 
     <dimen name="notification_panel_margin_bottom">32dp</dimen>
 
+    <dimen name="notification_2025_panel_margin_bottom">64dp</dimen>
+
     <!-- The bottom padding of the panel that holds the list of notifications. -->
     <dimen name="notification_panel_padding_bottom">0dp</dimen>
 
@@ -1781,6 +1783,7 @@
     <dimen name="wallet_button_vertical_padding">8dp</dimen>
 
     <!-- Ongoing activity chip -->
+    <dimen name="ongoing_activity_chip_min_text_width">12dp</dimen>
     <dimen name="ongoing_activity_chip_max_text_width">74dp</dimen>
     <dimen name="ongoing_activity_chip_margin_start">5dp</dimen>
     <!-- The activity chip side padding, used with the default phone icon. -->

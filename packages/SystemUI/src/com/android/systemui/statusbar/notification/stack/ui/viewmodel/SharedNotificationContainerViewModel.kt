@@ -76,10 +76,12 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.LargeScreenHeaderHelper
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode.Dual
 import com.android.systemui.shade.shared.model.ShadeMode.Single
 import com.android.systemui.shade.shared.model.ShadeMode.Split
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
+import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
 import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.SharedNotificationContainerInteractor
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
@@ -90,6 +92,7 @@ import com.android.systemui.util.kotlin.sample
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -110,6 +113,7 @@ import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.isActive
 
 /** View-model for the shared notification container, used by both the shade and keyguard spaces */
+@OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
 class SharedNotificationContainerViewModel
 @Inject
@@ -122,7 +126,8 @@ constructor(
     private val keyguardInteractor: KeyguardInteractor,
     private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
     private val shadeInteractor: ShadeInteractor,
-    private val notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
+    shadeModeInteractor: ShadeModeInteractor,
+    notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
     private val alternateBouncerToGoneTransitionViewModel:
         AlternateBouncerToGoneTransitionViewModel,
     private val alternateBouncerToPrimaryBouncerTransitionViewModel:
@@ -232,7 +237,7 @@ constructor(
         if (SceneContainerFlag.isEnabled) {
                 combine(
                     shadeInteractor.isShadeLayoutWide,
-                    shadeInteractor.shadeMode,
+                    shadeModeInteractor.shadeMode,
                     configurationInteractor.onAnyConfigurationChange,
                 ) { isShadeLayoutWide, shadeMode, _ ->
                     with(context.resources) {
@@ -263,8 +268,7 @@ constructor(
                             horizontalPosition = horizontalPosition,
                             marginStart = if (shadeMode is Split) 0 else marginHorizontal,
                             marginEnd = marginHorizontal,
-                            marginBottom =
-                                getDimensionPixelSize(R.dimen.notification_panel_margin_bottom),
+                            marginBottom = NotificationStackScrollLayout.getBottomMargin(context),
                             // y position of the NSSL in the window needs to be 0 under scene
                             // container
                             marginTop = 0,
@@ -477,7 +481,7 @@ constructor(
      */
     private val alphaForShadeAndQsExpansion: Flow<Float> =
         if (SceneContainerFlag.isEnabled) {
-                shadeInteractor.shadeMode.flatMapLatest { shadeMode ->
+                shadeModeInteractor.shadeMode.flatMapLatest { shadeMode ->
                     when (shadeMode) {
                         Single ->
                             combineTransform(
@@ -539,7 +543,7 @@ constructor(
 
     private fun bouncerToGoneNotificationAlpha(viewState: ViewStateAccessor): Flow<Float> =
         merge(
-                primaryBouncerToGoneTransitionViewModel.notificationAlpha,
+                primaryBouncerToGoneTransitionViewModel.notificationAlpha(viewState),
                 alternateBouncerToGoneTransitionViewModel.notificationAlpha(viewState),
             )
             .sample(communalSceneInteractor.isCommunalVisible) { alpha, isCommunalVisible ->
