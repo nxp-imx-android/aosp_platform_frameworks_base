@@ -23,6 +23,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.ViewGroup.MarginLayoutParams
 import android.view.ViewStub
 import android.widget.Chronometer
 import android.widget.DateTimeView
@@ -175,12 +176,13 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         root.findViewById(R.id.header_text_secondary_divider)
     private val icon: NotificationRowIconView? = root.findViewById(R.id.icon)
     private val leftIcon: ImageView? = root.findViewById(R.id.left_icon)
-    private val rightIcon: ImageView? = root.findViewById(R.id.right_icon)
+    private val mainColumn: View? = root.findViewById(R.id.notification_main_column)
     private val notificationProgressEndIcon: CachingIconView? =
         root.findViewById(R.id.notification_progress_end_icon)
     private val notificationProgressStartIcon: CachingIconView? =
         root.findViewById(R.id.notification_progress_start_icon)
     private val profileBadge: ImageView? = root.findViewById(R.id.profile_badge)
+    private val rightIcon: ImageView? = root.findViewById(R.id.right_icon)
     private val text: ImageFloatingTextView? = root.findViewById(R.id.text)
     private val time: DateTimeView? = root.findViewById(R.id.time)
     private val timeDivider: View? = root.findViewById(R.id.time_divider)
@@ -209,6 +211,16 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             ?.drawable
             ?.mutate()
             ?.setColorFilter(SecondaryText.colorInt, PorterDuff.Mode.SRC_IN)
+
+        if (Flags.notificationsRedesignTemplates()) {
+            (mainColumn?.layoutParams as? MarginLayoutParams)?.let { mainColumnMargins ->
+                mainColumnMargins.topMargin =
+                    Notification.Builder.getContentMarginTop(
+                        root.context,
+                        R.dimen.notification_2025_content_margin_top,
+                    )
+            }
+        }
     }
 
     fun update(content: PromotedNotificationContentModel, audiblyAlertedIconVisible: Boolean) {
