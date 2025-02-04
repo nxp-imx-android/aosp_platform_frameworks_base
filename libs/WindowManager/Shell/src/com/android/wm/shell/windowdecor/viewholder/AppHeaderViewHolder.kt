@@ -93,6 +93,9 @@ class AppHeaderViewHolder(
     private val lightColors = dynamicLightColorScheme(context)
     private val darkColors = dynamicDarkColorScheme(context)
 
+    private val headerButtonOpenMenuA11yText = context.resources
+        .getString(R.string.desktop_mode_app_header_chip_text)
+
     /**
      * The corner radius to apply to the app chip, maximize and close button's background drawable.
      **/
@@ -228,6 +231,18 @@ class AppHeaderViewHolder(
             }
         }
 
+        val a11yActionOpenHeaderMenu = AccessibilityAction(AccessibilityNodeInfo.ACTION_CLICK,
+            headerButtonOpenMenuA11yText)
+        openMenuButton.accessibilityDelegate = object : View.AccessibilityDelegate() {
+            override fun onInitializeAccessibilityNodeInfo(
+                host: View,
+                info: AccessibilityNodeInfo
+            ) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                info.addAction(a11yActionOpenHeaderMenu)
+            }
+        }
+
         with(context.resources) {
             // Update a11y read out to say "double tap to maximize or restore window size"
             ViewCompat.replaceAccessibilityAction(
@@ -260,6 +275,7 @@ class AppHeaderViewHolder(
     /** Sets the app's name in the header. */
     fun setAppName(name: CharSequence) {
         appNameTextView.text = name
+        openMenuButton.contentDescription = name
     }
 
     /** Sets the app's icon in the header. */
