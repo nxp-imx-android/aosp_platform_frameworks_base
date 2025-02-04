@@ -17,7 +17,6 @@
 package android.app;
 
 import static android.app.PropertyInvalidatedCache.MODULE_SYSTEM;
-import static android.app.PropertyInvalidatedCache.createSystemCacheKey;
 import static android.app.admin.DevicePolicyResources.Drawables.Style.SOLID_COLORED;
 import static android.app.admin.DevicePolicyResources.Drawables.Style.SOLID_NOT_COLORED;
 import static android.app.admin.DevicePolicyResources.Drawables.WORK_PROFILE_ICON;
@@ -1146,12 +1145,16 @@ public class ApplicationPackageManager extends PackageManager {
         }
     }
 
-    private static final String CACHE_KEY_PACKAGES_FOR_UID_PROPERTY =
-            createSystemCacheKey("get_packages_for_uid");
-    private static final PropertyInvalidatedCache<Integer, GetPackagesForUidResult>
-            mGetPackagesForUidCache =
-            new PropertyInvalidatedCache<Integer, GetPackagesForUidResult>(
-                1024, CACHE_KEY_PACKAGES_FOR_UID_PROPERTY) {
+    private static final String CACHE_KEY_PACKAGES_FOR_UID_API = "get_packages_for_uid";
+
+    /** @hide */
+    @VisibleForTesting
+    public static final PropertyInvalidatedCache<Integer, GetPackagesForUidResult>
+            sGetPackagesForUidCache = new PropertyInvalidatedCache<>(
+                new PropertyInvalidatedCache.Args(MODULE_SYSTEM)
+                .maxEntries(1024).api(CACHE_KEY_PACKAGES_FOR_UID_API).cacheNulls(true),
+                CACHE_KEY_PACKAGES_FOR_UID_API, null) {
+
                 @Override
                 public GetPackagesForUidResult recompute(Integer uid) {
                     try {
@@ -1170,17 +1173,17 @@ public class ApplicationPackageManager extends PackageManager {
 
     @Override
     public String[] getPackagesForUid(int uid) {
-        return mGetPackagesForUidCache.query(uid).value();
+        return sGetPackagesForUidCache.query(uid).value();
     }
 
     /** @hide */
     public static void disableGetPackagesForUidCache() {
-        mGetPackagesForUidCache.disableLocal();
+        sGetPackagesForUidCache.disableLocal();
     }
 
     /** @hide */
     public static void invalidateGetPackagesForUidCache() {
-        PropertyInvalidatedCache.invalidateCache(CACHE_KEY_PACKAGES_FOR_UID_PROPERTY);
+        sGetPackagesForUidCache.invalidateCache();
     }
 
     @Override
