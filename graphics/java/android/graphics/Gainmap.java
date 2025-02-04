@@ -161,6 +161,18 @@ public final class Gainmap implements Parcelable {
     }
 
     /**
+     * @hide
+     */
+    public Gainmap asShared() {
+        final Bitmap sharedContents = mGainmapContents.asShared();
+        if (sharedContents == mGainmapContents) {
+            return this;
+        } else {
+            return new Gainmap(sharedContents, nCreateCopy(mNativePtr));
+        }
+    }
+
+    /**
      * @return Returns the image data of the gainmap represented as a Bitmap. This is represented
      * as a Bitmap for broad API compatibility, however certain aspects of the Bitmap are ignored
      * such as {@link Bitmap#getColorSpace()} or {@link Bitmap#getGainmap()} as they are not

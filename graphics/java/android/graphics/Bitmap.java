@@ -755,6 +755,9 @@ public final class Bitmap implements Parcelable {
         if (b != null) {
             b.setPremultiplied(mRequestPremultiplied);
             b.mDensity = mDensity;
+            if (hasGainmap()) {
+                b.setGainmap(getGainmap().asShared());
+            }
         }
         return b;
     }
@@ -767,7 +770,8 @@ public final class Bitmap implements Parcelable {
      */
     @NonNull
     public Bitmap asShared() {
-        if (nativeIsBackedByAshmem(mNativePtr) && nativeIsImmutable(mNativePtr)) {
+        if (nativeIsBackedByAshmem(mNativePtr) && nativeIsImmutable(mNativePtr)
+                && (!hasGainmap() || getGainmap().asShared() == getGainmap())) {
             return this;
         }
         Bitmap shared = createAshmemBitmap();
@@ -2091,7 +2095,7 @@ public final class Bitmap implements Parcelable {
      */
     public void setGainmap(@Nullable Gainmap gainmap) {
         checkRecycled("Bitmap is recycled");
-        mGainmap = null;
+        mGainmap = gainmap;
         nativeSetGainmap(mNativePtr, gainmap == null ? 0 : gainmap.mNativePtr);
     }
 
