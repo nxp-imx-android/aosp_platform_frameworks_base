@@ -14,30 +14,29 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.common
+package com.android.wm.shell.common.suppliers
 
 import android.testing.AndroidTestingRunner
-import android.view.IWindowSession
+import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
-import com.android.wm.shell.ShellTestCase
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Tests for [WindowSessionSupplier].
+ * Tests for [WindowContainerTransactionSupplier].
  *
  * Build/Install/Run:
- *  atest WMShellUnitTests:WindowSessionSupplierTest
+ *  atest WMShellUnitTests:WindowContainerTransactionSupplierTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
-class WindowSessionSupplierTest : ShellTestCase() {
+class WindowContainerTransactionSupplierTest {
 
     @Test
-    fun `WindowSessionSupplierTest supplies an IWindowSession`() {
-        val supplier = WindowSessionSupplier()
+    fun `WindowContainerTransactionSupplier supplies a WindowContainerTransaction`() {
+        val supplier = WindowContainerTransactionSupplier()
         SuppliersUtilsTest.assertSupplierProvidesValue(supplier) {
-            it is IWindowSession
+            it is WindowContainerTransaction
         }
     }
 }

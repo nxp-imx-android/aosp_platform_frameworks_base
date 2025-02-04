@@ -18,7 +18,7 @@ package com.android.wm.shell.compatui.letterbox
 
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
-import com.android.wm.shell.common.transition.SurfaceBuilderSupplier
+import com.android.wm.shell.common.suppliers.SurfaceBuilderSupplier
 import com.android.wm.shell.dagger.WMSingleton
 import javax.inject.Inject
 

@@ -14,29 +14,30 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.common
+package com.android.wm.shell.common.suppliers
 
 import android.testing.AndroidTestingRunner
-import android.view.InputChannel
+import android.view.IWindowSession
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.ShellTestCase
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Tests for [InputChannelSupplier].
+ * Tests for [WindowSessionSupplier].
  *
  * Build/Install/Run:
- *  atest WMShellUnitTests:InputChannelSupplierTest
+ *  atest WMShellUnitTests:WindowSessionSupplierTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
-class InputChannelSupplierTest {
+class WindowSessionSupplierTest : ShellTestCase() {
 
     @Test
-    fun `InputChannelSupplier supplies an InputChannel`() {
-        val supplier = InputChannelSupplier()
+    fun `WindowSessionSupplierTest supplies an IWindowSession`() {
+        val supplier = WindowSessionSupplier()
         SuppliersUtilsTest.assertSupplierProvidesValue(supplier) {
-            it is InputChannel
+            it is IWindowSession
         }
     }
 }

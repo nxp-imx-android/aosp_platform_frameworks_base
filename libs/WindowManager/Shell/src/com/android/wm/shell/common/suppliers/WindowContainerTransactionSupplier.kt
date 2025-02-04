@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.common.transition
+package com.android.wm.shell.common.suppliers
 
-import android.view.SurfaceControl
+import android.window.WindowContainerTransaction
 import com.android.wm.shell.dagger.WMSingleton
 import java.util.function.Supplier
 import javax.inject.Inject
 
 /**
- * An Injectable [Supplier<SurfaceControl.Builder>]. This can be used in place of kotlin default
- * parameters values [builder = ::SurfaceControl.Builder] which requires the [@JvmOverloads]
- * annotation to make this available in Java.
- * This can be used every time a component needs the dependency to the default builder for
- * [SurfaceControl]s.
+ * An Injectable [Supplier<WindowContainerTransaction>]. This can be used in place of kotlin default
+ * parameters values [builder = ::WindowContainerTransaction] which requires the
+ * [@JvmOverloads] annotation to make this available in Java.
+ * This can be used every time a component needs the dependency to the default [Supplier] for
+ * [WindowContainerTransaction]s.
  */
 @WMSingleton
-class SurfaceBuilderSupplier @Inject constructor() : Supplier<SurfaceControl.Builder> {
-    override fun get(): SurfaceControl.Builder = SurfaceControl.Builder()
+class WindowContainerTransactionSupplier @Inject constructor(
+) : Supplier<WindowContainerTransaction> {
+    override fun get(): WindowContainerTransaction = WindowContainerTransaction()
 }
