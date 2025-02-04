@@ -32,6 +32,8 @@ import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.WindowingMode
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
@@ -2281,11 +2283,19 @@ class DesktopTasksController(
             wct.reorder(task.token, true)
             return wct
         }
+        val inheritedTaskBounds =
+            getInheritedExistingTaskBounds(taskRepository, shellTaskOrganizer, task, deskId)
+        if (!taskRepository.isActiveTask(task.taskId) && inheritedTaskBounds != null) {
+            // Inherit bounds from closing task instance to prevent application jumping different
+            // cascading positions.
+            wct.setBounds(task.token, inheritedTaskBounds)
+        }
         // TODO(b/365723620): Handle non running tasks that were launched after reboot.
         // If task is already visible, it must have been handled already and added to desktop mode.
-        // Cascade task only if it's not visible yet.
+        // Cascade task only if it's not visible yet and has no inherited bounds.
         if (
-            DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue() &&
+            inheritedTaskBounds == null &&
+                DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue() &&
                 !taskRepository.isVisibleTask(task.taskId)
         ) {
             val displayLayout = displayController.getDisplayLayout(task.displayId)
@@ -2521,9 +2531,17 @@ class DesktopTasksController(
     ) {
         val targetDisplayId = taskRepository.getDisplayForDesk(deskId)
         val displayLayout = displayController.getDisplayLayout(targetDisplayId) ?: return
-        val initialBounds = getInitialBounds(displayLayout, task, targetDisplayId)
-        if (canChangeTaskPosition(task)) {
-            wct.setBounds(task.token, initialBounds)
+        val inheritedTaskBounds =
+            getInheritedExistingTaskBounds(taskRepository, shellTaskOrganizer, task, deskId)
+        if (inheritedTaskBounds != null) {
+            // Inherit bounds from closing task instance to prevent application jumping different
+            // cascading positions.
+            wct.setBounds(task.token, inheritedTaskBounds)
+        } else {
+            val initialBounds = getInitialBounds(displayLayout, task, targetDisplayId)
+            if (canChangeTaskPosition(task)) {
+                wct.setBounds(task.token, initialBounds)
+            }
         }
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksOrganizer.moveTaskToDesk(wct = wct, deskId = deskId, task = task)

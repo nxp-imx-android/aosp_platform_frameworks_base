@@ -31,6 +31,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
 import android.content.pm.ActivityInfo.CONFIG_DENSITY
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -1126,6 +1127,54 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val finalBounds = findBoundsChange(wct, task)
         assertThat(finalBounds).isEqualTo(Rect())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES)
+    fun addMoveToDeskTaskChanges_newTaskInstance_inheritsClosingInstanceBounds() {
+        // Setup existing task.
+        val existingTask = setUpFreeformTask(active = true)
+        val testComponent = ComponentName(/* package */ "test.package", /* class */ "test.class")
+        existingTask.topActivity = testComponent
+        existingTask.configuration.windowConfiguration.setBounds(Rect(0, 0, 500, 500))
+        // Set up new instance of already existing task.
+        val launchingTask = setUpFullscreenTask()
+        launchingTask.topActivity = testComponent
+        launchingTask.baseIntent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+
+        // Move new instance to desktop. By default multi instance is not supported so first
+        // instance will close.
+        val wct = WindowContainerTransaction()
+        controller.addMoveToDeskTaskChanges(wct, launchingTask, deskId = 0)
+
+        // New instance should inherit task bounds of old instance.
+        assertThat(findBoundsChange(wct, launchingTask))
+            .isEqualTo(existingTask.configuration.windowConfiguration.bounds)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES)
+    fun handleRequest_newTaskInstance_inheritsClosingInstanceBounds() {
+        setUpLandscapeDisplay()
+        // Setup existing task.
+        val existingTask = setUpFreeformTask(active = true)
+        val testComponent = ComponentName(/* package */ "test.package", /* class */ "test.class")
+        existingTask.topActivity = testComponent
+        existingTask.configuration.windowConfiguration.setBounds(Rect(0, 0, 500, 500))
+        // Set up new instance of already existing task.
+        val launchingTask = setUpFreeformTask(active = false)
+        taskRepository.removeTask(launchingTask.displayId, launchingTask.taskId)
+        launchingTask.topActivity = testComponent
+        launchingTask.baseIntent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+
+        // Move new instance to desktop. By default multi instance is not supported so first
+        // instance will close.
+        val wct = controller.handleRequest(Binder(), createTransition(launchingTask))
+
+        assertNotNull(wct, "should handle request")
+        val finalBounds = findBoundsChange(wct, launchingTask)
+        // New instance should inherit task bounds of old instance.
+        assertThat(finalBounds).isEqualTo(existingTask.configuration.windowConfiguration.bounds)
     }
 
     @Test
