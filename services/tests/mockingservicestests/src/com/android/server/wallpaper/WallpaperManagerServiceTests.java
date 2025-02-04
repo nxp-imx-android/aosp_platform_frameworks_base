@@ -123,6 +123,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Tests for the {@link WallpaperManagerService} class.
@@ -742,7 +743,9 @@ public class WallpaperManagerServiceTests {
         wallpaper.connection.mService = mockIWallpaperService;
         // GIVEN there are two displays: DEFAULT_DISPLAY, 2
         final int testDisplayId = 2;
-        setUpDisplays(List.of(DEFAULT_DISPLAY, testDisplayId));
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                testDisplayId, true));
 
         // WHEN display ID, 2, is ready.
         WallpaperManagerInternal wallpaperManagerInternal = LocalServices.getService(
@@ -782,7 +785,9 @@ public class WallpaperManagerServiceTests {
         lockWallpaper.connection.mService = mockIWallpaperService;
         // GIVEN there are two displays: DEFAULT_DISPLAY, 2
         final int testDisplayId = 2;
-        setUpDisplays(List.of(DEFAULT_DISPLAY, testDisplayId));
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                testDisplayId, true));
 
         // WHEN display ID, 2, is ready.
         WallpaperManagerInternal wallpaperManagerInternal = LocalServices.getService(
@@ -823,13 +828,15 @@ public class WallpaperManagerServiceTests {
             throws Exception {
         final int testUserId = USER_SYSTEM;
         mService.switchUser(testUserId, null);
+        mService.mLastWallpaper.connection.mWallpaper.cropHint.set(0, 0, 4000, 2250);
         IWallpaperService mockIWallpaperService = mock(IWallpaperService.class);
         mService.mFallbackWallpaper.connection.mService = mockIWallpaperService;
         // GIVEN there are two displays: DEFAULT_DISPLAY, 2
         final int testDisplayId = 2;
-        setUpDisplays(List.of(DEFAULT_DISPLAY, testDisplayId));
-        // GIVEN the wallpaper isn't compatible with display ID, 2
-        mService.removeWallpaperCompatibleDisplayForTest(testDisplayId);
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                // Given the wallpaper is smaller thn the display resolution.
+                testDisplayId, false));
 
         // WHEN display ID, 2, is ready.
         WallpaperManagerInternal wallpaperManagerInternal = LocalServices.getService(
@@ -868,7 +875,10 @@ public class WallpaperManagerServiceTests {
         wallpaper.connection.mService = mockIWallpaperService;
         // GIVEN there are two displays: DEFAULT_DISPLAY, 2
         final int testDisplayId = 2;
-        setUpDisplays(List.of(DEFAULT_DISPLAY, testDisplayId));
+        mService.mLastWallpaper.connection.mWallpaper.cropHint.set(0, 0, 4000, 2250);
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                testDisplayId, true));
         // GIVEN wallpaper connections have been established for display ID, 2.
         WallpaperManagerInternal wallpaperManagerInternal = LocalServices.getService(
                 WallpaperManagerInternal.class);
@@ -906,7 +916,9 @@ public class WallpaperManagerServiceTests {
         lockWallpaper.connection.mService = mockIWallpaperService;
         // GIVEN there are two displays: DEFAULT_DISPLAY, 2
         final int testDisplayId = 2;
-        setUpDisplays(List.of(DEFAULT_DISPLAY, testDisplayId));
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                testDisplayId, true));
         // GIVEN wallpaper connections have been established for display ID, 2.
         WallpaperManagerInternal wallpaperManagerInternal = LocalServices.getService(
                 WallpaperManagerInternal.class);
@@ -940,9 +952,9 @@ public class WallpaperManagerServiceTests {
         mService.mFallbackWallpaper.connection.mService = mockIWallpaperService;
         // GIVEN there are two displays: DEFAULT_DISPLAY, 2
         final int testDisplayId = 2;
-        setUpDisplays(List.of(DEFAULT_DISPLAY, testDisplayId));
-        // GIVEN display ID, 2, is incompatible with the wallpaper.
-        mService.removeWallpaperCompatibleDisplayForTest(testDisplayId);
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                testDisplayId, false));
         // GIVEN wallpaper connections have been established for display ID, 2.
         WallpaperManagerInternal wallpaperManagerInternal = LocalServices.getService(
                 WallpaperManagerInternal.class);
@@ -989,7 +1001,9 @@ public class WallpaperManagerServiceTests {
         wallpaper.connection.mService = mockIWallpaperService;
         // GIVEN there are two displays: DEFAULT_DISPLAY, 2
         final int testDisplayId = 2;
-        setUpDisplays(List.of(DEFAULT_DISPLAY, testDisplayId));
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                testDisplayId, true));
         // GIVEN wallpaper connections have been established for displayID, 2.
         WallpaperManagerInternal wallpaperManagerInternal = LocalServices.getService(
                 WallpaperManagerInternal.class);
@@ -1023,7 +1037,9 @@ public class WallpaperManagerServiceTests {
         lockWallpaper.connection.mService = mockIWallpaperService;
         // GIVEN there are two displays: DEFAULT_DISPLAY, 2
         final int testDisplayId = 2;
-        setUpDisplays(List.of(DEFAULT_DISPLAY, testDisplayId));
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                testDisplayId, true));
         // GIVEN wallpaper connections have been established for displayID, 2.
         WallpaperManagerInternal wallpaperManagerInternal = LocalServices.getService(
                 WallpaperManagerInternal.class);
@@ -1051,12 +1067,14 @@ public class WallpaperManagerServiceTests {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
     public void deviceBooted_multiDisplays_shouldHaveExpectedConnections() {
+        final int testUserId = USER_SYSTEM;
         final int incompatibleDisplayId = 2;
         final int compatibleDisplayId = 3;
-        setUpDisplays(List.of(DEFAULT_DISPLAY, incompatibleDisplayId, compatibleDisplayId));
-        mService.removeWallpaperCompatibleDisplayForTest(incompatibleDisplayId);
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                compatibleDisplayId, true,
+                incompatibleDisplayId, false));
 
-        final int testUserId = USER_SYSTEM;
         // After reboot, a switch user triggers the wallpapers initialization.
         mService.switchUser(testUserId, null);
 
@@ -1087,15 +1105,18 @@ public class WallpaperManagerServiceTests {
     public void setWallpaperComponent_multiDisplays_displayBecomeCompatible_shouldHaveExpectedConnections() {
         final int display2 = 2;
         final int display3 = 3;
-        setUpDisplays(List.of(DEFAULT_DISPLAY, display2, display3));
-        mService.removeWallpaperCompatibleDisplayForTest(display2);
         final int testUserId = USER_SYSTEM;
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                display2, false,
+                display3, true));
+
         mService.switchUser(testUserId, null);
+        doReturn(true).when(mService.mWallpaperCropper).isWallpaperCompatibleForDisplay(
+                eq(display2), any());
         // Switch to a test wallpaper and then image wallpaper later to simulate a wallpaper change.
         mService.setWallpaperComponent(TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(),
                 FLAG_SYSTEM | FLAG_LOCK, testUserId);
-        mService.addWallpaperCompatibleDisplayForTest(display2);
-
         mService.setWallpaperComponent(sImageWallpaperComponentName, sContext.getOpPackageName(),
                 FLAG_SYSTEM | FLAG_LOCK, testUserId);
 
@@ -1124,15 +1145,19 @@ public class WallpaperManagerServiceTests {
     public void setWallpaperComponent_multiDisplays_displayBecomeIncompatible_shouldHaveExpectedConnections() {
         final int display2 = 2;
         final int display3 = 3;
-        setUpDisplays(List.of(DEFAULT_DISPLAY, display2, display3));
-        mService.removeWallpaperCompatibleDisplayForTest(display2);
         final int testUserId = USER_SYSTEM;
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                display2, true,
+                display3, true));
         mService.switchUser(testUserId, null);
+        doReturn(false).when(mService.mWallpaperCropper).isWallpaperCompatibleForDisplay(
+                eq(display2), any());
+        doReturn(false).when(mService.mWallpaperCropper).isWallpaperCompatibleForDisplay(
+                eq(display3), any());
         // Switch to a test wallpaper and then image wallpaper later to simulate a wallpaper change.
         mService.setWallpaperComponent(TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(),
                 FLAG_SYSTEM | FLAG_LOCK, testUserId);
-        mService.removeWallpaperCompatibleDisplayForTest(display3);
-
         mService.setWallpaperComponent(sImageWallpaperComponentName, sContext.getOpPackageName(),
                 FLAG_SYSTEM | FLAG_LOCK, testUserId);
 
@@ -1159,14 +1184,15 @@ public class WallpaperManagerServiceTests {
     public void setWallpaperComponent_systemAndLockWallpapers_multiDisplays_shouldHaveExpectedConnections() {
         final int incompatibleDisplayId = 2;
         final int compatibleDisplayId = 3;
-        setUpDisplays(List.of(DEFAULT_DISPLAY, incompatibleDisplayId, compatibleDisplayId));
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                incompatibleDisplayId, false,
+                compatibleDisplayId, true));
         final int testUserId = USER_SYSTEM;
         mService.switchUser(testUserId, null);
         // Switch to a test wallpaper and then image wallpaper later to simulate a wallpaper change.
         mService.setWallpaperComponent(TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(),
                 FLAG_SYSTEM | FLAG_LOCK, testUserId);
-        mService.removeWallpaperCompatibleDisplayForTest(incompatibleDisplayId);
-
         mService.setWallpaperComponent(sImageWallpaperComponentName, sContext.getOpPackageName(),
                 FLAG_SYSTEM, testUserId);
 
@@ -1258,21 +1284,27 @@ public class WallpaperManagerServiceTests {
      * to return them. It also sets up the {@link WindowManagerInternal} to indicate that all
      * displays support home.
      *
-     * @param displayIds A list of display IDs to create mock displays for.
+     * @param displayIdsToWallpaperCompatibility A map of display IDs to wallpaper compatibility.
      */
-    private void setUpDisplays(List<Integer> displayIds) {
+    private void setUpDisplays(Map<Integer, Boolean> displayIdsToWallpaperCompatibility) {
+        spyOn(mService.mWallpaperCropper);
         doReturn(true).when(sWindowManagerInternal).isHomeSupportedOnDisplay(anyInt());
 
-        Display[] mockDisplays = new Display[displayIds.size()];
-        for (int i = 0; i < displayIds.size(); i++) {
-            final int displayId = displayIds.get(i);
+        Display[] mockDisplays = new Display[displayIdsToWallpaperCompatibility.size()];
+        int counter = 0;
+        for (Map.Entry<Integer, Boolean> entry : displayIdsToWallpaperCompatibility.entrySet()) {
+            final int displayId = entry.getKey();
+            final boolean compatibleWithWallpaper = entry.getValue();
             final Display mockDisplay = mock(Display.class);
-            mockDisplays[i] = mockDisplay;
+            mockDisplays[counter] = mockDisplay;
             doReturn(DISPLAY_SIZE_DIMENSION).when(mockDisplay).getMaximumSizeDimension();
             doReturn(mockDisplay).when(mDisplayManager).getDisplay(eq(displayId));
             doReturn(displayId).when(mockDisplay).getDisplayId();
             doReturn(true).when(mockDisplay).hasAccess(anyInt());
-            mService.addWallpaperCompatibleDisplayForTest(displayId);
+            doReturn(compatibleWithWallpaper).when(
+                    mService.mWallpaperCropper).isWallpaperCompatibleForDisplay(eq(displayId),
+                    any());
+            counter++;
         }
 
         doReturn(mockDisplays).when(mDisplayManager).getDisplays();
@@ -1295,6 +1327,4 @@ public class WallpaperManagerServiceTests {
             assertEquals(pfdContents, fileContents);
         }
     }
-
-
 }
