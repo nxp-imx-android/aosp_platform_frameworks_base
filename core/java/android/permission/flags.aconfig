@@ -499,3 +499,11 @@ flag {
     description: "Collect sqlite performance metrics for discrete ops."
     bug: "377584611"
 }
+
+flag {
+    name: "app_ops_service_handler_fix"
+    is_fixed_read_only: true
+    namespace: "permissions"
+    description: "Use IoThread handler for AppOpsService background/IO work."
+    bug: "394380603"
+}
