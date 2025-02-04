@@ -67,6 +67,7 @@ import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.ServiceSpecificException;
@@ -1705,7 +1706,9 @@ public final class CameraManager {
             return ICameraService.ROTATION_OVERRIDE_NONE;
         }
 
-        if (context != null) {
+        // Isolated process does not have access to ActivityTaskManager service, which is used
+        // indirectly in `ActivityManager.getAppTasks()`.
+        if (context != null && !Process.isIsolated()) {
             final ActivityManager activityManager = context.getSystemService(ActivityManager.class);
             if (activityManager != null) {
                 for (ActivityManager.AppTask appTask : activityManager.getAppTasks()) {
