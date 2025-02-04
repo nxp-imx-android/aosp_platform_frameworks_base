@@ -106,7 +106,7 @@ public class ExitDesktopTaskTransitionHandler implements Transitions.TransitionH
      * @param position               Position of the task when transition is started
      * @param onAnimationEndCallback to be called after animation
      */
-    public void startTransition(@NonNull DesktopModeTransitionSource transitionSource,
+    public IBinder startTransition(@NonNull DesktopModeTransitionSource transitionSource,
             @NonNull WindowContainerTransaction wct, Point position,
             Function0<Unit> onAnimationEndCallback) {
         mPosition = position;
@@ -114,6 +114,7 @@ public class ExitDesktopTaskTransitionHandler implements Transitions.TransitionH
         final IBinder token = mTransitions.startTransition(getExitTransitionType(transitionSource),
                 wct, this);
         mPendingTransitionTokens.add(token);
+        return token;
     }
 
     @Override

@@ -19,7 +19,9 @@ import android.os.IBinder
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
+import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 
 /**
  * Observer of desk-related transitions, such as adding, removing or activating a whole desk. It
@@ -44,6 +46,7 @@ class DesksTransitionObserver(
     fun onTransitionReady(transition: IBinder, info: TransitionInfo) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         val deskTransition = deskTransitions.remove(transition) ?: return
+        logD("Desk transition ready: %s", deskTransition)
         val desktopRepository = desktopUserRepositories.current
         when (deskTransition) {
             is DeskTransition.RemoveDesk -> {
@@ -88,6 +91,33 @@ class DesksTransitionObserver(
                     )
                 }
             }
+            is DeskTransition.DeactivateDesk -> {
+                for (change in info.changes) {
+                    val isDeskChange = desksOrganizer.isDeskChange(change, deskTransition.deskId)
+                    if (isDeskChange) {
+                        desktopRepository.setDeskInactive(deskId = deskTransition.deskId)
+                        continue
+                    }
+                    val taskId = change.taskInfo?.taskId ?: continue
+                    val removedFromDesk =
+                        desktopRepository.getDeskIdForTask(taskId) == deskTransition.deskId &&
+                            desksOrganizer.getDeskAtEnd(change) == null
+                    if (removedFromDesk) {
+                        desktopRepository.removeTaskFromDesk(
+                            deskId = deskTransition.deskId,
+                            taskId = taskId,
+                        )
+                    }
+                }
+            }
         }
+    }
+
+    private fun logD(msg: String, vararg arguments: Any?) {
+        ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private companion object {
+        private const val TAG = "DesksTransitionObserver"
     }
 }

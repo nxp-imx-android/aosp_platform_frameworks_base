@@ -204,8 +204,8 @@ class DesktopModeShellCommandHandler(private val controller: DesktopTasksControl
                 pw.println("Error: task id should be an integer")
                 return false
             }
-        pw.println("Not implemented.")
-        return false
+        controller.moveToFullscreen(taskId, transitionSource = UNKNOWN)
+        return true
     }
 
     private fun runCanCreateDesk(args: Array<String>, pw: PrintWriter): Boolean {

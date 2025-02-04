@@ -83,6 +83,16 @@ class RootTaskDesksOrganizer(
         )
     }
 
+    override fun deactivateDesk(wct: WindowContainerTransaction, deskId: Int) {
+        logV("deactivateDesk %d", deskId)
+        val root = checkNotNull(roots[deskId]) { "Root not found for desk: $deskId" }
+        wct.setLaunchRoot(
+            /* container= */ root.taskInfo.token,
+            /* windowingModes= */ null,
+            /* activityTypes= */ null,
+        )
+    }
+
     override fun moveTaskToDesk(
         wct: WindowContainerTransaction,
         deskId: Int,
@@ -92,6 +102,9 @@ class RootTaskDesksOrganizer(
         wct.setWindowingMode(task.token, WINDOWING_MODE_UNDEFINED)
         wct.reparent(task.token, root.taskInfo.token, /* onTop= */ true)
     }
+
+    override fun isDeskChange(change: TransitionInfo.Change, deskId: Int): Boolean =
+        roots.contains(deskId) && change.taskInfo?.taskId == deskId
 
     override fun getDeskAtEnd(change: TransitionInfo.Change): Int? =
         change.taskInfo?.parentTaskId?.takeIf { it in roots }
