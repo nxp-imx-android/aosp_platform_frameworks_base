@@ -16,16 +16,20 @@
 
 package com.android.server.wm;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.content.res.Configuration.UI_MODE_TYPE_VR_HEADSET;
 
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
+import static com.android.server.wm.DesktopModeHelper.canEnterDesktopMode;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppCompatTaskInfo;
 import android.app.CameraCompatTaskInfo;
 import android.app.TaskInfo;
+import android.app.WindowConfiguration.WindowingMode;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.view.InsetsSource;
@@ -274,6 +278,14 @@ final class AppCompatUtils {
     static void offsetBounds(@NonNull Configuration inOutConfig, int offsetX, int offsetY) {
         inOutConfig.windowConfiguration.getBounds().offset(offsetX, offsetY);
         inOutConfig.windowConfiguration.getAppBounds().offset(offsetX, offsetY);
+    }
+
+    /**
+     * Return {@code true} if window is currently in desktop mode.
+     */
+    static boolean isInDesktopMode(@NonNull Context context,
+            @WindowingMode int parentWindowingMode) {
+        return parentWindowingMode == WINDOWING_MODE_FREEFORM && canEnterDesktopMode(context);
     }
 
     private static void clearAppCompatTaskInfo(@NonNull AppCompatTaskInfo info) {

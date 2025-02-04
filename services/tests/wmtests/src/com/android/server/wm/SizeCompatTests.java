@@ -4486,6 +4486,49 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
+    @DisableCompatChanges({ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED})
+    public void testInFreeform_boundsSandboxedToAppBounds() {
+        allowDesktopMode();
+        final int dw = 2800;
+        final int dh = 1400;
+        final int notchHeight = 100;
+        final DisplayContent display = new TestDisplayContent.Builder(mAtm, dw, dh)
+                .setNotch(notchHeight)
+                .build();
+        setUpApp(display);
+        prepareUnresizable(mActivity, SCREEN_ORIENTATION_PORTRAIT);
+
+        mTask.mDisplayContent.getDefaultTaskDisplayArea()
+                .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM);
+        mTask.setWindowingMode(WINDOWING_MODE_FREEFORM);
+        Rect appBounds = new Rect(0, 0, 1000, 500);
+        Rect bounds = new Rect(0, 0, 1000, 600);
+        mTask.getWindowConfiguration().setAppBounds(appBounds);
+        mTask.getWindowConfiguration().setBounds(bounds);
+        mActivity.onConfigurationChanged(mTask.getConfiguration());
+
+        // Bounds are sandboxed to appBounds in freeform.
+        assertDownScaled();
+        assertEquals(mActivity.getWindowConfiguration().getAppBounds(),
+                mActivity.getWindowConfiguration().getBounds());
+
+        // Exit freeform.
+        mTask.mDisplayContent.getDefaultTaskDisplayArea()
+                .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FULLSCREEN);
+        mTask.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        mTask.getWindowConfiguration().setBounds(new Rect(0, 0, dw, dh));
+        mActivity.onConfigurationChanged(mTask.getConfiguration());
+        assertFitted();
+        appBounds = mActivity.getWindowConfiguration().getAppBounds();
+        bounds = mActivity.getWindowConfiguration().getBounds();
+        // Bounds are not sandboxed to appBounds.
+        assertNotEquals(appBounds, bounds);
+        assertEquals(notchHeight, appBounds.top - bounds.top);
+    }
+
+
+    @Test
     @EnableFlags(Flags.FLAG_IGNORE_ASPECT_RATIO_RESTRICTIONS_FOR_RESIZEABLE_FREEFORM_ACTIVITIES)
     public void testUserAspectRatioOverridesNotAppliedToResizeableFreeformActivity() {
         final TaskBuilder taskBuilder =
