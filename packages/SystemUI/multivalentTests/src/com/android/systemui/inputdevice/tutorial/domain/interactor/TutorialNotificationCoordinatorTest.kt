@@ -18,6 +18,7 @@ package com.android.systemui.inputdevice.tutorial.domain.interactor
 
 import android.app.Notification
 import android.app.NotificationManager
+import android.service.notification.StatusBarNotification
 import androidx.annotation.StringRes
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -28,6 +29,7 @@ import com.android.systemui.inputdevice.tutorial.ui.TutorialNotificationCoordina
 import com.android.systemui.keyboard.data.repository.FakeKeyboardRepository
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.settings.userTracker
 import com.android.systemui.statusbar.commandline.commandRegistry
@@ -35,6 +37,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.touchpad.data.repository.FakeTouchpadRepository
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.hours
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -44,23 +47,29 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.Captor
 import org.mockito.Mock
+import org.mockito.Mockito.times
 import org.mockito.junit.MockitoJUnit
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.firstValue
 import org.mockito.kotlin.never
+import org.mockito.kotlin.secondValue
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class TutorialNotificationCoordinatorTest : SysuiTestCase() {
 
     private lateinit var underTest: TutorialNotificationCoordinator
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testScope = kosmos.testScope
     private val keyboardRepository = FakeKeyboardRepository()
     private val touchpadRepository = FakeTouchpadRepository()
     private lateinit var repository: TutorialSchedulerRepository
     @Mock private lateinit var notificationManager: NotificationManager
+    @Mock private lateinit var notification: StatusBarNotification
     @Captor private lateinit var notificationCaptor: ArgumentCaptor<Notification>
     @get:Rule val rule = MockitoJUnit.rule()
 
@@ -107,6 +116,7 @@ class TutorialNotificationCoordinatorTest : SysuiTestCase() {
     fun showTouchpadNotification() = runTestAndClear {
         touchpadRepository.setIsAnyTouchpadConnected(true)
         testScope.advanceTimeBy(LAUNCH_DELAY)
+        mockExistingNotification()
         verifyNotification(
             R.string.launch_touchpad_tutorial_notification_title,
             R.string.launch_touchpad_tutorial_notification_content,
@@ -131,6 +141,45 @@ class TutorialNotificationCoordinatorTest : SysuiTestCase() {
             .notifyAsUser(eq(TAG), eq(NOTIFICATION_ID), any(), any())
     }
 
+    @Test
+    fun showKeyboardNotificationThenDisconnectKeyboard() = runTestAndClear {
+        keyboardRepository.setIsAnyKeyboardConnected(true)
+        testScope.advanceTimeBy(LAUNCH_DELAY)
+        verifyNotification(
+            R.string.launch_keyboard_tutorial_notification_title,
+            R.string.launch_keyboard_tutorial_notification_content,
+        )
+        mockExistingNotification()
+
+        // After the keyboard is disconnected, i.e. there is nothing connected, the notification
+        // should be cancelled
+        keyboardRepository.setIsAnyKeyboardConnected(false)
+        verify(notificationManager).cancelAsUser(eq(TAG), eq(NOTIFICATION_ID), any())
+    }
+
+    @Test
+    fun showKeyboardTouchpadNotificationThenDisconnectKeyboard() = runTestAndClear {
+        keyboardRepository.setIsAnyKeyboardConnected(true)
+        touchpadRepository.setIsAnyTouchpadConnected(true)
+        testScope.advanceTimeBy(LAUNCH_DELAY)
+        mockExistingNotification()
+        keyboardRepository.setIsAnyKeyboardConnected(false)
+
+        verify(notificationManager, times(2))
+            .notifyAsUser(eq(TAG), eq(NOTIFICATION_ID), notificationCaptor.capture(), any())
+        // Connect both device and the first notification is for both
+        notificationCaptor.firstValue.verify(
+            R.string.launch_keyboard_touchpad_tutorial_notification_title,
+            R.string.launch_keyboard_touchpad_tutorial_notification_content,
+        )
+        // After the keyboard is disconnected, i.e. with only the touchpad left, the notification
+        // should be update to the one for only touchpad
+        notificationCaptor.secondValue.verify(
+            R.string.launch_touchpad_tutorial_notification_title,
+            R.string.launch_touchpad_tutorial_notification_content,
+        )
+    }
+
     private fun runTestAndClear(block: suspend () -> Unit) =
         testScope.runTest {
             try {
@@ -140,12 +189,21 @@ class TutorialNotificationCoordinatorTest : SysuiTestCase() {
             }
         }
 
+    // Assume that there's an existing notification when the updater checks activeNotifications
+    private fun mockExistingNotification() {
+        whenever(notification.id).thenReturn(NOTIFICATION_ID)
+        whenever(notificationManager.activeNotifications).thenReturn(arrayOf(notification))
+    }
+
     private fun verifyNotification(@StringRes titleResId: Int, @StringRes contentResId: Int) {
         verify(notificationManager)
             .notifyAsUser(eq(TAG), eq(NOTIFICATION_ID), notificationCaptor.capture(), any())
-        val notification = notificationCaptor.value
-        val actualTitle = notification.getString(Notification.EXTRA_TITLE)
-        val actualContent = notification.getString(Notification.EXTRA_TEXT)
+        notificationCaptor.value.verify(titleResId, contentResId)
+    }
+
+    private fun Notification.verify(@StringRes titleResId: Int, @StringRes contentResId: Int) {
+        val actualTitle = getString(Notification.EXTRA_TITLE)
+        val actualContent = getString(Notification.EXTRA_TEXT)
         assertThat(actualTitle).isEqualTo(context.getString(titleResId))
         assertThat(actualContent).isEqualTo(context.getString(contentResId))
     }
