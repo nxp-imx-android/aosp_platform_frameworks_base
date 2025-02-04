@@ -16,6 +16,7 @@
 
 package com.android.systemui.shared.system;
 
+import android.annotation.Nullable;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.RemoteAnimationTarget;
@@ -42,5 +43,5 @@ public interface RecentsAnimationListener {
      * Called when the task of an activity that has been started while the recents animation
      * was running becomes ready for control.
      */
-    void onTasksAppeared(RemoteAnimationTarget[] app);
+    void onTasksAppeared(RemoteAnimationTarget[] app, @Nullable TransitionInfo transitionInfo);
 }

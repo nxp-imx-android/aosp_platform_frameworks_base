@@ -34,6 +34,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -289,6 +290,31 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         mMainExecutor.flushAll();
 
         assertThat(listener.getState()).isEqualTo(TRANSITION_STATE_NOT_RUNNING);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX)
+    public void testMerge_openingTasks_callsOnTasksAppeared() throws Exception {
+        final IRecentsAnimationRunner animationRunner = mock(IRecentsAnimationRunner.class);
+        TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(TRANSIT_OPEN, new TestRunningTaskInfoBuilder().build())
+                .build();
+        final IBinder transition = startRecentsTransition(/* synthetic= */ false, animationRunner);
+        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        mRecentsTransitionHandler.startAnimation(
+                transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransitionInfo,
+                new StubTransaction(),
+                finishT,
+                transition,
+                mock(Transitions.TransitionFinishCallback.class));
+        mMainExecutor.flushAll();
+
+        verify(animationRunner).onTasksAppeared(
+                /* appearedTargets= */ any(), eq(mergeTransitionInfo));
     }
 
     @Test
