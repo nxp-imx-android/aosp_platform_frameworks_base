@@ -23,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.platform.test.annotations.Presubmit;
@@ -238,4 +239,42 @@ public class IntentTest {
         // Not all keys from intent are kept - clip data keys are dropped.
         assertFalse(intent.getExtraIntentKeys().containsAll(originalIntentKeys));
     }
+
+    @Test
+    public void testSetIntentExtrasClassLoaderEffectiveAfterExtraBundleUnparcel() {
+        Intent intent = new Intent();
+        intent.putExtra("bundle", new Bundle());
+
+        final Parcel parcel = Parcel.obtain();
+        intent.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+        final Intent target = new Intent();
+        target.readFromParcel(parcel);
+        target.collectExtraIntentKeys();
+        ClassLoader cl = new ClassLoader() {
+        };
+        target.setExtrasClassLoader(cl);
+        assertThat(target.getBundleExtra("bundle").getClassLoader()).isEqualTo(cl);
+    }
+
+    @Test
+    public void testBundlePutAllClassLoader() {
+        Intent intent = new Intent();
+        Bundle b1 = new Bundle();
+        b1.putBundle("bundle", new Bundle());
+        intent.putExtra("b1", b1);
+        final Parcel parcel = Parcel.obtain();
+        intent.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+        final Intent target = new Intent();
+        target.readFromParcel(parcel);
+
+        ClassLoader cl = new ClassLoader() {
+        };
+        target.setExtrasClassLoader(cl);
+        Bundle b2 = new Bundle();
+        b2.putAll(target.getBundleExtra("b1"));
+        assertThat(b2.getBundle("bundle").getClassLoader()).isEqualTo(cl);
+    }
+
 }
