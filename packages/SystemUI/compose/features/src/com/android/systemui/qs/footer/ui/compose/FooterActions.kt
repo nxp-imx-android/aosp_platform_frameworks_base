@@ -372,7 +372,11 @@ private fun TextButton(
             Modifier.padding(horizontal = dimensionResource(R.dimen.qs_footer_padding)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(icon, Modifier.padding(end = 12.dp).size(20.dp))
+            Icon(
+                icon,
+                Modifier.padding(end = 12.dp).size(20.dp),
+                colorAttr(R.attr.onShadeInactiveVariant),
+            )
 
             Text(
                 text,
@@ -381,6 +385,7 @@ private fun TextButton(
                 // TODO(b/242040009): Remove this letter spacing. We should only use the M3 text
                 // styles without modifying them.
                 letterSpacing = 0.01.em,
+                color = colorAttr(R.attr.onShadeInactiveVariant),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -394,6 +399,7 @@ private fun TextButton(
                     painterResource(com.android.internal.R.drawable.ic_chevron_end),
                     contentDescription = null,
                     Modifier.padding(start = 8.dp).size(20.dp),
+                    colorAttr(R.attr.onShadeInactiveVariant),
                 )
             }
         }
