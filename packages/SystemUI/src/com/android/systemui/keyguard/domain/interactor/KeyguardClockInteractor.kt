@@ -36,6 +36,8 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiAod
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.AODPromotedNotificationInteractor
 import com.android.systemui.util.kotlin.combine
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
 import javax.inject.Inject
@@ -45,6 +47,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -57,6 +60,7 @@ class KeyguardClockInteractor
 constructor(
     mediaCarouselInteractor: MediaCarouselInteractor,
     activeNotificationsInteractor: ActiveNotificationsInteractor,
+    aodPromotedNotificationInteractor: AODPromotedNotificationInteractor,
     shadeInteractor: ShadeInteractor,
     keyguardInteractor: KeyguardInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
@@ -80,11 +84,30 @@ constructor(
 
     var clock: ClockController? by keyguardClockRepository.clockEventController::clock
 
+    private val isAodPromotedNotificationPresent: Flow<Boolean> =
+        if (PromotedNotificationUiAod.isEnabled) {
+            aodPromotedNotificationInteractor.isPresent
+        } else {
+            flowOf(false)
+        }
+
+    private val areAnyNotificationsPresent: Flow<Boolean> =
+        if (PromotedNotificationUiAod.isEnabled) {
+            combine(
+                activeNotificationsInteractor.areAnyNotificationsPresent,
+                isAodPromotedNotificationPresent,
+            ) { areAnyNotificationsPresent, isAodPromotedNotificationPresent ->
+                areAnyNotificationsPresent || isAodPromotedNotificationPresent
+            }
+        } else {
+            activeNotificationsInteractor.areAnyNotificationsPresent
+        }
+
     val clockSize: StateFlow<ClockSize> =
         if (SceneContainerFlag.isEnabled) {
             combine(
                     shadeInteractor.isShadeLayoutWide,
-                    activeNotificationsInteractor.areAnyNotificationsPresent,
+                    areAnyNotificationsPresent,
                     mediaCarouselInteractor.hasActiveMediaOrRecommendation,
                     keyguardInteractor.isDozing,
                     isOnAod,
@@ -110,23 +133,32 @@ constructor(
         if (SceneContainerFlag.isEnabled) {
             combine(
                 shadeInteractor.isShadeLayoutWide,
-                activeNotificationsInteractor.areAnyNotificationsPresent,
+                areAnyNotificationsPresent,
+                isAodPromotedNotificationPresent,
                 isOnAod,
                 headsUpNotificationInteractor.isHeadsUpOrAnimatingAway,
                 keyguardInteractor.isDozing,
-            ) { isShadeLayoutWide, areAnyNotificationsPresent, isOnAod, isHeadsUp, isDozing ->
+            ) {
+                isShadeLayoutWide,
+                areAnyNotificationsPresent,
+                isAodPromotedNotificationPresent,
+                isOnAod,
+                isHeadsUp,
+                isDozing ->
                 when {
                     !isShadeLayoutWide -> true
                     !areAnyNotificationsPresent -> true
                     // Pulsing notification appears on the right. Move clock left to avoid overlap.
                     isHeadsUp && isDozing -> false
+                    isAodPromotedNotificationPresent -> false
                     else -> isOnAod
                 }
             }
         } else {
             combine(
                     shadeInteractor.isShadeLayoutWide,
-                    activeNotificationsInteractor.areAnyNotificationsPresent,
+                    areAnyNotificationsPresent,
+                    isAodPromotedNotificationPresent,
                     keyguardInteractor.dozeTransitionModel,
                     keyguardTransitionInteractor.startedKeyguardTransitionStep.map { it.to == AOD },
                     keyguardTransitionInteractor.startedKeyguardTransitionStep.map {
@@ -140,6 +172,7 @@ constructor(
                 ) {
                     isShadeLayoutWide,
                     areAnyNotificationsPresent,
+                    isAodPromotedNotificationPresent,
                     dozeTransitionModel,
                     startedToAod,
                     startedToLockScreen,
@@ -156,7 +189,7 @@ constructor(
                         // use null to skip emitting wrong value
                         startedToGone || startedToDoze -> null
                         startedToLockScreen -> !areAnyNotificationsPresent
-                        startedToAod -> !isPulsing
+                        startedToAod -> !(isPulsing || isAodPromotedNotificationPresent)
                         else -> true
                     }
                 }

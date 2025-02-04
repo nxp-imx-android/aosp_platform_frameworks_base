@@ -22,6 +22,7 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.aodPromotedNotificationInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
 import com.android.systemui.wallpapers.domain.interactor.wallpaperFocalAreaInteractor
 
@@ -30,6 +31,7 @@ val Kosmos.keyguardClockInteractor by
         KeyguardClockInteractor(
             mediaCarouselInteractor = mediaCarouselInteractor,
             activeNotificationsInteractor = activeNotificationsInteractor,
+            aodPromotedNotificationInteractor = aodPromotedNotificationInteractor,
             shadeInteractor = shadeInteractor,
             keyguardInteractor = keyguardInteractor,
             keyguardTransitionInteractor = keyguardTransitionInteractor,
