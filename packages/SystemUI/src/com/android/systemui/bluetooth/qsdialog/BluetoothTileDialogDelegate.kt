@@ -51,7 +51,7 @@ constructor(
             initialUiProperties: BluetoothDetailsContentViewModel.UiProperties,
             cachedContentHeight: Int,
             dialogCallback: BluetoothTileDialogCallback,
-            dimissListener: Runnable,
+            dismissListener: Runnable,
         ): BluetoothTileDialogDelegate
     }
 
