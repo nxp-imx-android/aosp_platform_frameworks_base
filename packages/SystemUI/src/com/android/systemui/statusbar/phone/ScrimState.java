@@ -17,14 +17,12 @@
 package com.android.systemui.statusbar.phone;
 
 import static com.android.systemui.statusbar.phone.ScrimController.BUSY_SCRIM_ALPHA;
-import static com.android.systemui.statusbar.phone.ScrimController.TRANSPARENT_BOUNCER_SCRIM_ALPHA;
 
 import android.graphics.Color;
 
 import com.android.app.tracing.coroutines.TrackTracer;
 import com.android.systemui.Flags;
 import com.android.systemui.dock.DockManager;
-import com.android.systemui.keyguard.ui.transitions.BlurConfig;
 import com.android.systemui.res.R;
 import com.android.systemui.scrim.ScrimView;
 import com.android.systemui.shade.ui.ShadeColors;
@@ -116,8 +114,8 @@ public enum ScrimState {
         @Override
         public void prepare(ScrimState previousState) {
             if (Flags.bouncerUiRevamp()) {
-                mBehindAlpha = mClipQsScrim ? 0.0f : TRANSPARENT_BOUNCER_SCRIM_ALPHA;
-                mNotifAlpha = mClipQsScrim ? TRANSPARENT_BOUNCER_SCRIM_ALPHA : 0;
+                mBehindAlpha = mDefaultScrimAlpha;
+                mNotifAlpha = 0f;
                 mBehindTint = mNotifTint = mSurfaceColor;
                 mFrontAlpha = 0f;
                 return;
@@ -153,12 +151,11 @@ public enum ScrimState {
                 if (previousState == SHADE_LOCKED) {
                     mBehindAlpha = previousState.getBehindAlpha();
                     mNotifAlpha = previousState.getNotifAlpha();
-                    mNotifBlurRadius = mBlurConfig.getMaxBlurRadiusPx();
                 } else {
                     mNotifAlpha = 0f;
                     mBehindAlpha = 0f;
                 }
-                mFrontAlpha = TRANSPARENT_BOUNCER_SCRIM_ALPHA;
+                mFrontAlpha = mDefaultScrimAlpha;
                 mFrontTint = mSurfaceColor;
                 return;
             }
@@ -403,7 +400,6 @@ public enum ScrimState {
     DozeParameters mDozeParameters;
     DockManager mDockManager;
     boolean mDisplayRequiresBlanking;
-    protected BlurConfig mBlurConfig;
     boolean mLaunchingAffordanceWithPreview;
     boolean mOccludeAnimationPlaying;
     boolean mWakeLockScreenSensorActive;
@@ -417,7 +413,7 @@ public enum ScrimState {
     protected float mNotifBlurRadius = 0.0f;
 
     public void init(ScrimView scrimInFront, ScrimView scrimBehind, DozeParameters dozeParameters,
-            DockManager dockManager, BlurConfig blurConfig) {
+            DockManager dockManager) {
         mBackgroundColor = scrimBehind.getContext().getColor(R.color.shade_scrim_background_dark);
         mScrimInFront = scrimInFront;
         mScrimBehind = scrimBehind;
@@ -425,7 +421,6 @@ public enum ScrimState {
         mDozeParameters = dozeParameters;
         mDockManager = dockManager;
         mDisplayRequiresBlanking = dozeParameters.getDisplayNeedsBlanking();
-        mBlurConfig = blurConfig;
     }
 
     /** Prepare state for transition. */
@@ -535,5 +530,9 @@ public enum ScrimState {
 
     public float getNotifBlurRadius() {
         return mNotifBlurRadius;
+    }
+
+    public void setNotifBlurRadius(float value) {
+        mNotifBlurRadius = value;
     }
 }

@@ -24,6 +24,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import com.android.systemui.window.data.repository.WindowRootViewBlurRepository.Companion.isDisableBlurSysPropSet
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +41,17 @@ interface WindowRootViewBlurRepository {
 
     /** Is blur supported based on settings toggle and battery power saver mode. */
     val isBlurSupported: StateFlow<Boolean>
+
+    companion object {
+        /**
+         * Whether the `persist.sysui.disableBlur` is set, this is used to disable blur for tests.
+         */
+        @JvmStatic
+        fun isDisableBlurSysPropSet() = SystemProperties.getBoolean(DISABLE_BLUR_PROPERTY, false)
+
+        // property that can be used to disable the cross window blur for tests
+        private const val DISABLE_BLUR_PROPERTY = "persist.sysui.disableBlur"
+    }
 }
 
 @SysUISingleton
@@ -58,7 +70,7 @@ constructor(
         conflatedCallbackFlow {
                 val sendUpdate = { value: Boolean ->
                     trySendWithFailureLogging(
-                        !isBlurExplicitlyDisabled() && value,
+                        isBlurAllowed() && value,
                         TAG,
                         "unable to send blur enabled/disable state change",
                     )
@@ -70,14 +82,11 @@ constructor(
             } // stateIn because this is backed by a binder call.
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
-    private fun isBlurExplicitlyDisabled(): Boolean {
-        return !ActivityManager.isHighEndGfx() ||
-            SystemProperties.getBoolean(DISABLE_BLUR_PROPERTY, false)
+    private fun isBlurAllowed(): Boolean {
+        return ActivityManager.isHighEndGfx() && !isDisableBlurSysPropSet()
     }
 
     companion object {
         const val TAG = "WindowRootViewBlurRepository"
-        // property that can be used to disable the cross window blur for tests
-        private const val DISABLE_BLUR_PROPERTY = "persist.sysui.disableBlur"
     }
 }
