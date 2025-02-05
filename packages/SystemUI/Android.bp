@@ -538,6 +538,7 @@ android_library {
     kotlincflags: [
         "-Xjvm-default=all",
         "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+        "-P plugin:androidx.compose.compiler.plugins.kotlin:sourceInformation=true",
     ],
 
     plugins: [
