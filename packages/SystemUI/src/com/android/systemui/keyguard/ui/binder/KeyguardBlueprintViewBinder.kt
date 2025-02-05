@@ -81,6 +81,12 @@ object KeyguardBlueprintViewBinder {
 
                             logger.logConstraintSet(cs, clockViewModel)
                             cs.applyTo(constraintLayout)
+                            if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                                manuallySetDateWeatherConstraintsOnConstraintLayout(
+                                    cs,
+                                    constraintLayout,
+                                )
+                            }
                         }
                     }
                 }
@@ -104,10 +110,34 @@ object KeyguardBlueprintViewBinder {
                                 }
                             logger.logConstraintSet(cs, clockViewModel)
                             cs.applyTo(constraintLayout)
+                            if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                                manuallySetDateWeatherConstraintsOnConstraintLayout(
+                                    cs,
+                                    constraintLayout,
+                                )
+                            }
                         }
                     }
                 }
             }
+        }
+    }
+
+    private fun manuallySetDateWeatherConstraintsOnConstraintLayout(
+        cs: ConstraintSet,
+        constraintLayout: ConstraintLayout,
+    ) {
+        val ids =
+            listOf(
+                sharedR.id.date_smartspace_view,
+                sharedR.id.date_smartspace_view_large,
+                sharedR.id.weather_smartspace_view,
+                sharedR.id.weather_smartspace_view_large,
+            )
+
+        for (i in ids) {
+            constraintLayout.getViewById(i)?.visibility = cs.getVisibility(i)
+            constraintLayout.getViewById(i)?.alpha = cs.getConstraint(i).propertySet.alpha
         }
     }
 
@@ -136,6 +166,24 @@ object KeyguardBlueprintViewBinder {
             val smartspaceDateId = sharedR.id.date_smartspace_view
             int1 = cs.getVisibility(smartspaceDateId)
             str1 = "${cs.getConstraint(smartspaceDateId).propertySet.alpha}"
+        }
+
+        if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+            this.i({ "applyCsToSmartspaceWeather: vis=${getVisText(int1)}; alpha=$str1" }) {
+                val smartspaceDateId = sharedR.id.weather_smartspace_view
+                int1 = cs.getVisibility(smartspaceDateId)
+                str1 = "${cs.getConstraint(smartspaceDateId).propertySet.alpha}"
+            }
+            this.i({ "applyCsToSmartspaceDateLarge: vis=${getVisText(int1)}; alpha=$str1" }) {
+                val smartspaceDateId = sharedR.id.date_smartspace_view_large
+                int1 = cs.getVisibility(smartspaceDateId)
+                str1 = "${cs.getConstraint(smartspaceDateId).propertySet.alpha}"
+            }
+            this.i({ "applyCsToSmartspaceWeatherLarge: vis=${getVisText(int1)}; alpha=$str1" }) {
+                val smartspaceDateId = sharedR.id.weather_smartspace_view_large
+                int1 = cs.getVisibility(smartspaceDateId)
+                str1 = "${cs.getConstraint(smartspaceDateId).propertySet.alpha}"
+            }
         }
     }
 
