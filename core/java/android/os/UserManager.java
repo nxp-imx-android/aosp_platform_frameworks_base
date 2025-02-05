@@ -2462,10 +2462,10 @@ public class UserManager {
      */
     public static final int USER_OPERATION_ERROR_DISABLED_USER = 8;
     /**
-     * Indicates user operation failed because private space is disabled on the device.
+     * Indicates user operation failed because the system features do not support this user type.
      * @hide
      */
-    public static final int USER_OPERATION_ERROR_PRIVATE_PROFILE = 9;
+    public static final int USER_OPERATION_ERROR_FEATURE_UNSUPPORTED = 9;
     /**
      * Indicates user operation failed because user is restricted on the device.
      * @hide
@@ -2488,7 +2488,7 @@ public class UserManager {
             USER_OPERATION_ERROR_MAX_USERS,
             USER_OPERATION_ERROR_USER_ACCOUNT_ALREADY_EXISTS,
             USER_OPERATION_ERROR_DISABLED_USER,
-            USER_OPERATION_ERROR_PRIVATE_PROFILE,
+            USER_OPERATION_ERROR_FEATURE_UNSUPPORTED,
             USER_OPERATION_ERROR_USER_RESTRICTED,
     })
     public @interface UserOperationResult {}
@@ -2648,7 +2648,9 @@ public class UserManager {
     /**
      * Returns whether this device supports multiple users with their own login and customizable
      * space.
-     * @return whether the device supports multiple users.
+     * <p>Note that, even if false, multiple users might still be possible, as long as no login UI
+     * is required; e.g., profiles might still be supported, as they do not require a login UI.
+     * @return whether the device supports multiple switchable users.
      */
     public static boolean supportsMultipleUsers() {
         return getMaxSupportedUsers() > 1
@@ -3343,7 +3345,12 @@ public class UserManager {
     }
 
     /**
-     * Checks if it's possible to add a private profile to the context user
+     * Checks if it's possible to add a private profile to the context user.
+     *
+     * Takes into account any possible considerations, including whether the user type is supported,
+     * maximum user limits, and UserRestrictions (and so is inconsistent with similar APIs in this
+     * class.)
+     *
      * @return whether the context user can add a private profile.
      * @hide
      */
@@ -3351,11 +3358,17 @@ public class UserManager {
     @FlaggedApi(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE)
     @RequiresPermission(anyOf = {
             Manifest.permission.MANAGE_USERS,
-            Manifest.permission.CREATE_USERS})
+            Manifest.permission.CREATE_USERS,
+            Manifest.permission.QUERY_USERS})
     @UserHandleAware
     public boolean canAddPrivateProfile() {
         if (!android.multiuser.Flags.enablePrivateSpaceFeatures()) return false;
         if (android.multiuser.Flags.blockPrivateSpaceCreation()) {
+            // TODO(b/413464199): Ideally, move this client-side, changing it to
+            // if (android.multiuser.Flags.consistentMaxUsers()) {
+            //  return canAddMoreProfilesToUser(USER_TYPE_PROFILE_PRIVATE, mUserId)
+            //          && !hasUserRestriction(UserManager.DISALLOW_ADD_PRIVATE_PROFILE);
+            // }
             try {
                 return mService.canAddPrivateProfile(mUserId);
             } catch (RemoteException re) {
@@ -5259,36 +5272,11 @@ public class UserManager {
     }
 
     /**
-     * Checks whether it's possible to add more users.
-     *
-     * @return true if more users can be added, false if limit has been reached.
-     *
-     * @deprecated use {@link #canAddMoreUsers(String)} instead.
-     *
-     * @hide
-     */
-    @Deprecated
-    @RequiresPermission(anyOf = {
-            android.Manifest.permission.MANAGE_USERS,
-            android.Manifest.permission.CREATE_USERS
-    })
-    public boolean canAddMoreUsers() {
-        // TODO(b/142482943): UMS has different logic, excluding Demo and Profile from counting. Why
-        //                    not here? The logic is inconsistent. See UMS.canAddMoreManagedProfiles
-        final List<UserInfo> users = getAliveUsers();
-        final int totalUserCount = users.size();
-        int aliveUserCount = 0;
-        for (int i = 0; i < totalUserCount; i++) {
-            UserInfo user = users.get(i);
-            if (!user.isGuest()) {
-                aliveUserCount++;
-            }
-        }
-        return aliveUserCount < getMaxSupportedUsers();
-    }
-
-    /**
      * Checks whether it is possible to add more users of the given user type.
+     *
+     * Takes into account whether the user type is supported and maximum user limits, but does not
+     * take into account UserRestrictions.
+     * It is consistent with {@link #getRemainingCreatableUserCount(String)}.
      *
      * @param userType the type of user, such as {@link UserManager#USER_TYPE_FULL_SECONDARY}.
      * @return true if more users of the given type can be added, otherwise false.
@@ -5299,12 +5287,12 @@ public class UserManager {
             android.Manifest.permission.CREATE_USERS
     })
     public boolean canAddMoreUsers(@NonNull String userType) {
+        if (!android.multiuser.Flags.consistentMaxUsers()) {
+            return canAddMoreUsersLegacy(userType);
+        }
         try {
-            if (userType.equals(USER_TYPE_FULL_GUEST)) {
-                return mService.canAddMoreUsersOfType(userType);
-            } else {
-                return canAddMoreUsers() && mService.canAddMoreUsersOfType(userType);
-            }
+            // Differs from getRemainingCreatableUserCount only because of isCreationOverrideEnabled
+            return mService.canAddMoreUsersOfType(userType);
         } catch (RemoteException re) {
             throw re.rethrowFromSystemServer();
         }
@@ -5362,6 +5350,10 @@ public class UserManager {
      * if allowedToRemoveOne is true and if the user already has a managed profile, then return if
      * we could add a new managed profile to this user after removing the existing one.
      *
+     * Takes into account whether the user type is supported and maximum user limits, but does not
+     * take into account UserRestrictions.
+     * It is consistent with {@link #getRemainingCreatableProfileCount(String)}.
+     *
      * @return true if more managed profiles can be added, false if limit has been reached.
      * @hide
      */
@@ -5372,7 +5364,8 @@ public class UserManager {
     })
     public boolean canAddMoreManagedProfiles(@UserIdInt int userId, boolean allowedToRemoveOne) {
         try {
-            return mService.canAddMoreManagedProfiles(userId, allowedToRemoveOne);
+            return mService.canAddMoreProfilesToUser(
+                    USER_TYPE_PROFILE_MANAGED, userId, allowedToRemoveOne);
         } catch (RemoteException re) {
             throw re.rethrowFromSystemServer();
         }
@@ -5380,6 +5373,10 @@ public class UserManager {
 
     /**
      * Checks whether it's possible to add more profiles of the given type to the given user.
+     *
+     * Takes into account whether the user type is supported and maximum user limits, but does not
+     * take into account UserRestrictions.
+     * It is consistent with {@link #getRemainingCreatableProfileCount(String)}.
      *
      * @param userType the type of user, such as {@link UserManager#USER_TYPE_PROFILE_MANAGED}.
      * @return true if more profiles can be added, false if limit has been reached.
@@ -5393,6 +5390,39 @@ public class UserManager {
     public boolean canAddMoreProfilesToUser(@NonNull String userType, @UserIdInt int userId) {
         try {
             return mService.canAddMoreProfilesToUser(userType, userId, false);
+        } catch (RemoteException re) {
+            throw re.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns how many users of the given type are currently allowed on the device, including ones
+     * that already exist.
+     *
+     * Takes into account the maximum number of users allowed on the device (of that type, and in
+     * general), as well as how many users of other types are already on the device (which thereby
+     * already count towards the device maximum). Does not take into account UserRestrictions.
+     * It is consistent with {@link #getRemainingCreatableUserCount(String)}.
+     *
+     * The value will be no less than the number of users of that type that currently exist (even if
+     * that value exceeds the maximum allowed, for whatever reason).
+     *
+     * @return a value greater than or equal to 0
+     * @hide
+     */
+    @RequiresPermission(anyOf = {
+            android.Manifest.permission.MANAGE_USERS,
+            android.Manifest.permission.CREATE_USERS
+    })
+    public int getCurrentAllowedNumberOfUsers(@NonNull String userType) {
+        if (!android.multiuser.Flags.consistentMaxUsers()) {
+            throw new UnsupportedOperationException("This method requires flag consistentMaxUsers");
+        }
+        try {
+            // Note: If we get rid of the overall device max, this should be the same as
+            // UMS.getMaxSupportedUsersOfType(). But even then it can still technically differ if
+            // the max gets exceeded for any reason.
+            return mService.getCurrentAllowedNumberOfUsers(userType);
         } catch (RemoteException re) {
             throw re.rethrowFromSystemServer();
         }
@@ -6506,15 +6536,22 @@ public class UserManager {
     }
 
     /**
-     * Returns the maximum number of users that can be created on this device. A return value
-     * of 1 means that it is a single user device.
-     * @hide
+     * Returns the maximum number of users (of any type) that can be created on this device.
+     * A return value of 1 means that it is a single-user device.
+     *
+     * This value is based on the device's limitation of total number of users. This is typically
+     * limited by storage considerations, not UX considerations (which depends on user type).
+     * Note that this includes all types of users, including profile and guest users
+     * (if {@link android.multiuser.Flags#consistentMaxUsersIncludingGuests()} is true).
+     *
+     * Under very rare circumstances, the number of users on the device can exceed this amount
+     * (such as if it were decreased during an OTA but more users had already been created).
+     *
      * @return a value greater than or equal to 1
+     * @hide
      */
     @UnsupportedAppUsage
     public static int getMaxSupportedUsers() {
-        // Don't allow multiple users on certain builds
-        if (android.os.Build.ID.startsWith("JVP")) return 1;
         return Math.max(1, SystemProperties.getInt("fw.max_users",
                 Resources.getSystem().getInteger(R.integer.config_multiuserMaximumUsers)));
     }
@@ -6826,6 +6863,60 @@ public class UserManager {
     public void setBootUser(@NonNull UserHandle bootUser) {
         try {
             mService.setBootUser(bootUser.getIdentifier());
+        } catch (RemoteException re) {
+            throw re.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Checks whether it's possible to add more users. Legacy version of parameterless
+     * {@link #canAddMoreUsers(String)}. Do not use.
+     *
+     * @return true if more users can be added, false if limit has been reached.
+     *
+     * @deprecated use {@link #canAddMoreUsers(String)} instead.
+     *
+     * @hide
+     */
+    @Deprecated
+    @RequiresPermission(anyOf = {
+            android.Manifest.permission.MANAGE_USERS,
+            android.Manifest.permission.CREATE_USERS
+    })
+    public boolean canAddMoreUsersLegacy() {
+        if (android.multiuser.Flags.consistentMaxUsers()
+                && android.multiuser.Flags.maxUsersInCarIsForSecondary()) {
+            // TODO(b/394178333): When the flags are permanent, delete this method entirely.
+            throw new UnsupportedOperationException("This method is no longer supported");
+        }
+
+        // TODO(b/142482943): UMS has different logic, excluding Demo and Profile from counting.
+        //                    Why not here? The logic is inconsistent. See
+        //                    UMS.canAddMoreManagedProfiles
+        final List<UserInfo> users = getAliveUsers();
+        final int totalUserCount = users.size();
+        int aliveUserCount = 0;
+        for (int i = 0; i < totalUserCount; i++) {
+            UserInfo user = users.get(i);
+            if (!user.isGuest()) {
+                aliveUserCount++;
+            }
+        }
+        return aliveUserCount < getMaxSupportedUsers();
+    }
+
+    /** Legacy version of {@link #canAddMoreUsers(String)}. Do not use. */
+    private boolean canAddMoreUsersLegacy(@NonNull String userType) {
+        if (android.multiuser.Flags.consistentMaxUsers()) {
+            // TODO(b/394178333): When the flag is permanent, delete this method entirely.
+            throw new UnsupportedOperationException("This method is no longer supported");
+        }
+        try {
+            if (userType.equals(USER_TYPE_FULL_GUEST)) {
+                return mService.canAddMoreUsersOfType(userType);
+            } else {
+                return canAddMoreUsersLegacy() && mService.canAddMoreUsersOfType(userType);
+            }
         } catch (RemoteException re) {
             throw re.rethrowFromSystemServer();
         }

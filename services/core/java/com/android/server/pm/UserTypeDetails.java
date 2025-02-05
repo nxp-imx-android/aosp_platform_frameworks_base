@@ -67,6 +67,8 @@ public final class UserTypeDetails {
     /**
      * Maximum number of this user type allowed on the device.
      * Use {@link #UNLIMITED_NUMBER_OF_USERS} to indicate that there is no hard limit.
+     * Note that all user types are also implicitly bound
+     * by {@link UserManager#getMaxSupportedUsers()}.
      */
     private final int mMaxAllowed;
 
@@ -229,6 +231,8 @@ public final class UserTypeDetails {
     /**
      * Returns the maximum number of this user type allowed on the device.
      * <p>Returns {@link #UNLIMITED_NUMBER_OF_USERS} to indicate that there is no hard limit.
+     * Note that all user types are also implicitly bound
+     * by {@link UserManager#getMaxSupportedUsers()}.
      */
     public int getMaxAllowed() {
         return mMaxAllowed;
@@ -439,7 +443,7 @@ public final class UserTypeDetails {
         private String mName; // This MUST be explicitly set.
         private int mBaseType; // This MUST be explicitly set.
         private int mMaxAllowed = UNLIMITED_NUMBER_OF_USERS;
-        private int mMaxAllowedPerParent = UNLIMITED_NUMBER_OF_USERS;
+        private int mMaxAllowedPerParent = 0;
         private int mDefaultUserInfoPropertyFlags = 0;
         private @Nullable Bundle mDefaultRestrictions = null;
         private @Nullable Bundle mDefaultSystemSettings = null;

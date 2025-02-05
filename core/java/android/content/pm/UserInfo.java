@@ -473,7 +473,7 @@ public class UserInfo implements Parcelable {
 
     /**
      * @return true if user is of type {@link UserManager#USER_TYPE_SYSTEM_HEADLESS} and
-     * {@link com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser} is true.
+     * {@link com.android.internal.R.bool#config_canSwitchToHeadlessSystemUser} is true.
      */
     @android.ravenwood.annotation.RavenwoodThrow
     private boolean canSwitchToHeadlessSystemUser() {
@@ -491,8 +491,10 @@ public class UserInfo implements Parcelable {
         return supportsSwitchTo();
     }
 
-    // TODO(b/142482943): Make this logic more specific and customizable. (canHaveProfile(userType))
-    /* @hide */
+    /**
+     * Returns whether the user can have profiles, in general (on the basis of its UserInfo data).
+     * See {@link #canHaveProfile(String)} for more fine-grained determination.
+     */
     public boolean canHaveProfile() {
         if (!isFull() || isProfile() || isGuest() || isRestricted() || isDemo()) {
             return false;
@@ -504,6 +506,22 @@ public class UserInfo implements Parcelable {
                 || (android.multiuser.Flags.profilesForAll()
                         && Resources.getSystem().getBoolean(
                                 com.android.internal.R.bool.config_supportProfilesOnNonMainUser));
+    }
+
+    /**
+     * Returns if the user can have a profile of the given type (on the basis of its UserInfo data).
+     * @hide
+     */
+    public boolean canHaveProfile(String userType) {
+        if (!canHaveProfile()) {
+            return false;
+        }
+        if (UserManager.isUserTypePrivateProfile(userType)) {
+            // Even if we eventually allow other users to have profiles too, only MainUsers are
+            // eligible to have a Private Space, for some reason.
+            return isMain();
+        }
+        return true;
     }
 
     // TODO(b/142482943): Get rid of this (after removing it from all tests) if feasible.

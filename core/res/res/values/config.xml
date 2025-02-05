@@ -3173,10 +3173,18 @@
     <!-- The default value if the SyncStorageEngine should sync automatically or not -->
     <bool name="config_syncstorageengine_masterSyncAutomatically">true</bool>
 
-    <!--  Maximum number of supported users -->
+    <!--  Maximum number of supported users, including all types of users (profiles, guests, demo,
+          etc.).
+          Setting to 1 enforces a single-user device.
+          For devices that support multiple users, the limit here should be based on overall
+          device storage capabilities and therefore could be set very high.
+          To limit the number of any particular user type, e.g. for UX considerations, set the
+          appropriate maximum in {@link com.android.internal.R.xml#config_user_types}.
+          Normally, storage shouldn't be the limiting factor, so this value should be at least as
+          large as the sum of all individual user type maxima. -->
     <integer name="config_multiuserMaximumUsers">1</integer>
 
-    <!-- Maximum number of users we allow to be running at a time -->
+    <!-- Maximum number of users we allow to be running at a time. -->
     <integer name="config_multiuserMaxRunningUsers">3</integer>
 
     <!-- Number of seconds of uptime after a full user enters the background before we attempt to
