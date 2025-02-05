@@ -789,7 +789,13 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
     int64_t frameDeadline = mCurrentFrameInfo->get(FrameInfoIndex::FrameDeadline);
     int64_t dequeueBufferDuration = mCurrentFrameInfo->get(FrameInfoIndex::DequeueBufferDuration);
 
-    mHintSessionWrapper->updateTargetWorkDuration(frameDeadline - intendedVsync);
+    if (Properties::calcWorkloadOrigDeadline()) {
+        // Uses the unmodified frame deadline in calculating workload target duration
+        mHintSessionWrapper->updateTargetWorkDuration(
+                mCurrentFrameInfo->get(FrameInfoIndex::WorkloadTarget));
+    } else {
+        mHintSessionWrapper->updateTargetWorkDuration(frameDeadline - intendedVsync);
+    }
 
     if (didDraw) {
         int64_t frameStartTime = mCurrentFrameInfo->get(FrameInfoIndex::FrameStartTime);

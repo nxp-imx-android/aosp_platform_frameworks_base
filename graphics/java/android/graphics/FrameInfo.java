@@ -95,7 +95,8 @@ public final class FrameInfo {
 
     // Must be the last one
     // This value must be in sync with `UI_THREAD_FRAME_INFO_SIZE` in FrameInfo.h
-    private static final int FRAME_INFO_SIZE = FRAME_INTERVAL + 1;
+    // In calculating size, + 1 for Flags, and + 1 for WorkloadTarget from FrameInfo.h
+    private static final int FRAME_INFO_SIZE = FRAME_INTERVAL + 2;
 
     /** checkstyle */
     public void setVsync(long intendedVsync, long usedVsync, long frameTimelineVsyncId,
