@@ -16,9 +16,19 @@
 
 package com.android.server.updates;
 
+import android.content.Context;
+import android.content.Intent;
+
 public class CertPinInstallReceiver extends ConfigUpdateInstallReceiver {
 
     public CertPinInstallReceiver() {
         super("/data/misc/keychain/", "pins", "metadata/", "version");
+    }
+
+    @Override
+    public void onReceive(final Context context, final Intent intent) {
+        if (!com.android.server.flags.Flags.certpininstallerRemoval()) {
+            super.onReceive(context, intent);
+        }
     }
 }
