@@ -1065,13 +1065,13 @@ public abstract class Layout {
                         var newBackground = determineContrastingBackgroundColor(index);
                         var hasBgColorChanged = newBackground != bgPaint.getColor();
 
-                        if (lineNum != mLastLineNum || hasBgColorChanged) {
-                            // Skip processing if the character is a space or a tap to avoid
-                            // rendering an abrupt, empty rectangle.
-                            if (Character.isWhitespace(mText.charAt(index))) {
-                                return;
-                            }
+                        // Skip processing if the character is a space or a tap to avoid
+                        // rendering an abrupt, empty rectangle.
+                        if (TextLine.isLineEndSpace(mText.charAt(index))) {
+                            return;
+                        }
 
+                        if (lineNum != mLastLineNum || hasBgColorChanged) {
                             // Draw what we have so far, then reset the rect and update its color
                             drawRect();
                             mLineBackground.set(left, top, right, bottom);
@@ -4620,6 +4620,16 @@ public abstract class Layout {
      * Callback for {@link #forEachCharacterBounds(int, int, int, int, CharacterBoundsListener)}
      */
     private interface CharacterBoundsListener {
+        /**
+         * Called for each character with its bounds.
+         *
+         * @param index the index of the character
+         * @param lineNum the line number of the character
+         * @param left the left edge of the character
+         * @param top the top edge of the character
+         * @param right the right edge of the character
+         * @param bottom the bottom edge of the character
+         */
         void onCharacterBounds(int index, int lineNum, float left, float top, float right,
                 float bottom);
 
