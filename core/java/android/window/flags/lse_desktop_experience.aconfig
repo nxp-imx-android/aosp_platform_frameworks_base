@@ -572,6 +572,13 @@ flag {
 }
 
 flag {
+    name: "enable_display_reconnect_interaction"
+    namespace: "lse_desktop_experience"
+    description: "Enables new interaction that occurs when a display is reconnected."
+    bug: "365873835"
+}
+
+flag {
     name: "show_desktop_experience_dev_option"
     namespace: "lse_desktop_experience"
     description: "Replace the freeform windowing dev options with a desktop experience one."
