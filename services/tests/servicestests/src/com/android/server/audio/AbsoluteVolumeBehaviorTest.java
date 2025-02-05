@@ -111,12 +111,13 @@ public class AbsoluteVolumeBehaviorTest {
                 mTestLooper.getLooper(), mock(AppOpsManager.class), mock(PermissionEnforcer.class),
                 mock(AudioServerPermissionProvider.class), r -> r.run()) {
             @Override
-            public int getDeviceForStream(int stream) {
+            public int getDeviceForStream(int stream, boolean selectAbsoluteDevices) {
                 return AudioSystem.DEVICE_OUT_SPEAKER;
             }
 
             @Override
-            public AudioDeviceAttributes getDeviceAttributesForStream(int stream) {
+            public AudioDeviceAttributes getDeviceAttributesForStream(int stream,
+                    boolean selectAbsoluteDevices) {
                 return DEVICE_SPEAKER_OUT;
             }
         };
