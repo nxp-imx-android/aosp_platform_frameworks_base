@@ -1811,6 +1811,7 @@
     <dimen name="ongoing_activity_chip_text_end_padding_for_embedded_padding_icon">6dp</dimen>
     <dimen name="ongoing_activity_chip_text_fading_edge_length">12dp</dimen>
     <dimen name="ongoing_activity_chip_corner_radius">28dp</dimen>
+    <dimen name="ongoing_activity_chip_outline_width">2px</dimen>
 
     <!-- Status bar user chip -->
     <dimen name="status_bar_user_chip_avatar_size">16dp</dimen>
