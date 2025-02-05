@@ -2940,6 +2940,13 @@ package android.app.smartspace.uitemplatedata {
 
 package android.app.supervision {
 
+  @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public class SupervisionAppService extends android.app.Service {
+    ctor public SupervisionAppService();
+    method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public void onDisabled();
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public void onEnabled();
+  }
+
   @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public class SupervisionManager {
     method @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") @Nullable @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.QUERY_USERS}) public android.content.Intent createConfirmSupervisionCredentialsIntent();
     method @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.QUERY_USERS}) public boolean isSupervisionEnabled();
