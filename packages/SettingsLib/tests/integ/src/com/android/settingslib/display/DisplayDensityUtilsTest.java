@@ -88,8 +88,8 @@ public class DisplayDensityUtilsTest {
 
     @Test
     public void createDisplayDensityUtil_onlyDefaultDisplay() throws RemoteException {
-        var info = createDisplayInfoForDisplay(Display.DEFAULT_DISPLAY, Display.TYPE_INTERNAL, 2560,
-                1600, 320);
+        var info = createDisplayInfoForDisplay(
+                Display.DEFAULT_DISPLAY, Display.TYPE_INTERNAL, 2560, 1600, 320);
         var display = new Display(mDisplayManagerGlobal, info.displayId, info,
                 (DisplayAdjustments) null);
         doReturn(new Display[]{display}).when(mDisplayManager).getDisplays(any());
@@ -124,6 +124,33 @@ public class DisplayDensityUtilsTest {
         mDisplayDensityUtils = new DisplayDensityUtils(mContext);
 
         assertThat(mDisplayDensityUtils.getValues()).isEqualTo(new int[]{330, 390, 426, 462, 500});
+    }
+
+    @Test
+    public void createDisplayDensityUtil_forExternalDisplay() throws RemoteException {
+        // Default display
+        var defaultDisplayInfo = createDisplayInfoForDisplay(Display.DEFAULT_DISPLAY,
+                Display.TYPE_INTERNAL, 2000, 2000, 390);
+        var defaultDisplay = new Display(mDisplayManagerGlobal, defaultDisplayInfo.displayId,
+                defaultDisplayInfo,
+                (DisplayAdjustments) null);
+        doReturn(defaultDisplay).when(mDisplayManager).getDisplay(defaultDisplayInfo.displayId);
+
+        // Create external display
+        var externalDisplayInfo = createDisplayInfoForDisplay(/* displayId= */ 2,
+                Display.TYPE_EXTERNAL, 1920, 1080, 85);
+        var externalDisplay = new Display(mDisplayManagerGlobal, externalDisplayInfo.displayId,
+                externalDisplayInfo,
+                (DisplayAdjustments) null);
+
+        doReturn(new Display[]{externalDisplay, defaultDisplay}).when(mDisplayManager).getDisplays(
+                any());
+        doReturn(externalDisplay).when(mDisplayManager).getDisplay(externalDisplayInfo.displayId);
+
+        mDisplayDensityUtils = new DisplayDensityUtils(mContext,
+                (info) -> info.displayId == externalDisplayInfo.displayId);
+
+        assertThat(mDisplayDensityUtils.getValues()).isEqualTo(new int[]{72, 85, 94, 102, 112});
     }
 
     private DisplayInfo createDisplayInfoForDisplay(int displayId, int displayType,
