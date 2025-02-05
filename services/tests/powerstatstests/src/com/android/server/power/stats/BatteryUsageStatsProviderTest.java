@@ -580,7 +580,7 @@ public class BatteryUsageStatsProviderTest {
         accumulateBatteryUsageStats(batteryStats, 10000000, 0);
         // Accumulate every 200 bytes of battery history
         accumulateBatteryUsageStats(batteryStats, 200, 2);
-        accumulateBatteryUsageStats(batteryStats, 50, 4);
+        accumulateBatteryUsageStats(batteryStats, 50, 5);
         // Accumulate on every invocation of accumulateBatteryUsageStats
         accumulateBatteryUsageStats(batteryStats, 0, 7);
     }
@@ -617,6 +617,9 @@ public class BatteryUsageStatsProviderTest {
 
         assertThat(stats.getStatsStartTimestamp()).isEqualTo(5 * MINUTE_IN_MS);
         assertThat(stats.getStatsEndTimestamp()).isEqualTo(115 * MINUTE_IN_MS);
+        assertThat(stats.getAggregateBatteryConsumer(
+                BatteryUsageStats.AGGREGATE_BATTERY_CONSUMER_SCOPE_DEVICE)
+                .getConsumedPower()).isEqualTo(1200);    // 1_200_000 uAh converted to mAh
         assertBatteryConsumer(stats, 360.0, 60 * MINUTE_IN_MS);
         assertBatteryConsumer(stats, APP_UID, 360.0, 60 * MINUTE_IN_MS);
 
@@ -655,6 +658,9 @@ public class BatteryUsageStatsProviderTest {
 
         setTime(10 * MINUTE_IN_MS);
         synchronized (batteryStats) {
+            batteryStats.setBatteryStateLocked(BatteryManager.BATTERY_STATUS_DISCHARGING, 100,
+                    /* plugType */ 0, 90, 72, 3700, 3_600_000, 4_000_000, 0,
+                    10 * MINUTE_IN_MS, 10 * MINUTE_IN_MS, 10 * MINUTE_IN_MS);
             batteryStats.noteFlashlightOnLocked(APP_UID,
                     10 * MINUTE_IN_MS, 10 * MINUTE_IN_MS);
         }
@@ -663,6 +669,9 @@ public class BatteryUsageStatsProviderTest {
 
         setTime(20 * MINUTE_IN_MS);
         synchronized (batteryStats) {
+            batteryStats.setBatteryStateLocked(BatteryManager.BATTERY_STATUS_DISCHARGING, 100,
+                    /* plugType */ 0, 85, 72, 3700, 3_000_000, 4_000_000, 0,
+                    20 * MINUTE_IN_MS, 20 * MINUTE_IN_MS, 20 * MINUTE_IN_MS);
             batteryStats.noteFlashlightOffLocked(APP_UID,
                     20 * MINUTE_IN_MS, 20 * MINUTE_IN_MS);
         }
@@ -682,6 +691,9 @@ public class BatteryUsageStatsProviderTest {
 
         setTime(50 * MINUTE_IN_MS);
         synchronized (batteryStats) {
+            batteryStats.setBatteryStateLocked(BatteryManager.BATTERY_STATUS_DISCHARGING, 100,
+                    /* plugType */ 0, 80, 72, 3700, 2_400_000, 4_000_000, 0,
+                    50 * MINUTE_IN_MS, 50 * MINUTE_IN_MS, 50 * MINUTE_IN_MS);
             batteryStats.noteFlashlightOffLocked(APP_UID,
                     50 * MINUTE_IN_MS, 50 * MINUTE_IN_MS);
         }
@@ -718,6 +730,10 @@ public class BatteryUsageStatsProviderTest {
         assertThat(stats.getBatteryTimeRemainingMs()).isEqualTo(111);
         assertThat(stats.getChargeTimeRemainingMs()).isEqualTo(777);
         assertThat(stats.getBatteryCapacity()).isEqualTo(4000);  // from PowerProfile
+
+        assertThat(stats.getAggregateBatteryConsumer(
+                        BatteryUsageStats.AGGREGATE_BATTERY_CONSUMER_SCOPE_DEVICE)
+                .getConsumedPower()).isEqualTo(1200);    // 3_600_000-2_400_000 uAh converted to mAh
 
         // Total: 10 + 20 + 30 = 60
         assertBatteryConsumer(stats, 360.0, 60 * MINUTE_IN_MS);

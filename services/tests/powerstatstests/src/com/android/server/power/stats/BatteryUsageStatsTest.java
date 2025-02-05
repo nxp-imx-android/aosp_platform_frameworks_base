@@ -327,9 +327,9 @@ public class BatteryUsageStatsTest {
                 new BatteryUsageStats.Builder(new String[]{"FOO"}, true,
                         includeScreenState, includePowerState, 0)
                         .setBatteryCapacity(4000)
-                        .setDischargePercentage(20)
-                        .setDischargedPowerRange(1000, 2000)
-                        .setDischargeDurationMs(1234)
+                        .addDischargePercentage(20)
+                        .addDischargedPowerRange(1000, 2000)
+                        .addDischargeDurationMs(1234)
                         .setStatsStartTimestamp(1000)
                         .setStatsEndTimestamp(3000);
 
@@ -371,8 +371,8 @@ public class BatteryUsageStatsTest {
         final BatteryUsageStats.Builder builder =
                 new BatteryUsageStats.Builder(customPowerComponentNames,
                         includeProcessStateData, true, true, 0);
-        builder.setDischargePercentage(30)
-                .setDischargedPowerRange(1234, 2345)
+        builder.addDischargePercentage(30)
+                .addDischargedPowerRange(1234, 2345)
                 .setStatsStartTimestamp(2000)
                 .setStatsEndTimestamp(5000);
 
