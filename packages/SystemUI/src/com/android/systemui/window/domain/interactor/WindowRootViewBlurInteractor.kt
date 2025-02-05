@@ -16,6 +16,7 @@
 
 package com.android.systemui.window.domain.interactor
 
+import android.annotation.SuppressLint
 import android.util.Log
 import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
@@ -28,6 +29,7 @@ import com.android.systemui.window.data.repository.WindowRootViewBlurRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -52,6 +54,8 @@ constructor(
     private val communalInteractor: CommunalInteractor,
     private val repository: WindowRootViewBlurRepository,
 ) {
+    @SuppressLint("SharedFlowCreation") private val _onBlurAppliedEvent = MutableSharedFlow<Int>()
+
     private var isBouncerTransitionInProgress: StateFlow<Boolean> =
         if (Flags.bouncerUiRevamp()) {
             keyguardTransitionInteractor
@@ -68,7 +72,7 @@ constructor(
      * root view.
      */
     suspend fun onBlurApplied(appliedBlurRadius: Int) {
-        repository.onBlurApplied.emit(appliedBlurRadius)
+        _onBlurAppliedEvent.emit(appliedBlurRadius)
     }
 
     /** Radius of blur to be applied on the window root view. */
@@ -77,7 +81,7 @@ constructor(
     /**
      * Emits the applied blur radius whenever blur is successfully applied to the window root view.
      */
-    val onBlurAppliedEvent: Flow<Int> = repository.onBlurApplied
+    val onBlurAppliedEvent: Flow<Int> = _onBlurAppliedEvent
 
     /** Whether the blur applied is opaque or transparent. */
     val isBlurOpaque: Flow<Boolean> =

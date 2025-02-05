@@ -16,10 +16,8 @@
 
 package com.android.systemui.window.data.repository
 
-import android.annotation.SuppressLint
 import com.android.systemui.dagger.SysUISingleton
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /** Repository that maintains state for the window blur effect. */
@@ -28,6 +26,4 @@ class WindowRootViewBlurRepository @Inject constructor() {
     val blurRadius = MutableStateFlow(0)
 
     val isBlurOpaque = MutableStateFlow(false)
-
-    @SuppressLint("SharedFlowCreation") val onBlurApplied = MutableSharedFlow<Int>()
 }
