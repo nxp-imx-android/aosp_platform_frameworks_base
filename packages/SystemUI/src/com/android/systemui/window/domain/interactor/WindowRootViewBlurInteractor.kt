@@ -75,6 +75,12 @@ constructor(
         _onBlurAppliedEvent.emit(appliedBlurRadius)
     }
 
+    /**
+     * Whether blur is enabled or not based on settings toggle, critical thermal state, battery save
+     * state and multimedia tunneling state.
+     */
+    val isBlurCurrentlySupported: StateFlow<Boolean> = repository.isBlurSupported
+
     /** Radius of blur to be applied on the window root view. */
     val blurRadius: StateFlow<Int> = repository.blurRadius.asStateFlow()
 
