@@ -32,12 +32,14 @@ import com.airbnb.lottie.SimpleColorFilter
 import com.airbnb.lottie.model.KeyPath
 import com.airbnb.lottie.value.LottieValueCallback
 import com.android.internal.R as internalR
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.UiBackground
 import com.android.systemui.lottie.await
 import com.android.systemui.res.R
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialog
 import com.android.systemui.volume.dialog.settings.domain.VolumeDialogSettingsButtonInteractor
+import com.android.systemui.volume.dialog.ui.VolumeDialogUiEvent
 import com.android.systemui.volume.panel.component.mediaoutput.domain.interactor.MediaDeviceSessionInteractor
 import com.android.systemui.volume.panel.component.mediaoutput.domain.interactor.MediaOutputInteractor
 import com.android.systemui.volume.panel.shared.model.filterData
@@ -71,6 +73,7 @@ constructor(
     mediaOutputInteractor: MediaOutputInteractor,
     private val mediaDeviceSessionInteractor: MediaDeviceSessionInteractor,
     private val interactor: VolumeDialogSettingsButtonInteractor,
+    private val uiEventLogger: UiEventLogger,
 ) {
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -160,6 +163,7 @@ constructor(
 
     fun onButtonClicked() {
         interactor.onButtonClicked()
+        uiEventLogger.log(VolumeDialogUiEvent.VOLUME_DIALOG_SETTINGS_CLICK)
     }
 
     private data class PlaybackStates(val isPreviousActive: Boolean?, val isCurrentActive: Boolean)
