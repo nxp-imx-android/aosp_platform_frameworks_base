@@ -117,15 +117,24 @@ public class BubbleTaskViewHelper {
                         Context context =
                                 mContext.createContextAsUser(
                                         mBubble.getUser(), Context.CONTEXT_RESTRICTED);
-                        PendingIntent pi = PendingIntent.getActivity(
-                                context,
-                                /* requestCode= */ 0,
-                                mBubble.getIntent()
-                                        .addFlags(FLAG_ACTIVITY_MULTIPLE_TASK),
-                                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
-                                /* options= */ null);
-                        mTaskView.startActivity(pi, /* fillInIntent= */ null, options,
-                                launchBounds);
+                        Intent fillInIntent = null;
+                        //first try get pending intent from the bubble
+                        PendingIntent pi = mBubble.getPendingIntent();
+                        if (pi == null) {
+                            // if null - create new one
+                            pi = PendingIntent.getActivity(
+                                    context,
+                                    /* requestCode= */ 0,
+                                    mBubble.getIntent()
+                                            .addFlags(FLAG_ACTIVITY_MULTIPLE_TASK),
+                                    PendingIntent.FLAG_IMMUTABLE
+                                            | PendingIntent.FLAG_UPDATE_CURRENT,
+                                    /* options= */ null);
+                        } else {
+                            fillInIntent = new Intent(pi.getIntent());
+                            fillInIntent.addFlags(FLAG_ACTIVITY_MULTIPLE_TASK);
+                        }
+                        mTaskView.startActivity(pi, fillInIntent, options, launchBounds);
                     } else if (isShortcutBubble) {
                         options.setLaunchedFromBubble(true);
                         options.setApplyActivityFlagsForBubbles(true);
