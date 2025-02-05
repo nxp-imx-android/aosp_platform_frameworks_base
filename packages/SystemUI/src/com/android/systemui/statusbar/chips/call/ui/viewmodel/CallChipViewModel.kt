@@ -32,9 +32,7 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.StatusBarChipLogTags.pad
 import com.android.systemui.statusbar.chips.StatusBarChipsLog
 import com.android.systemui.statusbar.chips.call.domain.interactor.CallChipInteractor
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
-import com.android.systemui.statusbar.chips.ui.model.ColorsModel.Companion.toCustomColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel
@@ -86,12 +84,7 @@ constructor(
                                 OngoingActivityChipModel.ChipIcon.SingleColorIcon(phoneIcon)
                             }
 
-                        val colors =
-                            if (StatusBarNotifChips.isEnabled && state.promotedContent != null) {
-                                state.promotedContent.toCustomColorsModel()
-                            } else {
-                                ColorsModel.Themed
-                            }
+                        val colors = ColorsModel.AccentThemed
 
                         // This block mimics OngoingCallController#updateChip.
                         if (state.startTimeMs <= 0L) {

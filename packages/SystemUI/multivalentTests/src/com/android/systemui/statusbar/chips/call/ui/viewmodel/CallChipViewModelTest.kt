@@ -31,7 +31,6 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
@@ -265,91 +264,25 @@ class CallChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun chip_positiveStartTime_notPromoted_colorsAreThemed() =
+    fun chip_positiveStartTime_colorsAreAccentThemed() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
 
             repo.setOngoingCallState(inCallModel(startTimeMs = 1000, promotedContent = null))
 
             assertThat((latest as OngoingActivityChipModel.Active).colors)
-                .isEqualTo(ColorsModel.Themed)
+                .isEqualTo(ColorsModel.AccentThemed)
         }
 
     @Test
-    fun chip_zeroStartTime_notPromoted_colorsAreThemed() =
+    fun chip_zeroStartTime_colorsAreAccentThemed() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
 
             repo.setOngoingCallState(inCallModel(startTimeMs = 0, promotedContent = null))
 
             assertThat((latest as OngoingActivityChipModel.Active).colors)
-                .isEqualTo(ColorsModel.Themed)
-        }
-
-    @Test
-    @DisableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun chip_positiveStartTime_promoted_notifChipsFlagOff_colorsAreThemed() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.chip)
-
-            repo.setOngoingCallState(
-                inCallModel(startTimeMs = 1000, promotedContent = PROMOTED_CONTENT_WITH_COLOR)
-            )
-
-            assertThat((latest as OngoingActivityChipModel.Active).colors)
-                .isEqualTo(ColorsModel.Themed)
-        }
-
-    @Test
-    @DisableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun chip_zeroStartTime_promoted_notifChipsFlagOff_colorsAreThemed() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.chip)
-
-            repo.setOngoingCallState(
-                inCallModel(startTimeMs = 0, promotedContent = PROMOTED_CONTENT_WITH_COLOR)
-            )
-
-            assertThat((latest as OngoingActivityChipModel.Active).colors)
-                .isEqualTo(ColorsModel.Themed)
-        }
-
-    @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun chip_positiveStartTime_promoted_notifChipsFlagOn_colorsAreCustom() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.chip)
-
-            repo.setOngoingCallState(
-                inCallModel(startTimeMs = 1000, promotedContent = PROMOTED_CONTENT_WITH_COLOR)
-            )
-
-            assertThat((latest as OngoingActivityChipModel.Active).colors)
-                .isEqualTo(
-                    ColorsModel.Custom(
-                        backgroundColorInt = PROMOTED_BACKGROUND_COLOR,
-                        primaryTextColorInt = PROMOTED_PRIMARY_TEXT_COLOR,
-                    )
-                )
-        }
-
-    @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun chip_zeroStartTime_promoted_notifChipsFlagOff_colorsAreCustom() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.chip)
-
-            repo.setOngoingCallState(
-                inCallModel(startTimeMs = 0, promotedContent = PROMOTED_CONTENT_WITH_COLOR)
-            )
-
-            assertThat((latest as OngoingActivityChipModel.Active).colors)
-                .isEqualTo(
-                    ColorsModel.Custom(
-                        backgroundColorInt = PROMOTED_BACKGROUND_COLOR,
-                        primaryTextColorInt = PROMOTED_PRIMARY_TEXT_COLOR,
-                    )
-                )
+                .isEqualTo(ColorsModel.AccentThemed)
         }
 
     @Test
