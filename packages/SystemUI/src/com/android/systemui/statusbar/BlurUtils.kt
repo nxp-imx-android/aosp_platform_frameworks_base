@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar
 
 import android.app.ActivityManager
+import android.content.res.Resources
 import android.os.SystemProperties
 import android.os.Trace
 import android.os.Trace.TRACE_TAG_APP
@@ -28,20 +29,28 @@ import android.view.SurfaceControl
 import android.view.ViewRootImpl
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.Dumpable
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
 import java.io.PrintWriter
 import javax.inject.Inject
 import com.android.systemui.keyguard.ui.transitions.BlurConfig
+import com.android.systemui.res.R
 
 @SysUISingleton
 open class BlurUtils @Inject constructor(
+    @Main resources: Resources,
     blurConfig: BlurConfig,
     private val crossWindowBlurListeners: CrossWindowBlurListeners,
     dumpManager: DumpManager
 ) : Dumpable {
     val minBlurRadius = blurConfig.minBlurRadiusPx
-    val maxBlurRadius = blurConfig.maxBlurRadiusPx
+    val maxBlurRadius = if (Flags.notificationShadeBlur()) {
+        blurConfig.maxBlurRadiusPx
+    } else {
+        resources.getDimensionPixelSize(R.dimen.max_window_blur_radius).toFloat()
+    }
 
     private var lastAppliedBlur = 0
     private var earlyWakeupEnabled = false
