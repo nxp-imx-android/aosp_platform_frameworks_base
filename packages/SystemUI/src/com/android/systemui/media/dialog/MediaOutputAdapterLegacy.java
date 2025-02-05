@@ -61,8 +61,8 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     private static final int UNMUTE_DEFAULT_VOLUME = 2;
-    private static final float DEVICE_DISABLED_ALPHA = 0.5f;
-    private static final float DEVICE_ACTIVE_ALPHA = 1f;
+    @VisibleForTesting static final float DEVICE_DISABLED_ALPHA = 0.5f;
+    @VisibleForTesting static final float DEVICE_ACTIVE_ALPHA = 1f;
     View mHolderView;
     private boolean mIsInitVolumeFirstTime;
 
