@@ -86,3 +86,10 @@ flag {
     description: "Enable the time notifications feature, a toggle to enable/disable time-related notifications in Date & Time Settings"
     bug: "283267917"
 }
+
+flag {
+    name: "certpininstaller_removal"
+    namespace: "network_security"
+    description: "Remove CertPinInstallReceiver from the platform"
+    bug: "391205997"
+}
