@@ -153,7 +153,6 @@ public final class Settings {
      * Output: Nothing.
      */
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
-    @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final String ACTION_SATELLITE_SETTING = "android.settings.SATELLITE_SETTING";
 
     /**

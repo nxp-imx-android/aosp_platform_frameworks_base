@@ -2330,8 +2330,6 @@ public class TelephonyCallback {
         }
 
         public void onCarrierRoamingNtnModeChanged(boolean active) {
-            if (!Flags.carrierEnabledSatelliteFlag()) return;
-
             CarrierRoamingNtnListener listener =
                     (CarrierRoamingNtnListener) mTelephonyCallbackWeakRef.get();
             if (listener == null) return;
