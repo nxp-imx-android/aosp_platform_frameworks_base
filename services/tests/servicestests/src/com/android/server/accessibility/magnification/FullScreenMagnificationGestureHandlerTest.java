@@ -1419,6 +1419,12 @@ public class FullScreenMagnificationGestureHandlerTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
+    public void testMouseMoveEventsDoNotMoveMagnifierViewport() {
+        runMoveEventsDoNotMoveMagnifierViewport(InputDevice.SOURCE_MOUSE);
+    }
+
+    @Test
     public void testStylusMoveEventsDoNotMoveMagnifierViewport() {
         runMoveEventsDoNotMoveMagnifierViewport(InputDevice.SOURCE_STYLUS);
     }
@@ -1467,11 +1473,28 @@ public class FullScreenMagnificationGestureHandlerTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
+    public void testMouseHoverMoveEventsDoNotMoveMagnifierViewport() {
+        // Note that this means mouse hover shouldn't be handled here.
+        // FullScreenMagnificationPointerMotionEventFilter handles mouse input events.
+        runHoverMoveEventsDoNotMoveMagnifierViewport(InputDevice.SOURCE_MOUSE);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
+    public void testStylusHoverMoveEventsDoNotMoveMagnifierViewport() {
+        // TODO(b/398984690): We will revisit the behavior.
+        runHoverMoveEventsDoNotMoveMagnifierViewport(InputDevice.SOURCE_STYLUS);
+    }
+
+    @Test
+    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
     public void testMouseHoverMoveEventsMoveMagnifierViewport() {
         runHoverMovesViewportTest(InputDevice.SOURCE_MOUSE);
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
     public void testStylusHoverMoveEventsMoveMagnifierViewport() {
         runHoverMovesViewportTest(InputDevice.SOURCE_STYLUS);
     }
@@ -1497,6 +1520,7 @@ public class FullScreenMagnificationGestureHandlerTest {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
     public void testMouseMoveEventsMoveMagnifierViewport() {
         final EventCaptor eventCaptor = new EventCaptor();
         mMgh.setNext(eventCaptor);
