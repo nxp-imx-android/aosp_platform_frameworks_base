@@ -31,6 +31,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -43,9 +44,13 @@ import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Context;
 import android.media.MediaRoute2Info;
+import android.media.MediaRouter2;
+import android.media.MediaRouter2.DeviceSuggestionsCallback;
+import android.media.MediaRouter2.RoutingController;
 import android.media.MediaRouter2Manager;
 import android.media.RouteListingPreference;
 import android.media.RoutingSessionInfo;
+import android.media.SuggestedDeviceInfo;
 import android.media.session.MediaSessionManager;
 import android.os.Build;
 import android.platform.test.annotations.EnableFlags;
@@ -64,6 +69,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -141,6 +148,12 @@ public class InfoMediaManagerTest {
     private MediaSessionManager mMediaSessionManager;
     @Mock
     private ComponentName mComponentName;
+    @Mock private MediaRouter2 mRouter2;
+    @Mock private RoutingController mRoutingController;
+    @Captor private ArgumentCaptor<DeviceSuggestionsCallback> mDeviceSuggestionsCallbackCaptor;
+
+    @Captor
+    private ArgumentCaptor<InfoMediaManager.SuggestedDeviceState> mSuggestedDeviceStateCaptor;
 
     private ManagerInfoMediaManager mInfoMediaManager;
     private Context mContext;
@@ -161,6 +174,9 @@ public class InfoMediaManagerTest {
                         /* mediaController */ null);
         mShadowRouter2Manager = ShadowRouter2Manager.getShadow();
         mInfoMediaManager.mRouterManager = MediaRouter2Manager.getInstance(mContext);
+        when(mRouter2.getController(any())).thenReturn(mRoutingController);
+        when(mRouter2.getControllers()).thenReturn(List.of(mRoutingController));
+        when(mRoutingController.getRoutingSessionInfo()).thenReturn(TEST_SYSTEM_ROUTING_SESSION);
     }
 
     @Test
@@ -445,6 +461,7 @@ public class InfoMediaManagerTest {
         availableRoutes.add(availableInfo4);
 
         when(mRouterManager.getAvailableRoutes(packageName)).thenReturn(availableRoutes);
+        when(mRoutingController.getSelectableRoutes()).thenReturn(availableRoutes);
 
         return availableRoutes;
     }
@@ -940,6 +957,192 @@ public class InfoMediaManagerTest {
         assertThat(device instanceof BluetoothMediaDevice).isTrue();
         assertThat(device.getState()).isEqualTo(STATE_SELECTED);
         assertThat(mInfoMediaManager.getCurrentConnectedDevice()).isEqualTo(device);
+    }
+
+    private RouterInfoMediaManager createRouterInfoMediaManager() {
+        return new RouterInfoMediaManager(
+                mContext,
+                TEST_PACKAGE_NAME,
+                mContext.getUser(),
+                mLocalBluetoothManager,
+                /* mediaController */ null,
+                mRouter2,
+                mRouterManager);
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @Test
+    public void onSuggestionUpdated_listenersNotified() {
+        SuggestedDeviceInfo suggestedDeviceInfo =
+                new SuggestedDeviceInfo.Builder()
+                        .setDeviceDisplayName("device_name")
+                        .setRouteId(TEST_ID_3)
+                        .setType(0)
+                        .build();
+        RouterInfoMediaManager mediaManager = createRouterInfoMediaManager();
+        setAvailableRoutesList(TEST_PACKAGE_NAME);
+        mediaManager.registerCallback(mCallback);
+        clearInvocations(mCallback);
+        verify(mRouter2)
+                .registerDeviceSuggestionsCallback(
+                        any(), mDeviceSuggestionsCallbackCaptor.capture());
+
+        mDeviceSuggestionsCallbackCaptor
+                .getValue()
+                .onSuggestionUpdated("random_package_name", List.of(suggestedDeviceInfo));
+
+        verify(mCallback).onDeviceListAdded(any());
+        verify(mCallback).onSuggestedDeviceUpdated(mSuggestedDeviceStateCaptor.capture());
+        assertThat(mSuggestedDeviceStateCaptor.getValue().getSuggestedDeviceInfo())
+                .isEqualTo(suggestedDeviceInfo);
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @Test
+    public void onSuggestionUpdated_mediaDeviceIsSuggested() {
+        SuggestedDeviceInfo suggestedDeviceInfo =
+                new SuggestedDeviceInfo.Builder()
+                        .setDeviceDisplayName("device_name")
+                        .setRouteId(TEST_ID_3)
+                        .setType(0)
+                        .build();
+        RouterInfoMediaManager mediaManager = createRouterInfoMediaManager();
+        setAvailableRoutesList(TEST_PACKAGE_NAME);
+        mediaManager.registerCallback(mCallback);
+        clearInvocations(mCallback);
+        verify(mRouter2)
+                .registerDeviceSuggestionsCallback(
+                        any(), mDeviceSuggestionsCallbackCaptor.capture());
+
+        mDeviceSuggestionsCallbackCaptor
+                .getValue()
+                .onSuggestionUpdated("random_package_name", List.of(suggestedDeviceInfo));
+
+        MediaDevice mediaDevice = mediaManager.mMediaDevices.get(1);
+        assertThat(mediaDevice.getId()).isEqualTo(TEST_ID_3);
+        assertThat(mediaDevice.isSuggestedDevice()).isTrue();
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @Test
+    public void onSuggestionUpdated_noSuggestedDevices_noSuggestedMediaDevices() {
+        SuggestedDeviceInfo suggestedDeviceInfo =
+                new SuggestedDeviceInfo.Builder()
+                        .setDeviceDisplayName("device_name")
+                        .setRouteId(TEST_ID_3)
+                        .setType(0)
+                        .build();
+        RouterInfoMediaManager mediaManager = createRouterInfoMediaManager();
+        setAvailableRoutesList(TEST_PACKAGE_NAME);
+        mediaManager.registerCallback(mCallback);
+        clearInvocations(mCallback);
+        verify(mRouter2)
+                .registerDeviceSuggestionsCallback(
+                        any(), mDeviceSuggestionsCallbackCaptor.capture());
+
+        mDeviceSuggestionsCallbackCaptor
+                .getValue()
+                .onSuggestionUpdated("random_package_name", List.of(suggestedDeviceInfo));
+        mDeviceSuggestionsCallbackCaptor
+                .getValue()
+                .onSuggestionUpdated("random_package_name", null);
+
+        MediaDevice mediaDevice = mediaManager.mMediaDevices.get(1);
+        assertThat(mediaDevice.getId()).isEqualTo(TEST_ID_3);
+        assertThat(mediaDevice.isSuggestedDevice()).isFalse();
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @Test
+    public void onSuggestionUpdated_multipleProviders_noSuggestedMediaDevices() {
+        SuggestedDeviceInfo suggestedDeviceInfo1 =
+                new SuggestedDeviceInfo.Builder()
+                        .setDeviceDisplayName("device_name")
+                        .setRouteId(TEST_ID_3)
+                        .setType(0)
+                        .build();
+        SuggestedDeviceInfo suggestedDeviceInfo2 =
+                new SuggestedDeviceInfo.Builder()
+                        .setDeviceDisplayName("device_name_2")
+                        .setRouteId(TEST_ID_3)
+                        .setType(0)
+                        .build();
+        RouterInfoMediaManager mediaManager = createRouterInfoMediaManager();
+        setAvailableRoutesList(TEST_PACKAGE_NAME);
+        mediaManager.registerCallback(mCallback);
+        clearInvocations(mCallback);
+        verify(mRouter2)
+                .registerDeviceSuggestionsCallback(
+                        any(), mDeviceSuggestionsCallbackCaptor.capture());
+
+        mDeviceSuggestionsCallbackCaptor
+                .getValue()
+                .onSuggestionUpdated("random_package_name_1", List.of(suggestedDeviceInfo1));
+        mDeviceSuggestionsCallbackCaptor
+                .getValue()
+                .onSuggestionUpdated("random_package_name_2", List.of(suggestedDeviceInfo2));
+
+        MediaDevice mediaDevice = mediaManager.mMediaDevices.get(1);
+        assertThat(mediaDevice.getId()).isEqualTo(TEST_ID_3);
+        assertThat(mediaDevice.isSuggestedDevice()).isFalse();
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @Test
+    public void onSuggestionUpdated_firstSuggestionFromSamePackage_suggestionIsFromSamePackage() {
+        SuggestedDeviceInfo suggestedDeviceInfo =
+                new SuggestedDeviceInfo.Builder()
+                        .setDeviceDisplayName("device_name")
+                        .setRouteId(TEST_ID_3)
+                        .setType(0)
+                        .build();
+        RouterInfoMediaManager mediaManager = createRouterInfoMediaManager();
+        setAvailableRoutesList(TEST_PACKAGE_NAME);
+        mediaManager.registerCallback(mCallback);
+        clearInvocations(mCallback);
+        verify(mRouter2)
+                .registerDeviceSuggestionsCallback(
+                        any(), mDeviceSuggestionsCallbackCaptor.capture());
+
+        mDeviceSuggestionsCallbackCaptor
+                .getValue()
+                .onSuggestionUpdated(TEST_PACKAGE_NAME, List.of(suggestedDeviceInfo));
+        mDeviceSuggestionsCallbackCaptor
+                .getValue()
+                .onSuggestionUpdated("random_package_name", null);
+
+        MediaDevice mediaDevice = mediaManager.mMediaDevices.get(1);
+        assertThat(mediaDevice.getId()).isEqualTo(TEST_ID_3);
+        assertThat(mediaDevice.isSuggestedDevice()).isTrue();
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @Test
+    public void onSuggestionUpdated_laterSuggestionFromSamePackage_suggestionIsFromSamePackage() {
+        SuggestedDeviceInfo suggestedDeviceInfo =
+                new SuggestedDeviceInfo.Builder()
+                        .setDeviceDisplayName("device_name")
+                        .setRouteId(TEST_ID_3)
+                        .setType(0)
+                        .build();
+        RouterInfoMediaManager mediaManager = createRouterInfoMediaManager();
+        setAvailableRoutesList(TEST_PACKAGE_NAME);
+        mediaManager.registerCallback(mCallback);
+        clearInvocations(mCallback);
+        verify(mRouter2)
+                .registerDeviceSuggestionsCallback(
+                        any(), mDeviceSuggestionsCallbackCaptor.capture());
+
+        mDeviceSuggestionsCallbackCaptor
+                .getValue()
+                .onSuggestionUpdated("random_package_name", null);
+        mDeviceSuggestionsCallbackCaptor
+                .getValue()
+                .onSuggestionUpdated(TEST_PACKAGE_NAME, List.of(suggestedDeviceInfo));
+
+        MediaDevice mediaDevice = mediaManager.mMediaDevices.get(1);
+        assertThat(mediaDevice.getId()).isEqualTo(TEST_ID_3);
+        assertThat(mediaDevice.isSuggestedDevice()).isTrue();
     }
 
     @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
