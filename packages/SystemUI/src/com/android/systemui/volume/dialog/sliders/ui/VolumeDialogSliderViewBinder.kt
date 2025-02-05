@@ -47,6 +47,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.compose.theme.PlatformTheme
 import com.android.compose.ui.graphics.painter.DrawablePainter
 import com.android.systemui.haptics.slider.compose.ui.SliderHapticsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
@@ -77,16 +78,18 @@ constructor(
     fun bind(view: View) {
         val sliderComposeView: ComposeView = view.requireViewById(R.id.volume_dialog_slider)
         sliderComposeView.setContent {
-            VolumeDialogSlider(
-                viewModel = viewModel,
-                overscrollViewModel = overscrollViewModel,
-                hapticsViewModelFactory =
-                    if (com.android.systemui.Flags.hapticsForComposeSliders()) {
-                        hapticsViewModelFactory
-                    } else {
-                        null
-                    },
-            )
+            PlatformTheme {
+                VolumeDialogSlider(
+                    viewModel = viewModel,
+                    overscrollViewModel = overscrollViewModel,
+                    hapticsViewModelFactory =
+                        if (com.android.systemui.Flags.hapticsForComposeSliders()) {
+                            hapticsViewModelFactory
+                        } else {
+                            null
+                        },
+                )
+            }
         }
     }
 }
@@ -99,7 +102,6 @@ private fun VolumeDialogSlider(
     hapticsViewModelFactory: SliderHapticsViewModel.Factory?,
     modifier: Modifier = Modifier,
 ) {
-
     val colors =
         SliderDefaults.colors(
             thumbColor = MaterialTheme.colorScheme.primary,
@@ -205,7 +207,7 @@ private fun BoxScope.VolumeIcon(
 ) {
     AnimatedVisibility(
         visible = isVisible,
-        enter = fadeIn(animationSpec = tween(durationMillis = 50)),
+        enter = fadeIn(animationSpec = tween(delayMillis = 33, durationMillis = 100)),
         exit = fadeOut(animationSpec = tween(durationMillis = 50)),
         modifier = modifier.align(Alignment.Center).size(40.dp).padding(10.dp),
     ) {

@@ -150,6 +150,7 @@ import java.util.Optional
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
+import kotlin.jvm.optionals.getOrNull
 
 /** Handles moving tasks in and out of desktop */
 class DesktopTasksController(
@@ -2706,6 +2707,7 @@ class DesktopTasksController(
                     taskSurface,
                     rootTaskDisplayAreaOrganizer,
                     dragStartState,
+                    bubbleController.getOrNull()?.bubbleDropTargetBoundsProvider,
                 )
         if (visualIndicator == null) visualIndicator = indicator
         return indicator.updateIndicatorType(PointF(inputX, taskTop))
@@ -2788,7 +2790,11 @@ class DesktopTasksController(
                     desktopModeWindowDecoration,
                 )
             }
-            IndicatorType.NO_INDICATOR -> {
+            IndicatorType.NO_INDICATOR,
+            IndicatorType.TO_BUBBLE_LEFT_INDICATOR,
+            IndicatorType.TO_BUBBLE_RIGHT_INDICATOR -> {
+                // TODO(b/391928049): add support fof dragging desktop apps to a bubble
+
                 // Create a copy so that we can animate from the current bounds if we end up having
                 // to snap the surface back without a WCT change.
                 val destinationBounds = Rect(currentDragBounds)
@@ -2914,6 +2920,11 @@ class DesktopTasksController(
                     DesktopUiEventEnum.DESKTOP_WINDOW_APP_HANDLE_DRAG_TO_SPLIT_SCREEN,
                 )
                 requestSplit(taskInfo, leftOrTop = false)
+            }
+            IndicatorType.TO_BUBBLE_LEFT_INDICATOR,
+            IndicatorType.TO_BUBBLE_RIGHT_INDICATOR -> {
+                // TODO(b/388851898): move to bubble
+                cancelDragToDesktop(taskInfo)
             }
         }
         return indicatorType

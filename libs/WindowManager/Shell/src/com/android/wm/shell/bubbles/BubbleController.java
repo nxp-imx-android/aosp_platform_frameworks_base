@@ -116,6 +116,7 @@ import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.BubbleBarUpdate;
+import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.sysui.ConfigurationChangeListener;
 import com.android.wm.shell.sysui.ShellCommandHandler;
@@ -419,10 +420,11 @@ public class BubbleController implements ConfigurationChangeListener,
         mBubbleData.setSuppressionChangedListener(this::onBubbleMetadataFlagChanged);
         mDataRepository.setSuppressionChangedListener(this::onBubbleMetadataFlagChanged);
         mBubbleData.setPendingIntentCancelledListener(bubble -> {
-            if (bubble.getBubbleIntent() == null) {
+            if (bubble.getPendingIntent() == null) {
                 return;
             }
-            if (bubble.isIntentActive() || mBubbleData.hasBubbleInStackWithKey(bubble.getKey())) {
+            if (bubble.isPendingIntentActive()
+                    || mBubbleData.hasBubbleInStackWithKey(bubble.getKey())) {
                 bubble.setPendingIntentCanceled();
                 return;
             }
@@ -921,6 +923,11 @@ public class BubbleController implements ConfigurationChangeListener,
     /** Contains information to help position things on the screen. */
     @VisibleForTesting
     public BubblePositioner getPositioner() {
+        return mBubblePositioner;
+    }
+
+    /** Provides bounds for drag zone drop targets */
+    public BubbleDropTargetBoundsProvider getBubbleDropTargetBoundsProvider() {
         return mBubblePositioner;
     }
 
@@ -1663,7 +1670,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 // It's in the overflow, so remove it & reinflate
                 mBubbleData.dismissBubbleWithKey(noteBubbleKey, Bubbles.DISMISS_NOTIF_CANCEL);
                 // Update the bubble entry in the overflow with the latest intent.
-                b.setAppBubbleIntent(intent);
+                b.setIntent(intent);
             } else {
                 // Notes bubble does not exist, lets add and expand it
                 b = Bubble.createNotesBubble(intent, user, icon, mMainExecutor,

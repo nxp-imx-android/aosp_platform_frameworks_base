@@ -47,7 +47,7 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
 
     init {
         fun createController(cfg: LayerConfig) {
-            val controller = SimpleDigitalHandLayerController(clockCtx, cfg)
+            val controller = SimpleDigitalHandLayerController(clockCtx, cfg, isLargeClock = true)
             view.addView(controller.view)
             layerControllers.add(controller)
         }
@@ -55,31 +55,20 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
         val layerCfg =
             LayerConfig(
                 style = FontTextStyle(lineHeight = 147.25f),
+                timespec = DigitalTimespec.DIGIT_PAIR,
+                alignment = DigitalAlignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER),
                 aodStyle =
                     FontTextStyle(
                         transitionInterpolator = Interpolators.EMPHASIZED,
                         transitionDuration = 750,
                     ),
-                alignment =
-                    DigitalAlignment(HorizontalAlignment.CENTER, VerticalAlignment.BASELINE),
 
-                // Placeholders
-                timespec = DigitalTimespec.TIME_FULL_FORMAT,
+                // Placeholder
                 dateTimeFormat = "hh:mm",
             )
 
-        createController(
-            layerCfg.copy(timespec = DigitalTimespec.FIRST_DIGIT, dateTimeFormat = "hh")
-        )
-        createController(
-            layerCfg.copy(timespec = DigitalTimespec.SECOND_DIGIT, dateTimeFormat = "hh")
-        )
-        createController(
-            layerCfg.copy(timespec = DigitalTimespec.FIRST_DIGIT, dateTimeFormat = "mm")
-        )
-        createController(
-            layerCfg.copy(timespec = DigitalTimespec.SECOND_DIGIT, dateTimeFormat = "mm")
-        )
+        createController(layerCfg.copy(dateTimeFormat = "hh"))
+        createController(layerCfg.copy(dateTimeFormat = "mm"))
     }
 
     private fun refreshTime() {
