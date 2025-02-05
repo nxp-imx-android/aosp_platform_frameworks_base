@@ -163,6 +163,7 @@ constructor(
             if (entry in nextMap) nextMap.remove(entry)
             if (entry in nextList) nextList.remove(entry)
 
+            outcome = "add next"
             addToNext(entry, runnable)
 
             // Shorten headsUpEntryShowing display time
@@ -174,7 +175,7 @@ constructor(
                 headsUpEntryShowing!!.updateEntry(
                     /* updatePostTime= */ false,
                     /* updateEarliestRemovalTime= */ false,
-                    /* reason= */ "avalanche duration update",
+                    /* reason= */ "shorten duration of previously-last HUN",
                 )
             }
         }
@@ -402,11 +403,7 @@ constructor(
                     debugRunnableLabelMap.remove(r)
                 }
             }
-            val queue = ArrayList<String>()
-            for (entry in listToDrop) {
-                queue.add("[${getKey(entry)}]")
-            }
-            val dropList = java.lang.String.join("\n", queue)
+            val dropList = listToDrop.joinToString("\n ") { getKey(it) }
             headsUpManagerLogger.logDroppedHuns(dropList)
         }
         clearNext()
@@ -432,31 +429,23 @@ constructor(
     // Methods below are for logging only ==========================================================
 
     private fun getStateStr(): String {
-        return "\navalanche state:" +
-            "\n\tshowing: [${getKey(headsUpEntryShowing)}]" +
-            "\n\tprevious: [$previousHunKey]" +
-            "\n\tnext list: $nextListStr" +
-            "\n\tnext map: $nextMapStr" +
-            "\nBHUM.mHeadsUpEntryMap: " +
-            baseEntryMapStr()
+        return "\n[AC state]" +
+                "\nshow: ${getKey(headsUpEntryShowing)}" +
+                "\nprevious: $previousHunKey" +
+                "\n$nextStr" +
+                "\n[HeadsUpManagerImpl.mHeadsUpEntryMap] " + baseEntryMapStr() + "\n"
     }
 
-    private val nextListStr: String
+    private val nextStr: String
         get() {
-            val queue = ArrayList<String>()
-            for (entry in nextList) {
-                queue.add("[${getKey(entry)}]")
+            val nextListStr = nextList.joinToString("\n ") { getKey(it) }
+            if (nextList.toSet() == nextMap.keys.toSet()) {
+                return "next (${nextList.size}):\n $nextListStr"
             }
-            return java.lang.String.join("\n", queue)
-        }
-
-    private val nextMapStr: String
-        get() {
-            val queue = ArrayList<String>()
-            for (entry in nextMap.keys) {
-                queue.add("[${getKey(entry)}]")
-            }
-            return java.lang.String.join("\n", queue)
+            // This should never happen
+            val nextMapStr = nextMap.keys.joinToString("\n ") { getKey(it) }
+            return "next list (${nextList.size}):\n $nextListStr" +
+                    "\nnext map (${nextMap.size}):\n $nextMapStr"
         }
 
     fun getKey(entry: HeadsUpEntry?): String {

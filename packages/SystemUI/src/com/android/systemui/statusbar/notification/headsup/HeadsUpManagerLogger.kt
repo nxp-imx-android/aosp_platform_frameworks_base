@@ -71,7 +71,7 @@ constructor(@NotificationHeadsUpLog private val buffer: LogBuffer) {
                 str3 = outcome
                 bool1 = isEnabled
             },
-            { "$str1\n\t=> AC[enabled:$bool1] update: $str2\n\t=> $str3" },
+            { "$str1\n=> AC[enabled:$bool1] update: $str2\n=> $str3" },
         )
     }
 
@@ -90,7 +90,7 @@ constructor(@NotificationHeadsUpLog private val buffer: LogBuffer) {
                 str3 = outcome
                 bool1 = isEnabled
             },
-            { "$str1\n\t=> AC[enabled:$bool1] delete: $str2\n\t=> $str3" },
+            { "$str1\n=> AC[enabled:$bool1] delete: $str2\n=> $str3" },
         )
     }
 
@@ -351,7 +351,7 @@ constructor(@NotificationHeadsUpLog private val buffer: LogBuffer) {
     }
 
     fun logDroppedHuns(entryList: String) {
-        buffer.log(TAG, VERBOSE, { str1 = entryList }, { "[AC] Drop HUNs: $str1" })
+        buffer.log(TAG, VERBOSE, { str1 = entryList }, { "[AC] dropped:\n $str1" })
     }
 }
 
