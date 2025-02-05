@@ -81,7 +81,7 @@ class DefaultClockProviderTest : SysuiTestCase() {
         whenever(mockSmallClockView.getLayoutParams()).thenReturn(FrameLayout.LayoutParams(10, 10))
         whenever(mockLargeClockView.getLayoutParams()).thenReturn(FrameLayout.LayoutParams(10, 10))
 
-        provider = DefaultClockProvider(context, layoutInflater, resources)
+        provider = DefaultClockProvider(context, layoutInflater, resources, vibrator = null)
     }
 
     @Test

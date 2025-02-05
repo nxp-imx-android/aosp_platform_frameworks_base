@@ -58,6 +58,7 @@ class SimpleDigitalClockTextViewTest : SysuiTestCase() {
                     },
                     ClockMessageBuffers(messageBuffer),
                     messageBuffer,
+                    vibrator = null,
                 ),
                 isLargeClock = false,
             )
