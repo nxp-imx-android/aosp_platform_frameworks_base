@@ -26,6 +26,7 @@ import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.util.MobileMappingsProxy
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 class FakeMobileIconsInteractor(
     mobileMappings: MobileMappingsProxy,
@@ -72,6 +73,8 @@ class FakeMobileIconsInteractor(
     override val isSingleCarrier = MutableStateFlow(true)
 
     override val icons: MutableStateFlow<List<MobileIconInteractor>> = MutableStateFlow(emptyList())
+
+    override val isStackable: StateFlow<Boolean> = MutableStateFlow(false)
 
     private val _defaultMobileIconMapping = MutableStateFlow(TEST_MAPPING)
     override val defaultMobileIconMapping = _defaultMobileIconMapping

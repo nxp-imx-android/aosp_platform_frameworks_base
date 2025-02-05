@@ -1,0 +1,90 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
+
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class StackedMobileIconViewModel
+@AssistedInject
+constructor(mobileIconsViewModel: MobileIconsViewModel) : ExclusiveActivatable() {
+    private val hydrator = Hydrator("StackedMobileIconViewModel")
+
+    private val isStackable: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isStackable",
+            source = mobileIconsViewModel.isStackable,
+            initialValue = false,
+        )
+
+    private val iconViewModelFlow: StateFlow<List<MobileIconViewModelCommon>> =
+        mobileIconsViewModel.mobileSubViewModels
+
+    val dualSim: DualSim? by
+        hydrator.hydratedStateOf(
+            traceName = "dualSim",
+            source =
+                iconViewModelFlow.flatMapLatest { viewModels ->
+                    combine(viewModels.map { it.icon }) { icons ->
+                        icons
+                            .toList()
+                            .filterIsInstance<SignalIconModel.Cellular>()
+                            .takeIf { it.size == 2 }
+                            ?.let { DualSim(it[0], it[1]) }
+                    }
+                },
+            initialValue = null,
+        )
+
+    val networkTypeIcon: Icon.Resource? by
+        hydrator.hydratedStateOf(
+            traceName = "networkTypeIcon",
+            source =
+                iconViewModelFlow.flatMapLatest { viewModels ->
+                    viewModels.firstOrNull()?.networkTypeIcon ?: flowOf(null)
+                },
+            initialValue = null,
+        )
+
+    val isIconVisible: Boolean by derivedStateOf { isStackable && dualSim != null }
+
+    override suspend fun onActivated(): Nothing {
+        hydrator.activate()
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(): StackedMobileIconViewModel
+    }
+
+    data class DualSim(
+        val primary: SignalIconModel.Cellular,
+        val secondary: SignalIconModel.Cellular,
+    )
+}
