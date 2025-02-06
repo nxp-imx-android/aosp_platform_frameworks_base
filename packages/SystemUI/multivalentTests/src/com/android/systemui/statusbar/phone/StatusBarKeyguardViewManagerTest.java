@@ -64,11 +64,9 @@ import com.android.keyguard.KeyguardMessageArea;
 import com.android.keyguard.KeyguardMessageAreaController;
 import com.android.keyguard.KeyguardSecurityModel;
 import com.android.keyguard.KeyguardUpdateMonitor;
-import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.keyguard.ViewMediatorCallback;
 import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
-import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor;
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerCallbackInteractor;
@@ -144,7 +142,6 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     @Mock private SysuiStatusBarStateController mStatusBarStateController;
     @Mock private KeyguardUpdateMonitor mKeyguardUpdateMonitor;
     @Mock private View mNotificationContainer;
-    @Mock private KeyguardBypassController mBypassController;
     @Mock private KeyguardMessageAreaController.Factory mKeyguardMessageAreaFactory;
     @Mock private KeyguardMessageAreaController mKeyguardMessageAreaController;
     @Mock private KeyguardMessageArea mKeyguardMessageArea;
@@ -156,7 +153,6 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     @Mock private PrimaryBouncerCallbackInteractor mPrimaryBouncerCallbackInteractor;
     @Mock private PrimaryBouncerInteractor mPrimaryBouncerInteractor;
     @Mock private AlternateBouncerInteractor mAlternateBouncerInteractor;
-    @Mock private UdfpsOverlayInteractor mUdfpsOverlayInteractor;
     @Mock private ActivityStarter mActivityStarter;
     @Mock private BouncerView mBouncerView;
     @Mock private BouncerViewDelegate mBouncerViewDelegate;
@@ -165,7 +161,6 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     @Mock private NotificationShadeWindowView mNotificationShadeWindowView;
     @Mock private WindowInsetsController mWindowInsetsController;
     @Mock private TaskbarDelegate mTaskbarDelegate;
-    @Mock private StatusBarKeyguardViewManager.KeyguardViewManagerCallback mCallback;
     @Mock private SelectedUserInteractor mSelectedUserInteractor;
     @Mock private DeviceEntryInteractor mDeviceEntryInteractor;
     @Mock private SceneInteractor mSceneInteractor;
@@ -187,8 +182,6 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     private KeyguardTransitionInteractor mKeyguardTransitionInteractor;
     @Captor
     private ArgumentCaptor<OnBackInvokedCallback> mBackCallbackCaptor;
-    @Captor
-    private ArgumentCaptor<KeyguardUpdateMonitorCallback> mKeyguardUpdateMonitorCallback;
     @Mock
     private KeyguardDismissActionInteractor mKeyguardDismissActionInteractor;
 
@@ -223,7 +216,6 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
                         mock(DockManager.class),
                         mNotificationShadeWindowController,
                         mKeyguardStateController,
-                        mKeyguardMessageAreaFactory,
                         Optional.of(mSysUiUnfoldComponent),
                         () -> mShadeController,
                         mLatencyTracker,
@@ -232,7 +224,6 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
                         mPrimaryBouncerInteractor,
                         mBouncerView,
                         mAlternateBouncerInteractor,
-                        mUdfpsOverlayInteractor,
                         mActivityStarter,
                         mKeyguardTransitionInteractor,
                         mock(KeyguardDismissTransitionInteractor.class),
@@ -727,7 +718,6 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
                         mock(DockManager.class),
                         mock(NotificationShadeWindowController.class),
                         mKeyguardStateController,
-                        mKeyguardMessageAreaFactory,
                         Optional.of(mSysUiUnfoldComponent),
                         () -> mShadeController,
                         mLatencyTracker,
@@ -736,7 +726,6 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
                         mPrimaryBouncerInteractor,
                         mBouncerView,
                         mAlternateBouncerInteractor,
-                        mUdfpsOverlayInteractor,
                         mActivityStarter,
                         mock(KeyguardTransitionInteractor.class),
                         mock(KeyguardDismissTransitionInteractor.class),

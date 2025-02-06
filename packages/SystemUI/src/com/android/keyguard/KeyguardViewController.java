@@ -173,6 +173,11 @@ public interface KeyguardViewController {
     boolean isBouncerShowing();
 
     /**
+     * Report when the UI is ready for dismissing the whole Keyguard.
+     */
+    void readyForKeyguardDone();
+
+    /**
      * Stop showing the alternate bouncer, if showing.
      *
      * <p>Should be like calling {@link #hideAlternateBouncer(boolean, boolean)} with a {@code true}
