@@ -462,6 +462,13 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 }
 
                 @Override
+                public void onMagneticInteractionEnd(View view, float velocity) {
+                    if (view instanceof ExpandableNotificationRow row) {
+                        mMagneticNotificationRowManager.onMagneticInteractionEnd(row, velocity);
+                    }
+                }
+
+                @Override
                 public float getTotalTranslationLength(View animView) {
                     return mView.getTotalTranslationLength(animView);
                 }
@@ -503,14 +510,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 public void onDragCancelled(View v) {
                 }
 
-                @Override
-                public void onDragCancelledWithVelocity(View v, float finalVelocity) {
-                    if (v instanceof ExpandableNotificationRow row) {
-                        mMagneticNotificationRowManager.onMagneticInteractionEnd(
-                                row, finalVelocity);
-                    }
-                }
-
                 /**
                  * Handles cleanup after the given {@code view} has been fully swiped out (including
                  * re-invoking dismiss logic in case the notification has not made its way out yet).
@@ -538,10 +537,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                  */
 
                 public void handleChildViewDismissed(View view) {
-                    if (view instanceof ExpandableNotificationRow row) {
-                        mMagneticNotificationRowManager.onMagneticInteractionEnd(
-                                row, null /* velocity */);
-                    }
                     // The View needs to clean up the Swipe states, e.g. roundness.
                     mView.onSwipeEnd();
                     if (mView.getClearAllInProgress()) {
@@ -613,11 +608,15 @@ public class NotificationStackScrollLayoutController implements Dumpable {
 
                 @Override
                 public void onBeginDrag(View v) {
+                    mView.onSwipeBegin(v);
+                }
+
+                @Override
+                public void setMagneticAndRoundableTargets(View v) {
                     if (v instanceof ExpandableNotificationRow row) {
                         mMagneticNotificationRowManager.setMagneticAndRoundableTargets(
                                 row, mView, mSectionsManager);
                     }
-                    mView.onSwipeBegin(v);
                 }
 
                 @Override
