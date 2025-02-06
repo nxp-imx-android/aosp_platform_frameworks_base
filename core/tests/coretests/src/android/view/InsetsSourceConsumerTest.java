@@ -123,15 +123,21 @@ public class InsetsSourceConsumerTest {
     @Test
     public void testSetControl_cancelAnimation() {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            final InsetsSourceControl newControl = new InsetsSourceControl(mConsumer.getControl());
+            final int[] cancelTypes = {0};
 
-            // Change the side of the insets hint.
-            newControl.setInsetsHint(Insets.of(0, 0, 0, 100));
+            // Change the side of the insets hint from NONE to BOTTOM.
+            final InsetsSourceControl newControl1 = new InsetsSourceControl(mConsumer.getControl());
+            newControl1.setInsetsHint(Insets.of(0, 0, 0, 100));
+            mConsumer.setControl(newControl1, new int[1], new int[1], cancelTypes, new int[1]);
 
-            int[] cancelTypes = {0};
-            mConsumer.setControl(newControl, new int[1], new int[1], cancelTypes, new int[1]);
+            assertEquals("The animation must not be cancelled", 0, cancelTypes[0]);
 
-            assertEquals(statusBars(), cancelTypes[0]);
+            // Change the side of the insets hint from BOTTOM to TOP.
+            final InsetsSourceControl newControl2 = new InsetsSourceControl(mConsumer.getControl());
+            newControl2.setInsetsHint(Insets.of(0, 100, 0, 0));
+            mConsumer.setControl(newControl2, new int[1], new int[1], cancelTypes, new int[1]);
+
+            assertEquals("The animation must be cancelled", statusBars(), cancelTypes[0]);
         });
 
     }
