@@ -46,6 +46,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.om.IOverlayManager;
+import android.content.om.OverlayConstraint;
 import android.content.om.OverlayIdentifier;
 import android.content.om.OverlayInfo;
 import android.content.om.OverlayManagerTransaction;
@@ -674,6 +675,18 @@ public final class OverlayManagerService extends SystemService {
         @Override
         public boolean setEnabled(@Nullable final String packageName, final boolean enable,
                 int userIdArg) {
+            return setEnabled(packageName, enable, userIdArg,
+                    Collections.emptyList() /* constraints */);
+        }
+
+        @Override
+        public boolean enableWithConstraints(@Nullable final String packageName, int userIdArg,
+                @NonNull final List<OverlayConstraint> constraints) {
+            return setEnabled(packageName, true /* enable */, userIdArg, constraints);
+        }
+
+        private boolean setEnabled(@Nullable final String packageName, final boolean enable,
+                int userIdArg, @NonNull final List<OverlayConstraint> constraints) {
             if (packageName == null) {
                 return false;
             }
@@ -690,7 +703,7 @@ public final class OverlayManagerService extends SystemService {
                     synchronized (mLock) {
                         try {
                             updateTargetPackagesLocked(
-                                    mImpl.setEnabled(overlay, enable, realUserId));
+                                    mImpl.setEnabled(overlay, enable, realUserId, constraints));
                             return true;
                         } catch (OperationFailedException e) {
                             return false;
@@ -989,13 +1002,15 @@ public final class OverlayManagerService extends SystemService {
                     case TYPE_SET_ENABLED:
                         Set<UserPackage> result = null;
                         result = CollectionUtils.addAll(result,
-                                mImpl.setEnabled(request.overlay, true, realUserId));
+                                mImpl.setEnabled(request.overlay, true /* enable */, realUserId,
+                                        request.constraints));
                         result = CollectionUtils.addAll(result,
                                 mImpl.setHighestPriority(request.overlay, realUserId));
                         return CollectionUtils.emptyIfNull(result);
 
                     case TYPE_SET_DISABLED:
-                        return mImpl.setEnabled(request.overlay, false, realUserId);
+                        return mImpl.setEnabled(request.overlay, false /* enable */, realUserId,
+                                request.constraints);
 
                     case TYPE_REGISTER_FABRICATED:
                         final FabricatedOverlayInternal fabricated =
