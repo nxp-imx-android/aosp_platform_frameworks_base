@@ -547,6 +547,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun showDesktopApps_allAppsInvisible_bringsToFront_desktopWallpaperEnabled() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
         val task1 = setUpFreeformTask()
         val task2 = setUpFreeformTask()
         markTaskHidden(task1)
@@ -581,7 +582,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
         // Wallpaper is moved to front.
-        wct.assertPendingIntentAt(index = 0, desktopWallpaperIntent)
+        wct.assertReorderAt(index = 0, wallpaperToken)
         // Desk is activated.
         verify(desksOrganizer).activateDesk(wct, deskId)
     }
@@ -783,6 +784,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun showDesktopApps_appsAlreadyVisible_bringsToFront_desktopWallpaperEnabled() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
         val task1 = setUpFreeformTask()
         val task2 = setUpFreeformTask()
         markTaskVisible(task1)
@@ -825,7 +827,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun showDesktopApps_someAppsInvisible_reordersAll_desktopWallpaperEnabled() {
+    fun showDesktopApps_someAppsInvisible_desktopWallpaperEnabled_reordersOnlyFreeformTasks() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
         val task1 = setUpFreeformTask()
         val task2 = setUpFreeformTask()
         markTaskHidden(task1)
@@ -838,6 +841,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(wct.hierarchyOps).hasSize(3)
         // Expect order to be from bottom: wallpaper intent, task1, task2
         wct.assertPendingIntentAt(index = 0, desktopWallpaperIntent)
+        wct.assertReorderAt(index = 1, task1)
+        wct.assertReorderAt(index = 2, task2)
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
+    fun showDesktopApps_someAppsInvisible_desktopWallpaperEnabled_reordersAll() {
+        val task1 = setUpFreeformTask()
+        val task2 = setUpFreeformTask()
+        markTaskHidden(task1)
+        markTaskVisible(task2)
+
+        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+
+        val wct =
+            getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
+        assertThat(wct.hierarchyOps).hasSize(3)
+        // Expect order to be from bottom: wallpaper intent, task1, task2
+        wct.assertReorderAt(index = 0, wallpaperToken)
         wct.assertReorderAt(index = 1, task1)
         wct.assertReorderAt(index = 2, task2)
     }
@@ -860,9 +881,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
-    fun showDesktopApps_noActiveTasks_addDesktopWallpaper_desktopWallpaperEnabled() {
-        whenever(transitions.startTransition(eq(TRANSIT_TO_FRONT), any(), anyOrNull()))
-            .thenReturn(Binder())
+    fun showDesktopApps_noActiveTasks_desktopWallpaperEnabled_addsDesktopWallpaper() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
+
         controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
 
         val wct =
@@ -871,10 +892,18 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @DisableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
+    fun showDesktopApps_noActiveTasks_desktopWallpaperEnabled_reordersDesktopWallpaper() {
+        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+
+        val wct =
+            getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
+        wct.assertReorderAt(index = 0, wallpaperToken)
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     fun showDesktopApps_twoDisplays_bringsToFrontOnlyOneDisplay_desktopWallpaperDisabled() {
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         val homeTaskDefaultDisplay = setUpHomeTask(DEFAULT_DISPLAY)
@@ -899,6 +928,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun showDesktopApps_twoDisplays_bringsToFrontOnlyOneDisplay_desktopWallpaperEnabled() {
         whenever(transitions.startTransition(eq(TRANSIT_TO_FRONT), any(), anyOrNull()))
             .thenReturn(Binder())
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         val homeTaskDefaultDisplay = setUpHomeTask(DEFAULT_DISPLAY)
         val taskDefaultDisplay = setUpFreeformTask(DEFAULT_DISPLAY)
@@ -991,6 +1021,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     /** TODO: b/362720497 - add multi-desk version when minimization is implemented. */
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun showDesktopApps_desktopWallpaperEnabled_dontReorderMinimizedTask() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
         val homeTask = setUpHomeTask()
         val freeformTask = setUpFreeformTask()
         val minimizedTask = setUpFreeformTask()
@@ -1569,6 +1600,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     fun moveTaskToDesktop_desktopWallpaperEnabled_nonRunningTask_launchesInFreeform() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
         val task = createTaskInfo(1)
         whenever(shellTaskOrganizer.getRunningTaskInfo(anyInt())).thenReturn(null)
         whenever(recentTasksController.findTaskInBackground(anyInt())).thenReturn(task)
@@ -1802,6 +1834,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveRunningTaskToDesktop_otherFreeformTasksBroughtToFront_desktopWallpaperEnabled() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
         val freeformTask = setUpFreeformTask()
         val fullscreenTask = setUpFullscreenTask()
         markTaskHidden(freeformTask)
@@ -1828,6 +1861,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
     )
     fun moveRunningTaskToDesktop_desktopWallpaperEnabled_multiDesksEnabled() {
         val freeformTask = setUpFreeformTask()
@@ -1840,7 +1874,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
 
         val wct = getLatestEnterDesktopWct()
-        wct.assertPendingIntentAt(index = 0, desktopWallpaperIntent)
+        wct.assertReorderAt(index = 0, wallpaperToken)
         verify(desksOrganizer).moveTaskToDesk(wct, deskId = 0, fullscreenTask)
         verify(desksOrganizer).activateDesk(wct, deskId = 0)
         verify(desktopModeEnterExitTransitionListener)
@@ -1967,6 +2001,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveRunningTaskToDesktop_desktopWallpaperEnabled_bringsTasksOverLimit_dontShowBackTask() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
         val freeformTasks = (1..MAX_TASK_LIMIT).map { _ -> setUpFreeformTask() }
         val newTask = setUpFullscreenTask()
         val homeTask = setUpHomeTask()
@@ -2987,6 +3022,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     fun handleRequest_fullscreenTask_noTasks_enforceDesktop_freeformDisplay_returnFreeformWCT() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
         whenever(DesktopModeStatus.enterDesktopByDefaultOnFreeformDisplay(context)).thenReturn(true)
         val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
         tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
@@ -3118,6 +3154,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     fun handleRequest_freeformTask_desktopWallpaperEnabled_freeformNotVisible_reorderedToTop() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
         val freeformTask1 = setUpFreeformTask()
         val freeformTask2 = createFreeformTask()
 
@@ -3152,7 +3189,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     fun handleRequest_freeformTask_desktopWallpaperEnabled_noOtherTasks_reorderedToTop() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
         val task = createFreeformTask()
+
         val result = controller.handleRequest(Binder(), createTransition(task))
 
         assertNotNull(result, "Should handle request")
@@ -3180,6 +3219,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     fun handleRequest_freeformTask_dskWallpaperEnabled_freeformOnOtherDisplayOnly_reorderedToTop() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
         val taskDefaultDisplay = createFreeformTask(displayId = DEFAULT_DISPLAY)
         // Second display task
         createFreeformTask(displayId = SECOND_DISPLAY)
