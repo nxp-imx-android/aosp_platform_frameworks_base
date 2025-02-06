@@ -2975,6 +2975,13 @@ class ContextImpl extends Context {
         if (display != null) {
             updateDeviceIdIfChanged(display.getDisplayId());
         }
+        updateResourceOverlayConstraints();
+    }
+
+    private void updateResourceOverlayConstraints() {
+        if (mResources != null) {
+            mResources.getAssets().setOverlayConstraints(getDisplayId(), getDeviceId());
+        }
     }
 
     @Override
@@ -2987,9 +2994,11 @@ class ContextImpl extends Context {
             }
         }
 
-        return new ContextImpl(this, mMainThread, mPackageInfo, mParams,
+        final ContextImpl context = new ContextImpl(this, mMainThread, mPackageInfo, mParams,
                 mAttributionSource.getAttributionTag(), mAttributionSource.getNext(), mSplitName,
                 mToken, mUser, mFlags, mClassLoader, null, deviceId, true);
+        context.updateResourceOverlayConstraints();
+        return context;
     }
 
     @NonNull
@@ -3284,6 +3293,7 @@ class ContextImpl extends Context {
             mDeviceId = updatedDeviceId;
             mAttributionSource = createAttributionSourceWithDeviceId(mAttributionSource, mDeviceId);
             notifyOnDeviceChangedListeners(updatedDeviceId);
+            updateResourceOverlayConstraints();
         }
     }
 
@@ -3686,6 +3696,7 @@ class ContextImpl extends Context {
                 mResourcesManager.setLocaleConfig(lc);
             }
         }
+        updateResourceOverlayConstraints();
     }
 
     void installSystemApplicationInfo(ApplicationInfo info, ClassLoader classLoader) {

@@ -59,13 +59,25 @@ inline UpToDate fromBool(bool value) {
 class LoadedIdmap;
 class IdmapResMap;
 struct Idmap_header;
-struct Idmap_constraint;
+struct Idmap_constraints;
 struct Idmap_data_header;
-struct Idmap_target_entry;
 struct Idmap_target_entry_inline;
 struct Idmap_target_entry_inline_value;
-struct Idmap_overlay_entry;
 
+// LINT.IfChange
+constexpr int32_t kOverlayConstraintTypeDisplayId = 0;
+constexpr int32_t kOverlayConstraintTypeDeviceId = 1;
+// LINT.ThenChange(../../../../core/java/android/content/om/OverlayConstraint.java)
+
+struct Idmap_constraint {
+  // Constraint type can be kOverlayConstraintTypeDisplayId or kOverlayConstraintTypeDeviceId
+  const uint32_t constraint_type;
+  const uint32_t constraint_value;
+};
+struct Idmap_constraints {
+  const uint32_t constraint_count = 0;
+  const Idmap_constraint* constraint_entries = nullptr;
+};
 struct Idmap_target_entries {
   const uint32_t* target_id = nullptr;
   const uint32_t* overlay_id = nullptr;
@@ -169,14 +181,19 @@ class IdmapResMap {
     return overlay_ref_table_;
   }
 
+  inline Idmap_constraints GetConstraints() const {
+    return constraints_;
+  }
+
  private:
-  explicit IdmapResMap(const Idmap_data_header* data_header, Idmap_target_entries entries,
-                       Idmap_target_inline_entries inline_entries,
+  explicit IdmapResMap(const Idmap_data_header* data_header, const Idmap_constraints& constraints,
+                       Idmap_target_entries entries, Idmap_target_inline_entries inline_entries,
                        const Idmap_target_entry_inline_value* inline_entry_values,
                        const ConfigDescription* configs, uint8_t target_assigned_package_id,
                        const OverlayDynamicRefTable* overlay_ref_table);
 
   const Idmap_data_header* data_header_;
+  Idmap_constraints constraints_;
   Idmap_target_entries entries_;
   Idmap_target_inline_entries inline_entries_;
   const Idmap_target_entry_inline_value* inline_entry_values_;
@@ -210,8 +227,9 @@ class LoadedIdmap {
   // Returns a mapping from target resource ids to overlay values.
   IdmapResMap GetTargetResourcesMap(uint8_t target_assigned_package_id,
                                     const OverlayDynamicRefTable* overlay_ref_table) const {
-    return IdmapResMap(data_header_, target_entries_, target_inline_entries_, inline_entry_values_,
-                       configurations_, target_assigned_package_id, overlay_ref_table);
+    return IdmapResMap(data_header_, constraints_, target_entries_, target_inline_entries_,
+                       inline_entry_values_, configurations_, target_assigned_package_id,
+                       overlay_ref_table);
   }
 
   // Returns a dynamic reference table for a loaded overlay package.
@@ -223,14 +241,17 @@ class LoadedIdmap {
   // LoadedIdmap.
   UpToDate IsUpToDate() const;
 
+  inline const Idmap_constraints GetConstraints() const {
+    return constraints_;
+  }
+
  protected:
   // Exposed as protected so that tests can subclass and mock this class out.
   LoadedIdmap() = default;
 
   const Idmap_header* header_;
-  const Idmap_constraint* constraints_;
-  uint32_t constraints_count_;
   const Idmap_data_header* data_header_;
+  Idmap_constraints constraints_;
   Idmap_target_entries target_entries_;
   Idmap_target_inline_entries target_inline_entries_;
   const Idmap_target_entry_inline_value* inline_entry_values_;
@@ -247,9 +268,7 @@ class LoadedIdmap {
   DISALLOW_COPY_AND_ASSIGN(LoadedIdmap);
 
   explicit LoadedIdmap(const std::string& idmap_path, const Idmap_header* header,
-                       const Idmap_constraint* constraints,
-                       uint32_t constraints_count,
-                       const Idmap_data_header* data_header,
+                       const Idmap_data_header* data_header, const Idmap_constraints& constraints,
                        Idmap_target_entries target_entries,
                        Idmap_target_inline_entries target_inline_entries,
                        const Idmap_target_entry_inline_value* inline_entry_values_,
