@@ -473,17 +473,31 @@ public class SystemHealthManager {
             }
         }
 
-        final HealthStats[] results = new HealthStats[uids.length];
-        if (result.bundle != null) {
-            HealthStatsParceler[] parcelers = result.bundle.getParcelableArray(
-                    IBatteryStats.KEY_UID_SNAPSHOTS, HealthStatsParceler.class);
-            if (parcelers != null && parcelers.length == uids.length) {
-                for (int i = 0; i < parcelers.length; i++) {
-                    results[i] = parcelers[i].getHealthStats();
+        switch (result.resultCode) {
+            case IBatteryStats.RESULT_OK: {
+                final HealthStats[] results = new HealthStats[uids.length];
+                if (result.bundle != null) {
+                    HealthStatsParceler[] parcelers = result.bundle.getParcelableArray(
+                            IBatteryStats.KEY_UID_SNAPSHOTS, HealthStatsParceler.class);
+                    if (parcelers != null && parcelers.length == uids.length) {
+                        for (int i = 0; i < parcelers.length; i++) {
+                            results[i] = parcelers[i].getHealthStats();
+                        }
+                    }
                 }
+                return results;
             }
+            case IBatteryStats.RESULT_SECURITY_EXCEPTION: {
+                throw new SecurityException(result.bundle != null
+                        ? result.bundle.getString(IBatteryStats.KEY_EXCEPTION_MESSAGE) : null);
+            }
+            case IBatteryStats.RESULT_RUNTIME_EXCEPTION: {
+                throw new RuntimeException(result.bundle != null
+                        ? result.bundle.getString(IBatteryStats.KEY_EXCEPTION_MESSAGE) : null);
+            }
+            default:
+                throw new RuntimeException("Error code: " + result.resultCode);
         }
-        return results;
     }
 
     /**

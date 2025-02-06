@@ -3705,8 +3705,14 @@ public final class BatteryStatsService extends IBatteryStats.Stub
     @Override
     public void takeUidSnapshotsAsync(int[] requestUids, ResultReceiver resultReceiver) {
         if (!onlyCaller(requestUids)) {
-            mContext.enforceCallingOrSelfPermission(
-                    android.Manifest.permission.BATTERY_STATS, null);
+            try {
+                mContext.enforceCallingOrSelfPermission(
+                        android.Manifest.permission.BATTERY_STATS, null);
+            } catch (SecurityException ex) {
+                resultReceiver.send(IBatteryStats.RESULT_SECURITY_EXCEPTION,
+                        Bundle.forPair(IBatteryStats.KEY_EXCEPTION_MESSAGE, ex.getMessage()));
+                return;
+            }
         }
 
         if (shouldCollectExternalStats()) {
@@ -3727,13 +3733,14 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                 }
                 Bundle resultData = new Bundle(1);
                 resultData.putParcelableArray(IBatteryStats.KEY_UID_SNAPSHOTS, results);
-                resultReceiver.send(0, resultData);
+                resultReceiver.send(IBatteryStats.RESULT_OK, resultData);
             } catch (Exception ex) {
                 if (DBG) {
                     Slog.d(TAG, "Crashed while returning results for takeUidSnapshots("
                             + Arrays.toString(requestUids) + ") i=" + i, ex);
                 }
-                throw ex;
+                resultReceiver.send(IBatteryStats.RESULT_RUNTIME_EXCEPTION,
+                        Bundle.forPair(IBatteryStats.KEY_EXCEPTION_MESSAGE, ex.getMessage()));
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
