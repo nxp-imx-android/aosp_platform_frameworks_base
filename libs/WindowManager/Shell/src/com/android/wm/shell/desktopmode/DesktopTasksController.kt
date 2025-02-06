@@ -481,7 +481,7 @@ class DesktopTasksController(
     ): Boolean {
         val runningTask = shellTaskOrganizer.getRunningTaskInfo(taskId)
         if (runningTask != null) {
-            moveRunningTaskToDesk(
+            return moveRunningTaskToDesk(
                 task = runningTask,
                 deskId = deskId,
                 wct = wct,
@@ -563,10 +563,10 @@ class DesktopTasksController(
         transitionSource: DesktopModeTransitionSource,
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
-    ) {
+    ): Boolean {
         if (desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(task)) {
             logW("Cannot enter desktop for taskId %d, ineligible top activity found", task.taskId)
-            return
+            return false
         }
         val displayId = taskRepository.getDisplayForDesk(deskId)
         logV(
@@ -621,6 +621,7 @@ class DesktopTasksController(
         } else {
             taskRepository.setActiveDesk(displayId = displayId, deskId = deskId)
         }
+        return true
     }
 
     /**
@@ -789,24 +790,57 @@ class DesktopTasksController(
         wct: WindowContainerTransaction,
         displayId: Int,
         taskInfo: RunningTaskInfo,
-    ): ((IBinder) -> Unit)? {
+    ): ((IBinder) -> Unit) {
         val taskId = taskInfo.taskId
         snapEventHandler.removeTaskIfTiled(displayId, taskId)
-        // TODO: b/394268248 - desk needs to be deactivated when closing the last task and going
-        //  home.
-        performDesktopExitCleanupIfNeeded(taskId, displayId, wct, forceToFullscreen = false)
+        val shouldExitDesktop =
+            willExitDesktop(
+                triggerTaskId = taskInfo.taskId,
+                displayId = displayId,
+                forceToFullscreen = false,
+            )
+        taskRepository.setPipShouldKeepDesktopActive(displayId, keepActive = true)
+        // TODO: b/393978539 - Deactivation should not happen in desktop-first devices.
+        val deactivatingDeskId =
+            if (shouldExitDesktop) {
+                performDesktopExitCleanUp(wct, displayId, shouldEndUpAtHome = true)
+                val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
+                if (
+                    DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue && deskId != null
+                ) {
+                    desksOrganizer.deactivateDesk(wct, deskId)
+                }
+                deskId
+            } else {
+                null
+            }
+        val deskDeactivationRunnable =
+            deactivatingDeskId?.let { deskId ->
+                { transition: IBinder ->
+                    desksTransitionObserver.addPendingTransition(
+                        DeskTransition.DeactivateDesk(token = transition, deskId = deskId)
+                    )
+                }
+            }
+
         taskRepository.addClosingTask(displayId, taskId)
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
             doesAnyTaskRequireTaskbarRounding(displayId, taskId)
         )
-        return desktopImmersiveController
-            .exitImmersiveIfApplicable(
-                wct = wct,
-                taskInfo = taskInfo,
-                reason = DesktopImmersiveController.ExitReason.CLOSED,
-            )
-            .asExit()
-            ?.runOnTransitionStart
+
+        val immersiveRunnable =
+            desktopImmersiveController
+                .exitImmersiveIfApplicable(
+                    wct = wct,
+                    taskInfo = taskInfo,
+                    reason = DesktopImmersiveController.ExitReason.CLOSED,
+                )
+                .asExit()
+                ?.runOnTransitionStart
+        return { transitionToken ->
+            immersiveRunnable?.invoke(transitionToken)
+            deskDeactivationRunnable?.invoke(transitionToken)
+        }
     }
 
     fun minimizeTask(taskInfo: RunningTaskInfo, minimizeReason: MinimizeReason) {

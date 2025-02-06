@@ -821,7 +821,7 @@ class DesktopRepository(
 
     /** Removes the given task from the given desk. */
     fun removeTaskFromDesk(deskId: Int, taskId: Int) {
-        logD("removeTaskFromDesk: deskId=%d, taskId=%d", taskId, deskId)
+        logD("removeTaskFromDesk: deskId=%d, taskId=%d", deskId, taskId)
         // TODO: b/362720497 - consider not clearing bounds on any removal, such as when moving
         //  it between desks. It might be better to allow restoring to the previous bounds as long
         //  as they're valid (probably valid if in the same display).
