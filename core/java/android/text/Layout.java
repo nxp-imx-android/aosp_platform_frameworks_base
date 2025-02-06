@@ -1071,6 +1071,20 @@ public abstract class Layout {
                             return;
                         }
 
+                        // To avoid highlighting emoji sequences, we use Extended_Pictgraphs as a
+                        // heuristic. Highlighting is skipped based on code points, not glyph type
+                        // (text vs. color), so emojis with default text presentation are
+                        // intentionally not highlighted (numeric representation with emoji
+                        // presentation are manually excluded). Although we process ZWJ and
+                        // variation selectors within emoji sequences, they should not affect
+                        // highlighting due to their zero-width nature.
+                        var codePoint = Character.codePointAt(mText, index);
+                        var isEmoji = Character.isEmojiComponent(codePoint)
+                                || Character.isExtendedPictographic(codePoint);
+                        if (isEmoji && !isStandardNumber(index)) {
+                            return;
+                        }
+
                         if (lineNum != mLastLineNum || hasBgColorChanged) {
                             // Draw what we have so far, then reset the rect and update its color
                             drawRect();
@@ -1088,6 +1102,16 @@ public abstract class Layout {
                     @Override
                     public void onEnd() {
                         drawRect();
+                    }
+
+                    private boolean isStandardNumber(int index) {
+                        var codePoint = Character.codePointAt(mText, index);
+                        var isNumberSignOrAsterisk = (codePoint >= '0' && codePoint <= '9')
+                                || codePoint == '#' || codePoint == '*';
+                        var isColoredGlyph = index + 1 < mText.length()
+                                && Character.codePointAt(mText, index + 1) == 0xFE0F;
+
+                        return isNumberSignOrAsterisk && !isColoredGlyph;
                     }
 
                     private void drawRect() {
