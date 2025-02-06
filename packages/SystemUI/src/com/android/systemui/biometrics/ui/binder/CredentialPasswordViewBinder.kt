@@ -42,7 +42,7 @@ object CredentialPasswordViewBinder {
         view.repeatWhenAttached {
             // the header info never changes - do it early
             val header = viewModel.header.first()
-            passwordField.setTextOperationUser(UserHandle.of(header.user.deviceCredentialOwnerId))
+            passwordField.setTextOperationUser(UserHandle.of(header.user.userIdForPasswordEntry))
             viewModel.inputFlags.firstOrNull()?.let { flags -> passwordField.inputType = flags }
             if (requestFocusForInput) {
                 passwordField.requestFocus()
