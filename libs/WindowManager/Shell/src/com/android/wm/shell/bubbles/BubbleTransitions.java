@@ -92,10 +92,10 @@ public class BubbleTransitions {
             BubbleExpandedViewManager expandedViewManager, BubbleTaskViewFactory factory,
             BubblePositioner positioner, BubbleStackView stackView,
             BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
-            boolean inflateSync) {
+            DragData dragData, boolean inflateSync) {
         return new ConvertToBubble(bubble, taskInfo, mContext,
                 expandedViewManager, factory, positioner, stackView, layerView, iconFactory,
-                inflateSync);
+                dragData, inflateSync);
     }
 
     /**
@@ -149,6 +149,39 @@ public class BubbleTransitions {
     }
 
     /**
+     * Information about the task when it is being dragged to a bubble
+     */
+    public static class DragData {
+        private final Rect mBounds;
+        private final WindowContainerTransaction mPendingWct;
+
+        /**
+         * @param bounds bounds of the dragged task when the drag was released
+         * @param wct pending operations to be applied when finishing the drag
+         */
+        public DragData(@Nullable Rect bounds, @Nullable WindowContainerTransaction wct) {
+            mBounds = bounds;
+            mPendingWct = wct;
+        }
+
+        /**
+         * @return bounds of the dragged task when the drag was released
+         */
+        @Nullable
+        public Rect getBounds() {
+            return mBounds;
+        }
+
+        /**
+         * @return pending operations to be applied when finishing the drag
+         */
+        @Nullable
+        public WindowContainerTransaction getPendingWct() {
+            return mPendingWct;
+        }
+    }
+
+    /**
      * BubbleTransition that coordinates the process of a non-bubble task becoming a bubble. The
      * steps are as follows:
      *
@@ -167,6 +200,7 @@ public class BubbleTransitions {
     class ConvertToBubble implements Transitions.TransitionHandler, BubbleTransition {
         final BubbleBarLayerView mLayerView;
         Bubble mBubble;
+        @Nullable DragData mDragData;
         IBinder mTransition;
         Transitions.TransitionFinishCallback mFinishCb;
         WindowContainerTransaction mFinishWct = null;
@@ -182,10 +216,12 @@ public class BubbleTransitions {
         ConvertToBubble(Bubble bubble, TaskInfo taskInfo, Context context,
                 BubbleExpandedViewManager expandedViewManager, BubbleTaskViewFactory factory,
                 BubblePositioner positioner, BubbleStackView stackView,
-                BubbleBarLayerView layerView, BubbleIconFactory iconFactory, boolean inflateSync) {
+                BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
+                @Nullable DragData dragData, boolean inflateSync) {
             mBubble = bubble;
             mTaskInfo = taskInfo;
             mLayerView = layerView;
+            mDragData = dragData;
             mBubble.setInflateSynchronously(inflateSync);
             mBubble.setPreparingTransition(this);
             mBubble.inflate(
@@ -208,6 +244,9 @@ public class BubbleTransitions {
             final Rect launchBounds = new Rect();
             mLayerView.getExpandedViewRestBounds(launchBounds);
             WindowContainerTransaction wct = new WindowContainerTransaction();
+            if (mDragData != null && mDragData.getPendingWct() != null) {
+                wct.merge(mDragData.getPendingWct(), true);
+            }
             if (mTaskInfo.getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW) {
                 if (mTaskInfo.getParentTaskId() != INVALID_TASK_ID) {
                     wct.reparent(mTaskInfo.token, null, true);
@@ -292,6 +331,11 @@ public class BubbleTransitions {
             }
             mFinishCb = finishCallback;
 
+            if (mDragData != null && mDragData.getBounds() != null) {
+                // Override start bounds with the dragged task bounds
+                mStartBounds.set(mDragData.getBounds());
+            }
+
             // Now update state (and talk to launcher) in parallel with snapshot stuff
             mBubbleData.notificationEntryUpdated(mBubble, /* suppressFlyout= */ true,
                     /* showInShade= */ false);
@@ -303,6 +347,13 @@ public class BubbleTransitions {
                     mStartBounds.left - info.getRoot(0).getOffset().x,
                     mStartBounds.top - info.getRoot(0).getOffset().y);
             startTransaction.setLayer(mSnapshot, Integer.MAX_VALUE);
+
+            BubbleBarExpandedView bbev = mBubble.getBubbleBarExpandedView();
+            if (bbev != null) {
+                // Corners get reset during the animation. Add them back
+                startTransaction.setCornerRadius(mSnapshot, bbev.getRestingCornerRadius());
+            }
+
             startTransaction.apply();
 
             mTaskViewTransitions.onExternalDone(transition);
