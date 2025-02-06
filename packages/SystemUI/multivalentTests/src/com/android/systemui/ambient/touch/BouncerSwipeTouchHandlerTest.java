@@ -74,11 +74,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import java.util.List;
-import java.util.Optional;
-
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
+
+import java.util.List;
+import java.util.Optional;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -187,6 +187,7 @@ public class BouncerSwipeTouchHandlerTest extends SysuiTestCase {
                 mActivityStarter,
                 mKeyguardInteractor,
                 mSceneInteractor,
+                mKosmos.getShadeRepository(),
                 Optional.of(() -> mWindowRootView)
         );
 
@@ -625,6 +626,22 @@ public class BouncerSwipeTouchHandlerTest extends SysuiTestCase {
         verify(mTouchSession).registerCallback(onRemovedCallbackCaptor.capture());
         onRemovedCallbackCaptor.getValue().onRemoved();
         onRemovedCallbackCaptor.getValue().onRemoved();
+    }
+
+    @Test
+    public void testTouchSessionStart_notifiesShadeOfUserInteraction() {
+        mTouchHandler.onSessionStart(mTouchSession);
+
+        mKosmos.getTestScope().getTestScheduler().runCurrent();
+        assertThat(mKosmos.getShadeRepository().getLegacyShadeTracking().getValue()).isTrue();
+
+        ArgumentCaptor<TouchHandler.TouchSession.Callback> onRemovedCallbackCaptor =
+                ArgumentCaptor.forClass(TouchHandler.TouchSession.Callback.class);
+        verify(mTouchSession).registerCallback(onRemovedCallbackCaptor.capture());
+        onRemovedCallbackCaptor.getValue().onRemoved();
+
+        mKosmos.getTestScope().getTestScheduler().runCurrent();
+        assertThat(mKosmos.getShadeRepository().getLegacyShadeTracking().getValue()).isFalse();
     }
 
     private void swipeToPosition(float percent, float velocityY) {
