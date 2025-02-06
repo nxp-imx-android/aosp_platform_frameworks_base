@@ -68,7 +68,7 @@ constructor(
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.volume_dialog)
-        requireViewById<View>(R.id.volume_dialog_root).repeatWhenAttached {
+        requireViewById<View>(R.id.volume_dialog).repeatWhenAttached {
             coroutineScopeTraced("[Volume]dialog") {
                 val component = componentFactory.create(this)
                 with(component.volumeDialogViewBinder()) { bind(this@VolumeDialog) }
