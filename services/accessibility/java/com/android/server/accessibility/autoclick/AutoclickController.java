@@ -510,6 +510,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
             return mMetaState;
         }
 
+        @VisibleForTesting
+        boolean getIsActiveForTesting() {
+            return mActive;
+        }
+
         /**
          * Updates delay that should be used when scheduling clicks. The delay will be used only for
          * clicks scheduled after this point (pending click tasks are not affected).
