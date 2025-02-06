@@ -36,6 +36,12 @@ namespace android {
 struct AssetsProvider {
   static constexpr off64_t kUnknownLength = -1;
 
+  static std::unique_ptr<AssetsProvider> CreateWithOverride(
+      std::unique_ptr<AssetsProvider> provider, std::unique_ptr<AssetsProvider> override);
+
+  static std::unique_ptr<AssetsProvider> CreateFromNullable(
+      std::unique_ptr<AssetsProvider> nullable);
+
   // Opens a file for reading. If `file_exists` is not null, it will be set to `true` if the file
   // exists. This is useful for determining if the file exists but was unable to be opened due to
   // an I/O error.
