@@ -147,5 +147,9 @@ constructor(
             to: OverlayKey,
             transitionKey: TransitionKey?,
         ) = Unit
+
+        override fun instantlyShowOverlay(overlay: OverlayKey) = Unit
+
+        override fun instantlyHideOverlay(overlay: OverlayKey) = Unit
     }
 }

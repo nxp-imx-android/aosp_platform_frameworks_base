@@ -30,6 +30,7 @@ import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintA
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.data.repository.Idle
@@ -44,6 +45,8 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.fakeSceneDataSource
+import com.android.systemui.shade.domain.interactor.disableDualShade
+import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
 import com.android.systemui.testKosmos
@@ -298,7 +301,9 @@ class SceneInteractorTest : SysuiTestCase() {
 
     @Test
     fun transitioningTo_overlayChange() =
-        testScope.runTest {
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
             val transitionState =
                 MutableStateFlow<ObservableTransitionState>(
                     ObservableTransitionState.Idle(underTest.currentScene.value)
@@ -529,6 +534,8 @@ class SceneInteractorTest : SysuiTestCase() {
     @Test
     fun showOverlay_overlayDisabled_doesNothing() =
         kosmos.runTest {
+            enableDualShade()
+            runCurrent()
             val currentOverlays by collectLastValue(underTest.currentOverlays)
             val disabledOverlay = Overlays.QuickSettingsShade
             fakeDisableFlagsRepository.disableFlags.value =
@@ -544,6 +551,8 @@ class SceneInteractorTest : SysuiTestCase() {
     @Test
     fun replaceOverlay_withDisabledOverlay_doesNothing() =
         kosmos.runTest {
+            enableDualShade()
+            runCurrent()
             val currentOverlays by collectLastValue(underTest.currentOverlays)
             val showingOverlay = Overlays.NotificationsShade
             underTest.showOverlay(showingOverlay, "reason")
@@ -617,5 +626,91 @@ class SceneInteractorTest : SysuiTestCase() {
             underTest.onTransitionAnimationEnd()
             // No more active animations, not forced visible.
             assertThat(isVisible).isFalse()
+        }
+
+    @Test(expected = IllegalStateException::class)
+    fun changeScene_toIncorrectShade_crashes() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+            underTest.changeScene(Scenes.Shade, "reason")
+        }
+
+    @Test(expected = IllegalStateException::class)
+    fun changeScene_toIncorrectQuickSettings_crashes() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+            underTest.changeScene(Scenes.QuickSettings, "reason")
+        }
+
+    @Test(expected = IllegalStateException::class)
+    fun snapToScene_toIncorrectShade_crashes() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+            underTest.snapToScene(Scenes.Shade, "reason")
+        }
+
+    @Test(expected = IllegalStateException::class)
+    fun snapToScene_toIncorrectQuickSettings_crashes() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+            underTest.changeScene(Scenes.QuickSettings, "reason")
+        }
+
+    @Test(expected = IllegalStateException::class)
+    fun showOverlay_incorrectShadeOverlay_crashes() =
+        kosmos.runTest {
+            disableDualShade()
+            runCurrent()
+            underTest.showOverlay(Overlays.NotificationsShade, "reason")
+        }
+
+    @Test(expected = IllegalStateException::class)
+    fun showOverlay_incorrectQuickSettingsOverlay_crashes() =
+        kosmos.runTest {
+            disableDualShade()
+            runCurrent()
+            underTest.showOverlay(Overlays.QuickSettingsShade, "reason")
+        }
+
+    @Test
+    fun instantlyShowOverlay() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+            val currentScene by collectLastValue(underTest.currentScene)
+            val currentOverlays by collectLastValue(underTest.currentOverlays)
+            val originalScene = currentScene
+            assertThat(currentOverlays).isEmpty()
+
+            val overlay = Overlays.NotificationsShade
+            underTest.instantlyShowOverlay(overlay, "reason")
+            runCurrent()
+
+            assertThat(currentScene).isEqualTo(originalScene)
+            assertThat(currentOverlays).contains(overlay)
+        }
+
+    @Test
+    fun instantlyHideOverlay() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+            val currentScene by collectLastValue(underTest.currentScene)
+            val currentOverlays by collectLastValue(underTest.currentOverlays)
+            val overlay = Overlays.QuickSettingsShade
+            underTest.showOverlay(overlay, "reason")
+            runCurrent()
+            val originalScene = currentScene
+            assertThat(currentOverlays).contains(overlay)
+
+            underTest.instantlyHideOverlay(overlay, "reason")
+            runCurrent()
+
+            assertThat(currentScene).isEqualTo(originalScene)
+            assertThat(currentOverlays).isEmpty()
         }
 }

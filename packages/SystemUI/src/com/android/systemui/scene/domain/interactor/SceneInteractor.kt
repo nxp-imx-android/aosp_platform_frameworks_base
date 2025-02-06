@@ -33,8 +33,10 @@ import com.android.systemui.log.table.TableRowLogger
 import com.android.systemui.scene.data.repository.SceneContainerRepository
 import com.android.systemui.scene.domain.resolver.SceneResolver
 import com.android.systemui.scene.shared.logger.SceneLogger
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.util.kotlin.pairwise
 import dagger.Lazy
 import javax.inject.Inject
@@ -72,6 +74,7 @@ constructor(
     private val deviceUnlockedInteractor: Lazy<DeviceUnlockedInteractor>,
     private val keyguardEnabledInteractor: Lazy<KeyguardEnabledInteractor>,
     private val disabledContentInteractor: DisabledContentInteractor,
+    private val shadeModeInteractor: ShadeModeInteractor,
 ) {
 
     interface OnSceneAboutToChangeListener {
@@ -336,6 +339,38 @@ constructor(
     }
 
     /**
+     * Instantly shows [overlay].
+     *
+     * The change is instantaneous and not animated; it will be observable in the next frame and
+     * there will be no transition animation.
+     */
+    fun instantlyShowOverlay(overlay: OverlayKey, loggingReason: String) {
+        if (!validateOverlayChange(to = overlay, loggingReason = loggingReason)) {
+            return
+        }
+
+        logger.logOverlayChangeRequested(to = overlay, reason = loggingReason)
+
+        repository.instantlyShowOverlay(overlay)
+    }
+
+    /**
+     * Instantly hides [overlay].
+     *
+     * The change is instantaneous and not animated; it will be observable in the next frame and
+     * there will be no transition animation.
+     */
+    fun instantlyHideOverlay(overlay: OverlayKey, loggingReason: String) {
+        if (!validateOverlayChange(from = overlay, loggingReason = loggingReason)) {
+            return
+        }
+
+        logger.logOverlayChangeRequested(from = overlay, reason = loggingReason)
+
+        repository.instantlyHideOverlay(overlay)
+    }
+
+    /**
      * Replace [from] by [to] so that [from] ends up not being visible on screen and [to] ends up
      * being visible.
      *
@@ -459,6 +494,15 @@ constructor(
      * @return `true` if the scene change is valid; `false` if it shouldn't happen
      */
     private fun validateSceneChange(to: SceneKey, loggingReason: String): Boolean {
+        check(
+            !shadeModeInteractor.isDualShade || (to != Scenes.Shade && to != Scenes.QuickSettings)
+        ) {
+            "Can't change scene to ${to.debugName} when dual shade is on!"
+        }
+        check(!shadeModeInteractor.isSplitShade || (to != Scenes.QuickSettings)) {
+            "Can't change scene to ${to.debugName} in split shade mode!"
+        }
+
         if (to !in repository.allContentKeys) {
             return false
         }
@@ -503,6 +547,13 @@ constructor(
             "No overlay key provided for requested change." +
                 " Current transition state is ${transitionState.value}." +
                 " Logging reason for overlay change was: $loggingReason"
+        }
+
+        check(
+            shadeModeInteractor.isDualShade ||
+                (to != Overlays.NotificationsShade && to != Overlays.QuickSettingsShade)
+        ) {
+            "Can't show overlay ${to?.debugName} when dual shade is off!"
         }
 
         if (to != null && disabledContentInteractor.isDisabled(to)) {

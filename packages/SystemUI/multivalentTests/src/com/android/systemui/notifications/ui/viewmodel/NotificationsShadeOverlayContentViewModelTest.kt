@@ -25,6 +25,7 @@ import com.android.systemui.authentication.domain.interactor.AuthenticationResul
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
@@ -65,6 +66,7 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     fun setUp() {
         kosmos.sceneContainerStartable.start()
         kosmos.enableDualShade()
+        kosmos.runCurrent()
         underTest.activateIn(testScope)
     }
 

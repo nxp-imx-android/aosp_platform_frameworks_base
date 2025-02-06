@@ -130,6 +130,26 @@ constructor(
         dataSource.replaceOverlay(from = from, to = to, transitionKey = transitionKey)
     }
 
+    /**
+     * Instantly shows [overlay].
+     *
+     * The change is instantaneous and not animated; it will be observable in the next frame and
+     * there will be no transition animation.
+     */
+    fun instantlyShowOverlay(overlay: OverlayKey) {
+        dataSource.instantlyShowOverlay(overlay)
+    }
+
+    /**
+     * Instantly hides [overlay].
+     *
+     * The change is instantaneous and not animated; it will be observable in the next frame and
+     * there will be no transition animation.
+     */
+    fun instantlyHideOverlay(overlay: OverlayKey) {
+        dataSource.instantlyHideOverlay(overlay)
+    }
+
     /** Sets whether the container is visible. */
     fun setVisible(isVisible: Boolean) {
         _isVisible.value = isVisible
