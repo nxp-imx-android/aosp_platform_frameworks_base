@@ -20,7 +20,7 @@ import com.android.systemui.plugins.qs.TileDetailsViewModel
 
 class BluetoothDetailsViewModel(
     private val onSettingsClick: () -> Unit,
-    val detailsContentViewModel: BluetoothTileDialogViewModel,
+    val detailsContentViewModel: BluetoothDetailsContentViewModel,
 ) : TileDetailsViewModel() {
     override fun clickOnSettingsButton() {
         onSettingsClick()

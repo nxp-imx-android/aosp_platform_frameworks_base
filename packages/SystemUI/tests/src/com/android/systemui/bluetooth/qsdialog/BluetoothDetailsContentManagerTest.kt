@@ -87,7 +87,7 @@ class BluetoothDetailsContentManagerTest : SysuiTestCase() {
     private val fakeSystemClock = FakeSystemClock()
 
     private val uiProperties =
-        BluetoothTileDialogViewModel.UiProperties.build(
+        BluetoothDetailsContentViewModel.UiProperties.build(
             isBluetoothEnabled = ENABLED,
             isAutoOnToggleFeatureAvailable = ENABLED,
         )
@@ -314,7 +314,7 @@ class BluetoothDetailsContentManagerTest : SysuiTestCase() {
                 val cachedHeight = Int.MAX_VALUE
                 val contentManager =
                     BluetoothDetailsContentManager(
-                        BluetoothTileDialogViewModel.UiProperties.build(ENABLED, ENABLED),
+                        BluetoothDetailsContentViewModel.UiProperties.build(ENABLED, ENABLED),
                         cachedHeight,
                         bluetoothTileDialogCallback,
                         /* isInDialog= */ true,
@@ -339,7 +339,7 @@ class BluetoothDetailsContentManagerTest : SysuiTestCase() {
             testScope.runTest {
                 val contentManager =
                     BluetoothDetailsContentManager(
-                        BluetoothTileDialogViewModel.UiProperties.build(ENABLED, ENABLED),
+                        BluetoothDetailsContentViewModel.UiProperties.build(ENABLED, ENABLED),
                         MATCH_PARENT,
                         bluetoothTileDialogCallback,
                         /* isInDialog= */ true,
@@ -364,7 +364,7 @@ class BluetoothDetailsContentManagerTest : SysuiTestCase() {
             testScope.runTest {
                 val contentManager =
                     BluetoothDetailsContentManager(
-                        BluetoothTileDialogViewModel.UiProperties.build(ENABLED, ENABLED),
+                        BluetoothDetailsContentViewModel.UiProperties.build(ENABLED, ENABLED),
                         MATCH_PARENT,
                         bluetoothTileDialogCallback,
                         /* isInDialog= */ true,

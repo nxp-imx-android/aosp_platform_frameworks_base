@@ -24,7 +24,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.android.systemui.res.R
 
 @Composable
-fun BluetoothDetailsContent(detailsContentViewModel: BluetoothTileDialogViewModel) {
+fun BluetoothDetailsContent(detailsContentViewModel: BluetoothDetailsContentViewModel) {
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = { context ->

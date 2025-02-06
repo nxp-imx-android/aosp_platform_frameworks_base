@@ -61,12 +61,9 @@ import kotlinx.coroutines.withContext
 
 /**
  * ViewModel for Bluetooth Dialog or Bluetooth Details View after clicking on the Bluetooth QS tile.
- *
- * TODO: b/378513956 Rename this class to BluetoothDetailsContentViewModel, since it's not only used
- *   by the dialog view.
  */
 @SysUISingleton
-class BluetoothTileDialogViewModel
+class BluetoothDetailsContentViewModel
 @Inject
 constructor(
     private val deviceItemInteractor: DeviceItemInteractor,
@@ -312,7 +309,7 @@ constructor(
         return bluetoothDialogDelegateFactory.create(
             getUiProperties(),
             getCachedContentHeight(),
-            this@BluetoothTileDialogViewModel,
+            this@BluetoothDetailsContentViewModel,
             { cancelJob() },
         )
     }
@@ -321,7 +318,7 @@ constructor(
         return bluetoothDetailsContentManagerFactory.create(
             getUiProperties(),
             getCachedContentHeight(),
-            this@BluetoothTileDialogViewModel,
+            this@BluetoothDetailsContentViewModel,
             /* isInDialog= */ false,
             /* doneButtonCallback= */ fun() {},
         )
