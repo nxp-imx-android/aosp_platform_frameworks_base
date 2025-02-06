@@ -20,16 +20,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
@@ -37,6 +30,8 @@ import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -83,15 +78,14 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
                 softWrap = false,
                 modifier =
                     modifier
-                        .customTextContentLayout(
+                        .hideTextIfDoesNotFit(
+                            text = text,
+                            textStyle = textStyle,
+                            textMeasurer = textMeasurer,
                             maxTextWidth = maxTextWidth,
                             startPadding = startPadding,
                             endPadding = endPadding,
-                        ) { constraintWidth ->
-                            val intrinsicWidth =
-                                textMeasurer.measure(text, textStyle, softWrap = false).size.width
-                            intrinsicWidth <= constraintWidth
-                        }
+                        )
                         .neverDecreaseWidth(),
             )
         }
@@ -108,7 +102,6 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
         }
 
         is OngoingActivityChipModel.Active.Text -> {
-            var hasOverflow by remember { mutableStateOf(false) }
             val text = viewModel.text
             Text(
                 text = text,
@@ -116,24 +109,14 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
                 style = textStyle,
                 softWrap = false,
                 modifier =
-                    modifier
-                        .customTextContentLayout(
-                            maxTextWidth = maxTextWidth,
-                            startPadding = startPadding,
-                            endPadding = endPadding,
-                        ) { constraintWidth ->
-                            val intrinsicWidth =
-                                textMeasurer.measure(text, textStyle, softWrap = false).size.width
-                            hasOverflow = intrinsicWidth > constraintWidth
-                            constraintWidth.toFloat() / intrinsicWidth.toFloat() > 0.5f
-                        }
-                        .overflowFadeOut(
-                            hasOverflow = { hasOverflow },
-                            fadeLength =
-                                dimensionResource(
-                                    id = R.dimen.ongoing_activity_chip_text_fading_edge_length
-                                ),
-                        ),
+                    modifier.hideTextIfDoesNotFit(
+                        text = text,
+                        textStyle = textStyle,
+                        textMeasurer = textMeasurer,
+                        maxTextWidth = maxTextWidth,
+                        startPadding = startPadding,
+                        endPadding = endPadding,
+                    ),
             )
         }
 
@@ -180,45 +163,67 @@ private class NeverDecreaseWidthNode : Modifier.Node(), LayoutModifierNode {
 }
 
 /**
- * A custom layout modifier for text that ensures its text is only visible if a provided
- * [shouldShow] callback returns true. Imposes a provided [maxTextWidthPx]. Also, accounts for
- * provided padding values if provided and ensures its text is placed with the provided padding
- * included around it.
+ * A custom layout modifier for text that ensures the text is only visible if it completely fits
+ * within the constrained bounds. Imposes a provided [maxTextWidthPx]. Also, accounts for provided
+ * padding values if provided and ensures its text is placed with the provided padding included
+ * around it.
  */
-private fun Modifier.customTextContentLayout(
+private fun Modifier.hideTextIfDoesNotFit(
+    text: String,
+    textStyle: TextStyle,
+    textMeasurer: TextMeasurer,
     maxTextWidth: Dp,
     startPadding: Dp = 0.dp,
     endPadding: Dp = 0.dp,
-    shouldShow: (constraintWidth: Int) -> Boolean,
 ): Modifier {
     return this.then(
-        CustomTextContentLayoutElement(maxTextWidth, startPadding, endPadding, shouldShow)
+        HideTextIfDoesNotFitElement(
+            text,
+            textStyle,
+            textMeasurer,
+            maxTextWidth,
+            startPadding,
+            endPadding,
+        )
     )
 }
 
-private data class CustomTextContentLayoutElement(
+private data class HideTextIfDoesNotFitElement(
+    val text: String,
+    val textStyle: TextStyle,
+    val textMeasurer: TextMeasurer,
     val maxTextWidth: Dp,
     val startPadding: Dp,
     val endPadding: Dp,
-    val shouldShow: (constrainedWidth: Int) -> Boolean,
-) : ModifierNodeElement<CustomTextContentLayoutNode>() {
-    override fun create(): CustomTextContentLayoutNode {
-        return CustomTextContentLayoutNode(maxTextWidth, startPadding, endPadding, shouldShow)
+) : ModifierNodeElement<HideTextIfDoesNotFitNode>() {
+    override fun create(): HideTextIfDoesNotFitNode {
+        return HideTextIfDoesNotFitNode(
+            text,
+            textStyle,
+            textMeasurer,
+            maxTextWidth,
+            startPadding,
+            endPadding,
+        )
     }
 
-    override fun update(node: CustomTextContentLayoutNode) {
-        node.shouldShow = shouldShow
+    override fun update(node: HideTextIfDoesNotFitNode) {
+        node.text = text
+        node.textStyle = textStyle
+        node.textMeasurer = textMeasurer
         node.maxTextWidth = maxTextWidth
         node.startPadding = startPadding
         node.endPadding = endPadding
     }
 }
 
-private class CustomTextContentLayoutNode(
+private class HideTextIfDoesNotFitNode(
+    var text: String,
+    var textStyle: TextStyle,
+    var textMeasurer: TextMeasurer,
     var maxTextWidth: Dp,
     var startPadding: Dp,
     var endPadding: Dp,
-    var shouldShow: (constrainedWidth: Int) -> Boolean,
 ) : Modifier.Node(), LayoutModifierNode {
     override fun MeasureScope.measure(
         measurable: Measurable,
@@ -230,31 +235,15 @@ private class CustomTextContentLayoutNode(
                 .coerceAtLeast(constraints.minWidth)
         val placeable = measurable.measure(constraints.copy(maxWidth = maxWidth))
 
-        val height = placeable.height
-        val width = placeable.width
-        return if (shouldShow(maxWidth)) {
+        val intrinsicWidth = textMeasurer.measure(text, textStyle, softWrap = false).size.width
+        return if (intrinsicWidth <= maxWidth) {
+            val height = placeable.height
+            val width = placeable.width
             layout(width + horizontalPadding.roundToPx(), height) {
                 placeable.place(startPadding.roundToPx(), 0)
             }
         } else {
             layout(0, 0) {}
-        }
-    }
-}
-
-private fun Modifier.overflowFadeOut(hasOverflow: () -> Boolean, fadeLength: Dp): Modifier {
-    return graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen).drawWithCache {
-        val width = size.width
-        val start = (width - fadeLength.toPx()).coerceAtLeast(0f)
-        val gradient =
-            Brush.horizontalGradient(
-                colors = listOf(Color.Black, Color.Transparent),
-                startX = start,
-                endX = width,
-            )
-        onDrawWithContent {
-            drawContent()
-            if (hasOverflow()) drawRect(brush = gradient, blendMode = BlendMode.DstIn)
         }
     }
 }
