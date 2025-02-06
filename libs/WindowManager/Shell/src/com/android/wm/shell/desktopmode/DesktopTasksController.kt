@@ -153,6 +153,16 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import kotlin.jvm.optionals.getOrNull
 
+/**
+ * A callback to be invoked when a transition is started via |Transitions.startTransition| with the
+ * transition binder token that it produces.
+ *
+ * Useful when multiple components are appending WCT operations to a single transition that is
+ * started outside of their control, and each of them wants to track the transition lifecycle
+ * independently by cross-referencing the transition token with future ready-transitions.
+ */
+typealias RunOnTransitStart = (IBinder) -> Unit
+
 /** Handles moving tasks in and out of desktop */
 class DesktopTasksController(
     private val context: Context,
@@ -792,6 +802,7 @@ class DesktopTasksController(
         taskInfo: RunningTaskInfo,
     ): ((IBinder) -> Unit) {
         val taskId = taskInfo.taskId
+        val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
         snapEventHandler.removeTaskIfTiled(displayId, taskId)
         val shouldExitDesktop =
             willExitDesktop(
@@ -800,28 +811,14 @@ class DesktopTasksController(
                 forceToFullscreen = false,
             )
         taskRepository.setPipShouldKeepDesktopActive(displayId, keepActive = true)
-        // TODO: b/393978539 - Deactivation should not happen in desktop-first devices.
-        val deactivatingDeskId =
-            if (shouldExitDesktop) {
-                performDesktopExitCleanUp(wct, displayId, shouldEndUpAtHome = true)
-                val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
-                if (
-                    DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue && deskId != null
-                ) {
-                    desksOrganizer.deactivateDesk(wct, deskId)
-                }
-                deskId
-            } else {
-                null
-            }
-        val deskDeactivationRunnable =
-            deactivatingDeskId?.let { deskId ->
-                { transition: IBinder ->
-                    desksTransitionObserver.addPendingTransition(
-                        DeskTransition.DeactivateDesk(token = transition, deskId = deskId)
-                    )
-                }
-            }
+        val desktopExitRunnable =
+            performDesktopExitCleanUp(
+                wct = wct,
+                deskId = deskId,
+                displayId = displayId,
+                willExitDesktop = shouldExitDesktop,
+                shouldEndUpAtHome = true,
+            )
 
         taskRepository.addClosingTask(displayId, taskId)
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
@@ -839,7 +836,7 @@ class DesktopTasksController(
                 ?.runOnTransitionStart
         return { transitionToken ->
             immersiveRunnable?.invoke(transitionToken)
-            deskDeactivationRunnable?.invoke(transitionToken)
+            desktopExitRunnable?.invoke(transitionToken)
         }
     }
 
@@ -874,12 +871,20 @@ class DesktopTasksController(
 
     private fun minimizeTaskInner(taskInfo: RunningTaskInfo, minimizeReason: MinimizeReason) {
         val taskId = taskInfo.taskId
+        val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
         val displayId = taskInfo.displayId
         val wct = WindowContainerTransaction()
+
         snapEventHandler.removeTaskIfTiled(displayId, taskId)
-        // TODO: b/394268248 - desk needs to be deactivated when minimizing the last task and going
-        //  home.
-        performDesktopExitCleanupIfNeeded(taskId, displayId, wct, forceToFullscreen = false)
+        taskRepository.setPipShouldKeepDesktopActive(displayId, keepActive = true)
+        val willExitDesktop = willExitDesktop(taskId, displayId, forceToFullscreen = false)
+        val desktopExitRunnable =
+            performDesktopExitCleanUp(
+                wct = wct,
+                deskId = deskId,
+                displayId = displayId,
+                willExitDesktop = willExitDesktop,
+            )
         // Notify immersive handler as it might need to exit immersive state.
         val exitResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
@@ -901,6 +906,7 @@ class DesktopTasksController(
             )
         }
         exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
+        desktopExitRunnable?.invoke(transition)
     }
 
     /** Move a task with given `taskId` to fullscreen */
@@ -949,7 +955,7 @@ class DesktopTasksController(
         logV("moveToFullscreenWithAnimation taskId=%d", task.taskId)
         val wct = WindowContainerTransaction()
         val willExitDesktop = willExitDesktop(task.taskId, task.displayId, forceToFullscreen = true)
-        val deactivatingDeskId = addMoveToFullscreenChanges(wct, task, willExitDesktop)
+        val deactivationRunnable = addMoveToFullscreenChanges(wct, task, willExitDesktop)
 
         // We are moving a freeform task to fullscreen, put the home task under the fullscreen task.
         if (!forceEnterDesktop(task.displayId)) {
@@ -964,11 +970,7 @@ class DesktopTasksController(
                 position,
                 mOnAnimationFinishedCallback,
             )
-        if (deactivatingDeskId != null) {
-            desksTransitionObserver.addPendingTransition(
-                DeskTransition.DeactivateDesk(token = transition, deskId = deactivatingDeskId)
-            )
-        }
+        deactivationRunnable?.invoke(transition)
 
         // handles case where we are moving to full screen without closing all DW tasks.
         if (!taskRepository.isOnlyVisibleNonClosingTask(task.taskId)) {
@@ -1804,19 +1806,30 @@ class DesktopTasksController(
         wct: WindowContainerTransaction,
         forceToFullscreen: Boolean,
         shouldEndUpAtHome: Boolean = true,
-    ) {
+    ): RunOnTransitStart? {
         taskRepository.setPipShouldKeepDesktopActive(displayId, keepActive = !forceToFullscreen)
         if (!willExitDesktop(taskId, displayId, forceToFullscreen)) {
-            return
+            return null
         }
-        performDesktopExitCleanUp(wct, displayId, shouldEndUpAtHome)
+        // TODO: b/394268248 - update remaining callers to pass in a |deskId| and apply the
+        //  |RunOnTransitStart| when the transition is started.
+        return performDesktopExitCleanUp(
+            wct = wct,
+            deskId = null,
+            displayId = displayId,
+            willExitDesktop = true,
+            shouldEndUpAtHome = shouldEndUpAtHome,
+        )
     }
 
     private fun performDesktopExitCleanUp(
         wct: WindowContainerTransaction,
+        deskId: Int?,
         displayId: Int,
+        willExitDesktop: Boolean,
         shouldEndUpAtHome: Boolean = true,
-    ) {
+    ): RunOnTransitStart? {
+        if (!willExitDesktop) return null
         desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
             FULLSCREEN_ANIMATION_DURATION
         )
@@ -1826,6 +1839,7 @@ class DesktopTasksController(
             // intent.
             addLaunchHomePendingIntent(wct, displayId)
         }
+        return prepareDeskDeactivationIfNeeded(wct, deskId)
     }
 
     fun releaseVisualIndicator() {
@@ -2507,7 +2521,7 @@ class DesktopTasksController(
         wct: WindowContainerTransaction,
         taskInfo: RunningTaskInfo,
         willExitDesktop: Boolean,
-    ): Int? {
+    ): RunOnTransitStart? {
         val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(taskInfo.displayId)!!
         val tdaWindowingMode = tdaInfo.configuration.windowConfiguration.windowingMode
         val targetWindowingMode =
@@ -2526,15 +2540,14 @@ class DesktopTasksController(
             wct.reparent(taskInfo.token, tdaInfo.token, /* onTop= */ true)
         }
         taskRepository.setPipShouldKeepDesktopActive(taskInfo.displayId, keepActive = false)
-        if (willExitDesktop) {
-            performDesktopExitCleanUp(wct, taskInfo.displayId, shouldEndUpAtHome = false)
-            val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue && deskId != null) {
-                desksOrganizer.deactivateDesk(wct, deskId)
-                return deskId
-            }
-        }
-        return null
+        val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
+        return performDesktopExitCleanUp(
+            wct = wct,
+            deskId = deskId,
+            displayId = taskInfo.displayId,
+            willExitDesktop = willExitDesktop,
+            shouldEndUpAtHome = false,
+        )
     }
 
     private fun cascadeWindow(bounds: Rect, displayLayout: DisplayLayout, displayId: Int) {
@@ -2693,6 +2706,23 @@ class DesktopTasksController(
         desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
             FREEFORM_ANIMATION_DURATION
         )
+    }
+
+    /**
+     * TODO: b/393978539 - Deactivation should not happen in desktop-first devices when going home.
+     */
+    private fun prepareDeskDeactivationIfNeeded(
+        wct: WindowContainerTransaction,
+        deskId: Int?,
+    ): RunOnTransitStart? {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return null
+        if (deskId == null) return null
+        desksOrganizer.deactivateDesk(wct, deskId)
+        return { transition ->
+            desksTransitionObserver.addPendingTransition(
+                DeskTransition.DeactivateDesk(token = transition, deskId = deskId)
+            )
+        }
     }
 
     /** Removes the default desk in the given display. */
