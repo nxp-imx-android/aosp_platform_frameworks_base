@@ -61,6 +61,7 @@ import kotlinx.coroutines.flow.StateFlowKt;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * The header group on Keyguard.
@@ -102,6 +103,9 @@ public class KeyguardStatusBarView extends RelativeLayout {
      * Draw this many pixels into the left/right side of the cutout to optimally use the space
      */
     private int mCutoutSideNudge = 0;
+
+    @Nullable
+    private WindowInsets mPreviousInsets = null;
 
     private DisplayCutout mDisplayCutout;
     private int mRoundedCornerPadding = 0;
@@ -284,9 +288,12 @@ public class KeyguardStatusBarView extends RelativeLayout {
     WindowInsets updateWindowInsets(
             WindowInsets insets,
             StatusBarContentInsetsProvider insetsProvider) {
-        mLayoutState = LAYOUT_NONE;
-        if (updateLayoutConsideringCutout(insetsProvider)) {
-            requestLayout();
+        if (!Objects.equals(mPreviousInsets, insets)) {
+            mLayoutState = LAYOUT_NONE;
+            if (updateLayoutConsideringCutout(insetsProvider)) {
+                requestLayout();
+            }
+            mPreviousInsets = new WindowInsets(insets);
         }
         return super.onApplyWindowInsets(insets);
     }
