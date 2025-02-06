@@ -110,4 +110,8 @@
             tap power gesture from triggering the selected target action.
     -->
     <integer name="config_doubleTapPowerGestureMode">0</integer>
+
+    <!-- By default ActivityOptions#makeScaleUpAnimation is only used between activities. This
+     config enables OEMs to support its usage across tasks.-->
+    <bool name="config_enableCrossTaskScaleUpAnimation">true</bool>
 </resources>

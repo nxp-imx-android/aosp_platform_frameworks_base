@@ -5239,7 +5239,8 @@ final class ActivityRecord extends WindowToken {
                         pendingOptions.getWidth(), pendingOptions.getHeight());
                 options = AnimationOptions.makeScaleUpAnimOptions(
                         pendingOptions.getStartX(), pendingOptions.getStartY(),
-                        pendingOptions.getWidth(), pendingOptions.getHeight());
+                        pendingOptions.getWidth(), pendingOptions.getHeight(),
+                        pendingOptions.getOverrideTaskTransition());
                 if (intent.getSourceBounds() == null) {
                     intent.setSourceBounds(new Rect(pendingOptions.getStartX(),
                             pendingOptions.getStartY(),
