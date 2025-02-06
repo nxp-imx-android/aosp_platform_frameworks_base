@@ -177,3 +177,10 @@ flag {
     description: "Factor task-view state tracking out of taskviewtransitions"
     bug: "384976265"
 }
+
+flag {
+    name: "enable_bubble_bar_on_phones"
+    namespace: "multitasking"
+    description: "Try out bubble bar on phones"
+    bug: "394869612"
+}
