@@ -77,6 +77,8 @@ public class PerfettoTraceTest {
     private static final String TAG = "PerfettoTraceTest";
     private static final String FOO = "foo";
     private static final String BAR = "bar";
+    private static final String TEXT_ABOVE_4K_SIZE =
+            new String(new char[8192]).replace('\0', 'a');
 
     private static final Category FOO_CATEGORY = new Category(FOO);
     private static final int MESSAGE = 1234567;
@@ -151,41 +153,6 @@ public class PerfettoTraceTest {
         assertThat(mDebugAnnotationNames).contains("bool_val");
         assertThat(mDebugAnnotationNames).contains("double_val");
         assertThat(mDebugAnnotationNames).contains("string_val");
-    }
-
-    @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
-    public void testDebugAnnotationsWithLambda() throws Exception {
-        TraceConfig traceConfig = getTraceConfig(FOO);
-
-        PerfettoTrace.Session session = new PerfettoTrace.Session(true, traceConfig.toByteArray());
-
-        PerfettoTrace.instant(FOO_CATEGORY, "event").addArg("long_val", 123L).emit();
-
-        byte[] traceBytes = session.close();
-
-        Trace trace = Trace.parseFrom(traceBytes);
-
-        boolean hasTrackEvent = false;
-        boolean hasDebugAnnotations = false;
-        for (TracePacket packet: trace.getPacketList()) {
-            TrackEvent event;
-            if (packet.hasTrackEvent()) {
-                hasTrackEvent = true;
-                event = packet.getTrackEvent();
-
-                if (TrackEvent.Type.TYPE_INSTANT.equals(event.getType())
-                        && event.getDebugAnnotationsCount() == 1) {
-                    hasDebugAnnotations = true;
-
-                    List<DebugAnnotation> annotations = event.getDebugAnnotationsList();
-                    assertThat(annotations.get(0).getIntValue()).isEqualTo(123L);
-                }
-            }
-        }
-
-        assertThat(hasTrackEvent).isTrue();
-        assertThat(hasDebugAnnotations).isTrue();
     }
 
     @Test
@@ -440,7 +407,6 @@ public class PerfettoTraceTest {
 
         boolean hasTrackEvent = false;
         boolean hasSourceLocation = false;
-
         for (TracePacket packet: trace.getPacketList()) {
             TrackEvent event;
             if (packet.hasTrackEvent()) {
@@ -451,6 +417,53 @@ public class PerfettoTraceTest {
                         && event.hasSourceLocation()) {
                     SourceLocation loc = event.getSourceLocation();
                     if ("ActivityManagerService.java:11489".equals(loc.getFunctionName())
+                            && loc.getLineNumber() == 2) {
+                        hasSourceLocation = true;
+                    }
+                }
+            }
+
+            collectInternedData(packet);
+        }
+
+        assertThat(hasTrackEvent).isTrue();
+        assertThat(hasSourceLocation).isTrue();
+        assertThat(mCategoryNames).contains(FOO);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
+    public void testProtoWithSlowPath() throws Exception {
+        TraceConfig traceConfig = getTraceConfig(FOO);
+
+        PerfettoTrace.Session session = new PerfettoTrace.Session(true, traceConfig.toByteArray());
+
+        PerfettoTrace.instant(FOO_CATEGORY, "event_proto")
+                .beginProto()
+                .beginNested(33L)
+                .addField(4L, 2L)
+                .addField(3, TEXT_ABOVE_4K_SIZE)
+                .endNested()
+                .addField(2001, "AIDL::IActivityManager")
+                .endProto()
+                .emit();
+
+        byte[] traceBytes = session.close();
+
+        Trace trace = Trace.parseFrom(traceBytes);
+
+        boolean hasTrackEvent = false;
+        boolean hasSourceLocation = false;
+        for (TracePacket packet: trace.getPacketList()) {
+            TrackEvent event;
+            if (packet.hasTrackEvent()) {
+                hasTrackEvent = true;
+                event = packet.getTrackEvent();
+
+                if (TrackEvent.Type.TYPE_INSTANT.equals(event.getType())
+                        && event.hasSourceLocation()) {
+                    SourceLocation loc = event.getSourceLocation();
+                    if (TEXT_ABOVE_4K_SIZE.equals(loc.getFunctionName())
                             && loc.getLineNumber() == 2) {
                         hasSourceLocation = true;
                     }
