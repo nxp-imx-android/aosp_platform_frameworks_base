@@ -290,7 +290,7 @@
     <!-- Accessibility text for the handle fullscreen button [CHAR LIMIT=NONE] -->
     <string name="fullscreen_text">Fullscreen</string>
     <!-- Accessibility text for the handle desktop button [CHAR LIMIT=NONE] -->
-    <string name="desktop_text">Desktop Mode</string>
+    <string name="desktop_text">Desktop View</string>
     <!-- Accessibility text for the handle split screen button [CHAR LIMIT=NONE] -->
     <string name="split_screen_text">Split Screen</string>
     <!-- Accessibility text for the handle more options button [CHAR LIMIT=NONE] -->
@@ -316,7 +316,7 @@
     <!-- Accessibility text for the handle menu close menu button [CHAR LIMIT=NONE] -->
     <string name="collapse_menu_text">Close Menu</string>
     <!-- Accessibility text for the App Header's App Chip [CHAR LIMIT=NONE] -->
-    <string name="desktop_mode_app_header_chip_text">Open Menu</string>
+    <string name="desktop_mode_app_header_chip_text"><xliff:g id="app_name" example="Chrome">%1$s</xliff:g> (Desktop View)</string>
     <!-- Maximize menu maximize button string. -->
     <string name="desktop_mode_maximize_menu_maximize_text">Maximize Screen</string>
     <!-- Maximize menu snap buttons string. -->
@@ -342,10 +342,10 @@
     <!-- Accessibility text for the Maximize Menu's snap maximize/restore [CHAR LIMIT=NONE] -->
     <string name="desktop_mode_a11y_action_maximize_restore">Maximize or restore window size</string>
 
-    <!-- Accessibility action replacement for caption handle menu split screen button [CHAR LIMIT=NONE] -->
-    <string name="app_handle_menu_talkback_split_screen_mode_button_text">Enter split screen mode</string>
-    <!-- Accessibility action replacement for caption handle menu enter desktop mode button [CHAR LIMIT=NONE] -->
-    <string name="app_handle_menu_talkback_desktop_mode_button_text">Enter desktop windowing mode</string>
+    <!-- Accessibility action replacement for caption handle app chip buttons [CHAR LIMIT=NONE] -->
+    <string name="app_handle_chip_accessibility_announce">Open Menu</string>
+    <!-- Accessibility action replacement for caption handle menu buttons [CHAR LIMIT=NONE] -->
+    <string name="app_handle_menu_accessibility_announce">Enter <xliff:g id="windowing_mode" example="Desktop View">%1$s</xliff:g></string>
     <!-- Accessibility action replacement for maximize menu enter snap left button [CHAR LIMIT=NONE] -->
     <string name="maximize_menu_talkback_action_snap_left_text">Resize window to left</string>
     <!-- Accessibility action replacement for maximize menu enter snap right button [CHAR LIMIT=NONE] -->
