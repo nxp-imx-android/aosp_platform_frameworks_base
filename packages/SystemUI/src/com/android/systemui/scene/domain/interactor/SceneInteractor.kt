@@ -339,6 +339,38 @@ constructor(
     }
 
     /**
+     * Instantly shows [overlay].
+     *
+     * The change is instantaneous and not animated; it will be observable in the next frame and
+     * there will be no transition animation.
+     */
+    fun instantlyShowOverlay(overlay: OverlayKey, loggingReason: String) {
+        if (!validateOverlayChange(to = overlay, loggingReason = loggingReason)) {
+            return
+        }
+
+        logger.logOverlayChangeRequested(to = overlay, reason = loggingReason)
+
+        repository.instantlyShowOverlay(overlay)
+    }
+
+    /**
+     * Instantly hides [overlay].
+     *
+     * The change is instantaneous and not animated; it will be observable in the next frame and
+     * there will be no transition animation.
+     */
+    fun instantlyHideOverlay(overlay: OverlayKey, loggingReason: String) {
+        if (!validateOverlayChange(from = overlay, loggingReason = loggingReason)) {
+            return
+        }
+
+        logger.logOverlayChangeRequested(from = overlay, reason = loggingReason)
+
+        repository.instantlyHideOverlay(overlay)
+    }
+
+    /**
      * Replace [from] by [to] so that [from] ends up not being visible on screen and [to] ends up
      * being visible.
      *

@@ -77,6 +77,14 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
         showOverlay(to, transitionKey)
     }
 
+    override fun instantlyShowOverlay(overlay: OverlayKey) {
+        showOverlay(overlay)
+    }
+
+    override fun instantlyHideOverlay(overlay: OverlayKey) {
+        hideOverlay(overlay)
+    }
+
     /**
      * Pauses scene and overlay changes.
      *

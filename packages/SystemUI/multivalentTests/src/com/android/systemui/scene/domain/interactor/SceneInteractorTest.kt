@@ -675,4 +675,42 @@ class SceneInteractorTest : SysuiTestCase() {
             runCurrent()
             underTest.showOverlay(Overlays.QuickSettingsShade, "reason")
         }
+
+    @Test
+    fun instantlyShowOverlay() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+            val currentScene by collectLastValue(underTest.currentScene)
+            val currentOverlays by collectLastValue(underTest.currentOverlays)
+            val originalScene = currentScene
+            assertThat(currentOverlays).isEmpty()
+
+            val overlay = Overlays.NotificationsShade
+            underTest.instantlyShowOverlay(overlay, "reason")
+            runCurrent()
+
+            assertThat(currentScene).isEqualTo(originalScene)
+            assertThat(currentOverlays).contains(overlay)
+        }
+
+    @Test
+    fun instantlyHideOverlay() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+            val currentScene by collectLastValue(underTest.currentScene)
+            val currentOverlays by collectLastValue(underTest.currentOverlays)
+            val overlay = Overlays.QuickSettingsShade
+            underTest.showOverlay(overlay, "reason")
+            runCurrent()
+            val originalScene = currentScene
+            assertThat(currentOverlays).contains(overlay)
+
+            underTest.instantlyHideOverlay(overlay, "reason")
+            runCurrent()
+
+            assertThat(currentScene).isEqualTo(originalScene)
+            assertThat(currentOverlays).isEmpty()
+        }
 }
