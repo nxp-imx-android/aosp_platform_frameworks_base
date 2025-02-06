@@ -108,7 +108,9 @@ class DefaultClockProvider(
     }
 
     companion object {
-        const val NUM_CLOCK_FONT_ANIMATION_STEPS = 30
+        // 750ms @ 120hz -> 90 frames of animation
+        // In practice, 45 looks good enough
+        const val NUM_CLOCK_FONT_ANIMATION_STEPS = 45
 
         val FLEX_TYPEFACE by lazy {
             // TODO(b/364680873): Move constant to config_clockFontFamily when shipping

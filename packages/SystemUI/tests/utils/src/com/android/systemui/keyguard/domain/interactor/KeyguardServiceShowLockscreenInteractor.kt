@@ -19,5 +19,5 @@ package com.android.systemui.keyguard.domain.interactor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 
-val Kosmos.keyguardServiceLockNowInteractor by
-    Kosmos.Fixture { KeyguardServiceLockNowInteractor(backgroundScope = testScope) }
+val Kosmos.keyguardServiceShowLockscreenInteractor by
+    Kosmos.Fixture { KeyguardServiceShowLockscreenInteractor(backgroundScope = testScope) }

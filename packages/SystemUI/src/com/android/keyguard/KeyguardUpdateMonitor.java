@@ -37,6 +37,7 @@ import static android.hardware.biometrics.BiometricSourceType.FINGERPRINT;
 import static android.os.BatteryManager.BATTERY_STATUS_UNKNOWN;
 import static android.os.BatteryManager.CHARGING_POLICY_DEFAULT;
 import static android.telephony.SubscriptionManager.PROFILE_CLASS_PROVISIONING;
+import static android.telephony.SubscriptionManager.SUBSCRIPTION_TYPE_REMOTE_SIM;
 
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_BOOT;
@@ -145,6 +146,9 @@ import com.android.systemui.deviceentry.shared.model.HelpFaceAuthenticationStatu
 import com.android.systemui.deviceentry.shared.model.SuccessFaceAuthenticationStatus;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.dump.DumpsysTableLogger;
+import com.android.systemui.keyguard.KeyguardWmStateRefactor;
+import com.android.systemui.keyguard.domain.interactor.KeyguardServiceShowLockscreenInteractor;
+import com.android.systemui.keyguard.domain.interactor.ShowWhileAwakeReason;
 import com.android.systemui.keyguard.shared.constants.TrustAgentUiEvent;
 import com.android.systemui.log.SessionTracker;
 import com.android.systemui.plugins.clocks.WeatherData;
@@ -297,6 +301,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, Dumpab
     private final Provider<SceneInteractor> mSceneInteractor;
     private final Provider<AlternateBouncerInteractor> mAlternateBouncerInteractor;
     private final Provider<CommunalSceneInteractor> mCommunalSceneInteractor;
+    private final KeyguardServiceShowLockscreenInteractor mKeyguardServiceShowLockscreenInteractor;
     private final AuthController mAuthController;
     private final UiEventLogger mUiEventLogger;
     private final Set<String> mAllowFingerprintOnOccludingActivitiesFromPackage;
@@ -689,13 +694,16 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, Dumpab
      * @return List of SubscriptionInfo records, maybe empty but never null.
      *
      * Note that this method will filter out any subscription which is PROFILE_CLASS_PROVISIONING
+     * and REMOTE SIMs. REMOTE SIMs use an invalid slot index (-1).
      */
     public List<SubscriptionInfo> getSubscriptionInfo(boolean forceReload) {
         List<SubscriptionInfo> sil = mSubscriptionInfo;
         if (sil == null || forceReload) {
             mSubscriptionInfo = mSubscriptionManager.getCompleteActiveSubscriptionInfoList()
                     .stream()
-                    .filter(subInfo -> subInfo.getProfileClass() != PROFILE_CLASS_PROVISIONING)
+                    .filter(subInfo ->
+                            subInfo.getProfileClass() != PROFILE_CLASS_PROVISIONING
+                                && subInfo.getSubscriptionType() != SUBSCRIPTION_TYPE_REMOTE_SIM)
                     .toList();
         }
 
@@ -2210,7 +2218,8 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, Dumpab
             Provider<AlternateBouncerInteractor> alternateBouncerInteractor,
             Provider<JavaAdapter> javaAdapter,
             Provider<SceneInteractor> sceneInteractor,
-            Provider<CommunalSceneInteractor> communalSceneInteractor) {
+            Provider<CommunalSceneInteractor> communalSceneInteractor,
+            KeyguardServiceShowLockscreenInteractor keyguardServiceShowLockscreenInteractor) {
         mContext = context;
         mSubscriptionManager = subscriptionManager;
         mUserTracker = userTracker;
@@ -2260,6 +2269,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, Dumpab
         mJavaAdapter = javaAdapter;
         mSceneInteractor = sceneInteractor;
         mCommunalSceneInteractor = communalSceneInteractor;
+        mKeyguardServiceShowLockscreenInteractor = keyguardServiceShowLockscreenInteractor;
 
         mHandler = new Handler(mainLooper) {
             @Override
@@ -2541,6 +2551,13 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, Dumpab
             );
         }
 
+        if (KeyguardWmStateRefactor.isEnabled()) {
+            mJavaAdapter.get().alwaysCollectFlow(
+                    mKeyguardServiceShowLockscreenInteractor.getShowNowEvents(),
+                    this::onKeyguardServiceShowLockscreenNowEvents
+            );
+        }
+
         if (glanceableHubV2()) {
             mJavaAdapter.get().alwaysCollectFlow(
                     mCommunalSceneInteractor.get().isCommunalVisible(),
@@ -2572,6 +2589,12 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, Dumpab
         int primaryBouncerIsOrWillBeShowing =
                   isPrimaryBouncerShowingOrWillBeShowing(transitionState) ? 1 : 0;
         handlePrimaryBouncerChanged(primaryBouncerIsOrWillBeShowing, primaryBouncerFullyShown);
+    }
+
+    void onKeyguardServiceShowLockscreenNowEvents(ShowWhileAwakeReason reason) {
+        if (reason == ShowWhileAwakeReason.FOLDED_WITH_SWIPE_UP_TO_CONTINUE) {
+            mMainExecutor.execute(this::tryForceIsDismissibleKeyguard);
+        }
     }
 
     private void initializeSimState() {

@@ -149,6 +149,7 @@ import com.android.systemui.deviceentry.shared.model.FaceDetectionStatus;
 import com.android.systemui.deviceentry.shared.model.FailedFaceAuthenticationStatus;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.flags.SceneContainerFlagParameterizationKt;
+import com.android.systemui.keyguard.domain.interactor.KeyguardServiceShowLockscreenInteractor;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.log.SessionTracker;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
@@ -218,6 +219,9 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
             TEST_CARRIER, TEST_CARRIER, NAME_SOURCE_CARRIER_ID, 0xFFFFFF, "",
             DATA_ROAMING_DISABLE, null, null, null, null, false, null, "", false, TEST_GROUP_UUID,
             TEST_CARRIER_ID, PROFILE_CLASS_PROVISIONING);
+    private static final SubscriptionInfo TEST_REMOTE_SIM =
+            new SubscriptionInfo.Builder(TEST_SUBSCRIPTION)
+                    .setType(SubscriptionManager.SUBSCRIPTION_TYPE_REMOTE_SIM).build();
     private static final int FINGERPRINT_SENSOR_ID = 1;
     private KosmosJavaAdapter mKosmos;
     @Mock
@@ -307,6 +311,8 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     private SceneInteractor mSceneInteractor;
     @Mock
     private CommunalSceneInteractor mCommunalSceneInteractor;
+    @Mock
+    private KeyguardServiceShowLockscreenInteractor mKeyguardServiceShowLockscreenInteractor;
     @Captor
     private ArgumentCaptor<FaceAuthenticationListener> mFaceAuthenticationListener;
 
@@ -1365,6 +1371,26 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
 
         SubscriptionInfo.Builder b = new SubscriptionInfo.Builder(TEST_SUBSCRIPTION_PROVISIONING);
         b.setProfileClass(PROFILE_CLASS_DEFAULT);
+        SubscriptionInfo validInfo = b.build();
+
+        list.clear();
+        list.add(validInfo);
+        mKeyguardUpdateMonitor.mSubscriptionListener.onSubscriptionsChanged();
+
+        assertThat(mKeyguardUpdateMonitor.getSubscriptionInfo(true)).hasSize(1);
+    }
+
+    @Test
+    public void testActiveSubscriptionList_filtersRemoteSim() {
+        List<SubscriptionInfo> list = new ArrayList<>();
+        list.add(TEST_REMOTE_SIM);
+        when(mSubscriptionManager.getCompleteActiveSubscriptionInfoList()).thenReturn(list);
+        mKeyguardUpdateMonitor.mSubscriptionListener.onSubscriptionsChanged();
+
+        assertThat(mKeyguardUpdateMonitor.getSubscriptionInfo(true)).isEmpty();
+
+        SubscriptionInfo.Builder b = new SubscriptionInfo.Builder(TEST_REMOTE_SIM);
+        b.setType(SubscriptionManager.SUBSCRIPTION_TYPE_LOCAL_SIM);
         SubscriptionInfo validInfo = b.build();
 
         list.clear();
@@ -2716,7 +2742,8 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
                     () -> mAlternateBouncerInteractor,
                     () -> mJavaAdapter,
                     () -> mSceneInteractor,
-                    () -> mCommunalSceneInteractor);
+                    () -> mCommunalSceneInteractor,
+                    mKeyguardServiceShowLockscreenInteractor);
             setAlternateBouncerVisibility(false);
             setPrimaryBouncerVisibility(false);
             setStrongAuthTracker(KeyguardUpdateMonitorTest.this.mStrongAuthTracker);

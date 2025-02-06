@@ -574,8 +574,6 @@
 
     <dimen name="notification_panel_margin_bottom">32dp</dimen>
 
-    <dimen name="notification_2025_panel_margin_bottom">64dp</dimen>
-
     <!-- The bottom padding of the panel that holds the list of notifications. -->
     <dimen name="notification_panel_padding_bottom">0dp</dimen>
 
@@ -1995,10 +1993,14 @@
     </item>
 
     <!-- The padding applied to the dream overlay container -->
-    <dimen name="dream_overlay_container_padding_start">0dp</dimen>
-    <dimen name="dream_overlay_container_padding_end">0dp</dimen>
+    <dimen name="dream_overlay_container_padding_start">40dp</dimen>
+    <dimen name="dream_overlay_container_padding_end">40dp</dimen>
     <dimen name="dream_overlay_container_padding_top">0dp</dimen>
-    <dimen name="dream_overlay_container_padding_bottom">0dp</dimen>
+    <dimen name="dream_overlay_container_padding_bottom">40dp</dimen>
+    <dimen name="dream_overlay_container_small_padding_start">32dp</dimen>
+    <dimen name="dream_overlay_container_small_padding_end">32dp</dimen>
+    <dimen name="dream_overlay_container_small_padding_top">0dp</dimen>
+    <dimen name="dream_overlay_container_small_padding_bottom">32dp</dimen>
 
     <!-- The margin applied between complications -->
     <dimen name="dream_overlay_complication_margin">0dp</dimen>
@@ -2159,4 +2161,14 @@
     <!-- Gradient color wallpaper start -->
     <dimen name="gradient_color_wallpaper_center_offset">128dp</dimen>
     <!-- Gradient color wallpaper end -->
+
+    <!-- Rear display mode -->
+    <dimen name="rear_display_dialog_slider_height">42dp</dimen>
+    <dimen name="rear_display_dialog_slider_corner_radius">21dp</dimen>
+    <!-- (rear_display_dialog_slider_height - rounded_slider_icon_size) / 2 -->
+    <dimen name="rear_display_dialog_slider_icon_inset">11dp</dimen>
+    <!-- rear_display_animation_width_opened - 2 * rear_display_dialog_slider_corner_radius -->
+    <dimen name="rear_display_progress_width">231dp</dimen>
+    <!-- Rear display mode end -->
+
 </resources>
