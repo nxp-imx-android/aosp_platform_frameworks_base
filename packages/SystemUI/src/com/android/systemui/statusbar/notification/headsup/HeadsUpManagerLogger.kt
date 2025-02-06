@@ -71,7 +71,7 @@ constructor(@NotificationHeadsUpLog private val buffer: LogBuffer) {
                 str3 = outcome
                 bool1 = isEnabled
             },
-            { "$str1\n\t=> AC[isEnabled:$bool1] update: $str2\n\t=> $str3" },
+            { "$str1\n\t=> AC[enabled:$bool1] update: $str2\n\t=> $str3" },
         )
     }
 
@@ -90,7 +90,33 @@ constructor(@NotificationHeadsUpLog private val buffer: LogBuffer) {
                 str3 = outcome
                 bool1 = isEnabled
             },
-            { "$str1\n\t=> AC[isEnabled:$bool1] delete: $str2\n\t=> $str3" },
+            { "$str1\n\t=> AC[enabled:$bool1] delete: $str2\n\t=> $str3" },
+        )
+    }
+
+    fun logAvalancheStage(stage: String, key: String) {
+        buffer.log(
+            TAG,
+            INFO,
+            {
+                str1 = stage
+                str2 = key
+            },
+            { "[AC] $str1 $str2" },
+        )
+    }
+
+    fun logAvalancheDuration(thisKey: String, duration: Int, reason: String, nextKey: String) {
+        buffer.log(
+            TAG,
+            INFO,
+            {
+                str1 = thisKey
+                int1 = duration
+                str2 = reason
+                str3 = nextKey
+            },
+            { "[AC] $str1 | $int1 ms | $str2 $str3" },
         )
     }
 

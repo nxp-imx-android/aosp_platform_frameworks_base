@@ -269,8 +269,10 @@ constructor(
         }
         nextList.sort()
         val entryList = showingList + nextList
+        val thisKey = getKey(entry)
         if (entryList.isEmpty()) {
-            log { "No avalanche HUNs, use default ms: $autoDismissMs" }
+            headsUpManagerLogger.logAvalancheDuration(
+                thisKey, autoDismissMs, "No avalanche HUNs, use default", nextKey = "")
             return autoDismissMs
         }
         // entryList.indexOf(entry) returns -1 even when the entry is in entryList
@@ -281,27 +283,29 @@ constructor(
             }
         }
         if (thisEntryIndex == -1) {
-            log { "Untracked entry, use default ms: $autoDismissMs" }
+            headsUpManagerLogger.logAvalancheDuration(
+                thisKey, autoDismissMs, "Untracked entry, use default", nextKey = "")
             return autoDismissMs
         }
         val nextEntryIndex = thisEntryIndex + 1
-
-        // If last entry, use default duration
         if (nextEntryIndex >= entryList.size) {
-            log { "Last entry, use default ms: $autoDismissMs" }
+            headsUpManagerLogger.logAvalancheDuration(
+                thisKey, autoDismissMs, "Last entry, use default", nextKey = "")
             return autoDismissMs
         }
         val nextEntry = entryList[nextEntryIndex]
+        val nextKey = getKey(nextEntry)
         if (nextEntry.compareNonTimeFields(entry) == -1) {
-            // Next entry is higher priority
-            log { "Next entry is higher priority: 500ms" }
+            headsUpManagerLogger.logAvalancheDuration(
+                thisKey, 500, "LOWER priority than next: ", nextKey)
             return 500
         } else if (nextEntry.compareNonTimeFields(entry) == 0) {
-            // Next entry is same priority
-            log { "Next entry is same priority: 1000ms" }
+            headsUpManagerLogger.logAvalancheDuration(
+                thisKey, 1000, "SAME priority as next: ", nextKey)
             return 1000
         } else {
-            log { "Next entry is lower priority, use default ms: $autoDismissMs" }
+            headsUpManagerLogger.logAvalancheDuration(
+                thisKey, autoDismissMs, "HIGHER priority than next: ", nextKey)
             return autoDismissMs
         }
     }
@@ -355,25 +359,28 @@ constructor(
     }
 
     private fun showNow(entry: HeadsUpEntry, runnableList: MutableList<Runnable>) {
-        log { "SHOW: " + getKey(entry) }
-
+        headsUpManagerLogger.logAvalancheStage("show", getKey(entry))
         uiEventLogger.log(ThrottleEvent.AVALANCHE_THROTTLING_HUN_SHOWN)
         headsUpEntryShowing = entry
 
-        runnableList.forEach {
-            if (it in debugRunnableLabelMap) {
-                log { "RUNNABLE: ${debugRunnableLabelMap[it]}" }
+        runnableList.forEach { runnable ->
+            if (debug) {
+                debugRunnableLabelMap[runnable]?.let { label ->
+                    headsUpManagerLogger.logAvalancheStage("run", label)
+                    // Remove label after logging to avoid memory leak
+                    debugRunnableLabelMap.remove(runnable)
+                }
             }
-            it.run()
+            runnable.run()
         }
     }
 
     private fun showNext() {
-        log { "SHOW NEXT" }
+        headsUpManagerLogger.logAvalancheStage("show next",  key = "")
         headsUpEntryShowing = null
 
         if (nextList.isEmpty()) {
-            log { "NO MORE TO SHOW" }
+            headsUpManagerLogger.logAvalancheStage("no more",  key = "")
             previousHunKey = ""
             return
         }
@@ -423,12 +430,6 @@ constructor(
     }
 
     // Methods below are for logging only ==========================================================
-
-    private inline fun log(s: () -> String) {
-        if (debug) {
-            Log.d(tag, s())
-        }
-    }
 
     private fun getStateStr(): String {
         return "\navalanche state:" +
