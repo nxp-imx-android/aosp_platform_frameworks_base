@@ -5042,6 +5042,14 @@ public class PackageInstaller {
                         return new VerificationUserConfirmationInfo[size];
                     }
                 };
+
+        @Override
+        public String toString() {
+            return "VerificationUserConfirmationInfo{"
+                    + "verificationPolicy=" + mVerificationPolicy
+                    + ", vericationFailureReason=" + mVerificationFailureReason
+                    + '}';
+        }
     }
 
     /**
@@ -5100,9 +5108,13 @@ public class PackageInstaller {
         @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
             byte flg = 0;
-            if (mIcon != null) flg |= 0x1;
+            if (mIcon != null) {
+                flg |= 0x1;
+            }
             dest.writeByte(flg);
-            if (mIcon != null) mIcon.writeToParcel(dest, flags);
+            if (mIcon != null) {
+                mIcon.writeToParcel(dest, flags);
+            }
             dest.writeCharSequence(mLabel);
             dest.writeString8(mLocale.toString());
             dest.writeString8(mPackageName);

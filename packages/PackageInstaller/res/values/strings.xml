@@ -91,9 +91,9 @@
     <!-- Message presented in a dialog box when verification failed due to problems with the network. [CHAR LIMIT=none]-->
     <string name="verification_incomplete_summary">App is not yet installed because verification could not take place. Please try again.</string>
     <!-- Message presented in a dialog box when verification failed due to internal failures. [CHAR LIMIT=none]-->
-    <string name="cannot_install_verification_unavailable_summary"><p>Warning: App verification could not take place.</p><p><a href="">Learn more</a> about package verification</p></string>
+    <string name="cannot_install_verification_unavailable_summary"><p>Warning: App verification could not take place. </p><p><a href="">Learn more</a> about package verification</p></string>
     <!-- Message presented in a dialog box when the verifier blocked an app from being installed. [CHAR LIMIT=none]-->
-    <string name="cannot_install_package_summary"><p>This app can’t be installed because it has been blocked.</p><p><a href="">Learn more</a> about package verification</p></string>
+    <string name="cannot_install_package_summary"><p>This app can’t be installed because it has been blocked. </p><p><a href="">Learn more</a> about package verification</p></string>
 
     <!-- [CHAR LIMIT=15] -->
     <string name="ok">OK</string>

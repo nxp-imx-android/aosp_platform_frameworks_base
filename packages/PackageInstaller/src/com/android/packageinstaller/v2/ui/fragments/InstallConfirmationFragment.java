@@ -171,6 +171,6 @@ public class InstallConfirmationFragment extends DialogFragment {
         CharSequence newOwner = args.getCharSequence(ARGS_NEW_OWNER);
 
         mDialogData = new InstallUserActionRequired(actionReason, appSnippet, isUpdating,
-            existingOwner, newOwner, null);
+            existingOwner, newOwner, null, /* VerificationUserConfirmationInfo= */ null);
     }
 }
