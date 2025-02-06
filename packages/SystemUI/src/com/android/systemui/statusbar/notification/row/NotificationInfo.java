@@ -83,20 +83,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     private static final String TAG = "InfoGuts";
     private int mActualHeight;
 
-    @IntDef(prefix = { "ACTION_" }, value = {
-            ACTION_NONE,
-            ACTION_TOGGLE_ALERT,
-            ACTION_TOGGLE_SILENT,
-    })
-    public @interface NotificationInfoAction {
-    }
-
-    public static final int ACTION_NONE = 0;
-    // standard controls
-    static final int ACTION_TOGGLE_SILENT = 2;
-    // standard controls
-    private static final int ACTION_TOGGLE_ALERT = 5;
-
     private TextView mPriorityDescriptionView;
     private TextView mSilentDescriptionView;
     private TextView mAutomaticDescriptionView;
@@ -123,7 +109,8 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
      * The last importance level chosen by the user.  Null if the user has not chosen an importance
      * level; non-null once the user takes an action which indicates an explicit preference.
      */
-    @Nullable private Integer mChosenImportance;
+    @Nullable
+    private Integer mChosenImportance;
     private boolean mIsAutomaticChosen;
     private boolean mIsSingleDefaultChannel;
     private boolean mIsNonblockable;
@@ -143,27 +130,27 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     boolean mSkipPost = false;
 
     // used by standard ui
-    private OnClickListener mOnAutomatic = v -> {
+    private final OnClickListener mOnAutomatic = v -> {
         mIsAutomaticChosen = true;
         applyAlertingBehavior(BEHAVIOR_AUTOMATIC, true /* userTriggered */);
     };
 
     // used by standard ui
-    private OnClickListener mOnAlert = v -> {
+    private final OnClickListener mOnAlert = v -> {
         mChosenImportance = IMPORTANCE_DEFAULT;
         mIsAutomaticChosen = false;
         applyAlertingBehavior(BEHAVIOR_ALERTING, true /* userTriggered */);
     };
 
     // used by standard ui
-    private OnClickListener mOnSilent = v -> {
+    private final OnClickListener mOnSilent = v -> {
         mChosenImportance = IMPORTANCE_LOW;
         mIsAutomaticChosen = false;
         applyAlertingBehavior(BEHAVIOR_SILENT, true /* userTriggered */);
     };
 
     // used by standard ui
-    private OnClickListener mOnDismissSettings = v -> {
+    private final OnClickListener mOnDismissSettings = v -> {
         mPressedApply = true;
         mGutsContainer.closeControls(v, /* save= */ true);
     };
@@ -179,13 +166,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         mPriorityDescriptionView = findViewById(R.id.alert_summary);
         mSilentDescriptionView = findViewById(R.id.silence_summary);
         mAutomaticDescriptionView = findViewById(R.id.automatic_summary);
-    }
-
-    // Specify a CheckSaveListener to override when/if the user's changes are committed.
-    public interface CheckSaveListener {
-        // Invoked when importance has changed and the NotificationInfo wants to try to save it.
-        // Listener should run saveImportance unless the change should be canceled.
-        void checkSave(Runnable saveImportance, StatusBarNotification sbn);
     }
 
     public interface OnSettingsClickListener {
@@ -216,7 +196,8 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             boolean isNonblockable,
             boolean wasShownHighPriority,
             AssistantFeedbackController assistantFeedbackController,
-            MetricsLogger metricsLogger, OnClickListener onCloseClick)
+            MetricsLogger metricsLogger,
+            OnClickListener onCloseClick)
             throws RemoteException {
         mINotificationManager = iNotificationManager;
         mMetricsLogger = metricsLogger;
@@ -623,7 +604,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
                 intent,
                 PackageManager.MATCH_DEFAULT_ONLY
         );
-        if (resolveInfos == null || resolveInfos.size() == 0 || resolveInfos.get(0) == null) {
+        if (resolveInfos == null || resolveInfos.isEmpty() || resolveInfos.get(0) == null) {
             return null;
         }
         final ActivityInfo activityInfo = resolveInfos.get(0).activityInfo;
@@ -758,6 +739,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     /**
      * Returns a LogMaker with all available notification information.
      * Caller should set category, type, and maybe subtype, before passing it to mMetricsLogger.
+     *
      * @return LogMaker
      */
     private LogMaker getLogMaker() {
@@ -769,10 +751,11 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     /**
      * Returns an initialized LogMaker for logging importance changes.
      * The caller may override the type before passing it to mMetricsLogger.
+     *
      * @return LogMaker
      */
     private LogMaker importanceChangeLogMaker() {
-        Integer chosenImportance =
+        int chosenImportance =
                 mChosenImportance != null ? mChosenImportance : mStartingChannelImportance;
         return getLogMaker().setCategory(MetricsEvent.ACTION_SAVE_IMPORTANCE)
                 .setType(MetricsEvent.TYPE_ACTION)
@@ -782,6 +765,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     /**
      * Returns an initialized LogMaker for logging open/close of the info display.
      * The caller may override the type before passing it to mMetricsLogger.
+     *
      * @return LogMaker
      */
     private LogMaker notificationControlsLogMaker() {
@@ -799,7 +783,9 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
 
     @Retention(SOURCE)
     @IntDef({BEHAVIOR_ALERTING, BEHAVIOR_SILENT, BEHAVIOR_AUTOMATIC})
-    private @interface AlertingBehavior {}
+    private @interface AlertingBehavior {
+    }
+
     private static final int BEHAVIOR_ALERTING = 0;
     private static final int BEHAVIOR_SILENT = 1;
     private static final int BEHAVIOR_AUTOMATIC = 2;
