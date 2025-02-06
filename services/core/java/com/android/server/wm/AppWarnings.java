@@ -506,6 +506,10 @@ class AppWarnings {
             context =  new ContextThemeWrapper(context, context.getThemeResId()) {
                 @Override
                 public void startActivity(Intent intent) {
+                    // PageSizeMismatch dialog stays on top of the browser even after opening link
+                    // set broadcast to close the dialog when link has been clicked.
+                    sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     super.startActivity(intent);
                 }
