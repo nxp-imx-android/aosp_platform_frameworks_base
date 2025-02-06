@@ -19,6 +19,7 @@ package com.android.systemui.scene.ui.viewmodel
 import android.view.MotionEvent
 import android.view.View
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.dp
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.DefaultEdgeDetector
@@ -64,7 +65,6 @@ constructor(
     private val powerInteractor: PowerInteractor,
     shadeModeInteractor: ShadeModeInteractor,
     private val remoteInputInteractor: RemoteInputInteractor,
-    private val splitEdgeDetector: SplitEdgeDetector,
     private val logger: SceneLogger,
     hapticsViewModelFactory: SceneContainerHapticsViewModel.Factory,
     val lightRevealScrim: LightRevealScrimViewModel,
@@ -89,16 +89,20 @@ constructor(
     val hapticsViewModel: SceneContainerHapticsViewModel = hapticsViewModelFactory.create(view)
 
     /**
-     * The [SwipeSourceDetector] to use for defining which edges of the screen can be defined in the
+     * The [SwipeSourceDetector] to use for defining which areas of the screen can be defined in the
      * [UserAction]s for this container.
      */
-    val edgeDetector: SwipeSourceDetector by
+    val swipeSourceDetector: SwipeSourceDetector by
         hydrator.hydratedStateOf(
-            traceName = "edgeDetector",
+            traceName = "swipeSourceDetector",
             initialValue = DefaultEdgeDetector,
             source =
                 shadeModeInteractor.shadeMode.map {
-                    if (it is ShadeMode.Dual) splitEdgeDetector else DefaultEdgeDetector
+                    if (it is ShadeMode.Dual) {
+                        SceneContainerSwipeDetector(edgeSize = 40.dp)
+                    } else {
+                        DefaultEdgeDetector
+                    }
                 },
         )
 

@@ -31,7 +31,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.qs.panels.ui.viewmodel.editModeViewModel
 import com.android.systemui.scene.shared.model.Overlays
-import com.android.systemui.scene.ui.viewmodel.SceneContainerEdge
+import com.android.systemui.scene.ui.viewmodel.SceneContainerArea
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
@@ -84,13 +84,14 @@ class QuickSettingsShadeOverlayActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun downFromTopLeft_switchesToNotificationsShade() =
+    fun downFromTopStart_switchesToNotificationsShade() =
         testScope.runTest {
             val actions by collectLastValue(underTest.actions)
             underTest.activateIn(this)
 
             val action =
-                (actions?.get(Swipe.Down(fromSource = SceneContainerEdge.TopLeft)) as? ShowOverlay)
+                (actions?.get(Swipe.Down(fromSource = SceneContainerArea.StartHalf))
+                    as? ShowOverlay)
             assertThat(action?.overlay).isEqualTo(Overlays.NotificationsShade)
             val overlaysToHide = action?.hideCurrentOverlays as? HideCurrentOverlays.Some
             assertThat(overlaysToHide).isNotNull()

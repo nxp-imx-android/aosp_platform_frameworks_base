@@ -111,10 +111,7 @@ constructor(
         statusbarWidth: Int,
     ): ShadeElement {
         val xPercentage = motionEvent.x / statusbarWidth
-        val threshold = shadeInteractor.get().getTopEdgeSplitFraction()
-        return if (xPercentage < threshold) {
-            notificationElement.get()
-        } else qsShadeElement.get()
+        return if (xPercentage < 0.5f) notificationElement.get() else qsShadeElement.get()
     }
 
     private fun monitorDisplayRemovals(): Job {

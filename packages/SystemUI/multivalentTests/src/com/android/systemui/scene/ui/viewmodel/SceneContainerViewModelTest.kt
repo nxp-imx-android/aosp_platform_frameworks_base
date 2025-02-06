@@ -48,6 +48,7 @@ import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -55,6 +56,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
@@ -324,7 +326,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             kosmos.enableSingleShade()
 
             assertThat(shadeMode).isEqualTo(ShadeMode.Single)
-            assertThat(underTest.edgeDetector).isEqualTo(DefaultEdgeDetector)
+            assertThat(underTest.swipeSourceDetector).isEqualTo(DefaultEdgeDetector)
         }
 
     @Test
@@ -334,26 +336,28 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             kosmos.enableSplitShade()
 
             assertThat(shadeMode).isEqualTo(ShadeMode.Split)
-            assertThat(underTest.edgeDetector).isEqualTo(DefaultEdgeDetector)
+            assertThat(underTest.swipeSourceDetector).isEqualTo(DefaultEdgeDetector)
         }
 
     @Test
-    fun edgeDetector_dualShade_narrowScreen_usesSplitEdgeDetector() =
+    fun edgeDetector_dualShade_narrowScreen_usesSceneContainerSwipeDetector() =
         testScope.runTest {
             val shadeMode by collectLastValue(kosmos.shadeMode)
             kosmos.enableDualShade(wideLayout = false)
 
             assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
-            assertThat(underTest.edgeDetector).isEqualTo(kosmos.splitEdgeDetector)
+            assertThat(underTest.swipeSourceDetector)
+                .isInstanceOf(SceneContainerSwipeDetector::class.java)
         }
 
     @Test
-    fun edgeDetector_dualShade_wideScreen_usesSplitEdgeDetector() =
+    fun edgeDetector_dualShade_wideScreen_usesSceneContainerSwipeDetector() =
         testScope.runTest {
             val shadeMode by collectLastValue(kosmos.shadeMode)
             kosmos.enableDualShade(wideLayout = true)
 
             assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
-            assertThat(underTest.edgeDetector).isEqualTo(kosmos.splitEdgeDetector)
+            assertThat(underTest.swipeSourceDetector)
+                .isInstanceOf(SceneContainerSwipeDetector::class.java)
         }
 }

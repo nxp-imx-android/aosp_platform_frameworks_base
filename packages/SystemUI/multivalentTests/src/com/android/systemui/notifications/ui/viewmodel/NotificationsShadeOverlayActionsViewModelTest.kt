@@ -30,7 +30,7 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.scene.shared.model.Overlays
-import com.android.systemui.scene.ui.viewmodel.SceneContainerEdge
+import com.android.systemui.scene.ui.viewmodel.SceneContainerArea
 import com.android.systemui.shade.ui.viewmodel.notificationsShadeOverlayActionsViewModel
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -71,13 +71,13 @@ class NotificationsShadeOverlayActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun downFromTopRight_switchesToQuickSettingsShade() =
+    fun downFromTopEnd_switchesToQuickSettingsShade() =
         testScope.runTest {
             val actions by collectLastValue(underTest.actions)
             underTest.activateIn(this)
 
             val action =
-                (actions?.get(Swipe.Down(fromSource = SceneContainerEdge.TopRight)) as? ShowOverlay)
+                (actions?.get(Swipe.Down(fromSource = SceneContainerArea.EndHalf)) as? ShowOverlay)
             assertThat(action?.overlay).isEqualTo(Overlays.QuickSettingsShade)
             val overlaysToHide = action?.hideCurrentOverlays as? HideCurrentOverlays.Some
             assertThat(overlaysToHide).isNotNull()

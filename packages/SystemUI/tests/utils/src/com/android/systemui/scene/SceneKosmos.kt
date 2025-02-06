@@ -20,7 +20,6 @@ import com.android.systemui.scene.ui.FakeOverlay
 import com.android.systemui.scene.ui.composable.ConstantSceneContainerTransitionsBuilder
 import com.android.systemui.scene.ui.viewmodel.SceneContainerHapticsViewModel
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
-import com.android.systemui.scene.ui.viewmodel.splitEdgeDetector
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.domain.interactor.remoteInputInteractor
@@ -99,7 +98,6 @@ val Kosmos.sceneContainerViewModelFactory by Fixture {
                 powerInteractor = powerInteractor,
                 shadeModeInteractor = shadeModeInteractor,
                 remoteInputInteractor = remoteInputInteractor,
-                splitEdgeDetector = splitEdgeDetector,
                 logger = sceneLogger,
                 hapticsViewModelFactory = sceneContainerHapticsViewModelFactory,
                 view = view,
