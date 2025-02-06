@@ -20,7 +20,6 @@ import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
-import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.viewmodel.UserActionsViewModel
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -60,8 +59,7 @@ constructor(
                                     if (isDeviceUnlocked) Scenes.Gone else Scenes.Bouncer
                                 add(Swipe.Up to bouncerOrGone)
 
-                                // "Home" is either Lockscreen, or Gone - if the device is entered.
-                                add(Swipe.End to SceneFamilies.Home)
+                                add(Swipe.End to Scenes.Lockscreen)
 
                                 addAll(
                                     when (shadeMode) {

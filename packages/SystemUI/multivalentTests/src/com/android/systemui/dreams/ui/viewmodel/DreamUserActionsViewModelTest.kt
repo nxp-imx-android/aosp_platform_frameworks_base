@@ -23,7 +23,6 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
-import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.flags.EnableSceneContainer
@@ -62,15 +61,14 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        underTest = kosmos.dreamUserActionsViewModel
+        underTest = kosmos.dreamUserActionsViewModelFactory.create()
         underTest.activateIn(testScope)
     }
 
     @Test
-    fun actions_communalNotAvailable_singleShade() =
+    fun actions_singleShade() =
         testScope.runTest {
             kosmos.enableSingleShade()
-            kosmos.setCommunalAvailable(false)
 
             val actions by collectLastValue(underTest.actions)
 
@@ -93,10 +91,9 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun actions_communalNotAvailable_splitShade() =
+    fun actions_splitShade() =
         testScope.runTest {
             kosmos.enableSplitShade()
-            kosmos.setCommunalAvailable(false)
 
             val actions by collectLastValue(underTest.actions)
 
@@ -121,10 +118,9 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun actions_communalNotAvailable_dualShade() =
+    fun actions_dualShade() =
         testScope.runTest {
             kosmos.enableDualShade()
-            kosmos.setCommunalAvailable(false)
 
             val actions by collectLastValue(underTest.actions)
 
@@ -145,88 +141,6 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
             assertThat(actions?.get(Swipe.Down))
                 .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
             assertThat(actions?.get(Swipe.Start)).isNull()
-            assertThat(actions?.get(Swipe.End)).isNull()
-        }
-
-    @Test
-    fun actions_communalAvailable_singleShade() =
-        testScope.runTest {
-            kosmos.enableSingleShade()
-            kosmos.setCommunalAvailable(true)
-
-            val actions by collectLastValue(underTest.actions)
-
-            setUpState(isShadeTouchable = true, isDeviceUnlocked = false)
-            assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Bouncer))
-            assertThat(actions?.get(Swipe.Down)).isEqualTo(UserActionResult(Scenes.Shade))
-            assertThat(actions?.get(Swipe.Start)).isEqualTo(UserActionResult(Scenes.Communal))
-            assertThat(actions?.get(Swipe.End)).isNull()
-
-            setUpState(isShadeTouchable = false, isDeviceUnlocked = false)
-            assertThat(actions).isEmpty()
-
-            setUpState(isShadeTouchable = true, isDeviceUnlocked = true)
-            assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Gone))
-            assertThat(actions?.get(Swipe.Down)).isEqualTo(UserActionResult(Scenes.Shade))
-            assertThat(actions?.get(Swipe.Start)).isEqualTo(UserActionResult(Scenes.Communal))
-            assertThat(actions?.get(Swipe.End)).isNull()
-        }
-
-    @Test
-    fun actions_communalAvailable_splitShade() =
-        testScope.runTest {
-            kosmos.enableSplitShade()
-            kosmos.setCommunalAvailable(true)
-
-            val actions by collectLastValue(underTest.actions)
-
-            setUpState(isShadeTouchable = true, isDeviceUnlocked = false)
-            assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Bouncer))
-            assertThat(actions?.get(Swipe.Down))
-                .isEqualTo(UserActionResult(Scenes.Shade, ToSplitShade))
-            assertThat(actions?.get(Swipe.Start)).isEqualTo(UserActionResult(Scenes.Communal))
-            assertThat(actions?.get(Swipe.End)).isNull()
-
-            setUpState(isShadeTouchable = false, isDeviceUnlocked = false)
-            assertThat(actions).isEmpty()
-
-            setUpState(isShadeTouchable = true, isDeviceUnlocked = true)
-            assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Gone))
-            assertThat(actions?.get(Swipe.Down))
-                .isEqualTo(UserActionResult(Scenes.Shade, ToSplitShade))
-            assertThat(actions?.get(Swipe.Start)).isEqualTo(UserActionResult(Scenes.Communal))
-            assertThat(actions?.get(Swipe.End)).isNull()
-        }
-
-    @Test
-    fun actions_communalAvailable_dualShade() =
-        testScope.runTest {
-            kosmos.enableDualShade()
-            kosmos.setCommunalAvailable(true)
-
-            val actions by collectLastValue(underTest.actions)
-
-            setUpState(isShadeTouchable = true, isDeviceUnlocked = false)
-            assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Bouncer))
-            assertThat(actions?.get(Swipe.Down))
-                .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
-            assertThat(actions?.get(Swipe.Start)).isEqualTo(UserActionResult(Scenes.Communal))
-            assertThat(actions?.get(Swipe.End)).isNull()
-
-            setUpState(isShadeTouchable = false, isDeviceUnlocked = false)
-            assertThat(actions).isEmpty()
-
-            setUpState(isShadeTouchable = true, isDeviceUnlocked = true)
-            assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Gone))
-            assertThat(actions?.get(Swipe.Down))
-                .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
-            assertThat(actions?.get(Swipe.Start)).isEqualTo(UserActionResult(Scenes.Communal))
             assertThat(actions?.get(Swipe.End)).isNull()
         }
 
