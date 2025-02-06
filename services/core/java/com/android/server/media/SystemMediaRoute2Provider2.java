@@ -267,6 +267,50 @@ import java.util.stream.Stream;
         notifyRequestFailed(requestId, MediaRoute2ProviderService.REASON_ROUTE_NOT_AVAILABLE);
     }
 
+    @Override
+    public void selectRoute(long requestId, String sessionId, String routeId) {
+        if (SYSTEM_SESSION_ID.equals(sessionId)) {
+            super.selectRoute(requestId, sessionId, routeId);
+            return;
+        }
+        synchronized (mLock) {
+            var sessionRecord = getSessionRecordByOriginalId(sessionId);
+            var proxyRecord = sessionRecord != null ? sessionRecord.getProxyRecord() : null;
+            if (proxyRecord != null) {
+                var targetSourceRouteId =
+                        proxyRecord.mNewOriginalIdToSourceOriginalIdMap.get(routeId);
+                if (targetSourceRouteId != null) {
+                    proxyRecord.mProxy.selectRoute(
+                            requestId, sessionRecord.getServiceSessionId(), targetSourceRouteId);
+                }
+                return;
+            }
+        }
+        notifyRequestFailed(requestId, MediaRoute2ProviderService.REASON_ROUTE_NOT_AVAILABLE);
+    }
+
+    @Override
+    public void deselectRoute(long requestId, String sessionId, String routeId) {
+        if (SYSTEM_SESSION_ID.equals(sessionId)) {
+            super.selectRoute(requestId, sessionId, routeId);
+            return;
+        }
+        synchronized (mLock) {
+            var sessionRecord = getSessionRecordByOriginalId(sessionId);
+            var proxyRecord = sessionRecord != null ? sessionRecord.getProxyRecord() : null;
+            if (proxyRecord != null) {
+                var targetSourceRouteId =
+                        proxyRecord.mNewOriginalIdToSourceOriginalIdMap.get(routeId);
+                if (targetSourceRouteId != null) {
+                    proxyRecord.mProxy.deselectRoute(
+                            requestId, sessionRecord.getServiceSessionId(), targetSourceRouteId);
+                }
+                return;
+            }
+        }
+        notifyRequestFailed(requestId, MediaRoute2ProviderService.REASON_ROUTE_NOT_AVAILABLE);
+    }
+
     @GuardedBy("mLock")
     private SystemMediaSessionRecord getSessionRecordByOriginalId(String sessionOriginalId) {
         if (FORCE_GLOBAL_ROUTING_SESSION) {
