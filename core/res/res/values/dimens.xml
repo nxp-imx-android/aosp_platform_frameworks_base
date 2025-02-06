@@ -431,15 +431,18 @@
     <!-- The minimum height of the notification content (even when there's only one line of text) -->
     <dimen name="notification_2025_content_min_height">40dp</dimen>
 
-    <!-- Height of a headerless notification with one or two lines -->
-    <!-- 16 * 2 (margins) + 40 (min content height) = 72 (notification) -->
+    <!-- Max height of a collapsed (headerless) notification with a summarization -->
+    <dimen name="notification_collapsed_height_with_summarization">156dp</dimen>
+
+    <!-- Max height of a collapsed (headerless) notification with one or two lines -->
+    <!-- 16 * 2 (margins) + 48 (min content height) = 72 (notification) -->
     <dimen name="notification_2025_min_height">72dp</dimen>
 
     <!-- Height of a headerless notification with one line -->
     <!-- 16 * 2 (margins) + 24 (1 line) = 56 (notification) -->
     <dimen name="notification_headerless_min_height">56dp</dimen>
 
-    <!-- Height of a small two-line notification -->
+    <!-- Max height of a collapsed two-line notification -->
     <!-- 20 * 2 (margins) + 24 * 2 (2 lines) = 88 (notification) -->
     <dimen name="notification_min_height">88dp</dimen>
 

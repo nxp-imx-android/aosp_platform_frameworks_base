@@ -55,6 +55,7 @@ import com.android.systemui.statusbar.InflationTask;
 import com.android.systemui.statusbar.NotificationRemoteInputManager;
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor;
 import com.android.systemui.statusbar.notification.InflationException;
+import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
@@ -201,13 +202,13 @@ public class NotificationContentInflater implements NotificationRowContentBinder
                 mNotifLayoutInflaterFactoryProvider,
                 mHeadsUpStyleProvider,
                 mLogger);
-
         result = inflateSmartReplyViews(result, reInflateFlags, entry, row.getContext(),
                 packageContext, row.getExistingSmartReplyState(), smartRepliesInflater, mLogger);
         boolean isConversation = entry.getRanking().isConversation();
         Notification.MessagingStyle messagingStyle = null;
-        if (isConversation && (AsyncHybridViewInflation.isEnabled()
-                || LockscreenOtpRedaction.isSingleLineViewEnabled())) {
+        if (NmSummarizationUiFlag.isEnabled()
+                || (isConversation && (AsyncHybridViewInflation.isEnabled()
+                || LockscreenOtpRedaction.isSingleLineViewEnabled()))) {
             messagingStyle = mConversationProcessor
                     .processNotification(entry, builder, mLogger);
         }

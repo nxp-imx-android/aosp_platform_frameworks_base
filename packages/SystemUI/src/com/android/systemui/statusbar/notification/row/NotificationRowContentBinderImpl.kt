@@ -48,6 +48,7 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTIO
 import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
 import com.android.systemui.statusbar.notification.InflationException
+import com.android.systemui.statusbar.notification.NmSummarizationUiFlag
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
@@ -700,7 +701,7 @@ constructor(
 
             // process conversations and extract the messaging style
             val messagingStyle =
-                if (entry.ranking.isConversation) {
+                if (NmSummarizationUiFlag.isEnabled || entry.ranking.isConversation) {
                     conversationProcessor.processNotification(entry, builder, logger)
                 } else null
 
@@ -730,9 +731,8 @@ constructor(
                         builder = builder,
                         systemUiContext = systemUiContext,
                         redactText = false,
-                        summarization = entry.sbn.notification.extras.getCharSequence(
-                            EXTRA_SUMMARIZED_CONTENT,
-                        )
+                        summarization =
+                            entry.sbn.notification.extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT),
                     )
                 } else null
 
