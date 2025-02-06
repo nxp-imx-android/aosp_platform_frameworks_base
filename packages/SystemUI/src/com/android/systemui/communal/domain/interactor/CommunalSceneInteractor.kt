@@ -307,6 +307,21 @@ constructor(
                 initialValue = false,
             )
 
+    /** Flow that emits a boolean if transitioning to or idle on communal scene. */
+    val isTransitioningToOrIdleOnCommunal: Flow<Boolean> =
+        transitionState
+            .map {
+                (it is ObservableTransitionState.Idle &&
+                    it.currentScene == CommunalScenes.Communal) ||
+                    (it is ObservableTransitionState.Transition &&
+                        it.toContent == CommunalScenes.Communal)
+            }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
+
     private companion object {
         const val TAG = "CommunalSceneInteractor"
     }
