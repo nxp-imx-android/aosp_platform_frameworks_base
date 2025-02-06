@@ -3701,15 +3701,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case KeyEvent.KEYCODE_N:
                 if (firstDown && event.isMetaPressed()) {
-                    if (event.isCtrlPressed()) {
-                        sendSystemKeyToStatusBarAsync(event);
-                        notifyKeyGestureCompleted(event,
-                                KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_NOTES);
-                    } else {
-                        toggleNotificationPanel();
-                        notifyKeyGestureCompleted(event,
-                                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL);
-                    }
+                    toggleNotificationPanel();
+                    notifyKeyGestureCompleted(event,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL);
                     return true;
                 }
                 break;
