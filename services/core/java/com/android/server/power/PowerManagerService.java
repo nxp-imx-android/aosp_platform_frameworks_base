@@ -7441,6 +7441,13 @@ public final class PowerManagerService extends SystemService
         public void setDevicePostured(boolean isPostured) {
             setDevicePosturedInternal(isPostured);
         }
+
+        @Override
+        public void updateSettings() {
+            synchronized (mLock) {
+                updateSettingsLocked();
+            }
+        }
     }
 
     /**

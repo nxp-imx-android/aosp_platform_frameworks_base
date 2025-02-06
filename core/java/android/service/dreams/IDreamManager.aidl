@@ -59,4 +59,6 @@ interface IDreamManager {
             float screenBrightnessFloat, int screenBrightnessInt,
             boolean useNormalBrightnessForDoze);
     oneway void finishSelfOneway(in IBinder token, boolean immediate);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS)")
+    void setScreensaverEnabled(boolean enabled);
 }
