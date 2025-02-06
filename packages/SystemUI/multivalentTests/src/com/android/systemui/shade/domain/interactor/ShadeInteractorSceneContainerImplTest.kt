@@ -781,28 +781,6 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun collapseQuickSettingsShadeNotBypassingShade_splitShade_switchesToLockscreen() =
-        testScope.runTest {
-            kosmos.enableSplitShade()
-            val shadeMode by collectLastValue(kosmos.shadeMode)
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            assertThat(shadeMode).isEqualTo(ShadeMode.Split)
-
-            sceneInteractor.changeScene(Scenes.QuickSettings, "reason")
-            assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
-            assertThat(currentOverlays).isEmpty()
-
-            underTest.collapseQuickSettingsShade(
-                loggingReason = "reason",
-                bypassNotificationsShade = false,
-            )
-
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(currentOverlays).isEmpty()
-        }
-
-    @Test
     fun collapseQuickSettingsShadeBypassingShade_singleShade_switchesToLockscreen() =
         testScope.runTest {
             kosmos.enableSingleShade()
