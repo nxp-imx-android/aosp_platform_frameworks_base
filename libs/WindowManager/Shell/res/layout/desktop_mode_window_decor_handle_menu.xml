@@ -46,17 +46,10 @@
             android:contentDescription="@string/app_icon_text"
             android:importantForAccessibility="no"/>
 
-        <TextView
+        <com.android.wm.shell.windowdecor.MarqueedTextView
             android:id="@+id/application_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
             tools:text="Gmail"
-            android:textColor="@androidprv:color/materialColorOnSurface"
-            android:textSize="14sp"
-            android:textFontWeight="500"
-            android:lineHeight="20dp"
-            android:textStyle="normal"
-            android:layout_weight="1"/>
+            style="@style/DesktopModeHandleMenuActionButtonTextView"/>
 
         <com.android.wm.shell.windowdecor.HandleMenuImageButton
             android:id="@+id/collapse_menu_button"
@@ -133,37 +126,77 @@
         android:elevation="@dimen/desktop_mode_handle_menu_pill_elevation"
         android:background="@drawable/desktop_mode_decor_handle_menu_background">
 
-        <Button
+        <LinearLayout
             android:id="@+id/screenshot_button"
             android:contentDescription="@string/screenshot_text"
-            android:text="@string/screenshot_text"
-            android:drawableStart="@drawable/desktop_mode_ic_handle_menu_screenshot"
-            android:drawableTint="@androidprv:color/materialColorOnSurface"
-            style="@style/DesktopModeHandleMenuActionButton"/>
+            style="@style/DesktopModeHandleMenuActionButtonLayout">
 
-        <Button
+            <ImageView
+                android:id="@+id/image"
+                android:src="@drawable/desktop_mode_ic_handle_menu_screenshot"
+                android:importantForAccessibility="no"
+                style="@style/DesktopModeHandleMenuActionButtonImage"/>
+
+            <com.android.wm.shell.windowdecor.MarqueedTextView
+                android:id="@+id/label"
+                android:text="@string/screenshot_text"
+                style="@style/DesktopModeHandleMenuActionButtonTextView"/>
+
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/new_window_button"
             android:contentDescription="@string/new_window_text"
-            android:text="@string/new_window_text"
-            android:drawableStart="@drawable/desktop_mode_ic_handle_menu_new_window"
-            android:drawableTint="@androidprv:color/materialColorOnSurface"
-            style="@style/DesktopModeHandleMenuActionButton" />
+            style="@style/DesktopModeHandleMenuActionButtonLayout">
 
-        <Button
+            <ImageView
+                android:id="@+id/image"
+                android:src="@drawable/desktop_mode_ic_handle_menu_new_window"
+                android:importantForAccessibility="no"
+                style="@style/DesktopModeHandleMenuActionButtonImage"/>
+
+            <com.android.wm.shell.windowdecor.MarqueedTextView
+                android:id="@+id/label"
+                android:text="@string/new_window_text"
+                style="@style/DesktopModeHandleMenuActionButtonTextView"/>
+
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/manage_windows_button"
             android:contentDescription="@string/manage_windows_text"
-            android:text="@string/manage_windows_text"
-            android:drawableStart="@drawable/desktop_mode_ic_handle_menu_manage_windows"
-            android:drawableTint="@androidprv:color/materialColorOnSurface"
-            style="@style/DesktopModeHandleMenuActionButton" />
+            style="@style/DesktopModeHandleMenuActionButtonLayout">
 
-        <Button
+            <ImageView
+                android:id="@+id/image"
+                android:src="@drawable/desktop_mode_ic_handle_menu_manage_windows"
+                android:importantForAccessibility="no"
+                style="@style/DesktopModeHandleMenuActionButtonImage"/>
+
+            <com.android.wm.shell.windowdecor.MarqueedTextView
+                android:id="@+id/label"
+                android:text="@string/manage_windows_text"
+                style="@style/DesktopModeHandleMenuActionButtonTextView"/>
+
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/change_aspect_ratio_button"
             android:contentDescription="@string/change_aspect_ratio_text"
-            android:text="@string/change_aspect_ratio_text"
-            android:drawableStart="@drawable/desktop_mode_ic_handle_menu_change_aspect_ratio"
-            android:drawableTint="@androidprv:color/materialColorOnSurface"
-            style="@style/DesktopModeHandleMenuActionButton" />
+            style="@style/DesktopModeHandleMenuActionButtonLayout">
+
+            <ImageView
+                android:id="@+id/image"
+                android:src="@drawable/desktop_mode_ic_handle_menu_change_aspect_ratio"
+                android:importantForAccessibility="no"
+                style="@style/DesktopModeHandleMenuActionButtonImage"/>
+
+            <com.android.wm.shell.windowdecor.MarqueedTextView
+                android:id="@+id/label"
+                android:text="@string/change_aspect_ratio_text"
+                style="@style/DesktopModeHandleMenuActionButtonTextView"/>
+
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -176,22 +209,37 @@
         android:elevation="@dimen/desktop_mode_handle_menu_pill_elevation"
         android:background="@drawable/desktop_mode_decor_handle_menu_background">
 
-        <Button
+        <LinearLayout
             android:id="@+id/open_in_app_or_browser_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:gravity="start|center_vertical"
+            android:paddingStart="16dp"
             android:contentDescription="@string/open_in_browser_text"
-            android:text="@string/open_in_browser_text"
-            android:drawableStart="@drawable/desktop_mode_ic_handle_menu_open_in_browser"
-            android:drawableTint="@androidprv:color/materialColorOnSurface"
-            style="@style/DesktopModeHandleMenuActionButton"/>
+            android:background="?android:selectableItemBackground">
+
+            <ImageView
+                android:id="@+id/image"
+                android:src="@drawable/desktop_mode_ic_handle_menu_open_in_browser"
+                android:importantForAccessibility="no"
+                style="@style/DesktopModeHandleMenuActionButtonImage"/>
+
+            <com.android.wm.shell.windowdecor.MarqueedTextView
+                android:id="@+id/label"
+                android:text="@string/open_in_browser_text"
+                style="@style/DesktopModeHandleMenuActionButtonTextView"/>
+
+        </LinearLayout>
 
         <ImageButton
             android:id="@+id/open_by_default_button"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_gravity="end|center_vertical"
+            android:layout_marginStart="8dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginStart="10dp"
             android:contentDescription="@string/open_by_default_settings_text"
             android:src="@drawable/desktop_mode_ic_handle_menu_open_by_default_settings"
             android:tint="@androidprv:color/materialColorOnSurface"/>
