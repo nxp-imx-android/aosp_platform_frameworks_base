@@ -37,7 +37,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.modifiers.thenIf
-import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.ui.composable.blueprint.ClockScenes.largeClockScene
 import com.android.systemui.keyguard.ui.composable.blueprint.ClockScenes.smallClockScene
 import com.android.systemui.keyguard.ui.composable.blueprint.ClockScenes.splitShadeLargeClockScene
@@ -56,7 +55,7 @@ constructor(
     private val mediaCarouselSection: MediaCarouselSection,
     private val clockSection: DefaultClockSection,
     private val weatherClockSection: WeatherClockSection,
-    private val clockInteractor: KeyguardClockInteractor,
+    private val keyguardClockViewModel: KeyguardClockViewModel,
 ) {
     @Composable
     fun ContentScope.DefaultClockLayout(
@@ -138,7 +137,7 @@ constructor(
         smartSpacePaddingTop: (Resources) -> Int,
         modifier: Modifier = Modifier,
     ) {
-        val burnIn = rememberBurnIn(clockInteractor)
+        val burnIn = rememberBurnIn(keyguardClockViewModel)
 
         Column(modifier = modifier) {
             with(clockSection) {
@@ -163,7 +162,7 @@ constructor(
         smartSpacePaddingTop: (Resources) -> Int,
         shouldOffSetClockToOneHalf: Boolean = false,
     ) {
-        val burnIn = rememberBurnIn(clockInteractor)
+        val burnIn = rememberBurnIn(keyguardClockViewModel)
         val isLargeClockVisible by clockViewModel.isLargeClockVisible.collectAsStateWithLifecycle()
 
         LaunchedEffect(isLargeClockVisible) {
@@ -204,7 +203,7 @@ constructor(
         smartSpacePaddingTop: (Resources) -> Int,
         modifier: Modifier = Modifier,
     ) {
-        val burnIn = rememberBurnIn(clockInteractor)
+        val burnIn = rememberBurnIn(keyguardClockViewModel)
         val isLargeClockVisible by clockViewModel.isLargeClockVisible.collectAsStateWithLifecycle()
         val currentClockState = clockViewModel.currentClock.collectAsStateWithLifecycle()
 

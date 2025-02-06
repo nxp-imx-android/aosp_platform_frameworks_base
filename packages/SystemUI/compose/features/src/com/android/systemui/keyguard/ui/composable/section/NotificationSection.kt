@@ -38,11 +38,11 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.ui.composable.blueprint.rememberBurnIn
 import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.BurnInParameters
+import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.ConstrainedNotificationStack
@@ -89,7 +89,7 @@ constructor(
     private val nicAodIconViewStore: AlwaysOnDisplayNotificationIconViewStore,
     private val aodPromotedNotificationViewModelFactory: AODPromotedNotificationViewModel.Factory,
     private val systemBarUtilsState: SystemBarUtilsState,
-    private val clockInteractor: KeyguardClockInteractor,
+    private val keyguardClockViewModel: KeyguardClockViewModel,
 ) {
 
     init {
@@ -118,7 +118,7 @@ constructor(
 
         val isVisible by
             keyguardRootViewModel.isAodPromotedNotifVisible.collectAsStateWithLifecycle()
-        val burnIn = rememberBurnIn(clockInteractor)
+        val burnIn = rememberBurnIn(keyguardClockViewModel)
 
         AnimatedVisibility(
             visible = isVisible,
@@ -141,7 +141,7 @@ constructor(
                 isVisible.stopAnimating()
             }
         }
-        val burnIn = rememberBurnIn(clockInteractor)
+        val burnIn = rememberBurnIn(keyguardClockViewModel)
         AnimatedVisibility(
             visibleState = transitionState,
             enter = fadeIn(),
