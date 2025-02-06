@@ -233,4 +233,9 @@ public abstract class AppOpsManagerInternal {
      */
     public abstract int getOpRestrictionCount(int code, UserHandle user, String pkg,
             String attributionTag);
+
+    /**
+     * Invoke when a package is added.
+     */
+    public abstract void onPackageAdded(String pkgName, int uid);
 }
