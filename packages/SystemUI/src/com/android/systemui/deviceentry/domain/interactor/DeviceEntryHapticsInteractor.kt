@@ -22,7 +22,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.keyguard.data.repository.BiometricSettingsRepository
-import com.android.systemui.keyguard.domain.interactor.KeyguardBypassInteractor
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.util.kotlin.FlowDumperImpl
@@ -49,8 +48,6 @@ class DeviceEntryHapticsInteractor
 constructor(
     biometricSettingsRepository: BiometricSettingsRepository,
     deviceEntryBiometricAuthInteractor: DeviceEntryBiometricAuthInteractor,
-    deviceEntryFaceAuthInteractor: DeviceEntryFaceAuthInteractor,
-    keyguardBypassInteractor: KeyguardBypassInteractor,
     deviceEntryFingerprintAuthInteractor: DeviceEntryFingerprintAuthInteractor,
     deviceEntrySourceInteractor: DeviceEntrySourceInteractor,
     fingerprintPropertyRepository: FingerprintPropertyRepository,
@@ -83,7 +80,12 @@ constructor(
                 emit(recentPowerButtonPressThresholdMs * -1L - 1L)
             }
 
-    private val playHapticsOnDeviceEntry: Flow<Boolean> =
+    /**
+     * Indicates when success haptics should play when the device is entered. This always occurs on
+     * successful fingerprint authentications. It also occurs on successful face authentication but
+     * only if the lockscreen is bypassed.
+     */
+    val playSuccessHapticOnDeviceEntry: Flow<Unit> =
         deviceEntrySourceInteractor.deviceEntryFromBiometricSource
             .sample(
                 combine(
@@ -93,29 +95,17 @@ constructor(
                     ::Triple,
                 )
             )
-            .map { (sideFpsEnrolled, powerButtonDown, lastPowerButtonWakeup) ->
+            .filter { (sideFpsEnrolled, powerButtonDown, lastPowerButtonWakeup) ->
                 val sideFpsAllowsHaptic =
                     !powerButtonDown &&
                         systemClock.uptimeMillis() - lastPowerButtonWakeup >
                             recentPowerButtonPressThresholdMs
                 val allowHaptic = !sideFpsEnrolled || sideFpsAllowsHaptic
                 if (!allowHaptic) {
-                    logger.d(
-                        "Skip success entry haptic from power button. Recent power button press or button is down."
-                    )
+                    logger.d("Skip success haptic. Recent power button press or button is down.")
                 }
                 allowHaptic
             }
-
-    private val playHapticsOnFaceAuthSuccessAndBypassDisabled: Flow<Boolean> =
-        deviceEntryFaceAuthInteractor.isAuthenticated
-            .filter { it }
-            .sample(keyguardBypassInteractor.isBypassAvailable)
-            .map { !it }
-
-    val playSuccessHaptic: Flow<Unit> =
-        merge(playHapticsOnDeviceEntry, playHapticsOnFaceAuthSuccessAndBypassDisabled)
-            .filter { it }
             // map to Unit
             .map {}
             .dumpWhileCollecting("playSuccessHaptic")
@@ -123,7 +113,7 @@ constructor(
     private val playErrorHapticForBiometricFailure: Flow<Unit> =
         merge(
                 deviceEntryFingerprintAuthInteractor.fingerprintFailure,
-                deviceEntryBiometricAuthInteractor.faceFailure,
+                deviceEntryBiometricAuthInteractor.faceOnlyFaceFailure,
             )
             // map to Unit
             .map {}

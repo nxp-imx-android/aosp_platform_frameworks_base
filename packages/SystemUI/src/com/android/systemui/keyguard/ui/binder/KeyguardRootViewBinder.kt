@@ -333,7 +333,7 @@ object KeyguardRootViewBinder {
 
                     if (deviceEntryHapticsInteractor != null && vibratorHelper != null) {
                         launch {
-                            deviceEntryHapticsInteractor.playSuccessHaptic.collect {
+                            deviceEntryHapticsInteractor.playSuccessHapticOnDeviceEntry.collect {
                                 if (msdlFeedback()) {
                                     msdlPlayer?.playToken(
                                         MSDLToken.UNLOCK,
