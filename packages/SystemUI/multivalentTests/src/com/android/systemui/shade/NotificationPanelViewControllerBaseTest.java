@@ -87,6 +87,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.keyguard.domain.interactor.NaturalScrollingSettingObserver;
+import com.android.systemui.keyguard.ui.transitions.BlurConfig;
 import com.android.systemui.keyguard.ui.viewmodel.DreamingToLockscreenTransitionViewModel;
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
@@ -587,7 +588,8 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 mPowerInteractor,
                 mKeyguardClockPositionAlgorithm,
                 mMSDLPlayer,
-                mBrightnessMirrorShowingInteractor);
+                mBrightnessMirrorShowingInteractor,
+                new BlurConfig(0f, 0f));
         mNotificationPanelViewController.initDependencies(
                 mCentralSurfaces,
                 null,

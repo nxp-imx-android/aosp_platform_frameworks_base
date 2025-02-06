@@ -110,6 +110,7 @@ import com.android.systemui.keyguard.shared.model.Edge;
 import com.android.systemui.keyguard.shared.model.TransitionState;
 import com.android.systemui.keyguard.shared.model.TransitionStep;
 import com.android.systemui.keyguard.ui.binder.KeyguardTouchViewBinder;
+import com.android.systemui.keyguard.ui.transitions.BlurConfig;
 import com.android.systemui.keyguard.ui.viewmodel.DreamingToLockscreenTransitionViewModel;
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel;
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager;
@@ -309,6 +310,7 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
     private final AlternateBouncerInteractor mAlternateBouncerInteractor;
     private final QuickSettingsControllerImpl mQsController;
     private final TouchHandler mTouchHandler = new TouchHandler();
+    private final BlurConfig mBlurConfig;
 
     private long mDownTime;
     private long mStatusBarLongPressDowntime = -1L;
@@ -606,7 +608,9 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
             PowerInteractor powerInteractor,
             KeyguardClockPositionAlgorithm keyguardClockPositionAlgorithm,
             MSDLPlayer msdlPlayer,
-            BrightnessMirrorShowingInteractor brightnessMirrorShowingInteractor) {
+            BrightnessMirrorShowingInteractor brightnessMirrorShowingInteractor,
+            BlurConfig blurConfig) {
+        mBlurConfig = blurConfig;
         SceneContainerFlag.assertInLegacyMode();
         keyguardStateController.addCallback(new KeyguardStateController.Callback() {
             @Override
@@ -923,8 +927,8 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
         if (isBouncerShowing && isExpanded()) {
             if (mBlurRenderEffect == null) {
                 mBlurRenderEffect = RenderEffect.createBlurEffect(
-                        mDepthController.getMaxBlurRadiusPx(),
-                        mDepthController.getMaxBlurRadiusPx(),
+                        mBlurConfig.getMaxBlurRadiusPx(),
+                        mBlurConfig.getMaxBlurRadiusPx(),
                         Shader.TileMode.CLAMP);
             }
             mView.setRenderEffect(mBlurRenderEffect);
