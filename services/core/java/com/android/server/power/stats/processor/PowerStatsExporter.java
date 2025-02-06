@@ -245,13 +245,13 @@ class PowerStatsExporter {
 
     private void populateBatteryLevelInfo(BatteryUsageStats.Builder builder,
             BatteryLevelInfo batteryLevelInfo) {
-        builder.setDischargePercentage((int) Math.round(batteryLevelInfo.batteryDischargePct))
-                .setDischargedPowerRange(batteryLevelInfo.batteryDischargeMah,
+        builder.addDischargePercentage((int) Math.round(batteryLevelInfo.batteryDischargePct))
+                .addDischargedPowerRange(batteryLevelInfo.batteryDischargeMah,
                         batteryLevelInfo.batteryDischargeMah)
-                .setDischargeDurationMs(batteryLevelInfo.batteryDischargeDurationMs)
+                .addDischargeDurationMs(batteryLevelInfo.batteryDischargeDurationMs)
                 .getAggregateBatteryConsumerBuilder(
                         BatteryUsageStats.AGGREGATE_BATTERY_CONSUMER_SCOPE_DEVICE)
-                .setConsumedPower(batteryLevelInfo.batteryDischargeMah);
+                .addConsumedPower(batteryLevelInfo.batteryDischargeMah);
     }
 
     private void populateBatteryConsumers(
