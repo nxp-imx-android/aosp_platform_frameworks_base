@@ -627,6 +627,7 @@ public class HdmiCecMessageValidatorTest {
         assertMessageValidity("4F:81:13:05").isEqualTo(ERROR_PARAMETER);
         assertMessageValidity("4F:86:10:14").isEqualTo(ERROR_PARAMETER);
         assertMessageValidity("0F:86:10:24").isEqualTo(ERROR_PARAMETER);
+        assertMessageValidity("8F:86:FF:FF").isEqualTo(ERROR_PARAMETER);
     }
 
     @Test
