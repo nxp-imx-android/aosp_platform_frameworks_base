@@ -166,7 +166,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
                 mContext.getText(R.string.media_output_dialog_pairing_new).toString());
     }
 
-    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_SESSION_GROUPING)
+    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void onBindViewHolder_bindGroup_withSessionName_verifyView() {
         when(mMediaSwitchingController.getSelectedMediaDevice())
@@ -188,7 +188,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
     }
 
-    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_SESSION_GROUPING)
+    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void onBindViewHolder_bindGroup_noSessionName_verifyView() {
         when(mMediaSwitchingController.getSelectedMediaDevice())
@@ -237,7 +237,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         assertThat(mViewHolder.mSeekBar.getVisibility()).isEqualTo(View.VISIBLE);
     }
 
-    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_SESSION_GROUPING)
+    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void onBindViewHolder_bindConnectedRemoteDevice_verifyView() {
         when(mMediaSwitchingController.getSelectableMediaDevice())
@@ -818,7 +818,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         verify(mMediaSwitchingController).removeDeviceFromPlayMedia(mMediaDevice1);
     }
 
-    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_SESSION_GROUPING)
+    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void onBindViewHolder_hasVolumeAdjustmentRestriction_verifySeekbarDisabled() {
         when(mMediaSwitchingController.getSelectedMediaDevice()).thenReturn(
@@ -935,7 +935,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
                 .isEqualTo(R.drawable.media_output_icon_volume);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_SESSION_GROUPING)
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void multipleSelectedDevices_verifySessionView() {
         initializeSession();
@@ -956,7 +956,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         assertThat(mViewHolder.mSeekBar.getVolume()).isEqualTo(TEST_CURRENT_VOLUME);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_SESSION_GROUPING)
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void multipleSelectedDevices_verifyCollapsedView() {
         initializeSession();
@@ -970,7 +970,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         assertThat(mViewHolder.mEndTouchArea.getVisibility()).isEqualTo(View.GONE);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_SESSION_GROUPING)
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void multipleSelectedDevices_expandIconClicked_verifyInitialView() {
         initializeSession();
@@ -993,7 +993,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_1);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_SESSION_GROUPING)
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void multipleSelectedDevices_expandIconClicked_verifyCollapsedView() {
         initializeSession();
@@ -1016,7 +1016,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_SESSION_GROUPING)
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void deviceCanNotBeDeselected_verifyView() {
         List<MediaDevice> selectedDevices = new ArrayList<>();

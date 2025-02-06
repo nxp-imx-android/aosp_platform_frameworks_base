@@ -779,7 +779,7 @@ public abstract class InfoMediaManager {
         static List<RouteListingPreference.Item> composePreferenceRouteListing(
                 RouteListingPreference routeListingPreference) {
             boolean preferRouteListingOrdering =
-                    com.android.media.flags.Flags.enableOutputSwitcherSessionGrouping()
+                    com.android.media.flags.Flags.enableOutputSwitcherDeviceGrouping()
                     && preferRouteListingOrdering(routeListingPreference);
             List<RouteListingPreference.Item> finalizedItemList = new ArrayList<>();
             List<RouteListingPreference.Item> itemList = routeListingPreference.getItems();
@@ -814,7 +814,7 @@ public abstract class InfoMediaManager {
          * Returns an ordered list of available devices based on the provided {@code
          * routeListingPreferenceItems}.
          *
-         * <p>The resulting order if enableOutputSwitcherSessionGrouping is disabled is:
+         * <p>The resulting order if enableOutputSwitcherDeviceGrouping is disabled is:
          *
          * <ol>
          *   <li>Selected routes.
@@ -822,7 +822,7 @@ public abstract class InfoMediaManager {
          *   <li>Not-selected, non-system, available routes sorted by route listing preference.
          * </ol>
          *
-         * <p>The resulting order if enableOutputSwitcherSessionGrouping is enabled is:
+         * <p>The resulting order if enableOutputSwitcherDeviceGrouping is enabled is:
          *
          * <ol>
          *   <li>Selected routes sorted by route listing preference.
@@ -848,7 +848,7 @@ public abstract class InfoMediaManager {
             Set<String> sortedRouteIds = new LinkedHashSet<>();
 
             boolean addSelectedRlpItemsFirst =
-                    com.android.media.flags.Flags.enableOutputSwitcherSessionGrouping()
+                    com.android.media.flags.Flags.enableOutputSwitcherDeviceGrouping()
                     && preferRouteListingOrdering(routeListingPreference);
             Set<String> selectedRouteIds = new HashSet<>();
 
