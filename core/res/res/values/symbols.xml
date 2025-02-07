@@ -4153,6 +4153,17 @@
   <java-symbol type="string" name="config_headlineFontFamily" />
   <java-symbol type="string" name="config_headlineFontFamilyMedium" />
 
+  <java-symbol type="integer" name="config_pressedStateDurationMillis" />
+  <java-symbol type="integer" name="config_tapTimeoutMillis" />
+  <java-symbol type="integer" name="config_jumpTapTimeoutMillis" />
+  <java-symbol type="integer" name="config_doubleTapTimeoutMillis" />
+  <java-symbol type="integer" name="config_doubleTapMinTimeMillis" />
+  <java-symbol type="integer" name="config_hoverTapTimeoutMillis" />
+  <java-symbol type="integer" name="config_zoomControlsTimeoutMillis" />
+  <java-symbol type="integer" name="config_defaultActionModeHideDurationMillis" />
+  <java-symbol type="dimen" name="config_hoverTapSlop" />
+  <java-symbol type="dimen" name="config_scrollFriction" />
+
   <java-symbol type="drawable" name="stat_sys_vitals" />
 
   <java-symbol type="color" name="text_color_primary" />
