@@ -572,6 +572,22 @@ public class BubbleDataTest extends ShellTestCase {
         assertThat(update.shouldShowEducation).isTrue();
     }
 
+    /** Verifies that the update should contain the bubble bar location. */
+    @Test
+    public void test_shouldUpdateBubbleBarLocation() {
+        // Setup
+        mBubbleData.setListener(mListener);
+
+        // Test
+        mBubbleData.notificationEntryUpdated(mBubbleA1, /* suppressFlyout */ true, /* showInShade */
+                true, BubbleBarLocation.LEFT);
+
+        // Verify
+        verifyUpdateReceived();
+        BubbleData.Update update = mUpdateCaptor.getValue();
+        assertThat(update.mBubbleBarLocation).isEqualTo(BubbleBarLocation.LEFT);
+    }
+
     /**
      * Verifies that the update shouldn't show the user education, if the education is required but
      * the bubble should auto-expand
@@ -1367,6 +1383,20 @@ public class BubbleDataTest extends ShellTestCase {
     }
 
     @Test
+    public void setSelectedBubbleAndExpandStackWithLocation() {
+        sendUpdatedEntryAtTime(mEntryA1, 1000);
+        sendUpdatedEntryAtTime(mEntryA2, 2000);
+        mBubbleData.setListener(mListener);
+
+        mBubbleData.setSelectedBubbleAndExpandStack(mBubbleA1, BubbleBarLocation.LEFT);
+
+        verifyUpdateReceived();
+        assertSelectionChangedTo(mBubbleA1);
+        assertExpandedChangedTo(true);
+        assertLocationChangedTo(BubbleBarLocation.LEFT);
+    }
+
+    @Test
     public void testShowOverflowChanged_hasOverflowBubbles() {
         assertThat(mBubbleData.getOverflowBubbles()).isEmpty();
         sendUpdatedEntryAtTime(mEntryA1, 1000);
@@ -1448,6 +1478,12 @@ public class BubbleDataTest extends ShellTestCase {
         BubbleData.Update update = mUpdateCaptor.getValue();
         assertWithMessage("selectionChanged").that(update.selectionChanged).isTrue();
         assertWithMessage("selectedBubble").that(update.selectedBubble).isEqualTo(bubble);
+    }
+
+    private void assertLocationChangedTo(BubbleBarLocation location) {
+        BubbleData.Update update = mUpdateCaptor.getValue();
+        assertWithMessage("locationChanged").that(update.mBubbleBarLocation)
+                .isEqualTo(location);
     }
 
     private void assertExpandedChangedTo(boolean expected) {
