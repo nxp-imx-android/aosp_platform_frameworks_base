@@ -441,7 +441,7 @@ public:
             numEvents = mBootAnimation->mDisplayEventReceiver->getEvents(buffer, kBufferSize);
             for (size_t i = 0; i < static_cast<size_t>(numEvents); i++) {
                 const auto& event = buffer[i];
-                if (event.header.type == DisplayEventReceiver::DISPLAY_EVENT_HOTPLUG) {
+                if (event.header.type == DisplayEventType::DISPLAY_EVENT_HOTPLUG) {
                     SLOGV("Hotplug received");
 
                     if (!event.hotplug.connected) {
