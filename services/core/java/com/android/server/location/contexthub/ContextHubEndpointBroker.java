@@ -237,6 +237,14 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     @android.annotation.EnforcePermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public void unregister() {
         super.unregister_enforcePermission();
+        synchronized (mOpenSessionLock) {
+            // Iterate in reverse since cleanupSessionResources will remove the entry
+            for (int i = mSessionInfoMap.size() - 1; i >= 0; i--) {
+                int id = mSessionInfoMap.keyAt(i);
+                halCloseEndpointSessionNoThrow(id, Reason.ENDPOINT_GONE);
+                cleanupSessionResources(id);
+            }
+        }
         synchronized (mRegistrationLock) {
             if (!isRegistered()) {
                 Log.w(TAG, "Attempting to unregister when already unregistered");
@@ -247,13 +255,6 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 mHubInterface.unregisterEndpoint(mHalEndpointInfo);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException while calling HAL unregisterEndpoint", e);
-            }
-        }
-        synchronized (mOpenSessionLock) {
-            // Iterate in reverse since cleanupSessionResources will remove the entry
-            for (int i = mSessionInfoMap.size() - 1; i >= 0; i--) {
-                int id = mSessionInfoMap.keyAt(i);
-                cleanupSessionResources(id);
             }
         }
         mEndpointManager.unregisterEndpoint(mEndpointInfo.getIdentifier().getEndpoint());

@@ -186,6 +186,26 @@ public class ContextHubEndpointTest {
         assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
     }
 
+    @Test
+    public void testOpenSessionOnUnregistration() throws RemoteException {
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+
+        HubEndpointInfo targetInfo =
+                new HubEndpointInfo(
+                        TARGET_ENDPOINT_NAME,
+                        TARGET_ENDPOINT_ID,
+                        ENDPOINT_PACKAGE_NAME,
+                        Collections.emptyList());
+        int sessionId = endpoint.openSession(targetInfo, /* serviceDescriptor= */ null);
+        mEndpointManager.onEndpointSessionOpenComplete(sessionId);
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE - 1);
+
+        unregisterExampleEndpoint(endpoint);
+        verify(mMockEndpointCommunications).closeEndpointSession(sessionId, Reason.ENDPOINT_GONE);
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+    }
+
     private IContextHubEndpoint registerExampleEndpoint() throws RemoteException {
         HubEndpointInfo info =
                 new HubEndpointInfo(
