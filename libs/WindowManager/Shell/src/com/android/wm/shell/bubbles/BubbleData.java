@@ -471,6 +471,16 @@ public class BubbleData {
         return bubbleToReturn;
     }
 
+    Bubble getOrCreateBubble(PendingIntent pendingIntent, UserHandle user) {
+        String bubbleKey = Bubble.getAppBubbleKeyForApp(pendingIntent.getCreatorPackage(), user);
+        Bubble bubbleToReturn = findAndRemoveBubbleFromOverflow(bubbleKey);
+        if (bubbleToReturn == null) {
+            bubbleToReturn = Bubble.createAppBubble(pendingIntent, user, mMainExecutor,
+                    mBgExecutor);
+        }
+        return bubbleToReturn;
+    }
+
     Bubble getOrCreateBubble(TaskInfo taskInfo) {
         UserHandle user = UserHandle.of(mCurrentUserId);
         String bubbleKey = Bubble.getAppBubbleKeyForTask(taskInfo);
