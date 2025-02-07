@@ -40,6 +40,11 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.taskview.TaskView;
 
+/**
+ * A listener that works with task views for bubbles, manages launching the appropriate
+ * content into the task view from the bubble and sends updates of task view events back to
+ * the parent view via {@link BubbleTaskViewListener.Callback}.
+ */
 public class BubbleTaskViewListener implements TaskView.Listener {
     private static final String TAG = BubbleTaskViewListener.class.getSimpleName();
 
@@ -74,6 +79,20 @@ public class BubbleTaskViewListener implements TaskView.Listener {
 
     private boolean mInitialized = false;
     private boolean mDestroyed = false;
+
+    public BubbleTaskViewListener(Context context, BubbleTaskView bubbleTaskView, View parentView,
+            BubbleExpandedViewManager manager, BubbleTaskViewListener.Callback callback) {
+        mContext = context;
+        mTaskView = bubbleTaskView.getTaskView();
+        mParentView = parentView;
+        mExpandedViewManager = manager;
+        mCallback = callback;
+        bubbleTaskView.setDelegateListener(this);
+        if (bubbleTaskView.isCreated()) {
+            mTaskId = bubbleTaskView.getTaskId();
+            callback.onTaskCreated();
+        }
+    }
 
     @Override
     public void onInitialized() {
@@ -204,20 +223,6 @@ public class BubbleTaskViewListener implements TaskView.Listener {
     public void onBackPressedOnTaskRoot(int taskId) {
         if (mTaskId == taskId && mExpandedViewManager.isStackExpanded()) {
             mCallback.onBackPressed();
-        }
-    }
-
-    public BubbleTaskViewListener(Context context, BubbleTaskView bubbleTaskView, View parentView,
-            BubbleExpandedViewManager manager, BubbleTaskViewListener.Callback callback) {
-        mContext = context;
-        mTaskView = bubbleTaskView.getTaskView();
-        mParentView = parentView;
-        mExpandedViewManager = manager;
-        mCallback = callback;
-        bubbleTaskView.setDelegateListener(this);
-        if (bubbleTaskView.isCreated()) {
-            mTaskId = bubbleTaskView.getTaskId();
-            callback.onTaskCreated();
         }
     }
 
