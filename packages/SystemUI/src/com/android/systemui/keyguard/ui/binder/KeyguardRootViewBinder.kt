@@ -300,7 +300,7 @@ object KeyguardRootViewBinder {
                     }
 
                     launch {
-                        viewModel.isNotifIconContainerVisible.collect { isVisible ->
+                        viewModel.isAodPromotedNotifVisible.collect { isVisible ->
                             if (isVisible.value) {
                                 blueprintViewModel.refreshBlueprint()
                             }

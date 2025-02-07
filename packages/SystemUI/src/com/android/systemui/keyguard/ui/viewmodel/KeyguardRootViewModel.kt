@@ -45,6 +45,7 @@ import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.ui.viewmodel.NotificationShadeWindowModel
 import com.android.systemui.statusbar.notification.domain.interactor.NotificationsKeyguardInteractor
 import com.android.systemui.statusbar.notification.icon.ui.viewmodel.NotificationIconContainerAlwaysOnDisplayViewModel
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.AODPromotedNotificationInteractor
 import com.android.systemui.statusbar.phone.DozeParameters
 import com.android.systemui.statusbar.phone.ScreenOffAnimationController
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
@@ -84,6 +85,7 @@ constructor(
     private val notificationsKeyguardInteractor: NotificationsKeyguardInteractor,
     private val pulseExpansionInteractor: PulseExpansionInteractor,
     notificationShadeWindowModel: NotificationShadeWindowModel,
+    private val aodPromotedNotificationInteractor: AODPromotedNotificationInteractor,
     private val aodNotificationIconViewModel: NotificationIconContainerAlwaysOnDisplayViewModel,
     private val alternateBouncerToAodTransitionViewModel: AlternateBouncerToAodTransitionViewModel,
     private val alternateBouncerToGoneTransitionViewModel:
@@ -327,14 +329,22 @@ constructor(
             .map { BurnInScaleViewModel(scale = it.scale, scaleClockOnly = it.scaleClockOnly) }
             .dumpWhileCollecting("scale")
 
-    val isAodPromotedNotifVisible: StateFlow<Boolean> =
-        keyguardTransitionInteractor
-            .transitionValue(AOD)
-            .map { it == 1f }
+    val isAodPromotedNotifVisible: StateFlow<AnimatedValue<Boolean>> =
+        combine(
+                areNotifsFullyHiddenAnimated(),
+                isPulseExpandingAnimated(),
+                aodPromotedNotificationInteractor.isPresent,
+            ) { notifsFullyHiddenAnimated, pulseExpandingAnimated, haveAodPromotedNotif ->
+                zip(notifsFullyHiddenAnimated, pulseExpandingAnimated) {
+                    notifsFullyHidden,
+                    pulseExpanding ->
+                    notifsFullyHidden && !pulseExpanding && haveAodPromotedNotif
+                }
+            }
             .stateIn(
                 scope = applicationScope,
                 started = SharingStarted.WhileSubscribed(),
-                initialValue = false,
+                initialValue = AnimatedValue.NotAnimating(false),
             )
             .dumpValue("isAodPromotedNotifVisible")
 
