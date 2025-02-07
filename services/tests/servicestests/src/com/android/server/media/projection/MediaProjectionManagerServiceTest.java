@@ -74,6 +74,8 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.test.TestLooper;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
@@ -87,6 +89,8 @@ import androidx.test.filters.FlakyTest;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.internal.R;
+import com.android.media.projection.flags.Flags;
 import com.android.server.LocalServices;
 import com.android.server.testutils.OffsettableClock;
 import com.android.server.wm.WindowManagerInternal;
@@ -1185,6 +1189,42 @@ public class MediaProjectionManagerServiceTest {
         MediaProjectionManagerService.MediaProjection projection =
                 createProjectionPreconditions(mService, 200);
         assertThat(projection.getDisplayId()).isEqualTo(200);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_RECORDING_OVERLAY)
+    public void createProjectionForOverlay_forUnknownCaller_isNotSet() throws Exception {
+        mContext.getOrCreateTestableResources().addOverride(
+                R.string.config_defaultContextualSearchPackageName, "test.something");
+        MediaProjectionManagerService.MediaProjection projection =
+                createProjectionPreconditions(mService);
+        projection.setRecordingOverlay(true);
+
+        assertThat(projection.isRecordingOverlay()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_RECORDING_OVERLAY)
+    public void createProjectionForOverlay_forContextualSearch() throws Exception {
+        mContext.getOrCreateTestableResources().addOverride(
+                R.string.config_defaultContextualSearchPackageName, PACKAGE_NAME);
+        MediaProjectionManagerService.MediaProjection projection =
+                createProjectionPreconditions(mService);
+        projection.setRecordingOverlay(true);
+
+        assertThat(projection.isRecordingOverlay()).isTrue();
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_RECORDING_OVERLAY)
+    public void createProjectionForOverlay_withoutFlag() throws Exception {
+        mContext.getOrCreateTestableResources().addOverride(
+                R.string.config_defaultContextualSearchPackageName, PACKAGE_NAME);
+        MediaProjectionManagerService.MediaProjection projection = createProjectionPreconditions(
+                mService);
+        projection.setRecordingOverlay(true);
+
+        assertThat(projection.isRecordingOverlay()).isFalse();
     }
 
     private void verifySetSessionWithContent(@RecordContent int content) {

@@ -411,6 +411,7 @@ public class ContextualSearchManagerService extends SystemService {
                 IMediaProjection mediaProjection = mediaProjectionManager.createProjection(uid,
                         packageName,
                         MediaProjectionManager.TYPE_SCREEN_CAPTURE, false, Display.DEFAULT_DISPLAY);
+                mediaProjection.setRecordingOverlay(true);
                 return mediaProjection;
             });
         } else {

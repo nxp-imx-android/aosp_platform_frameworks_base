@@ -55,3 +55,12 @@ flag {
   bug: "406217983"
 }
 
+flag {
+    namespace: "media_projection"
+    name: "recording_overlay"
+    description: "Allows overlay recordings via MediaProjection"
+    bug: "395054309"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
