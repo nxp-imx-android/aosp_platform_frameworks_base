@@ -249,6 +249,7 @@ constructor(
         logger.logSceneChanged(
             from = currentSceneKey,
             to = resolvedScene,
+            sceneState = sceneState,
             reason = loggingReason,
             isInstant = false,
         )
@@ -279,6 +280,7 @@ constructor(
         logger.logSceneChanged(
             from = currentSceneKey,
             to = resolvedScene,
+            sceneState = null,
             reason = loggingReason,
             isInstant = true,
         )
