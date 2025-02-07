@@ -56,6 +56,8 @@ class DreamUniverse : DreamService() {
             }
         }
 
+    private var notifier: UniverseProgressNotifier? = null
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
 
@@ -76,8 +78,8 @@ class DreamUniverse : DreamService() {
                         Random.nextFloat() * PI2f,
                         Random.nextFloatInRange(
                             PLANET_ORBIT_RANGE.start,
-                            PLANET_ORBIT_RANGE.endInclusive
-                        )
+                            PLANET_ORBIT_RANGE.endInclusive,
+                        ),
                     )
         }
 
@@ -94,8 +96,10 @@ class DreamUniverse : DreamService() {
         composeView.setContent {
             Spaaaace(modifier = Modifier.fillMaxSize(), u = universe, foldState = foldState)
             DebugText(DEBUG_TEXT)
-            Telemetry(universe)
+            Telemetry(universe, showControls = false)
         }
+
+        notifier = UniverseProgressNotifier(this, universe)
 
         composeView.setViewTreeLifecycleOwner(lifecycleOwner)
         composeView.setViewTreeSavedStateRegistryOwner(lifecycleOwner)
