@@ -3962,7 +3962,7 @@ public class DisplayModeDirectorTest {
         }
 
         @Override
-        public VotesStatsReporter getVotesStatsReporter(boolean refreshRateVotingTelemetryEnabled) {
+        public VotesStatsReporter getVotesStatsReporter() {
             return null;
         }
 
