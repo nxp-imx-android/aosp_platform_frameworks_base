@@ -24,6 +24,7 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
+import com.android.systemui.keyguard.shared.model.TransitionState.FINISHED
 import com.android.systemui.keyguard.shared.model.TransitionState.RUNNING
 import com.android.systemui.keyguard.shared.model.TransitionState.STARTED
 import com.android.systemui.keyguard.shared.model.TransitionStep
@@ -63,7 +64,15 @@ class DeviceEntryBackgroundViewModelTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertThat(alpha).isEqualTo(0.0f)
+            assertThat(alpha).isEqualTo(1.0f)
+
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(lockscreenToDozing(1f, FINISHED)),
+                testScope,
+            )
+            runCurrent()
+
+            assertThat(alpha).isEqualTo(0f)
         }
 
     private fun lockscreenToDozing(value: Float, state: TransitionState = RUNNING): TransitionStep {

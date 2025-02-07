@@ -54,7 +54,12 @@ constructor(
         )
 
     val deviceEntryBackgroundViewAlpha: Flow<Float> =
-        transitionAnimation.immediatelyTransitionTo(0f)
+        transitionAnimation.sharedFlow(
+            duration = TO_DOZING_DURATION,
+            onStep = { null },
+            onFinish = { 0f },
+            onCancel = { 0f },
+        )
 
     override val deviceEntryParentViewAlpha: Flow<Float> =
         deviceEntryUdfpsInteractor.isUdfpsEnrolledAndEnabled.flatMapLatest {
