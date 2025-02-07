@@ -65,6 +65,7 @@ import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor;
 import com.android.systemui.bouncer.shared.flag.ComposeBouncerFlags;
 import com.android.systemui.bouncer.ui.BouncerView;
 import com.android.systemui.bouncer.util.BouncerTestUtilsKt;
+import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor;
@@ -170,6 +171,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
     private final Lazy<SceneInteractor> mSceneInteractorLazy;
     private final Lazy<DeviceEntryInteractor> mDeviceEntryInteractorLazy;
     private final DismissCallbackRegistry mDismissCallbackRegistry;
+    private final CommunalSceneInteractor mCommunalSceneInteractor;
 
     private Job mListenForAlternateBouncerTransitionSteps = null;
     private Job mListenForKeyguardAuthenticatedBiometricsHandled = null;
@@ -406,7 +408,8 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
             @Main DelayableExecutor executor,
             Lazy<DeviceEntryInteractor> deviceEntryInteractorLazy,
             DismissCallbackRegistry dismissCallbackRegistry,
-            Lazy<BouncerInteractor> bouncerInteractor
+            Lazy<BouncerInteractor> bouncerInteractor,
+            CommunalSceneInteractor communalSceneInteractor
     ) {
         mContext = context;
         mExecutor = executor;
@@ -443,6 +446,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
         mStatusBarKeyguardViewManagerInteractor = statusBarKeyguardViewManagerInteractor;
         mDeviceEntryInteractorLazy = deviceEntryInteractorLazy;
         mDismissCallbackRegistry = dismissCallbackRegistry;
+        mCommunalSceneInteractor = communalSceneInteractor;
     }
 
     KeyguardTransitionInteractor mKeyguardTransitionInteractor;
@@ -1364,11 +1368,13 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
         }
         mStatusBarStateController.setLeaveOpenOnKeyguardHide(false);
 
-        boolean hideBouncerOverDream = isBouncerShowing()
-                && mDreamOverlayStateController.isOverlayActive();
+        boolean hideBouncerOverDreamOrHub = isBouncerShowing()
+                && (mDreamOverlayStateController.isOverlayActive()
+                || mCommunalSceneInteractor.isIdleOnCommunal().getValue());
         mCentralSurfaces.endAffordanceLaunch();
         // The second condition is for SIM card locked bouncer
-        if (hideBouncerOverDream || (primaryBouncerIsScrimmed() && !needsFullscreenBouncer())) {
+        if (hideBouncerOverDreamOrHub
+                || (primaryBouncerIsScrimmed() && !needsFullscreenBouncer())) {
             hideBouncer(false);
             updateStates();
         } else {

@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.phone;
 import static com.android.systemui.bouncer.shared.constants.KeyguardBouncerConstants.EXPANSION_HIDDEN;
 import static com.android.systemui.bouncer.shared.constants.KeyguardBouncerConstants.EXPANSION_VISIBLE;
 
+import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
 import static kotlinx.coroutines.test.TestCoroutineDispatchersKt.StandardTestDispatcher;
 
 import static org.junit.Assert.assertFalse;
@@ -76,6 +77,7 @@ import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerCallbackInte
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor;
 import com.android.systemui.bouncer.ui.BouncerView;
 import com.android.systemui.bouncer.ui.BouncerViewDelegate;
+import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor;
 import com.android.systemui.dock.DockManager;
 import com.android.systemui.dreams.DreamOverlayStateController;
@@ -171,6 +173,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     @Mock private SceneInteractor mSceneInteractor;
     @Mock private DismissCallbackRegistry mDismissCallbackRegistry;
     @Mock private BouncerInteractor mBouncerInteractor;
+    @Mock private CommunalSceneInteractor mCommunalSceneInteractor;
 
     private StatusBarKeyguardViewManager mStatusBarKeyguardViewManager;
     private PrimaryBouncerCallbackInteractor.PrimaryBouncerExpansionCallback
@@ -209,6 +212,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
                 .thenReturn(mNotificationShadeWindowView);
         when(mNotificationShadeWindowView.getWindowInsetsController())
                 .thenReturn(mWindowInsetsController);
+        when(mCommunalSceneInteractor.isIdleOnCommunal()).thenReturn(MutableStateFlow(false));
 
         mStatusBarKeyguardViewManager =
                 new StatusBarKeyguardViewManager(
@@ -245,7 +249,8 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
                         mExecutor,
                         () -> mDeviceEntryInteractor,
                         mDismissCallbackRegistry,
-                        () -> mBouncerInteractor) {
+                        () -> mBouncerInteractor,
+                        mCommunalSceneInteractor) {
                     @Override
                     public ViewRootImpl getViewRootImpl() {
                         return mViewRootImpl;
@@ -749,7 +754,8 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
                         mExecutor,
                         () -> mDeviceEntryInteractor,
                         mDismissCallbackRegistry,
-                        () -> mBouncerInteractor) {
+                        () -> mBouncerInteractor,
+                        mCommunalSceneInteractor) {
                     @Override
                     public ViewRootImpl getViewRootImpl() {
                         return mViewRootImpl;
