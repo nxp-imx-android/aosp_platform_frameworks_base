@@ -163,10 +163,6 @@ constructor(
     }
 
     private fun bindJankViewModel() {
-        if (SceneContainerFlag.isEnabled) {
-            return
-        }
-
         jankHandle?.dispose()
         jankHandle =
             KeyguardJankBinder.bind(

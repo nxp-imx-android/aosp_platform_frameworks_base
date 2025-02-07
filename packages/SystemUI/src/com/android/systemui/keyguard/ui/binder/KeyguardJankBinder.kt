@@ -30,6 +30,7 @@ import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardJankViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -79,15 +80,18 @@ object KeyguardJankBinder {
                     }
                 }
 
-                launch {
-                    viewModel.lockscreenToAodTransition.collect {
-                        processStep(it, CUJ_LOCKSCREEN_TRANSITION_TO_AOD)
+                // The following is already done in KeyguardTransitionAnimationCallbackImpl.
+                if (!SceneContainerFlag.isEnabled) {
+                    launch {
+                        viewModel.lockscreenToAodTransition.collect {
+                            processStep(it, CUJ_LOCKSCREEN_TRANSITION_TO_AOD)
+                        }
                     }
-                }
 
-                launch {
-                    viewModel.aodToLockscreenTransition.collect {
-                        processStep(it, CUJ_LOCKSCREEN_TRANSITION_FROM_AOD)
+                    launch {
+                        viewModel.aodToLockscreenTransition.collect {
+                            processStep(it, CUJ_LOCKSCREEN_TRANSITION_FROM_AOD)
+                        }
                     }
                 }
             }
