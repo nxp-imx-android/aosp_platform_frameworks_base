@@ -21,8 +21,9 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
-import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
+import com.android.systemui.statusbar.notification.data.repository.addNotif
+import com.android.systemui.statusbar.notification.data.repository.removeNotif
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.shared.CallType
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
@@ -49,51 +50,47 @@ fun inCallModel(
 
 object OngoingCallTestHelper {
     /**
-     * Sets the call state to be no call, and does it correctly based on whether
-     * [StatusBarChipsModernization] is enabled or not.
+     * Removes any ongoing call state and removes any call notification associated with [key]. Does
+     * it correctly based on whether [StatusBarChipsModernization] is enabled or not.
+     *
+     * @param key the notification key associated with the call notification.
      */
-    fun setNoCallState(kosmos: Kosmos) {
+    fun Kosmos.removeOngoingCallState(key: String) {
         if (StatusBarChipsModernization.isEnabled) {
-            // TODO(b/372657935): Maybe don't clear *all* notifications
-            kosmos.activeNotificationListRepository.activeNotifications.value =
-                ActiveNotificationsStore()
+            activeNotificationListRepository.removeNotif(key)
         } else {
-            kosmos.ongoingCallRepository.setOngoingCallState(OngoingCallModel.NoCall)
+            ongoingCallRepository.setOngoingCallState(OngoingCallModel.NoCall)
         }
     }
 
     /**
-     * Sets the ongoing call state correctly based on whether [StatusBarChipsModernization] is
-     * enabled or not.
+     * Sets SysUI to have an ongoing call state. Does it correctly based on whether
+     * [StatusBarChipsModernization] is enabled or not.
+     *
+     * @param key the notification key to be associated with the call notification
      */
-    fun setOngoingCallState(
-        kosmos: Kosmos,
-        startTimeMs: Long = 1000L,
+    fun Kosmos.addOngoingCallState(
         key: String = "notif",
+        startTimeMs: Long = 1000L,
         statusBarChipIconView: StatusBarIconView? = createStatusBarIconViewOrNull(),
         promotedContent: PromotedNotificationContentModel? = null,
         contentIntent: PendingIntent? = null,
         uid: Int = DEFAULT_UID,
     ) {
         if (StatusBarChipsModernization.isEnabled) {
-            kosmos.activeNotificationListRepository.activeNotifications.value =
-                ActiveNotificationsStore.Builder()
-                    .apply {
-                        addIndividualNotif(
-                            activeNotificationModel(
-                                key = key,
-                                whenTime = startTimeMs,
-                                callType = CallType.Ongoing,
-                                statusBarChipIcon = statusBarChipIconView,
-                                contentIntent = contentIntent,
-                                promotedContent = promotedContent,
-                                uid = uid,
-                            )
-                        )
-                    }
-                    .build()
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = key,
+                    whenTime = startTimeMs,
+                    callType = CallType.Ongoing,
+                    statusBarChipIcon = statusBarChipIconView,
+                    contentIntent = contentIntent,
+                    promotedContent = promotedContent,
+                    uid = uid,
+                )
+            )
         } else {
-            kosmos.ongoingCallRepository.setOngoingCallState(
+            ongoingCallRepository.setOngoingCallState(
                 inCallModel(
                     startTimeMs = startTimeMs,
                     notificationIcon = statusBarChipIconView,
