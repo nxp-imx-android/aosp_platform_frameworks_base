@@ -148,6 +148,7 @@ public class WallpaperManagerServiceTests {
 
     private static ComponentName sImageWallpaperComponentName;
     private static ComponentName sDefaultWallpaperComponent;
+    private static WallpaperDescription sDefaultWallpaperDescription;
 
     private static ComponentName sFallbackWallpaperComponentName;
 
@@ -214,6 +215,8 @@ public class WallpaperManagerServiceTests {
         } else {
             sContext.addMockService(sDefaultWallpaperComponent, sWallpaperService);
         }
+        sDefaultWallpaperDescription = new WallpaperDescription.Builder().setComponent(
+                sDefaultWallpaperComponent).build();
 
         sContext.addMockService(sImageWallpaperComponentName, sWallpaperService);
         sContext.addMockService(TEST_WALLPAPER_COMPONENT, sWallpaperService);
@@ -489,11 +492,12 @@ public class WallpaperManagerServiceTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT)
+    @EnableFlags({Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT,
+            Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING})
     public void testSaveLoadSettings_withoutWallpaperDescription()
             throws IOException, XmlPullParserException {
         WallpaperData expectedData = mService.getCurrentWallpaperData(FLAG_SYSTEM, 0);
-        expectedData.setComponent(sDefaultWallpaperComponent);
+        expectedData.setDescription(sDefaultWallpaperDescription);
         expectedData.primaryColors = new WallpaperColors(Color.valueOf(Color.RED),
                 Color.valueOf(Color.BLUE), null);
         expectedData.mWallpaperDimAmount = 0.5f;
@@ -529,11 +533,12 @@ public class WallpaperManagerServiceTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT)
+    @EnableFlags({Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT,
+            Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING})
     public void testSaveLoadSettings_withWallpaperDescription()
             throws IOException, XmlPullParserException {
         WallpaperData expectedData = mService.getCurrentWallpaperData(FLAG_SYSTEM, 0);
-        expectedData.setComponent(sDefaultWallpaperComponent);
+        expectedData.setDescription(sDefaultWallpaperDescription);
         PersistableBundle content = new PersistableBundle();
         content.putString("ckey", "cvalue");
         WallpaperDescription description = new WallpaperDescription.Builder()
@@ -561,7 +566,8 @@ public class WallpaperManagerServiceTests {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT)
+    @DisableFlags({Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT,
+            Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING})
     public void testSaveLoadSettings_legacyNextComponent()
             throws IOException, XmlPullParserException {
         WallpaperData systemWallpaperData = mService.getCurrentWallpaperData(FLAG_SYSTEM, 0);
