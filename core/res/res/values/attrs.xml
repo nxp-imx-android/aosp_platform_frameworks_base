@@ -6934,6 +6934,8 @@
             <enum name="line" value="2" />
             <!-- Ring shape. -->
             <enum name="ring" value="3" />
+            <!-- ARC shape. -->
+            <enum name="arc" value="4"/>
         </attr>
         <!-- Inner radius of the ring expressed as a ratio of the ring's width. For instance,
              if innerRadiusRatio=9, then the inner radius equals the ring's width divided by 9.
@@ -6966,6 +6968,12 @@
         <attr name="opticalInsetRight" />
         <!-- Bottom optical inset. -->
         <attr name="opticalInsetBottom" />
+        <!-- Attributes that customize the stroke line cap. @hide -->
+        <attr name="strokeCap" format="enum">
+            <enum name="butt" value="0"/>
+            <enum name="round" value="1"/>
+            <enum name="square" value="2"/>
+        </attr>
     </declare-styleable>
 
     <!-- Used to specify the size of the shape for GradientDrawable. -->
