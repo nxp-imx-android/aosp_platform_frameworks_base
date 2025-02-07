@@ -19,7 +19,6 @@ package com.android.systemui.dreams.ui.viewmodel
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
-import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.viewmodel.UserActionsViewModel
@@ -40,7 +39,6 @@ import kotlinx.coroutines.flow.map
 class DreamUserActionsViewModel
 @AssistedInject
 constructor(
-    private val communalInteractor: CommunalInteractor,
     private val deviceUnlockedInteractor: DeviceUnlockedInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
@@ -54,14 +52,9 @@ constructor(
                 } else {
                     combine(
                         deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked },
-                        communalInteractor.isCommunalAvailable,
                         shadeModeInteractor.shadeMode,
-                    ) { isDeviceUnlocked, isCommunalAvailable, shadeMode ->
+                    ) { isDeviceUnlocked, shadeMode ->
                         buildList {
-                                if (isCommunalAvailable) {
-                                    add(Swipe.Start to Scenes.Communal)
-                                }
-
                                 val bouncerOrGone =
                                     if (isDeviceUnlocked) Scenes.Gone else Scenes.Bouncer
                                 add(Swipe.Up to bouncerOrGone)
