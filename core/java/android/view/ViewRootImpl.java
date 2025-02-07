@@ -133,6 +133,7 @@ import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.enableBufferTransformHintFromDisplay;
+import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
 import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
@@ -271,7 +272,9 @@ import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 import android.window.ScreenCapture;
 import android.window.SurfaceSyncGroup;
+import android.window.WindowContext;
 import android.window.WindowOnBackInvokedDispatcher;
+import android.window.WindowTokenClient;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -6609,10 +6612,24 @@ public final class ViewRootImpl implements ViewParent,
             mActivityConfigCallback.onConfigurationChanged(overrideConfig, newDisplayId,
                     activityWindowInfo);
         } else {
-            // There is no activity callback - update the configuration right away.
+            if (enableWindowContextResourcesUpdateOnConfigChange()) {
+                // There is no activity callback - update resources for window token, if needed.
+                final WindowTokenClient windowTokenClient = getWindowTokenClient();
+                if (windowTokenClient != null) {
+                    windowTokenClient.onConfigurationChanged(
+                            mLastReportedMergedConfiguration.getMergedConfiguration(),
+                            newDisplayId == INVALID_DISPLAY ? mDisplay.getDisplayId()
+                                    : newDisplayId);
+                }
+            }
             updateConfiguration(newDisplayId);
         }
         mForceNextConfigUpdate = false;
+    }
+
+    private WindowTokenClient getWindowTokenClient() {
+        if (!(mContext instanceof WindowContext)) return null;
+        return (WindowTokenClient) mContext.getWindowContextToken();
     }
 
     /**
