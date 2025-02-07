@@ -3661,16 +3661,17 @@ public class StatsPullAtomService extends SystemService {
 
                     if (!packageNames.isEmpty()) {
                         for (String packageName : packageNames) {
-                            PackageInfo pkg;
+                            int uid = INVALID_UID;
                             try {
-                                pkg = pm.getPackageInfoAsUser(packageName, 0, userId);
+                                PackageInfo pkg = pm.getPackageInfoAsUser(packageName, 0, userId);
+                                uid = pkg.applicationInfo.uid;
                             } catch (PackageManager.NameNotFoundException e) {
-                                Slog.w(TAG, "Role holder " + packageName + " not found");
-                                return StatsManager.PULL_SKIP;
+                                Slog.w(TAG, "Role holder " + packageName + " not found for user "
+                                        + userId);
                             }
 
                             pulledData.add(FrameworkStatsLog.buildStatsEvent(
-                                    atomTag, pkg.applicationInfo.uid, packageName, roleName));
+                                    atomTag, uid, packageName, roleName));
                         }
                     } else {
                         // Ensure that roles set to None are logged with an empty state.
@@ -3679,6 +3680,9 @@ public class StatsPullAtomService extends SystemService {
                     }
                 }
             }
+        } catch (Throwable t) {
+            Log.e(TAG, "Could not read role holders", t);
+            return StatsManager.PULL_SKIP;
         } finally {
             Binder.restoreCallingIdentity(callingToken);
         }
