@@ -51,6 +51,7 @@ import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UND
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitPosition
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.transition.Transitions
+import com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE
 import com.android.wm.shell.transition.Transitions.TransitionHandler
 import com.android.wm.shell.windowdecor.MoveToDesktopAnimator
 import com.android.wm.shell.windowdecor.MoveToDesktopAnimator.Companion.DRAG_FREEFORM_SCALE
@@ -530,13 +531,7 @@ sealed class DragToDesktopTransitionHandler(
         }
         // In case of bubble animation, finish the initial desktop drag animation, but keep the
         // current animation running and have bubbles take over
-        if (
-            state.cancelState == CancelState.CANCEL_BUBBLE_LEFT ||
-                state.cancelState == CancelState.CANCEL_BUBBLE_RIGHT
-        ) {
-            // TODO(b/388851898): once bubbles sends a specific type of transition for the enter
-            //  bubble, add a check for that transition type to ensure that any other transition
-            //  would not end up here
+        if (info.type == TRANSIT_CONVERT_TO_BUBBLE) {
             state.startTransitionFinishCb?.onTransitionFinished(/* wct= */ null)
             clearState()
             return

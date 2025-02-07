@@ -17,6 +17,8 @@ package com.android.wm.shell.bubbles;
 
 import static android.view.WindowManager.TRANSIT_CHANGE;
 
+import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertFalse;
@@ -137,7 +139,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
     }
 
     private TransitionInfo setupFullscreenTaskTransition(ActivityManager.RunningTaskInfo taskInfo) {
-        final TransitionInfo info = new TransitionInfo(TRANSIT_CHANGE, 0);
+        final TransitionInfo info = new TransitionInfo(TRANSIT_CONVERT_TO_BUBBLE, 0);
         final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token,
                 mock(SurfaceControl.class));
         chg.setTaskInfo(taskInfo);

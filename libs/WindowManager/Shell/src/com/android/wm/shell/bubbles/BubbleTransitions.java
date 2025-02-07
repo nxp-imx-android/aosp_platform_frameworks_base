@@ -22,6 +22,8 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.View.INVISIBLE;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 
+import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
@@ -265,7 +267,7 @@ public class BubbleTransitions {
                 state.mVisible = true;
             }
             mTaskViewTransitions.enqueueExternal(tv.getController(), () -> {
-                mTransition = mTransitions.startTransition(TRANSIT_CHANGE, wct, this);
+                mTransition = mTransitions.startTransition(TRANSIT_CONVERT_TO_BUBBLE, wct, this);
                 return mTransition;
             });
         }
