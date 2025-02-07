@@ -40,7 +40,6 @@ import android.companion.virtual.IVirtualDeviceSoundEffectListener;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
-import android.companion.virtual.flags.Flags;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtualnative.IVirtualDeviceManagerNative;
 import android.compat.annotation.ChangeId;
@@ -49,6 +48,7 @@ import android.content.AttributionSource;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.display.DisplayManagerInternal;
+import android.hardware.display.IVirtualDisplayCallback;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
@@ -67,6 +67,7 @@ import android.util.Slog;
 import android.util.SparseArray;
 import android.view.Display;
 import android.widget.Toast;
+import android.window.DisplayWindowPolicyController;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -748,6 +749,16 @@ public class VirtualDeviceManagerService extends SystemService {
                 }
             }
             return result;
+        }
+
+        @Override
+        public void onVirtualDisplayCreated(IVirtualDevice virtualDevice, int displayId,
+                IVirtualDisplayCallback callback, DisplayWindowPolicyController dwpc) {
+            VirtualDeviceImpl virtualDeviceImpl = getVirtualDeviceForId(
+                    ((VirtualDeviceImpl) virtualDevice).getDeviceId());
+            if (virtualDeviceImpl != null) {
+                virtualDeviceImpl.onVirtualDisplayCreated(displayId, callback, dwpc);
+            }
         }
 
         @Override
