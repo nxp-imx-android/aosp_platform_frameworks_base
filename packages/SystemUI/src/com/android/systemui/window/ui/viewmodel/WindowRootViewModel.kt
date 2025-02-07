@@ -26,11 +26,14 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
@@ -38,6 +41,7 @@ import kotlinx.coroutines.flow.onEach
 typealias BlurAppliedUiEvent = Int
 
 /** View model for window root view. */
+@OptIn(ExperimentalCoroutinesApi::class)
 class WindowRootViewModel
 @AssistedInject
 constructor(
@@ -58,7 +62,7 @@ constructor(
             glanceableHubTransitions.map { it.windowBlurRadius.logIfPossible(it.javaClass.name) }
         else emptyList()
 
-    val blurRadius: Flow<Float> =
+    private val _blurRadius =
         listOf(
                 *bouncerBlurRadiusFlows.toTypedArray(),
                 *glanceableHubBlurRadiusFlows.toTypedArray(),
@@ -66,8 +70,23 @@ constructor(
             )
             .merge()
 
+    val blurRadius: Flow<Float> =
+        blurInteractor.isBlurCurrentlySupported.flatMapLatest { blurSupported ->
+            if (blurSupported) {
+                _blurRadius
+            } else {
+                flowOf(0f)
+            }
+        }
+
     val isBlurOpaque =
-        blurInteractor.isBlurOpaque.distinctUntilChanged().logIfPossible("isBlurOpaque")
+        blurInteractor.isBlurCurrentlySupported.flatMapLatest { blurSupported ->
+            if (blurSupported) {
+                blurInteractor.isBlurOpaque.distinctUntilChanged().logIfPossible("isBlurOpaque")
+            } else {
+                flowOf(false)
+            }
+        }
 
     override suspend fun onActivated(): Nothing {
         coroutineScope {
