@@ -26,6 +26,7 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.settings.UserTracker
+import com.android.systemui.user.domain.interactor.UserLockedInteractor
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
@@ -58,6 +59,7 @@ constructor(
     @Main private val uiDispatcher: CoroutineDispatcher,
     private val glanceableHubWidgetManagerLazy: Lazy<GlanceableHubWidgetManager>,
     private val glanceableHubMultiUserHelper: GlanceableHubMultiUserHelper,
+    private val userLockedInteractor: UserLockedInteractor,
 ) : CoreStartable {
 
     private val appWidgetHost by lazy { appWidgetHostLazy.get() }

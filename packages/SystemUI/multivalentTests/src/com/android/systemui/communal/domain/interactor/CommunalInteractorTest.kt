@@ -75,6 +75,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.fakeUserTracker
 import com.android.systemui.statusbar.phone.fakeManagedProfileController
 import com.android.systemui.testKosmos
+import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.argumentCaptor
@@ -163,12 +164,12 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    fun isCommunalAvailable_storageUnlockedAndMainUser_true() =
+    fun isCommunalAvailable_mainUserUnlockedAndMainUser_true() =
         kosmos.runTest {
             val isAvailable by collectLastValue(underTest.isCommunalAvailable)
             assertThat(isAvailable).isFalse()
 
-            fakeKeyguardRepository.setIsEncryptedOrLockdown(false)
+            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
             fakeUserRepository.setSelectedUserInfo(mainUser)
             fakeKeyguardRepository.setKeyguardShowing(true)
 
@@ -176,12 +177,12 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    fun isCommunalAvailable_storageLockedAndMainUser_false() =
+    fun isCommunalAvailable_mainUserLockedAndMainUser_false() =
         kosmos.runTest {
             val isAvailable by collectLastValue(underTest.isCommunalAvailable)
             assertThat(isAvailable).isFalse()
 
-            fakeKeyguardRepository.setIsEncryptedOrLockdown(true)
+            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, false)
             fakeUserRepository.setSelectedUserInfo(mainUser)
             fakeKeyguardRepository.setKeyguardShowing(true)
 
@@ -189,12 +190,12 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    fun isCommunalAvailable_storageUnlockedAndSecondaryUser_false() =
+    fun isCommunalAvailable_mainUserUnlockedAndSecondaryUser_false() =
         kosmos.runTest {
             val isAvailable by collectLastValue(underTest.isCommunalAvailable)
             assertThat(isAvailable).isFalse()
 
-            fakeKeyguardRepository.setIsEncryptedOrLockdown(false)
+            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
             fakeUserRepository.setSelectedUserInfo(secondaryUser)
             fakeKeyguardRepository.setKeyguardShowing(true)
 
@@ -207,7 +208,7 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
             val isAvailable by collectLastValue(underTest.isCommunalAvailable)
             assertThat(isAvailable).isFalse()
 
-            fakeKeyguardRepository.setIsEncryptedOrLockdown(false)
+            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
             fakeUserRepository.setSelectedUserInfo(mainUser)
             fakeKeyguardRepository.setKeyguardShowing(true)
 
@@ -222,7 +223,7 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
             val isAvailable by collectLastValue(underTest.isCommunalAvailable)
             assertThat(isAvailable).isFalse()
 
-            fakeKeyguardRepository.setIsEncryptedOrLockdown(false)
+            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, false)
             fakeUserRepository.setSelectedUserInfo(mainUser)
             fakeKeyguardRepository.setKeyguardShowing(true)
 
@@ -1282,7 +1283,7 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     fun showCommunalWhileCharging() =
         kosmos.runTest {
-            fakeKeyguardRepository.setIsEncryptedOrLockdown(false)
+            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
             fakeUserRepository.setSelectedUserInfo(mainUser)
             fakeKeyguardRepository.setKeyguardShowing(true)
             fakeSettings.putIntForUser(
@@ -1302,7 +1303,7 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     fun showCommunalWhilePosturedAndCharging() =
         kosmos.runTest {
-            fakeKeyguardRepository.setIsEncryptedOrLockdown(false)
+            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
             fakeUserRepository.setSelectedUserInfo(mainUser)
             fakeKeyguardRepository.setKeyguardShowing(true)
             fakeSettings.putIntForUser(
@@ -1323,7 +1324,7 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     fun showCommunalWhileDocked() =
         kosmos.runTest {
-            fakeKeyguardRepository.setIsEncryptedOrLockdown(false)
+            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
             fakeUserRepository.setSelectedUserInfo(mainUser)
             fakeKeyguardRepository.setKeyguardShowing(true)
             fakeSettings.putIntForUser(Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK, 1, mainUser.id)

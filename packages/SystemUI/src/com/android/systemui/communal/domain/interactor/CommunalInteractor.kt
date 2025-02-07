@@ -69,6 +69,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.phone.ManagedProfileController
+import com.android.systemui.user.domain.interactor.UserLockedInteractor
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import com.android.systemui.util.kotlin.emitOnStart
@@ -127,6 +128,7 @@ constructor(
     private val batteryInteractor: BatteryInteractor,
     private val dockManager: DockManager,
     private val posturingInteractor: PosturingInteractor,
+    private val userLockedInteractor: UserLockedInteractor,
 ) {
     private val logger = Logger(logBuffer, "CommunalInteractor")
 
@@ -162,7 +164,7 @@ constructor(
     val isCommunalAvailable: Flow<Boolean> =
         allOf(
                 communalSettingsInteractor.isCommunalEnabled,
-                not(keyguardInteractor.isEncryptedOrLockdown),
+                userLockedInteractor.isUserUnlocked(userManager.mainUser),
                 keyguardInteractor.isKeyguardShowing,
             )
             .distinctUntilChanged()

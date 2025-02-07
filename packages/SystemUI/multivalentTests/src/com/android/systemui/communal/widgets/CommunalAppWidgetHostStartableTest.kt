@@ -37,7 +37,9 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.settings.fakeUserTracker
 import com.android.systemui.testKosmos
+import com.android.systemui.user.data.repository.FakeUserRepository.Companion.MAIN_USER_ID
 import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.user.domain.interactor.userLockedInteractor
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
@@ -91,6 +93,7 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
                 kosmos.testDispatcher,
                 { widgetManager },
                 helper,
+                kosmos.userLockedInteractor,
             )
     }
 
@@ -269,6 +272,7 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
 
                 // Binding to the service does not require keyguard showing
                 setCommunalAvailable(true, setKeyguardShowing = false)
+                fakeKeyguardRepository.setIsEncryptedOrLockdown(false)
                 runCurrent()
                 verify(widgetManager).register()
 
@@ -283,7 +287,7 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
         setKeyguardShowing: Boolean = true,
     ) =
         with(kosmos) {
-            fakeKeyguardRepository.setIsEncryptedOrLockdown(false)
+            fakeUserRepository.setUserUnlocked(MAIN_USER_ID, true)
             fakeUserRepository.setSelectedUserInfo(MAIN_USER_INFO)
             if (setKeyguardShowing) {
                 fakeKeyguardRepository.setKeyguardShowing(true)
