@@ -1519,7 +1519,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         assertThat(getNumberOfConnectDeviceButtons()).isEqualTo(1);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_SESSION_GROUPING)
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void selectedDevicesAddedInSameOrder() {
         when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(true);
@@ -1537,7 +1537,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         assertThat(items.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice2);
     }
 
-    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_SESSION_GROUPING)
+    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void selectedDevicesAddedInReverseOrder() {
         when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(true);
@@ -1555,7 +1555,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         assertThat(items.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice1);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_SESSION_GROUPING)
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void firstSelectedDeviceIsFirstDeviceInGroupIsTrue() {
         when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(true);
