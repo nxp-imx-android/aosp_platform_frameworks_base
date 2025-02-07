@@ -246,7 +246,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_STARTING_WIND
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_WILL_PLACE_SURFACES;
-import static com.android.server.wm.WindowManagerService.sEnableShellTransitions;
 import static com.android.server.wm.WindowState.LEGACY_POLICY_VISIBILITY;
 
 import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
@@ -5770,19 +5769,16 @@ final class ActivityRecord extends WindowToken {
             return;
         }
 
-        final int windowsCount = mChildren.size();
-        // With Shell-Transition, the activity will running a transition when it is visible.
-        // It won't be included when fromTransition is true means the call from finishTransition.
-        final boolean runningAnimation = sEnableShellTransitions ? visible
-                : isAnimating(PARENTS, ANIMATION_TYPE_APP_TRANSITION);
-        for (int i = 0; i < windowsCount; i++) {
-            mChildren.get(i).onAppVisibilityChanged(visible, runningAnimation);
+        if (!visible) {
+            for (int i = mChildren.size() - 1; i >= 0; --i) {
+                mChildren.get(i).onAppCommitInvisible();
+            }
         }
         setVisible(visible);
         setVisibleRequested(visible);
         ProtoLog.v(WM_DEBUG_APP_TRANSITIONS, "commitVisibility: %s: visible=%b"
-                        + " visibleRequested=%b, isInTransition=%b, runningAnimation=%b, caller=%s",
-                this, isVisible(), mVisibleRequested, isInTransition(), runningAnimation,
+                        + " visibleRequested=%b, inTransition=%b, caller=%s",
+                this, visible, mVisibleRequested, inTransition(),
                 Debug.getCallers(5));
         if (visible) {
             // If we are being set visible, and the starting window is not yet displayed,
