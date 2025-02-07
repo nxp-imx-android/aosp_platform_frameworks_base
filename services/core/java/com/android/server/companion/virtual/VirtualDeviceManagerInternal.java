@@ -24,8 +24,10 @@ import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.content.Context;
+import android.hardware.display.IVirtualDisplayCallback;
 import android.os.LocaleList;
 import android.util.ArraySet;
+import android.window.DisplayWindowPolicyController;
 
 import java.util.Set;
 import java.util.function.Consumer;
@@ -102,6 +104,17 @@ public abstract class VirtualDeviceManagerInternal {
      * the app is running on the default device or not.
      */
     public abstract @NonNull ArraySet<Integer> getDeviceIdsForUid(int uid);
+
+    /**
+     * Notifies that a virtual display was created.
+     *
+     * @param virtualDevice The virtual device that owns the virtual display.
+     * @param displayId     The display id of the created virtual display.
+     * @param callback      The callback of the virtual display.
+     * @param dwpc          The DisplayWindowPolicyController of the created virtual display.
+     */
+    public abstract void onVirtualDisplayCreated(IVirtualDevice virtualDevice, int displayId,
+            IVirtualDisplayCallback callback, DisplayWindowPolicyController dwpc);
 
     /**
      * Notifies that a virtual display is removed.

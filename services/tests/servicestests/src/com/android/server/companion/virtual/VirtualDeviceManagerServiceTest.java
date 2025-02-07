@@ -73,6 +73,7 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.hardware.Sensor;
+import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.IDisplayManager;
@@ -173,8 +174,7 @@ public class VirtualDeviceManagerServiceTest {
     private static final int FLAG_CANNOT_DISPLAY_ON_REMOTE_DEVICES = 0x00000;
     private static final int VIRTUAL_DEVICE_ID_1 = 42;
     private static final int VIRTUAL_DEVICE_ID_2 = 43;
-    private static final VirtualDisplayConfig VIRTUAL_DISPLAY_CONFIG =
-            new VirtualDisplayConfig.Builder("virtual_display", 640, 480, 400).build();
+
     private static final VirtualDpadConfig DPAD_CONFIG =
             new VirtualDpadConfig.Builder()
                     .setVendorId(VENDOR_ID)
@@ -284,7 +284,12 @@ public class VirtualDeviceManagerServiceTest {
     private Intent createRestrictedActivityBlockedIntent(Set<String> displayCategories,
             String targetDisplayCategory) {
         when(mDisplayManagerInternalMock.createVirtualDisplay(any(), any(), any(), any(),
-                eq(VIRTUAL_DEVICE_OWNER_PACKAGE))).thenReturn(DISPLAY_ID_1);
+                eq(VIRTUAL_DEVICE_OWNER_PACKAGE)))
+                .thenAnswer(inv -> {
+                    mLocalService.onVirtualDisplayCreated(
+                            mDeviceImpl, DISPLAY_ID_1, inv.getArgument(1), inv.getArgument(3));
+                    return DISPLAY_ID_1;
+                });
         VirtualDisplayConfig config = new VirtualDisplayConfig.Builder("display", 640, 480,
                 420).setDisplayCategories(displayCategories).build();
         mDeviceImpl.createVirtualDisplay(config, mVirtualDisplayCallback);
@@ -997,8 +1002,7 @@ public class VirtualDeviceManagerServiceTest {
     public void onVirtualDisplayCreatedLocked_duplicateCalls_onlyOneWakeLockIsAcquired()
             throws RemoteException {
         addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        assertThrows(IllegalStateException.class,
-                () -> addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1));
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
         TestableLooper.get(this).processAllMessages();
         verify(mIPowerManagerMock).acquireWakeLock(any(Binder.class), anyInt(),
                 nullable(String.class), nullable(String.class), nullable(WorkSource.class),
@@ -1871,8 +1875,6 @@ public class VirtualDeviceManagerServiceTest {
     }
 
     private void addVirtualDisplay(VirtualDeviceImpl virtualDevice, int displayId, int flags) {
-        when(mDisplayManagerInternalMock.createVirtualDisplay(any(), eq(mVirtualDisplayCallback),
-                eq(virtualDevice), any(), any())).thenReturn(displayId);
         final String uniqueId = UNIQUE_ID + displayId;
         doAnswer(inv -> {
             final DisplayInfo displayInfo = new DisplayInfo();
@@ -1880,7 +1882,22 @@ public class VirtualDeviceManagerServiceTest {
             displayInfo.flags = flags;
             return displayInfo;
         }).when(mDisplayManagerInternalMock).getDisplayInfo(eq(displayId));
-        virtualDevice.createVirtualDisplay(VIRTUAL_DISPLAY_CONFIG, mVirtualDisplayCallback);
+
+        when(mDisplayManagerInternalMock.createVirtualDisplay(any(), eq(mVirtualDisplayCallback),
+                eq(virtualDevice), any(), any())).thenAnswer(inv -> {
+                    mLocalService.onVirtualDisplayCreated(
+                            virtualDevice, displayId, mVirtualDisplayCallback, inv.getArgument(3));
+                    return displayId;
+                });
+
+        final int virtualDisplayFlags = (flags & Display.FLAG_TRUSTED) == 0
+                ? 0
+                : DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED;
+        VirtualDisplayConfig virtualDisplayConfig =
+                new VirtualDisplayConfig.Builder("virtual_display", 640, 480, 400)
+                        .setFlags(virtualDisplayFlags)
+                        .build();
+        virtualDevice.createVirtualDisplay(virtualDisplayConfig, mVirtualDisplayCallback);
         mInputManagerMockHelper.addDisplayIdMapping(uniqueId, displayId);
     }
 
