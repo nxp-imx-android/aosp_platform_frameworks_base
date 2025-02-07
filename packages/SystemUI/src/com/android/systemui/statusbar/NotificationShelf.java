@@ -93,6 +93,7 @@ public class NotificationShelf extends ActivatableNotificationView {
     private int mPaddingBetweenElements;
     private int mNotGoneIndex;
     private boolean mHasItemsInStableShelf;
+    private boolean mAlignedToEnd;
     private int mScrollFastThreshold;
     private boolean mInteractive;
     private boolean mAnimationsEnabled = true;
@@ -412,8 +413,22 @@ public class NotificationShelf extends ActivatableNotificationView {
     public boolean isAlignedToEnd() {
         if (!NotificationMinimalism.isEnabled()) {
             return false;
+        } else if (SceneContainerFlag.isEnabled()) {
+            return mAlignedToEnd;
+        } else {
+            return mAmbientState.getUseSplitShade();
         }
-        return mAmbientState.getUseSplitShade();
+    }
+
+    /** @see #isAlignedToEnd() */
+    public void setAlignedToEnd(boolean alignedToEnd) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
+            return;
+        }
+        if (mAlignedToEnd != alignedToEnd) {
+            mAlignedToEnd = alignedToEnd;
+            requestLayout();
+        }
     }
 
     @Override

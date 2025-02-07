@@ -17,11 +17,13 @@
 package com.android.systemui.statusbar.notification.shelf.ui.viewmodel
 
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.NotificationShelf
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.ActivatableNotificationViewModel
 import com.android.systemui.statusbar.notification.shelf.domain.interactor.NotificationShelfInteractor
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /** ViewModel for [NotificationShelf]. */
@@ -39,6 +41,15 @@ constructor(
     /** Is the shelf allowed to modify the color of notifications in the host layout? */
     val canModifyColorOfNotifications: Flow<Boolean>
         get() = interactor.isShelfStatic.map { static -> !static }
+
+    /** Is the shelf aligned to the end in the current configuration? */
+    val isAlignedToEnd: Flow<Boolean> by lazy {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
+            flowOf(false)
+        } else {
+            interactor.isAlignedToEnd
+        }
+    }
 
     /** Notifies that the user has clicked the shelf. */
     fun onShelfClicked() {

@@ -20,6 +20,8 @@ import android.os.PowerManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.kosmos.Kosmos
@@ -28,9 +30,13 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.power.data.repository.fakePowerRepository
+import com.android.systemui.shade.domain.interactor.enableDualShade
+import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.statusbar.lockscreenShadeTransitionController
 import com.android.systemui.statusbar.phone.screenOffAnimationController
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.eq
@@ -119,5 +125,49 @@ class NotificationShelfViewModelTest : SysuiTestCase() {
             assertThat(powerRepository.lastWakeReason).isNotNull()
             assertThat(powerRepository.lastWakeReason).isEqualTo(PowerManager.WAKE_REASON_GESTURE)
             verify(keyguardTransitionController).goToLockedShade(Mockito.isNull(), eq(true))
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun isAlignedToEnd_splitShade_true() =
+        kosmos.runTest {
+            val isShelfAlignedToEnd by collectLastValue(underTest.isAlignedToEnd)
+
+            kosmos.enableSplitShade()
+
+            assertThat(isShelfAlignedToEnd).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun isAlignedToEnd_singleShade_false() =
+        kosmos.runTest {
+            val isShelfAlignedToEnd by collectLastValue(underTest.isAlignedToEnd)
+
+            kosmos.enableSingleShade()
+
+            assertThat(isShelfAlignedToEnd).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun isAlignedToEnd_dualShade_wideScreen_false() =
+        kosmos.runTest {
+            val isShelfAlignedToEnd by collectLastValue(underTest.isAlignedToEnd)
+
+            kosmos.enableDualShade(wideLayout = true)
+
+            assertThat(isShelfAlignedToEnd).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun isAlignedToEnd_dualShade_narrowScreen_false() =
+        kosmos.runTest {
+            val isShelfAlignedToEnd by collectLastValue(underTest.isAlignedToEnd)
+
+            kosmos.enableDualShade(wideLayout = false)
+
+            assertThat(isShelfAlignedToEnd).isFalse()
         }
 }
