@@ -69,6 +69,11 @@ import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.KeyCombinationManager;
 
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.List;
@@ -1189,6 +1194,29 @@ final class KeyGestureController {
         synchronized (mKeyGestureEventListenerRecords) {
             mKeyGestureEventListenerRecords.remove(pid);
         }
+    }
+
+    byte[] getInputGestureBackupPayload(int userId) throws IOException {
+        final List<InputGestureData> inputGestureDataList =
+                mInputGestureManager.getCustomInputGestures(userId, null);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        synchronized (mInputDataStore) {
+            mInputDataStore.writeInputGestureXml(byteArrayOutputStream, true, inputGestureDataList);
+        }
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    void applyInputGesturesBackupPayload(byte[] payload, int userId)
+            throws XmlPullParserException, IOException {
+        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(payload);
+        List<InputGestureData> inputGestureDataList;
+        synchronized (mInputDataStore) {
+            inputGestureDataList = mInputDataStore.readInputGesturesXml(byteArrayInputStream, true);
+        }
+        for (final InputGestureData inputGestureData : inputGestureDataList) {
+            mInputGestureManager.addCustomInputGesture(userId, inputGestureData);
+        }
+        mHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
     }
 
     // A record of a registered key gesture event listener from one process.

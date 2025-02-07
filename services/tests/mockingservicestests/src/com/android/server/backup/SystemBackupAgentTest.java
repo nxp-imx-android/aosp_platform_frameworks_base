@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
@@ -73,6 +74,7 @@ public class SystemBackupAgentTest {
     }
 
     @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_BACKUP_AND_RESTORE_FOR_INPUT_GESTURES)
     public void onCreate_systemUser_addsAllHelpers() {
         UserHandle userHandle = new UserHandle(UserHandle.USER_SYSTEM);
         when(mUserManagerMock.isProfile()).thenReturn(false);
@@ -94,10 +96,12 @@ public class SystemBackupAgentTest {
                         "app_gender",
                         "companion",
                         "system_gender",
-                        "display");
+                        "display",
+                        "input");
     }
 
     @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_BACKUP_AND_RESTORE_FOR_INPUT_GESTURES)
     public void onCreate_systemUser_slicesDisabled_addsAllNonSlicesHelpers() {
         UserHandle userHandle = new UserHandle(UserHandle.USER_SYSTEM);
         when(mUserManagerMock.isProfile()).thenReturn(false);
@@ -120,10 +124,12 @@ public class SystemBackupAgentTest {
                         "app_gender",
                         "companion",
                         "system_gender",
-                        "display");
+                        "display",
+                        "input");
     }
 
     @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_BACKUP_AND_RESTORE_FOR_INPUT_GESTURES)
     public void onCreate_profileUser_addsProfileEligibleHelpers() {
         UserHandle userHandle = new UserHandle(NON_SYSTEM_USER_ID);
         when(mUserManagerMock.isProfile()).thenReturn(true);
@@ -143,6 +149,7 @@ public class SystemBackupAgentTest {
     }
 
     @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_BACKUP_AND_RESTORE_FOR_INPUT_GESTURES)
     public void onCreate_nonSystemUser_addsNonSystemEligibleHelpers() {
         UserHandle userHandle = new UserHandle(NON_SYSTEM_USER_ID);
         when(mUserManagerMock.isProfile()).thenReturn(false);
@@ -162,7 +169,8 @@ public class SystemBackupAgentTest {
                         "companion",
                         "app_gender",
                         "system_gender",
-                        "display");
+                        "display",
+                        "input");
     }
 
     @Test

@@ -24,6 +24,7 @@ import static android.provider.DeviceConfig.NAMESPACE_INPUT_NATIVE_BOOT;
 import static android.view.KeyEvent.KEYCODE_UNKNOWN;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
+import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
 import static com.android.hardware.input.Flags.keyEventActivityDetection;
 import static com.android.hardware.input.Flags.useKeyGestureEventHandler;
@@ -152,6 +153,8 @@ import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.wm.WindowManagerInternal;
 
 import libcore.io.IoUtils;
+
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -3804,6 +3807,26 @@ public class InputManagerService extends IInputManager.Stub
         @Override
         public boolean setKernelWakeEnabled(int deviceId, boolean enabled) {
             return mNative.setKernelWakeEnabled(deviceId, enabled);
+        }
+
+        @Override
+        public Map<Integer, byte[]> getBackupPayload(int userId) throws IOException {
+            final Map<Integer, byte[]> payload = new HashMap<>();
+            if (enableCustomizableInputGestures()) {
+                payload.put(BACKUP_CATEGORY_INPUT_GESTURES,
+                        mKeyGestureController.getInputGestureBackupPayload(userId));
+            }
+            return payload;
+        }
+
+        @Override
+        public void applyBackupPayload(Map<Integer, byte[]> payload, int userId)
+                throws XmlPullParserException, IOException {
+            if (enableCustomizableInputGestures() && payload.containsKey(
+                    BACKUP_CATEGORY_INPUT_GESTURES)) {
+                mKeyGestureController.applyInputGesturesBackupPayload(
+                        payload.get(BACKUP_CATEGORY_INPUT_GESTURES), userId);
+            }
         }
     }
 
