@@ -218,8 +218,8 @@ final class VendorVibrationSession extends IVibrationSession.Stub
     }
 
     @Override
-    public void notifyVibratorCallback(int vibratorId, long vibrationId) {
-        Slog.d(TAG, "Vibration callback received for vibration " + vibrationId
+    public void notifyVibratorCallback(int vibratorId, long vibrationId, long stepId) {
+        Slog.d(TAG, "Vibration callback received for vibration " + vibrationId + " step " + stepId
                 + " on vibrator " + vibratorId + ", ignoring...");
     }
 
