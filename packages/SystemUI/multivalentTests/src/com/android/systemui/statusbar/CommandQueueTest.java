@@ -460,14 +460,14 @@ public class CommandQueueTest extends SysuiTestCase {
     }
 
     @Test
-    public void testonDisplayAddSystemDecorations() {
+    public void testOnDisplayAddSystemDecorations() {
         mCommandQueue.onDisplayAddSystemDecorations(DEFAULT_DISPLAY);
         waitForIdleSync();
         verify(mCallbacks).onDisplayAddSystemDecorations(eq(DEFAULT_DISPLAY));
     }
 
     @Test
-    public void testonDisplayAddSystemDecorationsForSecondaryDisplay() {
+    public void testOnDisplayAddSystemDecorationsForSecondaryDisplay() {
         mCommandQueue.onDisplayAddSystemDecorations(SECONDARY_DISPLAY);
         waitForIdleSync();
         verify(mCallbacks).onDisplayAddSystemDecorations(eq(SECONDARY_DISPLAY));
