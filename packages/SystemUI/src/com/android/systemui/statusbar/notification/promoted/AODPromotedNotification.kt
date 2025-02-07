@@ -39,7 +39,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
@@ -502,14 +501,12 @@ private fun Notification.ProgressStyle.Point.toSkeleton(): Notification.Progress
     }
 }
 
-private enum class AodPromotedNotificationColor(colorUInt: UInt) {
-    Background(0xFF000000u),
-    PrimaryText(0xFFFFFFFFu),
-    SecondaryText(0xFFCCCCCCu);
+private enum class AodPromotedNotificationColor(val colorInt: Int) {
+    Background(android.graphics.Color.BLACK),
+    PrimaryText(android.graphics.Color.WHITE),
+    SecondaryText(android.graphics.Color.WHITE);
 
-    val colorInt = colorUInt.toInt()
-    val color = Color(colorInt)
-    val brush = SolidColor(color)
+    val brush = SolidColor(androidx.compose.ui.graphics.Color(colorInt))
 }
 
 private val viewUpdaterTagId = systemuiR.id.aod_promoted_notification_view_updater_tag
