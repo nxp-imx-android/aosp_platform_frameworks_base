@@ -777,7 +777,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         mWallpaperCompatibleDisplaysForTest.remove(displayId);
     }
 
-    private void updateFallbackConnection() {
+    private void updateFallbackConnection(int clientUid) {
         if (mLastWallpaper == null || mFallbackWallpaper == null) return;
         final WallpaperConnection systemConnection = mLastWallpaper.connection;
         final WallpaperConnection fallbackConnection = mFallbackWallpaper.connection;
@@ -793,8 +793,12 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         }
 
         if (isDeviceEligibleForDesktopExperienceWallpaper(mContext)) {
-            mWallpaperDisplayHelper.forEachDisplayData(displayData -> {
-                int displayId = displayData.mDisplayId;
+            Display[] displays = mWallpaperDisplayHelper.getDisplays();
+            for (int i = displays.length - 1; i >= 0; i--) {
+                int displayId = displays[i].getDisplayId();
+                if (!mWallpaperDisplayHelper.isUsableDisplay(displayId, clientUid)) {
+                    continue;
+                }
                 // If the display is already connected to the desired wallpaper(s), either the
                 // same wallpaper for both lock and system, or different wallpapers for each,
                 // any existing fallback wallpaper connection will be removed.
@@ -802,11 +806,13 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                         && (lockConnection == null || lockConnection.containsDisplay(displayId))) {
                     DisplayConnector fallbackConnector =
                             mFallbackWallpaper.connection.mDisplayConnector.get(displayId);
-                    if (fallbackConnector != null && fallbackConnector.mEngine != null) {
-                        fallbackConnector.disconnectLocked(mFallbackWallpaper.connection);
+                    if (fallbackConnector != null) {
+                        if (fallbackConnector.mEngine != null) {
+                            fallbackConnector.disconnectLocked(mFallbackWallpaper.connection);
+                        }
                         mFallbackWallpaper.connection.mDisplayConnector.remove(displayId);
                     }
-                    return;
+                    continue;
                 }
 
                 // Identify if the fallback wallpaper should be use for lock or system or both.
@@ -844,7 +850,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                                 mFallbackWallpaper);
                     }
                 }
-            });
+            }
         } else if (isWallpaperCompatibleForDisplay(DEFAULT_DISPLAY, systemConnection)) {
             if (fallbackConnection.mDisplayConnector.size() != 0) {
                 fallbackConnection.forEachDisplayConnector(connector -> {
@@ -3787,7 +3793,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             wallpaper.connection = newConn;
             newConn.mReply = reply;
             updateCurrentWallpapers(wallpaper);
-            updateFallbackConnection();
+            updateFallbackConnection(componentUid);
         } catch (RemoteException e) {
             String msg = "Remote exception for " + componentName + "\n" + e;
             if (fromUser) {
