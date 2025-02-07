@@ -32,6 +32,7 @@ import static com.android.internal.annotations.VisibleForTesting.Visibility.PACK
 
 import android.annotation.IntDef;
 import android.annotation.Nullable;
+import android.graphics.Insets;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -168,8 +169,9 @@ public class InsetsSourceConsumer {
             // Reset the applier to the default one which has the most lightweight implementation.
             setSurfaceParamsApplier(InsetsAnimationControlRunner.SurfaceParamsApplier.DEFAULT);
         } else {
-            if (lastControl != null && InsetsSource.getInsetSide(lastControl.getInsetsHint())
-                    != InsetsSource.getInsetSide(control.getInsetsHint())) {
+            if (lastControl != null && !Insets.NONE.equals(lastControl.getInsetsHint())
+                    && InsetsSource.getInsetSide(lastControl.getInsetsHint())
+                            != InsetsSource.getInsetSide(control.getInsetsHint())) {
                 // The source has been moved to a different side. The coordinates are stale.
                 // Canceling existing animation if there is any.
                 cancelTypes[0] |= mType;
