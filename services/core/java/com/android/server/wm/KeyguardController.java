@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.WindowManager.TRANSIT_FLAG_AOD_APPEARING;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_APPEARING;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_GOING_AWAY;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_GOING_AWAY_NO_ANIMATION;
@@ -216,6 +217,9 @@ class KeyguardController {
                 } else if (keyguardShowing && !state.mKeyguardShowing) {
                     transition.addFlag(TRANSIT_FLAG_KEYGUARD_APPEARING);
                 }
+                if (mWindowManager.mFlags.mAodTransition && aodShowing && !state.mAodShowing) {
+                    transition.addFlag(TRANSIT_FLAG_AOD_APPEARING);
+                }
             }
         }
         // Update the task snapshot if the screen will not be turned off. To make sure that the
@@ -238,19 +242,27 @@ class KeyguardController {
         state.mAodShowing = aodShowing;
         state.writeEventLog("setKeyguardShown");
 
-        if (keyguardChanged) {
-            // Irrelevant to AOD.
-            state.mKeyguardGoingAway = false;
-            if (keyguardShowing) {
-                state.mDismissalRequested = false;
+        if (keyguardChanged || aodChanged) {
+            if (keyguardChanged) {
+                // Irrelevant to AOD.
+                state.mKeyguardGoingAway = false;
+                if (keyguardShowing) {
+                    state.mDismissalRequested = false;
+                }
             }
             if (goingAwayRemoved
-                    || (keyguardShowing && !Display.isOffState(dc.getDisplayInfo().state))) {
+                    || (keyguardShowing && !Display.isOffState(dc.getDisplayInfo().state))
+                    || (mWindowManager.mFlags.mAodTransition && aodShowing)) {
                 // Keyguard decided to show or stopped going away. Send a transition to animate back
                 // to the locked state before holding the sleep token again
                 if (!ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS) {
                     dc.requestTransitionAndLegacyPrepare(
                             TRANSIT_TO_FRONT, TRANSIT_FLAG_KEYGUARD_APPEARING);
+                    if (mWindowManager.mFlags.mAodTransition && aodShowing
+                            && dc.mTransitionController.isCollecting()) {
+                        dc.mTransitionController.getCollectingTransition().addFlag(
+                                TRANSIT_FLAG_AOD_APPEARING);
+                    }
                 }
                 dc.mWallpaperController.adjustWallpaperWindows();
                 dc.executeAppTransition();

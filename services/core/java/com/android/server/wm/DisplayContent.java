@@ -6635,6 +6635,22 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 .getKeyguardController().isKeyguardLocked(mDisplayId);
     }
 
+    boolean isKeyguardLockedOrAodShowing() {
+        return isKeyguardLocked() || isAodShowing();
+    }
+
+    /**
+     * @return whether aod is showing for this display
+     */
+    boolean isAodShowing() {
+        final boolean isAodShowing = mRootWindowContainer.mTaskSupervisor
+                .getKeyguardController().isAodShowing(mDisplayId);
+        if (mDisplayId == DEFAULT_DISPLAY && isAodShowing) {
+            return !isKeyguardGoingAway();
+        }
+        return isAodShowing;
+    }
+
     /**
      * @return whether keyguard is going away on this display
      */
