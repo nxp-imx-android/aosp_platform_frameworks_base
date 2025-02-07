@@ -49,6 +49,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
     private val sectionsManager = mock<NotificationSectionsManager>()
     private val msdlPlayer = kosmos.fakeMSDLPlayer
     private var canRowBeDismissed = true
+    private var magneticAnimationsCancelled = false
 
     private val underTest = kosmos.magneticNotificationRowManagerImpl
 
@@ -64,6 +65,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
         children = notificationTestHelper.createGroup(childrenNumber).childrenContainer
         swipedRow = children.attachedChildren[childrenNumber / 2]
         configureMagneticRowListener(swipedRow)
+        magneticAnimationsCancelled = false
     }
 
     @Test
@@ -247,6 +249,35 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             assertThat(underTest.currentState).isEqualTo(State.IDLE)
         }
 
+    @Test
+    fun onMagneticInteractionEnd_whenDetached_cancelsMagneticAnimations() =
+        kosmos.testScope.runTest {
+            // GIVEN the swiped row is detached
+            setDetachedState()
+
+            // WHEN the interaction ends on the row
+            underTest.onMagneticInteractionEnd(swipedRow, velocity = null)
+
+            // THEN magnetic animations are cancelled
+            assertThat(magneticAnimationsCancelled).isTrue()
+        }
+
+    @Test
+    fun onMagneticInteractionEnd_forMagneticNeighbor_cancelsMagneticAnimations() =
+        kosmos.testScope.runTest {
+            val neighborRow = children.attachedChildren[childrenNumber / 2 - 1]
+            configureMagneticRowListener(neighborRow)
+
+            // GIVEN that targets are set
+            setTargets()
+
+            // WHEN the interactionEnd is called on a target different from the swiped row
+            underTest.onMagneticInteractionEnd(neighborRow, null)
+
+            // THEN magnetic animations are cancelled
+            assertThat(magneticAnimationsCancelled).isTrue()
+        }
+
     private fun setDetachedState() {
         val threshold = 100f
         underTest.setSwipeThresholdPx(threshold)
@@ -284,7 +315,11 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
                     startVelocity: Float,
                 ) {}
 
-                override fun cancelMagneticAnimations() {}
+                override fun cancelMagneticAnimations() {
+                    magneticAnimationsCancelled = true
+                }
+
+                override fun cancelTranslationAnimations() {}
 
                 override fun canRowBeDismissed(): Boolean = canRowBeDismissed
             }

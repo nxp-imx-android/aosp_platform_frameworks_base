@@ -97,6 +97,7 @@ constructor(
                 stackScrollLayout,
                 MAGNETIC_TRANSLATION_MULTIPLIERS.size,
             )
+        currentMagneticListeners.swipedListener()?.cancelTranslationAnimations()
         newListeners.forEach {
             if (currentMagneticListeners.contains(it)) {
                 it?.cancelMagneticAnimations()
@@ -214,22 +215,32 @@ constructor(
     }
 
     override fun onMagneticInteractionEnd(row: ExpandableNotificationRow, velocity: Float?) {
-        if (!row.isSwipedTarget()) return
-
-        when (currentState) {
-            State.PULLING -> {
-                snapNeighborsBack(velocity)
-                currentState = State.IDLE
+        if (row.isSwipedTarget()) {
+            when (currentState) {
+                State.PULLING -> {
+                    snapNeighborsBack(velocity)
+                    currentState = State.IDLE
+                }
+                State.DETACHED -> {
+                    // Cancel any detaching animation that may be occurring
+                    currentMagneticListeners.swipedListener()?.cancelMagneticAnimations()
+                    currentState = State.IDLE
+                }
+                else -> {}
             }
-            State.DETACHED -> {
-                currentState = State.IDLE
-            }
-            else -> {}
+        } else {
+            // A magnetic neighbor may be dismissing. In this case, we need to cancel any snap back
+            // magnetic animation to let the external dismiss animation proceed.
+            val listener = currentMagneticListeners.find { it == row.magneticRowListener }
+            listener?.cancelMagneticAnimations()
         }
     }
 
     override fun reset() {
-        currentMagneticListeners.forEach { it?.cancelMagneticAnimations() }
+        currentMagneticListeners.forEach {
+            it?.cancelMagneticAnimations()
+            it?.cancelTranslationAnimations()
+        }
         currentState = State.IDLE
         currentMagneticListeners = listOf()
         currentRoundableTargets = null
