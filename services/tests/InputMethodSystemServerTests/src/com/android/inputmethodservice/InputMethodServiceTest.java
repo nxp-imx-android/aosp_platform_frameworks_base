@@ -31,7 +31,6 @@ import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 import android.app.Instrumentation;
-import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Insets;
 import android.os.RemoteException;
@@ -42,7 +41,6 @@ import android.provider.Settings;
 import android.server.wm.WindowManagerStateHelper;
 import android.util.Log;
 import android.view.WindowManagerGlobal;
-import android.view.WindowManagerPolicyConstants;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.Flags;
 import android.view.inputmethod.InputMethodManager;
@@ -59,6 +57,7 @@ import androidx.test.uiautomator.Until;
 
 import com.android.apps.inputmethod.simpleime.ims.InputMethodServiceWrapper;
 import com.android.apps.inputmethod.simpleime.testing.TestActivity;
+import com.android.compatibility.common.util.GestureNavSwitchHelper;
 import com.android.compatibility.common.util.SystemUtil;
 
 import org.junit.After;
@@ -90,6 +89,8 @@ public class InputMethodServiceTest {
 
     private final WindowManagerStateHelper mWmState =  new WindowManagerStateHelper();
 
+    private final GestureNavSwitchHelper mGestureNavSwitchHelper = new GestureNavSwitchHelper();
+
     private final DeviceFlagsValueProvider mFlagsValueProvider = new DeviceFlagsValueProvider();
 
     @Rule
@@ -100,7 +101,6 @@ public class InputMethodServiceTest {
 
     private Instrumentation mInstrumentation;
     private UiDevice mUiDevice;
-    private Context mContext;
     private InputMethodManager mImm;
     private String mTargetPackageName;
     private String mInputMethodId;
@@ -112,8 +112,7 @@ public class InputMethodServiceTest {
     public void setUp() throws Exception {
         mInstrumentation = InstrumentationRegistry.getInstrumentation();
         mUiDevice = UiDevice.getInstance(mInstrumentation);
-        mContext = mInstrumentation.getContext();
-        mImm = mContext.getSystemService(InputMethodManager.class);
+        mImm = mInstrumentation.getContext().getSystemService(InputMethodManager.class);
         mTargetPackageName = mInstrumentation.getTargetContext().getPackageName();
         mInputMethodId = getInputMethodId();
         prepareIme();
@@ -872,35 +871,47 @@ public class InputMethodServiceTest {
      * Verifies that clicking on the IME navigation bar back button hides the IME.
      */
     @Test
-    public void testBackButtonClick() {
+    public void testBackButtonClick() throws Exception {
         assumeTrue("Must have a navigation bar", hasNavigationBar());
-        assumeTrue("Must be in gesture navigation mode", isGestureNavEnabled());
 
         waitUntilActivityReadyForInputInjection(mActivity);
 
         setShowImeWithHardKeyboard(true /* enabled */);
 
-        verifyInputViewStatusOnMainSync(
-                () -> {
-                    setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
-                    mActivity.showImeWithWindowInsetsController();
-                },
-                true /* expected */,
-                true /* inputViewStarted */);
-        assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
+        final boolean isGestureMode = mGestureNavSwitchHelper.isGestureMode();
 
-        final var backButtonUiObject = getUiObject(By.res(INPUT_METHOD_NAV_BACK_ID));
-        backButtonUiObject.click();
-        mInstrumentation.waitForIdleSync();
+        final var restoreNav = new AutoCloseable[]{() -> {}};
+        try {
+            if (!isGestureMode) {
+                //  Wait for onConfigurationChanged when changing navigation modes.
+                verifyInputViewStatus(
+                        () -> restoreNav[0] = mGestureNavSwitchHelper.withGestureNavigationMode(),
+                        true, /* expected */
+                        false /* inputViewStarted */
+                );
+            }
 
-        if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
-            // The IME visibility is only sent at the end of the animation. Therefore, we have to
-            // wait until the visibility was sent to the server and the IME window hidden.
-            eventually(() -> assertWithMessage("IME is not shown")
-                    .that(mInputMethodService.isInputViewShown()).isFalse());
-        } else {
-            assertWithMessage("IME is not shown")
-                    .that(mInputMethodService.isInputViewShown()).isFalse();
+            verifyInputViewStatusOnMainSync(
+                    () -> mActivity.showImeWithWindowInsetsController(),
+                    true /* expected */,
+                    true /* inputViewStarted */);
+            assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
+
+            final var backButton = getUiObject(By.res(INPUT_METHOD_NAV_BACK_ID));
+            backButton.click();
+            mInstrumentation.waitForIdleSync();
+
+            if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
+                // The IME visibility is only sent at the end of the animation. Therefore, we have
+                // to wait until the visibility was sent to the server and the IME window hidden.
+                eventually(() -> assertWithMessage("IME is not shown")
+                        .that(mInputMethodService.isInputViewShown()).isFalse());
+            } else {
+                assertWithMessage("IME is not shown")
+                        .that(mInputMethodService.isInputViewShown()).isFalse();
+            }
+        } finally {
+            restoreNav[0].close();
         }
     }
 
@@ -908,35 +919,47 @@ public class InputMethodServiceTest {
      * Verifies that long clicking on the IME navigation bar back button hides the IME.
      */
     @Test
-    public void testBackButtonLongClick() {
+    public void testBackButtonLongClick() throws Exception {
         assumeTrue("Must have a navigation bar", hasNavigationBar());
-        assumeTrue("Must be in gesture navigation mode", isGestureNavEnabled());
 
         waitUntilActivityReadyForInputInjection(mActivity);
 
         setShowImeWithHardKeyboard(true /* enabled */);
 
-        verifyInputViewStatusOnMainSync(
-                () -> {
-                    setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
-                    mActivity.showImeWithWindowInsetsController();
-                },
-                true /* expected */,
-                true /* inputViewStarted */);
-        assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
+        final boolean isGestureMode = mGestureNavSwitchHelper.isGestureMode();
 
-        final var backButtonUiObject = getUiObject(By.res(INPUT_METHOD_NAV_BACK_ID));
-        backButtonUiObject.longClick();
-        mInstrumentation.waitForIdleSync();
+        final var restoreNav = new AutoCloseable[]{() -> {}};
+        try {
+            if (!isGestureMode) {
+                //  Wait for onConfigurationChanged when changing navigation modes.
+                verifyInputViewStatus(
+                        () -> restoreNav[0] = mGestureNavSwitchHelper.withGestureNavigationMode(),
+                        true, /* expected */
+                        false /* inputViewStarted */
+                );
+            }
 
-        if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
-            // The IME visibility is only sent at the end of the animation. Therefore, we have to
-            // wait until the visibility was sent to the server and the IME window hidden.
-            eventually(() -> assertWithMessage("IME is not shown")
-                    .that(mInputMethodService.isInputViewShown()).isFalse());
-        } else {
-            assertWithMessage("IME is not shown")
-                    .that(mInputMethodService.isInputViewShown()).isFalse();
+            verifyInputViewStatusOnMainSync(
+                    () -> mActivity.showImeWithWindowInsetsController(),
+                    true /* expected */,
+                    true /* inputViewStarted */);
+            assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
+
+            final var backButton = getUiObject(By.res(INPUT_METHOD_NAV_BACK_ID));
+            backButton.longClick();
+            mInstrumentation.waitForIdleSync();
+
+            if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
+                // The IME visibility is only sent at the end of the animation. Therefore, we have
+                // to wait until the visibility was sent to the server and the IME window hidden.
+                eventually(() -> assertWithMessage("IME is not shown")
+                        .that(mInputMethodService.isInputViewShown()).isFalse());
+            } else {
+                assertWithMessage("IME is not shown")
+                        .that(mInputMethodService.isInputViewShown()).isFalse();
+            }
+        } finally {
+            restoreNav[0].close();
         }
     }
 
@@ -945,74 +968,104 @@ public class InputMethodServiceTest {
      * or switches the input method.
      */
     @Test
-    public void testImeSwitchButtonClick() {
+    public void testImeSwitchButtonClick() throws Exception {
         assumeTrue("Must have a navigation bar", hasNavigationBar());
-        assumeTrue("Must be in gesture navigation mode", isGestureNavEnabled());
 
         waitUntilActivityReadyForInputInjection(mActivity);
 
         setShowImeWithHardKeyboard(true /* enabled */);
 
-        verifyInputViewStatusOnMainSync(
-                () -> {
-                    setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
-                    mActivity.showImeWithWindowInsetsController();
-                },
-                true /* expected */,
-                true /* inputViewStarted */);
-        assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
+        final boolean isGestureMode = mGestureNavSwitchHelper.isGestureMode();
 
-        final var initialInfo = mImm.getCurrentInputMethodInfo();
+        final var restoreNav = new AutoCloseable[]{() -> {}};
+        try {
+            if (!isGestureMode) {
+                //  Wait for onConfigurationChanged when changing navigation modes.
+                verifyInputViewStatus(
+                        () -> restoreNav[0] = mGestureNavSwitchHelper.withGestureNavigationMode(),
+                        true, /* expected */
+                        false /* inputViewStarted */
+                );
+            }
 
-        final var imeSwitchButtonUiObject = getUiObject(By.res(INPUT_METHOD_NAV_IME_SWITCHER_ID));
-        imeSwitchButtonUiObject.click();
-        mInstrumentation.waitForIdleSync();
+            verifyInputViewStatusOnMainSync(
+                    () -> {
+                        setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
+                        mActivity.showImeWithWindowInsetsController();
+                    },
+                    true /* expected */,
+                    true /* inputViewStarted */);
+            assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
 
-        final var newInfo = mImm.getCurrentInputMethodInfo();
+            final var initialInfo = mImm.getCurrentInputMethodInfo();
 
-        assertWithMessage("Input Method Switcher Menu is shown or input method was switched")
-                .that(isInputMethodPickerShown(mImm) || !Objects.equals(initialInfo, newInfo))
-                .isTrue();
+            final var imeSwitcherButton = getUiObject(By.res(INPUT_METHOD_NAV_IME_SWITCHER_ID));
+            imeSwitcherButton.click();
+            mInstrumentation.waitForIdleSync();
 
-        assertWithMessage("IME is still shown after IME Switcher button was clicked")
-                .that(mInputMethodService.isInputViewShown()).isTrue();
+            final var newInfo = mImm.getCurrentInputMethodInfo();
 
-        // Hide the IME Switcher Menu before finishing.
-        mUiDevice.pressBack();
+            assertWithMessage("Input Method Switcher Menu is shown or input method was switched")
+                    .that(isInputMethodPickerShown(mImm) || !Objects.equals(initialInfo, newInfo))
+                    .isTrue();
+
+            assertWithMessage("IME is still shown after IME Switcher button was clicked")
+                    .that(mInputMethodService.isInputViewShown()).isTrue();
+
+            // Hide the IME Switcher Menu before finishing.
+            mUiDevice.pressBack();
+        } finally {
+            restoreNav[0].close();
+        }
     }
 
     /**
      * Verifies that long clicking on the IME switch button shows the Input Method Switcher Menu.
      */
     @Test
-    public void testImeSwitchButtonLongClick() {
+    public void testImeSwitchButtonLongClick() throws Exception {
         assumeTrue("Must have a navigation bar", hasNavigationBar());
-        assumeTrue("Must be in gesture navigation mode", isGestureNavEnabled());
 
         waitUntilActivityReadyForInputInjection(mActivity);
 
         setShowImeWithHardKeyboard(true /* enabled */);
 
-        verifyInputViewStatusOnMainSync(
-                () -> {
-                    setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
-                    mActivity.showImeWithWindowInsetsController();
-                },
-                true /* expected */,
-                true /* inputViewStarted */);
-        assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
+        final boolean isGestureMode = mGestureNavSwitchHelper.isGestureMode();
 
-        final var imeSwitchButtonUiObject = getUiObject(By.res(INPUT_METHOD_NAV_IME_SWITCHER_ID));
-        imeSwitchButtonUiObject.longClick();
-        mInstrumentation.waitForIdleSync();
+        final var restoreNav = new AutoCloseable[]{() -> {}};
+        try {
+            if (!isGestureMode) {
+                //  Wait for onConfigurationChanged when changing navigation modes.
+                verifyInputViewStatus(
+                        () -> restoreNav[0] = mGestureNavSwitchHelper.withGestureNavigationMode(),
+                        true, /* expected */
+                        false /* inputViewStarted */
+                );
+            }
 
-        assertWithMessage("Input Method Switcher Menu is shown")
-                .that(isInputMethodPickerShown(mImm)).isTrue();
-        assertWithMessage("IME is still shown after IME Switcher button was long clicked")
-                .that(mInputMethodService.isInputViewShown()).isTrue();
+            verifyInputViewStatusOnMainSync(
+                    () -> {
+                        setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
+                        mActivity.showImeWithWindowInsetsController();
+                    },
+                    true /* expected */,
+                    true /* inputViewStarted */);
+            assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
 
-        // Hide the IME Switcher Menu before finishing.
-        mUiDevice.pressBack();
+            final var imeSwitcherButton = getUiObject(By.res(INPUT_METHOD_NAV_IME_SWITCHER_ID));
+            imeSwitcherButton.longClick();
+            mInstrumentation.waitForIdleSync();
+
+            assertWithMessage("Input Method Switcher Menu is shown")
+                    .that(isInputMethodPickerShown(mImm)).isTrue();
+            assertWithMessage("IME is still shown after IME Switcher button was long clicked")
+                    .that(mInputMethodService.isInputViewShown()).isTrue();
+
+            // Hide the IME Switcher Menu before finishing.
+            mUiDevice.pressBack();
+        } finally {
+            restoreNav[0].close();
+        }
     }
 
     private void verifyInputViewStatus(@NonNull Runnable runnable, boolean expected,
@@ -1105,6 +1158,9 @@ public class InputMethodServiceTest {
             // Get the new TestActivity.
             mActivity = TestActivity.getLastCreatedInstance();
             assertWithMessage("Re-created activity is not null").that(mActivity).isNotNull();
+            // Wait for the new EditText to be served by InputMethodManager.
+            eventually(() -> assertWithMessage("Has an input connection to the re-created Activity")
+                    .that(mImm.hasActiveInputConnection(mActivity.getEditText())).isTrue());
         }
 
         verifyInputViewStatusOnMainSync(
@@ -1214,18 +1270,12 @@ public class InputMethodServiceTest {
         return uiObject;
     }
 
-    /** Checks whether gesture navigation move is enabled. */
-    private boolean isGestureNavEnabled() {
-        return mContext.getResources().getInteger(
-                com.android.internal.R.integer.config_navBarInteractionMode)
-                == WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
-    }
-
     /** Checks whether the device has a navigation bar on the IME's display. */
     private boolean hasNavigationBar() {
         try {
             return WindowManagerGlobal.getWindowManagerService()
-                    .hasNavigationBar(mInputMethodService.getDisplayId());
+                    .hasNavigationBar(mInputMethodService.getDisplayId())
+                    && mGestureNavSwitchHelper.hasNavigationBar();
         } catch (RemoteException e) {
             fail("Failed to check whether the device has a navigation bar: " + e.getMessage());
             return false;
