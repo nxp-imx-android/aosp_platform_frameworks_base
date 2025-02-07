@@ -241,6 +241,7 @@ constructor(
             logger.logSceneChanged(
                 from = fromScene,
                 to = toScene,
+                sceneState = null,
                 reason = "user interaction",
                 isInstant = false,
             )

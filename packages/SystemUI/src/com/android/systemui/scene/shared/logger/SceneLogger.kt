@@ -45,23 +45,30 @@ class SceneLogger @Inject constructor(@SceneFrameworkLog private val logBuffer: 
         )
     }
 
-    fun logSceneChanged(from: SceneKey, to: SceneKey, reason: String, isInstant: Boolean) {
+    fun logSceneChanged(
+        from: SceneKey,
+        to: SceneKey,
+        sceneState: Any?,
+        reason: String,
+        isInstant: Boolean,
+    ) {
         logBuffer.log(
             tag = TAG,
             level = LogLevel.INFO,
             messageInitializer = {
-                str1 = from.toString()
-                str2 = to.toString()
-                str3 = reason
+                str1 = "${from.debugName} → ${to.debugName}"
+                str2 = reason
+                str3 = sceneState?.toString()
                 bool1 = isInstant
             },
             messagePrinter = {
                 buildString {
-                    append("Scene changed: $str1 → $str2")
+                    append("Scene changed: $str1")
+                    str3?.let { append(" (sceneState=$it)") }
                     if (isInstant) {
                         append(" (instant)")
                     }
-                    append(", reason: $str3")
+                    append(", reason: $str2")
                 }
             },
         )
