@@ -55,19 +55,19 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /**
- * Tests for [BubbleTaskViewHelper].
+ * Tests for [BubbleTaskViewListener].
  */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class BubbleTaskViewHelperTest {
+class BubbleTaskViewListenerTest {
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
 
     private var taskViewController = mock<TaskViewController>()
-    private var listenerCallback = mock<BubbleTaskViewHelper.Callback>()
+    private var listenerCallback = mock<BubbleTaskViewListener.Callback>()
     private var expandedViewManager = mock<BubbleExpandedViewManager>()
 
-    private lateinit var bubbleTaskViewListener: BubbleTaskViewHelper
+    private lateinit var bubbleTaskViewListener: BubbleTaskViewListener
     private lateinit var taskView: TaskView
     private lateinit var bubbleTaskView: BubbleTaskView
     private lateinit var parentView: ViewPoster
@@ -87,7 +87,7 @@ class BubbleTaskViewHelperTest {
         bubbleTaskView = BubbleTaskView(taskView, mainExecutor)
 
         bubbleTaskViewListener =
-            BubbleTaskViewHelper(
+            BubbleTaskViewListener(
                 context,
                 bubbleTaskView,
                 parentView,
@@ -104,7 +104,7 @@ class BubbleTaskViewHelperTest {
         reset(listenerCallback)
 
         bubbleTaskViewListener =
-            BubbleTaskViewHelper(
+            BubbleTaskViewListener(
                 context,
                 bubbleTaskView,
                 parentView,
@@ -122,7 +122,7 @@ class BubbleTaskViewHelperTest {
     @Test
     fun createBubbleTaskViewListener() {
         bubbleTaskViewListener =
-            BubbleTaskViewHelper(
+            BubbleTaskViewListener(
                 context,
                 bubbleTaskView,
                 parentView,
@@ -318,7 +318,7 @@ class BubbleTaskViewHelperTest {
         bubbleTaskView = BubbleTaskView(mockTaskView, mainExecutor)
 
         bubbleTaskViewListener =
-            BubbleTaskViewHelper(
+            BubbleTaskViewListener(
                 context,
                 bubbleTaskView,
                 parentView,

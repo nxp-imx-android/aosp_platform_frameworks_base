@@ -40,8 +40,8 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.taskview.TaskView;
 
-public class BubbleTaskViewHelper implements TaskView.Listener {
-    private static final String TAG = BubbleTaskViewHelper.class.getSimpleName();
+public class BubbleTaskViewListener implements TaskView.Listener {
+    private static final String TAG = BubbleTaskViewListener.class.getSimpleName();
 
     /**
      * Callback to let the view parent of TaskView to be notified of different events.
@@ -63,7 +63,7 @@ public class BubbleTaskViewHelper implements TaskView.Listener {
 
     private final Context mContext;
     private final BubbleExpandedViewManager mExpandedViewManager;
-    private final BubbleTaskViewHelper.Callback mCallback;
+    private final BubbleTaskViewListener.Callback mCallback;
     private final View mParentView;
 
     private Bubble mBubble;
@@ -207,8 +207,8 @@ public class BubbleTaskViewHelper implements TaskView.Listener {
         }
     }
 
-    public BubbleTaskViewHelper(Context context, BubbleTaskView bubbleTaskView, View parentView,
-            BubbleExpandedViewManager manager, BubbleTaskViewHelper.Callback callback) {
+    public BubbleTaskViewListener(Context context, BubbleTaskView bubbleTaskView, View parentView,
+            BubbleExpandedViewManager manager, BubbleTaskViewListener.Callback callback) {
         mContext = context;
         mTaskView = bubbleTaskView.getTaskView();
         mParentView = parentView;

@@ -43,7 +43,7 @@ import com.android.wm.shell.bubbles.BubbleLogger;
 import com.android.wm.shell.bubbles.BubbleOverflowContainerView;
 import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleTaskView;
-import com.android.wm.shell.bubbles.BubbleTaskViewHelper;
+import com.android.wm.shell.bubbles.BubbleTaskViewListener;
 import com.android.wm.shell.bubbles.Bubbles;
 import com.android.wm.shell.bubbles.RegionSamplingProvider;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
@@ -56,7 +56,7 @@ import java.util.function.Supplier;
 import javax.inject.Inject;
 
 /** Expanded view of a bubble when it's part of the bubble bar. */
-public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskViewHelper.Callback {
+public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskViewListener.Callback {
     /**
      * The expanded view listener notifying the {@link BubbleBarLayerView} about the internal
      * actions and events
@@ -110,7 +110,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     private BubbleExpandedViewManager mManager;
     private BubblePositioner mPositioner;
     private boolean mIsOverflow;
-    private BubbleTaskViewHelper mBubbleTaskViewListener;
+    private BubbleTaskViewListener mBubbleTaskViewListener;
     private BubbleBarMenuViewController mMenuViewController;
     @Nullable
     private Supplier<Rect> mLayerBoundsSupplier;
@@ -246,7 +246,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
             mHandleView.setVisibility(View.GONE);
         } else {
             mTaskView = bubbleTaskView.getTaskView();
-            mBubbleTaskViewListener = new BubbleTaskViewHelper(mContext, bubbleTaskView,
+            mBubbleTaskViewListener = new BubbleTaskViewListener(mContext, bubbleTaskView,
                     /* viewParent= */ this,
                     expandedViewManager,
                     /* callback= */ this);
