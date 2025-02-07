@@ -20,6 +20,7 @@ import com.android.internal.jank.InteractionJankMonitor.CUJ_SCREEN_OFF_SHOW_AOD
 import com.android.systemui.DejankUtils
 import com.android.systemui.Flags.lightRevealMigration
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.shade.ShadeViewController
@@ -71,7 +72,7 @@ constructor(
     private val powerManager: PowerManager,
     private val shadeLockscreenInteractorLazy: Lazy<ShadeLockscreenInteractor>,
     private val panelExpansionInteractorLazy: Lazy<PanelExpansionInteractor>,
-    private val handler: Handler = Handler(),
+    @Main private val handler: Handler,
 ) : WakefulnessLifecycle.Observer, ScreenOffAnimation {
     private lateinit var centralSurfaces: CentralSurfaces
     /**

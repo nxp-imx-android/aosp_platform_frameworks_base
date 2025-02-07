@@ -212,13 +212,6 @@ public class FrameworkServicesModule {
         return new UserScopedServiceImpl<>(context, CaptioningManager.class);
     }
 
-    /** */
-    @Provides
-    @Singleton
-    public Choreographer providesChoreographer() {
-        return Choreographer.getInstance();
-    }
-
     @Provides
     @Singleton
     static ColorDisplayManager provideColorDisplayManager(Context context) {

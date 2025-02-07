@@ -57,6 +57,7 @@ import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Background;
+import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.settings.UserTracker;
@@ -155,7 +156,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
     @Inject
     StatusBarNotificationActivityStarter(
             @ShadeDisplayAware Context context,
-            Handler mainThreadHandler,
+            @Main Handler mainThreadHandler,
             @Background Executor uiBgExecutor,
             NotificationVisibilityProvider visibilityProvider,
             HeadsUpManager headsUpManager,

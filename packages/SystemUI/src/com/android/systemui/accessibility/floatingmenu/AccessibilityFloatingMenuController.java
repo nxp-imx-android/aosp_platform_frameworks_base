@@ -40,6 +40,7 @@ import com.android.systemui.accessibility.AccessibilityButtonModeObserver;
 import com.android.systemui.accessibility.AccessibilityButtonModeObserver.AccessibilityButtonMode;
 import com.android.systemui.accessibility.AccessibilityButtonTargetsObserver;
 import com.android.systemui.dagger.SysUISingleton;
+import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.util.settings.SecureSettings;
@@ -114,7 +115,7 @@ public class AccessibilityFloatingMenuController implements
             SecureSettings secureSettings,
             DisplayTracker displayTracker,
             NavigationModeController navigationModeController,
-            Handler handler) {
+            @Main Handler handler) {
         mContext = context;
         mWindowManager = windowManager;
         mViewCaptureAwareWindowManager = viewCaptureAwareWindowManager;

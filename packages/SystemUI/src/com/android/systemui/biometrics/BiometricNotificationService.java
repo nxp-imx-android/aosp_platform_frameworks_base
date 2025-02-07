@@ -149,7 +149,7 @@ public class BiometricNotificationService implements CoreStartable {
     public BiometricNotificationService(@NonNull @Main Context context,
             @NonNull KeyguardUpdateMonitor keyguardUpdateMonitor,
             @NonNull KeyguardStateController keyguardStateController,
-            @NonNull Handler handler, @NonNull NotificationManager notificationManager,
+            @NonNull @Main Handler handler, @NonNull NotificationManager notificationManager,
             @NonNull BiometricNotificationBroadcastReceiver biometricNotificationBroadcastReceiver,
             @NonNull Optional<FingerprintReEnrollNotification> fingerprintReEnrollNotification,
             @Nullable FingerprintManager fingerprintManager,
