@@ -674,7 +674,8 @@ bool ResourceFileFlattener::Flatten(ResourceTable* table, IArchiveWriter* archiv
             }
 
             FeatureFlagsFilterOptions flags_filter_options;
-            flags_filter_options.flags_must_be_readonly = true;
+            flags_filter_options.fail_on_unrecognized_flags = false;
+            flags_filter_options.flags_must_have_value = false;
             FeatureFlagsFilter flags_filter(options_.feature_flag_values, flags_filter_options);
             if (!flags_filter.Consume(context_, doc.get())) {
               return 1;

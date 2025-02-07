@@ -1026,7 +1026,7 @@ TEST_F(LinkTest, FeatureFlagDisabled_SdkAtMostUDC) {
                            .SetManifestFile(app_manifest)
                            .AddParameter("-I", android_apk)
                            .AddParameter("--java", app_java)
-                           .AddParameter("--feature-flags", "flag=false");
+                           .AddParameter("--feature-flags", "flag:ro=false");
 
   const std::string app_apk = GetTestPath("app.apk");
   BuildApk({}, app_apk, std::move(app_link_args), this, &diag);
