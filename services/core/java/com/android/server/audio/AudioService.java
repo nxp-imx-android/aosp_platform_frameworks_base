@@ -66,7 +66,6 @@ import static com.android.media.audio.Flags.equalScoLeaVcIndexRange;
 import static com.android.media.audio.Flags.replaceStreamBtSco;
 import static com.android.media.audio.Flags.ringMyCar;
 import static com.android.media.audio.Flags.ringerModeAffectsAlarm;
-import static com.android.media.audio.Flags.vgsVssSyncMuteOrder;
 import static com.android.media.flags.Flags.enableAudioInputDeviceRoutingAndVolumeControl;
 import static com.android.server.audio.SoundDoseHelper.ACTION_CHECK_MUSIC_ACTIVE;
 import static com.android.server.utils.EventLogger.Event.ALOGE;
@@ -4977,9 +4976,8 @@ public class AudioService extends IAudioService.Stub
                 + roForegroundAudioControl());
         pw.println("\tandroid.media.audio.scoManagedByAudio:"
                 + scoManagedByAudio());
-        pw.println("\tcom.android.media.audio.vgsVssSyncMuteOrder:"
-                + vgsVssSyncMuteOrder());
         pw.println("\tcom.android.media.audio.absVolumeIndexFix - EOL");
+        pw.println("\tcom.android.media.audio.vgsVssSyncMuteOrder - EOL");
         pw.println("\tcom.android.media.audio.replaceStreamBtSco:"
                 + replaceStreamBtSco());
         pw.println("\tcom.android.media.audio.equalScoLeaVcIndexRange:"
@@ -9010,21 +9008,12 @@ public class AudioService extends IAudioService.Stub
                                         synced = true;
                                         continue;
                                     }
-                                    if (vgsVssSyncMuteOrder()) {
-                                        if ((isMuted() != streamMuted) && isVssMuteBijective(
-                                                stream)) {
-                                            vss.mute(isMuted(), "VGS.applyAllVolumes#1");
-                                        }
+                                    if ((isMuted() != streamMuted) && isVssMuteBijective(stream)) {
+                                        vss.mute(isMuted(), "VGS.applyAllVolumes#1");
                                     }
                                     if (indexForStream != index) {
                                         vss.setIndex(index * 10, device,
                                                 caller, true /*hasModifyAudioSettings*/);
-                                    }
-                                    if (!vgsVssSyncMuteOrder()) {
-                                        if ((isMuted() != streamMuted) && isVssMuteBijective(
-                                                stream)) {
-                                            vss.mute(isMuted(), "VGS.applyAllVolumes#1");
-                                        }
                                     }
                                 }
                             }
