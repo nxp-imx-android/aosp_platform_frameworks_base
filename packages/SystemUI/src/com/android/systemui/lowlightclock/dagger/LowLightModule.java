@@ -78,7 +78,7 @@ public abstract class LowLightModule {
 
     @Provides
     @IntoSet
-    @Named(com.android.systemui.lowlightclock.dagger.LowLightModule.LOW_LIGHT_PRECONDITIONS)
+    @Named(LOW_LIGHT_PRECONDITIONS)
     static Condition provideLowLightCondition(LowLightCondition lowLightCondition,
             DirectBootCondition directBootCondition) {
         // Start lowlight if we are either in lowlight or in direct boot. The ordering of the
