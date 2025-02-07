@@ -704,9 +704,10 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
                     ImeTracker.forLogging().onProgress(imeStatsToken,
                             ImeTracker.PHASE_WM_UPDATE_REQUESTED_VISIBLE_TYPES);
                 }
-                win.setRequestedVisibleTypes(requestedVisibleTypes);
+                final @InsetsType int changedTypes =
+                        win.setRequestedVisibleTypes(requestedVisibleTypes);
                 win.getDisplayContent().getInsetsPolicy().onRequestedVisibleTypesChanged(win,
-                        imeStatsToken);
+                        changedTypes, imeStatsToken);
                 final Task task = win.getTask();
                 if (task != null) {
                     task.dispatchTaskInfoChangedIfNeeded(/* forced= */ true);
@@ -723,10 +724,11 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
                     // TODO(b/353463205) Use different phase here
                     ImeTracker.forLogging().onProgress(imeStatsToken,
                             ImeTracker.PHASE_WM_UPDATE_REQUESTED_VISIBLE_TYPES);
-                    embeddedWindow.setRequestedVisibleTypes(
+                    final @InsetsType int changedTypes = embeddedWindow.setRequestedVisibleTypes(
                             requestedVisibleTypes & WindowInsets.Type.ime());
                     embeddedWindow.getDisplayContent().getInsetsPolicy()
-                            .onRequestedVisibleTypesChanged(embeddedWindow, imeStatsToken);
+                            .onRequestedVisibleTypesChanged(
+                                    embeddedWindow, changedTypes, imeStatsToken);
                 } else {
                     ImeTracker.forLogging().onFailed(imeStatsToken,
                             ImeTracker.PHASE_WM_UPDATE_REQUESTED_VISIBLE_TYPES);

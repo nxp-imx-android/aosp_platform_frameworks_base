@@ -219,14 +219,20 @@ class InsetsStateController {
         }
     }
 
-    void onRequestedVisibleTypesChanged(InsetsTarget caller,
+    void onRequestedVisibleTypesChanged(InsetsTarget caller, @InsetsType int changedTypes,
             @Nullable ImeTracker.Token statsToken) {
         boolean changed = false;
         for (int i = mProviders.size() - 1; i >= 0; i--) {
             final InsetsSourceProvider provider = mProviders.valueAt(i);
-            final boolean isImeProvider = provider.getSource().getType() == WindowInsets.Type.ime();
-            changed |= provider.updateClientVisibility(caller,
-                    isImeProvider ? statsToken : null);
+            final @InsetsType int type = provider.getSource().getType();
+            if ((type & changedTypes) != 0) {
+                final boolean isImeProvider = type == WindowInsets.Type.ime();
+                changed |= provider.updateClientVisibility(
+                                caller, isImeProvider ? statsToken : null)
+                        // Fake control target cannot change the client visibility, but it should
+                        // change the insets with its newly requested visibility.
+                        || (caller == provider.getFakeControlTarget());
+            }
         }
         if (changed) {
             notifyInsetsChanged();
@@ -435,7 +441,8 @@ class InsetsStateController {
             for (int i = newControlTargets.size() - 1; i >= 0; i--) {
                 // TODO(b/353463205) the statsToken shouldn't be null as it is used later in the
                 //  IME provider. Check if we have to create a new request here
-                onRequestedVisibleTypesChanged(newControlTargets.valueAt(i), null /* statsToken */);
+                onRequestedVisibleTypesChanged(newControlTargets.valueAt(i),
+                        WindowInsets.Type.all(), null /* statsToken */);
             }
             newControlTargets.clear();
             if (!android.view.inputmethod.Flags.refactorInsetsController()) {

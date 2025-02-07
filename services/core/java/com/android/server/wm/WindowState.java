@@ -822,17 +822,23 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     /**
+     * @return an integer as the changed requested visible insets types.
      * @see #getRequestedVisibleTypes()
      */
-    void setRequestedVisibleTypes(@InsetsType int requestedVisibleTypes) {
+    @InsetsType int setRequestedVisibleTypes(@InsetsType int requestedVisibleTypes) {
         if (mRequestedVisibleTypes != requestedVisibleTypes) {
+            final int changedTypes = mRequestedVisibleTypes ^ requestedVisibleTypes;
             mRequestedVisibleTypes = requestedVisibleTypes;
+            return changedTypes;
         }
+        return 0;
     }
 
     @VisibleForTesting
-    void setRequestedVisibleTypes(@InsetsType int requestedVisibleTypes, @InsetsType int mask) {
-        setRequestedVisibleTypes(mRequestedVisibleTypes & ~mask | requestedVisibleTypes & mask);
+    @InsetsType int setRequestedVisibleTypes(
+            @InsetsType int requestedVisibleTypes, @InsetsType int mask) {
+        return setRequestedVisibleTypes(
+                mRequestedVisibleTypes & ~mask | requestedVisibleTypes & mask);
     }
 
     /**

@@ -437,9 +437,9 @@ class InsetsPolicy {
         return originalState;
     }
 
-    void onRequestedVisibleTypesChanged(InsetsTarget caller,
+    void onRequestedVisibleTypesChanged(InsetsTarget caller, @InsetsType int changedTypes,
             @Nullable ImeTracker.Token statsToken) {
-        mStateController.onRequestedVisibleTypesChanged(caller, statsToken);
+        mStateController.onRequestedVisibleTypesChanged(caller, changedTypes, statsToken);
         checkAbortTransient(caller);
         updateBarControlTarget(mFocusedWin);
     }

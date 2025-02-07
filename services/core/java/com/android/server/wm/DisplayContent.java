@@ -7112,14 +7112,19 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         /**
+         * @return an integer as the changed requested visible insets types.
          * @see #getRequestedVisibleTypes()
          */
-        void updateRequestedVisibleTypes(@InsetsType int visibleTypes, @InsetsType int mask) {
-            int newRequestedVisibleTypes =
+        @InsetsType int updateRequestedVisibleTypes(
+                @InsetsType int visibleTypes, @InsetsType int mask) {
+            final int newRequestedVisibleTypes =
                     (mRequestedVisibleTypes & ~mask) | (visibleTypes & mask);
             if (mRequestedVisibleTypes != newRequestedVisibleTypes) {
+                final int changedTypes = mRequestedVisibleTypes ^ newRequestedVisibleTypes;
                 mRequestedVisibleTypes = newRequestedVisibleTypes;
+                return changedTypes;
             }
+            return 0;
         }
     }
 
