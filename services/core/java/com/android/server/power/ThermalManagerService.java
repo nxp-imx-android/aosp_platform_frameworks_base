@@ -2096,11 +2096,16 @@ public class ThermalManagerService extends SystemService {
                 }
 
                 if (mCachedHeadrooms.contains(forecastSeconds)) {
-                    // TODO(b/360486877): replace with metrics
-                    Slog.d(TAG,
-                            "Headroom forecast in " + forecastSeconds + "s served from cache: "
-                                    + mCachedHeadrooms.get(forecastSeconds));
-                    return mCachedHeadrooms.get(forecastSeconds);
+                    float headroom = mCachedHeadrooms.get(forecastSeconds);
+                    // TODO(b/360486877): add new API status enum or a new atom field to
+                    //                    differentiate success from reading cache or not
+                    FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_HEADROOM_CALLED,
+                            Binder.getCallingUid(),
+                            FrameworkStatsLog.THERMAL_HEADROOM_CALLED__API_STATUS__SUCCESS,
+                            headroom, forecastSeconds);
+                    Slog.d(TAG, "Headroom forecast in " + forecastSeconds + "s served from cache: "
+                            + headroom);
+                    return headroom;
                 }
 
                 float maxNormalized = Float.NaN;
@@ -2121,9 +2126,15 @@ public class ThermalManagerService extends SystemService {
                     if (samples.size() < MINIMUM_SAMPLE_COUNT) {
                         if (mSamples.size() == 1 && mCachedHeadrooms.contains(0)) {
                             // if only one sensor name exists, then try reading the cache
-                            // TODO(b/360486877): replace with metrics
-                            Slog.d(TAG, "Headroom forecast cached: " + mCachedHeadrooms.get(0));
-                            return mCachedHeadrooms.get(0);
+                            // TODO(b/360486877): add new API status enum or a new atom field to
+                            //                    differentiate success from reading cache or not
+                            float headroom = mCachedHeadrooms.get(0);
+                            FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_HEADROOM_CALLED,
+                                    Binder.getCallingUid(),
+                                    FrameworkStatsLog.THERMAL_HEADROOM_CALLED__API_STATUS__SUCCESS,
+                                    headroom, 0);
+                            Slog.d(TAG, "Headroom forecast in 0s served from cache: " + headroom);
+                            return headroom;
                         }
                         // Don't try to forecast, just use the latest one we have
                         float normalized = normalizeTemperature(currentTemperature, threshold);
