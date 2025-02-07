@@ -306,8 +306,15 @@ public class Cuj {
     /** Track work utility view animation shrinking when scrolling down app list. */
     public static final int CUJ_LAUNCHER_WORK_UTILITY_VIEW_SHRINK = 127;
 
+    /**
+     * Track task transitions
+     *
+     * <p>Tracking starts and ends with the animation.</p>
+     */
+    public static final int CUJ_DEFAULT_TASK_TO_TASK_ANIMATION = 128;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_LAUNCHER_WORK_UTILITY_VIEW_SHRINK;
+    @VisibleForTesting static final int LAST_CUJ = CUJ_DEFAULT_TASK_TO_TASK_ANIMATION;
 
     /** @hide */
     @IntDef({
@@ -426,7 +433,8 @@ public class Cuj {
             CUJ_DESKTOP_MODE_APP_LAUNCH_FROM_ICON,
             CUJ_DESKTOP_MODE_KEYBOARD_QUICK_SWITCH_APP_LAUNCH,
             CUJ_LAUNCHER_WORK_UTILITY_VIEW_EXPAND,
-            CUJ_LAUNCHER_WORK_UTILITY_VIEW_SHRINK
+            CUJ_LAUNCHER_WORK_UTILITY_VIEW_SHRINK,
+            CUJ_DEFAULT_TASK_TO_TASK_ANIMATION
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -556,6 +564,7 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_KEYBOARD_QUICK_SWITCH_APP_LAUNCH] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_KEYBOARD_QUICK_SWITCH_APP_LAUNCH;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LAUNCHER_WORK_UTILITY_VIEW_EXPAND] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LAUNCHER_WORK_UTILITY_VIEW_EXPAND;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LAUNCHER_WORK_UTILITY_VIEW_SHRINK] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LAUNCHER_WORK_UTILITY_VIEW_SHRINK;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DEFAULT_TASK_TO_TASK_ANIMATION] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DEFAULT_TASK_TO_TASK_ANIMATION;
     }
 
     private Cuj() {
@@ -806,6 +815,8 @@ public class Cuj {
                 return "LAUNCHER_WORK_UTILITY_VIEW_EXPAND";
             case CUJ_LAUNCHER_WORK_UTILITY_VIEW_SHRINK:
                 return "LAUNCHER_WORK_UTILITY_VIEW_SHRINK";
+            case CUJ_DEFAULT_TASK_TO_TASK_ANIMATION:
+                return "CUJ_DEFAULT_TASK_TO_TASK_ANIMATION";
         }
         return "UNKNOWN";
     }
