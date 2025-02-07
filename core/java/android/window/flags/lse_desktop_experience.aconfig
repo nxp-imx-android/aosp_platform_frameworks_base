@@ -696,3 +696,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_desktop_close_shortcut_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fix the window-close keyboard shortcut in Desktop Mode."
+    bug: "394599430"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
