@@ -34,7 +34,11 @@ constructor(
     override fun animateCollapseQs(fullyCollapse: Boolean) {
         if (shadeInteractor.isQsExpanded.value) {
             val key =
-                if (fullyCollapse || shadeModeInteractor.isDualShade) {
+                if (
+                    fullyCollapse ||
+                        shadeModeInteractor.isDualShade ||
+                        shadeModeInteractor.isSplitShade
+                ) {
                     SceneFamilies.Home
                 } else {
                     Scenes.Shade
