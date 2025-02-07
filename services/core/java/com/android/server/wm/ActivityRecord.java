@@ -5806,7 +5806,21 @@ final class ActivityRecord extends WindowToken {
         displayContent.getInputMonitor().updateInputWindowsLw(false /*force*/);
         mTransitionChangeFlags = 0;
 
-        postApplyAnimation(visible, fromTransition);
+        // Set client visibility if:
+        // 1. The activity is becoming visible. This is usually no-op because assume that
+        //    setVisibility(true) should have been called. Just in case if that was missed.
+        // 2. The activity is becoming invisible and not RESUMED state (it is usually PAUSED unless
+        //    the activity is transient-hide). If the state is RESUMED, setVisibility(false) will be
+        //    called until activityStopped. This is to avoid crashing apps that assume its view root
+        //    won't be invisible before the activity is paused.
+        if (visible || mState != RESUMED) {
+            setClientVisible(visible);
+        }
+        // Notify the visibility change outside of transition in case onTransitionFinish is not
+        // called for updating snapshot states.
+        if (!fromTransition) {
+            mWmService.mSnapshotController.notifyAppVisibilityChanged(this, visible);
+        }
     }
 
     void commitVisibility(boolean visible, boolean performLayout) {
@@ -5823,75 +5837,6 @@ final class ActivityRecord extends WindowToken {
 
     boolean isInLetterboxAnimation() {
         return mNeedsLetterboxedAnimation && isAnimating();
-    }
-
-    /**
-     * Post process after applying an app transition animation.
-     *
-     * <p class="note"><strong>Note: </strong> This function must be called after the animations
-     * have been applied and {@link #commitVisibility}.</p>
-     *
-     * @param visible {@code true} if this {@link ActivityRecord} has become visible, otherwise
-     *                this has become invisible.
-     * @param fromTransition {@code true} if this call is part of finishing a transition. This is
-     *                       needed because the shell transition is no-longer active by the time
-     *                       commitVisibility is called.
-     */
-    private void postApplyAnimation(boolean visible, boolean fromTransition) {
-        final boolean usingShellTransitions = mTransitionController.isShellTransitionsEnabled();
-        final boolean delayed = !usingShellTransitions && isAnimating(PARENTS | CHILDREN,
-                ANIMATION_TYPE_APP_TRANSITION | ANIMATION_TYPE_WINDOW_ANIMATION);
-        if (!delayed && !usingShellTransitions) {
-            // We aren't delayed anything, but exiting windows rely on the animation finished
-            // callback being called in case the ActivityRecord was pretending to be delayed,
-            // which we might have done because we were in closing/opening apps list.
-            onAnimationFinished(ANIMATION_TYPE_APP_TRANSITION, null /* AnimationAdapter */);
-            if (visible) {
-                // The token was made immediately visible, there will be no entrance animation.
-                // We need to inform the client the enter animation was finished.
-                mEnteringAnimation = true;
-                mWmService.mActivityManagerAppTransitionNotifier.onAppTransitionFinishedLocked(
-                        token);
-            }
-        }
-
-        // If we're becoming visible, immediately change client visibility as well. there seem
-        // to be some edge cases where we change our visibility but client visibility never gets
-        // updated.
-        // If we're becoming invisible, update the client visibility if we are not running an
-        // animation and aren't in RESUMED state. Otherwise, we'll update client visibility in
-        // onAnimationFinished or activityStopped.
-        if (visible || (mState != RESUMED && (usingShellTransitions || !isAnimating(
-                PARENTS, ANIMATION_TYPE_APP_TRANSITION)))) {
-            setClientVisible(visible);
-        }
-
-        final DisplayContent displayContent = getDisplayContent();
-        if (!displayContent.mClosingApps.contains(this)
-                && !displayContent.mOpeningApps.contains(this)
-                && !fromTransition) {
-            // Take the screenshot before possibly hiding the WSA, otherwise the screenshot
-            // will not be taken.
-            mWmService.mSnapshotController.notifyAppVisibilityChanged(this, visible);
-        }
-
-        // If we are hidden but there is no delay needed we immediately
-        // apply the Surface transaction so that the ActivityManager
-        // can have some guarantee on the Surface state following
-        // setting the visibility. This captures cases like dismissing
-        // the docked or root pinned task where there is no app transition.
-        //
-        // In the case of a "Null" animation, there will be
-        // no animation but there will still be a transition set.
-        // We still need to delay hiding the surface such that it
-        // can be synchronized with showing the next surface in the transition.
-        if (!usingShellTransitions && !isVisible() && !delayed
-                && !displayContent.mAppTransition.isTransitionSet()) {
-            forAllWindows(win -> {
-                win.mWinAnimator.hide(getPendingTransaction(), "immediately hidden");
-            }, true);
-            scheduleAnimation();
-        }
     }
 
     /** Updates draw state and shows drawn windows. */
