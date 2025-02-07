@@ -452,7 +452,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
 
                 // If the previous front-most task is moved to the back, then notify of the new
                 // front-most task.
-                final ActivityRecord topMost = getTopMostActivity();
+                final ActivityRecord topMost = getTopNonFinishingActivity();
                 if (topMost != null) {
                     mAtmService.getTaskChangeNotificationController().notifyTaskMovedToFront(
                             topMost.getTask().getTaskInfo());

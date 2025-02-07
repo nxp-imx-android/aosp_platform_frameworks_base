@@ -4324,10 +4324,12 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 task = mRootWindowContainer.getDefaultTaskDisplayArea().getRootTask(
                         t -> t.isActivityTypeStandard());
             }
-            if (task != null && task.getTopMostActivity() != null
-                    && !task.getTopMostActivity().isState(FINISHING, DESTROYING, DESTROYED)) {
+            final ActivityRecord topActivity = task != null
+                    ? task.getTopMostActivity()
+                    : null;
+            if (topActivity != null && !topActivity.isState(FINISHING, DESTROYING, DESTROYED)) {
                 mWindowManager.mAtmService.mActivityClientController
-                        .onPictureInPictureUiStateChanged(task.getTopMostActivity(), pipState);
+                        .onPictureInPictureUiStateChanged(topActivity, pipState);
             }
         }
     }
