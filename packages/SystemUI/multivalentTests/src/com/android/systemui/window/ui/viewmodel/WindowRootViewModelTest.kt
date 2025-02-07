@@ -16,8 +16,10 @@
 
 package com.android.systemui.window.ui.viewmodel
 
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
@@ -32,6 +34,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@EnableFlags(Flags.FLAG_BOUNCER_UI_REVAMP)
 class WindowRootViewModelTest : SysuiTestCase() {
     val kosmos = testKosmos()
     val testScope = kosmos.testScope
