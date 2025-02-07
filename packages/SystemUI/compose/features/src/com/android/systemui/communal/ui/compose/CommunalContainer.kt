@@ -207,12 +207,7 @@ fun CommunalContainer(
             Box(modifier = Modifier.fillMaxSize())
         }
 
-        scene(
-            CommunalScenes.Communal,
-            userActions =
-                if (viewModel.v2FlagEnabled()) emptyMap()
-                else mapOf(Swipe.End to CommunalScenes.Blank),
-        ) {
+        scene(CommunalScenes.Communal, userActions = mapOf(Swipe.End to CommunalScenes.Blank)) {
             CommunalScene(
                 backgroundType = backgroundType,
                 colors = colors,

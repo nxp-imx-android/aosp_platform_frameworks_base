@@ -69,7 +69,7 @@ constructor(
          * Note that [onCancel] isn't used when the scene framework is enabled.
          */
         fun sharedFlow(
-            duration: Duration,
+            duration: Duration = transitionDuration,
             onStep: (Float) -> Float,
             startTime: Duration = 0.milliseconds,
             onStart: (() -> Unit)? = null,
