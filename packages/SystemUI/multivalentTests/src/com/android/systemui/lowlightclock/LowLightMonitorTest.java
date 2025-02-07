@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,9 @@ import static org.mockito.Mockito.when;
 
 import android.content.ComponentName;
 import android.content.pm.PackageManager;
-import android.testing.AndroidTestingRunner;
+import android.testing.TestableLooper;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.dream.lowlight.LowLightDreamManager;
@@ -39,6 +40,8 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.keyguard.ScreenLifecycle;
 import com.android.systemui.shared.condition.Condition;
 import com.android.systemui.shared.condition.Monitor;
+import com.android.systemui.util.concurrency.FakeExecutor;
+import com.android.systemui.util.time.FakeSystemClock;
 
 import dagger.Lazy;
 
@@ -53,7 +56,8 @@ import org.mockito.MockitoAnnotations;
 import java.util.Set;
 
 @SmallTest
-@RunWith(AndroidTestingRunner.class)
+@RunWith(AndroidJUnit4.class)
+@TestableLooper.RunWithLooper()
 public class LowLightMonitorTest extends SysuiTestCase {
 
     @Mock
@@ -78,6 +82,8 @@ public class LowLightMonitorTest extends SysuiTestCase {
     @Mock
     private ComponentName mDreamComponent;
 
+    FakeExecutor mBackgroundExecutor = new FakeExecutor(new FakeSystemClock());
+
     Condition mCondition = mock(Condition.class);
     Set<Condition> mConditionSet = Set.of(mCondition);
 
@@ -91,12 +97,13 @@ public class LowLightMonitorTest extends SysuiTestCase {
         when(mLazyConditions.get()).thenReturn(mConditionSet);
         mLowLightMonitor = new LowLightMonitor(mLowLightDreamManagerLazy,
             mMonitor, mLazyConditions, mScreenLifecycle, mLogger, mDreamComponent,
-                mPackageManager);
+                mPackageManager, mBackgroundExecutor);
     }
 
     @Test
     public void testSetAmbientLowLightWhenInLowLight() {
         mLowLightMonitor.onConditionsChanged(true);
+        mBackgroundExecutor.runAllReady();
         // Verify setting low light when condition is true
         verify(mLowLightDreamManager).setAmbientLightMode(AMBIENT_LIGHT_MODE_LOW_LIGHT);
     }
@@ -105,6 +112,7 @@ public class LowLightMonitorTest extends SysuiTestCase {
     public void testExitAmbientLowLightWhenNotInLowLight() {
         mLowLightMonitor.onConditionsChanged(true);
         mLowLightMonitor.onConditionsChanged(false);
+        mBackgroundExecutor.runAllReady();
         // Verify ambient light toggles back to light mode regular
         verify(mLowLightDreamManager).setAmbientLightMode(AMBIENT_LIGHT_MODE_REGULAR);
     }
@@ -112,6 +120,7 @@ public class LowLightMonitorTest extends SysuiTestCase {
     @Test
     public void testStartMonitorLowLightConditionsWhenScreenTurnsOn() {
         mLowLightMonitor.onScreenTurnedOn();
+        mBackgroundExecutor.runAllReady();
 
         // Verify subscribing to low light conditions monitor when screen turns on.
         verify(mMonitor).addSubscription(any());
@@ -125,6 +134,7 @@ public class LowLightMonitorTest extends SysuiTestCase {
 
         // Verify removing subscription when screen turns off.
         mLowLightMonitor.onScreenTurnedOff();
+        mBackgroundExecutor.runAllReady();
         verify(mMonitor).removeSubscription(token);
     }
 
@@ -135,6 +145,7 @@ public class LowLightMonitorTest extends SysuiTestCase {
 
         mLowLightMonitor.onScreenTurnedOn();
         mLowLightMonitor.onScreenTurnedOn();
+        mBackgroundExecutor.runAllReady();
         // Verify subscription is only added once.
         verify(mMonitor, times(1)).addSubscription(any());
     }
@@ -146,6 +157,7 @@ public class LowLightMonitorTest extends SysuiTestCase {
 
         mLowLightMonitor.onScreenTurnedOn();
         mLowLightMonitor.onScreenTurnedOn();
+        mBackgroundExecutor.runAllReady();
         Set<Condition> conditions = captureConditions();
         // Verify Monitor is subscribed to the expected conditions
         assertThat(conditions).isEqualTo(mConditionSet);
@@ -154,7 +166,7 @@ public class LowLightMonitorTest extends SysuiTestCase {
     @Test
     public void testNotUnsubscribeIfNotSubscribedWhenScreenTurnsOff() {
         mLowLightMonitor.onScreenTurnedOff();
-
+        mBackgroundExecutor.runAllReady();
         // Verify doesn't remove subscription since there is none.
         verify(mMonitor, never()).removeSubscription(any());
     }
@@ -163,6 +175,7 @@ public class LowLightMonitorTest extends SysuiTestCase {
     public void testSubscribeIfScreenIsOnWhenStarting() {
         when(mScreenLifecycle.getScreenState()).thenReturn(SCREEN_ON);
         mLowLightMonitor.start();
+        mBackgroundExecutor.runAllReady();
         // Verify to add subscription on start if the screen state is on
         verify(mMonitor, times(1)).addSubscription(any());
     }
@@ -170,9 +183,11 @@ public class LowLightMonitorTest extends SysuiTestCase {
     @Test
     public void testNoSubscribeIfDreamNotPresent() {
         LowLightMonitor lowLightMonitor = new LowLightMonitor(mLowLightDreamManagerLazy,
-                mMonitor, mLazyConditions, mScreenLifecycle, mLogger, null, mPackageManager);
+                mMonitor, mLazyConditions, mScreenLifecycle, mLogger, null, mPackageManager,
+                mBackgroundExecutor);
         when(mScreenLifecycle.getScreenState()).thenReturn(SCREEN_ON);
         lowLightMonitor.start();
+        mBackgroundExecutor.runAllReady();
         verify(mScreenLifecycle, never()).addObserver(any());
     }
 

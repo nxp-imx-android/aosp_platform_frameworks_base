@@ -27,6 +27,7 @@ import android.content.pm.PackageManager;
 import androidx.annotation.Nullable;
 
 import com.android.dream.lowlight.LowLightDreamManager;
+import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.SystemUser;
 import com.android.systemui.keyguard.ScreenLifecycle;
 import com.android.systemui.shared.condition.Condition;
@@ -36,6 +37,7 @@ import com.android.systemui.util.condition.ConditionalCoreStartable;
 import dagger.Lazy;
 
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -59,6 +61,8 @@ public class LowLightMonitor extends ConditionalCoreStartable implements Monitor
 
     private final PackageManager mPackageManager;
 
+    private final Executor mExecutor;
+
     @Inject
     public LowLightMonitor(Lazy<LowLightDreamManager> lowLightDreamManager,
             @SystemUser Monitor conditionsMonitor,
@@ -66,7 +70,8 @@ public class LowLightMonitor extends ConditionalCoreStartable implements Monitor
             ScreenLifecycle screenLifecycle,
             LowLightLogger lowLightLogger,
             @Nullable @Named(LOW_LIGHT_DREAM_SERVICE) ComponentName lowLightDreamService,
-            PackageManager packageManager) {
+            PackageManager packageManager,
+            @Background Executor backgroundExecutor) {
         super(conditionsMonitor);
         mLowLightDreamManager = lowLightDreamManager;
         mConditionsMonitor = conditionsMonitor;
@@ -75,59 +80,69 @@ public class LowLightMonitor extends ConditionalCoreStartable implements Monitor
         mLogger = lowLightLogger;
         mLowLightDreamService = lowLightDreamService;
         mPackageManager = packageManager;
+        mExecutor = backgroundExecutor;
     }
 
     @Override
     public void onConditionsChanged(boolean allConditionsMet) {
-        mLogger.d(TAG, "Low light enabled: " + allConditionsMet);
+        mExecutor.execute(() -> {
+            mLogger.d(TAG, "Low light enabled: " + allConditionsMet);
 
-        mLowLightDreamManager.get().setAmbientLightMode(allConditionsMet
-                ? AMBIENT_LIGHT_MODE_LOW_LIGHT : AMBIENT_LIGHT_MODE_REGULAR);
+            mLowLightDreamManager.get().setAmbientLightMode(allConditionsMet
+                    ? AMBIENT_LIGHT_MODE_LOW_LIGHT : AMBIENT_LIGHT_MODE_REGULAR);
+        });
     }
 
     @Override
     public void onScreenTurnedOn() {
-        if (mSubscriptionToken == null) {
-            mLogger.d(TAG, "Screen turned on. Subscribing to low light conditions.");
+        mExecutor.execute(() -> {
+            if (mSubscriptionToken == null) {
+                mLogger.d(TAG, "Screen turned on. Subscribing to low light conditions.");
 
-            mSubscriptionToken = mConditionsMonitor.addSubscription(
-                new Monitor.Subscription.Builder(this)
-                    .addConditions(mLowLightConditions.get())
-                    .build());
-        }
+                mSubscriptionToken = mConditionsMonitor.addSubscription(
+                        new Monitor.Subscription.Builder(this)
+                                .addConditions(mLowLightConditions.get())
+                                .build());
+            }
+        });
     }
 
 
     @Override
     public void onScreenTurnedOff() {
-        if (mSubscriptionToken != null) {
-            mLogger.d(TAG, "Screen turned off. Removing subscription to low light conditions.");
+        mExecutor.execute(() -> {
+            if (mSubscriptionToken != null) {
+                mLogger.d(TAG, "Screen turned off. Removing subscription to low light conditions.");
 
-            mConditionsMonitor.removeSubscription(mSubscriptionToken);
-            mSubscriptionToken = null;
-        }
+                mConditionsMonitor.removeSubscription(mSubscriptionToken);
+                mSubscriptionToken = null;
+            }
+        });
     }
 
     @Override
     protected void onStart() {
-        if (mLowLightDreamService != null) {
-            // Note that the dream service is disabled by default. This prevents the dream from
-            // appearing in settings on devices that don't have it explicitly excluded (done in
-            // the settings overlay). Therefore, the component is enabled if it is to be used
-            // here.
-            mPackageManager.setComponentEnabledSetting(
-                    mLowLightDreamService,
-                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                    PackageManager.DONT_KILL_APP
-            );
-        } else {
-            // If there is no low light dream service, do not observe conditions.
-            return;
-        }
+        mExecutor.execute(() -> {
+            if (mLowLightDreamService != null) {
+                // Note that the dream service is disabled by default. This prevents the dream from
+                // appearing in settings on devices that don't have it explicitly excluded (done in
+                // the settings overlay). Therefore, the component is enabled if it is to be used
+                // here.
+                mPackageManager.setComponentEnabledSetting(
+                        mLowLightDreamService,
+                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                        PackageManager.DONT_KILL_APP
+                );
+            } else {
+                // If there is no low light dream service, do not observe conditions.
+                return;
+            }
 
-        mScreenLifecycle.addObserver(this);
-        if (mScreenLifecycle.getScreenState() == SCREEN_ON) {
-            onScreenTurnedOn();
-        }
+            mScreenLifecycle.addObserver(this);
+            if (mScreenLifecycle.getScreenState() == SCREEN_ON) {
+                onScreenTurnedOn();
+            }
+        });
+
     }
 }
