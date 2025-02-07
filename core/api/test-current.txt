@@ -942,7 +942,7 @@ package android.companion.virtual {
 
 package android.companion.virtual.camera {
 
-  @FlaggedApi("android.companion.virtual.flags.virtual_camera") public final class VirtualCamera implements java.io.Closeable {
+  public final class VirtualCamera implements java.io.Closeable {
     method @NonNull public String getId();
   }
 

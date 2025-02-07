@@ -30,7 +30,6 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CAMERA;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CLIPBOARD;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
-import static android.companion.virtualdevice.flags.Flags.virtualCameraServiceDiscovery;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -55,9 +54,9 @@ import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.audio.IAudioConfigChangedCallback;
 import android.companion.virtual.audio.IAudioRoutingCallback;
 import android.companion.virtual.camera.VirtualCameraConfig;
-import android.companion.virtual.flags.Flags;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtual.sensor.VirtualSensorEvent;
+import android.companion.virtualdevice.flags.Flags;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
 import android.content.AttributionSource;
@@ -265,7 +264,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
                         UserHandle.SYSTEM);
             }
 
-            if (android.companion.virtualdevice.flags.Flags.activityControlApi()) {
+            if (Flags.activityControlApi()) {
                 try {
                     mActivityListener.onActivityLaunchBlocked(
                             displayId,
@@ -280,7 +279,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
 
         @Override
         public void onSecureWindowShown(int displayId, @NonNull ActivityInfo activityInfo) {
-            if (android.companion.virtualdevice.flags.Flags.activityControlApi()) {
+            if (Flags.activityControlApi()) {
                 try {
                     mActivityListener.onSecureWindowShown(
                             displayId,
@@ -318,7 +317,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
 
         @Override
         public void onSecureWindowHidden(int displayId) {
-            if (android.companion.virtualdevice.flags.Flags.activityControlApi()) {
+            if (Flags.activityControlApi()) {
                 try {
                     mActivityListener.onSecureWindowHidden(displayId);
                 } catch (RemoteException e) {
@@ -682,7 +681,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         checkCallerIsDeviceOwner();
         final int displayId = exemption.getDisplayId();
         if (exemption.getComponentName() == null || displayId != Display.INVALID_DISPLAY) {
-            if (!android.companion.virtualdevice.flags.Flags.activityControlApi()) {
+            if (!Flags.activityControlApi()) {
                 return;
             }
         }
@@ -719,7 +718,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         checkCallerIsDeviceOwner();
         final int displayId = exemption.getDisplayId();
         if (exemption.getComponentName() == null || displayId != Display.INVALID_DISPLAY) {
-            if (!android.companion.virtualdevice.flags.Flags.activityControlApi()) {
+            if (!Flags.activityControlApi()) {
                 return;
             }
         }
@@ -921,7 +920,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
                 }
                 break;
             case POLICY_TYPE_BLOCKED_ACTIVITY:
-                if (android.companion.virtualdevice.flags.Flags.activityControlApi()) {
+                if (Flags.activityControlApi()) {
                     synchronized (mVirtualDeviceLock) {
                         mDevicePolicies.put(policyType, devicePolicy);
                     }
@@ -938,7 +937,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             @VirtualDeviceParams.DynamicDisplayPolicyType int policyType,
             @VirtualDeviceParams.DevicePolicy int devicePolicy) {
         checkCallerIsDeviceOwner();
-        if (!android.companion.virtualdevice.flags.Flags.activityControlApi()) {
+        if (!Flags.activityControlApi()) {
             return;
         }
         synchronized (mVirtualDeviceLock) {
@@ -1508,7 +1507,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     private PowerManager.WakeLock createAndAcquireWakeLockForDisplay(int displayId) {
-        if (android.companion.virtualdevice.flags.Flags.deviceAwareDisplayPower()) {
+        if (Flags.deviceAwareDisplayPower()) {
             return null;
         }
         final long token = Binder.clearCallingIdentity();
@@ -1531,7 +1530,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             // infinite blocking loop.
             return false;
         }
-        if (!android.companion.virtualdevice.flags.Flags.activityControlApi()) {
+        if (!Flags.activityControlApi()) {
             return true;
         }
         // Do not show the dialog if disabled by policy.
@@ -1868,8 +1867,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     private static boolean isVirtualCameraEnabled() {
-        return Flags.virtualCamera() && virtualCameraServiceDiscovery()
-                && nativeVirtualCameraServiceBuildFlagEnabled();
+        return nativeVirtualCameraServiceBuildFlagEnabled();
     }
 
     // Returns true if virtual_camera service is enabled in this build.

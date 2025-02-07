@@ -11,13 +11,6 @@ package: "android.companion.virtualdevice.flags"
 container: "system"
 
 flag {
-     namespace: "virtual_devices"
-     name: "virtual_camera_service_discovery"
-     description: "Enable discovery of the Virtual Camera HAL without a VINTF entry"
-     bug: "305170199"
-}
-
-flag {
     namespace: "virtual_devices"
     name: "virtual_display_insets"
     description: "APIs for specifying virtual display insets (via cutout)"
@@ -31,13 +24,6 @@ flag {
      description: "Enable APIs for fine grained activity policy, fallback and callbacks"
      bug: "333443509"
      is_exported: true
-}
-
-flag {
-     namespace: "virtual_devices"
-     name: "camera_device_awareness"
-     description: "Enable device awareness in camera service"
-     bug: "305170199"
 }
 
 flag {
