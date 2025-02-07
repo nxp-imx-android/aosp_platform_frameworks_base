@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.systemui.qs.panels.data.repository
+package com.android.wm.shell.desktopmode;
 
-import com.android.systemui.common.ui.data.repository.configurationRepository
-import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.testCase
+/**
+ * Defines the state of desks on a display whose ID is `displayId`, which is:
+ * - `canCreateDesks`: whether it's possible to create new desks on this display.
+ * - `activeDeskId`: the currently active desk Id, or `-1` if none is active.
+ * - `deskId`: the list of desk Ids of the available desks on this display.
+ */
+parcelable DisplayDeskState {
+    int displayId;
+    boolean canCreateDesk;
+    int activeDeskId;
+    int[] deskIds;
+}
 
-val Kosmos.paginatedGridRepository by
-    Kosmos.Fixture {
-        testCase.context.orCreateTestableResources
-        PaginatedGridRepository(testCase.context.resources, configurationRepository)
-    }

@@ -49,6 +49,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Insets;
@@ -108,7 +109,7 @@ import com.android.systemui.keyguard.shared.model.ClockSize;
 import com.android.systemui.keyguard.shared.model.Edge;
 import com.android.systemui.keyguard.shared.model.TransitionState;
 import com.android.systemui.keyguard.shared.model.TransitionStep;
-import com.android.systemui.keyguard.ui.binder.KeyguardLongPressViewBinder;
+import com.android.systemui.keyguard.ui.binder.KeyguardTouchViewBinder;
 import com.android.systemui.keyguard.ui.viewmodel.DreamingToLockscreenTransitionViewModel;
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel;
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager;
@@ -751,8 +752,7 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
 
         mKeyguardClockInteractor = keyguardClockInteractor;
         mWallpaperFocalAreaViewModel = wallpaperFocalAreaViewModel;
-
-        KeyguardLongPressViewBinder.bind(
+        KeyguardTouchViewBinder.bind(
                 mView.requireViewById(R.id.keyguard_long_press),
                 keyguardTouchHandlingViewModel,
                 (x, y) -> {
@@ -2095,7 +2095,7 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
                         mLockscreenGestureLogger
                                 .log(LockscreenUiEvent.LOCKSCREEN_LOCK_SHOW_HINT);
                         mKeyguardIndicationController.showActionToUnlock();
-                        mWallpaperFocalAreaViewModel.setTapPosition(x, y);
+                        mKeyguardClockInteractor.handleFidgetTap(x, y);
                     }
                 }
                 break;
@@ -3376,6 +3376,13 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
 
     private final class ConfigurationListener implements
             ConfigurationController.ConfigurationListener {
+        @Override
+        public void onConfigChanged(Configuration newConfig) {
+            if (ShadeWindowGoesAround.isEnabled()) {
+                updateResources();
+            }
+        }
+
         @Override
         public void onThemeChanged() {
             debugLog("onThemeChanged");
