@@ -3250,23 +3250,41 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             Slog.e(TAG, "ShouldShowSystemDecors shouldn't be updated when the flag is off.");
         }
 
-        final boolean shouldShow;
-        if (isDefaultDisplay) {
-            shouldShow = true;
-        } else if (isPrivate()) {
-            shouldShow = false;
-        } else {
-            shouldShow = mDisplay.canHostTasks();
-        }
-
-        if (shouldShow == mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(this)) {
+        final boolean shouldShowContent;
+        if (!allowContentModeSwitch()) {
             return;
         }
-        mWmService.mDisplayWindowSettings.setShouldShowSystemDecorsLocked(this, shouldShow);
+        shouldShowContent = mDisplay.canHostTasks();
 
-        if (!shouldShow) {
+        if (shouldShowContent == mWmService.mDisplayWindowSettings
+                .shouldShowSystemDecorsLocked(this)) {
+            return;
+        }
+        mWmService.mDisplayWindowSettings.setShouldShowSystemDecorsLocked(this, shouldShowContent);
+
+        if (!shouldShowContent) {
             clearAllTasksOnDisplay(null /* clearTasksCallback */, false /* isRemovingDisplay */);
         }
+    }
+
+    private boolean allowContentModeSwitch() {
+        // The default display should always show system decorations.
+        if (isDefaultDisplay) {
+            return false;
+        }
+
+        // Private display should never show system decorations.
+        if (isPrivate()) {
+            return false;
+        }
+
+        // TODO(b/391965805): Remove this after introducing FLAG_ALLOW_SYSTEM_DECORATIONS_CHANGE.
+        // Virtual displays cannot add or remove system decorations during their lifecycle.
+        if (mDisplay.getType() == Display.TYPE_VIRTUAL) {
+            return false;
+        }
+
+        return true;
     }
 
     DisplayCutout loadDisplayCutout(int displayWidth, int displayHeight) {
