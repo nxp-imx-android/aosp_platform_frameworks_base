@@ -222,10 +222,6 @@ constructor(
                 return@traceSection
             }
 
-            if (StatusBarConnectedDisplays.isEnabled) {
-                onIconUpdateRequiredListeners.onEach { it.onIconUpdateRequired(entry) }
-            }
-
             if (usingCache && !Flags.notificationsBackgroundIcons()) {
                 Log.wtf(
                     TAG,
@@ -236,6 +232,10 @@ constructor(
             if (!usingCache || !Flags.notificationsBackgroundIcons()) {
                 entry.icons.smallIconDescriptor = null
                 entry.icons.peopleAvatarDescriptor = null
+            }
+
+            if (StatusBarConnectedDisplays.isEnabled) {
+                onIconUpdateRequiredListeners.onEach { it.onIconUpdateRequired(entry) }
             }
 
             val (normalIconDescriptor, sensitiveIconDescriptor) = getIconDescriptors(entry)
