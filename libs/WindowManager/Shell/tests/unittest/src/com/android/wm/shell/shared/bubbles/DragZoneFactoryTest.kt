@@ -27,6 +27,8 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 
+private typealias DragZoneVerifier = (dragZone: DragZone) -> Unit
+
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 /** Unit tests for [DragZoneFactory]. */
@@ -58,15 +60,14 @@ class DragZoneFactoryTest {
             DragZoneFactory(tabletPortrait, splitScreenModeChecker, desktopWindowModeChecker)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.BubbleBar(BubbleBarLocation.LEFT))
-        val expectedZones: List<Class<out DragZone>> =
+        val expectedZones: List<DragZoneVerifier> =
             listOf(
-                DragZone.Dismiss::class.java,
-                DragZone.Bubble::class.java,
-                DragZone.Bubble::class.java,
+                verifyInstance<DragZone.Dismiss>(),
+                verifyInstance<DragZone.Bubble.Left>(),
+                verifyInstance<DragZone.Bubble.Right>(),
             )
-        dragZones.zip(expectedZones).forEach { (zone, expectedType) ->
-            assertThat(zone).isInstanceOf(expectedType)
-        }
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
     }
 
     @Test
@@ -75,19 +76,18 @@ class DragZoneFactoryTest {
             DragZoneFactory(tabletPortrait, splitScreenModeChecker, desktopWindowModeChecker)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
-        val expectedZones: List<Class<out DragZone>> =
+        val expectedZones: List<DragZoneVerifier> =
             listOf(
-                DragZone.Dismiss::class.java,
-                DragZone.Bubble.Left::class.java,
-                DragZone.Bubble.Right::class.java,
-                DragZone.FullScreen::class.java,
-                DragZone.DesktopWindow::class.java,
-                DragZone.Split.Top::class.java,
-                DragZone.Split.Bottom::class.java,
+                verifyInstance<DragZone.Dismiss>(),
+                verifyInstance<DragZone.Bubble.Left>(),
+                verifyInstance<DragZone.Bubble.Right>(),
+                verifyInstance<DragZone.FullScreen>(),
+                verifyInstance<DragZone.DesktopWindow>(),
+                verifyInstance<DragZone.Split.Top>(),
+                verifyInstance<DragZone.Split.Bottom>(),
             )
-        dragZones.zip(expectedZones).forEach { (zone, expectedType) ->
-            assertThat(zone).isInstanceOf(expectedType)
-        }
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
     }
 
     @Test
@@ -95,19 +95,18 @@ class DragZoneFactoryTest {
         dragZoneFactory = DragZoneFactory(tabletLandscape, splitScreenModeChecker, desktopWindowModeChecker)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
-        val expectedZones: List<Class<out DragZone>> =
+        val expectedZones: List<DragZoneVerifier> =
             listOf(
-                DragZone.Dismiss::class.java,
-                DragZone.Bubble.Left::class.java,
-                DragZone.Bubble.Right::class.java,
-                DragZone.FullScreen::class.java,
-                DragZone.DesktopWindow::class.java,
-                DragZone.Split.Left::class.java,
-                DragZone.Split.Right::class.java,
+                verifyInstance<DragZone.Dismiss>(),
+                verifyInstance<DragZone.Bubble.Left>(),
+                verifyInstance<DragZone.Bubble.Right>(),
+                verifyInstance<DragZone.FullScreen>(),
+                verifyInstance<DragZone.DesktopWindow>(),
+                verifyInstance<DragZone.Split.Left>(),
+                verifyInstance<DragZone.Split.Right>(),
             )
-        dragZones.zip(expectedZones).forEach { (zone, expectedType) ->
-            assertThat(zone).isInstanceOf(expectedType)
-        }
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
     }
 
     @Test
@@ -115,18 +114,17 @@ class DragZoneFactoryTest {
         dragZoneFactory = DragZoneFactory(foldablePortrait, splitScreenModeChecker, desktopWindowModeChecker)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
-        val expectedZones: List<Class<out DragZone>> =
+        val expectedZones: List<DragZoneVerifier> =
             listOf(
-                DragZone.Dismiss::class.java,
-                DragZone.Bubble.Left::class.java,
-                DragZone.Bubble.Right::class.java,
-                DragZone.FullScreen::class.java,
-                DragZone.Split.Left::class.java,
-                DragZone.Split.Right::class.java,
+                verifyInstance<DragZone.Dismiss>(),
+                verifyInstance<DragZone.Bubble.Left>(),
+                verifyInstance<DragZone.Bubble.Right>(),
+                verifyInstance<DragZone.FullScreen>(),
+                verifyInstance<DragZone.Split.Left>(),
+                verifyInstance<DragZone.Split.Right>(),
             )
-        dragZones.zip(expectedZones).forEach { (zone, expectedType) ->
-            assertThat(zone).isInstanceOf(expectedType)
-        }
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
     }
 
     @Test
@@ -134,18 +132,17 @@ class DragZoneFactoryTest {
         dragZoneFactory = DragZoneFactory(foldableLandscape, splitScreenModeChecker, desktopWindowModeChecker)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
-        val expectedZones: List<Class<out DragZone>> =
+        val expectedZones: List<DragZoneVerifier> =
             listOf(
-                DragZone.Dismiss::class.java,
-                DragZone.Bubble.Left::class.java,
-                DragZone.Bubble.Right::class.java,
-                DragZone.FullScreen::class.java,
-                DragZone.Split.Top::class.java,
-                DragZone.Split.Bottom::class.java,
+                verifyInstance<DragZone.Dismiss>(),
+                verifyInstance<DragZone.Bubble.Left>(),
+                verifyInstance<DragZone.Bubble.Right>(),
+                verifyInstance<DragZone.FullScreen>(),
+                verifyInstance<DragZone.Split.Top>(),
+                verifyInstance<DragZone.Split.Bottom>(),
             )
-        dragZones.zip(expectedZones).forEach { (zone, expectedType) ->
-            assertThat(zone).isInstanceOf(expectedType)
-        }
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
     }
 
     @Test
@@ -156,19 +153,18 @@ class DragZoneFactoryTest {
             dragZoneFactory.createSortedDragZones(
                 DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
             )
-        val expectedZones: List<Class<out DragZone>> =
+        val expectedZones: List<DragZoneVerifier> =
             listOf(
-                DragZone.Dismiss::class.java,
-                DragZone.FullScreen::class.java,
-                DragZone.DesktopWindow::class.java,
-                DragZone.Split.Top::class.java,
-                DragZone.Split.Bottom::class.java,
-                DragZone.Bubble.Left::class.java,
-                DragZone.Bubble.Right::class.java,
+                verifyInstance<DragZone.Dismiss>(),
+                verifyInstance<DragZone.FullScreen>(),
+                verifyInstance<DragZone.DesktopWindow>(),
+                verifyInstance<DragZone.Split.Top>(),
+                verifyInstance<DragZone.Split.Bottom>(),
+                verifyInstance<DragZone.Bubble.Left>(),
+                verifyInstance<DragZone.Bubble.Right>(),
             )
-        dragZones.zip(expectedZones).forEach { (zone, expectedType) ->
-            assertThat(zone).isInstanceOf(expectedType)
-        }
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
     }
 
     @Test
@@ -176,19 +172,18 @@ class DragZoneFactoryTest {
         dragZoneFactory = DragZoneFactory(tabletLandscape, splitScreenModeChecker, desktopWindowModeChecker)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.ExpandedView(BubbleBarLocation.LEFT))
-        val expectedZones: List<Class<out DragZone>> =
+        val expectedZones: List<DragZoneVerifier> =
             listOf(
-                DragZone.Dismiss::class.java,
-                DragZone.FullScreen::class.java,
-                DragZone.DesktopWindow::class.java,
-                DragZone.Split.Left::class.java,
-                DragZone.Split.Right::class.java,
-                DragZone.Bubble.Left::class.java,
-                DragZone.Bubble.Right::class.java,
+                verifyInstance<DragZone.Dismiss>(),
+                verifyInstance<DragZone.FullScreen>(),
+                verifyInstance<DragZone.DesktopWindow>(),
+                verifyInstance<DragZone.Split.Left>(),
+                verifyInstance<DragZone.Split.Right>(),
+                verifyInstance<DragZone.Bubble.Left>(),
+                verifyInstance<DragZone.Bubble.Right>(),
             )
-        dragZones.zip(expectedZones).forEach { (zone, expectedType) ->
-            assertThat(zone).isInstanceOf(expectedType)
-        }
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
     }
 
     @Test
@@ -196,18 +191,17 @@ class DragZoneFactoryTest {
         dragZoneFactory = DragZoneFactory(foldablePortrait, splitScreenModeChecker, desktopWindowModeChecker)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.ExpandedView(BubbleBarLocation.LEFT))
-        val expectedZones: List<Class<out DragZone>> =
+        val expectedZones: List<DragZoneVerifier> =
             listOf(
-                DragZone.Dismiss::class.java,
-                DragZone.FullScreen::class.java,
-                DragZone.Split.Left::class.java,
-                DragZone.Split.Right::class.java,
-                DragZone.Bubble.Left::class.java,
-                DragZone.Bubble.Right::class.java,
+                verifyInstance<DragZone.Dismiss>(),
+                verifyInstance<DragZone.FullScreen>(),
+                verifyInstance<DragZone.Split.Left>(),
+                verifyInstance<DragZone.Split.Right>(),
+                verifyInstance<DragZone.Bubble.Left>(),
+                verifyInstance<DragZone.Bubble.Right>(),
             )
-        dragZones.zip(expectedZones).forEach { (zone, expectedType) ->
-            assertThat(zone).isInstanceOf(expectedType)
-        }
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
     }
 
     @Test
@@ -215,18 +209,17 @@ class DragZoneFactoryTest {
         dragZoneFactory = DragZoneFactory(foldableLandscape, splitScreenModeChecker, desktopWindowModeChecker)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.ExpandedView(BubbleBarLocation.LEFT))
-        val expectedZones: List<Class<out DragZone>> =
+        val expectedZones: List<DragZoneVerifier> =
             listOf(
-                DragZone.Dismiss::class.java,
-                DragZone.FullScreen::class.java,
-                DragZone.Split.Top::class.java,
-                DragZone.Split.Bottom::class.java,
-                DragZone.Bubble.Left::class.java,
-                DragZone.Bubble.Right::class.java,
+                verifyInstance<DragZone.Dismiss>(),
+                verifyInstance<DragZone.FullScreen>(),
+                verifyInstance<DragZone.Split.Top>(),
+                verifyInstance<DragZone.Split.Bottom>(),
+                verifyInstance<DragZone.Bubble.Left>(),
+                verifyInstance<DragZone.Bubble.Right>(),
             )
-        dragZones.zip(expectedZones).forEach { (zone, expectedType) ->
-            assertThat(zone).isInstanceOf(expectedType)
-        }
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
     }
 
     @Test
@@ -245,5 +238,9 @@ class DragZoneFactoryTest {
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.ExpandedView(BubbleBarLocation.LEFT))
         assertThat(dragZones.filterIsInstance<DragZone.DesktopWindow>()).isEmpty()
+    }
+
+    private inline fun <reified T> verifyInstance(): DragZoneVerifier = { dragZone ->
+        assertThat(dragZone).isInstanceOf(T::class.java)
     }
 }
