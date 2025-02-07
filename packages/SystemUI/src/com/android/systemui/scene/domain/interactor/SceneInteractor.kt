@@ -240,7 +240,13 @@ constructor(
     ) {
         val currentSceneKey = currentScene.value
         val resolvedScene = sceneFamilyResolvers.get()[toScene]?.resolvedScene?.value ?: toScene
-        if (!validateSceneChange(to = resolvedScene, loggingReason = loggingReason)) {
+        if (
+            !validateSceneChange(
+                from = currentSceneKey,
+                to = resolvedScene,
+                loggingReason = loggingReason,
+            )
+        ) {
             return
         }
 
@@ -273,7 +279,13 @@ constructor(
                     familyResolver.resolvedScene.value
                 }
             } ?: toScene
-        if (!validateSceneChange(to = resolvedScene, loggingReason = loggingReason)) {
+        if (
+            !validateSceneChange(
+                from = currentSceneKey,
+                to = resolvedScene,
+                loggingReason = loggingReason,
+            )
+        ) {
             return
         }
 
@@ -491,11 +503,12 @@ constructor(
      * Will throw a runtime exception for illegal states (for example, attempting to change to a
      * scene that's not part of the current scene framework configuration).
      *
+     * @param from The current scene being transitioned away from
      * @param to The desired destination scene to transition to
      * @param loggingReason The reason why the transition is requested, for logging purposes
      * @return `true` if the scene change is valid; `false` if it shouldn't happen
      */
-    private fun validateSceneChange(to: SceneKey, loggingReason: String): Boolean {
+    private fun validateSceneChange(from: SceneKey, to: SceneKey, loggingReason: String): Boolean {
         check(
             !shadeModeInteractor.isDualShade || (to != Scenes.Shade && to != Scenes.QuickSettings)
         ) {
@@ -503,6 +516,10 @@ constructor(
         }
         check(!shadeModeInteractor.isSplitShade || (to != Scenes.QuickSettings)) {
             "Can't change scene to ${to.debugName} in split shade mode!"
+        }
+
+        if (from == to) {
+            return false
         }
 
         if (to !in repository.allContentKeys) {
