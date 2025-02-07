@@ -184,3 +184,13 @@ flag {
     description: "Try out bubble bar on phones"
     bug: "394869612"
 }
+
+flag {
+    name: "enable_bubble_task_view_listener"
+    namespace: "multitasking"
+    description: "Use the same taskview listener for bubble bar and floating"
+    bug: "272102927"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
