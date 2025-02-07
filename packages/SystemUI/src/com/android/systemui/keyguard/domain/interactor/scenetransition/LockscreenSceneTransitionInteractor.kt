@@ -215,6 +215,7 @@ constructor(
                 animator = null,
                 modeOnCanceled = TransitionModeOnCanceled.RESET,
             )
+        repository.nextLockscreenTargetState.value = DEFAULT_STATE
         startTransition(newTransition)
     }
 
