@@ -187,6 +187,7 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             metricsLogger,
             kosmos.mediaCarouselController,
             kosmos.blurConfig,
+            false,
         )
     }
 
