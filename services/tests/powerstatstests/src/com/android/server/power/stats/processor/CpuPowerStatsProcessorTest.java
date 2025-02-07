@@ -34,6 +34,7 @@ import static org.junit.Assert.fail;
 import android.os.BatteryConsumer;
 import android.os.PersistableBundle;
 import android.platform.test.ravenwood.RavenwoodRule;
+import android.util.IntArray;
 import android.util.LongArray;
 
 import androidx.test.filters.SmallTest;
@@ -51,7 +52,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -315,8 +315,12 @@ public class CpuPowerStatsProcessorTest {
         }
 
         @Override
-        void collectUids(Collection<Integer> uids) {
-            uids.addAll(mUids);
+        IntArray getActiveUids() {
+            IntArray uids = new IntArray();
+            for (Integer uid : mUids) {
+                uids.add(uid);
+            }
+            return uids;
         }
 
         void verifyPowerEstimates() {
