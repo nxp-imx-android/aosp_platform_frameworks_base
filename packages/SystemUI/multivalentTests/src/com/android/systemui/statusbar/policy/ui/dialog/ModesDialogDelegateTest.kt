@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.policy.ui.dialog
 
 import android.app.Dialog
 import android.content.Intent
+import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -25,10 +26,10 @@ import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.mockActivityTransitionAnimatorController
 import com.android.systemui.animation.mockDialogTransitionAnimator
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.backgroundCoroutineContext
 import com.android.systemui.kosmos.mainCoroutineContext
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.activityStarter
-import com.android.systemui.runOnMainThreadAndWaitForIdleSync
 import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
@@ -49,6 +50,7 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@TestableLooper.RunWithLooper(setAsMainLooper = true)
 class ModesDialogDelegateTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
@@ -76,20 +78,28 @@ class ModesDialogDelegateTest : SysuiTestCase() {
                 activityStarter,
                 { kosmos.modesDialogViewModel },
                 mockDialogEventLogger,
+                kosmos.applicationCoroutineScope,
                 kosmos.mainCoroutineContext,
+                kosmos.backgroundCoroutineContext,
                 kosmos.shadeDialogContextInteractor,
             )
     }
 
     @Test
-    fun launchFromDialog_whenDialogNotOpen() {
-        val intent: Intent = mock()
+    fun launchFromDialog_whenDialogNotOpen() =
+        testScope.runTest {
+            val intent: Intent = mock()
 
-        runOnMainThreadAndWaitForIdleSync { underTest.launchFromDialog(intent) }
+            underTest.launchFromDialog(intent)
+            runCurrent()
 
-        verify(activityStarter)
-            .startActivity(eq(intent), eq(true), eq<ActivityTransitionAnimator.Controller?>(null))
-    }
+            verify(activityStarter)
+                .startActivity(
+                    eq(intent),
+                    eq(true),
+                    eq<ActivityTransitionAnimator.Controller?>(null),
+                )
+        }
 
     @Test
     fun launchFromDialog_whenDialogOpen() =
@@ -97,29 +107,26 @@ class ModesDialogDelegateTest : SysuiTestCase() {
             val intent: Intent = mock()
             lateinit var dialog: Dialog
 
-            runOnMainThreadAndWaitForIdleSync {
-                kosmos.applicationCoroutineScope.launch { dialog = underTest.showDialog() }
-                runCurrent()
-                underTest.launchFromDialog(intent)
-            }
+            kosmos.applicationCoroutineScope.launch { dialog = underTest.showDialog() }
+            runCurrent()
+            underTest.launchFromDialog(intent)
+            runCurrent()
 
             verify(mockDialogTransitionAnimator)
                 .createActivityTransitionController(any<Dialog>(), eq(null))
             verify(activityStarter).startActivity(eq(intent), eq(true), eq(mockAnimationController))
 
-            runOnMainThreadAndWaitForIdleSync { dialog.dismiss() }
+            dialog.dismiss()
         }
 
     @Test
     fun dismiss_clearsDialogReference() {
-        val dialog = runOnMainThreadAndWaitForIdleSync { underTest.createDialog() }
+        val dialog = underTest.createDialog()
 
         assertThat(underTest.currentDialog).isEqualTo(dialog)
 
-        runOnMainThreadAndWaitForIdleSync {
-            dialog.show()
-            dialog.dismiss()
-        }
+        dialog.show()
+        dialog.dismiss()
 
         assertThat(underTest.currentDialog).isNull()
     }

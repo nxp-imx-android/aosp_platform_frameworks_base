@@ -19,6 +19,8 @@ package com.android.systemui.statusbar.policy.ui.dialog
 import android.content.mockedContext
 import com.android.systemui.animation.dialogTransitionAnimator
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.backgroundCoroutineContext
 import com.android.systemui.kosmos.mainCoroutineContext
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
@@ -37,7 +39,9 @@ var Kosmos.modesDialogDelegate: ModesDialogDelegate by
             activityStarter,
             { modesDialogViewModel },
             modesDialogEventLogger,
+            applicationCoroutineScope,
             mainCoroutineContext,
+            backgroundCoroutineContext,
             shadeDialogContextInteractor,
         )
     }

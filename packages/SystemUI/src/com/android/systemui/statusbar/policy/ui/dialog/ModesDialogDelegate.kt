@@ -16,7 +16,7 @@
 
 package com.android.systemui.statusbar.policy.ui.dialog
 
-import android.annotation.UiThread;
+import android.annotation.UiThread
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -44,6 +44,8 @@ import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dialog.ui.composable.AlertDialogContent
 import com.android.systemui.plugins.ActivityStarter
@@ -60,6 +62,8 @@ import com.android.systemui.util.Assert
 import javax.inject.Inject
 import javax.inject.Provider
 import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @SysUISingleton
@@ -73,7 +77,9 @@ constructor(
     // Using a provider to avoid a circular dependency.
     private val viewModel: Provider<ModesDialogViewModel>,
     private val dialogEventLogger: ModesDialogEventLogger,
+    @Application private val applicationCoroutineScope: CoroutineScope,
     @Main private val mainCoroutineContext: CoroutineContext,
+    @Background private val bgContext: CoroutineContext,
     private val shadeDisplayContextRepository: ShadeDialogContextInteractor,
 ) : SystemUIDialog.Delegate {
     // NOTE: This should only be accessed/written from the main thread.
@@ -185,6 +191,18 @@ constructor(
      * launches it normally without animating.
      */
     fun launchFromDialog(intent: Intent) {
+        // TODO: b/394571336 - Remove this method and inline "actual" if b/394571336 fixed.
+        // Workaround for Compose bug, see b/394241061 and b/394571336 -- Need to post on the main
+        // thread so that dialog dismissal doesn't crash after a long press inside it (the *double*
+        // jump, out and back in, is because mainCoroutineContext is .immediate).
+        applicationCoroutineScope.launch {
+            withContext(bgContext) {
+                withContext(mainCoroutineContext) { actualLaunchFromDialog(intent) }
+            }
+        }
+    }
+
+    private fun actualLaunchFromDialog(intent: Intent) {
         Assert.isMainThread()
         if (currentDialog == null) {
             Log.w(
