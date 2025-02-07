@@ -782,6 +782,9 @@
          aliasing effects). This is only used on circular displays. -->
     <dimen name="circular_display_mask_thickness">1px</dimen>
 
+    <!-- The width of the round scrollbar -->
+    <dimen name="round_scrollbar_width">5dp</dimen>
+
     <dimen name="lock_pattern_dot_line_width">22dp</dimen>
     <dimen name="lock_pattern_dot_size">14dp</dimen>
     <dimen name="lock_pattern_dot_size_activated">30dp</dimen>
