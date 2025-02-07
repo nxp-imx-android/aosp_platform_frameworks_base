@@ -59,7 +59,7 @@ import com.android.systemui.res.R
 @Composable
 fun ContentScope.OverlayShade(
     panelElement: ElementKey,
-    panelAlignment: Alignment,
+    alignmentOnWideScreens: Alignment,
     onScrimClicked: () -> Unit,
     modifier: Modifier = Modifier,
     header: @Composable () -> Unit,
@@ -71,7 +71,7 @@ fun ContentScope.OverlayShade(
 
         Box(
             modifier = Modifier.fillMaxSize().panelContainerPadding(isFullWidth),
-            contentAlignment = panelAlignment,
+            contentAlignment = if (isFullWidth) Alignment.TopCenter else alignmentOnWideScreens,
         ) {
             Panel(
                 modifier =

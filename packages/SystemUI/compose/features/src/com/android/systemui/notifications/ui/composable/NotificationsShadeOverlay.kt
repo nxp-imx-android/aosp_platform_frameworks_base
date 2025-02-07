@@ -86,7 +86,7 @@ constructor(
 
         OverlayShade(
             panelElement = NotificationsShade.Elements.Panel,
-            panelAlignment = Alignment.TopStart,
+            alignmentOnWideScreens = Alignment.TopStart,
             modifier = modifier,
             onScrimClicked = viewModel::onScrimClicked,
             header = {
