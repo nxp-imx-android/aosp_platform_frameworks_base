@@ -28,6 +28,14 @@ flag {
 }
 
 flag {
+    name: "a11y_is_visited_api"
+    namespace: "accessibility"
+    description: "Adds an API to indicate whether a URL has been visited or not."
+    bug: "391469786"
+    is_exported: true
+}
+
+flag {
     name: "a11y_overlay_callbacks"
     is_exported: true
     namespace: "accessibility"
