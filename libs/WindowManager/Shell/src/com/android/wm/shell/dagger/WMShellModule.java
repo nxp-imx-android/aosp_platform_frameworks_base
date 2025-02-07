@@ -178,6 +178,7 @@ import dagger.Binds;
 import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
+
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
 import kotlinx.coroutines.MainCoroutineDispatcher;
@@ -913,12 +914,15 @@ public abstract class WMShellModule {
             Context context,
             Transitions transitions,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             InteractionJankMonitor interactionJankMonitor) {
         return ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX.isTrue()
                 ? new SpringDragToDesktopTransitionHandler(
-                        context, transitions, rootTaskDisplayAreaOrganizer, interactionJankMonitor)
+                context, transitions, rootTaskDisplayAreaOrganizer, desktopUserRepositories,
+                interactionJankMonitor)
                 : new DefaultDragToDesktopTransitionHandler(
-                        context, transitions, rootTaskDisplayAreaOrganizer, interactionJankMonitor);
+                        context, transitions, rootTaskDisplayAreaOrganizer, desktopUserRepositories,
+                        interactionJankMonitor);
     }
 
     @WMSingleton

@@ -70,6 +70,7 @@ sealed class DragToDesktopTransitionHandler(
     private val context: Context,
     private val transitions: Transitions,
     private val taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
+    private val desktopUserRepositories: DesktopUserRepositories,
     protected val interactionJankMonitor: InteractionJankMonitor,
     protected val transactionSupplier: Supplier<SurfaceControl.Transaction>,
 ) : TransitionHandler {
@@ -127,15 +128,18 @@ sealed class DragToDesktopTransitionHandler(
                 pendingIntentCreatorBackgroundActivityStartMode =
                     ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
             }
-        val taskUser = UserHandle.of(taskInfo.userId)
+        // If we are launching home for a profile of a user, just use the [userId] of that user
+        // instead of the [profileId] to create the context.
+        val userToLaunchWith =
+            UserHandle.of(desktopUserRepositories.getUserIdForProfile(taskInfo.userId))
         val pendingIntent =
             PendingIntent.getActivityAsUser(
-                context.createContextAsUser(taskUser, /* flags= */ 0),
+                context.createContextAsUser(userToLaunchWith, /* flags= */ 0),
                 /* requestCode= */ 0,
                 launchHomeIntent,
                 FLAG_MUTABLE or FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT or FILL_IN_COMPONENT,
                 options.toBundle(),
-                taskUser,
+                userToLaunchWith,
             )
         val wct = WindowContainerTransaction()
         // The app that is being dragged into desktop mode might cause new transitions, make this
@@ -881,6 +885,7 @@ constructor(
     context: Context,
     transitions: Transitions,
     taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
+    desktopUserRepositories: DesktopUserRepositories,
     interactionJankMonitor: InteractionJankMonitor,
     transactionSupplier: Supplier<SurfaceControl.Transaction> = Supplier {
         SurfaceControl.Transaction()
@@ -890,6 +895,7 @@ constructor(
         context,
         transitions,
         taskDisplayAreaOrganizer,
+        desktopUserRepositories,
         interactionJankMonitor,
         transactionSupplier,
     ) {
@@ -917,6 +923,7 @@ constructor(
     context: Context,
     transitions: Transitions,
     taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
+    desktopUserRepositories: DesktopUserRepositories,
     interactionJankMonitor: InteractionJankMonitor,
     transactionSupplier: Supplier<SurfaceControl.Transaction> = Supplier {
         SurfaceControl.Transaction()
@@ -926,6 +933,7 @@ constructor(
         context,
         transitions,
         taskDisplayAreaOrganizer,
+        desktopUserRepositories,
         interactionJankMonitor,
         transactionSupplier,
     ) {

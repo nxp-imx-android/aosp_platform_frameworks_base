@@ -70,6 +70,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     @Mock private lateinit var mockInteractionJankMonitor: InteractionJankMonitor
     @Mock private lateinit var draggedTaskLeash: SurfaceControl
     @Mock private lateinit var homeTaskLeash: SurfaceControl
+    @Mock private lateinit var desktopUserRepositories: DesktopUserRepositories
 
     private val transactionSupplier = Supplier { mock<SurfaceControl.Transaction>() }
 
@@ -84,6 +85,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     context,
                     transitions,
                     taskDisplayAreaOrganizer,
+                    desktopUserRepositories,
                     mockInteractionJankMonitor,
                     transactionSupplier,
                 )
@@ -93,6 +95,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     context,
                     transitions,
                     taskDisplayAreaOrganizer,
+                    desktopUserRepositories,
                     mockInteractionJankMonitor,
                     transactionSupplier,
                 )
@@ -484,17 +487,22 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         val mergedFinishTransaction = mock<SurfaceControl.Transaction>()
         val finishCallback = mock<Transitions.TransitionFinishCallback>()
         val task = createTask()
-        val startTransition = startDrag(
-            springHandler, task, finishTransaction = playingFinishTransaction, homeChange = null)
+        val startTransition =
+            startDrag(
+                springHandler,
+                task,
+                finishTransaction = playingFinishTransaction,
+                homeChange = null,
+            )
         springHandler.onTaskResizeAnimationListener = mock()
 
         springHandler.mergeAnimation(
             transition = mock<IBinder>(),
             info =
-            createTransitionInfo(
-                type = TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP,
-                draggedTask = task,
-            ),
+                createTransitionInfo(
+                    type = TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP,
+                    draggedTask = task,
+                ),
             startT = mergedStartTransaction,
             finishT = mergedFinishTransaction,
             mergeTarget = startTransition,
@@ -723,7 +731,8 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     private fun createTransitionInfo(
         type: Int,
         draggedTask: RunningTaskInfo,
-        homeChange: TransitionInfo.Change? = createHomeChange()) =
+        homeChange: TransitionInfo.Change? = createHomeChange(),
+    ) =
         TransitionInfo(type, /* flags= */ 0).apply {
             homeChange?.let { addChange(it) }
             addChange( // Dragged Task.
@@ -741,11 +750,12 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
             )
         }
 
-    private fun createHomeChange() = TransitionInfo.Change(mock(), homeTaskLeash).apply {
-        parent = null
-        taskInfo = TestRunningTaskInfoBuilder().setActivityType(ACTIVITY_TYPE_HOME).build()
-        flags = flags or FLAG_IS_WALLPAPER
-    }
+    private fun createHomeChange() =
+        TransitionInfo.Change(mock(), homeTaskLeash).apply {
+            parent = null
+            taskInfo = TestRunningTaskInfoBuilder().setActivityType(ACTIVITY_TYPE_HOME).build()
+            flags = flags or FLAG_IS_WALLPAPER
+        }
 
     private fun systemPropertiesKey(name: String) =
         "${SpringDragToDesktopTransitionHandler.SYSTEM_PROPERTIES_GROUP}.$name"
