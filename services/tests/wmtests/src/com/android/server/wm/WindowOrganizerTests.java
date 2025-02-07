@@ -26,6 +26,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
+import static android.content.pm.ActivityInfo.CONFIG_UI_MODE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSET;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
@@ -33,6 +34,8 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.res.Configuration.SCREEN_HEIGHT_DP_UNDEFINED;
 import static android.content.res.Configuration.SCREEN_WIDTH_DP_UNDEFINED;
+import static android.content.res.Configuration.UI_MODE_NIGHT_NO;
+import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_FIRST;
@@ -1981,6 +1984,30 @@ public class WindowOrganizerTests extends WindowTestsBase {
         final DisplayArea displayArea = mDisplayContent.getDefaultTaskDisplayArea();
         displayArea.setWindowingMode(WINDOWING_MODE_FREEFORM);
         testSetAlwaysOnTop(displayArea);
+    }
+
+    @Test
+    public void testConfigurationsAreEqualForOrganizer() {
+        Configuration config1 = new Configuration();
+        config1.smallestScreenWidthDp = 300;
+        config1.uiMode = UI_MODE_NIGHT_YES;
+
+        Configuration config2 = new Configuration(config1);
+        config2.uiMode = UI_MODE_NIGHT_NO;
+
+        Configuration config3 = new Configuration(config1);
+        config3.smallestScreenWidthDp = 500;
+
+        // Should be equal for non-controllable configuration changes.
+        assertTrue(WindowOrganizerController.configurationsAreEqualForOrganizer(config1, config2));
+
+        // Should be unequal for non-controllable configuration changes if the organizer is
+        // interested in that change.
+        assertFalse(WindowOrganizerController.configurationsAreEqualForOrganizer(
+                config1, config2, CONFIG_UI_MODE));
+
+        // Should be unequal for controllable configuration changes.
+        assertFalse(WindowOrganizerController.configurationsAreEqualForOrganizer(config1, config3));
     }
 
     private void testSetAlwaysOnTop(WindowContainer wc) {

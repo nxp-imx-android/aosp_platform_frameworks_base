@@ -394,6 +394,12 @@ class TaskFragment extends WindowContainer<WindowContainer> {
      */
     private boolean mAllowTransitionWhenEmpty;
 
+    /**
+     * Specifies which configuration changes should trigger TaskFragment info changed callbacks.
+     * Only system TaskFragment organizers are allowed to set this value.
+     */
+    private @ActivityInfo.Config int mConfigurationChangeMaskForOrganizer;
+
     /** When set, will force the task to report as invisible. */
     static final int FLAG_FORCE_HIDDEN_FOR_PINNED_TASK = 1;
     static final int FLAG_FORCE_HIDDEN_FOR_TASK_ORG = 1 << 1;
@@ -654,6 +660,17 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             return;
         }
         mAllowTransitionWhenEmpty = allowTransitionWhenEmpty;
+    }
+
+    void setConfigurationChangeMaskForOrganizer(@ActivityInfo.Config int mask) {
+        // Only system organizers are allowed to set configuration change mask.
+        if (mTaskFragmentOrganizerController.isSystemOrganizer(mTaskFragmentOrganizer.asBinder())) {
+            mConfigurationChangeMaskForOrganizer = mask;
+        }
+    }
+
+    @ActivityInfo.Config int getConfigurationChangeMaskForOrganizer() {
+        return mConfigurationChangeMaskForOrganizer;
     }
 
     /** @see #mIsolatedNav */
