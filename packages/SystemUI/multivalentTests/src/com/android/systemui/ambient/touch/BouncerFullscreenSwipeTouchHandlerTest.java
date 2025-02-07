@@ -64,11 +64,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import java.util.List;
-import java.util.Optional;
-
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
+
+import java.util.List;
+import java.util.Optional;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -171,6 +171,7 @@ public class BouncerFullscreenSwipeTouchHandlerTest extends SysuiTestCase {
                 mActivityStarter,
                 mKeyguardInteractor,
                 mSceneInteractor,
+                mKosmos.getShadeRepository(),
                 Optional.of(() -> mWindowRootView));
 
         when(mScrimManager.getCurrentController()).thenReturn(mScrimController);
