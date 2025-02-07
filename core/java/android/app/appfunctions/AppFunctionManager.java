@@ -27,6 +27,7 @@ import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemService;
 import android.annotation.UserHandleAware;
+import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundException;
 import android.app.appsearch.AppSearchManager;
 import android.content.Context;
 import android.os.CancellationSignal;
@@ -325,8 +326,28 @@ public final class AppFunctionManager {
             return;
         }
 
+        // Wrap the callback to convert AppFunctionNotFoundException to IllegalArgumentException
+        // to match the documentation.
+        OutcomeReceiver<Boolean, Exception> callbackWithExceptionInterceptor =
+                new OutcomeReceiver<>() {
+                    @Override
+                    public void onResult(@NonNull Boolean result) {
+                        callback.onResult(result);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Exception exception) {
+                        if (exception instanceof AppFunctionNotFoundException) {
+                            exception = new IllegalArgumentException(exception);
+                        }
+                        callback.onError(exception);
+                    }
+                };
+
         AppFunctionManagerHelper.isAppFunctionEnabled(
-                functionIdentifier, targetPackage, appSearchManager, executor, callback);
+                functionIdentifier, targetPackage, appSearchManager, executor,
+                callbackWithExceptionInterceptor);
+
     }
 
     private static class CallbackWrapper extends IAppFunctionEnabledCallback.Stub {

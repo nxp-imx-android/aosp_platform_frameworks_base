@@ -60,8 +60,8 @@ public class AppFunctionManagerHelper {
      * <p>If operation fails, the callback's {@link OutcomeReceiver#onError} is called with errors:
      *
      * <ul>
-     *   <li>{@link IllegalArgumentException}, if the function is not found or the caller does not
-     *       have access to it.
+     *   <li>{@link AppFunctionNotFoundException}, if the function is not found or the caller does
+     *       not have access to it.
      * </ul>
      *
      * @param functionIdentifier the identifier of the app function to check (unique within the
@@ -216,7 +216,7 @@ public class AppFunctionManagerHelper {
     private static @NonNull Exception failedResultToException(
             @NonNull AppSearchResult appSearchResult) {
         return switch (appSearchResult.getResultCode()) {
-            case AppSearchResult.RESULT_INVALID_ARGUMENT -> new IllegalArgumentException(
+            case AppSearchResult.RESULT_INVALID_ARGUMENT -> new AppFunctionNotFoundException(
                     appSearchResult.getErrorMessage());
             case AppSearchResult.RESULT_IO_ERROR -> new IOException(
                     appSearchResult.getErrorMessage());
@@ -224,5 +224,16 @@ public class AppFunctionManagerHelper {
                     appSearchResult.getErrorMessage());
             default -> new IllegalStateException(appSearchResult.getErrorMessage());
         };
+    }
+
+    /**
+     * Throws when the app function is not found.
+     *
+     * @hide
+     */
+    public static class AppFunctionNotFoundException extends RuntimeException {
+        private AppFunctionNotFoundException(@NonNull String errorMessage) {
+            super(errorMessage);
+        }
     }
 }
