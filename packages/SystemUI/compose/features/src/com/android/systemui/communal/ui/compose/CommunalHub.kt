@@ -1747,7 +1747,7 @@ private fun UmoLegacy(viewModel: BaseCommunalViewModel, modifier: Modifier = Mod
             modifier
                 .clip(
                     shape =
-                        RoundedCornerShape(dimensionResource(system_app_widget_background_radius))
+                        RoundedCornerShape(dimensionResource(R.dimen.notification_corner_radius))
                 )
                 .background(MaterialTheme.colorScheme.primary)
                 .pointerInput(Unit) {
