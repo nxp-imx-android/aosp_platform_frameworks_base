@@ -343,10 +343,22 @@ class DesktopTasksController(
             DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
                 .isTrue() && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue()
         ) {
+            logV(
+                "isDesktopModeShowing: hasVisibleTasks=%s hasTopTransparentFullscreenTask=%s hasMinimizedPip=%s",
+                hasVisibleTasks,
+                hasTopTransparentFullscreenTask,
+                hasMinimizedPip,
+            )
             return hasVisibleTasks || hasTopTransparentFullscreenTask || hasMinimizedPip
         } else if (Flags.enableDesktopWindowingPip()) {
+            logV(
+                "isDesktopModeShowing: hasVisibleTasks=%s hasMinimizedPip=%s",
+                hasVisibleTasks,
+                hasMinimizedPip,
+            )
             return hasVisibleTasks || hasMinimizedPip
         }
+        logV("isDesktopModeShowing: hasVisibleTasks=%s", hasVisibleTasks)
         return hasVisibleTasks
     }
 
