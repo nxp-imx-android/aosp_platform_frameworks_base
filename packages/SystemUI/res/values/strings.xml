@@ -1351,10 +1351,6 @@
     <string name="accessibility_action_label_shrink_widget">Decrease height</string>
     <!-- Label for accessibility action to expand a widget in edit mode. [CHAR LIMIT=NONE] -->
     <string name="accessibility_action_label_expand_widget">Increase height</string>
-    <!-- Label for accessibility action to show the next media player. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_action_label_umo_show_next">Show next</string>
-    <!-- Label for accessibility action to show the previous media player. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_action_label_umo_show_previous">Show previous</string>
     <!-- Title shown above information regarding lock screen widgets. [CHAR LIMIT=50] -->
     <string name="communal_widgets_disclaimer_title">Lock screen widgets</string>
     <!-- Information about lock screen widgets presented to the user. [CHAR LIMIT=NONE] -->

@@ -254,14 +254,6 @@ constructor(
         }
     }
 
-    override fun onShowPreviousMedia() {
-        mediaCarouselController.mediaCarouselScrollHandler.scrollByStep(-1)
-    }
-
-    override fun onShowNextMedia() {
-        mediaCarouselController.mediaCarouselScrollHandler.scrollByStep(1)
-    }
-
     override fun onTapWidget(componentName: ComponentName, rank: Int) {
         metricsLogger.logTapWidget(componentName.flattenToString(), rank)
     }
