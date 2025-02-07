@@ -478,7 +478,7 @@ constructor(
 
     /**
      * Ensure view is visible when the shade/qs are expanded. Also, as QS is expanding, fade out
-     * notifications unless in splitshade.
+     * notifications unless it's a large screen.
      */
     private val alphaForShadeAndQsExpansion: Flow<Float> =
         if (SceneContainerFlag.isEnabled) {
@@ -501,16 +501,26 @@ constructor(
                         Split -> isAnyExpanded.filter { it }.map { 1f }
                         Dual ->
                             combineTransform(
+                                shadeModeInteractor.isShadeLayoutWide,
                                 headsUpNotificationInteractor.get().isHeadsUpOrAnimatingAway,
                                 shadeInteractor.shadeExpansion,
                                 shadeInteractor.qsExpansion,
-                            ) { isHeadsUpOrAnimatingAway, shadeExpansion, qsExpansion ->
-                                if (isHeadsUpOrAnimatingAway) {
+                            ) {
+                                isShadeLayoutWide,
+                                isHeadsUpOrAnimatingAway,
+                                shadeExpansion,
+                                qsExpansion ->
+                                if (isShadeLayoutWide) {
+                                    if (shadeExpansion > 0f) {
+                                        emit(1f)
+                                    }
+                                } else if (isHeadsUpOrAnimatingAway) {
                                     // Ensure HUNs will be visible in QS shade (at least while
                                     // unlocked)
                                     emit(1f)
                                 } else if (shadeExpansion > 0f || qsExpansion > 0f) {
-                                    // Fade out as QS shade expands
+                                    // On a narrow screen, the QS shade overlaps with lockscreen
+                                    // notifications. Fade them out as the QS shade expands.
                                     emit(1f - qsExpansion)
                                 }
                             }
