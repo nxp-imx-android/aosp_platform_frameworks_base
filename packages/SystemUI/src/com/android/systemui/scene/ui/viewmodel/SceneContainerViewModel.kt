@@ -31,6 +31,8 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
+import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LightRevealScrimViewModel
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -68,6 +70,8 @@ constructor(
     val lightRevealScrim: LightRevealScrimViewModel,
     val wallpaperViewModel: WallpaperViewModel,
     keyguardInteractor: KeyguardInteractor,
+    val burnIn: AodBurnInViewModel,
+    val clock: KeyguardClockViewModel,
     @Assisted view: View,
     @Assisted private val motionEventHandlerReceiver: (MotionEventHandler?) -> Unit,
 ) : ExclusiveActivatable() {
