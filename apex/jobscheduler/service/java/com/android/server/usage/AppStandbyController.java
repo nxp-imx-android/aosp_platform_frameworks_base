@@ -264,6 +264,8 @@ public class AppStandbyController
     @GuardedBy("mCarrierPrivilegedLock")
     private boolean mHaveCarrierPrivilegedApps;
 
+    private final boolean mHasFeatureTelephonySubscription;
+
     /** List of carrier-privileged apps that should be excluded from standby */
     @GuardedBy("mCarrierPrivilegedLock")
     private List<String> mCarrierPrivilegedApps;
@@ -603,6 +605,8 @@ public class AppStandbyController
         mContext = mInjector.getContext();
         mHandler = new AppStandbyHandler(mInjector.getLooper());
         mPackageManager = mContext.getPackageManager();
+        mHasFeatureTelephonySubscription = mPackageManager.hasSystemFeature(
+                PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION);
 
         DeviceStateReceiver deviceStateReceiver = new DeviceStateReceiver();
         IntentFilter deviceStates = new IntentFilter(BatteryManager.ACTION_CHARGING);
@@ -1515,7 +1519,7 @@ public class AppStandbyController
         }
 
         // Check this last, as it can be the most expensive check
-        if (isCarrierApp(packageName)) {
+        if (mHasFeatureTelephonySubscription && isCarrierApp(packageName)) {
             return STANDBY_BUCKET_EXEMPTED;
         }
 
