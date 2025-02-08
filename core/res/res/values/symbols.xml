@@ -5754,6 +5754,9 @@
   <!-- Whether the developer option for desktop mode is supported on the current device  -->
   <java-symbol type="bool" name="config_isDesktopModeDevOptionSupported" />
 
+  <!-- Whether the current device's internal display can host desktop sessions.  -->
+  <java-symbol type="bool" name="config_canInternalDisplayHostDesktops" />
+
   <!-- Maximum number of active tasks on a given Desktop Windowing session. Set to 0 for unlimited. -->
   <java-symbol type="integer" name="config_maxDesktopWindowingActiveTasks"/>
 
@@ -5902,4 +5905,8 @@
   <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_text" />
   <java-symbol type="string" name="usb_apm_usb_suspicious_activity_notification_title" />
   <java-symbol type="string" name="usb_apm_usb_suspicious_activity_notification_text" />
+
+  <!-- Enable OEMs to support scale up anim across tasks.-->
+  <java-symbol type="bool" name="config_enableCrossTaskScaleUpAnimation" />
+
 </resources>

@@ -22,11 +22,17 @@ import android.util.Log
 import com.android.settingslib.datastore.KeyValueStore
 
 /** Registry of all available preference screens in the app. */
-object PreferenceScreenRegistry : ReadWritePermitProvider {
+object PreferenceScreenRegistry {
     private const val TAG = "ScreenRegistry"
 
     /** Provider of key-value store. */
     private lateinit var keyValueStoreProvider: KeyValueStoreProvider
+
+    /** The default permit for external application to read preference values. */
+    var defaultReadPermit: @ReadWritePermit Int = ReadWritePermit.DISALLOW
+
+    /** The default permit for external application to write preference values. */
+    var defaultWritePermit: @ReadWritePermit Int = ReadWritePermit.DISALLOW
 
     /**
      * Factories of all available [PreferenceScreenMetadata]s.
@@ -37,9 +43,6 @@ object PreferenceScreenRegistry : ReadWritePermitProvider {
 
     /** Metrics logger for preference actions triggered by user interaction. */
     var preferenceUiActionMetricsLogger: PreferenceUiActionMetricsLogger? = null
-
-    private var readWritePermitProvider: ReadWritePermitProvider =
-        object : ReadWritePermitProvider {}
 
     /** Sets the [KeyValueStoreProvider]. */
     fun setKeyValueStoreProvider(keyValueStoreProvider: KeyValueStoreProvider) {
@@ -77,28 +80,6 @@ object PreferenceScreenRegistry : ReadWritePermitProvider {
             return null
         }
     }
-
-    /**
-     * Sets the provider to check read write permit. Read and write requests are denied by default.
-     */
-    fun setReadWritePermitProvider(readWritePermitProvider: ReadWritePermitProvider) {
-        this.readWritePermitProvider = readWritePermitProvider
-    }
-
-    override fun getReadPermit(
-        context: Context,
-        callingPid: Int,
-        callingUid: Int,
-        preference: PreferenceMetadata,
-    ) = readWritePermitProvider.getReadPermit(context, callingPid, callingUid, preference)
-
-    override fun getWritePermit(
-        context: Context,
-        value: Any?,
-        callingPid: Int,
-        callingUid: Int,
-        preference: PreferenceMetadata,
-    ) = readWritePermitProvider.getWritePermit(context, value, callingPid, callingUid, preference)
 }
 
 /** Provider of [KeyValueStore]. */
@@ -112,26 +93,4 @@ fun interface KeyValueStoreProvider {
      * - determine the storage per preference keys or the interfaces implemented by the preference
      */
     fun getKeyValueStore(context: Context, preference: PreferenceMetadata): KeyValueStore?
-}
-
-/** Provider of read and write permit. */
-interface ReadWritePermitProvider {
-
-    val defaultReadWritePermit: @ReadWritePermit Int
-        get() = ReadWritePermit.DISALLOW
-
-    fun getReadPermit(
-        context: Context,
-        callingPid: Int,
-        callingUid: Int,
-        preference: PreferenceMetadata,
-    ): @ReadWritePermit Int = defaultReadWritePermit
-
-    fun getWritePermit(
-        context: Context,
-        value: Any?,
-        callingPid: Int,
-        callingUid: Int,
-        preference: PreferenceMetadata,
-    ): @ReadWritePermit Int = defaultReadWritePermit
 }

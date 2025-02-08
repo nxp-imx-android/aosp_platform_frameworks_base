@@ -555,6 +555,23 @@ class TransitionController {
         return null;
     }
 
+    /**
+     * @return The playing transition that is transiently-hiding the given {@param container}, or
+     *         null if there isn't one
+     * @param container A participant of a transient-hide transition
+     */
+    @Nullable
+    Transition getTransientHideTransitionForContainer(
+            @NonNull WindowContainer container) {
+        for (int i = mPlayingTransitions.size() - 1; i >= 0; --i) {
+            final Transition transition = mPlayingTransitions.get(i);
+            if (transition.isInTransientHide(container)) {
+                return transition;
+            }
+        }
+        return null;
+    }
+
     /** Returns {@code true} if the display contains a transient-launch transition. */
     boolean hasTransientLaunch(@NonNull DisplayContent dc) {
         if (mCollectingTransition != null && mCollectingTransition.hasTransientLaunch()

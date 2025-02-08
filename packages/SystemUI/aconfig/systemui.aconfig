@@ -1946,6 +1946,16 @@ flag {
 }
 
 flag {
+    name: "unfold_latency_tracking_fix"
+    namespace: "systemui"
+    description: "New implementation to track unfold latency that excludes broken cases"
+    bug: "390649568"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "ui_rich_ongoing_force_expanded"
     namespace: "systemui"
     description: "Force promoted notifications to always be expanded"

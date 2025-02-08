@@ -36,8 +36,6 @@ import com.android.settingslib.metadata.PreferenceRemoteOpMetricsLogger
 import com.android.settingslib.metadata.PreferenceRestrictionProvider
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import com.android.settingslib.metadata.ReadWritePermit
-import com.android.settingslib.metadata.SensitivityLevel.Companion.HIGH_SENSITIVITY
-import com.android.settingslib.metadata.SensitivityLevel.Companion.UNKNOWN_SENSITIVITY
 
 /** Request to set preference value. */
 class PreferenceSetterRequest(
@@ -223,13 +221,8 @@ fun <T> PersistentPreference<T>.evalWritePermit(
     callingPid: Int,
     callingUid: Int,
 ): Int =
-    when {
-        sensitivityLevel == UNKNOWN_SENSITIVITY || sensitivityLevel == HIGH_SENSITIVITY ->
-            ReadWritePermit.DISALLOW
-        getWritePermissions(context)?.check(context, callingPid, callingUid) == false ->
-            ReadWritePermit.REQUIRE_APP_PERMISSION
-        else -> getWritePermit(context, value, callingPid, callingUid)
-    }
+    evalWritePermit(context, callingPid, callingUid)
+        ?: getWritePermit(context, value, callingPid, callingUid)
 
 /** Message codec for [PreferenceSetterRequest]. */
 object PreferenceSetterRequestCodec : MessageCodec<PreferenceSetterRequest> {

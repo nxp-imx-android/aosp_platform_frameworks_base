@@ -17,16 +17,19 @@
 package com.android.systemui.communal;
 
 import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_ASLEEP;
-import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_GOING_TO_SLEEP;
 
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
+import com.android.systemui.keyguard.shared.model.DozeStateModel;
 import com.android.systemui.shared.condition.Condition;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
+import com.android.systemui.util.kotlin.JavaAdapter;
 
 import kotlinx.coroutines.CoroutineScope;
+import kotlinx.coroutines.Job;
 
 import javax.inject.Inject;
 
@@ -38,6 +41,10 @@ public class DeviceInactiveCondition extends Condition {
     private final KeyguardStateController mKeyguardStateController;
     private final WakefulnessLifecycle mWakefulnessLifecycle;
     private final KeyguardUpdateMonitor mKeyguardUpdateMonitor;
+    private final KeyguardInteractor mKeyguardInteractor;
+    private final JavaAdapter mJavaAdapter;
+    private Job mAnyDozeListenerJob;
+    private boolean mAnyDoze;
     private final KeyguardStateController.Callback mKeyguardStateCallback =
             new KeyguardStateController.Callback() {
                 @Override
@@ -63,12 +70,14 @@ public class DeviceInactiveCondition extends Condition {
     @Inject
     public DeviceInactiveCondition(@Application CoroutineScope scope,
             KeyguardStateController keyguardStateController,
-            WakefulnessLifecycle wakefulnessLifecycle,
-            KeyguardUpdateMonitor keyguardUpdateMonitor) {
+            WakefulnessLifecycle wakefulnessLifecycle, KeyguardUpdateMonitor keyguardUpdateMonitor,
+            KeyguardInteractor keyguardInteractor, JavaAdapter javaAdapter) {
         super(scope);
         mKeyguardStateController = keyguardStateController;
         mWakefulnessLifecycle = wakefulnessLifecycle;
         mKeyguardUpdateMonitor = keyguardUpdateMonitor;
+        mKeyguardInteractor = keyguardInteractor;
+        mJavaAdapter = javaAdapter;
     }
 
     @Override
@@ -77,6 +86,11 @@ public class DeviceInactiveCondition extends Condition {
         mKeyguardStateController.addCallback(mKeyguardStateCallback);
         mKeyguardUpdateMonitor.registerCallback(mKeyguardUpdateCallback);
         mWakefulnessLifecycle.addObserver(mWakefulnessObserver);
+        mAnyDozeListenerJob = mJavaAdapter.alwaysCollectFlow(
+                mKeyguardInteractor.getDozeTransitionModel(), dozeModel -> {
+                    mAnyDoze = !DozeStateModel.Companion.isDozeOff(dozeModel.getTo());
+                    updateState();
+                });
     }
 
     @Override
@@ -84,6 +98,7 @@ public class DeviceInactiveCondition extends Condition {
         mKeyguardStateController.removeCallback(mKeyguardStateCallback);
         mKeyguardUpdateMonitor.removeCallback(mKeyguardUpdateCallback);
         mWakefulnessLifecycle.removeObserver(mWakefulnessObserver);
+        mAnyDozeListenerJob.cancel(null);
     }
 
     @Override
@@ -92,10 +107,10 @@ public class DeviceInactiveCondition extends Condition {
     }
 
     private void updateState() {
-        final boolean asleep =
-                mWakefulnessLifecycle.getWakefulness() == WAKEFULNESS_ASLEEP
-                        || mWakefulnessLifecycle.getWakefulness() == WAKEFULNESS_GOING_TO_SLEEP;
-        updateCondition(asleep || mKeyguardStateController.isShowing()
-                || mKeyguardUpdateMonitor.isDreaming());
+        final boolean asleep = mWakefulnessLifecycle.getWakefulness() == WAKEFULNESS_ASLEEP;
+        // Doze/AoD is also a dream, but we should never override it with low light as to the user
+        // it's totally unrelated.
+        updateCondition(!mAnyDoze && (asleep || mKeyguardStateController.isShowing()
+                || mKeyguardUpdateMonitor.isDreaming()));
     }
 }
