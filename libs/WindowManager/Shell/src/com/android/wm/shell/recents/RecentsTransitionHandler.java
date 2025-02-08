@@ -1450,6 +1450,11 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             wct.clear();
 
                             if (Flags.enableRecentsBookendTransition()) {
+                                // Notify the mixers of the pending finish
+                                for (int i = 0; i < mMixers.size(); ++i) {
+                                    mMixers.get(i).handleFinishRecents(returningToApp, wct, t);
+                                }
+
                                 // In this case, we've already started the PIP transition, so we can
                                 // clean up immediately
                                 mPendingRunnerFinishCb = runnerFinishCb;

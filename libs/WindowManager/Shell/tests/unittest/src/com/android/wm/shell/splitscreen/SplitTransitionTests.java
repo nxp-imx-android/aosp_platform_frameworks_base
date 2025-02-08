@@ -360,7 +360,8 @@ public class SplitTransitionTests extends ShellTestCase {
             mStageCoordinator.onRecentsInSplitAnimationFinishing(false /* returnToApp */, commitWCT,
                     mock(SurfaceControl.Transaction.class));
         } else {
-            mStageCoordinator.onRecentsInSplitAnimationFinish(commitWCT,
+            mStageCoordinator.onRecentsInSplitAnimationFinishing(
+                    mStageCoordinator.wctIsReorderingSplitToTop(commitWCT), commitWCT,
                     mock(SurfaceControl.Transaction.class));
         }
         assertFalse(mStageCoordinator.isSplitScreenVisible());
@@ -430,7 +431,8 @@ public class SplitTransitionTests extends ShellTestCase {
             mStageCoordinator.onRecentsInSplitAnimationFinishing(true /* returnToApp */, restoreWCT,
                     mock(SurfaceControl.Transaction.class));
         } else {
-            mStageCoordinator.onRecentsInSplitAnimationFinish(restoreWCT,
+            mStageCoordinator.onRecentsInSplitAnimationFinishing(
+                    mStageCoordinator.wctIsReorderingSplitToTop(restoreWCT), restoreWCT,
                     mock(SurfaceControl.Transaction.class));
         }
         assertTrue(mStageCoordinator.isSplitScreenVisible());
