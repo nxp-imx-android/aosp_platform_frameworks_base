@@ -90,7 +90,7 @@ class MaximizeMenu(
         private val displayController: DisplayController,
         private val taskInfo: RunningTaskInfo,
         private val decorWindowContext: Context,
-        private val menuPosition: PointF,
+        private val positionSupplier: (Int, Int) -> PointF,
         private val transactionSupplier: Supplier<Transaction> = Supplier { Transaction() }
 ) {
     private var maximizeMenu: AdditionalViewHostViewContainer? = null
@@ -100,19 +100,19 @@ class MaximizeMenu(
     private val cornerRadius = loadDimensionPixelSize(
             R.dimen.desktop_mode_maximize_menu_corner_radius
     ).toFloat()
-    private val menuHeight = loadDimensionPixelSize(R.dimen.desktop_mode_maximize_menu_height)
+    private lateinit var menuPosition: PointF
     private val menuPadding = loadDimensionPixelSize(R.dimen.desktop_mode_menu_padding)
 
     /** Position the menu relative to the caption's position. */
-    fun positionMenu(position: PointF, t: Transaction) {
-        menuPosition.set(position)
+    fun positionMenu(t: Transaction) {
+        menuPosition = positionSupplier(maximizeMenuView?.measureWidth() ?: 0,
+                                        maximizeMenuView?.measureHeight() ?: 0)
         t.setPosition(leash, menuPosition.x, menuPosition.y)
     }
 
     /** Creates and shows the maximize window. */
     fun show(
         isTaskInImmersiveMode: Boolean,
-        menuWidth: Int,
         showImmersiveOption: Boolean,
         showSnapOptions: Boolean,
         onMaximizeOrRestoreClickListener: () -> Unit,
@@ -125,7 +125,6 @@ class MaximizeMenu(
         if (maximizeMenu != null) return
         createMaximizeMenu(
             isTaskInImmersiveMode = isTaskInImmersiveMode,
-            menuWidth = menuWidth,
             showImmersiveOption = showImmersiveOption,
             showSnapOptions = showSnapOptions,
             onMaximizeClickListener = onMaximizeOrRestoreClickListener,
@@ -161,7 +160,6 @@ class MaximizeMenu(
     /** Create a maximize menu that is attached to the display area. */
     private fun createMaximizeMenu(
         isTaskInImmersiveMode: Boolean,
-        menuWidth: Int,
         showImmersiveOption: Boolean,
         showSnapOptions: Boolean,
         onMaximizeClickListener: () -> Unit,
@@ -178,16 +176,6 @@ class MaximizeMenu(
                 .setName("Maximize Menu")
                 .setContainerLayer()
                 .build()
-        val lp = WindowManager.LayoutParams(
-                menuWidth,
-                menuHeight,
-                WindowManager.LayoutParams.TYPE_APPLICATION,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
-                PixelFormat.TRANSPARENT
-        )
-        lp.title = "Maximize Menu for Task=" + taskInfo.taskId
-        lp.setTrustedOverlay()
         val windowManager = WindowlessWindowManager(
                 taskInfo.configuration,
                 leash,
@@ -207,7 +195,6 @@ class MaximizeMenu(
                 MaximizeMenuView.ImmersiveConfig.Hidden
             },
             showSnapOptions = showSnapOptions,
-            menuHeight = menuHeight,
             menuPadding = menuPadding,
         ).also { menuView ->
             menuView.bind(taskInfo)
@@ -217,6 +204,19 @@ class MaximizeMenu(
             menuView.onRightSnapClickListener = onRightSnapClickListener
             menuView.onMenuHoverListener = onHoverListener
             menuView.onOutsideTouchListener = onOutsideTouchListener
+            val menuWidth = menuView.measureWidth()
+            val menuHeight = menuView.measureHeight()
+            menuPosition = positionSupplier(menuWidth, menuHeight)
+            val lp = WindowManager.LayoutParams(
+                    menuWidth.toInt(),
+                    menuHeight.toInt(),
+                    WindowManager.LayoutParams.TYPE_APPLICATION,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                            or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                    PixelFormat.TRANSPARENT
+            )
+            lp.title = "Maximize Menu for Task=" + taskInfo.taskId
+            lp.setTrustedOverlay()
             viewHost.setView(menuView.rootView, lp)
         }
 
@@ -268,7 +268,6 @@ class MaximizeMenu(
         private val sizeToggleDirection: SizeToggleDirection,
         immersiveConfig: ImmersiveConfig,
         showSnapOptions: Boolean,
-        private val menuHeight: Int,
         private val menuPadding: Int
     ) {
         val rootView = LayoutInflater.from(context)
@@ -583,7 +582,7 @@ class MaximizeMenu(
                             // the menu.
                             val value = animatedValue as Float
                             val topPadding = menuPadding -
-                                    ((1 - value) * menuHeight).toInt()
+                                    ((1 - value) * measureHeight()).toInt()
                             container.setPadding(menuPadding, topPadding,
                                 menuPadding, menuPadding)
                         }
@@ -604,7 +603,7 @@ class MaximizeMenu(
                     }
                 },
                 ObjectAnimator.ofFloat(rootView, TRANSLATION_Y,
-                    (STARTING_MENU_HEIGHT_SCALE - 1) * menuHeight, 0f).apply {
+                    (STARTING_MENU_HEIGHT_SCALE - 1) * measureHeight(), 0f).apply {
                     duration = OPEN_MENU_HEIGHT_ANIMATION_DURATION_MS
                     interpolator = EMPHASIZED_DECELERATE
                 },
@@ -667,7 +666,7 @@ class MaximizeMenu(
                                     // the menu.
                                     val value = animatedValue as Float
                                     val topPadding = menuPadding -
-                                            ((1 - value) * menuHeight).toInt()
+                                            ((1 - value) * measureHeight()).toInt()
                                     container.setPadding(menuPadding, topPadding,
                                             menuPadding, menuPadding)
                                 }
@@ -688,7 +687,7 @@ class MaximizeMenu(
                         }
                     },
                     ObjectAnimator.ofFloat(rootView, TRANSLATION_Y,
-                            0f, (STARTING_MENU_HEIGHT_SCALE - 1) * menuHeight).apply {
+                            0f, (STARTING_MENU_HEIGHT_SCALE - 1) * measureHeight()).apply {
                         duration = CLOSE_MENU_HEIGHT_ANIMATION_DURATION_MS
                         interpolator = FAST_OUT_LINEAR_IN
                     },
@@ -790,6 +789,18 @@ class MaximizeMenu(
                     activeBackgroundColor = colorScheme.primary.toArgb().withAlpha(OPACITY_12)
                 ),
             )
+        }
+
+        /** Measure width of the root view of this menu. */
+        fun measureWidth() : Int {
+            rootView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+            return rootView.getMeasuredWidth()
+        }
+
+        /** Measure height of the root view of this menu. */
+        fun measureHeight() : Int {
+            rootView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+            return rootView.getMeasuredHeight()
         }
 
         private fun deactivateSnapOptions() {
@@ -1036,7 +1047,7 @@ interface MaximizeMenuFactory {
         displayController: DisplayController,
         taskInfo: RunningTaskInfo,
         decorWindowContext: Context,
-        menuPosition: PointF,
+        positionSupplier: (Int, Int) -> PointF,
         transactionSupplier: Supplier<Transaction>
     ): MaximizeMenu
 }
@@ -1049,7 +1060,7 @@ object DefaultMaximizeMenuFactory : MaximizeMenuFactory {
         displayController: DisplayController,
         taskInfo: RunningTaskInfo,
         decorWindowContext: Context,
-        menuPosition: PointF,
+        positionSupplier: (Int, Int) -> PointF,
         transactionSupplier: Supplier<Transaction>
     ): MaximizeMenu {
         return MaximizeMenu(
@@ -1058,7 +1069,7 @@ object DefaultMaximizeMenuFactory : MaximizeMenuFactory {
             displayController,
             taskInfo,
             decorWindowContext,
-            menuPosition,
+            positionSupplier,
             transactionSupplier
         )
     }
