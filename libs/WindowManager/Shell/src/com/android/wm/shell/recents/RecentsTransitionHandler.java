@@ -29,6 +29,7 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
+import static android.window.DesktopModeFlags.ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX;
 import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static android.window.TransitionInfo.FLAG_TRANSLUCENT;
 
@@ -46,6 +47,7 @@ import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
 import android.app.IApplicationThread;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -73,6 +75,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.Flags;
+import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipUtils;
@@ -1353,6 +1356,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     wct.reorder(mPausingTasks.get(i).mToken, true /* onTop */);
                     t.show(mPausingTasks.get(i).mTaskSurface);
                 }
+                setCornerRadiusForFreeformTasks(
+                        mRecentTasksController.getContext(), t, mPausingTasks);
                 if (!mKeyguardLocked && mRecentsTask != null) {
                     wct.restoreTransientOrder(mRecentsTask);
                 }
@@ -1390,6 +1395,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 for (int i = 0; i < mOpeningTasks.size(); ++i) {
                     t.show(mOpeningTasks.get(i).mTaskSurface);
                 }
+                setCornerRadiusForFreeformTasks(
+                        mRecentTasksController.getContext(), t, mOpeningTasks);
                 for (int i = 0; i < mPausingTasks.size(); ++i) {
                     cleanUpPausingOrClosingTask(mPausingTasks.get(i), wct, t, sendUserLeaveHint);
                 }
@@ -1512,6 +1519,27 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     Slog.e(TAG, "Failed to report transition finished", e);
                 }
             }
+        }
+
+        private static void setCornerRadiusForFreeformTasks(
+                Context context,
+                SurfaceControl.Transaction t,
+                ArrayList<TaskState> tasks) {
+            if (!ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue()) {
+                return;
+            }
+            int cornerRadius = getCornerRadius(context);
+            for (int i = 0; i < tasks.size(); ++i) {
+                TaskState task = tasks.get(i);
+                if (task.mTaskInfo != null && task.mTaskInfo.isFreeform()) {
+                    t.setCornerRadius(task.mTaskSurface, cornerRadius);
+                }
+            }
+        }
+
+        private static int getCornerRadius(Context context) {
+            return context.getResources().getDimensionPixelSize(
+                    R.dimen.desktop_windowing_freeform_rounded_corner_radius);
         }
 
         private boolean allAppsAreTranslucent(ArrayList<TaskState> tasks) {

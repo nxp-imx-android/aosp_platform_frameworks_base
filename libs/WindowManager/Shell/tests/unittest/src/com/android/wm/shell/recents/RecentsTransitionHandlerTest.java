@@ -17,9 +17,13 @@
 package com.android.wm.shell.recents;
 
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
+import static android.view.WindowManager.TRANSIT_CLOSE;
+import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
+import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED;
@@ -44,9 +48,11 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
 
@@ -57,6 +63,7 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.dx.mockito.inline.extended.ExtendedMockito;
 import com.android.dx.mockito.inline.extended.StaticMockitoSession;
 import com.android.internal.os.IResultReceiver;
+import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
@@ -92,8 +99,12 @@ import java.util.Optional;
 @SmallTest
 public class RecentsTransitionHandlerTest extends ShellTestCase {
 
+    private static final int FREEFORM_TASK_CORNER_RADIUS = 32;
+
     @Mock
     private Context mContext;
+    @Mock
+    private Resources mResources;
     @Mock
     private TaskStackListenerImpl mTaskStackListener;
     @Mock
@@ -134,6 +145,10 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         when(mContext.getPackageManager()).thenReturn(mock(PackageManager.class));
         when(mContext.getSystemService(KeyguardManager.class))
                 .thenReturn(mock(KeyguardManager.class));
+        when(mContext.getResources()).thenReturn(mResources);
+        when(mResources.getDimensionPixelSize(
+                R.dimen.desktop_windowing_freeform_rounded_corner_radius)
+        ).thenReturn(FREEFORM_TASK_CORNER_RADIUS);
         mShellInit = spy(new ShellInit(mMainExecutor));
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
                 mDisplayInsetsController, mMainExecutor));
@@ -274,6 +289,57 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         mMainExecutor.flushAll();
 
         assertThat(listener.getState()).isEqualTo(TRANSITION_STATE_NOT_RUNNING);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX)
+    public void testMergeAndFinish_openingFreeformTasks_setsCornerRadius() {
+        ActivityManager.RunningTaskInfo freeformTask =
+                new TestRunningTaskInfoBuilder().setWindowingMode(WINDOWING_MODE_FREEFORM).build();
+        TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(TRANSIT_OPEN, freeformTask)
+                .build();
+        SurfaceControl leash = mergeTransitionInfo.getChanges().get(0).getLeash();
+        final IBinder transition = startRecentsTransition(/* synthetic= */ false);
+        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        mRecentsTransitionHandler.startAnimation(
+                transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransitionInfo,
+                new StubTransaction(),
+                finishT,
+                transition,
+                mock(Transitions.TransitionFinishCallback.class));
+        mRecentsTransitionHandler.findController(transition).finish(/* toHome= */ false,
+                false /* sendUserLeaveHint */, mock(IResultReceiver.class));
+        mMainExecutor.flushAll();
+
+        verify(finishT).setCornerRadius(leash, FREEFORM_TASK_CORNER_RADIUS);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX)
+    public void testFinish_returningToFreeformTasks_setsCornerRadius() {
+        ActivityManager.RunningTaskInfo freeformTask =
+                new TestRunningTaskInfoBuilder().setWindowingMode(WINDOWING_MODE_FREEFORM).build();
+        TransitionInfo transitionInfo = new TransitionInfoBuilder(TRANSIT_CLOSE)
+                .addChange(TRANSIT_CLOSE, freeformTask)
+                .build();
+        SurfaceControl leash = transitionInfo.getChanges().get(0).getLeash();
+        final IBinder transition = startRecentsTransition(/* synthetic= */ false);
+        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        mRecentsTransitionHandler.startAnimation(
+                transition, transitionInfo, new StubTransaction(), finishT,
+                mock(Transitions.TransitionFinishCallback.class));
+
+        mRecentsTransitionHandler.findController(transition).finish(/* toHome= */ false,
+                false /* sendUserLeaveHint */, mock(IResultReceiver.class));
+        mMainExecutor.flushAll();
+
+
+        verify(finishT).setCornerRadius(leash, FREEFORM_TASK_CORNER_RADIUS);
     }
 
     private IBinder startRecentsTransition(boolean synthetic) {
