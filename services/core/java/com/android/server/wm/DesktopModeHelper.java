@@ -51,8 +51,13 @@ public final class DesktopModeHelper {
     }
 
     /**
-     * Return {@code true} if the current device supports desktop mode.
+     * Return {@code true} if the current device can hosts desktop sessions on its internal display.
      */
+    @VisibleForTesting
+    static boolean canInternalDisplayHostDesktops(@NonNull Context context) {
+        return context.getResources().getBoolean(R.bool.config_canInternalDisplayHostDesktops);
+    }
+
     // TODO(b/337819319): use a companion object instead.
     private static boolean isDesktopModeSupported(@NonNull Context context) {
         return context.getResources().getBoolean(R.bool.config_isDesktopModeSupported);
@@ -67,12 +72,12 @@ public final class DesktopModeHelper {
      */
     private static boolean isDesktopModeEnabledByDevOption(@NonNull Context context) {
         return DesktopModeFlags.isDesktopModeForcedEnabled() && (isDesktopModeDevOptionsSupported(
-                context) || isDeviceEligibleForDesktopMode(context));
+                context) || isInternalDisplayEligibleToHostDesktops(context));
     }
 
     @VisibleForTesting
-    static boolean isDeviceEligibleForDesktopMode(@NonNull Context context) {
-        return !shouldEnforceDeviceRestrictions() || isDesktopModeSupported(context)  || (
+    static boolean isInternalDisplayEligibleToHostDesktops(@NonNull Context context) {
+        return !shouldEnforceDeviceRestrictions() || canInternalDisplayHostDesktops(context) || (
                 Flags.enableDesktopModeThroughDevOption() && isDesktopModeDevOptionsSupported(
                         context));
     }
@@ -81,12 +86,14 @@ public final class DesktopModeHelper {
      * Return {@code true} if desktop mode can be entered on the current device.
      */
     static boolean canEnterDesktopMode(@NonNull Context context) {
-        return (isDesktopModeEnabled() && isDeviceEligibleForDesktopMode(context))
+        return (isInternalDisplayEligibleToHostDesktops(context)
+                && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODE.isTrue()
+                && (isDesktopModeSupported(context) || !shouldEnforceDeviceRestrictions()))
                 || isDesktopModeEnabledByDevOption(context);
     }
 
     /** Returns {@code true} if desktop experience wallpaper is supported on this device. */
     public static boolean isDeviceEligibleForDesktopExperienceWallpaper(@NonNull Context context) {
-        return enableConnectedDisplaysWallpaper() && isDeviceEligibleForDesktopMode(context);
+        return enableConnectedDisplaysWallpaper() && canEnterDesktopMode(context);
     }
 }

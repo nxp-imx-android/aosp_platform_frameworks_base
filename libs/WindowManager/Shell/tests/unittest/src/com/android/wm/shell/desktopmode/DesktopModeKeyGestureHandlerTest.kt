@@ -30,7 +30,6 @@ import android.view.KeyEvent
 import android.window.DisplayAreaInfo
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer
-import com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn
 import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.hardware.input.Flags.FLAG_USE_KEY_GESTURE_EVENT_HANDLER
@@ -48,7 +47,6 @@ import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel
@@ -107,12 +105,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     @Before
     fun setUp() {
         Dispatchers.setMain(StandardTestDispatcher())
-        mockitoSession =
-            mockitoSession()
-                .strictness(Strictness.LENIENT)
-                .spyStatic(DesktopModeStatus::class.java)
-                .startMocking()
-        doReturn(true).`when` { DesktopModeStatus.isDeviceEligibleForDesktopMode(any()) }
+        mockitoSession = mockitoSession().strictness(Strictness.LENIENT).startMocking()
 
         testScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
         shellInit = spy(ShellInit(testExecutor))
