@@ -524,8 +524,8 @@ public class BubbleBarLayerView extends FrameLayout
      * Skips logging if it is {@link BubbleOverflow}.
      */
     private void logBubbleEvent(BubbleLogger.Event event) {
-        if (mExpandedBubble != null && mExpandedBubble instanceof Bubble bubble) {
-            mBubbleLogger.log(bubble, event);
+        if (mExpandedBubble != null && mExpandedBubble instanceof Bubble) {
+            mBubbleLogger.log((Bubble) mExpandedBubble, event);
         }
     }
 
