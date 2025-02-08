@@ -35,7 +35,6 @@ import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_OCCLUDING;
 import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_SLEEP;
-import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_WAKE;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS_LIGHT;
@@ -68,7 +67,6 @@ import static com.android.server.wm.ActivityTaskSupervisor.DEFER_RESUME;
 import static com.android.server.wm.ActivityTaskSupervisor.ON_TOP;
 import static com.android.server.wm.ActivityTaskSupervisor.dumpHistoryList;
 import static com.android.server.wm.ActivityTaskSupervisor.printThisActivity;
-import static com.android.server.wm.KeyguardController.KEYGUARD_SLEEP_TOKEN_TAG;
 import static com.android.server.wm.RootWindowContainerProto.IS_HOME_RECENTS_COMPONENT;
 import static com.android.server.wm.RootWindowContainerProto.KEYGUARD_CONTROLLER;
 import static com.android.server.wm.RootWindowContainerProto.WINDOW_CONTAINER;
@@ -803,8 +801,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         mWmService.mAtmService.mTaskFragmentOrganizerController.dispatchPendingEvents();
         mWmService.mSyncEngine.onSurfacePlacement();
 
-        checkAppTransitionReady(surfacePlacer);
-
         mWmService.mAtmService.mBackNavigationController
                 .checkAnimationReady(defaultDisplay.mWallpaperController);
 
@@ -896,38 +892,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         mWmService.scheduleAnimationLocked();
 
         if (DEBUG_WINDOW_TRACE) Slog.e(TAG, "performSurfacePlacementInner exit");
-    }
-
-    private void checkAppTransitionReady(WindowSurfacePlacer surfacePlacer) {
-        // Trace all displays app transition by Z-order for pending layout change.
-        for (int i = mChildren.size() - 1; i >= 0; --i) {
-            final DisplayContent curDisplay = mChildren.get(i);
-
-            // If we are ready to perform an app transition, check through all of the app tokens
-            // to be shown and see if they are ready to go.
-            if (curDisplay.mAppTransition.isReady()) {
-                // handleAppTransitionReady may modify curDisplay.pendingLayoutChanges.
-                curDisplay.mAppTransitionController.handleAppTransitionReady();
-                if (DEBUG_LAYOUT_REPEATS) {
-                    surfacePlacer.debugLayoutRepeats("after handleAppTransitionReady",
-                            curDisplay.pendingLayoutChanges);
-                }
-            }
-
-            if (curDisplay.mAppTransition.isRunning() && !curDisplay.isAppTransitioning()) {
-                // We have finished the animation of an app transition. To do this, we have
-                // delayed a lot of operations like showing and hiding apps, moving apps in
-                // Z-order, etc.
-                // The app token list reflects the correct Z-order, but the window list may now
-                // be out of sync with it. So here we will just rebuild the entire app window
-                // list. Fun!
-                curDisplay.handleAnimatingStoppedAndTransition();
-                if (DEBUG_LAYOUT_REPEATS) {
-                    surfacePlacer.debugLayoutRepeats("after handleAnimStopAndXitionLock",
-                            curDisplay.pendingLayoutChanges);
-                }
-            }
-        }
     }
 
     private void applySurfaceChangesTransaction() {
@@ -2266,20 +2230,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
                 // Ensure the leash of new task is in sync with its current bounds after reparent.
                 rootTask.maybeApplyLastRecentsAnimationTransaction();
-
-                // In the case of this activity entering PIP due to it being moved to the back,
-                // the old activity would have a TRANSIT_TASK_TO_BACK transition that needs to be
-                // ran. But, since its visibility did not change (note how it was STOPPED/not
-                // visible, and with it now at the back stack, it remains not visible), the logic to
-                // add the transition is automatically skipped. We then add this activity manually
-                // to the list of apps being closed, and request its transition to be ran.
-                final ActivityRecord oldTopActivity = task.getTopMostActivity();
-                if (oldTopActivity != null && oldTopActivity.isState(STOPPED)
-                        && task.getDisplayContent().mAppTransition.containsTransitRequest(
-                        TRANSIT_TO_BACK)) {
-                    task.getDisplayContent().mClosingApps.add(oldTopActivity);
-                    oldTopActivity.mRequestForceTransition = true;
-                }
             }
 
             // TODO(remove-legacy-transit): Move this to the `singleActivity` case when removing
@@ -2958,20 +2908,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         display.mAllSleepTokens.remove(token);
         if (display.mAllSleepTokens.isEmpty()) {
             mService.updateSleepIfNeededLocked();
-            // Assuming no lock screen is set and a user launches an activity, turns off the screen
-            // and turn on the screen again, then the launched activity should be displayed on the
-            // screen without app transition animation. When the screen turns on, both keyguard
-            // sleep token and display off sleep token are removed, but the order is
-            // non-deterministic.
-            // Note: Display#mSkipAppTransitionAnimation will be ignored when keyguard related
-            // transition exists, so this affects only when no lock screen is set. Otherwise
-            // keyguard going away animation will be played.
-            // See also AppTransitionController#getTransitCompatType for more details.
-            if ((!mTaskSupervisor.getKeyguardController().isKeyguardOccluded(display.mDisplayId)
-                    && token.mTag.equals(KEYGUARD_SLEEP_TOKEN_TAG))
-                    || token.mTag.equals(DISPLAY_OFF_SLEEP_TOKEN_TAG)) {
-                display.mSkipAppTransitionAnimation = true;
-            }
         }
     }
 
