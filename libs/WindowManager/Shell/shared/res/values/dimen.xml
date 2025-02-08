@@ -17,4 +17,23 @@
 <resources>
     <dimen name="floating_dismiss_icon_size">32dp</dimen>
     <dimen name="floating_dismiss_background_size">96dp</dimen>
+
+    <!-- Bubble drag zone dimensions -->
+    <dimen name="drag_zone_dismiss_fold">140dp</dimen>
+    <dimen name="drag_zone_dismiss_tablet">200dp</dimen>
+    <dimen name="drag_zone_bubble_fold">140dp</dimen>
+    <dimen name="drag_zone_bubble_tablet">200dp</dimen>
+    <dimen name="drag_zone_full_screen_width">512dp</dimen>
+    <dimen name="drag_zone_full_screen_height">44dp</dimen>
+    <dimen name="drag_zone_desktop_window_width">880dp</dimen>
+    <dimen name="drag_zone_desktop_window_height">300dp</dimen>
+    <dimen name="drag_zone_desktop_window_expanded_view_width">200dp</dimen>
+    <dimen name="drag_zone_desktop_window_expanded_view_height">350dp</dimen>
+    <dimen name="drag_zone_split_from_bubble_height">100dp</dimen>
+    <dimen name="drag_zone_split_from_bubble_width">60dp</dimen>
+    <dimen name="drag_zone_h_split_from_expanded_view_width">60dp</dimen>
+    <dimen name="drag_zone_v_split_from_expanded_view_width">200dp</dimen>
+    <dimen name="drag_zone_v_split_from_expanded_view_height_tablet">285dp</dimen>
+    <dimen name="drag_zone_v_split_from_expanded_view_height_fold_tall">150dp</dimen>
+    <dimen name="drag_zone_v_split_from_expanded_view_height_fold_short">100dp</dimen>
 </resources>
