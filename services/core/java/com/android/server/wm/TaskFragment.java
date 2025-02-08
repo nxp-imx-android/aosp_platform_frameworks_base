@@ -1224,6 +1224,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 false /* ignoringKeyguard */, true /* ignoringInvisibleActivity */);
     }
 
+    @Override
     ActivityRecord getTopNonFinishingActivity() {
         return getTopNonFinishingActivity(
                 true /* includeOverlays */, true /* includeLaunchedFromBubble */);

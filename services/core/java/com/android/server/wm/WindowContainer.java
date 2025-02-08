@@ -2079,6 +2079,10 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return getActivity(alwaysTruePredicate(), true /* traverseTopToBottom */);
     }
 
+    ActivityRecord getTopNonFinishingActivity() {
+        return getActivity(r -> !r.finishing, true /* traverseTopToBottom */);
+    }
+
     ActivityRecord getTopActivity(boolean includeFinishing, boolean includeOverlays) {
         // Break down into 4 calls to avoid object creation due to capturing input params.
         if (includeFinishing) {
