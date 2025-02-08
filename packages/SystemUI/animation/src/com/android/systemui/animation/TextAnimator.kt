@@ -27,9 +27,8 @@ import android.graphics.fonts.FontVariationAxis
 import android.text.Layout
 import android.util.Log
 import android.util.LruCache
-
-private const val DEFAULT_ANIMATION_DURATION: Long = 300
-private const val TYPEFACE_CACHE_MAX_ENTRIES = 5
+import androidx.annotation.VisibleForTesting
+import com.android.app.animation.Interpolators
 
 typealias GlyphCallback = (TextAnimator.PositionedGlyph, Float) -> Unit
 
@@ -76,6 +75,10 @@ class TypefaceVariantCacheImpl(var baseTypeface: Typeface, override val animatio
             cache.put(fvar, it)
         }
     }
+
+    companion object {
+        private const val TYPEFACE_CACHE_MAX_ENTRIES = 5
+    }
 }
 
 /**
@@ -108,25 +111,12 @@ class TextAnimator(
     private val typefaceCache: TypefaceVariantCache,
     private val invalidateCallback: () -> Unit = {},
 ) {
-    // Following two members are for mutable for testing purposes.
-    public var textInterpolator = TextInterpolator(layout, typefaceCache)
-    public var animator =
-        ValueAnimator.ofFloat(1f).apply {
-            duration = DEFAULT_ANIMATION_DURATION
-            addUpdateListener {
-                textInterpolator.progress = it.animatedValue as Float
-                textInterpolator.linearProgress =
-                    it.currentPlayTime.toFloat() / it.duration.toFloat()
-                invalidateCallback()
-            }
-            addListener(
-                object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) = textInterpolator.rebase()
+    @VisibleForTesting var textInterpolator = TextInterpolator(layout, typefaceCache)
+    @VisibleForTesting var createAnimator: () -> ValueAnimator = { ValueAnimator.ofFloat(1f) }
 
-                    override fun onAnimationCancel(animation: Animator) = textInterpolator.rebase()
-                }
-            )
-        }
+    var animator: ValueAnimator? = null
+
+    val fontVariationUtils = FontVariationUtils()
 
     sealed class PositionedGlyph {
         /** Mutable X coordinate of the glyph position relative from drawing offset. */
@@ -165,8 +155,6 @@ class TextAnimator(
             protected set
     }
 
-    private val fontVariationUtils = FontVariationUtils()
-
     fun updateLayout(layout: Layout, textSize: Float = -1f) {
         textInterpolator.layout = layout
 
@@ -178,9 +166,8 @@ class TextAnimator(
         }
     }
 
-    fun isRunning(): Boolean {
-        return animator.isRunning
-    }
+    val isRunning: Boolean
+        get() = animator?.isRunning ?: false
 
     /**
      * GlyphFilter applied just before drawing to canvas for tweaking positions and text size.
@@ -237,110 +224,110 @@ class TextAnimator(
 
     fun draw(c: Canvas) = textInterpolator.draw(c)
 
-    /**
-     * Set text style with animation.
-     *
-     * ```
-     * By passing -1 to weight, the view preserve the current weight.
-     * By passing -1 to textSize, the view preserve the current text size.
-     * By passing -1 to duration, the default text animation, 1000ms, is used.
-     * By passing false to animate, the text will be updated without animation.
-     * ```
-     *
-     * @param fvar an optional text fontVariationSettings.
-     * @param textSize an optional font size.
-     * @param colors an optional colors array that must be the same size as numLines passed to the
-     *   TextInterpolator
-     * @param strokeWidth an optional paint stroke width
-     * @param animate an optional boolean indicating true for showing style transition as animation,
-     *   false for immediate style transition. True by default.
-     * @param duration an optional animation duration in milliseconds. This is ignored if animate is
-     *   false.
-     * @param interpolator an optional time interpolator. If null is passed, last set interpolator
-     *   will be used. This is ignored if animate is false.
-     */
-    fun setTextStyle(
-        fvar: String? = "",
-        textSize: Float = -1f,
-        color: Int? = null,
-        strokeWidth: Float = -1f,
-        animate: Boolean = true,
-        duration: Long = -1L,
-        interpolator: TimeInterpolator? = null,
-        delay: Long = 0,
-        onAnimationEnd: Runnable? = null,
+    /** Style spec to use when rendering the font */
+    data class Style(
+        val fVar: String? = null,
+        val textSize: Float? = null,
+        val color: Int? = null,
+        val strokeWidth: Float? = null,
     ) {
-        setTextStyleInternal(
-            fvar,
-            textSize,
-            color,
-            strokeWidth,
-            animate,
-            duration,
-            interpolator,
-            delay,
-            onAnimationEnd,
-            updateLayoutOnFailure = true,
-        )
+        fun withUpdatedFVar(
+            fontVariationUtils: FontVariationUtils,
+            weight: Int = -1,
+            width: Int = -1,
+            opticalSize: Int = -1,
+            roundness: Int = -1,
+        ): Style {
+            return this.copy(
+                fVar =
+                    fontVariationUtils.updateFontVariation(
+                        weight = weight,
+                        width = width,
+                        opticalSize = opticalSize,
+                        roundness = roundness,
+                    )
+            )
+        }
+    }
+
+    /** Animation Spec for use when style changes should be animated */
+    data class Animation(
+        val animate: Boolean = true,
+        val startDelay: Long = 0,
+        val duration: Long = DEFAULT_ANIMATION_DURATION,
+        val interpolator: TimeInterpolator = Interpolators.LINEAR,
+        val onAnimationEnd: Runnable? = null,
+    ) {
+        fun configureAnimator(animator: Animator) {
+            animator.startDelay = startDelay
+            animator.duration = duration
+            animator.interpolator = interpolator
+            if (onAnimationEnd != null) {
+                animator.addListener(
+                    object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            onAnimationEnd.run()
+                        }
+                    }
+                )
+            }
+        }
+
+        companion object {
+            val DISABLED = Animation(animate = false)
+        }
+    }
+
+    /** Sets the text style, optionally with animation */
+    fun setTextStyle(style: Style, animation: Animation = Animation.DISABLED) {
+        animator?.cancel()
+        setTextStyleInternal(style, rebase = animation.animate)
+
+        if (animation.animate) {
+            animator = buildAnimator(animation).apply { start() }
+        } else {
+            textInterpolator.progress = 1f
+            textInterpolator.rebase()
+            invalidateCallback()
+        }
+    }
+
+    /** Builds a ValueAnimator from the specified animation parameters */
+    private fun buildAnimator(animation: Animation): ValueAnimator {
+        return createAnimator().apply {
+            duration = DEFAULT_ANIMATION_DURATION
+            animation.configureAnimator(this)
+
+            addUpdateListener {
+                textInterpolator.progress = it.animatedValue as Float
+                textInterpolator.linearProgress = it.currentPlayTime / it.duration.toFloat()
+                invalidateCallback()
+            }
+
+            addListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animator: Animator) = textInterpolator.rebase()
+
+                    override fun onAnimationCancel(animator: Animator) = textInterpolator.rebase()
+                }
+            )
+        }
     }
 
     private fun setTextStyleInternal(
-        fvar: String?,
-        textSize: Float,
-        color: Int?,
-        strokeWidth: Float,
-        animate: Boolean,
-        duration: Long,
-        interpolator: TimeInterpolator?,
-        delay: Long,
-        onAnimationEnd: Runnable?,
-        updateLayoutOnFailure: Boolean,
+        style: Style,
+        rebase: Boolean,
+        updateLayoutOnFailure: Boolean = true,
     ) {
         try {
-            if (animate) {
-                animator.cancel()
-                textInterpolator.rebase()
-            }
-
-            if (textSize >= 0) {
-                textInterpolator.targetPaint.textSize = textSize
-            }
-            if (!fvar.isNullOrBlank()) {
-                textInterpolator.targetPaint.typeface = typefaceCache.getTypefaceForVariant(fvar)
-            }
-            if (color != null) {
-                textInterpolator.targetPaint.color = color
-            }
-            if (strokeWidth >= 0F) {
-                textInterpolator.targetPaint.strokeWidth = strokeWidth
+            if (rebase) textInterpolator.rebase()
+            style.color?.let { textInterpolator.targetPaint.color = it }
+            style.textSize?.let { textInterpolator.targetPaint.textSize = it }
+            style.strokeWidth?.let { textInterpolator.targetPaint.strokeWidth = it }
+            style.fVar?.let {
+                textInterpolator.targetPaint.typeface = typefaceCache.getTypefaceForVariant(it)
             }
             textInterpolator.onTargetPaintModified()
-
-            if (animate) {
-                animator.startDelay = delay
-                animator.duration = if (duration == -1L) DEFAULT_ANIMATION_DURATION else duration
-                interpolator?.let { animator.interpolator = it }
-                if (onAnimationEnd != null) {
-                    animator.addListener(
-                        object : AnimatorListenerAdapter() {
-                            override fun onAnimationEnd(animation: Animator) {
-                                onAnimationEnd.run()
-                                animator.removeListener(this)
-                            }
-
-                            override fun onAnimationCancel(animation: Animator) {
-                                animator.removeListener(this)
-                            }
-                        }
-                    )
-                }
-                animator.start()
-            } else {
-                // No animation is requested, thus set base and target state to the same state.
-                textInterpolator.progress = 1f
-                textInterpolator.rebase()
-                invalidateCallback()
-            }
         } catch (ex: IllegalArgumentException) {
             if (updateLayoutOnFailure) {
                 Log.e(
@@ -351,81 +338,15 @@ class TextAnimator(
                 )
 
                 updateLayout(textInterpolator.layout)
-                setTextStyleInternal(
-                    fvar,
-                    textSize,
-                    color,
-                    strokeWidth,
-                    animate,
-                    duration,
-                    interpolator,
-                    delay,
-                    onAnimationEnd,
-                    updateLayoutOnFailure = false,
-                )
+                setTextStyleInternal(style, rebase, updateLayoutOnFailure = false)
             } else {
                 throw ex
             }
         }
     }
 
-    /**
-     * Set text style with animation. Similar as
-     *
-     * ```
-     * fun setTextStyle(
-     *      fvar: String? = "",
-     *      textSize: Float = -1f,
-     *      color: Int? = null,
-     *      strokeWidth: Float = -1f,
-     *      animate: Boolean = true,
-     *      duration: Long = -1L,
-     *      interpolator: TimeInterpolator? = null,
-     *      delay: Long = 0,
-     *      onAnimationEnd: Runnable? = null
-     * )
-     * ```
-     *
-     * @param weight an optional style value for `wght` in fontVariationSettings.
-     * @param width an optional style value for `wdth` in fontVariationSettings.
-     * @param opticalSize an optional style value for `opsz` in fontVariationSettings.
-     * @param roundness an optional style value for `ROND` in fontVariationSettings.
-     */
-    fun setTextStyle(
-        weight: Int = -1,
-        width: Int = -1,
-        opticalSize: Int = -1,
-        roundness: Int = -1,
-        textSize: Float = -1f,
-        color: Int? = null,
-        strokeWidth: Float = -1f,
-        animate: Boolean = true,
-        duration: Long = -1L,
-        interpolator: TimeInterpolator? = null,
-        delay: Long = 0,
-        onAnimationEnd: Runnable? = null,
-    ) {
-        setTextStyleInternal(
-            fvar =
-                fontVariationUtils.updateFontVariation(
-                    weight = weight,
-                    width = width,
-                    opticalSize = opticalSize,
-                    roundness = roundness,
-                ),
-            textSize = textSize,
-            color = color,
-            strokeWidth = strokeWidth,
-            animate = animate,
-            duration = duration,
-            interpolator = interpolator,
-            delay = delay,
-            onAnimationEnd = onAnimationEnd,
-            updateLayoutOnFailure = true,
-        )
-    }
-
     companion object {
         private val TAG = TextAnimator::class.simpleName!!
+        const val DEFAULT_ANIMATION_DURATION = 300L
     }
 }

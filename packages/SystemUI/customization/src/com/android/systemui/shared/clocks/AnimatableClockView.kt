@@ -366,7 +366,7 @@ constructor(
 
     fun animateCharge(isDozing: () -> Boolean) {
         // Skip charge animation if dozing animation is already playing.
-        if (textAnimator == null || textAnimator!!.isRunning()) {
+        if (textAnimator == null || textAnimator!!.isRunning) {
             return
         }
 
@@ -444,15 +444,19 @@ constructor(
         delay: Long,
         onAnimationEnd: Runnable?,
     ) {
-        textAnimator?.let {
-            it.setTextStyle(
-                weight = weight,
-                color = color,
+        val style = TextAnimator.Style(color = color)
+        val animation =
+            TextAnimator.Animation(
                 animate = animate && isAnimationEnabled,
                 duration = duration,
-                interpolator = interpolator,
-                delay = delay,
+                interpolator = interpolator ?: Interpolators.LINEAR,
+                startDelay = delay,
                 onAnimationEnd = onAnimationEnd,
+            )
+        textAnimator?.let {
+            it.setTextStyle(
+                style.withUpdatedFVar(it.fontVariationUtils, weight = weight),
+                animation,
             )
             it.glyphFilter = glyphFilter
         }
@@ -460,13 +464,8 @@ constructor(
                 // when the text animator is set, update its start values
                 onTextAnimatorInitialized = { textAnimator ->
                     textAnimator.setTextStyle(
-                        weight = weight,
-                        color = color,
-                        animate = false,
-                        duration = duration,
-                        interpolator = interpolator,
-                        delay = delay,
-                        onAnimationEnd = onAnimationEnd,
+                        style.withUpdatedFVar(textAnimator.fontVariationUtils, weight = weight),
+                        animation.copy(animate = false),
                     )
                     textAnimator.glyphFilter = glyphFilter
                 }

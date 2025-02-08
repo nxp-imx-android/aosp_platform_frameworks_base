@@ -20,9 +20,10 @@ import android.view.LayoutInflater
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.app.animation.Interpolators
-import com.android.systemui.customization.R
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.animation.FontVariationUtils
 import com.android.systemui.animation.TextAnimator
+import com.android.systemui.customization.R
 import com.android.systemui.util.mockito.any
 import org.junit.Before
 import org.junit.Rule
@@ -32,7 +33,9 @@ import org.mockito.Mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
+import org.mockito.Mockito.`when` as whenever
 import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.eq
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
@@ -46,6 +49,7 @@ class AnimatableClockViewTest : SysuiTestCase() {
     @Before
     fun setUp() {
         val layoutInflater = LayoutInflater.from(context)
+        whenever(mockTextAnimator.fontVariationUtils).thenReturn(FontVariationUtils())
         clockView =
             layoutInflater.inflate(R.layout.clock_default_small, null) as AnimatableClockView
         clockView.textAnimatorFactory = { _, _ -> mockTextAnimator }
@@ -57,18 +61,19 @@ class AnimatableClockViewTest : SysuiTestCase() {
         clockView.animateAppearOnLockscreen()
         clockView.measure(50, 50)
 
+        verify(mockTextAnimator).fontVariationUtils
         verify(mockTextAnimator).glyphFilter = any()
         verify(mockTextAnimator)
             .setTextStyle(
-                weight = 300,
-                textSize = -1.0f,
-                color = 200,
-                strokeWidth = -1F,
-                animate = false,
-                duration = 833L,
-                interpolator = Interpolators.EMPHASIZED_DECELERATE,
-                delay = 0L,
-                onAnimationEnd = null
+                eq(TextAnimator.Style(fVar = "'wght' 300", color = 200)),
+                eq(
+                    TextAnimator.Animation(
+                        animate = false,
+                        duration = 833L,
+                        interpolator = Interpolators.EMPHASIZED_DECELERATE,
+                        onAnimationEnd = null,
+                    )
+                ),
             )
         verifyNoMoreInteractions(mockTextAnimator)
     }
@@ -79,30 +84,24 @@ class AnimatableClockViewTest : SysuiTestCase() {
         clockView.measure(50, 50)
         clockView.animateAppearOnLockscreen()
 
+        verify(mockTextAnimator, times(2)).fontVariationUtils
         verify(mockTextAnimator, times(2)).glyphFilter = any()
         verify(mockTextAnimator)
             .setTextStyle(
-                weight = 100,
-                textSize = -1.0f,
-                color = 200,
-                strokeWidth = -1F,
-                animate = false,
-                duration = 0L,
-                interpolator = null,
-                delay = 0L,
-                onAnimationEnd = null
+                eq(TextAnimator.Style(fVar = "'wght' 100", color = 200)),
+                eq(TextAnimator.Animation(animate = false, duration = 0)),
             )
+
         verify(mockTextAnimator)
             .setTextStyle(
-                weight = 300,
-                textSize = -1.0f,
-                color = 200,
-                strokeWidth = -1F,
-                animate = true,
-                duration = 833L,
-                interpolator = Interpolators.EMPHASIZED_DECELERATE,
-                delay = 0L,
-                onAnimationEnd = null
+                eq(TextAnimator.Style(fVar = "'wght' 300", color = 200)),
+                eq(
+                    TextAnimator.Animation(
+                        animate = true,
+                        duration = 833L,
+                        interpolator = Interpolators.EMPHASIZED_DECELERATE,
+                    )
+                ),
             )
         verifyNoMoreInteractions(mockTextAnimator)
     }
