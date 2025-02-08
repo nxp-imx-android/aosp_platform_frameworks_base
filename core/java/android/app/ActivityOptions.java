@@ -2230,6 +2230,16 @@ public class ActivityOptions extends ComponentOptions {
         return mLaunchCookie;
     }
 
+    /**
+     * Set the ability for the current transition/animation to work cross-task.
+     * @param allowTaskOverride true to allow cross-task use, otherwise false.
+     *
+     * @hide
+     */
+    public ActivityOptions setOverrideTaskTransition(boolean allowTaskOverride) {
+        this.mOverrideTaskTransition = allowTaskOverride;
+        return this;
+    }
 
     /** @hide */
     public boolean getOverrideTaskTransition() {

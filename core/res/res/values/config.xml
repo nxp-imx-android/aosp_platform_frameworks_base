@@ -7348,4 +7348,8 @@
     <!-- Array containing the notification assistant service adjustments that are not supported by
      default on this device-->
     <string-array translatable="false" name="config_notificationDefaultUnsupportedAdjustments" />
+
+    <!-- By default ActivityOptions#makeScaleUpAnimation is only used between activities. This
+         config enables OEMs to support its usage across tasks.-->
+    <bool name="config_enableCrossTaskScaleUpAnimation">false</bool>
 </resources>

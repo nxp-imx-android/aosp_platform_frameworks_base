@@ -1291,12 +1291,13 @@ public final class TransitionInfo implements Parcelable {
             return options;
         }
 
-        /** Make options for a scale-up animation. */
+        /** Make options for a scale-up animation with task override option */
         @NonNull
         public static AnimationOptions makeScaleUpAnimOptions(int startX, int startY, int width,
-                int height) {
+                int height, boolean overrideTaskTransition) {
             AnimationOptions options = new AnimationOptions(ANIM_SCALE_UP);
             options.mTransitionBounds.set(startX, startY, startX + width, startY + height);
+            options.mOverrideTaskTransition = overrideTaskTransition;
             return options;
         }
 
