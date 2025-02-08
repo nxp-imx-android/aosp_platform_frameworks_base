@@ -84,7 +84,7 @@ aconfig_declarations_group {
         "android.view.inputmethod.flags-aconfig-java",
         "android.webkit.flags-aconfig-java",
         "android.widget.flags-aconfig-java",
-        "android.xr.flags-aconfig-java",
+        "android.xr.flags-aconfig-java-export",
         "art_exported_aconfig_flags_lib",
         "backstage_power_flags_lib",
         "backup_flags_lib",
@@ -989,15 +989,22 @@ java_aconfig_library {
 // XR
 aconfig_declarations {
     name: "android.xr.flags-aconfig",
-    package: "android.xr",
     container: "system",
+    exportable: true,
+    package: "android.xr",
     srcs: ["core/java/android/content/pm/xr.aconfig"],
 }
 
 java_aconfig_library {
-    name: "android.xr.flags-aconfig-java",
+    name: "android.xr.flags-aconfig-java-export",
     aconfig_declarations: "android.xr.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    min_sdk_version: "30",
+    mode: "exported",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.permission",
+    ],
 }
 
 // android.app
