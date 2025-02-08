@@ -159,9 +159,17 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
             // If pair-to-pair switching, the post-recents clean-up isn't needed.
             wct = wct != null ? wct : new WindowContainerTransaction();
             if (mAnimType != ANIM_TYPE_PAIR_TO_PAIR) {
-                // TODO(b/346588978): Only called if !enableRecentsBookendTransition(), can remove
-                // once that rolls out
-                mSplitHandler.onRecentsInSplitAnimationFinish(wct, finishTransaction);
+                // We've dispatched to the mLeftoversHandler to handle the rest of the transition
+                // and called onRecentsInSplitAnimationStart(), but if the recents handler is not
+                // actually handling the transition, then onRecentsInSplitAnimationFinishing()
+                // won't actually get called by the recents handler.  In such cases, we still need
+                // to clean up after the changes from the start call.
+                boolean splitNotifiedByRecents = mRecentsHandler == mLeftoversHandler;
+                if (!splitNotifiedByRecents) {
+                    mSplitHandler.onRecentsInSplitAnimationFinishing(
+                            mSplitHandler.wctIsReorderingSplitToTop(wct),
+                            wct, finishTransaction);
+                }
             } else {
                 // notify pair-to-pair recents animation finish
                 mSplitHandler.onRecentsPairToPairAnimationFinish(wct);

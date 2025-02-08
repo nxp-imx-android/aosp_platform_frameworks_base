@@ -343,10 +343,22 @@ class DesktopTasksController(
             DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
                 .isTrue() && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue()
         ) {
+            logV(
+                "isDesktopModeShowing: hasVisibleTasks=%s hasTopTransparentFullscreenTask=%s hasMinimizedPip=%s",
+                hasVisibleTasks,
+                hasTopTransparentFullscreenTask,
+                hasMinimizedPip,
+            )
             return hasVisibleTasks || hasTopTransparentFullscreenTask || hasMinimizedPip
         } else if (Flags.enableDesktopWindowingPip()) {
+            logV(
+                "isDesktopModeShowing: hasVisibleTasks=%s hasMinimizedPip=%s",
+                hasVisibleTasks,
+                hasMinimizedPip,
+            )
             return hasVisibleTasks || hasMinimizedPip
         }
+        logV("isDesktopModeShowing: hasVisibleTasks=%s", hasVisibleTasks)
         return hasVisibleTasks
     }
 
@@ -3074,6 +3086,7 @@ class DesktopTasksController(
                     ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
                 pendingIntentLaunchFlags =
                     Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+                splashScreenStyle = SPLASH_SCREEN_STYLE_ICON
             }
         if (windowingMode == WINDOWING_MODE_FULLSCREEN) {
             dragAndDropFullscreenCookie = Binder()
@@ -3082,7 +3095,12 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
         wct.sendPendingIntent(launchIntent, null, opts.toBundle())
         if (windowingMode == WINDOWING_MODE_FREEFORM) {
-            desktopModeDragAndDropTransitionHandler.handleDropEvent(wct)
+            if (DesktopModeFlags.ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX.isTrue()) {
+                // TODO b/376389593: Use a custom tab tearing transition/animation
+                startLaunchTransition(TRANSIT_OPEN, wct, launchingTaskId = null)
+            } else {
+                desktopModeDragAndDropTransitionHandler.handleDropEvent(wct)
+            }
         } else {
             transitions.startTransition(TRANSIT_OPEN, wct, null)
         }

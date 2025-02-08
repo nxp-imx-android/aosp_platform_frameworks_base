@@ -42,6 +42,9 @@ interface MagneticRowListener {
     /** Cancel any animations related to the magnetic interactions of the row */
     fun cancelMagneticAnimations()
 
+    /** Cancel any other animations related to the row's translation */
+    fun cancelTranslationAnimations()
+
     /** Can the row be dismissed. */
     fun canRowBeDismissed(): Boolean
 }

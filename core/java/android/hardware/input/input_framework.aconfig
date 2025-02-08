@@ -233,3 +233,12 @@ flag {
     description: "Key Event Activity Detection"
     bug: "356412905"
 }
+
+flag {
+   name: "enable_backup_and_restore_for_input_gestures"
+   namespace: "input"
+   description: "Adds backup and restore support for custom input gestures"
+   bug: "382184249"
+   is_fixed_read_only: true
+}
+

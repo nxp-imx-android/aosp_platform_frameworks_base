@@ -827,12 +827,12 @@ public final class BatteryUsageStats implements Parcelable, Closeable {
                         parser.getAttributeLong(null, XML_ATTR_DURATION));
                 builder.setBatteryCapacity(
                         parser.getAttributeDouble(null, XML_ATTR_BATTERY_CAPACITY));
-                builder.setDischargePercentage(
+                builder.addDischargePercentage(
                         parser.getAttributeInt(null, XML_ATTR_DISCHARGE_PERCENT));
-                builder.setDischargedPowerRange(
+                builder.addDischargedPowerRange(
                         parser.getAttributeDouble(null, XML_ATTR_DISCHARGE_LOWER),
                         parser.getAttributeDouble(null, XML_ATTR_DISCHARGE_UPPER));
-                builder.setDischargeDurationMs(
+                builder.addDischargeDurationMs(
                         parser.getAttributeLong(null, XML_ATTR_DISCHARGE_DURATION));
                 builder.setBatteryTimeRemainingMs(
                         parser.getAttributeLong(null, XML_ATTR_BATTERY_REMAINING));
@@ -1044,23 +1044,22 @@ public final class BatteryUsageStats implements Parcelable, Closeable {
         }
 
         /**
-         * Sets the battery discharge amount since BatteryStats reset as percentage of the full
-         * charge.
+         * Accumulates the battery discharge amount as percentage of the full charge. Can exceed 100
          */
         @NonNull
-        public Builder setDischargePercentage(int dischargePercentage) {
-            mDischargePercentage = dischargePercentage;
+        public Builder addDischargePercentage(int dischargePercentage) {
+            mDischargePercentage += dischargePercentage;
             return this;
         }
 
         /**
-         * Sets the estimated battery discharge range.
+         * Accumulates the estimated battery discharge range.
          */
         @NonNull
-        public Builder setDischargedPowerRange(double dischargedPowerLowerBoundMah,
+        public Builder addDischargedPowerRange(double dischargedPowerLowerBoundMah,
                 double dischargedPowerUpperBoundMah) {
-            mDischargedPowerLowerBoundMah = dischargedPowerLowerBoundMah;
-            mDischargedPowerUpperBoundMah = dischargedPowerUpperBoundMah;
+            mDischargedPowerLowerBoundMah += dischargedPowerLowerBoundMah;
+            mDischargedPowerUpperBoundMah += dischargedPowerUpperBoundMah;
             return this;
         }
 
@@ -1068,8 +1067,8 @@ public final class BatteryUsageStats implements Parcelable, Closeable {
          * Sets the total battery discharge time, in milliseconds.
          */
         @NonNull
-        public Builder setDischargeDurationMs(long durationMs) {
-            mDischargeDurationMs = durationMs;
+        public Builder addDischargeDurationMs(long durationMs) {
+            mDischargeDurationMs += durationMs;
             return this;
         }
 

@@ -20,11 +20,14 @@ import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_M
 
 import android.content.Context;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
@@ -50,6 +53,8 @@ public class AutoclickTypePanel {
     private final LinearLayout mDoubleClickButton;
     private final LinearLayout mDragButton;
     private final LinearLayout mScrollButton;
+
+    private LinearLayout mSelectedButton;
 
     public AutoclickTypePanel(Context context, WindowManager windowManager) {
         mContext = context;
@@ -80,6 +85,40 @@ public class AutoclickTypePanel {
         // Initializes panel as collapsed state and only displays the left click button.
         hideAllClickTypeButtons();
         mLeftClickButton.setVisibility(View.VISIBLE);
+        setSelectedButton(/* selectedButton= */ mLeftClickButton);
+    }
+
+    /** Sets the selected button and updates the newly and previously selected button styling. */
+    private void setSelectedButton(@NonNull LinearLayout selectedButton) {
+        // Updates the previously selected button styling.
+        if (mSelectedButton != null) {
+            toggleSelectedButtonStyle(mSelectedButton, /* isSelected= */ false);
+        }
+
+        mSelectedButton = selectedButton;
+
+        // Updates the newly selected button styling.
+        toggleSelectedButtonStyle(selectedButton, /* isSelected= */ true);
+    }
+
+    private void toggleSelectedButtonStyle(@NonNull LinearLayout button, boolean isSelected) {
+        // Sets icon background color.
+        GradientDrawable gradientDrawable = (GradientDrawable) button.getBackground();
+        gradientDrawable.setColor(
+                mContext.getColor(
+                        isSelected
+                                ? R.color.materialColorPrimary
+                                : R.color.materialColorSurfaceContainer));
+
+        // Sets icon color.
+        ImageButton imageButton = (ImageButton) button.getChildAt(/* index= */ 0);
+        Drawable drawable = imageButton.getDrawable();
+        drawable.mutate()
+                .setTint(
+                        mContext.getColor(
+                                isSelected
+                                        ? R.color.materialColorSurfaceContainer
+                                        : R.color.materialColorPrimary));
     }
 
     public void show() {
@@ -97,6 +136,9 @@ public class AutoclickTypePanel {
             // buttons except the one user selected.
             hideAllClickTypeButtons();
             button.setVisibility(View.VISIBLE);
+
+            // Sets the newly selected button.
+            setSelectedButton(/* selectedButton= */ button);
         } else {
             // If the panel is already collapsed, we just need to expand it.
             showAllClickTypeButtons();

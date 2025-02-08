@@ -58,7 +58,7 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
     private static final float DEVICE_DISABLED_ALPHA = 0.5f;
     private static final float DEVICE_ACTIVE_ALPHA = 1f;
     protected List<MediaItem> mMediaItemList = new CopyOnWriteArrayList<>();
-    private boolean mShouldGroupSelectedMediaItems = Flags.enableOutputSwitcherSessionGrouping();
+    private boolean mShouldGroupSelectedMediaItems = Flags.enableOutputSwitcherDeviceGrouping();
 
     public MediaOutputAdapter(MediaSwitchingController controller) {
         super(controller);
@@ -333,7 +333,7 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
         }
 
         private boolean shouldShowGroupCheckbox(@NonNull GroupStatus groupStatus) {
-            if (Flags.enableOutputSwitcherSessionGrouping()) {
+            if (Flags.enableOutputSwitcherDeviceGrouping()) {
                 return isGroupCheckboxEnabled(groupStatus);
             }
             return true;
@@ -391,7 +391,7 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             if (drawable instanceof AnimatedVectorDrawable) {
                 ((AnimatedVectorDrawable) drawable).start();
             }
-            if (Flags.enableOutputSwitcherSessionGrouping()) {
+            if (Flags.enableOutputSwitcherDeviceGrouping()) {
                 mEndClickIcon.setContentDescription(mContext.getString(accessibilityStringId));
             }
         }

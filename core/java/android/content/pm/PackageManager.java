@@ -16,6 +16,7 @@
 
 package android.content.pm;
 
+import static android.app.PropertyInvalidatedCache.MODULE_SYSTEM;
 import static android.content.pm.SigningInfo.AppSigningSchemeVersion;
 import static android.media.audio.Flags.FLAG_FEATURE_SPATIAL_AUDIO_HEADTRACKING_LOW_LATENCY;
 
@@ -11659,11 +11660,22 @@ public abstract class PackageManager {
         }
     }
 
-    private static final PropertyInvalidatedCache<ApplicationInfoQuery, ApplicationInfo>
-            sApplicationInfoCache =
-            new PropertyInvalidatedCache<ApplicationInfoQuery, ApplicationInfo>(
-                    2048, PermissionManager.CACHE_KEY_PACKAGE_INFO_CACHE,
-                    "getApplicationInfo") {
+    private static String packageInfoApi() {
+        return PropertyInvalidatedCache.apiFromProperty(
+            PermissionManager.CACHE_KEY_PACKAGE_INFO_CACHE);
+    }
+
+    // The maximum number of entries to keep in the packageInfo and applicationInfo caches.
+    private final static int MAX_INFO_CACHE_ENTRIES = 2048;
+
+    /** @hide */
+    @VisibleForTesting
+    public static final PropertyInvalidatedCache<ApplicationInfoQuery, ApplicationInfo>
+            sApplicationInfoCache = new PropertyInvalidatedCache<>(
+                new PropertyInvalidatedCache.Args(MODULE_SYSTEM)
+                .maxEntries(MAX_INFO_CACHE_ENTRIES).api(packageInfoApi()).cacheNulls(true),
+                "getApplicationInfo", null) {
+
                 @Override
                 public ApplicationInfo recompute(ApplicationInfoQuery query) {
                     return getApplicationInfoAsUserUncached(
@@ -11749,10 +11761,11 @@ public abstract class PackageManager {
     }
 
     private static final PropertyInvalidatedCache<PackageInfoQuery, PackageInfo>
-            sPackageInfoCache =
-            new PropertyInvalidatedCache<PackageInfoQuery, PackageInfo>(
-                    2048, PermissionManager.CACHE_KEY_PACKAGE_INFO_CACHE,
-                    "getPackageInfo") {
+            sPackageInfoCache = new PropertyInvalidatedCache<>(
+                new PropertyInvalidatedCache.Args(MODULE_SYSTEM)
+                .maxEntries(MAX_INFO_CACHE_ENTRIES).api(packageInfoApi()).cacheNulls(true),
+                "getPackageInfo", null) {
+
                 @Override
                 public PackageInfo recompute(PackageInfoQuery query) {
                     return getPackageInfoAsUserUncached(

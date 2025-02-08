@@ -18,7 +18,10 @@ package com.android.keyguard.dagger;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Vibrator;
 import android.view.LayoutInflater;
+
+import androidx.annotation.Nullable;
 
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
@@ -55,7 +58,8 @@ public abstract class ClockRegistryModule {
             FeatureFlags featureFlags,
             @Main Resources resources,
             LayoutInflater layoutInflater,
-            ClockMessageBuffers clockBuffers) {
+            ClockMessageBuffers clockBuffers,
+            @Nullable Vibrator vibrator) {
         ClockRegistry registry = new ClockRegistry(
                 context,
                 pluginManager,
@@ -69,7 +73,8 @@ public abstract class ClockRegistryModule {
                         context,
                         layoutInflater,
                         resources,
-                        com.android.systemui.shared.Flags.clockReactiveVariants()
+                        com.android.systemui.shared.Flags.clockReactiveVariants(),
+                        vibrator
                 ),
                 context.getString(R.string.lockscreen_clock_id_fallback),
                 clockBuffers,

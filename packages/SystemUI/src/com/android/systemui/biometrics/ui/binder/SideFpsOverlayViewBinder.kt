@@ -31,6 +31,7 @@ import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieComposition
 import com.airbnb.lottie.LottieProperty
 import com.android.app.animation.Interpolators
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.keyguard.KeyguardPINView
 import com.android.systemui.CoreStartable
 import com.android.systemui.biometrics.domain.interactor.BiometricStatusInteractor
@@ -50,7 +51,6 @@ import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.combine
-import com.android.app.tracing.coroutines.launchTraced as launch
 
 /** Binds the side fingerprint sensor indicator view to [SideFpsOverlayViewModel]. */
 @SysUISingleton
@@ -65,51 +65,53 @@ constructor(
     private val layoutInflater: Lazy<LayoutInflater>,
     private val sideFpsProgressBarViewModel: Lazy<SideFpsProgressBarViewModel>,
     private val sfpsSensorInteractor: Lazy<SideFpsSensorInteractor>,
-    private val windowManager: Lazy<WindowManager>
+    private val windowManager: Lazy<WindowManager>,
 ) : CoreStartable {
 
     override fun start() {
-        applicationScope
-            .launch {
-                sfpsSensorInteractor.get().isAvailable.collect { isSfpsAvailable ->
-                    if (isSfpsAvailable) {
-                        combine(
-                                biometricStatusInteractor.get().sfpsAuthenticationReason,
-                                deviceEntrySideFpsOverlayInteractor
-                                    .get()
-                                    .showIndicatorForDeviceEntry,
-                                sideFpsProgressBarViewModel.get().isVisible,
-                                ::Triple
+        applicationScope.launch {
+            sfpsSensorInteractor.get().isAvailable.collect { isSfpsAvailable ->
+                if (isSfpsAvailable) {
+                    combine(
+                            biometricStatusInteractor.get().sfpsAuthenticationReason,
+                            deviceEntrySideFpsOverlayInteractor.get().showIndicatorForDeviceEntry,
+                            sideFpsProgressBarViewModel.get().isVisible,
+                            ::Triple,
+                        )
+                        .sample(displayStateInteractor.get().isInRearDisplayMode, ::Pair)
+                        .collect { (combinedFlows, isInRearDisplayMode: Boolean) ->
+                            val (
+                                systemServerAuthReason,
+                                showIndicatorForDeviceEntry,
+                                progressBarIsVisible) =
+                                combinedFlows
+                            Log.d(
+                                TAG,
+                                "systemServerAuthReason = $systemServerAuthReason, " +
+                                    "showIndicatorForDeviceEntry = " +
+                                    "$showIndicatorForDeviceEntry, " +
+                                    "progressBarIsVisible = $progressBarIsVisible",
                             )
-                            .sample(displayStateInteractor.get().isInRearDisplayMode, ::Pair)
-                            .collect { (combinedFlows, isInRearDisplayMode: Boolean) ->
-                                val (
-                                    systemServerAuthReason,
-                                    showIndicatorForDeviceEntry,
-                                    progressBarIsVisible) =
-                                    combinedFlows
-                                Log.d(
-                                    TAG,
-                                    "systemServerAuthReason = $systemServerAuthReason, " +
-                                        "showIndicatorForDeviceEntry = " +
-                                        "$showIndicatorForDeviceEntry, " +
-                                        "progressBarIsVisible = $progressBarIsVisible"
-                                )
-                                if (!isInRearDisplayMode) {
-                                    if (progressBarIsVisible) {
-                                        hide()
-                                    } else if (systemServerAuthReason != NotRunning) {
-                                        show()
-                                    } else if (showIndicatorForDeviceEntry) {
-                                        show()
-                                    } else {
-                                        hide()
-                                    }
+                            if (!isInRearDisplayMode) {
+                                if (progressBarIsVisible) {
+                                    hide()
+                                } else if (systemServerAuthReason != NotRunning) {
+                                    show()
+                                } else if (showIndicatorForDeviceEntry) {
+                                    show()
+                                    overlayView?.announceForAccessibility(
+                                        applicationContext.resources.getString(
+                                            R.string.accessibility_side_fingerprint_indicator_label
+                                        )
+                                    )
+                                } else {
+                                    hide()
                                 }
                             }
-                    }
+                        }
                 }
             }
+        }
     }
 
     private var overlayView: View? = null
@@ -119,7 +121,7 @@ constructor(
         if (overlayView?.isAttachedToWindow == true) {
             Log.d(
                 TAG,
-                "show(): overlayView $overlayView isAttachedToWindow already, ignoring show request"
+                "show(): overlayView $overlayView isAttachedToWindow already, ignoring show request",
             )
             return
         }
@@ -137,11 +139,6 @@ constructor(
         overlayView!!.visibility = View.INVISIBLE
         Log.d(TAG, "show(): adding overlayView $overlayView")
         windowManager.get().addView(overlayView, overlayViewModel.defaultOverlayViewParams)
-        overlayView!!.announceForAccessibility(
-            applicationContext.resources.getString(
-                R.string.accessibility_side_fingerprint_indicator_label
-            )
-        )
     }
 
     /** Hide the side fingerprint sensor indicator */
@@ -163,7 +160,7 @@ constructor(
         fun bind(
             overlayView: View,
             viewModel: SideFpsOverlayViewModel,
-            windowManager: WindowManager
+            windowManager: WindowManager,
         ) {
             overlayView.repeatWhenAttached {
                 val lottie = it.requireViewById<LottieAnimationView>(R.id.sidefps_animation)
@@ -186,7 +183,7 @@ constructor(
                     object : View.AccessibilityDelegate() {
                         override fun dispatchPopulateAccessibilityEvent(
                             host: View,
-                            event: AccessibilityEvent
+                            event: AccessibilityEvent,
                         ): Boolean {
                             return if (
                                 event.getEventType() ===

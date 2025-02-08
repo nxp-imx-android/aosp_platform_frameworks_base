@@ -110,7 +110,8 @@ public class PowerStatsAggregator {
 
                     lastTime = item.time;
 
-                    if (item.batteryLevel != lastBatteryLevel) {
+                    if (item.cmd == BatteryStats.HistoryItem.CMD_UPDATE
+                            && item.batteryLevel != lastBatteryLevel) {
                         mStats.noteBatteryLevel(item.batteryLevel, item.batteryChargeUah,
                                 item.time);
                         lastBatteryLevel = item.batteryLevel;

@@ -18,6 +18,7 @@
 package com.android.systemui.user.data.repository
 
 import android.app.admin.devicePolicyManager
+import android.content.Intent
 import android.content.pm.UserInfo
 import android.internal.statusbar.fakeStatusBarService
 import android.os.UserHandle
@@ -27,6 +28,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -50,6 +52,8 @@ import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -169,6 +173,39 @@ class UserRepositoryImplTest : SysuiTestCase() {
             assertThat(underTest.mainUserId).isEqualTo(mainUserId)
             job1.cancel()
             job2.cancel()
+        }
+
+    @Test
+    fun userUnlockedFlow_tracksBroadcastedChanges() =
+        testScope.runTest {
+            val userHandle: UserHandle = mock()
+            underTest = create(testScope.backgroundScope)
+            val latest by collectLastValue(underTest.isUserUnlocked(userHandle))
+            whenever(manager.isUserUnlocked(eq(userHandle))).thenReturn(false)
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+                context,
+                Intent(Intent.ACTION_USER_UNLOCKED),
+            )
+
+            assertThat(latest).isFalse()
+
+            whenever(manager.isUserUnlocked(eq(userHandle))).thenReturn(true)
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+                context,
+                Intent(Intent.ACTION_USER_UNLOCKED),
+            )
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    fun userUnlockedFlow_initialValueReported() =
+        testScope.runTest {
+            val userHandle: UserHandle = mock()
+            underTest = create(testScope.backgroundScope)
+            whenever(manager.isUserUnlocked(eq(userHandle))).thenReturn(true)
+            val latest by collectLastValue(underTest.isUserUnlocked(userHandle))
+            assertThat(latest).isTrue()
         }
 
     @Test

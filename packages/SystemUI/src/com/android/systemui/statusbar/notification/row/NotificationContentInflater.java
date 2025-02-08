@@ -901,6 +901,13 @@ public class NotificationContentInflater implements NotificationRowContentBinder
         if (!satisfiesMinHeightRequirement(view, entry, resources)) {
             return "inflated notification does not meet minimum height requirement";
         }
+
+        if (NotificationCustomContentMemoryVerifier.requiresImageViewMemorySizeCheck(entry)) {
+            if (!NotificationCustomContentMemoryVerifier.satisfiesMemoryLimits(view, entry)) {
+                return "inflated notification does not meet maximum memory size requirement";
+            }
+        }
+
         return null;
     }
 

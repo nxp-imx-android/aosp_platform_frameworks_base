@@ -72,6 +72,7 @@ import static android.content.Intent.EXTRA_REPLACING;
 import static android.content.pm.PermissionInfo.PROTECTION_DANGEROUS;
 import static android.content.pm.PermissionInfo.PROTECTION_FLAG_APPOP;
 import static android.os.Flags.binderFrozenStateChangeCallback;
+import static android.permission.flags.Flags.appOpsServiceHandlerFix;
 import static android.permission.flags.Flags.checkOpValidatePackage;
 import static android.permission.flags.Flags.deviceAwareAppOpNewSchemaEnabled;
 import static android.permission.flags.Flags.useFrozenAwareRemoteCallbackList;
@@ -174,6 +175,7 @@ import com.android.internal.util.XmlUtils;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
+import com.android.server.IoThread;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.LocalServices;
 import com.android.server.LockGuard;
@@ -277,6 +279,7 @@ public class AppOpsService extends IAppOpsService.Stub {
     final AtomicFile mStorageFile;
     final AtomicFile mRecentAccessesFile;
     private final @Nullable File mNoteOpCallerStacktracesFile;
+    /* AMS handler, this shouldn't be used for IO */
     final Handler mHandler;
 
     private final AppOpsRecentAccessPersistence mRecentAccessPersistence;
@@ -1411,7 +1414,7 @@ public class AppOpsService extends IAppOpsService.Stub {
 
     @GuardedBy("this")
     private void packageRemovedLocked(int uid, String packageName) {
-        mHandler.post(PooledLambda.obtainRunnable(HistoricalRegistry::clearHistory,
+        getIoHandler().post(PooledLambda.obtainRunnable(HistoricalRegistry::clearHistory,
                 mHistoricalRegistry, uid, packageName));
 
         UidState uidState = mUidStates.get(uid);
@@ -1693,7 +1696,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             if (mWriteScheduled) {
                 mWriteScheduled = false;
                 mFastWriteScheduled = false;
-                mHandler.removeCallbacks(mWriteRunner);
+                getIoHandler().removeCallbacks(mWriteRunner);
                 doWrite = true;
             }
         }
@@ -1979,7 +1982,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                         new String[attributionChainExemptPackages.size()]) : null;
 
         // Must not hold the appops lock
-        mHandler.post(PooledLambda.obtainRunnable(HistoricalRegistry::getHistoricalOps,
+        getIoHandler().post(PooledLambda.obtainRunnable(HistoricalRegistry::getHistoricalOps,
                 mHistoricalRegistry, uid, packageName, attributionTag, opNamesArray, dataType,
                 filter, beginTimeMillis, endTimeMillis, flags, chainExemptPkgArray,
                 callback).recycleOnUse());
@@ -2010,7 +2013,8 @@ public class AppOpsService extends IAppOpsService.Stub {
                 new String[attributionChainExemptPackages.size()]) : null;
 
         // Must not hold the appops lock
-        mHandler.post(PooledLambda.obtainRunnable(HistoricalRegistry::getHistoricalOpsFromDiskRaw,
+        getIoHandler().post(PooledLambda.obtainRunnable(
+                HistoricalRegistry::getHistoricalOpsFromDiskRaw,
                 mHistoricalRegistry, uid, packageName, attributionTag, opNamesArray, dataType,
                 filter, beginTimeMillis, endTimeMillis, flags, chainExemptPkgArray,
                 callback).recycleOnUse());
@@ -5074,7 +5078,7 @@ public class AppOpsService extends IAppOpsService.Stub {
     private void scheduleWriteLocked() {
         if (!mWriteScheduled) {
             mWriteScheduled = true;
-            mHandler.postDelayed(mWriteRunner, WRITE_DELAY);
+            getIoHandler().postDelayed(mWriteRunner, WRITE_DELAY);
         }
     }
 
@@ -5082,8 +5086,8 @@ public class AppOpsService extends IAppOpsService.Stub {
         if (!mFastWriteScheduled) {
             mWriteScheduled = true;
             mFastWriteScheduled = true;
-            mHandler.removeCallbacks(mWriteRunner);
-            mHandler.postDelayed(mWriteRunner, 10*1000);
+            getIoHandler().removeCallbacks(mWriteRunner);
+            getIoHandler().postDelayed(mWriteRunner, 10 * 1000);
         }
     }
 
@@ -5957,7 +5961,8 @@ public class AppOpsService extends IAppOpsService.Stub {
                     final long token = Binder.clearCallingIdentity();
                     try {
                         synchronized (shell.mInternal) {
-                            shell.mInternal.mHandler.removeCallbacks(shell.mInternal.mWriteRunner);
+                            shell.mInternal.getIoHandler().removeCallbacks(
+                                    shell.mInternal.mWriteRunner);
                         }
                         shell.mInternal.writeRecentAccesses();
                         shell.mInternal.mAppOpsCheckingService.writeState();
@@ -7882,6 +7887,14 @@ public class AppOpsService extends IAppOpsService.Stub {
             mCheckOpsDelegate.finishProxyOperation(clientId, code, attributionSource,
                     skipProxyOperation, AppOpsService.this::finishProxyOperationImpl);
             return null;
+        }
+    }
+
+    private Handler getIoHandler() {
+        if (appOpsServiceHandlerFix()) {
+            return IoThread.getHandler();
+        } else {
+            return mHandler;
         }
     }
 }

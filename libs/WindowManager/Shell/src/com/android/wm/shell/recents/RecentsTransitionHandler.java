@@ -317,7 +317,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     "RecentsTransitionHandler.mergeAnimation: no controller found");
             return;
         }
-        controller.merge(info, startT, mergeTarget, finishCallback);
+        controller.merge(info, startT, finishT, mergeTarget, finishCallback);
     }
 
     @Override
@@ -912,7 +912,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
          * before any unhandled transitions.
          */
         @SuppressLint("NewApi")
-        void merge(TransitionInfo info, SurfaceControl.Transaction t, IBinder mergeTarget,
+        void merge(TransitionInfo info, SurfaceControl.Transaction startT,
+                SurfaceControl.Transaction finishT, IBinder mergeTarget,
                 Transitions.TransitionFinishCallback finishCallback) {
             if (mFinishCB == null) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
@@ -1072,8 +1073,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     Slog.e(TAG, "Returning to recents without closing any opening tasks.");
                 }
                 // Setup may hide it initially since it doesn't know that overview was still active.
-                t.show(recentsOpening.getLeash());
-                t.setAlpha(recentsOpening.getLeash(), 1.f);
+                startT.show(recentsOpening.getLeash());
+                startT.setAlpha(recentsOpening.getLeash(), 1.f);
                 mState = STATE_NORMAL;
             }
             boolean didMergeThings = false;
@@ -1142,31 +1143,31 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         mOpeningTasks.add(pausingTask);
                         // Setup hides opening tasks initially, so make it visible again (since we
                         // are already showing it).
-                        t.show(change.getLeash());
-                        t.setAlpha(change.getLeash(), 1.f);
+                        startT.show(change.getLeash());
+                        startT.setAlpha(change.getLeash(), 1.f);
                     } else if (isLeaf) {
                         // We are receiving new opening leaf tasks, so convert to onTasksAppeared.
                         final RemoteAnimationTarget target = TransitionUtil.newTarget(
-                                change, layer, info, t, mLeashMap);
+                                change, layer, info, startT, mLeashMap);
                         appearedTargets[nextTargetIdx++] = target;
                         // reparent into the original `mInfo` since that's where we are animating.
                         final TransitionInfo.Root root = TransitionUtil.getRootFor(change, mInfo);
                         final boolean wasClosing = closingIdx >= 0;
-                        t.reparent(target.leash, root.getLeash());
-                        t.setPosition(target.leash,
+                        startT.reparent(target.leash, root.getLeash());
+                        startT.setPosition(target.leash,
                                 change.getStartAbsBounds().left - root.getOffset().x,
                                 change.getStartAbsBounds().top - root.getOffset().y);
-                        t.setLayer(target.leash, layer);
+                        startT.setLayer(target.leash, layer);
                         if (wasClosing) {
                             // App was previously visible and is closing
-                            t.show(target.leash);
-                            t.setAlpha(target.leash, 1f);
+                            startT.show(target.leash);
+                            startT.setAlpha(target.leash, 1f);
                             // Also override the task alpha as it was set earlier when dispatching
                             // the transition and setting up the leash to hide the
-                            t.setAlpha(change.getLeash(), 1f);
+                            startT.setAlpha(change.getLeash(), 1f);
                         } else {
                             // Hide the animation leash, let the listener show it
-                            t.hide(target.leash);
+                            startT.hide(target.leash);
                         }
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                 "  opening new leaf taskId=%d wasClosing=%b",
@@ -1175,10 +1176,10 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     } else {
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                 "  opening new taskId=%d", change.getTaskInfo().taskId);
-                        t.setLayer(change.getLeash(), layer);
+                        startT.setLayer(change.getLeash(), layer);
                         // Setup hides opening tasks initially, so make it visible since recents
                         // is only animating the leafs.
-                        t.show(change.getLeash());
+                        startT.show(change.getLeash());
                         mOpeningTasks.add(new TaskState(change, null));
                     }
                 }
@@ -1194,7 +1195,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 // Activity only transition, so consume the merge as it doesn't affect the rest of
                 // recents.
                 Slog.d(TAG, "Got an activity only transition during recents, so apply directly");
-                mergeActivityOnly(info, t);
+                mergeActivityOnly(info, startT);
             } else if (!didMergeThings) {
                 // Didn't recognize anything in incoming transition so don't merge it.
                 Slog.w(TAG, "Don't know how to merge this transition, foundRecentsClosing="
@@ -1206,7 +1207,10 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 return;
             }
             // At this point, we are accepting the merge.
-            t.apply();
+            startT.apply();
+            // Since we're accepting the merge, update the finish transaction so that changes via
+            // that transaction will be applied on top of those of the merged transitions
+            mFinishTransaction = finishT;
             // not using the incoming anim-only surfaces
             info.releaseAnimSurfaces();
             if (appearedTargets != null) {
@@ -1446,6 +1450,11 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             wct.clear();
 
                             if (Flags.enableRecentsBookendTransition()) {
+                                // Notify the mixers of the pending finish
+                                for (int i = 0; i < mMixers.size(); ++i) {
+                                    mMixers.get(i).handleFinishRecents(returningToApp, wct, t);
+                                }
+
                                 // In this case, we've already started the PIP transition, so we can
                                 // clean up immediately
                                 mPendingRunnerFinishCb = runnerFinishCb;

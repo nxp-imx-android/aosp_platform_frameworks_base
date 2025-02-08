@@ -30,18 +30,13 @@ import com.android.systemui.compose.ComposeInitializer
 import com.android.systemui.res.R
 
 /** A view that can serve as the root of the main SysUI window. */
-open class WindowRootView(
-    context: Context,
-    attrs: AttributeSet?,
-) :
-    FrameLayout(
-        context,
-        attrs,
-    ) {
+open class WindowRootView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
 
     private lateinit var layoutInsetsController: LayoutInsetsController
     private var leftInset = 0
     private var rightInset = 0
+
+    private var previousInsets: WindowInsets? = null
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
@@ -66,11 +61,14 @@ open class WindowRootView(
     override fun generateDefaultLayoutParams(): FrameLayout.LayoutParams? {
         return LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT
+            FrameLayout.LayoutParams.MATCH_PARENT,
         )
     }
 
     override fun onApplyWindowInsets(windowInsets: WindowInsets): WindowInsets? {
+        if (windowInsets == previousInsets) {
+            return windowInsets
+        }
         val insets = windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars())
         if (fitsSystemWindows) {
             val paddingChanged = insets.top != paddingTop || insets.bottom != paddingBottom
@@ -95,7 +93,7 @@ open class WindowRootView(
         leftInset = pairInsets.first
         rightInset = pairInsets.second
         applyMargins()
-        return windowInsets
+        return windowInsets.also { previousInsets = WindowInsets(it) }
     }
 
     fun setLayoutInsetsController(layoutInsetsController: LayoutInsetsController) {
@@ -143,37 +141,22 @@ open class WindowRootView(
     interface LayoutInsetsController {
 
         /** Update the insets and calculate them accordingly. */
-        fun getinsets(
-            windowInsets: WindowInsets?,
-            displayCutout: DisplayCutout?,
-        ): Pair<Int, Int>
+        fun getinsets(windowInsets: WindowInsets?, displayCutout: DisplayCutout?): Pair<Int, Int>
     }
 
     private class LayoutParams : FrameLayout.LayoutParams {
         var ignoreRightInset = false
 
-        constructor(
-            width: Int,
-            height: Int,
-        ) : super(
-            width,
-            height,
-        )
+        constructor(width: Int, height: Int) : super(width, height)
 
         @SuppressLint("CustomViewStyleable")
-        constructor(
-            context: Context,
-            attrs: AttributeSet?,
-        ) : super(
-            context,
-            attrs,
-        ) {
+        constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
             val obtainedAttributes =
                 context.obtainStyledAttributes(attrs, R.styleable.StatusBarWindowView_Layout)
             ignoreRightInset =
                 obtainedAttributes.getBoolean(
                     R.styleable.StatusBarWindowView_Layout_ignoreRightInset,
-                    false
+                    false,
                 )
             obtainedAttributes.recycle()
         }

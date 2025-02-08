@@ -136,6 +136,10 @@ public class WallpaperManagerServiceTests {
 
     private static final String TAG = "WallpaperManagerServiceTests";
     private static final int DISPLAY_SIZE_DIMENSION = 100;
+
+    private static final ComponentName TEST_WALLPAPER_COMPONENT = ComponentName.createRelative(
+            "com.android.frameworks.mockingservicestests",
+            "com.android.server.wallpaper.TestWallpaperService");
     private static StaticMockitoSession sMockitoSession;
 
     @ClassRule
@@ -144,6 +148,7 @@ public class WallpaperManagerServiceTests {
 
     private static ComponentName sImageWallpaperComponentName;
     private static ComponentName sDefaultWallpaperComponent;
+    private static WallpaperDescription sDefaultWallpaperDescription;
 
     private static ComponentName sFallbackWallpaperComponentName;
 
@@ -210,8 +215,11 @@ public class WallpaperManagerServiceTests {
         } else {
             sContext.addMockService(sDefaultWallpaperComponent, sWallpaperService);
         }
+        sDefaultWallpaperDescription = new WallpaperDescription.Builder().setComponent(
+                sDefaultWallpaperComponent).build();
 
         sContext.addMockService(sImageWallpaperComponentName, sWallpaperService);
+        sContext.addMockService(TEST_WALLPAPER_COMPONENT, sWallpaperService);
         if (sFallbackWallpaperComponentName != null) {
             sContext.addMockService(sFallbackWallpaperComponentName, sWallpaperService);
         }
@@ -484,11 +492,12 @@ public class WallpaperManagerServiceTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT)
+    @EnableFlags({Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT,
+            Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING})
     public void testSaveLoadSettings_withoutWallpaperDescription()
             throws IOException, XmlPullParserException {
         WallpaperData expectedData = mService.getCurrentWallpaperData(FLAG_SYSTEM, 0);
-        expectedData.setComponent(sDefaultWallpaperComponent);
+        expectedData.setDescription(sDefaultWallpaperDescription);
         expectedData.primaryColors = new WallpaperColors(Color.valueOf(Color.RED),
                 Color.valueOf(Color.BLUE), null);
         expectedData.mWallpaperDimAmount = 0.5f;
@@ -524,11 +533,12 @@ public class WallpaperManagerServiceTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT)
+    @EnableFlags({Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT,
+            Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING})
     public void testSaveLoadSettings_withWallpaperDescription()
             throws IOException, XmlPullParserException {
         WallpaperData expectedData = mService.getCurrentWallpaperData(FLAG_SYSTEM, 0);
-        expectedData.setComponent(sDefaultWallpaperComponent);
+        expectedData.setDescription(sDefaultWallpaperDescription);
         PersistableBundle content = new PersistableBundle();
         content.putString("ckey", "cvalue");
         WallpaperDescription description = new WallpaperDescription.Builder()
@@ -556,7 +566,8 @@ public class WallpaperManagerServiceTests {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT)
+    @DisableFlags({Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT,
+            Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING})
     public void testSaveLoadSettings_legacyNextComponent()
             throws IOException, XmlPullParserException {
         WallpaperData systemWallpaperData = mService.getCurrentWallpaperData(FLAG_SYSTEM, 0);
@@ -1033,35 +1044,33 @@ public class WallpaperManagerServiceTests {
     }
     // Verify a secondary display removes system decorations ended
 
-    // Test setWallpaperComponent on multiple displays.
-    // GIVEN 3 displays, 0, 2, 3, the new wallpaper is only compatible for display 0 and 3 but not
-    // 2.
-    // WHEN the new wallpaper is set for system and lock via setWallpaperComponent.
+    // Test fallback connection is correctly established for multiple displays after reboot.
+    // GIVEN 3 displays, 0, 2, 3, the wallpaper is only compatible for display 0 and 3 but not 2.
+    // WHEN the device is booted.
     // THEN there are 2 connections in mLastWallpaper and 1 connection in mFallbackWallpaper.
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
-    public void setWallpaperComponent_multiDisplays_shouldHaveExpectedConnections() {
-        // Skip if there is no pre-defined default wallpaper component.
-        assumeThat(sDefaultWallpaperComponent,
-                not(CoreMatchers.equalTo(sImageWallpaperComponentName)));
-
-        final int testUserId = USER_SYSTEM;
-        mService.switchUser(testUserId, null);
+    public void deviceBooted_multiDisplays_shouldHaveExpectedConnections() {
         final int incompatibleDisplayId = 2;
         final int compatibleDisplayId = 3;
         setUpDisplays(List.of(DEFAULT_DISPLAY, incompatibleDisplayId, compatibleDisplayId));
         mService.removeWallpaperCompatibleDisplayForTest(incompatibleDisplayId);
 
-        mService.setWallpaperComponent(sImageWallpaperComponentName, sContext.getOpPackageName(),
-                FLAG_SYSTEM | FLAG_LOCK, testUserId);
+        final int testUserId = USER_SYSTEM;
+        // After reboot, a switch user triggers the wallpapers initialization.
+        mService.switchUser(testUserId, null);
 
         verifyLastWallpaperData(testUserId, sImageWallpaperComponentName);
         verifyCurrentSystemData(testUserId);
-        assertThat(mService.mLastWallpaper.connection.getConnectedEngineSize()).isEqualTo(2);
         assertThat(mService.mLastWallpaper.connection.containsDisplay(DEFAULT_DISPLAY)).isTrue();
         assertThat(mService.mLastWallpaper.connection.containsDisplay(compatibleDisplayId))
                 .isTrue();
-        assertThat(mService.mFallbackWallpaper.connection.getConnectedEngineSize()).isEqualTo(1);
+        assertThat(mService.mLastWallpaper.connection.containsDisplay(incompatibleDisplayId))
+                .isFalse();
+        assertThat(mService.mFallbackWallpaper.connection.containsDisplay(DEFAULT_DISPLAY))
+                .isFalse();
+        assertThat(mService.mFallbackWallpaper.connection.containsDisplay(compatibleDisplayId))
+                .isFalse();
         assertThat(mService.mFallbackWallpaper.connection.containsDisplay(incompatibleDisplayId))
                 .isTrue();
         assertThat(mService.mLastLockWallpaper).isNull();
@@ -1076,30 +1085,31 @@ public class WallpaperManagerServiceTests {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
     public void setWallpaperComponent_multiDisplays_displayBecomeCompatible_shouldHaveExpectedConnections() {
-        // Skip if there is no pre-defined default wallpaper component.
-        assumeThat(sDefaultWallpaperComponent,
-                not(CoreMatchers.equalTo(sImageWallpaperComponentName)));
-
-        final int testUserId = USER_SYSTEM;
-        mService.switchUser(testUserId, null);
         final int display2 = 2;
         final int display3 = 3;
         setUpDisplays(List.of(DEFAULT_DISPLAY, display2, display3));
         mService.removeWallpaperCompatibleDisplayForTest(display2);
-        mService.setWallpaperComponent(sImageWallpaperComponentName, sContext.getOpPackageName(),
+        final int testUserId = USER_SYSTEM;
+        mService.switchUser(testUserId, null);
+        // Switch to a test wallpaper and then image wallpaper later to simulate a wallpaper change.
+        mService.setWallpaperComponent(TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(),
                 FLAG_SYSTEM | FLAG_LOCK, testUserId);
-
         mService.addWallpaperCompatibleDisplayForTest(display2);
+
         mService.setWallpaperComponent(sImageWallpaperComponentName, sContext.getOpPackageName(),
                 FLAG_SYSTEM | FLAG_LOCK, testUserId);
 
         verifyLastWallpaperData(testUserId, sImageWallpaperComponentName);
         verifyCurrentSystemData(testUserId);
-        assertThat(mService.mLastWallpaper.connection.getConnectedEngineSize()).isEqualTo(3);
         assertThat(mService.mLastWallpaper.connection.containsDisplay(DEFAULT_DISPLAY)).isTrue();
         assertThat(mService.mLastWallpaper.connection.containsDisplay(display2)).isTrue();
         assertThat(mService.mLastWallpaper.connection.containsDisplay(display3)).isTrue();
-        assertThat(mService.mFallbackWallpaper.connection.getConnectedEngineSize()).isEqualTo(0);
+        assertThat(
+                mService.mFallbackWallpaper.connection.containsDisplay(DEFAULT_DISPLAY)).isFalse();
+        assertThat(
+                mService.mFallbackWallpaper.connection.containsDisplay(display2)).isFalse();
+        assertThat(
+                mService.mFallbackWallpaper.connection.containsDisplay(display3)).isFalse();
         assertThat(mService.mLastLockWallpaper).isNull();
     }
 
@@ -1112,28 +1122,27 @@ public class WallpaperManagerServiceTests {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
     public void setWallpaperComponent_multiDisplays_displayBecomeIncompatible_shouldHaveExpectedConnections() {
-        // Skip if there is no pre-defined default wallpaper component.
-        assumeThat(sDefaultWallpaperComponent,
-                not(CoreMatchers.equalTo(sImageWallpaperComponentName)));
-
-        final int testUserId = USER_SYSTEM;
-        mService.switchUser(testUserId, null);
         final int display2 = 2;
         final int display3 = 3;
         setUpDisplays(List.of(DEFAULT_DISPLAY, display2, display3));
         mService.removeWallpaperCompatibleDisplayForTest(display2);
-        mService.setWallpaperComponent(sImageWallpaperComponentName, sContext.getOpPackageName(),
+        final int testUserId = USER_SYSTEM;
+        mService.switchUser(testUserId, null);
+        // Switch to a test wallpaper and then image wallpaper later to simulate a wallpaper change.
+        mService.setWallpaperComponent(TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(),
                 FLAG_SYSTEM | FLAG_LOCK, testUserId);
-
         mService.removeWallpaperCompatibleDisplayForTest(display3);
+
         mService.setWallpaperComponent(sImageWallpaperComponentName, sContext.getOpPackageName(),
                 FLAG_SYSTEM | FLAG_LOCK, testUserId);
 
         verifyLastWallpaperData(testUserId, sImageWallpaperComponentName);
         verifyCurrentSystemData(testUserId);
-        assertThat(mService.mLastWallpaper.connection.getConnectedEngineSize()).isEqualTo(1);
         assertThat(mService.mLastWallpaper.connection.containsDisplay(DEFAULT_DISPLAY)).isTrue();
-        assertThat(mService.mFallbackWallpaper.connection.getConnectedEngineSize()).isEqualTo(2);
+        assertThat(mService.mLastWallpaper.connection.containsDisplay(display2)).isFalse();
+        assertThat(mService.mLastWallpaper.connection.containsDisplay(display3)).isFalse();
+        assertThat(
+                mService.mFallbackWallpaper.connection.containsDisplay(DEFAULT_DISPLAY)).isFalse();
         assertThat(mService.mFallbackWallpaper.connection.containsDisplay(display2)).isTrue();
         assertThat(mService.mFallbackWallpaper.connection.containsDisplay(display3)).isTrue();
         assertThat(mService.mLastLockWallpaper).isNull();
@@ -1148,35 +1157,40 @@ public class WallpaperManagerServiceTests {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
     public void setWallpaperComponent_systemAndLockWallpapers_multiDisplays_shouldHaveExpectedConnections() {
-        // Skip if there is no pre-defined default wallpaper component.
-        assumeThat(sDefaultWallpaperComponent,
-                not(CoreMatchers.equalTo(sImageWallpaperComponentName)));
-
-        final int testUserId = USER_SYSTEM;
-        mService.switchUser(testUserId, null);
         final int incompatibleDisplayId = 2;
         final int compatibleDisplayId = 3;
         setUpDisplays(List.of(DEFAULT_DISPLAY, incompatibleDisplayId, compatibleDisplayId));
+        final int testUserId = USER_SYSTEM;
+        mService.switchUser(testUserId, null);
+        // Switch to a test wallpaper and then image wallpaper later to simulate a wallpaper change.
+        mService.setWallpaperComponent(TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(),
+                FLAG_SYSTEM | FLAG_LOCK, testUserId);
         mService.removeWallpaperCompatibleDisplayForTest(incompatibleDisplayId);
 
         mService.setWallpaperComponent(sImageWallpaperComponentName, sContext.getOpPackageName(),
                 FLAG_SYSTEM, testUserId);
-        mService.setWallpaperComponent(sImageWallpaperComponentName, sContext.getOpPackageName(),
-                FLAG_LOCK, testUserId);
 
         verifyLastWallpaperData(testUserId, sImageWallpaperComponentName);
-        verifyLastLockWallpaperData(testUserId, sImageWallpaperComponentName);
+        verifyLastLockWallpaperData(testUserId, TEST_WALLPAPER_COMPONENT);
         verifyCurrentSystemData(testUserId);
-        assertThat(mService.mLastWallpaper.connection.getConnectedEngineSize()).isEqualTo(2);
+
         assertThat(mService.mLastWallpaper.connection.containsDisplay(DEFAULT_DISPLAY)).isTrue();
         assertThat(mService.mLastWallpaper.connection.containsDisplay(compatibleDisplayId))
                 .isTrue();
-        assertThat(mService.mLastLockWallpaper.connection.getConnectedEngineSize()).isEqualTo(2);
+        assertThat(mService.mLastWallpaper.connection.containsDisplay(incompatibleDisplayId))
+                .isFalse();
+        // mLastLockWallpaper is TEST_WALLPAPER_COMPONENT, which declares external displays support
+        // in the wallpaper metadata.
         assertThat(mService.mLastLockWallpaper.connection.containsDisplay(DEFAULT_DISPLAY))
                 .isTrue();
         assertThat(mService.mLastLockWallpaper.connection.containsDisplay(compatibleDisplayId))
                 .isTrue();
-        assertThat(mService.mFallbackWallpaper.connection.getConnectedEngineSize()).isEqualTo(1);
+        assertThat(mService.mLastLockWallpaper.connection.containsDisplay(incompatibleDisplayId))
+                .isTrue();
+        assertThat(mService.mFallbackWallpaper.connection.containsDisplay(DEFAULT_DISPLAY))
+                .isFalse();
+        assertThat(mService.mFallbackWallpaper.connection.containsDisplay(compatibleDisplayId))
+                .isFalse();
         assertThat(mService.mFallbackWallpaper.connection.containsDisplay(incompatibleDisplayId))
                 .isTrue();
     }
@@ -1281,4 +1295,6 @@ public class WallpaperManagerServiceTests {
             assertEquals(pfdContents, fileContents);
         }
     }
+
+
 }

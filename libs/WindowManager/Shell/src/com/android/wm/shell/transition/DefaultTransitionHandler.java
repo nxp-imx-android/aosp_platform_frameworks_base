@@ -39,9 +39,12 @@ import static android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_ROTATE;
 import static android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_SEAMLESS;
 import static android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_UNSPECIFIED;
 import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_KEYGUARD_UNOCCLUDE;
+import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_RELAUNCH;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
+import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.TransitionInfo.FLAG_CROSS_PROFILE_OWNER_THUMBNAIL;
 import static android.window.TransitionInfo.FLAG_CROSS_PROFILE_WORK_THUMBNAIL;
 import static android.window.TransitionInfo.FLAG_DISPLAY_HAS_ALERT_WINDOWS;
@@ -55,6 +58,7 @@ import static android.window.TransitionInfo.FLAG_SHOW_WALLPAPER;
 import static android.window.TransitionInfo.FLAG_STARTING_WINDOW_TRANSFER_RECIPIENT;
 import static android.window.TransitionInfo.FLAG_TRANSLUCENT;
 
+import static com.android.internal.jank.Cuj.CUJ_DEFAULT_TASK_TO_TASK_ANIMATION;
 import static com.android.internal.policy.TransitionAnimation.DEFAULT_APP_TRANSITION_DURATION;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_CHANGE;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_CLOSE;
@@ -101,6 +105,7 @@ import android.window.WindowContainerTransaction;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.policy.ScreenDecorationsUtils;
 import com.android.internal.policy.TransitionAnimation;
 import com.android.internal.protolog.ProtoLog;
@@ -143,6 +148,9 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     private final int mCurrentUserId;
 
     private Drawable mEnterpriseThumbnailDrawable;
+
+    static final InteractionJankMonitor sInteractionJankMonitor =
+            InteractionJankMonitor.getInstance();
 
     private BroadcastReceiver mEnterpriseResourceUpdatedReceiver = new BroadcastReceiver() {
         @Override
@@ -321,8 +329,17 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         final ArrayList<Animator> animations = new ArrayList<>();
         mAnimations.put(transition, animations);
 
+        final boolean isTaskTransition = isTaskTransition(info);
+        if (isTaskTransition) {
+            sInteractionJankMonitor.begin(info.getRoot(0).getLeash(), mContext,
+                    mMainHandler, CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
+        }
+
         final Runnable onAnimFinish = () -> {
             if (!animations.isEmpty()) return;
+            if (isTaskTransition) {
+                sInteractionJankMonitor.end(CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
+            }
             mAnimations.remove(transition);
             finishCallback.onTransitionFinished(null /* wct */);
         };
@@ -678,6 +695,30 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     }
 
     /**
+     * A task transition is defined as a transition where there is exaclty one open/to_front task
+     * and one close/to_back task. Nothing else is allowed to be included in the transition
+     */
+    public static boolean isTaskTransition(@NonNull TransitionInfo info) {
+        if (info.getChanges().size() != 2) {
+            return false;
+        }
+        boolean hasOpeningTask = false;
+        boolean hasClosingTask = false;
+
+        for (int i = info.getChanges().size() - 1; i >= 0; --i) {
+            final TransitionInfo.Change change = info.getChanges().get(i);
+            if (change.getTaskInfo() == null) {
+                // A non-task is in the transition
+                return false;
+            }
+            int mode = change.getMode();
+            hasOpeningTask |= mode == TRANSIT_OPEN || mode == TRANSIT_TO_FRONT;
+            hasClosingTask |= mode == TRANSIT_CLOSE || mode == TRANSIT_TO_BACK;
+        }
+        return hasOpeningTask && hasClosingTask;
+    }
+
+    /**
      * Does `info` only contain translucent visibility changes (CHANGEs are ignored). We select
      * different animations and z-orders for these
      */
@@ -985,5 +1026,11 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 || animType == ANIM_THUMBNAIL_SCALE_UP || animType == ANIM_THUMBNAIL_SCALE_DOWN
                 || animType == ANIM_CLIP_REVEAL || animType == ANIM_OPEN_CROSS_PROFILE_APPS
                 || animType == ANIM_FROM_STYLE;
+    }
+
+    @Override
+    public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
+                              @Nullable SurfaceControl.Transaction finishTransaction) {
+        sInteractionJankMonitor.cancel(CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
     }
 }

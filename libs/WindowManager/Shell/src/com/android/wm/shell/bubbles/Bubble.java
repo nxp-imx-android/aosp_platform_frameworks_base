@@ -54,6 +54,7 @@ import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
+import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleInfo;
@@ -282,6 +283,29 @@ public class Bubble implements BubbleViewProvider {
         mPackageName = intent.getPackage();
     }
 
+    private Bubble(
+            PendingIntent intent,
+            UserHandle user,
+            String key,
+            @ShellMainThread Executor mainExecutor,
+            @ShellBackgroundThread Executor bgExecutor) {
+        mGroupKey = null;
+        mLocusId = null;
+        mFlags = 0;
+        mUser = user;
+        mIcon = null;
+        mType = BubbleType.TYPE_APP;
+        mKey = key;
+        mShowBubbleUpdateDot = false;
+        mMainExecutor = mainExecutor;
+        mBgExecutor = bgExecutor;
+        mTaskId = INVALID_TASK_ID;
+        mPendingIntent = intent;
+        mIntent = null;
+        mDesiredHeight = Integer.MAX_VALUE;
+        mPackageName = ComponentUtils.getPackageName(intent);
+    }
+
     private Bubble(ShortcutInfo info, @ShellMainThread Executor mainExecutor,
             @ShellBackgroundThread Executor bgExecutor) {
         mGroupKey = null;
@@ -332,6 +356,15 @@ public class Bubble implements BubbleViewProvider {
                 icon,
                 BubbleType.TYPE_NOTE,
                 getNoteBubbleKeyForApp(intent.getPackage(), user),
+                mainExecutor, bgExecutor);
+    }
+
+    /** Creates an app bubble. */
+    public static Bubble createAppBubble(PendingIntent intent, UserHandle user,
+            @ShellMainThread Executor mainExecutor, @ShellBackgroundThread Executor bgExecutor) {
+        return new Bubble(intent,
+                user,
+                /* key= */ getAppBubbleKeyForApp(ComponentUtils.getPackageName(intent), user),
                 mainExecutor, bgExecutor);
     }
 

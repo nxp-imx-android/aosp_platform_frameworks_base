@@ -30,9 +30,9 @@ import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.ui.composable.blueprint.rememberBurnIn
 import com.android.systemui.keyguard.ui.composable.section.DefaultClockSection
+import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayActionsViewModel
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayContentViewModel
@@ -57,7 +57,7 @@ constructor(
     private val shadeSession: SaveableSession,
     private val stackScrollView: Lazy<NotificationScrollView>,
     private val clockSection: DefaultClockSection,
-    private val clockInteractor: KeyguardClockInteractor,
+    private val keyguardClockViewModel: KeyguardClockViewModel,
 ) : Overlay {
     override val key = Overlays.NotificationsShade
 
@@ -86,7 +86,7 @@ constructor(
 
         OverlayShade(
             panelElement = NotificationsShade.Elements.Panel,
-            panelAlignment = Alignment.TopStart,
+            alignmentOnWideScreens = Alignment.TopStart,
             modifier = modifier,
             onScrimClicked = viewModel::onScrimClicked,
             header = {
@@ -105,7 +105,7 @@ constructor(
             Box {
                 Column {
                     if (viewModel.showClock) {
-                        val burnIn = rememberBurnIn(clockInteractor)
+                        val burnIn = rememberBurnIn(keyguardClockViewModel)
 
                         with(clockSection) {
                             SmallClock(

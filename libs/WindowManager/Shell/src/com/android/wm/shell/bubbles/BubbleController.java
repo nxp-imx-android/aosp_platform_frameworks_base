@@ -46,6 +46,7 @@ import android.app.NotificationChannel;
 import android.app.PendingIntent;
 import android.app.TaskInfo;
 import android.content.BroadcastReceiver;
+import android.content.ClipDescription;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -118,6 +119,7 @@ import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.BubbleBarUpdate;
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
+import com.android.wm.shell.shared.draganddrop.DragAndDropConstants;
 import com.android.wm.shell.sysui.ConfigurationChangeListener;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -872,11 +874,19 @@ public class BubbleController implements ConfigurationChangeListener,
     }
 
     @Override
-    public void onItemDroppedOverBubbleBarDragZone(BubbleBarLocation location, Intent appIntent,
-            UserHandle userHandle) {
-        if (isShowingAsBubbleBar() && BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
-            hideBubbleBarExpandedViewDropTarget();
-            expandStackAndSelectBubble(appIntent, userHandle, location);
+    public void onItemDroppedOverBubbleBarDragZone(BubbleBarLocation location, Intent itemIntent) {
+        hideBubbleBarExpandedViewDropTarget();
+        ShortcutInfo shortcutInfo = (ShortcutInfo) itemIntent
+                .getExtra(DragAndDropConstants.EXTRA_SHORTCUT_INFO);
+        if (shortcutInfo != null) {
+            expandStackAndSelectBubble(shortcutInfo, location);
+            return;
+        }
+        UserHandle user = (UserHandle) itemIntent.getExtra(Intent.EXTRA_USER);
+        PendingIntent pendingIntent = (PendingIntent) itemIntent
+                .getExtra(ClipDescription.EXTRA_PENDING_INTENT);
+        if (pendingIntent != null && user != null) {
+            expandStackAndSelectBubble(pendingIntent, user, location);
         }
     }
 
@@ -1506,9 +1516,16 @@ public class BubbleController implements ConfigurationChangeListener,
      * Expands and selects a bubble created or found via the provided shortcut info.
      *
      * @param info the shortcut info for the bubble.
+     * @param bubbleBarLocation optional location in case bubble bar should be repositioned.
      */
-    public void expandStackAndSelectBubble(ShortcutInfo info) {
+    public void expandStackAndSelectBubble(ShortcutInfo info,
+            @Nullable BubbleBarLocation bubbleBarLocation) {
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
+        if (bubbleBarLocation != null) {
+            //TODO (b/388894910) combine location update with the setSelectedBubbleAndExpandStack &
+            // fix bubble bar flicking
+            setBubbleBarLocation(bubbleBarLocation, BubbleBarLocation.UpdateSource.APP_ICON_DRAG);
+        }
         Bubble b = mBubbleData.getOrCreateBubble(info); // Removes from overflow
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - shortcut=%s", info);
         if (b.isInflated()) {
@@ -1524,7 +1541,25 @@ public class BubbleController implements ConfigurationChangeListener,
      *
      * @param intent the intent for the bubble.
      */
-    public void expandStackAndSelectBubble(Intent intent, UserHandle user,
+    public void expandStackAndSelectBubble(Intent intent, UserHandle user) {
+        if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
+        Bubble b = mBubbleData.getOrCreateBubble(intent, user); // Removes from overflow
+        ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - intent=%s", intent);
+        if (b.isInflated()) {
+            mBubbleData.setSelectedBubbleAndExpandStack(b);
+        } else {
+            b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
+            inflateAndAdd(b, /* suppressFlyout= */ true, /* showInShade= */ false);
+        }
+    }
+
+    /**
+     * Expands and selects a bubble created or found for this app.
+     *
+     * @param pendingIntent     the intent for the bubble.
+     * @param bubbleBarLocation optional location in case bubble bar should be repositioned.
+     */
+    public void expandStackAndSelectBubble(PendingIntent pendingIntent, UserHandle user,
             @Nullable BubbleBarLocation bubbleBarLocation) {
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
         if (bubbleBarLocation != null) {
@@ -1532,8 +1567,9 @@ public class BubbleController implements ConfigurationChangeListener,
             // fix bubble bar flicking
             setBubbleBarLocation(bubbleBarLocation, BubbleBarLocation.UpdateSource.APP_ICON_DRAG);
         }
-        Bubble b = mBubbleData.getOrCreateBubble(intent, user); // Removes from overflow
-        ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - intent=%s", intent);
+        Bubble b = mBubbleData.getOrCreateBubble(pendingIntent, user);
+        ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - pendingIntent=%s",
+                pendingIntent);
         if (b.isInflated()) {
             mBubbleData.setSelectedBubbleAndExpandStack(b);
         } else {
@@ -2756,13 +2792,13 @@ public class BubbleController implements ConfigurationChangeListener,
 
         @Override
         public void showShortcutBubble(ShortcutInfo info) {
-            mMainExecutor.execute(() -> mController.expandStackAndSelectBubble(info));
+            mMainExecutor.execute(() -> mController
+                    .expandStackAndSelectBubble(info, /* bubbleBarLocation = */ null));
         }
 
         @Override
         public void showAppBubble(Intent intent, UserHandle user) {
-            mMainExecutor.execute(() -> mController.expandStackAndSelectBubble(intent,
-                    user, /* bubbleBarLocation = */ null));
+            mMainExecutor.execute(() -> mController.expandStackAndSelectBubble(intent, user));
         }
 
         @Override
@@ -2983,9 +3019,10 @@ public class BubbleController implements ConfigurationChangeListener,
 
         @Override
         public void expandStackAndSelectBubble(ShortcutInfo info) {
-            mMainExecutor.execute(() -> {
-                BubbleController.this.expandStackAndSelectBubble(info);
-            });
+            mMainExecutor.execute(() ->
+                    BubbleController.this
+                            .expandStackAndSelectBubble(info, /* bubbleBarLocation = */ null)
+            );
         }
 
         @Override

@@ -47,7 +47,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.graphics.drawable.Drawable;
-import android.os.UserHandle;
 import android.view.DragEvent;
 import android.view.SurfaceControl;
 import android.view.View;
@@ -70,6 +69,7 @@ import com.android.wm.shell.bubbles.bar.BubbleBarDragListener;
 import com.android.wm.shell.common.split.SplitScreenUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.animation.Interpolators;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 
@@ -627,8 +627,7 @@ public class DragLayout extends LinearLayout
     @Nullable
     private BubbleBarLocation getBubbleBarLocation(int x, int y) {
         Intent appData = mSession.appData;
-        if (appData == null || appData.getExtra(Intent.EXTRA_INTENT) == null
-                || appData.getExtra(Intent.EXTRA_USER) == null) {
+        if (appData == null) {
             // there is no app data, so drop event over the bubble bar can not be handled
             return null;
         }
@@ -686,11 +685,10 @@ public class DragLayout extends LinearLayout
         // Process the drop exclusive by DropTarget OR by the BubbleBar
         if (mCurrentTarget != null) {
             mPolicy.onDropped(mCurrentTarget, hideTaskToken);
-        } else if (appData != null && mCurrentBubbleBarTarget != null) {
-            Intent appIntent = (Intent) appData.getExtra(Intent.EXTRA_INTENT);
-            UserHandle user = (UserHandle) appData.getExtra(Intent.EXTRA_USER);
+        } else if (appData != null && mCurrentBubbleBarTarget != null
+                && BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             mBubbleBarDragListener.onItemDroppedOverBubbleBarDragZone(mCurrentBubbleBarTarget,
-                    appIntent, user);
+                    appData);
         }
 
         // Start animating the drop UI out with the drag surface

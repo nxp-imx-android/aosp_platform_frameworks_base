@@ -43,6 +43,7 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.ui.view.WindowRootView
 import com.android.systemui.shade.ShadeExpansionChangeEvent
+import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.phone.CentralSurfaces
 import com.android.wm.shell.animation.FlingAnimationUtils
@@ -79,6 +80,7 @@ constructor(
     private val activityStarter: ActivityStarter,
     private val keyguardInteractor: KeyguardInteractor,
     private val sceneInteractor: SceneInteractor,
+    private val shadeRepository: ShadeRepository,
     private val windowRootViewProvider: Optional<Provider<WindowRootView>>,
 ) : TouchHandler {
     /** An interface for creating ValueAnimators. */
@@ -260,6 +262,8 @@ constructor(
         }
         scrimManager.addCallback(scrimManagerCallback)
         currentScrimController = scrimManager.currentController
+
+        shadeRepository.setLegacyShadeTracking(true)
         session.registerCallback {
             velocityTracker?.apply { recycle() }
             velocityTracker = null
@@ -270,6 +274,7 @@ constructor(
             if (!Flags.communalBouncerDoNotModifyPluginOpen()) {
                 notificationShadeWindowController.setForcePluginOpen(false, this)
             }
+            shadeRepository.setLegacyShadeTracking(false)
         }
         session.registerGestureListener(onGestureListener)
         session.registerInputListener { ev: InputEvent -> onMotionEvent(ev) }

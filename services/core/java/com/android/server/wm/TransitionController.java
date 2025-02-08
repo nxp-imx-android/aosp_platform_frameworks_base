@@ -525,6 +525,19 @@ class TransitionController {
         return false;
     }
 
+    boolean isInAodAppearTransition() {
+        if (mCollectingTransition != null && mCollectingTransition.isInAodAppearTransition()) {
+            return true;
+        }
+        for (int i = mWaitingTransitions.size() - 1; i >= 0; --i) {
+            if (mWaitingTransitions.get(i).isInAodAppearTransition()) return true;
+        }
+        for (int i = mPlayingTransitions.size() - 1; i >= 0; --i) {
+            if (mPlayingTransitions.get(i).isInAodAppearTransition()) return true;
+        }
+        return false;
+    }
+
     /**
      * @return A pair of the transition and restore-behind target for the given {@param container}.
      * @param container An ancestor of a transient-launch activity

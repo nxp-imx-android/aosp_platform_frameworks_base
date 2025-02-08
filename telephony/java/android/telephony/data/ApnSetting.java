@@ -994,7 +994,6 @@ public class ApnSetting implements Parcelable {
      *
      * @return True if the PDU session for this APN should always be on and false otherwise
      */
-    @FlaggedApi(Flags.FLAG_APN_SETTING_FIELD_SUPPORT_FLAG)
     public boolean isAlwaysOn() {
         return mAlwaysOn;
     }
@@ -2349,7 +2348,6 @@ public class ApnSetting implements Parcelable {
          *
          * @param alwaysOn the always on status to set for this APN
          */
-        @FlaggedApi(Flags.FLAG_APN_SETTING_FIELD_SUPPORT_FLAG)
         public @NonNull Builder setAlwaysOn(boolean alwaysOn) {
             this.mAlwaysOn = alwaysOn;
             return this;

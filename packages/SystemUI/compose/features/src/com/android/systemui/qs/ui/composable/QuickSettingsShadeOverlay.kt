@@ -128,7 +128,7 @@ constructor(
             )
             OverlayShade(
                 panelElement = QuickSettingsShade.Elements.Panel,
-                panelAlignment = Alignment.TopEnd,
+                alignmentOnWideScreens = Alignment.TopEnd,
                 onScrimClicked = contentViewModel::onScrimClicked,
                 header = {
                     OverlayShadeHeader(

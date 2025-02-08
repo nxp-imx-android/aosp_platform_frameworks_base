@@ -101,6 +101,7 @@ import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -477,7 +478,7 @@ constructor(
 
     /**
      * Ensure view is visible when the shade/qs are expanded. Also, as QS is expanding, fade out
-     * notifications unless in splitshade.
+     * notifications unless it's a large screen.
      */
     private val alphaForShadeAndQsExpansion: Flow<Float> =
         if (SceneContainerFlag.isEnabled) {
@@ -500,16 +501,26 @@ constructor(
                         Split -> isAnyExpanded.filter { it }.map { 1f }
                         Dual ->
                             combineTransform(
+                                shadeModeInteractor.isShadeLayoutWide,
                                 headsUpNotificationInteractor.get().isHeadsUpOrAnimatingAway,
                                 shadeInteractor.shadeExpansion,
                                 shadeInteractor.qsExpansion,
-                            ) { isHeadsUpOrAnimatingAway, shadeExpansion, qsExpansion ->
-                                if (isHeadsUpOrAnimatingAway) {
+                            ) {
+                                isShadeLayoutWide,
+                                isHeadsUpOrAnimatingAway,
+                                shadeExpansion,
+                                qsExpansion ->
+                                if (isShadeLayoutWide) {
+                                    if (shadeExpansion > 0f) {
+                                        emit(1f)
+                                    }
+                                } else if (isHeadsUpOrAnimatingAway) {
                                     // Ensure HUNs will be visible in QS shade (at least while
                                     // unlocked)
                                     emit(1f)
                                 } else if (shadeExpansion > 0f || qsExpansion > 0f) {
-                                    // Fade out as QS shade expands
+                                    // On a narrow screen, the QS shade overlaps with lockscreen
+                                    // notifications. Fade them out as the QS shade expands.
                                     emit(1f - qsExpansion)
                                 }
                             }
@@ -796,7 +807,8 @@ constructor(
     }
 
     /**
-     * Wallpaper needs the absolute bottom of notification stack to avoid occlusion
+     * Wallpaper focal area needs the absolute bottom of notification stack to avoid occlusion. It
+     * should not change with notifications in shade.
      *
      * @param calculateMaxNotifications is required by getMaxNotifications as calculateSpace by
      *   calling computeMaxKeyguardNotifications in NotificationStackSizeCalculator
@@ -811,18 +823,24 @@ constructor(
         SceneContainerFlag.assertInLegacyMode()
 
         return combine(
-            getLockscreenDisplayConfig(calculateMaxNotifications).map { (_, maxNotifications) ->
-                val height = calculateHeight(maxNotifications)
-                if (maxNotifications == 0) {
-                    height - shelfHeight
+                getLockscreenDisplayConfig(calculateMaxNotifications).map { (_, maxNotifications) ->
+                    val height = calculateHeight(maxNotifications)
+                    if (maxNotifications == 0) {
+                        height - shelfHeight
+                    } else {
+                        height
+                    }
+                },
+                bounds.map { it.top },
+                isOnLockscreenWithoutShade,
+            ) { height, top, isOnLockscreenWithoutShade ->
+                if (isOnLockscreenWithoutShade) {
+                    top + height
                 } else {
-                    height
+                    null
                 }
-            },
-            bounds.map { it.top },
-        ) { height, top ->
-            top + height
-        }
+            }
+            .filterNotNull()
     }
 
     fun notificationStackChanged() {

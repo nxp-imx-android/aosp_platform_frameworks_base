@@ -16,7 +16,6 @@
 
 package com.android.systemui.shade.domain.interactor
 
-import androidx.annotation.FloatRange
 import com.android.compose.animation.scene.TransitionKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -66,16 +65,6 @@ interface ShadeInteractor : BaseShadeInteractor {
      * wide as the entire screen.
      */
     val isShadeLayoutWide: StateFlow<Boolean>
-
-    /**
-     * The fraction between [0..1] (i.e., percentage) of screen width to consider the threshold
-     * between "top-left" and "top-right" for the purposes of dual-shade invocation.
-     *
-     * Note that this fraction only determines the *split* between the absolute left and right
-     * directions. In RTL layouts, the "top-start" edge will resolve to "top-right", and "top-end"
-     * will resolve to "top-left".
-     */
-    @FloatRange(from = 0.0, to = 1.0) fun getTopEdgeSplitFraction(): Float
 }
 
 /** ShadeInteractor methods with implementations that differ between non-empty impls. */

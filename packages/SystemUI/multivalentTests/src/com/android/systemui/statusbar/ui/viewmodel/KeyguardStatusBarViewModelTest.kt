@@ -39,11 +39,9 @@ import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior
 import com.android.systemui.statusbar.notification.data.repository.FakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
-import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.statusbar.policy.batteryController
+import com.android.systemui.statusbar.policy.fake
 import com.android.systemui.testKosmos
-import com.android.systemui.util.mockito.argumentCaptor
-import com.android.systemui.util.mockito.capture
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
@@ -52,7 +50,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.verify
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
@@ -219,23 +216,12 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
             val latest by collectLastValue(underTest.isBatteryCharging)
             runCurrent()
 
-            val captor = argumentCaptor<BatteryController.BatteryStateChangeCallback>()
-            verify(batteryController).addCallback(capture(captor))
-            val callback = captor.value
-
-            callback.onBatteryLevelChanged(
-                /* level= */ 2,
-                /* pluggedIn= */ false,
-                /* charging= */ true,
-            )
+            batteryController.fake._level = 2
+            batteryController.fake._isPluggedIn = true
 
             assertThat(latest).isTrue()
 
-            callback.onBatteryLevelChanged(
-                /* level= */ 2,
-                /* pluggedIn= */ true,
-                /* charging= */ false,
-            )
+            batteryController.fake._isPluggedIn = false
 
             assertThat(latest).isFalse()
         }
@@ -246,12 +232,9 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
             val job = underTest.isBatteryCharging.launchIn(this)
             runCurrent()
 
-            val captor = argumentCaptor<BatteryController.BatteryStateChangeCallback>()
-            verify(batteryController).addCallback(capture(captor))
-
             job.cancel()
             runCurrent()
 
-            verify(batteryController).removeCallback(captor.value)
+            assertThat(batteryController.fake.listeners).isEmpty()
         }
 }

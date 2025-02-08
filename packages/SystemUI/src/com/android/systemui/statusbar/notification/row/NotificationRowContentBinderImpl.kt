@@ -1396,9 +1396,17 @@ constructor(
          */
         @VisibleForTesting
         fun isValidView(view: View, entry: NotificationEntry, resources: Resources): String? {
-            return if (!satisfiesMinHeightRequirement(view, entry, resources)) {
-                "inflated notification does not meet minimum height requirement"
-            } else null
+            if (!satisfiesMinHeightRequirement(view, entry, resources)) {
+                return "inflated notification does not meet minimum height requirement"
+            }
+
+            if (NotificationCustomContentMemoryVerifier.requiresImageViewMemorySizeCheck(entry)) {
+                if (!NotificationCustomContentMemoryVerifier.satisfiesMemoryLimits(view, entry)) {
+                    return "inflated notification does not meet maximum memory size requirement"
+                }
+            }
+
+            return null
         }
 
         private fun satisfiesMinHeightRequirement(

@@ -46,6 +46,8 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.observableTransitionState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
+import com.android.systemui.keyguard.ui.composable.blueprint.rememberBurnIn
+import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
 import com.android.systemui.lifecycle.rememberActivated
 import com.android.systemui.qs.ui.adapter.QSSceneAdapter
 import com.android.systemui.qs.ui.composable.QuickSettingsTheme
@@ -202,7 +204,7 @@ fun SceneContainer(
         SceneTransitionLayout(
             state = state,
             modifier = modifier.fillMaxSize(),
-            swipeSourceDetector = viewModel.edgeDetector,
+            swipeSourceDetector = viewModel.swipeSourceDetector,
         ) {
             sceneByKey.forEach { (sceneKey, scene) ->
                 scene(
@@ -239,7 +241,12 @@ fun SceneContainer(
         BottomRightCornerRibbon(
             content = { Text(text = "flexi\uD83E\uDD43", color = Color.White) },
             colorSaturation = { viewModel.ribbonColorSaturation },
-            modifier = Modifier.align(Alignment.BottomEnd),
+            modifier =
+                Modifier.align(Alignment.BottomEnd)
+                    .burnInAware(
+                        viewModel = viewModel.burnIn,
+                        params = rememberBurnIn(viewModel.clock).parameters,
+                    ),
         )
     }
 }

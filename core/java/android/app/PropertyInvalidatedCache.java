@@ -1163,6 +1163,17 @@ public class PropertyInvalidatedCache<Query, Result> {
     }
 
     /**
+     * Return the current cache nonce.
+     * @hide
+     */
+    @VisibleForTesting
+    public long getNonce() {
+        synchronized (mLock) {
+            return mNonce.getNonce();
+        }
+    }
+
+    /**
      * Complete key prefixes.
      */
     private static final String PREFIX_TEST = CACHE_KEY_PREFIX + "." + MODULE_TEST + ".";
@@ -1314,7 +1325,7 @@ public class PropertyInvalidatedCache<Query, Result> {
 
     /**
      * Burst a property name into module and api.  Throw if the key is invalid.  This method is
-     * used in to transition legacy cache constructors to the args constructor.
+     * used to transition legacy cache constructors to the Args constructor.
      */
     private static Args argsFromProperty(@NonNull String name) {
         throwIfInvalidCacheKey(name);
@@ -1324,6 +1335,15 @@ public class PropertyInvalidatedCache<Query, Result> {
         String module = base.substring(0, dot);
         String api = base.substring(dot + 1);
         return new Args(module).api(api);
+    }
+
+    /**
+     * Return the API porting of a legacy property.  This method is used to transition caches to
+     * the Args constructor.
+     * @hide
+     */
+    public static String apiFromProperty(@NonNull String name) {
+        return argsFromProperty(name).mApi;
     }
 
     /**
@@ -2036,11 +2056,11 @@ public class PropertyInvalidatedCache<Query, Result> {
     }
 
     /**
-     * Disable all caches in the local process.  This is primarily useful for testing when
-     * the test needs to bypass the cache or when the test is for a server, and the test
-     * process does not have privileges to write SystemProperties. Once disabled it is not
-     * possible to re-enable caching in the current process.  If a client wants to
-     * temporarily disable caching, use the corking mechanism.
+     * Disable all caches in the local process.  This is primarily useful for testing when the
+     * test needs to bypass the cache or when the test is for a server, and the test process does
+     * not have privileges to write the nonce. Once disabled it is not possible to re-enable
+     * caching in the current process.  See {@link #testPropertyName} for a more focused way to
+     * bypass caches when the test is for a server.
      * @hide
      */
     public static void disableForTestMode() {

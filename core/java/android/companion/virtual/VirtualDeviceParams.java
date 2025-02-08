@@ -29,12 +29,12 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
-import android.companion.virtual.flags.Flags;
 import android.companion.virtual.sensor.IVirtualSensorCallback;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtual.sensor.VirtualSensorCallback;
 import android.companion.virtual.sensor.VirtualSensorConfig;
 import android.companion.virtual.sensor.VirtualSensorDirectChannelCallback;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.ComponentName;
 import android.content.Context;
 import android.hardware.display.VirtualDisplayConfig;
@@ -279,7 +279,6 @@ public final class VirtualDeviceParams implements Parcelable {
      *
      * @see Context#getDeviceId
      */
-    @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA)
     public static final int POLICY_TYPE_CAMERA = 5;
 
     /**
@@ -296,7 +295,7 @@ public final class VirtualDeviceParams implements Parcelable {
      * </ul>
      */
     // TODO(b/333443509): Link to POLICY_TYPE_ACTIVITY
-    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_ACTIVITY_CONTROL_API)
+    @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
     public static final int POLICY_TYPE_BLOCKED_ACTIVITY = 6;
 
     /**
@@ -310,8 +309,7 @@ public final class VirtualDeviceParams implements Parcelable {
      *
      * @see Context#DEVICE_ID_DEFAULT
      */
-    @FlaggedApi(android.companion.virtualdevice.flags.Flags
-            .FLAG_DEFAULT_DEVICE_CAMERA_ACCESS_POLICY)
+    @FlaggedApi(Flags.FLAG_DEFAULT_DEVICE_CAMERA_ACCESS_POLICY)
     public static final int POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS = 7;
 
     private final int mLockState;
@@ -407,7 +405,7 @@ public final class VirtualDeviceParams implements Parcelable {
      *
      * @see Builder#setDimDuration(Duration)
      */
-    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
+    @FlaggedApi(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     public @NonNull Duration getDimDuration() {
         return Duration.ofMillis(mDimDuration);
     }
@@ -417,7 +415,7 @@ public final class VirtualDeviceParams implements Parcelable {
      *
      * @see Builder#setDimDuration(Duration)
      */
-    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
+    @FlaggedApi(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     public @NonNull Duration getScreenOffTimeout() {
         return Duration.ofMillis(mScreenOffTimeout);
     }
@@ -876,7 +874,7 @@ public final class VirtualDeviceParams implements Parcelable {
          * @see android.hardware.display.DisplayManager#VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR
          * @see #setScreenOffTimeout
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
+        @FlaggedApi(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
         @NonNull
         public Builder setDimDuration(@NonNull Duration dimDuration) {
             if (Objects.requireNonNull(dimDuration).compareTo(Duration.ZERO) < 0) {
@@ -901,7 +899,7 @@ public final class VirtualDeviceParams implements Parcelable {
          * @see #setDimDuration
          * @see VirtualDeviceManager.VirtualDevice#goToSleep()
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
+        @FlaggedApi(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
         @NonNull
         public Builder setScreenOffTimeout(@NonNull Duration screenOffTimeout) {
             if (Objects.requireNonNull(screenOffTimeout).compareTo(Duration.ZERO) < 0) {
@@ -1311,15 +1309,11 @@ public final class VirtualDeviceParams implements Parcelable {
                 mScreenOffTimeout = INFINITE_TIMEOUT;
             }
 
-            if (!Flags.virtualCamera()) {
-                mDevicePolicies.delete(POLICY_TYPE_CAMERA);
-            }
-
-            if (!android.companion.virtualdevice.flags.Flags.defaultDeviceCameraAccessPolicy()) {
+            if (!Flags.defaultDeviceCameraAccessPolicy()) {
                 mDevicePolicies.delete(POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS);
             }
 
-            if (!android.companion.virtualdevice.flags.Flags.activityControlApi()) {
+            if (!Flags.activityControlApi()) {
                 mDevicePolicies.delete(POLICY_TYPE_BLOCKED_ACTIVITY);
             }
 

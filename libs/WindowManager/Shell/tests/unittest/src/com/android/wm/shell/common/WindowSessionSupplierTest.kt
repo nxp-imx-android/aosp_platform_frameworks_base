@@ -19,6 +19,7 @@ package com.android.wm.shell.common
 import android.testing.AndroidTestingRunner
 import android.view.IWindowSession
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.ShellTestCase
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -30,10 +31,10 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
-class WindowSessionSupplierTest {
+class WindowSessionSupplierTest : ShellTestCase() {
 
     @Test
-    fun `InputChannelSupplier supplies an InputChannel`() {
+    fun `WindowSessionSupplierTest supplies an IWindowSession`() {
         val supplier = WindowSessionSupplier()
         SuppliersUtilsTest.assertSupplierProvidesValue(supplier) {
             it is IWindowSession

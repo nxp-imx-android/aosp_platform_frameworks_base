@@ -35,6 +35,7 @@ namespace android {
 class LoadedIdmap;
 class IdmapResMap;
 struct Idmap_header;
+struct Idmap_constraint;
 struct Idmap_data_header;
 struct Idmap_target_entry;
 struct Idmap_target_entry_inline;
@@ -203,6 +204,8 @@ class LoadedIdmap {
   LoadedIdmap() = default;
 
   const Idmap_header* header_;
+  const Idmap_constraint* constraints_;
+  uint32_t constraints_count_;
   const Idmap_data_header* data_header_;
   Idmap_target_entries target_entries_;
   Idmap_target_inline_entries target_inline_entries_;
@@ -220,7 +223,10 @@ class LoadedIdmap {
   DISALLOW_COPY_AND_ASSIGN(LoadedIdmap);
 
   explicit LoadedIdmap(const std::string& idmap_path, const Idmap_header* header,
-                       const Idmap_data_header* data_header, Idmap_target_entries target_entries,
+                       const Idmap_constraint* constraints,
+                       uint32_t constraints_count,
+                       const Idmap_data_header* data_header,
+                       Idmap_target_entries target_entries,
                        Idmap_target_inline_entries target_inline_entries,
                        const Idmap_target_entry_inline_value* inline_entry_values_,
                        const ConfigDescription* configs, Idmap_overlay_entries overlay_entries,

@@ -42,7 +42,9 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.settings.userTracker
 import com.android.systemui.statusbar.phone.fakeManagedProfileController
+import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.user.domain.interactor.userLockedInteractor
 import com.android.systemui.util.mockito.mock
 
 val Kosmos.communalInteractor by Fixture {
@@ -70,6 +72,7 @@ val Kosmos.communalInteractor by Fixture {
         batteryInteractor = batteryInteractor,
         dockManager = dockManager,
         posturingInteractor = posturingInteractor,
+        userLockedInteractor = userLockedInteractor,
     )
 }
 
@@ -98,10 +101,8 @@ suspend fun Kosmos.setCommunalV2Enabled(enabled: Boolean) {
 
 suspend fun Kosmos.setCommunalAvailable(available: Boolean) {
     setCommunalEnabled(available)
-    with(fakeKeyguardRepository) {
-        setIsEncryptedOrLockdown(!available)
-        setKeyguardShowing(available)
-    }
+    fakeKeyguardRepository.setKeyguardShowing(available)
+    fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, available)
 }
 
 suspend fun Kosmos.setCommunalV2Available(available: Boolean) {

@@ -430,6 +430,7 @@
   <java-symbol type="bool" name="config_enableProximityService" />
   <java-symbol type="bool" name="config_enableVirtualDeviceManager" />
   <java-symbol type="array" name="config_localPrivateDisplayPorts" />
+  <java-symbol type="array" name="config_localNotStealTopFocusDisplayPorts" />
   <java-symbol type="integer" name="config_defaultDisplayDefaultColorMode" />
   <java-symbol type="bool" name="config_enableAppWidgetService" />
   <java-symbol type="dimen" name="config_pictureInPictureMinAspectRatio" />
@@ -585,6 +586,7 @@
   <java-symbol type="dimen" name="accessibility_magnification_indicator_width" />
   <java-symbol type="dimen" name="circular_display_mask_thickness" />
   <java-symbol type="dimen" name="user_icon_size" />
+  <java-symbol type="dimen" name="round_scrollbar_width" />
 
   <java-symbol type="string" name="add_account_button_label" />
   <java-symbol type="string" name="addToDictionary" />

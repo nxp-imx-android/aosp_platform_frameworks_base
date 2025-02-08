@@ -2049,9 +2049,9 @@ class SceneContainerStartableTest : SysuiTestCase() {
             )
 
             clearInvocations(centralSurfaces)
-            emulateSceneTransition(
+            emulateOverlayTransition(
                 transitionStateFlow = transitionStateFlow,
-                toScene = Scenes.Shade,
+                toOverlay = Overlays.NotificationsShade,
                 verifyBeforeTransition = {
                     verify(centralSurfaces, never()).setInteracting(anyInt(), anyBoolean())
                 },
@@ -2079,9 +2079,9 @@ class SceneContainerStartableTest : SysuiTestCase() {
             )
 
             clearInvocations(centralSurfaces)
-            emulateSceneTransition(
+            emulateOverlayTransition(
                 transitionStateFlow = transitionStateFlow,
-                toScene = Scenes.QuickSettings,
+                toOverlay = Overlays.QuickSettingsShade,
                 verifyBeforeTransition = {
                     verify(centralSurfaces, never()).setInteracting(anyInt(), anyBoolean())
                 },
@@ -2654,22 +2654,36 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun handleDisableFlags() =
+    fun handleDisableFlags_singleShade() =
         kosmos.runTest {
             underTest.start()
             val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            disableDualShade()
             runCurrent()
             sceneInteractor.changeScene(Scenes.Shade, "reason")
-            sceneInteractor.showOverlay(Overlays.NotificationsShade, "reason")
             assertThat(currentScene).isEqualTo(Scenes.Shade)
-            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
 
             fakeDisableFlagsRepository.disableFlags.value =
                 DisableFlagsModel(disable2 = StatusBarManager.DISABLE2_NOTIFICATION_SHADE)
             runCurrent()
 
             assertThat(currentScene).isNotEqualTo(Scenes.Shade)
+        }
+
+    @Test
+    fun handleDisableFlags_dualShade() =
+        kosmos.runTest {
+            underTest.start()
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            enableDualShade()
+            runCurrent()
+            sceneInteractor.showOverlay(Overlays.NotificationsShade, "reason")
+            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
+
+            fakeDisableFlagsRepository.disableFlags.value =
+                DisableFlagsModel(disable2 = StatusBarManager.DISABLE2_NOTIFICATION_SHADE)
+            runCurrent()
+
             assertThat(currentOverlays).isEmpty()
         }
 

@@ -16,6 +16,7 @@
 
 package com.android.systemui.keyguard.ui.transitions
 
+import android.util.MathUtils
 import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -33,8 +34,18 @@ constructor(
     blurConfig: BlurConfig,
 ) {
     val exitBlurRadius: Flow<Float> =
-        transitionAnimation.immediatelyTransitionTo(blurConfig.minBlurRadiusPx)
+        transitionAnimation.sharedFlow(
+            onStep = { MathUtils.lerp(blurConfig.maxBlurRadiusPx, blurConfig.minBlurRadiusPx, it) },
+            onStart = { blurConfig.maxBlurRadiusPx },
+            onFinish = { blurConfig.minBlurRadiusPx },
+            onCancel = { blurConfig.maxBlurRadiusPx },
+        )
 
     val enterBlurRadius: Flow<Float> =
-        transitionAnimation.immediatelyTransitionTo(blurConfig.maxBlurRadiusPx)
+        transitionAnimation.sharedFlow(
+            onStep = { MathUtils.lerp(blurConfig.minBlurRadiusPx, blurConfig.maxBlurRadiusPx, it) },
+            onStart = { blurConfig.minBlurRadiusPx },
+            onFinish = { blurConfig.maxBlurRadiusPx },
+            onCancel = { blurConfig.minBlurRadiusPx },
+        )
 }

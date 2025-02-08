@@ -21,12 +21,15 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableContext;
 import android.testing.TestableLooper;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
+
+import androidx.annotation.NonNull;
 
 import com.android.internal.R;
 
@@ -87,6 +90,11 @@ public class AutoclickTypePanelTest {
     }
 
     @Test
+    public void AutoclickTypePanel_initialState_correctButtonStyle() {
+        verifyButtonHasSelectedStyle(mLeftClickButton);
+    }
+
+    @Test
     public void togglePanelExpansion_onClick_expandedTrue() {
         // On clicking left click button, the panel is expanded and all buttons are visible.
         mLeftClickButton.callOnClick();
@@ -115,5 +123,22 @@ public class AutoclickTypePanelTest {
         assertThat(mLeftClickButton.getVisibility()).isEqualTo(View.GONE);
         assertThat(mDoubleClickButton.getVisibility()).isEqualTo(View.GONE);
         assertThat(mDragButton.getVisibility()).isEqualTo(View.GONE);
+    }
+
+    @Test
+    public void togglePanelExpansion_selectButton_correctStyle() {
+        // By first click, the panel is expanded.
+        mLeftClickButton.callOnClick();
+
+        // Clicks any button in the expanded state to select a type button.
+        mScrollButton.callOnClick();
+
+        verifyButtonHasSelectedStyle(mScrollButton);
+    }
+
+    private void verifyButtonHasSelectedStyle(@NonNull LinearLayout button) {
+        GradientDrawable gradientDrawable = (GradientDrawable) button.getBackground();
+        assertThat(gradientDrawable.getColor().getDefaultColor())
+                .isEqualTo(mTestableContext.getColor(R.color.materialColorPrimary));
     }
 }

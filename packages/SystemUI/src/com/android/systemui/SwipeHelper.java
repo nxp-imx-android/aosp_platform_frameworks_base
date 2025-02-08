@@ -133,6 +133,8 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
 
     private final ArrayMap<View, Animator> mDismissPendingMap = new ArrayMap<>();
 
+    private float mSnapBackDirection = 0;
+
     public SwipeHelper(
             Callback callback, Resources resources, ViewConfiguration viewConfiguration,
             FalsingManager falsingManager, FeatureFlags featureFlags) {
@@ -350,6 +352,7 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
                             && Math.abs(delta) > Math.abs(deltaPerpendicular)) {
                         if (mCallback.canChildBeDragged(mTouchedView)) {
                             mIsSwiping = true;
+                            mCallback.setMagneticAndRoundableTargets(mTouchedView);
                             mCallback.onBeginDrag(mTouchedView);
                             mInitialTouchPos = getPos(ev);
                             mTranslation = getTranslation(mTouchedView);
@@ -442,6 +445,7 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
         };
 
         Animator anim = getViewTranslationAnimator(animView, newPos, updateListener);
+        mCallback.onMagneticInteractionEnd(animView, velocity);
         if (anim == null) {
             onDismissChildWithAnimationFinished();
             return;
@@ -523,17 +527,24 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
      */
     protected void snapChild(final View animView, final float targetLeft, float velocity) {
         final boolean canBeDismissed = mCallback.canChildBeDismissed(animView);
+        mSnapBackDirection = getTranslation(animView) - targetLeft;
 
         cancelTranslateAnimation(animView);
 
         PhysicsAnimator<? extends View> anim =
                 createSnapBackAnimation(animView, targetLeft, velocity);
         anim.addUpdateListener((target, values) -> {
-            onTranslationUpdate(target, getTranslation(target), canBeDismissed);
+            float translation = getTranslation(target);
+            onTranslationUpdate(target, translation, canBeDismissed);
+            if ((mSnapBackDirection > 0 && translation < targetLeft)
+                    || (mSnapBackDirection < 0 && translation > targetLeft)) {
+                mCallback.onChildSnapBackOvershoots();
+                mSnapBackDirection = 0;
+            }
         });
         anim.addEndListener((t, p, wasFling, cancelled, finalValue, finalVelocity, allEnded) -> {
             mSnappingChild = false;
-
+            mSnapBackDirection = 0;
             if (!cancelled) {
                 updateSwipeProgressFromOffset(animView, canBeDismissed);
                 resetViewIfSwiping(animView);
@@ -724,7 +735,8 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
                         dismissChild(mTouchedView, velocity,
                                 !swipedFastEnough() /* useAccelerateInterpolator */);
                     } else {
-                        mCallback.onDragCancelledWithVelocity(mTouchedView, velocity);
+                        mCallback.onMagneticInteractionEnd(mTouchedView, velocity);
+                        mCallback.onDragCancelled(mTouchedView);
                         snapChild(mTouchedView, 0 /* leftTarget */, velocity);
                     }
                     mTouchedView = null;
@@ -926,18 +938,24 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
 
         void onBeginDrag(View v);
 
+        /**
+         * Set magnetic and roundable targets for a view.
+         */
+        void setMagneticAndRoundableTargets(View v);
+
         void onChildDismissed(View v);
 
         void onDragCancelled(View v);
 
         /**
-         * A drag operation has been cancelled on a view with a final velocity.
-         * @param v View that was dragged.
-         * @param finalVelocity Final velocity of the drag.
+         * Notify that a magnetic interaction ended on a view with a velocity.
+         * <p>
+         * This method should be called when a view will snap back or be dismissed.
+         *
+         * @param view The {@link  View} whose magnetic interaction ended.
+         * @param velocity The velocity when the interaction ended.
          */
-        default void onDragCancelledWithVelocity(View v, float finalVelocity) {
-            onDragCancelled(v);
-        }
+        void onMagneticInteractionEnd(View view, float velocity);
 
         /**
          * Called when the child is long pressed and available to start drag and drop.
@@ -945,6 +963,11 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
          * @param v the view that was long pressed.
          */
         void onLongPressSent(View v);
+
+        /**
+         * The snap back animation on a view overshoots for the first time.
+         */
+        void onChildSnapBackOvershoots();
 
         /**
          * Called when the child is snapped to a position.

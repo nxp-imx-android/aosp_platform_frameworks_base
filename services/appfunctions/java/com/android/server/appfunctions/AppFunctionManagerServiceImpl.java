@@ -27,6 +27,7 @@ import android.annotation.WorkerThread;
 import android.app.appfunctions.AppFunctionException;
 import android.app.appfunctions.AppFunctionManager;
 import android.app.appfunctions.AppFunctionManagerHelper;
+import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundException;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
@@ -513,7 +514,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             e = e.getCause();
         }
         int resultCode = AppFunctionException.ERROR_SYSTEM_ERROR;
-        if (e instanceof AppSearchException appSearchException) {
+        if (e instanceof AppFunctionNotFoundException) {
+            resultCode = AppFunctionException.ERROR_FUNCTION_NOT_FOUND;
+        } else if (e instanceof AppSearchException appSearchException) {
             resultCode =
                     mapAppSearchResultFailureCodeToExecuteAppFunctionResponse(
                             appSearchException.getResultCode());

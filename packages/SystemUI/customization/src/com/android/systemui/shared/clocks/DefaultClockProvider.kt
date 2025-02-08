@@ -16,6 +16,7 @@ package com.android.systemui.shared.clocks
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Typeface
+import android.os.Vibrator
 import android.view.LayoutInflater
 import com.android.systemui.customization.R
 import com.android.systemui.log.core.MessageBuffer
@@ -40,6 +41,7 @@ data class ClockContext(
     val typefaceCache: TypefaceCache,
     val messageBuffers: ClockMessageBuffers,
     val messageBuffer: MessageBuffer,
+    val vibrator: Vibrator?,
 )
 
 /** Provides the default system clock */
@@ -48,6 +50,7 @@ class DefaultClockProvider(
     val layoutInflater: LayoutInflater,
     val resources: Resources,
     private val isClockReactiveVariantsEnabled: Boolean = false,
+    private val vibrator: Vibrator?,
 ) : ClockProvider {
     private var messageBuffers: ClockMessageBuffers? = null
 
@@ -82,6 +85,7 @@ class DefaultClockProvider(
                     typefaceCache,
                     buffers,
                     buffers.infraMessageBuffer,
+                    vibrator,
                 )
             )
         } else {

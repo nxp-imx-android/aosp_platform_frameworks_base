@@ -33,8 +33,10 @@ import com.android.systemui.log.table.TableRowLogger
 import com.android.systemui.scene.data.repository.SceneContainerRepository
 import com.android.systemui.scene.domain.resolver.SceneResolver
 import com.android.systemui.scene.shared.logger.SceneLogger
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.util.kotlin.pairwise
 import dagger.Lazy
 import javax.inject.Inject
@@ -72,6 +74,7 @@ constructor(
     private val deviceUnlockedInteractor: Lazy<DeviceUnlockedInteractor>,
     private val keyguardEnabledInteractor: Lazy<KeyguardEnabledInteractor>,
     private val disabledContentInteractor: DisabledContentInteractor,
+    private val shadeModeInteractor: ShadeModeInteractor,
 ) {
 
     interface OnSceneAboutToChangeListener {
@@ -237,7 +240,13 @@ constructor(
     ) {
         val currentSceneKey = currentScene.value
         val resolvedScene = sceneFamilyResolvers.get()[toScene]?.resolvedScene?.value ?: toScene
-        if (!validateSceneChange(to = resolvedScene, loggingReason = loggingReason)) {
+        if (
+            !validateSceneChange(
+                from = currentSceneKey,
+                to = resolvedScene,
+                loggingReason = loggingReason,
+            )
+        ) {
             return
         }
 
@@ -246,6 +255,7 @@ constructor(
         logger.logSceneChanged(
             from = currentSceneKey,
             to = resolvedScene,
+            sceneState = sceneState,
             reason = loggingReason,
             isInstant = false,
         )
@@ -269,13 +279,20 @@ constructor(
                     familyResolver.resolvedScene.value
                 }
             } ?: toScene
-        if (!validateSceneChange(to = resolvedScene, loggingReason = loggingReason)) {
+        if (
+            !validateSceneChange(
+                from = currentSceneKey,
+                to = resolvedScene,
+                loggingReason = loggingReason,
+            )
+        ) {
             return
         }
 
         logger.logSceneChanged(
             from = currentSceneKey,
             to = resolvedScene,
+            sceneState = null,
             reason = loggingReason,
             isInstant = true,
         )
@@ -333,6 +350,38 @@ constructor(
         logger.logOverlayChangeRequested(from = overlay, reason = loggingReason)
 
         repository.hideOverlay(overlay = overlay, transitionKey = transitionKey)
+    }
+
+    /**
+     * Instantly shows [overlay].
+     *
+     * The change is instantaneous and not animated; it will be observable in the next frame and
+     * there will be no transition animation.
+     */
+    fun instantlyShowOverlay(overlay: OverlayKey, loggingReason: String) {
+        if (!validateOverlayChange(to = overlay, loggingReason = loggingReason)) {
+            return
+        }
+
+        logger.logOverlayChangeRequested(to = overlay, reason = loggingReason)
+
+        repository.instantlyShowOverlay(overlay)
+    }
+
+    /**
+     * Instantly hides [overlay].
+     *
+     * The change is instantaneous and not animated; it will be observable in the next frame and
+     * there will be no transition animation.
+     */
+    fun instantlyHideOverlay(overlay: OverlayKey, loggingReason: String) {
+        if (!validateOverlayChange(from = overlay, loggingReason = loggingReason)) {
+            return
+        }
+
+        logger.logOverlayChangeRequested(from = overlay, reason = loggingReason)
+
+        repository.instantlyHideOverlay(overlay)
     }
 
     /**
@@ -454,11 +503,25 @@ constructor(
      * Will throw a runtime exception for illegal states (for example, attempting to change to a
      * scene that's not part of the current scene framework configuration).
      *
+     * @param from The current scene being transitioned away from
      * @param to The desired destination scene to transition to
      * @param loggingReason The reason why the transition is requested, for logging purposes
      * @return `true` if the scene change is valid; `false` if it shouldn't happen
      */
-    private fun validateSceneChange(to: SceneKey, loggingReason: String): Boolean {
+    private fun validateSceneChange(from: SceneKey, to: SceneKey, loggingReason: String): Boolean {
+        check(
+            !shadeModeInteractor.isDualShade || (to != Scenes.Shade && to != Scenes.QuickSettings)
+        ) {
+            "Can't change scene to ${to.debugName} when dual shade is on!"
+        }
+        check(!shadeModeInteractor.isSplitShade || (to != Scenes.QuickSettings)) {
+            "Can't change scene to ${to.debugName} in split shade mode!"
+        }
+
+        if (from == to) {
+            return false
+        }
+
         if (to !in repository.allContentKeys) {
             return false
         }
@@ -503,6 +566,13 @@ constructor(
             "No overlay key provided for requested change." +
                 " Current transition state is ${transitionState.value}." +
                 " Logging reason for overlay change was: $loggingReason"
+        }
+
+        check(
+            shadeModeInteractor.isDualShade ||
+                (to != Overlays.NotificationsShade && to != Overlays.QuickSettingsShade)
+        ) {
+            "Can't show overlay ${to?.debugName} when dual shade is off!"
         }
 
         if (to != null && disabledContentInteractor.isDisabled(to)) {

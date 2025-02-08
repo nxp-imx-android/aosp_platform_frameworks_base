@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.systemui.scene.ui.viewmodel
+package com.android.server.am.compaction;
 
-import androidx.compose.ui.unit.dp
-import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.shade.domain.interactor.shadeInteractor
+import com.android.server.am.CachedAppOptimizer;
 
-var Kosmos.splitEdgeDetector: SplitEdgeDetector by
-    Kosmos.Fixture {
-        SplitEdgeDetector(
-            topEdgeSplitFraction = shadeInteractor::getTopEdgeSplitFraction,
-            edgeSize = 40.dp,
-        )
+final class AggregatedSourceCompactionStats extends AggregatedCompactionStats {
+    public final CachedAppOptimizer.CompactSource mSourceType;
+
+    public AggregatedSourceCompactionStats(CachedAppOptimizer.CompactSource sourceType) {
+        this.mSourceType = sourceType;
     }
+}

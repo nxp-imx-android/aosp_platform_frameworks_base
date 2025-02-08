@@ -21,6 +21,7 @@ import android.annotation.SuppressLint
 import android.annotation.UserIdInt
 import android.app.admin.DevicePolicyManager
 import android.content.Context
+import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.UserInfo
 import android.content.res.Resources
@@ -83,6 +84,9 @@ interface UserRepository {
 
     /** [UserInfo] of the currently-selected user. */
     val selectedUserInfo: Flow<UserInfo>
+
+    /** Tracks whether the main user is unlocked. */
+    fun isUserUnlocked(userHandle: UserHandle?): Flow<Boolean>
 
     /** User ID of the main user. */
     val mainUserId: Int
@@ -283,6 +287,18 @@ constructor(
                 }
             }
             .stateIn(applicationScope, SharingStarted.Eagerly, false)
+
+    override fun isUserUnlocked(userHandle: UserHandle?): Flow<Boolean> =
+        broadcastDispatcher
+            .broadcastFlow(IntentFilter(Intent.ACTION_USER_UNLOCKED))
+            .map { getUnlockedState(userHandle) }
+            .onStart { emit(getUnlockedState(userHandle)) }
+
+    private suspend fun getUnlockedState(userHandle: UserHandle?): Boolean {
+        return withContext(backgroundDispatcher) {
+            userHandle?.let { user -> manager.isUserUnlocked(user) } ?: false
+        }
+    }
 
     @SuppressLint("MissingPermission")
     override val isLogoutToSystemUserEnabled: StateFlow<Boolean> =

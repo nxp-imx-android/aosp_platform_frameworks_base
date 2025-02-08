@@ -106,7 +106,7 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
         @Override
         public void triggerMagneticForce(float endTranslation, @NonNull SpringForce springForce,
                 float startVelocity) {
-            cancelMagneticAnimations();
+            cancelTranslationAnimations();
             mMagneticAnimator.setSpring(springForce);
             mMagneticAnimator.setStartVelocity(startVelocity);
             mMagneticAnimator.animateToFinalPosition(endTranslation);
@@ -114,8 +114,12 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
 
         @Override
         public void cancelMagneticAnimations() {
-            cancelTranslationAnimations();
             mMagneticAnimator.cancel();
+        }
+
+        @Override
+        public void cancelTranslationAnimations() {
+            ExpandableView.this.cancelTranslationAnimations();
         }
 
         @Override

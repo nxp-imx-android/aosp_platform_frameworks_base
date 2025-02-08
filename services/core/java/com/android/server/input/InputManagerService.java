@@ -24,7 +24,9 @@ import static android.provider.DeviceConfig.NAMESPACE_INPUT_NATIVE_BOOT;
 import static android.view.KeyEvent.KEYCODE_UNKNOWN;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
+import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
+import static com.android.hardware.input.Flags.keyEventActivityDetection;
 import static com.android.hardware.input.Flags.useKeyGestureEventHandler;
 import static com.android.server.policy.WindowManagerPolicy.ACTION_PASS_TO_USER;
 
@@ -61,6 +63,7 @@ import android.hardware.input.IInputDeviceBatteryState;
 import android.hardware.input.IInputDevicesChangedListener;
 import android.hardware.input.IInputManager;
 import android.hardware.input.IInputSensorEventListener;
+import android.hardware.input.IKeyEventActivityListener;
 import android.hardware.input.IKeyGestureEventListener;
 import android.hardware.input.IKeyGestureHandler;
 import android.hardware.input.IKeyboardBacklightListener;
@@ -89,11 +92,13 @@ import android.os.InputEventInjectionResult;
 import android.os.InputEventInjectionSync;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PermissionEnforcer;
 import android.os.Process;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
+import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.VibrationEffect;
 import android.os.vibrator.StepSegment;
@@ -148,6 +153,8 @@ import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.wm.WindowManagerInternal;
 
 import libcore.io.IoUtils;
+
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -279,6 +286,16 @@ public class InputManagerService extends IInputManager.Stub
     private final Object mAssociationsLock = new Object();
     @GuardedBy("mAssociationsLock")
     private final Map<String, Integer> mRuntimeAssociations = new ArrayMap<>();
+
+    final Object mKeyEventActivityLock = new Object();
+    @GuardedBy("mKeyEventActivityLock")
+    private List<IKeyEventActivityListener> mKeyEventActivityListenersToNotify =
+            new ArrayList<>();
+
+    // Rate limit for key event activity detection. Prevent the listener from being notified
+    // too frequently.
+    private static final long KEY_EVENT_ACTIVITY_RATE_LIMIT_INTERVAL_MS = 1000;
+    private long mLastKeyEventActivityTimeMs = 0;
 
     // The associations of input devices to displays by port. Maps from {InputDevice#mName} (String)
     // to {DisplayInfo#uniqueId} (String) so that events from the Input Device go to a
@@ -484,13 +501,16 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     public InputManagerService(Context context) {
-        this(new Injector(context, DisplayThread.get().getLooper(), new UEventManager() {}));
+        this(new Injector(context, DisplayThread.get().getLooper(), new UEventManager() {}),
+                context.getSystemService(PermissionEnforcer.class));
     }
 
     @VisibleForTesting
-    InputManagerService(Injector injector) {
+    InputManagerService(Injector injector, PermissionEnforcer permissionEnforcer) {
         // The static association map is accessed by both java and native code, so it must be
         // initialized before initializing the native service.
+        super(permissionEnforcer);
+
         mStaticAssociations = loadStaticInputPortAssociations();
 
         mContext = injector.getContext();
@@ -2509,9 +2529,73 @@ public class InputManagerService extends IInputManager.Stub
         return true;
     }
 
+    @EnforcePermission(android.Manifest.permission.LISTEN_FOR_KEY_ACTIVITY)
+    @Override // Binder Call
+    public boolean registerKeyEventActivityListener(@NonNull IKeyEventActivityListener listener) {
+        super.registerKeyEventActivityListener_enforcePermission();
+        Objects.requireNonNull(listener, "listener must not be null");
+        return InputManagerService.this.registerKeyEventActivityListenerInternal(listener);
+    }
+
+    @EnforcePermission(android.Manifest.permission.LISTEN_FOR_KEY_ACTIVITY)
+    @Override // Binder Call
+    public boolean unregisterKeyEventActivityListener(@NonNull IKeyEventActivityListener listener) {
+        super.unregisterKeyEventActivityListener_enforcePermission();
+        Objects.requireNonNull(listener, "listener must not be null");
+        return InputManagerService.this.unregisterKeyEventActivityListenerInternal(listener);
+    }
+
+    /**
+     * Registers a listener for updates to key event activeness
+     */
+    private boolean registerKeyEventActivityListenerInternal(IKeyEventActivityListener listener) {
+        synchronized (mKeyEventActivityLock) {
+            if (!mKeyEventActivityListenersToNotify.contains(listener)) {
+                mKeyEventActivityListenersToNotify.add(listener);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Unregisters a listener for updates to key event activeness
+     */
+    private boolean unregisterKeyEventActivityListenerInternal(IKeyEventActivityListener listener) {
+        synchronized (mKeyEventActivityLock) {
+            return mKeyEventActivityListenersToNotify.removeIf(existingListener ->
+                    existingListener.asBinder() == listener.asBinder());
+        }
+    }
+
+    private void notifyKeyActivityListeners(KeyEvent event) {
+        long currentTimeMs = SystemClock.uptimeMillis();
+        if (keyEventActivityDetection()
+                && event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0
+                && currentTimeMs - mLastKeyEventActivityTimeMs
+                >= KEY_EVENT_ACTIVITY_RATE_LIMIT_INTERVAL_MS) {
+            List<IKeyEventActivityListener> keyEventActivityListeners;
+            synchronized (mKeyEventActivityLock) {
+                keyEventActivityListeners = List.copyOf(mKeyEventActivityListenersToNotify);
+            }
+            for (IKeyEventActivityListener listener : keyEventActivityListeners) {
+                try {
+                    listener.onKeyEventActivity();
+                } catch (RemoteException e) {
+                    Slog.i(TAG,
+                            "Could Not Notify Listener due to Remote Exception: " + e);
+                    unregisterKeyEventActivityListener(listener);
+                }
+            }
+            mLastKeyEventActivityTimeMs = currentTimeMs;
+        }
+    }
+
     // Native callback.
     @SuppressWarnings("unused")
-    private int interceptKeyBeforeQueueing(KeyEvent event, int policyFlags) {
+    @VisibleForTesting
+    public int interceptKeyBeforeQueueing(KeyEvent event, int policyFlags) {
+        notifyKeyActivityListeners(event);
         synchronized (mFocusEventDebugViewLock) {
             if (mFocusEventDebugView != null) {
                 mFocusEventDebugView.reportKeyEvent(event);
@@ -3723,6 +3807,26 @@ public class InputManagerService extends IInputManager.Stub
         @Override
         public boolean setKernelWakeEnabled(int deviceId, boolean enabled) {
             return mNative.setKernelWakeEnabled(deviceId, enabled);
+        }
+
+        @Override
+        public Map<Integer, byte[]> getBackupPayload(int userId) throws IOException {
+            final Map<Integer, byte[]> payload = new HashMap<>();
+            if (enableCustomizableInputGestures()) {
+                payload.put(BACKUP_CATEGORY_INPUT_GESTURES,
+                        mKeyGestureController.getInputGestureBackupPayload(userId));
+            }
+            return payload;
+        }
+
+        @Override
+        public void applyBackupPayload(Map<Integer, byte[]> payload, int userId)
+                throws XmlPullParserException, IOException {
+            if (enableCustomizableInputGestures() && payload.containsKey(
+                    BACKUP_CATEGORY_INPUT_GESTURES)) {
+                mKeyGestureController.applyInputGesturesBackupPayload(
+                        payload.get(BACKUP_CATEGORY_INPUT_GESTURES), userId);
+            }
         }
     }
 

@@ -180,6 +180,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
 
     // Ideally this would be package private, but we have to set this in a fake for test and we
     // don't yet have dagger set up for tests, so have to set manually
+    @VisibleForTesting
     @Inject
     public BubbleLogger bubbleLogger;
 

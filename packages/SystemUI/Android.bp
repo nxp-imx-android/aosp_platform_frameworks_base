@@ -207,6 +207,8 @@ filegroup {
         "tests/src/**/systemui/statusbar/notification/row/NotificationConversationInfoTest.java",
         "tests/src/**/systemui/statusbar/notification/row/NotificationGutsManagerWithScenesTest.kt",
         "tests/src/**/systemui/statusbar/notification/row/wrapper/NotificationTemplateViewWrapperTest.kt",
+        "tests/src/**/systemui/statusbar/notification/row/NotificationCustomContentMemoryVerifierTest.java",
+        "tests/src/**/systemui/statusbar/notification/row/NotificationCustomContentMemoryVerifierDisabledTest.java",
         "tests/src/**/systemui/statusbar/notification/stack/NotificationStackScrollLayoutTest.java",
         "tests/src/**/systemui/statusbar/phone/CentralSurfacesImplTest.java",
         "tests/src/**/systemui/statusbar/phone/fragment/CollapsedStatusBarFragmentTest.java",
@@ -538,6 +540,7 @@ android_library {
     kotlincflags: [
         "-Xjvm-default=all",
         "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+        "-P plugin:androidx.compose.compiler.plugins.kotlin:sourceInformation=true",
     ],
 
     plugins: [
@@ -550,6 +553,11 @@ android_library {
         warning_checks: ["MissingApacheLicenseDetector"],
         baseline_filename: "lint-baseline.xml",
     },
+}
+
+platform_compat_config {
+    name: "SystemUI-core-compat-config",
+    src: ":SystemUI-core",
 }
 
 filegroup {
@@ -754,6 +762,7 @@ android_library {
         "kosmos",
         "testables",
         "androidx.test.rules",
+        "platform-compat-test-rules",
     ],
     libs: [
         "android.test.runner.stubs.system",
@@ -888,6 +897,7 @@ android_robolectric_test {
     static_libs: [
         "RoboTestLibraries",
         "androidx.compose.runtime_runtime",
+        "platform-compat-test-rules",
     ],
     libs: [
         "android.test.runner.impl",

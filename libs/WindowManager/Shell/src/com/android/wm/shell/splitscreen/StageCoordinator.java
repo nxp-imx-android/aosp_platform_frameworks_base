@@ -1675,8 +1675,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     void prepareExitSplitScreen(@StageType int stageToTop,
             @NonNull WindowContainerTransaction wct, @ExitReason int exitReason) {
         if (!isSplitActive()) return;
-        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "prepareExitSplitScreen: stageToTop=%s",
-                stageTypeToString(stageToTop));
+        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "prepareExitSplitScreen: stageToTop=%s reason=%s",
+                stageTypeToString(stageToTop), exitReasonToString(exitReason));
         if (enableFlexibleSplit()) {
             mStageOrderOperator.getActiveStages().stream()
                     .filter(stage -> stage.getId() != stageToTop)
@@ -3395,12 +3395,14 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         TransitionInfo.Change sideChild = null;
         StageTaskListener firstAppStage = null;
         StageTaskListener secondAppStage = null;
+        boolean foundPausingTask = false;
         final WindowContainerTransaction evictWct = new WindowContainerTransaction();
         for (int iC = 0; iC < info.getChanges().size(); ++iC) {
             final TransitionInfo.Change change = info.getChanges().get(iC);
             final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
             if (taskInfo == null || !taskInfo.hasParentTask()) continue;
             if (mPausingTasks.contains(taskInfo.taskId)) {
+                foundPausingTask = true;
                 continue;
             }
             StageTaskListener stage = getStageOfTask(taskInfo);
@@ -3443,9 +3445,9 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                             prepareExitSplitScreen(dismissTop, cancelWct, EXIT_REASON_UNKNOWN);
                             logExit(EXIT_REASON_UNKNOWN);
                         });
-                Log.w(TAG, splitFailureMessage("startPendingEnterAnimation",
-                        "launched 2 tasks in split, but didn't receive "
-                        + "2 tasks in transition. Possibly one of them failed to launch"));
+                Log.w(TAG, splitFailureMessage("startPendingEnterAnimation", "launched 2 tasks in "
+                        + "split, but didn't receive 2 tasks in transition. Possibly one of them "
+                        + "failed to launch (foundPausingTask=" + foundPausingTask + ")"));
                 if (mRecentTasks.isPresent() && mainChild != null) {
                     mRecentTasks.get().removeSplitPair(mainChild.getTaskInfo().taskId);
                 }
@@ -3800,6 +3802,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
 
     /** Call this when the recents animation canceled during split-screen. */
     public void onRecentsInSplitAnimationCanceled() {
+        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onRecentsInSplitAnimationCanceled");
         mPausingTasks.clear();
         setSplitsVisible(false);
 
@@ -3809,31 +3812,10 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mTaskOrganizer.applyTransaction(wct);
     }
 
-    public void onRecentsInSplitAnimationFinishing(boolean returnToApp,
-            @NonNull WindowContainerTransaction finishWct,
-            @NonNull SurfaceControl.Transaction finishT) {
-        if (!Flags.enableRecentsBookendTransition()) {
-            // The non-bookend recents transition case will be handled by
-            // RecentsMixedTransition wrapping the finish callback and calling
-            // onRecentsInSplitAnimationFinish()
-            return;
-        }
-
-        onRecentsInSplitAnimationFinishInner(returnToApp, finishWct, finishT);
-    }
-
-    /** Call this when the recents animation during split-screen finishes. */
-    public void onRecentsInSplitAnimationFinish(@NonNull WindowContainerTransaction finishWct,
-            @NonNull SurfaceControl.Transaction finishT) {
-        if (Flags.enableRecentsBookendTransition()) {
-            // The bookend recents transition case will be handled by
-            // onRecentsInSplitAnimationFinishing above
-            return;
-        }
-
-        // Check if the recent transition is finished by returning to the current
-        // split, so we can restore the divider bar.
-        boolean returnToApp = false;
+    /**
+     * Returns whether the given WCT is reordering any of the split tasks to top.
+     */
+    public boolean wctIsReorderingSplitToTop(@NonNull WindowContainerTransaction finishWct) {
         for (int i = 0; i < finishWct.getHierarchyOps().size(); ++i) {
             final WindowContainerTransaction.HierarchyOp op =
                     finishWct.getHierarchyOps().get(i);
@@ -3848,14 +3830,14 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             }
             if (op.getType() == HIERARCHY_OP_TYPE_REORDER && op.getToTop()
                     && anyStageContainsContainer) {
-                returnToApp = true;
+                return true;
             }
         }
-        onRecentsInSplitAnimationFinishInner(returnToApp, finishWct, finishT);
+        return false;
     }
 
-    /** Call this when the recents animation during split-screen finishes. */
-    public void onRecentsInSplitAnimationFinishInner(boolean returnToApp,
+    /** Called when the recents animation during split-screen finishes. */
+    public void onRecentsInSplitAnimationFinishing(boolean returnToApp,
             @NonNull WindowContainerTransaction finishWct,
             @NonNull SurfaceControl.Transaction finishT) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onRecentsInSplitAnimationFinish: returnToApp=%b",

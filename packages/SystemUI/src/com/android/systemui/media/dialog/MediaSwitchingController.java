@@ -733,7 +733,7 @@ public class MediaSwitchingController
             selectedDevicesIds.add(connectedMediaDevice.getId());
         }
         boolean groupSelectedDevices =
-                com.android.media.flags.Flags.enableOutputSwitcherSessionGrouping();
+                com.android.media.flags.Flags.enableOutputSwitcherDeviceGrouping();
         int nextSelectedItemIndex = 0;
         boolean suggestedDeviceAdded = false;
         boolean displayGroupAdded = false;

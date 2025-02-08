@@ -55,6 +55,13 @@ struct Idmap_header {
   // without having to read/store each header entry separately.
 };
 
+struct Idmap_constraint {
+  // Constraint type can be TYPE_DISPLAY_ID or TYP_DEVICE_ID, please refer
+  // to ConstraintType in OverlayConstraint.java
+  uint32_t constraint_type;
+  uint32_t constraint_value;
+};
+
 struct Idmap_data_header {
   uint32_t target_entry_count;
   uint32_t target_inline_entry_count;
@@ -254,13 +261,18 @@ std::optional<std::string_view> ReadString(const uint8_t** in_out_data_ptr, size
 #endif
 
 LoadedIdmap::LoadedIdmap(const std::string& idmap_path, const Idmap_header* header,
-                         const Idmap_data_header* data_header, Idmap_target_entries target_entries,
+                         const Idmap_constraint* constraints,
+                         uint32_t constraints_count,
+                         const Idmap_data_header* data_header,
+                         Idmap_target_entries target_entries,
                          Idmap_target_inline_entries target_inline_entries,
                          const Idmap_target_entry_inline_value* inline_entry_values,
                          const ConfigDescription* configs, Idmap_overlay_entries overlay_entries,
                          std::unique_ptr<ResStringPool>&& string_pool,
                          std::string_view overlay_apk_path, std::string_view target_apk_path)
     : header_(header),
+      constraints_(constraints),
+      constraints_count_(constraints_count),
       data_header_(data_header),
       target_entries_(target_entries),
       target_inline_entries_(target_inline_entries),
@@ -298,15 +310,26 @@ std::unique_ptr<LoadedIdmap> LoadedIdmap::Load(StringPiece idmap_path, StringPie
     return {};
   }
   std::optional<std::string_view> target_path = ReadString(&data_ptr, &data_size, "target path");
-    if (!target_path) {
-      return {};
-    }
+  if (!target_path) {
+    return {};
+  }
   std::optional<std::string_view> overlay_path = ReadString(&data_ptr, &data_size, "overlay path");
   if (!overlay_path) {
     return {};
   }
   if (!ReadString(&data_ptr, &data_size, "target name") ||
       !ReadString(&data_ptr, &data_size, "debug info")) {
+    return {};
+  }
+
+  auto constraints_count = ReadType<uint32_t>(&data_ptr, &data_size, "constraints count");
+  if (!constraints_count) {
+    return {};
+  }
+  auto constraints = *constraints_count > 0 ?
+      ReadType<Idmap_constraint>(&data_ptr, &data_size, "constraints", *constraints_count)
+      : nullptr;
+  if (*constraints_count > 0 && !constraints) {
     return {};
   }
 
@@ -376,9 +399,10 @@ std::unique_ptr<LoadedIdmap> LoadedIdmap::Load(StringPiece idmap_path, StringPie
 
   // Can't use make_unique because LoadedIdmap constructor is private.
   return std::unique_ptr<LoadedIdmap>(
-      new LoadedIdmap(std::string(idmap_path), header, data_header, target_entries,
-                      target_inline_entries, target_inline_entry_values, configurations,
-                      overlay_entries, std::move(idmap_string_pool), *overlay_path, *target_path));
+      new LoadedIdmap(std::string(idmap_path), header, constraints, *constraints_count,
+                      data_header, target_entries, target_inline_entries,
+                      target_inline_entry_values,configurations, overlay_entries,
+                      std::move(idmap_string_pool),*overlay_path, *target_path));
 }
 
 bool LoadedIdmap::IsUpToDate() const {

@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar
 
+import android.content.res.Resources
 import android.view.CrossWindowBlurListeners
 import android.view.SurfaceControl
 import android.view.ViewRootImpl
@@ -46,6 +47,7 @@ class BlurUtilsTest : SysuiTestCase() {
     @Mock lateinit var dumpManager: DumpManager
     @Mock lateinit var transaction: SurfaceControl.Transaction
     @Mock lateinit var crossWindowBlurListeners: CrossWindowBlurListeners
+    @Mock lateinit var resources: Resources
     lateinit var blurUtils: TestableBlurUtils
 
     @Before
@@ -109,7 +111,7 @@ class BlurUtilsTest : SysuiTestCase() {
         verify(transaction).setEarlyWakeupEnd()
     }
 
-    inner class TestableBlurUtils : BlurUtils(blurConfig, crossWindowBlurListeners, dumpManager) {
+    inner class TestableBlurUtils : BlurUtils(resources, blurConfig, crossWindowBlurListeners, dumpManager) {
         var blursEnabled = true
 
         override fun supportsBlursOnWindows(): Boolean {

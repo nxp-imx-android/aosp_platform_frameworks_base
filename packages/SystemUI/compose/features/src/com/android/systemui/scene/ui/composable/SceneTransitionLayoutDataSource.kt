@@ -59,10 +59,7 @@ class SceneTransitionLayoutDataSource(
                 initialValue = emptySet(),
             )
 
-    override fun changeScene(
-        toScene: SceneKey,
-        transitionKey: TransitionKey?,
-    ) {
+    override fun changeScene(toScene: SceneKey, transitionKey: TransitionKey?) {
         state.setTargetScene(
             targetScene = toScene,
             transitionKey = transitionKey,
@@ -71,9 +68,7 @@ class SceneTransitionLayoutDataSource(
     }
 
     override fun snapToScene(toScene: SceneKey) {
-        state.snapToScene(
-            scene = toScene,
-        )
+        state.snapToScene(scene = toScene)
     }
 
     override fun showOverlay(overlay: OverlayKey, transitionKey: TransitionKey?) {
@@ -98,6 +93,20 @@ class SceneTransitionLayoutDataSource(
             to = to,
             animationScope = coroutineScope,
             transitionKey = transitionKey,
+        )
+    }
+
+    override fun instantlyShowOverlay(overlay: OverlayKey) {
+        state.snapToScene(
+            scene = state.transitionState.currentScene,
+            currentOverlays = state.currentOverlays + overlay,
+        )
+    }
+
+    override fun instantlyHideOverlay(overlay: OverlayKey) {
+        state.snapToScene(
+            scene = state.transitionState.currentScene,
+            currentOverlays = state.currentOverlays - overlay,
         )
     }
 }

@@ -19,6 +19,7 @@ package com.android.systemui.scene.ui.viewmodel
 import android.view.MotionEvent
 import android.view.View
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.dp
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.DefaultEdgeDetector
@@ -31,6 +32,8 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
+import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LightRevealScrimViewModel
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -62,12 +65,13 @@ constructor(
     private val powerInteractor: PowerInteractor,
     shadeModeInteractor: ShadeModeInteractor,
     private val remoteInputInteractor: RemoteInputInteractor,
-    private val splitEdgeDetector: SplitEdgeDetector,
     private val logger: SceneLogger,
     hapticsViewModelFactory: SceneContainerHapticsViewModel.Factory,
     val lightRevealScrim: LightRevealScrimViewModel,
     val wallpaperViewModel: WallpaperViewModel,
     keyguardInteractor: KeyguardInteractor,
+    val burnIn: AodBurnInViewModel,
+    val clock: KeyguardClockViewModel,
     @Assisted view: View,
     @Assisted private val motionEventHandlerReceiver: (MotionEventHandler?) -> Unit,
 ) : ExclusiveActivatable() {
@@ -85,16 +89,20 @@ constructor(
     val hapticsViewModel: SceneContainerHapticsViewModel = hapticsViewModelFactory.create(view)
 
     /**
-     * The [SwipeSourceDetector] to use for defining which edges of the screen can be defined in the
+     * The [SwipeSourceDetector] to use for defining which areas of the screen can be defined in the
      * [UserAction]s for this container.
      */
-    val edgeDetector: SwipeSourceDetector by
+    val swipeSourceDetector: SwipeSourceDetector by
         hydrator.hydratedStateOf(
-            traceName = "edgeDetector",
+            traceName = "swipeSourceDetector",
             initialValue = DefaultEdgeDetector,
             source =
                 shadeModeInteractor.shadeMode.map {
-                    if (it is ShadeMode.Dual) splitEdgeDetector else DefaultEdgeDetector
+                    if (it is ShadeMode.Dual) {
+                        SceneContainerSwipeDetector(edgeSize = 40.dp)
+                    } else {
+                        DefaultEdgeDetector
+                    }
                 },
         )
 
@@ -237,6 +245,7 @@ constructor(
             logger.logSceneChanged(
                 from = fromScene,
                 to = toScene,
+                sceneState = null,
                 reason = "user interaction",
                 isInstant = false,
             )

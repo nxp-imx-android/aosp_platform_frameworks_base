@@ -19,7 +19,6 @@ package com.android.systemui.keyguard.ui.viewmodel
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
-import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.scene.domain.interactor.SceneContainerOcclusionInteractor
 import com.android.systemui.scene.shared.model.Scenes
@@ -43,7 +42,6 @@ class LockscreenUserActionsViewModel
 @AssistedInject
 constructor(
     private val deviceEntryInteractor: DeviceEntryInteractor,
-    private val communalInteractor: CommunalInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
     private val occlusionInteractor: SceneContainerOcclusionInteractor,
@@ -58,15 +56,10 @@ constructor(
 
                 combine(
                     deviceEntryInteractor.isUnlocked,
-                    communalInteractor.isCommunalAvailable,
                     shadeModeInteractor.shadeMode,
                     occlusionInteractor.isOccludingActivityShown,
-                ) { isDeviceUnlocked, isCommunalAvailable, shadeMode, isOccluded ->
+                ) { isDeviceUnlocked, shadeMode, isOccluded ->
                     buildList {
-                            if (isCommunalAvailable) {
-                                add(Swipe.Start to Scenes.Communal)
-                            }
-
                             add(Swipe.Up to if (isDeviceUnlocked) Scenes.Gone else Scenes.Bouncer)
 
                             addAll(

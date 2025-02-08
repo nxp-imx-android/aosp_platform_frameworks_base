@@ -45,7 +45,8 @@ import java.util.function.BiFunction;
  * {@link PersistableBundle} subclass.
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
-public class BaseBundle {
+@SuppressWarnings("HiddenSuperclass")
+public class BaseBundle implements Parcel.ClassLoaderProvider {
     /** @hide */
     protected static final String TAG = "Bundle";
     static final boolean DEBUG = false;
@@ -311,8 +312,9 @@ public class BaseBundle {
 
     /**
      * Return the ClassLoader currently associated with this Bundle.
+     * @hide
      */
-    ClassLoader getClassLoader() {
+    public ClassLoader getClassLoader() {
         return mClassLoader;
     }
 
@@ -426,6 +428,9 @@ public class BaseBundle {
             if ((mFlags & Bundle.FLAG_VERIFY_TOKENS_PRESENT) != 0) {
                 Intent.maybeMarkAsMissingCreatorToken(object);
             }
+        } else if (object instanceof Bundle) {
+            Bundle bundle = (Bundle) object;
+            bundle.setClassLoaderSameAsContainerBundleWhenRetrievedFirstTime(this);
         }
         return (clazz != null) ? clazz.cast(object) : (T) object;
     }
@@ -499,7 +504,7 @@ public class BaseBundle {
         int[] numLazyValues = new int[]{0};
         try {
             parcelledData.readArrayMap(map, count, !parcelledByNative,
-                    /* lazy */ ownsParcel, mClassLoader, numLazyValues);
+                    /* lazy */ ownsParcel, this, numLazyValues);
         } catch (BadParcelableException e) {
             if (sShouldDefuse) {
                 Log.w(TAG, "Failed to parse Bundle, but defusing quietly", e);

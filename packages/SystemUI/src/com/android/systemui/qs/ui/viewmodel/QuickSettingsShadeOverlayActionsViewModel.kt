@@ -25,7 +25,7 @@ import com.android.compose.animation.scene.UserActionResult.ShowOverlay
 import com.android.compose.animation.scene.UserActionResult.ShowOverlay.HideCurrentOverlays
 import com.android.systemui.qs.panels.ui.viewmodel.EditModeViewModel
 import com.android.systemui.scene.shared.model.Overlays
-import com.android.systemui.scene.ui.viewmodel.SceneContainerEdge
+import com.android.systemui.scene.ui.viewmodel.SceneContainerArea
 import com.android.systemui.scene.ui.viewmodel.UserActionsViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -47,7 +47,7 @@ constructor(private val editModeViewModel: EditModeViewModel) : UserActionsViewM
                         put(Back, HideOverlay(Overlays.QuickSettingsShade))
                     }
                     put(
-                        Swipe.Down(fromSource = SceneContainerEdge.TopLeft),
+                        Swipe.Down(fromSource = SceneContainerArea.StartHalf),
                         ShowOverlay(
                             Overlays.NotificationsShade,
                             hideCurrentOverlays =

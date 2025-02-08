@@ -58,11 +58,11 @@ class DragZoneFactory(
         when (draggedObject) {
             is DraggedObject.BubbleBar -> {
                 dragZones.add(createDismissDragZone())
-                dragZones.addAll(createBubbleDragZones())
+                dragZones.addAll(createBubbleHalfScreenDragZones())
             }
             is DraggedObject.Bubble -> {
                 dragZones.add(createDismissDragZone())
-                dragZones.addAll(createBubbleDragZones())
+                dragZones.addAll(createBubbleCornerDragZones())
                 dragZones.add(createFullScreenDragZone())
                 if (shouldShowDesktopWindowDragZones()) {
                     dragZones.add(createDesktopWindowDragZoneForBubble())
@@ -80,7 +80,7 @@ class DragZoneFactory(
                 } else {
                     dragZones.addAll(createSplitScreenDragZonesForExpandedViewOnTablet())
                 }
-                createBubbleDragZonesForExpandedView()
+                dragZones.addAll(createBubbleHalfScreenDragZones())
             }
         }
         return dragZones
@@ -98,7 +98,7 @@ class DragZoneFactory(
         )
     }
 
-    private fun createBubbleDragZones(): List<DragZone> {
+    private fun createBubbleCornerDragZones(): List<DragZone> {
         val dragZoneSize =
             if (deviceConfig.isSmallTablet) {
                 bubbleDragZoneFoldableSize
@@ -124,7 +124,7 @@ class DragZoneFactory(
         )
     }
 
-    private fun createBubbleDragZonesForExpandedView(): List<DragZone> {
+    private fun createBubbleHalfScreenDragZones(): List<DragZone> {
         return listOf(
             DragZone.Bubble.Left(
                 bounds = Rect(0, 0, windowBounds.right / 2, windowBounds.bottom),

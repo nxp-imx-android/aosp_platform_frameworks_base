@@ -2041,6 +2041,7 @@ public final class DisplayManagerService extends SystemService {
                                 packageName,
                                 displayUniqueId,
                                 virtualDevice,
+                                dwpc,
                                 surface,
                                 flags,
                                 virtualDisplayConfig);
@@ -2135,6 +2136,7 @@ public final class DisplayManagerService extends SystemService {
             String packageName,
             String uniqueId,
             IVirtualDevice virtualDevice,
+            DisplayWindowPolicyController dwpc,
             Surface surface,
             int flags,
             VirtualDisplayConfig virtualDisplayConfig) {
@@ -2188,6 +2190,16 @@ public final class DisplayManagerService extends SystemService {
 
         final LogicalDisplay display = mLogicalDisplayMapper.getDisplayLocked(device);
         if (display != null) {
+            // Notify the virtual device that the display has been created. This needs to be called
+            // in this locked section before the repository had the chance to notify any listeners
+            // to ensure that the device is aware of the new display before others know about it.
+            if (virtualDevice != null) {
+                final VirtualDeviceManagerInternal vdm =
+                        getLocalService(VirtualDeviceManagerInternal.class);
+                vdm.onVirtualDisplayCreated(
+                        virtualDevice, display.getDisplayIdLocked(), callback, dwpc);
+            }
+
             return display.getDisplayIdLocked();
         }
 

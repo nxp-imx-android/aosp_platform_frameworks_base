@@ -24,6 +24,7 @@ import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
+import android.os.VibrationEffect
 import android.text.Layout
 import android.text.TextPaint
 import android.util.AttributeSet
@@ -67,7 +68,7 @@ enum class HorizontalAlignment {
 
 @SuppressLint("AppCompatCustomView")
 open class SimpleDigitalClockTextView(
-    clockCtx: ClockContext,
+    val clockCtx: ClockContext,
     isLargeClock: Boolean,
     attrs: AttributeSet? = null,
 ) : TextView(clockCtx.context, attrs) {
@@ -91,6 +92,9 @@ open class SimpleDigitalClockTextView(
         val roundAxis = if (!isLegacyFlex) ROUND_AXIS else FLEX_ROUND_AXIS
         (fixedAodAxes + listOf(roundAxis, SLANT_AXIS)).toFVar()
     }
+
+    // TODO(b/374306512): Fidget endpoint to spec
+    private var fidgetFontVariation = aodFontVariation
 
     private val parser = DimensionParser(clockCtx.context)
     var maxSingleDigitHeight = -1
@@ -289,24 +293,45 @@ open class SimpleDigitalClockTextView(
             return
         }
         logger.d("animateCharge()")
-        val startAnimPhase2 = Runnable {
-            textAnimator.setTextStyle(
-                fvar = if (dozeFraction == 0F) lsFontVariation else aodFontVariation,
-                animate = isAnimationEnabled,
-            )
-            updateTextBoundsForTextAnimator()
-        }
         textAnimator.setTextStyle(
             fvar = if (dozeFraction == 0F) aodFontVariation else lsFontVariation,
             animate = isAnimationEnabled,
-            onAnimationEnd = startAnimPhase2,
+            onAnimationEnd =
+                Runnable {
+                    textAnimator.setTextStyle(
+                        fvar = if (dozeFraction == 0F) lsFontVariation else aodFontVariation,
+                        animate = isAnimationEnabled,
+                    )
+                    updateTextBoundsForTextAnimator()
+                },
         )
         updateTextBoundsForTextAnimator()
     }
 
     fun animateFidget(x: Float, y: Float) {
-        // TODO(b/374306512): Implement Fidget Animation
+        if (!this::textAnimator.isInitialized || textAnimator.isRunning()) {
+            // Skip fidget animation if other animation is already playing.
+            return
+        }
+
         logger.animateFidget(x, y)
+        clockCtx.vibrator?.vibrate(FIDGET_HAPTICS)
+
+        // TODO(b/374306512): Duplicated charge animation as placeholder. Implement final version
+        // when we have a complete spec. May require additional code to animate individual digits.
+        textAnimator.setTextStyle(
+            fvar = fidgetFontVariation,
+            animate = isAnimationEnabled,
+            onAnimationEnd =
+                Runnable {
+                    textAnimator.setTextStyle(
+                        fvar = if (dozeFraction == 0F) lsFontVariation else aodFontVariation,
+                        animate = isAnimationEnabled,
+                    )
+                    updateTextBoundsForTextAnimator()
+                },
+        )
+        updateTextBoundsForTextAnimator()
     }
 
     fun refreshText() {
@@ -532,6 +557,12 @@ open class SimpleDigitalClockTextView(
     companion object {
         private val PORTER_DUFF_XFER_MODE_PAINT =
             Paint().also { it.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT) }
+
+        val FIDGET_HAPTICS =
+            VibrationEffect.startComposition()
+                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_THUD, 1.0f, 0)
+                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_QUICK_RISE, 1.0f, 43)
+                .compose()
 
         val AOD_COLOR = Color.WHITE
         val LS_WEIGHT_AXIS = ClockFontAxisSetting(GSFAxes.WEIGHT, 400f)
