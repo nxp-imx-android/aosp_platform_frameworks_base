@@ -157,7 +157,6 @@ import static com.android.server.wm.WindowManagerServiceDumpProto.POLICY;
 import static com.android.server.wm.WindowManagerServiceDumpProto.ROOT_WINDOW_CONTAINER;
 import static com.android.server.wm.WindowManagerServiceDumpProto.WINDOW_FRAMES_VALID;
 import static com.android.window.flags.Flags.enableDisplayFocusInShellTransitions;
-import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 import static com.android.window.flags.Flags.multiCrop;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
@@ -502,6 +501,8 @@ public class WindowManagerService extends IWindowManager.Stub
             Collections.synchronizedMap(new ArrayMap<>());
 
     final StartingSurfaceController mStartingSurfaceController;
+
+    final PresentationController mPresentationController;
 
     private final IVrStateCallbacks mVrStateCallbacks = new IVrStateCallbacks.Stub() {
         @Override
@@ -1419,6 +1420,7 @@ public class WindowManagerService extends IWindowManager.Stub
         setGlobalShadowSettings();
         mAnrController = new AnrController(this);
         mStartingSurfaceController = new StartingSurfaceController(this);
+        mPresentationController = new PresentationController();
 
         mBlurController = new BlurController(mContext, mPowerManager);
         mTaskFpsCallbackController = new TaskFpsCallbackController(mContext);
@@ -1923,16 +1925,8 @@ public class WindowManagerService extends IWindowManager.Stub
             }
             outSizeCompatScale[0] = win.getCompatScaleForClient();
 
-            if (res >= ADD_OKAY
-                    && (type == TYPE_PRESENTATION || type == TYPE_PRIVATE_PRESENTATION)) {
-                displayContent.mIsPresenting = true;
-                if (enablePresentationForConnectedDisplays()) {
-                    // A presentation hides all activities behind on the same display.
-                    displayContent.ensureActivitiesVisible(/*starting=*/ null,
-                            /*notifyClients=*/ true);
-                }
-                mDisplayManagerInternal.onPresentation(displayContent.getDisplay().getDisplayId(),
-                        /*isShown=*/ true);
+            if (res >= ADD_OKAY && win.isPresentation()) {
+                mPresentationController.onPresentationAdded(win);
             }
         }
 
