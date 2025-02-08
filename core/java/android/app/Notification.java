@@ -11370,7 +11370,7 @@ public class Notification implements Parcelable
             if (mProgressPoints == null) {
                 mProgressPoints = new ArrayList<>();
             }
-            if (point.getPosition() >= 0) {
+            if (point.getPosition() > 0) {
                 mProgressPoints.add(point);
 
                 if (mProgressPoints.size() > MAX_PROGRESS_POINT_LIMIT) {
@@ -11379,7 +11379,7 @@ public class Notification implements Parcelable
                 }
 
             } else {
-                Log.w(TAG, "Dropped the point. The position is a negative integer.");
+                Log.w(TAG, "Dropped the point. The position is a negative or zero integer.");
             }
 
             return this;
@@ -11893,7 +11893,9 @@ public class Notification implements Parcelable
                 final List<Point> points = new ArrayList<>();
                 for (Point point : mProgressPoints) {
                     final int position = point.getPosition();
-                    if (position < 0 || position > totalLength) continue;
+                    // The points at start/end aren't supposed to show in the progress bar.
+                    // Therefore those are also dropped here.
+                    if (position <= 0 || position >= totalLength) continue;
                     points.add(sanitizePoint(point, backgroundColor, defaultProgressColor));
                     if (points.size() == MAX_PROGRESS_POINT_LIMIT) {
                         break;
