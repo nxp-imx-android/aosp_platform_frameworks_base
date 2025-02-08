@@ -702,9 +702,23 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
 
                 if ((entry.getValue().getChangeMask()
                         & WindowContainerTransaction.Change.CHANGE_FORCE_NO_PIP) != 0) {
-                    // Disable entering pip (eg. when recents pretends to finish itself)
-                    if (chain.mTransition != null) {
-                        chain.mTransition.setCanPipOnFinish(false /* canPipOnFinish */);
+                    if (com.android.wm.shell.Flags.enableRecentsBookendTransition()) {
+                        // If we are using a bookend transition, then the transition that we need
+                        // to disable pip on finish is the original transient transition, not the
+                        // bookend transition
+                        final Transition transientHideTransition =
+                                mTransitionController.getTransientHideTransitionForContainer(wc);
+                        if (transientHideTransition != null) {
+                            transientHideTransition.setCanPipOnFinish(false);
+                        } else {
+                            ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
+                                    "Set do-not-pip: no task");
+                        }
+                    } else {
+                        // Disable entering pip (eg. when recents pretends to finish itself)
+                        if (chain.mTransition != null) {
+                            chain.mTransition.setCanPipOnFinish(false /* canPipOnFinish */);
+                        }
                     }
                 }
                 // A bit hacky, but we need to detect "remove PiP" so that we can "wrap" the
