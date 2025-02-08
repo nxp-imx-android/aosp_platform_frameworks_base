@@ -415,52 +415,46 @@ fun PreferenceMetadata.toProto(
         for (tag in metadata.tags(context)) addTags(tag)
     }
     persistent = metadata.isPersistent(context)
-    if (persistent) {
-        if (metadata is PersistentPreference<*>) {
-            sensitivityLevel = metadata.sensitivityLevel
-            metadata.getReadPermissions(context)?.let {
-                if (it.size > 0) readPermissions = it.toProto()
-            }
-            metadata.getWritePermissions(context)?.let {
-                if (it.size > 0) writePermissions = it.toProto()
-            }
-        }
-        if (
-            flags.includeValue() &&
-                enabled &&
-                (!hasAvailable() || available) &&
-                (!hasRestricted() || !restricted) &&
-                metadata is PersistentPreference<*> &&
-                metadata.evalReadPermit(context, callingPid, callingUid) == ReadWritePermit.ALLOW
-        ) {
-            val storage = metadata.storage(context)
-            value = preferenceValueProto {
-                when (metadata.valueType) {
-                    Int::class.javaObjectType -> storage.getInt(metadata.key)?.let { intValue = it }
-                    Boolean::class.javaObjectType ->
-                        storage.getBoolean(metadata.key)?.let { booleanValue = it }
-                    Float::class.javaObjectType ->
-                        storage.getFloat(metadata.key)?.let { floatValue = it }
-                    else -> {}
-                }
+    if (metadata !is PersistentPreference<*>) return@preferenceProto
+    sensitivityLevel = metadata.sensitivityLevel
+    metadata.getReadPermissions(context)?.let { if (it.size > 0) readPermissions = it.toProto() }
+    metadata.getWritePermissions(context)?.let { if (it.size > 0) writePermissions = it.toProto() }
+    val readPermit = metadata.evalReadPermit(context, callingPid, callingUid)
+    val writePermit =
+        metadata.getWritePermit(context, callingPid, callingUid) ?: ReadWritePermit.ALLOW
+    readWritePermit = ReadWritePermit.make(readPermit, writePermit)
+    if (
+        flags.includeValue() &&
+            enabled &&
+            (!hasAvailable() || available) &&
+            (!hasRestricted() || !restricted) &&
+            readPermit == ReadWritePermit.ALLOW
+    ) {
+        val storage = metadata.storage(context)
+        value = preferenceValueProto {
+            when (metadata.valueType) {
+                Int::class.javaObjectType -> storage.getInt(metadata.key)?.let { intValue = it }
+                Boolean::class.javaObjectType ->
+                    storage.getBoolean(metadata.key)?.let { booleanValue = it }
+                Float::class.javaObjectType ->
+                    storage.getFloat(metadata.key)?.let { floatValue = it }
+                else -> {}
             }
         }
-        if (flags.includeValueDescriptor()) {
-            valueDescriptor = preferenceValueDescriptorProto {
-                when (metadata) {
-                    is IntRangeValuePreference -> rangeValue = rangeValueProto {
-                            min = metadata.getMinValue(context)
-                            max = metadata.getMaxValue(context)
-                            step = metadata.getIncrementStep(context)
-                        }
-                    else -> {}
-                }
-                if (metadata is PersistentPreference<*>) {
-                    when (metadata.valueType) {
-                        Boolean::class.javaObjectType -> booleanType = true
-                        Float::class.javaObjectType -> floatType = true
+    }
+    if (flags.includeValueDescriptor()) {
+        valueDescriptor = preferenceValueDescriptorProto {
+            when (metadata) {
+                is IntRangeValuePreference -> rangeValue = rangeValueProto {
+                        min = metadata.getMinValue(context)
+                        max = metadata.getMaxValue(context)
+                        step = metadata.getIncrementStep(context)
                     }
-                }
+                else -> {}
+            }
+            when (metadata.valueType) {
+                Boolean::class.javaObjectType -> booleanType = true
+                Float::class.javaObjectType -> floatType = true
             }
         }
     }

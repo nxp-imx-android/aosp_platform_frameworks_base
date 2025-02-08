@@ -228,7 +228,9 @@ fun <T> PersistentPreference<T>.evalWritePermit(
             ReadWritePermit.DISALLOW
         getWritePermissions(context)?.check(context, callingPid, callingUid) == false ->
             ReadWritePermit.REQUIRE_APP_PERMISSION
-        else -> getWritePermit(context, value, callingPid, callingUid)
+        else ->
+            getWritePermit(context, callingPid, callingUid)
+                ?: getWritePermit(context, value, callingPid, callingUid)
     }
 
 /** Message codec for [PreferenceSetterRequest]. */
