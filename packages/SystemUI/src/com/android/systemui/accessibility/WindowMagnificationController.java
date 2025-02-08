@@ -296,6 +296,7 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
         mGestureDetector =
                 new MagnificationGestureDetector(mContext, handler, this);
         mWindowInsetChangeRunnable = this::onWindowInsetChanged;
+        mWindowInsetChangeRunnable.run();
 
         // Initialize listeners.
         mMirrorViewRunnable = new Runnable() {
@@ -367,8 +368,12 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
     private boolean updateSystemGestureInsetsTop() {
         final WindowMetrics windowMetrics = mWm.getCurrentWindowMetrics();
         final Insets insets = windowMetrics.getWindowInsets().getInsets(systemGestures());
-        final int gestureTop =
-                insets.bottom != 0 ? windowMetrics.getBounds().bottom - insets.bottom : -1;
+        final int gestureTop;
+        if (Flags.updateWindowMagnifierBottomBoundary()) {
+            gestureTop = windowMetrics.getBounds().bottom - insets.bottom;
+        } else {
+            gestureTop = insets.bottom != 0 ? windowMetrics.getBounds().bottom - insets.bottom : -1;
+        }
         if (gestureTop != mSystemGestureTop) {
             mSystemGestureTop = gestureTop;
             return true;
@@ -953,7 +958,6 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
                 ? mSystemGestureTop - height + mOuterBorderSize
                 : mWindowBounds.bottom - height + mOuterBorderSize;
         final int y = MathUtils.clamp(mMagnificationFrame.top - mMirrorSurfaceMargin, minY, maxY);
-
         if (computeWindowSize) {
             LayoutParams params = (LayoutParams) mMirrorView.getLayoutParams();
             params.width = width;
