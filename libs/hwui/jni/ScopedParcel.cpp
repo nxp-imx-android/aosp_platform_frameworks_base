@@ -39,6 +39,16 @@ uint32_t ScopedParcel::readUint32() {
     return temp;
 }
 
+int64_t ScopedParcel::readInt64() {
+    int64_t temp = 0;
+    // TODO: This behavior-matches what android::Parcel does
+    // but this should probably be better
+    if (AParcel_readInt64(mParcel, &temp) != STATUS_OK) {
+        temp = 0;
+    }
+    return temp;
+}
+
 float ScopedParcel::readFloat() {
     float temp = 0.;
     if (AParcel_readFloat(mParcel, &temp) != STATUS_OK) {

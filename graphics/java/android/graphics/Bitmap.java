@@ -102,6 +102,10 @@ public final class Bitmap implements Parcelable {
 
     private static volatile int sDefaultDensity = -1;
 
+    /**
+     * This id is not authoritative and can be duplicated if an ashmem bitmap is decoded from a
+     * parcel.
+     */
     private long mId;
 
     /**
