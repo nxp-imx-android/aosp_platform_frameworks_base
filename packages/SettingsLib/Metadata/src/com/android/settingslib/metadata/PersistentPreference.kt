@@ -128,7 +128,8 @@ interface PersistentPreference<T> : PreferenceMetadata {
 
     /**
      * Returns if the external application (identified by [callingPid] and [callingUid]) is
-     * permitted to write preference value.
+     * permitted to write preference value. If the write permit depends on certain value, implement
+     * the overloading [getWritePermit] instead.
      *
      * The underlying implementation does NOT need to check common states like isEnabled,
      * isRestricted, isAvailable or permissions in [getWritePermissions]. The framework will do it
@@ -139,7 +140,8 @@ interface PersistentPreference<T> : PreferenceMetadata {
 
     /**
      * Returns if the external application (identified by [callingPid] and [callingUid]) is
-     * permitted to write preference with given [value].
+     * permitted to write preference with given [value]. Note that if the overloading
+     * [getWritePermit] returns non null value, this method will be ignored!
      *
      * The underlying implementation does NOT need to check common states like isEnabled,
      * isRestricted, isAvailable or permissions in [getWritePermissions]. The framework will do it
