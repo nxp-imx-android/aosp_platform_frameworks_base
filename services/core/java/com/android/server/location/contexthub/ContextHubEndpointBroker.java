@@ -508,24 +508,21 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             }
             remote = mSessionInfoMap.get(sessionId).getRemoteEndpointInfo();
         }
-        if (!ContextHubServiceUtil.notePermissions(
-                mAppOpsManager,
-                mUid,
-                mPackageName,
-                mAttributionTag,
-                remote.getRequiredPermissions(),
-                RECEIVE_MSG_NOTE
-                        + "-0x"
-                        + Long.toHexString(remote.getIdentifier().getHub())
-                        + "-0x"
-                        + Long.toHexString(remote.getIdentifier().getEndpoint()))) {
-            Log.e(
-                    TAG,
-                    "Dropping message from "
-                            + remote
-                            + ". "
-                            + mPackageName
-                            + " doesn't have permission");
+
+        try {
+            Binder.withCleanCallingIdentity(
+                    () -> {
+                        if (!notePermissions(remote)) {
+                            throw new RuntimeException(
+                                    "Dropping message from "
+                                            + remote
+                                            + ". "
+                                            + mPackageName
+                                            + " doesn't have permission");
+                        }
+                    });
+        } catch (RuntimeException e) {
+            Log.e(TAG, e.getMessage());
             return ErrorCode.PERMISSION_DENIED;
         }
 
@@ -656,5 +653,25 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         synchronized (mRegistrationLock) {
             return mIsRegistered;
         }
+    }
+
+    /**
+     * Utility to call notePermissions for e.g. when processing a message from a given endpoint for
+     * this broker.
+     *
+     * @param endpoint The endpoint to check permissions for this broker.
+     */
+    private boolean notePermissions(HubEndpointInfo endpoint) {
+        return ContextHubServiceUtil.notePermissions(
+                mAppOpsManager,
+                mUid,
+                mPackageName,
+                mAttributionTag,
+                endpoint.getRequiredPermissions(),
+                RECEIVE_MSG_NOTE
+                        + "-0x"
+                        + Long.toHexString(endpoint.getIdentifier().getHub())
+                        + "-0x"
+                        + Long.toHexString(endpoint.getIdentifier().getEndpoint()));
     }
 }
