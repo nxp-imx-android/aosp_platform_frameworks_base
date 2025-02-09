@@ -25038,8 +25038,10 @@ package android.media {
     method public final void notifySessionCreated(long, @NonNull android.media.RoutingSessionInfo);
     method public final void notifySessionReleased(@NonNull String);
     method public final void notifySessionUpdated(@NonNull android.media.RoutingSessionInfo);
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @Nullable @RequiresPermission("android.permission.MODIFY_AUDIO_ROUTING") public final android.media.MediaRoute2ProviderService.MediaStreams notifySystemRoutingSessionCreated(long, @NonNull android.media.RoutingSessionInfo, @NonNull android.media.MediaRoute2ProviderService.MediaStreamsFormats);
     method @CallSuper @Nullable public android.os.IBinder onBind(@NonNull android.content.Intent);
     method public abstract void onCreateSession(long, @NonNull String, @NonNull String, @Nullable android.os.Bundle);
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public void onCreateSystemRoutingSession(long, @NonNull String, @NonNull android.media.MediaRoute2ProviderService.SystemRoutingSessionParams);
     method public abstract void onDeselectRoute(long, @NonNull String, @NonNull String);
     method public void onDiscoveryPreferenceChanged(@NonNull android.media.RouteDiscoveryPreference);
     method public abstract void onReleaseSession(long, @NonNull String);
@@ -25047,13 +25049,42 @@ package android.media {
     method public abstract void onSetRouteVolume(long, @NonNull String, int);
     method public abstract void onSetSessionVolume(long, @NonNull String, int);
     method public abstract void onTransferToRoute(long, @NonNull String, @NonNull String);
+    field @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final String CATEGORY_SYSTEM_MEDIA = "android.media.MediaRoute2ProviderService.SYSTEM_MEDIA";
+    field @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final int REASON_FAILED_TO_REROUTE_SYSTEM_MEDIA = 6; // 0x6
     field public static final int REASON_INVALID_COMMAND = 4; // 0x4
     field public static final int REASON_NETWORK_ERROR = 2; // 0x2
     field public static final int REASON_REJECTED = 1; // 0x1
     field public static final int REASON_ROUTE_NOT_AVAILABLE = 3; // 0x3
+    field @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final int REASON_UNIMPLEMENTED = 5; // 0x5
     field public static final int REASON_UNKNOWN_ERROR = 0; // 0x0
     field public static final long REQUEST_ID_NONE = 0L; // 0x0L
     field public static final String SERVICE_INTERFACE = "android.media.MediaRoute2ProviderService";
+  }
+
+  @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final class MediaRoute2ProviderService.MediaStreams {
+    method @Nullable public android.media.AudioRecord getAudioRecord();
+  }
+
+  @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final class MediaRoute2ProviderService.MediaStreamsFormats {
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @Nullable public android.media.AudioFormat getAudioFormat();
+  }
+
+  @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final class MediaRoute2ProviderService.MediaStreamsFormats.Builder {
+    ctor public MediaRoute2ProviderService.MediaStreamsFormats.Builder();
+    method @NonNull public android.media.MediaRoute2ProviderService.MediaStreamsFormats build();
+    method @NonNull public android.media.MediaRoute2ProviderService.MediaStreamsFormats.Builder setAudioFormat(@NonNull android.media.AudioFormat);
+  }
+
+  @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final class MediaRoute2ProviderService.SystemRoutingSessionParams {
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @NonNull public android.os.Bundle getExtras();
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @NonNull public String getPackageName();
+  }
+
+  public static final class MediaRoute2ProviderService.SystemRoutingSessionParams.Builder {
+    ctor public MediaRoute2ProviderService.SystemRoutingSessionParams.Builder();
+    method @NonNull public android.media.MediaRoute2ProviderService.SystemRoutingSessionParams build();
+    method @NonNull public android.media.MediaRoute2ProviderService.SystemRoutingSessionParams.Builder setExtras(@NonNull android.os.Bundle);
+    method @NonNull public android.media.MediaRoute2ProviderService.SystemRoutingSessionParams.Builder setPackageName(@NonNull String);
   }
 
   public class MediaRouter {
