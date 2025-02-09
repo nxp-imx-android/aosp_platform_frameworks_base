@@ -4821,10 +4821,14 @@ public class SubscriptionManager {
                     + "Invalid subscriptionId: " + subscriptionId);
         }
 
+        String contextPkg = mContext != null ? mContext.getOpPackageName() : "<unknown>";
+        String contextAttributionTag = mContext != null ? mContext.getAttributionTag() : null;
+
         try {
             ISub iSub = TelephonyManager.getSubscriptionService();
             if (iSub != null) {
-                return iSub.isSubscriptionAssociatedWithCallingUser(subscriptionId);
+                return iSub.isSubscriptionAssociatedWithCallingUser(subscriptionId, contextPkg,
+                        contextAttributionTag);
             } else {
                 throw new IllegalStateException("subscription service unavailable.");
             }
