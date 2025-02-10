@@ -25,6 +25,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Trace;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.Display;
 
 import com.android.internal.util.FrameworkStatsLog;
@@ -37,7 +38,7 @@ class VotesStatsReporter {
     private static final int REFRESH_RATE_NOT_LIMITED = 1000;
     private final boolean mIgnoredRenderRate;
 
-    private int mLastMinPriorityReported = Vote.MAX_PRIORITY + 1;
+    private final SparseIntArray mLastMinPriorityByDisplay = new SparseIntArray();
 
     VotesStatsReporter(boolean ignoreRenderRate) {
         mIgnoredRenderRate = ignoreRenderRate;
@@ -71,9 +72,11 @@ class VotesStatsReporter {
 
     void reportVotesActivated(int displayId, int minPriority, @Nullable Display.Mode baseMode,
             SparseArray<Vote> votes) {
+        int lastMinPriorityReported = mLastMinPriorityByDisplay.get(
+                displayId, Vote.MAX_PRIORITY + 1);
         int selectedRefreshRate = baseMode != null ? (int) baseMode.getRefreshRate() : -1;
         for (int priority = Vote.MIN_PRIORITY; priority <= Vote.MAX_PRIORITY; priority++) {
-            if (priority < mLastMinPriorityReported && priority < minPriority) {
+            if (priority < lastMinPriorityReported && priority < minPriority) {
                 continue;
             }
             Vote vote = votes.get(priority);
@@ -82,7 +85,7 @@ class VotesStatsReporter {
             }
 
             // Was previously reported ACTIVE, changed to ADDED
-            if (priority >= mLastMinPriorityReported && priority < minPriority) {
+            if (priority >= lastMinPriorityReported && priority < minPriority) {
                 int maxRefreshRate = getMaxRefreshRate(vote, mIgnoredRenderRate);
                 FrameworkStatsLog.write(
                         DISPLAY_MODE_DIRECTOR_VOTE_CHANGED, displayId, priority,
@@ -90,7 +93,7 @@ class VotesStatsReporter {
                         maxRefreshRate, selectedRefreshRate);
             }
             // Was previously reported ADDED, changed to ACTIVE
-            if (priority >= minPriority && priority < mLastMinPriorityReported) {
+            if (priority >= minPriority && priority < lastMinPriorityReported) {
                 int maxRefreshRate = getMaxRefreshRate(vote, mIgnoredRenderRate);
                 FrameworkStatsLog.write(
                         DISPLAY_MODE_DIRECTOR_VOTE_CHANGED, displayId, priority,
@@ -98,7 +101,7 @@ class VotesStatsReporter {
                         maxRefreshRate, selectedRefreshRate);
             }
 
-            mLastMinPriorityReported = minPriority;
+            mLastMinPriorityByDisplay.put(displayId, minPriority);
         }
     }
 
