@@ -15618,9 +15618,13 @@ public class TelephonyManager {
      * SIM card(s), Android database, modem, network or defaults; {@code false} otherwise.
      * @throws IllegalStateException if the Telephony process is not currently available.
      * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING}.
+     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING} or
+     *          {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
      */
-    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+    @RequiresFeature(anyOf = {
+        PackageManager.FEATURE_TELEPHONY_CALLING,
+        PackageManager.FEATURE_TELEPHONY_MESSAGING
+    })
     public boolean isEmergencyNumber(@NonNull String number) {
         try {
             ITelephony telephony = getITelephony();
