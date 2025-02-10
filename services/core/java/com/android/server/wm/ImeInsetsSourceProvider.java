@@ -321,7 +321,6 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                 reportImeDrawnForOrganizerIfNeeded((InsetsControlTarget) caller);
             }
         }
-        changed |= mDisplayContent.onImeInsetsClientVisibilityUpdate();
         if (Flags.refactorInsetsController()) {
             if (changed) {
                 ImeTracker.forLogging().onProgress(statsToken,

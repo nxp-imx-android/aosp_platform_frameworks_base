@@ -1282,7 +1282,6 @@ public class WindowStateTests extends WindowTestsBase {
         // Simulate app plays closing transition to app2.
         app.mActivityRecord.commitVisibility(false, false);
         assertTrue(app.mActivityRecord.mLastImeShown);
-        assertTrue(app.mActivityRecord.mImeInsetsFrozenUntilStartInput);
 
         // Verify the IME insets is visible on app, but not for app2 during app task switching.
         assertTrue(app.getInsetsState().isSourceOrDefaultVisible(ID_IME, ime()));
@@ -1305,7 +1304,7 @@ public class WindowStateTests extends WindowTestsBase {
 
         // Simulate app2 in multi-window mode is going to background to switch to the fullscreen
         // app which requests IME with updating all windows Insets State when IME is above app.
-        app2.mActivityRecord.mImeInsetsFrozenUntilStartInput = true;
+        app2.mActivityRecord.setVisibleRequested(false);
         mDisplayContent.setImeLayeringTarget(app);
         mDisplayContent.setImeInputTarget(app);
         app.setRequestedVisibleTypes(ime(), ime());
@@ -1324,7 +1323,6 @@ public class WindowStateTests extends WindowTestsBase {
         mDisplayContent.setImeLayeringTarget(app2);
         app.mActivityRecord.commitVisibility(false, false);
         assertTrue(app.mActivityRecord.mLastImeShown);
-        assertTrue(app.mActivityRecord.mImeInsetsFrozenUntilStartInput);
 
         // Verify the IME insets is still visible on app, but not for app2 during task switching.
         assertTrue(app.getInsetsState().isSourceOrDefaultVisible(ID_IME, ime()));
