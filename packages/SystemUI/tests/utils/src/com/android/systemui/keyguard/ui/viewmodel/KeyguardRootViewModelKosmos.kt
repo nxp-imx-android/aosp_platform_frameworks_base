@@ -17,6 +17,7 @@ package com.android.systemui.keyguard.ui.viewmodel
 
 import com.android.systemui.communal.domain.interactor.communalInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
+import com.android.systemui.dump.dumpManager
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.pulseExpansionInteractor
@@ -90,5 +91,6 @@ val Kosmos.keyguardRootViewModel by Fixture {
         aodBurnInViewModel = aodBurnInViewModel,
         shadeInteractor = shadeInteractor,
         wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor,
+        dumpManager = dumpManager,
     )
 }
