@@ -30,11 +30,13 @@ import android.util.Log;
 import androidx.annotation.ChecksSdkIntAtLeast;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.settingslib.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -385,7 +387,7 @@ public class CsipDeviceManager {
                 preferredMainDevice.refresh();
                 hasChanged = true;
             }
-            syncAudioSharingSourceIfNeeded(preferredMainDevice);
+            syncAudioSharingStatusIfNeeded(preferredMainDevice);
         }
         if (hasChanged) {
             log("addMemberDevicesIntoMainDevice: After changed, CachedBluetoothDevice list: "
@@ -399,13 +401,16 @@ public class CsipDeviceManager {
         return userManager != null && userManager.isManagedProfile();
     }
 
-    private void syncAudioSharingSourceIfNeeded(CachedBluetoothDevice mainDevice) {
+    private void syncAudioSharingStatusIfNeeded(CachedBluetoothDevice mainDevice) {
         boolean isAudioSharingEnabled = BluetoothUtils.isAudioSharingUIAvailable(mContext);
-        if (isAudioSharingEnabled) {
+        if (isAudioSharingEnabled && mainDevice != null) {
             if (isWorkProfile()) {
-                log("addMemberDevicesIntoMainDevice: skip sync source for work profile");
+                log("addMemberDevicesIntoMainDevice: skip sync audio sharing status, work profile");
                 return;
             }
+            Set<CachedBluetoothDevice> deviceSet = new HashSet<>();
+            deviceSet.add(mainDevice);
+            deviceSet.addAll(mainDevice.getMemberDevice());
             boolean hasBroadcastSource = BluetoothUtils.isBroadcasting(mBtManager)
                     && BluetoothUtils.hasConnectedBroadcastSource(
                     mainDevice, mBtManager);
@@ -419,9 +424,6 @@ public class CsipDeviceManager {
                 if (metadata != null && assistant != null) {
                     log("addMemberDevicesIntoMainDevice: sync audio sharing source after "
                             + "combining the top level devices.");
-                    Set<CachedBluetoothDevice> deviceSet = new HashSet<>();
-                    deviceSet.add(mainDevice);
-                    deviceSet.addAll(mainDevice.getMemberDevice());
                     Set<BluetoothDevice> sinksToSync = deviceSet.stream()
                             .map(CachedBluetoothDevice::getDevice)
                             .filter(device ->
@@ -435,8 +437,24 @@ public class CsipDeviceManager {
                     }
                 }
             }
+            if (Flags.enableTemporaryBondDevicesUi()) {
+                log("addMemberDevicesIntoMainDevice: sync temp bond metadata for audio sharing "
+                        + "sinks after combining the top level devices.");
+                Set<BluetoothDevice> sinksToSync = deviceSet.stream()
+                        .map(CachedBluetoothDevice::getDevice).filter(Objects::nonNull).collect(
+                                Collectors.toSet());
+                if (sinksToSync.stream().anyMatch(BluetoothUtils::isTemporaryBondDevice)) {
+                    for (BluetoothDevice device : sinksToSync) {
+                        if (!BluetoothUtils.isTemporaryBondDevice(device)) {
+                            log("addMemberDevicesIntoMainDevice: sync temp bond metadata for "
+                                    + device.getAnonymizedAddress());
+                            BluetoothUtils.setTemporaryBondMetadata(device);
+                        }
+                    }
+                }
+            }
         } else {
-            log("addMemberDevicesIntoMainDevice: skip sync source, flag disabled");
+            log("addMemberDevicesIntoMainDevice: skip sync audio sharing status, flag disabled");
         }
     }
 
