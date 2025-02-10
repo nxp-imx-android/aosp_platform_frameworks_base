@@ -250,10 +250,8 @@
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Az akkumulátor töltöttségi szintje ismeretlen."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Csatlakoztatva a következőhöz: <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Csatlakozva a következőhöz: <xliff:g id="CAST">%s</xliff:g>."</string>
-    <!-- no translation found for accessibility_expand_group (521237935987978624) -->
-    <skip />
-    <!-- no translation found for accessibility_open_application (1749126077501259712) -->
-    <skip />
+    <string name="accessibility_expand_group" msgid="521237935987978624">"Csoport kibontása."</string>
+    <string name="accessibility_open_application" msgid="1749126077501259712">"Alkalmazás megnyitása."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Nincs csatlakozva."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>
     <string name="cell_data_off" msgid="4886198950247099526">"Ki"</string>
@@ -298,7 +296,7 @@
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"A képernyő zárolva van fekvő tájolásban."</string>
     <string name="accessibility_rotation_lock_on_portrait" msgid="2356633398683813837">"A képernyő zárolva van álló tájolásban."</string>
     <string name="dessert_case" msgid="9104973640704357717">"Dessert Case"</string>
-    <string name="start_dreams" msgid="9131802557946276718">"Képernyővédő"</string>
+    <string name="start_dreams" msgid="9131802557946276718">"Képernyőkímélő"</string>
     <string name="ethernet_label" msgid="2203544727007463351">"Ethernet"</string>
     <string name="quick_settings_dnd_label" msgid="7728690179108024338">"Ne zavarjanak"</string>
     <string name="quick_settings_modes_label" msgid="879156359479504244">"Módok"</string>
@@ -543,8 +541,7 @@
     <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"A Hub mód felfedezése"</string>
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Töltés közben hozzáférhet kedvenc moduljaihoz és képernyőkímélőihez."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Kezdés"</string>
-    <!-- no translation found for glanceable_hub_to_dream_button_tooltip (9018287673822335829) -->
-    <skip />
+    <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Kedvenc képernyőkímélők megjelenítése töltés közben"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Felhasználóváltás"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"lehúzható menü"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"A munkamenetben található összes alkalmazás és adat törlődni fog."</string>
@@ -807,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"A beszélgetésekre vonatkozó értesítések tetején, lebegő buborékként látható, megjeleníti a profilképet a lezárási képernyőn, és megszakítja a Ne zavarjanak funkciót"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Prioritás"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"A(z) <xliff:g id="APP_NAME">%1$s</xliff:g> nem támogatja a beszélgetési funkciókat"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Visszajelzés"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Elvetés"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Ne jelenjen meg újra"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Ezeket az értesítéseket nem lehet módosítani."</string>
@@ -1308,8 +1304,7 @@
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Ujjlenyomat használata a megnyitáshoz"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Hitelesítés szükséges. Érintse meg az ujjlenyomat-érzékelőt a hitelesítéshez."</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Hívás folyamatban"</string>
-    <!-- no translation found for ongoing_notification_extra_content_description (2098752668861351265) -->
-    <skip />
+    <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Folyamatban van"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobiladat"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Csatlakozva"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Ideiglenesen csatlakoztatva"</string>
@@ -1399,6 +1394,8 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Összehajtható eszköz kihajtása"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Összehajtható eszköz körbeforgatása"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Előlapi képernyő bekapcsolva"</string>
+    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
+    <skip />
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"összehajtva"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"kihajtva"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>

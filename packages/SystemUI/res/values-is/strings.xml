@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Birtist efst í samtalstilkynningum og sem prófílmynd á lásskjánum. Birtist sem blaðra sem truflar „Ónáðið ekki“"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Forgangur"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> styður ekki samtalseiginleika"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Ábendingar"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Loka"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Ekki sýna aftur"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Ekki er hægt að breyta þessum tilkynningum."</string>
@@ -1395,6 +1394,8 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Samanbrjótanlegt tæki opnað"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Samanbrjótanlegu tæki snúið við"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Kveikt á fremri skjá"</string>
+    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
+    <skip />
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"samanbrotið"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"opið"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>

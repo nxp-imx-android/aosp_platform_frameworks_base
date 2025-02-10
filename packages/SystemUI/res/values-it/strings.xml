@@ -408,8 +408,8 @@
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"Impostazioni di traccia personalizzate"</string>
     <string name="restore_default" msgid="5259420807486239755">"Ripristina predefinite"</string>
     <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"Modalità a una mano"</string>
-    <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"Apparecchi acustici"</string>
-    <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"Attivi"</string>
+    <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"Protesi uditive"</string>
+    <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"Attive"</string>
     <string name="quick_settings_hearing_devices_disconnected" msgid="8907061223998176187">"Disconnessi"</string>
     <string name="quick_settings_hearing_devices_dialog_title" msgid="9004774017688484981">"Protesi uditive"</string>
     <string name="quick_settings_pair_hearing_devices" msgid="5987105102207447322">"Accoppia nuovo dispositivo"</string>
@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Appare in cima alle notifiche delle conversazioni, come immagine del profilo nella schermata di blocco e sotto forma di bolla, inoltre interrompe la modalità Non disturbare"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Priorità"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> non supporta le funzionalità delle conversazioni"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Feedback"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Ignora"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Non mostrare più"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Impossibile modificare queste notifiche."</string>
@@ -1395,6 +1394,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Dispositivo pieghevole che viene aperto"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Dispositivo pieghevole che viene capovolto"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Schermo frontale attivato"</string>
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Scorri per usare lo schermo interno"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"Piegato"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"Non piegato"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>

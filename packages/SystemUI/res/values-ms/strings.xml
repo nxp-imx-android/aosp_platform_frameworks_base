@@ -570,7 +570,7 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"Apabila anda berkongsi seluruh skrin anda, apa-apa sahaja kandungan pada skrin anda boleh dilihat oleh <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Oleh hal yang demikian, berhati-hati dengan perkara seperti kata laluan, butiran pembayaran, mesej, foto dan audio serta video."</string>
-    <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Apabila anda berkongsi apl, apa-apa sahaja kandungan yang dipaparkan atau dimainkan pada apl boleh dilihat oleh <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Oleh hal yang demikian, berhati-hati dengan perkara seperti kata laluan, butiran pembayaran, mesej, foto dan audio serta video."</string>
+    <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Apabila anda berkongsi apl, apa-apa sahaja kandungan yang dipaparkan atau dimainkan dalam apl tersebut boleh dilihat oleh <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Oleh hal yang demikian, berhati-hati dengan perkara seperti kata laluan, butiran pembayaran, mesej, foto dan audio serta video."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Kongsi skrin"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> telah melumpuhkan pilihan ini"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Pilih apl untuk dikongsi"</string>
@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Ditunjukkan di bahagian atas pemberitahuan perbualan dan sebagai gambar profil pada skrin kunci, muncul sebagai gelembung, mengganggu Jangan Ganggu"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Keutamaan"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> tidak menyokong ciri perbualan"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Maklum balas"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Ketepikan"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Jangan tunjukkan lagi"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Pemberitahuan ini tidak boleh diubah suai."</string>
@@ -1395,6 +1394,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Peranti boleh lipat dibuka"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Peranti boleh lipat diterbalikkan"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Skrin hadapan dihidupkan"</string>
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Luncurkan bar untuk menggunakan skrin dalaman"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"terlipat"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"tidak terlipat"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>

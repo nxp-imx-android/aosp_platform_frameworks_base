@@ -250,10 +250,8 @@
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"نسبة شحن البطارية غير معروفة."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"متصل بـ <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"تم الاتصال بـ <xliff:g id="CAST">%s</xliff:g>."</string>
-    <!-- no translation found for accessibility_expand_group (521237935987978624) -->
-    <skip />
-    <!-- no translation found for accessibility_open_application (1749126077501259712) -->
-    <skip />
+    <string name="accessibility_expand_group" msgid="521237935987978624">"سيتم توسيع المجموعة."</string>
+    <string name="accessibility_open_application" msgid="1749126077501259712">"سيتم فتح التطبيق."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"غير متصل."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"التجوال"</string>
     <string name="cell_data_off" msgid="4886198950247099526">"غير مفعّلة"</string>
@@ -543,8 +541,7 @@
     <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"التعرُّف على \"وضع الإرساء\""</string>
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"يمكنك الاطّلاع على التطبيقات المصغّرة وشاشات الاستراحة المفضَّلة لديك أثناء شحن الجهاز."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"لنبدأ"</string>
-    <!-- no translation found for glanceable_hub_to_dream_button_tooltip (9018287673822335829) -->
-    <skip />
+    <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"سيتم عرض شاشات الاستراحة المفضَّلة أثناء شحن الجهاز"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"تبديل المستخدم"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"القائمة المنسدلة"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"سيتم حذف كل التطبيقات والبيانات في هذه الجلسة."</string>
@@ -807,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"تظهر في أعلى إشعارات المحادثات وكصورة ملف شخصي على شاشة القفل وتظهر على شكل فقاعة لمقاطعة ميزة \"عدم الإزعاج\"."</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"الأولوية"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"لا يدعم تطبيق <xliff:g id="APP_NAME">%1$s</xliff:g> ميزات المحادثات."</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"الملاحظات"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"إغلاق"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"عدم الإظهار مرة أخرى"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"يتعذّر تعديل هذه الإشعارات."</string>
@@ -1308,8 +1304,7 @@
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"يمكنك استخدام بصمة الإصبع للفتح"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"المصادقة مطلوبة. المس مستشعر بصمات الإصبع للمصادقة."</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"مكالمة جارية"</string>
-    <!-- no translation found for ongoing_notification_extra_content_description (2098752668861351265) -->
-    <skip />
+    <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"مستمر"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"بيانات الجوّال"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"متصلة بالإنترنت"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"متصلة مؤقتًا"</string>
@@ -1399,6 +1394,8 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"جهاز قابل للطي يجري فتحه"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"جهاز قابل للطي يجري قلبه"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"تم تفعيل الشاشة الأمامية"</string>
+    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
+    <skip />
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"مطوي"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"غير مطوي"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"‫%1$s / %2$s"</string>

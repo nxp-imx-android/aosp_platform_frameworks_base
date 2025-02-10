@@ -109,14 +109,14 @@
     <string name="screenrecord_title" msgid="4257171601439507792">"Snimač ekrana"</string>
     <string name="screenrecord_background_processing_label" msgid="7244617554884238898">"Obrađujemo video snimka ekrana"</string>
     <string name="screenrecord_channel_description" msgid="4147077128486138351">"Obaveštenje o sesiji snimanja ekrana je aktivno"</string>
-    <string name="screenrecord_permission_dialog_title" msgid="7415261783188749730">"Želite da snimite ekran?"</string>
-    <string name="screenrecord_permission_dialog_option_text_single_app" msgid="1996450687814647583">"Snimi jednu aplikaciju"</string>
+    <string name="screenrecord_permission_dialog_title" msgid="7415261783188749730">"Želite da snimate ekran?"</string>
+    <string name="screenrecord_permission_dialog_option_text_single_app" msgid="1996450687814647583">"Snimaj jednu aplikaciju"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen" msgid="4882406311415082016">"Snimi ovaj ekran"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen_for_display" msgid="4169494703993148253">"Snimi %s"</string>
     <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"Kada snimate ceo ekran, snima se sve što je na njemu. Zato pazite na lozinke, informacije o plaćanju, poruke, slike, audio i video sadržaj."</string>
     <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"Kada snimate aplikaciju, snima se sav sadržaj koji se prikazuje ili pušta u njoj. Zato pazite na lozinke, informacije o plaćanju, poruke, slike, audio i video sadržaj."</string>
     <string name="screenrecord_permission_dialog_continue_entire_screen" msgid="5557974446773486600">"Snimi ekran"</string>
-    <string name="screenrecord_app_selector_title" msgid="3854492366333954736">"Odaberite aplikaciju koju želite da snimite"</string>
+    <string name="screenrecord_app_selector_title" msgid="3854492366333954736">"Odaberite aplikaciju za snimanje"</string>
     <string name="screenrecord_audio_label" msgid="6183558856175159629">"Snimaj zvuk"</string>
     <string name="screenrecord_device_audio_label" msgid="9016927171280567791">"Zvuk uređaja"</string>
     <string name="screenrecord_device_audio_description" msgid="4922694220572186193">"Zvuk sa uređaja, na primer, muzika, pozivi i melodije zvona"</string>
@@ -573,7 +573,7 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Kada delite aplikaciju, <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> vidi sav sadržaj koji se prikazuje ili pušta u njoj. Zato pazite na lozinke, informacije o plaćanju, poruke, slike, audio i video sadržaj."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Deli ekran"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je onemogućila ovu opciju"</string>
-    <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Odaberite aplikaciju koju želite da delite"</string>
+    <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Odaberite aplikaciju za deljenje"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Želite da prebacite ekran?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Prebaci jednu aplikaciju"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Prebaci ceo ekran"</string>
@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Prikazuje se u vrhu obaveštenja o konverzacijama i kao slika profila na zaključanom ekranu, pojavljuje se kao oblačić, prekida režim Ne uznemiravaj"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Prioritetno"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ne podržava funkcije konverzacije"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Povratne informacije"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Odbaci"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Ne prikazuj ponovo"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Ova obaveštenja ne mogu da se menjaju."</string>
@@ -1395,6 +1394,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Uređaj na preklop se otvara"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Uređaj na preklop se obrće"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Prednji ekran je uključen"</string>
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Prevucite da biste koristili unutrašnji ekran"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"zatvoreno"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"otvoreno"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s/%2$s"</string>

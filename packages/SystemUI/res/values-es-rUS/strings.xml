@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Aparece en forma de burbuja y como foto de perfil en la parte superior de las notificaciones de conversación, en la pantalla de bloqueo, y detiene el modo No interrumpir"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Prioritaria"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> no admite funciones de conversación"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Comentarios"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Descartar"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"No volver a mostrar"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"No se pueden modificar estas notificaciones."</string>
@@ -963,8 +962,8 @@
     <string name="right_keycode" msgid="2480715509844798438">"Clave de código derecho"</string>
     <string name="left_icon" msgid="5036278531966897006">"Ícono izquierdo"</string>
     <string name="right_icon" msgid="1103955040645237425">"Ícono derecho"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"Mantén presionada la tarjeta y arrástrala para agregarla"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Mantén presionada la tarjeta y arrástrala para reorganizarla"</string>
+    <string name="drag_to_add_tiles" msgid="8933270127508303672">"Mantén presionada una tarjeta y arrástrala para agregarla"</string>
+    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Mantén presionada una tarjeta y arrástrala para reubicarla"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Arrastra aquí para quitar"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Necesitas al menos <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> tarjetas"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Editar"</string>
@@ -1395,6 +1394,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Dispositivo plegable siendo desplegado"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Dispositivo plegable siendo girado"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Pantalla frontal activada"</string>
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Desliza para usar la pantalla interior"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"plegado"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"desplegado"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s/%2$s"</string>

@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"বাৰ্তালাপৰ জাননীৰ শীৰ্ষত আৰু প্ৰ’ফাইল চিত্ৰ হিচাপে লক স্ক্ৰীনত দেখুৱায়, এটা বাবল হিচাপে দেখা পোৱা যায়, অসুবিধা নিদিব ম’ডত ব্যাঘাত জন্মায়"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"অগ্ৰাধিকাৰ"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g>এ বাৰ্তালাপৰ সুবিধাসমূহ সমৰ্থন নকৰে"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"মতামত"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"অগ্ৰাহ্য কৰক"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"পুনৰাই নেদেখুৱাব"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"এই জাননীসমূহ সংশোধন কৰিব নোৱাৰি।"</string>
@@ -1395,6 +1394,8 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"জপাব পৰা ডিভাইচৰ জাপ খুলি থকা হৈছে"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"জপাব পৰা ডিভাইচৰ ওলোটাই থকা হৈছে"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"সন্মুখৰ স্ক্ৰীনখন অন কৰা হৈছে"</string>
+    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
+    <skip />
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"ফ’ল্ড কৰা"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"আনফ’ল্ড কৰা"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>

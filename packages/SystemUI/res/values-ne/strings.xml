@@ -169,7 +169,7 @@
     <string name="immersive_cling_description" msgid="2717426731830851921">"यहाँबाट बाहिरिन स्क्रिनको सिरानबाट तलतिर स्वाइप गर्नुहोस्"</string>
     <string name="immersive_cling_positive" msgid="3076681691468978568">"बुझेँ"</string>
     <string name="accessibility_back" msgid="6530104400086152611">"पछाडि"</string>
-    <string name="accessibility_home" msgid="5430449841237966217">"गृह"</string>
+    <string name="accessibility_home" msgid="5430449841237966217">"होम"</string>
     <string name="accessibility_menu" msgid="2701163794470513040">"मेनु"</string>
     <string name="accessibility_accessibility_button" msgid="4089042473497107709">"पहुँच"</string>
     <string name="accessibility_rotate_button" msgid="1238584767612362586">"स्क्रिन घुमाउनुहोस्"</string>
@@ -250,10 +250,8 @@
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ब्याट्रीमा कति प्रतिशत चार्ज छ भन्ने कुराको जानाकरी छैन।"</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> मा जडित।"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> मा कनेक्ट गरियो।"</string>
-    <!-- no translation found for accessibility_expand_group (521237935987978624) -->
-    <skip />
-    <!-- no translation found for accessibility_open_application (1749126077501259712) -->
-    <skip />
+    <string name="accessibility_expand_group" msgid="521237935987978624">"समूह एक्स्पान्ड गर्नुहोस्।"</string>
+    <string name="accessibility_open_application" msgid="1749126077501259712">"एप खोल्नुहोस्।"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"जडान नगरिएको।"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"रोमिङ"</string>
     <string name="cell_data_off" msgid="4886198950247099526">"निष्क्रिय पार्नु"</string>
@@ -352,7 +350,7 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"बेनाम उपकरण"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"कुनै उपकरणहरू उपलब्ध छैन"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Wi-Fi वा इन्टरनेट कनेक्सन छैन"</string>
-    <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"उज्यालपन"</string>
+    <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"ब्राइटनेस"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"कलर इन्भर्सन"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"कलर करेक्सन"</string>
     <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"फन्टको आकार"</string>
@@ -543,8 +541,7 @@
     <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"हब मोडको अन्वेषण गर्नुहोस्"</string>
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"चार्ज गर्दै गर्दा आफूलाई मन पर्ने विजेट तथा स्क्रिन सेभर एक्सेस गर्नुहोस्।"</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"सुरु गरौँ"</string>
-    <!-- no translation found for glanceable_hub_to_dream_button_tooltip (9018287673822335829) -->
-    <skip />
+    <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"चार्ज भइरहेका बेला आफूलाई मन पर्ने स्क्रिनसेभरहरू देखाउनुहोस्"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"प्रयोगकर्ता फेर्नुहोस्"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"पुलडाउन मेनु"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"यो सत्रमा भएका सबै एपहरू र डेटा मेटाइने छ।"</string>
@@ -565,7 +562,7 @@
     <string name="media_projection_sys_service_dialog_title" msgid="3751133258891897878">"रेकर्ड वा कास्ट गर्न थाल्ने हो?"</string>
     <string name="media_projection_sys_service_dialog_warning" msgid="2443872865267330320">"यो फङ्सन प्रदान गर्ने सेवाले रेकर्ड वा कास्ट गर्दै गर्दा तपाईंको स्क्रिनमा देखिने सबै जानकारी अथवा तपाईंको डिभाइसबाट प्ले गरिने सबै सामग्री हेर्न तथा प्रयोग गर्न सक्छ। यसअन्तर्गत पासवर्ड, भुक्तानीसम्बन्धी विवरण, फोटो, म्यासेज र तपाईंले प्ले गर्ने अडियो जस्ता कुराहरू समावेश हुन्छन्।"</string>
     <string name="screen_share_generic_app_selector_title" msgid="8331515850599218288">"कुनै एप सेयर वा रेकर्ड गर्नुहोस्"</string>
-    <string name="media_projection_entry_app_permission_dialog_title" msgid="4613857256721708062">"स्क्रिन <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> सँग सेयर गर्ने हो?"</string>
+    <string name="media_projection_entry_app_permission_dialog_title" msgid="4613857256721708062">"आफ्नो स्क्रिन <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> मा सेयर गर्ने हो?"</string>
     <string name="screen_share_permission_dialog_option_single_app" msgid="2974054871681567314">"एउटा एप सेयर गर्नुहोस्"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
@@ -695,7 +692,7 @@
     <string name="stream_ring" msgid="7550670036738697526">"घन्टी"</string>
     <string name="stream_music" msgid="2188224742361847580">"मिडिया"</string>
     <string name="stream_alarm" msgid="16058075093011694">"अलार्म"</string>
-    <string name="stream_notification" msgid="7930294049046243939">"सूचना"</string>
+    <string name="stream_notification" msgid="7930294049046243939">"नोटिफिकेसन"</string>
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"ब्लुटुथ"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"दोहोरो बहु टोनको फ्रिक्वेन्सी"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"पहुँच"</string>
@@ -807,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"यो वार्तालापका सूचनाहरूको सिरानमा, बबलका रूपमा र लक स्क्रिनमा प्रोफाइल फोटोका रूपमा देखिन्छ। साथै, यसले गर्दा \'बाधा नपुऱ्याउनुहोस्\' नामक सुविधामा अवरोध आउँछ"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"प्राथमिकता"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> मा वार्तालापसम्बन्धी सुविधा प्रयोग गर्न मिल्दैन"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"प्रतिक्रिया"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"हटाउनुहोस्"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"फेरि नदेखाउनुहोस्"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"यी सूचनाहरू परिमार्जन गर्न मिल्दैन।"</string>
@@ -862,7 +858,7 @@
     <string name="keyboard_key_numpad_template" msgid="7316338238459991821">"नमप्याड <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="notif_inline_reply_remove_attachment_description" msgid="7954075334095405429">"एट्याचमेन्ट हटाउनुहोस्"</string>
     <string name="keyboard_shortcut_group_system" msgid="1583416273777875970">"प्रणाली"</string>
-    <string name="keyboard_shortcut_group_system_home" msgid="7465138628692109907">"गृह"</string>
+    <string name="keyboard_shortcut_group_system_home" msgid="7465138628692109907">"होम"</string>
     <string name="keyboard_shortcut_group_system_recents" msgid="8628108256824616927">"हालैका"</string>
     <string name="keyboard_shortcut_group_system_back" msgid="1055709713218453863">"पछाडि"</string>
     <string name="keyboard_shortcut_group_system_notifications" msgid="3615971650562485878">"नोटिफिकेसनहरू"</string>
@@ -1308,8 +1304,7 @@
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"फिंगरप्रिन्ट प्रयोग गरी खोल्नुहोस्"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"पुष्टि गर्नु पर्ने हुन्छ। पुष्टि गर्न फिंगरप्रिन्ट सेन्सर छुनुहोस्।"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"कल भइरहेको"</string>
-    <!-- no translation found for ongoing_notification_extra_content_description (2098752668861351265) -->
-    <skip />
+    <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"जारी"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"मोबाइल डेटा"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"इन्टरनेटमा कनेक्ट गरिएको छ"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"यसमा केही समयका लागि कनेक्ट गरिएको हो"</string>
@@ -1399,6 +1394,8 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"फोल्डेबल डिभाइस अनफोल्ड गरेको देखाइएको एनिमेसन"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"फोल्डेबल डिभाइस यताउता पल्टाएर देखाइएको एनिमेसन"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"अगाडिको स्क्रिन अन गरिएको छ"</string>
+    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
+    <skip />
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"फोल्ड गरिएको"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"अनफोल्ड गरिएको"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>

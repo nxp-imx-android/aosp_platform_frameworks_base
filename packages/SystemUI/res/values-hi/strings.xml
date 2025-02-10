@@ -142,7 +142,7 @@
     <string name="share_to_app_stop_dialog_title_generic" msgid="9079161538135843648">"क्या आपको शेयर करने की प्रोसेस बंद करनी है?"</string>
     <string name="share_to_app_stop_dialog_message_entire_screen_with_host_app" msgid="522823522115375414">"फ़िलहाल, <xliff:g id="HOST_APP_NAME">%1$s</xliff:g> पर पूरी स्क्रीन शेयर की जा रही है"</string>
     <string name="share_to_app_stop_dialog_message_entire_screen" msgid="5090115386271179270">"फ़िलहाल, किसी ऐप्लिकेशन पर पूरी स्क्रीन शेयर की जा रही है"</string>
-    <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"फ़िलहाल, <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> शेयर किया जा रहा है"</string>
+    <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"फ़िलहाल, <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> की स्क्रीन शेयर की जा रही है"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"फ़िलहाल, कोई ऐप्लिकेशन शेयर किया जा रहा है"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"फ़िलहाल, ऐप्लिकेशन के साथ कुछ शेयर किया जा रहा है"</string>
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"शेयर करना बंद करें"</string>
@@ -250,10 +250,8 @@
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"इस बारे में जानकारी नहीं है कि अभी बैटरी कितने प्रतिशत चार्ज है."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> से कनेक्ट किया गया."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> से कनेक्ट है."</string>
-    <!-- no translation found for accessibility_expand_group (521237935987978624) -->
-    <skip />
-    <!-- no translation found for accessibility_open_application (1749126077501259712) -->
-    <skip />
+    <string name="accessibility_expand_group" msgid="521237935987978624">"ग्रुप को बड़ा करें."</string>
+    <string name="accessibility_open_application" msgid="1749126077501259712">"ऐप्लिकेशन खोलें."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"कनेक्ट नहीं है."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"रोमिंग"</string>
     <string name="cell_data_off" msgid="4886198950247099526">"बंद है"</string>
@@ -543,8 +541,7 @@
     <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"हब मोड को एक्सप्लोर करें"</string>
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"चार्जिंग के दौरान, अपने पसंदीदा विजेट और स्क्रीन सेवर को ऐक्सेस करें."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"आइए शुरू करें"</string>
-    <!-- no translation found for glanceable_hub_to_dream_button_tooltip (9018287673822335829) -->
-    <skip />
+    <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"चार्ज करते समय अपने पसंदीदा स्क्रीन सेवर दिखाएं"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"उपयोगकर्ता बदलें"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"पुलडाउन मेन्यू"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"इस सेशन के सभी ऐप्लिकेशन और डेटा को हटा दिया जाएगा."</string>
@@ -807,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"यह कई तरीकों से दिखती है, जैसे कि बातचीत वाली सूचनाओं में सबसे ऊपर, बबल के तौर पर, और लॉक स्क्रीन पर प्रोफ़ाइल फ़ोटो के तौर पर. साथ ही, यह \'परेशान न करें\' मोड को बायपास कर सकती है"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"प्राथमिकता"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> पर बातचीत की सुविधाएं काम नहीं करतीं"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"सुझाव/राय दें या शिकायत करें"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"खारिज करें"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"फिर से न दिखाएं"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ये सूचनाएं नहीं बदली जा सकती हैं."</string>
@@ -1308,8 +1304,7 @@
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"खोलने के लिए, फ़िंगरप्रिंट का इस्तेमाल करें"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"पुष्टि करना ज़रूरी है. पुष्टि करने के लिए, फ़िंगरप्रिंट सेंसर को छुएं."</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"पहले से जारी कॉल"</string>
-    <!-- no translation found for ongoing_notification_extra_content_description (2098752668861351265) -->
-    <skip />
+    <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"जारी है"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"मोबाइल डेटा"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"कनेक्ट हो गया"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"इंटरनेट कनेक्शन कुछ समय के लिए है"</string>
@@ -1399,6 +1394,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"फ़ोल्ड किया जा सकने वाला डिवाइस अनफ़ोल्ड किया जा रहा है"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"फ़ोल्ड किया जा सकने वाला डिवाइस पलटा जा रहा है"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"फ़्रंट स्क्रीन चालू है"</string>
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"इनर स्क्रीन का इस्तेमाल करने के लिए स्लाइड करें"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"डिवाइस फ़ोल्ड किया गया"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"डिवाइस अनफ़ोल्ड किया गया"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>
@@ -1457,7 +1453,7 @@
     <string name="shortcut_helper_category_current_app_shortcuts" msgid="4017840565974573628">"मौजूदा ऐप्लिकेशन"</string>
     <string name="shortcut_helper_category_a11y" msgid="6314444792641773464">"सुलभता"</string>
     <string name="shortcut_helper_title" msgid="8567500639300970049">"कीबोर्ड शॉर्टकट"</string>
-    <string name="shortcut_helper_customize_mode_title" msgid="8327297960035006036">"शॉर्टकट पसंद के मुताबिक बनाएं"</string>
+    <string name="shortcut_helper_customize_mode_title" msgid="8327297960035006036">"पसंद के मुताबिक शॉर्टकट बनाएं"</string>
     <string name="shortcut_customize_mode_remove_shortcut_dialog_title" msgid="7106420484940737208">"क्या आपको शॉर्टकट हटाना है?"</string>
     <string name="shortcut_customize_mode_reset_shortcut_dialog_title" msgid="8131184731313717780">"क्या आपको फिर से डिफ़ॉल्ट शॉर्टकट चालू करने हैं?"</string>
     <string name="shortcut_customize_mode_add_shortcut_description" msgid="7636040209946696120">"यह शॉर्टकट बनाने के लिए, ऐक्शन बटन और एक या उससे ज़्यादा अन्य बटन एक साथ दबाएं"</string>

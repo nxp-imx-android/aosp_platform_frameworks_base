@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Aparece na parte superior das notificações de conversas e como uma imagem do perfil no ecrã de bloqueio, surge como um balão, interrompe o modo Não incomodar"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Prioridade"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"A app <xliff:g id="APP_NAME">%1$s</xliff:g> não suporta funcionalidades de conversa."</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Feedback"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Ignorar"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Não mostrar novamente"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Não é possível modificar estas notificações."</string>
@@ -1395,6 +1394,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Dispositivo dobrável a ser desdobrado"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Dispositivo dobrável a ser virado ao contrário"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Ecrã frontal ativado"</string>
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Deslize lentamente para usar o ecrã interior"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"fechado"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"aberto"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s/%2$s"</string>
