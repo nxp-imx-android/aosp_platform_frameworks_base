@@ -56,7 +56,6 @@ import com.android.systemui.unfold.data.repository.UnfoldTransitionRepositoryImp
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
 import com.android.systemui.unfoldedDeviceState
 import com.android.systemui.util.animation.data.repository.fakeAnimationStatusRepository
-import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.capture
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
@@ -79,8 +78,10 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
+import org.mockito.kotlin.verifyNoMoreInteractions
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
@@ -603,8 +604,35 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
         }
     }
 
+    @Test
+    fun foldingStarted_screenStillOn_eventSentOnlyAfterScreenSwitches() {
+        // can happen for both folding and unfolding (with animations off) but it's more likely to
+        // happen when folding as waiting for screen on is the default case then
+        testScope.runTest {
+            startInUnfoldedState(displaySwitchLatencyTracker)
+            setDeviceState(FOLDED)
+            powerInteractor.setScreenPowerState(SCREEN_ON)
+            runCurrent()
+
+            verifyNoMoreInteractions(displaySwitchLatencyLogger)
+
+            powerInteractor.setScreenPowerState(SCREEN_OFF)
+            runCurrent()
+            powerInteractor.setScreenPowerState(SCREEN_ON)
+            runCurrent()
+
+            verify(displaySwitchLatencyLogger).log(any())
+        }
+    }
+
     private suspend fun TestScope.startInFoldedState(tracker: DisplaySwitchLatencyTracker) {
         setDeviceState(FOLDED)
+        tracker.start()
+        runCurrent()
+    }
+
+    private suspend fun TestScope.startInUnfoldedState(tracker: DisplaySwitchLatencyTracker) {
+        setDeviceState(UNFOLDED)
         tracker.start()
         runCurrent()
     }

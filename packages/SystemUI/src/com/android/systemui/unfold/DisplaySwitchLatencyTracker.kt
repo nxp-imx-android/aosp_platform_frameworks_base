@@ -214,7 +214,12 @@ constructor(
 
     private suspend fun waitForScreenTurnedOn() {
         traceAsync(TAG, "waitForScreenTurnedOn()") {
-            powerInteractor.screenPowerState.filter { it == ScreenPowerState.SCREEN_ON }.first()
+            // dropping first as it's stateFlow and will always emit latest value but we're
+            // only interested in new states
+            powerInteractor.screenPowerState
+                .drop(1)
+                .filter { it == ScreenPowerState.SCREEN_ON }
+                .first()
         }
     }
 

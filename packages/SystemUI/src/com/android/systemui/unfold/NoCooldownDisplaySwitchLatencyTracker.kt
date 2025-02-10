@@ -50,6 +50,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -160,7 +161,12 @@ constructor(
 
     private suspend fun waitForScreenTurnedOn() {
         traceAsync(TAG, "waitForScreenTurnedOn()") {
-            powerInteractor.screenPowerState.filter { it == ScreenPowerState.SCREEN_ON }.first()
+            // dropping first as it's stateFlow and will always emit latest value but we're
+            // only interested in new states
+            powerInteractor.screenPowerState
+                .drop(1)
+                .filter { it == ScreenPowerState.SCREEN_ON }
+                .first()
         }
     }
 
