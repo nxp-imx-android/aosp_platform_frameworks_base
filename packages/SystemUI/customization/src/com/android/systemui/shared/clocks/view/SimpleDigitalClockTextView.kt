@@ -197,43 +197,7 @@ open class SimpleDigitalClockTextView(
             )
         }
 
-        var expectedWidth: Int
-        var expectedHeight: Int
-
-        if (MeasureSpec.getMode(heightMeasureSpec) == EXACTLY) {
-            // For view which has fixed height, e.g. small clock,
-            // we should always return the size required from parent view
-            expectedHeight = heightMeasureSpec
-        } else {
-            expectedHeight =
-                MeasureSpec.makeMeasureSpec(
-                    if (isSingleDigit()) {
-                        maxSingleDigitHeight
-                    } else {
-                        textBounds.height() + 2 * lockScreenPaint.strokeWidth.toInt()
-                    },
-                    MeasureSpec.getMode(measuredHeightAndState),
-                )
-        }
-
-        if (MeasureSpec.getMode(widthMeasureSpec) == EXACTLY) {
-            expectedWidth = widthMeasureSpec
-        } else {
-            expectedWidth =
-                MeasureSpec.makeMeasureSpec(
-                    if (isSingleDigit()) {
-                        maxSingleDigitWidth
-                    } else {
-                        max(
-                            textBounds.width() + 2 * lockScreenPaint.strokeWidth.toInt(),
-                            MeasureSpec.getSize(measuredWidthAndState),
-                        )
-                    },
-                    MeasureSpec.getMode(measuredWidthAndState),
-                )
-        }
-
-        setMeasuredDimension(expectedWidth, expectedHeight)
+        setInterpolatedViewBounds(getInterpolatedTextBounds(), widthMeasureSpec, heightMeasureSpec)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -359,7 +323,7 @@ open class SimpleDigitalClockTextView(
             id == R.id.MINUTE_SECOND_DIGIT
     }
 
-    private fun updateInterpolatedTextBounds(): Rect {
+    private fun getInterpolatedTextBounds(): Rect {
         val interpolatedTextBounds = Rect()
         if (textAnimator.animator.animatedFraction != 1.0f && textAnimator.animator.isRunning) {
             interpolatedTextBounds.left =
@@ -399,7 +363,41 @@ open class SimpleDigitalClockTextView(
         return interpolatedTextBounds
     }
 
-    private fun updateXtranslation(inPoint: Point, interpolatedTextBounds: Rect): Point {
+    private fun setInterpolatedViewBounds(
+        interpBounds: Rect,
+        widthMeasureSpec: Int = measuredWidthAndState,
+        heightMeasureSpec: Int = measuredHeightAndState,
+    ) {
+        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
+
+        val heightSpec =
+            if (heightMode == EXACTLY) {
+                heightMeasureSpec
+            } else {
+                MeasureSpec.makeMeasureSpec(
+                    if (isSingleDigit()) maxSingleDigitHeight
+                    else interpBounds.height() + 2 * lockScreenPaint.strokeWidth.toInt(),
+                    heightMode,
+                )
+            }
+
+        val widthSpec =
+            if (widthMode == EXACTLY) {
+                widthMeasureSpec
+            } else {
+                MeasureSpec.makeMeasureSpec(
+                    if (isSingleDigit()) maxSingleDigitWidth
+                    else interpBounds.width() + 2 * lockScreenPaint.strokeWidth.toInt(),
+                    widthMode,
+                )
+            }
+
+        setMeasuredDimension(widthSpec, heightSpec)
+        parent?.requestLayout()
+    }
+
+    private fun updateXTranslation(inPoint: Point, interpolatedTextBounds: Rect): Point {
         when (horizontalAlignment) {
             HorizontalAlignment.LEFT -> {
                 inPoint.x = lockScreenPaint.strokeWidth.toInt() - interpolatedTextBounds.left
@@ -422,7 +420,9 @@ open class SimpleDigitalClockTextView(
     // translation of reference point of text
     // used for translation when calling textInterpolator
     private fun getLocalTranslation(): Point {
-        val interpolatedTextBounds = updateInterpolatedTextBounds()
+        val interpolatedTextBounds = getInterpolatedTextBounds()
+        setInterpolatedViewBounds(interpolatedTextBounds)
+
         val localTranslation = Point(0, 0)
         val correctedBaseline = if (baseline != -1) baseline else baselineFromMeasure
         // get the change from current baseline to expected baseline
@@ -452,7 +452,7 @@ open class SimpleDigitalClockTextView(
             }
         }
 
-        return updateXtranslation(localTranslation, interpolatedTextBounds)
+        return updateXTranslation(localTranslation, interpolatedTextBounds)
     }
 
     fun applyStyles(textStyle: FontTextStyle, aodStyle: FontTextStyle?) {
