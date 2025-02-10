@@ -67,6 +67,7 @@ public class DisplayController {
     private final SparseArray<DisplayRecord> mDisplays = new SparseArray<>();
     private final ArrayList<OnDisplaysChangedListener> mDisplayChangedListeners = new ArrayList<>();
     private final Map<Integer, RectF> mUnpopulatedDisplayBounds = new HashMap<>();
+    private DisplayTopology mDisplayTopology;
 
     public DisplayController(Context context, IWindowManager wmService, ShellInit shellInit,
             ShellExecutor mainExecutor, DisplayManager displayManager) {
@@ -157,6 +158,7 @@ public class DisplayController {
             for (int i = 0; i < mDisplays.size(); ++i) {
                 listener.onDisplayAdded(mDisplays.keyAt(i));
             }
+            listener.onTopologyChanged(mDisplayTopology);
         }
     }
 
@@ -245,6 +247,7 @@ public class DisplayController {
         if (topology == null) {
             return;
         }
+        mDisplayTopology = topology;
         SparseArray<RectF> absoluteBounds = topology.getAbsoluteBounds();
         mUnpopulatedDisplayBounds.clear();
         for (int i = 0; i < absoluteBounds.size(); ++i) {
