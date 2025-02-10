@@ -38,6 +38,7 @@ data class PromotedNotificationContentModel(
      */
     val wasPromotedAutomatically: Boolean,
     val smallIcon: ImageModel?,
+    val iconLevel: Int,
     val appName: CharSequence?,
     val subText: CharSequence?,
     val shortCriticalText: String?,
@@ -67,6 +68,7 @@ data class PromotedNotificationContentModel(
     class Builder(val key: String) {
         var wasPromotedAutomatically: Boolean = false
         var smallIcon: ImageModel? = null
+        var iconLevel: Int = 0
         var appName: CharSequence? = null
         var subText: CharSequence? = null
         var time: When? = null
@@ -94,6 +96,7 @@ data class PromotedNotificationContentModel(
                 identity = Identity(key, style),
                 wasPromotedAutomatically = wasPromotedAutomatically,
                 smallIcon = smallIcon,
+                iconLevel = iconLevel,
                 appName = appName,
                 subText = subText,
                 shortCriticalText = shortCriticalText,

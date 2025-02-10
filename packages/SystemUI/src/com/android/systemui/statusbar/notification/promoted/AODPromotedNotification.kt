@@ -231,6 +231,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     ) {
         // Icon binding must be called in this order
         updateImageView(icon, content.smallIcon)
+        icon?.setImageLevel(content.iconLevel)
         icon?.setBackgroundColor(Background.colorInt)
         icon?.originalIconColor = PrimaryText.colorInt
 
