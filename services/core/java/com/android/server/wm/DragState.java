@@ -310,10 +310,10 @@ class DragState {
 
     /**
      * Creates the drop event for dispatching to the unhandled drag.
-     * TODO(b/384841906): Update `inWindowX` and `inWindowY` to be display-coordinate.
      */
-    private DragEvent createUnhandledDropEvent(float inWindowX, float inWindowY) {
-        return obtainDragEvent(DragEvent.ACTION_DROP, inWindowX, inWindowY, mDataDescription, mData,
+    private DragEvent createUnhandledDropEvent(float inDisplayX, float inDisplayY) {
+        return obtainDragEvent(DragEvent.ACTION_DROP, inDisplayX, inDisplayY, mDataDescription,
+                mData,
                 /* includeDragSurface= */ true,
                 /* includeDragFlags= */ true, null /* dragAndDropPermissions */);
     }
@@ -370,11 +370,8 @@ class DragState {
         }
 
         final WindowState touchedWin = mService.mInputToWindowMap.get(token);
-        // TODO(b/384841906): The x, y here when sent to a window and unhandled, will still be
-        //  relative to the window it was originally sent to. Need to update this to actually be
-        //  display-coordinate.
-        final DragEvent unhandledDropEvent = createUnhandledDropEvent(inWindowX, inWindowY);
         if (!isWindowNotified(touchedWin)) {
+            final DragEvent unhandledDropEvent = createUnhandledDropEvent(inWindowX, inWindowY);
             // Delegate to the unhandled drag listener as a first pass
             if (mDragDropController.notifyUnhandledDrop(unhandledDropEvent, "unhandled-drop")) {
                 // The unhandled drag listener will call back to notify whether it has consumed
@@ -392,6 +389,8 @@ class DragState {
         }
 
         if (DEBUG_DRAG) Slog.d(TAG_WM, "Sending DROP to " + touchedWin);
+        final DragEvent unhandledDropEvent = createUnhandledDropEvent(
+                touchedWin.getBounds().left + inWindowX, touchedWin.getBounds().top + inWindowY);
 
         final IBinder clientToken = touchedWin.mClient.asBinder();
         final DragEvent event = createDropEvent(inWindowX, inWindowY, touchedWin);
