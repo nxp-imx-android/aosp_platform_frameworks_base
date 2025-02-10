@@ -17,7 +17,9 @@
 package com.android.systemui.volume.dialog.domain.interactor
 
 import android.annotation.SuppressLint
+import android.provider.Settings
 import com.android.systemui.plugins.VolumeDialogController
+import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.volume.Events
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogPlugin
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogPluginScope
@@ -28,8 +30,9 @@ import com.android.systemui.volume.dialog.shared.model.VolumeDialogVisibilityMod
 import com.android.systemui.volume.dialog.shared.model.VolumeDialogVisibilityModel.Visible
 import com.android.systemui.volume.dialog.utils.VolumeTracer
 import javax.inject.Inject
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -42,8 +45,6 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-
-private val MAX_DIALOG_SHOW_TIME: Duration = 3.seconds
 
 /**
  * Handles Volume Dialog visibility state. It might change from several sources:
@@ -60,7 +61,10 @@ constructor(
     private val tracer: VolumeTracer,
     private val repository: VolumeDialogVisibilityRepository,
     private val controller: VolumeDialogController,
+    private val secureSettingsRepository: SecureSettingsRepository,
 ) {
+
+    private val defaultTimeout = 3.seconds
 
     @SuppressLint("SharedFlowCreation")
     private val mutableDismissDialogEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
@@ -73,7 +77,14 @@ constructor(
     init {
         merge(
                 mutableDismissDialogEvents.mapLatest {
-                    delay(MAX_DIALOG_SHOW_TIME)
+                    delay(
+                        secureSettingsRepository
+                            .getInt(
+                                Settings.Secure.VOLUME_DIALOG_DISMISS_TIMEOUT,
+                                defaultTimeout.toInt(DurationUnit.MILLISECONDS),
+                            )
+                            .milliseconds
+                    )
                     VolumeDialogEventModel.DismissRequested(Events.DISMISS_REASON_TIMEOUT)
                 },
                 callbacksInteractor.event,

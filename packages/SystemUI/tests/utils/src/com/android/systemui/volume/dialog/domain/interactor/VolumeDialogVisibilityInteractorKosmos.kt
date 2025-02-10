@@ -19,6 +19,7 @@ package com.android.systemui.volume.dialog.domain.interactor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.plugins.volumeDialogController
+import com.android.systemui.shared.settings.data.repository.secureSettingsRepository
 import com.android.systemui.volume.dialog.data.repository.volumeDialogVisibilityRepository
 import com.android.systemui.volume.dialog.utils.volumeTracer
 
@@ -30,5 +31,6 @@ val Kosmos.volumeDialogVisibilityInteractor by
             volumeTracer,
             volumeDialogVisibilityRepository,
             volumeDialogController,
+            secureSettingsRepository,
         )
     }
