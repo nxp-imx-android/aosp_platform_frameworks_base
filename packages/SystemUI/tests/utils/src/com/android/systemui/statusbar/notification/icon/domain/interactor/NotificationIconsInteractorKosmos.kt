@@ -24,6 +24,7 @@ import com.android.systemui.statusbar.data.repository.notificationListenerSettin
 import com.android.systemui.statusbar.notification.data.repository.notificationsKeyguardViewStateRepository
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.headsUpNotificationIconInteractor
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.aodPromotedNotificationInteractor
 import com.android.wm.shell.bubbles.bubblesOptional
 
 val Kosmos.alwaysOnDisplayNotificationIconsInteractor by Fixture {
@@ -47,6 +48,7 @@ val Kosmos.notificationIconsInteractor by Fixture {
         activeNotificationsInteractor = activeNotificationsInteractor,
         bubbles = bubblesOptional,
         headsUpNotificationIconInteractor = headsUpNotificationIconInteractor,
+        aodPromotedNotificationInteractor = aodPromotedNotificationInteractor,
         keyguardViewStateRepository = notificationsKeyguardViewStateRepository,
     )
 }
