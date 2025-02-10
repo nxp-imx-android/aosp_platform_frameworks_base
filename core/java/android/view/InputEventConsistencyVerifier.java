@@ -180,7 +180,7 @@ public final class InputEventConsistencyVerifier {
             final MotionEvent motionEvent = (MotionEvent)event;
             if (motionEvent.isTouchEvent()) {
                 onTouchEvent(motionEvent, nestingLevel);
-            } else if ((motionEvent.getSource() & InputDevice.SOURCE_CLASS_TRACKBALL) != 0) {
+            } else if (motionEvent.isFromSource(InputDevice.SOURCE_TRACKBALL)) {
                 onTrackballEvent(motionEvent, nestingLevel);
             } else {
                 onGenericMotionEvent(motionEvent, nestingLevel);
