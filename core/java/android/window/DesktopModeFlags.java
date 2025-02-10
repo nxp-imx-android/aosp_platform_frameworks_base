@@ -55,6 +55,7 @@ public enum DesktopModeFlags {
             Flags::enableDesktopAppLaunchAlttabTransitionsBugfix, true),
     ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX(Flags::enableDesktopAppLaunchTransitionsBugfix,
             true),
+    ENABLE_DESKTOP_CLOSE_SHORTCUT_BUGFIX(Flags::enableDesktopCloseShortcutBugfix, false),
     ENABLE_DESKTOP_COMPAT_UI_VISIBILITY_STATUS(Flags::enableCompatUiVisibilityStatus, true),
     ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX(
             Flags::enableDesktopRecentsTransitionsCornersBugfix, false),
