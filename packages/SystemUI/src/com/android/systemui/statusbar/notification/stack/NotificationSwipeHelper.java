@@ -534,12 +534,6 @@ class NotificationSwipeHelper extends SwipeHelper implements NotificationSwipeAc
     }
 
     @Override
-    public void setDensityScale(float densityScale) {
-        super.setDensityScale(densityScale);
-        mCallback.onDensityScaleChange(densityScale);
-    }
-
-    @Override
     public void resetTouchState() {
         super.resetTouchState();
         mCallback.resetMagneticStates();
@@ -564,8 +558,6 @@ class NotificationSwipeHelper extends SwipeHelper implements NotificationSwipeAc
          * @param animView the view to ask about
          */
         float getTotalTranslationLength(View animView);
-
-        void onDensityScaleChange(float density);
 
         boolean handleSwipeableViewTranslation(SwipeableView view, float translate);
 

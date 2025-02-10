@@ -896,6 +896,7 @@ public class NotificationStackScrollLayout
         mOverflingDistance = configuration.getScaledOverflingDistance();
 
         Resources res = context.getResources();
+        mSwipeHelper.updateResourceProperties(res);
         final boolean isSmallScreenLandscape = res.getBoolean(R.bool.is_small_screen_landscape);
         boolean useSmallLandscapeLockscreenResources = mIsSmallLandscapeLockscreenEnabled
                 && isSmallScreenLandscape;
@@ -2073,8 +2074,6 @@ public class NotificationStackScrollLayout
         Resources res = getResources();
         updateSplitNotificationShade();
         mStatusBarHeight = SystemBarUtils.getStatusBarHeight(mContext);
-        float densityScale = res.getDisplayMetrics().density;
-        mSwipeHelper.setDensityScale(densityScale);
         float pagingTouchSlop = ViewConfiguration.get(getContext()).getScaledPagingTouchSlop();
         mSwipeHelper.setPagingTouchSlop(pagingTouchSlop);
         reinitView();
