@@ -68,7 +68,7 @@ class SceneTransitionLayoutDataSource(
     }
 
     override fun snapToScene(toScene: SceneKey) {
-        state.snapToScene(scene = toScene)
+        state.snapTo(scene = toScene)
     }
 
     override fun showOverlay(overlay: OverlayKey, transitionKey: TransitionKey?) {
@@ -97,16 +97,10 @@ class SceneTransitionLayoutDataSource(
     }
 
     override fun instantlyShowOverlay(overlay: OverlayKey) {
-        state.snapToScene(
-            scene = state.transitionState.currentScene,
-            currentOverlays = state.currentOverlays + overlay,
-        )
+        state.snapTo(overlays = state.currentOverlays + overlay)
     }
 
     override fun instantlyHideOverlay(overlay: OverlayKey) {
-        state.snapToScene(
-            scene = state.transitionState.currentScene,
-            currentOverlays = state.currentOverlays - overlay,
-        )
+        state.snapTo(overlays = state.currentOverlays - overlay)
     }
 }

@@ -255,7 +255,7 @@ class SceneTransitionLayoutStateTest {
         assertThat(transition).hasCurrentScene(SceneB)
 
         // Snap to C.
-        state.snapToScene(SceneC)
+        state.snapTo(SceneC)
         assertThat(state.transitionState).isIdle()
         assertThat(state.transitionState).hasCurrentScene(SceneC)
     }
@@ -272,7 +272,7 @@ class SceneTransitionLayoutStateTest {
         assertThat(transition).hasToScene(SceneB)
 
         // Snap to C.
-        state.snapToScene(SceneC)
+        state.snapTo(SceneC)
         assertThat(state.transitionState).isIdle()
         assertThat(state.transitionState).hasCurrentScene(SceneC)
     }
@@ -375,7 +375,7 @@ class SceneTransitionLayoutStateTest {
         val job = transition.coroutineScope.launch { awaitCancellation() }
 
         // Force snap state to SceneB to force finish all current transitions.
-        state.snapToScene(SceneB)
+        state.snapTo(SceneB)
         assertThat(state.transitionState).isIdle()
         assertThat(job.isCancelled).isTrue()
     }
@@ -411,7 +411,7 @@ class SceneTransitionLayoutStateTest {
         val state = MutableSceneTransitionLayoutStateForTests(SceneA)
         state.startTransitionImmediately(this, transition(SceneA, SceneB))
         state.startTransitionImmediately(this, transition(SceneB, SceneC))
-        state.snapToScene(SceneC)
+        state.snapTo(SceneC)
 
         assertThat(state.transitionState).isIdle()
         assertThat(state.transitionState).hasCurrentScene(SceneC)

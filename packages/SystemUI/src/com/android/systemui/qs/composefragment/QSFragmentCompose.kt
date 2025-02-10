@@ -883,7 +883,7 @@ private suspend fun synchronizeQsState(
         var currentTransition: ExpansionTransition? = null
 
         fun snapTo(scene: SceneKey) {
-            state.snapToScene(scene)
+            state.snapTo(scene)
             currentTransition = null
         }
 
