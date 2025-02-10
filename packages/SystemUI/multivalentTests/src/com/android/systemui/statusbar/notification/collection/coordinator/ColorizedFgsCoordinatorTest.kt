@@ -27,14 +27,29 @@ import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
+import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
+import com.android.systemui.statusbar.core.StatusBarRootModernization
+import com.android.systemui.statusbar.notification.buildNotificationEntry
+import com.android.systemui.statusbar.notification.buildOngoingCallEntry
+import com.android.systemui.statusbar.notification.buildPromotedOngoingEntry
 import com.android.systemui.statusbar.notification.collection.buildEntry
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
 import com.android.systemui.statusbar.notification.collection.notifPipeline
+import com.android.systemui.statusbar.notification.domain.interactor.renderNotificationListInteractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.promotedNotificationsInteractor
+import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.withArgCaptor
+import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -59,7 +74,13 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
     fun setup() {
         allowTestableLooperAsMainThread()
 
-        colorizedFgsCoordinator = ColorizedFgsCoordinator()
+        kosmos.statusBarNotificationChipsInteractor.start()
+
+        colorizedFgsCoordinator =
+            ColorizedFgsCoordinator(
+                kosmos.applicationCoroutineScope,
+                kosmos.promotedNotificationsInteractor,
+            )
         colorizedFgsCoordinator.attach(notifPipeline)
         sectioner = colorizedFgsCoordinator.sectioner
     }
@@ -177,6 +198,37 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
     fun noPromoterAdded_flagDisabled() {
         verify(notifPipeline, never()).addPromoter(any())
     }
+
+    @Test
+    @EnableFlags(
+        PromotedNotificationUi.FLAG_NAME,
+        StatusBarNotifChips.FLAG_NAME,
+        StatusBarChipsModernization.FLAG_NAME,
+        StatusBarRootModernization.FLAG_NAME,
+    )
+    fun comparatorPutsCallBeforeOther() =
+        kosmos.runTest {
+            // GIVEN a call and a promoted ongoing notification
+            val callEntry = buildOngoingCallEntry(promoted = false)
+            val ronEntry = buildPromotedOngoingEntry()
+            val otherEntry = buildNotificationEntry(tag = "other")
+
+            kosmos.renderNotificationListInteractor.setRenderedList(
+                listOf(callEntry, ronEntry, otherEntry)
+            )
+
+            val orderedChipNotificationKeys by
+                collectLastValue(kosmos.promotedNotificationsInteractor.orderedChipNotificationKeys)
+
+            // THEN the order of the notification keys should be the call then the RON
+            assertThat(orderedChipNotificationKeys)
+                .containsExactly("0|test_pkg|0|call|0", "0|test_pkg|0|ron|0")
+
+            // VERIFY that the comparator puts the call before the ron
+            assertThat(sectioner.comparator!!.compare(callEntry, ronEntry)).isLessThan(0)
+            // VERIFY that the comparator puts the ron before the other
+            assertThat(sectioner.comparator!!.compare(ronEntry, otherEntry)).isLessThan(0)
+        }
 
     private fun makeCallStyle(): Notification.CallStyle {
         val pendingIntent =

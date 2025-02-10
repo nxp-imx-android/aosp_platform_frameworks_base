@@ -16,8 +16,11 @@
 
 package com.android.systemui.statusbar.notification.promoted
 
+import android.app.Notification
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.statusbar.notification.collection.NotificationEntry
+import com.android.systemui.statusbar.notification.row.RowImageInflater
 import com.android.systemui.statusbar.notification.row.shared.skeletonImageTransform
 
 var Kosmos.promotedNotificationContentExtractor by
@@ -28,3 +31,14 @@ var Kosmos.promotedNotificationContentExtractor by
             promotedNotificationLogger,
         )
     }
+
+fun Kosmos.setPromotedContent(entry: NotificationEntry) {
+    val extractedContent =
+        promotedNotificationContentExtractor.extractContent(
+            entry,
+            Notification.Builder.recoverBuilder(applicationContext, entry.sbn.notification),
+            RowImageInflater.newInstance(null).useForContentModel(),
+        )
+    entry.promotedNotificationContentModel =
+        requireNotNull(extractedContent) { "extractContent returned null" }
+}
