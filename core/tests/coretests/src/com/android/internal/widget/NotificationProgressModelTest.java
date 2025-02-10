@@ -90,7 +90,7 @@ public class NotificationProgressModelTest {
                 new Notification.ProgressStyle.Segment(50).setColor(Color.YELLOW),
                 new Notification.ProgressStyle.Segment(50).setColor(Color.LTGRAY));
         final List<Notification.ProgressStyle.Point> points = List.of(
-                new Notification.ProgressStyle.Point(0).setColor(Color.RED),
+                new Notification.ProgressStyle.Point(1).setColor(Color.RED),
                 new Notification.ProgressStyle.Point(20).setColor(Color.BLUE));
         final NotificationProgressModel savedModel = new NotificationProgressModel(segments,
                 points,
@@ -121,7 +121,7 @@ public class NotificationProgressModelTest {
                 new Notification.ProgressStyle.Segment(50).setColor(Color.YELLOW),
                 new Notification.ProgressStyle.Segment(50).setColor(Color.YELLOW));
         final List<Notification.ProgressStyle.Point> points = List.of(
-                new Notification.ProgressStyle.Point(0).setColor(Color.RED),
+                new Notification.ProgressStyle.Point(1).setColor(Color.RED),
                 new Notification.ProgressStyle.Point(20).setColor(Color.BLUE));
         final NotificationProgressModel savedModel = new NotificationProgressModel(segments,
                 points,
