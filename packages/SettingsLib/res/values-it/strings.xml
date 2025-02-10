@@ -107,7 +107,7 @@
     <string name="tv_bluetooth_battery_level_untethered_right" msgid="8610019317279155595">"Destra: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="bluetooth_active_no_battery_level" msgid="4155462233006205630">"Attivo"</string>
     <string name="bluetooth_saved_device" msgid="4895871321722311428">"Dispositivo salvato"</string>
-    <string name="bluetooth_hearing_aid_left_active" msgid="8330226430756799572">"Attivo (solo sinistro)"</string>
+    <string name="bluetooth_hearing_aid_left_active" msgid="8330226430756799572">"Attiva (solo sinistra)"</string>
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Attivo (solo destro)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Attivi (destro e sinistro)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Impossibile aggiornare audio ambientale"</string>
@@ -505,8 +505,8 @@
     <string name="power_charging_limited" msgid="4144004473976005214">"<xliff:g id="LEVEL">%1$s</xliff:g> - Ricarica in sospeso per proteggere la batteria"</string>
     <string name="power_charging_future_paused" msgid="1809543660923642799">"<xliff:g id="LEVEL">%1$s</xliff:g> ‑ In carica"</string>
     <string name="power_fast_charging_duration_v2" msgid="3797735998640359490">"<xliff:g id="LEVEL">%1$s</xliff:g> - <xliff:g id="STATUS">%2$s</xliff:g> - Ricarica completa entro <xliff:g id="TIME">%3$s</xliff:g>"</string>
-    <string name="power_charging_duration_v2" msgid="2938998284074003248">"<xliff:g id="LEVEL">%1$s</xliff:g> - Batteria completamente carica entro <xliff:g id="TIME">%2$s</xliff:g>"</string>
-    <string name="power_remaining_charging_duration_only_v2" msgid="5358176435722950193">"Batteria completamente carica entro <xliff:g id="TIME">%1$s</xliff:g>"</string>
+    <string name="power_charging_duration_v2" msgid="2938998284074003248">"<xliff:g id="LEVEL">%1$s</xliff:g> - Batteria completamente carica entro: <xliff:g id="TIME">%2$s</xliff:g>"</string>
+    <string name="power_remaining_charging_duration_only_v2" msgid="5358176435722950193">"Batteria completamente carica entro: <xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="power_remaining_fast_charging_duration_only_v2" msgid="6270950195810579563">"Ricarica completa entro le ore <xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="battery_info_status_unknown" msgid="268625384868401114">"Sconosciuta"</string>
     <string name="battery_info_status_charging" msgid="4279958015430387405">"In carica"</string>
@@ -523,8 +523,7 @@
     <string name="battery_info_status_charging_fast_v2" msgid="1825439848151256589">"Ricarica rapida"</string>
     <string name="disabled_by_admin_summary_text" msgid="5343911767402923057">"Gestita dall\'amministratore"</string>
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"Gestita tramite impostazioni con restrizioni"</string>
-    <!-- no translation found for disabled_in_phone_call_text (6568931334337318320) -->
-    <skip />
+    <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"Non disponibile durante le chiamate"</string>
     <string name="disabled" msgid="8017887509554714950">"Disattivato"</string>
     <string name="external_source_trusted" msgid="1146522036773132905">"Autorizzazione concessa"</string>
     <string name="external_source_untrusted" msgid="5037891688911672227">"Autorizzazione non concessa"</string>
