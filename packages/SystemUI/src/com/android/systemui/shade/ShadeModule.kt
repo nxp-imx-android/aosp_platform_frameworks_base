@@ -45,13 +45,17 @@ import com.android.systemui.shade.domain.interactor.ShadeLockscreenInteractor
 import com.android.systemui.shade.domain.interactor.ShadeLockscreenInteractorImpl
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractorImpl
+import com.android.systemui.window.dagger.WindowRootViewBlurModule
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import javax.inject.Provider
 
 /** Module for classes related to the notification shade. */
-@Module(includes = [StartShadeModule::class, ShadeViewProviderModule::class])
+@Module(
+    includes =
+        [StartShadeModule::class, ShadeViewProviderModule::class, WindowRootViewBlurModule::class]
+)
 abstract class ShadeModule {
     companion object {
         @Provides

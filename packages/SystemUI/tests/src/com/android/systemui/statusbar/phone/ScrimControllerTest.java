@@ -290,7 +290,8 @@ public class ScrimControllerTest extends SysuiTestCase {
                 mKeyguardInteractor,
                 mKosmos.getTestDispatcher(),
                 mLinearLargeScreenShadeInterpolator,
-                new BlurConfig(0.0f, 0.0f));
+                new BlurConfig(0.0f, 0.0f),
+                mKosmos::getWindowRootViewBlurInteractor);
         mScrimController.setScrimVisibleListener(visible -> mScrimVisibility = visible);
         mScrimController.attachViews(mScrimBehind, mNotificationsScrim, mScrimInFront);
         mScrimController.setAnimatorListener(mAnimatorListener);
@@ -1204,7 +1205,8 @@ public class ScrimControllerTest extends SysuiTestCase {
                 mKeyguardInteractor,
                 mKosmos.getTestDispatcher(),
                 mLinearLargeScreenShadeInterpolator,
-                new BlurConfig(0.0f, 0.0f));
+                new BlurConfig(0.0f, 0.0f),
+                mKosmos::getWindowRootViewBlurInteractor);
         mScrimController.setScrimVisibleListener(visible -> mScrimVisibility = visible);
         mScrimController.attachViews(mScrimBehind, mNotificationsScrim, mScrimInFront);
         mScrimController.setAnimatorListener(mAnimatorListener);

@@ -98,7 +98,6 @@ import com.android.internal.widget.LockPatternUtils;
 import com.android.keyguard.KeyguardSecurityModel.SecurityMode;
 import com.android.settingslib.Utils;
 import com.android.settingslib.drawable.CircleFramedDrawable;
-import com.android.systemui.Flags;
 import com.android.systemui.FontStyles;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.classifier.FalsingA11yDelegate;
@@ -121,6 +120,7 @@ public class KeyguardSecurityContainer extends ConstraintLayout {
     static final int USER_TYPE_PRIMARY = 1;
     static final int USER_TYPE_WORK_PROFILE = 2;
     static final int USER_TYPE_SECONDARY_USER = 3;
+    private boolean mTransparentModeEnabled = false;
 
     @IntDef({MODE_UNINITIALIZED, MODE_DEFAULT, MODE_ONE_HANDED, MODE_USER_SWITCHER})
     public @interface Mode {}
@@ -814,15 +814,30 @@ public class KeyguardSecurityContainer extends ConstraintLayout {
         mDisappearAnimRunning = false;
     }
 
+    /**
+     * Make the bouncer background transparent
+     */
+    public void enableTransparentMode() {
+        mTransparentModeEnabled = true;
+        reloadBackgroundColor();
+    }
+
+    /**
+     * Make the bouncer background opaque
+     */
+    public void disableTransparentMode() {
+        mTransparentModeEnabled = false;
+        reloadBackgroundColor();
+    }
+
     private void reloadBackgroundColor() {
-        if (Flags.bouncerUiRevamp()) {
-            // Keep the background transparent, otherwise the background color looks like a box
-            // while scaling the bouncer for back animation or while transitioning to the bouncer.
+        if (mTransparentModeEnabled) {
             setBackgroundColor(Color.TRANSPARENT);
         } else {
             setBackgroundColor(
                     getContext().getColor(com.android.internal.R.color.materialColorSurfaceDim));
         }
+        invalidate();
     }
 
     void reloadColors() {

@@ -84,6 +84,7 @@ import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.util.time.FakeSystemClock
+import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.google.common.truth.Truth
 import junit.framework.Assert
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -280,9 +281,9 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 kosmos.keyguardDismissTransitionInteractor,
                 { primaryBouncerInteractor },
                 executor,
-            ) {
-                deviceEntryInteractor
-            }
+                { deviceEntryInteractor },
+                { kosmos.windowRootViewBlurInteractor },
+            )
     }
 
     @Test
