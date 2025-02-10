@@ -39,6 +39,11 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.WorkerThread
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_COLLAPSE
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_EXPAND
+import androidx.core.view.accessibility.AccessibilityViewCommand
+import com.android.systemui.Flags
 import com.android.systemui.animation.ViewHierarchyAnimator
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
@@ -282,47 +287,93 @@ class PrivacyDialogV2(
 
         val expandToggle =
             itemHeader.findViewById<ImageView>(R.id.privacy_dialog_item_header_expand_toggle)!!
-        expandToggle.setImageResource(R.drawable.privacy_dialog_expand_toggle_down)
         expandToggle.visibility = View.VISIBLE
-
-        ViewCompat.replaceAccessibilityAction(
-            itemCard,
-            AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
-            context.getString(R.string.privacy_dialog_expand_action),
-            null,
-        )
-
         val expandedLayout =
             itemCard.findViewById<View>(R.id.privacy_dialog_item_header_expanded_layout)!!
         expandedLayout.setOnClickListener {
             // Stop clicks from propagating
         }
 
-        itemCard.setOnClickListener {
-            if (expandedLayout.visibility == View.VISIBLE) {
-                expandedLayout.visibility = View.GONE
-                expandToggle.setImageResource(R.drawable.privacy_dialog_expand_toggle_down)
-                ViewCompat.replaceAccessibilityAction(
-                    it!!,
-                    AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
-                    context.getString(R.string.privacy_dialog_expand_action),
-                    null,
-                )
-            } else {
-                expandedLayout.visibility = View.VISIBLE
-                expandToggle.setImageResource(R.drawable.privacy_dialog_expand_toggle_up)
-                ViewCompat.replaceAccessibilityAction(
-                    it!!,
-                    AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
-                    context.getString(R.string.privacy_dialog_collapse_action),
-                    null,
+        if (Flags.expandCollapsePrivacyDialog()) {
+            updateExpansion(ACTION_COLLAPSE, itemCard, expandedLayout, expandToggle)
+
+            itemCard.setOnClickListener {
+                if (expandedLayout.visibility == View.VISIBLE) {
+                    updateExpansion(ACTION_COLLAPSE, it!!, expandedLayout, expandToggle)
+                } else {
+                    updateExpansion(ACTION_EXPAND, it!!, expandedLayout, expandToggle)
+                }
+            }
+        } else {
+            expandToggle.setImageResource(R.drawable.privacy_dialog_expand_toggle_down)
+            ViewCompat.replaceAccessibilityAction(
+                itemCard,
+                AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
+                context.getString(R.string.privacy_dialog_expand_action),
+                null,
+            )
+
+            itemCard.setOnClickListener {
+                if (expandedLayout.visibility == View.VISIBLE) {
+                    expandedLayout.visibility = View.GONE
+                    expandToggle.setImageResource(R.drawable.privacy_dialog_expand_toggle_down)
+                    ViewCompat.replaceAccessibilityAction(
+                        it!!,
+                        AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
+                        context.getString(R.string.privacy_dialog_expand_action),
+                        null,
+                    )
+                } else {
+                    expandedLayout.visibility = View.VISIBLE
+                    expandToggle.setImageResource(R.drawable.privacy_dialog_expand_toggle_up)
+                    ViewCompat.replaceAccessibilityAction(
+                        it!!,
+                        AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
+                        context.getString(R.string.privacy_dialog_collapse_action),
+                        null,
+                    )
+                }
+                ViewHierarchyAnimator.animateNextUpdate(
+                    rootView = window!!.decorView,
+                    excludedViews = setOf(expandedLayout),
                 )
             }
-            ViewHierarchyAnimator.animateNextUpdate(
-                rootView = window!!.decorView,
-                excludedViews = setOf(expandedLayout),
-            )
         }
+    }
+
+    private fun updateExpansion(
+        newState: AccessibilityActionCompat,
+        itemCard: View,
+        expandedLayout: View,
+        expandToggle: ImageView,
+    ) {
+        expandedLayout.visibility = if (newState == ACTION_COLLAPSE) View.GONE else View.VISIBLE
+        expandToggle.setImageResource(
+            if (newState == ACTION_COLLAPSE) R.drawable.privacy_dialog_expand_toggle_down
+            else R.drawable.privacy_dialog_expand_toggle_up
+        )
+        val accessibilityString =
+            context.getString(
+                if (newState == ACTION_COLLAPSE) R.string.privacy_dialog_expand_action
+                else R.string.privacy_dialog_collapse_action
+            )
+        ViewCompat.replaceAccessibilityAction(
+            itemCard,
+            AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
+            accessibilityString,
+            null,
+        )
+        val expandCollapseAccessibilityListener =
+            AccessibilityViewCommand { view: View, _: AccessibilityViewCommand.CommandArguments? ->
+                view.callOnClick()
+            }
+        ViewCompat.replaceAccessibilityAction(
+            itemCard,
+            if (newState == ACTION_COLLAPSE) ACTION_EXPAND else ACTION_COLLAPSE,
+            accessibilityString,
+            expandCollapseAccessibilityListener,
+        )
+        ViewCompat.removeAccessibilityAction(itemCard, newState.id)
     }
 
     private fun updateIconView(iconView: ImageView, indicatorIcon: Drawable, active: Boolean) {

@@ -2015,6 +2015,16 @@ flag {
 }
 
 flag {
+  name: "expand_collapse_privacy_dialog"
+  namespace: "systemui"
+  description: "Add expand and collapse actions to accessibility, to allow announcement in TalkBack when state changes."
+  bug: "380161221"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "show_locked_by_your_watch_keyguard_indicator"
     namespace: "systemui"
     description: "Show a Locked by your watch indicator on the keyguard when the device is locked by the watch."
