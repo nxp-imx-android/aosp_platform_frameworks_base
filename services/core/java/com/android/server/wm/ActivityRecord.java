@@ -46,9 +46,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.app.WindowConfiguration.activityTypeToString;
-import static android.app.admin.DevicePolicyResources.Drawables.Source.PROFILE_SWITCH_ANIMATION;
-import static android.app.admin.DevicePolicyResources.Drawables.Style.OUTLINE;
-import static android.app.admin.DevicePolicyResources.Drawables.WORK_PROFILE_ICON;
 import static android.content.Context.CONTEXT_RESTRICTED;
 import static android.content.Intent.ACTION_MAIN;
 import static android.content.Intent.CATEGORY_HOME;
@@ -189,7 +186,6 @@ import static com.android.server.wm.ActivityRecordProto.STARTING_DISPLAYED;
 import static com.android.server.wm.ActivityRecordProto.STARTING_MOVED;
 import static com.android.server.wm.ActivityRecordProto.STARTING_WINDOW;
 import static com.android.server.wm.ActivityRecordProto.STATE;
-import static com.android.server.wm.ActivityRecordProto.THUMBNAIL;
 import static com.android.server.wm.ActivityRecordProto.TRANSLUCENT;
 import static com.android.server.wm.ActivityRecordProto.VISIBLE;
 import static com.android.server.wm.ActivityRecordProto.VISIBLE_REQUESTED;
@@ -265,7 +261,6 @@ import android.app.PictureInPictureParams;
 import android.app.ResultInfo;
 import android.app.WaitResult;
 import android.app.WindowConfiguration;
-import android.app.admin.DevicePolicyManager;
 import android.app.assist.ActivityId;
 import android.app.compat.CompatChanges;
 import android.app.servertransaction.ActivityConfigurationChangeItem;
@@ -300,7 +295,6 @@ import android.graphics.Insets;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.gui.DropInputMode;
 import android.hardware.HardwareBuffer;
 import android.net.Uri;
@@ -341,7 +335,6 @@ import android.view.WindowInsets.Type;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.WindowManager.TransitionOldType;
-import android.view.animation.Animation;
 import android.window.ActivityWindowInfo;
 import android.window.ITaskFragmentOrganizer;
 import android.window.RemoteTransition;
@@ -4701,8 +4694,6 @@ final class ActivityRecord extends WindowToken {
             return true;
         }
 
-        // TODO: Transfer thumbnail
-
         return false;
     }
 
@@ -7597,9 +7588,6 @@ final class ActivityRecord extends WindowToken {
                 mActivityRecordInputSink.applyChangesToSurfaceIfChanged(getPendingTransaction());
             }
         }
-        if (mThumbnail != null) {
-            mThumbnail.setShowing(getPendingTransaction(), show);
-        }
         mLastSurfaceShowing = show;
         super.prepareSurfaces();
     }
@@ -7609,84 +7597,6 @@ final class ActivityRecord extends WindowToken {
      */
     boolean isSurfaceShowing() {
         return mLastSurfaceShowing;
-    }
-
-    void attachThumbnailAnimation() {
-        if (!isAnimating(PARENTS, ANIMATION_TYPE_APP_TRANSITION)) {
-            return;
-        }
-        final HardwareBuffer thumbnailHeader =
-                getDisplayContent().mAppTransition.getAppTransitionThumbnailHeader(task);
-        if (thumbnailHeader == null) {
-            ProtoLog.d(WM_DEBUG_APP_TRANSITIONS, "No thumbnail header bitmap for: %s", task);
-            return;
-        }
-        clearThumbnail();
-        final Transaction transaction = getAnimatingContainer().getPendingTransaction();
-        mThumbnail = new WindowContainerThumbnail(transaction, getAnimatingContainer(),
-                thumbnailHeader);
-        mThumbnail.startAnimation(transaction, loadThumbnailAnimation(thumbnailHeader));
-    }
-
-    /**
-     * Attaches a surface with a thumbnail for the
-     * {@link android.app.ActivityOptions#ANIM_OPEN_CROSS_PROFILE_APPS} animation.
-     */
-    void attachCrossProfileAppsThumbnailAnimation() {
-        if (!isAnimating(PARENTS, ANIMATION_TYPE_APP_TRANSITION)) {
-            return;
-        }
-        clearThumbnail();
-
-        final WindowState win = findMainWindow();
-        if (win == null) {
-            return;
-        }
-        final Rect frame = win.getRelativeFrame();
-        final Context context = mAtmService.getUiContext();
-        final Drawable thumbnailDrawable;
-        if (task.mUserId == mWmService.mCurrentUserId) {
-            thumbnailDrawable = context.getDrawable(R.drawable.ic_account_circle);
-        } else {
-            final DevicePolicyManager dpm = context.getSystemService(DevicePolicyManager.class);
-            thumbnailDrawable = dpm.getResources().getDrawable(
-                    WORK_PROFILE_ICON, OUTLINE, PROFILE_SWITCH_ANIMATION,
-                    () -> context.getDrawable(R.drawable.ic_corp_badge));
-        }
-        final HardwareBuffer thumbnail = getDisplayContent().mAppTransition
-                .createCrossProfileAppsThumbnail(thumbnailDrawable, frame);
-        if (thumbnail == null) {
-            return;
-        }
-        final Transaction transaction = getPendingTransaction();
-        mThumbnail = new WindowContainerThumbnail(transaction, getTask(), thumbnail);
-        final Animation animation =
-                getDisplayContent().mAppTransition.createCrossProfileAppsThumbnailAnimationLocked(
-                        frame);
-        mThumbnail.startAnimation(transaction, animation, new Point(frame.left, frame.top));
-    }
-
-    private Animation loadThumbnailAnimation(HardwareBuffer thumbnailHeader) {
-        final DisplayInfo displayInfo = mDisplayContent.getDisplayInfo();
-
-        // If this is a multi-window scenario, we use the windows frame as
-        // destination of the thumbnail header animation. If this is a full screen
-        // window scenario, we use the whole display as the target.
-        WindowState win = findMainWindow();
-        Rect insets;
-        Rect appRect;
-        if (win != null) {
-            insets = win.getInsetsStateWithVisibilityOverride().calculateInsets(
-                    win.getFrame(), Type.systemBars(), false /* ignoreVisibility */).toRect();
-            appRect = new Rect(win.getFrame());
-            appRect.inset(insets);
-        } else {
-            insets = null;
-            appRect = new Rect(0, 0, displayInfo.appWidth, displayInfo.appHeight);
-        }
-        final Configuration displayConfig = mDisplayContent.getConfiguration();
-        return getDisplayContent().mAppTransition.createThumbnailAspectScaleAnimationLocked(
-                appRect, insets, thumbnailHeader, task, displayConfig.orientation);
     }
 
     @Override
@@ -7715,7 +7625,6 @@ final class ActivityRecord extends WindowToken {
         setAppLayoutChanges(FINISH_LAYOUT_REDO_ANIM | FINISH_LAYOUT_REDO_WALLPAPER,
                 "ActivityRecord");
 
-        clearThumbnail();
         setClientVisible(isVisible() || mVisibleRequested);
 
         getDisplayContent().computeImeTargetIfNeeded(this);
@@ -7724,12 +7633,6 @@ final class ActivityRecord extends WindowToken {
                 + ": reportedVisible=%b okToDisplay=%b okToAnimate=%b startingDisplayed=%b",
                 this, reportedVisible, okToDisplay(), okToAnimate(),
                 isStartingWindowDisplayed());
-
-        // clean up thumbnail window
-        if (mThumbnail != null) {
-            mThumbnail.destroy();
-            mThumbnail = null;
-        }
 
         // WindowState.onExitAnimationDone might modify the children list, so make a copy and then
         // traverse the copy.
@@ -7767,20 +7670,6 @@ final class ActivityRecord extends WindowToken {
         if (wallpaperMightChange) {
             requestUpdateWallpaperIfNeeded();
         }
-    }
-
-    @Override
-    void cancelAnimation() {
-        super.cancelAnimation();
-        clearThumbnail();
-    }
-
-    private void clearThumbnail() {
-        if (mThumbnail == null) {
-            return;
-        }
-        mThumbnail.destroy();
-        mThumbnail = null;
     }
 
     public @TransitionOldType int getTransit() {
@@ -9728,9 +9617,6 @@ final class ActivityRecord extends WindowToken {
         proto.write(IS_WAITING_FOR_TRANSITION_START, isWaitingForTransitionStart());
         proto.write(IS_ANIMATING, isAnimating(TRANSITION | PARENTS | CHILDREN,
                 ANIMATION_TYPE_APP_TRANSITION | ANIMATION_TYPE_WINDOW_ANIMATION));
-        if (mThumbnail != null){
-            mThumbnail.dumpDebug(proto, THUMBNAIL);
-        }
         proto.write(FILLS_PARENT, fillsParent());
         proto.write(APP_STOPPED, mAppStopped);
         proto.write(TRANSLUCENT, !occludesParent());

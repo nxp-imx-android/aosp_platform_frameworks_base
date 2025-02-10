@@ -303,7 +303,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * This gets used during some open/close transitions as well as during a change transition
      * where it represents the starting-state snapshot.
      */
-    WindowContainerThumbnail mThumbnail;
     final Point mTmpPoint = new Point();
     protected final Rect mTmpRect = new Rect();
     final Rect mTmpPrevBounds = new Rect();
