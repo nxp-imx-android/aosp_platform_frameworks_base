@@ -1122,17 +1122,6 @@ class Task extends TaskFragment {
         // already ran fully within super.onParentChanged
         updateTaskOrganizerState();
 
-        // TODO(b/168037178): The check for null display content and setting it to null doesn't
-        //                    really make sense here...
-
-        // TODO(b/168037178): This is mostly taking care of the case where the stask is removing
-        //                    from the display, so we should probably consolidate it there instead.
-
-        if (getParent() == null && mDisplayContent != null) {
-            mDisplayContent = null;
-            mWmService.mWindowPlacerLocked.requestTraversal();
-        }
-
         if (oldParent != null) {
             final Task oldParentTask = oldParent.asTask();
             if (oldParentTask != null) {
@@ -2770,6 +2759,7 @@ class Task extends TaskFragment {
         }
 
         super.removeImmediately();
+        mDisplayContent = null;
         mRemoving = false;
     }
 
