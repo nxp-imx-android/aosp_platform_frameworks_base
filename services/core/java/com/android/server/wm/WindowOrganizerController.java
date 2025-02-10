@@ -30,24 +30,25 @@ import static android.window.TaskFragmentOperation.OP_TYPE_CLEAR_ADJACENT_TASK_F
 import static android.window.TaskFragmentOperation.OP_TYPE_CREATE_OR_MOVE_TASK_FRAGMENT_DECOR_SURFACE;
 import static android.window.TaskFragmentOperation.OP_TYPE_CREATE_TASK_FRAGMENT;
 import static android.window.TaskFragmentOperation.OP_TYPE_DELETE_TASK_FRAGMENT;
+import static android.window.TaskFragmentOperation.OP_TYPE_PRIVILEGED_REORDER_TO_BOTTOM_OF_TASK;
+import static android.window.TaskFragmentOperation.OP_TYPE_PRIVILEGED_REORDER_TO_TOP_OF_TASK;
+import static android.window.TaskFragmentOperation.OP_TYPE_PRIVILEGED_SET_CAN_AFFECT_SYSTEM_UI_FLAGS;
+import static android.window.TaskFragmentOperation.OP_TYPE_PRIVILEGED_SET_MOVE_TO_BOTTOM_IF_CLEAR_WHEN_LAUNCH;
 import static android.window.TaskFragmentOperation.OP_TYPE_REMOVE_TASK_FRAGMENT_DECOR_SURFACE;
-import static android.window.TaskFragmentOperation.OP_TYPE_REORDER_TO_BOTTOM_OF_TASK;
 import static android.window.TaskFragmentOperation.OP_TYPE_REORDER_TO_FRONT;
-import static android.window.TaskFragmentOperation.OP_TYPE_REORDER_TO_TOP_OF_TASK;
 import static android.window.TaskFragmentOperation.OP_TYPE_REPARENT_ACTIVITY_TO_TASK_FRAGMENT;
 import static android.window.TaskFragmentOperation.OP_TYPE_REQUEST_FOCUS_ON_TASK_FRAGMENT;
 import static android.window.TaskFragmentOperation.OP_TYPE_SET_ADJACENT_TASK_FRAGMENTS;
 import static android.window.TaskFragmentOperation.OP_TYPE_SET_ANIMATION_PARAMS;
-import static android.window.TaskFragmentOperation.OP_TYPE_SET_CAN_AFFECT_SYSTEM_UI_FLAGS;
 import static android.window.TaskFragmentOperation.OP_TYPE_SET_COMPANION_TASK_FRAGMENT;
 import static android.window.TaskFragmentOperation.OP_TYPE_SET_DECOR_SURFACE_BOOSTED;
 import static android.window.TaskFragmentOperation.OP_TYPE_SET_DIM_ON_TASK;
 import static android.window.TaskFragmentOperation.OP_TYPE_SET_ISOLATED_NAVIGATION;
-import static android.window.TaskFragmentOperation.OP_TYPE_SET_MOVE_TO_BOTTOM_IF_CLEAR_WHEN_LAUNCH;
 import static android.window.TaskFragmentOperation.OP_TYPE_SET_PINNED;
 import static android.window.TaskFragmentOperation.OP_TYPE_SET_RELATIVE_BOUNDS;
 import static android.window.TaskFragmentOperation.OP_TYPE_START_ACTIVITY_IN_TASK_FRAGMENT;
 import static android.window.TaskFragmentOperation.OP_TYPE_UNKNOWN;
+import static android.window.TaskFragmentOperation.PRIVILEGED_OP_START;
 import static android.window.WindowContainerTransaction.Change.CHANGE_FOCUSABLE;
 import static android.window.WindowContainerTransaction.Change.CHANGE_FORCE_TRANSLUCENT;
 import static android.window.WindowContainerTransaction.Change.CHANGE_HIDDEN;
@@ -1786,7 +1787,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 taskFragment.setIsolatedNav(isolatedNav);
                 break;
             }
-            case OP_TYPE_REORDER_TO_BOTTOM_OF_TASK: {
+            case OP_TYPE_PRIVILEGED_REORDER_TO_BOTTOM_OF_TASK: {
                 final Task task = taskFragment.getTask();
                 if (task != null) {
                     if (task.getBottomChild() != taskFragment) {
@@ -1802,7 +1803,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 }
                 break;
             }
-            case OP_TYPE_REORDER_TO_TOP_OF_TASK: {
+            case OP_TYPE_PRIVILEGED_REORDER_TO_TOP_OF_TASK: {
                 final Task task = taskFragment.getTask();
                 if (task != null) {
                     if (task.getTopChild() != taskFragment) {
@@ -1852,7 +1853,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                         : EMBEDDED_DIM_AREA_TASK_FRAGMENT);
                 break;
             }
-            case OP_TYPE_SET_MOVE_TO_BOTTOM_IF_CLEAR_WHEN_LAUNCH: {
+            case OP_TYPE_PRIVILEGED_SET_MOVE_TO_BOTTOM_IF_CLEAR_WHEN_LAUNCH: {
                 taskFragment.setMoveToBottomIfClearWhenLaunch(operation.getBooleanValue());
                 break;
             }
@@ -1888,7 +1889,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 taskFragment.setPinned(pinned);
                 break;
             }
-            case OP_TYPE_SET_CAN_AFFECT_SYSTEM_UI_FLAGS: {
+            case OP_TYPE_PRIVILEGED_SET_CAN_AFFECT_SYSTEM_UI_FLAGS: {
                 taskFragment.setCanAffectSystemUiFlags(operation.getBooleanValue());
 
                 // Request to apply the flags.
@@ -1938,45 +1939,23 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             return false;
         }
         final int opType = operation.getOpType();
+
+        if (opType >= PRIVILEGED_OP_START
+                && !mTaskFragmentOrganizerController.isSystemOrganizer(organizer.asBinder())) {
+            final Throwable exception = new SecurityException(
+                    "Only a system organizer can perform privileged operations. opType=" + opType
+            );
+            sendTaskFragmentOperationFailure(organizer, errorCallbackToken, taskFragment,
+                    opType, exception);
+            return false;
+        }
+
         if (opType == OP_TYPE_CREATE_TASK_FRAGMENT) {
             // No need to check TaskFragment.
             return true;
         }
 
         if (!validateTaskFragment(taskFragment, opType, errorCallbackToken, organizer)) {
-            return false;
-        }
-
-        if ((opType == OP_TYPE_REORDER_TO_BOTTOM_OF_TASK
-                || opType == OP_TYPE_REORDER_TO_TOP_OF_TASK)
-                && !mTaskFragmentOrganizerController.isSystemOrganizer(organizer.asBinder())) {
-            final Throwable exception = new SecurityException(
-                    "Only a system organizer can perform OP_TYPE_REORDER_TO_BOTTOM_OF_TASK or "
-                            + "OP_TYPE_REORDER_TO_TOP_OF_TASK."
-            );
-            sendTaskFragmentOperationFailure(organizer, errorCallbackToken, taskFragment,
-                    opType, exception);
-            return false;
-        }
-
-        if ((opType == OP_TYPE_SET_MOVE_TO_BOTTOM_IF_CLEAR_WHEN_LAUNCH)
-                && !mTaskFragmentOrganizerController.isSystemOrganizer(organizer.asBinder())) {
-            final Throwable exception = new SecurityException(
-                    "Only a system organizer can perform "
-                            + "OP_TYPE_SET_MOVE_TO_BOTTOM_IF_CLEAR_WHEN_LAUNCH."
-            );
-            sendTaskFragmentOperationFailure(organizer, errorCallbackToken, taskFragment,
-                    opType, exception);
-            return false;
-        }
-
-        if ((opType == OP_TYPE_SET_CAN_AFFECT_SYSTEM_UI_FLAGS)
-                && !mTaskFragmentOrganizerController.isSystemOrganizer(organizer.asBinder())) {
-            final Throwable exception = new SecurityException(
-                    "Only a system organizer can perform OP_TYPE_SET_CAN_AFFECT_SYSTEM_UI_FLAGS."
-            );
-            sendTaskFragmentOperationFailure(organizer, errorCallbackToken, taskFragment,
-                    opType, exception);
             return false;
         }
 
