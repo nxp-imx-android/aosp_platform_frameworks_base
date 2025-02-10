@@ -18,7 +18,7 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4470785958457506021">"सहयोगी डिव्हाइस व्यवस्थापक"</string>
     <string name="confirmation_title" msgid="2244241995958340998">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; अ‍ॅपला &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; अ‍ॅक्सेस करण्याची अनुमती द्यायची आहे का?"</string>
-    <string name="message_discovery_soft_timeout" msgid="473346859407859161">"या <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> चे <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> सुरू असल्याची खात्री करा आणि तुमचे<xliff:g id="PROFILE_NAME">%3$s</xliff:g> जवळ ठेवा."</string>
+    <string name="message_discovery_soft_timeout" msgid="473346859407859161">"या <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> चे <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> सुरू असल्याची खात्री करा आणि तुमचे <xliff:g id="PROFILE_NAME">%3$s</xliff:g> जवळ ठेवा."</string>
     <string name="message_discovery_hard_timeout" msgid="677514663495711424">"डिव्हाइस आढळली नाहीत. कृपया नंतर पुन्हा प्रयत्न करा."</string>
     <string name="discovery_bluetooth" msgid="5693557668470016164">"ब्लूटूथ"</string>
     <string name="discovery_wifi" msgid="1551782459721758773">"वाय-फाय"</string>

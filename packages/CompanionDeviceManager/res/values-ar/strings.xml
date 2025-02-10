@@ -18,7 +18,7 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4470785958457506021">"تطبيق \"مدير الجهاز المصاحب\""</string>
     <string name="confirmation_title" msgid="2244241995958340998">"‏هل تريد السماح لـ &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; بالوصول إلى &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;؟"</string>
-    <string name="message_discovery_soft_timeout" msgid="473346859407859161">"يُرجى التأكّد من أنّ <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> مفعَّل في <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>، وجعل <xliff:g id="PROFILE_NAME">%3$s</xliff:g> بالقرب منك."</string>
+    <string name="message_discovery_soft_timeout" msgid="473346859407859161">"يُرجى التأكّد من تفعيل <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> في <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>، وإبقاء <xliff:g id="PROFILE_NAME">%3$s</xliff:g> بالقرب منك."</string>
     <string name="message_discovery_hard_timeout" msgid="677514663495711424">"لم يتم العثور على أي أجهزة. يُرجى إعادة المحاولة لاحقًا."</string>
     <string name="discovery_bluetooth" msgid="5693557668470016164">"البلوتوث"</string>
     <string name="discovery_wifi" msgid="1551782459721758773">"Wi-Fi"</string>
@@ -63,7 +63,7 @@
     <string name="permission_microphone" msgid="2152206421428732949">"الميكروفون"</string>
     <string name="permission_call_logs" msgid="5546761417694586041">"سجلّ المكالمات"</string>
     <string name="permission_nearby_devices" msgid="7530973297737123481">"الأجهزة المجاورة"</string>
-    <string name="permission_media_routing_control" msgid="5498639511586715253">"تغيير جهاز إخراج الوسائط"</string>
+    <string name="permission_media_routing_control" msgid="5498639511586715253">"تغيير جهاز بث الوسائط"</string>
     <string name="permission_storage" msgid="6831099350839392343">"الصور والوسائط"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"الإشعارات"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"إجراء المكالمات الهاتفية وإدارتها"</string>
@@ -77,7 +77,7 @@
     <string name="permission_notifications_summary" msgid="2272810466047367030">"‏• قراءة كل الإشعارات بما فيها المعلومات، مثل جهات الاتصال والرسائل والصور&lt;br/&gt;• إرسال الإشعارات&lt;br/&gt;&lt;br/&gt;يمكنك إدارة الإذن الممنوح لهذا التطبيق بقراءة الإشعارات وإرسالها في أي وقت من خلال الإعدادات &gt; الإشعارات."</string>
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"يتيح لك هذا الإذن الاطّلاع على مجموعة من الأجهزة المتاحة وتحديد الجهاز المسموح له بتشغيل الصوت أو الفيديو أو بثّهما من التطبيقات الأخرى."</string>
-    <string name="device_type" product="default" msgid="8268703872070046263">"هاتف"</string>
+    <string name="device_type" product="default" msgid="8268703872070046263">"الهاتف"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"جهاز لوحي"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"تلفزيون"</string>
     <string name="device_type" product="device" msgid="1526125965802507189">"جهاز"</string>
