@@ -205,13 +205,6 @@ flag {
 }
 
 flag {
-    name: "reset_on_fork_enabled"
-    namespace: "system_performance"
-    description: "Set reset_on_fork flag."
-    bug: "370988407"
-}
-
-flag {
     name: "push_global_state_to_oomadjuster"
     namespace: "backstage_power"
     description: "Migrate OomAdjuster pulled device state to a push model"
