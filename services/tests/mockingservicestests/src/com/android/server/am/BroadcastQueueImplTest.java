@@ -1550,6 +1550,7 @@ public final class BroadcastQueueImplTest extends BaseBroadcastQueueTest {
         verifyPendingRecords(queue, List.of(closeSystemDialogs1, closeSystemDialogs2));
     }
 
+    @SuppressWarnings("GuardedBy")
     @Test
     public void testDeliveryGroupPolicy_sameAction_multiplePolicies() {
         // Create a PACKAGE_CHANGED broadcast corresponding to a change in the whole PACKAGE_GREEN
