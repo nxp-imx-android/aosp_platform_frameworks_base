@@ -107,6 +107,7 @@ public class WindowTokenClient extends Binder {
      * @param newDisplayId the updated {@link android.view.Display} ID
      */
     @MainThread
+    @VisibleForTesting(visibility = PACKAGE)
     public void onConfigurationChanged(Configuration newConfig, int newDisplayId) {
         onConfigurationChanged(newConfig, newDisplayId, true /* shouldReportConfigChange */);
     }
