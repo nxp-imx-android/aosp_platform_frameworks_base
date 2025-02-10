@@ -24,7 +24,6 @@ import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.NOT_
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.SHOW_IMMEDIATELY;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.Flags.FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS;
-import static android.app.Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS;
 import static android.app.Flags.FLAG_SORT_SECTION_BY_TIME;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
 import static android.app.Notification.EXTRA_PICTURE;
@@ -5377,6 +5376,42 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         }
 
         verify(mPreferencesHelper, never()).getNotificationChannelGroups(anyString(), anyInt());
+    }
+
+    @Test
+    public void testGetPackagesWithChannels_blocked() throws Exception {
+        // While we mostly rely on the PreferencesHelper implementation of channels, we filter in
+        // NMS so that we do not return blocked packages.
+        // Three packages; all under user 1.
+        // pkg2 is blocked, but pkg1 and pkg3 are not.
+        String pkg1 = "com.package.one", pkg2 = "com.package.two", pkg3 = "com.package.three";
+        int uid1 = UserHandle.getUid(1, 111);
+        int uid2 = UserHandle.getUid(1, 222);
+        int uid3 = UserHandle.getUid(1, 333);
+
+        when(mPackageManager.getPackageUid(eq(pkg1), anyLong(), anyInt())).thenReturn(uid1);
+        when(mPackageManager.getPackageUid(eq(pkg2), anyLong(), anyInt())).thenReturn(uid2);
+        when(mPackageManager.getPackageUid(eq(pkg3), anyLong(), anyInt())).thenReturn(uid3);
+        when(mPermissionHelper.hasPermission(uid1)).thenReturn(true);
+        when(mPermissionHelper.hasPermission(uid2)).thenReturn(false);
+        when(mPermissionHelper.hasPermission(uid3)).thenReturn(true);
+
+        NotificationChannel channel1 = new NotificationChannel("id1", "name1",
+                NotificationManager.IMPORTANCE_DEFAULT);
+        NotificationChannel channel2 = new NotificationChannel("id3", "name3",
+                NotificationManager.IMPORTANCE_DEFAULT);
+        NotificationChannel channel3 = new NotificationChannel("id4", "name3",
+                NotificationManager.IMPORTANCE_DEFAULT);
+        mService.mPreferencesHelper.createNotificationChannel(pkg1, uid1, channel1, true, false,
+                uid1, false);
+        mService.mPreferencesHelper.createNotificationChannel(pkg2, uid2, channel2, true, false,
+                uid2, false);
+        mService.mPreferencesHelper.createNotificationChannel(pkg3, uid3, channel3, true, false,
+                uid3, false);
+
+        // Output should contain only the package with notification permissions (1, 3).
+        enableInteractAcrossUsers();
+        assertThat(mBinderService.getPackagesWithAnyChannels(1)).containsExactly(pkg1, pkg3);
     }
 
     @Test
