@@ -20,6 +20,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaMetadata
 import android.media.session.MediaController
+import android.media.session.MediaController.PlaybackInfo
 import android.media.session.MediaSession
 import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
@@ -98,16 +99,22 @@ class MediaSessions(context: Context, looper: Looper, callbacks: Callbacks) {
     }
 
     /** Set volume `level` to remote media `token` */
-    fun setVolume(token: MediaSession.Token, level: Int) {
+    fun setVolume(sessionId: SessionId, volumeLevel: Int) {
+        when (sessionId) {
+            is SessionId.Media -> setMediaSessionVolume(sessionId.token, volumeLevel)
+        }
+    }
+
+    private fun setMediaSessionVolume(token: MediaSession.Token, volumeLevel: Int) {
         val record = mRecords[token]
         if (record == null) {
             Log.w(TAG, "setVolume: No record found for token $token")
             return
         }
         if (D.BUG) {
-            Log.d(TAG, "Setting level to $level")
+            Log.d(TAG, "Setting level to $volumeLevel")
         }
-        record.controller.setVolumeTo(level, 0)
+        record.controller.setVolumeTo(volumeLevel, 0)
     }
 
     private fun onRemoteVolumeChangedH(sessionToken: MediaSession.Token, flags: Int) {
@@ -122,7 +129,7 @@ class MediaSessions(context: Context, looper: Looper, callbacks: Callbacks) {
             )
         }
         val token = controller.sessionToken
-        mCallbacks.onRemoteVolumeChanged(token, flags)
+        mCallbacks.onRemoteVolumeChanged(SessionId.from(token), flags)
     }
 
     private fun onUpdateRemoteSessionListH(sessionToken: MediaSession.Token?) {
@@ -158,7 +165,7 @@ class MediaSessions(context: Context, looper: Looper, callbacks: Callbacks) {
                 controller.registerCallback(record, mHandler)
             }
             val record = mRecords[token]
-            val remote = isRemote(playbackInfo)
+            val remote = playbackInfo.isRemote()
             if (remote) {
                 updateRemoteH(token, record!!.name, playbackInfo)
                 record.sentRemote = true
@@ -172,7 +179,7 @@ class MediaSessions(context: Context, looper: Looper, callbacks: Callbacks) {
                 Log.d(TAG, "Removing " + record.name + " sentRemote=" + record.sentRemote)
             }
             if (record.sentRemote) {
-                mCallbacks.onRemoteRemoved(token)
+                mCallbacks.onRemoteRemoved(SessionId.from(token))
                 record.sentRemote = false
             }
         }
@@ -213,8 +220,8 @@ class MediaSessions(context: Context, looper: Looper, callbacks: Callbacks) {
     private fun updateRemoteH(
         token: MediaSession.Token,
         name: String?,
-        pi: MediaController.PlaybackInfo,
-    ) = mCallbacks.onRemoteUpdate(token, name, pi)
+        playbackInfo: PlaybackInfo,
+    ) = mCallbacks.onRemoteUpdate(SessionId.from(token), name, VolumeInfo.from(playbackInfo))
 
     private inner class MediaControllerRecord(val controller: MediaController) :
         MediaController.Callback() {
@@ -225,7 +232,7 @@ class MediaSessions(context: Context, looper: Looper, callbacks: Callbacks) {
             return method + " " + controller.packageName + " "
         }
 
-        override fun onAudioInfoChanged(info: MediaController.PlaybackInfo) {
+        override fun onAudioInfoChanged(info: PlaybackInfo) {
             if (D.BUG) {
                 Log.d(
                     TAG,
@@ -235,9 +242,9 @@ class MediaSessions(context: Context, looper: Looper, callbacks: Callbacks) {
                         sentRemote),
                 )
             }
-            val remote = isRemote(info)
+            val remote = info.isRemote()
             if (!remote && sentRemote) {
-                mCallbacks.onRemoteRemoved(controller.sessionToken)
+                mCallbacks.onRemoteRemoved(SessionId.from(controller.sessionToken))
                 sentRemote = false
             } else if (remote) {
                 updateRemoteH(controller.sessionToken, name, info)
@@ -301,20 +308,36 @@ class MediaSessions(context: Context, looper: Looper, callbacks: Callbacks) {
         }
     }
 
+    /** Opaque id for ongoing sessions that support volume adjustment. */
+    sealed interface SessionId {
+
+        companion object {
+            fun from(token: MediaSession.Token) = Media(token)
+        }
+
+        data class Media(val token: MediaSession.Token) : SessionId
+    }
+
+    /** Holds session volume information. */
+    data class VolumeInfo(val currentVolume: Int, val maxVolume: Int) {
+
+        companion object {
+
+            fun from(playbackInfo: PlaybackInfo) =
+                VolumeInfo(playbackInfo.currentVolume, playbackInfo.maxVolume)
+        }
+    }
+
     /** Callback for remote media sessions */
     interface Callbacks {
         /** Invoked when remote media session is updated */
-        fun onRemoteUpdate(
-            token: MediaSession.Token?,
-            name: String?,
-            pi: MediaController.PlaybackInfo?,
-        )
+        fun onRemoteUpdate(token: SessionId?, name: String?, volumeInfo: VolumeInfo?)
 
         /** Invoked when remote media session is removed */
-        fun onRemoteRemoved(token: MediaSession.Token?)
+        fun onRemoteRemoved(token: SessionId?)
 
         /** Invoked when remote volume is changed */
-        fun onRemoteVolumeChanged(token: MediaSession.Token?, flags: Int)
+        fun onRemoteVolumeChanged(token: SessionId?, flags: Int)
     }
 
     companion object {
@@ -325,11 +348,10 @@ class MediaSessions(context: Context, looper: Looper, callbacks: Callbacks) {
         const val UPDATE_REMOTE_SESSION_LIST: Int = 3
 
         private const val USE_SERVICE_LABEL = false
-
-        private fun isRemote(pi: MediaController.PlaybackInfo?): Boolean =
-            pi != null && pi.playbackType == MediaController.PlaybackInfo.PLAYBACK_TYPE_REMOTE
     }
 }
+
+private fun PlaybackInfo?.isRemote() = this?.playbackType == PlaybackInfo.PLAYBACK_TYPE_REMOTE
 
 private fun MediaController.dump(n: Int, writer: PrintWriter) {
     writer.println("  Controller $n: $packageName")
