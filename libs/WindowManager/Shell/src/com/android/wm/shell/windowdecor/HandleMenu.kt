@@ -35,10 +35,8 @@ import android.view.SurfaceControl
 import android.view.View
 import android.view.WindowInsets.Type.systemBars
 import android.view.WindowManager
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.TextView
 import android.window.DesktopModeFlags
 import android.window.SurfaceSyncGroup
 import androidx.annotation.StringRes
@@ -540,17 +538,35 @@ class HandleMenu(
                 return@setOnTouchListener true
             }
 
-            with(context.resources) {
-                // Update a11y read out to say "double tap to enter desktop windowing mode"
+            with(context) {
+                // Update a11y announcement out to say "double tap to enter Fullscreen"
                 ViewCompat.replaceAccessibilityAction(
-                    desktopBtn, ACTION_CLICK,
-                    getString(R.string.app_handle_menu_talkback_desktop_mode_button_text), null
+                    fullscreenBtn, ACTION_CLICK,
+                    getString(
+                        R.string.app_handle_menu_accessibility_announce,
+                        getString(R.string.fullscreen_text)
+                    ),
+                    null,
                 )
 
-                // Update a11y read out to say "double tap to enter split screen mode"
+                // Update a11y announcement out to say "double tap to enter Desktop View"
+                ViewCompat.replaceAccessibilityAction(
+                    desktopBtn, ACTION_CLICK,
+                    getString(
+                        R.string.app_handle_menu_accessibility_announce,
+                        getString(R.string.desktop_text)
+                    ),
+                    null,
+                )
+
+                // Update a11y announcement to say "double tap to enter Split Screen"
                 ViewCompat.replaceAccessibilityAction(
                     splitscreenBtn, ACTION_CLICK,
-                    getString(R.string.app_handle_menu_talkback_split_screen_mode_button_text), null
+                    getString(
+                        R.string.app_handle_menu_accessibility_announce,
+                        getString(R.string.split_screen_text)
+                    ),
+                    null,
                 )
             }
         }

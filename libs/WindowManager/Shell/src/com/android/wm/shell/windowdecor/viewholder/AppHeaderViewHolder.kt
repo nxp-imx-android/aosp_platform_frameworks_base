@@ -93,9 +93,6 @@ class AppHeaderViewHolder(
     private val lightColors = dynamicLightColorScheme(context)
     private val darkColors = dynamicDarkColorScheme(context)
 
-    private val headerButtonOpenMenuA11yText = context.resources
-        .getString(R.string.desktop_mode_app_header_chip_text)
-
     /**
      * The corner radius to apply to the app chip, maximize and close button's background drawable.
      **/
@@ -231,35 +228,29 @@ class AppHeaderViewHolder(
             }
         }
 
-        val a11yActionOpenHeaderMenu = AccessibilityAction(AccessibilityNodeInfo.ACTION_CLICK,
-            headerButtonOpenMenuA11yText)
-        openMenuButton.accessibilityDelegate = object : View.AccessibilityDelegate() {
-            override fun onInitializeAccessibilityNodeInfo(
-                host: View,
-                info: AccessibilityNodeInfo
-            ) {
-                super.onInitializeAccessibilityNodeInfo(host, info)
-                info.addAction(a11yActionOpenHeaderMenu)
-            }
-        }
+        // Update a11y announcement to say "double tap to open menu"
+        ViewCompat.replaceAccessibilityAction(
+            openMenuButton,
+            AccessibilityActionCompat.ACTION_CLICK,
+            context.getString(R.string.app_handle_chip_accessibility_announce),
+            null
+        )
 
-        with(context.resources) {
-            // Update a11y read out to say "double tap to maximize or restore window size"
-            ViewCompat.replaceAccessibilityAction(
-                maximizeWindowButton,
-                AccessibilityActionCompat.ACTION_CLICK,
-                getString(R.string.maximize_button_talkback_action_maximize_restore_text),
-                null
-            )
+        // Update a11y announcement to say "double tap to maximize or restore window size"
+        ViewCompat.replaceAccessibilityAction(
+            maximizeWindowButton,
+            AccessibilityActionCompat.ACTION_CLICK,
+            context.getString(R.string.maximize_button_talkback_action_maximize_restore_text),
+            null
+        )
 
-            // Update a11y read out to say "double tap to minimize app window"
-            ViewCompat.replaceAccessibilityAction(
-                minimizeWindowButton,
-                AccessibilityActionCompat.ACTION_CLICK,
-                getString(R.string.minimize_button_talkback_action_maximize_restore_text),
-                null
-            )
-        }
+        // Update a11y announcement out to say "double tap to minimize app window"
+        ViewCompat.replaceAccessibilityAction(
+            minimizeWindowButton,
+            AccessibilityActionCompat.ACTION_CLICK,
+            context.getString(R.string.minimize_button_talkback_action_maximize_restore_text),
+            null
+        )
     }
 
     override fun bindData(data: HeaderData) {
@@ -275,7 +266,8 @@ class AppHeaderViewHolder(
     /** Sets the app's name in the header. */
     fun setAppName(name: CharSequence) {
         appNameTextView.text = name
-        openMenuButton.contentDescription = name
+        openMenuButton.contentDescription =
+            context.getString(R.string.desktop_mode_app_header_chip_text, name)
     }
 
     /** Sets the app's icon in the header. */
