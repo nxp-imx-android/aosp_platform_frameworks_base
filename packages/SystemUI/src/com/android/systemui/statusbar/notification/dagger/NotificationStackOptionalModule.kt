@@ -26,7 +26,7 @@ import dagger.Module
  * This is meant to be bound in SystemUI variants with [NotificationStackScrollLayoutController].
  */
 @Module
-interface NotificationStackGoogleModule {
+interface NotificationStackModule {
     @Binds
     fun bindNotificationStackRebindingHider(
         impl: NotificationStackRebindingHiderImpl
@@ -35,7 +35,7 @@ interface NotificationStackGoogleModule {
 
 /** This is meant to be used by all SystemUI variants, also those without NSSL. */
 @Module
-interface NotificationStackModule {
+interface NotificationStackOptionalModule {
     @BindsOptionalOf
     fun bindOptionalOfNotificationStackRebindingHider(): NotificationStackRebindingHider
 }
