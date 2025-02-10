@@ -1306,7 +1306,8 @@ public abstract class WMShellModule {
             WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
             DesktopWindowingEducationTooltipController desktopWindowingEducationTooltipController,
             @ShellMainThread CoroutineScope applicationScope,
-            @ShellBackgroundThread MainCoroutineDispatcher backgroundDispatcher) {
+            @ShellBackgroundThread MainCoroutineDispatcher backgroundDispatcher,
+            DesktopModeUiEventLogger desktopModeUiEventLogger) {
         return new AppHandleEducationController(
                 context,
                 appHandleEducationFilter,
@@ -1314,7 +1315,8 @@ public abstract class WMShellModule {
                 windowDecorCaptionHandleRepository,
                 desktopWindowingEducationTooltipController,
                 applicationScope,
-                backgroundDispatcher);
+                backgroundDispatcher,
+                desktopModeUiEventLogger);
     }
 
     @WMSingleton
