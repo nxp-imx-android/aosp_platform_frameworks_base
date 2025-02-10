@@ -236,6 +236,14 @@
     <string name="bluetooth_active_media_only_battery_level">Active (media only). <xliff:g id="battery_level_as_percentage">%1$s</xliff:g> battery.</string>
     <!-- Connected devices settings. Message when Bluetooth is connected and active for media only, showing remote device status and battery level for untethered headset. [CHAR LIMIT=NONE] -->
     <string name="bluetooth_active_media_only_battery_level_untethered">Active (media only). L: <xliff:g id="battery_level_as_percentage" example="25%">%1$s</xliff:g>, R: <xliff:g id="battery_level_as_percentage" example="25%">%2$s</xliff:g> battery.</string>
+    <!-- Connected devices settings. Message when Bluetooth is connected but not in use, showing remote device status and battery level for temporary bond device. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_guest_battery_level">Guest device. <xliff:g id="battery_level_as_percentage">%1$s</xliff:g> battery.</string>
+    <!-- Connected devices settings. Message when Bluetooth is connected but not in use, showing remote device status and battery level for temporary bond untethered headset. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_guest_battery_level_untethered">Guest device. L: <xliff:g id="battery_level_as_percentage" example="25%">%1$s</xliff:g>, R: <xliff:g id="battery_level_as_percentage" example="25%">%2$s</xliff:g> battery.</string>
+    <!-- Connected devices settings. Message when Bluetooth is connected and active for media only, showing remote device status and battery level for temporary bond device. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_guest_media_only_battery_level">Guest device (media only). <xliff:g id="battery_level_as_percentage">%1$s</xliff:g> battery.</string>
+    <!-- Connected devices settings. Message when Bluetooth is connected and active for media only, showing remote device status and battery level for temporary bond untethered headset. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_guest_media_only_battery_level_untethered">Guest device (media only). L: <xliff:g id="battery_level_as_percentage" example="25%">%1$s</xliff:g>, R: <xliff:g id="battery_level_as_percentage" example="25%">%2$s</xliff:g> battery.</string>
     <!-- Connected devices settings. Message when Bluetooth is connected but not in use, showing remote device battery level, supports audio sharing. [CHAR LIMIT=NONE] -->
     <string name="bluetooth_battery_level_lea_support">Connected (supports audio sharing). <xliff:g id="battery_level_as_percentage">%1$s</xliff:g> battery.</string>
     <!-- Connected devices settings. Message when Bluetooth is connected but not in use, showing remote device battery level for untethered headset, supports audio sharing. [CHAR LIMIT=NONE] -->
@@ -246,10 +254,22 @@
     <string name="bluetooth_battery_level_untethered_right_lea_support">Connected (supports audio sharing). Right: <xliff:g id="battery_level_as_percentage" example="25%">%1$s</xliff:g> battery.</string>
     <!-- Connected devices settings. Message when Bluetooth is connected but not in use, showing no battery information, supports audio sharing. [CHAR LIMIT=NONE] -->
     <string name="bluetooth_no_battery_level_lea_support">Connected (supports audio sharing)</string>
+    <!-- Connected devices settings. Message when Bluetooth is connected but not in use, showing remote device battery level, supports audio sharing. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_guest_battery_level_lea_support">Guest device (supports audio sharing). <xliff:g id="battery_level_as_percentage">%1$s</xliff:g> battery.</string>
+    <!-- Connected devices settings. Message when Bluetooth is connected but not in use, showing remote device battery level for untethered headset, supports audio sharing. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_guest_battery_level_untethered_lea_support">Guest device (supports audio sharing). L: <xliff:g id="battery_level_as_percentage" example="25%">%1$s</xliff:g>, R: <xliff:g id="battery_level_as_percentage" example="25%">%2$s</xliff:g> battery.</string>
+    <!-- Connected devices settings. Message when Bluetooth is connected but not in use, showing no battery information, supports audio sharing. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_guest_no_battery_level_lea_support">Guest device (supports audio sharing)</string>
     <!-- Connected devices settings. Message when Bluetooth is connected and active for media only but no battery information, showing remote device status. [CHAR LIMIT=NONE] -->
     <string name="bluetooth_active_media_only_no_battery_level">Active (media only)</string>
+    <!-- Connected devices settings. Message when Bluetooth is connected but not in use with no battery information, showing remote device status for temporary bond device. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_guest_no_battery_level">Guest device</string>
+    <!-- Connected devices settings. Message when Bluetooth is connected and active for media only but no battery information, showing remote device status for temporary bond device. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_guest_media_only_no_battery_level">Guest device (media only)</string>
     <!-- Connected devices settings. Message shown when bluetooth device is disconnected but is a known, previously connected device, supports audio sharing [CHAR LIMIT=NONE] -->
     <string name="bluetooth_saved_device_lea_support">Supports audio sharing</string>
+    <!-- Connected devices settings. Message shown when temporary bond bluetooth device is disconnected but is a known, previously connected device, supports audio sharing [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_guest_saved_device_lea_support">Guest device. Supports audio sharing</string>
 
     <!-- Connected device settings. Message when the left-side hearing aid device is active for media only. [CHAR LIMIT=NONE] -->
     <string name="bluetooth_hearing_aid_media_only_left_active">Active (media only), left only</string>
