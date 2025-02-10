@@ -35,11 +35,16 @@ fun List<BounceableTileViewModel>.bounceableInfo(
     index: Int,
     column: Int,
     columns: Int,
+    isFirstInRow: Boolean,
+    isLastInRow: Boolean,
 ): BounceableInfo {
-    // Only look for neighbor bounceables if they are on the same row
+    // A tile may be the last in the row without being on the last column
     val onLastColumn = sizedTile.onLastColumn(column, columns)
-    val previousTile = getOrNull(index - 1)?.takeIf { column != 0 }
-    val nextTile = getOrNull(index + 1)?.takeIf { !onLastColumn }
+
+    // Only look for neighbor bounceables if they are on the same row
+    val previousTile = getOrNull(index - 1)?.takeIf { !isFirstInRow }
+    val nextTile = getOrNull(index + 1)?.takeIf { !isLastInRow }
+
     return BounceableInfo(this[index], previousTile, nextTile, !onLastColumn)
 }
 
