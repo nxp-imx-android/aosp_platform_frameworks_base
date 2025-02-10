@@ -63,7 +63,7 @@ public class VerificationStatusTrackerTest {
                 .thenReturn(TEST_REQUEST_START_TIME + TEST_MAX_TIMEOUT_DURATION_MILLIS - 100)
                 .thenReturn(TEST_REQUEST_START_TIME + TEST_MAX_TIMEOUT_DURATION_MILLIS);
         mTracker = new VerificationStatusTracker(TEST_TIMEOUT_DURATION_MILLIS,
-                TEST_MAX_TIMEOUT_DURATION_MILLIS, mInjector);
+                TEST_MAX_TIMEOUT_DURATION_MILLIS, mInjector, 0);
     }
 
     @Test

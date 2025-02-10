@@ -19,6 +19,8 @@ package com.android.server.pm.verify.pkg;
 import android.annotation.CurrentTimeMillisLong;
 import android.annotation.DurationMillisLong;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.UserIdInt;
 
 import com.android.internal.annotations.VisibleForTesting;
 
@@ -31,6 +33,7 @@ public final class VerificationStatusTracker {
     private final @CurrentTimeMillisLong long mMaxTimeoutTime;
     @NonNull
     private final VerifierController.Injector mInjector;
+    private final @UserIdInt int mUserId;
 
     /**
      * By default, the timeout time is the default timeout duration plus the current time (when
@@ -41,11 +44,12 @@ public final class VerificationStatusTracker {
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PROTECTED)
     public VerificationStatusTracker(@DurationMillisLong long defaultTimeoutMillis,
             @DurationMillisLong long maxExtendedTimeoutMillis,
-            @NonNull VerifierController.Injector injector) {
+            @NonNull VerifierController.Injector injector, @UserIdInt int userId) {
         mStartTime = injector.getCurrentTimeMillis();
         mTimeoutTime = mStartTime + defaultTimeoutMillis;
         mMaxTimeoutTime = mStartTime + maxExtendedTimeoutMillis;
         mInjector = injector;
+        mUserId = userId;
     }
 
     /**
@@ -89,5 +93,21 @@ public final class VerificationStatusTracker {
      */
     public boolean isTimeout() {
         return mInjector.getCurrentTimeMillis() >= mTimeoutTime;
+    }
+
+    public @UserIdInt int getUserId() {
+        return mUserId;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+        if (o instanceof VerificationStatusTracker that) {
+            return this.mStartTime == that.mStartTime
+                    && this.mTimeoutTime == that.mTimeoutTime
+                    && this.mMaxTimeoutTime == that.mMaxTimeoutTime
+                    && this.mInjector == that.mInjector
+                    && this.mUserId == that.mUserId;
+        }
+        return false;
     }
 }

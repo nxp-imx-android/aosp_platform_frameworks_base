@@ -44,6 +44,7 @@ import android.os.UserHandle;
 import android.provider.DeviceConfig;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -103,19 +104,21 @@ public class VerifierController {
     private static final long DEFAULT_VERIFIER_CONNECTION_TIMEOUT_MILLIS =
             TimeUnit.SECONDS.toMillis(10);
 
-    // The maximum amount of time to wait before the system unbinds from the verifier.
-    private static final long UNBIND_TIMEOUT_MILLIS = TimeUnit.HOURS.toMillis(6);
+    /**
+     * After the connection to the verifier is established, if the tracker is empty or becomes empty
+     * after all the pending verification requests are resolved, automatically disconnect from the
+     * verifier after this amount of time.
+     */
+    private static final long DISCONNECT_TIMEOUT_MILLIS = TimeUnit.MINUTES.toMillis(10);
 
     private static VerifierController sInstance;
 
     private final Context mContext;
     private final Handler mHandler;
-    // Guards the remote service object, as well as the verifier name and UID, which should all be
-    // changed at the same time.
-    private final Object mLock = new Object();
+
     // Map of userId -> remote verifier service for the user.
     @NonNull
-    @GuardedBy("mLock")
+    @GuardedBy("mRemoteServices")
     private final SparseArray<ServiceConnectorWrapper> mRemoteServices = new SparseArray<>();
 
     @NonNull
@@ -126,10 +129,15 @@ public class VerifierController {
     @Nullable
     private final String mDefaultVerifierPackageName;
 
-    // Repository of active verification sessions and their status, mapping from id to status.
+    // Repository of active verification sessions and their status (map of id -> tracker).
     @NonNull
-    @GuardedBy("mVerificationStatus")
-    private final SparseArray<VerificationStatusTracker> mVerificationStatus = new SparseArray<>();
+    @GuardedBy("mVerificationStatusTrackers")
+    private final SparseArray<VerificationStatusTracker> mVerificationStatusTrackers =
+            new SparseArray<>();
+
+    @GuardedBy("mVerificationStatusTrackers")
+    // Counter of active verification sessions per user; must be synced with the trackers map.
+    private final SparseIntArray mSessionsCountPerUser = new SparseIntArray();
 
     /**
      * Get an instance of VerifierController.
@@ -189,7 +197,7 @@ public class VerifierController {
             Slog.i(TAG, "Requesting to bind to the verifier service for user " + userId);
         }
         final String verifierPackageName = getVerifierPackageName();
-        synchronized (mLock) {
+        synchronized (mRemoteServices) {
             var remoteService = mRemoteServices.get(userId);
             if (remoteService != null) {
                 // The system has already bound to a verifier. Check if it's still valid.
@@ -221,12 +229,17 @@ public class VerifierController {
         }
         final var remoteService = mInjector.getRemoteService(
                 verifierPackageName, mContext, userId, mHandler);
+        final var remoteServiceWrapper = new ServiceConnectorWrapper(
+                remoteService, verifierUid, verifierPackageName);
         remoteService.setServiceLifecycleCallbacks(
                 new ServiceConnector.ServiceLifecycleCallbacks<>() {
                     @Override
                     public void onConnected(@NonNull IVerifierService service) {
                         Slog.i(TAG, "Verifier " + verifierPackageName + " is connected"
                                 + " on user " + userId);
+                        // Aggressively auto-disconnect until verification requests are sent out
+                        startAutoDisconnectCountdown(
+                                remoteServiceWrapper.getAutoDisconnectCallback());
                     }
 
                     @Override
@@ -235,6 +248,9 @@ public class VerifierController {
                                 "Verifier " + verifierPackageName + " is disconnected"
                                         + " on user " + userId);
                         destroy(userId);
+                        // Cancel auto-disconnect because the verifier is already disconnected
+                        stopAutoDisconnectCountdown(
+                                remoteServiceWrapper.getAutoDisconnectCallback());
                     }
 
                     @Override
@@ -242,11 +258,13 @@ public class VerifierController {
                         Slog.w(TAG, "Verifier " + verifierPackageName + " has died"
                                 + " on user " + userId);
                         destroy(userId);
+                        // Cancel auto-disconnect because the binder has already died
+                        stopAutoDisconnectCountdown(
+                                remoteServiceWrapper.getAutoDisconnectCallback());
                     }
                 });
-        synchronized (mLock) {
-            mRemoteServices.put(userId, new ServiceConnectorWrapper(
-                    remoteService, verifierUid, verifierPackageName));
+        synchronized (mRemoteServices) {
+            mRemoteServices.put(userId, remoteServiceWrapper);
         }
         if (DEBUG) {
             Slog.i(TAG, "Connecting to a qualified verifier: " + verifierPackageName
@@ -257,7 +275,7 @@ public class VerifierController {
     }
 
     private void destroy(int userId) {
-        synchronized (mLock) {
+        synchronized (mRemoteServices) {
             if (mRemoteServices.contains(userId)) {
                 var remoteService = mRemoteServices.get(userId);
                 if (remoteService != null) {
@@ -268,12 +286,22 @@ public class VerifierController {
         }
     }
 
+    private void startAutoDisconnectCountdown(Runnable autoDisconnectCallback) {
+        // If there is already a task to disconnect, remove it and restart the countdown
+        stopAutoDisconnectCountdown(autoDisconnectCallback);
+        mHandler.postDelayed(autoDisconnectCallback, DISCONNECT_TIMEOUT_MILLIS);
+    }
+
+    private void stopAutoDisconnectCountdown(Runnable autoDisconnectCallback) {
+        mInjector.removeCallbacks(mHandler, autoDisconnectCallback);
+    }
+
     /**
      * Called to notify the bound verifier agent that a package name is available and will soon be
      * requested for verification.
      */
     public void notifyPackageNameAvailable(@NonNull String packageName, int userId) {
-        synchronized (mLock) {
+        synchronized (mRemoteServices) {
             var remoteService = mRemoteServices.get(userId);
             if (remoteService == null) {
                 if (DEBUG) {
@@ -297,7 +325,7 @@ public class VerifierController {
      * will no longer be requested for verification, possibly because the installation is canceled.
      */
     public void notifyVerificationCancelled(@NonNull String packageName, int userId) {
-        synchronized (mLock) {
+        synchronized (mRemoteServices) {
             var remoteService = mRemoteServices.get(userId);
             if (remoteService == null) {
                 if (DEBUG) {
@@ -341,7 +369,7 @@ public class VerifierController {
         }
         // For now, the verification id is the same as the installation session id.
         final int verificationId = installationSessionId;
-        synchronized (mLock) {
+        synchronized (mRemoteServices) {
             var remoteService = mRemoteServices.get(userId);
             if (remoteService == null) {
                 if (DEBUG) {
@@ -381,14 +409,21 @@ public class VerifierController {
                             callback.onConnectionFailed();
                         }
                     });
+            // We've sent out a new verification request, so stop the auto-disconnection countdown.
+            stopAutoDisconnectCountdown(remoteService.getAutoDisconnectCallback());
         }
         // Keep track of the session status with the ID. Start counting down the session timeout.
         final long defaultTimeoutMillis = mInjector.getVerificationRequestTimeoutMillis();
         final long maxExtendedTimeoutMillis = mInjector.getMaxVerificationExtendedTimeoutMillis();
         final VerificationStatusTracker tracker = new VerificationStatusTracker(
-                defaultTimeoutMillis, maxExtendedTimeoutMillis, mInjector);
-        synchronized (mVerificationStatus) {
-            mVerificationStatus.put(verificationId, tracker);
+                defaultTimeoutMillis, maxExtendedTimeoutMillis, mInjector, userId);
+        synchronized (mVerificationStatusTrackers) {
+            mVerificationStatusTrackers.put(verificationId, tracker);
+            if (mSessionsCountPerUser.indexOfKey(userId) < 0) {
+                mSessionsCountPerUser.put(userId, 0);
+            }
+            final int sessionsCount = mSessionsCountPerUser.get(userId);
+            mSessionsCountPerUser.put(userId, sessionsCount + 1);
         }
         startTimeoutCountdown(verificationId, tracker, callback, defaultTimeoutMillis);
         return true;
@@ -423,7 +458,7 @@ public class VerifierController {
      * Called to notify the bound verifier agent that a verification request has timed out.
      */
     public void notifyVerificationTimeout(int verificationId, int userId) {
-        synchronized (mLock) {
+        synchronized (mRemoteServices) {
             var remoteService = mRemoteServices.get(userId);
             if (remoteService == null) {
                 if (DEBUG) {
@@ -454,12 +489,35 @@ public class VerifierController {
         if (DEBUG) {
             Slog.i(TAG, "Removing status tracking for verification " + verificationId);
         }
-        synchronized (mVerificationStatus) {
-            VerificationStatusTracker tracker = mVerificationStatus.removeReturnOld(verificationId);
-            // Cancel the timeout counters if there's any
-            if (tracker != null) {
-                mInjector.stopTimeoutCountdown(mHandler, tracker);
+        synchronized (mVerificationStatusTrackers) {
+            final VerificationStatusTracker trackerRemoved =
+                    mVerificationStatusTrackers.removeReturnOld(verificationId);
+            if (trackerRemoved != null) {
+                // Stop the request timeout countdown
+                mInjector.stopTimeoutCountdown(mHandler, /* token= */ trackerRemoved);
+                final int userId = trackerRemoved.getUserId();
+                final int sessionCountForUser = mSessionsCountPerUser.get(userId);
+                if (sessionCountForUser >= 1) {
+                    // Decrement the sessions count but don't go beyond zero
+                    mSessionsCountPerUser.put(userId, sessionCountForUser - 1);
+                }
+                // Schedule auto-disconnect if there's no more active session on the user
+                if (mSessionsCountPerUser.get(userId) == 0) {
+                    maybeScheduleAutoDisconnect(userId);
+                }
             }
+        }
+    }
+
+    private void maybeScheduleAutoDisconnect(int userId) {
+        synchronized (mRemoteServices) {
+            final ServiceConnectorWrapper service = mRemoteServices.get(userId);
+            if (service == null) {
+                // Already unbound on this user
+                return;
+            }
+            // Schedule a job to disconnect from the verifier on this user
+            startAutoDisconnectCountdown(service.getAutoDisconnectCallback());
         }
     }
 
@@ -468,7 +526,7 @@ public class VerifierController {
      */
     public void assertCallerIsCurrentVerifier(int callingUid) {
         final int userId = UserHandle.getUserId(callingUid);
-        synchronized (mLock) {
+        synchronized (mRemoteServices) {
             var remoteService = mRemoteServices.get(userId);
             if (remoteService == null) {
                 throw new IllegalStateException(
@@ -493,8 +551,9 @@ public class VerifierController {
         @Override
         public @CurrentTimeMillisLong long getTimeoutTime(int verificationId) {
             assertCallerIsCurrentVerifier(getCallingUid());
-            synchronized (mVerificationStatus) {
-                final VerificationStatusTracker tracker = mVerificationStatus.get(verificationId);
+            synchronized (mVerificationStatusTrackers) {
+                final VerificationStatusTracker tracker =
+                        mVerificationStatusTrackers.get(verificationId);
                 if (tracker == null) {
                     throw new IllegalStateException("Verification session " + verificationId
                             + " doesn't exist or has finished");
@@ -507,8 +566,9 @@ public class VerifierController {
         public @DurationMillisLong long extendTimeRemaining(int verificationId,
                 @DurationMillisLong long additionalMs) {
             assertCallerIsCurrentVerifier(getCallingUid());
-            synchronized (mVerificationStatus) {
-                final VerificationStatusTracker tracker = mVerificationStatus.get(verificationId);
+            synchronized (mVerificationStatusTrackers) {
+                final VerificationStatusTracker tracker =
+                        mVerificationStatusTrackers.get(verificationId);
                 if (tracker == null) {
                     throw new IllegalStateException("Verification session " + verificationId
                             + " doesn't exist or has finished");
@@ -521,8 +581,9 @@ public class VerifierController {
         public boolean setVerificationPolicy(int verificationId,
                 @PackageInstaller.VerificationPolicy int policy) {
             assertCallerIsCurrentVerifier(getCallingUid());
-            synchronized (mVerificationStatus) {
-                final VerificationStatusTracker tracker = mVerificationStatus.get(verificationId);
+            synchronized (mVerificationStatusTrackers) {
+                final VerificationStatusTracker tracker =
+                        mVerificationStatusTrackers.get(verificationId);
                 if (tracker == null) {
                     throw new IllegalStateException("Verification session " + verificationId
                             + " doesn't exist or has finished");
@@ -535,8 +596,8 @@ public class VerifierController {
         public void reportVerificationIncomplete(int id, int reason) {
             assertCallerIsCurrentVerifier(getCallingUid());
             final VerificationStatusTracker tracker;
-            synchronized (mVerificationStatus) {
-                tracker = mVerificationStatus.get(id);
+            synchronized (mVerificationStatusTrackers) {
+                tracker = mVerificationStatusTrackers.get(id);
                 if (tracker == null) {
                     throw new IllegalStateException("Verification session " + id
                             + " doesn't exist or has finished");
@@ -552,8 +613,8 @@ public class VerifierController {
                 @Nullable PersistableBundle extensionResponse) {
             assertCallerIsCurrentVerifier(getCallingUid());
             final VerificationStatusTracker tracker;
-            synchronized (mVerificationStatus) {
-                tracker = mVerificationStatus.get(id);
+            synchronized (mVerificationStatusTrackers) {
+                tracker = mVerificationStatusTrackers.get(id);
                 if (tracker == null) {
                     throw new IllegalStateException("Verification session " + id
                             + " doesn't exist or has finished");
@@ -573,11 +634,13 @@ public class VerifierController {
         // Package name of the verifier that was bound to. This can be different from the verifier
         // originally specified by the system.
         private final @NonNull String mVerifierPackageName;
+        private final @NonNull Runnable mAutoDisconnectCallback;
         ServiceConnectorWrapper(@NonNull ServiceConnector<IVerifierService> service, int uid,
                 @NonNull String verifierPackageName) {
             mRemoteService = service;
             mUid = uid;
             mVerifierPackageName = verifierPackageName;
+            mAutoDisconnectCallback = mRemoteService::unbind;
         }
         ServiceConnector<IVerifierService> getService() {
             return mRemoteService;
@@ -587,6 +650,9 @@ public class VerifierController {
         }
         @NonNull String getVerifierPackageName() {
             return mVerifierPackageName;
+        }
+        @NonNull Runnable getAutoDisconnectCallback() {
+            return mAutoDisconnectCallback;
         }
     }
 
@@ -616,7 +682,8 @@ public class VerifierController {
 
                 @Override
                 protected long getAutoDisconnectTimeoutMs() {
-                    return UNBIND_TIMEOUT_MILLIS;
+                    // Do not auto-disconnect here; let VerifierController decide when to disconnect
+                    return -1;
                 }
             };
         }
@@ -635,6 +702,14 @@ public class VerifierController {
         public void stopTimeoutCountdown(Handler handler, Object token) {
             handler.removeCallbacksAndEqualMessages(token);
         }
+
+        /**
+         * This is added so that we don't need to mock Handler.removeCallbacks which is final.
+         */
+        public void removeCallbacks(Handler handler, Runnable callback) {
+            handler.removeCallbacks(callback);
+        }
+
 
         /**
          * This is added so that we can mock the verification request timeout duration without
