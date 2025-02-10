@@ -61,7 +61,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.util.Optional
@@ -133,7 +132,7 @@ class BubbleControllerBubbleBarTest {
                 mainExecutor,
                 bgExecutor,
             )
-        bubbleController.asBubbles().setSysuiProxy(Mockito.mock(SysuiProxy::class.java))
+        bubbleController.asBubbles().setSysuiProxy(mock<SysuiProxy>())
 
         shellInit.init()
 
