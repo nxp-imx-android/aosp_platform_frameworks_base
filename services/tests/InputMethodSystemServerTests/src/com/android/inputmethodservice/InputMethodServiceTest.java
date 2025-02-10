@@ -914,20 +914,7 @@ public class InputMethodServiceTest {
 
         setShowImeWithHardKeyboard(true /* enabled */);
 
-        final boolean isGestureMode = mGestureNavSwitchHelper.isGestureMode();
-
-        final var restoreNav = new AutoCloseable[]{() -> {}};
-        try {
-            if (!isGestureMode) {
-                //  Wait for onConfigurationChanged when changing navigation modes.
-                verifyInputViewStatus(
-                        () -> restoreNav[0] = mGestureNavSwitchHelper.withGestureNavigationMode(),
-                        EVENT_CONFIG,
-                        true, /* expected */
-                        false /* inputViewStarted */
-                );
-            }
-
+        try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
             verifyInputViewStatusOnMainSync(
                     () -> mActivity.showImeWithWindowInsetsController(),
                     EVENT_SHOW,
@@ -948,8 +935,6 @@ public class InputMethodServiceTest {
                 assertWithMessage("IME is not shown")
                         .that(mInputMethodService.isInputViewShown()).isFalse();
             }
-        } finally {
-            restoreNav[0].close();
         }
     }
 
@@ -964,20 +949,7 @@ public class InputMethodServiceTest {
 
         setShowImeWithHardKeyboard(true /* enabled */);
 
-        final boolean isGestureMode = mGestureNavSwitchHelper.isGestureMode();
-
-        final var restoreNav = new AutoCloseable[]{() -> {}};
-        try {
-            if (!isGestureMode) {
-                //  Wait for onConfigurationChanged when changing navigation modes.
-                verifyInputViewStatus(
-                        () -> restoreNav[0] = mGestureNavSwitchHelper.withGestureNavigationMode(),
-                        EVENT_CONFIG,
-                        true, /* expected */
-                        false /* inputViewStarted */
-                );
-            }
-
+        try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
             verifyInputViewStatusOnMainSync(
                     () -> mActivity.showImeWithWindowInsetsController(),
                     EVENT_SHOW,
@@ -998,8 +970,6 @@ public class InputMethodServiceTest {
                 assertWithMessage("IME is not shown")
                         .that(mInputMethodService.isInputViewShown()).isFalse();
             }
-        } finally {
-            restoreNav[0].close();
         }
     }
 
@@ -1015,20 +985,7 @@ public class InputMethodServiceTest {
 
         setShowImeWithHardKeyboard(true /* enabled */);
 
-        final boolean isGestureMode = mGestureNavSwitchHelper.isGestureMode();
-
-        final var restoreNav = new AutoCloseable[]{() -> {}};
-        try {
-            if (!isGestureMode) {
-                //  Wait for onConfigurationChanged when changing navigation modes.
-                verifyInputViewStatus(
-                        () -> restoreNav[0] = mGestureNavSwitchHelper.withGestureNavigationMode(),
-                        EVENT_CONFIG,
-                        true, /* expected */
-                        false /* inputViewStarted */
-                );
-            }
-
+        try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
             verifyInputViewStatusOnMainSync(
                     () -> {
                         setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
@@ -1056,8 +1013,6 @@ public class InputMethodServiceTest {
 
             // Hide the IME Switcher Menu before finishing.
             mUiDevice.pressBack();
-        } finally {
-            restoreNav[0].close();
         }
     }
 
@@ -1072,20 +1027,7 @@ public class InputMethodServiceTest {
 
         setShowImeWithHardKeyboard(true /* enabled */);
 
-        final boolean isGestureMode = mGestureNavSwitchHelper.isGestureMode();
-
-        final var restoreNav = new AutoCloseable[]{() -> {}};
-        try {
-            if (!isGestureMode) {
-                //  Wait for onConfigurationChanged when changing navigation modes.
-                verifyInputViewStatus(
-                        () -> restoreNav[0] = mGestureNavSwitchHelper.withGestureNavigationMode(),
-                        EVENT_CONFIG,
-                        true, /* expected */
-                        false /* inputViewStarted */
-                );
-            }
-
+        try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
             verifyInputViewStatusOnMainSync(
                     () -> {
                         setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
@@ -1107,8 +1049,6 @@ public class InputMethodServiceTest {
 
             // Hide the IME Switcher Menu before finishing.
             mUiDevice.pressBack();
-        } finally {
-            restoreNav[0].close();
         }
     }
 
