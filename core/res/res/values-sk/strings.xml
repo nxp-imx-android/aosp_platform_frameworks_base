@@ -75,7 +75,7 @@
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"V predvolenom nastavení nie je identifikácia volajúceho obmedzená. Ďalší hovor: Bez obmedzenia"</string>
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zarovnanie súboru APK. Táto aplikácia bude spustená v režime kompatibilnom s veľkosťou stránky. Ak chcete dosiahnuť najlepšiu kompatibilitu, znova skompilujte aplikáciu s podporou 16 kB. Viac sa dozviete na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zarovnanie formátu ELF. Táto aplikácia bude spustená v režime kompatibilnom s veľkosťou stránky. Ak chcete dosiahnuť najlepšiu kompatibilitu, znova skompilujte aplikáciu s podporou 16 kB. Viac sa dozviete na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zarovnanie súboru APK a formátu ELF. Táto aplikácia bude spustená v režime kompatibilnom s veľkosťou stránky. Ak chcete dosiahnuť najlepšiu kompatibilitu, znova skompilujte aplikáciu s podporou 16 kB. Viac sa dozviete na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Táto aplikácia nie je kompatibilná s 16 kB stránkovaním. Kontrola zarovnania v súboroch APK a ELF sa nepodarila. Aplikácia pobeží v režime kompatibility s veľkosťou stránky. Pre optimálnu kompatibilitu aplikáciu prekompilujte s podporou 16 kB stránkovania. Viac sa dozviete na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Služba nie je poskytovaná."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Nemôžete meniť nastavenie identifikácie volajúcich."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Dátové pripojenie bolo prepnuté na operátora <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -2090,12 +2090,9 @@
     <string name="unpin_target" msgid="3963318576590204447">"Uvoľniť"</string>
     <string name="unpin_specific_target" msgid="3859828252160908146">"Odopnúť <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="app_info" msgid="6113278084877079851">"Informácie o aplikácii"</string>
-    <!-- no translation found for shortcut_group_a11y_title (2992150163811583865) -->
-    <skip />
-    <!-- no translation found for suggested_apps_group_a11y_title (2804876567839501831) -->
-    <skip />
-    <!-- no translation found for all_apps_group_a11y_title (7020352520224108745) -->
-    <skip />
+    <string name="shortcut_group_a11y_title" msgid="2992150163811583865">"Ciele priameho zdieľania"</string>
+    <string name="suggested_apps_group_a11y_title" msgid="2804876567839501831">"Návrhy aplikácií"</string>
+    <string name="all_apps_group_a11y_title" msgid="7020352520224108745">"Zoznam aplikácií"</string>
     <string name="negative_duration" msgid="1938335096972945232">"-<xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="demo_starting_message" msgid="6577581216125805905">"Spúšťa sa ukážka…"</string>
     <string name="demo_restarting_message" msgid="1160053183701746766">"Resetuje sa zariadenie…"</string>
@@ -2252,6 +2249,10 @@
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Stlačiť stredné tlačidlo krížového ovládača"</string>
     <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"Panel nastavení typu automatického kliknutia"</string>
     <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"Kliknutie ľavým tlačidlom"</string>
+    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"Kliknúť pravým tlačidlom"</string>
+    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Dvakrát kliknúť"</string>
+    <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Presunúť"</string>
+    <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Posúvať"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pozastaviť"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Pozícia"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"Balík <xliff:g id="PACKAGE_NAME">%1$s</xliff:g> bol vložený do kontajnera OBMEDZENÉ"</string>
@@ -2528,12 +2529,8 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Mapy"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikácie"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Vaše odtlačky prstov sa už nedajú rozpoznať. Znova nastavte odomknutie odtlačkom prsta."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (468577168569874967) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (6695268246267993166) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_title (3461195995882871461) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (6537085605929303187) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Zariadenie USB bolo pripojené počas uzamknutia"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Zariadenie USB bolo pripojené, keď bolo zariadenie s Androidom uzamknuté. Ak chcete dané zariadenie používať, najprv odomknite zariadenie s Androidom a potom znova vložte zariadenie USB."</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Podozrivá aktivita cez USB"</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Dátový signál cez USB bol deaktivovaný."</string>
 </resources>

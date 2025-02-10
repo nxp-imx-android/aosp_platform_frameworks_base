@@ -2089,12 +2089,9 @@
     <string name="unpin_target" msgid="3963318576590204447">"Otkači"</string>
     <string name="unpin_specific_target" msgid="3859828252160908146">"Otkači aplikaciju <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="app_info" msgid="6113278084877079851">"Informacije o aplikaciji"</string>
-    <!-- no translation found for shortcut_group_a11y_title (2992150163811583865) -->
-    <skip />
-    <!-- no translation found for suggested_apps_group_a11y_title (2804876567839501831) -->
-    <skip />
-    <!-- no translation found for all_apps_group_a11y_title (7020352520224108745) -->
-    <skip />
+    <string name="shortcut_group_a11y_title" msgid="2992150163811583865">"Ciljevi direktnog dijeljenja"</string>
+    <string name="suggested_apps_group_a11y_title" msgid="2804876567839501831">"Prijedlozi aplikacija"</string>
+    <string name="all_apps_group_a11y_title" msgid="7020352520224108745">"Lista aplikacija"</string>
     <string name="negative_duration" msgid="1938335096972945232">"−<xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="demo_starting_message" msgid="6577581216125805905">"Pokretanje demonstracije…"</string>
     <string name="demo_restarting_message" msgid="1160053183701746766">"Vraćanje uređaja na početne postavke…"</string>
@@ -2251,8 +2248,12 @@
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Upravljač sredina"</string>
     <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"Ploča postavki vrste automatskog klika"</string>
     <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"Lijevi klik"</string>
+    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"Desni klik"</string>
+    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Dvostruki klik"</string>
+    <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Povuci"</string>
+    <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Pomakni se"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pauziraj"</string>
-    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Pozicija"</string>
+    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Položaj"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"Paket <xliff:g id="PACKAGE_NAME">%1$s</xliff:g> je stavljen u odjeljak OGRANIČENO"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"je poslao/la sliku"</string>
@@ -2266,7 +2267,7 @@
     <string name="resolver_cross_profile_blocked" msgid="3014597376026044840">"Blokirao je vaš IT administrator"</string>
     <string name="resolver_cant_share_with_work_apps_explanation" msgid="9071442683080586643">"Ovaj sadržaj nije moguće dijeliti pomoću poslovnih aplikacija"</string>
     <string name="resolver_cant_access_work_apps_explanation" msgid="1129960195389373279">"Ovaj sadržaj nije moguće otvoriti pomoću poslovnih aplikacija"</string>
-    <string name="resolver_cant_share_with_personal_apps_explanation" msgid="6349766201904601544">"Ovaj sadržaj nije moguće dijeliti pomoću ličnih aplikacija"</string>
+    <string name="resolver_cant_share_with_personal_apps_explanation" msgid="6349766201904601544">"Ovaj sadržaj nije moguće dijeliti s ličnim aplikacijama"</string>
     <string name="resolver_cant_access_personal_apps_explanation" msgid="1679399548862724359">"Ovaj sadržaj nije moguće otvoriti pomoću ličnih aplikacija"</string>
     <string name="resolver_turn_on_work_apps" msgid="1535946298236678122">"Poslovne aplikacije su pauzirane"</string>
     <string name="resolver_switch_on_work" msgid="4527096360772311894">"Ponovo pokreni"</string>
@@ -2527,12 +2528,8 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Mape"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikacije"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Vaši otisci prstiju se više ne mogu prepoznavati. Ponovo postavite otključavanje otiskom prsta."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (468577168569874967) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (6695268246267993166) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_title (3461195995882871461) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (6537085605929303187) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB uređaj je priključen dok je uređaj bio zaključan"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB uređaj je priključen dok je Android bio zaključan. Da koristite uređaj, prvo otključajte Android, a zatim ponovo umetnite USB uređaj da ga koristite."</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Sumnjiva aktivnost USB-a"</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Podatkovni signal USB-a je onemogućen."</string>
 </resources>

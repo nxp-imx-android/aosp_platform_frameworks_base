@@ -2088,12 +2088,9 @@
     <string name="unpin_target" msgid="3963318576590204447">"Ontspeld"</string>
     <string name="unpin_specific_target" msgid="3859828252160908146">"Ontspeld <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="app_info" msgid="6113278084877079851">"Appinligting"</string>
-    <!-- no translation found for shortcut_group_a11y_title (2992150163811583865) -->
-    <skip />
-    <!-- no translation found for suggested_apps_group_a11y_title (2804876567839501831) -->
-    <skip />
-    <!-- no translation found for all_apps_group_a11y_title (7020352520224108745) -->
-    <skip />
+    <string name="shortcut_group_a11y_title" msgid="2992150163811583865">"Direktedelingteikens"</string>
+    <string name="suggested_apps_group_a11y_title" msgid="2804876567839501831">"Appvoorstelle"</string>
+    <string name="all_apps_group_a11y_title" msgid="7020352520224108745">"Applys"</string>
     <string name="negative_duration" msgid="1938335096972945232">"−<xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="demo_starting_message" msgid="6577581216125805905">"Begin tans demonstrasie …"</string>
     <string name="demo_restarting_message" msgid="1160053183701746766">"Stel toestel tans terug …"</string>
@@ -2248,14 +2245,18 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"D-paneel links"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"D-paneel regs"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"D-paneel middel"</string>
-    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (7354373370578758696) -->
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"Outoklik-tipe instellingspaneel"</string>
+    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"Linksklik"</string>
+    <!-- no translation found for accessibility_autoclick_right_click (4353495816526181293) -->
     <skip />
-    <!-- no translation found for accessibility_autoclick_left_click (2301793352260551080) -->
+    <!-- no translation found for accessibility_autoclick_double_click (2103826849116176478) -->
     <skip />
-    <!-- no translation found for accessibility_autoclick_pause (3272200156172573568) -->
+    <!-- no translation found for accessibility_autoclick_drag (1499559489796843224) -->
     <skip />
-    <!-- no translation found for accessibility_autoclick_position (2933660969907663545) -->
+    <!-- no translation found for accessibility_autoclick_scroll (3499385943728726933) -->
     <skip />
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Onderbreek"</string>
+    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Posisie"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> is in die BEPERK-groep geplaas"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"het \'n prent gestuur"</string>
@@ -2269,7 +2270,7 @@
     <string name="resolver_cross_profile_blocked" msgid="3014597376026044840">"Deur jou IT-admin geblokkeer"</string>
     <string name="resolver_cant_share_with_work_apps_explanation" msgid="9071442683080586643">"Hierdie inhoud kan nie met werkprogramme gedeel word nie"</string>
     <string name="resolver_cant_access_work_apps_explanation" msgid="1129960195389373279">"Hierdie inhoud kan nie met werkprogramme oopgemaak word nie"</string>
-    <string name="resolver_cant_share_with_personal_apps_explanation" msgid="6349766201904601544">"Hierdie inhoud kan nie met persoonlike programme gedeel word nie"</string>
+    <string name="resolver_cant_share_with_personal_apps_explanation" msgid="6349766201904601544">"Hierdie inhoud kan nie met persoonlike apps gedeel word nie"</string>
     <string name="resolver_cant_access_personal_apps_explanation" msgid="1679399548862724359">"Hierdie inhoud kan nie met persoonlike programme oopgemaak word nie"</string>
     <string name="resolver_turn_on_work_apps" msgid="1535946298236678122">"Werkapps is onderbreek"</string>
     <string name="resolver_switch_on_work" msgid="4527096360772311894">"Hervat"</string>
@@ -2530,12 +2531,8 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Apps"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Jou vingerafdrukke kan nie meer herken word nie. Stel Vingerafdrukslot weer op."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (468577168569874967) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (6695268246267993166) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_title (3461195995882871461) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (6537085605929303187) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB-toestel is ingeprop wanneer dit gesluit is"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB-toestel is ingeprop wanneer jou Android gesluit is. Om die toestel te gebruik, moet jy eers jou Android ontsluit en dan weer die USB-toestel insit om dit te gebruik."</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Verdagte USB-aktiwiteit"</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-datasein is gedeaktiveer."</string>
 </resources>

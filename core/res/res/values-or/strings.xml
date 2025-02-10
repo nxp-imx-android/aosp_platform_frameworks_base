@@ -2042,7 +2042,7 @@
     <string name="app_suspended_title" msgid="888873445010322650">"ଆପ୍‌ ଉପଲବ୍ଧ ନାହିଁ"</string>
     <string name="app_suspended_default_message" msgid="6451215678552004172">"ବର୍ତ୍ତମାନ <xliff:g id="APP_NAME_0">%1$s</xliff:g> ଉପଲବ୍ଧ ନାହିଁ। ଏହା <xliff:g id="APP_NAME_1">%2$s</xliff:g> ଦ୍ଵାରା ପରିଚାଳିତ ହେଉଛି।"</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"ଅଧିକ ଜାଣନ୍ତୁ"</string>
-    <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"ଆପ୍ ଅନପଜ୍ କରନ୍ତୁ"</string>
+    <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"ଆପ ପୁଣି ଆରମ୍ଭ କରନ୍ତୁ"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"ୱାର୍କ ଆପ୍ସକୁ ପୁଣି ଚାଲୁ କରିବେ?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"ପୁଣି ଚାଲୁ କରନ୍ତୁ"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"ଜରୁରୀକାଳୀନ"</string>
@@ -2088,12 +2088,9 @@
     <string name="unpin_target" msgid="3963318576590204447">"ଅନପିନ୍ କରନ୍ତୁ"</string>
     <string name="unpin_specific_target" msgid="3859828252160908146">"<xliff:g id="LABEL">%1$s</xliff:g>ରେ ଅନ୍‌ପିନ୍ କରନ୍ତୁ"</string>
     <string name="app_info" msgid="6113278084877079851">"ଆପ୍‍ ସୂଚନା"</string>
-    <!-- no translation found for shortcut_group_a11y_title (2992150163811583865) -->
-    <skip />
-    <!-- no translation found for suggested_apps_group_a11y_title (2804876567839501831) -->
-    <skip />
-    <!-- no translation found for all_apps_group_a11y_title (7020352520224108745) -->
-    <skip />
+    <string name="shortcut_group_a11y_title" msgid="2992150163811583865">"ଡାଇରେକ୍ଟ ସେୟାର ଟାର୍ଗେଟ"</string>
+    <string name="suggested_apps_group_a11y_title" msgid="2804876567839501831">"ଆପ ପରାମର୍ଶ"</string>
+    <string name="all_apps_group_a11y_title" msgid="7020352520224108745">"ଆପ ତାଲିକା"</string>
     <string name="negative_duration" msgid="1938335096972945232">"−<xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="demo_starting_message" msgid="6577581216125805905">"ଡେମୋ ଆରମ୍ଭ କରାଯାଉଛି…"</string>
     <string name="demo_restarting_message" msgid="1160053183701746766">"ଡିଭାଇସ୍‍କୁ ରିସେଟ୍‍ କରାଯାଉଛି…"</string>
@@ -2248,14 +2245,18 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Dpad ବାମ"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Dpad ଡାହାଣ"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Dpad କେନ୍ଦ୍ର"</string>
-    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (7354373370578758696) -->
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"ଅଟୋକ୍ଲିକ ପ୍ରକାର ସେଟିଂସ ପେନେଲ"</string>
+    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"ବାମ ବଟନ କ୍ଲିକ କରନ୍ତୁ"</string>
+    <!-- no translation found for accessibility_autoclick_right_click (4353495816526181293) -->
     <skip />
-    <!-- no translation found for accessibility_autoclick_left_click (2301793352260551080) -->
+    <!-- no translation found for accessibility_autoclick_double_click (2103826849116176478) -->
     <skip />
-    <!-- no translation found for accessibility_autoclick_pause (3272200156172573568) -->
+    <!-- no translation found for accessibility_autoclick_drag (1499559489796843224) -->
     <skip />
-    <!-- no translation found for accessibility_autoclick_position (2933660969907663545) -->
+    <!-- no translation found for accessibility_autoclick_scroll (3499385943728726933) -->
     <skip />
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"ବିରତ କରନ୍ତୁ"</string>
+    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"ସ୍ଥିତି"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g>କୁ ପ୍ରତିବନ୍ଧିତ ବକେଟରେ ରଖାଯାଇଛି"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"ଏକ ଛବି ପଠାଯାଇଛି"</string>
@@ -2530,12 +2531,8 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ଆପ୍ଲିକେସନ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"ଆପଣଙ୍କ ଟିପଚିହ୍ନକୁ ଆଉ ଚିହ୍ନଟ କରାଯାଇପାରିବ ନାହିଁ। ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକ ପୁଣି ସେଟ ଅପ କରନ୍ତୁ।"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (468577168569874967) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (6695268246267993166) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_title (3461195995882871461) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (6537085605929303187) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"ଲକ ଥିବା ସମୟରେ USB ଡିଭାଇସ ପ୍ଲଗ ଇନ ହୋଇଛି"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android ଲକ ଥିବାବେଳେ USB ଡିଭାଇସ ପ୍ଲଗ ଇନ ହୋଇଥାଏ। ଡିଭାଇସ ବ୍ୟବହାର କରିବାକୁ, ଦୟାକରି ପ୍ରଥମେ Android ଅନଲକ କରନ୍ତୁ ଏବଂ ତାପରେ ଏହାକୁ ବ୍ୟବହାର କରିବାକୁ USB ଡିଭାଇସ ପୁଣି ଭର୍ତ୍ତି କରନ୍ତୁ।"</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"ସନ୍ଦେହଜନକ USB କାର୍ଯ୍ୟକଳାପ"</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ଡାଟା ସିଗନାଲକୁ ଅକ୍ଷମ କରାଯାଇଛି।"</string>
 </resources>

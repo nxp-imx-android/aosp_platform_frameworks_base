@@ -1468,7 +1468,7 @@
     <string name="select_keyboard_layout_notification_message" msgid="8835158247369158154">"انقر لاختيار لغة وتنسيق"</string>
     <string name="fast_scroll_alphabet" msgid="8854435958703888376">" أ ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ي"</string>
     <string name="fast_scroll_numeric_alphabet" msgid="2529539945421557329">" 0123456789 أ ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ي"</string>
-    <string name="alert_windows_notification_channel_group_name" msgid="6063891141815714246">"إظهار فوق التطبيقات الأخرى"</string>
+    <string name="alert_windows_notification_channel_group_name" msgid="6063891141815714246">"الظهور فوق التطبيقات الأخرى"</string>
     <string name="alert_windows_notification_channel_name" msgid="3437528564303192620">"جارٍ عرض <xliff:g id="NAME">%s</xliff:g> فوق تطبيقات أخرى"</string>
     <string name="alert_windows_notification_title" msgid="6331662751095228536">"يتم عرض <xliff:g id="NAME">%s</xliff:g> فوق التطبيقات الأخرى."</string>
     <string name="alert_windows_notification_message" msgid="6538171456970725333">"إذا كنت لا تريد أن يستخدم <xliff:g id="NAME">%s</xliff:g> هذه الميزة، فانقر لفتح الإعدادات، ثم اختر إيقافها."</string>
@@ -2092,12 +2092,9 @@
     <string name="unpin_target" msgid="3963318576590204447">"إزالة تثبيت"</string>
     <string name="unpin_specific_target" msgid="3859828252160908146">"إزالة تثبيت <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="app_info" msgid="6113278084877079851">"معلومات عن التطبيق"</string>
-    <!-- no translation found for shortcut_group_a11y_title (2992150163811583865) -->
-    <skip />
-    <!-- no translation found for suggested_apps_group_a11y_title (2804876567839501831) -->
-    <skip />
-    <!-- no translation found for all_apps_group_a11y_title (7020352520224108745) -->
-    <skip />
+    <string name="shortcut_group_a11y_title" msgid="2992150163811583865">"أهداف المشاركة المباشرة"</string>
+    <string name="suggested_apps_group_a11y_title" msgid="2804876567839501831">"التطبيقات المقترَحة"</string>
+    <string name="all_apps_group_a11y_title" msgid="7020352520224108745">"قائمة التطبيقات"</string>
     <string name="negative_duration" msgid="1938335096972945232">"−<xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="demo_starting_message" msgid="6577581216125805905">"جارٍ بدء العرض التوضيحي…"</string>
     <string name="demo_restarting_message" msgid="1160053183701746766">"جارٍ إعادة ضبط الجهاز…"</string>
@@ -2254,6 +2251,14 @@
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"الزرّ المركزي"</string>
     <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"لوحة إعدادات نوع النقر التلقائي"</string>
     <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"النقر بالزر الأيسر"</string>
+    <!-- no translation found for accessibility_autoclick_right_click (4353495816526181293) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_double_click (2103826849116176478) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_drag (1499559489796843224) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll (3499385943728726933) -->
+    <skip />
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"إيقاف مؤقت"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"تعديل الموضع"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"تم وضع <xliff:g id="PACKAGE_NAME">%1$s</xliff:g> في الحزمة \"محظورة\"."</string>
@@ -2530,12 +2535,8 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"‏خرائط Google"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"التطبيقات"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"لم يعد بالإمكان التعرّف على بصمات أصابعك. يجب ضبط ميزة \"فتح الجهاز ببصمة الإصبع\" مجددًا."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (468577168569874967) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (6695268246267993166) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_title (3461195995882871461) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (6537085605929303187) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"‏تم توصيل جهاز USB عندما كان الجهاز مقفلاً"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"‏تم توصيل جهاز USB عندما كان جهاز Android مقفلاً. لاستخدام الجهاز، يُرجى فتح قفل جهاز Android أولاً ثم إعادة إدخال جهاز USB لاستخدامه."</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏نشاط مريب في جهاز USB"</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏تم إيقاف مؤشر بيانات USB."</string>
 </resources>
