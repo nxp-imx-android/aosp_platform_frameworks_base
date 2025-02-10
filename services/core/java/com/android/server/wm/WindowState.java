@@ -2069,38 +2069,15 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         super.onMovedByResize();
     }
 
-    void onAppVisibilityChanged(boolean visible, boolean runningAppAnimation) {
+    void onAppCommitInvisible() {
         for (int i = mChildren.size() - 1; i >= 0; --i) {
-            mChildren.get(i).onAppVisibilityChanged(visible, runningAppAnimation);
+            mChildren.get(i).onAppCommitInvisible();
         }
-
-        final boolean isVisibleNow = isVisibleNow();
-        if (mAttrs.type == TYPE_APPLICATION_STARTING) {
-            // Starting window that's exiting will be removed when the animation finishes.
-            // Mark all relevant flags for that onExitAnimationDone will proceed all the way
-            // to actually remove it.
-            if (!visible && isVisibleNow && mActivityRecord.isAnimating(PARENTS | TRANSITION)) {
-                ProtoLog.d(WM_DEBUG_ANIM,
-                        "Set animatingExit: reason=onAppVisibilityChanged win=%s", this);
-                mAnimatingExit = true;
-                mRemoveOnExit = true;
-                mWindowRemovalAllowed = true;
-            }
-        } else if (visible != isVisibleNow) {
-            // Run exit animation if:
-            // 1. App visibility and WS visibility are different
-            // 2. App is not running an animation
-            // 3. WS is currently visible
-            if (!runningAppAnimation && isVisibleNow) {
-                final AccessibilityController accessibilityController =
-                        mWmService.mAccessibilityController;
-                final int winTransit = TRANSIT_EXIT;
-                mWinAnimator.applyAnimationLocked(winTransit, false /* isEntrance */);
-                if (accessibilityController.hasCallbacks()) {
-                    accessibilityController.onWindowTransition(this, winTransit);
-                }
-            }
-            setDisplayLayoutNeeded();
+        if (mAttrs.type != TYPE_APPLICATION_STARTING
+                && mWmService.mAccessibilityController.hasCallbacks()
+                // It is a change only if App visibility and WS visibility are different.
+                && isVisible()) {
+            mWmService.mAccessibilityController.onWindowTransition(this, TRANSIT_EXIT);
         }
     }
 
