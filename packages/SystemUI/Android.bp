@@ -832,7 +832,7 @@ java_library {
         "androidx.test.uiautomator_uiautomator",
         "androidx.core_core-animation-testing",
         "androidx.test.ext.junit",
-        "inline-mockito-robolectric-prebuilt",
+        "inline-mockito5-robolectric-prebuilt",
         "mockito-kotlin-nodeps",
         "platform-parametric-runner-lib",
         "SystemUICustomizationTestUtils",
