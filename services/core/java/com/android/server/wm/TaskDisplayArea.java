@@ -50,7 +50,6 @@ import android.graphics.Color;
 import android.os.UserHandle;
 import android.util.IntArray;
 import android.util.Slog;
-import android.view.RemoteAnimationTarget;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 
@@ -774,13 +773,6 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
             needsZBoost[0] |= task.needsZBoost();
         });
         return needsZBoost[0];
-    }
-
-    @Override
-    RemoteAnimationTarget createRemoteAnimationTarget(
-            RemoteAnimationController.RemoteAnimationRecord record) {
-        final ActivityRecord activity = getTopMostActivity();
-        return activity != null ? activity.createRemoteAnimationTarget(record) : null;
     }
 
     void setBackgroundColor(@ColorInt int colorInt) {

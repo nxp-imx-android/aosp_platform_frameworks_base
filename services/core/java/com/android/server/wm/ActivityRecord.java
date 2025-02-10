@@ -333,7 +333,6 @@ import android.view.IAppTransitionAnimationSpecsFuture;
 import android.view.InputApplicationHandle;
 import android.view.RemoteAnimationAdapter;
 import android.view.RemoteAnimationDefinition;
-import android.view.RemoteAnimationTarget;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
 import android.view.WindowInsets;
@@ -380,7 +379,6 @@ import com.android.server.uri.UriPermissionOwner;
 import com.android.server.wm.ActivityMetricsLogger.TransitionInfoSnapshot;
 import com.android.server.wm.SurfaceAnimator.AnimationType;
 import com.android.server.wm.WindowManagerService.H;
-import com.android.server.wm.utils.InsetUtils;
 import com.android.window.flags.Flags;
 
 import dalvik.annotation.optimization.NeverCompile;
@@ -9831,31 +9829,6 @@ final class ActivityRecord extends WindowToken {
             System.arraycopy(matrix, 0, mMatrix, 0, mMatrix.length);
             System.arraycopy(translation, 0, mTranslation, 0, mTranslation.length);
         }
-    }
-
-    @Override
-    RemoteAnimationTarget createRemoteAnimationTarget(
-            RemoteAnimationController.RemoteAnimationRecord record) {
-        final WindowState mainWindow = findMainWindow();
-        if (task == null || mainWindow == null) {
-            return null;
-        }
-        final Rect insets = mainWindow.getInsetsStateWithVisibilityOverride().calculateInsets(
-                task.getBounds(), Type.systemBars(), false /* ignoreVisibility */).toRect();
-        InsetUtils.addInsets(insets, getLetterboxInsets());
-
-        final RemoteAnimationTarget target = new RemoteAnimationTarget(task.mTaskId,
-                record.getMode(), record.mAdapter.mCapturedLeash, !fillsParent(),
-                new Rect(), insets,
-                getPrefixOrderIndex(), record.mAdapter.mPosition, record.mAdapter.mLocalBounds,
-                record.mAdapter.mEndBounds, task.getWindowConfiguration(),
-                false /*isNotInRecents*/,
-                record.mThumbnailAdapter != null ? record.mThumbnailAdapter.mCapturedLeash : null,
-                record.mStartBounds, task.getTaskInfo(), checkEnterPictureInPictureAppOpsState());
-        target.setShowBackdrop(record.mShowBackdrop);
-        target.setWillShowImeOnTarget(mStartingData != null && mStartingData.hasImeSurface());
-        target.hasAnimatingParent = record.hasAnimatingParent();
-        return target;
     }
 
     @Override

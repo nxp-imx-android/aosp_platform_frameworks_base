@@ -34,7 +34,6 @@ import android.util.SparseArray;
 import com.android.internal.protolog.ProtoLog;
 
 import java.io.PrintWriter;
-import java.util.function.Consumer;
 
 /**
  * A token that represents a set of wallpaper windows.
@@ -247,11 +246,6 @@ class WallpaperWindowToken extends WindowToken {
             }
         }
         return false;
-    }
-
-    @Override
-    void forAllWallpaperWindows(Consumer<WallpaperWindowToken> callback) {
-        callback.accept(this);
     }
 
     @Override
