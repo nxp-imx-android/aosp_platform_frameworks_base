@@ -793,15 +793,21 @@ public class BubbleController implements ConfigurationChangeListener,
     public void setBubbleBarLocation(BubbleBarLocation bubbleBarLocation,
             @BubbleBarLocation.UpdateSource int source) {
         if (isShowingAsBubbleBar()) {
+            updateExpandedViewForBubbleBarLocation(bubbleBarLocation, source);
+            BubbleBarUpdate bubbleBarUpdate = new BubbleBarUpdate();
+            bubbleBarUpdate.bubbleBarLocation = bubbleBarLocation;
+            mBubbleStateListener.onBubbleStateChange(bubbleBarUpdate);
+        }
+    }
+
+    private void updateExpandedViewForBubbleBarLocation(BubbleBarLocation bubbleBarLocation,
+            @BubbleBarLocation.UpdateSource int source) {
+        if (isShowingAsBubbleBar()) {
             BubbleBarLocation previousLocation = mBubblePositioner.getBubbleBarLocation();
             mBubblePositioner.setBubbleBarLocation(bubbleBarLocation);
             if (mLayerView != null && !mLayerView.isExpandedViewDragged()) {
                 mLayerView.updateExpandedView();
             }
-            BubbleBarUpdate bubbleBarUpdate = new BubbleBarUpdate();
-            bubbleBarUpdate.bubbleBarLocation = bubbleBarLocation;
-            mBubbleStateListener.onBubbleStateChange(bubbleBarUpdate);
-
             logBubbleBarLocationIfChanged(bubbleBarLocation, previousLocation, source);
         }
     }
@@ -874,7 +880,8 @@ public class BubbleController implements ConfigurationChangeListener,
     }
 
     @Override
-    public void onItemDroppedOverBubbleBarDragZone(BubbleBarLocation location, Intent itemIntent) {
+    public void onItemDroppedOverBubbleBarDragZone(@NonNull BubbleBarLocation location,
+            Intent itemIntent) {
         hideBubbleBarExpandedViewDropTarget();
         ShortcutInfo shortcutInfo = (ShortcutInfo) itemIntent
                 .getExtra(DragAndDropConstants.EXTRA_SHORTCUT_INFO);
@@ -1521,18 +1528,19 @@ public class BubbleController implements ConfigurationChangeListener,
     public void expandStackAndSelectBubble(ShortcutInfo info,
             @Nullable BubbleBarLocation bubbleBarLocation) {
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
-        if (bubbleBarLocation != null) {
-            //TODO (b/388894910) combine location update with the setSelectedBubbleAndExpandStack &
-            // fix bubble bar flicking
-            setBubbleBarLocation(bubbleBarLocation, BubbleBarLocation.UpdateSource.APP_ICON_DRAG);
+        BubbleBarLocation updateLocation = isShowingAsBubbleBar() ? bubbleBarLocation : null;
+        if (updateLocation != null) {
+            updateExpandedViewForBubbleBarLocation(updateLocation,
+                    BubbleBarLocation.UpdateSource.APP_ICON_DRAG);
         }
         Bubble b = mBubbleData.getOrCreateBubble(info); // Removes from overflow
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - shortcut=%s", info);
         if (b.isInflated()) {
-            mBubbleData.setSelectedBubbleAndExpandStack(b);
+            mBubbleData.setSelectedBubbleAndExpandStack(b, updateLocation);
         } else {
             b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
-            inflateAndAdd(b, /* suppressFlyout= */ true, /* showInShade= */ false);
+            inflateAndAdd(b, /* suppressFlyout= */ true, /* showInShade= */ false,
+                    updateLocation);
         }
     }
 
@@ -1562,19 +1570,19 @@ public class BubbleController implements ConfigurationChangeListener,
     public void expandStackAndSelectBubble(PendingIntent pendingIntent, UserHandle user,
             @Nullable BubbleBarLocation bubbleBarLocation) {
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
-        if (bubbleBarLocation != null) {
-            //TODO (b/388894910) combine location update with the setSelectedBubbleAndExpandStack &
-            // fix bubble bar flicking
-            setBubbleBarLocation(bubbleBarLocation, BubbleBarLocation.UpdateSource.APP_ICON_DRAG);
+        BubbleBarLocation updateLocation = isShowingAsBubbleBar() ? bubbleBarLocation : null;
+        if (updateLocation != null) {
+            updateExpandedViewForBubbleBarLocation(updateLocation,
+                    BubbleBarLocation.UpdateSource.APP_ICON_DRAG);
         }
         Bubble b = mBubbleData.getOrCreateBubble(pendingIntent, user);
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - pendingIntent=%s",
                 pendingIntent);
         if (b.isInflated()) {
-            mBubbleData.setSelectedBubbleAndExpandStack(b);
+            mBubbleData.setSelectedBubbleAndExpandStack(b, updateLocation);
         } else {
             b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
-            inflateAndAdd(b, /* suppressFlyout= */ true, /* showInShade= */ false);
+            inflateAndAdd(b, /* suppressFlyout= */ true, /* showInShade= */ false, updateLocation);
         }
     }
 
@@ -1940,11 +1948,22 @@ public class BubbleController implements ConfigurationChangeListener,
 
     @VisibleForTesting
     public void inflateAndAdd(Bubble bubble, boolean suppressFlyout, boolean showInShade) {
+        inflateAndAdd(bubble, suppressFlyout, showInShade, /* bubbleBarLocation= */ null);
+    }
+
+    /**
+     * Inflates and adds a bubble. Updates Bubble Bar location if bubbles
+     * are shown in the Bubble Bar and the location is not null.
+     */
+    @VisibleForTesting
+    public void inflateAndAdd(Bubble bubble, boolean suppressFlyout, boolean showInShade,
+            @Nullable BubbleBarLocation bubbleBarLocation) {
         // Lazy init stack view when a bubble is created
         ensureBubbleViewsAndWindowCreated();
         bubble.setInflateSynchronously(mInflateSynchronously);
         bubble.inflate(
-                b -> mBubbleData.notificationEntryUpdated(b, suppressFlyout, showInShade),
+                b -> mBubbleData.notificationEntryUpdated(b, suppressFlyout, showInShade,
+                        bubbleBarLocation),
                 mContext,
                 mExpandedViewManager,
                 mBubbleTaskViewFactory,
@@ -2278,7 +2297,8 @@ public class BubbleController implements ConfigurationChangeListener,
             ProtoLog.d(WM_SHELL_BUBBLES, "mBubbleDataListener#applyUpdate:"
                     + " added=%s removed=%b updated=%s orderChanged=%b expansionChanged=%b"
                     + " expanded=%b selectionChanged=%b selected=%s"
-                    + " suppressed=%s unsupressed=%s shouldShowEducation=%b showOverflowChanged=%b",
+                    + " suppressed=%s unsupressed=%s shouldShowEducation=%b showOverflowChanged=%b"
+                    + " bubbleBarLocation=%s",
                     update.addedBubble != null ? update.addedBubble.getKey() : "null",
                     !update.removedBubbles.isEmpty(),
                     update.updatedBubble != null ? update.updatedBubble.getKey() : "null",
@@ -2287,7 +2307,9 @@ public class BubbleController implements ConfigurationChangeListener,
                     update.selectedBubble != null ? update.selectedBubble.getKey() : "null",
                     update.suppressedBubble != null ? update.suppressedBubble.getKey() : "null",
                     update.unsuppressedBubble != null ? update.unsuppressedBubble.getKey() : "null",
-                    update.shouldShowEducation, update.showOverflowChanged);
+                    update.shouldShowEducation, update.showOverflowChanged,
+                    update.mBubbleBarLocation != null ? update.mBubbleBarLocation.toString()
+                            : "null");
 
             ensureBubbleViewsAndWindowCreated();
 
