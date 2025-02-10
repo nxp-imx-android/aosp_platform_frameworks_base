@@ -182,7 +182,6 @@ import static com.android.server.wm.WindowStateProto.UNRESTRICTED_KEEP_CLEAR_ARE
 import static com.android.server.wm.WindowStateProto.VIEW_VISIBILITY;
 import static com.android.server.wm.WindowStateProto.WINDOW_CONTAINER;
 import static com.android.server.wm.WindowStateProto.WINDOW_FRAMES;
-import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 import static com.android.window.flags.Flags.surfaceTrustedOverlay;
 
 import android.annotation.CallSuper;
@@ -2300,15 +2299,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
         final int type = mAttrs.type;
 
-        if (type == TYPE_PRESENTATION || type == TYPE_PRIVATE_PRESENTATION) {
-            // TODO(b/393945496): Make sure that there's one presentation at most per display.
-            dc.mIsPresenting = false;
-            if (enablePresentationForConnectedDisplays()) {
-                // A presentation hides all activities behind on the same display.
-                dc.ensureActivitiesVisible(/*starting=*/ null, /*notifyClients=*/ true);
-            }
-            mWmService.mDisplayManagerInternal.onPresentation(dc.getDisplay().getDisplayId(),
-                    /*isShown=*/ false);
+        if (isPresentation()) {
+            mWmService.mPresentationController.onPresentationRemoved(this);
         }
         // Check if window provides non decor insets before clearing its provided insets.
         final boolean windowProvidesDisplayDecorInsets = providesDisplayDecorInsets();
@@ -3335,6 +3327,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             mWmService.mAtmService.mActiveUids.onNonAppSurfaceVisibilityChanged(mOwnerUid,
                     mAttrs.type, shown);
         }
+    }
+
+    boolean isPresentation() {
+        return mAttrs.type == TYPE_PRESENTATION || mAttrs.type == TYPE_PRIVATE_PRESENTATION;
     }
 
     private boolean isOnVirtualDisplay() {
