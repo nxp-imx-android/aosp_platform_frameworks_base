@@ -78,6 +78,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.controller.mediaCarouselController
+import com.android.systemui.media.controls.ui.view.MediaCarouselScrollHandler
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
@@ -120,6 +121,7 @@ import platform.test.runner.parameterized.Parameters
 @RunWith(ParameterizedAndroidJunit4::class)
 class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Mock private lateinit var mediaHost: MediaHost
+    @Mock private lateinit var mediaCarouselScrollHandler: MediaCarouselScrollHandler
     @Mock private lateinit var metricsLogger: CommunalMetricsLogger
 
     private val kosmos = testKosmos()
@@ -161,6 +163,8 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
         kosmos.fakeUserTracker.set(userInfos = listOf(MAIN_USER_INFO), selectedUserIndex = 0)
         whenever(mediaHost.visible).thenReturn(true)
+        whenever(kosmos.mediaCarouselController.mediaCarouselScrollHandler)
+            .thenReturn(mediaCarouselScrollHandler)
 
         kosmos.powerInteractor.setAwakeForTest()
 
@@ -900,6 +904,20 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             assertThat(selectedKey1).isEqualTo(key)
             assertThat(selectedKey2).isEqualTo(key)
+        }
+
+    @Test
+    fun onShowPreviousMedia_scrollHandler_isCalled() =
+        testScope.runTest {
+            underTest.onShowPreviousMedia()
+            verify(mediaCarouselScrollHandler).scrollByStep(-1)
+        }
+
+    @Test
+    fun onShowNextMedia_scrollHandler_isCalled() =
+        testScope.runTest {
+            underTest.onShowNextMedia()
+            verify(mediaCarouselScrollHandler).scrollByStep(1)
         }
 
     @Test
