@@ -149,8 +149,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
 
     private Drawable mEnterpriseThumbnailDrawable;
 
-    static final InteractionJankMonitor sInteractionJankMonitor =
-            InteractionJankMonitor.getInstance();
+    final InteractionJankMonitor mInteractionJankMonitor;
 
     private BroadcastReceiver mEnterpriseResourceUpdatedReceiver = new BroadcastReceiver() {
         @Override
@@ -169,7 +168,8 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
             @NonNull TransactionPool transactionPool,
             @NonNull ShellExecutor mainExecutor, @NonNull Handler mainHandler,
             @NonNull ShellExecutor animExecutor,
-            @NonNull RootTaskDisplayAreaOrganizer rootTDAOrganizer) {
+            @NonNull RootTaskDisplayAreaOrganizer rootTDAOrganizer,
+            @NonNull InteractionJankMonitor interactionJankMonitor) {
         mDisplayController = displayController;
         mTransactionPool = transactionPool;
         mContext = context;
@@ -181,6 +181,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         mDevicePolicyManager = mContext.getSystemService(DevicePolicyManager.class);
         shellInit.addInitCallback(this::onInit, this);
         mRootTDAOrganizer = rootTDAOrganizer;
+        mInteractionJankMonitor = interactionJankMonitor;
     }
 
     private void onInit() {
@@ -331,14 +332,14 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
 
         final boolean isTaskTransition = isTaskTransition(info);
         if (isTaskTransition) {
-            sInteractionJankMonitor.begin(info.getRoot(0).getLeash(), mContext,
+            mInteractionJankMonitor.begin(info.getRoot(0).getLeash(), mContext,
                     mMainHandler, CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
         }
 
         final Runnable onAnimFinish = () -> {
             if (!animations.isEmpty()) return;
             if (isTaskTransition) {
-                sInteractionJankMonitor.end(CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
+                mInteractionJankMonitor.end(CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
             }
             mAnimations.remove(transition);
             finishCallback.onTransitionFinished(null /* wct */);
@@ -1031,6 +1032,6 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     @Override
     public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
                               @Nullable SurfaceControl.Transaction finishTransaction) {
-        sInteractionJankMonitor.cancel(CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
+        mInteractionJankMonitor.cancel(CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
     }
 }
