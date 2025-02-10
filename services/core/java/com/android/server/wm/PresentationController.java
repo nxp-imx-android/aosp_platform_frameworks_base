@@ -21,6 +21,9 @@ import static com.android.window.flags.Flags.enablePresentationForConnectedDispl
 import android.annotation.NonNull;
 import android.util.IntArray;
 
+import com.android.internal.protolog.ProtoLog;
+import com.android.internal.protolog.WmProtoLogGroups;
+
 /**
  * Manages presentation windows.
  */
@@ -50,7 +53,9 @@ class PresentationController {
         if (isPresenting(displayId)) {
             return;
         }
-        mPresentingDisplayIds.add(displayId);
+        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_PRESENTATION, "Presentation added to display %d: %s",
+                win.getDisplayId(), win);
+        mPresentingDisplayIds.add(win.getDisplayId());
         if (enablePresentationForConnectedDisplays()) {
             // A presentation hides all activities behind on the same display.
             win.mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
@@ -64,6 +69,8 @@ class PresentationController {
         if (!isPresenting(displayId)) {
             return;
         }
+        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_PRESENTATION,
+                "Presentation removed from display %d: %s", win.getDisplayId(), win);
         // TODO(b/393945496): Make sure that there's one presentation at most per display.
         final int displayIdIndex = mPresentingDisplayIds.indexOf(displayId);
         if (displayIdIndex != -1) {
