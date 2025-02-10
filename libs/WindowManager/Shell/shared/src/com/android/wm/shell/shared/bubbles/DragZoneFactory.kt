@@ -16,11 +16,15 @@
 
 package com.android.wm.shell.shared.bubbles
 
+import android.content.Context
 import android.graphics.Rect
+import androidx.annotation.DimenRes
+import com.android.wm.shell.shared.R
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.SplitScreenModeChecker.SplitScreenMode
 
 /** A class for creating drag zones for dragging bubble objects or dragging into bubbles. */
 class DragZoneFactory(
+    private val context: Context,
     private val deviceConfig: DeviceConfig,
     private val splitScreenModeChecker: SplitScreenModeChecker,
     private val desktopWindowModeChecker: DesktopWindowModeChecker,
@@ -29,23 +33,65 @@ class DragZoneFactory(
     private val windowBounds: Rect
         get() = deviceConfig.windowBounds
 
-    // TODO b/393172431: move these to xml
-    private val dismissDragZoneSize = if (deviceConfig.isSmallTablet) 140 else 200
-    private val bubbleDragZoneTabletSize = 200
-    private val bubbleDragZoneFoldableSize = 140
-    private val fullScreenDragZoneWidth = 512
-    private val fullScreenDragZoneHeight = 44
-    private val desktopWindowDragZoneWidth = 880
-    private val desktopWindowDragZoneHeight = 300
-    private val desktopWindowFromExpandedViewDragZoneWidth = 200
-    private val desktopWindowFromExpandedViewDragZoneHeight = 350
-    private val splitFromBubbleDragZoneHeight = 100
-    private val splitFromBubbleDragZoneWidth = 60
-    private val hSplitFromExpandedViewDragZoneWidth = 60
-    private val vSplitFromExpandedViewDragZoneWidth = 200
-    private val vSplitFromExpandedViewDragZoneHeightTablet = 285
-    private val vSplitFromExpandedViewDragZoneHeightFoldTall = 150
-    private val vSplitFromExpandedViewDragZoneHeightFoldShort = 100
+    private var dismissDragZoneSize = 0
+    private var bubbleDragZoneTabletSize = 0
+    private var bubbleDragZoneFoldableSize = 0
+    private var fullScreenDragZoneWidth = 0
+    private var fullScreenDragZoneHeight = 0
+    private var desktopWindowDragZoneWidth = 0
+    private var desktopWindowDragZoneHeight = 0
+    private var desktopWindowFromExpandedViewDragZoneWidth = 0
+    private var desktopWindowFromExpandedViewDragZoneHeight = 0
+    private var splitFromBubbleDragZoneHeight = 0
+    private var splitFromBubbleDragZoneWidth = 0
+    private var hSplitFromExpandedViewDragZoneWidth = 0
+    private var vSplitFromExpandedViewDragZoneWidth = 0
+    private var vSplitFromExpandedViewDragZoneHeightTablet = 0
+    private var vSplitFromExpandedViewDragZoneHeightFoldTall = 0
+    private var vSplitFromExpandedViewDragZoneHeightFoldShort = 0
+
+    init {
+        onConfigurationUpdated()
+    }
+
+    /** Updates all dimensions after a configuration change. */
+    fun onConfigurationUpdated() {
+        dismissDragZoneSize =
+            if (deviceConfig.isSmallTablet) {
+                context.resolveDimension(R.dimen.drag_zone_dismiss_fold)
+            } else {
+                context.resolveDimension(R.dimen.drag_zone_dismiss_tablet)
+            }
+        bubbleDragZoneTabletSize = context.resolveDimension(R.dimen.drag_zone_bubble_tablet)
+        bubbleDragZoneFoldableSize = context.resolveDimension(R.dimen.drag_zone_bubble_fold)
+        fullScreenDragZoneWidth = context.resolveDimension(R.dimen.drag_zone_full_screen_width)
+        fullScreenDragZoneHeight = context.resolveDimension(R.dimen.drag_zone_full_screen_height)
+        desktopWindowDragZoneWidth =
+            context.resolveDimension(R.dimen.drag_zone_desktop_window_width)
+        desktopWindowDragZoneHeight =
+            context.resolveDimension(R.dimen.drag_zone_desktop_window_height)
+        desktopWindowFromExpandedViewDragZoneWidth =
+            context.resolveDimension(R.dimen.drag_zone_desktop_window_expanded_view_width)
+        desktopWindowFromExpandedViewDragZoneHeight =
+            context.resolveDimension(R.dimen.drag_zone_desktop_window_expanded_view_height)
+        splitFromBubbleDragZoneHeight =
+            context.resolveDimension(R.dimen.drag_zone_split_from_bubble_height)
+        splitFromBubbleDragZoneWidth =
+            context.resolveDimension(R.dimen.drag_zone_split_from_bubble_width)
+        hSplitFromExpandedViewDragZoneWidth =
+            context.resolveDimension(R.dimen.drag_zone_h_split_from_expanded_view_width)
+        vSplitFromExpandedViewDragZoneWidth =
+            context.resolveDimension(R.dimen.drag_zone_v_split_from_expanded_view_width)
+        vSplitFromExpandedViewDragZoneHeightTablet =
+            context.resolveDimension(R.dimen.drag_zone_v_split_from_expanded_view_height_tablet)
+        vSplitFromExpandedViewDragZoneHeightFoldTall =
+            context.resolveDimension(R.dimen.drag_zone_v_split_from_expanded_view_height_fold_tall)
+        vSplitFromExpandedViewDragZoneHeightFoldShort =
+            context.resolveDimension(R.dimen.drag_zone_v_split_from_expanded_view_height_fold_short)
+    }
+
+    private fun Context.resolveDimension(@DimenRes dimension: Int) =
+        resources.getDimensionPixelSize(dimension)
 
     /**
      * Creates the list of drag zones for the dragged object.
