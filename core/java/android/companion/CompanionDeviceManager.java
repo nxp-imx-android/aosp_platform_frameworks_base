@@ -277,6 +277,23 @@ public final class CompanionDeviceManager {
      */
     public static final int MESSAGE_ONEWAY_TO_WEARABLE = 0x43847987; // +TOW
 
+
+    /** @hide */
+    @IntDef(flag = true, prefix = { "TRANSPORT_FLAG_" }, value = {
+            TRANSPORT_FLAG_EXTEND_PATCH_DIFF,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface TransportFlags {}
+
+    /**
+     * A security flag that allows transports to be attached to devices that may be more vulnerable
+     * due to infrequent updates. Can only be used for associations with
+     * {@link AssociationRequest#DEVICE_PROFILE_WEARABLE_SENSING} device profile.
+     *
+     * @hide
+     */
+    public static final int TRANSPORT_FLAG_EXTEND_PATCH_DIFF = 1;
+
     /**
      * Callback for applications to receive updates about and the outcome of
      * {@link AssociationRequest} issued via {@code associate()} call.
@@ -1452,7 +1469,52 @@ public final class CompanionDeviceManager {
             }
 
             try {
-                final Transport transport = new Transport(associationId, in, out);
+                final Transport transport = new Transport(associationId, in, out, 0);
+                mTransports.put(associationId, transport);
+                transport.start();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to attach transport", e);
+            }
+        }
+    }
+
+    /**
+     * Attach a bidirectional communication stream to be used as a transport channel for
+     * transporting system data between associated devices. Flags can be provided to further
+     * customize the behavior of the transport.
+     *
+     * @param associationId id of the associated device.
+     * @param in Already connected stream of data incoming from remote
+     *           associated device.
+     * @param out Already connected stream of data outgoing to remote associated
+     *            device.
+     * @param flags Flags to customize transport behavior.
+     * @throws DeviceNotAssociatedException Thrown if the associationId was not previously
+     * associated with this app.
+     *
+     * @see #buildPermissionTransferUserConsentIntent(int)
+     * @see #startSystemDataTransfer(int, Executor, OutcomeReceiver)
+     * @see #detachSystemDataTransport(int)
+     *
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES)
+    public void attachSystemDataTransport(int associationId,
+            @NonNull InputStream in,
+            @NonNull OutputStream out,
+            @TransportFlags int flags) throws DeviceNotAssociatedException {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return;
+        }
+
+        synchronized (mTransports) {
+            if (mTransports.contains(associationId)) {
+                detachSystemDataTransport(associationId);
+            }
+
+            try {
+                final Transport transport = new Transport(associationId, in, out, flags);
                 mTransports.put(associationId, transport);
                 transport.start();
             } catch (IOException e) {
@@ -1931,16 +1993,22 @@ public final class CompanionDeviceManager {
         private final int mAssociationId;
         private final InputStream mRemoteIn;
         private final OutputStream mRemoteOut;
+        private final int mFlags;
 
         private InputStream mLocalIn;
         private OutputStream mLocalOut;
 
         private volatile boolean mStopped;
 
-        public Transport(int associationId, InputStream remoteIn, OutputStream remoteOut) {
+        Transport(int associationId, InputStream remoteIn, OutputStream remoteOut) {
+            this(associationId, remoteIn, remoteOut, 0);
+        }
+
+        Transport(int associationId, InputStream remoteIn, OutputStream remoteOut, int flags) {
             mAssociationId = associationId;
             mRemoteIn = remoteIn;
             mRemoteOut = remoteOut;
+            mFlags = flags;
         }
 
         public void start() throws IOException {
@@ -1957,7 +2025,7 @@ public final class CompanionDeviceManager {
 
             try {
                 mService.attachSystemDataTransport(mContext.getOpPackageName(),
-                        mContext.getUserId(), mAssociationId, remoteFd);
+                        mContext.getUserId(), mAssociationId, remoteFd, mFlags);
             } catch (RemoteException e) {
                 throw new IOException("Failed to configure transport", e);
             }
