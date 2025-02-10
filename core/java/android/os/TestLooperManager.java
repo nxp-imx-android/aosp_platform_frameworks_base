@@ -159,7 +159,7 @@ public class TestLooperManager {
      */
     public void execute(Message message) {
         checkReleased();
-        if (Looper.myLooper() == mLooper) {
+        if (mLooper.isCurrentThread()) {
             // This is being called from the thread it should be executed on, we can just dispatch.
             message.target.dispatchMessage(message);
         } else {
