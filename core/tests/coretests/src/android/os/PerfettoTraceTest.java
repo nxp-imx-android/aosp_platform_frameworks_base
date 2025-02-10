@@ -108,8 +108,8 @@ public class PerfettoTraceTest {
         PerfettoTrace.Session session = new PerfettoTrace.Session(true, traceConfig.toByteArray());
 
         PerfettoTrace.instant(FOO_CATEGORY, "event")
-                .addFlow(2)
-                .addTerminatingFlow(3)
+                .setFlow(2)
+                .setTerminatingFlow(3)
                 .addArg("long_val", 10000000000L)
                 .addArg("bool_val", true)
                 .addArg("double_val", 3.14)
