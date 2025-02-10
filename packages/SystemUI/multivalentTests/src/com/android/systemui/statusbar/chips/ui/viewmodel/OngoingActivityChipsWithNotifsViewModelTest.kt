@@ -293,7 +293,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @DisableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
     @Test
-    fun chipsLegacy_twoTimerChips_isSmallPortrait_andChipsModernizationDisabled_bothSquished() =
+    fun chipsLegacy_twoTimerChips_isSmallPortrait_bothSquished() =
         kosmos.runTest {
             screenRecordState.value = ScreenRecordModel.Recording
             addOngoingCallState(key = "call")
@@ -304,6 +304,22 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(latest!!.primary)
                 .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
             assertThat(latest!!.secondary)
+                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+        }
+
+    @EnableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @Test
+    fun chips_twoTimerChips_isSmallPortrait_bothSquished() =
+        kosmos.runTest {
+            screenRecordState.value = ScreenRecordModel.Recording
+            addOngoingCallState(key = "call")
+
+            val latest by collectLastValue(underTest.chips)
+
+            // Squished chips are icon only
+            assertThat(latest!!.active[0])
+                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!!.active[1])
                 .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
         }
 
@@ -321,6 +337,23 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Active.Countdown::class.java)
             // But the call chip *is* squished
             assertThat(latest!!.secondary)
+                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+        }
+
+    @EnableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @Test
+    fun chips_countdownChipAndTimerChip_countdownNotSquished_butTimerSquished() =
+        kosmos.runTest {
+            screenRecordState.value = ScreenRecordModel.Starting(millisUntilStarted = 2000)
+            addOngoingCallState(key = "call")
+
+            val latest by collectLastValue(underTest.chips)
+
+            // The screen record countdown isn't squished to icon-only
+            assertThat(latest!!.active[0])
+                .isInstanceOf(OngoingActivityChipModel.Active.Countdown::class.java)
+            // But the call chip *is* squished
+            assertThat(latest!!.active[1])
                 .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
         }
 
@@ -360,6 +393,38 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
         }
 
+    @EnableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @Test
+    fun chips_numberOfChipsChanges_chipsGetSquishedAndUnsquished() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            // WHEN there's only one chip
+            screenRecordState.value = ScreenRecordModel.Recording
+            removeOngoingCallState(key = "call")
+
+            // The screen record isn't squished because it's the only one
+            assertThat(latest!!.active[0])
+                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+
+            // WHEN there's 2 chips
+            addOngoingCallState(key = "call")
+
+            // THEN they both become squished
+            assertThat(latest!!.active[0])
+                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            // But the call chip *is* squished
+            assertThat(latest!!.active[1])
+                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+
+            // WHEN we go back down to 1 chip
+            screenRecordState.value = ScreenRecordModel.DoingNothing
+
+            // THEN the remaining chip unsquishes
+            assertThat(latest!!.active[0])
+                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+        }
+
     @DisableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
     @Test
     fun chipsLegacy_twoChips_isLandscape_notSquished() =
@@ -383,6 +448,29 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
         }
 
+    @EnableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @Test
+    fun chips_twoChips_isLandscape_notSquished() =
+        kosmos.runTest {
+            screenRecordState.value = ScreenRecordModel.Recording
+            addOngoingCallState(key = "call")
+
+            // WHEN we're in landscape
+            val config =
+                Configuration(kosmos.mainResources.configuration).apply {
+                    orientation = Configuration.ORIENTATION_LANDSCAPE
+                }
+            kosmos.fakeConfigurationRepository.onConfigurationChange(config)
+
+            val latest by collectLastValue(underTest.chips)
+
+            // THEN the chips aren't squished (squished chips would be icon only)
+            assertThat(latest!!.active[0])
+                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat(latest!!.active[1])
+                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+        }
+
     @DisableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
     @Test
     fun chipsLegacy_twoChips_isLargeScreen_notSquished() =
@@ -402,16 +490,19 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
         }
 
-    @Test
     @EnableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
-    fun chips_twoChips_chipsModernizationEnabled_notSquished() =
+    @Test
+    fun chips_twoChips_isLargeScreen_notSquished() =
         kosmos.runTest {
             screenRecordState.value = ScreenRecordModel.Recording
             addOngoingCallState(key = "call")
 
+            // WHEN we're on a large screen
+            kosmos.displayStateRepository.setIsLargeScreen(true)
+
             val latest by collectLastValue(underTest.chips)
 
-            // Squished chips would be icon only
+            // THEN the chips aren't squished (squished chips would be icon only)
             assertThat(latest!!.active[0])
                 .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
             assertThat(latest!!.active[1])

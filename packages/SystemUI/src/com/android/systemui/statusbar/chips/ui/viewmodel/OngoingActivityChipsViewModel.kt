@@ -214,7 +214,6 @@ constructor(
                     if (
                         secondaryChip is InternalChipModel.Active &&
                             StatusBarNotifChips.isEnabled &&
-                            !StatusBarChipsModernization.isEnabled &&
                             !isScreenReasonablyLarge
                     ) {
                         // If we have two showing chips and we don't have a ton of room
@@ -222,8 +221,10 @@ constructor(
                         // possible so that we have the highest chance of showing both chips (as
                         // opposed to showing the primary chip with a lot of text and completely
                         // hiding the secondary chip).
-                        // Also: If StatusBarChipsModernization is enabled, then we'll do the
-                        // squishing in Compose instead.
+                        // TODO(b/392895330): If StatusBarChipsModernization is enabled, do the
+                        // squishing in Compose instead, and be smart about it (e.g. if we have
+                        // room for the first chip to show text and the second chip to be icon-only,
+                        // do that instead of always squishing both chips.)
                         InternalMultipleOngoingActivityChipsModel(
                             primaryChip.squish(),
                             secondaryChip.squish(),
@@ -237,24 +238,31 @@ constructor(
 
     /** Squishes the chip down to the smallest content possible. */
     private fun InternalChipModel.Active.squish(): InternalChipModel.Active {
-        return when (model) {
+        return if (model.shouldSquish()) {
+            InternalChipModel.Active(this.type, this.model.toIconOnly())
+        } else {
+            this
+        }
+    }
+
+    private fun OngoingActivityChipModel.Active.shouldSquish(): Boolean {
+        return when (this) {
             // Icon-only is already maximum squished
-            is OngoingActivityChipModel.Active.IconOnly -> this
+            is OngoingActivityChipModel.Active.IconOnly,
             // Countdown shows just a single digit, so already maximum squished
-            is OngoingActivityChipModel.Active.Countdown -> this
-            // The other chips have icon+text, so we should hide the text
+            is OngoingActivityChipModel.Active.Countdown -> false
+            // The other chips have icon+text, so we can squish them by hiding text
             is OngoingActivityChipModel.Active.Timer,
             is OngoingActivityChipModel.Active.ShortTimeDelta,
-            is OngoingActivityChipModel.Active.Text ->
-                InternalChipModel.Active(this.type, this.model.toIconOnly())
+            is OngoingActivityChipModel.Active.Text -> true
         }
     }
 
     private fun OngoingActivityChipModel.Active.toIconOnly(): OngoingActivityChipModel.Active {
         // If this chip doesn't have an icon, then it only has text and we should continue showing
         // its text. (This is theoretically impossible because
-        // [OngoingActivityChipModel.Active.Countdown] is the only chip without an icon, but protect
-        // against it just in case.)
+        // [OngoingActivityChipModel.Active.Countdown] is the only chip without an icon and
+        // [shouldSquish] returns false for that model, but protect against it just in case.)
         val currentIcon = icon ?: return this
         return OngoingActivityChipModel.Active.IconOnly(
             key,
@@ -271,8 +279,38 @@ constructor(
      */
     val chips: StateFlow<MultipleOngoingActivityChipsModel> =
         if (StatusBarChipsModernization.isEnabled) {
-            incomingChipBundle
-                .map { bundle -> rankChips(bundle) }
+            combine(
+                    incomingChipBundle.map { bundle -> rankChips(bundle) },
+                    isScreenReasonablyLarge,
+                ) { rankedChips, isScreenReasonablyLarge ->
+                    if (
+                        StatusBarNotifChips.isEnabled &&
+                            !isScreenReasonablyLarge &&
+                            rankedChips.active.filter { !it.isHidden }.size >= 2
+                    ) {
+                        // If we have at least two showing chips and we don't have a ton of room
+                        // (!isScreenReasonablyLarge), then we want to make both of them as small as
+                        // possible so that we have the highest chance of showing both chips (as
+                        // opposed to showing the first chip with a lot of text and completely
+                        // hiding the other chips).
+                        val squishedActiveChips =
+                            rankedChips.active.map {
+                                if (!it.isHidden && it.shouldSquish()) {
+                                    it.toIconOnly()
+                                } else {
+                                    it
+                                }
+                            }
+
+                        MultipleOngoingActivityChipsModel(
+                            active = squishedActiveChips,
+                            overflow = rankedChips.overflow,
+                            inactive = rankedChips.inactive,
+                        )
+                    } else {
+                        rankedChips
+                    }
+                }
                 .stateIn(scope, SharingStarted.Lazily, MultipleOngoingActivityChipsModel())
         } else {
             MutableStateFlow(MultipleOngoingActivityChipsModel()).asStateFlow()
