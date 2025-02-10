@@ -123,8 +123,26 @@ class DesktopUserRepositoriesTest : ShellTestCase() {
         assertThat(desktopRepository.userId).isEqualTo(PROFILE_ID_2)
     }
 
+    @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_HSUM)
+    fun getUserForProfile_flagEnabled_returnsUserIdForProfile() {
+        userRepositories.onUserChanged(USER_ID_2, mock())
+        val profiles: MutableList<UserInfo> =
+            mutableListOf(
+                UserInfo(USER_ID_2, "User profile", 0),
+                UserInfo(PROFILE_ID_1, "Work profile", 0),
+            )
+        userRepositories.onUserProfilesChanged(profiles)
+
+        val userIdForProfile = userRepositories.getUserIdForProfile(PROFILE_ID_1)
+
+        assertThat(userIdForProfile).isEqualTo(USER_ID_2)
+    }
+
     private companion object {
         const val USER_ID_1 = 7
+        const val USER_ID_2 = 8
+        const val PROFILE_ID_1 = 4
         const val PROFILE_ID_2 = 5
     }
 }

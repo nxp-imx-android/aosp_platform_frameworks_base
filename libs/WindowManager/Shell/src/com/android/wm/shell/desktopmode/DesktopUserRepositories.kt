@@ -90,6 +90,11 @@ class DesktopUserRepositories(
         return desktopRepoByUserId.getOrCreate(profileId)
     }
 
+    fun getUserIdForProfile(profileId: Int): Int {
+        if (userIdToProfileIdsMap[userId]?.contains(profileId) == true) return userId
+        else return profileId
+    }
+
     /** Dumps [DesktopRepository] for each user. */
     fun dump(pw: PrintWriter, prefix: String) {
         desktopRepoByUserId.forEach { key, value ->
