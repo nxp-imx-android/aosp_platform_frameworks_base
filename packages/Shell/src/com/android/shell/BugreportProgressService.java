@@ -21,8 +21,6 @@ import static android.content.pm.PackageManager.FEATURE_LEANBACK;
 import static android.content.pm.PackageManager.FEATURE_TELEVISION;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
-import static com.android.shell.BugreportPrefs.STATE_HIDE;
-import static com.android.shell.BugreportPrefs.STATE_UNKNOWN;
 import static com.android.shell.BugreportPrefs.getWarningState;
 import static com.android.shell.flags.Flags.handleBugreportsForWear;
 
@@ -1347,7 +1345,11 @@ public class BugreportProgressService extends Service {
     }
 
     private boolean hasUserDecidedNotToGetWarningMessage() {
-        return getWarningState(mContext, STATE_UNKNOWN) == STATE_HIDE;
+        int bugreportStateUnknown = mContext.getResources().getInteger(
+                com.android.internal.R.integer.bugreport_state_unknown);
+        int bugreportStateHide = mContext.getResources().getInteger(
+                com.android.internal.R.integer.bugreport_state_hide);
+        return getWarningState(mContext, bugreportStateUnknown) == bugreportStateHide;
     }
 
     private void maybeShowWarningMessageAndCloseNotification(int id) {

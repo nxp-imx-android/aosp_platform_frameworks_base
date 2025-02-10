@@ -5906,6 +5906,12 @@
   <java-symbol type="string" name="usb_apm_usb_suspicious_activity_notification_title" />
   <java-symbol type="string" name="usb_apm_usb_suspicious_activity_notification_text" />
 
+  <java-symbol type="string" name="prefs_bugreport" />
+  <java-symbol type="string" name="key_warning_state" />
+  <java-symbol type="integer" name="bugreport_state_unknown" />
+  <java-symbol type="integer" name="bugreport_state_show" />
+  <java-symbol type="integer" name="bugreport_state_hide" />
+
   <!-- Enable OEMs to support scale up anim across tasks.-->
   <java-symbol type="bool" name="config_enableCrossTaskScaleUpAnimation" />
 

@@ -7352,6 +7352,21 @@
      default on this device-->
     <string-array translatable="false" name="config_notificationDefaultUnsupportedAdjustments" />
 
+    <!-- Preference name of bugreport-->
+    <string name="prefs_bugreport" translatable="false">bugreports</string>
+
+    <!-- key value of warning state stored in bugreport preference-->
+    <string name="key_warning_state" translatable="false">warning-state</string>
+
+    <!-- Bugreport warning dialog state unknown-->
+    <integer name="bugreport_state_unknown">0</integer>
+
+    <!-- Bugreport warning dialog state shows the warning dialog-->
+    <integer name="bugreport_state_show">1</integer>
+
+    <!-- Bugreport warning dialog state skips the warning dialog-->
+    <integer name="bugreport_state_hide">2</integer>
+
     <!-- By default ActivityOptions#makeScaleUpAnimation is only used between activities. This
          config enables OEMs to support its usage across tasks.-->
     <bool name="config_enableCrossTaskScaleUpAnimation">false</bool>
