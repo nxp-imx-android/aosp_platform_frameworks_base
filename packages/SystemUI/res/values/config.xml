@@ -1110,4 +1110,7 @@
     <!-- Configuration for wallpaper focal area -->
     <bool name="center_align_focal_area_shape">false</bool>
     <string name="focal_area_target" translatable="false" />
+
+    <!-- Configuration to swipe to open glanceable hub -->
+    <bool name="config_swipeToOpenGlanceableHub">false</bool>
 </resources>

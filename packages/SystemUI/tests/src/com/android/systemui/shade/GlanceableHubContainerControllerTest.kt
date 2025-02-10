@@ -640,11 +640,11 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
             }
         }
 
-    @DisableFlags(FLAG_GLANCEABLE_HUB_V2)
     @Test
     fun onTouchEvent_shadeInteracting_movesNotDispatched() =
         with(kosmos) {
             testScope.runTest {
+                `whenever`(communalViewModel.swipeToHubEnabled()).thenReturn(true)
                 // On lockscreen.
                 goToScene(CommunalScenes.Blank)
                 whenever(
@@ -721,11 +721,11 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
             }
         }
 
-    @DisableFlags(FLAG_GLANCEABLE_HUB_V2)
     @Test
     fun onTouchEvent_bouncerInteracting_movesNotDispatched() =
         with(kosmos) {
             testScope.runTest {
+                `whenever`(communalViewModel.swipeToHubEnabled()).thenReturn(true)
                 // On lockscreen.
                 goToScene(CommunalScenes.Blank)
                 whenever(

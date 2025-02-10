@@ -200,8 +200,9 @@ fun CommunalContainer(
         scene(
             CommunalScenes.Blank,
             userActions =
-                if (viewModel.v2FlagEnabled()) emptyMap()
-                else mapOf(Swipe.Start(fromSource = Edge.End) to CommunalScenes.Communal),
+                if (viewModel.swipeToHubEnabled())
+                    mapOf(Swipe.Start(fromSource = Edge.End) to CommunalScenes.Communal)
+                else emptyMap(),
         ) {
             // This scene shows nothing only allowing for transitions to the communal scene.
             Box(modifier = Modifier.fillMaxSize())

@@ -520,7 +520,10 @@ constructor(
         val glanceableHubV2 = communalSettingsInteractor.isV2FlagEnabled()
         if (
             !hubShowing &&
-                (touchOnNotifications || touchOnUmo || touchOnSmartspace || glanceableHubV2)
+                (touchOnNotifications ||
+                    touchOnUmo ||
+                    touchOnSmartspace ||
+                    !communalViewModel.swipeToHubEnabled())
         ) {
             logger.d({
                 "Lockscreen touch ignored: touchOnNotifications: $bool1, touchOnUmo: $bool2, " +

@@ -104,6 +104,7 @@ interface CommunalModule {
     companion object {
         const val LOGGABLE_PREFIXES = "loggable_prefixes"
         const val LAUNCHER_PACKAGE = "launcher_package"
+        const val SWIPE_TO_HUB = "swipe_to_hub"
 
         @Provides
         @Communal
@@ -142,6 +143,12 @@ interface CommunalModule {
         @Named(LAUNCHER_PACKAGE)
         fun provideLauncherPackage(@Main resources: Resources): String {
             return resources.getString(R.string.launcher_overlayable_package)
+        }
+
+        @Provides
+        @Named(SWIPE_TO_HUB)
+        fun provideSwipeToHub(@Main resources: Resources): Boolean {
+            return resources.getBoolean(R.bool.config_swipeToOpenGlanceableHub)
         }
     }
 }
