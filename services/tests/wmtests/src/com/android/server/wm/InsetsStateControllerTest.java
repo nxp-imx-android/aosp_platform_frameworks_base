@@ -52,6 +52,7 @@ import android.util.SparseArray;
 import android.view.InsetsSource;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
+import android.view.WindowInsets.Type.InsetsType;
 
 import androidx.test.filters.SmallTest;
 
@@ -201,8 +202,8 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         getController().getOrCreateSourceProvider(ID_IME, ime())
                 .setWindowContainer(mImeWindow, null, null);
         getController().onImeControlTargetChanged(base);
-        base.setRequestedVisibleTypes(ime(), ime());
-        getController().onRequestedVisibleTypesChanged(base, null /* statsToken */);
+        final @InsetsType int changedTypes = base.setRequestedVisibleTypes(ime(), ime());
+        getController().onRequestedVisibleTypesChanged(base, changedTypes, null /* statsToken */);
         if (android.view.inputmethod.Flags.refactorInsetsController()) {
             // to set the serverVisibility, the IME needs to be drawn and onPostLayout be called.
             mImeWindow.mWinAnimator.mDrawState = HAS_DRAWN;
@@ -509,8 +510,8 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         mDisplayContent.setImeLayeringTarget(app);
         mDisplayContent.updateImeInputAndControlTarget(app);
 
-        app.setRequestedVisibleTypes(ime(), ime());
-        getController().onRequestedVisibleTypesChanged(app, null /* statsToken */);
+        final @InsetsType int changedTypes = app.setRequestedVisibleTypes(ime(), ime());
+        getController().onRequestedVisibleTypesChanged(app, changedTypes, null /* statsToken */);
         assertTrue(ime.getControllableInsetProvider().getSource().isVisible());
 
         if (android.view.inputmethod.Flags.refactorInsetsController()) {

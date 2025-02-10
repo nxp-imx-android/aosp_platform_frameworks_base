@@ -4732,11 +4732,13 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
                 ImeTracker.forLogging().onProgress(statsToken,
                         ImeTracker.PHASE_WM_UPDATE_DISPLAY_WINDOW_REQUESTED_VISIBLE_TYPES);
-                dc.mRemoteInsetsControlTarget.updateRequestedVisibleTypes(visibleTypes, mask);
+                final @InsetsType int changedTypes =
+                        dc.mRemoteInsetsControlTarget.updateRequestedVisibleTypes(
+                                visibleTypes, mask);
                 // TODO(b/353463205) the statsToken shouldn't be null as it is used later in the
                 //  IME provider. Check if we have to create a new request here, if null.
                 dc.getInsetsStateController().onRequestedVisibleTypesChanged(
-                        dc.mRemoteInsetsControlTarget, statsToken);
+                        dc.mRemoteInsetsControlTarget, changedTypes, statsToken);
             }
         } finally {
             Binder.restoreCallingIdentity(origId);
