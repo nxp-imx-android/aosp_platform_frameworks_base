@@ -30,5 +30,7 @@ fun TestContentScope(
     content: @Composable ContentScope.() -> Unit,
 ) {
     val state = rememberMutableSceneTransitionLayoutState(currentScene)
-    SceneTransitionLayout(state, modifier) { scene(currentScene, content = content) }
+    SceneTransitionLayout(state, modifier, implicitTestTags = true) {
+        scene(currentScene, content = content)
+    }
 }

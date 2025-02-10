@@ -65,6 +65,8 @@ fun SceneTransitionLayout(
     swipeSourceDetector: SwipeSourceDetector = DefaultEdgeDetector,
     swipeDetector: SwipeDetector = DefaultSwipeDetector,
     @FloatRange(from = 0.0, to = 0.5) transitionInterceptionThreshold: Float = 0.05f,
+    // TODO(b/240432457) Remove this once test utils can access the internal STLForTesting().
+    implicitTestTags: Boolean = false,
     builder: SceneTransitionLayoutScope<ContentScope>.() -> Unit,
 ) {
     SceneTransitionLayoutForTesting(
@@ -73,6 +75,7 @@ fun SceneTransitionLayout(
         swipeSourceDetector,
         swipeDetector,
         transitionInterceptionThreshold,
+        implicitTestTags = implicitTestTags,
         onLayoutImpl = null,
         builder = builder,
     )
@@ -725,10 +728,8 @@ class FixedDistance(private val distance: Dp) : UserActionDistance {
 }
 
 /**
- * An internal version of [SceneTransitionLayout] to be used for tests.
- *
- * Important: You should use this only in tests and if you need to access the underlying
- * [SceneTransitionLayoutImpl]. In other cases, you should use [SceneTransitionLayout].
+ * An internal version of [SceneTransitionLayout] to be used for tests, that provides access to the
+ * internal [SceneTransitionLayoutImpl] and implicitly tags all scenes and elements.
  */
 @Composable
 internal fun SceneTransitionLayoutForTesting(
@@ -741,6 +742,7 @@ internal fun SceneTransitionLayoutForTesting(
     sharedElementMap: MutableMap<ElementKey, Element> = remember { mutableMapOf() },
     ancestors: List<Ancestor> = remember { emptyList() },
     lookaheadScope: LookaheadScope? = null,
+    implicitTestTags: Boolean = true,
     builder: SceneTransitionLayoutScope<InternalContentScope>.() -> Unit,
 ) {
     val density = LocalDensity.current
@@ -765,6 +767,7 @@ internal fun SceneTransitionLayoutForTesting(
                 directionChangeSlop = directionChangeSlop,
                 defaultEffectFactory = defaultEffectFactory,
                 decayAnimationSpec = decayAnimationSpec,
+                implicitTestTags = implicitTestTags,
             )
             .also { onLayoutImpl?.invoke(it) }
     }
