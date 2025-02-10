@@ -69,7 +69,7 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
         @Parameters(
             name =
                 "canSwipeToEnter={0}, downWithTwoPointers={1}, downFromEdge={2}," +
-                    " isSingleShade={3}, isShadeTouchable={4}, isOccluded={6}"
+                    " isSingleShade={3}, isShadeTouchable={4}, isOccluded={5}"
         )
         @JvmStatic
         fun combinations() = buildList {
