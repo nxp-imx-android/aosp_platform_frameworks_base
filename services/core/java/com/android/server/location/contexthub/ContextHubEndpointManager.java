@@ -206,12 +206,6 @@ import java.util.function.Consumer;
         EndpointInfo halEndpointInfo =
                 ContextHubServiceUtil.createHalEndpointInfo(
                         pendingEndpointInfo, endpointId, SERVICE_HUB_ID);
-        try {
-            mHubInterface.registerEndpoint(halEndpointInfo);
-        } catch (RemoteException e) {
-            Log.e(TAG, "RemoteException while calling HAL registerEndpoint", e);
-            throw e;
-        }
         broker =
                 new ContextHubEndpointBroker(
                         mContext,
@@ -222,6 +216,7 @@ import java.util.function.Consumer;
                         packageName,
                         attributionTag,
                         mTransactionManager);
+        broker.register();
         mEndpointMap.put(endpointId, broker);
 
         try {
@@ -280,6 +275,14 @@ import java.util.function.Consumer;
      */
     /* package */ void unregisterEndpoint(long endpointId) {
         mEndpointMap.remove(endpointId);
+    }
+
+    /** Invoked by the service when the Context Hub HAL restarts. */
+    /* package */ void onHalRestart() {
+        for (ContextHubEndpointBroker broker : mEndpointMap.values()) {
+            // The broker will close existing sessions and re-register itself
+            broker.onHalRestart();
+        }
     }
 
     @Override

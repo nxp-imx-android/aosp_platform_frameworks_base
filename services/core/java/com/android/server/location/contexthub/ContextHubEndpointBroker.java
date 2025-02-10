@@ -43,7 +43,6 @@ import com.android.internal.annotations.GuardedBy;
 
 import java.util.Collection;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A class that represents a broker for the endpoint registered by the client app. This class
@@ -89,8 +88,11 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     /** The remote callback interface for this endpoint. */
     private final IContextHubEndpointCallback mContextHubEndpointCallback;
 
-    /** True if this endpoint is registered with the service. */
-    private AtomicBoolean mIsRegistered = new AtomicBoolean(true);
+    /** True if this endpoint is registered with the service/HAL. */
+    @GuardedBy("mRegistrationLock")
+    private boolean mIsRegistered = false;
+
+    private final Object mRegistrationLock = new Object();
 
     private final Object mOpenSessionLock = new Object();
 
@@ -192,7 +194,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     public int openSession(HubEndpointInfo destination, String serviceDescriptor)
             throws RemoteException {
         super.openSession_enforcePermission();
-        if (!mIsRegistered.get()) throw new IllegalStateException("Endpoint is not registered");
+        if (!isRegistered()) throw new IllegalStateException("Endpoint is not registered");
         if (!hasEndpointPermissions(destination)) {
             throw new SecurityException(
                     "Insufficient permission to open a session with endpoint: " + destination);
@@ -223,7 +225,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     @android.annotation.EnforcePermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public void closeSession(int sessionId, int reason) throws RemoteException {
         super.closeSession_enforcePermission();
-        if (!mIsRegistered.get()) throw new IllegalStateException("Endpoint is not registered");
+        if (!isRegistered()) throw new IllegalStateException("Endpoint is not registered");
         if (!cleanupSessionResources(sessionId)) {
             throw new IllegalArgumentException(
                     "Unknown session ID in closeSession: id=" + sessionId);
@@ -235,17 +237,24 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     @android.annotation.EnforcePermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public void unregister() {
         super.unregister_enforcePermission();
-        mIsRegistered.set(false);
-        try {
-            mHubInterface.unregisterEndpoint(mHalEndpointInfo);
-        } catch (RemoteException e) {
-            Log.e(TAG, "RemoteException while calling HAL unregisterEndpoint", e);
-        }
         synchronized (mOpenSessionLock) {
             // Iterate in reverse since cleanupSessionResources will remove the entry
             for (int i = mSessionInfoMap.size() - 1; i >= 0; i--) {
                 int id = mSessionInfoMap.keyAt(i);
+                halCloseEndpointSessionNoThrow(id, Reason.ENDPOINT_GONE);
                 cleanupSessionResources(id);
+            }
+        }
+        synchronized (mRegistrationLock) {
+            if (!isRegistered()) {
+                Log.w(TAG, "Attempting to unregister when already unregistered");
+                return;
+            }
+            mIsRegistered = false;
+            try {
+                mHubInterface.unregisterEndpoint(mHalEndpointInfo);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException while calling HAL unregisterEndpoint", e);
             }
         }
         mEndpointManager.unregisterEndpoint(mEndpointInfo.getIdentifier().getEndpoint());
@@ -335,7 +344,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     /** Invoked when the underlying binder of this broker has died at the client process. */
     @Override
     public void binderDied() {
-        if (mIsRegistered.get()) {
+        if (isRegistered()) {
             unregister();
         }
     }
@@ -361,6 +370,22 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                         // Resource cleanup is done in onCloseEndpointSession
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Registers this endpoints with the Context Hub HAL.
+     *
+     * @throws RemoteException if the registrations fails with a RemoteException
+     */
+    /* package */ void register() throws RemoteException {
+        synchronized (mRegistrationLock) {
+            if (isRegistered()) {
+                Log.w(TAG, "Attempting to register when already registered");
+            } else {
+                mHubInterface.registerEndpoint(mHalEndpointInfo);
+                mIsRegistered = true;
             }
         }
     }
@@ -423,6 +448,24 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         synchronized (mOpenSessionLock) {
             return mSessionInfoMap.contains(sessionId);
         }
+    }
+
+    /* package */ void onHalRestart() {
+        synchronized (mRegistrationLock) {
+            mIsRegistered = false;
+            try {
+                register();
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException while calling HAL registerEndpoint", e);
+            }
+        }
+        synchronized (mOpenSessionLock) {
+            for (int i = mSessionInfoMap.size() - 1; i >= 0; i--) {
+                int id = mSessionInfoMap.keyAt(i);
+                onCloseEndpointSession(id, Reason.HUB_RESET);
+            }
+        }
+        // TODO(b/390029594): Cancel any ongoing reliable communication transactions
     }
 
     private Optional<Byte> onEndpointSessionOpenRequestInternal(
@@ -553,7 +596,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     private void acquireWakeLock() {
         Binder.withCleanCallingIdentity(
                 () -> {
-                    if (mIsRegistered.get()) {
+                    if (isRegistered()) {
                         mWakeLock.acquire(WAKELOCK_TIMEOUT_MILLIS);
                     }
                 });
@@ -607,5 +650,11 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             }
         }
         return true;
+    }
+
+    private boolean isRegistered() {
+        synchronized (mRegistrationLock) {
+            return mIsRegistered;
+        }
     }
 }
