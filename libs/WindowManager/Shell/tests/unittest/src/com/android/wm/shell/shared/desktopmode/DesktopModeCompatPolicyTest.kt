@@ -181,6 +181,17 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
         )
     }
 
+
+    @Test
+    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
+    @DisableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
+    @EnableCompatChanges(ActivityInfo.OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS)
+    fun testShouldExcludeCaptionFromAppBounds_resizeable_overridden_true() {
+        assertTrue(desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(
+            setUpFreeformTask().apply { isResizeable = true })
+        )
+    }
+
     fun setUpFreeformTask(): TaskInfo =
         createFreeformTask().apply {
             val componentName =
