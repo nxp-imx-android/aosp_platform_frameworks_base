@@ -838,6 +838,7 @@ class DesktopTasksController(
         val taskId = taskInfo.taskId
         val displayId = taskInfo.displayId
         val wct = WindowContainerTransaction()
+        desktopTilingDecorViewModel.removeTaskIfTiled(displayId, taskId)
         performDesktopExitCleanupIfNeeded(taskId, displayId, wct, forceToFullscreen = false)
         // Notify immersive handler as it might need to exit immersive state.
         val exitResult =
