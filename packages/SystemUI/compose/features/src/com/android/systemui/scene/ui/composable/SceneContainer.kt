@@ -109,6 +109,13 @@ fun SceneContainer(
         rememberMutableSceneTransitionLayoutState(
             initialScene = initialSceneKey,
             canChangeScene = { toScene -> viewModel.canChangeScene(toScene) },
+            canShowOverlay = { overlay -> viewModel.canShowOrReplaceOverlay(overlay) },
+            canReplaceOverlay = { beingReplaced, newlyShown ->
+                viewModel.canShowOrReplaceOverlay(
+                    newlyShown = newlyShown,
+                    beingReplaced = beingReplaced,
+                )
+            },
             transitions = sceneTransitions,
             onTransitionStart = { transition ->
                 sceneJankMonitor.onTransitionStart(
