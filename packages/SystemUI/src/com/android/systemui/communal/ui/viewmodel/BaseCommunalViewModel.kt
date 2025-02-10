@@ -153,7 +153,7 @@ abstract class BaseCommunalViewModel(
     ) {}
 
     /** Called as the UI requests deleting a widget. */
-    open fun onDeleteWidget(id: Int, componentName: ComponentName, rank: Int) {}
+    open fun onDeleteWidget(id: Int, key: String, componentName: ComponentName, rank: Int) {}
 
     /** Called as the UI detects a tap event on the widget. */
     open fun onTapWidget(componentName: ComponentName, rank: Int) {}

@@ -201,6 +201,7 @@ class CommunalEditModeViewModelTest : SysuiTestCase() {
 
             underTest.onDeleteWidget(
                 id = 0,
+                key = "key_0",
                 componentName = ComponentName("test_package", "test_class"),
                 rank = 30,
             )
@@ -211,6 +212,24 @@ class CommunalEditModeViewModelTest : SysuiTestCase() {
             val appWidgetId =
                 if (item is CommunalContentModel.WidgetContent) item.appWidgetId else null
             assertThat(appWidgetId).isEqualTo(1)
+        }
+
+    @Test
+    fun deleteWidget_clearsSelectedKey() =
+        kosmos.runTest {
+            val selectedKey by collectLastValue(underTest.selectedKey)
+            underTest.setSelectedKey("test_key")
+            assertThat(selectedKey).isEqualTo("test_key")
+
+            // Selected key is deleted.
+            underTest.onDeleteWidget(
+                id = 0,
+                key = "test_key",
+                componentName = ComponentName("test_package", "test_class"),
+                rank = 30,
+            )
+
+            assertThat(selectedKey).isNull()
         }
 
     @Test
