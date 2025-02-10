@@ -51,9 +51,8 @@ class ChipTextTruncationHelper(private val view: View) {
     }
 
     /**
-     * Returns true if this view should show the text because there's enough room for a substantial
-     * amount of text, and returns false if this view should hide the text because the text is much
-     * too long.
+     * Returns true if this view should show the text because there's enough room for all the text,
+     * and returns false if this view should hide the text because not all of it fits.
      *
      * @param desiredTextWidthPx should be calculated by having the view measure itself with
      *   [unlimitedWidthMeasureSpec] and then sending its `measuredWidth` to this method. (This
@@ -82,9 +81,8 @@ class ChipTextTruncationHelper(private val view: View) {
             enforcedTextWidth = maxWidthBasedOnDimension
         }
 
-        // Only show the text if at least 50% of it can show. (Assume that if < 50% of the text will
-        // be visible, the text will be more confusing than helpful.)
-        return desiredTextWidthPx <= enforcedTextWidth * 2
+        // Only show the text if all of it can show
+        return desiredTextWidthPx <= enforcedTextWidth
     }
 
     private fun fetchMaxWidth() =

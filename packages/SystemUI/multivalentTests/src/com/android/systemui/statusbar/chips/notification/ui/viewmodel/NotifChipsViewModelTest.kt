@@ -186,7 +186,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
-    fun chips_onePromotedNotif_colorMatches() =
+    fun chips_onePromotedNotif_colorIsSystemThemed() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
 
@@ -209,10 +209,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            val colors = latest!![0].colors
-            assertThat(colors).isInstanceOf(ColorsModel.Custom::class.java)
-            assertThat((colors as ColorsModel.Custom).backgroundColorInt).isEqualTo(56)
-            assertThat((colors as ColorsModel.Custom).primaryTextColorInt).isEqualTo(89)
+            assertThat(latest!![0].colors).isEqualTo(ColorsModel.SystemThemed)
         }
 
     @Test

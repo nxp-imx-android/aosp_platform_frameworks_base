@@ -27,7 +27,7 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.domain.model.NotificationChipModel
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
-import com.android.systemui.statusbar.chips.ui.model.ColorsModel.Companion.toCustomColorsModel
+import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
@@ -85,8 +85,7 @@ constructor(
                     contentDescription,
                 )
             }
-        val colors = this.promotedContent.toCustomColorsModel()
-
+        val colors = ColorsModel.SystemThemed
         val clickListener: () -> Unit = {
             // The notification pipeline needs everything to run on the main thread, so keep
             // this event on the main thread.

@@ -43,9 +43,6 @@
              ongoing_activity_chip_short_time_delta] will ever be shown at one time. -->
 
         <!-- Shows a timer, like 00:01. -->
-        <!-- Don't use the LimitedWidth style for the timer because the end of the timer is often
-             the most important value. ChipChronometer has the correct logic for when the timer is
-             too large for the space allowed. -->
         <com.android.systemui.statusbar.chips.ui.view.ChipChronometer
             android:id="@+id/ongoing_activity_chip_time"
             style="@style/StatusBar.Chip.Text"
@@ -54,14 +51,14 @@
         <!-- Shows generic text. -->
         <com.android.systemui.statusbar.chips.ui.view.ChipTextView
             android:id="@+id/ongoing_activity_chip_text"
-            style="@style/StatusBar.Chip.Text.LimitedWidth"
+            style="@style/StatusBar.Chip.Text"
             android:visibility="gone"
             />
 
         <!-- Shows a time delta in short form, like "15min" or "1hr". -->
         <com.android.systemui.statusbar.chips.ui.view.ChipDateTimeView
             android:id="@+id/ongoing_activity_chip_short_time_delta"
-            style="@style/StatusBar.Chip.Text.LimitedWidth"
+            style="@style/StatusBar.Chip.Text"
             android:visibility="gone"
             />
 
