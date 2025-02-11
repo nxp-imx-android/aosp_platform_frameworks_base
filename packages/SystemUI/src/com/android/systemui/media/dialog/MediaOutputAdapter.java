@@ -185,6 +185,7 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             }
 
             boolean isDeviceGroup = false;
+            boolean hideGroupItem = false;
             GroupStatus groupStatus = null;
             OngoingSessionStatus ongoingSessionStatus = null;
             ConnectionState connectionState = ConnectionState.DISCONNECTED;
@@ -218,11 +219,10 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                     connectionState = ConnectionState.CONNECTING;
                 } else if (mShouldGroupSelectedMediaItems && hasMultipleSelectedDevices()
                         && isSelected) {
-                    if (!mediaItem.isFirstDeviceInGroup()) {
-                        mItemLayout.setVisibility(View.GONE);
-                        return;
-                    } else {
+                    if (mediaItem.isFirstDeviceInGroup()) {
                         isDeviceGroup = true;
+                    } else {
+                        hideGroupItem = true;
                     }
                 } else { // A connected or disconnected device.
                     subtitle = device.hasSubtext() ? device.getSubtextString() : null;
@@ -257,26 +257,44 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             }
 
             if (isDeviceGroup) {
-                String sessionName = mController.getSessionName() == null ? ""
-                        : mController.getSessionName().toString();
-                updateTitle(sessionName);
-                updateUnmutedVolumeIcon(null /* device */);
-                updateGroupSeekBar(getGroupItemContentDescription(sessionName));
-                updateEndAreaForDeviceGroup();
-                updateItemBackground(ConnectionState.CONNECTED);
+                renderDeviceGroupItem();
             } else {
-                updateTitle(device.getName());
-                updateTitleIcon(device, connectionState, restrictVolumeAdjustment);
-                updateSeekBar(device, connectionState, restrictVolumeAdjustment,
-                        getDeviceItemContentDescription(device));
-                updateEndArea(device, connectionState, groupStatus, ongoingSessionStatus);
-                updateLoadingIndicator(connectionState);
-                updateFullItemClickListener(clickListener);
-                updateContentAlpha(deviceDisabled);
-                updateSubtitle(subtitle);
-                updateDeviceStatusIcon(deviceStatusIcon);
-                updateItemBackground(connectionState);
+                renderDeviceItem(hideGroupItem, device, connectionState, restrictVolumeAdjustment,
+                        groupStatus, ongoingSessionStatus, clickListener, deviceDisabled, subtitle,
+                        deviceStatusIcon);
             }
+        }
+
+        private void renderDeviceItem(boolean hideGroupItem, MediaDevice device,
+                ConnectionState connectionState, boolean restrictVolumeAdjustment,
+                GroupStatus groupStatus, OngoingSessionStatus ongoingSessionStatus,
+                View.OnClickListener clickListener, boolean deviceDisabled, String subtitle,
+                Drawable deviceStatusIcon) {
+            if (hideGroupItem) {
+                mItemLayout.setVisibility(View.GONE);
+                return;
+            }
+            updateTitle(device.getName());
+            updateTitleIcon(device, connectionState, restrictVolumeAdjustment);
+            updateSeekBar(device, connectionState, restrictVolumeAdjustment,
+                    getDeviceItemContentDescription(device));
+            updateEndArea(device, connectionState, groupStatus, ongoingSessionStatus);
+            updateLoadingIndicator(connectionState);
+            updateFullItemClickListener(clickListener);
+            updateContentAlpha(deviceDisabled);
+            updateSubtitle(subtitle);
+            updateDeviceStatusIcon(deviceStatusIcon);
+            updateItemBackground(connectionState);
+        }
+
+        private void renderDeviceGroupItem() {
+            String sessionName = mController.getSessionName() == null ? ""
+                    : mController.getSessionName().toString();
+            updateTitle(sessionName);
+            updateUnmutedVolumeIcon(null /* device */);
+            updateGroupSeekBar(getGroupItemContentDescription(sessionName));
+            updateEndAreaForDeviceGroup();
+            updateItemBackground(ConnectionState.CONNECTED);
         }
 
         private OngoingSessionStatus getOngoingSessionStatus(MediaDevice device) {
