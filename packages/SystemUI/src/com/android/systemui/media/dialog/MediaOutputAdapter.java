@@ -224,8 +224,10 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                     } else {
                         isDeviceGroup = true;
                     }
-                } else {
+                } else { // A connected or disconnected device.
                     subtitle = device.hasSubtext() ? device.getSubtextString() : null;
+                    ongoingSessionStatus = getOngoingSessionStatus(device);
+                    groupStatus = getGroupStatus(isSelected, isSelectable, isDeselectable);
 
                     if (device.getState() == MediaDeviceState.STATE_CONNECTING_FAILED) {
                         deviceStatusIcon = mContext.getDrawable(
@@ -234,22 +236,8 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                         clickListener = v -> onItemClick(v, device);
                     } else if (currentlyConnected || isSelected) {
                         connectionState = ConnectionState.CONNECTED;
-                        // single selected device
-                        if (device.hasOngoingSession()) {
-                            ongoingSessionStatus = new OngoingSessionStatus(
-                                    device.isHostForOngoingSession());
-                        }
-                        if (hasMultipleSelectedDevices() || hasSelectableDevices()) {
-                            //If device is connected and there's other selectable devices, layout as
-                            // one of selected devices.
-                            groupStatus = new GroupStatus(true /* selected */,
-                                    isDeselectable /* isDeselectable */);
-                        }
                     } else { // disconnected
-                        if (isSelectable) {
-                            //groupable device
-                            groupStatus = new GroupStatus(false /* selected */,
-                                    true /* deselectable */);
+                        if (isSelectable) { // groupable device
                             if (!Flags.disableTransferWhenAppsDoNotSupport() || isTransferable
                                     || hasRouteListingPreferenceItem) {
                                 clickListener = v -> onItemClick(v, device);
@@ -289,6 +277,23 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                 updateDeviceStatusIcon(deviceStatusIcon);
                 updateItemBackground(connectionState);
             }
+        }
+
+        private OngoingSessionStatus getOngoingSessionStatus(MediaDevice device) {
+            return device.hasOngoingSession() ? new OngoingSessionStatus(
+                    device.isHostForOngoingSession()) : null;
+        }
+
+        private GroupStatus getGroupStatus(boolean isSelected, boolean isSelectable,
+                boolean isDeselectable) {
+            // A device should either be selectable or, when the device selected, the list should
+            // have other selectable or selected devices.
+            boolean selectedWithOtherGroupDevices =
+                    isSelected && (hasMultipleSelectedDevices() || hasSelectableDevices());
+            if (isSelectable || selectedWithOtherGroupDevices) {
+                return new GroupStatus(isSelected, isDeselectable);
+            }
+            return null;
         }
 
         private boolean hasMultipleSelectedDevices() {
