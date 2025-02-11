@@ -81,7 +81,7 @@ fun ResizableTileContainer(
             state = state,
             modifier =
                 // Higher zIndex to make sure the handle is drawn above the content
-                Modifier.zIndex(2f),
+                Modifier.zIndex(if (selected) 2f else 1f),
         )
     }
 }
