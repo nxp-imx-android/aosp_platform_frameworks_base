@@ -92,6 +92,9 @@ public class InputMethodServiceTest {
     private static final String DISABLE_SHOW_IME_WITH_HARD_KEYBOARD_CMD =
             "settings put secure " + Settings.Secure.SHOW_IME_WITH_HARD_KEYBOARD + " 0";
 
+    /** The ids of the subtypes of SimpleIme. */
+    private static final int[] SUBTYPE_IDS = new int[]{1, 2};
+
     private final WindowManagerStateHelper mWmState =  new WindowManagerStateHelper();
 
     private final GestureNavSwitchHelper mGestureNavSwitchHelper = new GestureNavSwitchHelper();
@@ -833,8 +836,7 @@ public class InputMethodServiceTest {
     }
 
     /**
-     * Verifies that clicking on the IME switch button either shows the Input Method Switcher Menu,
-     * or switches the input method.
+     * Verifies that clicking on the IME switch button switches the input method subtype.
      */
     @Test
     public void testImeSwitchButtonClick() throws Exception {
@@ -844,6 +846,12 @@ public class InputMethodServiceTest {
 
         setShowImeWithHardKeyboard(true /* enabled */);
 
+        final var info = mImm.getCurrentInputMethodInfo();
+        assertWithMessage("InputMethodInfo is not null").that(info).isNotNull();
+        mImm.setExplicitlyEnabledInputMethodSubtypes(info.getId(), SUBTYPE_IDS);
+
+        final var initialSubtype = mImm.getCurrentInputMethodSubtype();
+
         try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
             verifyInputViewStatusOnMainSync(
                     () -> {
@@ -852,23 +860,18 @@ public class InputMethodServiceTest {
                     },
                     EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
 
-            final var initialInfo = mImm.getCurrentInputMethodInfo();
-
             final var imeSwitcherButton = getUiObject(By.res(INPUT_METHOD_NAV_IME_SWITCHER_ID));
             imeSwitcherButton.click();
             mInstrumentation.waitForIdleSync();
 
-            final var newInfo = mImm.getCurrentInputMethodInfo();
+            final var newSubtype = mImm.getCurrentInputMethodSubtype();
 
-            assertWithMessage("Input Method Switcher Menu is shown or input method was switched")
-                    .that(isInputMethodPickerShown(mImm) || !Objects.equals(initialInfo, newInfo))
+            assertWithMessage("Input method subtype was switched")
+                    .that(!Objects.equals(initialSubtype, newSubtype))
                     .isTrue();
 
             assertWithMessage("IME is still shown after IME Switcher button was clicked")
                     .that(mInputMethodService.isInputViewShown()).isTrue();
-
-            // Hide the IME Switcher Menu before finishing.
-            mUiDevice.pressBack();
         }
     }
 
@@ -882,6 +885,10 @@ public class InputMethodServiceTest {
         waitUntilActivityReadyForInputInjection(mActivity);
 
         setShowImeWithHardKeyboard(true /* enabled */);
+
+        final var info = mImm.getCurrentInputMethodInfo();
+        assertWithMessage("InputMethodInfo is not null").that(info).isNotNull();
+        mImm.setExplicitlyEnabledInputMethodSubtypes(info.getId(), SUBTYPE_IDS);
 
         try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
             verifyInputViewStatusOnMainSync(
