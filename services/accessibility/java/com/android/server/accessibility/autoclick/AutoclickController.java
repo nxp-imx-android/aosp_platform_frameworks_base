@@ -17,11 +17,16 @@
 package com.android.server.accessibility.autoclick;
 
 import static android.view.MotionEvent.BUTTON_PRIMARY;
+import static android.view.MotionEvent.BUTTON_SECONDARY;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_DELAY_DEFAULT;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT_DEFAULT;
 
 import static com.android.server.accessibility.autoclick.AutoclickIndicatorView.SHOW_INDICATOR_DELAY_TIME;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_RIGHT_CLICK;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AutoclickType;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.ClickPanelControllerInterface;
 
 import android.accessibilityservice.AccessibilityTrace;
 import android.annotation.NonNull;
@@ -84,6 +89,23 @@ public class AutoclickController extends BaseEventStreamTransformation {
     @VisibleForTesting AutoclickTypePanel mAutoclickTypePanel;
     private WindowManager mWindowManager;
 
+    // Default click type is left-click.
+    private @AutoclickType int mActiveClickType = AUTOCLICK_TYPE_LEFT_CLICK;
+
+    @VisibleForTesting
+    final ClickPanelControllerInterface clickPanelController =
+            new ClickPanelControllerInterface() {
+                @Override
+                public void handleAutoclickTypeChange(@AutoclickType int clickType) {
+                    mActiveClickType = clickType;
+                }
+
+                @Override
+                public void toggleAutoclickPause() {
+                    // TODO(b/388872274): allows users to pause the autoclick.
+                }
+            };
+
     public AutoclickController(Context context, int userId, AccessibilityTraceManager trace) {
         mTrace = trace;
         mContext = context;
@@ -124,7 +146,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
         mAutoclickIndicatorView = new AutoclickIndicatorView(mContext);
 
         mWindowManager = mContext.getSystemService(WindowManager.class);
-        mAutoclickTypePanel = new AutoclickTypePanel(mContext, mWindowManager);
+        mAutoclickTypePanel =
+                new AutoclickTypePanel(mContext, mWindowManager, clickPanelController);
 
         mAutoclickTypePanel.show();
         mWindowManager.addView(mAutoclickIndicatorView, mAutoclickIndicatorView.getLayoutParams());
@@ -644,6 +667,15 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
             final long now = SystemClock.uptimeMillis();
 
+            // TODO(b/395094903): always triggers left-click when the cursor hovers over the
+            // autoclick type panel, to always allow users to change a different click type.
+            // Otherwise, if one chooses the right-click, this user won't be able to rely on
+            // autoclick to select other click types.
+            final int actionButton =
+                    mActiveClickType == AUTOCLICK_TYPE_RIGHT_CLICK
+                            ? BUTTON_SECONDARY
+                            : BUTTON_PRIMARY;
+
             MotionEvent downEvent =
                     MotionEvent.obtain(
                             /* downTime= */ now,
@@ -653,7 +685,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                             mTempPointerProperties,
                             mTempPointerCoords,
                             mMetaState,
-                            BUTTON_PRIMARY,
+                            actionButton,
                             /* xPrecision= */ 1.0f,
                             /* yPrecision= */ 1.0f,
                             mLastMotionEvent.getDeviceId(),
@@ -663,11 +695,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
             MotionEvent pressEvent = MotionEvent.obtain(downEvent);
             pressEvent.setAction(MotionEvent.ACTION_BUTTON_PRESS);
-            pressEvent.setActionButton(BUTTON_PRIMARY);
+            pressEvent.setActionButton(actionButton);
 
             MotionEvent releaseEvent = MotionEvent.obtain(downEvent);
             releaseEvent.setAction(MotionEvent.ACTION_BUTTON_RELEASE);
-            releaseEvent.setActionButton(BUTTON_PRIMARY);
+            releaseEvent.setActionButton(actionButton);
             releaseEvent.setButtonState(0);
 
             MotionEvent upEvent = MotionEvent.obtain(downEvent);

@@ -18,6 +18,7 @@ package com.android.server.accessibility.autoclick;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
+import android.annotation.IntDef;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
@@ -39,11 +40,39 @@ public class AutoclickTypePanel {
 
     private final String TAG = AutoclickTypePanel.class.getSimpleName();
 
+    public static final int AUTOCLICK_TYPE_LEFT_CLICK = 0;
+    public static final int AUTOCLICK_TYPE_RIGHT_CLICK = 1;
+    public static final int AUTOCLICK_TYPE_DOUBLE_CLICK = 2;
+    public static final int AUTOCLICK_TYPE_DRAG = 3;
+    public static final int AUTOCLICK_TYPE_SCROLL = 4;
+
+    // Types of click the AutoclickTypePanel supports.
+    @IntDef({
+        AUTOCLICK_TYPE_LEFT_CLICK,
+        AUTOCLICK_TYPE_RIGHT_CLICK,
+        AUTOCLICK_TYPE_DOUBLE_CLICK,
+        AUTOCLICK_TYPE_DRAG,
+        AUTOCLICK_TYPE_SCROLL,
+    })
+    public @interface AutoclickType {}
+
+    // An interface exposed to {@link AutoclickController) to handle different actions on the panel,
+    // including changing autoclick type, pausing/resuming autoclick.
+    public interface ClickPanelControllerInterface {
+        // Allows users to change a different autoclick type.
+        void handleAutoclickTypeChange(@AutoclickType int clickType);
+
+        // Allows users to pause/resume the autoclick.
+        void toggleAutoclickPause();
+    }
+
     private final Context mContext;
 
     private final View mContentView;
 
     private final WindowManager mWindowManager;
+
+    private final ClickPanelControllerInterface mClickPanelController;
 
     // Whether the panel is expanded or not.
     private boolean mExpanded = false;
@@ -56,9 +85,13 @@ public class AutoclickTypePanel {
 
     private LinearLayout mSelectedButton;
 
-    public AutoclickTypePanel(Context context, WindowManager windowManager) {
+    public AutoclickTypePanel(
+            Context context,
+            WindowManager windowManager,
+            ClickPanelControllerInterface clickPanelController) {
         mContext = context;
         mWindowManager = windowManager;
+        mClickPanelController = clickPanelController;
 
         mContentView =
                 LayoutInflater.from(context)
@@ -76,26 +109,35 @@ public class AutoclickTypePanel {
     }
 
     private void initializeButtonState() {
-        mLeftClickButton.setOnClickListener(v -> togglePanelExpansion(mLeftClickButton));
-        mRightClickButton.setOnClickListener(v -> togglePanelExpansion(mRightClickButton));
-        mDoubleClickButton.setOnClickListener(v -> togglePanelExpansion(mDoubleClickButton));
-        mScrollButton.setOnClickListener(v -> togglePanelExpansion(mScrollButton));
-        mDragButton.setOnClickListener(v -> togglePanelExpansion(mDragButton));
+        mLeftClickButton.setOnClickListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_LEFT_CLICK));
+        mRightClickButton.setOnClickListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_RIGHT_CLICK));
+        mDoubleClickButton.setOnClickListener(
+                v -> togglePanelExpansion(AUTOCLICK_TYPE_DOUBLE_CLICK));
+        mScrollButton.setOnClickListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_SCROLL));
+        mDragButton.setOnClickListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_DRAG));
+
+        // TODO(b/388872274): registers listener for pause button and allows users to pause/resume
+        // the autoclick.
+        // TODO(b/388847771): registers listener for position button and allows users to move the
+        // panel to a different position.
 
         // Initializes panel as collapsed state and only displays the left click button.
         hideAllClickTypeButtons();
         mLeftClickButton.setVisibility(View.VISIBLE);
-        setSelectedButton(/* selectedButton= */ mLeftClickButton);
+        setSelectedClickType(AUTOCLICK_TYPE_LEFT_CLICK);
     }
 
     /** Sets the selected button and updates the newly and previously selected button styling. */
-    private void setSelectedButton(@NonNull LinearLayout selectedButton) {
+    private void setSelectedClickType(@AutoclickType int clickType) {
+        final LinearLayout selectedButton = getButtonFromClickType(clickType);
+
         // Updates the previously selected button styling.
         if (mSelectedButton != null) {
             toggleSelectedButtonStyle(mSelectedButton, /* isSelected= */ false);
         }
 
         mSelectedButton = selectedButton;
+        mClickPanelController.handleAutoclickTypeChange(clickType);
 
         // Updates the newly selected button styling.
         toggleSelectedButtonStyle(selectedButton, /* isSelected= */ true);
@@ -130,7 +172,9 @@ public class AutoclickTypePanel {
     }
 
     /** Toggles the panel expanded or collapsed state. */
-    private void togglePanelExpansion(LinearLayout button) {
+    private void togglePanelExpansion(@AutoclickType int clickType) {
+        final LinearLayout button = getButtonFromClickType(clickType);
+
         if (mExpanded) {
             // If the panel is already in expanded state, we should collapse it by hiding all
             // buttons except the one user selected.
@@ -138,7 +182,7 @@ public class AutoclickTypePanel {
             button.setVisibility(View.VISIBLE);
 
             // Sets the newly selected button.
-            setSelectedButton(/* selectedButton= */ button);
+            setSelectedClickType(clickType);
         } else {
             // If the panel is already collapsed, we just need to expand it.
             showAllClickTypeButtons();
@@ -164,6 +208,17 @@ public class AutoclickTypePanel {
         mDoubleClickButton.setVisibility(View.VISIBLE);
         mDragButton.setVisibility(View.VISIBLE);
         mScrollButton.setVisibility(View.VISIBLE);
+    }
+
+    private LinearLayout getButtonFromClickType(@AutoclickType int clickType) {
+        return switch (clickType) {
+            case AUTOCLICK_TYPE_LEFT_CLICK -> mLeftClickButton;
+            case AUTOCLICK_TYPE_RIGHT_CLICK -> mRightClickButton;
+            case AUTOCLICK_TYPE_DOUBLE_CLICK -> mDoubleClickButton;
+            case AUTOCLICK_TYPE_DRAG -> mDragButton;
+            case AUTOCLICK_TYPE_SCROLL -> mScrollButton;
+            default -> throw new IllegalArgumentException("Unknown clickType " + clickType);
+        };
     }
 
     @VisibleForTesting
