@@ -216,9 +216,8 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                     clickListener = v -> cancelMuteAwaitConnection();
                 } else if (device.getState() == MediaDeviceState.STATE_GROUPING) {
                     connectionState = ConnectionState.CONNECTING;
-                } else if (mShouldGroupSelectedMediaItems
-                        && mController.getSelectedMediaDevice().size() > 1
-                        && isDeviceIncluded(mController.getSelectedMediaDevice(), device)) {
+                } else if (mShouldGroupSelectedMediaItems && hasMultipleSelectedDevices()
+                        && isSelected) {
                     if (!mediaItem.isFirstDeviceInGroup()) {
                         mItemLayout.setVisibility(View.GONE);
                         return;
@@ -245,38 +244,33 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                     deviceStatusIcon = mContext.getDrawable(R.drawable.media_output_status_failed);
                     subtitle = mContext.getString(R.string.media_output_dialog_connect_failed);
                     clickListener = v -> onItemClick(v, device);
-                } else if (mController.getSelectedMediaDevice().size() > 1 && isSelected) {
-                    // selected device in group
-                    groupStatus = new GroupStatus(
-                            true /* selected */,
-                            isDeselectable /* deselectable */);
-                    connectionState = ConnectionState.CONNECTED;
-                } else if (currentlyConnected) {
+                } else if (currentlyConnected || isSelected) {
                     connectionState = ConnectionState.CONNECTED;
                     // single selected device
                     if (device.hasOngoingSession()) {
                         ongoingSessionStatus = new OngoingSessionStatus(
                                 device.isHostForOngoingSession());
-                    } else if (mController.isCurrentConnectedDeviceRemote()
-                            && !mController.getSelectableMediaDevice().isEmpty()) {
+                    }
+                    if (hasMultipleSelectedDevices() || hasSelectableDevices()) {
                         //If device is connected and there's other selectable devices, layout as
                         // one of selected devices.
                         groupStatus = new GroupStatus(
                                 true /* selected */,
                                 isDeselectable /* isDeselectable */);
                     }
-                } else if (isSelectable) {
-                    //groupable device
-                    groupStatus = new GroupStatus(false /* selected */, true /* deselectable */);
-                    if (!Flags.disableTransferWhenAppsDoNotSupport()
-                            || isTransferable
-                            || hasRouteListingPreferenceItem) {
-                        clickListener = v -> onItemClick(v, device);
+                } else { // disconnected
+                    if (isSelectable) {
+                        //groupable device
+                        groupStatus = new GroupStatus(false /* selected */,
+                                true /* deselectable */);
+                        if (!Flags.disableTransferWhenAppsDoNotSupport() || isTransferable
+                                || hasRouteListingPreferenceItem) {
+                            clickListener = v -> onItemClick(v, device);
+                        }
+                    } else {
+                        deviceStatusIcon = getDeviceStatusIcon(device, device.hasOngoingSession());
+                        clickListener = getClickListenerBasedOnSelectionBehavior(device);
                     }
-                    deviceDisabled = clickListener == null;
-                } else {
-                    deviceStatusIcon = getDeviceStatusIcon(device, device.hasOngoingSession());
-                    clickListener = getClickListenerBasedOnSelectionBehavior(device);
                     deviceDisabled = clickListener == null;
                 }
             }
@@ -306,6 +300,14 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                 updateDeviceStatusIcon(deviceStatusIcon);
                 updateItemBackground(connectionState);
             }
+        }
+
+        private boolean hasMultipleSelectedDevices() {
+            return mController.getSelectedMediaDevice().size() > 1;
+        }
+
+        private boolean hasSelectableDevices() {
+            return !mController.getSelectableMediaDevice().isEmpty();
         }
 
         /** Renders the right side round pill button / checkbox. */

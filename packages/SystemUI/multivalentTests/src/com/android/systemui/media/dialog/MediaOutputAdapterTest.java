@@ -240,6 +240,8 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
     @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void onBindViewHolder_bindConnectedRemoteDevice_verifyView() {
+        when(mMediaSwitchingController.getSelectedMediaDevice())
+                .thenReturn(ImmutableList.of(mMediaDevice1));
         when(mMediaSwitchingController.getSelectableMediaDevice())
                 .thenReturn(ImmutableList.of(mMediaDevice2));
         when(mMediaSwitchingController.isCurrentConnectedDeviceRemote()).thenReturn(true);
@@ -853,6 +855,8 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         when(mMediaSwitchingController.getSelectableMediaDevice())
                 .thenReturn(ImmutableList.of(mMediaDevice2));
         when(mMediaSwitchingController.getDeselectableMediaDevice())
+                .thenReturn(ImmutableList.of(mMediaDevice1));
+        when(mMediaSwitchingController.getSelectedMediaDevice())
                 .thenReturn(ImmutableList.of(mMediaDevice1));
         when(mMediaSwitchingController.isCurrentConnectedDeviceRemote()).thenReturn(true);
         mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
