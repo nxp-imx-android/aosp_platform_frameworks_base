@@ -386,6 +386,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         verify(mMediaSwitchingController).logInteractionAdjustVolume(mMediaDevice1);
     }
 
+    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void onBindViewHolder_bindSelectableDevice_verifyView() {
         List<MediaDevice> selectableDevices = new ArrayList<>();
@@ -396,10 +397,55 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         assertThat(mViewHolder.mProgressBar.getVisibility()).isEqualTo(View.GONE);
         assertThat(mViewHolder.mEndTouchArea.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(mViewHolder.mCheckBox.isChecked()).isFalse();
         assertThat(mViewHolder.mEndClickIcon.getVisibility()).isEqualTo(View.GONE);
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
+
+        mViewHolder.mCheckBox.performClick();
+        verify(mMediaSwitchingController).addDeviceToPlayMedia(mMediaDevice2);
+    }
+
+    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
+    @Test
+    public void onBindViewHolder_bindDeselectableDevice_verifyView() {
+        when(mMediaSwitchingController.getSelectedMediaDevice()).thenReturn(
+                List.of(mMediaDevice1, mMediaDevice2));
+        when(mMediaSwitchingController.getDeselectableMediaDevice()).thenReturn(
+                List.of(mMediaDevice1, mMediaDevice2));
+        mMediaOutputAdapter.onBindViewHolder(mViewHolder, 1);
+
+        assertThat(mViewHolder.mEndTouchArea.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(mViewHolder.mCheckBox.isChecked()).isTrue();
+        assertThat(mViewHolder.mEndClickIcon.getVisibility()).isEqualTo(View.GONE);
+
+        mViewHolder.mCheckBox.performClick();
+        verify(mMediaSwitchingController).removeDeviceFromPlayMedia(mMediaDevice2);
+    }
+
+    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
+    @Test
+    public void onBindViewHolder_changingSelectedValue_doesntTriggerChangeListener() {
+        List<MediaDevice> selectableDevices = List.of(mMediaDevice2);
+        List<MediaDevice> selectedDevices = new ArrayList<>();
+        selectedDevices.add(mMediaDevice1);
+        when(mMediaSwitchingController.getSelectableMediaDevice()).thenReturn(selectableDevices);
+        when(mMediaSwitchingController.getSelectedMediaDevice()).thenReturn(selectedDevices);
+
+        // mMediaDevice2 is selected
+        mMediaOutputAdapter.onBindViewHolder(mViewHolder, 1);
+        assertThat(mViewHolder.mCheckBox.isChecked()).isFalse();
+
+        // changing the selected state programmatically (not a user click)
+        selectedDevices.add(mMediaDevice2);
+        mMediaOutputAdapter.onBindViewHolder(mViewHolder, 1);
+        assertThat(mViewHolder.mCheckBox.isChecked()).isTrue();
+
+        // The onCheckedChangeListener is not invoked
+        verify(mMediaSwitchingController, never()).addDeviceToPlayMedia(mMediaDevice2);
+        verify(mMediaSwitchingController, never()).removeDeviceFromPlayMedia(mMediaDevice2);
     }
 
     @Test

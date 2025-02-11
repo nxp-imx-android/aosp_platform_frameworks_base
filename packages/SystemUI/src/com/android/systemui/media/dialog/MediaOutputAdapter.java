@@ -440,6 +440,7 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             updateEndAreaColor(groupStatus.selected() ? mController.getColorSeekbarProgress()
                     : mController.getColorItemBackground());
             mEndTouchArea.setContentDescription(getDeviceItemContentDescription(device));
+            mCheckBox.setOnCheckedChangeListener(null);
             mCheckBox.setChecked(groupStatus.selected());
             mCheckBox.setOnCheckedChangeListener(
                     isEnabled ? (buttonView, isChecked) -> onGroupActionTriggered(
