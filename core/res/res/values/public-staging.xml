@@ -129,6 +129,8 @@
   <staging-public-group type="id" first-id="0x01b20000">
     <!-- @FlaggedApi(android.appwidget.flags.Flags.FLAG_ENGAGEMENT_METRICS) -->
     <public name="remoteViewsMetricsId"/>
+    <!-- @FlaggedApi("android.view.accessibility.a11y_selection_api")  -->
+    <public name="accessibilityActionSetExtendedSelection"/>
   </staging-public-group>
 
   <staging-public-group type="style" first-id="0x01b10000">
