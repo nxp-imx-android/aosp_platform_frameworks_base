@@ -34,6 +34,8 @@ import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.VisibleForTesting;
 
+import com.android.internal.R;
+
 // A visual indicator for the autoclick feature.
 public class AutoclickIndicatorView extends View {
     private static final String TAG = AutoclickIndicatorView.class.getSimpleName();
@@ -67,8 +69,7 @@ public class AutoclickIndicatorView extends View {
         super(context);
 
         mPaint = new Paint();
-        // TODO(b/383901288): update styling once determined by UX.
-        mPaint.setARGB(255, 52, 103, 235);
+        mPaint.setColor(context.getColor(R.color.materialColorPrimary));
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeWidth(10);
 
