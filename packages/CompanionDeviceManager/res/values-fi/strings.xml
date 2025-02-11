@@ -17,7 +17,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4470785958457506021">"Companion Device Manager"</string>
-    <string name="confirmation_title" msgid="2244241995958340998">"Sallitaanko, että soellus (&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;) saa pääsyn laitteeseen: &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
+    <string name="confirmation_title" msgid="2244241995958340998">"Sallitaanko, että sovellus (&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;) saa pääsyn laitteeseen: &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="message_discovery_soft_timeout" msgid="473346859407859161">"Varmista, että <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> on päällä laitteella (<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>), ja pidä <xliff:g id="PROFILE_NAME">%3$s</xliff:g> lähellä."</string>
     <string name="message_discovery_hard_timeout" msgid="677514663495711424">"Laitteita ei löydy. Yritä myöhemmin uudelleen."</string>
     <string name="discovery_bluetooth" msgid="5693557668470016164">"Bluetooth"</string>

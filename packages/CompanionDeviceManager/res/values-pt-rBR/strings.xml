@@ -18,7 +18,7 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4470785958457506021">"Gerenciador de dispositivos complementar"</string>
     <string name="confirmation_title" msgid="2244241995958340998">"Permitir que o app &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; acesse o dispositivo &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
-    <string name="message_discovery_soft_timeout" msgid="473346859407859161">"Confira se o <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> tem o <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> ativado e se o <xliff:g id="PROFILE_NAME">%3$s</xliff:g> está por perto."</string>
+    <string name="message_discovery_soft_timeout" msgid="473346859407859161">"Confira se o <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> está com o <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> ativado e se o <xliff:g id="PROFILE_NAME">%3$s</xliff:g> está por perto."</string>
     <string name="message_discovery_hard_timeout" msgid="677514663495711424">"Nenhum dispositivo foi encontrado. Tente de novo mais tarde."</string>
     <string name="discovery_bluetooth" msgid="5693557668470016164">"Bluetooth"</string>
     <string name="discovery_wifi" msgid="1551782459721758773">"Wi-Fi"</string>

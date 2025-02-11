@@ -25,7 +25,7 @@
     <string name="discovery_mixed" msgid="7071466134150760127">"Bluetooth at Wi-Fi"</string>
     <string name="profile_name_watch" msgid="576290739483672360">"relo"</string>
     <string name="chooser_title_non_profile" msgid="6035023914517087400">"Pumili ng device na papamahalaan ng &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;"</string>
-    <string name="chooser_title" msgid="2235819929238267637">"Pumili ng <xliff:g id="PROFILE_NAME">%1$s</xliff:g> para mag-set up"</string>
+    <string name="chooser_title" msgid="2235819929238267637">"Pumili ng <xliff:g id="PROFILE_NAME">%1$s</xliff:g> para i-set up"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Hinahanap ang <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Papayagan ang app na ito na mag-sync ng impormasyon, tulad ng pangalan ng isang taong tumatawag, at ma-access ang mga pahintulot na ito sa iyong <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Payagan ang &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; na pamahalaan ang &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
@@ -46,7 +46,7 @@
     <string name="summary_sensor_device_streaming" msgid="3413105061195145547">"Magkakaroon ng access ang <xliff:g id="APP_NAME_0">%1$s</xliff:g> sa anumang pine-play sa iyong <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>.&lt;br/&gt;&lt;br/&gt;Makakapag-stream ang <xliff:g id="APP_NAME_2">%1$s</xliff:g> ng audio sa <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> hanggang sa alisin mo ang access sa pahintulot na ito."</string>
     <string name="helper_summary_sensor_device_streaming" msgid="8860174545653786353">"Humihingi ang <xliff:g id="APP_NAME">%1$s</xliff:g> ng pahintulot para sa <xliff:g id="DEVICE_NAME">%2$s</xliff:g> na mag-stream ng audio at mga feature ng system sa pagitan ng iyong mga device."</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"device"</string>
-    <string name="summary_generic" msgid="1761976003668044801">"Magagawa ng app na ito na mag-sync ng impormasyon, tulad ng pangalan ng isang taong tumatawag, sa pagitan ng iyong telepono at ng napiling device"</string>
+    <string name="summary_generic" msgid="1761976003668044801">"Magagawa ng app na ito na mag-sync ng impormasyon, tulad ng pangalan ng taong tumatawag, sa pagitan ng telepono mo at ng napiling device"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Payagan"</string>
     <string name="consent_no" msgid="2640796915611404382">"Huwag payagan"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Kanselahin"</string>

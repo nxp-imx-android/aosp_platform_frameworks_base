@@ -25,7 +25,7 @@
     <string name="discovery_mixed" msgid="7071466134150760127">"Bluetooth a Wi-Fi"</string>
     <string name="profile_name_watch" msgid="576290739483672360">"hodinky"</string>
     <string name="chooser_title_non_profile" msgid="6035023914517087400">"Vyberte zariadenie, ktoré bude spravovať aplikácia &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;"</string>
-    <string name="chooser_title" msgid="2235819929238267637">"Vyberte profil <xliff:g id="PROFILE_NAME">%1$s</xliff:g>, ktorý nastavíte"</string>
+    <string name="chooser_title" msgid="2235819929238267637">"Vyberte profil <xliff:g id="PROFILE_NAME">%1$s</xliff:g>, ktorý chcete nastaviť"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Hľadá sa zariadenie <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Táto aplikácia bude môcť synchronizovať informácie, napríklad meno volajúceho, a získavať prístup k týmto povoleniam v zariadení <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Chcete povoliť aplikácii &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; spravovať zariadenie &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>

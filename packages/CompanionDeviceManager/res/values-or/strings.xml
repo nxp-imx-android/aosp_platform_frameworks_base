@@ -18,7 +18,7 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4470785958457506021">"ସହଯୋଗୀ ଡିଭାଇସ୍ ପରିଚାଳକ"</string>
     <string name="confirmation_title" msgid="2244241995958340998">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;କୁ ଆକ୍ସେସ କରିବା ପାଇଁ &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ଆପକୁ ଅନୁମତି ଦେବେ?"</string>
-    <string name="message_discovery_soft_timeout" msgid="473346859407859161">"ସୁନିଶ୍ଚିତ ହୁଏନ୍ତୁ ଏହି <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ରେ <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> ଚାଲୁ କରାଯାଇଛି ଏବଂ ଆପଣଙ୍କର <xliff:g id="PROFILE_NAME">%3$s</xliff:g> ଆଖପାଖରେ ରଖନ୍ତୁ।"</string>
+    <string name="message_discovery_soft_timeout" msgid="473346859407859161">"ସୁନିଶ୍ଚିତ ହୁଏନ୍ତୁ ଯେ ଏହି <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ରେ <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> ଚାଲୁ କରାଯାଇଛି ଏବଂ ଆପଣଙ୍କର <xliff:g id="PROFILE_NAME">%3$s</xliff:g> ଆଖପାଖରେ ରଖନ୍ତୁ।"</string>
     <string name="message_discovery_hard_timeout" msgid="677514663495711424">"କୌଣସି ଡିଭାଇସ ମିଳିଲା ନାହିଁ। ଦୟାକରି ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।"</string>
     <string name="discovery_bluetooth" msgid="5693557668470016164">"ବ୍ଲୁଟୁଥ"</string>
     <string name="discovery_wifi" msgid="1551782459721758773">"ୱାଇ-ଫାଇ"</string>
