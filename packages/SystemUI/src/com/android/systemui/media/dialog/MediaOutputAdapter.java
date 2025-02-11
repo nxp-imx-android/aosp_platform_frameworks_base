@@ -211,6 +211,12 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                     restrictVolumeAdjustment = true;
                     mCurrentActivePosition = position;
                     clickListener = v -> onItemClick(v, device);
+                } else if (currentlyConnected && isMutingExpectedDeviceExist
+                        && !mController.isCurrentConnectedDeviceRemote()) {
+                    // mark as disconnected and set special click listener
+                    clickListener = v -> cancelMuteAwaitConnection();
+                } else if (device.getState() == MediaDeviceState.STATE_GROUPING) {
+                    connectionState = ConnectionState.CONNECTING;
                 } else if (mShouldGroupSelectedMediaItems
                         && mController.getSelectedMediaDevice().size() > 1
                         && isDeviceIncluded(mController.getSelectedMediaDevice(), device)) {
@@ -242,8 +248,6 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                     deviceStatusIcon = mContext.getDrawable(R.drawable.media_output_status_failed);
                     subtitle = mContext.getString(R.string.media_output_dialog_connect_failed);
                     clickListener = v -> onItemClick(v, device);
-                } else if (device.getState() == MediaDeviceState.STATE_GROUPING) {
-                    connectionState = ConnectionState.CONNECTING;
                 } else if (mController.getSelectedMediaDevice().size() > 1 && isSelected) {
                     // selected device in group
                     groupStatus = new GroupStatus(
@@ -251,16 +255,12 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                             isDeselectable /* deselectable */);
                     connectionState = ConnectionState.CONNECTED;
                 } else if (currentlyConnected) {
+                    connectionState = ConnectionState.CONNECTED;
                     // single selected device
-                    if (isMutingExpectedDeviceExist
-                            && !mController.isCurrentConnectedDeviceRemote()) {
-                        // mark as disconnected and set special click listener
-                        clickListener = v -> cancelMuteAwaitConnection();
-                    } else if (device.hasOngoingSession()) {
+                    if (device.hasOngoingSession()) {
                         mCurrentActivePosition = position;
                         ongoingSessionStatus = new OngoingSessionStatus(
                                 device.isHostForOngoingSession());
-                        connectionState = ConnectionState.CONNECTED;
                     } else if (mController.isCurrentConnectedDeviceRemote()
                             && !mController.getSelectableMediaDevice().isEmpty()) {
                         //If device is connected and there's other selectable devices, layout as
@@ -268,10 +268,8 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                         groupStatus = new GroupStatus(
                                 true /* selected */,
                                 isDeselectable /* isDeselectable */);
-                        connectionState = ConnectionState.CONNECTED;
                     } else {
                         mCurrentActivePosition = position;
-                        connectionState = ConnectionState.CONNECTED;
                     }
                 } else if (isSelectable) {
                     //groupable device
