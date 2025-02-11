@@ -45,6 +45,7 @@ TEST(JankTracker, noJank) {
     info->set(FrameInfoIndex::FrameCompleted) = 115_ms;
     info->set(FrameInfoIndex::FrameInterval) = 16_ms;
     info->set(FrameInfoIndex::FrameDeadline) = 120_ms;
+    info->set(FrameInfoIndex::WorkloadTarget) = 20_ms;
     jankTracker.finishFrame(*info, reporter, frameNumber, surfaceId);
 
     info = jankTracker.startFrame();
@@ -55,6 +56,7 @@ TEST(JankTracker, noJank) {
     info->set(FrameInfoIndex::FrameCompleted) = 131_ms;
     info->set(FrameInfoIndex::FrameInterval) = 16_ms;
     info->set(FrameInfoIndex::FrameDeadline) = 136_ms;
+    info->set(FrameInfoIndex::WorkloadTarget) = 20_ms;
     jankTracker.finishFrame(*info, reporter, frameNumber, surfaceId);
 
     ASSERT_EQ(2, container.get()->totalFrameCount());
@@ -79,6 +81,7 @@ TEST(JankTracker, jank) {
     info->set(FrameInfoIndex::FrameCompleted) = 121_ms;
     info->set(FrameInfoIndex::FrameInterval) = 16_ms;
     info->set(FrameInfoIndex::FrameDeadline) = 120_ms;
+    info->set(FrameInfoIndex::WorkloadTarget) = 20_ms;
     jankTracker.finishFrame(*info, reporter, frameNumber, surfaceId);
 
     ASSERT_EQ(1, container.get()->totalFrameCount());
@@ -102,6 +105,7 @@ TEST(JankTracker, legacyJankButNoRealJank) {
     info->set(FrameInfoIndex::FrameCompleted) = 118_ms;
     info->set(FrameInfoIndex::FrameInterval) = 16_ms;
     info->set(FrameInfoIndex::FrameDeadline) = 120_ms;
+    info->set(FrameInfoIndex::WorkloadTarget) = 20_ms;
     jankTracker.finishFrame(*info, reporter, frameNumber, surfaceId);
 
     ASSERT_EQ(1, container.get()->totalFrameCount());
@@ -127,6 +131,7 @@ TEST(JankTracker, doubleStuffed) {
     info->set(FrameInfoIndex::FrameCompleted) = 121_ms;
     info->set(FrameInfoIndex::FrameInterval) = 16_ms;
     info->set(FrameInfoIndex::FrameDeadline) = 120_ms;
+    info->set(FrameInfoIndex::WorkloadTarget) = 20_ms;
     jankTracker.finishFrame(*info, reporter, frameNumber, surfaceId);
 
     ASSERT_EQ(1, container.get()->jankFrameCount());
@@ -140,6 +145,7 @@ TEST(JankTracker, doubleStuffed) {
     info->set(FrameInfoIndex::FrameCompleted) = 137_ms;
     info->set(FrameInfoIndex::FrameInterval) = 16_ms;
     info->set(FrameInfoIndex::FrameDeadline) = 136_ms;
+    info->set(FrameInfoIndex::WorkloadTarget) = 20_ms;
     jankTracker.finishFrame(*info, reporter, frameNumber, surfaceId);
 
     ASSERT_EQ(2, container.get()->totalFrameCount());
@@ -164,6 +170,7 @@ TEST(JankTracker, doubleStuffedThenPauseThenJank) {
     info->set(FrameInfoIndex::FrameCompleted) = 121_ms;
     info->set(FrameInfoIndex::FrameInterval) = 16_ms;
     info->set(FrameInfoIndex::FrameDeadline) = 120_ms;
+    info->set(FrameInfoIndex::WorkloadTarget) = 20_ms;
     jankTracker.finishFrame(*info, reporter, frameNumber, surfaceId);
 
     ASSERT_EQ(1, container.get()->jankFrameCount());
@@ -177,6 +184,7 @@ TEST(JankTracker, doubleStuffedThenPauseThenJank) {
     info->set(FrameInfoIndex::FrameCompleted) = 137_ms;
     info->set(FrameInfoIndex::FrameInterval) = 16_ms;
     info->set(FrameInfoIndex::FrameDeadline) = 136_ms;
+    info->set(FrameInfoIndex::WorkloadTarget) = 20_ms;
     jankTracker.finishFrame(*info, reporter, frameNumber, surfaceId);
 
     ASSERT_EQ(1, container.get()->jankFrameCount());
@@ -190,6 +198,7 @@ TEST(JankTracker, doubleStuffedThenPauseThenJank) {
     info->set(FrameInfoIndex::FrameCompleted) = 169_ms;
     info->set(FrameInfoIndex::FrameInterval) = 16_ms;
     info->set(FrameInfoIndex::FrameDeadline) = 168_ms;
+    info->set(FrameInfoIndex::WorkloadTarget) = 20_ms;
     jankTracker.finishFrame(*info, reporter, frameNumber, surfaceId);
 
     ASSERT_EQ(3, container.get()->totalFrameCount());
@@ -214,6 +223,7 @@ TEST(JankTracker, doubleStuffedTwoIntervalBehind) {
     info->set(FrameInfoIndex::FrameCompleted) = 117_ms;
     info->set(FrameInfoIndex::FrameInterval) = 16_ms;
     info->set(FrameInfoIndex::FrameDeadline) = 116_ms;
+    info->set(FrameInfoIndex::WorkloadTarget) = 16_ms;
     jankTracker.finishFrame(*info, reporter, frameNumber, surfaceId);
 
     ASSERT_EQ(1, container.get()->jankFrameCount());
@@ -228,6 +238,7 @@ TEST(JankTracker, doubleStuffedTwoIntervalBehind) {
     info->set(FrameInfoIndex::FrameCompleted) = 133_ms;
     info->set(FrameInfoIndex::FrameInterval) = 16_ms;
     info->set(FrameInfoIndex::FrameDeadline) = 132_ms;
+    info->set(FrameInfoIndex::WorkloadTarget) = 16_ms;
     jankTracker.finishFrame(*info, reporter, frameNumber, surfaceId);
 
     ASSERT_EQ(1, container.get()->jankFrameCount());
@@ -242,6 +253,7 @@ TEST(JankTracker, doubleStuffedTwoIntervalBehind) {
     info->set(FrameInfoIndex::FrameCompleted) = 165_ms;
     info->set(FrameInfoIndex::FrameInterval) = 16_ms;
     info->set(FrameInfoIndex::FrameDeadline) = 148_ms;
+    info->set(FrameInfoIndex::WorkloadTarget) = 16_ms;
     jankTracker.finishFrame(*info, reporter, frameNumber, surfaceId);
 
     ASSERT_EQ(2, container.get()->jankFrameCount());
@@ -256,6 +268,7 @@ TEST(JankTracker, doubleStuffedTwoIntervalBehind) {
     info->set(FrameInfoIndex::FrameCompleted) = 181_ms;
     info->set(FrameInfoIndex::FrameInterval) = 16_ms;
     info->set(FrameInfoIndex::FrameDeadline) = 164_ms;
+    info->set(FrameInfoIndex::WorkloadTarget) = 16_ms;
     jankTracker.finishFrame(*info, reporter, frameNumber, surfaceId);
 
     ASSERT_EQ(2, container.get()->jankFrameCount());

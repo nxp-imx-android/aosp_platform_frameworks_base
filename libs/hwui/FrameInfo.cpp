@@ -32,8 +32,9 @@ const std::array FrameInfoNames{"Flags",
                                 "PerformTraversalsStart",
                                 "DrawStart",
                                 "FrameDeadline",
-                                "FrameInterval",
                                 "FrameStartTime",
+                                "FrameInterval",
+                                "WorkloadTarget",
                                 "SyncQueued",
                                 "SyncStart",
                                 "IssueDrawCommandsStart",
@@ -48,7 +49,7 @@ const std::array FrameInfoNames{"Flags",
 
 };
 
-static_assert(static_cast<int>(FrameInfoIndex::NumIndexes) == 23,
+static_assert(static_cast<int>(FrameInfoIndex::NumIndexes) == 24,
               "Must update value in FrameMetrics.java#FRAME_STATS_COUNT (and here)");
 
 void FrameInfo::importUiThreadInfo(int64_t* info) {
