@@ -23,6 +23,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.ViewGroup.MarginLayoutParams
 import android.view.ViewStub
 import android.widget.Chronometer
 import android.widget.DateTimeView
@@ -164,8 +165,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private var chronometerStub: ViewStub? = root.findViewById(R.id.chronometer)
     private var chronometer: Chronometer? = null
     private val closeButton: View? = root.findViewById(R.id.close_button)
-    private val conversationIconContainer: View? =
-        root.findViewById(R.id.conversation_icon_container)
+    private val conversationIconBadge: View? = root.findViewById(R.id.conversation_icon_badge)
+    private val conversationIcon: CachingIconView? = root.findViewById(R.id.conversation_icon)
     private val conversationText: TextView? = root.findViewById(R.id.conversation_text)
     private val expandButton: NotificationExpandButton? = root.findViewById(R.id.expand_button)
     private val headerText: TextView? = root.findViewById(R.id.header_text)
@@ -175,12 +176,13 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         root.findViewById(R.id.header_text_secondary_divider)
     private val icon: NotificationRowIconView? = root.findViewById(R.id.icon)
     private val leftIcon: ImageView? = root.findViewById(R.id.left_icon)
-    private val rightIcon: ImageView? = root.findViewById(R.id.right_icon)
+    private val mainColumn: View? = root.findViewById(R.id.notification_main_column)
     private val notificationProgressEndIcon: CachingIconView? =
         root.findViewById(R.id.notification_progress_end_icon)
     private val notificationProgressStartIcon: CachingIconView? =
         root.findViewById(R.id.notification_progress_start_icon)
     private val profileBadge: ImageView? = root.findViewById(R.id.profile_badge)
+    private val rightIcon: ImageView? = root.findViewById(R.id.right_icon)
     private val text: ImageFloatingTextView? = root.findViewById(R.id.text)
     private val time: DateTimeView? = root.findViewById(R.id.time)
     private val timeDivider: View? = root.findViewById(R.id.time_divider)
@@ -198,7 +200,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         alternateExpandTarget?.visibility = GONE
         bigPicture?.visibility = GONE
         closeButton?.visibility = GONE
-        conversationIconContainer?.visibility = GONE
+        conversationIconBadge?.visibility = GONE
         expandButton?.visibility = GONE
         leftIcon?.visibility = GONE
         notificationProgressEndIcon?.visibility = GONE
@@ -209,6 +211,16 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             ?.drawable
             ?.mutate()
             ?.setColorFilter(SecondaryText.colorInt, PorterDuff.Mode.SRC_IN)
+
+        if (Flags.notificationsRedesignTemplates()) {
+            (mainColumn?.layoutParams as? MarginLayoutParams)?.let { mainColumnMargins ->
+                mainColumnMargins.topMargin =
+                    Notification.Builder.getContentMarginTop(
+                        root.context,
+                        R.dimen.notification_2025_content_margin_top,
+                    )
+            }
+        }
     }
 
     fun update(content: PromotedNotificationContentModel, audiblyAlertedIconVisible: Boolean) {
@@ -229,16 +241,11 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         textView: ImageFloatingTextView? = null,
         showOldProgress: Boolean = true,
     ) {
-        // Icon binding must be called in this order
-        updateImageView(icon, content.smallIcon)
-        icon?.setImageLevel(content.iconLevel)
-        icon?.setBackgroundColor(Background.colorInt)
-        icon?.originalIconColor = PrimaryText.colorInt
-
         updateHeader(content, hideTitle = true)
 
         updateTitle(title, content)
         updateText(textView ?: text, content)
+        updateSmallIcon(icon, content)
         updateImageView(rightIcon, content.skeletonLargeIcon)
 
         if (showOldProgress) {
@@ -341,6 +348,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
         updateImageView(verificationIcon, content.verificationIcon)
         updateTextView(verificationText, content.verificationText)
+
+        updateSmallIcon(conversationIcon, content)
     }
 
     private fun updateConversationHeaderDividers(
@@ -396,6 +405,19 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             chronometer?.isCountDown = (timeValue.mode == When.Mode.CountDown)
             chronometer?.setStarted(true)
         }
+    }
+
+    private fun updateSmallIcon(
+        smallIconView: CachingIconView?,
+        content: PromotedNotificationContentModel,
+    ) {
+        smallIconView ?: return
+
+        // Icon binding must be called in this order
+        updateImageView(smallIconView, content.smallIcon)
+        smallIconView.setImageLevel(content.iconLevel)
+        smallIconView.setBackgroundColor(Background.colorInt)
+        smallIconView.originalIconColor = PrimaryText.colorInt
     }
 
     private fun inflateChronometer() {

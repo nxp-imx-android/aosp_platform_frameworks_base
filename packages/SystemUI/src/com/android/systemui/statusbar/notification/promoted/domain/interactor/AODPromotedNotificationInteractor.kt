@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.promoted.domain.interactor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -31,4 +32,6 @@ constructor(activeNotificationsInteractor: ActiveNotificationsInteractor) {
         activeNotificationsInteractor.topLevelRepresentativeNotifications.map { notifs ->
             notifs.firstNotNullOfOrNull { it.promotedContent }
         }
+
+    val isPresent: Flow<Boolean> = content.map { (it != null) && (it.style != Style.Ineligible) }
 }
