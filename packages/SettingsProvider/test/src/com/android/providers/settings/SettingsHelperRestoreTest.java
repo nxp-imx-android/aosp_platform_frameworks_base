@@ -20,6 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static junit.framework.Assert.assertEquals;
 
+import android.app.backup.BackupAnnotations.OperationType;
+import android.app.backup.BackupRestoreEventLogger;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -60,11 +62,14 @@ public class SettingsHelperRestoreTest {
     private static final float FLOAT_TOLERANCE = 0.01f;
     private ContentResolver mContentResolver;
     private SettingsHelper mSettingsHelper;
+    private BackupRestoreEventLogger mBackupRestoreEventLogger;
 
     @Before
     public void setUp() {
         mContentResolver = mInterceptingContext.getContentResolver();
         mSettingsHelper = new SettingsHelper(mInterceptingContext);
+        mBackupRestoreEventLogger = new BackupRestoreEventLogger(OperationType.RESTORE);
+        mSettingsHelper.setBackupRestoreEventLogger(mBackupRestoreEventLogger);
     }
 
     @After
