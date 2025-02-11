@@ -22,7 +22,7 @@ import android.os.ServiceManager;
 import android.util.Log;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.protolog.ProtoLogConfigurationServiceImpl.RegisterClientArgs;
+import com.android.internal.protolog.IProtoLogConfigurationService.RegisterClientArgs;
 import com.android.internal.protolog.common.ILogger;
 import com.android.internal.protolog.common.IProtoLogGroup;
 
@@ -104,8 +104,9 @@ public class ProcessedPerfettoProtoLogImpl extends PerfettoProtoLogImpl {
     @NonNull
     @Override
     protected RegisterClientArgs createConfigurationServiceRegisterClientArgs() {
-        return new RegisterClientArgs()
-                .setViewerConfigFile(mViewerConfigFilePath);
+        var args = new RegisterClientArgs();
+        args.viewerConfigFile = mViewerConfigFilePath;
+        return args;
     }
 
     /**
