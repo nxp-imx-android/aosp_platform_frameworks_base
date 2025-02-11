@@ -349,8 +349,10 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
             // Check if the info is different from the last reported info.
             final TaskFragmentInfo info = tf.getTaskFragmentInfo();
             final TaskFragmentInfo lastInfo = mLastSentTaskFragmentInfos.get(tf);
-            if (info.equalsForTaskFragmentOrganizer(lastInfo) && configurationsAreEqualForOrganizer(
-                    info.getConfiguration(), lastInfo.getConfiguration())) {
+            final int configurationChangeMask = tf.getConfigurationChangeMaskForOrganizer();
+            if (info.equalsForTaskFragmentOrganizer(lastInfo)
+                    && configurationsAreEqualForOrganizer(info.getConfiguration(),
+                            lastInfo.getConfiguration(), configurationChangeMask)) {
                 return null;
             }
 
