@@ -70,7 +70,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
-import android.app.Flags;
 import android.app.IOnProjectionStateChangedListener;
 import android.app.IUiModeManager;
 import android.content.BroadcastReceiver;
@@ -91,7 +90,6 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.test.FakePermissionEnforcer;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.dreams.DreamManagerInternal;
@@ -1508,13 +1506,11 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MODES_API)
     public void testAttentionModeThemeOverlay_nightModeDisabled() throws RemoteException {
         testAttentionModeThemeOverlay(false);
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MODES_API)
     public void testAttentionModeThemeOverlay_nightModeEnabled() throws RemoteException {
         testAttentionModeThemeOverlay(true);
     }

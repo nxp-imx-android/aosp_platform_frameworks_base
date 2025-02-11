@@ -1207,7 +1207,7 @@ public class NotificationManagerService extends SystemService {
         }
 
         mAssistants.resetDefaultAssistantsIfNecessary();
-        mPreferencesHelper.syncChannelsBypassingDnd();
+        mPreferencesHelper.syncHasPriorityChannels();
     }
 
     @VisibleForTesting
@@ -2343,7 +2343,7 @@ public class NotificationManagerService extends SystemService {
                         mConditionProviders.onUserSwitched(userId);
                         mListeners.onUserSwitched(userId);
                         mZenModeHelper.onUserSwitched(userId);
-                        mPreferencesHelper.syncChannelsBypassingDnd();
+                        mPreferencesHelper.syncHasPriorityChannels();
                     }
                     // assistant is the only thing that cares about managed profiles specifically
                     mAssistants.onUserSwitched(userId);
@@ -2367,7 +2367,7 @@ public class NotificationManagerService extends SystemService {
                 mConditionProviders.onUserRemoved(userId);
                 mAssistants.onUserRemoved(userId);
                 mHistoryManager.onUserRemoved(userId);
-                mPreferencesHelper.syncChannelsBypassingDnd();
+                mPreferencesHelper.syncHasPriorityChannels();
                 handleSavePolicyFile();
             } else if (action.equals(Intent.ACTION_USER_UNLOCKED)) {
                 final int userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, USER_NULL);
@@ -2376,9 +2376,6 @@ public class NotificationManagerService extends SystemService {
                 if (!mUserProfiles.isProfileUser(userId, context)) {
                     mConditionProviders.onUserUnlocked(userId);
                     mListeners.onUserUnlocked(userId);
-                    if (!android.app.Flags.modesApi()) {
-                        mZenModeHelper.onUserUnlocked(userId);
-                    }
                 }
             }
         }
@@ -2767,9 +2764,7 @@ public class NotificationManagerService extends SystemService {
             void onPolicyChanged(Policy newPolicy) {
                 Binder.withCleanCallingIdentity(() -> {
                     Intent intent = new Intent(ACTION_NOTIFICATION_POLICY_CHANGED);
-                    if (android.app.Flags.modesApi()) {
-                        intent.putExtra(EXTRA_NOTIFICATION_POLICY, newPolicy);
-                    }
+                    intent.putExtra(EXTRA_NOTIFICATION_POLICY, newPolicy);
                     sendRegisteredOnlyBroadcast(intent);
                     mRankingHandler.requestSort();
                 });
@@ -2778,11 +2773,10 @@ public class NotificationManagerService extends SystemService {
             @Override
             void onConsolidatedPolicyChanged(Policy newConsolidatedPolicy) {
                 Binder.withCleanCallingIdentity(() -> {
-                    if (android.app.Flags.modesApi()) {
-                        Intent intent = new Intent(ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED);
-                        intent.putExtra(EXTRA_NOTIFICATION_POLICY, newConsolidatedPolicy);
-                        sendRegisteredOnlyBroadcast(intent);
-                    }
+                    Intent intent = new Intent(ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED);
+                    intent.putExtra(EXTRA_NOTIFICATION_POLICY, newConsolidatedPolicy);
+                    sendRegisteredOnlyBroadcast(intent);
+
                     mRankingHandler.requestSort();
                 });
             }
@@ -3368,7 +3362,7 @@ public class NotificationManagerService extends SystemService {
             migrateDefaultNAS();
             maybeShowInitialReviewPermissionsNotification();
 
-            if (android.app.Flags.modesApi() && !mZenModeHelper.hasDeviceEffectsApplier()) {
+            if (!mZenModeHelper.hasDeviceEffectsApplier()) {
                 // Cannot be done earlier, as some services aren't ready until this point.
                 mZenModeHelper.setDeviceEffectsApplier(
                         new DefaultDeviceEffectsApplier(getContext()));
@@ -3446,7 +3440,7 @@ public class NotificationManagerService extends SystemService {
             mConditionProviders.onUserSwitched(userId);
             mListeners.onUserSwitched(userId);
             mZenModeHelper.onUserSwitched(userId);
-            mPreferencesHelper.syncChannelsBypassingDnd();
+            mPreferencesHelper.syncHasPriorityChannels();
         }
         // assistant is the only thing that cares about managed profiles specifically
         mAssistants.onUserSwitched(userId);
@@ -5236,11 +5230,8 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public boolean areChannelsBypassingDnd() {
-            if (android.app.Flags.modesApi()) {
-                return mZenModeHelper.getConsolidatedNotificationPolicy().allowPriorityChannels()
-                        && mPreferencesHelper.areChannelsBypassingDnd();
-            }
-            return mPreferencesHelper.areChannelsBypassingDnd();
+            return mZenModeHelper.getConsolidatedNotificationPolicy().allowPriorityChannels()
+                    && mPreferencesHelper.hasPriorityChannels();
         }
 
         @Override
@@ -6077,43 +6068,27 @@ public class NotificationManagerService extends SystemService {
         @Override
         public void requestInterruptionFilterFromListener(INotificationListener token,
                 int interruptionFilter) throws RemoteException {
-            if (android.app.Flags.modesApi()) {
-                final int callingUid = Binder.getCallingUid();
-                ManagedServiceInfo info;
-                synchronized (mNotificationLock) {
-                    info = mListeners.checkServiceTokenLocked(token);
-                }
+            final int callingUid = Binder.getCallingUid();
+            ManagedServiceInfo info;
+            synchronized (mNotificationLock) {
+                info = mListeners.checkServiceTokenLocked(token);
+            }
 
-                final int zenMode = zenModeFromInterruptionFilter(interruptionFilter, -1);
-                if (zenMode == -1) return;
+            final int zenMode = zenModeFromInterruptionFilter(interruptionFilter, -1);
+            if (zenMode == -1) return;
 
-                UserHandle zenUser = getCallingZenUser();
-                if (!canManageGlobalZenPolicy(info.component.getPackageName(), callingUid)) {
-                    mZenModeHelper.applyGlobalZenModeAsImplicitZenRule(
-                            zenUser, info.component.getPackageName(), callingUid, zenMode);
-                } else {
-                    int origin = computeZenOrigin(/* fromUser= */ false);
-                    Binder.withCleanCallingIdentity(() -> {
-                        mZenModeHelper.setManualZenMode(zenUser, zenMode, /* conditionId= */ null,
-                                origin, "listener:" + info.component.flattenToShortString(),
-                                /* caller= */ info.component.getPackageName(),
-                                callingUid);
-                    });
-                }
+            UserHandle zenUser = getCallingZenUser();
+            if (!canManageGlobalZenPolicy(info.component.getPackageName(), callingUid)) {
+                mZenModeHelper.applyGlobalZenModeAsImplicitZenRule(
+                        zenUser, info.component.getPackageName(), callingUid, zenMode);
             } else {
-                final int callingUid = Binder.getCallingUid();
-                final boolean isSystemOrSystemUi = isCallerSystemOrSystemUi();
-                final long identity = Binder.clearCallingIdentity();
-                try {
-                    synchronized (mNotificationLock) {
-                        final ManagedServiceInfo info = mListeners.checkServiceTokenLocked(token);
-                        mZenModeHelper.requestFromListener(info.component, interruptionFilter,
-                                callingUid, isSystemOrSystemUi);
-                        updateInterruptionFilterLocked();
-                    }
-                } finally {
-                    Binder.restoreCallingIdentity(identity);
-                }
+                int origin = computeZenOrigin(/* fromUser= */ false);
+                Binder.withCleanCallingIdentity(() -> {
+                    mZenModeHelper.setManualZenMode(zenUser, zenMode, /* conditionId= */ null,
+                            origin, "listener:" + info.component.flattenToShortString(),
+                            /* caller= */ info.component.getPackageName(),
+                            callingUid);
+                });
             }
         }
 
@@ -6162,19 +6137,8 @@ public class NotificationManagerService extends SystemService {
             }
         }
 
-        // TODO: b/310620812 - Remove getZenRules() when MODES_API is inlined.
-        @Override
-        public List<ZenModeConfig.ZenRule> getZenRules() throws RemoteException {
-            int callingUid = Binder.getCallingUid();
-            enforcePolicyAccess(callingUid, "getZenRules");
-            return mZenModeHelper.getZenRules(getCallingZenUser(), callingUid);
-        }
-
         @Override
         public Map<String, AutomaticZenRule> getAutomaticZenRules() {
-            if (!android.app.Flags.modesApi()) {
-                throw new IllegalStateException("getAutomaticZenRules called with flag off!");
-            }
             int callingUid = Binder.getCallingUid();
             enforcePolicyAccess(callingUid, "getAutomaticZenRules");
             return mZenModeHelper.getAutomaticZenRules(getCallingZenUser(), callingUid);
@@ -6245,50 +6209,40 @@ public class NotificationManagerService extends SystemService {
             // Implicit rules have no ConditionProvider or Activity. We allow the user to customize
             // them (via Settings), but not the owner app. Should the app want to start using it as
             // a "normal" rule, it must provide a CP/ConfigActivity too.
-            if (android.app.Flags.modesApi()) {
-                boolean isImplicitRuleUpdateFromSystem = updateId != null
-                        && ZenModeConfig.isImplicitRuleId(updateId)
-                        && isCallerSystemOrSystemUi();
-                if (!isImplicitRuleUpdateFromSystem
-                        && rule.getOwner() == null
-                        && rule.getConfigurationActivity() == null) {
-                    throw new NullPointerException(
-                            "Rule must have a ConditionProviderService and/or configuration "
-                                    + "activity");
-                }
-            } else {
-                if (rule.getOwner() == null && rule.getConfigurationActivity() == null) {
-                    throw new NullPointerException(
-                            "Rule must have a ConditionProviderService and/or configuration "
-                                    + "activity");
-                }
+            boolean isImplicitRuleUpdateFromSystem = updateId != null
+                    && ZenModeConfig.isImplicitRuleId(updateId)
+                    && isCallerSystemOrSystemUi();
+            if (!isImplicitRuleUpdateFromSystem
+                    && rule.getOwner() == null
+                    && rule.getConfigurationActivity() == null) {
+                throw new NullPointerException(
+                        "Rule must have a ConditionProviderService and/or configuration "
+                                + "activity");
             }
             Objects.requireNonNull(rule.getConditionId(), "ConditionId is null");
 
-            if (android.app.Flags.modesApi()) {
-                if (isCallerSystemOrSystemUi()) {
-                    return; // System callers can use any type.
-                }
-                int uid = Binder.getCallingUid();
-                int userId = UserHandle.getUserId(uid);
+            if (isCallerSystemOrSystemUi()) {
+                return; // System callers can use any type.
+            }
+            int uid = Binder.getCallingUid();
+            int userId = UserHandle.getUserId(uid);
 
-                if (rule.getType() == AutomaticZenRule.TYPE_MANAGED) {
-                    boolean isDeviceOwner = Binder.withCleanCallingIdentity(
-                            () -> mDpm.isActiveDeviceOwner(uid));
-                    if (!isDeviceOwner) {
-                        throw new IllegalArgumentException(
-                                "Only Device Owners can use AutomaticZenRules with TYPE_MANAGED");
-                    }
-                } else if (rule.getType() == AutomaticZenRule.TYPE_BEDTIME) {
-                    String wellbeingPackage = getContext().getResources().getString(
-                            com.android.internal.R.string.config_systemWellbeing);
-                    boolean isCallerWellbeing = !TextUtils.isEmpty(wellbeingPackage)
-                            && mPackageManagerInternal.isSameApp(wellbeingPackage, uid, userId);
-                    if (!isCallerWellbeing) {
-                        throw new IllegalArgumentException(
-                                "Only the 'Wellbeing' package can use AutomaticZenRules with "
-                                        + "TYPE_BEDTIME");
-                    }
+            if (rule.getType() == AutomaticZenRule.TYPE_MANAGED) {
+                boolean isDeviceOwner = Binder.withCleanCallingIdentity(
+                        () -> mDpm.isActiveDeviceOwner(uid));
+                if (!isDeviceOwner) {
+                    throw new IllegalArgumentException(
+                            "Only Device Owners can use AutomaticZenRules with TYPE_MANAGED");
+                }
+            } else if (rule.getType() == AutomaticZenRule.TYPE_BEDTIME) {
+                String wellbeingPackage = getContext().getResources().getString(
+                        com.android.internal.R.string.config_systemWellbeing);
+                boolean isCallerWellbeing = !TextUtils.isEmpty(wellbeingPackage)
+                        && mPackageManagerInternal.isSameApp(wellbeingPackage, uid, userId);
+                if (!isCallerWellbeing) {
+                    throw new IllegalArgumentException(
+                            "Only the 'Wellbeing' package can use AutomaticZenRules with "
+                                    + "TYPE_BEDTIME");
                 }
             }
         }
@@ -6371,9 +6325,7 @@ public class NotificationManagerService extends SystemService {
 
         @ZenModeConfig.ConfigOrigin
         private int computeZenOrigin(boolean fromUser) {
-            // "fromUser" is introduced with MODES_API, so only consider it in that case.
-            // (Non-MODES_API behavior should also not depend at all on ORIGIN_USER_IN_X).
-            if (android.app.Flags.modesApi() && fromUser) {
+            if (fromUser) {
                 if (isCallerSystemOrSystemUi()) {
                     return ZenModeConfig.ORIGIN_USER_IN_SYSTEMUI;
                 } else {
@@ -6387,9 +6339,7 @@ public class NotificationManagerService extends SystemService {
         }
 
         private void enforceUserOriginOnlyFromSystem(boolean fromUser, String method) {
-            if (android.app.Flags.modesApi()
-                    && fromUser
-                    && !isCallerSystemOrSystemUiOrShell()) {
+            if (fromUser && !isCallerSystemOrSystemUiOrShell()) {
                 throw new SecurityException(TextUtils.formatSimple(
                         "Calling %s with fromUser == true is only allowed for system", method));
             }
@@ -6404,7 +6354,7 @@ public class NotificationManagerService extends SystemService {
             enforceUserOriginOnlyFromSystem(fromUser, "setInterruptionFilter");
             UserHandle zenUser = getCallingZenUser();
 
-            if (android.app.Flags.modesApi() && !canManageGlobalZenPolicy(pkg, callingUid)) {
+            if (!canManageGlobalZenPolicy(pkg, callingUid)) {
                 mZenModeHelper.applyGlobalZenModeAsImplicitZenRule(zenUser, pkg, callingUid, zen);
                 return;
             }
@@ -6708,7 +6658,7 @@ public class NotificationManagerService extends SystemService {
         public Policy getNotificationPolicy(String pkg) {
             final int callingUid = Binder.getCallingUid();
             UserHandle zenUser = getCallingZenUser();
-            if (android.app.Flags.modesApi() && !canManageGlobalZenPolicy(pkg, callingUid)) {
+            if (!canManageGlobalZenPolicy(pkg, callingUid)) {
                 return mZenModeHelper.getNotificationPolicyFromImplicitZenRule(zenUser, pkg);
             }
             final long identity = Binder.clearCallingIdentity();
@@ -6745,8 +6695,7 @@ public class NotificationManagerService extends SystemService {
             UserHandle zenUser = getCallingZenUser();
 
             boolean isSystemCaller = isCallerSystemOrSystemUiOrShell();
-            boolean shouldApplyAsImplicitRule = android.app.Flags.modesApi()
-                    && !canManageGlobalZenPolicy(pkg, callingUid);
+            boolean shouldApplyAsImplicitRule = !canManageGlobalZenPolicy(pkg, callingUid);
 
             final long identity = Binder.clearCallingIdentity();
             try {
@@ -8204,9 +8153,6 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public void setDeviceEffectsApplier(DeviceEffectsApplier applier) {
-            if (!android.app.Flags.modesApi()) {
-                return;
-            }
             if (mZenModeHelper == null) {
                 throw new IllegalStateException("ZenModeHelper is not yet ready!");
             }

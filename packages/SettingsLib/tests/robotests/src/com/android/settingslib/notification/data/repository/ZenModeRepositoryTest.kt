@@ -91,7 +91,6 @@ class ZenModeRepositoryTest {
             )
     }
 
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     @Test
     fun consolidatedPolicyChanges_repositoryEmits_flagsOn() {
         testScope.runTest {
@@ -110,7 +109,6 @@ class ZenModeRepositoryTest {
         }
     }
 
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     @Test
     fun consolidatedPolicyChanges_repositoryEmitsFromExtras() {
         testScope.runTest {

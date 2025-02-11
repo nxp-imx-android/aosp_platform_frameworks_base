@@ -356,7 +356,6 @@ public class NotificationManager {
      * a DND component, the rule owner should activate any extra behavior that's part of that mode
      * in response to this broadcast.
      */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     public static final int AUTOMATIC_RULE_STATUS_ACTIVATED = 4;
 
     /**
@@ -367,7 +366,6 @@ public class NotificationManager {
      * longer met) and then {@link Condition#STATE_TRUE} when the trigger criteria is freshly met,
      * or when the user re-activates it.
      */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     public static final int AUTOMATIC_RULE_STATUS_DEACTIVATED = 5;
 
     /**
@@ -415,7 +413,6 @@ public class NotificationManager {
      * <p>This broadcast is only sent to registered receivers and receivers in packages that have
      * been granted Notification Policy access (see {@link #isNotificationPolicyAccessGranted()}).
      */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     @SdkConstant(SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION)
     public static final String ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED =
             "android.app.action.CONSOLIDATED_NOTIFICATION_POLICY_CHANGED";
@@ -425,7 +422,6 @@ public class NotificationManager {
      * {@link #ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED} containing the new
      * {@link Policy} value.
      */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     public static final String EXTRA_NOTIFICATION_POLICY =
             "android.app.extra.NOTIFICATION_POLICY";
 
@@ -1726,9 +1722,8 @@ public class NotificationManager {
      * rule management to system settings/uis via
      * {@link Settings#ACTION_AUTOMATIC_ZEN_RULE_SETTINGS}.
      */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     public boolean areAutomaticZenRulesUserManaged() {
-        if (Flags.modesApi() && Flags.modesUi()) {
+        if (Flags.modesUi()) {
             PackageManager pm = mContext.getPackageManager();
             return !pm.hasSystemFeature(PackageManager.FEATURE_WATCH)
                     && !pm.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
@@ -1748,21 +1743,7 @@ public class NotificationManager {
     public Map<String, AutomaticZenRule> getAutomaticZenRules() {
         INotificationManager service = service();
         try {
-            if (Flags.modesApi()) {
-                return service.getAutomaticZenRules();
-            } else {
-                List<ZenModeConfig.ZenRule> rules = service.getZenRules();
-                Map<String, AutomaticZenRule> ruleMap = new HashMap<>();
-                for (ZenModeConfig.ZenRule rule : rules) {
-                    AutomaticZenRule azr = new AutomaticZenRule(rule.name, rule.component,
-                            rule.configurationActivity, rule.conditionId, rule.zenPolicy,
-                            zenModeToInterruptionFilter(rule.zenMode), rule.enabled,
-                            rule.creationTime);
-                    azr.setPackageName(rule.pkg);
-                    ruleMap.put(rule.id, azr);
-                }
-                return ruleMap;
-            }
+            return service.getAutomaticZenRules();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -1804,7 +1785,6 @@ public class NotificationManager {
 
     /** @hide */
     @TestApi
-    @FlaggedApi(Flags.FLAG_MODES_API)
     @NonNull
     public String addAutomaticZenRule(@NonNull AutomaticZenRule automaticZenRule,
             boolean fromUser) {
@@ -1840,7 +1820,6 @@ public class NotificationManager {
 
     /** @hide */
     @TestApi
-    @FlaggedApi(Flags.FLAG_MODES_API)
     public boolean updateAutomaticZenRule(@NonNull String id,
             @NonNull AutomaticZenRule automaticZenRule, boolean fromUser) {
         INotificationManager service = service();
@@ -1860,7 +1839,6 @@ public class NotificationManager {
      * @param id The id of the rule
      * @return the state of the rule.
      */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     @Condition.State
     public int getAutomaticZenRuleState(@NonNull String id) {
         INotificationManager service = service();
@@ -1935,7 +1913,6 @@ public class NotificationManager {
 
     /** @hide */
     @TestApi
-    @FlaggedApi(Flags.FLAG_MODES_API)
     public boolean removeAutomaticZenRule(@NonNull String id, boolean fromUser) {
         INotificationManager service = service();
         try {
@@ -2326,7 +2303,6 @@ public class NotificationManager {
      * @hide
      */
     @TestApi
-    @FlaggedApi(Flags.FLAG_MODES_API)
     public @NonNull ZenPolicy getDefaultZenPolicy() {
         INotificationManager service = service();
         try {
@@ -2693,7 +2669,7 @@ public class NotificationManager {
         /**
          * @hide
          */
-        public static final int STATE_CHANNELS_BYPASSING_DND = 1 << 0;
+        public static final int STATE_HAS_PRIORITY_CHANNELS = 1 << 0;
 
         /**
          * Whether the policy indicates that even priority channels are NOT permitted to bypass DND.
@@ -2918,7 +2894,7 @@ public class NotificationManager {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder().append("NotificationManager.Policy[")
+            return new StringBuilder().append("NotificationManager.Policy[")
                     .append("priorityCategories=")
                     .append(priorityCategoriesToString(priorityCategories))
                     .append(",priorityCallSenders=")
@@ -2928,24 +2904,19 @@ public class NotificationManager {
                     .append(",priorityConvSenders=")
                     .append(conversationSendersToString(priorityConversationSenders))
                     .append(",suppressedVisualEffects=")
-                    .append(suppressedEffectsToString(suppressedVisualEffects));
-            if (Flags.modesApi()) {
-                sb.append(",hasPriorityChannels=");
-            } else {
-                sb.append(",areChannelsBypassingDnd=");
-            }
-            sb.append((state == STATE_UNSET
-                    ? "unset"
-                    : ((state & STATE_CHANNELS_BYPASSING_DND) != 0)
-                            ? "true"
-                            : "false"));
-            if (Flags.modesApi()) {
-                sb.append(",allowPriorityChannels=")
-                        .append((state == STATE_UNSET
-                                ? "unset"
-                                : (allowPriorityChannels() ? "true" : "false")));
-            }
-            return sb.append("]").toString();
+                    .append(suppressedEffectsToString(suppressedVisualEffects))
+                    .append(",hasPriorityChannels=")
+                    .append((state == STATE_UNSET
+                            ? "unset"
+                            : ((state & STATE_HAS_PRIORITY_CHANNELS) != 0)
+                                    ? "true"
+                                    : "false"))
+                    .append(",allowPriorityChannels=")
+                    .append((state == STATE_UNSET
+                            ? "unset"
+                            : (allowPriorityChannels() ? "true" : "false")))
+                    .append("]")
+                    .toString();
         }
 
         /** @hide */
@@ -3220,7 +3191,6 @@ public class NotificationManager {
         }
 
         /** @hide **/
-        @FlaggedApi(Flags.FLAG_MODES_API)
         @TestApi // so CTS tests can read this state without having to use implementation detail
         public boolean allowPriorityChannels() {
             if (state == STATE_UNSET) {
@@ -3230,17 +3200,15 @@ public class NotificationManager {
         }
 
         /** @hide */
-        @FlaggedApi(Flags.FLAG_MODES_API)
         public boolean hasPriorityChannels() {
-            return (state & STATE_CHANNELS_BYPASSING_DND) != 0;
+            return (state & STATE_HAS_PRIORITY_CHANNELS) != 0;
         }
 
         /** @hide **/
-        @FlaggedApi(Flags.FLAG_MODES_API)
         public static int policyState(boolean hasPriorityChannels, boolean allowPriorityChannels) {
             int state = 0;
             if (hasPriorityChannels) {
-                state |= STATE_CHANNELS_BYPASSING_DND;
+                state |= STATE_HAS_PRIORITY_CHANNELS;
             }
             if (!allowPriorityChannels) {
                 state |= STATE_PRIORITY_CHANNELS_BLOCKED;

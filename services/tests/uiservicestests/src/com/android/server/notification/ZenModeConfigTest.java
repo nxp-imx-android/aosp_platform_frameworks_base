@@ -174,7 +174,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         }
         assertTrue(ZenModeConfig.areAllPriorityOnlyRingerSoundsMuted(config));
 
-        config.areChannelsBypassingDnd = true;
+        config.hasPriorityChannels = true;
         assertTrue(ZenModeConfig.areAllPriorityOnlyRingerSoundsMuted(config));
 
         if (Flags.modesUi()) {
@@ -187,7 +187,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
 
         assertFalse(ZenModeConfig.areAllPriorityOnlyRingerSoundsMuted(config));
 
-        config.areChannelsBypassingDnd = false;
+        config.hasPriorityChannels = false;
         if (Flags.modesUi()) {
             config.manualRule.zenPolicy = new ZenPolicy.Builder(config.manualRule.zenPolicy)
                     .allowPriorityChannels(false)
@@ -417,7 +417,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         assertTrue(ZenModeConfig.areAllPriorityOnlyRingerSoundsMuted(config));
         assertTrue(ZenModeConfig.areAllZenBehaviorSoundsMuted(config));
 
-        config.areChannelsBypassingDnd = true;
+        config.hasPriorityChannels = true;
         if (Flags.modesUi()) {
             config.manualRule.zenPolicy = new ZenPolicy.Builder(config.manualRule.zenPolicy)
                     .allowPriorityChannels(true)
@@ -429,7 +429,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         assertFalse(ZenModeConfig.areAllPriorityOnlyRingerSoundsMuted(config));
         assertFalse(ZenModeConfig.areAllZenBehaviorSoundsMuted(config));
 
-        config.areChannelsBypassingDnd = false;
+        config.hasPriorityChannels = false;
         if (Flags.modesUi()) {
             config.manualRule.zenPolicy = new ZenPolicy.Builder(config.manualRule.zenPolicy)
                     .allowPriorityChannels(false)
@@ -548,7 +548,6 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.creationTime = 123;
         rule.id = "id";
         rule.zenMode = INTERRUPTION_FILTER;
-        rule.modified = true;
         rule.name = NAME;
         rule.setConditionOverride(OVERRIDE_DEACTIVATE);
         rule.pkg = OWNER.getPackageName();
@@ -585,7 +584,6 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         assertEquals(rule.condition, ruleActual.condition);
         assertEquals(rule.enabled, ruleActual.enabled);
         assertEquals(rule.creationTime, ruleActual.creationTime);
-        assertEquals(rule.modified, ruleActual.modified);
         assertEquals(rule.conditionId, ruleActual.conditionId);
         assertEquals(rule.name, ruleActual.name);
         assertEquals(rule.zenMode, ruleActual.zenMode);
@@ -620,7 +618,6 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.creationTime = 123;
         rule.id = "id";
         rule.zenMode = INTERRUPTION_FILTER;
-        rule.modified = true;
         rule.name = NAME;
         rule.setConditionOverride(OVERRIDE_DEACTIVATE);
         rule.pkg = OWNER.getPackageName();
@@ -651,7 +648,6 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         assertEquals(rule.condition, parceled.condition);
         assertEquals(rule.enabled, parceled.enabled);
         assertEquals(rule.creationTime, parceled.creationTime);
-        assertEquals(rule.modified, parceled.modified);
         assertEquals(rule.conditionId, parceled.conditionId);
         assertEquals(rule.name, parceled.name);
         assertEquals(rule.zenMode, parceled.zenMode);
@@ -685,7 +681,6 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.creationTime = 123;
         rule.id = "id";
         rule.zenMode = Settings.Global.ZEN_MODE_ALARMS;
-        rule.modified = true;
         rule.name = "name";
         rule.snoozing = true;
         rule.pkg = "b";
@@ -705,7 +700,6 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         assertEquals(rule.condition, fromXml.condition);
         assertEquals(rule.enabled, fromXml.enabled);
         assertEquals(rule.creationTime, fromXml.creationTime);
-        assertEquals(rule.modified, fromXml.modified);
         assertEquals(rule.conditionId, fromXml.conditionId);
         assertEquals(rule.name, fromXml.name);
         assertEquals(rule.zenMode, fromXml.zenMode);
@@ -721,7 +715,6 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.enabled = ENABLED;
         rule.id = "id";
         rule.zenMode = INTERRUPTION_FILTER;
-        rule.modified = true;
         rule.name = NAME;
         rule.setConditionOverride(OVERRIDE_DEACTIVATE);
         rule.pkg = OWNER.getPackageName();
@@ -770,7 +763,6 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         assertEquals(rule.condition, fromXml.condition);
         assertEquals(rule.enabled, fromXml.enabled);
         assertEquals(rule.creationTime, fromXml.creationTime);
-        assertEquals(rule.modified, fromXml.modified);
         assertEquals(rule.conditionId, fromXml.conditionId);
         assertEquals(rule.name, fromXml.name);
         assertEquals(rule.zenMode, fromXml.zenMode);
@@ -1259,7 +1251,6 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.creationTime = 123;
         rule.id = "id";
         rule.zenMode = ZEN_MODE_IMPORTANT_INTERRUPTIONS;
-        rule.modified = true;
         rule.name = "name";
         rule.pkg = "b";
         config.automaticRules.put("key", rule);
@@ -1348,7 +1339,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             config.setSuppressedVisualEffects(0);
             config.setAllowPriorityChannels(false);
         }
-        config.areChannelsBypassingDnd = false;
+        config.hasPriorityChannels = false;
 
         return config;
     }
@@ -1383,7 +1374,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             config.setSuppressedVisualEffects(0);
             config.setAllowPriorityChannels(true);
         }
-        config.areChannelsBypassingDnd = false;
+        config.hasPriorityChannels = false;
         return config;
     }
 
@@ -1410,7 +1401,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             config.setAllowConversationsFrom(CONVERSATION_SENDERS_NONE);
             config.setSuppressedVisualEffects(0);
         }
-        config.areChannelsBypassingDnd = false;
+        config.hasPriorityChannels = false;
         return config;
     }
 

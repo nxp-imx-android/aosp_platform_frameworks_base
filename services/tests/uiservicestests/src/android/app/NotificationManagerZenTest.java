@@ -80,7 +80,7 @@ public class NotificationManagerZenTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_MODES_API, Flags.FLAG_MODES_UI})
+    @RequiresFlagsEnabled(Flags.FLAG_MODES_UI)
     public void setAutomaticZenRuleState_manualActivation() {
         AutomaticZenRule ruleToCreate = createZenRule("rule");
         String ruleId = mNotificationManager.addAutomaticZenRule(ruleToCreate);
@@ -111,7 +111,7 @@ public class NotificationManagerZenTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_MODES_API, Flags.FLAG_MODES_UI})
+    @RequiresFlagsEnabled(Flags.FLAG_MODES_UI)
     public void setAutomaticZenRuleState_manualDeactivation() {
         AutomaticZenRule ruleToCreate = createZenRule("rule");
         String ruleId = mNotificationManager.addAutomaticZenRule(ruleToCreate);
@@ -145,7 +145,7 @@ public class NotificationManagerZenTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_MODES_API, Flags.FLAG_MODES_UI})
+    @RequiresFlagsEnabled(Flags.FLAG_MODES_UI)
     public void setAutomaticZenRuleState_respectsManuallyActivated() {
         AutomaticZenRule ruleToCreate = createZenRule("rule");
         String ruleId = mNotificationManager.addAutomaticZenRule(ruleToCreate);
@@ -178,7 +178,7 @@ public class NotificationManagerZenTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_MODES_API, Flags.FLAG_MODES_UI})
+    @RequiresFlagsEnabled(Flags.FLAG_MODES_UI)
     public void setAutomaticZenRuleState_respectsManuallyDeactivated() {
         AutomaticZenRule ruleToCreate = createZenRule("rule");
         String ruleId = mNotificationManager.addAutomaticZenRule(ruleToCreate);
@@ -212,7 +212,7 @@ public class NotificationManagerZenTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_MODES_API, Flags.FLAG_MODES_UI})
+    @RequiresFlagsEnabled(Flags.FLAG_MODES_UI)
     public void setAutomaticZenRuleState_manualActivationFromApp() {
         AutomaticZenRule ruleToCreate = createZenRule("rule");
         String ruleId = mNotificationManager.addAutomaticZenRule(ruleToCreate);
@@ -244,7 +244,7 @@ public class NotificationManagerZenTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_MODES_API, Flags.FLAG_MODES_UI})
+    @RequiresFlagsEnabled(Flags.FLAG_MODES_UI)
     public void setAutomaticZenRuleState_manualDeactivationFromApp() {
         AutomaticZenRule ruleToCreate = createZenRule("rule");
         String ruleId = mNotificationManager.addAutomaticZenRule(ruleToCreate);

@@ -18,7 +18,6 @@ package com.android.server;
 
 import static android.app.Flags.enableCurrentModeTypeBinderCache;
 import static android.app.Flags.enableNightModeBinderCache;
-import static android.app.Flags.modesApi;
 import static android.app.UiModeManager.ContrastUtils.CONTRAST_DEFAULT_VALUE;
 import static android.app.UiModeManager.DEFAULT_PRIORITY;
 import static android.app.UiModeManager.FORCE_INVERT_TYPE_DARK;
@@ -2208,14 +2207,12 @@ final class UiModeManagerService extends SystemService {
             appliedOverrides = true;
         }
 
-        if (modesApi()) {
-            // Computes final night mode values based on Attention Mode.
-            mComputedNightMode = switch (mAttentionModeThemeOverlay) {
-                case (UiModeManager.MODE_ATTENTION_THEME_OVERLAY_NIGHT) -> true;
-                case (UiModeManager.MODE_ATTENTION_THEME_OVERLAY_DAY) -> false;
-                default -> newComputedValue; // case OFF
-            };
-        }
+        // Computes final night mode values based on Attention Mode.
+        mComputedNightMode = switch (mAttentionModeThemeOverlay) {
+            case (UiModeManager.MODE_ATTENTION_THEME_OVERLAY_NIGHT) -> true;
+            case (UiModeManager.MODE_ATTENTION_THEME_OVERLAY_DAY) -> false;
+            default -> newComputedValue; // case OFF
+        };
 
         if (appliedOverrides) {
             return;

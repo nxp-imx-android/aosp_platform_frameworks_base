@@ -26,6 +26,7 @@ flag {
   bug: "378660052"
 }
 
+# Flag for finalized API: In Nextfood but exported (and therefore must stay).
 flag {
   name: "modes_api"
   is_exported: true

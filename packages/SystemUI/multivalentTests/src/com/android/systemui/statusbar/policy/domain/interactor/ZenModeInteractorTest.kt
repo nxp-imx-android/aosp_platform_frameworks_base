@@ -469,7 +469,7 @@ class ZenModeInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI, Flags.FLAG_MODES_API)
+    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun modesHidingNotifications_onlyIncludesModesWithNotifListSuppression() =
         kosmos.runTest {
             val modesHidingNotifications by collectLastValue(underTest.modesHidingNotifications)
