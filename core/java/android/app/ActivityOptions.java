@@ -596,6 +596,7 @@ public class ActivityOptions extends ComponentOptions {
     private boolean mIsEligibleForLegacyPermissionPrompt;
     private boolean mRemoveWithTaskOrganizer;
     private boolean mLaunchedFromBubble;
+    // TODO(b/407669465): remove it once migrated to the new approach
     private boolean mLaunchNextToBubble;
     private boolean mTransientLaunch;
     private PictureInPictureParams mLaunchIntoPipParams;

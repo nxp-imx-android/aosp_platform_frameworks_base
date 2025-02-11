@@ -52,6 +52,26 @@ public class BubbleAnythingFlagHelper {
                 && Flags.enableCreateAnyBubble());
     }
 
+    /** Whether creating a root task to manage the bubble tasks in the Core. */
+    public static boolean enableRootTaskForBubble() {
+        // This is needed to prevent tasks being hidden and re-parented to TDA when move-to-back.
+        if (!enableCreateAnyBubbleWithForceExcludedFromRecents()) {
+            return false;
+        }
+
+        // This is needed to allow the activity behind the root task remains in RESUMED state.
+        if (!com.android.window.flags.Flags.enableSeeThroughTaskFragments()) {
+            return false;
+        }
+
+        // This is needed to allow the leaf task can be started in expected bounds.
+        if (!com.android.window.flags.Flags.respectLeafTaskBounds()) {
+            return false;
+        }
+
+        return com.android.window.flags.Flags.rootTaskForBubble();
+    }
+
     /** Whether the overall bubble anything feature is enabled. */
     public static boolean enableBubbleAnything() {
         return Flags.enableBubbleAnything();
