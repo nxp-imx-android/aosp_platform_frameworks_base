@@ -31,6 +31,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.padding
@@ -117,12 +118,12 @@ constructor(
                                         )
                                         Notifications(
                                             areNotificationsVisible = areNotificationsVisible,
-                                            isShadeLayoutWide = true,
                                             burnInParams = null,
                                             modifier =
                                                 Modifier.fillMaxWidth(0.5f)
                                                     .fillMaxHeight()
-                                                    .align(alignment = Alignment.TopEnd),
+                                                    .align(alignment = Alignment.TopEnd)
+                                                    .padding(top = 12.dp),
                                         )
                                     }
                                 }
@@ -150,7 +151,6 @@ constructor(
                                     }
                                     Notifications(
                                         areNotificationsVisible = areNotificationsVisible,
-                                        isShadeLayoutWide = false,
                                         burnInParams = null,
                                     )
                                 }

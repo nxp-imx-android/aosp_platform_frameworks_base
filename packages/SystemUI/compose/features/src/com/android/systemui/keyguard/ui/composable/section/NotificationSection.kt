@@ -23,7 +23,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,11 +30,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.modifiers.thenIf
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.composable.blueprint.rememberBurnIn
@@ -186,7 +183,6 @@ constructor(
     @Composable
     fun ContentScope.Notifications(
         areNotificationsVisible: Boolean,
-        isShadeLayoutWide: Boolean,
         burnInParams: BurnInParameters?,
         modifier: Modifier = Modifier,
     ) {
@@ -198,16 +194,13 @@ constructor(
             stackScrollView = stackScrollView.get(),
             viewModel = rememberViewModel("Notifications") { viewModelFactory.create() },
             modifier =
-                modifier
-                    .fillMaxWidth()
-                    .thenIf(isShadeLayoutWide) { Modifier.padding(top = 12.dp) }
-                    .let {
-                        if (burnInParams == null) {
-                            it
-                        } else {
-                            it.burnInAware(viewModel = aodBurnInViewModel, params = burnInParams)
-                        }
-                    },
+                modifier.fillMaxWidth().let {
+                    if (burnInParams == null) {
+                        it
+                    } else {
+                        it.burnInAware(viewModel = aodBurnInViewModel, params = burnInParams)
+                    }
+                },
         )
     }
 }
