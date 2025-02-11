@@ -26,6 +26,8 @@ import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.CaptionState
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum
 import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController.Companion.APP_HANDLE_EDUCATION_DELAY_MILLIS
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController.Companion.TOOLTIP_VISIBLE_DURATION_MILLIS
@@ -86,6 +88,7 @@ class AppHandleEducationControllerTest : ShellTestCase() {
     @Mock private lateinit var mockDataStoreRepository: AppHandleEducationDatastoreRepository
     @Mock private lateinit var mockCaptionHandleRepository: WindowDecorCaptionHandleRepository
     @Mock private lateinit var mockTooltipController: DesktopWindowingEducationTooltipController
+    @Mock private lateinit var mockDesktopModeUiEventLogger: DesktopModeUiEventLogger
 
     @Before
     fun setUp() {
@@ -105,6 +108,7 @@ class AppHandleEducationControllerTest : ShellTestCase() {
                 mockTooltipController,
                 testScope.backgroundScope,
                 Dispatchers.Main,
+                mockDesktopModeUiEventLogger,
             )
     }
 
@@ -123,6 +127,8 @@ class AppHandleEducationControllerTest : ShellTestCase() {
             verify(mockTooltipController, times(1)).showEducationTooltip(any(), any())
             verify(mockDataStoreRepository, times(1))
                 .updateAppHandleHintViewedTimestampMillis(eq(true))
+            verify(mockDesktopModeUiEventLogger, times(1))
+                .log(any(), eq(DesktopUiEventEnum.APP_HANDLE_EDUCATION_TOOLTIP_SHOWN))
         }
 
     @Test
@@ -155,6 +161,8 @@ class AppHandleEducationControllerTest : ShellTestCase() {
             verify(mockTooltipController, times(1)).showEducationTooltip(any(), any())
             verify(mockDataStoreRepository, times(1))
                 .updateEnterDesktopModeHintViewedTimestampMillis(eq(true))
+            verify(mockDesktopModeUiEventLogger, times(1))
+                .log(any(), eq(DesktopUiEventEnum.ENTER_DESKTOP_MODE_EDUCATION_TOOLTIP_SHOWN))
         }
 
     @Test
@@ -170,6 +178,8 @@ class AppHandleEducationControllerTest : ShellTestCase() {
             verify(mockTooltipController, times(1)).showEducationTooltip(any(), any())
             verify(mockDataStoreRepository, times(1))
                 .updateExitDesktopModeHintViewedTimestampMillis(eq(true))
+            verify(mockDesktopModeUiEventLogger, times(1))
+                .log(any(), eq(DesktopUiEventEnum.EXIT_DESKTOP_MODE_EDUCATION_TOOLTIP_SHOWN))
         }
 
     @Test

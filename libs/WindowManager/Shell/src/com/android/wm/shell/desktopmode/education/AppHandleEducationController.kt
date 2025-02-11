@@ -26,6 +26,8 @@ import android.view.View.LAYOUT_DIRECTION_RTL
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.CaptionState
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum
 import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository
 import com.android.wm.shell.desktopmode.education.data.AppHandleEducationDatastoreRepository
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
@@ -62,6 +64,7 @@ class AppHandleEducationController(
     private val windowingEducationViewController: DesktopWindowingEducationTooltipController,
     @ShellMainThread private val applicationCoroutineScope: CoroutineScope,
     @ShellBackgroundThread private val backgroundDispatcher: MainCoroutineDispatcher,
+    private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
 ) {
     private lateinit var openHandleMenuCallback: (Int) -> Unit
     private lateinit var toDesktopModeCallback: (Int, DesktopModeTransitionSource) -> Unit
@@ -171,6 +174,7 @@ class AppHandleEducationController(
 
     private fun showEducation(captionState: CaptionState) {
         val appHandleBounds = (captionState as CaptionState.AppHandle).globalAppHandleBounds
+        val taskInfo = captionState.runningTaskInfo
         val tooltipGlobalCoordinates =
             Point(appHandleBounds.left + appHandleBounds.width() / 2, appHandleBounds.bottom)
         // Populate information important to inflate app handle education tooltip.
@@ -188,22 +192,34 @@ class AppHandleEducationController(
                 arrowDirection =
                     DesktopWindowingEducationTooltipController.TooltipArrowDirection.UP,
                 onEducationClickAction = {
-                    openHandleMenuCallback(captionState.runningTaskInfo.taskId)
+                    openHandleMenuCallback(taskInfo.taskId)
+                    desktopModeUiEventLogger.log(
+                        taskInfo,
+                        DesktopUiEventEnum.APP_HANDLE_EDUCATION_TOOLTIP_CLICKED,
+                    )
                 },
                 onDismissAction = {
-                    // TODO: b/341320146 - Log previous tooltip was dismissed
+                    desktopModeUiEventLogger.log(
+                        taskInfo,
+                        DesktopUiEventEnum.APP_HANDLE_EDUCATION_TOOLTIP_DISMISSED,
+                    )
                 },
             )
 
         windowingEducationViewController.showEducationTooltip(
             tooltipViewConfig = appHandleTooltipConfig,
-            taskId = captionState.runningTaskInfo.taskId,
+            taskId = taskInfo.taskId,
+        )
+        desktopModeUiEventLogger.log(
+            taskInfo,
+            DesktopUiEventEnum.APP_HANDLE_EDUCATION_TOOLTIP_SHOWN,
         )
     }
 
     /** Show tooltip that points to windowing image button in app handle menu */
     private suspend fun showWindowingImageButtonTooltip(captionState: CaptionState.AppHandle) {
         val appInfoPillHeight = getSize(R.dimen.desktop_mode_handle_menu_app_info_pill_height)
+        val taskInfo = captionState.runningTaskInfo
         val windowingOptionPillHeight =
             getSize(R.dimen.desktop_mode_handle_menu_windowing_pill_height)
         val appHandleMenuWidth =
@@ -245,24 +261,36 @@ class AppHandleEducationController(
                     DesktopWindowingEducationTooltipController.TooltipArrowDirection.HORIZONTAL,
                 onEducationClickAction = {
                     toDesktopModeCallback(
-                        captionState.runningTaskInfo.taskId,
+                        taskInfo.taskId,
                         DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON,
+                    )
+                    desktopModeUiEventLogger.log(
+                        taskInfo,
+                        DesktopUiEventEnum.ENTER_DESKTOP_MODE_EDUCATION_TOOLTIP_CLICKED,
                     )
                 },
                 onDismissAction = {
-                    // TODO: b/341320146 - Log previous tooltip was dismissed
+                    desktopModeUiEventLogger.log(
+                        taskInfo,
+                        DesktopUiEventEnum.ENTER_DESKTOP_MODE_EDUCATION_TOOLTIP_DISMISSED,
+                    )
                 },
             )
 
         windowingEducationViewController.showEducationTooltip(
-            taskId = captionState.runningTaskInfo.taskId,
+            taskId = taskInfo.taskId,
             tooltipViewConfig = windowingImageButtonTooltipConfig,
+        )
+        desktopModeUiEventLogger.log(
+            taskInfo,
+            DesktopUiEventEnum.ENTER_DESKTOP_MODE_EDUCATION_TOOLTIP_SHOWN,
         )
     }
 
     /** Show tooltip that points to app chip button and educates user on how to exit desktop mode */
     private suspend fun showExitWindowingTooltip(captionState: CaptionState.AppHeader) {
         val globalAppChipBounds = captionState.globalAppChipBounds
+        val taskInfo = captionState.runningTaskInfo
         val tooltipGlobalCoordinates =
             Point(
                 if (isRtl()) {
@@ -287,15 +315,26 @@ class AppHandleEducationController(
                 arrowDirection =
                     DesktopWindowingEducationTooltipController.TooltipArrowDirection.HORIZONTAL,
                 onDismissAction = {
-                    // TODO: b/341320146 - Log previous tooltip was dismissed
+                    desktopModeUiEventLogger.log(
+                        taskInfo,
+                        DesktopUiEventEnum.EXIT_DESKTOP_MODE_EDUCATION_TOOLTIP_DISMISSED,
+                    )
                 },
                 onEducationClickAction = {
-                    openHandleMenuCallback(captionState.runningTaskInfo.taskId)
+                    openHandleMenuCallback(taskInfo.taskId)
+                    desktopModeUiEventLogger.log(
+                        taskInfo,
+                        DesktopUiEventEnum.EXIT_DESKTOP_MODE_EDUCATION_TOOLTIP_CLICKED,
+                    )
                 },
             )
         windowingEducationViewController.showEducationTooltip(
-            taskId = captionState.runningTaskInfo.taskId,
+            taskId = taskInfo.taskId,
             tooltipViewConfig = exitWindowingTooltipConfig,
+        )
+        desktopModeUiEventLogger.log(
+            taskInfo,
+            DesktopUiEventEnum.EXIT_DESKTOP_MODE_EDUCATION_TOOLTIP_SHOWN,
         )
     }
 

@@ -149,7 +149,25 @@ class DesktopModeUiEventLogger(
         @UiEvent(doc = "Enter multi-instance by using the New Window button")
         DESKTOP_WINDOW_MULTI_INSTANCE_NEW_WINDOW_CLICK(2069),
         @UiEvent(doc = "Enter multi-instance by clicking an icon in the Manage Windows menu")
-        DESKTOP_WINDOW_MULTI_INSTANCE_MANAGE_WINDOWS_ICON_CLICK(2070);
+        DESKTOP_WINDOW_MULTI_INSTANCE_MANAGE_WINDOWS_ICON_CLICK(2070),
+        @UiEvent(doc = "Education tooltip on the app handle is shown")
+        APP_HANDLE_EDUCATION_TOOLTIP_SHOWN(2097),
+        @UiEvent(doc = "Education tooltip on the app handle is clicked")
+        APP_HANDLE_EDUCATION_TOOLTIP_CLICKED(2098),
+        @UiEvent(doc = "Education tooltip on the app handle is dismissed by the user")
+        APP_HANDLE_EDUCATION_TOOLTIP_DISMISSED(2099),
+        @UiEvent(doc = "Enter desktop mode education tooltip on the app handle menu is shown")
+        ENTER_DESKTOP_MODE_EDUCATION_TOOLTIP_SHOWN(2100),
+        @UiEvent(doc = "Enter desktop mode education tooltip on the app handle menu is clicked")
+        ENTER_DESKTOP_MODE_EDUCATION_TOOLTIP_CLICKED(2101),
+        @UiEvent(doc = "Enter desktop mode education tooltip is dismissed by the user")
+        ENTER_DESKTOP_MODE_EDUCATION_TOOLTIP_DISMISSED(2102),
+        @UiEvent(doc = "Exit desktop mode education tooltip on the app header menu is shown")
+        EXIT_DESKTOP_MODE_EDUCATION_TOOLTIP_SHOWN(2103),
+        @UiEvent(doc = "Exit desktop mode education tooltip on the app header menu is clicked")
+        EXIT_DESKTOP_MODE_EDUCATION_TOOLTIP_CLICKED(2104),
+        @UiEvent(doc = "Exit desktop mode education tooltip is dismissed by the user")
+        EXIT_DESKTOP_MODE_EDUCATION_TOOLTIP_DISMISSED(2105);
 
         override fun getId(): Int = mId
     }
