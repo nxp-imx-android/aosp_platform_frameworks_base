@@ -8214,8 +8214,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         return mInstallPackageHelper.enableCompressedPackage(stubPkg, stubPs);
     }
 
-    void installPackagesTraced(List<InstallRequest> requests) {
-        mInstallPackageHelper.installPackagesTraced(requests);
+    void installPackagesTraced(List<InstallRequest> requests, MoveInfo moveInfo) {
+        mInstallPackageHelper.installPackagesTraced(requests, moveInfo);
     }
 
     void restoreAndPostInstall(InstallRequest request) {
