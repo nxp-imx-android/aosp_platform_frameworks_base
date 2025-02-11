@@ -2026,23 +2026,18 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (mOverrideOptions == null) {
             return;
         }
-
-        if (!Flags.moveAnimationOptionsToChange()) {
-            info.setAnimationOptions(mOverrideOptions);
-        } else {
-            final List<TransitionInfo.Change> changes = info.getChanges();
-            for (int i = changes.size() - 1; i >= 0; --i) {
-                final WindowContainer<?> container = mTargets.get(i).mContainer;
-                if (container.asActivityRecord() != null
-                        || shouldApplyAnimOptionsToTask(container.asTask())) {
-                    changes.get(i).setAnimationOptions(mOverrideOptions);
-                    // TODO(b/295805497): Extract mBackgroundColor from AnimationOptions.
-                    changes.get(i).setBackgroundColor(mOverrideOptions.getBackgroundColor());
-                } else if (shouldApplyAnimOptionsToEmbeddedTf(container.asTaskFragment())) {
-                    // We only override AnimationOptions because backgroundColor should be from
-                    // TaskFragmentAnimationParams.
-                    changes.get(i).setAnimationOptions(mOverrideOptions);
-                }
+        final List<TransitionInfo.Change> changes = info.getChanges();
+        for (int i = changes.size() - 1; i >= 0; --i) {
+            final WindowContainer<?> container = mTargets.get(i).mContainer;
+            if (container.asActivityRecord() != null
+                    || shouldApplyAnimOptionsToTask(container.asTask())) {
+                changes.get(i).setAnimationOptions(mOverrideOptions);
+                // TODO(b/295805497): Extract mBackgroundColor from AnimationOptions.
+                changes.get(i).setBackgroundColor(mOverrideOptions.getBackgroundColor());
+            } else if (shouldApplyAnimOptionsToEmbeddedTf(container.asTaskFragment())) {
+                // We only override AnimationOptions because backgroundColor should be from
+                // TaskFragmentAnimationParams.
+                changes.get(i).setAnimationOptions(mOverrideOptions);
             }
         }
         updateActivityTargetForCrossProfileAnimation(info);
@@ -2933,9 +2928,6 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
         final AnimationOptions animOptionsForActivityTransition =
                 calculateAnimationOptionsForActivityTransition(type, sortedTargets);
-        if (!Flags.moveAnimationOptionsToChange() && animOptionsForActivityTransition != null) {
-            out.setAnimationOptions(animOptionsForActivityTransition);
-        }
 
         final ArraySet<WindowContainer> occludedAtEndContainers = new ArraySet<>();
         // Convert all the resolved ChangeInfos into TransactionInfo.Change objects in order.
@@ -3059,27 +3051,25 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             }
 
             AnimationOptions animOptions = null;
-            if (Flags.moveAnimationOptionsToChange()) {
-                if (activityRecord != null && animOptionsForActivityTransition != null) {
-                    animOptions = animOptionsForActivityTransition;
-                } else if (Flags.activityEmbeddingOverlayPresentationFlag()
-                        && isEmbeddedTaskFragment) {
-                    final TaskFragmentAnimationParams params = taskFragment.getAnimationParams();
-                    if (params.hasOverrideAnimation()) {
-                        // Only set AnimationOptions if there's any animation override.
-                        // We use separated field for backgroundColor, and
-                        // AnimationOptions#backgroundColor will be removed in long term.
-                        animOptions = AnimationOptions.makeCustomAnimOptions(
-                                taskFragment.getTask().getBasePackageName(),
-                                params.getOpenAnimationResId(), params.getChangeAnimationResId(),
-                                params.getCloseAnimationResId(), 0 /* backgroundColor */,
-                                false /* overrideTaskTransition */);
-                        animOptions.setUserId(taskFragment.getTask().mUserId);
-                    }
+            if (activityRecord != null && animOptionsForActivityTransition != null) {
+                animOptions = animOptionsForActivityTransition;
+            } else if (Flags.activityEmbeddingOverlayPresentationFlag()
+                    && isEmbeddedTaskFragment) {
+                final TaskFragmentAnimationParams params = taskFragment.getAnimationParams();
+                if (params.hasOverrideAnimation()) {
+                    // Only set AnimationOptions if there's any animation override.
+                    // We use separated field for backgroundColor, and
+                    // AnimationOptions#backgroundColor will be removed in long term.
+                    animOptions = AnimationOptions.makeCustomAnimOptions(
+                            taskFragment.getTask().getBasePackageName(),
+                            params.getOpenAnimationResId(), params.getChangeAnimationResId(),
+                            params.getCloseAnimationResId(), 0 /* backgroundColor */,
+                            false /* overrideTaskTransition */);
+                    animOptions.setUserId(taskFragment.getTask().mUserId);
                 }
-                if (animOptions != null) {
-                    change.setAnimationOptions(animOptions);
-                }
+            }
+            if (animOptions != null) {
+                change.setAnimationOptions(animOptions);
             }
 
             if (activityRecord != null) {

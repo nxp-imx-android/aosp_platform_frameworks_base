@@ -82,8 +82,6 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.IBinder;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -104,7 +102,6 @@ import androidx.annotation.NonNull;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.graphics.ColorUtils;
-import com.android.window.flags.Flags;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -2009,21 +2006,6 @@ public class TransitionTests extends WindowTestsBase {
         assertEquals(expectedBackgroundColor, info.getChanges().get(1).getBackgroundColor());
     }
 
-    @DisableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
-    @Test
-    public void testOverrideAnimationOptionsToInfoIfNecessary_disableAnimOptionsPerChange() {
-        ActivityRecord r = initializeOverrideAnimationOptionsTest();
-        TransitionInfo.AnimationOptions options = TransitionInfo.AnimationOptions
-                .makeCommonAnimOptions("testPackage");
-        mTransition.setOverrideAnimation(options, r, null /* startCallback */,
-                null /* finishCallback */);
-
-        mTransition.overrideAnimationOptionsToInfoIfNecessary(mInfo);
-
-        assertEquals(options, mInfo.getAnimationOptions());
-    }
-
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testOverrideAnimationOptionsToInfoIfNecessary_fromStyleAnimOptions() {
         ActivityRecord r = initializeOverrideAnimationOptionsTest();
@@ -2049,7 +2031,6 @@ public class TransitionTests extends WindowTestsBase {
                 options, activityChange.getAnimationOptions());
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testOverrideAnimationOptionsToInfoIfNecessary_sceneAnimOptions() {
         ActivityRecord r = initializeOverrideAnimationOptionsTest();
@@ -2075,7 +2056,6 @@ public class TransitionTests extends WindowTestsBase {
                 options, activityChange.getAnimationOptions());
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testOverrideAnimationOptionsToInfoIfNecessary_crossProfileAnimOptions() {
         ActivityRecord r = initializeOverrideAnimationOptionsTest();
@@ -2103,7 +2083,6 @@ public class TransitionTests extends WindowTestsBase {
         assertTrue(activityChange.hasFlags(FLAG_CROSS_PROFILE_OWNER_THUMBNAIL));
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testOverrideAnimationOptionsToInfoIfNecessary_customAnimOptions() {
         ActivityRecord r = initializeOverrideAnimationOptionsTest();
@@ -2136,7 +2115,6 @@ public class TransitionTests extends WindowTestsBase {
                 options.getBackgroundColor(), activityChange.getBackgroundColor());
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testOverrideAnimationOptionsToInfoIfNecessary_haveTaskFragmentAnimParams() {
         ActivityRecord r = initializeOverrideAnimationOptionsTest();
@@ -2185,7 +2163,6 @@ public class TransitionTests extends WindowTestsBase {
                 options.getBackgroundColor(), activityChange.getBackgroundColor());
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testOverrideAnimationOptionsToInfoIfNecessary_customAnimOptionsWithTaskOverride() {
         ActivityRecord r = initializeOverrideAnimationOptionsTest();
@@ -2415,7 +2392,6 @@ public class TransitionTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
     public void testMoveDisplayToTop() {
         // Set up two displays, each of which has a task.
         DisplayContent otherDisplay = createNewDisplay();

@@ -364,7 +364,7 @@ class ActivityEmbeddingAnimationRunner {
             @NonNull SurfaceControl.Transaction finishTransaction,
             @NonNull List<ActivityEmbeddingAnimationAdapter> adapters) {
         for (ActivityEmbeddingAnimationAdapter adapter : adapters) {
-            final int backgroundColor = getTransitionBackgroundColorIfSet(info, adapter.mChange,
+            final int backgroundColor = getTransitionBackgroundColorIfSet(adapter.mChange,
                     adapter.mAnimation, 0 /* defaultColor */);
             if (backgroundColor != 0) {
                 // We only need to show one color.
@@ -436,8 +436,8 @@ class ActivityEmbeddingAnimationRunner {
             final TransitionInfo.AnimationOptions options = boundsAnimationChange
                     .getAnimationOptions();
             if (options != null) {
-                final Animation overrideAnimation = mAnimationSpec.loadCustomAnimationFromOptions(
-                        options, TRANSIT_CHANGE);
+                final Animation overrideAnimation =
+                        mAnimationSpec.loadCustomAnimation(options, TRANSIT_CHANGE);
                 if (overrideAnimation != null) {
                     overrideShowBackdrop = overrideAnimation.getShowBackdrop();
                 }
@@ -447,7 +447,7 @@ class ActivityEmbeddingAnimationRunner {
             // There are two animations in the array. The first one is for the start leash
             // (snapshot), and the second one is for the end leash (TaskFragment).
             final Animation[] animations =
-                    mAnimationSpec.createChangeBoundsChangeAnimations(info, change, parentBounds);
+                    mAnimationSpec.createChangeBoundsChangeAnimations(change, parentBounds);
             // Jump cut if either animation has zero for duration.
             for (Animation animation : animations) {
                 if (shouldUseJumpCutForAnimation(animation)) {
@@ -500,12 +500,10 @@ class ActivityEmbeddingAnimationRunner {
                 // window without bounds change.
                 animation = ActivityEmbeddingAnimationSpec.createNoopAnimation(change);
             } else if (TransitionUtil.isClosingType(change.getMode())) {
-                animation =
-                        mAnimationSpec.createChangeBoundsCloseAnimation(info, change, parentBounds);
+                animation = mAnimationSpec.createChangeBoundsCloseAnimation(change, parentBounds);
                 shouldShowBackgroundColor = false;
             } else {
-                animation =
-                        mAnimationSpec.createChangeBoundsOpenAnimation(info, change, parentBounds);
+                animation = mAnimationSpec.createChangeBoundsOpenAnimation(change, parentBounds);
                 shouldShowBackgroundColor = false;
             }
             if (shouldUseJumpCutForAnimation(animation)) {
