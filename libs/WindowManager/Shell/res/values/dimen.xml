@@ -447,6 +447,17 @@
         80 dp for handle + 20 dp for room to grow on the sides when hovered. -->
     <dimen name="desktop_mode_fullscreen_decor_caption_width">100dp</dimen>
 
+    <!-- Horizontal padding for desktop mode caption in default unhovered untouched state. -->
+    <dimen name="desktop_mode_fullscreen_decor_caption_horizontal_padding_default">10dp</dimen>
+
+    <!-- Horizontal padding for desktop mode caption when hovered.
+        1/2 * (100 dp of total width - 80 dp for handle * 1.2 scaling factor). -->
+    <dimen name="desktop_mode_fullscreen_decor_caption_horizontal_padding_hovered">2dp</dimen>
+
+    <!-- Horizontal padding for desktop mode caption when touched.
+        1/2 * (100 dp of total width - 80 dp for handle * 0.85 scaling factor). -->
+    <dimen name="desktop_mode_fullscreen_decor_caption_horizontal_padding_touched">16dp</dimen>
+
     <!-- Required empty space to be visible for partially offscreen tasks. -->
     <dimen name="freeform_required_visible_empty_space_in_header">48dp</dimen>
 
