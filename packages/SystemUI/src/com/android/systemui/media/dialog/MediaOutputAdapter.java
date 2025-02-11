@@ -224,54 +224,43 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                     } else {
                         isDeviceGroup = true;
                     }
-                } else if (device.hasSubtext()) {
-                    subtitle = device.getSubtextString();
-                    boolean isActiveWithOngoingSession =
-                            device.hasOngoingSession() && (currentlyConnected || isSelected);
-                    if (isActiveWithOngoingSession) {
-                        ongoingSessionStatus = new OngoingSessionStatus(
-                                device.isHostForOngoingSession());
+                } else {
+                    subtitle = device.hasSubtext() ? device.getSubtextString() : null;
+
+                    if (device.getState() == MediaDeviceState.STATE_CONNECTING_FAILED) {
+                        deviceStatusIcon = mContext.getDrawable(
+                                R.drawable.media_output_status_failed);
+                        subtitle = mContext.getString(R.string.media_output_dialog_connect_failed);
+                        clickListener = v -> onItemClick(v, device);
+                    } else if (currentlyConnected || isSelected) {
                         connectionState = ConnectionState.CONNECTED;
-                    } else {
-                        if (currentlyConnected) {
-                            connectionState = ConnectionState.CONNECTED;
+                        // single selected device
+                        if (device.hasOngoingSession()) {
+                            ongoingSessionStatus = new OngoingSessionStatus(
+                                    device.isHostForOngoingSession());
                         }
-                        clickListener = getClickListenerBasedOnSelectionBehavior(device);
+                        if (hasMultipleSelectedDevices() || hasSelectableDevices()) {
+                            //If device is connected and there's other selectable devices, layout as
+                            // one of selected devices.
+                            groupStatus = new GroupStatus(true /* selected */,
+                                    isDeselectable /* isDeselectable */);
+                        }
+                    } else { // disconnected
+                        if (isSelectable) {
+                            //groupable device
+                            groupStatus = new GroupStatus(false /* selected */,
+                                    true /* deselectable */);
+                            if (!Flags.disableTransferWhenAppsDoNotSupport() || isTransferable
+                                    || hasRouteListingPreferenceItem) {
+                                clickListener = v -> onItemClick(v, device);
+                            }
+                        } else {
+                            deviceStatusIcon = getDeviceStatusIcon(device,
+                                    device.hasOngoingSession());
+                            clickListener = getClickListenerBasedOnSelectionBehavior(device);
+                        }
                         deviceDisabled = clickListener == null;
-                        deviceStatusIcon = getDeviceStatusIcon(device, device.hasOngoingSession());
                     }
-                } else if (device.getState() == MediaDeviceState.STATE_CONNECTING_FAILED) {
-                    deviceStatusIcon = mContext.getDrawable(R.drawable.media_output_status_failed);
-                    subtitle = mContext.getString(R.string.media_output_dialog_connect_failed);
-                    clickListener = v -> onItemClick(v, device);
-                } else if (currentlyConnected || isSelected) {
-                    connectionState = ConnectionState.CONNECTED;
-                    // single selected device
-                    if (device.hasOngoingSession()) {
-                        ongoingSessionStatus = new OngoingSessionStatus(
-                                device.isHostForOngoingSession());
-                    }
-                    if (hasMultipleSelectedDevices() || hasSelectableDevices()) {
-                        //If device is connected and there's other selectable devices, layout as
-                        // one of selected devices.
-                        groupStatus = new GroupStatus(
-                                true /* selected */,
-                                isDeselectable /* isDeselectable */);
-                    }
-                } else { // disconnected
-                    if (isSelectable) {
-                        //groupable device
-                        groupStatus = new GroupStatus(false /* selected */,
-                                true /* deselectable */);
-                        if (!Flags.disableTransferWhenAppsDoNotSupport() || isTransferable
-                                || hasRouteListingPreferenceItem) {
-                            clickListener = v -> onItemClick(v, device);
-                        }
-                    } else {
-                        deviceStatusIcon = getDeviceStatusIcon(device, device.hasOngoingSession());
-                        clickListener = getClickListenerBasedOnSelectionBehavior(device);
-                    }
-                    deviceDisabled = clickListener == null;
                 }
             }
 
