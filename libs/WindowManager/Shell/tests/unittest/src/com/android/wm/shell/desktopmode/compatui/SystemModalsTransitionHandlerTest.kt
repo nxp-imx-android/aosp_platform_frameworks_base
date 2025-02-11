@@ -16,9 +16,12 @@
 
 package com.android.wm.shell.desktopmode.compatui
 
+import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Binder
 import android.testing.AndroidTestingRunner
+import android.testing.TestableContext
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
@@ -37,6 +40,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.TransitionInfoBuilder
 import com.android.wm.shell.transition.Transitions
+import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModelTestsBase.Companion.HOME_LAUNCHER_PACKAGE_NAME
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -44,6 +48,7 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -62,16 +67,23 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
     private val desktopRepository = mock<DesktopRepository>()
     private val startT = mock<SurfaceControl.Transaction>()
     private val finishT = mock<SurfaceControl.Transaction>()
+    private val packageManager = mock<PackageManager>()
+    private val componentName = mock<ComponentName>()
 
+    private lateinit var spyContext: TestableContext
     private lateinit var transitionHandler: SystemModalsTransitionHandler
     private lateinit var desktopModeCompatPolicy: DesktopModeCompatPolicy
 
     @Before
     fun setUp() {
+        spyContext = spy(mContext)
         // Simulate having one Desktop task so that we see Desktop Mode as active
         whenever(desktopUserRepositories.current).thenReturn(desktopRepository)
         whenever(desktopRepository.getVisibleTaskCount(anyInt())).thenReturn(1)
-        desktopModeCompatPolicy = DesktopModeCompatPolicy(context)
+        whenever(spyContext.packageManager).thenReturn(packageManager)
+        whenever(componentName.packageName).thenReturn(HOME_LAUNCHER_PACKAGE_NAME)
+        whenever(packageManager.getHomeActivities(ArrayList())).thenReturn(componentName)
+        desktopModeCompatPolicy = DesktopModeCompatPolicy(spyContext)
         transitionHandler = createTransitionHandler()
     }
 

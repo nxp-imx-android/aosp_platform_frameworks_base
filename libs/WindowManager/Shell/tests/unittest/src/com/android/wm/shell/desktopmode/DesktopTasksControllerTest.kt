@@ -51,6 +51,7 @@ import android.os.UserManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
+import android.testing.TestableContext
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DragEvent
 import android.view.Gravity
@@ -147,6 +148,7 @@ import com.android.wm.shell.transition.TestRemoteTransition
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.ENABLE_SHELL_TRANSITIONS
 import com.android.wm.shell.transition.Transitions.TransitionHandler
+import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModelTestsBase.Companion.HOME_LAUNCHER_PACKAGE_NAME
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel
 import com.google.common.truth.Truth.assertThat
@@ -186,7 +188,6 @@ import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.atLeastOnce
-import org.mockito.kotlin.capture
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
@@ -256,6 +257,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var desksOrganizer: DesksOrganizer
     @Mock private lateinit var userProfileContexts: UserProfileContexts
     @Mock private lateinit var desksTransitionsObserver: DesksTransitionObserver
+    @Mock private lateinit var packageManager: PackageManager
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -265,6 +267,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private lateinit var recentsTransitionStateListener: RecentsTransitionStateListener
     private lateinit var testScope: CoroutineScope
     private lateinit var desktopModeCompatPolicy: DesktopModeCompatPolicy
+    private lateinit var spyContext: TestableContext
 
     private val shellExecutor = TestShellExecutor()
 
@@ -281,6 +284,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private val UNRESIZABLE_LANDSCAPE_BOUNDS = Rect(25, 449, 1575, 1611)
     private val UNRESIZABLE_PORTRAIT_BOUNDS = Rect(830, 75, 1730, 1275)
     private val wallpaperToken = MockToken().token()
+    private val homeComponentName = ComponentName(HOME_LAUNCHER_PACKAGE_NAME, /* class */ "")
 
     @Before
     fun setUp() {
@@ -294,6 +298,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         doReturn(true).`when` { DesktopModeStatus.canEnterDesktopMode(any()) }
 
         testScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
+        spyContext = spy(mContext)
         shellInit = spy(ShellInit(testExecutor))
         userRepositories =
             DesktopUserRepositories(
@@ -315,7 +320,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 mContext,
                 mockHandler,
             )
-        desktopModeCompatPolicy = spy(DesktopModeCompatPolicy(context))
+        desktopModeCompatPolicy = spy(DesktopModeCompatPolicy(spyContext))
 
         whenever(shellTaskOrganizer.getRunningTasks(anyInt())).thenAnswer { runningTasks }
         whenever(transitions.startTransition(anyInt(), any(), isNull())).thenAnswer { Binder() }
@@ -373,6 +378,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository = userRepositories.current
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
+
+        spyContext.setMockPackageManager(packageManager)
+        whenever(packageManager.getHomeActivities(ArrayList())).thenReturn(homeComponentName)
     }
 
     private fun createController() =
