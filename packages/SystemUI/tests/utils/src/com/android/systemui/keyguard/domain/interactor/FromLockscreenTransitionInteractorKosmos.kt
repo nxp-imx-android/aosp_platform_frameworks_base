@@ -39,7 +39,6 @@ var Kosmos.fromLockscreenTransitionInteractor by
             keyguardInteractor = keyguardInteractor,
             shadeRepository = shadeRepository,
             powerInteractor = powerInteractor,
-            glanceableHubTransitions = glanceableHubTransitions,
             communalSettingsInteractor = communalSettingsInteractor,
             swipeToDismissInteractor = swipeToDismissInteractor,
             keyguardOcclusionInteractor = keyguardOcclusionInteractor,

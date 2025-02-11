@@ -24,7 +24,6 @@ import android.provider.Settings
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
-import com.android.systemui.Flags.FLAG_COMMUNAL_SCENE_KTF_REFACTOR
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.domain.interactor.communalInteractor
@@ -33,26 +32,21 @@ import com.android.systemui.communal.domain.interactor.communalSettingsInteracto
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.shared.log.CommunalUiEvent
 import com.android.systemui.communal.shared.model.CommunalScenes
-import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.dock.dockManager
-import com.android.systemui.dock.fakeDockManager
 import com.android.systemui.flags.Flags.COMMUNAL_SERVICE_ENABLED
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
-import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
-import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.notificationShadeWindowController
-import com.android.systemui.statusbar.phone.centralSurfaces
 import com.android.systemui.statusbar.phone.centralSurfacesOptional
 import com.android.systemui.testKosmos
 import com.android.systemui.util.settings.fakeSettings
@@ -64,10 +58,8 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.whenever
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
@@ -130,272 +122,6 @@ class CommunalSceneStartableTest(flags: FlagsParameterization) : SysuiTestCase()
             }
         }
     }
-
-    @Test
-    @DisableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR, FLAG_SCENE_CONTAINER)
-    fun keyguardGoesAway_whenLaunchingEditMode_doNotForceBlankScene() =
-        with(kosmos) {
-            testScope.runTest {
-                val scene by collectLastValue(communalSceneInteractor.currentScene)
-
-                communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-
-                communalSceneInteractor.setEditModeState(EditModeState.STARTING)
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.PRIMARY_BOUNCER,
-                    to = KeyguardState.GONE,
-                    testScope = this,
-                )
-
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-            }
-        }
-
-    @Test
-    @DisableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR, FLAG_SCENE_CONTAINER)
-    fun keyguardGoesAway_whenLaunchingWidget_doNotForceBlankScene() =
-        with(kosmos) {
-            testScope.runTest {
-                val scene by collectLastValue(communalSceneInteractor.currentScene)
-
-                communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-
-                communalSceneInteractor.setIsLaunchingWidget(true)
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.PRIMARY_BOUNCER,
-                    to = KeyguardState.GONE,
-                    testScope = this,
-                )
-
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-            }
-        }
-
-    @Test
-    @DisableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR, FLAG_SCENE_CONTAINER)
-    fun keyguardGoesAway_whenNotLaunchingWidget_forceBlankScene() =
-        with(kosmos) {
-            testScope.runTest {
-                val scene by collectLastValue(communalSceneInteractor.currentScene)
-
-                communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-
-                communalSceneInteractor.setIsLaunchingWidget(false)
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.PRIMARY_BOUNCER,
-                    to = KeyguardState.GONE,
-                    testScope = this,
-                )
-
-                assertThat(scene).isEqualTo(CommunalScenes.Blank)
-            }
-        }
-
-    @Test
-    @DisableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR, FLAG_SCENE_CONTAINER)
-    fun keyguardGoesAway_whenInEditMode_doesNotChangeScene() =
-        with(kosmos) {
-            testScope.runTest {
-                val scene by collectLastValue(communalSceneInteractor.currentScene)
-                communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-
-                communalInteractor.setEditModeOpen(true)
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.ALTERNATE_BOUNCER,
-                    to = KeyguardState.GONE,
-                    testScope = this,
-                )
-                // Scene change will be handled in EditWidgetsActivity not here
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-            }
-        }
-
-    @Ignore("Ignored until custom animations are implemented in b/322787129")
-    @Test
-    @DisableFlags(FLAG_SCENE_CONTAINER)
-    fun deviceDocked_forceCommunalScene() =
-        with(kosmos) {
-            testScope.runTest {
-                val scene by collectLastValue(communalSceneInteractor.currentScene)
-                assertThat(scene).isEqualTo(CommunalScenes.Blank)
-
-                updateDocked(true)
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.GONE,
-                    to = KeyguardState.LOCKSCREEN,
-                    testScope = this,
-                )
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-            }
-        }
-
-    @Test
-    @DisableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR, FLAG_SCENE_CONTAINER)
-    fun occluded_forceBlankScene() =
-        with(kosmos) {
-            testScope.runTest {
-                whenever(centralSurfaces.isLaunchingActivityOverLockscreen).thenReturn(false)
-                val scene by collectLastValue(communalSceneInteractor.currentScene)
-                communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-
-                updateDocked(true)
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.GLANCEABLE_HUB,
-                    to = KeyguardState.OCCLUDED,
-                    testScope = this,
-                )
-                assertThat(scene).isEqualTo(CommunalScenes.Blank)
-            }
-        }
-
-    @Test
-    @DisableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR, FLAG_SCENE_CONTAINER)
-    fun occluded_doesNotForceBlankSceneIfLaunchingActivityOverLockscreen() =
-        with(kosmos) {
-            testScope.runTest {
-                whenever(centralSurfaces.isLaunchingActivityOverLockscreen).thenReturn(true)
-                val scene by collectLastValue(communalSceneInteractor.currentScene)
-                communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-
-                updateDocked(true)
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.GLANCEABLE_HUB,
-                    to = KeyguardState.OCCLUDED,
-                    testScope = this,
-                )
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-            }
-        }
-
-    @Test
-    @DisableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR, FLAG_SCENE_CONTAINER)
-    fun deviceDocked_doesNotForceCommunalIfTransitioningFromCommunal() =
-        with(kosmos) {
-            testScope.runTest {
-                val scene by collectLastValue(communalSceneInteractor.currentScene)
-                assertThat(scene).isEqualTo(CommunalScenes.Blank)
-
-                updateDocked(true)
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.GLANCEABLE_HUB,
-                    to = KeyguardState.LOCKSCREEN,
-                    testScope = this,
-                )
-                assertThat(scene).isEqualTo(CommunalScenes.Blank)
-            }
-        }
-
-    @Test
-    @DisableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR, FLAG_SCENE_CONTAINER)
-    fun deviceAsleep_forceBlankSceneAfterTimeout() =
-        with(kosmos) {
-            testScope.runTest {
-                val scene by collectLastValue(communalSceneInteractor.currentScene)
-                communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.GLANCEABLE_HUB,
-                    to = KeyguardState.OFF,
-                    testScope = this,
-                )
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-
-                advanceTimeBy(CommunalSceneStartable.AWAKE_DEBOUNCE_DELAY)
-
-                assertThat(scene).isEqualTo(CommunalScenes.Blank)
-            }
-        }
-
-    @Test
-    @DisableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR, FLAG_SCENE_CONTAINER)
-    fun deviceAsleep_wakesUpBeforeTimeout_noChangeInScene() =
-        with(kosmos) {
-            testScope.runTest {
-                val scene by collectLastValue(communalSceneInteractor.currentScene)
-                communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.GLANCEABLE_HUB,
-                    to = KeyguardState.OFF,
-                    testScope = this,
-                )
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-                advanceTimeBy(CommunalSceneStartable.AWAKE_DEBOUNCE_DELAY / 2)
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.OFF,
-                    to = KeyguardState.GLANCEABLE_HUB,
-                    testScope = this,
-                )
-
-                advanceTimeBy(CommunalSceneStartable.AWAKE_DEBOUNCE_DELAY)
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-            }
-        }
-
-    @Ignore("Ignored until custom animations are implemented in b/322787129")
-    @Test
-    @DisableFlags(FLAG_SCENE_CONTAINER)
-    fun dockingOnLockscreen_forcesCommunal() =
-        with(kosmos) {
-            testScope.runTest {
-                communalSceneInteractor.changeScene(CommunalScenes.Blank, "test")
-                val scene by collectLastValue(communalSceneInteractor.currentScene)
-
-                // device is docked while on the lockscreen
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.GLANCEABLE_HUB,
-                    to = KeyguardState.LOCKSCREEN,
-                    testScope = this,
-                )
-                updateDocked(true)
-
-                assertThat(scene).isEqualTo(CommunalScenes.Blank)
-                advanceTimeBy(CommunalSceneStartable.DOCK_DEBOUNCE_DELAY)
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-            }
-        }
-
-    @Ignore("Ignored until custom animations are implemented in b/322787129")
-    @Test
-    @DisableFlags(FLAG_SCENE_CONTAINER)
-    fun dockingOnLockscreen_doesNotForceCommunalIfDreamStarts() =
-        with(kosmos) {
-            testScope.runTest {
-                communalSceneInteractor.changeScene(CommunalScenes.Blank, "test")
-                val scene by collectLastValue(communalSceneInteractor.currentScene)
-
-                // device is docked while on the lockscreen
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.GLANCEABLE_HUB,
-                    to = KeyguardState.LOCKSCREEN,
-                    testScope = this,
-                )
-                updateDocked(true)
-
-                assertThat(scene).isEqualTo(CommunalScenes.Blank)
-                advanceTimeBy(CommunalSceneStartable.DOCK_DEBOUNCE_DELAY / 2)
-                assertThat(scene).isEqualTo(CommunalScenes.Blank)
-
-                // dream starts shortly after docking
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.LOCKSCREEN,
-                    to = KeyguardState.DREAMING,
-                    testScope = this,
-                )
-                advanceTimeBy(CommunalSceneStartable.DOCK_DEBOUNCE_DELAY)
-                assertThat(scene).isEqualTo(CommunalScenes.Blank)
-            }
-        }
 
     @Test
     @DisableFlags(FLAG_SCENE_CONTAINER)
@@ -709,34 +435,6 @@ class CommunalSceneStartableTest(flags: FlagsParameterization) : SysuiTestCase()
                     .isEqualTo(CommunalUiEvent.COMMUNAL_HUB_TIMEOUT.id)
                 assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
             }
-        }
-
-    @Test
-    @DisableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR, FLAG_SCENE_CONTAINER)
-    fun transitionFromDozingToGlanceableHub_forcesCommunal() =
-        with(kosmos) {
-            testScope.runTest {
-                val scene by collectLastValue(communalSceneInteractor.currentScene)
-                communalSceneInteractor.changeScene(CommunalScenes.Blank, "test")
-                assertThat(scene).isEqualTo(CommunalScenes.Blank)
-
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.DOZING,
-                    to = KeyguardState.GLANCEABLE_HUB,
-                    testScope = this,
-                )
-
-                assertThat(scene).isEqualTo(CommunalScenes.Communal)
-            }
-        }
-
-    private fun TestScope.updateDocked(docked: Boolean) =
-        with(kosmos) {
-            runCurrent()
-            fakeDockManager.setIsDocked(docked)
-            // TODO(b/322787129): uncomment once custom animations are in place
-            // fakeDockManager.setDockEvent(DockManager.STATE_DOCKED)
-            runCurrent()
         }
 
     private fun TestScope.updateDreaming(dreaming: Boolean) =

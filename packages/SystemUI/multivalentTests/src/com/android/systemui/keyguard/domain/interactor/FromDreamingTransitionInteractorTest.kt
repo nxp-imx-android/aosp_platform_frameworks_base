@@ -23,7 +23,6 @@ import android.provider.Settings
 import android.service.dream.dreamManager
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
-import com.android.systemui.Flags.FLAG_COMMUNAL_SCENE_KTF_REFACTOR
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.SysuiTestCase
@@ -74,10 +73,7 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(
-                    FLAG_COMMUNAL_SCENE_KTF_REFACTOR,
-                    FLAG_GLANCEABLE_HUB_V2,
-                )
+            return FlagsParameterization.allCombinationsOf(FLAG_GLANCEABLE_HUB_V2)
                 .andSceneContainer()
         }
     }
@@ -202,7 +198,6 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
         }
 
     @Test
-    @EnableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR)
     @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
     fun testTransitionToGlanceableHubOnWake() =
         kosmos.runTest {

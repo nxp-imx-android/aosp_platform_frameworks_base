@@ -20,7 +20,6 @@ import android.animation.ValueAnimator
 import android.util.MathUtils
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.Flags.communalSceneKtfRefactor
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
@@ -69,7 +68,6 @@ constructor(
     keyguardInteractor: KeyguardInteractor,
     private val shadeRepository: ShadeRepository,
     powerInteractor: PowerInteractor,
-    private val glanceableHubTransitions: GlanceableHubTransitions,
     private val communalSettingsInteractor: CommunalSettingsInteractor,
     private val communalInteractor: CommunalInteractor,
     private val communalSceneInteractor: CommunalSceneInteractor,
@@ -96,9 +94,6 @@ constructor(
         listenForLockscreenToPrimaryBouncerDragging()
         listenForLockscreenToAlternateBouncer()
         listenForLockscreenTransitionToCamera()
-        if (!communalSceneKtfRefactor()) {
-            listenForLockscreenToGlanceableHub()
-        }
         if (communalSettingsInteractor.isV2FlagEnabled()) {
             listenForLockscreenToGlanceableHubV2()
         }
@@ -354,24 +349,6 @@ constructor(
                         TransitionModeOnCanceled.LAST_VALUE
                     }
                 }
-            )
-        }
-    }
-
-    /**
-     * Listens for transition from glanceable hub back to lock screen and directly drives the
-     * keyguard transition.
-     */
-    private fun listenForLockscreenToGlanceableHub() {
-        if (SceneContainerFlag.isEnabled) return
-        if (!communalSettingsInteractor.isCommunalFlagEnabled()) {
-            return
-        }
-        scope.launch(context = mainDispatcher) {
-            glanceableHubTransitions.listenForGlanceableHubTransition(
-                transitionOwnerName = TAG,
-                fromState = KeyguardState.LOCKSCREEN,
-                toState = KeyguardState.GLANCEABLE_HUB,
             )
         }
     }

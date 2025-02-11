@@ -23,7 +23,6 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags.communalSceneKtfRefactor
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
@@ -31,7 +30,6 @@ import com.android.systemui.communal.shared.log.CommunalUiEvent
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.CommunalScenes.isCommunal
 import com.android.systemui.communal.shared.model.CommunalTransitionKeys
-import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -58,9 +56,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 
@@ -98,46 +94,6 @@ constructor(
         if (!communalSettingsInteractor.isCommunalFlagEnabled()) {
             return
         }
-
-        if (!communalSceneKtfRefactor()) {
-            // Handle automatically switching based on keyguard state.
-            keyguardTransitionInteractor.startedKeyguardTransitionStep
-                .mapLatest(::determineSceneAfterTransition)
-                .filterNotNull()
-                .onEach { (nextScene, nextTransition) ->
-                    // When launching a widget, we don't want to animate the scene change or the
-                    // Communal Hub will reveal the wallpaper even though it shouldn't. Instead we
-                    // snap to the new scene as part of the launch animation, once the activity
-                    // launch is done, so we don't change scene here.
-                    val delaySceneTransition =
-                        communalSceneInteractor.editModeState.value == EditModeState.STARTING ||
-                            communalSceneInteractor.isLaunchingWidget.value
-                    if (!delaySceneTransition) {
-                        communalSceneInteractor.changeScene(
-                            newScene = nextScene,
-                            loggingReason = "KTF syncing",
-                            transitionKey = nextTransition,
-                        )
-                    }
-                }
-                .launchIn(applicationScope)
-        }
-
-        // TODO(b/322787129): re-enable once custom animations are in place
-        // Handle automatically switching to communal when docked.
-        //        dockManager
-        //            .retrieveIsDocked()
-        //            // Allow some time after docking to ensure the dream doesn't start. If the
-        // dream
-        //            // starts, then we don't want to automatically transition to glanceable hub.
-        //            .debounce(DOCK_DEBOUNCE_DELAY)
-        //            .sample(keyguardTransitionInteractor.startedKeyguardState, ::Pair)
-        //            .onEach { (docked, lastStartedState) ->
-        //                if (docked && lastStartedState == KeyguardState.LOCKSCREEN) {
-        //                    communalInteractor.onSceneChanged(CommunalScenes.Communal)
-        //                }
-        //            }
-        //            .launchIn(bgScope)
 
         systemSettings
             .observerFlow(Settings.System.SCREEN_OFF_TIMEOUT)
