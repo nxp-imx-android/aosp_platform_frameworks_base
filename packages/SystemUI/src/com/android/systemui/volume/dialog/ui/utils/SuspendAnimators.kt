@@ -96,21 +96,23 @@ suspend fun <T> ValueAnimator.suspendAnimate(onValueChanged: (T) -> Unit) {
  * Starts spring animation and suspends until it's finished. Cancels the animation if the running
  * coroutine is cancelled.
  */
-suspend fun SpringAnimation.suspendAnimate(onAnimationUpdate: (Float) -> Unit) =
-    suspendCancellableCoroutine { continuation ->
-        val updateListener =
-            DynamicAnimation.OnAnimationUpdateListener { _, value, _ -> onAnimationUpdate(value) }
-        val endListener =
-            DynamicAnimation.OnAnimationEndListener { _, _, _, _ -> continuation.resumeIfCan(Unit) }
-        addUpdateListener(updateListener)
-        addEndListener(endListener)
-        animateToFinalPosition(1F)
-        continuation.invokeOnCancellation {
-            removeUpdateListener(updateListener)
-            removeEndListener(endListener)
-            cancel()
-        }
+suspend fun SpringAnimation.suspendAnimate(
+    finalPosition: Float = 1f,
+    onAnimationUpdate: (Float) -> Unit = {},
+) = suspendCancellableCoroutine { continuation ->
+    val updateListener =
+        DynamicAnimation.OnAnimationUpdateListener { _, value, _ -> onAnimationUpdate(value) }
+    val endListener =
+        DynamicAnimation.OnAnimationEndListener { _, _, _, _ -> continuation.resumeIfCan(Unit) }
+    addUpdateListener(updateListener)
+    addEndListener(endListener)
+    animateToFinalPosition(finalPosition)
+    continuation.invokeOnCancellation {
+        removeUpdateListener(updateListener)
+        removeEndListener(endListener)
+        cancel()
     }
+}
 
 /**
  * Starts the animation and suspends until it's finished. Cancels the animation if the running
