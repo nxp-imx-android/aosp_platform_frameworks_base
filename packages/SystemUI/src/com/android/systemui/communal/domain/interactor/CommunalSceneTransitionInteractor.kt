@@ -32,6 +32,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionInfo
 import com.android.systemui.keyguard.shared.model.TransitionModeOnCanceled
 import com.android.systemui.keyguard.shared.model.TransitionState
+import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.util.kotlin.pairwise
 import java.util.UUID
@@ -65,6 +66,7 @@ constructor(
     @Application private val applicationScope: CoroutineScope,
     private val sceneInteractor: CommunalSceneInteractor,
     private val repository: CommunalSceneTransitionRepository,
+    private val powerInteractor: PowerInteractor,
     keyguardInteractor: KeyguardInteractor,
 ) : CoreStartable, CommunalSceneInteractor.OnSceneAboutToChangeListener {
 
@@ -88,12 +90,15 @@ constructor(
         combine(
                 // Don't use delayed dreaming signal as otherwise we might go to occluded or lock
                 // screen when closing hub if dream just started under the hub.
+                powerInteractor.isAsleep,
                 keyguardInteractor.isDreamingWithOverlay,
                 keyguardInteractor.isKeyguardOccluded,
                 keyguardInteractor.isKeyguardGoingAway,
                 keyguardInteractor.isKeyguardShowing,
-            ) { dreaming, occluded, keyguardGoingAway, keyguardShowing ->
-                if (keyguardGoingAway) {
+            ) { asleep, dreaming, occluded, keyguardGoingAway, keyguardShowing ->
+                if (asleep) {
+                    KeyguardState.DOZING
+                } else if (keyguardGoingAway) {
                     KeyguardState.GONE
                 } else if (occluded && !dreaming) {
                     KeyguardState.OCCLUDED
