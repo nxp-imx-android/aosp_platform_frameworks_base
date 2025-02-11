@@ -1172,11 +1172,12 @@ public class DisplayContentTests extends WindowTestsBase {
                 .setScreenOrientation(getRotatedOrientation(mDisplayContent)).build();
         prev.setVisibleRequested(false);
         final ActivityRecord top = new ActivityBuilder(mAtm).setCreateTask(true)
+                .setVisible(false)
                 .setScreenOrientation(SCREEN_ORIENTATION_BEHIND).build();
         assertNotEquals(WindowConfiguration.ROTATION_UNDEFINED,
                 mDisplayContent.rotationForActivityInDifferentOrientation(top));
 
-        mDisplayContent.requestTransitionAndLegacyPrepare(WindowManager.TRANSIT_OPEN, 0);
+        requestTransition(top, WindowManager.TRANSIT_OPEN);
         top.setVisibility(true);
         mDisplayContent.updateOrientation();
         // The top uses "behind", so the orientation is decided by the previous.
@@ -1609,8 +1610,7 @@ public class DisplayContentTests extends WindowTestsBase {
         final ActivityRecord app = mAppWindow.mActivityRecord;
         app.setVisible(false);
         app.setVisibleRequested(false);
-        registerTestTransitionPlayer();
-        mDisplayContent.requestTransitionAndLegacyPrepare(WindowManager.TRANSIT_OPEN, 0);
+        requestTransition(app, WindowManager.TRANSIT_OPEN);
         app.setVisibility(true);
         final int newOrientation = getRotatedOrientation(mDisplayContent);
         app.setRequestedOrientation(newOrientation);

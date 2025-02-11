@@ -961,6 +961,15 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         return testPlayer;
     }
 
+    void requestTransition(WindowContainer<?> wc, int transit) {
+        final TransitionController controller = mRootWindowContainer.mTransitionController;
+        if (controller.getTransitionPlayer() == null) {
+            registerTestTransitionPlayer();
+        }
+        controller.requestTransitionIfNeeded(transit, 0 /* flags */, null /* trigger */,
+                wc.mDisplayContent);
+    }
+
     /** Overrides the behavior of config_reverseDefaultRotation for the given display. */
     void setReverseDefaultRotation(DisplayContent dc, boolean reverse) {
         final DisplayRotation displayRotation = dc.getDisplayRotation();
@@ -1417,7 +1426,9 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             activity.setProcess(wpc);
 
             // Resume top activities to make sure all other signals in the system are connected.
-            mService.mRootWindowContainer.resumeFocusedTasksTopActivities();
+            if (mVisible) {
+                mService.mRootWindowContainer.resumeFocusedTasksTopActivities();
+            }
             return activity;
         }
     }

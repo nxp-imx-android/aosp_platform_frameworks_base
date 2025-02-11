@@ -3359,7 +3359,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
 
     private Animation loadAnimation(WindowManager.LayoutParams lp, int transit, boolean enter,
                                     boolean isVoiceInteraction) {
-        if (AppTransitionController.isTaskViewTask(this) || (isOrganized()
+        if ((isOrganized()
                 // TODO(b/161711458): Clean-up when moved to shell.
                 && getWindowingMode() != WINDOWING_MODE_FULLSCREEN
                 && getWindowingMode() != WINDOWING_MODE_FREEFORM

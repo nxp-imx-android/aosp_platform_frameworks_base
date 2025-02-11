@@ -226,7 +226,6 @@ import android.view.InsetsSource;
 import android.view.InsetsState;
 import android.view.MagnificationSpec;
 import android.view.PrivacyIndicatorBounds;
-import android.view.RemoteAnimationDefinition;
 import android.view.RoundedCorners;
 import android.view.Surface;
 import android.view.Surface.Rotation;
@@ -367,8 +366,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     private int mMaxUiWidth = 0;
 
     final AppTransition mAppTransition;
-    final AppTransitionController mAppTransitionController;
-    boolean mSkipAppTransitionAnimation = false;
 
     final ArraySet<ActivityRecord> mOpeningApps = new ArraySet<>();
     final ArraySet<ActivityRecord> mClosingApps = new ArraySet<>();
@@ -1161,7 +1158,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mAppTransition = new AppTransition(mWmService.mContext, mWmService, this);
         mAppTransition.registerListenerLocked(mWmService.mActivityManagerAppTransitionNotifier);
         mAppTransition.registerListenerLocked(mFixedRotationTransitionListener);
-        mAppTransitionController = new AppTransitionController(mWmService, this);
         mTransitionController.registerLegacyListener(mFixedRotationTransitionListener);
         mUnknownAppVisibilityController = new UnknownAppVisibilityController(mWmService, this);
         mRemoteDisplayChangeController = new RemoteDisplayChangeController(this);
@@ -1551,10 +1547,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     WindowContainer getImeParentWindow() {
         return mInputMethodSurfaceParentWindow;
-    }
-
-    void registerRemoteAnimations(RemoteAnimationDefinition definition) {
-        mAppTransitionController.registerRemoteAnimations(definition);
     }
 
     void reconfigureDisplayLocked() {
@@ -5604,20 +5596,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * Transfer app transition from other display to this display.
-     *
-     * @param from Display from where the app transition is transferred.
-     *
-     * TODO(new-app-transition): Remove this once the shell handles app transition.
-     */
-    void transferAppTransitionFrom(DisplayContent from) {
-        final boolean prepared = mAppTransition.transferFrom(from.mAppTransition);
-        if (prepared && okToAnimate()) {
-            mSkipAppTransitionAnimation = false;
-        }
-    }
-
-    /**
      * @deprecated new transition should use {@link #requestTransitionAndLegacyPrepare(int, int)}
      */
     @Deprecated
@@ -5631,10 +5609,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     @Deprecated
     void prepareAppTransition(@WindowManager.TransitionType int transit,
             @WindowManager.TransitionFlags int flags) {
-        final boolean prepared = mAppTransition.prepareAppTransition(transit, flags);
-        if (prepared && okToAnimate() && transit != TRANSIT_NONE) {
-            mSkipAppTransitionAnimation = false;
-        }
+        mAppTransition.prepareAppTransition(transit, flags);
     }
 
     /**

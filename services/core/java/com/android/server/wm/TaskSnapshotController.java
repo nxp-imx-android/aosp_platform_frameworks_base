@@ -113,27 +113,6 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
                 enableLowResSnapshots, lowResScaleFactor, use16BitFormat);
     }
 
-    // Still needed for legacy transition.(AppTransitionControllerTest)
-    void handleClosingApps(ArraySet<ActivityRecord> closingApps) {
-        if (shouldDisableSnapshots()) {
-            return;
-        }
-        // We need to take a snapshot of the task if and only if all activities of the task are
-        // either closing or hidden.
-        mTmpTasks.clear();
-        for (int i = closingApps.size() - 1; i >= 0; i--) {
-            final ActivityRecord activity = closingApps.valueAt(i);
-            if (activity.isActivityTypeHome()) continue;
-            final Task task = activity.getTask();
-            if (task == null) continue;
-
-            getClosingTasksInner(task, mTmpTasks);
-        }
-        snapshotTasks(mTmpTasks);
-        mTmpTasks.clear();
-        mSkipClosingAppSnapshotTasks.clear();
-    }
-
     /**
      * Adds the given {@param tasks} to the list of tasks which should not have their snapshots
      * taken upon the next processing of the set of closing apps. The caller is responsible for

@@ -1462,7 +1462,7 @@ public class AppTransition implements Dump {
     }
 
     boolean prepareAppTransition(@TransitionType int transit, @TransitionFlags int flags) {
-        if (mDisplayContent.mTransitionController.isShellTransitionsEnabled()) {
+        if (WindowManagerService.sEnableShellTransitions) {
             return false;
         }
         mNextAppTransitionRequests.add(transit);

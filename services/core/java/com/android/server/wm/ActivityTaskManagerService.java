@@ -4128,22 +4128,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     @Override
     public void registerRemoteAnimationsForDisplay(int displayId,
             RemoteAnimationDefinition definition) {
-        mAmInternal.enforceCallingPermission(CONTROL_REMOTE_APP_TRANSITION_ANIMATIONS,
-                "registerRemoteAnimations");
-        definition.setCallingPidUid(Binder.getCallingPid(), Binder.getCallingUid());
-        synchronized (mGlobalLock) {
-            final DisplayContent display = mRootWindowContainer.getDisplayContent(displayId);
-            if (display == null) {
-                Slog.e(TAG, "Couldn't find display with id: " + displayId);
-                return;
-            }
-            final long origId = Binder.clearCallingIdentity();
-            try {
-                display.registerRemoteAnimations(definition);
-            } finally {
-                Binder.restoreCallingIdentity(origId);
-            }
-        }
+        // TODO(b/365884835): Remove callers.
     }
 
     /** @see android.app.ActivityManager#alwaysShowUnsupportedCompileSdkWarning */
