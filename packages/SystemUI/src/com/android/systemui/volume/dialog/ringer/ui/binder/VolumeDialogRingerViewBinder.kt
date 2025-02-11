@@ -120,7 +120,7 @@ constructor(
         drawerContainer.setTransitionListener(ringerDrawerTransitionListener)
         volumeDialogBackgroundView.background = volumeDialogBackgroundView.background.mutate()
         ringerBackgroundView.background = ringerBackgroundView.background.mutate()
-        launch { dialogViewModel.addTouchableBounds(drawerContainer) }
+        launch { dialogViewModel.addTouchableBounds(ringerBackgroundView) }
 
         viewModel.ringerViewModel
             .mapLatest { ringerState ->
