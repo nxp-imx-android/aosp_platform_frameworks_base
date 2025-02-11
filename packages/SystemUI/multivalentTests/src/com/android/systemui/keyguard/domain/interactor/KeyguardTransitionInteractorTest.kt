@@ -46,6 +46,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.assertEquals
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -53,13 +54,15 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class KeyguardTransitionInteractorTest : SysuiTestCase() {
     val kosmos = testKosmos()
-    val underTest = kosmos.keyguardTransitionInteractor
-    val repository = kosmos.fakeKeyguardTransitionRepository
     val testScope = kosmos.testScope
+    val repository = kosmos.fakeKeyguardTransitionRepository
+
+    val underTest by lazy { kosmos.keyguardTransitionInteractor }
 
     @Test
     fun transitionCollectorsReceivesOnlyAppropriateEvents() =
