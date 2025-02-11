@@ -23,6 +23,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.os.UserHandle
+import android.provider.Settings
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -41,6 +42,8 @@ import com.android.systemui.shared.Flags.extendedWallpaperEffects
 import com.android.systemui.user.data.model.SelectedUserModel
 import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.UserRepository
+import com.android.systemui.util.settings.SecureSettings
+import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
 import com.android.systemui.utils.coroutines.flow.mapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -54,7 +57,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -87,6 +90,7 @@ constructor(
     private val wallpaperManager: WallpaperManager,
     private val context: Context,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
+    private val secureSettings: SecureSettings,
 ) : WallpaperRepository {
     private val wallpaperChanged: Flow<Unit> =
         broadcastDispatcher
@@ -125,7 +129,17 @@ constructor(
         }
 
     override val wallpaperSupportsAmbientMode: Flow<Boolean> =
-        flowOf(context.resources.getBoolean(R.bool.config_dozeSupportsAodWallpaper) && ambientAod())
+        secureSettings
+            .observerFlow(UserHandle.USER_ALL, Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED)
+            .onStart { emit(Unit) }
+            .map {
+                val userEnabled =
+                    secureSettings.getInt(Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED, 1) == 1
+                userEnabled &&
+                    context.resources.getBoolean(R.bool.config_dozeSupportsAodWallpaper) &&
+                    ambientAod()
+            }
+            .flowOn(bgDispatcher)
 
     override var rootView: View? = null
 

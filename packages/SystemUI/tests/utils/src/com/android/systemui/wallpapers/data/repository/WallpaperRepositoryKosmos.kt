@@ -16,9 +16,27 @@
 
 package com.android.systemui.wallpapers.data.repository
 
+import android.content.applicationContext
+import com.android.app.wallpaperManager
+import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.kosmos.testScope
+import com.android.systemui.user.data.repository.userRepository
+import com.android.systemui.util.settings.fakeSettings
 
-var Kosmos.fakeWallpaperRepository by Kosmos.Fixture { FakeWallpaperRepository() }
-
-var Kosmos.wallpaperRepository: WallpaperRepository by Kosmos.Fixture { fakeWallpaperRepository }
+val Kosmos.wallpaperRepository by Fixture {
+    WallpaperRepositoryImpl(
+        context = applicationContext,
+        scope = testScope.backgroundScope,
+        bgDispatcher = testDispatcher,
+        broadcastDispatcher = broadcastDispatcher,
+        userRepository = userRepository,
+        keyguardTransitionInteractor = keyguardTransitionInteractor,
+        wallpaperFocalAreaRepository = wallpaperFocalAreaRepository,
+        wallpaperManager = wallpaperManager,
+        secureSettings = fakeSettings,
+    )
+}

@@ -22,20 +22,23 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.UserInfo
 import android.platform.test.annotations.EnableFlags
+import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.app.wallpaperManager
 import com.android.internal.R
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R as SysUIR
 import com.android.systemui.shared.Flags as SharedFlags
+import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.SelectedUserModel
 import com.android.systemui.user.data.model.SelectionStatus
-import com.android.systemui.user.data.repository.FakeUserRepository
+import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -43,6 +46,7 @@ import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -50,42 +54,39 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class WallpaperRepositoryImplTest : SysuiTestCase() {
 
-    private val testDispatcher = StandardTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
-    private val userRepository = FakeUserRepository()
-    private val wallpaperFocalAreaRepository = FakeWallpaperFocalAreaRepository()
-    private val wallpaperManager: WallpaperManager = mock()
-    private val keyguardTransitionInteractor: KeyguardTransitionInteractor = mock()
+    private var isWallpaperSupported = true
+    private val kosmos =
+        testKosmos().apply {
+            wallpaperManager =
+                mock<WallpaperManager>() {
+                    on { isWallpaperSupported } doAnswer { isWallpaperSupported }
+                }
+        }
+    private val secureSettings = kosmos.fakeSettings
+    private val testScope = kosmos.testScope
+    private val userRepository = kosmos.fakeUserRepository
+    private val broadcastDispatcher = kosmos.broadcastDispatcher
 
-    private val underTest: WallpaperRepositoryImpl by lazy {
-        WallpaperRepositoryImpl(
-            testScope.backgroundScope,
-            testDispatcher,
-            fakeBroadcastDispatcher,
-            userRepository,
-            wallpaperFocalAreaRepository,
-            wallpaperManager,
-            context,
-            keyguardTransitionInteractor,
-        )
-    }
+    // Initialized in each test since certain flows rely on mocked data that isn't
+    // modifiable after start, like wallpaperManager.isWallpaperSupported
+    private lateinit var underTest: WallpaperRepositoryImpl
 
     lateinit var focalAreaTarget: String
 
     @Before
     fun setUp() {
-        whenever(wallpaperManager.isWallpaperSupported).thenReturn(true)
         focalAreaTarget = context.resources.getString(SysUIR.string.focal_area_target)
     }
 
     @Test
     fun wallpaperInfo_nullInfo() =
         testScope.runTest {
+            underTest = kosmos.wallpaperRepository
             val latest by collectLastValue(underTest.wallpaperInfo)
 
-            whenever(wallpaperManager.getWallpaperInfoForUser(any())).thenReturn(null)
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(any())).thenReturn(null)
 
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
                 context,
                 Intent(Intent.ACTION_WALLPAPER_CHANGED),
             )
@@ -96,11 +97,13 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
     @Test
     fun wallpaperInfo_hasInfoFromManager() =
         testScope.runTest {
+            underTest = kosmos.wallpaperRepository
             val latest by collectLastValue(underTest.wallpaperInfo)
 
-            whenever(wallpaperManager.getWallpaperInfoForUser(any())).thenReturn(UNSUPPORTED_WP)
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(any()))
+                .thenReturn(UNSUPPORTED_WP)
 
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
                 context,
                 Intent(Intent.ACTION_WALLPAPER_CHANGED),
             )
@@ -111,7 +114,8 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
     @Test
     fun wallpaperInfo_initialValueIsFetched() =
         testScope.runTest {
-            whenever(wallpaperManager.getWallpaperInfoForUser(USER_WITH_SUPPORTED_WP.id))
+            underTest = kosmos.wallpaperRepository
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(USER_WITH_SUPPORTED_WP.id))
                 .thenReturn(SUPPORTED_WP)
             userRepository.setUserInfos(listOf(USER_WITH_SUPPORTED_WP))
             userRepository.setSelectedUserInfo(USER_WITH_SUPPORTED_WP)
@@ -126,15 +130,16 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
     @Test
     fun wallpaperInfo_updatesOnUserChanged() =
         testScope.runTest {
+            underTest = kosmos.wallpaperRepository
             val latest by collectLastValue(underTest.wallpaperInfo)
 
             val user3 = UserInfo(/* id= */ 3, /* name= */ "user3", /* flags= */ 0)
             val user3Wp = mock<WallpaperInfo>()
-            whenever(wallpaperManager.getWallpaperInfoForUser(user3.id)).thenReturn(user3Wp)
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(user3.id)).thenReturn(user3Wp)
 
             val user4 = UserInfo(/* id= */ 4, /* name= */ "user4", /* flags= */ 0)
             val user4Wp = mock<WallpaperInfo>()
-            whenever(wallpaperManager.getWallpaperInfoForUser(user4.id)).thenReturn(user4Wp)
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(user4.id)).thenReturn(user4Wp)
 
             userRepository.setUserInfos(listOf(user3, user4))
 
@@ -154,15 +159,16 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
     @Test
     fun wallpaperInfo_doesNotUpdateOnUserChanging() =
         testScope.runTest {
+            underTest = kosmos.wallpaperRepository
             val latest by collectLastValue(underTest.wallpaperInfo)
 
             val user3 = UserInfo(/* id= */ 3, /* name= */ "user3", /* flags= */ 0)
             val user3Wp = mock<WallpaperInfo>()
-            whenever(wallpaperManager.getWallpaperInfoForUser(user3.id)).thenReturn(user3Wp)
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(user3.id)).thenReturn(user3Wp)
 
             val user4 = UserInfo(/* id= */ 4, /* name= */ "user4", /* flags= */ 0)
             val user4Wp = mock<WallpaperInfo>()
-            whenever(wallpaperManager.getWallpaperInfoForUser(user4.id)).thenReturn(user4Wp)
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(user4.id)).thenReturn(user4Wp)
 
             userRepository.setUserInfos(listOf(user3, user4))
 
@@ -183,17 +189,18 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
     @Test
     fun wallpaperInfo_updatesOnIntent() =
         testScope.runTest {
+            underTest = kosmos.wallpaperRepository
             val latest by collectLastValue(underTest.wallpaperInfo)
 
             val wp1 = mock<WallpaperInfo>()
-            whenever(wallpaperManager.getWallpaperInfoForUser(any())).thenReturn(wp1)
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(any())).thenReturn(wp1)
 
             assertThat(latest).isEqualTo(wp1)
 
             // WHEN the info is new and a broadcast is sent
             val wp2 = mock<WallpaperInfo>()
-            whenever(wallpaperManager.getWallpaperInfoForUser(any())).thenReturn(wp2)
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(any())).thenReturn(wp2)
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
                 context,
                 Intent(Intent.ACTION_WALLPAPER_CHANGED),
             )
@@ -205,15 +212,16 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
     @Test
     fun wallpaperInfo_wallpaperNotSupported_alwaysNull() =
         testScope.runTest {
-            whenever(wallpaperManager.isWallpaperSupported).thenReturn(false)
+            isWallpaperSupported = false
+            underTest = kosmos.wallpaperRepository
 
             val latest by collectLastValue(underTest.wallpaperInfo)
             assertThat(latest).isNull()
 
             // Even WHEN there *is* current wallpaper
             val wp1 = mock<WallpaperInfo>()
-            whenever(wallpaperManager.getWallpaperInfoForUser(any())).thenReturn(wp1)
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(any())).thenReturn(wp1)
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
                 context,
                 Intent(Intent.ACTION_WALLPAPER_CHANGED),
             )
@@ -226,6 +234,8 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
     @EnableFlags(SharedFlags.FLAG_AMBIENT_AOD)
     fun wallpaperSupportsAmbientMode_deviceDoesNotSupport_false() =
         testScope.runTest {
+            underTest = kosmos.wallpaperRepository
+            secureSettings.putInt(Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED, 1)
             context.orCreateTestableResources.addOverride(
                 R.bool.config_dozeSupportsAodWallpaper,
                 false,
@@ -239,6 +249,8 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
     @EnableFlags(SharedFlags.FLAG_AMBIENT_AOD)
     fun wallpaperSupportsAmbientMode_deviceDoesSupport_true() =
         testScope.runTest {
+            underTest = kosmos.wallpaperRepository
+            secureSettings.putInt(Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED, 1)
             context.orCreateTestableResources.addOverride(
                 R.bool.config_dozeSupportsAodWallpaper,
                 true,
@@ -249,19 +261,34 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
-    @Ignore("ag/31591766")
+    @EnableFlags(SharedFlags.FLAG_AMBIENT_AOD)
+    fun wallpaperSupportsAmbientMode_deviceDoesSupport_settingDisabled_false() =
+        testScope.runTest {
+            underTest = kosmos.wallpaperRepository
+            secureSettings.putInt(Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED, 0)
+            context.orCreateTestableResources.addOverride(
+                R.bool.config_dozeSupportsAodWallpaper,
+                true,
+            )
+
+            val latest by collectLastValue(underTest.wallpaperSupportsAmbientMode)
+            assertThat(latest).isFalse()
+        }
+
+    @Test
     @EnableFlags(SharedFlags.FLAG_EXTENDED_WALLPAPER_EFFECTS)
     fun shouldSendNotificationLayout_setExtendedEffectsWallpaper_launchSendLayoutJob() =
         testScope.runTest {
+            underTest = kosmos.wallpaperRepository
             val latest by collectLastValue(underTest.shouldSendFocalArea)
             val extedendEffectsWallpaper =
                 mock<WallpaperInfo>().apply {
                     whenever(this.component).thenReturn(ComponentName(context, focalAreaTarget))
                 }
 
-            whenever(wallpaperManager.getWallpaperInfoForUser(any()))
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(any()))
                 .thenReturn(extedendEffectsWallpaper)
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
                 context,
                 Intent(Intent.ACTION_WALLPAPER_CHANGED),
             )
@@ -275,14 +302,15 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
     @EnableFlags(SharedFlags.FLAG_EXTENDED_WALLPAPER_EFFECTS)
     fun shouldSendNotificationLayout_setNotExtendedEffectsWallpaper_cancelSendLayoutJob() =
         testScope.runTest {
+            underTest = kosmos.wallpaperRepository
             val latest by collectLastValue(underTest.shouldSendFocalArea)
             val extendedEffectsWallpaper =
                 mock<WallpaperInfo>().apply {
                     whenever(this.component).thenReturn(ComponentName("", focalAreaTarget))
                 }
-            whenever(wallpaperManager.getWallpaperInfoForUser(any()))
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(any()))
                 .thenReturn(extendedEffectsWallpaper)
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
                 context,
                 Intent(Intent.ACTION_WALLPAPER_CHANGED),
             )
@@ -290,11 +318,14 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
             assertThat(underTest.sendLockscreenLayoutJob).isNotNull()
             assertThat(underTest.sendLockscreenLayoutJob!!.isActive).isEqualTo(true)
 
-            whenever(wallpaperManager.getWallpaperInfoForUser(any())).thenReturn(UNSUPPORTED_WP)
-            fakeBroadcastDispatcher.sendIntentToMatchingReceiversOnly(
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(any()))
+                .thenReturn(UNSUPPORTED_WP)
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
                 context,
                 Intent(Intent.ACTION_WALLPAPER_CHANGED),
             )
+            runCurrent()
+
             assertThat(latest).isFalse()
             assertThat(underTest.sendLockscreenLayoutJob?.isCancelled).isEqualTo(true)
         }
