@@ -17,11 +17,14 @@
 package com.android.systemui.qs
 
 import android.content.res.Configuration
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.view.ContextThemeWrapper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.MetricsLogger
 import com.android.internal.logging.testing.UiEventLoggerFake
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.haptics.qs.QSLongPressEffect
@@ -33,6 +36,7 @@ import com.android.systemui.qs.customize.QSCustomizerController
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.ConfigurationController
+import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener
 import com.android.systemui.statusbar.policy.ResourcesSplitShadeStateController
 import com.android.systemui.util.leak.RotationUtils
 import javax.inject.Provider
@@ -63,6 +67,7 @@ class QuickQSPanelControllerTest : SysuiTestCase() {
     @Mock private lateinit var tile: QSTile
     @Mock private lateinit var tileLayout: TileLayout
     @Captor private lateinit var captor: ArgumentCaptor<QSPanel.OnConfigurationChangedListener>
+    @Captor private lateinit var configCaptor: ArgumentCaptor<ConfigurationListener>
     @Mock private lateinit var longPressEffectProvider: Provider<QSLongPressEffect>
     @Mock private lateinit var mediaCarouselInteractor: MediaCarouselInteractor
     @Mock private lateinit var configurationController: ConfigurationController
@@ -135,7 +140,8 @@ class QuickQSPanelControllerTest : SysuiTestCase() {
     }
 
     @Test
-    fun mediaExpansion_afterConfigChange_inLandscape_collapsedInLandscapeTrue_updatesToCollapsed() {
+    @DisableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun mediaExpansion_afterConfigChange_inLandscape_collapsedInLandscapeTrue_updatesToCollapsed_old() {
         verify(quickQSPanel).addOnConfigurationChangedListener(captor.capture())
 
         // verify that media starts in the expanded state by default
@@ -150,13 +156,43 @@ class QuickQSPanelControllerTest : SysuiTestCase() {
     }
 
     @Test
-    fun mediaExpansion_afterConfigChange_landscape_collapsedInLandscapeFalse_remainsExpanded() {
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun mediaExpansion_afterConfigChange_inLandscape_collapsedInLandscapeTrue_updatesToCollapsed() {
+        verify(configurationController).addCallback(configCaptor.capture())
+
+        // verify that media starts in the expanded state by default
+        verify(mediaHost).expansion = MediaHostState.EXPANDED
+
+        // Rotate device, verify media size updated to collapsed
+        usingCollapsedLandscapeMedia = true
+        controller.setRotation(RotationUtils.ROTATION_LANDSCAPE)
+        configCaptor.allValues.forEach { it.onConfigChanged(Configuration.EMPTY) }
+
+        verify(mediaHost).expansion = MediaHostState.COLLAPSED
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun mediaExpansion_afterConfigChange_landscape_collapsedInLandscapeFalse_remainsExpanded_old() {
         verify(quickQSPanel).addOnConfigurationChangedListener(captor.capture())
         reset(mediaHost)
 
         usingCollapsedLandscapeMedia = false
         controller.setRotation(RotationUtils.ROTATION_LANDSCAPE)
         captor.allValues.forEach { it.onConfigurationChange(Configuration.EMPTY) }
+
+        verify(mediaHost).expansion = MediaHostState.EXPANDED
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun mediaExpansion_afterConfigChange_landscape_collapsedInLandscapeFalse_remainsExpanded() {
+        verify(configurationController).addCallback(configCaptor.capture())
+        reset(mediaHost)
+
+        usingCollapsedLandscapeMedia = false
+        controller.setRotation(RotationUtils.ROTATION_LANDSCAPE)
+        configCaptor.allValues.forEach { it.onConfigChanged(Configuration.EMPTY) }
 
         verify(mediaHost).expansion = MediaHostState.EXPANDED
     }
