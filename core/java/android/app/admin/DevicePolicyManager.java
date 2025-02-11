@@ -17644,9 +17644,17 @@ public class DevicePolicyManager {
             android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS
     })
     public boolean isFinancedDevice() {
-        return isDeviceManaged()
-                && getDeviceOwnerType(getDeviceOwnerComponentOnAnyUser())
-                == DEVICE_OWNER_TYPE_FINANCED;
+        try {
+            return isDeviceManaged()
+                    && getDeviceOwnerType(getDeviceOwnerComponentOnAnyUser())
+                    == DEVICE_OWNER_TYPE_FINANCED;
+        } catch (IllegalStateException e) {
+            // getDeviceOwnerType() will throw IllegalStateException if the device does not have a
+            // DO. This can happen under a race condition when the DO is removed after
+            // isDeviceManaged() (so it still returns true) but before getDeviceOwnerType().
+            // In this case, the device should not be considered a financed device.
+            return false;
+        }
     }
 
     // TODO(b/315298076): revert ag/25574027 and update the doc
