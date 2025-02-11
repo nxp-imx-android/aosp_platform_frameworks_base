@@ -32,7 +32,6 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
@@ -64,12 +63,10 @@ public class MediaRouteControllerDialog extends AlertDialog {
     private int[] mMediaRouteOnState = { R.attr.state_activated, R.attr.state_enabled };
     private Drawable mCurrentIconDrawable;
 
-    private boolean mVolumeControlEnabled = true;
     private LinearLayout mVolumeLayout;
     private SeekBar mVolumeSlider;
     private boolean mVolumeSliderTouched;
 
-    private View mControlView;
     private boolean mAttachedToWindow;
 
     public MediaRouteControllerDialog(Context context, int theme) {
@@ -78,33 +75,6 @@ public class MediaRouteControllerDialog extends AlertDialog {
         mRouter = (MediaRouter) context.getSystemService(Context.MEDIA_ROUTER_SERVICE);
         mCallback = new MediaRouterCallback();
         mRoute = mRouter.getSelectedRoute();
-    }
-
-    /**
-     * Gets the route that this dialog is controlling.
-     */
-    public MediaRouter.RouteInfo getRoute() {
-        return mRoute;
-    }
-
-    /**
-     * Provides the subclass an opportunity to create a view that will
-     * be included within the body of the dialog to offer additional media controls
-     * for the currently playing content.
-     *
-     * @param savedInstanceState The dialog's saved instance state.
-     * @return The media control view, or null if none.
-     */
-    public View onCreateMediaControlView(Bundle savedInstanceState) {
-        return null;
-    }
-
-    /**
-     * Returns whether to enable the volume slider and volume control using the volume keys
-     * when the route supports it.
-     */
-    public boolean isVolumeControlEnabled() {
-        return mVolumeControlEnabled;
     }
 
     @Override
@@ -169,17 +139,7 @@ public class MediaRouteControllerDialog extends AlertDialog {
         });
 
         mMediaRouteButtonDrawable = obtainMediaRouteButtonDrawable();
-        if (update()) {
-            mControlView = onCreateMediaControlView(savedInstanceState);
-            FrameLayout controlFrame =
-                    customView.findViewById(R.id.media_route_control_frame);
-            if (mControlView != null) {
-                controlFrame.addView(mControlView);
-                controlFrame.setVisibility(View.VISIBLE);
-            } else {
-                controlFrame.setVisibility(View.GONE);
-            }
-        }
+        update();
     }
 
     @Override
@@ -218,10 +178,9 @@ public class MediaRouteControllerDialog extends AlertDialog {
         return super.onKeyUp(keyCode, event);
     }
 
-    private boolean update() {
+    private void update() {
         if (!mRoute.isSelected() || mRoute.isDefault()) {
             dismiss();
-            return false;
         }
 
         setTitle(mRoute.getName());
@@ -244,7 +203,6 @@ public class MediaRouteControllerDialog extends AlertDialog {
             }
             setIcon(icon);
         }
-        return true;
     }
 
     private Drawable obtainMediaRouteButtonDrawable() {
@@ -287,8 +245,7 @@ public class MediaRouteControllerDialog extends AlertDialog {
     }
 
     private boolean isVolumeControlAvailable() {
-        return mVolumeControlEnabled && mRoute.getVolumeHandling() ==
-                MediaRouter.RouteInfo.PLAYBACK_VOLUME_VARIABLE;
+        return mRoute.getVolumeHandling() == MediaRouter.RouteInfo.PLAYBACK_VOLUME_VARIABLE;
     }
 
     private final class MediaRouterCallback extends MediaRouter.SimpleCallback {
