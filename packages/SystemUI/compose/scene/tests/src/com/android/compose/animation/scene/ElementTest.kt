@@ -247,7 +247,7 @@ class ElementTest {
                 rule.runOnUiThread {
                     // We snap to scene B so that the transition A => B is removed from the list of
                     // transitions.
-                    state.snapToScene(SceneB)
+                    state.snapTo(SceneB)
                     state.setTargetScene(SceneC, coroutineScope)
                 }
             }
