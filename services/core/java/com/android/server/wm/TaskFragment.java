@@ -2779,9 +2779,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         }
 
         // If this TaskFragment is closing while resizing, crop to the starting bounds instead.
-        final Rect bounds = isClosingWhenResizing()
-                ? mDisplayContent.mClosingChangingContainers.get(this)
-                : getBounds();
+        final Rect bounds = getBounds();
         final int width = bounds.width();
         final int height = bounds.height();
         if (!forceUpdate && width == mLastSurfaceSize.x && height == mLastSurfaceSize.y) {

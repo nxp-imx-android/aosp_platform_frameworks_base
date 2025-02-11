@@ -159,7 +159,6 @@ import static com.android.server.wm.ActivityRecordProto.FRONT_OF_TASK;
 import static com.android.server.wm.ActivityRecordProto.IN_SIZE_COMPAT_MODE;
 import static com.android.server.wm.ActivityRecordProto.IS_ANIMATING;
 import static com.android.server.wm.ActivityRecordProto.IS_USER_FULLSCREEN_OVERRIDE_ENABLED;
-import static com.android.server.wm.ActivityRecordProto.IS_WAITING_FOR_TRANSITION_START;
 import static com.android.server.wm.ActivityRecordProto.LAST_ALL_DRAWN;
 import static com.android.server.wm.ActivityRecordProto.LAST_DROP_INPUT_MODE;
 import static com.android.server.wm.ActivityRecordProto.LAST_SURFACE_SHOWING;
@@ -330,7 +329,6 @@ import android.view.RemoteAnimationDefinition;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
 import android.view.WindowInsets;
-import android.view.WindowInsets.Type;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.WindowManager.TransitionOldType;
@@ -1519,17 +1517,7 @@ final class ActivityRecord extends WindowToken {
         this.task = newTask;
 
         if (shouldStartChangeTransition(newParent, oldParent)) {
-            if (mTransitionController.isShellTransitionsEnabled()) {
-                // For Shell transition, call #initializeChangeTransition directly to take the
-                // screenshot at the Activity level. And Shell will be in charge of handling the
-                // surface reparent and crop.
-                initializeChangeTransition(getBounds());
-            } else {
-                // For legacy app transition, we want to take a screenshot of the Activity surface,
-                // but animate the change transition on TaskFragment level to get the correct window
-                // crop.
-                newParent.initializeChangeTransition(getBounds(), getSurfaceControl());
-            }
+            mTransitionController.collectVisibleChange(this);
         }
 
         super.onParentChanged(newParent, oldParent);
@@ -1557,16 +1545,6 @@ final class ActivityRecord extends WindowToken {
             mLastReportedPictureInPictureMode = inPinnedWindowingMode();
         }
 
-        // When the associated task is {@code null}, the {@link ActivityRecord} can no longer
-        // access visual elements like the {@link DisplayContent}. We must remove any associations
-        // such as animations.
-        if (task == null) {
-            // It is possible we have been marked as a closing app earlier. We must remove ourselves
-            // from this list so we do not participate in any future animations.
-            if (getDisplayContent() != null) {
-                getDisplayContent().mClosingApps.remove(this);
-            }
-        }
         final Task rootTask = getRootTask();
         if (task == mLastParentBeforePip && task != null) {
             // Notify the TaskFragmentOrganizer that the activity is reparented back from pip.
@@ -1749,14 +1727,6 @@ final class ActivityRecord extends WindowToken {
             return;
         }
         prevDc.onRunningActivityChanged();
-
-        if (prevDc.mOpeningApps.remove(this)) {
-            // Transfer opening transition to new display.
-            mDisplayContent.mOpeningApps.add(this);
-            mDisplayContent.executeAppTransition();
-        }
-
-        prevDc.mClosingApps.remove(this);
         prevDc.getDisplayPolicy().removeRelaunchingApp(this);
 
         if (prevDc.mFocusedApp == this) {
@@ -4392,7 +4362,6 @@ final class ActivityRecord extends WindowToken {
 
         ProtoLog.v(WM_DEBUG_APP_TRANSITIONS, "Removing app token: %s", this);
 
-        getDisplayContent().mOpeningApps.remove(this);
         getDisplayContent().mUnknownAppVisibilityController.appRemovedOrHidden(this);
         mWmService.mSnapshotController.onAppRemoved(this);
         mAtmService.mStartingProcessActivities.remove(this);
@@ -4404,20 +4373,9 @@ final class ActivityRecord extends WindowToken {
         mAppCompatController.getTransparentPolicy().stop();
 
         // Defer removal of this activity when either a child is animating, or app transition is on
-        // going. App transition animation might be applied on the parent task not on the activity,
-        // but the actual frame buffer is associated with the activity, so we have to keep the
-        // activity while a parent is animating.
-        boolean delayed = isAnimating(TRANSITION | PARENTS | CHILDREN,
-                ANIMATION_TYPE_APP_TRANSITION | ANIMATION_TYPE_WINDOW_ANIMATION);
-        if (getDisplayContent().mClosingApps.contains(this)) {
-            delayed = true;
-        } else if (getDisplayContent().mAppTransition.isTransitionSet()) {
-            getDisplayContent().mClosingApps.add(this);
-            delayed = true;
-        } else if (mTransitionController.inTransition()) {
-            delayed = true;
-        }
-
+        // going. The handleCompleteDeferredRemoval will continue the removal.
+        final boolean delayed = isAnimating(CHILDREN, ANIMATION_TYPE_WINDOW_ANIMATION)
+                || mTransitionController.inTransition();
         // Don't commit visibility if it is waiting to animate. It will be set post animation.
         if (!delayed) {
             commitVisibility(false /* visible */, true /* performLayout */);
@@ -5552,9 +5510,6 @@ final class ActivityRecord extends WindowToken {
 
         mAtmService.mBackNavigationController.onAppVisibilityChanged(this, visible);
 
-        final DisplayContent displayContent = getDisplayContent();
-        displayContent.mOpeningApps.remove(this);
-        displayContent.mClosingApps.remove(this);
         setVisibleRequested(visible);
         mLastDeferHidingClient = deferHidingClient;
 
@@ -5567,13 +5522,6 @@ final class ActivityRecord extends WindowToken {
                 setClientVisible(false);
             }
         } else {
-            if (!appTransition.isTransitionSet()
-                    && appTransition.isReady()) {
-                // Add the app mOpeningApps if transition is unset but ready. This means
-                // we're doing a screen freeze, and the unfreeze will wait for all opening
-                // apps to be ready.
-                displayContent.mOpeningApps.add(this);
-            }
             startingMoved = false;
             // If the token is currently hidden (should be the common case), or has been
             // stopped, then we need to set up to wait for its windows to be ready.
@@ -6775,7 +6723,7 @@ final class ActivityRecord extends WindowToken {
         setAppLayoutChanges(FINISH_LAYOUT_REDO_ANIM, "checkAppWindowsReadyToShow");
 
         // We can now show all of the drawn windows!
-        if (!getDisplayContent().mOpeningApps.contains(this) && canShowWindows()) {
+        if (canShowWindows()) {
             showAllWindowsLocked();
         }
     }
@@ -7447,15 +7395,6 @@ final class ActivityRecord extends WindowToken {
         final SurfaceControl boundsLayer = builder.build();
         t.show(boundsLayer);
         return boundsLayer;
-    }
-
-    @Override
-    boolean isWaitingForTransitionStart() {
-        final DisplayContent dc = getDisplayContent();
-        return dc != null && dc.mAppTransition.isTransitionSet()
-                && (dc.mOpeningApps.contains(this)
-                || dc.mClosingApps.contains(this)
-                || dc.mChangingContainers.contains(this));
     }
 
     boolean isTransitionForward() {
@@ -9557,7 +9496,6 @@ final class ActivityRecord extends WindowToken {
         writeNameToProto(proto, NAME);
         super.dumpDebug(proto, WINDOW_TOKEN, logLevel);
         proto.write(LAST_SURFACE_SHOWING, mLastSurfaceShowing);
-        proto.write(IS_WAITING_FOR_TRANSITION_START, isWaitingForTransitionStart());
         proto.write(IS_ANIMATING, isAnimating(TRANSITION | PARENTS | CHILDREN,
                 ANIMATION_TYPE_APP_TRANSITION | ANIMATION_TYPE_WINDOW_ANIMATION));
         proto.write(FILLS_PARENT, fillsParent());

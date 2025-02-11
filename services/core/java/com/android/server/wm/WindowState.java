@@ -3272,13 +3272,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 mDestroying = false;
                 destroyedSomething = true;
             }
-
-            // Since mDestroying will affect ActivityRecord#allDrawn, we need to perform another
-            // traversal in case we are waiting on this window to start the transition.
-            if (getDisplayContent().mAppTransition.isTransitionSet()
-                    && getDisplayContent().mOpeningApps.contains(mActivityRecord)) {
-                mWmService.mWindowPlacerLocked.requestTraversal();
-            }
         }
 
         return destroyedSomething;
