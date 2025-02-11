@@ -21,7 +21,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.ui.data.repository.configurationRepository
-import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.testCase
@@ -89,7 +88,6 @@ class QSColumnsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
     fun mediaLocationNull_dualShade_alwaysDualShadeColumns() =
         with(kosmos) {
             testScope.runTest {
@@ -113,7 +111,6 @@ class QSColumnsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
     fun mediaLocationQS_dualShade_alwaysDualShadeColumns() =
         with(kosmos) {
             testScope.runTest {
@@ -136,7 +133,6 @@ class QSColumnsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
     fun mediaLocationQQS_dualShade_alwaysDualShadeColumns() =
         with(kosmos) {
             testScope.runTest {
