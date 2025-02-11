@@ -391,7 +391,7 @@ public class FooterView extends StackScrollerDecorView {
         if (!notificationFooterBackgroundTintOptimization()) {
             if (notificationShadeBlur()) {
                 Color backgroundColor = Color.valueOf(
-                        SurfaceEffectColors.surfaceEffect0(getResources()));
+                        SurfaceEffectColors.surfaceEffect1(getResources()));
                 scHigh = ColorUtils.setAlphaComponent(backgroundColor.toArgb(), 0xFF);
                 // Apply alpha on background drawables.
                 int backgroundAlpha = (int) (backgroundColor.alpha() * 0xFF);
