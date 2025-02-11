@@ -2089,7 +2089,13 @@
     <string name="notification_inline_dismiss">Dismiss</string>
 
     <!-- [CHAR LIMIT=30] Text shown in button used to prevent app from showing Live Updates, for this notification and all future ones -->
-    <string name="notification_inline_disable_promotion">Don\'t show again</string>
+    <string name="notification_inline_disable_promotion">Don\'t show as pinned</string>
+
+    <!-- Text accompanying the "Show live updates" switch explaining the purpose of the setting -->
+    <string name="live_notifications_title">Showing Live Updates</string>
+
+    <!-- Text accompanying the "Show live updates" switch explaining the purpose of the setting -->
+    <string name="live_notifications_desc">Pinned notifications display live info from apps, and always appear on the status bar and lock screen</string>
 
     <!-- Notification: Control panel: Label that displays when the app's notifications cannot be blocked. -->
     <string name="notification_unblockable_desc">These notifications can\'t be modified.</string>
