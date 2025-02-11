@@ -151,7 +151,9 @@ public enum ScrimState {
         @Override
         public void prepare(ScrimState previousState) {
             if (Flags.bouncerUiRevamp()) {
-                if (previousState == SHADE_LOCKED) {
+                // Add unlocked here because scrim state is unlocked when there is an app on top of
+                // the lockscreen and shade is pulled over it.
+                if (previousState == SHADE_LOCKED || previousState == UNLOCKED) {
                     mBehindAlpha = previousState.getBehindAlpha();
                     mNotifAlpha = previousState.getNotifAlpha();
                 } else {
@@ -195,6 +197,15 @@ public enum ScrimState {
                 mNotifAlpha = Color.alpha(mNotifTint) / 255.0f;
                 mFrontAlpha = 0.0f;
             } else {
+                if (Flags.bouncerUiRevamp()) {
+                    // This is only required until shade blur flag is fully enabled, shade is always
+                    // opaque when shade blur is not enabled, and mClipQsScrim is always false.
+                    mBehindAlpha = 1f;
+                    mNotifAlpha = 1f;
+                    mFrontAlpha = 0f;
+                    mBehindTint = mBackgroundColor;
+                    return;
+                }
                 mBehindAlpha = mClipQsScrim ? 1 : mDefaultScrimAlpha;
                 mNotifAlpha = 1f;
                 mFrontAlpha = 0f;
