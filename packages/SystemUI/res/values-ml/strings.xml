@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"സംഭാഷണ അറിയിപ്പുകളുടെ മുകളിലും സ്ക്രീൻ ലോക്കായിരിക്കുമ്പോൾ ഒരു പ്രൊഫൈൽ ചിത്രമായും ബബിൾ രൂപത്തിൽ ദൃശ്യമാകുന്നു, ശല്യപ്പെടുത്തരുത് മോഡ് തടസ്സപ്പെടുത്തുന്നു"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"മുൻഗണന"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"സംഭാഷണ ഫീച്ചറുകളെ <xliff:g id="APP_NAME">%1$s</xliff:g> പിന്തുണയ്‌ക്കുന്നില്ല"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ഫീഡ്ബാക്ക്"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ഡിസ്‌മിസ് ചെയ്യുക"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"വീണ്ടും കാണിക്കരുത്"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ഈ അറിയിപ്പുകൾ പരിഷ്ക്കരിക്കാനാവില്ല."</string>
@@ -1395,6 +1394,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"ഫോൾഡ് ചെയ്യാവുന്ന ഉപകരണം അൺഫോൾഡ് ആകുന്നു"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"ഫോൾഡ് ചെയ്യാവുന്ന ഉപകരണം, കറങ്ങുന്ന വിധത്തിൽ ഫ്ലിപ്പ് ആകുന്നു"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"ഫ്രണ്ട് സ്ക്രീൻ ഓണാക്കി"</string>
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"ഉള്ളിലുള്ള സ്‌ക്രീൻ ഉപയോഗിക്കുന്നതിന് സ്ലൈഡുചെയ്യുക"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"ഫോൾഡ് ചെയ്തത്"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"അൺഫോൾഡ് ചെയ്തത്"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>

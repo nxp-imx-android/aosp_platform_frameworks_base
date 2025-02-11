@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"แสดงที่ด้านบนของการแจ้งเตือนการสนทนาและเป็นรูปโปรไฟล์บนหน้าจอล็อก ปรากฏเป็นบับเบิล แสดงในโหมดห้ามรบกวน"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"สำคัญ"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ไม่รองรับฟีเจอร์การสนทนา"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ความคิดเห็น"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ปิด"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"ไม่ต้องแสดงอีก"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"แก้ไขการแจ้งเตือนเหล่านี้ไม่ได้"</string>
@@ -1395,6 +1394,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"อุปกรณ์ที่พับได้กำลังกางออก"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"อุปกรณ์ที่พับได้กำลังพลิกไปมา"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"เปิดหน้าจอด้านหน้าแล้ว"</string>
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"เลื่อนเพื่อใช้หน้าจอด้านใน"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"พับ"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"กางออก"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>

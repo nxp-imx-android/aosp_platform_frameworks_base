@@ -250,10 +250,8 @@
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"બૅટરીની ટકાવારી અજાણ છે."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> થી કનેક્ટ થયાં."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> થી કનેક્ટ કરેલ."</string>
-    <!-- no translation found for accessibility_expand_group (521237935987978624) -->
-    <skip />
-    <!-- no translation found for accessibility_open_application (1749126077501259712) -->
-    <skip />
+    <string name="accessibility_expand_group" msgid="521237935987978624">"ગ્રૂપને મોટું કરો."</string>
+    <string name="accessibility_open_application" msgid="1749126077501259712">"ઍપ્લિકેશન ખોલો."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"કનેક્ટ થયેલું નથી."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"રોમિંગ"</string>
     <string name="cell_data_off" msgid="4886198950247099526">"બંધ કરો"</string>
@@ -543,8 +541,7 @@
     <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"હબ મોડ શોધખોળ કરો"</string>
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"ચાર્જ કરતી વખતે તમારા મનપસંદ વિજેટ અને સ્ક્રીન સેવર ઍક્સેસ કરો."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"ચાલો પ્રારંભ કરીએ"</string>
-    <!-- no translation found for glanceable_hub_to_dream_button_tooltip (9018287673822335829) -->
-    <skip />
+    <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"ચાર્જ વખતે તમારું મનપસંદ સ્ક્રીનસેવર બતાવો"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"વપરાશકર્તા સ્વિચ કરો"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"પુલડાઉન મેનૂ"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"આ સત્રમાંની તમામ ઍપ અને ડેટા કાઢી નાખવામાં આવશે."</string>
@@ -807,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"વાતચીતના નોટિફિકેશન વિભાગની ટોચ પર અને લૉક કરેલી સ્ક્રીન પર પ્રોફાઇલ ફોટો તરીકે બતાવે છે, બબલ તરીકે દેખાય છે, ખલેલ પાડશો નહીં મોડમાં વિક્ષેપ ઊભો કરે છે"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"પ્રાધાન્યતા"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> વાતચીતની સુવિધાઓને સપોર્ટ આપતી નથી"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"પ્રતિસાદ"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"છોડી દો"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"ફરી બતાવશો નહીં"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"આ નોટિફિકેશનમાં કોઈ ફેરફાર થઈ શકશે નહીં."</string>
@@ -914,7 +910,7 @@
     <string name="keyboard_shortcut_group_applications" msgid="7386239431100651266">"ઍપ્લિકેશનો"</string>
     <string name="keyboard_shortcut_group_applications_assist" msgid="6772492350416591448">"Assistant"</string>
     <string name="keyboard_shortcut_group_applications_browser" msgid="2776211137869809251">"બ્રાઉઝર"</string>
-    <string name="keyboard_shortcut_group_applications_contacts" msgid="2807268086386201060">"Contacts"</string>
+    <string name="keyboard_shortcut_group_applications_contacts" msgid="2807268086386201060">"સંપર્કો"</string>
     <string name="keyboard_shortcut_group_applications_email" msgid="7852376788894975192">"ઇમેઇલ"</string>
     <string name="keyboard_shortcut_group_applications_sms" msgid="6912633831752843566">"SMS"</string>
     <string name="keyboard_shortcut_group_applications_music" msgid="9032078456666204025">"મ્યુઝિક"</string>
@@ -1308,8 +1304,7 @@
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"ખોલવા માટે ફિંગરપ્રિન્ટનો ઉપયોગ કરો"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"પ્રમાણીકરણ આવશ્યક છે. પ્રમાણિત કરવા માટે ફિંગરપ્રિન્ટ સેન્સરને ટચ કરો."</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"ચાલુ કૉલ"</string>
-    <!-- no translation found for ongoing_notification_extra_content_description (2098752668861351265) -->
-    <skip />
+    <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"ચાલી રહેલી પ્રવૃત્તિ"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"મોબાઇલ ડેટા"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"કનેક્ટ કરેલું"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"હંગામી રીતે કનેક્ટ કર્યું"</string>
@@ -1399,6 +1394,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"ફોલ્ડ કરી શકાય એવું ડિવાઇસ અનફોલ્ડ કરવામાં આવી રહ્યું છે"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"ફોલ્ડ કરી શકાય એવું ડિવાઇસ ફ્લિપ કરવામાં આવી રહ્યું છે"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"ફ્રન્ટ સ્ક્રીનની સુવિધા ચાલુ કરેલી છે"</string>
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"અંદરની સ્ક્રીનનો ઉપયોગ કરવા માટે સ્લાઇડ કરો"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"ફોલ્ડ કરેલું"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"અનફોલ્ડ કરેલું"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>

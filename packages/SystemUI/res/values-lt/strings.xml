@@ -142,7 +142,7 @@
     <string name="share_to_app_stop_dialog_title_generic" msgid="9079161538135843648">"Nebebendrinti?"</string>
     <string name="share_to_app_stop_dialog_message_entire_screen_with_host_app" msgid="522823522115375414">"Šiuo metu bendrinate visą ekraną su šia programa: <xliff:g id="HOST_APP_NAME">%1$s</xliff:g>"</string>
     <string name="share_to_app_stop_dialog_message_entire_screen" msgid="5090115386271179270">"Šiuo metu bendrinate visą ekraną su programa"</string>
-    <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"Šiuo metu bendrinate šią programą: <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>"</string>
+    <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"Šiuo metu bendrinate programą „<xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>“"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"Šiuo metu bendrinate programą"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"Šiuo metu bendrinate su programa"</string>
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"Nebebendrinti"</string>
@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Rodoma pokalbių pranešimų viršuje ir kaip profilio nuotrauka užrakinimo ekrane, burbule, pertraukia netrukdymo režimą"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Prioritetiniai"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"Programa „<xliff:g id="APP_NAME">%1$s</xliff:g>“ nepalaiko pokalbių funkcijų"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Atsiliepimai"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Uždaryti"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Neberodyti"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Šių pranešimų keisti negalima."</string>
@@ -1323,7 +1322,7 @@
     <string name="see_all_networks" msgid="3773666844913168122">"Žiūrėti viską"</string>
     <string name="to_switch_networks_disconnect_ethernet" msgid="6698111101156951955">"Norėdami perjungti tinklus, atjunkite eternetą"</string>
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Kad pagerintų įrenginio funkcijas, programos ir paslaugos vis tiek gali bet kada nuskaityti ieškodamos „Wi‑Fi“ tinklų, net jei „Wi‑Fi“ išjungtas. Tai galite pakeisti „Wi-Fi“ nuskaitymo nustatymuose. "<annotation id="link">"Pakeisti"</annotation></string>
-    <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Išjungti lėktuvo režimą"</string>
+    <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Išj. lėk. rež."</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"„<xliff:g id="APPNAME">%1$s</xliff:g>“ nori prie sparčiųjų nustatymų pridėti toliau pateiktą išklotinės elementą"</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Pridėti išklotinės elementą"</string>
     <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"Nepridėti išklotinės elemento"</string>
@@ -1395,6 +1394,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Lankstomasis įrenginys išlankstomas"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Lankstomasis įrenginys apverčiamas"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Priekinis ekranas įjungtas"</string>
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Slinkite, kad naudotumėte vidinį ekraną"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"sulenkta"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"nesulenkta"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>
@@ -1486,7 +1486,7 @@
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Naršykite naudodamiesi klaviatūra"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2880339951512757918">"Sužinokite apie sparčiuosius klavišus"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Naršykite naudodamiesi jutikline dalimi"</string>
-    <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"Sužinokite jutiklinės dalies gestus"</string>
+    <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"Peržvelkite jutiklinės dalies gestus"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"Naršykite naudodamiesi klaviatūra ir jutikline dalimi"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="1780725168171929365">"Sužinokite jutiklinės dalies gestus, sparčiuosius klavišus ir kt."</string>
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Grįžti"</string>

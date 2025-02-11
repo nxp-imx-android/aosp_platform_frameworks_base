@@ -123,7 +123,7 @@
     <string name="screenrecord_mic_label" msgid="2111264835791332350">"మైక్రోఫోన్"</string>
     <string name="screenrecord_device_audio_and_mic_label" msgid="1831323771978646841">"పరికరం ఆడియో, మైక్రోఫోన్"</string>
     <string name="screenrecord_continue" msgid="4055347133700593164">"ప్రారంభించండి"</string>
-    <string name="screenrecord_ongoing_screen_only" msgid="4459670242451527727">"స్క్రీన్ రికార్డింగ్ చేయబడుతోంది"</string>
+    <string name="screenrecord_ongoing_screen_only" msgid="4459670242451527727">"స్క్రీన్ రికార్డింగ్ అవుతోంది"</string>
     <string name="screenrecord_ongoing_screen_and_audio" msgid="5351133763125180920">"స్క్రీన్, ఆడియో రికార్డింగ్ చేయబడుతున్నాయి"</string>
     <string name="screenrecord_taps_label" msgid="1595690528298857649">"స్క్రీన్‌పై తాకే స్థానాలను చూపండి"</string>
     <string name="screenrecord_stop_label" msgid="72699670052087989">"ఆపివేయండి"</string>
@@ -562,7 +562,7 @@
     <string name="media_projection_sys_service_dialog_title" msgid="3751133258891897878">"రికార్డ్ చేయడం లేదా ప్రసారం చేయడం ప్రారంభించాలా?"</string>
     <string name="media_projection_sys_service_dialog_warning" msgid="2443872865267330320">"రికార్డ్ చేస్తున్నప్పుడు లేదా ప్రసారం చేస్తున్నప్పుడు మీ స్క్రీన్‌పై చూపబడిన లేదా మీ పరికరం నుండి ప్లే చేయబడిన సమాచారం మొత్తాన్ని, ఈ ఫంక్షన్‌ను అందిస్తున్న సర్వీస్ యాక్సెస్ చేయగలదు. ఈ సమాచారంలో, పాస్‌వర్డ్‌లు, పేమెంట్ వివరాలు, ఫోటోలు, మెసేజ్‌లు, మీరు ప్లే చేసే ఆడియో వంటివి ఉంటాయి."</string>
     <string name="screen_share_generic_app_selector_title" msgid="8331515850599218288">"యాప్‌ను షేర్ చేయండి లేదా రికార్డ్ చేయండి"</string>
-    <string name="media_projection_entry_app_permission_dialog_title" msgid="4613857256721708062">"మీ స్క్రీన్‌ను <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>‌తో షేర్ చేయండి?"</string>
+    <string name="media_projection_entry_app_permission_dialog_title" msgid="4613857256721708062">"మీ స్క్రీన్‌ను <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>‌కు షేర్ చేయాలా?"</string>
     <string name="screen_share_permission_dialog_option_single_app" msgid="2974054871681567314">"ఒక యాప్‌ను షేర్ చేయండి"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"సంభాషణ నోటిఫికేషన్‌ల ఎగువున, లాక్ స్క్రీన్‌లో ప్రొఫైల్ ఫోటో‌గా చూపిస్తుంది, బబుల్‌గా కనిపిస్తుంది, \'అంతరాయం కలిగించవద్దు\'ను అంతరాయం కలిగిస్తుంది"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"ప్రాధాన్యత"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> సంభాషణ ఫీచర్‌లను సపోర్ట్ చేయదు"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ఫీడ్‌బ్యాక్"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"విస్మరించండి"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"మళ్లీ చూపవద్దు"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ఈ నోటిఫికేషన్‌లను ఎడిట్ చేయడం వీలుపడదు."</string>
@@ -1395,6 +1394,8 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"మడవగల పరికరం విప్పబడుతోంది"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"మడవగల పరికరం చుట్టూ తిప్పబడుతోంది"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"ముందు వైపు స్క్రీన్ ఆన్ అయింది"</string>
+    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
+    <skip />
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"మడిచే సదుపాయం గల పరికరం"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"మడిచే సదుపాయం లేని పరికరం"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>

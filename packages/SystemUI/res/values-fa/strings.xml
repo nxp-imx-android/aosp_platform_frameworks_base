@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"در بالای اعلان‌های مکالمه و به‌صورت عکس نمایه در صفحه قفل نشان داده می‌شود، به‌صورت حبابک ظاهر می‌شود، در حالت «مزاحم نشوید» وقفه ایجاد می‌کند"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"اولویت"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> از ویژگی‌های مکالمه پشتیبانی نمی‌کند"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"بازخورد"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"بستن"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"دیگر نشان داده نشود"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"این اعلان‌ها قابل اصلاح نیستند."</string>
@@ -921,7 +920,7 @@
     <string name="group_accessibility_toggle_bounce_keys" msgid="4183584952493519179">"تغییر وضعیت کلیدهای ضدتکرار"</string>
     <string name="group_accessibility_toggle_mouse_keys" msgid="534757719357514361">"تغییر وضعیت کلیدهای موشواره"</string>
     <string name="group_accessibility_toggle_sticky_keys" msgid="7722214637652104184">"تغییر وضعیت کلیدهای چسبان"</string>
-    <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"تغییر وضعیت کلیدهای آهسته"</string>
+    <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"تغییر وضعیت کلیدهای تأخیری"</string>
     <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"تغییر وضعیت «دسترسی صوتی»"</string>
     <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"‏روشن/خاموش کردن TalkBack"</string>
     <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"روشن/خاموش کردن درشت‌نمایی"</string>
@@ -1320,7 +1319,7 @@
     <string name="wifi_empty_list_wifi_on" msgid="3864376632067585377">"درحال جستجوی شبکه…"</string>
     <string name="wifi_failed_connect_message" msgid="4161863112079000071">"اتصال به شبکه برقرار نشد"</string>
     <string name="wifi_wont_autoconnect_for_now" msgid="5782282612749867762">"‏فعلاً Wi-Fi به‌طور خودکار متصل نمی‌شود"</string>
-    <string name="see_all_networks" msgid="3773666844913168122">"مشاهده همه"</string>
+    <string name="see_all_networks" msgid="3773666844913168122">"دیدن همه"</string>
     <string name="to_switch_networks_disconnect_ethernet" msgid="6698111101156951955">"برای تغییر شبکه، اترنت را قطع کنید"</string>
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"‏برای بهبود تجربه استفاده از دستگاه، برنامه‌ها و سرویس‌ها همچنان می‌توانند در هر زمانی شبکه‌های Wi-Fi را اسکن کنند؛ حتی وقتی که Wi-Fi خاموش باشد. می‌توانید این مورد را در تنظیمات اسکن کردن Wi‑Fi تغییر دهید. "<annotation id="link">"تغییر"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"خاموش کردن حالت هواپیما"</string>
@@ -1395,6 +1394,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"دستگاه تاشو درحال باز شدن"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"دستگاه تاشو درحال چرخش به اطراف"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"صفحه‌نمایش جلو روشن شد"</string>
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"برای استفاده از صفحه‌نمایش داخلی، بلغزانید"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"تاشده"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"تانشده"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>
