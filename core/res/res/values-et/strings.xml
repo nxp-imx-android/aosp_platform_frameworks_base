@@ -318,7 +318,7 @@
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"Aku ja andmekasutuse üksikasjade nägemiseks puudutage"</string>
     <string name="foreground_service_multiple_separator" msgid="5002287361849863168">"<xliff:g id="LEFT_SIDE">%1$s</xliff:g>, <xliff:g id="RIGHT_SIDE">%2$s</xliff:g>"</string>
     <string name="safeMode" msgid="8974401416068943888">"Turvarežiim"</string>
-    <string name="android_system_label" msgid="5974767339591067210">"Android-süsteem"</string>
+    <string name="android_system_label" msgid="5974767339591067210">"Androidi süsteem"</string>
     <string name="user_owner_label" msgid="8628726904184471211">"Lülitu isiklikule profiilile"</string>
     <string name="managed_profile_label" msgid="7316778766973512382">"Lülitu tööprofiilile"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Lülita <xliff:g id="APP_NAME">%1$s</xliff:g> isiklikule profiilile"</string>
@@ -2088,12 +2088,9 @@
     <string name="unpin_target" msgid="3963318576590204447">"Vabasta"</string>
     <string name="unpin_specific_target" msgid="3859828252160908146">"Vabasta <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="app_info" msgid="6113278084877079851">"Rakenduse teave"</string>
-    <!-- no translation found for shortcut_group_a11y_title (2992150163811583865) -->
-    <skip />
-    <!-- no translation found for suggested_apps_group_a11y_title (2804876567839501831) -->
-    <skip />
-    <!-- no translation found for all_apps_group_a11y_title (7020352520224108745) -->
-    <skip />
+    <string name="shortcut_group_a11y_title" msgid="2992150163811583865">"Otsejagamise sihtmärgid"</string>
+    <string name="suggested_apps_group_a11y_title" msgid="2804876567839501831">"Rakenduste soovitused"</string>
+    <string name="all_apps_group_a11y_title" msgid="7020352520224108745">"Rakenduste loend"</string>
     <string name="negative_duration" msgid="1938335096972945232">"−<xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="demo_starting_message" msgid="6577581216125805905">"Demo käivitamine …"</string>
     <string name="demo_restarting_message" msgid="1160053183701746766">"Seadme lähtestamine …"</string>
@@ -2250,6 +2247,10 @@
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Suunaklahvistiku keskmine nupp"</string>
     <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"Automaatkliki tüübi seadete paneel"</string>
     <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"Vasakklikk"</string>
+    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"Paremklikk"</string>
+    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Topeltklikk"</string>
+    <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Lohista"</string>
+    <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Keri"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Peata"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Asukoht"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> on lisatud salve PIIRANGUTEGA"</string>
@@ -2526,12 +2527,8 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Rakendused"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Teie sõrmejälgi ei saa enam tuvastada. Seadistage sõrmejäljega avamine uuesti."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (468577168569874967) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (6695268246267993166) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_title (3461195995882871461) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (6537085605929303187) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB-seade ühendati, kui seade oli lukus"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB-seade ühendati, kui Android oli lukustatud. Seadme kasutamiseks avage esmalt Android ja ühendage siis USB-seade uuesti, et seda kasutada."</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Kahtlane tegevus USB-ga"</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB andmesignaal on keelatud."</string>
 </resources>

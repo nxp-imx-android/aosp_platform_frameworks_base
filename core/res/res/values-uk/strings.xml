@@ -2250,14 +2250,18 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Кнопка \"вліво\" панелі керування"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Кнопка \"вправо\" панелі керування"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Центральна кнопка панелі керування"</string>
-    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (7354373370578758696) -->
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"Панель налаштувань типу автоматичного натискання"</string>
+    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"Натиснути лівою кнопкою миші"</string>
+    <!-- no translation found for accessibility_autoclick_right_click (4353495816526181293) -->
     <skip />
-    <!-- no translation found for accessibility_autoclick_left_click (2301793352260551080) -->
+    <!-- no translation found for accessibility_autoclick_double_click (2103826849116176478) -->
     <skip />
-    <!-- no translation found for accessibility_autoclick_pause (3272200156172573568) -->
+    <!-- no translation found for accessibility_autoclick_drag (1499559489796843224) -->
     <skip />
-    <!-- no translation found for accessibility_autoclick_position (2933660969907663545) -->
+    <!-- no translation found for accessibility_autoclick_scroll (3499385943728726933) -->
     <skip />
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Призупинити"</string>
+    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Змінити позицію"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"Пакет \"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g>\" додано в сегмент з обмеженнями"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"надіслано зображення"</string>
@@ -2449,7 +2453,7 @@
     <string name="concurrent_display_notification_thermal_content" msgid="2075484836527609319">"Функція Dual Screen недоступна, оскільки телефон сильно нагрівається"</string>
     <string name="concurrent_display_notification_power_save_title" msgid="1794569070730736281">"Функція Dual Screen недоступна"</string>
     <string name="concurrent_display_notification_power_save_content" msgid="2198116070583851493">"Функція Dual Screen недоступна, оскільки ввімкнено режим енергозбереження. Її можна вимкнути в налаштуваннях."</string>
-    <string name="device_state_notification_settings_button" msgid="691937505741872749">"Перейти до налаштувань"</string>
+    <string name="device_state_notification_settings_button" msgid="691937505741872749">"Відкрити налаштування"</string>
     <string name="device_state_notification_turn_off_button" msgid="6327161707661689232">"Вимкнути"</string>
     <string name="keyboard_layout_notification_selected_title" msgid="1202560174252421219">"Клавіатуру \"<xliff:g id="DEVICE_NAME">%s</xliff:g>\" налаштовано"</string>
     <string name="keyboard_layout_notification_one_selected_message" msgid="4314216053129257197">"Вибрано розкладку клавіатури \"<xliff:g id="LAYOUT_1">%s</xliff:g>\". Натисніть, щоб змінити."</string>

@@ -2088,12 +2088,9 @@
     <string name="unpin_target" msgid="3963318576590204447">"பின்னை அகற்று"</string>
     <string name="unpin_specific_target" msgid="3859828252160908146">"<xliff:g id="LABEL">%1$s</xliff:g> ஐப் பின் நீக்கு"</string>
     <string name="app_info" msgid="6113278084877079851">"ஆப்ஸ் தகவல்"</string>
-    <!-- no translation found for shortcut_group_a11y_title (2992150163811583865) -->
-    <skip />
-    <!-- no translation found for suggested_apps_group_a11y_title (2804876567839501831) -->
-    <skip />
-    <!-- no translation found for all_apps_group_a11y_title (7020352520224108745) -->
-    <skip />
+    <string name="shortcut_group_a11y_title" msgid="2992150163811583865">"நேரடிப் பகிர்வு இலக்குகள்"</string>
+    <string name="suggested_apps_group_a11y_title" msgid="2804876567839501831">"ஆப்ஸ் பரிந்துரைகள்"</string>
+    <string name="all_apps_group_a11y_title" msgid="7020352520224108745">"ஆப்ஸ் பட்டியல்"</string>
     <string name="negative_duration" msgid="1938335096972945232">"−<xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="demo_starting_message" msgid="6577581216125805905">"டெமோவைத் தொடங்குகிறது…"</string>
     <string name="demo_restarting_message" msgid="1160053183701746766">"சாதனத்தை மீட்டமைக்கிறது…"</string>
@@ -2248,14 +2245,18 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"இடது திசை காட்டும் பட்டன்"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"வலது திசை காட்டும் பட்டன்"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"மையப் பகுதியைக் காட்டும் பட்டன்"</string>
-    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (7354373370578758696) -->
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"ஆட்டோ கிளிக் வகை அமைப்புகள் பேனல்"</string>
+    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"இடது கிளிக்"</string>
+    <!-- no translation found for accessibility_autoclick_right_click (4353495816526181293) -->
     <skip />
-    <!-- no translation found for accessibility_autoclick_left_click (2301793352260551080) -->
+    <!-- no translation found for accessibility_autoclick_double_click (2103826849116176478) -->
     <skip />
-    <!-- no translation found for accessibility_autoclick_pause (3272200156172573568) -->
+    <!-- no translation found for accessibility_autoclick_drag (1499559489796843224) -->
     <skip />
-    <!-- no translation found for accessibility_autoclick_position (2933660969907663545) -->
+    <!-- no translation found for accessibility_autoclick_scroll (3499385943728726933) -->
     <skip />
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"இடைநிறுத்து"</string>
+    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"நிலை"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> என்பதை வரம்பிடப்பட்ட பக்கெட்திற்குள் சேர்க்கப்பட்டது"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"படம் அனுப்பப்பட்டது"</string>
@@ -2530,12 +2531,8 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ஆப்ஸ்"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"உங்கள் கைரேகைகளை இனி அடையாளம் காண முடியாது. கைரேகை அன்லாக் அம்சத்தை மீண்டும் அமையுங்கள்."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (468577168569874967) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (6695268246267993166) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_title (3461195995882871461) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (6537085605929303187) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"பூட்டப்பட்டிருக்கும்போது USB சாதனம் செருகப்பட்டது"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android பூட்டப்பட்டிருக்கும்போது USB சாதனம் செருகப்பட்டது. சாதனத்தைப் பயன்படுத்த, முதலில் Androidடைத் திறக்கவும், பின்னர் USB சாதனத்தைப் பயன்படுத்த அதை மீண்டும் செருகவும்."</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"சந்தேகத்திற்குரிய USB செயல்பாடு"</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB தரவு சிக்னல் முடக்கப்பட்டுள்ளது."</string>
 </resources>
