@@ -57,6 +57,7 @@ import android.view.View;
 import android.view.ViewStructure;
 import android.view.autofill.AutofillId;
 import android.view.contentcapture.ViewNode.ViewStructureImpl;
+import android.view.contentcapture.flags.Flags;
 import android.view.contentprotection.ContentProtectionEventProcessor;
 import android.view.inputmethod.BaseInputConnection;
 
@@ -1008,6 +1009,9 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
                     }
                 }
                 internalNotifyViewTreeEvent(sessionId, /* started= */ false);
+                if (Flags.flushAfterEachFrame()) {
+                    internalNotifySessionFlushEvent(sessionId);
+                }
             }
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_VIEW);
