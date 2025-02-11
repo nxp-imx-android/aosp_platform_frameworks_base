@@ -272,9 +272,9 @@ import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 import android.window.ScreenCapture;
 import android.window.SurfaceSyncGroup;
-import android.window.WindowContext;
 import android.window.WindowOnBackInvokedDispatcher;
 import android.window.WindowTokenClient;
+import android.window.WindowTokenClientController;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -6614,22 +6614,20 @@ public final class ViewRootImpl implements ViewParent,
         } else {
             if (enableWindowContextResourcesUpdateOnConfigChange()) {
                 // There is no activity callback - update resources for window token, if needed.
-                final WindowTokenClient windowTokenClient = getWindowTokenClient();
-                if (windowTokenClient != null) {
-                    windowTokenClient.onConfigurationChanged(
+                final IBinder windowContextToken = mContext.getWindowContextToken();
+                if (windowContextToken instanceof WindowTokenClient) {
+                    WindowTokenClientController.getInstance().onWindowConfigurationChanged(
+                            windowContextToken,
                             mLastReportedMergedConfiguration.getMergedConfiguration(),
-                            newDisplayId == INVALID_DISPLAY ? mDisplay.getDisplayId()
-                                    : newDisplayId);
+                            newDisplayId == INVALID_DISPLAY
+                                    ? mDisplay.getDisplayId()
+                                    : newDisplayId
+                    );
                 }
             }
             updateConfiguration(newDisplayId);
         }
         mForceNextConfigUpdate = false;
-    }
-
-    private WindowTokenClient getWindowTokenClient() {
-        if (!(mContext instanceof WindowContext)) return null;
-        return (WindowTokenClient) mContext.getWindowContextToken();
     }
 
     /**
