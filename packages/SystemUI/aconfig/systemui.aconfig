@@ -67,6 +67,13 @@ flag {
 }
 
 flag {
+  name: "notifications_redesign_guts"
+  namespace: "systemui"
+  description: "Notifications Redesign: Update the look of the notification guts (that appear on long press). This includes using the new cache for app icons."
+  bug: "394822197"
+}
+
+flag {
    name: "notification_row_content_binder_refactor"
    namespace: "systemui"
    description: "Convert the NotificationContentInflater to Kotlin and restructure it to support modern views"

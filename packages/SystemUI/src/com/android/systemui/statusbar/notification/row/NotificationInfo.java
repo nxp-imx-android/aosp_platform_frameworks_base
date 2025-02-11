@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.row;
 
+import static android.app.Flags.notificationsRedesignThemedAppIcons;
 import static android.app.Notification.EXTRA_BUILDER_APPLICATION_INFO;
 import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
@@ -25,11 +26,13 @@ import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TYPE;
 
 import static com.android.app.animation.Interpolators.FAST_OUT_SLOW_IN;
+import static com.android.systemui.Flags.notificationsRedesignGuts;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 import android.annotation.IntDef;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.app.Flags;
 import android.app.INotificationManager;
 import android.app.Notification;
@@ -70,8 +73,9 @@ import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.systemui.Dependency;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.AssistantFeedbackController;
-import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
+import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 
 import java.lang.annotation.Retention;
 import java.util.List;
@@ -88,6 +92,8 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     private TextView mAutomaticDescriptionView;
 
     private INotificationManager mINotificationManager;
+    private AppIconProvider mAppIconProvider;
+    private NotificationIconStyleProvider mIconStyleProvider;
     private OnUserInteractionCallback mOnUserInteractionCallback;
     private PackageManager mPm;
     private MetricsLogger mMetricsLogger;
@@ -183,6 +189,8 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     public void bindNotification(
             PackageManager pm,
             INotificationManager iNotificationManager,
+            AppIconProvider appIconProvider,
+            NotificationIconStyleProvider iconStyleProvider,
             OnUserInteractionCallback onUserInteractionCallback,
             ChannelEditorDialogController channelEditorDialogController,
             String pkg,
@@ -200,6 +208,8 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             OnClickListener onCloseClick)
             throws RemoteException {
         mINotificationManager = iNotificationManager;
+        mAppIconProvider = appIconProvider;
+        mIconStyleProvider = iconStyleProvider;
         mMetricsLogger = metricsLogger;
         mOnUserInteractionCallback = onUserInteractionCallback;
         mChannelEditorDialogController = channelEditorDialogController;
@@ -290,23 +300,39 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         applyAlertingBehavior(behavior, false /* userTriggered */);
     }
 
+    @SuppressLint("WrongThread")
     private void bindHeader() {
-        // Package name
         mPkgIcon = null;
         // filled in if missing during notification inflation, which must have happened if
         // we have a notification to long press on
         ApplicationInfo info =
                 mSbn.getNotification().extras.getParcelable(EXTRA_BUILDER_APPLICATION_INFO,
                         ApplicationInfo.class);
-        if (info != null) {
-            try {
-                mAppName = String.valueOf(mPm.getApplicationLabel(info));
-                mPkgIcon = mPm.getApplicationIcon(info);
-            } catch (Exception ignored) {}
-        }
-        if (mPkgIcon == null) {
-            // app is gone, just show package name and generic icon
-            mPkgIcon = mPm.getDefaultActivityIcon();
+        if (notificationsRedesignGuts()) {
+            if (info != null) {
+                try {
+                    mAppName = String.valueOf(mPm.getApplicationLabel(info));
+                    // The app icon is likely already in the cache, so let's use it
+                    boolean withWorkProfileBadge =
+                            mIconStyleProvider.shouldShowWorkProfileBadge(mSbn, getContext());
+                    mPkgIcon = mAppIconProvider.getOrFetchAppIcon(info.packageName, getContext(),
+                            withWorkProfileBadge,
+                            /* themed = */ notificationsRedesignThemedAppIcons());
+                } catch (Exception ignored) {
+                }
+            }
+        } else {
+            if (info != null) {
+                try {
+                    mAppName = String.valueOf(mPm.getApplicationLabel(info));
+                    mPkgIcon = mPm.getApplicationIcon(info);
+                } catch (Exception ignored) {
+                }
+            }
+            if (mPkgIcon == null) {
+                // app is gone, just show package name and generic icon
+                mPkgIcon = mPm.getDefaultActivityIcon();
+            }
         }
         ((ImageView) findViewById(R.id.pkg_icon)).setImageDrawable(mPkgIcon);
         ((TextView) findViewById(R.id.pkg_name)).setText(mAppName);
