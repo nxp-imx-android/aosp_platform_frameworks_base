@@ -2689,15 +2689,22 @@ class DesktopTasksController(
     }
 
     /** Requests a task be transitioned from whatever mode it's in to a bubble. */
-    fun requestFloat(taskInfo: RunningTaskInfo) {
+    @JvmOverloads
+    fun requestFloat(taskInfo: RunningTaskInfo, left: Boolean? = null) {
         val isDragging = dragToDesktopTransitionHandler.inProgress
         val shouldRequestFloat =
             taskInfo.isFullscreen || taskInfo.isFreeform || isDragging || taskInfo.isMultiWindow
         if (!shouldRequestFloat) return
         if (isDragging) {
             releaseVisualIndicator()
+            val cancelState =
+                if (left == true) DragToDesktopTransitionHandler.CancelState.CANCEL_BUBBLE_LEFT
+                else DragToDesktopTransitionHandler.CancelState.CANCEL_BUBBLE_RIGHT
+            dragToDesktopTransitionHandler.cancelDragToDesktopTransition(cancelState)
         } else {
-            bubbleController.ifPresent { it.expandStackAndSelectBubble(taskInfo) }
+            bubbleController.ifPresent {
+                it.expandStackAndSelectBubble(taskInfo, /* dragData= */ null)
+            }
         }
     }
 
@@ -2975,10 +2982,11 @@ class DesktopTasksController(
                 )
                 requestSplit(taskInfo, leftOrTop = false)
             }
-            IndicatorType.TO_BUBBLE_LEFT_INDICATOR,
+            IndicatorType.TO_BUBBLE_LEFT_INDICATOR -> {
+                requestFloat(taskInfo, left = true)
+            }
             IndicatorType.TO_BUBBLE_RIGHT_INDICATOR -> {
-                // TODO(b/388851898): move to bubble
-                cancelDragToDesktop(taskInfo)
+                requestFloat(taskInfo, left = false)
             }
         }
         return indicatorType

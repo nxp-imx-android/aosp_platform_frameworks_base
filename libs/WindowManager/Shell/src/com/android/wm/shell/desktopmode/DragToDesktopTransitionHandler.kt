@@ -37,6 +37,8 @@ import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.animation.FloatProperties
+import com.android.wm.shell.bubbles.BubbleController
+import com.android.wm.shell.bubbles.BubbleTransitions
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
@@ -49,10 +51,12 @@ import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UND
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitPosition
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.transition.Transitions
+import com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE
 import com.android.wm.shell.transition.Transitions.TransitionHandler
 import com.android.wm.shell.windowdecor.MoveToDesktopAnimator
 import com.android.wm.shell.windowdecor.MoveToDesktopAnimator.Companion.DRAG_FREEFORM_SCALE
 import com.android.wm.shell.windowdecor.OnTaskResizeAnimationListener
+import java.util.Optional
 import java.util.function.Supplier
 import kotlin.math.max
 
@@ -72,6 +76,7 @@ sealed class DragToDesktopTransitionHandler(
     private val taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val desktopUserRepositories: DesktopUserRepositories,
     protected val interactionJankMonitor: InteractionJankMonitor,
+    private val bubbleController: Optional<BubbleController>,
     protected val transactionSupplier: Supplier<SurfaceControl.Transaction>,
 ) : TransitionHandler {
 
@@ -241,6 +246,20 @@ sealed class DragToDesktopTransitionHandler(
             state.startTransitionFinishCb?.onTransitionFinished(/* wct= */ null)
             requestSplitFromScaledTask(splitPosition, wct)
             clearState()
+        } else if (
+            state.draggedTaskChange != null &&
+                (cancelState == CancelState.CANCEL_BUBBLE_LEFT ||
+                    cancelState == CancelState.CANCEL_BUBBLE_RIGHT)
+        ) {
+            if (!bubbleController.isPresent) {
+                startCancelAnimation()
+            } else {
+                // Animation is handled by BubbleController
+                val wct = WindowContainerTransaction()
+                restoreWindowOrder(wct, state)
+                // TODO(b/388851898): pass along information about left or right side
+                requestBubbleFromScaledTask(wct)
+            }
         } else {
             // There's no dragged task, this can happen when the "cancel" happened too quickly
             // before the "start" transition is even ready (like on a fling gesture). The
@@ -258,20 +277,25 @@ sealed class DragToDesktopTransitionHandler(
     ) {
         val state = requireTransitionState()
         val taskInfo = state.draggedTaskChange?.taskInfo ?: error("Expected non-null taskInfo")
+        val animatedTaskBounds = getAnimatedTaskBounds()
+        requestSplitSelect(wct, taskInfo, splitPosition, animatedTaskBounds)
+    }
+
+    private fun getAnimatedTaskBounds(): Rect {
+        val state = requireTransitionState()
+        val taskInfo = state.draggedTaskChange?.taskInfo ?: error("Expected non-null taskInfo")
         val taskBounds = Rect(taskInfo.configuration.windowConfiguration.bounds)
         val taskScale = state.dragAnimator.scale
         val scaledWidth = taskBounds.width() * taskScale
         val scaledHeight = taskBounds.height() * taskScale
         val dragPosition = PointF(state.dragAnimator.position)
         state.dragAnimator.cancelAnimator()
-        val animatedTaskBounds =
-            Rect(
-                dragPosition.x.toInt(),
-                dragPosition.y.toInt(),
-                (dragPosition.x + scaledWidth).toInt(),
-                (dragPosition.y + scaledHeight).toInt(),
-            )
-        requestSplitSelect(wct, taskInfo, splitPosition, animatedTaskBounds)
+        return Rect(
+            dragPosition.x.toInt(),
+            dragPosition.y.toInt(),
+            (dragPosition.x + scaledWidth).toInt(),
+            (dragPosition.y + scaledHeight).toInt(),
+        )
     }
 
     private fun requestSplitSelect(
@@ -292,6 +316,25 @@ sealed class DragToDesktopTransitionHandler(
         wct.setWindowingMode(taskInfo.token, WINDOWING_MODE_MULTI_WINDOW)
         wct.setDensityDpi(taskInfo.token, context.resources.displayMetrics.densityDpi)
         splitScreenController.requestEnterSplitSelect(taskInfo, wct, splitPosition, taskBounds)
+    }
+
+    private fun requestBubbleFromScaledTask(wct: WindowContainerTransaction) {
+        // TODO(b/391928049): update density once we can drag from desktop to bubble
+        val state = requireTransitionState()
+        val taskInfo = state.draggedTaskChange?.taskInfo ?: error("Expected non-null taskInfo")
+        val taskBounds = getAnimatedTaskBounds()
+        state.dragAnimator.cancelAnimator()
+        requestBubble(wct, taskInfo, taskBounds)
+    }
+
+    private fun requestBubble(
+        wct: WindowContainerTransaction,
+        taskInfo: RunningTaskInfo,
+        taskBounds: Rect = Rect(taskInfo.configuration.windowConfiguration.bounds),
+    ) {
+        val controller =
+            bubbleController.orElseThrow { IllegalStateException("BubbleController not set") }
+        controller.expandStackAndSelectBubble(taskInfo, BubbleTransitions.DragData(taskBounds, wct))
     }
 
     override fun startAnimation(
@@ -446,6 +489,16 @@ sealed class DragToDesktopTransitionHandler(
             state.startTransitionFinishTransaction?.apply()
             state.startTransitionFinishCb?.onTransitionFinished(/* wct= */ null)
             requestSplitSelect(wct, taskInfo, splitPosition)
+        } else if (
+            state.cancelState == CancelState.CANCEL_BUBBLE_LEFT ||
+                state.cancelState == CancelState.CANCEL_BUBBLE_RIGHT
+        ) {
+            val taskInfo =
+                state.draggedTaskChange?.taskInfo ?: error("Expected non-null task info.")
+            val wct = WindowContainerTransaction()
+            restoreWindowOrder(wct)
+            // TODO(b/388851898): pass along information about left or right side
+            requestBubble(wct, taskInfo)
         }
         return true
     }
@@ -473,6 +526,13 @@ sealed class DragToDesktopTransitionHandler(
             state.cancelState == CancelState.CANCEL_SPLIT_LEFT ||
                 state.cancelState == CancelState.CANCEL_SPLIT_RIGHT
         ) {
+            clearState()
+            return
+        }
+        // In case of bubble animation, finish the initial desktop drag animation, but keep the
+        // current animation running and have bubbles take over
+        if (info.type == TRANSIT_CONVERT_TO_BUBBLE) {
+            state.startTransitionFinishCb?.onTransitionFinished(/* wct= */ null)
             clearState()
             return
         }
@@ -869,6 +929,10 @@ sealed class DragToDesktopTransitionHandler(
         CANCEL_SPLIT_LEFT,
         /** A cancel event where the task will request to enter split on the right side. */
         CANCEL_SPLIT_RIGHT,
+        /** A cancel event where the task will request to bubble on the left side. */
+        CANCEL_BUBBLE_LEFT,
+        /** A cancel event where the task will request to bubble on the right side. */
+        CANCEL_BUBBLE_RIGHT,
     }
 
     companion object {
@@ -887,6 +951,7 @@ constructor(
     taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     desktopUserRepositories: DesktopUserRepositories,
     interactionJankMonitor: InteractionJankMonitor,
+    bubbleController: Optional<BubbleController>,
     transactionSupplier: Supplier<SurfaceControl.Transaction> = Supplier {
         SurfaceControl.Transaction()
     },
@@ -897,6 +962,7 @@ constructor(
         taskDisplayAreaOrganizer,
         desktopUserRepositories,
         interactionJankMonitor,
+        bubbleController,
         transactionSupplier,
     ) {
 
@@ -925,6 +991,7 @@ constructor(
     taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     desktopUserRepositories: DesktopUserRepositories,
     interactionJankMonitor: InteractionJankMonitor,
+    bubbleController: Optional<BubbleController>,
     transactionSupplier: Supplier<SurfaceControl.Transaction> = Supplier {
         SurfaceControl.Transaction()
     },
@@ -935,6 +1002,7 @@ constructor(
         taskDisplayAreaOrganizer,
         desktopUserRepositories,
         interactionJankMonitor,
+        bubbleController,
         transactionSupplier,
     ) {
 

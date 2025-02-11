@@ -197,6 +197,9 @@ public class Transitions implements RemoteCallable<Transitions>,
     /** Transition type for app compat reachability. */
     public static final int TRANSIT_MOVE_LETTERBOX_REACHABILITY = TRANSIT_FIRST_CUSTOM + 23;
 
+    /** Transition type for converting a task to a bubble. */
+    public static final int TRANSIT_CONVERT_TO_BUBBLE = TRANSIT_FIRST_CUSTOM + 24;
+
     /** Transition type for desktop mode transitions. */
     public static final int TRANSIT_DESKTOP_MODE_TYPES =
             WindowManager.TRANSIT_FIRST_CUSTOM + 100;
@@ -1869,6 +1872,7 @@ public class Transitions implements RemoteCallable<Transitions>,
             case TRANSIT_MINIMIZE -> "MINIMIZE";
             case TRANSIT_START_RECENTS_TRANSITION -> "START_RECENTS_TRANSITION";
             case TRANSIT_END_RECENTS_TRANSITION -> "END_RECENTS_TRANSITION";
+            case TRANSIT_CONVERT_TO_BUBBLE -> "CONVERT_TO_BUBBLE";
             default -> "";
         };
         if (typeStr.isEmpty()) {
