@@ -105,6 +105,7 @@ import com.android.systemui.statusbar.notification.NotificationFadeAware;
 import com.android.systemui.statusbar.notification.NotificationTransitionAnimatorController;
 import com.android.systemui.statusbar.notification.NotificationUtils;
 import com.android.systemui.statusbar.notification.SourceType;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
@@ -120,6 +121,7 @@ import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedac
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationCompactMessagingTemplateViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationAddXOnHoverToDismiss;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationContentAlphaOptimization;
 import com.android.systemui.statusbar.notification.shared.TransparentHeaderFix;
 import com.android.systemui.statusbar.notification.stack.AmbientState;
@@ -268,6 +270,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private String mLoggingKey;
     private NotificationGuts mGuts;
     private NotificationEntry mEntry;
+    private EntryAdapter mEntryAdapter;
     private String mAppName;
     private NotificationRebindingTracker mRebindingTracker;
     private FalsingManager mFalsingManager;
@@ -390,11 +393,17 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     private void toggleExpansionState(View v, boolean shouldLogExpandClickMetric) {
-        if (!shouldShowPublic() && (!mIsMinimized || isExpanded())
-                && mGroupMembershipManager.isGroupSummary(mEntry)) {
+        boolean isGroupRoot = NotificationBundleUi.isEnabled()
+                ? mGroupMembershipManager.isGroupRoot(mEntryAdapter)
+                : mGroupMembershipManager.isGroupSummary(mEntry);
+        if (!shouldShowPublic() && (!mIsMinimized || isExpanded()) && isGroupRoot) {
             mGroupExpansionChanging = true;
-            final boolean wasExpanded = mGroupExpansionManager.isGroupExpanded(mEntry);
-            boolean nowExpanded = mGroupExpansionManager.toggleGroupExpansion(mEntry);
+            final boolean wasExpanded = NotificationBundleUi.isEnabled()
+                    ? mGroupExpansionManager.isGroupExpanded(mEntryAdapter)
+                    : mGroupExpansionManager.isGroupExpanded(mEntry);
+            boolean nowExpanded = NotificationBundleUi.isEnabled()
+                    ? mGroupExpansionManager.toggleGroupExpansion(mEntryAdapter)
+                    : mGroupExpansionManager.toggleGroupExpansion(mEntry);
             mOnExpandClickListener.onExpandClicked(mEntry, v, nowExpanded);
             if (shouldLogExpandClickMetric) {
                 mMetricsLogger.action(MetricsEvent.ACTION_NOTIFICATION_GROUP_EXPANDER, nowExpanded);
@@ -908,6 +917,12 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     @NonNull
     public NotificationEntry getEntry() {
         return mEntry;
+    }
+
+    @Nullable
+    public EntryAdapter getEntryAdapter() {
+        NotificationBundleUi.assertInNewMode();
+        return mEntryAdapter;
     }
 
     @Override
@@ -2010,11 +2025,25 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      *
      * @param context context context of the view
      * @param attrs   attributes used to initialize parent view
+     * @param user   the user the row is associated to
+     */
+    public ExpandableNotificationRow(Context context, AttributeSet attrs, UserHandle user) {
+        this(context, attrs, userContextForEntry(context, user));
+        NotificationBundleUi.assertInNewMode();
+    }
+
+    /**
+     * Constructs an ExpandableNotificationRow. Used by layout inflation (with a custom {@code
+     * AsyncLayoutFactory} in {@link RowInflaterTask}.
+     *
+     * @param context context context of the view
+     * @param attrs   attributes used to initialize parent view
      * @param entry   notification that the row will be associated to (determines the user for the
      *                ImageResolver)
      */
     public ExpandableNotificationRow(Context context, AttributeSet attrs, NotificationEntry entry) {
         this(context, attrs, userContextForEntry(context, entry));
+        NotificationBundleUi.assertInLegacyMode();
     }
 
     private static Context userContextForEntry(Context base, NotificationEntry entry) {
@@ -2023,6 +2052,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         return base.createContextAsUser(
                 UserHandle.of(entry.getSbn().getNormalizedUserId()), /* flags= */ 0);
+    }
+
+    private static Context userContextForEntry(Context base, UserHandle user) {
+        if (base.getUserId() == user.getIdentifier()) {
+            return base;
+        }
+        return base.createContextAsUser(user, /* flags= */ 0);
     }
 
     private ExpandableNotificationRow(Context sysUiContext, AttributeSet attrs,
@@ -2067,7 +2103,14 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             IStatusBarService statusBarService,
             UiEventLogger uiEventLogger,
             NotificationRebindingTracker notificationRebindingTracker) {
-        mEntry = entry;
+
+        if (NotificationBundleUi.isEnabled()) {
+            // TODO (b/395857098): remove when all usages are migrated
+            mEntryAdapter = entry.getEntryAdapter();
+            mEntry = entry;
+        } else {
+            mEntry = entry;
+        }
         mAppName = appName;
         mRebindingTracker = notificationRebindingTracker;
         if (mMenuRow == null) {
@@ -2871,7 +2914,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     public void setUserExpanded(boolean userExpanded, boolean allowChildExpansion) {
         if (mIsSummaryWithChildren && !shouldShowPublic() && allowChildExpansion
                 && !mChildrenContainer.showingAsLowPriority()) {
-            final boolean wasExpanded = mGroupExpansionManager.isGroupExpanded(mEntry);
+            final boolean wasExpanded = isGroupExpanded();
             mGroupExpansionManager.setGroupExpanded(mEntry, userExpanded);
             onExpansionChanged(true /* userAction */, wasExpanded);
             return;
@@ -3026,6 +3069,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     @Override
     public boolean isGroupExpanded() {
+        if (NotificationBundleUi.isEnabled()) {
+            return mGroupExpansionManager.isGroupExpanded(mEntryAdapter);
+        }
         return mGroupExpansionManager.isGroupExpanded(mEntry);
     }
 
@@ -3761,7 +3807,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     public void onExpandedByGesture(boolean userExpanded) {
         int event = MetricsEvent.ACTION_NOTIFICATION_GESTURE_EXPANDER;
-        if (mGroupMembershipManager.isGroupSummary(mEntry)) {
+        if (NotificationBundleUi.isEnabled()
+                ? mGroupMembershipManager.isGroupRoot(mEntryAdapter)
+                : mGroupMembershipManager.isGroupSummary(mEntry)) {
             event = MetricsEvent.ACTION_NOTIFICATION_GROUP_GESTURE_EXPANDER;
         }
         mMetricsLogger.action(event, userExpanded);
@@ -3797,7 +3845,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private void onExpansionChanged(boolean userAction, boolean wasExpanded) {
         boolean nowExpanded = isExpanded();
         if (mIsSummaryWithChildren && (!mIsMinimized || wasExpanded)) {
-            nowExpanded = mGroupExpansionManager.isGroupExpanded(mEntry);
+            nowExpanded = isGroupExpanded();
         }
         // Note: nowExpanded is going to be true here on the first expansion of minimized groups,
         // even though the group itself is not expanded. Use mGroupExpansionManager to get the real

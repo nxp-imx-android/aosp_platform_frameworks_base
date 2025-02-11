@@ -1,5 +1,6 @@
 package com.android.systemui.statusbar.notification.stack
 
+import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
 import android.service.notification.StatusBarNotification
 import android.testing.TestableLooper.RunWithLooper
@@ -21,6 +22,7 @@ import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
 import com.android.systemui.statusbar.notification.shelf.NotificationShelfIconContainer
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.StackScrollAlgorithmState
@@ -978,7 +980,10 @@ open class NotificationShelfTest : SysuiTestCase() {
     ) {
         val sbnMock: StatusBarNotification = mock()
         val mockEntry = mock<NotificationEntry>().apply { whenever(this.sbn).thenReturn(sbnMock) }
-        val row = ExpandableNotificationRow(mContext, null, mockEntry)
+        val row = when (NotificationBundleUi.isEnabled) {
+            true -> ExpandableNotificationRow(mContext, null, UserHandle.CURRENT)
+            false -> ExpandableNotificationRow(mContext, null, mockEntry)
+        }
         whenever(ambientState.lastVisibleBackgroundChild).thenReturn(row)
         whenever(ambientState.isExpansionChanging).thenReturn(true)
         whenever(ambientState.expansionFraction).thenReturn(expansionFraction)

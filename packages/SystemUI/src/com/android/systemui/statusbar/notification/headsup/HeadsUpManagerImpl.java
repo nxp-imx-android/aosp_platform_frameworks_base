@@ -46,6 +46,7 @@ import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.coordinator.HeadsUpCoordinator;
 import com.android.systemui.statusbar.notification.collection.provider.OnReorderingAllowedListener;
@@ -55,6 +56,7 @@ import com.android.systemui.statusbar.notification.collection.render.GroupMember
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository;
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRowRepository;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
 import com.android.systemui.statusbar.phone.ExpandHeadsUpOnInlineReply;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
@@ -871,14 +873,24 @@ public class HeadsUpManagerImpl
         if (!hasPinnedHeadsUp() || topEntry == null) {
             return null;
         } else {
+            ExpandableNotificationRow topRow = topEntry.getRow();
             if (topEntry.rowIsChildInGroup()) {
-                final NotificationEntry groupSummary =
-                        mGroupMembershipManager.getGroupSummary(topEntry);
-                if (groupSummary != null) {
-                    topEntry = groupSummary;
+                if (NotificationBundleUi.isEnabled()) {
+                    final EntryAdapter adapter = mGroupMembershipManager.getGroupRoot(
+                            topRow.getEntryAdapter());
+                    if (adapter != null) {
+                        topRow = adapter.getRow();
+                    }
+                } else {
+                    final NotificationEntry groupSummary =
+                            mGroupMembershipManager.getGroupSummary(topEntry);
+                    if (groupSummary != null) {
+                        topEntry = groupSummary;
+                        topRow = topEntry.getRow();
+                    }
                 }
             }
-            ExpandableNotificationRow topRow = topEntry.getRow();
+
             int[] tmpArray = new int[2];
             topRow.getLocationOnScreen(tmpArray);
             int minX = tmpArray[0];

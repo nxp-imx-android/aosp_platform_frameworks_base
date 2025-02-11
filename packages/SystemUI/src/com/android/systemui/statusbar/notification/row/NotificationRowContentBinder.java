@@ -24,6 +24,7 @@ import android.annotation.Nullable;
 
 import androidx.annotation.VisibleForTesting;
 
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 
 import java.lang.annotation.Retention;
@@ -170,13 +171,29 @@ public interface NotificationRowContentBinder {
          * @param entry notification which failed to inflate content
          * @param e exception
          */
-        void handleInflationException(NotificationEntry entry, Exception e);
+        default void handleInflationException(NotificationEntry entry, Exception e) {
+            handleInflationException(e);
+        }
+
+        /**
+         * Callback for when there is an inflation exception
+         *
+         * @param e exception
+         */
+        void handleInflationException(Exception e);
 
         /**
          * Callback for after the content views finish inflating.
          *
          * @param entry the entry with the content views set
          */
-        void onAsyncInflationFinished(NotificationEntry entry);
+        default void onAsyncInflationFinished(NotificationEntry entry) {
+            onAsyncInflationFinished();
+        }
+
+        /**
+         * Callback for after the content views finish inflating.
+         */
+        void onAsyncInflationFinished();
     }
 }

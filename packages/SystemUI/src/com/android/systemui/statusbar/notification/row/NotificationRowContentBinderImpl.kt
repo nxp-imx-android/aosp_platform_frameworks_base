@@ -49,6 +49,7 @@ import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
 import com.android.systemui.statusbar.notification.InflationException
 import com.android.systemui.statusbar.notification.NmSummarizationUiFlag
+import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
@@ -76,6 +77,7 @@ import com.android.systemui.statusbar.notification.row.shared.NotificationConten
 import com.android.systemui.statusbar.notification.row.shared.NotificationRowContentBinderRefactor
 import com.android.systemui.statusbar.notification.row.ui.viewbinder.SingleLineViewBinder
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainer
 import com.android.systemui.statusbar.policy.InflatedSmartReplyState
 import com.android.systemui.statusbar.policy.InflatedSmartReplyViewHolder
@@ -536,7 +538,7 @@ constructor(
             val ident: String = (sbn.packageName + "/0x" + Integer.toHexString(sbn.id))
             Log.e(TAG, "couldn't inflate view for notification $ident", e)
             callback?.handleInflationException(
-                row.entry,
+                if (NotificationBundleUi.isEnabled) entry else row.entry,
                 InflationException("Couldn't inflate contentViews$e"),
             )
 
@@ -554,11 +556,11 @@ constructor(
             logger.logAsyncTaskProgress(entry, "aborted")
         }
 
-        override fun handleInflationException(entry: NotificationEntry, e: Exception) {
+        override fun handleInflationException(e: Exception) {
             handleError(e)
         }
 
-        override fun onAsyncInflationFinished(entry: NotificationEntry) {
+        override fun onAsyncInflationFinished() {
             this.entry.onInflationTaskFinished()
             row.onNotificationUpdated()
             callback?.onAsyncInflationFinished(this.entry)

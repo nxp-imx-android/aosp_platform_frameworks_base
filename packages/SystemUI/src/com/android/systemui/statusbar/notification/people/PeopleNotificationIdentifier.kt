@@ -27,6 +27,7 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_IMPORTANT_PERSON
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_NON_PERSON
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_PERSON
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import javax.inject.Inject
 import kotlin.math.max
 
@@ -112,14 +113,26 @@ class PeopleNotificationIdentifierImpl @Inject constructor(
             if (personExtractor.isPersonNotification(sbn)) TYPE_PERSON else TYPE_NON_PERSON
 
     private fun getPeopleTypeOfSummary(entry: NotificationEntry): Int {
-        if (!groupManager.isGroupSummary(entry)) {
-            return TYPE_NON_PERSON
-        }
+        if (NotificationBundleUi.isEnabled) {
+            if (!entry.sbn.notification.isGroupSummary) {
+                return TYPE_NON_PERSON;
+            }
 
-        val childTypes = groupManager.getChildren(entry)
-                ?.asSequence()
-                ?.map { getPeopleNotificationType(it) }
-                ?: return TYPE_NON_PERSON
+            return getPeopleTypeForChildList(entry.parent?.children)
+        } else {
+            if (!groupManager.isGroupSummary(entry)) {
+                return TYPE_NON_PERSON
+            }
+
+            return getPeopleTypeForChildList(groupManager.getChildren(entry))
+        }
+    }
+
+    private fun getPeopleTypeForChildList(children: List<NotificationEntry>?): Int {
+        val childTypes = children
+            ?.asSequence()
+            ?.map { getPeopleNotificationType(it) }
+            ?: return TYPE_NON_PERSON
 
         var groupType = TYPE_NON_PERSON
         for (childType in childTypes) {
