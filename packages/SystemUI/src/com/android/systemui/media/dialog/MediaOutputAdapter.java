@@ -209,7 +209,6 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                         && !mController.isCurrentConnectedDeviceRemote()) {
                     connectionState = ConnectionState.CONNECTED;
                     restrictVolumeAdjustment = true;
-                    mCurrentActivePosition = position;
                     clickListener = v -> onItemClick(v, device);
                 } else if (currentlyConnected && isMutingExpectedDeviceExist
                         && !mController.isCurrentConnectedDeviceRemote()) {
@@ -231,13 +230,11 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                     boolean isActiveWithOngoingSession =
                             device.hasOngoingSession() && (currentlyConnected || isSelected);
                     if (isActiveWithOngoingSession) {
-                        mCurrentActivePosition = position;
                         ongoingSessionStatus = new OngoingSessionStatus(
                                 device.isHostForOngoingSession());
                         connectionState = ConnectionState.CONNECTED;
                     } else {
                         if (currentlyConnected) {
-                            mCurrentActivePosition = position;
                             connectionState = ConnectionState.CONNECTED;
                         }
                         clickListener = getClickListenerBasedOnSelectionBehavior(device);
@@ -258,7 +255,6 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                     connectionState = ConnectionState.CONNECTED;
                     // single selected device
                     if (device.hasOngoingSession()) {
-                        mCurrentActivePosition = position;
                         ongoingSessionStatus = new OngoingSessionStatus(
                                 device.isHostForOngoingSession());
                     } else if (mController.isCurrentConnectedDeviceRemote()
@@ -268,8 +264,6 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                         groupStatus = new GroupStatus(
                                 true /* selected */,
                                 isDeselectable /* isDeselectable */);
-                    } else {
-                        mCurrentActivePosition = position;
                     }
                 } else if (isSelectable) {
                     //groupable device
@@ -285,6 +279,10 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                     clickListener = getClickListenerBasedOnSelectionBehavior(device);
                     deviceDisabled = clickListener == null;
                 }
+            }
+
+            if (connectionState == ConnectionState.CONNECTED || isDeviceGroup) {
+                mCurrentActivePosition = position;
             }
 
             if (isDeviceGroup) {
