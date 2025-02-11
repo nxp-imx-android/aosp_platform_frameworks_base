@@ -24,6 +24,7 @@ import android.annotation.SuppressLint
 import android.os.Trace
 import android.util.Log
 import com.android.app.animation.Interpolators
+import com.android.app.tracing.coroutines.flow.traceAs
 import com.android.app.tracing.coroutines.withContextTraced as withContext
 import com.android.systemui.Flags.transitionRaceCondition
 import com.android.systemui.dagger.SysUISingleton
@@ -43,7 +44,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -143,11 +143,12 @@ constructor(
     @SuppressLint("SharedFlowCreation")
     private val _transitions =
         MutableSharedFlow<TransitionStep>(
-            replay = 2,
-            extraBufferCapacity = 20,
-            onBufferOverflow = BufferOverflow.DROP_OLDEST,
-        )
-    override val transitions = _transitions.asSharedFlow().distinctUntilChanged()
+                replay = 2,
+                extraBufferCapacity = 20,
+                onBufferOverflow = BufferOverflow.DROP_OLDEST,
+            )
+            .traceAs("KTR-transitions")
+    override val transitions = _transitions.distinctUntilChanged()
     private var lastStep: TransitionStep = TransitionStep()
     private var lastAnimator: ValueAnimator? = null
     private var animatorListener: AnimatorListenerAdapter? = null
