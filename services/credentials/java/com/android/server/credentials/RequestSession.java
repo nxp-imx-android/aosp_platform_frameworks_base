@@ -446,7 +446,7 @@ abstract class RequestSession<T, U, V> implements CredentialManagerUi.Credential
         @Override
         public void binderDied() {
             Slog.d(TAG, "Client binder died - clearing session");
-            finishSession(isUiWaitingForData(), ApiStatus.CLIENT_CANCELED.getMetricCode());
+            finishSession(isUiWaitingForData(), ApiStatus.BINDER_DIED.getMetricCode());
         }
     }
 
