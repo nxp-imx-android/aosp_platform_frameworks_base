@@ -43,8 +43,8 @@ import com.android.settingslib.bluetooth.BluetoothUtils;
 import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 import com.android.settingslib.satellite.SatelliteDialogUtils;
 import com.android.systemui.animation.Expandable;
+import com.android.systemui.bluetooth.qsdialog.BluetoothDetailsContentViewModel;
 import com.android.systemui.bluetooth.qsdialog.BluetoothDetailsViewModel;
-import com.android.systemui.bluetooth.qsdialog.BluetoothTileDialogViewModel;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.flags.FeatureFlags;
@@ -84,7 +84,7 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
 
     private final Executor mExecutor;
 
-    private final BluetoothTileDialogViewModel mDialogViewModel;
+    private final BluetoothDetailsContentViewModel mDetailsContentViewModel;
 
     private final FeatureFlags mFeatureFlags;
     @Nullable
@@ -104,7 +104,7 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
             QSLogger qsLogger,
             BluetoothController bluetoothController,
             FeatureFlags featureFlags,
-            BluetoothTileDialogViewModel dialogViewModel
+            BluetoothDetailsContentViewModel detailsContentViewModel
     ) {
         super(host, uiEventLogger, backgroundLooper, mainHandler, falsingManager, metricsLogger,
                 statusBarStateController, activityStarter, qsLogger);
@@ -112,7 +112,7 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
         mController.observe(getLifecycle(), mCallback);
         mExecutor = new HandlerExecutor(mainHandler);
         mFeatureFlags = featureFlags;
-        mDialogViewModel = dialogViewModel;
+        mDetailsContentViewModel = detailsContentViewModel;
     }
 
     @Override
@@ -133,7 +133,7 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
                 callback.accept(new BluetoothDetailsViewModel(() -> {
                     longClick(null);
                     return null;
-                }, mDialogViewModel))
+                }, mDetailsContentViewModel))
         );
         return true;
     }
@@ -158,7 +158,7 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
 
     private void handleClickEvent(@Nullable Expandable expandable) {
         if (mFeatureFlags.isEnabled(Flags.BLUETOOTH_QS_TILE_DIALOG)) {
-            mDialogViewModel.showDetailsContent(expandable, /* view= */ null);
+            mDetailsContentViewModel.showDetailsContent(expandable, /* view= */ null);
         } else {
             // Secondary clicks are header clicks, just toggle.
             toggleBluetooth();

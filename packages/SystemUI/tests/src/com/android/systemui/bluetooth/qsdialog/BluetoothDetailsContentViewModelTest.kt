@@ -67,14 +67,14 @@ import org.mockito.junit.MockitoRule
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @EnableFlags(Flags.FLAG_BLUETOOTH_QS_TILE_DIALOG_AUTO_ON_TOGGLE)
-class BluetoothTileDialogViewModelTest : SysuiTestCase() {
+class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
 
     @get:Rule val mockitoRule: MockitoRule = MockitoJUnit.rule()
     private val kosmos = testKosmos()
     private val fakeSystemClock = FakeSystemClock()
     private val backgroundExecutor = FakeExecutor(fakeSystemClock)
 
-    private lateinit var bluetoothTileDialogViewModel: BluetoothTileDialogViewModel
+    private lateinit var bluetoothDetailsContentViewModel: BluetoothDetailsContentViewModel
 
     @Mock private lateinit var bluetoothDeviceMetadataInteractor: BluetoothDeviceMetadataInteractor
 
@@ -126,8 +126,8 @@ class BluetoothTileDialogViewModelTest : SysuiTestCase() {
         testScope = kosmos.testScope
         // TODO(b/364515243): use real object instead of mock
         whenever(kosmos.deviceItemInteractor.deviceItemUpdate).thenReturn(MutableSharedFlow())
-        bluetoothTileDialogViewModel =
-            BluetoothTileDialogViewModel(
+        bluetoothDetailsContentViewModel =
+            BluetoothDetailsContentViewModel(
                 deviceItemInteractor,
                 deviceItemActionInteractor,
                 BluetoothStateInteractor(
@@ -194,7 +194,7 @@ class BluetoothTileDialogViewModelTest : SysuiTestCase() {
     @Test
     fun testShowDetailsContent_noAnimation() {
         testScope.runTest {
-            bluetoothTileDialogViewModel.showDetailsContent(null, null)
+            bluetoothDetailsContentViewModel.showDetailsContent(null, null)
             runCurrent()
 
             verify(mDialogTransitionAnimator, never()).show(any(), any(), any())
@@ -204,7 +204,7 @@ class BluetoothTileDialogViewModelTest : SysuiTestCase() {
     @Test
     fun testShowDetailsContent_animated() {
         testScope.runTest {
-            bluetoothTileDialogViewModel.showDetailsContent(expandable, null)
+            bluetoothDetailsContentViewModel.showDetailsContent(expandable, null)
             runCurrent()
 
             verify(mDialogTransitionAnimator).show(any(), any(), anyBoolean())
@@ -214,7 +214,7 @@ class BluetoothTileDialogViewModelTest : SysuiTestCase() {
     @Test
     fun testShowDetailsContent_animated_inDetailsView() {
         testScope.runTest {
-            bluetoothTileDialogViewModel.showDetailsContent(expandable, mockView)
+            bluetoothDetailsContentViewModel.showDetailsContent(expandable, mockView)
             runCurrent()
 
             verify(bluetoothDetailsContentManager).bind(mockView)
@@ -226,7 +226,7 @@ class BluetoothTileDialogViewModelTest : SysuiTestCase() {
     fun testShowDetailsContent_animated_callInBackgroundThread() {
         testScope.runTest {
             backgroundExecutor.execute {
-                bluetoothTileDialogViewModel.showDetailsContent(expandable, null)
+                bluetoothDetailsContentViewModel.showDetailsContent(expandable, null)
                 runCurrent()
 
                 verify(mDialogTransitionAnimator).show(any(), any(), anyBoolean())
@@ -238,7 +238,7 @@ class BluetoothTileDialogViewModelTest : SysuiTestCase() {
     fun testShowDetailsContent_animated_callInBackgroundThread_inDetailsView() {
         testScope.runTest {
             backgroundExecutor.execute {
-                bluetoothTileDialogViewModel.showDetailsContent(expandable, mockView)
+                bluetoothDetailsContentViewModel.showDetailsContent(expandable, mockView)
                 runCurrent()
 
                 verify(bluetoothDetailsContentManager).bind(mockView)
@@ -250,7 +250,7 @@ class BluetoothTileDialogViewModelTest : SysuiTestCase() {
     @Test
     fun testShowDetailsContent_fetchDeviceItem() {
         testScope.runTest {
-            bluetoothTileDialogViewModel.showDetailsContent(null, null)
+            bluetoothDetailsContentViewModel.showDetailsContent(null, null)
             runCurrent()
 
             verify(deviceItemInteractor).deviceItemUpdate
@@ -261,11 +261,11 @@ class BluetoothTileDialogViewModelTest : SysuiTestCase() {
     fun testStartSettingsActivity_activityLaunched_dialogDismissed() {
         testScope.runTest {
             whenever(deviceItem.cachedBluetoothDevice).thenReturn(cachedBluetoothDevice)
-            bluetoothTileDialogViewModel.showDetailsContent(null, null)
+            bluetoothDetailsContentViewModel.showDetailsContent(null, null)
             runCurrent()
 
             val clickedView = View(context)
-            bluetoothTileDialogViewModel.onPairNewDeviceClicked(clickedView)
+            bluetoothDetailsContentViewModel.onPairNewDeviceClicked(clickedView)
 
             verify(uiEventLogger).log(BluetoothTileDialogUiEvent.PAIR_NEW_DEVICE_CLICKED)
             verify(activityStarter).postStartActivityDismissingKeyguard(any(), anyInt(), nullable())
@@ -276,7 +276,7 @@ class BluetoothTileDialogViewModelTest : SysuiTestCase() {
     fun testBuildUiProperties_bluetoothOn_shouldHideAutoOn() {
         testScope.runTest {
             val actual =
-                BluetoothTileDialogViewModel.UiProperties.build(
+                BluetoothDetailsContentViewModel.UiProperties.build(
                     isBluetoothEnabled = true,
                     isAutoOnToggleFeatureAvailable = true,
                 )
@@ -288,7 +288,7 @@ class BluetoothTileDialogViewModelTest : SysuiTestCase() {
     fun testBuildUiProperties_bluetoothOff_shouldShowAutoOn() {
         testScope.runTest {
             val actual =
-                BluetoothTileDialogViewModel.UiProperties.build(
+                BluetoothDetailsContentViewModel.UiProperties.build(
                     isBluetoothEnabled = false,
                     isAutoOnToggleFeatureAvailable = true,
                 )
@@ -300,7 +300,7 @@ class BluetoothTileDialogViewModelTest : SysuiTestCase() {
     fun testBuildUiProperties_bluetoothOff_autoOnFeatureUnavailable_shouldHideAutoOn() {
         testScope.runTest {
             val actual =
-                BluetoothTileDialogViewModel.UiProperties.build(
+                BluetoothDetailsContentViewModel.UiProperties.build(
                     isBluetoothEnabled = false,
                     isAutoOnToggleFeatureAvailable = false,
                 )
@@ -313,7 +313,7 @@ class BluetoothTileDialogViewModelTest : SysuiTestCase() {
         testScope.runTest {
             whenever(bluetoothAdapter.isAutoOnSupported).thenReturn(true)
 
-            val actual = bluetoothTileDialogViewModel.isAutoOnToggleFeatureAvailable()
+            val actual = bluetoothDetailsContentViewModel.isAutoOnToggleFeatureAvailable()
             assertThat(actual).isTrue()
         }
     }
@@ -323,7 +323,7 @@ class BluetoothTileDialogViewModelTest : SysuiTestCase() {
         testScope.runTest {
             whenever(bluetoothAdapter.isAutoOnSupported).thenReturn(false)
 
-            val actual = bluetoothTileDialogViewModel.isAutoOnToggleFeatureAvailable()
+            val actual = bluetoothDetailsContentViewModel.isAutoOnToggleFeatureAvailable()
             assertThat(actual).isFalse()
         }
     }
