@@ -15993,8 +15993,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         @Override
         public void notifyUnsafeOperationStateChanged(DevicePolicySafetyChecker checker, int reason,
                 boolean isSafe) {
-            // TODO(b/178494483): use EventLog instead
-            // TODO(b/178494483): log metrics?
             if (VERBOSE_LOG) {
                 Slogf.v(LOG_TAG, "notifyUnsafeOperationStateChanged(): %s=%b",
                         DevicePolicyManager.operationSafetyReasonToString(reason), isSafe);
@@ -16006,16 +16004,20 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             extras.putInt(DeviceAdminReceiver.EXTRA_OPERATION_SAFETY_REASON, reason);
             extras.putBoolean(DeviceAdminReceiver.EXTRA_OPERATION_SAFETY_STATE, isSafe);
 
-            if (mOwners.hasDeviceOwner()) {
-                if (VERBOSE_LOG) Slogf.v(LOG_TAG, "Notifying DO");
-                sendDeviceOwnerCommand(DeviceAdminReceiver.ACTION_OPERATION_SAFETY_STATE_CHANGED,
-                        extras);
-            }
-            for (int profileOwnerId : mOwners.getProfileOwnerKeys()) {
-                if (VERBOSE_LOG) Slogf.v(LOG_TAG, "Notifying PO for user " + profileOwnerId);
-                sendProfileOwnerCommand(DeviceAdminReceiver.ACTION_OPERATION_SAFETY_STATE_CHANGED,
-                        extras, profileOwnerId);
-            }
+            mInjector.binderWithCleanCallingIdentity(() -> {
+                if (mOwners.hasDeviceOwner()) {
+                    if (VERBOSE_LOG) Slogf.v(LOG_TAG, "Notifying DO");
+                    sendDeviceOwnerCommand(
+                            DeviceAdminReceiver.ACTION_OPERATION_SAFETY_STATE_CHANGED,
+                            extras);
+                }
+                for (int profileOwnerId : mOwners.getProfileOwnerKeys()) {
+                    if (VERBOSE_LOG) Slogf.v(LOG_TAG, "Notifying PO for user " + profileOwnerId);
+                    sendProfileOwnerCommand(
+                            DeviceAdminReceiver.ACTION_OPERATION_SAFETY_STATE_CHANGED,
+                            extras, profileOwnerId);
+                }
+            });
         }
 
         private @Mode int findInteractAcrossProfilesResetMode(String packageName) {
