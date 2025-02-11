@@ -21,9 +21,7 @@ import android.content.ContextWrapper
 import android.os.Handler
 import android.os.HandlerExecutor
 import android.os.test.TestLooper
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
-import android.platform.test.flag.junit.SetFlagsRule
 import android.view.KeyEvent
 import androidx.test.core.app.ApplicationProvider
 import com.android.server.testutils.any
@@ -50,11 +48,8 @@ import org.mockito.junit.MockitoJUnitRunner
  */
 @Presubmit
 @RunWith(MockitoJUnitRunner::class)
-@EnableFlags(com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_STICKY_KEYS_FLAG)
 class StickyModifierStateListenerTest {
 
-    @get:Rule
-    val rule = SetFlagsRule()
     @get:Rule
     val inputManagerRule = MockInputManagerRule()
 

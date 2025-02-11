@@ -2775,7 +2775,7 @@ public class InputManagerService extends IInputManager.Stub
                 }
                 return true;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS:
-                if (complete && InputSettings.isAccessibilityBounceKeysFeatureEnabled()) {
+                if (complete) {
                     final boolean bounceKeysEnabled =
                             InputSettings.isAccessibilityBounceKeysEnabled(mContext);
                     InputSettings.setAccessibilityBounceKeysThreshold(mContext,
@@ -2793,7 +2793,7 @@ public class InputManagerService extends IInputManager.Stub
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS:
-                if (complete && InputSettings.isAccessibilityStickyKeysFeatureEnabled()) {
+                if (complete) {
                     final boolean stickyKeysEnabled =
                             InputSettings.isAccessibilityStickyKeysEnabled(mContext);
                     InputSettings.setAccessibilityStickyKeysEnabled(mContext, !stickyKeysEnabled);
@@ -2801,7 +2801,7 @@ public class InputManagerService extends IInputManager.Stub
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS:
-                if (complete && InputSettings.isAccessibilitySlowKeysFeatureFlagEnabled()) {
+                if (complete) {
                     final boolean slowKeysEnabled =
                             InputSettings.isAccessibilitySlowKeysEnabled(mContext);
                     InputSettings.setAccessibilitySlowKeysThreshold(mContext,

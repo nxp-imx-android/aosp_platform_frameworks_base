@@ -8,35 +8,6 @@ container: "system"
 
 flag {
     namespace: "input_native"
-    name: "keyboard_layout_preview_flag"
-    description: "Controls whether a preview will be shown in Settings when selecting a physical keyboard layout"
-    bug: "293579375"
-}
-
-
-flag {
-    namespace: "input_native"
-    name: "keyboard_a11y_sticky_keys_flag"
-    description: "Controls if the sticky keys accessibility feature for physical keyboard is available to the user"
-    bug: "294546335"
-}
-
-flag {
-    namespace: "input_native"
-    name: "keyboard_a11y_bounce_keys_flag"
-    description: "Controls if the bounce keys accessibility feature for physical keyboard is available to the user"
-    bug: "294546335"
-}
-
-flag {
-    namespace: "input_native"
-    name: "keyboard_a11y_slow_keys_flag"
-    description: "Controls if the slow keys accessibility feature for physical keyboard is available to the user"
-    bug: "294546335"
-}
-
-flag {
-    namespace: "input_native"
     name: "keyboard_glyph_map"
     description: "Allows system to provide keyboard specific key drawables and shortcuts via config files"
     bug: "345440920"
