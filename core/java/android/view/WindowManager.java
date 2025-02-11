@@ -1531,15 +1531,6 @@ public interface WindowManager extends ViewManager {
      */
     @TestApi
     static boolean hasWindowExtensionsEnabled() {
-        if (!Flags.enableWmExtensionsForAllFlag() && ACTIVITY_EMBEDDING_GUARD_WITH_ANDROID_15) {
-            // Since enableWmExtensionsForAllFlag, HAS_WINDOW_EXTENSIONS_ON_DEVICE is now true
-            // on all devices by default as a build file property.
-            // Until finishing flag ramp up, only return true when
-            // ACTIVITY_EMBEDDING_GUARD_WITH_ANDROID_15 is false, which is set per device by
-            // OEMs.
-            return false;
-        }
-
         if (!HAS_WINDOW_EXTENSIONS_ON_DEVICE) {
             return false;
         }
