@@ -38,7 +38,6 @@ import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityOptions;
 import android.app.AppOpsManager;
-import android.app.admin.DevicePolicyManagerInternal;
 import android.app.assist.AssistContent;
 import android.app.assist.AssistStructure;
 import android.app.contextualsearch.CallbackToken;
@@ -67,6 +66,7 @@ import android.os.ResultReceiver;
 import android.os.ServiceManager;
 import android.os.ShellCallback;
 import android.os.SystemClock;
+import android.os.UserManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.util.Slog;
@@ -112,8 +112,8 @@ public class ContextualSearchManagerService extends SystemService {
     private final ActivityTaskManagerInternal mAtmInternal;
     private final PackageManagerInternal mPackageManager;
     private final WindowManagerInternal mWmInternal;
-    private final DevicePolicyManagerInternal mDpmInternal;
     private final AudioManager mAudioManager;
+    private final UserManager mUserManager;
     private final Object mLock = new Object();
     private final AssistDataRequester mAssistDataRequester;
 
@@ -179,9 +179,9 @@ public class ContextualSearchManagerService extends SystemService {
                 LocalServices.getService(ActivityTaskManagerInternal.class));
         mPackageManager = LocalServices.getService(PackageManagerInternal.class);
         mAudioManager = context.getSystemService(AudioManager.class);
+        mUserManager = context.getSystemService(UserManager.class);
 
         mWmInternal = Objects.requireNonNull(LocalServices.getService(WindowManagerInternal.class));
-        mDpmInternal = LocalServices.getService(DevicePolicyManagerInternal.class);
         mAssistDataRequester = new AssistDataRequester(
                 mContext,
                 IWindowManager.Stub.asInterface(ServiceManager.getService(Context.WINDOW_SERVICE)),
@@ -308,6 +308,11 @@ public class ContextualSearchManagerService extends SystemService {
         }
     }
 
+    @RequiresPermission(anyOf = {
+            android.Manifest.permission.MANAGE_USERS,
+            android.Manifest.permission.CREATE_USERS,
+            android.Manifest.permission.QUERY_USERS
+    })
     private Intent getContextualSearchIntent(int entrypoint, int userId, CallbackToken mToken) {
         final Intent launchIntent = getResolvedLaunchIntent(userId);
         if (launchIntent == null) {
@@ -338,8 +343,7 @@ public class ContextualSearchManagerService extends SystemService {
                 visiblePackageNames.add(record.getComponentName().getPackageName());
                 activityTokens.add(record.getActivityToken());
             }
-            if (mDpmInternal != null
-                    && mDpmInternal.isUserOrganizationManaged(record.getUserId())) {
+            if (mUserManager.isManagedProfile(record.getUserId())) {
                 isManagedProfileVisible = true;
             }
         }
@@ -507,7 +511,10 @@ public class ContextualSearchManagerService extends SystemService {
                 Intent launchIntent = getContextualSearchIntent(entrypoint, callingUserId, mToken);
                 if (launchIntent != null) {
                     int result = invokeContextualSearchIntent(launchIntent, callingUserId);
-                    if (DEBUG) Log.d(TAG, "Launch result: " + result);
+                    if (DEBUG) {
+                        Log.d(TAG, "Launch intent: " + launchIntent);
+                        Log.d(TAG, "Launch result: " + result);
+                    }
                 }
             });
         }
