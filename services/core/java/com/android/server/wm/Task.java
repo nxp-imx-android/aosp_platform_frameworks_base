@@ -508,9 +508,6 @@ class Task extends TaskFragment {
      */
     boolean mAllowForceResizeOverride = true;
 
-    private final AnimatingActivityRegistry mAnimatingActivityRegistry =
-            new AnimatingActivityRegistry();
-
     private static final int TRANSLUCENT_TIMEOUT_MSG = FIRST_ACTIVITY_TASK_MSG + 1;
 
     private final Handler mHandler;
@@ -1174,9 +1171,6 @@ class Task extends TaskFragment {
         }
 
         mRootWindowContainer.updateUIDsPresentOnDisplay();
-
-        // Ensure all animations are finished at same time in split-screen mode.
-        forAllActivities(ActivityRecord::updateAnimatingActivityRegistry);
     }
 
     @Override
@@ -3334,13 +3328,6 @@ class Task extends TaskFragment {
         }
         mLastSurfaceShowing = show;
     }
-
-    @Override
-    void dump(PrintWriter pw, String prefix, boolean dumpAll) {
-        super.dump(pw, prefix, dumpAll);
-        mAnimatingActivityRegistry.dump(pw, "AnimatingApps:", prefix);
-    }
-
 
     /**
      * Fills in a {@link TaskInfo} with information from this task. Note that the base intent in the
@@ -6301,10 +6288,6 @@ class Task extends TaskFragment {
 
     public DisplayInfo getDisplayInfo() {
         return mDisplayContent.getDisplayInfo();
-    }
-
-    AnimatingActivityRegistry getAnimatingActivityRegistry() {
-        return mAnimatingActivityRegistry;
     }
 
     private Rect getRawBounds() {

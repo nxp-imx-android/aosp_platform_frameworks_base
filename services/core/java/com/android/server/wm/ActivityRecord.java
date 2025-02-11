@@ -657,8 +657,6 @@ final class ActivityRecord extends WindowToken {
 
     private RemoteAnimationDefinition mRemoteAnimationDefinition;
 
-    AnimatingActivityRegistry mAnimatingActivityRegistry;
-
     // Set to the previous Task parent of the ActivityRecord when it is reparented to a new Task
     // due to picture-in-picture. This gets cleared whenever this activity or the Task
     // it references to gets removed. This should also be cleared when we move out of pip.
@@ -1579,9 +1577,6 @@ final class ActivityRecord extends WindowToken {
             }
         }
         final Task rootTask = getRootTask();
-
-        updateAnimatingActivityRegistry();
-
         if (task == mLastParentBeforePip && task != null) {
             // Notify the TaskFragmentOrganizer that the activity is reparented back from pip.
             mAtmService.mWindowOrganizerController.mTaskFragmentOrganizerController
@@ -1681,20 +1676,6 @@ final class ActivityRecord extends WindowToken {
         }
         // Check if trusted.
         return !organizedTaskFragment.isAllowedToEmbedActivityInTrustedMode(this);
-    }
-
-    void updateAnimatingActivityRegistry() {
-        final Task rootTask = getRootTask();
-        final AnimatingActivityRegistry registry = rootTask != null
-                ? rootTask.getAnimatingActivityRegistry()
-                : null;
-
-        // If we reparent, make sure to remove ourselves from the old animation registry.
-        if (mAnimatingActivityRegistry != null && mAnimatingActivityRegistry != registry) {
-            mAnimatingActivityRegistry.notifyFinished(this);
-        }
-
-        mAnimatingActivityRegistry = registry;
     }
 
     boolean canAutoEnterPip() {
@@ -7535,13 +7516,6 @@ final class ActivityRecord extends WindowToken {
     }
 
     @Override
-    public boolean shouldDeferAnimationFinish(Runnable endDeferFinishCallback) {
-        return mAnimatingActivityRegistry != null
-                && mAnimatingActivityRegistry.notifyAboutToFinish(
-                this, endDeferFinishCallback);
-    }
-
-    @Override
     boolean isWaitingForTransitionStart() {
         final DisplayContent dc = getDisplayContent();
         return dc != null && dc.mAppTransition.isTransitionSet()
@@ -7562,10 +7536,6 @@ final class ActivityRecord extends WindowToken {
 
     @Override
     public void onLeashAnimationStarting(Transaction t, SurfaceControl leash) {
-        if (mAnimatingActivityRegistry != null) {
-            mAnimatingActivityRegistry.notifyStarting(this);
-        }
-
         if (mNeedsLetterboxedAnimation) {
             updateLetterboxSurfaceIfNeeded(findMainWindow(), t);
             mNeedsAnimationBoundsLayer = true;
@@ -7731,10 +7701,6 @@ final class ActivityRecord extends WindowToken {
         if (mNeedsLetterboxedAnimation) {
             mNeedsLetterboxedAnimation = false;
             updateLetterboxSurfaceIfNeeded(findMainWindow(), t);
-        }
-
-        if (mAnimatingActivityRegistry != null) {
-            mAnimatingActivityRegistry.notifyFinished(this);
         }
     }
 
