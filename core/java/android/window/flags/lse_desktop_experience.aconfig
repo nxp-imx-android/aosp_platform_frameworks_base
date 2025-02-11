@@ -706,3 +706,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_desktop_indicator_in_separate_thread_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables running visual indicator view operations in ShellDesktopThread."
+    bug: "366413536"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
