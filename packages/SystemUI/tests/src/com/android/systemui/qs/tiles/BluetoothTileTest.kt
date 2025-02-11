@@ -40,7 +40,6 @@ import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import dagger.Lazy
-import kotlin.test.assertTrue
 import kotlinx.coroutines.Job
 import org.junit.After
 import org.junit.Before
@@ -206,7 +205,6 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     @DisableFlags(QsDetailedView.FLAG_NAME)
     fun handleClick_hasSatelliteFeatureButNoQsTileDialogAndClickIsProcessing_doNothing() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_OEM_ENABLED_SATELLITE_FLAG)
         `when`(featureFlags.isEnabled(com.android.systemui.flags.Flags.BLUETOOTH_QS_TILE_DIALOG))
             .thenReturn(false)
         `when`(clickJob.isCompleted).thenReturn(false)
@@ -218,34 +216,8 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(QsDetailedView.FLAG_NAME)
-    fun handleClick_noSatelliteFeatureAndNoQsTileDialog_directSetBtEnable() {
-        mSetFlagsRule.disableFlags(Flags.FLAG_OEM_ENABLED_SATELLITE_FLAG)
-        `when`(featureFlags.isEnabled(com.android.systemui.flags.Flags.BLUETOOTH_QS_TILE_DIALOG))
-            .thenReturn(false)
-
-        tile.handleClick(null)
-
-        verify(bluetoothController).setBluetoothEnabled(any())
-    }
-
-    @Test
-    @DisableFlags(QsDetailedView.FLAG_NAME)
-    fun handleClick_noSatelliteFeatureButHasQsTileDialog_showDialog() {
-        mSetFlagsRule.disableFlags(Flags.FLAG_OEM_ENABLED_SATELLITE_FLAG)
-        `when`(featureFlags.isEnabled(com.android.systemui.flags.Flags.BLUETOOTH_QS_TILE_DIALOG))
-            .thenReturn(true)
-
-        tile.handleClick(null)
-
-        verify(bluetoothDetailsContentViewModel)
-            .showDetailsContent(/* expandable= */ null, /* view= */ null)
-    }
-
-    @Test
     @EnableFlags(QsDetailedView.FLAG_NAME)
     fun handleClick_hasSatelliteFeatureAndQsDetailedViewIsEnabledAndClickIsProcessing_doNothing() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_OEM_ENABLED_SATELLITE_FLAG)
         `when`(featureFlags.isEnabled(com.android.systemui.flags.Flags.BLUETOOTH_QS_TILE_DIALOG))
             .thenReturn(false)
         `when`(clickJob.isCompleted).thenReturn(false)
@@ -256,19 +228,6 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
 
         // Click is not allowed.
         assertThat(currentModel).isEqualTo(null)
-    }
-
-    @Test
-    @EnableFlags(QsDetailedView.FLAG_NAME)
-    fun handleClick_noSatelliteFeatureAndQsDetailedViewIsEnabled_returnDetailsViewModel() {
-        mSetFlagsRule.disableFlags(Flags.FLAG_OEM_ENABLED_SATELLITE_FLAG)
-        `when`(featureFlags.isEnabled(com.android.systemui.flags.Flags.BLUETOOTH_QS_TILE_DIALOG))
-            .thenReturn(false)
-        var currentModel: TileDetailsViewModel? = null
-
-        tile.getDetailsViewModel { model: TileDetailsViewModel? -> currentModel = model }
-
-        assertTrue(currentModel != null)
     }
 
     @Test

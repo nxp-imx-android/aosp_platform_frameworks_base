@@ -62,7 +62,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
-import com.android.internal.telephony.flags.Flags;
 import com.android.settingslib.satellite.SatelliteDialogUtils;
 import com.android.settingslib.wifi.WifiEnterpriseRestrictionUtils;
 import com.android.systemui.Prefs;
@@ -489,22 +488,18 @@ public class InternetDialogDelegateLegacy implements
     }
 
     private void handleWifiToggleClicked(boolean isChecked) {
-        if (Flags.oemEnabledSatelliteFlag()) {
-            if (mClickJob != null && !mClickJob.isCompleted()) {
-                return;
-            }
-            mClickJob = SatelliteDialogUtils.mayStartSatelliteWarningDialog(
-                    mDialog.getContext(), mCoroutineScope, TYPE_IS_WIFI, isAllowClick -> {
-                        if (isAllowClick) {
-                            setWifiEnable(isChecked);
-                        } else {
-                            mWiFiToggle.setChecked(!isChecked);
-                        }
-                        return null;
-                    });
+        if (mClickJob != null && !mClickJob.isCompleted()) {
             return;
         }
-        setWifiEnable(isChecked);
+        mClickJob = SatelliteDialogUtils.mayStartSatelliteWarningDialog(
+                mDialog.getContext(), mCoroutineScope, TYPE_IS_WIFI, isAllowClick -> {
+                    if (isAllowClick) {
+                        setWifiEnable(isChecked);
+                    } else {
+                        mWiFiToggle.setChecked(!isChecked);
+                    }
+                    return null;
+                });
     }
 
     private void setWifiEnable(boolean isChecked) {

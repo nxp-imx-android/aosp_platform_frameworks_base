@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.pipeline.satellite.domain.interactor
 
-import com.android.internal.telephony.flags.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.LogBuffer
@@ -57,35 +56,19 @@ constructor(
 
     /** Must be observed by any UI showing Satellite iconography */
     val isSatelliteAllowed =
-        if (Flags.oemEnabledSatelliteFlag()) {
-                repo.isSatelliteAllowedForCurrentLocation
-            } else {
-                flowOf(false)
-            }
-            .distinctUntilChanged()
+        repo.isSatelliteAllowedForCurrentLocation
             .logDiffsForTable(tableLog, columnName = COL_ALLOWED, initialValue = false)
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     /** See [SatelliteConnectionState] for relevant states */
     val connectionState =
-        if (Flags.oemEnabledSatelliteFlag()) {
-                repo.connectionState
-            } else {
-
-                flowOf(SatelliteConnectionState.Off)
-            }
-            .distinctUntilChanged()
+        repo.connectionState
             .logDiffsForTable(tableLog, initialValue = SatelliteConnectionState.Off)
             .stateIn(scope, SharingStarted.WhileSubscribed(), SatelliteConnectionState.Off)
 
     /** 0-4 description of the connection strength */
     val signalStrength =
-        if (Flags.oemEnabledSatelliteFlag()) {
-                repo.signalStrength
-            } else {
-                flowOf(0)
-            }
-            .distinctUntilChanged()
+        repo.signalStrength
             .logDiffsForTable(tableLog, columnName = COL_LEVEL, initialValue = 0)
             .stateIn(scope, SharingStarted.WhileSubscribed(), 0)
 
@@ -114,28 +97,24 @@ constructor(
 
     /** When all connections are considered OOS, satellite connectivity is potentially valid */
     val areAllConnectionsOutOfService =
-        if (Flags.oemEnabledSatelliteFlag()) {
-                combine(allConnectionsOos, iconsInteractor.isDeviceInEmergencyCallsOnlyMode) {
-                    connectionsOos,
-                    deviceEmergencyOnly ->
-                    logBuffer.log(
-                        TAG,
-                        LogLevel.INFO,
-                        {
-                            bool1 = connectionsOos
-                            bool2 = deviceEmergencyOnly
-                        },
-                        {
-                            "Updating OOS status. allConnectionsOOs=$bool1 " +
-                                "deviceEmergencyOnly=$bool2"
-                        },
-                    )
-                    // If no connections exist, or all are OOS, then we look to the device-based
-                    // service state to detect if any calls are possible
-                    connectionsOos && !deviceEmergencyOnly
-                }
-            } else {
-                flowOf(false)
+        combine(allConnectionsOos, iconsInteractor.isDeviceInEmergencyCallsOnlyMode) {
+                connectionsOos,
+                deviceEmergencyOnly ->
+                logBuffer.log(
+                    TAG,
+                    LogLevel.INFO,
+                    {
+                        bool1 = connectionsOos
+                        bool2 = deviceEmergencyOnly
+                    },
+                    {
+                        "Updating OOS status. allConnectionsOOs=$bool1 " +
+                            "deviceEmergencyOnly=$bool2"
+                    },
+                )
+                // If no connections exist, or all are OOS, then we look to the device-based
+                // service state to detect if any calls are possible
+                connectionsOos && !deviceEmergencyOnly
             }
             .distinctUntilChanged()
             .logDiffsForTable(tableLog, columnName = COL_FULL_OOS, initialValue = true)

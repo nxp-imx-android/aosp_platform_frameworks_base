@@ -60,8 +60,7 @@ public final class DisallowCellular2GAdvancedProtectionHook extends AdvancedProt
     private static boolean isEmbeddedSubscriptionVisible(SubscriptionInfo subInfo) {
         if (subInfo.isEmbedded()
                 && (subInfo.getProfileClass() == SubscriptionManager.PROFILE_CLASS_PROVISIONING
-                        || (com.android.internal.telephony.flags.Flags.oemEnabledSatelliteFlag()
-                                && subInfo.isOnlyNonTerrestrialNetwork()))) {
+                        || subInfo.isOnlyNonTerrestrialNetwork())) {
             return false;
         }
 
