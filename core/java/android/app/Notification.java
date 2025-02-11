@@ -11204,10 +11204,15 @@ public class Notification implements Parcelable
      * </pre>
      *
      *
-     *
+     * <p>
      * NOTE: The progress bar layout will be mirrored for RTL layout.
+     * </p>
+     *
+     * <p>
      * NOTE: The extras set by {@link Notification.Builder#setProgress} will be overridden by
-     * the values set on this style object when the notification is built.
+     * the values set on this style object when the notification is built.  Therefore, that method
+     * is not used with this style.
+     * </p>
      *
      */
     @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
