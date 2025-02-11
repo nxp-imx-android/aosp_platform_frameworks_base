@@ -26,6 +26,13 @@ data class NotificationChipModel(
     val appName: String,
     val statusBarChipIconView: StatusBarIconView?,
     val promotedContent: PromotedNotificationContentModel,
+    /** The time when the notification first appeared as promoted. */
+    val creationTime: Long,
     /** True if the app managing this notification is currently visible to the user. */
     val isAppVisible: Boolean,
+    /**
+     * The time when the app managing this notification last appeared as visible, or null if the app
+     * hasn't become visible since the notification became promoted.
+     */
+    val lastAppVisibleTime: Long?,
 )
