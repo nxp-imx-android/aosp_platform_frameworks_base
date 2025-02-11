@@ -41,12 +41,15 @@ import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
 import com.android.systemui.statusbar.core.NewStatusBarIcons
+import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.data.repository.DarkIconDispatcherStore
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.ui.compose.StatusBarPopupChipsContainer
+import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerStatusBarViewBinder
+import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder
 import com.android.systemui.statusbar.phone.NotificationIconContainer
 import com.android.systemui.statusbar.phone.PhoneStatusBarView
 import com.android.systemui.statusbar.phone.StatusBarLocation
@@ -72,6 +75,7 @@ constructor(
     private val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory,
     private val homeStatusBarViewBinder: HomeStatusBarViewBinder,
     private val notificationIconsBinder: NotificationIconContainerStatusBarViewBinder,
+    private val iconViewStoreFactory: ConnectedDisplaysStatusBarNotificationIconViewStore.Factory,
     private val darkIconManagerFactory: DarkIconManager.Factory,
     private val iconController: StatusBarIconController,
     private val ongoingCallController: OngoingCallController,
@@ -89,6 +93,7 @@ constructor(
                     statusBarViewModelFactory = homeStatusBarViewModelFactory,
                     statusBarViewBinder = homeStatusBarViewBinder,
                     notificationIconsBinder = notificationIconsBinder,
+                    iconViewStoreFactory = iconViewStoreFactory,
                     darkIconManagerFactory = darkIconManagerFactory,
                     iconController = iconController,
                     ongoingCallController = ongoingCallController,
@@ -119,6 +124,7 @@ fun StatusBarRoot(
     statusBarViewModelFactory: HomeStatusBarViewModelFactory,
     statusBarViewBinder: HomeStatusBarViewBinder,
     notificationIconsBinder: NotificationIconContainerStatusBarViewBinder,
+    iconViewStoreFactory: ConnectedDisplaysStatusBarNotificationIconViewStore.Factory,
     darkIconManagerFactory: DarkIconManager.Factory,
     iconController: StatusBarIconController,
     ongoingCallController: OngoingCallController,
@@ -129,6 +135,14 @@ fun StatusBarRoot(
     val displayId = parent.context.displayId
     val statusBarViewModel =
         rememberViewModel("HomeStatusBar") { statusBarViewModelFactory.create(displayId) }
+    val iconViewStore: NotificationIconContainerViewBinder.IconViewStore? =
+        if (StatusBarConnectedDisplays.isEnabled) {
+            rememberViewModel("HomeStatusBar.IconViewStore[$displayId]") {
+                iconViewStoreFactory.create(displayId)
+            }
+        } else {
+            null
+        }
 
     Box(Modifier.fillMaxSize()) {
         // TODO(b/364360986): remove this before rolling the flag forward
@@ -174,7 +188,10 @@ fun StatusBarRoot(
                                         val chips by
                                             statusBarViewModel.ongoingActivityChips
                                                 .collectAsStateWithLifecycle()
-                                        OngoingActivityChips(chips = chips)
+                                        OngoingActivityChips(
+                                            chips = chips,
+                                            iconViewStore = iconViewStore,
+                                        )
                                     }
                                 }
                             }

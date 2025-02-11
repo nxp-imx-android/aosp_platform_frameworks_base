@@ -49,11 +49,18 @@ import com.android.systemui.animation.Expandable
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
+import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder
 
 @Composable
-fun OngoingActivityChip(model: OngoingActivityChipModel.Active, modifier: Modifier = Modifier) {
+fun OngoingActivityChip(
+    model: OngoingActivityChipModel.Active,
+    iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
+    modifier: Modifier = Modifier,
+) {
     when (val clickBehavior = model.clickBehavior) {
         is OngoingActivityChipModel.ClickBehavior.ExpandAction -> {
             // Wrap the chip in an Expandable so we can animate the expand transition.
@@ -65,15 +72,15 @@ fun OngoingActivityChip(model: OngoingActivityChipModel.Active, modifier: Modifi
                     ),
                 modifier = modifier,
             ) { expandable ->
-                ChipBody(model, onClick = { clickBehavior.onClick(expandable) })
+                ChipBody(model, iconViewStore, onClick = { clickBehavior.onClick(expandable) })
             }
         }
         is OngoingActivityChipModel.ClickBehavior.ShowHeadsUpNotification -> {
-            ChipBody(model, onClick = { clickBehavior.onClick() })
+            ChipBody(model, iconViewStore, onClick = { clickBehavior.onClick() })
         }
 
         is OngoingActivityChipModel.ClickBehavior.None -> {
-            ChipBody(model, modifier = modifier)
+            ChipBody(model, iconViewStore, modifier = modifier)
         }
     }
 }
@@ -81,12 +88,15 @@ fun OngoingActivityChip(model: OngoingActivityChipModel.Active, modifier: Modifi
 @Composable
 private fun ChipBody(
     model: OngoingActivityChipModel.Active,
+    iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val isClickable = onClick != null
-    val hasEmbeddedIcon = model.icon is OngoingActivityChipModel.ChipIcon.StatusBarView
+    val hasEmbeddedIcon =
+        model.icon is OngoingActivityChipModel.ChipIcon.StatusBarView ||
+            model.icon is OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon
     val contentDescription =
         when (val icon = model.icon) {
             is OngoingActivityChipModel.ChipIcon.StatusBarView -> icon.contentDescription.load()
@@ -156,7 +166,9 @@ private fun ChipBody(
                             }
                     ),
         ) {
-            model.icon?.let { ChipIcon(viewModel = it, colors = model.colors) }
+            model.icon?.let {
+                ChipIcon(viewModel = it, iconViewStore = iconViewStore, colors = model.colors)
+            }
 
             val isIconOnly = model is OngoingActivityChipModel.Active.IconOnly
             if (!isIconOnly) {
@@ -169,6 +181,7 @@ private fun ChipBody(
 @Composable
 private fun ChipIcon(
     viewModel: OngoingActivityChipModel.ChipIcon,
+    iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
     colors: ColorsModel,
     modifier: Modifier = Modifier,
 ) {
@@ -176,22 +189,16 @@ private fun ChipIcon(
 
     when (viewModel) {
         is OngoingActivityChipModel.ChipIcon.StatusBarView -> {
-            // TODO(b/364653005): If the notification updates their small icon, ensure it's updated
-            // in the chip.
-            val originalIcon = viewModel.impl
-            val iconSizePx =
-                context.resources.getDimensionPixelSize(
-                    R.dimen.ongoing_activity_chip_embedded_padding_icon_size
-                )
-            AndroidView(
-                modifier = modifier,
-                factory = { _ ->
-                    originalIcon.apply {
-                        layoutParams = ViewGroup.LayoutParams(iconSizePx, iconSizePx)
-                        imageTintList = ColorStateList.valueOf(colors.text(context))
-                    }
-                },
-            )
+            StatusBarConnectedDisplays.assertInLegacyMode()
+            StatusBarIcon(colors, viewModel.impl.notification?.key, modifier) { viewModel.impl }
+        }
+        is OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon -> {
+            StatusBarConnectedDisplays.assertInNewMode()
+            check(iconViewStore != null)
+
+            StatusBarIcon(colors, viewModel.notificationKey, modifier) {
+                iconViewStore.iconView(viewModel.notificationKey)
+            }
         }
 
         is OngoingActivityChipModel.ChipIcon.SingleColorIcon -> {
@@ -207,6 +214,31 @@ private fun ChipIcon(
         // StatusBarNotificationIcons
         is OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon -> {}
     }
+}
+
+/** A Compose wrapper around [StatusBarIconView]. */
+@Composable
+private fun StatusBarIcon(
+    colors: ColorsModel,
+    notificationKey: String?,
+    modifier: Modifier = Modifier,
+    iconFactory: () -> StatusBarIconView?,
+) {
+    val context = LocalContext.current
+
+    val iconSizePx =
+        context.resources.getDimensionPixelSize(
+            R.dimen.ongoing_activity_chip_embedded_padding_icon_size
+        )
+    AndroidView(
+        modifier = modifier,
+        factory = { _ ->
+            iconFactory.invoke()?.apply {
+                layoutParams = ViewGroup.LayoutParams(iconSizePx, iconSizePx)
+                imageTintList = ColorStateList.valueOf(colors.text(context))
+            } ?: throw IllegalStateException("Missing StatusBarIconView for $notificationKey")
+        },
+    )
 }
 
 @Composable
