@@ -16,7 +16,6 @@
 
 package com.android.systemui.window.domain.interactor
 
-import android.annotation.SuppressLint
 import android.util.Log
 import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
@@ -25,11 +24,11 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState.PRIMARY_BOUNCER
+import com.android.systemui.window.data.repository.BlurAppliedListener
 import com.android.systemui.window.data.repository.WindowRootViewBlurRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -54,8 +53,6 @@ constructor(
     private val communalInteractor: CommunalInteractor,
     private val repository: WindowRootViewBlurRepository,
 ) {
-    @SuppressLint("SharedFlowCreation") private val _onBlurAppliedEvent = MutableSharedFlow<Int>()
-
     private var isBouncerTransitionInProgress: StateFlow<Boolean> =
         if (Flags.bouncerUiRevamp()) {
             keyguardTransitionInteractor
@@ -71,8 +68,16 @@ constructor(
      * Invoked by the view after blur of [appliedBlurRadius] was successfully applied on the window
      * root view.
      */
-    suspend fun onBlurApplied(appliedBlurRadius: Int) {
-        _onBlurAppliedEvent.emit(appliedBlurRadius)
+    fun onBlurApplied(appliedBlurRadius: Int) {
+        repository.blurAppliedListener?.accept(appliedBlurRadius)
+    }
+
+    /**
+     * Register a listener that gets invoked whenever blur is applied, clears the listener if the
+     * passed in value is null
+     */
+    fun registerBlurAppliedListener(listener: BlurAppliedListener?) {
+        repository.blurAppliedListener = listener
     }
 
     /**
@@ -83,11 +88,6 @@ constructor(
 
     /** Radius of blur to be applied on the window root view. */
     val blurRadius: StateFlow<Int> = repository.blurRadius.asStateFlow()
-
-    /**
-     * Emits the applied blur radius whenever blur is successfully applied to the window root view.
-     */
-    val onBlurAppliedEvent: Flow<Int> = _onBlurAppliedEvent
 
     /** Whether the blur applied is opaque or transparent. */
     val isBlurOpaque: Flow<Boolean> =

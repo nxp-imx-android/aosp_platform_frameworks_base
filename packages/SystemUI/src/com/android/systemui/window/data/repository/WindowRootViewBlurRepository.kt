@@ -26,6 +26,7 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.window.data.repository.WindowRootViewBlurRepository.Companion.isDisableBlurSysPropSet
 import java.util.concurrent.Executor
+import java.util.function.Consumer
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
@@ -34,6 +35,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 
+typealias BlurAppliedListener = Consumer<Int>
+
 /** Repository that maintains state for the window blur effect. */
 interface WindowRootViewBlurRepository {
     val blurRadius: MutableStateFlow<Int>
@@ -41,6 +44,8 @@ interface WindowRootViewBlurRepository {
 
     /** Is blur supported based on settings toggle and battery power saver mode. */
     val isBlurSupported: StateFlow<Boolean>
+
+    var blurAppliedListener: BlurAppliedListener?
 
     companion object {
         /**
@@ -81,6 +86,8 @@ constructor(
                 awaitClose { crossWindowBlurListeners.removeListener(sendUpdate) }
             } // stateIn because this is backed by a binder call.
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+
+    override var blurAppliedListener: BlurAppliedListener? = null
 
     private fun isBlurAllowed(): Boolean {
         return ActivityManager.isHighEndGfx() && !isDisableBlurSysPropSet()

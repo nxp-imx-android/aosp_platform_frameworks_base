@@ -38,7 +38,6 @@ import com.android.systemui.Flags
 import com.android.systemui.Flags.spatialModelAppPushback
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.plugins.statusbar.StatusBarStateController
@@ -61,8 +60,6 @@ import java.util.Optional
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.sign
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 /**
  * Responsible for blurring the notification shade window, and applying a zoom effect to the
@@ -84,7 +81,6 @@ constructor(
     @ShadeDisplayAware private val context: Context,
     private val splitShadeStateController: SplitShadeStateController,
     private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
-    @Application private val applicationScope: CoroutineScope,
     private val appZoomOutOptional: Optional<AppZoomOut>,
     dumpManager: DumpManager,
     configurationController: ConfigurationController,
@@ -394,18 +390,15 @@ constructor(
     private fun initBlurListeners() {
         if (!Flags.bouncerUiRevamp()) return
 
-        applicationScope.launch {
-            Log.d(TAG, "Starting coroutines for window root view blur")
-            windowRootViewBlurInteractor.onBlurAppliedEvent.collect { appliedBlurRadius ->
-                if (updateScheduled) {
-                    // Process the blur applied event only if we scheduled the update
-                    TrackTracer.instantForGroup("shade", "shade_blur_radius", appliedBlurRadius)
-                    updateScheduled = false
-                    onBlurApplied(appliedBlurRadius, zoomOutCalculatedFromShadeRadius)
-                } else {
-                    // Try scheduling an update now, maybe our blur request will be scheduled now.
-                    scheduleUpdate()
-                }
+        windowRootViewBlurInteractor.registerBlurAppliedListener { appliedBlurRadius ->
+            if (updateScheduled) {
+                // Process the blur applied event only if we scheduled the update
+                TrackTracer.instantForGroup("shade", "shade_blur_radius", appliedBlurRadius)
+                updateScheduled = false
+                onBlurApplied(appliedBlurRadius, zoomOutCalculatedFromShadeRadius)
+            } else {
+                // Try scheduling an update now, maybe our blur request will be scheduled now.
+                scheduleUpdate()
             }
         }
     }
