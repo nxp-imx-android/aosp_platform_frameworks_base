@@ -135,8 +135,8 @@ public class ActivityEmbeddingAnimationRunnerTests extends ActivityEmbeddingAnim
                 .addChange(createChange(FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY, TRANSIT_OPEN))
                 .build();
         info.getChanges().getFirst().setAnimationOptions(TransitionInfo.AnimationOptions
-                .makeCustomAnimOptions("packageName", 0 /* enterResId */, 0 /* exitResId */,
-                        0 /* backgroundColor */, false /* overrideTaskTransition */));
+                .makeCustomAnimOptions("packageName", 0 /* enterResId */, 0 /* changeResId */,
+                        0 /* exitResId */, false /* overrideTaskTransition */));
         final Animator animator = mAnimRunner.createAnimator(
                 info, mStartTransaction, mFinishTransaction,
                 () -> mFinishCallback.onTransitionFinished(null /* wct */),

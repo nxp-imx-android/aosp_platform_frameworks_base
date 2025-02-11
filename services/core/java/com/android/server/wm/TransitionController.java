@@ -23,6 +23,7 @@ import static android.view.WindowManager.TRANSIT_NONE;
 
 import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON_CHANGE_DISPLAY;
 
+import android.annotation.ColorInt;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
@@ -938,10 +939,17 @@ class TransitionController {
     }
 
     /** @see Transition#setOverrideAnimation */
-    void setOverrideAnimation(TransitionInfo.AnimationOptions options, ActivityRecord r,
-            @Nullable IRemoteCallback startCallback, @Nullable IRemoteCallback finishCallback) {
+    void setOverrideAnimation(@NonNull TransitionInfo.AnimationOptions options,
+            @NonNull ActivityRecord r, @Nullable IRemoteCallback startCallback,
+            @Nullable IRemoteCallback finishCallback) {
         if (mCollectingTransition == null) return;
         mCollectingTransition.setOverrideAnimation(options, r, startCallback, finishCallback);
+    }
+
+    /** @see Transition#setOverrideBackgroundColor */
+    void setOverrideBackgroundColor(@ColorInt int backgroundColor) {
+        if (mCollectingTransition == null) return;
+        mCollectingTransition.setOverrideBackgroundColor(backgroundColor);
     }
 
     void setNoAnimation(WindowContainer wc) {

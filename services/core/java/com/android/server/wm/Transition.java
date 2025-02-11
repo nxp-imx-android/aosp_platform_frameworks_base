@@ -77,6 +77,7 @@ import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
 import static com.android.server.wm.WindowState.BLAST_TIMEOUT_DURATION;
 import static com.android.window.flags.Flags.enableDisplayFocusInShellTransitions;
 
+import android.annotation.ColorInt;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -256,6 +257,12 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
     /** Custom activity-level animation options and callbacks. */
     private AnimationOptions mOverrideOptions;
+
+    /**
+     * Custom background color
+     */
+    @ColorInt
+    private int mOverrideBackgroundColor;
 
     private IRemoteCallback mClientAnimationStartCallback = null;
     private IRemoteCallback mClientAnimationFinishCallback = null;
@@ -1008,6 +1015,13 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         sendRemoteCallback(mClientAnimationStartCallback);
         mClientAnimationStartCallback = startCallback;
         mClientAnimationFinishCallback = finishCallback;
+    }
+
+    /**
+     * Set background color for collecting transition.
+     */
+    void setOverrideBackgroundColor(@ColorInt int backgroundColor) {
+        mOverrideBackgroundColor = backgroundColor;
     }
 
     /**
@@ -2038,8 +2052,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             if (container.asActivityRecord() != null
                     || shouldApplyAnimOptionsToTask(container.asTask())) {
                 changes.get(i).setAnimationOptions(mOverrideOptions);
-                // TODO(b/295805497): Extract mBackgroundColor from AnimationOptions.
-                changes.get(i).setBackgroundColor(mOverrideOptions.getBackgroundColor());
+                changes.get(i).setBackgroundColor(mOverrideBackgroundColor);
             } else if (shouldApplyAnimOptionsToEmbeddedTf(container.asTaskFragment())) {
                 // We only override AnimationOptions because backgroundColor should be from
                 // TaskFragmentAnimationParams.
@@ -2495,7 +2508,12 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         sb.append(" id=" + mSyncId);
         sb.append(" type=" + transitTypeToString(mType));
         sb.append(" flags=0x" + Integer.toHexString(mFlags));
-        sb.append(" overrideAnimOptions=" + mOverrideOptions);
+        if (mOverrideOptions != null) {
+            sb.append(" overrideAnimOptions=" + mOverrideOptions);
+        }
+        if (mOverrideBackgroundColor != 0) {
+            sb.append(" overrideBackgroundColor=" + mOverrideBackgroundColor);
+        }
         if (!mChanges.isEmpty()) {
             sb.append(" c=[");
             for (int i = 0; i < mChanges.size(); i++) {
@@ -3064,13 +3082,10 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 final TaskFragmentAnimationParams params = taskFragment.getAnimationParams();
                 if (params.hasOverrideAnimation()) {
                     // Only set AnimationOptions if there's any animation override.
-                    // We use separated field for backgroundColor, and
-                    // AnimationOptions#backgroundColor will be removed in long term.
                     animOptions = AnimationOptions.makeCustomAnimOptions(
                             taskFragment.getTask().getBasePackageName(),
                             params.getOpenAnimationResId(), params.getChangeAnimationResId(),
-                            params.getCloseAnimationResId(), 0 /* backgroundColor */,
-                            false /* overrideTaskTransition */);
+                            params.getCloseAnimationResId(), false /* overrideTaskTransition */);
                     animOptions.setUserId(taskFragment.getTask().mUserId);
                 }
             }

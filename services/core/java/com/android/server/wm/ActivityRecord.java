@@ -5089,8 +5089,8 @@ final class ActivityRecord extends WindowToken {
         switch (animationType) {
             case ANIM_CUSTOM:
                 options = AnimationOptions.makeCustomAnimOptions(pendingOptions.getPackageName(),
-                        pendingOptions.getCustomEnterResId(), pendingOptions.getCustomExitResId(),
-                        pendingOptions.getCustomBackgroundColor(),
+                        pendingOptions.getCustomEnterResId(), 0 /* changeResId */,
+                        pendingOptions.getCustomExitResId(),
                         pendingOptions.getOverrideTaskTransition());
                 startCallback = pendingOptions.getAnimationStartedListener();
                 finishCallback = pendingOptions.getAnimationFinishedListener();
@@ -5150,6 +5150,10 @@ final class ActivityRecord extends WindowToken {
         if (options != null) {
             mTransitionController.setOverrideAnimation(options, this, startCallback,
                     finishCallback);
+        }
+        final int backgroundColor = pendingOptions.getCustomBackgroundColor();
+        if (backgroundColor != 0) {
+            mTransitionController.setOverrideBackgroundColor(backgroundColor);
         }
     }
 
