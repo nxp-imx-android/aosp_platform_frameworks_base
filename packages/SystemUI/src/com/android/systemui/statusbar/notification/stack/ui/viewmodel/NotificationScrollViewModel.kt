@@ -15,6 +15,8 @@
  *
  */
 
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
 import com.android.compose.animation.scene.ContentKey
@@ -46,11 +48,14 @@ import com.android.systemui.util.kotlin.ActivatableFlowDumperImpl
 import dagger.Lazy
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -192,6 +197,37 @@ constructor(
 
     val qsExpandFraction: Flow<Float> =
         shadeInteractor.qsExpansion.dumpWhileCollecting("qsExpandFraction")
+
+    /** Blur radius to be applied to Notifications. */
+    fun blurRadius(maxBlurRadius: Flow<Int>) =
+        combine(blurFraction, maxBlurRadius) { fraction, maxRadius -> fraction * maxRadius }
+
+    /**
+     * Scale of the blur effect that should be applied to Notifications.
+     *
+     * 0 -> don't blur (default, removes all blur render effects) 1 -> do the full blur (apply a
+     * render effect with the max blur radius)
+     */
+    private val blurFraction: Flow<Float> =
+        if (SceneContainerFlag.isEnabled) {
+            shadeModeInteractor.shadeMode.flatMapLatest { shadeMode ->
+                when (shadeMode) {
+                    ShadeMode.Dual ->
+                        combineTransform(
+                            shadeInteractor.shadeExpansion,
+                            shadeInteractor.qsExpansion,
+                        ) { notificationShadeExpansion, qsExpansion ->
+                            if (notificationShadeExpansion == 0f) {
+                                // Blur out notifications as the QS overlay panel expands
+                                emit(qsExpansion)
+                            }
+                        }
+                    else -> flowOf(0f)
+                }
+            }
+        } else {
+            flowOf(0f)
+        }
 
     /** Whether we should close any open notification guts. */
     val shouldCloseGuts: Flow<Boolean> = stackAppearanceInteractor.shouldCloseGuts
