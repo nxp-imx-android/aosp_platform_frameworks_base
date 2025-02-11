@@ -387,22 +387,6 @@ class InsetsPolicy {
                 state.addSource(navSource);
             }
             return state;
-        } else if (w.mActivityRecord != null && w.mActivityRecord.mImeInsetsFrozenUntilStartInput) {
-            // During switching tasks with gestural navigation, before the next IME input target
-            // starts the input, we should adjust and freeze the last IME visibility of the window
-            // in case delivering obsoleted IME insets state during transitioning.
-            final InsetsSource originalImeSource = originalState.peekSource(ID_IME);
-
-            if (originalImeSource != null) {
-                final boolean imeVisibility = w.isRequestedVisible(Type.ime());
-                final InsetsState state = copyState
-                        ? new InsetsState(originalState)
-                        : originalState;
-                final InsetsSource imeSource = new InsetsSource(originalImeSource);
-                imeSource.setVisible(imeVisibility);
-                state.addSource(imeSource);
-                return state;
-            }
         } else if (w.mImeInsetsConsumed) {
             // Set the IME source (if there is one) to be invisible if it has been consumed.
             final InsetsSource originalImeSource = originalState.peekSource(ID_IME);
@@ -453,9 +437,9 @@ class InsetsPolicy {
         return originalState;
     }
 
-    void onRequestedVisibleTypesChanged(InsetsTarget caller,
+    void onRequestedVisibleTypesChanged(InsetsTarget caller, @InsetsType int changedTypes,
             @Nullable ImeTracker.Token statsToken) {
-        mStateController.onRequestedVisibleTypesChanged(caller, statsToken);
+        mStateController.onRequestedVisibleTypesChanged(caller, changedTypes, statsToken);
         checkAbortTransient(caller);
         updateBarControlTarget(mFocusedWin);
     }

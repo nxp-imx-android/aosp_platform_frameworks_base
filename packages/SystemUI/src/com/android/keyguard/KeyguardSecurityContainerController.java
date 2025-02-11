@@ -70,6 +70,7 @@ import com.android.keyguard.KeyguardSecurityContainer.SwipeListener;
 import com.android.keyguard.KeyguardSecurityModel.SecurityMode;
 import com.android.keyguard.dagger.KeyguardBouncerScope;
 import com.android.settingslib.utils.ThreadUtils;
+import com.android.systemui.Flags;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.biometrics.FaceAuthAccessibilityDelegate;
 import com.android.systemui.bouncer.domain.interactor.BouncerMessageInteractor;
@@ -96,6 +97,8 @@ import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.ViewController;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.settings.GlobalSettings;
+import com.android.systemui.window.data.repository.WindowRootViewBlurRepository;
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 
 import dagger.Lazy;
 
@@ -134,6 +137,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
     private final FalsingA11yDelegate mFalsingA11yDelegate;
     private final DeviceEntryFaceAuthInteractor mDeviceEntryFaceAuthInteractor;
     private final BouncerMessageInteractor mBouncerMessageInteractor;
+    private final Lazy<WindowRootViewBlurInteractor> mRootViewBlurInteractor;
     private int mTranslationY;
     private final KeyguardDismissTransitionInteractor mKeyguardDismissTransitionInteractor;
     private final DevicePolicyManager mDevicePolicyManager;
@@ -431,6 +435,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
     private final Executor mBgExecutor;
     @Nullable
     private Job mSceneTransitionCollectionJob;
+    private Job mBlurEnabledCollectionJob;
 
     @Inject
     public KeyguardSecurityContainerController(KeyguardSecurityContainer view,
@@ -463,9 +468,11 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
             KeyguardDismissTransitionInteractor keyguardDismissTransitionInteractor,
             Lazy<PrimaryBouncerInteractor> primaryBouncerInteractor,
             @Background Executor bgExecutor,
-            Provider<DeviceEntryInteractor> deviceEntryInteractor
+            Provider<DeviceEntryInteractor> deviceEntryInteractor,
+            Lazy<WindowRootViewBlurInteractor> rootViewBlurInteractorProvider
     ) {
         super(view);
+        mRootViewBlurInteractor = rootViewBlurInteractorProvider;
         view.setAccessibilityDelegate(faceAuthAccessibilityDelegate);
         mLockPatternUtils = lockPatternUtils;
         mUpdateMonitor = keyguardUpdateMonitor;
@@ -539,6 +546,32 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
                 }
             );
         }
+
+        if (Flags.bouncerUiRevamp()) {
+            mBlurEnabledCollectionJob = mJavaAdapter.get().alwaysCollectFlow(
+                    mRootViewBlurInteractor.get().isBlurCurrentlySupported(),
+                    this::handleBlurSupportedChanged);
+        }
+    }
+
+    private void handleBlurSupportedChanged(boolean isWindowBlurSupported) {
+        if (isWindowBlurSupported) {
+            mView.enableTransparentMode();
+        } else {
+            mView.disableTransparentMode();
+        }
+    }
+
+    private void refreshBouncerBackground() {
+        // This is present solely for screenshot tests that disable blur by invoking setprop to
+        // disable blurs, however the mRootViewBlurInteractor#isBlurCurrentlySupported doesn't emit
+        // an updated value because sysui doesn't have a way to register for changes to setprop.
+        // KeyguardSecurityContainer view is inflated only once and doesn't re-inflate so it has to
+        // check the sysprop every time bouncer is about to be shown.
+        if (Flags.bouncerUiRevamp() && (ActivityManager.isRunningInUserTestHarness()
+                || ActivityManager.isRunningInTestHarness())) {
+            handleBlurSupportedChanged(!WindowRootViewBlurRepository.isDisableBlurSysPropSet());
+        }
     }
 
     @Override
@@ -551,6 +584,11 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
         if (mSceneTransitionCollectionJob != null) {
             mSceneTransitionCollectionJob.cancel(null);
             mSceneTransitionCollectionJob = null;
+        }
+
+        if (mBlurEnabledCollectionJob != null) {
+            mBlurEnabledCollectionJob.cancel(null);
+            mBlurEnabledCollectionJob = null;
         }
     }
 
@@ -718,6 +756,8 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
         if (bouncerUserSwitcher != null) {
             bouncerUserSwitcher.setAlpha(0f);
         }
+
+        refreshBouncerBackground();
     }
 
     @Override

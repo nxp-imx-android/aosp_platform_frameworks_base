@@ -43,6 +43,7 @@ import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubbles.DismissReason;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.BubbleBarUpdate;
 import com.android.wm.shell.shared.bubbles.RemovedBubble;
 
@@ -91,6 +92,8 @@ public class BubbleData {
         @Nullable Bubble suppressedBubble;
         @Nullable Bubble unsuppressedBubble;
         @Nullable String suppressedSummaryGroup;
+        @Nullable
+        BubbleBarLocation mBubbleBarLocation;
         // Pair with Bubble and @DismissReason Integer
         final List<Pair<Bubble, Integer>> removedBubbles = new ArrayList<>();
 
@@ -116,6 +119,7 @@ public class BubbleData {
                     || unsuppressedBubble != null
                     || suppressedSummaryChanged
                     || suppressedSummaryGroup != null
+                    || mBubbleBarLocation != null
                     || showOverflowChanged;
         }
 
@@ -169,6 +173,7 @@ public class BubbleData {
             }
             bubbleBarUpdate.showOverflowChanged = showOverflowChanged;
             bubbleBarUpdate.showOverflow = !overflowBubbles.isEmpty();
+            bubbleBarUpdate.bubbleBarLocation = mBubbleBarLocation;
             return bubbleBarUpdate;
         }
 
@@ -396,8 +401,23 @@ public class BubbleData {
      * {@link #setExpanded(boolean)} immediately after, which will generate 2 separate updates.
      */
     public void setSelectedBubbleAndExpandStack(BubbleViewProvider bubble) {
+        setSelectedBubbleAndExpandStack(bubble, /* bubbleBarLocation = */ null);
+    }
+
+    /**
+     * Sets the selected bubble and expands it. Also updates bubble bar location if the
+     * bubbleBarLocation is not {@code null}
+     *
+     * <p>This dispatches a single state update for 3 changes and should be used instead of
+     * calling {@link BubbleController#setBubbleBarLocation(BubbleBarLocation, int)} followed by
+     * {@link #setSelectedBubbleAndExpandStack(BubbleViewProvider)} immediately after, which will
+     * generate 2 separate updates.
+     */
+    public void setSelectedBubbleAndExpandStack(BubbleViewProvider bubble,
+            @Nullable BubbleBarLocation bubbleBarLocation) {
         setSelectedBubbleInternal(bubble);
         setExpandedInternal(true);
+        mStateChange.mBubbleBarLocation = bubbleBarLocation;
         dispatchPendingChanges();
     }
 
@@ -513,13 +533,25 @@ public class BubbleData {
     }
 
     /**
+     * Calls {@link #notificationEntryUpdated(Bubble, boolean, boolean, BubbleBarLocation)} passing
+     * {@code null} for bubbleBarLocation.
+     *
+     * @see #notificationEntryUpdated(Bubble, boolean, boolean, BubbleBarLocation)
+     */
+    void notificationEntryUpdated(Bubble bubble, boolean suppressFlyout, boolean showInShade) {
+        notificationEntryUpdated(bubble, suppressFlyout, showInShade, /* bubbleBarLocation = */
+                null);
+    }
+
+    /**
      * When this method is called it is expected that all info in the bubble has completed loading.
      * @see Bubble#inflate(BubbleViewInfoTask.Callback, Context, BubbleExpandedViewManager,
      * BubbleTaskViewFactory, BubblePositioner, BubbleLogger, BubbleStackView,
      * com.android.wm.shell.bubbles.bar.BubbleBarLayerView,
      * com.android.launcher3.icons.BubbleIconFactory, boolean)
      */
-    void notificationEntryUpdated(Bubble bubble, boolean suppressFlyout, boolean showInShade) {
+    void notificationEntryUpdated(Bubble bubble, boolean suppressFlyout, boolean showInShade,
+            @Nullable BubbleBarLocation bubbleBarLocation) {
         mPendingBubbles.remove(bubble.getKey()); // No longer pending once we're here
         Bubble prevBubble = getBubbleInStackWithKey(bubble.getKey());
         suppressFlyout |= !bubble.isTextChanged();
@@ -567,6 +599,7 @@ public class BubbleData {
                 doSuppress(bubble);
             }
         }
+        mStateChange.mBubbleBarLocation = bubbleBarLocation;
         dispatchPendingChanges();
     }
 

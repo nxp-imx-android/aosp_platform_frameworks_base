@@ -1550,6 +1550,118 @@ public final class BroadcastQueueImplTest extends BaseBroadcastQueueTest {
         verifyPendingRecords(queue, List.of(closeSystemDialogs1, closeSystemDialogs2));
     }
 
+    @SuppressWarnings("GuardedBy")
+    @Test
+    public void testDeliveryGroupPolicy_sameAction_multiplePolicies() {
+        // Create a PACKAGE_CHANGED broadcast corresponding to a change in the whole PACKAGE_GREEN
+        // package.
+        final Intent greenPackageChangedIntent = createPackageChangedIntent(
+                getUidForPackage(PACKAGE_GREEN), List.of(PACKAGE_GREEN));
+        // Create delivery group policy such that when there are multiple broadcasts within the
+        // delivery group identified by "com.example.green/10002", only the most recent one
+        // gets delivered and the rest get discarded.
+        final BroadcastOptions optionsMostRecentPolicyForPackageGreen =
+                BroadcastOptions.makeBasic();
+        optionsMostRecentPolicyForPackageGreen.setDeliveryGroupMatchingKey("package_changed",
+                PACKAGE_GREEN + "/" + getUidForPackage(PACKAGE_GREEN));
+        optionsMostRecentPolicyForPackageGreen.setDeliveryGroupPolicy(
+                BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT);
+
+        // Create a PACKAGE_CHANGED broadcast corresponding to a change in the whole PACKAGE_RED
+        // package.
+        final Intent redPackageChangedIntent = createPackageChangedIntent(
+                getUidForPackage(PACKAGE_RED), List.of(PACKAGE_RED));
+        // Create delivery group policy such that when there are multiple broadcasts within the
+        // delivery group identified by "com.example.red/10001", only the most recent one
+        // gets delivered and the rest get discarded.
+        final BroadcastOptions optionsMostRecentPolicyForPackageRed =
+                BroadcastOptions.makeBasic();
+        optionsMostRecentPolicyForPackageRed.setDeliveryGroupMatchingKey("package_changed",
+                PACKAGE_RED + "/" + getUidForPackage(PACKAGE_RED));
+        optionsMostRecentPolicyForPackageRed.setDeliveryGroupPolicy(
+                BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT);
+
+        // Create a PACKAGE_CHANGED broadcast corresponding to a change in some components of
+        // PACKAGE_GREEN package.
+        final Intent greenPackageComponentsChangedIntent1 = createPackageChangedIntent(
+                getUidForPackage(PACKAGE_GREEN),
+                List.of(PACKAGE_GREEN + ".comp1", PACKAGE_GREEN + ".comp2"));
+        final Intent greenPackageComponentsChangedIntent2 = createPackageChangedIntent(
+                getUidForPackage(PACKAGE_GREEN),
+                List.of(PACKAGE_GREEN + ".comp3"));
+        // Create delivery group policy such that when there are multiple broadcasts within the
+        // delivery group identified by "components-com.example.green/10002", merge the extras
+        // within these broadcasts such that only one broadcast is sent and the rest are
+        // discarded. Couple of things to note here:
+        // 1. We are intentionally using a different policy group
+        //    "components-com.example.green/10002" (as opposed to "com.example.green/10002" used
+        //    earlier), because this is corresponding to a change in some particular components,
+        //    rather than a change to the whole package and we want to keep these two types of
+        //    broadcasts independent.
+        // 2. We are using 'extrasMerger' to indicate how we want the extras to be merged. This
+        //    assumes that broadcasts belonging to the group 'components-com.example.green/10002'
+        //    will have the same values for all the extras, except for the one extra
+        //    'EXTRA_CHANGED_COMPONENT_NAME_LIST'. So, we explicitly specify how to merge this
+        //    extra by using 'STRATEGY_ARRAY_APPEND' strategy, which basically indicates that
+        //    the extra values which are arrays should be concatenated.
+        final BundleMerger extrasMerger = new BundleMerger();
+        extrasMerger.setMergeStrategy(Intent.EXTRA_CHANGED_COMPONENT_NAME_LIST,
+                BundleMerger.STRATEGY_ARRAY_APPEND);
+        final BroadcastOptions optionsMergedPolicyForPackageGreen = BroadcastOptions.makeBasic();
+        optionsMergedPolicyForPackageGreen.setDeliveryGroupMatchingKey("package_changed",
+                "components-" + PACKAGE_GREEN + "/" + getUidForPackage(PACKAGE_GREEN));
+        optionsMergedPolicyForPackageGreen.setDeliveryGroupPolicy(
+                BroadcastOptions.DELIVERY_GROUP_POLICY_MERGED);
+        optionsMergedPolicyForPackageGreen.setDeliveryGroupExtrasMerger(extrasMerger);
+
+        // Create a PACKAGE_CHANGED broadcast corresponding to a change in some components of
+        // PACKAGE_RED package.
+        final Intent redPackageComponentsChangedIntent = createPackageChangedIntent(
+                getUidForPackage(PACKAGE_RED),
+                List.of(PACKAGE_RED + ".comp1", PACKAGE_RED + ".comp2"));
+        // Create delivery group policy such that when there are multiple broadcasts within the
+        // delivery group identified by "components-com.example.red/10001", merge the extras
+        // within these broadcasts such that only one broadcast is sent and the rest are
+        // discarded.
+        final BroadcastOptions optionsMergedPolicyForPackageRed = BroadcastOptions.makeBasic();
+        optionsMergedPolicyForPackageGreen.setDeliveryGroupMatchingKey("package_changed",
+                "components-" + PACKAGE_RED + "/" + getUidForPackage(PACKAGE_RED));
+        optionsMergedPolicyForPackageRed.setDeliveryGroupPolicy(
+                BroadcastOptions.DELIVERY_GROUP_POLICY_MERGED);
+        optionsMergedPolicyForPackageRed.setDeliveryGroupExtrasMerger(extrasMerger);
+
+        mImpl.enqueueBroadcastLocked(makeBroadcastRecord(greenPackageChangedIntent,
+                optionsMostRecentPolicyForPackageGreen));
+        mImpl.enqueueBroadcastLocked(makeBroadcastRecord(redPackageChangedIntent,
+                optionsMostRecentPolicyForPackageRed));
+        mImpl.enqueueBroadcastLocked(makeBroadcastRecord(greenPackageComponentsChangedIntent1,
+                optionsMergedPolicyForPackageGreen));
+        mImpl.enqueueBroadcastLocked(makeBroadcastRecord(redPackageComponentsChangedIntent,
+                optionsMergedPolicyForPackageRed));
+        // Since this broadcast has DELIVERY_GROUP_MOST_RECENT policy set, the earlier
+        // greenPackageChangedIntent broadcast with the same policy will be discarded.
+        mImpl.enqueueBroadcastLocked(makeBroadcastRecord(greenPackageChangedIntent,
+                optionsMostRecentPolicyForPackageGreen));
+        // Since this broadcast has DELIVERY_GROUP_MERGED policy set, the earlier
+        // greenPackageComponentsChangedIntent1 broadcast with the same policy will be merged
+        // with this one and then will be discarded.
+        mImpl.enqueueBroadcastLocked(makeBroadcastRecord(greenPackageComponentsChangedIntent2,
+                optionsMergedPolicyForPackageGreen));
+
+        final BroadcastProcessQueue queue = mImpl.getProcessQueue(PACKAGE_GREEN,
+                getUidForPackage(PACKAGE_GREEN));
+        // The extra EXTRA_CHANGED_COMPONENT_NAME_LIST values from
+        // greenPackageComponentsChangedIntent1 and
+        // greenPackageComponentsChangedIntent2 broadcasts would be merged, since
+        // STRATEGY_ARRAY_APPEND was used for this extra.
+        final Intent expectedGreenPackageComponentsChangedIntent = createPackageChangedIntent(
+                getUidForPackage(PACKAGE_GREEN), List.of(PACKAGE_GREEN + ".comp3",
+                        PACKAGE_GREEN + ".comp1", PACKAGE_GREEN + ".comp2"));
+        verifyPendingRecords(queue, List.of(redPackageChangedIntent,
+                redPackageComponentsChangedIntent, greenPackageChangedIntent,
+                expectedGreenPackageComponentsChangedIntent));
+    }
+
     private Pair<Intent, BroadcastOptions> createDropboxBroadcast(String tag, long timestampMs,
             int droppedCount) {
         final Intent dropboxEntryAdded = new Intent(DropBoxManager.ACTION_DROPBOX_ENTRY_ADDED);

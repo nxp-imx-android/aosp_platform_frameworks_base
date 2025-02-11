@@ -19,11 +19,13 @@ package com.android.systemui.qs.panels.domain.startable
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.panels.domain.interactor.QSPreferencesInteractor
 import com.android.systemui.qs.pipeline.data.repository.TileSpecRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 
 class QSPanelsCoreStartable
 @Inject
@@ -33,10 +35,14 @@ constructor(
     @Background private val backgroundApplicationScope: CoroutineScope,
 ) : CoreStartable {
     override fun start() {
-        backgroundApplicationScope.launchTraced("QSPanelsCoreStartable.startingLargeTiles") {
-            tileSpecRepository.tilesReadFromSetting.receiveAsFlow().collect { (tiles, userId) ->
-                preferenceInteractor.setInitialLargeTilesSpecs(tiles, userId)
+        if (QsInCompose.isEnabled) {
+            backgroundApplicationScope.launchTraced("QSPanelsCoreStartable.startingLargeTiles") {
+                tileSpecRepository.tilesUpgradePath.receiveAsFlow().collect { (tiles, userId) ->
+                    preferenceInteractor.setInitialOrUpgradeLargeTilesSpecs(tiles, userId)
+                }
             }
+        } else {
+            backgroundApplicationScope.launch { preferenceInteractor.deleteLargeTilesDataJob() }
         }
     }
 }

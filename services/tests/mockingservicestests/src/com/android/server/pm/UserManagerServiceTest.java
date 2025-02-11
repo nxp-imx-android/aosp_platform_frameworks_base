@@ -401,12 +401,24 @@ public final class UserManagerServiceTest {
     }
 
     @Test
-    public void testGetBootUser_Headless_ThrowsIfOnlySystemUserExists() throws Exception {
+    public void testGetBootUser_CannotSwitchToHeadlessSystemUser_ThrowsIfOnlySystemUserExists()
+            throws Exception {
         setSystemUserHeadless(true);
         removeNonSystemUsers();
+        mockCanSwitchToHeadlessSystemUser(false);
 
         assertThrows(UserManager.CheckedUserOperationException.class,
                 () -> mUmi.getBootUser(/* waitUntilSet= */ false));
+    }
+
+    @Test
+    public void testGetBootUser_CanSwitchToHeadlessSystemUser_NoThrowIfOnlySystemUserExists()
+            throws Exception {
+        setSystemUserHeadless(true);
+        removeNonSystemUsers();
+        mockCanSwitchToHeadlessSystemUser(true);
+
+        assertThat(mUmi.getBootUser(/* waitUntilSet= */ false)).isEqualTo(UserHandle.USER_SYSTEM);
     }
 
     @Test

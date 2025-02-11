@@ -9,6 +9,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.pipeline.data.model.RestoreData
 import com.android.systemui.qs.pipeline.shared.TileSpec
+import com.android.systemui.qs.pipeline.shared.TilesUpgradePath
 import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
 import com.android.systemui.util.settings.SecureSettings
 import dagger.assisted.Assisted
@@ -49,8 +50,8 @@ constructor(
     @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) {
 
-    private val _tilesReadFromSettings = Channel<Set<TileSpec>>(capacity = 2)
-    val tilesReadFromSettings: ReceiveChannel<Set<TileSpec>> = _tilesReadFromSettings
+    private val _tilesUpgradePath = Channel<TilesUpgradePath>(capacity = 3)
+    val tilesUpgradePath: ReceiveChannel<TilesUpgradePath> = _tilesUpgradePath
 
     private val defaultTiles: List<TileSpec>
         get() = defaultTilesRepository.defaultTiles
@@ -67,13 +68,22 @@ constructor(
                     .scan(loadTilesFromSettingsAndParse(userId)) { current, change ->
                         change
                             .apply(current)
-                            .also {
-                                if (current != it) {
+                            .also { afterRestore ->
+                                if (current != afterRestore) {
                                     if (change is RestoreTiles) {
-                                        logger.logTilesRestoredAndReconciled(current, it, userId)
+                                        logger.logTilesRestoredAndReconciled(
+                                            current,
+                                            afterRestore,
+                                            userId,
+                                        )
                                     } else {
-                                        logger.logProcessTileChange(change, it, userId)
+                                        logger.logProcessTileChange(change, afterRestore, userId)
                                     }
+                                }
+                                if (change is RestoreTiles) {
+                                    _tilesUpgradePath.send(
+                                        TilesUpgradePath.RestoreFromBackup(afterRestore.toSet())
+                                    )
                                 }
                             }
                             // Distinct preserves the order of the elements removing later
@@ -154,7 +164,9 @@ constructor(
     private suspend fun loadTilesFromSettingsAndParse(userId: Int): List<TileSpec> {
         val loadedTiles = loadTilesFromSettings(userId)
         if (loadedTiles.isNotEmpty()) {
-            _tilesReadFromSettings.send(loadedTiles.toSet())
+            _tilesUpgradePath.send(TilesUpgradePath.ReadFromSettings(loadedTiles.toSet()))
+        } else {
+            _tilesUpgradePath.send(TilesUpgradePath.DefaultSet)
         }
         return parseTileSpecs(loadedTiles, userId)
     }

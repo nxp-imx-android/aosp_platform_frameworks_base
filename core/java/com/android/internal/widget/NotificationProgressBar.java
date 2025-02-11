@@ -83,7 +83,7 @@ public final class NotificationProgressBar extends ProgressBar implements
 
     /** @see R.styleable#NotificationProgressBar_trackerHeight */
     private final int mTrackerHeight;
-    private int mTrackerWidth;
+    private int mTrackerDrawWidth = 0;
     private int mTrackerPos;
     private final Matrix mMatrix = new Matrix();
     private Matrix mTrackerDrawMatrix = null;
@@ -157,7 +157,7 @@ public final class NotificationProgressBar extends ProgressBar implements
         } else {
             // TODO: b/372908709 - maybe don't rerun the entire calculation every time the
             //  progress model is updated? For example, if the segments and parts aren't changed,
-            //  there is no need to call `processAndConvertToViewParts` again.
+            //  there is no need to call `processModelAndConvertToViewParts` again.
 
             final int progress = mProgressModel.getProgress();
             final int progressMax = mProgressModel.getProgressMax();
@@ -286,8 +286,11 @@ public final class NotificationProgressBar extends ProgressBar implements
     private void configureTrackerBounds() {
         // Reset the tracker draw matrix to null
         mTrackerDrawMatrix = null;
+        mTrackerDrawWidth = 0;
 
-        if (mTracker == null || mTrackerHeight <= 0) {
+        if (mTracker == null) return;
+        if (mTrackerHeight <= 0) {
+            mTrackerDrawWidth = mTracker.getIntrinsicWidth();
             return;
         }
 
@@ -306,14 +309,14 @@ public final class NotificationProgressBar extends ProgressBar implements
         if (dWidth > maxDWidth) {
             scale = (float) mTrackerHeight / (float) dHeight;
             dx = (maxDWidth * scale - dWidth * scale) * 0.5f;
-            mTrackerWidth = (int) (maxDWidth * scale);
+            mTrackerDrawWidth = (int) (maxDWidth * scale);
         } else if (dHeight > maxDHeight) {
             scale = (float) mTrackerHeight * 0.5f / (float) dWidth;
             dy = (maxDHeight * scale - dHeight * scale) * 0.5f;
-            mTrackerWidth = mTrackerHeight / 2;
+            mTrackerDrawWidth = mTrackerHeight / 2;
         } else {
             scale = (float) mTrackerHeight / (float) dHeight;
-            mTrackerWidth = (int) (dWidth * scale);
+            mTrackerDrawWidth = (int) (dWidth * scale);
         }
 
         mTrackerDrawMatrix.setScale(scale, scale);
@@ -449,7 +452,8 @@ public final class NotificationProgressBar extends ProgressBar implements
                 segSegGap,
                 segPointGap,
                 pointRadius,
-                mHasTrackerIcon
+                mHasTrackerIcon,
+                mTrackerDrawWidth
         );
 
         final float segmentMinWidth = mNotificationProgressDrawable.getSegmentMinWidth();
@@ -465,7 +469,6 @@ public final class NotificationProgressBar extends ProgressBar implements
                     segmentMinWidth,
                     pointRadius,
                     progressFraction,
-                    width,
                     isStyledByProgress,
                     progressGap
             );
@@ -493,8 +496,8 @@ public final class NotificationProgressBar extends ProgressBar implements
                         pointRadius,
                         mHasTrackerIcon,
                         segmentMinWidth,
-                        isStyledByProgress
-                );
+                        isStyledByProgress,
+                        mTrackerDrawWidth);
             } catch (NotEnoughWidthToFitAllPartsException ex) {
                 Log.w(TAG, "Failed to stretch and rescale segments with single segment fallback",
                         ex);
@@ -522,8 +525,8 @@ public final class NotificationProgressBar extends ProgressBar implements
                         pointRadius,
                         mHasTrackerIcon,
                         segmentMinWidth,
-                        isStyledByProgress
-                );
+                        isStyledByProgress,
+                        mTrackerDrawWidth);
             } catch (NotEnoughWidthToFitAllPartsException ex) {
                 Log.w(TAG,
                         "Failed to stretch and rescale segments with single segments and no points",
@@ -537,16 +540,20 @@ public final class NotificationProgressBar extends ProgressBar implements
                     mParts,
                     mProgressDrawableParts,
                     progressFraction,
-                    width,
                     isStyledByProgress,
                     progressGap);
         }
+
+        // Extend the first and last segments to fill the entire width.
+        p.first.getFirst().setStart(0);
+        p.first.getLast().setEnd(width);
 
         if (DEBUG) {
             Log.d(TAG, "Updating NotificationProgressDrawable parts");
         }
         mNotificationProgressDrawable.setParts(p.first);
-        mAdjustedProgressFraction = p.second / width;
+        mAdjustedProgressFraction =
+                (p.second - mTrackerDrawWidth / 2F) / (width - mTrackerDrawWidth);
     }
 
     private void updateTrackerAndBarPos(int w, int h) {
@@ -607,7 +614,7 @@ public final class NotificationProgressBar extends ProgressBar implements
         int available = w - mPaddingLeft - mPaddingRight;
         final int trackerWidth = tracker.getIntrinsicWidth();
         final int trackerHeight = tracker.getIntrinsicHeight();
-        available -= ((mTrackerHeight <= 0) ? trackerWidth : mTrackerWidth);
+        available -= mTrackerDrawWidth;
 
         final int trackerPos = (int) (progressFraction * available + 0.5f);
 
@@ -672,7 +679,7 @@ public final class NotificationProgressBar extends ProgressBar implements
         canvas.translate(mPaddingLeft + mTrackerPos, mPaddingTop);
 
         if (mTrackerHeight > 0) {
-            canvas.clipRect(0, 0, mTrackerWidth, mTrackerHeight);
+            canvas.clipRect(0, 0, mTrackerDrawWidth, mTrackerHeight);
         }
 
         if (mTrackerDrawMatrix != null) {
@@ -751,12 +758,26 @@ public final class NotificationProgressBar extends ProgressBar implements
             throw new IllegalArgumentException("Invalid progress : " + progress);
         }
 
+
         for (ProgressStyle.Point point : points) {
             final int pos = point.getPosition();
             if (pos < 0 || pos > progressMax) {
                 throw new IllegalArgumentException("Invalid Point position : " + pos);
             }
         }
+
+        // There should be no points at start or end. If there are, drop them with a warning.
+        points.removeIf(point -> {
+            final int pos = point.getPosition();
+            if (pos == 0) {
+                Log.w(TAG, "Dropping point at start");
+                return true;
+            } else if (pos == progressMax) {
+                Log.w(TAG, "Dropping point at end");
+                return true;
+            }
+            return false;
+        });
 
         final Map<Integer, ProgressStyle.Segment> startToSegmentMap = generateStartToSegmentMap(
                 segments);
@@ -891,12 +912,14 @@ public final class NotificationProgressBar extends ProgressBar implements
             float segSegGap,
             float segPointGap,
             float pointRadius,
-            boolean hasTrackerIcon
-    ) {
+            boolean hasTrackerIcon,
+            int trackerDrawWidth) {
         List<DrawablePart> drawableParts = new ArrayList<>();
 
-        // generally, we will start drawing at (x, y) and end at (x+w, y)
-        float x = (float) 0;
+        float available = totalWidth - trackerDrawWidth;
+        // Generally, we will start the first segment at (x+trackerDrawWidth/2, y) and end the last
+        // segment at (x+w-trackerDrawWidth/2, y)
+        float x = trackerDrawWidth / 2F;
 
         final int nParts = parts.size();
         for (int iPart = 0; iPart < nParts; iPart++) {
@@ -904,15 +927,14 @@ public final class NotificationProgressBar extends ProgressBar implements
             final Part prevPart = iPart == 0 ? null : parts.get(iPart - 1);
             final Part nextPart = iPart + 1 == nParts ? null : parts.get(iPart + 1);
             if (part instanceof Segment segment) {
-                final float segWidth = segment.mFraction * totalWidth;
+                final float segWidth = segment.mFraction * available;
                 // Advance the start position to account for a point immediately prior.
-                final float startOffset = getSegStartOffset(prevPart, pointRadius, segPointGap,
-                        iPart == 1);
+                final float startOffset = getSegStartOffset(prevPart, pointRadius, segPointGap);
                 final float start = x + startOffset;
                 // Retract the end position to account for the padding and a point immediately
                 // after.
                 final float endOffset = getSegEndOffset(segment, nextPart, pointRadius, segPointGap,
-                        segSegGap, iPart == nParts - 2, hasTrackerIcon);
+                        segSegGap, hasTrackerIcon);
                 final float end = x + segWidth - endOffset;
 
                 drawableParts.add(new DrawableSegment(start, end, segment.mColor, segment.mFaded));
@@ -927,16 +949,6 @@ public final class NotificationProgressBar extends ProgressBar implements
                 final float pointWidth = 2 * pointRadius;
                 float start = x - pointRadius;
                 float end = x + pointRadius;
-                // Only shift the points right at the start/end.
-                // For the points close to the start/end, the segment minimum width requirement
-                // would take care of shifting them to be within the bounds.
-                if (iPart == 0) {
-                    start = 0;
-                    end = pointWidth;
-                } else if (iPart == nParts - 1) {
-                    start = totalWidth - pointWidth;
-                    end = totalWidth;
-                }
 
                 drawableParts.add(new DrawablePoint(start, end, point.mColor));
             }
@@ -945,16 +957,13 @@ public final class NotificationProgressBar extends ProgressBar implements
         return drawableParts;
     }
 
-    private static float getSegStartOffset(Part prevPart, float pointRadius, float segPointGap,
-            boolean isSecondPart) {
+    private static float getSegStartOffset(Part prevPart, float pointRadius, float segPointGap) {
         if (!(prevPart instanceof Point)) return 0F;
-        final float pointOffset = isSecondPart ? pointRadius : 0;
-        return pointOffset + pointRadius + segPointGap;
+        return pointRadius + segPointGap;
     }
 
     private static float getSegEndOffset(Segment seg, Part nextPart, float pointRadius,
-            float segPointGap, float segSegGap, boolean isSecondToLastPart,
-            boolean hasTrackerIcon) {
+            float segPointGap, float segSegGap, boolean hasTrackerIcon) {
         if (nextPart == null) return 0F;
         if (nextPart instanceof Segment nextSeg) {
             if (!seg.mFaded && nextSeg.mFaded) {
@@ -964,8 +973,7 @@ public final class NotificationProgressBar extends ProgressBar implements
             return segSegGap;
         }
 
-        final float pointOffset = isSecondToLastPart ? pointRadius : 0;
-        return segPointGap + pointRadius + pointOffset;
+        return segPointGap + pointRadius;
     }
 
     /**
@@ -980,7 +988,6 @@ public final class NotificationProgressBar extends ProgressBar implements
             float segmentMinWidth,
             float pointRadius,
             float progressFraction,
-            float totalWidth,
             boolean isStyledByProgress,
             float progressGap
     ) throws NotEnoughWidthToFitAllPartsException {
@@ -1003,7 +1010,6 @@ public final class NotificationProgressBar extends ProgressBar implements
                     parts,
                     drawableParts,
                     progressFraction,
-                    totalWidth,
                     isStyledByProgress,
                     progressGap);
         }
@@ -1056,7 +1062,6 @@ public final class NotificationProgressBar extends ProgressBar implements
                 parts,
                 drawableParts,
                 progressFraction,
-                totalWidth,
                 isStyledByProgress,
                 progressGap);
     }
@@ -1071,11 +1076,12 @@ public final class NotificationProgressBar extends ProgressBar implements
             List<Part> parts,
             List<DrawablePart> drawableParts,
             float progressFraction,
-            float totalWidth,
             boolean isStyledByProgress,
             float progressGap
     ) {
-        if (progressFraction == 1) return new Pair<>(drawableParts, totalWidth);
+        if (progressFraction == 1) {
+            return new Pair<>(drawableParts, drawableParts.getLast().getEnd());
+        }
 
         int iPartFirstSegmentToStyle = -1;
         int iPartSegmentToSplit = -1;
@@ -1162,14 +1168,15 @@ public final class NotificationProgressBar extends ProgressBar implements
             float pointRadius,
             boolean hasTrackerIcon,
             float segmentMinWidth,
-            boolean isStyledByProgress
+            boolean isStyledByProgress,
+            int trackerDrawWidth
     ) throws NotEnoughWidthToFitAllPartsException {
         List<Part> parts = processModelAndConvertToViewParts(segments, points, progress,
                 progressMax);
         List<DrawablePart> drawableParts = processPartsAndConvertToDrawableParts(parts, totalWidth,
-                segSegGap, segPointGap, pointRadius, hasTrackerIcon);
+                segSegGap, segPointGap, pointRadius, hasTrackerIcon, trackerDrawWidth);
         return maybeStretchAndRescaleSegments(parts, drawableParts, segmentMinWidth, pointRadius,
-                getProgressFraction(progressMax, progress), totalWidth, isStyledByProgress,
+                getProgressFraction(progressMax, progress), isStyledByProgress,
                 hasTrackerIcon ? 0F : segSegGap);
     }
 

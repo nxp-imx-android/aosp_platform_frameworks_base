@@ -182,7 +182,6 @@ import static com.android.server.wm.WindowStateProto.UNRESTRICTED_KEEP_CLEAR_ARE
 import static com.android.server.wm.WindowStateProto.VIEW_VISIBILITY;
 import static com.android.server.wm.WindowStateProto.WINDOW_CONTAINER;
 import static com.android.server.wm.WindowStateProto.WINDOW_FRAMES;
-import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 import static com.android.window.flags.Flags.surfaceTrustedOverlay;
 
 import android.annotation.CallSuper;
@@ -822,17 +821,23 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     /**
+     * @return an integer as the changed requested visible insets types.
      * @see #getRequestedVisibleTypes()
      */
-    void setRequestedVisibleTypes(@InsetsType int requestedVisibleTypes) {
+    @InsetsType int setRequestedVisibleTypes(@InsetsType int requestedVisibleTypes) {
         if (mRequestedVisibleTypes != requestedVisibleTypes) {
+            final int changedTypes = mRequestedVisibleTypes ^ requestedVisibleTypes;
             mRequestedVisibleTypes = requestedVisibleTypes;
+            return changedTypes;
         }
+        return 0;
     }
 
     @VisibleForTesting
-    void setRequestedVisibleTypes(@InsetsType int requestedVisibleTypes, @InsetsType int mask) {
-        setRequestedVisibleTypes(mRequestedVisibleTypes & ~mask | requestedVisibleTypes & mask);
+    @InsetsType int setRequestedVisibleTypes(
+            @InsetsType int requestedVisibleTypes, @InsetsType int mask) {
+        return setRequestedVisibleTypes(
+                mRequestedVisibleTypes & ~mask | requestedVisibleTypes & mask);
     }
 
     /**
@@ -2069,38 +2074,15 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         super.onMovedByResize();
     }
 
-    void onAppVisibilityChanged(boolean visible, boolean runningAppAnimation) {
+    void onAppCommitInvisible() {
         for (int i = mChildren.size() - 1; i >= 0; --i) {
-            mChildren.get(i).onAppVisibilityChanged(visible, runningAppAnimation);
+            mChildren.get(i).onAppCommitInvisible();
         }
-
-        final boolean isVisibleNow = isVisibleNow();
-        if (mAttrs.type == TYPE_APPLICATION_STARTING) {
-            // Starting window that's exiting will be removed when the animation finishes.
-            // Mark all relevant flags for that onExitAnimationDone will proceed all the way
-            // to actually remove it.
-            if (!visible && isVisibleNow && mActivityRecord.isAnimating(PARENTS | TRANSITION)) {
-                ProtoLog.d(WM_DEBUG_ANIM,
-                        "Set animatingExit: reason=onAppVisibilityChanged win=%s", this);
-                mAnimatingExit = true;
-                mRemoveOnExit = true;
-                mWindowRemovalAllowed = true;
-            }
-        } else if (visible != isVisibleNow) {
-            // Run exit animation if:
-            // 1. App visibility and WS visibility are different
-            // 2. App is not running an animation
-            // 3. WS is currently visible
-            if (!runningAppAnimation && isVisibleNow) {
-                final AccessibilityController accessibilityController =
-                        mWmService.mAccessibilityController;
-                final int winTransit = TRANSIT_EXIT;
-                mWinAnimator.applyAnimationLocked(winTransit, false /* isEntrance */);
-                if (accessibilityController.hasCallbacks()) {
-                    accessibilityController.onWindowTransition(this, winTransit);
-                }
-            }
-            setDisplayLayoutNeeded();
+        if (mAttrs.type != TYPE_APPLICATION_STARTING
+                && mWmService.mAccessibilityController.hasCallbacks()
+                // It is a change only if App visibility and WS visibility are different.
+                && isVisible()) {
+            mWmService.mAccessibilityController.onWindowTransition(this, TRANSIT_EXIT);
         }
     }
 
@@ -2317,15 +2299,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
         final int type = mAttrs.type;
 
-        if (type == TYPE_PRESENTATION || type == TYPE_PRIVATE_PRESENTATION) {
-            // TODO(b/393945496): Make sure that there's one presentation at most per display.
-            dc.mIsPresenting = false;
-            if (enablePresentationForConnectedDisplays()) {
-                // A presentation hides all activities behind on the same display.
-                dc.ensureActivitiesVisible(/*starting=*/ null, /*notifyClients=*/ true);
-            }
-            mWmService.mDisplayManagerInternal.onPresentation(dc.getDisplay().getDisplayId(),
-                    /*isShown=*/ false);
+        if (isPresentation()) {
+            mWmService.mPresentationController.onPresentationRemoved(this);
         }
         // Check if window provides non decor insets before clearing its provided insets.
         final boolean windowProvidesDisplayDecorInsets = providesDisplayDecorInsets();
@@ -3352,6 +3327,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             mWmService.mAtmService.mActiveUids.onNonAppSurfaceVisibilityChanged(mOwnerUid,
                     mAttrs.type, shown);
         }
+    }
+
+    boolean isPresentation() {
+        return mAttrs.type == TYPE_PRESENTATION || mAttrs.type == TYPE_PRIVATE_PRESENTATION;
     }
 
     private boolean isOnVirtualDisplay() {

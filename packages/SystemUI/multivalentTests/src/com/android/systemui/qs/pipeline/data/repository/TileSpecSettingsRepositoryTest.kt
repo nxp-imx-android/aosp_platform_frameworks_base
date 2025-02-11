@@ -24,6 +24,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.qs.pipeline.shared.TileSpec
+import com.android.systemui.qs.pipeline.shared.TilesUpgradePath
 import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
 import com.android.systemui.res.R
 import com.android.systemui.retail.data.repository.FakeRetailModeRepository
@@ -242,9 +243,12 @@ class TileSpecSettingsRepositoryTest : SysuiTestCase() {
             storeTilesForUser(startingTiles, userId)
 
             val tiles by collectLastValue(underTest.tilesSpecs(userId))
-            val tilesRead by collectLastValue(underTest.tilesReadFromSetting.consumeAsFlow())
+            val tilesRead by collectLastValue(underTest.tilesUpgradePath.consumeAsFlow())
 
-            assertThat(tilesRead).isEqualTo(startingTiles.toTileSpecs().toSet() to userId)
+            assertThat(tilesRead)
+                .isEqualTo(
+                    TilesUpgradePath.ReadFromSettings(startingTiles.toTileSpecs().toSet()) to userId
+                )
         }
 
     @Test
@@ -258,13 +262,13 @@ class TileSpecSettingsRepositoryTest : SysuiTestCase() {
             val tiles10 by collectLastValue(underTest.tilesSpecs(10))
             val tiles11 by collectLastValue(underTest.tilesSpecs(11))
 
-            val tilesRead by collectValues(underTest.tilesReadFromSetting.consumeAsFlow())
+            val tilesRead by collectValues(underTest.tilesUpgradePath.consumeAsFlow())
 
             assertThat(tilesRead).hasSize(2)
             assertThat(tilesRead)
                 .containsExactly(
-                    startingTiles10.toTileSpecs().toSet() to 10,
-                    startingTiles11.toTileSpecs().toSet() to 11,
+                    TilesUpgradePath.ReadFromSettings(startingTiles10.toTileSpecs().toSet()) to 10,
+                    TilesUpgradePath.ReadFromSettings(startingTiles11.toTileSpecs().toSet()) to 11,
                 )
         }
 

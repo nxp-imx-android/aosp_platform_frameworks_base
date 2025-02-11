@@ -160,19 +160,21 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         Objects.requireNonNull(mConfigurationService,
                 "A null ProtoLog Configuration Service was provided!");
 
-        try {
-            var args = createConfigurationServiceRegisterClientArgs();
+        mBackgroundLoggingService.execute(() -> {
+            try {
+                var args = createConfigurationServiceRegisterClientArgs();
 
-            final var groupArgs = mLogGroups.values().stream()
-                    .map(group -> new RegisterClientArgs
-                            .GroupConfig(group.name(), group.isLogToLogcat()))
-                    .toArray(RegisterClientArgs.GroupConfig[]::new);
-            args.setGroups(groupArgs);
+                final var groupArgs = mLogGroups.values().stream()
+                        .map(group -> new RegisterClientArgs
+                                .GroupConfig(group.name(), group.isLogToLogcat()))
+                        .toArray(RegisterClientArgs.GroupConfig[]::new);
+                args.setGroups(groupArgs);
 
-            mConfigurationService.registerClient(this, args);
-        } catch (RemoteException e) {
-            throw new RuntimeException("Failed to register ProtoLog client");
-        }
+                mConfigurationService.registerClient(this, args);
+            } catch (RemoteException e) {
+                throw new RuntimeException("Failed to register ProtoLog client");
+            }
+        });
     }
 
     /**

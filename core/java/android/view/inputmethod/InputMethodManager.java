@@ -3778,8 +3778,32 @@ public final class InputMethodManager {
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
 
             if (Flags.refactorInsetsController()) {
-                mCurRootView.getInsetsController().hide(WindowInsets.Type.ime(),
-                        false /* fromIme */, statsToken);
+                synchronized (mH) {
+                    Handler vh = rootView.getHandler();
+                    if (vh == null) {
+                        // If the view doesn't have a handler, something has changed out from
+                        // under us.
+                        ImeTracker.forLogging().onFailed(statsToken,
+                                ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
+                        return;
+                    }
+                    ImeTracker.forLogging().onProgress(statsToken,
+                        ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
+
+                    if (vh.getLooper() != Looper.myLooper()) {
+                        // The view is running on a different thread than our own, so
+                        // we need to reschedule our work for over there.
+                        if (DEBUG) {
+                            Log.v(TAG, "Close current input: reschedule hide to view thread");
+                        }
+                        final var viewRootImpl = mCurRootView;
+                        vh.post(() -> viewRootImpl.getInsetsController().hide(
+                                WindowInsets.Type.ime(), false /* fromIme */, statsToken));
+                    } else {
+                        mCurRootView.getInsetsController().hide(WindowInsets.Type.ime(),
+                                false /* fromIme */, statsToken);
+                    }
+                }
             } else {
                 IInputMethodManagerGlobalInvoker.hideSoftInput(
                         mClient,

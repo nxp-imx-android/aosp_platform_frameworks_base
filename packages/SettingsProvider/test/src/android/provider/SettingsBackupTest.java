@@ -809,7 +809,9 @@ public class SettingsBackupTest {
                  Settings.Secure.DND_CONFIGS_MIGRATED,
                  Settings.Secure.NAVIGATION_MODE_RESTORE,
                  Settings.Secure.V_TO_U_RESTORE_ALLOWLIST,
-                 Settings.Secure.V_TO_U_RESTORE_DENYLIST);
+                 Settings.Secure.V_TO_U_RESTORE_DENYLIST,
+                 Settings.Secure.REDACT_OTP_NOTIFICATION_WHILE_CONNECTED_TO_WIFI,
+                 Settings.Secure.REDACT_OTP_NOTIFICATION_IMMEDIATELY);
 
     @Test
     public void systemSettingsBackedUpOrDenied() {

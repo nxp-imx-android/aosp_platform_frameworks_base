@@ -204,7 +204,7 @@ public class NotificationChannelExtractorTest extends UiServiceTestCase {
                 .build());
         final Notification n = new Notification.Builder(getContext())
                 .setContentTitle("foo")
-                .setCategory(CATEGORY_ALARM)
+                .setCategory(new String("alarm"))
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .build();
         NotificationRecord r = getRecord(channel, n);

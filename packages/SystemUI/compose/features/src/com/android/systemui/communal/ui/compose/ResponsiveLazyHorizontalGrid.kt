@@ -50,7 +50,6 @@ import androidx.compose.ui.unit.times
 import androidx.window.layout.WindowMetricsCalculator
 import com.android.systemui.communal.util.WindowSizeUtils.COMPACT_HEIGHT
 import com.android.systemui.communal.util.WindowSizeUtils.COMPACT_WIDTH
-import com.android.systemui.communal.util.WindowSizeUtils.MEDIUM_WIDTH
 
 /**
  * Renders a responsive [LazyHorizontalGrid] with dynamic columns and rows. Each cell will maintain
@@ -267,9 +266,8 @@ fun calculateWindowSize(): DpSize {
 }
 
 private fun calculateNumCellsWidth(width: Dp) =
-    // See https://developer.android.com/develop/ui/views/layout/use-window-size-classes
     when {
-        width >= MEDIUM_WIDTH -> 3
+        width >= 900.dp -> 3
         width >= COMPACT_WIDTH -> 2
         else -> 1
     }

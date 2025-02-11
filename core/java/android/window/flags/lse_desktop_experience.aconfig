@@ -677,10 +677,31 @@ flag {
 }
 
 flag {
+    name: "enable_window_context_resources_update_on_config_change"
+    namespace: "lse_desktop_experience"
+    description: "Updates window context resources before the view receives the config change callback."
+    bug: "394527409"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_tab_tearing_minimize_animation_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enabling a minimize animation when a new window is opened via tab tearing and the Desktop Windowing open windows limit is reached."
     bug: "376459606"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_desktop_close_shortcut_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fix the window-close keyboard shortcut in Desktop Mode."
+    bug: "394599430"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

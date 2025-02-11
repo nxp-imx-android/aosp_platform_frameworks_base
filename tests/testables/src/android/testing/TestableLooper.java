@@ -16,6 +16,7 @@ package android.testing;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -24,7 +25,7 @@ import android.os.MessageQueue;
 import android.os.TestLooperManager;
 import android.util.ArrayMap;
 
-import androidx.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.runners.model.FrameworkMethod;
 
@@ -33,8 +34,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
+import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -67,16 +70,42 @@ public class TestableLooper {
     private Handler mHandler;
     private TestLooperManager mQueueWrapper;
 
-    static {
+    /**
+     * Baklava introduces new {@link TestLooperManager} APIs that we can use instead of reflection.
+     */
+    private static boolean isAtLeastBaklava() {
+        TestLooperManager tlm =
+                InstrumentationRegistry.getInstrumentation()
+                        .acquireLooperManager(Looper.getMainLooper());
         try {
-            MESSAGE_QUEUE_MESSAGES_FIELD = MessageQueue.class.getDeclaredField("mMessages");
-            MESSAGE_QUEUE_MESSAGES_FIELD.setAccessible(true);
-            MESSAGE_NEXT_FIELD = Message.class.getDeclaredField("next");
-            MESSAGE_NEXT_FIELD.setAccessible(true);
-            MESSAGE_WHEN_FIELD = Message.class.getDeclaredField("when");
-            MESSAGE_WHEN_FIELD.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException("Failed to initialize TestableLooper", e);
+            Long unused = tlm.peekWhen();
+            return true;
+        } catch (NoSuchMethodError e) {
+            return false;
+        } finally {
+            tlm.release();
+        }
+        // TODO(shayba): delete the above, uncomment the below.
+        // SDK_INT has not yet ramped to Baklava in all 25Q2 builds.
+        // return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA;
+    }
+
+    static {
+        if (isAtLeastBaklava()) {
+            MESSAGE_QUEUE_MESSAGES_FIELD = null;
+            MESSAGE_NEXT_FIELD = null;
+            MESSAGE_WHEN_FIELD = null;
+        } else {
+            try {
+                MESSAGE_QUEUE_MESSAGES_FIELD = MessageQueue.class.getDeclaredField("mMessages");
+                MESSAGE_QUEUE_MESSAGES_FIELD.setAccessible(true);
+                MESSAGE_NEXT_FIELD = Message.class.getDeclaredField("next");
+                MESSAGE_NEXT_FIELD.setAccessible(true);
+                MESSAGE_WHEN_FIELD = Message.class.getDeclaredField("when");
+                MESSAGE_WHEN_FIELD.setAccessible(true);
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException("Failed to initialize TestableLooper", e);
+            }
         }
     }
 
@@ -222,8 +251,61 @@ public class TestableLooper {
     }
 
     public void moveTimeForward(long milliSeconds) {
+        if (isAtLeastBaklava()) {
+            moveTimeForwardBaklava(milliSeconds);
+        } else {
+            moveTimeForwardLegacy(milliSeconds);
+        }
+    }
+
+    private void moveTimeForwardBaklava(long milliSeconds) {
+        // Drain all Messages from the queue.
+        Queue<Message> messages = new ArrayDeque<>();
+        while (true) {
+            Message message = mQueueWrapper.poll();
+            if (message == null) {
+                break;
+            }
+
+            // Adjust the Message's delivery time.
+            long newWhen = message.when - milliSeconds;
+            if (newWhen < 0) {
+                newWhen = 0;
+            }
+            message.when = newWhen;
+            messages.add(message);
+        }
+
+        // Repost all Messages back to the queuewith a new time.
+        while (true) {
+            Message message = messages.poll();
+            if (message == null) {
+                break;
+            }
+
+            Runnable callback = message.getCallback();
+            Handler handler = message.getTarget();
+            long when = message.getWhen();
+
+            // The Message cannot be re-enqueued because it is marked in use.
+            // Make a copy of the Message and recycle the original.
+            // This resets {@link Message#isInUse()} but retains all other content.
+            {
+                Message newMessage = Message.obtain();
+                newMessage.copyFrom(message);
+                newMessage.setCallback(callback);
+                mQueueWrapper.recycle(message);
+                message = newMessage;
+            }
+
+            // Send the Message back to its Handler to be re-enqueued.
+            handler.sendMessageAtTime(message, when);
+        }
+    }
+
+    private void moveTimeForwardLegacy(long milliSeconds) {
         try {
-            Message msg = getMessageLinkedList();
+            Message msg = (Message) MESSAGE_QUEUE_MESSAGES_FIELD.get(mLooper.getQueue());
             while (msg != null) {
                 long updatedWhen = msg.getWhen() - milliSeconds;
                 if (updatedWhen < 0) {
@@ -234,17 +316,6 @@ public class TestableLooper {
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Access failed in TestableLooper: set - Message.when", e);
-        }
-    }
-
-    private Message getMessageLinkedList() {
-        try {
-            MessageQueue queue = mLooper.getQueue();
-            return (Message) MESSAGE_QUEUE_MESSAGES_FIELD.get(queue);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(
-                    "Access failed in TestableLooper: get - MessageQueue.mMessages",
-                    e);
         }
     }
 

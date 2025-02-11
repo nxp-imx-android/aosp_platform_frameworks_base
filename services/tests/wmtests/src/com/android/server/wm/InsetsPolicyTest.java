@@ -53,6 +53,7 @@ import android.view.InsetsSource;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
 import android.view.WindowInsets;
+import android.view.WindowInsets.Type.InsetsType;
 
 import androidx.test.filters.SmallTest;
 
@@ -400,9 +401,9 @@ public class InsetsPolicyTest extends WindowTestsBase {
         assertTrue(state.isSourceOrDefaultVisible(statusBarSource.getId(), statusBars()));
         assertTrue(state.isSourceOrDefaultVisible(navBarSource.getId(), navigationBars()));
 
-        mAppWindow.setRequestedVisibleTypes(
+        final @InsetsType int changedTypes = mAppWindow.setRequestedVisibleTypes(
                 navigationBars() | statusBars(), navigationBars() | statusBars());
-        policy.onRequestedVisibleTypesChanged(mAppWindow, null /* statsToken */);
+        policy.onRequestedVisibleTypesChanged(mAppWindow, changedTypes, null /* statsToken */);
         waitUntilWindowAnimatorIdle();
 
         controls = mDisplayContent.getInsetsStateController().getControlsForDispatch(mAppWindow);

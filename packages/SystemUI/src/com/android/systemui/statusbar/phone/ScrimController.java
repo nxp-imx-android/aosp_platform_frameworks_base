@@ -81,6 +81,9 @@ import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.wakelock.DelayedWakeLock;
 import com.android.systemui.util.wakelock.WakeLock;
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
+
+import dagger.Lazy;
 
 import kotlinx.coroutines.CoroutineDispatcher;
 
@@ -226,7 +229,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     private float mScrimBehindAlphaKeyguard = KEYGUARD_SCRIM_ALPHA;
 
     static final float TRANSPARENT_BOUNCER_SCRIM_ALPHA = 0.54f;
-    private final float mDefaultScrimAlpha;
+    private float mDefaultScrimAlpha;
 
     private float mRawPanelExpansionFraction;
     private float mPanelScrimMinFraction;
@@ -257,6 +260,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     private final TriConsumer<ScrimState, Float, GradientColors> mScrimStateListener;
     private final LargeScreenShadeInterpolator mLargeScreenShadeInterpolator;
     private final BlurConfig mBlurConfig;
+    private final Lazy<WindowRootViewBlurInteractor> mWindowRootViewBlurInteractor;
     private Consumer<Integer> mScrimVisibleListener;
     private boolean mBlankScreen;
     private boolean mScreenBlankingCallbackCalled;
@@ -339,14 +343,13 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             KeyguardInteractor keyguardInteractor,
             @Main CoroutineDispatcher mainDispatcher,
             LargeScreenShadeInterpolator largeScreenShadeInterpolator,
-            BlurConfig blurConfig) {
+            BlurConfig blurConfig,
+            Lazy<WindowRootViewBlurInteractor> windowRootViewBlurInteractor) {
         mScrimStateListener = lightBarController::setScrimState;
         mLargeScreenShadeInterpolator = largeScreenShadeInterpolator;
         mBlurConfig = blurConfig;
-        // All scrims default alpha need to match bouncer background alpha to make sure the
-        // transitions involving the bouncer are smooth and don't overshoot the bouncer alpha.
-        mDefaultScrimAlpha =
-                Flags.bouncerUiRevamp() ? TRANSPARENT_BOUNCER_SCRIM_ALPHA : BUSY_SCRIM_ALPHA;
+        mWindowRootViewBlurInteractor = windowRootViewBlurInteractor;
+        mDefaultScrimAlpha = BUSY_SCRIM_ALPHA;
 
         mKeyguardStateController = keyguardStateController;
         mDarkenWhileDragging = !mKeyguardStateController.canDismissLockScreen();
@@ -407,7 +410,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
 
         final ScrimState[] states = ScrimState.values();
         for (int i = 0; i < states.length; i++) {
-            states[i].init(mScrimInFront, mScrimBehind, mDozeParameters, mDockManager, mBlurConfig);
+            states[i].init(mScrimInFront, mScrimBehind, mDozeParameters, mDockManager);
             states[i].setScrimBehindAlphaKeyguard(mScrimBehindAlphaKeyguard);
             states[i].setDefaultScrimAlpha(mDefaultScrimAlpha);
         }
@@ -485,6 +488,30 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
                         Edge.Companion.create(Scenes.Communal, LOCKSCREEN),
                         Edge.Companion.create(GLANCEABLE_HUB, LOCKSCREEN)),
                 mGlanceableHubConsumer, mMainDispatcher);
+
+        if (Flags.bouncerUiRevamp()) {
+            collectFlow(behindScrim,
+                    mWindowRootViewBlurInteractor.get().isBlurCurrentlySupported(),
+                    this::handleBlurSupportedChanged);
+        }
+    }
+
+    private void updateDefaultScrimAlpha(float alpha) {
+        mDefaultScrimAlpha = alpha;
+        for (ScrimState state : ScrimState.values()) {
+            state.setDefaultScrimAlpha(mDefaultScrimAlpha);
+        }
+        applyAndDispatchState();
+    }
+
+    private void handleBlurSupportedChanged(boolean isBlurSupported) {
+        if (isBlurSupported) {
+            updateDefaultScrimAlpha(TRANSPARENT_BOUNCER_SCRIM_ALPHA);
+            ScrimState.BOUNCER_SCRIMMED.setNotifBlurRadius(mBlurConfig.getMaxBlurRadiusPx());
+        } else {
+            ScrimState.BOUNCER_SCRIMMED.setNotifBlurRadius(0f);
+            updateDefaultScrimAlpha(BUSY_SCRIM_ALPHA);
+        }
     }
 
     // TODO(b/270984686) recompute scrim height accurately, based on shade contents.

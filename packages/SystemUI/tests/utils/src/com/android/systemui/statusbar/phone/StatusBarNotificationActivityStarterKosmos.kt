@@ -52,7 +52,6 @@ val Kosmos.statusBarNotificationActivityStarter by
     Kosmos.Fixture {
         StatusBarNotificationActivityStarter(
             applicationContext,
-            applicationContext.displayId,
             fakeExecutorHandler,
             fakeExecutor,
             notificationVisibilityProvider,

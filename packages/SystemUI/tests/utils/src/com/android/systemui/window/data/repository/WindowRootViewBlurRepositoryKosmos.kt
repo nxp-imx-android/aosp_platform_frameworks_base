@@ -17,5 +17,16 @@
 package com.android.systemui.window.data.repository
 
 import com.android.systemui.kosmos.Kosmos
+import kotlinx.coroutines.flow.MutableStateFlow
 
-val Kosmos.windowRootViewBlurRepository by Kosmos.Fixture { WindowRootViewBlurRepository() }
+val Kosmos.fakeWindowRootViewBlurRepository: FakeWindowRootViewBlurRepository by
+    Kosmos.Fixture { FakeWindowRootViewBlurRepository() }
+
+val Kosmos.windowRootViewBlurRepository: WindowRootViewBlurRepository by
+    Kosmos.Fixture { fakeWindowRootViewBlurRepository }
+
+class FakeWindowRootViewBlurRepository : WindowRootViewBlurRepository {
+    override val blurRadius: MutableStateFlow<Int> = MutableStateFlow(0)
+    override val isBlurOpaque: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val isBlurSupported: MutableStateFlow<Boolean> = MutableStateFlow(false)
+}

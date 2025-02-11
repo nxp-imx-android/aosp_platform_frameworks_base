@@ -246,9 +246,7 @@ import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_STARTING_WIND
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_WILL_PLACE_SURFACES;
-import static com.android.server.wm.WindowManagerService.sEnableShellTransitions;
 import static com.android.server.wm.WindowState.LEGACY_POLICY_VISIBILITY;
-import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 
 import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
 import static org.xmlpull.v1.XmlPullParser.END_TAG;
@@ -764,13 +762,6 @@ final class ActivityRecord extends WindowToken {
     boolean mLastImeShown;
 
     /**
-     * When set to true, the IME insets will be frozen until the next app becomes IME input target.
-     * @see InsetsPolicy#adjustVisibilityForIme
-     * @see ImeInsetsSourceProvider#updateClientVisibility
-     */
-    boolean mImeInsetsFrozenUntilStartInput;
-
-    /**
      * A flag to determine if this AR is in the process of closing or entering PIP. This is needed
      * to help AR know that the app is in the process of closing but hasn't yet started closing on
      * the WM side.
@@ -1175,8 +1166,6 @@ final class ActivityRecord extends WindowToken {
                 pw.print(" launchMode="); pw.println(launchMode);
         pw.print(prefix); pw.print("mActivityType=");
                 pw.println(activityTypeToString(getActivityType()));
-        pw.print(prefix); pw.print("mImeInsetsFrozenUntilStartInput=");
-                pw.println(mImeInsetsFrozenUntilStartInput);
         if (requestedVrComponent != null) {
             pw.print(prefix);
             pw.print("requestedVrComponent=");
@@ -5772,19 +5761,16 @@ final class ActivityRecord extends WindowToken {
             return;
         }
 
-        final int windowsCount = mChildren.size();
-        // With Shell-Transition, the activity will running a transition when it is visible.
-        // It won't be included when fromTransition is true means the call from finishTransition.
-        final boolean runningAnimation = sEnableShellTransitions ? visible
-                : isAnimating(PARENTS, ANIMATION_TYPE_APP_TRANSITION);
-        for (int i = 0; i < windowsCount; i++) {
-            mChildren.get(i).onAppVisibilityChanged(visible, runningAnimation);
+        if (!visible) {
+            for (int i = mChildren.size() - 1; i >= 0; --i) {
+                mChildren.get(i).onAppCommitInvisible();
+            }
         }
         setVisible(visible);
         setVisibleRequested(visible);
         ProtoLog.v(WM_DEBUG_APP_TRANSITIONS, "commitVisibility: %s: visible=%b"
-                        + " visibleRequested=%b, isInTransition=%b, runningAnimation=%b, caller=%s",
-                this, isVisible(), mVisibleRequested, isInTransition(), runningAnimation,
+                        + " visibleRequested=%b, inTransition=%b, caller=%s",
+                this, visible, mVisibleRequested, inTransition(),
                 Debug.getCallers(5));
         if (visible) {
             // If we are being set visible, and the starting window is not yet displayed,
@@ -5874,10 +5860,6 @@ final class ActivityRecord extends WindowToken {
         }
 
         final DisplayContent displayContent = getDisplayContent();
-        if (!visible) {
-            mImeInsetsFrozenUntilStartInput = true;
-        }
-
         if (!displayContent.mClosingApps.contains(this)
                 && !displayContent.mOpeningApps.contains(this)
                 && !fromTransition) {
@@ -6225,13 +6207,8 @@ final class ActivityRecord extends WindowToken {
             return false;
         }
 
-        // Hide all activities on the presenting display so that malicious apps can't do tap
-        // jacking (b/391466268).
-        // For now, this should only be applied to external displays because presentations can only
-        // be shown on them.
-        // TODO(b/390481621): Disallow a presentation from covering its controlling activity so that
-        // the presentation won't stop its controlling activity.
-        if (enablePresentationForConnectedDisplays() && mDisplayContent.mIsPresenting) {
+        // A presentation stopps all activities behind on the same display.
+        if (mWmService.mPresentationController.shouldOccludeActivities(getDisplayId())) {
             return false;
         }
 
@@ -6953,14 +6930,6 @@ final class ActivityRecord extends WindowToken {
             // closing activity having to wait until idle timeout to be stopped or destroyed if the
             // next activity won't report idle (e.g. repeated view animation).
             mTaskSupervisor.scheduleProcessStoppingAndFinishingActivitiesIfNeeded();
-
-            // If the activity is visible, but no windows are eligible to start input, unfreeze
-            // to avoid permanently frozen IME insets.
-            if (mImeInsetsFrozenUntilStartInput && getWindow(
-                    win -> WindowManager.LayoutParams.mayUseInputMethod(win.mAttrs.flags))
-                    == null) {
-                mImeInsetsFrozenUntilStartInput = false;
-            }
         }
     }
 

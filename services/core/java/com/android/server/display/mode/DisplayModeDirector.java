@@ -229,8 +229,7 @@ public class DisplayModeDirector {
         mContext = context;
         mHandler = new DisplayModeDirectorHandler(handler.getLooper());
         mInjector = injector;
-        mVotesStatsReporter = injector.getVotesStatsReporter(
-                displayManagerFlags.isRefreshRateVotingTelemetryEnabled());
+        mVotesStatsReporter = injector.getVotesStatsReporter();
         mSupportedModesByDisplay = new SparseArray<>();
         mAppSupportedModesByDisplay = new SparseArray<>();
         mDefaultModeByDisplay = new SparseArray<>();
@@ -3141,7 +3140,7 @@ public class DisplayModeDirector {
         SensorManagerInternal getSensorManagerInternal();
 
         @Nullable
-        VotesStatsReporter getVotesStatsReporter(boolean refreshRateVotingTelemetryEnabled);
+        VotesStatsReporter getVotesStatsReporter();
     }
 
     @VisibleForTesting
@@ -3281,10 +3280,9 @@ public class DisplayModeDirector {
         }
 
         @Override
-        public VotesStatsReporter getVotesStatsReporter(boolean refreshRateVotingTelemetryEnabled) {
+        public VotesStatsReporter getVotesStatsReporter() {
             // if frame rate override supported, renderRates will be ignored in mode selection
-            return new VotesStatsReporter(supportsFrameRateOverride(),
-                    refreshRateVotingTelemetryEnabled);
+            return new VotesStatsReporter(supportsFrameRateOverride());
         }
 
         private DisplayManager getDisplayManager() {

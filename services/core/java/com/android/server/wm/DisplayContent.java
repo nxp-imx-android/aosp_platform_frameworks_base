@@ -547,9 +547,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     // TODO(multi-display): remove some of the usages.
     boolean isDefaultDisplay;
 
-    /** Indicates whether any presentation is shown on this display. */
-    boolean mIsPresenting;
-
     /** Save allocating when calculating rects */
     private final Rect mTmpRect = new Rect();
     private final Region mTmpRegion = new Region();
@@ -4661,35 +4658,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
     }
 
-    /**
-     * Callback from {@link ImeInsetsSourceProvider#updateClientVisibility} for the system to
-     * judge whether or not to notify the IME insets provider to dispatch this reported IME client
-     * visibility state to the app clients when needed.
-     */
-    boolean onImeInsetsClientVisibilityUpdate() {
-        boolean[] changed = new boolean[1];
-
-        // Unlike the IME layering target or the control target can be updated during the layout
-        // change, the IME input target requires to be changed after gaining the input focus.
-        // In case unfreezing IME insets state may too early during IME focus switching, we unfreeze
-        // when activities going to be visible until the input target changed, or the
-        // activity was the current input target that has to unfreeze after updating the IME
-        // client visibility.
-        final ActivityRecord inputTargetActivity =
-                mImeInputTarget != null ? mImeInputTarget.getActivityRecord() : null;
-        final boolean targetChanged = mImeInputTarget != mLastImeInputTarget;
-        if (targetChanged || inputTargetActivity != null && inputTargetActivity.isVisibleRequested()
-                && inputTargetActivity.mImeInsetsFrozenUntilStartInput) {
-            forAllActivities(r -> {
-                if (r.mImeInsetsFrozenUntilStartInput && r.isVisibleRequested()) {
-                    r.mImeInsetsFrozenUntilStartInput = false;
-                    changed[0] = true;
-                }
-            });
-        }
-        return changed[0];
-    }
-
     void updateImeControlTarget() {
         updateImeControlTarget(false /* forceUpdateImeParent */);
     }
@@ -7141,14 +7109,19 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         /**
+         * @return an integer as the changed requested visible insets types.
          * @see #getRequestedVisibleTypes()
          */
-        void updateRequestedVisibleTypes(@InsetsType int visibleTypes, @InsetsType int mask) {
-            int newRequestedVisibleTypes =
+        @InsetsType int updateRequestedVisibleTypes(
+                @InsetsType int visibleTypes, @InsetsType int mask) {
+            final int newRequestedVisibleTypes =
                     (mRequestedVisibleTypes & ~mask) | (visibleTypes & mask);
             if (mRequestedVisibleTypes != newRequestedVisibleTypes) {
+                final int changedTypes = mRequestedVisibleTypes ^ newRequestedVisibleTypes;
                 mRequestedVisibleTypes = newRequestedVisibleTypes;
+                return changedTypes;
             }
+            return 0;
         }
     }
 

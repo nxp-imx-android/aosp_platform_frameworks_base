@@ -282,7 +282,14 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             // TODO(b/353463205) investigate if we should fail the statsToken, or if it's only
             //  temporary null.
             if (target != null) {
-                invokeOnImeRequestedChangedListener(target.getWindow(), statsToken);
+                // If insets target is not available (e.g. RemoteInsetsControlTarget), use current
+                // IME input target to update IME request state. For example, switch from a task
+                // with showing IME to a split-screen task without showing IME.
+                InsetsTarget insetsTarget = target.getWindow();
+                if (insetsTarget == null && mServerVisible) {
+                    insetsTarget = mDisplayContent.getImeInputTarget();
+                }
+                invokeOnImeRequestedChangedListener(insetsTarget, statsToken);
             }
         }
     }
@@ -314,7 +321,6 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                 reportImeDrawnForOrganizerIfNeeded((InsetsControlTarget) caller);
             }
         }
-        changed |= mDisplayContent.onImeInsetsClientVisibilityUpdate();
         if (Flags.refactorInsetsController()) {
             if (changed) {
                 ImeTracker.forLogging().onProgress(statsToken,

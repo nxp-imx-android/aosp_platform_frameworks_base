@@ -24,6 +24,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.pipeline.data.model.RestoreData
 import com.android.systemui.qs.pipeline.shared.TileSpec
+import com.android.systemui.qs.pipeline.shared.TilesUpgradePath
 import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
 import com.android.systemui.res.R
 import com.android.systemui.retail.data.repository.RetailModeRepository
@@ -78,7 +79,7 @@ interface TileSpecRepository {
     /** Reset the current set of tiles to the default list of tiles */
     suspend fun resetToDefault(userId: Int)
 
-    val tilesReadFromSetting: ReceiveChannel<Pair<Set<TileSpec>, Int>>
+    val tilesUpgradePath: ReceiveChannel<Pair<TilesUpgradePath, Int>>
 
     companion object {
         /** Position to indicate the end of the list */
@@ -112,8 +113,8 @@ constructor(
             .filter { it !is TileSpec.Invalid }
     }
 
-    private val _tilesReadFromSetting = Channel<Pair<Set<TileSpec>, Int>>(capacity = 5)
-    override val tilesReadFromSetting = _tilesReadFromSetting
+    private val _tilesUpgradePath = Channel<Pair<TilesUpgradePath, Int>>(capacity = 5)
+    override val tilesUpgradePath = _tilesUpgradePath
 
     private val userTileRepositories = SparseArray<UserTileSpecRepository>()
 
@@ -122,8 +123,8 @@ constructor(
             val userTileRepository = userTileSpecRepositoryFactory.create(userId)
             userTileRepositories.put(userId, userTileRepository)
             applicationScope.launchTraced("TileSpecRepository.aggregateTilesPerUser") {
-                for (tilesFromSettings in userTileRepository.tilesReadFromSettings) {
-                    _tilesReadFromSetting.send(tilesFromSettings to userId)
+                for (tileUpgrade in userTileRepository.tilesUpgradePath) {
+                    _tilesUpgradePath.send(tileUpgrade to userId)
                 }
             }
         }

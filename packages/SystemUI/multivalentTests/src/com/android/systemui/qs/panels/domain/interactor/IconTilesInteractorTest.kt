@@ -66,7 +66,7 @@ class IconTilesInteractorTest : SysuiTestCase() {
                 runCurrent()
 
                 // Resize it to large
-                qsPreferencesRepository.setLargeTilesSpecs(setOf(spec))
+                qsPreferencesRepository.writeLargeTileSpecs(setOf(spec))
                 runCurrent()
 
                 // Assert that the new tile was added to the large tiles set
