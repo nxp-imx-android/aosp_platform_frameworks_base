@@ -25,6 +25,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +38,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.invalidateDraw
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
@@ -50,6 +54,7 @@ import com.android.systemui.animation.TransitionAnimator
 import kotlin.math.roundToInt
 
 /** A controller that can control animated launches from an [Expandable]. */
+@Stable
 interface ExpandableController {
     /** The [Expandable] controlled by this controller. */
     val expandable: Expandable
@@ -146,6 +151,11 @@ internal class ExpandableControllerImpl(
     /** The [ActivityTransitionAnimator.Controller] to be cleaned up [onDispose]. */
     private var activityControllerForDisposal: ActivityTransitionAnimator.Controller? = null
 
+    /**
+     * The current [DrawModifierNode] in the overlay, drawing the expandable during a transition.
+     */
+    internal var currentNodeInOverlay: DrawModifierNode? = null
+
     override val expandable: Expandable =
         object : Expandable {
             override fun activityTransitionController(
@@ -204,6 +214,10 @@ internal class ExpandableControllerImpl(
 
             override fun onTransitionAnimationEnd(isExpandingFullyAbove: Boolean) {
                 animatorState = null
+
+                // Force invalidate the drawing done in the overlay whenever the animation state
+                // changes.
+                currentNodeInOverlay?.invalidateDraw()
             }
 
             override fun onTransitionAnimationProgress(
@@ -227,6 +241,10 @@ internal class ExpandableControllerImpl(
                 // Force measure and layout the ComposeView in the overlay whenever the animation
                 // state changes.
                 currentComposeViewInOverlay?.let { measureAndLayoutComposeViewInOverlay(it, state) }
+
+                // Force invalidate the drawing done in the overlay whenever the animation state
+                // changes.
+                currentNodeInOverlay?.invalidateDraw()
             }
 
             override fun createAnimatorState(): TransitionAnimator.State {
