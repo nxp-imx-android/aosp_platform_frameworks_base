@@ -57,12 +57,11 @@ class NotificationShelfViewModelTest : SysuiTestCase() {
             statusBarStateController = mock()
             whenever(screenOffAnimationController.allowWakeUpIfDozing()).thenReturn(true)
         }
+    private val underTest = kosmos.notificationShelfViewModel
     private val deviceEntryFaceAuthRepository = kosmos.fakeDeviceEntryFaceAuthRepository
     private val keyguardRepository = kosmos.fakeKeyguardRepository
+    private val keyguardTransitionController = kosmos.lockscreenShadeTransitionController
     private val powerRepository = kosmos.fakePowerRepository
-    private val keyguardTransitionController by lazy { kosmos.lockscreenShadeTransitionController }
-
-    private val underTest by lazy { kosmos.notificationShelfViewModel }
 
     @Test
     fun canModifyColorOfNotifications_whenKeyguardNotShowing() =
