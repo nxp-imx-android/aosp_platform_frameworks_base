@@ -8288,8 +8288,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         Preconditions.checkCallAuthorization(isSystemUid(caller));
         // Managed Profile password can only be changed when it has a separate challenge.
         if (!isSeparateProfileChallengeEnabled(userId)) {
-            Preconditions.checkCallAuthorization(!isManagedProfile(userId), "You can "
-                    + "not set the active password for a managed profile, userId = %d", userId);
+            if (isManagedProfile(userId)) {
+                Slogf.i(LOG_TAG, "You can not set the active password for a managed profile,"
+                        + " userId = %d", userId);
+                return;
+            }
         }
 
         DevicePolicyData policy = getUserData(userId);
