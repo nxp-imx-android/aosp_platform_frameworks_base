@@ -3225,6 +3225,30 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onDesktopWindowMinimize_minimizesTask() {
+        val task = setUpFreeformTask()
+        val transition = Binder()
+        val runOnTransit = RunOnStartTransitionCallback()
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(transition)
+        whenever(mMockDesktopImmersiveController.exitImmersiveIfApplicable(any(), eq(task), any()))
+            .thenReturn(
+                ExitResult.Exit(exitingTask = task.taskId, runOnTransitionStart = runOnTransit)
+            )
+
+        controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
+
+        verify(desksOrganizer).minimizeTask(any(), /* deskId= */ eq(0), eq(task))
+    }
+
+    @Test
     fun onDesktopWindowMinimize_triesToStopTiling() {
         val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
         val transition = Binder()

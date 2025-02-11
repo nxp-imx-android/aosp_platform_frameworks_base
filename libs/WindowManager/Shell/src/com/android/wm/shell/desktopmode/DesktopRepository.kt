@@ -374,7 +374,8 @@ class DesktopRepository(
      * Checks if a task is the only visible, non-closing, non-minimized task on the active desk of
      * the given display, or any display's active desk if [displayId] is [INVALID_DISPLAY].
      *
-     * TODO: b/389960283 - add explicit [deskId] argument.
+     * TODO: b/389960283 - consider forcing callers to use [isOnlyVisibleNonClosingTaskInDesk] with
+     *   an explicit desk id instead of using this function and defaulting to the active one.
      */
     fun isOnlyVisibleNonClosingTask(taskId: Int, displayId: Int = INVALID_DISPLAY): Boolean {
         val activeDesks =
@@ -384,11 +385,24 @@ class DesktopRepository(
                 desktopData.getAllActiveDesks()
             }
         return activeDesks.any { desk ->
-            desk.visibleTasks
-                .subtract(desk.closingTasks)
-                .subtract(desk.minimizedTasks)
-                .singleOrNull() == taskId
+            isOnlyVisibleNonClosingTaskInDesk(
+                taskId = taskId,
+                deskId = desk.deskId,
+                displayId = desk.displayId,
+            )
         }
+    }
+
+    /**
+     * Checks if a task is the only visible, non-closing, non-minimized task on the given desk of
+     * the given display.
+     */
+    fun isOnlyVisibleNonClosingTaskInDesk(taskId: Int, deskId: Int, displayId: Int): Boolean {
+        val desk = desktopData.getDesk(deskId) ?: return false
+        return desk.visibleTasks
+            .subtract(desk.closingTasks)
+            .subtract(desk.minimizedTasks)
+            .singleOrNull() == taskId
     }
 
     /**

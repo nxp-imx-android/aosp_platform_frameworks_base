@@ -870,6 +870,10 @@ class DesktopTasksController(
     private fun minimizeTaskInner(taskInfo: RunningTaskInfo, minimizeReason: MinimizeReason) {
         val taskId = taskInfo.taskId
         val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
+        if (deskId == null && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            logW("minimizeTaskInner: desk not found for task: ${taskInfo.taskId}")
+            return
+        }
         val displayId = taskInfo.displayId
         val wct = WindowContainerTransaction()
 
@@ -890,10 +894,26 @@ class DesktopTasksController(
                 taskInfo = taskInfo,
                 reason = DesktopImmersiveController.ExitReason.MINIMIZED,
             )
-
-        wct.reorder(taskInfo.token, false)
-        val isLastTask = taskRepository.isOnlyVisibleNonClosingTask(taskId, displayId)
-        val transition: IBinder =
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            desksOrganizer.minimizeTask(
+                wct = wct,
+                deskId = checkNotNull(deskId) { "Expected non-null deskId" },
+                task = taskInfo,
+            )
+        } else {
+            wct.reorder(taskInfo.token, /* onTop= */ false)
+        }
+        val isLastTask =
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                taskRepository.isOnlyVisibleNonClosingTaskInDesk(
+                    taskId = taskId,
+                    deskId = checkNotNull(deskId) { "Expected non-null deskId" },
+                    displayId = displayId,
+                )
+            } else {
+                taskRepository.isOnlyVisibleNonClosingTask(taskId = taskId, displayId = displayId)
+            }
+        val transition =
             freeformTaskTransitionStarter.startMinimizedModeTransition(wct, taskId, isLastTask)
         desktopTasksLimiter.ifPresent {
             it.addPendingMinimizeChange(
