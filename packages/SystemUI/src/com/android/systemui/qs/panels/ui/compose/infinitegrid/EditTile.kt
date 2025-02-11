@@ -246,16 +246,14 @@ fun DefaultEditTileGrid(
                         // the top bar
                         .padding(top = innerPadding.calculateTopPadding())
                         .clipScrollableContainer(Orientation.Vertical)
-                        .verticalScroll(scrollState),
+                        .verticalScroll(scrollState)
+                        .dragAndDropRemoveZone(listState, onRemoveTile),
             ) {
                 AnimatedContent(
                     targetState = listState.dragInProgress || selectionState.selected,
                     label = "QSEditHeader",
                 ) { showRemoveTarget ->
-                    EditGridHeader(
-                        Modifier.dragAndDropRemoveZone(listState, onRemoveTile)
-                            .padding(bottom = 26.dp)
-                    ) {
+                    EditGridHeader(Modifier.padding(bottom = 26.dp)) {
                         if (showRemoveTarget) {
                             RemoveTileTarget {
                                 selectionState.selection?.let {
@@ -284,7 +282,6 @@ fun DefaultEditTileGrid(
                     Modifier.fillMaxWidth()
                         .requiredHeightIn(AvailableTilesGridMinHeight)
                         .animateContentSize()
-                        .dragAndDropRemoveZone(listState, onRemoveTile)
                 ) {
                     // Using the fully qualified name here as a workaround for AnimatedVisibility
                     // not being available from a Box
