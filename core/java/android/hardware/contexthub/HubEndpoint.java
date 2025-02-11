@@ -126,7 +126,16 @@ public class HubEndpoint {
                     if (sessionExists) {
                         Log.w(
                                 TAG,
-                                "onSessionOpenComplete: session already exists, id=" + sessionId);
+                                "onSessionOpenRequest: session already exists, id=" + sessionId);
+                    }
+
+                    if (mLifecycleCallback == null) {
+                        Log.w(
+                                TAG,
+                                "onSessionOpenRequest: "
+                                        + "failed to open session, no lifecycle callback attached",
+                                new Exception());
+                        rejectSession(sessionId);
                     }
 
                     if (!sessionExists && mLifecycleCallback != null) {
