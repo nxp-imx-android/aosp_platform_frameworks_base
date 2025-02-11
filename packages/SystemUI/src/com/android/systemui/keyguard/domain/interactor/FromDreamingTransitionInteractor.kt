@@ -21,7 +21,6 @@ import android.annotation.SuppressLint
 import android.app.DreamManager
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.Flags.communalSceneKtfRefactor
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
@@ -59,7 +58,6 @@ constructor(
     @Background bgDispatcher: CoroutineDispatcher,
     @Main mainDispatcher: CoroutineDispatcher,
     keyguardInteractor: KeyguardInteractor,
-    private val glanceableHubTransitions: GlanceableHubTransitions,
     private val communalInteractor: CommunalInteractor,
     private val communalSceneInteractor: CommunalSceneInteractor,
     private val communalSettingsInteractor: CommunalSettingsInteractor,
@@ -87,11 +85,7 @@ constructor(
         listenForDreamingToLockscreenOrGone()
         listenForDreamingToAodOrDozing()
         listenForTransitionToCamera(scope, keyguardInteractor)
-        if (!communalSceneKtfRefactor()) {
-            listenForDreamingToGlanceableHub()
-        } else {
-            listenForDreamingToGlanceableHubFromPowerButton()
-        }
+        listenForDreamingToGlanceableHubFromPowerButton()
         listenForDreamingToPrimaryBouncer()
     }
 
@@ -102,18 +96,6 @@ constructor(
                     isAlternateBouncerShowing
                 }
                 .collect { startTransitionTo(KeyguardState.ALTERNATE_BOUNCER) }
-        }
-    }
-
-    private fun listenForDreamingToGlanceableHub() {
-        if (!communalSettingsInteractor.isCommunalFlagEnabled()) return
-        if (SceneContainerFlag.isEnabled) return
-        scope.launch("$TAG#listenForDreamingToGlanceableHub", mainDispatcher) {
-            glanceableHubTransitions.listenForGlanceableHubTransition(
-                transitionOwnerName = TAG,
-                fromState = KeyguardState.DREAMING,
-                toState = KeyguardState.GLANCEABLE_HUB,
-            )
         }
     }
 

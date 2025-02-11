@@ -38,7 +38,6 @@ var Kosmos.fromDreamingTransitionInteractor by
             bgDispatcher = testDispatcher,
             mainDispatcher = testDispatcher,
             keyguardInteractor = keyguardInteractor,
-            glanceableHubTransitions = glanceableHubTransitions,
             communalInteractor = communalInteractor,
             communalSceneInteractor = communalSceneInteractor,
             communalSettingsInteractor = communalSettingsInteractor,

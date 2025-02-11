@@ -16,11 +16,11 @@
 
 package com.android.systemui.communal.domain.interactor
 
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags.communalSceneKtfRefactor
 import com.android.systemui.communal.data.repository.CommunalSceneTransitionRepository
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.dagger.SysUISingleton
@@ -44,7 +44,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
-import com.android.app.tracing.coroutines.launchTraced as launch
 
 /**
  * This class listens to [SceneTransitionLayout] transitions and manages keyguard transition
@@ -122,11 +121,7 @@ constructor(
             )
 
     override fun start() {
-        if (
-            communalSceneKtfRefactor() &&
-                settingsInteractor.isCommunalFlagEnabled() &&
-                !SceneContainerFlag.isEnabled
-        ) {
+        if (settingsInteractor.isCommunalFlagEnabled() && !SceneContainerFlag.isEnabled) {
             sceneInteractor.registerSceneStateProcessor(this)
             listenForSceneTransitionProgress()
         }

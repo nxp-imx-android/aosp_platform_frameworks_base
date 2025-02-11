@@ -19,7 +19,6 @@ package com.android.systemui.keyguard.domain.interactor
 import android.animation.ValueAnimator
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.Flags.communalSceneKtfRefactor
 import com.android.systemui.Flags.restartDreamOnUnocclude
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
@@ -143,15 +142,11 @@ constructor(
             startTransitionTo(KeyguardState.DREAMING)
         } else if (isIdleOnCommunal || showCommunalFromOccluded) {
             if (SceneContainerFlag.isEnabled) return
-            if (communalSceneKtfRefactor()) {
-                communalSceneInteractor.changeScene(
-                    newScene = CommunalScenes.Communal,
-                    loggingReason = "occluded to hub",
-                    transitionKey = CommunalTransitionKeys.SimpleFade,
-                )
-            } else {
-                startTransitionTo(KeyguardState.GLANCEABLE_HUB)
-            }
+            communalSceneInteractor.changeScene(
+                newScene = CommunalScenes.Communal,
+                loggingReason = "occluded to hub",
+                transitionKey = CommunalTransitionKeys.SimpleFade,
+            )
         } else {
             startTransitionTo(KeyguardState.LOCKSCREEN)
         }

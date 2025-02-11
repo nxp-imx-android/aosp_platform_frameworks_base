@@ -25,7 +25,6 @@ import android.service.dream.dreamManager
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
-import com.android.systemui.Flags.FLAG_COMMUNAL_SCENE_KTF_REFACTOR
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
@@ -39,7 +38,6 @@ import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnabled
 import com.android.systemui.communal.shared.model.CommunalScenes
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
@@ -70,7 +68,6 @@ import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -103,10 +100,7 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(
-                FLAG_COMMUNAL_SCENE_KTF_REFACTOR,
-                FLAG_GLANCEABLE_HUB_V2,
-            )
+            return FlagsParameterization.allCombinationsOf(FLAG_GLANCEABLE_HUB_V2)
         }
     }
 
@@ -174,22 +168,6 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
 
     @Test
     @EnableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    @DisableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR, FLAG_GLANCEABLE_HUB_V2)
-    fun testTransitionToLockscreen_onWake_canDream_glanceableHubAvailable() =
-        kosmos.runTest {
-            whenever(dreamManager.canStartDreaming(anyBoolean())).thenReturn(true)
-            setCommunalAvailable(true)
-
-            powerInteractor.setAwakeForTest()
-
-            // If dreaming is possible and communal is available, then we should transition to
-            // GLANCEABLE_HUB when waking up due to power button press.
-            assertThat(transitionRepository)
-                .startedTransition(from = KeyguardState.DOZING, to = KeyguardState.GLANCEABLE_HUB)
-        }
-
-    @Test
-    @EnableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR, FLAG_COMMUNAL_SCENE_KTF_REFACTOR)
     fun testTransitionToLockscreen_onWake_canDream_ktfRefactor() =
         kosmos.runTest {
             setCommunalAvailable(true)
@@ -243,24 +221,7 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
         }
 
     @Test
-    @EnableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    @DisableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR)
-    fun testTransitionToGlanceableHub_onWakeup_ifIdleOnCommunal_noOccludingActivity() =
-        kosmos.runTest {
-            fakeCommunalSceneRepository.setTransitionState(
-                flowOf(ObservableTransitionState.Idle(CommunalScenes.Communal))
-            )
-
-            powerInteractor.setAwakeForTest()
-
-            // Under default conditions, we should transition to LOCKSCREEN when waking up.
-            assertThat(transitionRepository)
-                .startedTransition(from = KeyguardState.DOZING, to = KeyguardState.GLANCEABLE_HUB)
-        }
-
-    @Test
     @DisableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR, FLAG_SCENE_CONTAINER)
-    @EnableFlags(FLAG_COMMUNAL_SCENE_KTF_REFACTOR)
     fun testTransitionToGlanceableHub_onWakeup_ifAvailable() =
         kosmos.runTest {
             setCommunalAvailable(true)

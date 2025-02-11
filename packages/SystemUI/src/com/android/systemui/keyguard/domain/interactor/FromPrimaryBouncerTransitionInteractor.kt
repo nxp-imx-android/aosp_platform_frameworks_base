@@ -18,8 +18,8 @@ package com.android.systemui.keyguard.domain.interactor
 
 import android.animation.ValueAnimator
 import android.util.Log
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.keyguard.KeyguardSecurityModel
-import com.android.systemui.Flags.communalSceneKtfRefactor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.dagger.SysUISingleton
@@ -35,7 +35,6 @@ import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.kotlin.Utils.Companion.sample
-import com.android.systemui.util.kotlin.sample
 import com.android.wm.shell.shared.animation.Interpolators
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -45,7 +44,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
-import com.android.app.tracing.coroutines.launchTraced as launch
 
 @SysUISingleton
 class FromPrimaryBouncerTransitionInteractor
@@ -173,8 +171,7 @@ constructor(
         // If the hub is showing, and we are not animating a widget launch nor transitioning to
         // edit mode, then close the hub immediately.
         if (
-            communalSceneKtfRefactor() &&
-                communalSceneInteractor.isIdleOnCommunal.value &&
+            communalSceneInteractor.isIdleOnCommunal.value &&
                 !communalSceneInteractor.isLaunchingWidget.value &&
                 communalSceneInteractor.editModeState.value == null
         ) {
