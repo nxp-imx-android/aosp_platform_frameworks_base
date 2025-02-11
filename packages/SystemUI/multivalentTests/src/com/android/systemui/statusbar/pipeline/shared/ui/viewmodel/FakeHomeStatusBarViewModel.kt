@@ -19,6 +19,9 @@ package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 import android.graphics.Color
 import android.graphics.Rect
 import android.view.View
+import androidx.compose.runtime.getValue
+import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
@@ -26,15 +29,20 @@ import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChip
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
+import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.mockito.Mockito.mock
 
 class FakeHomeStatusBarViewModel(
     override val operatorNameViewModel: StatusBarOperatorNameViewModel
-) : HomeStatusBarViewModel {
+) : HomeStatusBarViewModel, ExclusiveActivatable() {
+    private val hydrator = Hydrator("FakeHomeStatusBarViewModel.hydrator")
+
     override val areNotificationsLightsOut = MutableStateFlow(false)
 
     override val isTransitioningFromLockscreenToOccluded = MutableStateFlow(false)
@@ -55,6 +63,11 @@ class FakeHomeStatusBarViewModel(
         MutableStateFlow(MediaProjectionStopDialogModel.Hidden)
 
     override val isHomeStatusBarAllowedByScene = MutableStateFlow(false)
+
+    override val batteryViewModelFactory: BatteryViewModel.Factory =
+        object : BatteryViewModel.Factory {
+            override fun create(): BatteryViewModel = mock(BatteryViewModel::class.java)
+        }
 
     override val shouldShowOperatorNameView = MutableStateFlow(false)
 
@@ -80,6 +93,7 @@ class FakeHomeStatusBarViewModel(
 
     var darkIconTint = Color.BLACK
     var lightIconTint = Color.WHITE
+    var darkIntensity = 0f
 
     override val areaTint: Flow<StatusBarTintColor> =
         MutableStateFlow(
@@ -91,4 +105,22 @@ class FakeHomeStatusBarViewModel(
                 }
             }
         )
+
+    val isAreaDarkSource =
+        MutableStateFlow(
+            IsAreaDark { viewBounds ->
+                if (DarkIconDispatcher.isInAreas(darkRegions, viewBounds)) {
+                    darkIntensity < 0.5f
+                } else {
+                    false
+                }
+            }
+        )
+
+    override val areaDark: IsAreaDark by
+        hydrator.hydratedStateOf(traceName = "areaDark", source = isAreaDarkSource)
+
+    override suspend fun onActivated(): Nothing {
+        hydrator.activate()
+    }
 }

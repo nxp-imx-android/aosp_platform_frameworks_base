@@ -51,11 +51,13 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeViewStateProvider
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.StatusBarState
+import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
 import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryViewModelFactory
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.KeyguardStateController
@@ -85,6 +87,7 @@ import org.mockito.MockitoAnnotations
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper(setAsMainLooper = true)
+@DisableFlags(NewStatusBarIcons.FLAG_NAME)
 class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     private lateinit var kosmos: Kosmos
     private lateinit var testScope: TestScope
@@ -190,6 +193,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
             statusBarIconController,
             iconManagerFactory,
             batteryMeterViewController,
+            kosmos.batteryViewModelFactory,
             shadeViewStateProvider,
             keyguardStateController,
             keyguardBypassController,
