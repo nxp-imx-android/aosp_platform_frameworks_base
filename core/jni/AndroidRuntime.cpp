@@ -102,7 +102,10 @@ extern int register_android_media_AudioAttributes(JNIEnv *env);
 extern int register_android_media_AudioProductStrategies(JNIEnv *env);
 extern int register_android_media_AudioVolumeGroups(JNIEnv *env);
 extern int register_android_media_AudioVolumeGroupChangeHandler(JNIEnv *env);
+extern int register_android_media_ImageReader(JNIEnv *env);
+extern int register_android_media_ImageWriter(JNIEnv *env);
 extern int register_android_media_MicrophoneInfo(JNIEnv *env);
+extern int register_android_media_PublicFormatUtils(JNIEnv *env);
 extern int register_android_media_ToneGenerator(JNIEnv *env);
 extern int register_android_media_audio_common_AidlConversion(JNIEnv* env);
 extern int register_android_media_midi(JNIEnv *env);
@@ -1658,8 +1661,11 @@ static const RegJNIRec gRegJNI[] = {
         REG_JNI(register_android_media_AudioProductStrategies),
         REG_JNI(register_android_media_AudioVolumeGroups),
         REG_JNI(register_android_media_AudioVolumeGroupChangeHandler),
+        REG_JNI(register_android_media_ImageReader),
+        REG_JNI(register_android_media_ImageWriter),
         REG_JNI(register_android_media_MediaMetrics),
         REG_JNI(register_android_media_MicrophoneInfo),
+        REG_JNI(register_android_media_PublicFormatUtils),
         REG_JNI(register_android_media_RemoteDisplay),
         REG_JNI(register_android_media_ToneGenerator),
         REG_JNI(register_android_media_audio_common_AidlConversion),
