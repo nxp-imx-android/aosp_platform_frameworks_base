@@ -33,16 +33,20 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.ITradeInMode;
 import android.os.SystemProperties;
+import android.os.RemoteException;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.service.persistentdata.PersistentDataBlockManager;
 import android.util.Slog;
+
+import com.android.server.health.HealthServiceWrapper;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.NoSuchElementException;
 
 public final class TradeInModeService extends SystemService {
     private static final String TAG = "TradeInModeService";
@@ -317,6 +321,19 @@ public final class TradeInModeService extends SystemService {
     private void setAdbEnabled(boolean enabled) {
         final ContentResolver cr = mContext.getContentResolver();
         Settings.Global.putInt(cr, Settings.Global.ADB_ENABLED, enabled ? 1 : 0);
+    }
+
+    private HealthServiceWrapper getHealthService() {
+        try {
+            HealthServiceWrapper health = HealthServiceWrapper.create(null);
+            return health;
+        } catch (RemoteException ex) {
+            Slog.e(TAG, "health: (RemoteException)");
+            throw ex.rethrowFromSystemServer();
+        } catch (NoSuchElementException ex) {
+            Slog.e(TAG, "health: cannot register callback. (no supported health HAL service)");
+            throw ex;
+        }
     }
 
     private int getTradeInModeState() {
