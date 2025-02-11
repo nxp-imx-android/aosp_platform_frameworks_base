@@ -53,6 +53,7 @@ import com.android.wm.shell.pip2.phone.PipTransition;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.pip2.phone.PipUiStateChangeController;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
@@ -85,11 +86,13 @@ public abstract class Pip2Module {
             @NonNull PipDisplayLayoutState pipDisplayLayoutState,
             @NonNull PipUiStateChangeController pipUiStateChangeController,
             DisplayController displayController,
+            Optional<SplitScreenController> splitScreenControllerOptional,
             PipDesktopState pipDesktopState) {
         return new PipTransition(context, shellInit, shellTaskOrganizer, transitions,
                 pipBoundsState, null, pipBoundsAlgorithm, pipTaskListener,
                 pipScheduler, pipStackListenerController, pipDisplayLayoutState,
-                pipUiStateChangeController, displayController, pipDesktopState);
+                pipUiStateChangeController, displayController, splitScreenControllerOptional,
+                pipDesktopState);
     }
 
     @WMSingleton
@@ -140,9 +143,10 @@ public abstract class Pip2Module {
             PipBoundsState pipBoundsState,
             @ShellMainThread ShellExecutor mainExecutor,
             PipTransitionState pipTransitionState,
+            Optional<SplitScreenController> splitScreenControllerOptional,
             PipDesktopState pipDesktopState) {
         return new PipScheduler(context, pipBoundsState, mainExecutor, pipTransitionState,
-                pipDesktopState);
+                splitScreenControllerOptional, pipDesktopState);
     }
 
     @WMSingleton

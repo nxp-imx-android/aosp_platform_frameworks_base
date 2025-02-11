@@ -314,7 +314,8 @@ public class PipTransitionState {
         mSwipePipToHomeAppBounds.setEmpty();
     }
 
-    @Nullable WindowContainerToken getPipTaskToken() {
+    @Nullable
+    public WindowContainerToken getPipTaskToken() {
         return mPipTaskInfo != null ? mPipTaskInfo.getToken() : null;
     }
 

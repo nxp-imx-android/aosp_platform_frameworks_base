@@ -35,6 +35,10 @@ import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
+import com.android.wm.shell.shared.split.SplitScreenConstants;
+import com.android.wm.shell.splitscreen.SplitScreenController;
+
+import java.util.Optional;
 
 /**
  * Scheduler for Shell initiated PiP transitions and animations.
@@ -47,6 +51,7 @@ public class PipScheduler {
     private final ShellExecutor mMainExecutor;
     private final PipTransitionState mPipTransitionState;
     private final PipDesktopState mPipDesktopState;
+    private final Optional<SplitScreenController> mSplitScreenControllerOptional;
     private PipTransitionController mPipTransitionController;
     private PipSurfaceTransactionHelper.SurfaceControlTransactionFactory
             mSurfaceControlTransactionFactory;
@@ -59,12 +64,14 @@ public class PipScheduler {
             PipBoundsState pipBoundsState,
             ShellExecutor mainExecutor,
             PipTransitionState pipTransitionState,
+            Optional<SplitScreenController> splitScreenControllerOptional,
             PipDesktopState pipDesktopState) {
         mContext = context;
         mPipBoundsState = pipBoundsState;
         mMainExecutor = mainExecutor;
         mPipTransitionState = pipTransitionState;
         mPipDesktopState = pipDesktopState;
+        mSplitScreenControllerOptional = splitScreenControllerOptional;
 
         mSurfaceControlTransactionFactory =
                 new PipSurfaceTransactionHelper.VsyncSurfaceControlTransactionFactory();
@@ -96,10 +103,23 @@ public class PipScheduler {
     public void scheduleExitPipViaExpand() {
         mMainExecutor.execute(() -> {
             if (!mPipTransitionState.isInPip()) return;
-            WindowContainerTransaction wct = getExitPipViaExpandTransaction();
-            if (wct != null) {
-                mPipTransitionController.startExpandTransition(wct);
-            }
+
+            final WindowContainerTransaction expandWct = getExitPipViaExpandTransaction();
+            if (expandWct == null) return;
+
+            final WindowContainerTransaction wct = new WindowContainerTransaction();
+            mSplitScreenControllerOptional.ifPresent(splitScreenController -> {
+                int lastParentTaskId = mPipTransitionState.getPipTaskInfo()
+                        .lastParentTaskIdBeforePip;
+                if (splitScreenController.isTaskInSplitScreen(lastParentTaskId)) {
+                    splitScreenController.prepareEnterSplitScreen(wct,
+                            null /* taskInfo */, SplitScreenConstants.SPLIT_POSITION_UNDEFINED);
+                }
+            });
+
+            boolean toSplit = !wct.isEmpty();
+            wct.merge(expandWct, true /* transfer */);
+            mPipTransitionController.startExpandTransition(wct, toSplit);
         });
     }
 
