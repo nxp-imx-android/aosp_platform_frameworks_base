@@ -21,9 +21,6 @@ import android.hardware.contexthub.HubMessage;
 import android.hardware.contexthub.IEndpointCallback;
 import android.hardware.contexthub.Message;
 import android.hardware.contexthub.MessageDeliveryStatus;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Process;
 import android.os.RemoteException;
 
 /** IEndpointCallback implementation. */
@@ -31,11 +28,6 @@ public class ContextHubHalEndpointCallback
         extends android.hardware.contexthub.IEndpointCallback.Stub {
     private final IEndpointLifecycleCallback mEndpointLifecycleCallback;
     private final IEndpointSessionCallback mEndpointSessionCallback;
-
-    // Use this thread in case where the execution requires to be on an async service thread.
-    private final HandlerThread mHandlerThread =
-            new HandlerThread("Context Hub endpoint callback", Process.THREAD_PRIORITY_BACKGROUND);
-    private Handler mHandler;
 
     /** Interface for listening for endpoint start and stop events. */
     public interface IEndpointLifecycleCallback {
@@ -73,9 +65,6 @@ public class ContextHubHalEndpointCallback
             IEndpointSessionCallback endpointSessionCallback) {
         mEndpointLifecycleCallback = endpointLifecycleCallback;
         mEndpointSessionCallback = endpointSessionCallback;
-
-        mHandlerThread.start();
-        mHandler = new Handler(mHandlerThread.getLooper());
     }
 
     @Override
@@ -88,7 +77,7 @@ public class ContextHubHalEndpointCallback
         for (int i = 0; i < halEndpointInfos.length; i++) {
             endpointInfos[i] = new HubEndpointInfo(halEndpointInfos[i]);
         }
-        mHandler.post(() -> mEndpointLifecycleCallback.onEndpointStarted(endpointInfos));
+        mEndpointLifecycleCallback.onEndpointStarted(endpointInfos);
     }
 
     @Override
@@ -98,7 +87,7 @@ public class ContextHubHalEndpointCallback
         for (int i = 0; i < halEndpointIds.length; i++) {
             endpointIds[i] = new HubEndpointInfo.HubEndpointIdentifier(halEndpointIds[i]);
         }
-        mHandler.post(() -> mEndpointLifecycleCallback.onEndpointStopped(endpointIds, reason));
+        mEndpointLifecycleCallback.onEndpointStopped(endpointIds, reason);
     }
 
     @Override
@@ -109,37 +98,33 @@ public class ContextHubHalEndpointCallback
                 new HubEndpointInfo.HubEndpointIdentifier(destination.hubId, destination.id);
         HubEndpointInfo.HubEndpointIdentifier initiatorId =
                 new HubEndpointInfo.HubEndpointIdentifier(initiator.hubId, initiator.id);
-        mHandler.post(
-                () ->
-                        mEndpointSessionCallback.onEndpointSessionOpenRequest(
-                                sessionId, destinationId, initiatorId, serviceDescriptor));
+        mEndpointSessionCallback.onEndpointSessionOpenRequest(
+                sessionId, destinationId, initiatorId, serviceDescriptor);
     }
 
     @Override
     public void onCloseEndpointSession(int sessionId, byte reason) throws RemoteException {
-        mHandler.post(() -> mEndpointSessionCallback.onCloseEndpointSession(sessionId, reason));
+        mEndpointSessionCallback.onCloseEndpointSession(sessionId, reason);
     }
 
     @Override
     public void onEndpointSessionOpenComplete(int sessionId) throws RemoteException {
-        mHandler.post(() -> mEndpointSessionCallback.onEndpointSessionOpenComplete(sessionId));
+        mEndpointSessionCallback.onEndpointSessionOpenComplete(sessionId);
     }
 
     @Override
     public void onMessageReceived(int sessionId, Message message) throws RemoteException {
         HubMessage hubMessage = ContextHubServiceUtil.createHubMessage(message);
-        mHandler.post(() -> mEndpointSessionCallback.onMessageReceived(sessionId, hubMessage));
+        mEndpointSessionCallback.onMessageReceived(sessionId, hubMessage);
     }
 
     @Override
     public void onMessageDeliveryStatusReceived(
             int sessionId, MessageDeliveryStatus messageDeliveryStatus) throws RemoteException {
-        mHandler.post(
-                () ->
-                        mEndpointSessionCallback.onMessageDeliveryStatusReceived(
-                                sessionId,
-                                messageDeliveryStatus.messageSequenceNumber,
-                                messageDeliveryStatus.errorCode));
+        mEndpointSessionCallback.onMessageDeliveryStatusReceived(
+                sessionId,
+                messageDeliveryStatus.messageSequenceNumber,
+                messageDeliveryStatus.errorCode);
     }
 
     @Override
