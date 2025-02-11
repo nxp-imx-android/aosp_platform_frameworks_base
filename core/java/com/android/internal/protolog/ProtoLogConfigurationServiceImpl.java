@@ -134,74 +134,6 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
         mDataSource = datasource;
     }
 
-    public static class RegisterClientArgs extends IRegisterClientArgs.Stub {
-        /**
-         * The viewer config file to be registered for this client ProtoLog process.
-         */
-        @Nullable
-        private String mViewerConfigFile = null;
-        /**
-         * The list of all groups that this client protolog process supports and might trace.
-         */
-        @NonNull
-        private String[] mGroups = new String[0];
-        /**
-         * The default logcat status of the ProtoLog client. True is logging to logcat, false
-         * otherwise. The indices should match the indices in {@link mGroups}.
-         */
-        @NonNull
-        private boolean[] mLogcatStatus = new boolean[0];
-
-        public record GroupConfig(@NonNull String group, boolean logToLogcat) {}
-
-        /**
-         * Specify groups to register with this client that will be used for protologging in this
-         * process.
-         * @param groups to register with this client.
-         * @return self
-         */
-        public RegisterClientArgs setGroups(GroupConfig... groups) {
-            mGroups = new String[groups.length];
-            mLogcatStatus = new boolean[groups.length];
-
-            for (int i = 0; i < groups.length; i++) {
-                mGroups[i] = groups[i].group;
-                mLogcatStatus[i] = groups[i].logToLogcat;
-            }
-
-            return this;
-        }
-
-        /**
-         * Set the viewer config file that the logs in this process are using.
-         * @param viewerConfigFile The file path of the viewer config.
-         * @return self
-         */
-        public RegisterClientArgs setViewerConfigFile(@NonNull String viewerConfigFile) {
-            mViewerConfigFile = viewerConfigFile;
-
-            return this;
-        }
-
-        @Override
-        @NonNull
-        public String[] getGroups() {
-            return mGroups;
-        }
-
-        @Override
-        @NonNull
-        public boolean[] getGroupsDefaultLogcatStatus() {
-            return mLogcatStatus;
-        }
-
-        @Nullable
-        @Override
-        public String getViewerConfigFile() {
-            return mViewerConfigFile;
-        }
-    }
-
     @FunctionalInterface
     public interface ViewerConfigFileTracer {
         /**
@@ -216,16 +148,16 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
     }
 
     @Override
-    public void registerClient(@NonNull IProtoLogClient client, @NonNull IRegisterClientArgs args)
+    public void registerClient(@NonNull IProtoLogClient client, @NonNull RegisterClientArgs args)
             throws RemoteException {
         client.asBinder().linkToDeath(() -> onClientBinderDeath(client), /* flags */ 0);
 
-        final String viewerConfigFile = args.getViewerConfigFile();
+        final String viewerConfigFile = args.viewerConfigFile;
         if (viewerConfigFile != null) {
             registerViewerConfigFile(client, viewerConfigFile);
         }
 
-        registerGroups(client, args.getGroups(), args.getGroupsDefaultLogcatStatus());
+        registerGroups(client, args.groups, args.groupsDefaultLogcatStatus);
     }
 
     @Override
