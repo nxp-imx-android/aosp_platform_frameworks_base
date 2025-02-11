@@ -57,7 +57,8 @@ class ContentListState
 internal constructor(
     communalContent: List<CommunalContentModel>,
     private val onAddWidget: (componentName: ComponentName, user: UserHandle, rank: Int) -> Unit,
-    private val onDeleteWidget: (id: Int, componentName: ComponentName, rank: Int) -> Unit,
+    private val onDeleteWidget:
+        (id: Int, key: String, componentName: ComponentName, rank: Int) -> Unit,
     private val onReorderWidgets: (widgetIdToRankMap: Map<Int, Int>) -> Unit,
     private val onResizeWidget:
         (
@@ -81,7 +82,7 @@ internal constructor(
         if (list[indexToRemove].isWidgetContent()) {
             val widget = list[indexToRemove] as CommunalContentModel.WidgetContent
             list.apply { removeAt(indexToRemove) }
-            onDeleteWidget(widget.appWidgetId, widget.componentName, widget.rank)
+            onDeleteWidget(widget.appWidgetId, widget.key, widget.componentName, widget.rank)
         }
     }
 
