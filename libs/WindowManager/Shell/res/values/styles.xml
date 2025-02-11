@@ -40,13 +40,11 @@
         <item name="android:activityCloseExitAnimation">@anim/forced_resizable_exit</item>
     </style>
 
-    <style name="DesktopModeHandleMenuActionButtonLayout">
+    <style name="DesktopModeHandleMenuActionButton">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">52dp</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:gravity">start|center_vertical</item>
-        <item name="android:paddingHorizontal">16dp</item>
-        <item name="android:background">?android:selectableItemBackground</item>
+        <item name="android:textColor">@androidprv:color/materialColorOnSurface</item>
+        <item name="android:drawableTint">@androidprv:color/materialColorOnSurface</item>
     </style>
 
     <style name="DesktopModeHandleMenuActionButtonImage">
@@ -71,7 +69,6 @@
     <style name="DesktopModeHandleMenuWindowingButton">
         <item name="android:layout_width">48dp</item>
         <item name="android:layout_height">48dp</item>
-        <item name="android:padding">14dp</item>
         <item name="android:scaleType">fitCenter</item>
         <item name="android:background">?android:selectableItemBackgroundBorderless</item>
     </style>
