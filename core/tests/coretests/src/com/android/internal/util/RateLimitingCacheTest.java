@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.os.SystemClock;
+import android.platform.test.annotations.Presubmit;
 
 import androidx.test.runner.AndroidJUnit4;
 
@@ -34,6 +35,7 @@ import org.junit.runner.RunWith;
 /**
  * Test the RateLimitingCache class.
  */
+@Presubmit
 @RunWith(AndroidJUnit4.class)
 public class RateLimitingCacheTest {
 
