@@ -26,6 +26,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -192,8 +193,19 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
     @Override
     public boolean getDetailsViewModel(Consumer<TileDetailsViewModel> callback) {
         handleClick(() -> executeWhenUnlockedKeyguard(
-                () -> callback.accept(new ScreenRecordDetailsViewModel(mController,
-                                        this::onStartRecordingClicked)))
+                () -> {
+                    if (mController.isScreenCaptureDisabled()) {
+                        // Close the panel first so that the toast can show up.
+                        mDialogTransitionAnimator.disableAllCurrentDialogsExitAnimations();
+                        mPanelInteractor.collapsePanels();
+
+                        showDisabledByPolicyToast();
+                        return;
+                    }
+
+                    callback.accept(new ScreenRecordDetailsViewModel(mController,
+                            this::onStartRecordingClicked));
+                })
         );
         return true;
     }
@@ -242,6 +254,12 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
     @Override
     public CharSequence getTileLabel() {
         return mContext.getString(R.string.quick_settings_screen_record_label);
+    }
+
+    void showDisabledByPolicyToast() {
+        Toast.makeText(mContext,
+                R.string.screen_capturing_disabled_by_policy_dialog_description, Toast.LENGTH_SHORT)
+                .show();
     }
 
     private void cancelCountdown() {
