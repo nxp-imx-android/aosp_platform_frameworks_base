@@ -399,7 +399,9 @@ public class ConversationLayout extends FrameLayout
     @RemotableViewMethod(asyncImpl = "setIsCollapsedAsync")
     public void setIsCollapsed(boolean isCollapsed) {
         mIsCollapsed = isCollapsed;
-        mMessagingLinearLayout.setMaxDisplayedLines(isCollapsed ? 1 : Integer.MAX_VALUE);
+        mMessagingLinearLayout.setMaxDisplayedLines(isCollapsed
+                ? TextUtils.isEmpty(mSummarizedContent) ? 1 : 2
+                : Integer.MAX_VALUE);
         updateExpandButton();
         updateContentEndPaddings();
     }
@@ -448,7 +450,7 @@ public class ConversationLayout extends FrameLayout
 
         List<MessagingMessage> newMessagingMessages;
         mSummarizedContent = extras.getCharSequence(Notification.EXTRA_SUMMARIZED_CONTENT);
-        if (mSummarizedContent != null && mIsCollapsed) {
+        if (!TextUtils.isEmpty(mSummarizedContent) && mIsCollapsed) {
             Notification.MessagingStyle.Message summary =
                     new Notification.MessagingStyle.Message(mSummarizedContent,  0, "");
             newMessagingMessages = createMessages(List.of(summary), false, usePrecomputedText);
@@ -1162,7 +1164,7 @@ public class ConversationLayout extends FrameLayout
                 nameOverride = mNameReplacement;
             }
             newGroup.setShowingAvatar(!mIsOneToOne && !mIsCollapsed);
-            newGroup.setSingleLine(mIsCollapsed);
+            newGroup.setSingleLine(mIsCollapsed && TextUtils.isEmpty(mSummarizedContent));
             newGroup.setSender(sender, nameOverride);
             newGroup.setSending(groupIndex == (groups.size() - 1) && showSpinner);
             mGroups.add(newGroup);
@@ -1462,7 +1464,6 @@ public class ConversationLayout extends FrameLayout
                 maxHeight = Math.max(maxHeight,
                         child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin);
             }
-
             maxHeight = Math.max(maxHeight, getSuggestedMinimumHeight());
             if (maxHeight != getMeasuredHeight()) {
                 setMeasuredDimension(getMeasuredWidth(), maxHeight);

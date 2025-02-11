@@ -47,6 +47,7 @@ import android.os.Bundle;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.FloatProperty;
 import android.util.IndentingPrintWriter;
@@ -81,6 +82,8 @@ import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.internal.widget.CachingIconView;
 import com.android.internal.widget.CallLayout;
+import com.android.internal.widget.ConversationLayout;
+import com.android.internal.widget.MessagingLayout;
 import com.android.systemui.Flags;
 import com.android.systemui.flags.RefactorFlag;
 import com.android.systemui.plugins.FalsingManager;
@@ -97,6 +100,7 @@ import com.android.systemui.statusbar.notification.AboveShelfChangedListener;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.LaunchAnimationParameters;
+import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
 import com.android.systemui.statusbar.notification.NotificationFadeAware;
 import com.android.systemui.statusbar.notification.NotificationTransitionAnimatorController;
 import com.android.systemui.statusbar.notification.NotificationUtils;
@@ -205,6 +209,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private int mMaxSmallHeightBeforeN;
     private int mMaxSmallHeightBeforeP;
     private int mMaxSmallHeightBeforeS;
+    private int mMaxSmallHeightWithSummarization;
     private int mMaxSmallHeight;
     private int mMaxExpandedHeight;
     private int mMaxExpandedHeightForPromotedOngoing;
@@ -856,6 +861,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         int smallHeight;
 
         boolean isCallLayout = contractedView instanceof CallLayout;
+        boolean isMessagingLayout = contractedView instanceof MessagingLayout
+                || contractedView instanceof ConversationLayout;
 
         if (customView && beforeS && !mIsSummaryWithChildren) {
             if (beforeN) {
@@ -867,6 +874,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             }
         } else if (isCallLayout) {
             smallHeight = maxExpandedHeight;
+        } else if (NmSummarizationUiFlag.isEnabled()
+                && isMessagingLayout
+                && !TextUtils.isEmpty(mEntry.getRanking().getSummarization())) {
+            smallHeight = mMaxSmallHeightWithSummarization;
         } else {
             smallHeight = mMaxSmallHeight;
         }
@@ -2111,6 +2122,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             mMaxSmallHeight = NotificationUtils.getFontScaledHeight(mContext,
                     R.dimen.notification_min_height);
         }
+        mMaxSmallHeightWithSummarization = NotificationUtils.getFontScaledHeight(mContext,
+                com.android.internal.R.dimen.notification_collapsed_height_with_summarization);
         mMaxExpandedHeight = NotificationUtils.getFontScaledHeight(mContext,
                 R.dimen.notification_max_height);
         mMaxExpandedHeightForPromotedOngoing = NotificationUtils.getFontScaledHeight(mContext,

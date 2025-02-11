@@ -69,7 +69,10 @@ constructor(
         messagingStyle.conversationType =
             if (entry.ranking.channel.isImportantConversation)
                 Notification.MessagingStyle.CONVERSATION_TYPE_IMPORTANT
-            else Notification.MessagingStyle.CONVERSATION_TYPE_NORMAL
+            else if (entry.ranking.isConversation)
+                Notification.MessagingStyle.CONVERSATION_TYPE_NORMAL
+            else
+                Notification.MessagingStyle.CONVERSATION_TYPE_LEGACY
         entry.ranking.conversationShortcutInfo?.let { shortcutInfo ->
             logger.logAsyncTaskProgress(entry, "getting shortcut icon")
             messagingStyle.shortcutIcon = launcherApps.getShortcutIcon(shortcutInfo)

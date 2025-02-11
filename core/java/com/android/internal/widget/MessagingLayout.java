@@ -198,7 +198,8 @@ public class MessagingLayout extends FrameLayout
                 /* isHistoric= */true, usePrecomputedText);
         List<MessagingMessage> newMessagingMessages;
         mSummarizedContent = extras.getCharSequence(Notification.EXTRA_SUMMARIZED_CONTENT);
-        if (mSummarizedContent != null && mIsCollapsed) {
+        if (!TextUtils.isEmpty(mSummarizedContent) && mIsCollapsed) {
+            mMessagingLinearLayout.setMaxDisplayedLines(2);
             Notification.MessagingStyle.Message summary =
                     new Notification.MessagingStyle.Message(mSummarizedContent,  0, "");
             newMessagingMessages = createMessages(List.of(summary), false, usePrecomputedText);
@@ -488,7 +489,7 @@ public class MessagingLayout extends FrameLayout
             if (sender != mUser && mNameReplacement != null) {
                 nameOverride = mNameReplacement;
             }
-            newGroup.setSingleLine(mIsCollapsed);
+            newGroup.setSingleLine(mIsCollapsed && TextUtils.isEmpty(mSummarizedContent));
             newGroup.setShowingAvatar(!mIsCollapsed);
             newGroup.setSender(sender, nameOverride);
             newGroup.setSending(groupIndex == (groups.size() - 1) && showSpinner);
