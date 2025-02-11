@@ -3334,7 +3334,7 @@ public abstract class Context {
      * this case, only one of these can be returned directly by the function;
      * which of these that is returned is arbitrarily decided by the system.
      *
-     * <p>If you know the Intent your are registering for is sticky, you can
+     * <p>If you know the Intent you are registering for is sticky, you can
      * supply null for your <var>receiver</var>.  In this case, no receiver is
      * registered -- the function simply returns the sticky Intent that
      * matches <var>filter</var>.  In the case of multiple matches, the same
