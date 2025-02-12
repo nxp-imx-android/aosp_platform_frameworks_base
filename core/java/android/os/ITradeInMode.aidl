@@ -97,4 +97,14 @@ interface ITradeInMode {
      *
      */
     int getHingeCount();
+    /**
+     * Get foldCount of specific hinge on device
+     *
+     */
+    int getFoldCount(in int hingeId);
+    /**
+     * Get lifeSpan of specific hinge on device
+     *
+     */
+    int getHingeLifeSpan(in int hingeId);
 }
