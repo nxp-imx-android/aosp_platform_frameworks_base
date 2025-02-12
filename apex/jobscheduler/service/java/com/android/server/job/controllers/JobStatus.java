@@ -674,6 +674,12 @@ public final class JobStatus {
         this.job = job;
 
         StringBuilder batteryName = new StringBuilder();
+        if (com.android.server.job.Flags.includeTraceTagInJobName()) {
+            final String filteredTraceTag = this.getFilteredTraceTag();
+            if (filteredTraceTag != null) {
+                batteryName.append("#").append(filteredTraceTag).append("#");
+            }
+        }
         if (namespace != null) {
             batteryName.append("@").append(namespace).append("@");
         }
