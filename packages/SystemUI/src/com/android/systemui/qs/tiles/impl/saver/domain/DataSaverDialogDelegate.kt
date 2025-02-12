@@ -16,7 +16,6 @@
 
 package com.android.systemui.qs.tiles.impl.saver.domain
 
-import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -24,7 +23,7 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.R
 import com.android.systemui.coroutines.newTracingContext
 import com.android.systemui.qs.tiles.impl.saver.domain.interactor.DataSaverTileUserActionInteractor
-import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.policy.DataSaverController
 import kotlin.coroutines.CoroutineContext
@@ -32,13 +31,13 @@ import kotlinx.coroutines.CoroutineScope
 
 class DataSaverDialogDelegate(
     private val sysuiDialogFactory: SystemUIDialog.Factory,
-    @ShadeDisplayAware private val context: Context,
+    private val contextInteractor: ShadeDialogContextInteractor,
     private val backgroundContext: CoroutineContext,
     private val dataSaverController: DataSaverController,
     private val sharedPreferences: SharedPreferences,
 ) : SystemUIDialog.Delegate {
     override fun createDialog(): SystemUIDialog {
-        return sysuiDialogFactory.create(this, context)
+        return sysuiDialogFactory.create(this, contextInteractor.context)
     }
 
     override fun beforeCreate(dialog: SystemUIDialog, savedInstanceState: Bundle?) {

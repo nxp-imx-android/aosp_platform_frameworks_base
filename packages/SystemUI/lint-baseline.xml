@@ -32784,4 +32784,15 @@
             column="23"/>
     </issue>
 
+    <issue
+        id="ShadeDisplayAwareContextChecker"
+        message="UI elements of the shade window should use ShadeDisplayAware-annotated Context, as the shade might move between windows, and only @ShadeDisplayAware resources are updated with the new configuration correctly. Failures to do so might result in wrong dimensions for shade window classes (e.g. using the wrong density or theme). If the usage of Context is not related to display specific configuration or UI, then there is technically no need to use the annotation, and you can annotate the class with @SuppressLint(&quot;ShadeDisplayAwareContextChecker&quot;)/@Suppress(&quot;ShadeDisplayAwareContextChecker&quot;)"
+        errorLine1="            @QSThemedContext Context context,"
+        errorLine2="                                     ~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/qs/customize/TileAdapter.java"
+            line="126"
+            column="38"/>
+    </issue>
+
 </issues>
