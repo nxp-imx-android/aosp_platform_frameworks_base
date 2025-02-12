@@ -215,7 +215,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         pendingWct.reorder(pendingDragOpToken, /* onTop= */ false);
 
         BubbleTransitions.DragData dragData = new BubbleTransitions.DragData(
-                draggedTaskBounds, pendingWct
+                draggedTaskBounds, pendingWct, /* releasedOnLeft= */ false
         );
 
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(

@@ -845,6 +845,10 @@ public class BubbleController implements ConfigurationChangeListener,
                 mLogger.log(onLeft ? BubbleLogger.Event.BUBBLE_BAR_MOVED_LEFT_APP_ICON_DROP
                         : BubbleLogger.Event.BUBBLE_BAR_MOVED_RIGHT_APP_ICON_DROP);
                 break;
+            case BubbleBarLocation.UpdateSource.DRAG_TASK:
+                mLogger.log(onLeft ? BubbleLogger.Event.BUBBLE_BAR_MOVED_LEFT_DRAG_TASK
+                        : BubbleLogger.Event.BUBBLE_BAR_MOVED_RIGHT_DRAG_TASK);
+                break;
         }
     }
 
@@ -1598,13 +1602,21 @@ public class BubbleController implements ConfigurationChangeListener,
         if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen()) return;
         Bubble b = mBubbleData.getOrCreateBubble(taskInfo); // Removes from overflow
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - intent=%s", taskInfo.taskId);
+        BubbleBarLocation location = null;
+        if (dragData != null) {
+            location =
+                    dragData.isReleasedOnLeft() ? BubbleBarLocation.LEFT : BubbleBarLocation.RIGHT;
+        }
         if (b.isInflated()) {
-            mBubbleData.setSelectedBubbleAndExpandStack(b);
+            mBubbleData.setSelectedBubbleAndExpandStack(b, location);
             if (dragData != null && dragData.getPendingWct() != null) {
                 mTransitions.startTransition(TRANSIT_CHANGE,
                         dragData.getPendingWct(), /* handler= */ null);
             }
         } else {
+            if (location != null) {
+                setBubbleBarLocation(location, BubbleBarLocation.UpdateSource.DRAG_TASK);
+            }
             b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
             // Lazy init stack view when a bubble is created
             ensureBubbleViewsAndWindowCreated();

@@ -156,14 +156,18 @@ public class BubbleTransitions {
     public static class DragData {
         private final Rect mBounds;
         private final WindowContainerTransaction mPendingWct;
+        private final boolean mReleasedOnLeft;
 
         /**
          * @param bounds bounds of the dragged task when the drag was released
          * @param wct pending operations to be applied when finishing the drag
+         * @param releasedOnLeft true if the bubble was released in the left drop target
          */
-        public DragData(@Nullable Rect bounds, @Nullable WindowContainerTransaction wct) {
+        public DragData(@Nullable Rect bounds, @Nullable WindowContainerTransaction wct,
+                boolean releasedOnLeft) {
             mBounds = bounds;
             mPendingWct = wct;
+            mReleasedOnLeft = releasedOnLeft;
         }
 
         /**
@@ -180,6 +184,13 @@ public class BubbleTransitions {
         @Nullable
         public WindowContainerTransaction getPendingWct() {
             return mPendingWct;
+        }
+
+        /**
+         * @return true if the bubble was released in the left drop target
+         */
+        public boolean isReleasedOnLeft() {
+            return mReleasedOnLeft;
         }
     }
 

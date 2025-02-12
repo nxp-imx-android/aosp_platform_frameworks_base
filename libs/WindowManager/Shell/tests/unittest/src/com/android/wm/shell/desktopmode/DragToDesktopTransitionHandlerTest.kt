@@ -51,6 +51,7 @@ import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
 import org.mockito.MockitoSession
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -180,10 +181,11 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
             defaultHandler,
             DragToDesktopTransitionHandler.CancelState.CANCEL_BUBBLE_LEFT,
         )
-        verify(bubbleController).expandStackAndSelectBubble(
-            any<RunningTaskInfo>(),
-            any<BubbleTransitions.DragData>()
-        )
+        verify(bubbleController)
+            .expandStackAndSelectBubble(
+                any<RunningTaskInfo>(),
+                argThat<BubbleTransitions.DragData> { isReleasedOnLeft },
+            )
     }
 
     @Test
@@ -192,10 +194,11 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
             defaultHandler,
             DragToDesktopTransitionHandler.CancelState.CANCEL_BUBBLE_RIGHT,
         )
-        verify(bubbleController).expandStackAndSelectBubble(
-            any<RunningTaskInfo>(),
-            any<BubbleTransitions.DragData>()
-        )
+        verify(bubbleController)
+            .expandStackAndSelectBubble(
+                any<RunningTaskInfo>(),
+                argThat<BubbleTransitions.DragData> { !isReleasedOnLeft },
+            )
     }
 
     @Test
@@ -382,10 +385,11 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         )
 
         // Verify the request went through bubble controller.
-        verify(bubbleController).expandStackAndSelectBubble(
-            any<RunningTaskInfo>(),
-            any<BubbleTransitions.DragData>()
-        )
+        verify(bubbleController)
+            .expandStackAndSelectBubble(
+                any<RunningTaskInfo>(),
+                argThat<BubbleTransitions.DragData> { isReleasedOnLeft },
+            )
     }
 
     @Test
@@ -398,10 +402,11 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         )
 
         // Verify the request went through bubble controller.
-        verify(bubbleController).expandStackAndSelectBubble(
-            any<RunningTaskInfo>(),
-            any<BubbleTransitions.DragData>()
-        )
+        verify(bubbleController)
+            .expandStackAndSelectBubble(
+                any<RunningTaskInfo>(),
+                argThat<BubbleTransitions.DragData> { !isReleasedOnLeft },
+            )
     }
 
     @Test
