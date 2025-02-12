@@ -33,7 +33,12 @@ val byIsRowDismissed: Correspondence<ActiveNotificationModel, Boolean> =
 val byIsLastMessageFromReply: Correspondence<ActiveNotificationModel, Boolean> =
     Correspondence.transforming(
         { it?.isLastMessageFromReply },
-        "has an isLastMessageFromReply value of"
+        "has an isLastMessageFromReply value of",
     )
 val byIsPulsing: Correspondence<ActiveNotificationModel, Boolean> =
     Correspondence.transforming({ it?.isPulsing }, "has an isPulsing value of")
+val byIsPromoted: Correspondence<ActiveNotificationModel, Boolean> =
+    Correspondence.transforming(
+        { it?.promotedContent != null },
+        "has (or doesn't have) a promoted content model",
+    )
