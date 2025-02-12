@@ -27,3 +27,14 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "log_broadcast_processed_event"
+    namespace: "backstage_power"
+    description: "Log the broadcast processed event to Statsd"
+    bug: "387576580"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

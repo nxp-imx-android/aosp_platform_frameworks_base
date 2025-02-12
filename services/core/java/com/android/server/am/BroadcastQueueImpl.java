@@ -2189,6 +2189,11 @@ class BroadcastQueueImpl extends BroadcastQueue {
             logBroadcastDeliveryEventReported(queue, app, r, index, receiver);
         }
 
+        if (!r.isAssumedDelivered(index) && r.wasDelivered(index)) {
+            r.updateBroadcastProcessedEventRecord(receiver,
+                    r.terminalTime[index] - r.scheduledTime[index]);
+        }
+
         final boolean recordFinished = (r.terminalCount == r.receivers.size());
         if (recordFinished) {
             notifyFinishBroadcast(r);
@@ -2254,6 +2259,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
         mHistory.onBroadcastFinishedLocked(r);
 
         logBootCompletedBroadcastCompletionLatencyIfPossible(r);
+        r.logBroadcastProcessedEventRecord();
 
         if (r.intent.getComponent() == null && r.intent.getPackage() == null
                 && (r.intent.getFlags() & Intent.FLAG_RECEIVER_REGISTERED_ONLY) == 0) {

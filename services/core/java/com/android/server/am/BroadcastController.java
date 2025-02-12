@@ -1961,7 +1961,9 @@ class BroadcastController {
 
     private void sendPackageBroadcastLocked(int cmd, String[] packages, int userId) {
         mService.mProcessList.sendPackageBroadcastLocked(cmd, packages, userId);
-    }private List<ResolveInfo> collectReceiverComponents(
+    }
+
+    private List<ResolveInfo> collectReceiverComponents(
             Intent intent, String resolvedType, int callingUid, int callingPid,
             int[] users, int[] broadcastAllowList) {
         // TODO: come back and remove this assumption to triage all broadcasts
