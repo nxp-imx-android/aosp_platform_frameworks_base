@@ -186,15 +186,20 @@ public class BubbleTransitionsTest extends ShellTestCase {
         verify(startT).setPosition(any(), eq(0f), eq(0f));
 
         verify(mBubbleData).notificationEntryUpdated(eq(mBubble), anyBoolean(), anyBoolean());
-        ctb.continueExpand();
 
         clearInvocations(mBubble);
         verify(mBubble, never()).setPreparingTransition(any());
 
         ctb.surfaceCreated();
-        verify(mBubble).setPreparingTransition(isNull());
+        // Check that preparing transition is not reset before continueExpand is called
+        verify(mBubble, never()).setPreparingTransition(any());
         ArgumentCaptor<Runnable> animCb = ArgumentCaptor.forClass(Runnable.class);
         verify(mLayerView).animateConvert(any(), any(), any(), any(), animCb.capture());
+
+        // continueExpand is now called, check that preparing transition is cleared
+        ctb.continueExpand();
+        verify(mBubble).setPreparingTransition(isNull());
+
         assertFalse(finishCalled[0]);
         animCb.getValue().run();
         assertTrue(finishCalled[0]);

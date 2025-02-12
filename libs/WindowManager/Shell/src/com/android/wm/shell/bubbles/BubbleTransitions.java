@@ -189,14 +189,16 @@ public class BubbleTransitions {
      *
      * 1. Start inflating the bubble view
      * 2. Once inflated (but not-yet visible), tell WM to do the shell-transition.
-     * 3. Transition becomes ready, so notify Launcher
-     * 4. Launcher responds with showExpandedView which calls continueExpand() to make view visible
-     * 5. Surface is created which kicks off actual animation
+     * 3. When the transition becomes ready, notify Launcher in parallel
+     * 4. Wait for surface to be created
+     * 5. Once surface is ready, animate the task to a bubble
      *
-     * So, constructor -> onInflated -> startAnimation -> continueExpand -> surfaceCreated.
+     * While the animation is pending, we keep a reference to the pending transition in the bubble.
+     * This allows us to check in other parts of the code that this bubble will be shown via the
+     * transition animation.
      *
-     * continueExpand and surfaceCreated are set-up to happen in either order, though, to support
-     * UX/timing adjustments.
+     * startAnimation, continueExpand and surfaceCreated are set-up to happen in either order,
+     * to support UX/timing adjustments.
      */
     @VisibleForTesting
     class ConvertToBubble implements Transitions.TransitionHandler, BubbleTransition {
@@ -209,9 +211,9 @@ public class BubbleTransitions {
         final Rect mStartBounds = new Rect();
         SurfaceControl mSnapshot = null;
         TaskInfo mTaskInfo;
-        boolean mFinishedExpand = false;
         BubbleViewProvider mPriorBubble = null;
 
+        private final TransitionProgress mTransitionProgress = new TransitionProgress();
         private SurfaceControl.Transaction mFinishT;
         private SurfaceControl mTaskLeash;
 
@@ -359,12 +361,12 @@ public class BubbleTransitions {
             startTransaction.apply();
 
             mTaskViewTransitions.onExternalDone(transition);
+            mTransitionProgress.setTransitionReady();
+            startExpandAnim();
             return true;
         }
 
-        @Override
-        public void continueExpand() {
-            mFinishedExpand = true;
+        private void startExpandAnim() {
             final boolean animate = mLayerView.canExpandView(mBubble);
             if (animate) {
                 mPriorBubble = mLayerView.prepareConvertedView(mBubble);
@@ -375,19 +377,25 @@ public class BubbleTransitions {
                 mLayerView.removeView(priorView);
                 mPriorBubble = null;
             }
-            if (!animate || mBubble.getTaskView().getSurfaceControl() != null) {
+            if (!animate || mTransitionProgress.isReadyToAnimate()) {
                 playAnimation(animate);
             }
         }
 
         @Override
+        public void continueExpand() {
+            mTransitionProgress.setReadyToExpand();
+        }
+
+        @Override
         public void surfaceCreated() {
+            mTransitionProgress.setSurfaceReady();
             mMainExecutor.execute(() -> {
                 final TaskViewTaskController tvc = mBubble.getTaskView().getController();
                 final TaskViewRepository.TaskViewState state = mRepository.byTaskView(tvc);
                 if (state == null) return;
                 state.mVisible = true;
-                if (mFinishedExpand) {
+                if (mTransitionProgress.isReadyToAnimate()) {
                     playAnimation(true /* animate */);
                 }
             });
@@ -403,9 +411,6 @@ public class BubbleTransitions {
                 mFinishWct = null;
             }
 
-            // Preparation is complete.
-            mBubble.setPreparingTransition(null);
-
             if (animate) {
                 mLayerView.animateConvert(startT, mStartBounds, mSnapshot, mTaskLeash, () -> {
                     mFinishCb.onTransitionFinished(mFinishWct);
@@ -415,6 +420,42 @@ public class BubbleTransitions {
                 startT.apply();
                 mFinishCb.onTransitionFinished(mFinishWct);
                 mFinishCb = null;
+            }
+        }
+
+        /**
+         * Keeps track of internal state of different steps of this BubbleTransition.
+         */
+        private class TransitionProgress {
+            private boolean mTransitionReady;
+            private boolean mReadyToExpand;
+            private boolean mSurfaceReady;
+
+            void setTransitionReady() {
+                mTransitionReady = true;
+                onUpdate();
+            }
+
+            void setReadyToExpand() {
+                mReadyToExpand = true;
+                onUpdate();
+            }
+
+            void setSurfaceReady() {
+                mSurfaceReady = true;
+                onUpdate();
+            }
+
+            boolean isReadyToAnimate() {
+                // Animation only depends on transition and surface state
+                return mTransitionReady && mSurfaceReady;
+            }
+
+            private void onUpdate() {
+                if (mTransitionReady && mReadyToExpand && mSurfaceReady) {
+                    // Clear the transition from bubble when all the steps are ready
+                    mBubble.setPreparingTransition(null);
+                }
             }
         }
     }
