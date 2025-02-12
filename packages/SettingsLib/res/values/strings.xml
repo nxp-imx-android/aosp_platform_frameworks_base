@@ -1123,6 +1123,13 @@
     <!-- Developer settings: text for the WebView provider selection toast shown if an invalid provider was chosen (i.e. the setting list was stale). [CHAR LIMIT=NONE] -->
     <string name="select_webview_provider_toast_text">This choice is no longer valid. Try again.</string>
 
+    <!-- [CHAR LIMIT=50] Label for button to launch current WebView provider's DevTools (developer tools) UI -->
+    <string name="webview_launch_devtools_title">WebView DevTools</string>
+    <!-- [CHAR LIMIT=50] Error toast shown to user when no (current) WebView package is found (when trying to launch DevTools) -->
+    <string name="webview_launch_devtools_no_package">WebView package not found.</string>
+    <!-- [CHAR LIMIT=50] Error toast shown to user when DevTools (developer tools) activity could not be launched (despite there being a WebView package) -->
+    <string name="webview_launch_devtools_no_activity">Could not launch DevTools.</string>
+
     <!-- Name of feature to change color setting for the display [CHAR LIMIT=60] -->
     <string name="picture_color_mode">Picture color mode</string>
 
