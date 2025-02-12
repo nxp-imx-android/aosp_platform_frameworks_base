@@ -58,7 +58,7 @@ constructor(
      */
     val chips: Flow<List<OngoingActivityChipModel.Active>> =
         combine(
-                notifChipsInteractor.notificationChips,
+                notifChipsInteractor.shownNotificationChips,
                 headsUpNotificationInteractor.statusBarHeadsUpState,
             ) { notifications, headsUpState ->
                 notifications.map { it.toActivityChipModel(headsUpState) }

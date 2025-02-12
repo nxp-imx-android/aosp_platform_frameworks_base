@@ -21,8 +21,8 @@ import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.coroutines.collectValues
+import com.android.systemui.activity.data.repository.activityManagerRepository
+import com.android.systemui.activity.data.repository.fake
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.collectValues
@@ -41,7 +41,6 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
-import kotlinx.coroutines.test.runTest
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
 
@@ -55,9 +54,9 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun notificationChips_flagOff_noNotifs() =
+    fun shownNotificationChips_flagOff_noNotifs() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.notificationChips)
+            val latest by collectLastValue(underTest.shownNotificationChips)
 
             setNotifs(
                 listOf(
@@ -74,9 +73,9 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun notificationChips_noNotifs_empty() =
+    fun shownNotificationChips_noNotifs_empty() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.notificationChips)
+            val latest by collectLastValue(underTest.shownNotificationChips)
 
             setNotifs(emptyList())
 
@@ -86,9 +85,9 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
     @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun notificationChips_notifMissingStatusBarChipIconView_cdFlagOff_empty() =
+    fun shownNotificationChips_notifMissingStatusBarChipIconView_cdFlagOff_empty() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.notificationChips)
+            val latest by collectLastValue(underTest.shownNotificationChips)
 
             setNotifs(
                 listOf(
@@ -105,9 +104,9 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME, StatusBarConnectedDisplays.FLAG_NAME)
-    fun notificationChips_notifMissingStatusBarChipIconView_cdFlagOn_notEmpty() =
+    fun shownNotificationChips_notifMissingStatusBarChipIconView_cdFlagOn_notEmpty() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.notificationChips)
+            val latest by collectLastValue(underTest.shownNotificationChips)
 
             setNotifs(
                 listOf(
@@ -124,9 +123,9 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun notificationChips_onePromotedNotif_statusBarIconViewMatches() =
+    fun shownNotificationChips_onePromotedNotif_statusBarIconViewMatches() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.notificationChips)
+            val latest by collectLastValue(underTest.shownNotificationChips)
 
             val icon = mock<StatusBarIconView>()
             setNotifs(
@@ -146,9 +145,9 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun notificationChips_onlyForPromotedNotifs() =
+    fun shownNotificationChips_onlyForPromotedNotifs() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.notificationChips)
+            val latest by collectLastValue(underTest.shownNotificationChips)
 
             val firstIcon = mock<StatusBarIconView>()
             val secondIcon = mock<StatusBarIconView>()
@@ -179,12 +178,42 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
             assertThat(latest!![1].statusBarChipIconView).isEqualTo(secondIcon)
         }
 
+    @Test
+    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    fun shownNotificationChips_onlyForNotVisibleApps() =
+        kosmos.runTest {
+            activityManagerRepository.fake.startingIsAppVisibleValue = false
+
+            val latest by collectLastValue(underTest.shownNotificationChips)
+
+            val uid = 433
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        uid = uid,
+                        statusBarChipIcon = mock<StatusBarIconView>(),
+                        promotedContent = PromotedNotificationContentModel.Builder("notif1").build(),
+                    )
+                )
+            )
+
+            activityManagerRepository.fake.setIsAppVisible(uid, isAppVisible = false)
+            assertThat(latest).hasSize(1)
+
+            activityManagerRepository.fake.setIsAppVisible(uid, isAppVisible = true)
+            assertThat(latest).isEmpty()
+
+            activityManagerRepository.fake.setIsAppVisible(uid, isAppVisible = false)
+            assertThat(latest).hasSize(1)
+        }
+
     /** Regression test for b/388521980. */
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun notificationChips_callNotifIsAlsoPromoted_callNotifExcluded() =
+    fun shownNotificationChips_callNotifIsAlsoPromoted_callNotifExcluded() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.notificationChips)
+            val latest by collectLastValue(underTest.shownNotificationChips)
 
             setNotifs(
                 listOf(
@@ -212,9 +241,9 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun notificationChips_notifUpdatesGoThrough() =
+    fun shownNotificationChips_notifUpdatesGoThrough() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.notificationChips)
+            val latest by collectLastValue(underTest.shownNotificationChips)
 
             val firstIcon = mock<StatusBarIconView>()
             val secondIcon = mock<StatusBarIconView>()
@@ -262,9 +291,9 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun notificationChips_promotedNotifDisappearsThenReappears() =
+    fun shownNotificationChips_promotedNotifDisappearsThenReappears() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.notificationChips)
+            val latest by collectLastValue(underTest.shownNotificationChips)
 
             setNotifs(
                 listOf(
@@ -304,9 +333,9 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun notificationChips_sortedBasedOnFirstAppearanceTime() =
+    fun shownNotificationChips_sortedBasedOnFirstAppearanceTime() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.notificationChips)
+            val latest by collectLastValue(underTest.shownNotificationChips)
 
             val firstIcon = mock<StatusBarIconView>()
             val secondIcon = mock<StatusBarIconView>()
@@ -391,9 +420,9 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun notificationChips_notifChangesKey() =
+    fun shownNotificationChips_notifChangesKey() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.notificationChips)
+            val latest by collectLastValue(underTest.shownNotificationChips)
 
             val firstIcon = mock<StatusBarIconView>()
             val secondIcon = mock<StatusBarIconView>()

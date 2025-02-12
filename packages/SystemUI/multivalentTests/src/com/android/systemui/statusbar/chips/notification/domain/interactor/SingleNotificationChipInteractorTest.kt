@@ -306,7 +306,7 @@ class SingleNotificationChipInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun notificationChip_appIsVisibleOnCreation_emitsNull() =
+    fun notificationChip_appIsVisibleOnCreation_emitsIsAppVisibleTrue() =
         kosmos.runTest {
             activityManagerRepository.fake.startingIsAppVisibleValue = true
 
@@ -323,11 +323,12 @@ class SingleNotificationChipInteractorTest : SysuiTestCase() {
 
             val latest by collectLastValue(underTest.notificationChip)
 
-            assertThat(latest).isNull()
+            assertThat(latest).isNotNull()
+            assertThat(latest!!.isAppVisible).isTrue()
         }
 
     @Test
-    fun notificationChip_appNotVisibleOnCreation_emitsValue() =
+    fun notificationChip_appNotVisibleOnCreation_emitsIsAppVisibleFalse() =
         kosmos.runTest {
             activityManagerRepository.fake.startingIsAppVisibleValue = false
 
@@ -345,10 +346,11 @@ class SingleNotificationChipInteractorTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.notificationChip)
 
             assertThat(latest).isNotNull()
+            assertThat(latest!!.isAppVisible).isFalse()
         }
 
     @Test
-    fun notificationChip_hidesWhenAppIsVisible() =
+    fun notificationChip_updatesWhenAppIsVisible() =
         kosmos.runTest {
             val underTest =
                 factory.create(
@@ -364,13 +366,13 @@ class SingleNotificationChipInteractorTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.notificationChip)
 
             activityManagerRepository.fake.setIsAppVisible(UID, false)
-            assertThat(latest).isNotNull()
+            assertThat(latest!!.isAppVisible).isFalse()
 
             activityManagerRepository.fake.setIsAppVisible(UID, true)
-            assertThat(latest).isNull()
+            assertThat(latest!!.isAppVisible).isTrue()
 
             activityManagerRepository.fake.setIsAppVisible(UID, false)
-            assertThat(latest).isNotNull()
+            assertThat(latest!!.isAppVisible).isFalse()
         }
 
     // Note: This test is theoretically impossible because the notification key should contain the
@@ -396,6 +398,7 @@ class SingleNotificationChipInteractorTest : SysuiTestCase() {
                 )
             val latest by collectLastValue(underTest.notificationChip)
             assertThat(latest).isNotNull()
+            assertThat(latest!!.isAppVisible).isFalse()
 
             // WHEN the notif gets a new UID that starts as visible
             activityManagerRepository.fake.startingIsAppVisibleValue = true
@@ -408,9 +411,8 @@ class SingleNotificationChipInteractorTest : SysuiTestCase() {
                 )
             )
 
-            // THEN we re-fetch the app visibility state with the new UID, and since that UID is
-            // visible, we hide the chip
-            assertThat(latest).isNull()
+            // THEN we re-fetch the app visibility state with the new UID
+            assertThat(latest!!.isAppVisible).isTrue()
         }
 
     companion object {
