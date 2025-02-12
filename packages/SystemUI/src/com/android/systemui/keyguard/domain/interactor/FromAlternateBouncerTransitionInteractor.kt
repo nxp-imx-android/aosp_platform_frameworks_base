@@ -118,26 +118,19 @@ constructor(
                     powerInteractor.isAwake,
                     keyguardInteractor.isAodAvailable,
                     communalSceneInteractor.isIdleOnCommunal,
-                    communalInteractor.editModeOpen,
+                    keyguardInteractor.isDreaming,
                     keyguardInteractor.isKeyguardOccluded,
                 )
                 .filterRelevantKeyguardStateAnd {
-                    (isAlternateBouncerShowing, isPrimaryBouncerShowing, _, _, _) ->
+                    (isAlternateBouncerShowing, isPrimaryBouncerShowing, _, _, _, _) ->
                     !isAlternateBouncerShowing && !isPrimaryBouncerShowing
                 }
-                .collect {
-                    (
-                        _,
-                        _,
-                        isAwake,
-                        isAodAvailable,
-                        isIdleOnCommunal,
-                        isCommunalEditMode,
-                        isOccluded) ->
+                .collect { (_, _, isAwake, isAodAvailable, isIdleOnCommunal, isDreaming, isOccluded)
+                    ->
                     // When unlocking over glanceable hub to enter edit mode, transitioning directly
                     // to GONE prevents the lockscreen flash. Let listenForAlternateBouncerToGone
                     // handle it.
-                    if (isCommunalEditMode) return@collect
+                    if (communalInteractor.editModeOpen.value) return@collect
                     val hubV2 = communalSettingsInteractor.isV2FlagEnabled()
                     val to =
                         if (!isAwake) {
@@ -150,8 +143,10 @@ constructor(
                             if (!hubV2 && isIdleOnCommunal) {
                                 if (SceneContainerFlag.isEnabled) return@collect
                                 KeyguardState.GLANCEABLE_HUB
-                            } else if (isOccluded) {
+                            } else if (isOccluded && !isDreaming) {
                                 KeyguardState.OCCLUDED
+                            } else if (hubV2 && isDreaming) {
+                                KeyguardState.DREAMING
                             } else if (hubV2 && isIdleOnCommunal) {
                                 if (SceneContainerFlag.isEnabled) return@collect
                                 KeyguardState.GLANCEABLE_HUB

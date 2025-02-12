@@ -229,6 +229,39 @@ class FromAlternateBouncerTransitionInteractorTest(flags: FlagsParameterization)
         }
 
     @Test
+    @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
+    fun transitionToDreaming() =
+        kosmos.runTest {
+            fakePowerRepository.updateWakefulness(
+                WakefulnessState.AWAKE,
+                WakeSleepReason.POWER_BUTTON,
+                WakeSleepReason.POWER_BUTTON,
+                false,
+            )
+            fakeKeyguardRepository.setKeyguardOccluded(false)
+            fakeKeyguardBouncerRepository.setAlternateVisible(true)
+            runCurrent()
+
+            transitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.ALTERNATE_BOUNCER,
+                testScope,
+            )
+            reset(transitionRepository)
+
+            fakeKeyguardRepository.setKeyguardOccluded(true)
+            fakeKeyguardRepository.setDreaming(true)
+            fakeKeyguardBouncerRepository.setAlternateVisible(false)
+            testScope.advanceTimeBy(200) // advance past delay
+
+            assertThat(transitionRepository)
+                .startedTransition(
+                    from = KeyguardState.ALTERNATE_BOUNCER,
+                    to = KeyguardState.DREAMING,
+                )
+        }
+
+    @Test
     @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun transitionToGone_whenOpeningGlanceableHubEditMode() =
         testScope.runTest {
