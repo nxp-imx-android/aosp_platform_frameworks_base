@@ -58,6 +58,13 @@ interface NotificationScrollView {
      */
     fun setNegativeClippingShape(shape: ShadeScrimShape?)
 
+    /**
+     * Sets a blur effect on the view. A radius of 0 means no blur.
+     *
+     * @param radius blur radius in pixels
+     */
+    fun setBlurRadius(radius: Float)
+
     /** set the y position in px of the top of the stack in this view's coordinates */
     fun setStackTop(stackTop: Float)
 
