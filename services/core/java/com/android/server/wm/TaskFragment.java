@@ -99,7 +99,6 @@ import android.util.DisplayMetrics;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 import android.view.DisplayInfo;
-import android.view.RemoteAnimationTarget;
 import android.view.SurfaceControl;
 import android.window.ITaskFragmentOrganizer;
 import android.window.TaskFragmentAnimationParams;
@@ -2303,18 +2302,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     void executeAppTransition(ActivityOptions options) {
         mDisplayContent.executeAppTransition();
         ActivityOptions.abort(options);
-    }
-
-    @Override
-    RemoteAnimationTarget createRemoteAnimationTarget(
-            RemoteAnimationController.RemoteAnimationRecord record) {
-        final ActivityRecord activity = record.getMode() == RemoteAnimationTarget.MODE_OPENING
-                // There may be a launching (e.g. trampoline or embedded) activity without a window
-                // on top of the existing task which is moving to front. Exclude finishing activity
-                // so the window of next activity can be chosen to create the animation target.
-                ? getActivity(r -> !r.finishing && r.hasChild())
-                : getTopMostActivity();
-        return activity != null ? activity.createRemoteAnimationTarget(record) : null;
     }
 
     @Override
