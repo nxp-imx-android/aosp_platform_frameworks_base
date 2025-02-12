@@ -173,7 +173,6 @@ import static com.android.server.am.PendingIntentRecord.FLAG_ACTIVITY_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_BROADCAST_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
 import static com.android.server.notification.Flags.expireBitmaps;
-import static com.android.server.notification.Flags.managedServicesConcurrentMultiuser;
 import static com.android.server.policy.PhoneWindowManager.TOAST_WINDOW_ANIM_BUFFER;
 import static com.android.server.policy.PhoneWindowManager.TOAST_WINDOW_TIMEOUT;
 import static com.android.server.utils.PriorityDump.PRIORITY_ARG;
@@ -2324,9 +2323,6 @@ public class NotificationManagerService extends SystemService {
                 if (userHandle >= 0) {
                     cancelAllNotificationsInt(MY_UID, MY_PID, null, null, 0, 0, userHandle,
                             REASON_USER_STOPPED);
-                    mConditionProviders.onUserStopped(userHandle);
-                    mListeners.onUserStopped(userHandle);
-                    mAssistants.onUserStopped(userHandle);
                 }
             } else if (
                     isProfileUnavailable(action)) {
@@ -5734,13 +5730,12 @@ public class NotificationManagerService extends SystemService {
         public void requestBindListener(ComponentName component) {
             checkCallerIsSystemOrSameApp(component.getPackageName());
             int uid = Binder.getCallingUid();
-            int userId = UserHandle.getUserId(uid);
             final long identity = Binder.clearCallingIdentity();
             try {
-                boolean isAssistantEnabled = managedServicesConcurrentMultiuser()
-                        ? mAssistants.isComponentEnabledForUser(component, userId)
-                        : mAssistants.isComponentEnabledForCurrentProfiles(component);
-                ManagedServices manager = isAssistantEnabled ? mAssistants : mListeners;
+                ManagedServices manager =
+                        mAssistants.isComponentEnabledForCurrentProfiles(component)
+                        ? mAssistants
+                        : mListeners;
                 manager.setComponentState(component, UserHandle.getUserId(uid), true);
             } finally {
                 Binder.restoreCallingIdentity(identity);
@@ -5767,16 +5762,16 @@ public class NotificationManagerService extends SystemService {
         public void requestUnbindListenerComponent(ComponentName component) {
             checkCallerIsSameApp(component.getPackageName());
             int uid = Binder.getCallingUid();
-            int userId = UserHandle.getUserId(uid);
             final long identity = Binder.clearCallingIdentity();
             try {
                 synchronized (mNotificationLock) {
-                    boolean isAssistantEnabled = managedServicesConcurrentMultiuser()
-                            ? mAssistants.isComponentEnabledForUser(component, userId)
-                            : mAssistants.isComponentEnabledForCurrentProfiles(component);
-                    ManagedServices manager = isAssistantEnabled ? mAssistants : mListeners;
-                    if (manager.isPackageOrComponentAllowed(component.flattenToString(), userId)) {
-                        manager.setComponentState(component, userId, false);
+                    ManagedServices manager =
+                            mAssistants.isComponentEnabledForCurrentProfiles(component)
+                                    ? mAssistants
+                                    : mListeners;
+                    if (manager.isPackageOrComponentAllowed(component.flattenToString(),
+                            UserHandle.getUserId(uid))) {
+                        manager.setComponentState(component, UserHandle.getUserId(uid), false);
                     }
                 }
             } finally {
@@ -6554,13 +6549,6 @@ public class NotificationManagerService extends SystemService {
             } catch (NameNotFoundException e) {
                 return false;
             }
-            if (managedServicesConcurrentMultiuser()) {
-                return checkPackagePolicyAccess(pkg)
-                        || mListeners.isComponentEnabledForPackage(pkg,
-                            UserHandle.getCallingUserId())
-                        || (mDpm != null
-                            && (mDpm.isActiveProfileOwner(uid) || mDpm.isActiveDeviceOwner(uid)));
-            }
             //TODO(b/169395065) Figure out if this flow makes sense in Device Owner mode.
             return checkPackagePolicyAccess(pkg)
                     || mListeners.isComponentEnabledForPackage(pkg)
@@ -6965,8 +6953,7 @@ public class NotificationManagerService extends SystemService {
                         android.Manifest.permission.INTERACT_ACROSS_USERS,
                         "setNotificationListenerAccessGrantedForUser for user " + userId);
             }
-            if (!managedServicesConcurrentMultiuser()
-                    && mUmInternal.isVisibleBackgroundFullUser(userId)) {
+            if (mUmInternal.isVisibleBackgroundFullUser(userId)) {
                 // The main use case for visible background users is the Automotive multi-display
                 // configuration where a passenger can use a secondary display while the driver is
                 // using the main display. NotificationListeners is designed only for the current
@@ -13178,8 +13165,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public void onUserUnlocked(int user) {
-            if (!managedServicesConcurrentMultiuser()
-                    && mUmInternal.isVisibleBackgroundFullUser(user)) {
+            if (mUmInternal.isVisibleBackgroundFullUser(user)) {
                 // The main use case for visible background users is the Automotive
                 // multi-display configuration where a passenger can use a secondary
                 // display while the driver is using the main display.
@@ -13819,7 +13805,7 @@ public class NotificationManagerService extends SystemService {
             // TODO (b/73052211): if the ranking update changed the notification type,
             // cancel notifications for NLSes that can't see them anymore
             for (final ManagedServiceInfo serviceInfo : getServices()) {
-                if (!serviceInfo.isEnabledForUser() || !isInteractionVisibleToListener(
+                if (!serviceInfo.isEnabledForCurrentProfiles() || !isInteractionVisibleToListener(
                         serviceInfo, ActivityManager.getCurrentUser())) {
                     continue;
                 }
@@ -13847,7 +13833,7 @@ public class NotificationManagerService extends SystemService {
         @GuardedBy("mNotificationLock")
         public void notifyListenerHintsChangedLocked(final int hints) {
             for (final ManagedServiceInfo serviceInfo : getServices()) {
-                if (!serviceInfo.isEnabledForUser() || !isInteractionVisibleToListener(
+                if (!serviceInfo.isEnabledForCurrentProfiles() || !isInteractionVisibleToListener(
                         serviceInfo, ActivityManager.getCurrentUser())) {
                     continue;
                 }
@@ -13903,7 +13889,7 @@ public class NotificationManagerService extends SystemService {
 
         public void notifyInterruptionFilterChanged(final int interruptionFilter) {
             for (final ManagedServiceInfo serviceInfo : getServices()) {
-                if (!serviceInfo.isEnabledForUser() || !isInteractionVisibleToListener(
+                if (!serviceInfo.isEnabledForCurrentProfiles() || !isInteractionVisibleToListener(
                         serviceInfo, ActivityManager.getCurrentUser())) {
                     continue;
                 }
