@@ -40,6 +40,7 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 public class PromotedNotificationInfo extends NotificationInfo {
     private static final String TAG = "PromotedNotifInfoGuts";
     private INotificationManager mNotificationManager;
+    private NotificationGuts mGutsContainer;
 
     public PromotedNotificationInfo(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -71,19 +72,7 @@ public class PromotedNotificationInfo extends NotificationInfo {
 
         mNotificationManager = iNotificationManager;
 
-        bindDismiss(entry.getSbn(), onCloseClick);
         bindDemote(entry.getSbn(), pkg);
-    }
-
-
-    protected void bindDismiss(StatusBarNotification sbn,
-            View.OnClickListener onCloseClick) {
-        View dismissButton = findViewById(R.id.promoted_dismiss);
-
-        dismissButton.setOnClickListener(onCloseClick);
-        dismissButton.setVisibility(!sbn.isNonDismissable()
-                && dismissButton.hasOnClickListeners() ? VISIBLE : GONE);
-
     }
 
     protected void bindDemote(StatusBarNotification sbn, String packageName) {
@@ -92,11 +81,18 @@ public class PromotedNotificationInfo extends NotificationInfo {
         demoteButton.setVisibility(demoteButton.hasOnClickListeners() ? VISIBLE : GONE);
     }
 
+    @Override
+    public void setGutsParent(NotificationGuts guts) {
+        mGutsContainer = guts;
+        super.setGutsParent(guts);
+    }
+
     private OnClickListener getDemoteClickListener(StatusBarNotification sbn, String packageName) {
-        return ((View unusedView) -> {
+        return ((View v) -> {
             try {
                 // TODO(b/391661009): Signal AutomaticPromotionCoordinator here
                 mNotificationManager.setCanBePromoted(packageName, sbn.getUid(), false, true);
+                mGutsContainer.closeControls(v, true);
             } catch (RemoteException e) {
                 Log.e(TAG, "Couldn't revoke live update permission", e);
             }
