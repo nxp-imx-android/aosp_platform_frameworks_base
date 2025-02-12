@@ -1246,6 +1246,10 @@ class DesktopTasksController(
                 pendingIntentBackgroundActivityStartMode =
                     ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
                 launchBounds = bounds
+                if (DesktopModeFlags.ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX.isTrue) {
+                    // Sets launch bounds size as flexible so core can recalculate.
+                    flexibleLaunchSize = true
+                }
             }
 
         wct.sendPendingIntent(pendingIntent, intent, ops.toBundle())
