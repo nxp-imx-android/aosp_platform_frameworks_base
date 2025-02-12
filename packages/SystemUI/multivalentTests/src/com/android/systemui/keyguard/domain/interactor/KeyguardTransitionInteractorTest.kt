@@ -23,6 +23,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -46,20 +47,31 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.assertEquals
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertThrows
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class KeyguardTransitionInteractorTest : SysuiTestCase() {
-    val kosmos = testKosmos()
-    val underTest = kosmos.keyguardTransitionInteractor
-    val repository = kosmos.fakeKeyguardTransitionRepository
-    val testScope = kosmos.testScope
+
+    private val kosmos = testKosmos()
+    private val testScope = kosmos.testScope
+
+    private lateinit var repository: FakeKeyguardTransitionRepository
+    private lateinit var underTest: KeyguardTransitionInteractor
+
+    @Before
+    fun setup() {
+        repository = kosmos.fakeKeyguardTransitionRepository
+        underTest = kosmos.keyguardTransitionInteractor
+    }
 
     @Test
     fun transitionCollectorsReceivesOnlyAppropriateEvents() =
