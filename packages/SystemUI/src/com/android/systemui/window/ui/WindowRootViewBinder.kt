@@ -84,9 +84,16 @@ object WindowRootViewBinder {
                         combine(viewModel.blurRadius, viewModel.isBlurOpaque, ::Pair)
                             .filter { it.first >= 0 }
                             .collect { (blurRadius, isOpaque) ->
-                                // Expectation is that we schedule only one blur radius value
-                                // per frame
+                                val newBlurRadius = blurRadius.toInt()
+                                // Expectation is that we schedule only one frame callback per frame
                                 if (wasUpdateScheduledForThisFrame) {
+                                    // Update this value so that the frame callback picks up this
+                                    // value when it runs
+                                    if (lastScheduledBlurRadius != newBlurRadius) {
+                                        Log.w(TAG, "Multiple blur values emitted in the same frame")
+                                    }
+                                    lastScheduledBlurRadius = newBlurRadius
+                                    lastScheduleBlurOpaqueness = isOpaque
                                     return@collect
                                 }
                                 TrackTracer.instantForGroup(
@@ -94,7 +101,7 @@ object WindowRootViewBinder {
                                     "preparedBlurRadius",
                                     blurRadius,
                                 )
-                                lastScheduledBlurRadius = blurRadius.toInt()
+                                lastScheduledBlurRadius = newBlurRadius
                                 lastScheduleBlurOpaqueness = isOpaque
                                 wasUpdateScheduledForThisFrame = true
                                 blurUtils.prepareBlur(
