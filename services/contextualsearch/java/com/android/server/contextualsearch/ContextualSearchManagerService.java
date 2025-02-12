@@ -34,6 +34,8 @@ import static com.android.server.wm.ActivityTaskManagerInternal.ASSIST_KEY_STRUC
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.app.ActivityManager;
+import android.app.ActivityManagerInternal;
 import android.app.ActivityOptions;
 import android.app.AppOpsManager;
 import android.app.admin.DevicePolicyManagerInternal;
@@ -69,7 +71,6 @@ import android.provider.Settings;
 import android.util.Log;
 import android.util.Slog;
 import android.view.IWindowManager;
-import android.window.ScreenCapture;
 import android.window.ScreenCapture.ScreenshotHardwareBuffer;
 
 import com.android.internal.R;
@@ -86,7 +87,6 @@ import java.io.FileDescriptor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class ContextualSearchManagerService extends SystemService {
     private static final String TAG = ContextualSearchManagerService.class.getSimpleName();
@@ -95,9 +95,20 @@ public class ContextualSearchManagerService extends SystemService {
     private static final int MSG_INVALIDATE_TOKEN = 1;
     private static final int MAX_TOKEN_VALID_DURATION_MS = 1_000 * 60 * 10; // 10 minutes
 
+    /**
+     * Below are internal entrypoints not supported by the
+     * {@link ContextualSearchManager#startContextualSearch(int entrypoint)} method.
+     *
+     * <p>These values should be negative to avoid conflicting with the system entrypoints.
+     */
+
+    /** Entrypoint to be used when a foreground app invokes Contextual Search. */
+    private static final int INTERNAL_ENTRYPOINT_APP = -1;
+
     private static final boolean DEBUG = false;
 
     private final Context mContext;
+    private final ActivityManagerInternal mActivityManagerInternal;
     private final ActivityTaskManagerInternal mAtmInternal;
     private final PackageManagerInternal mPackageManager;
     private final WindowManagerInternal mWmInternal;
@@ -162,6 +173,8 @@ public class ContextualSearchManagerService extends SystemService {
         super(context);
         if (DEBUG) Log.d(TAG, "ContextualSearchManagerService created");
         mContext = context;
+        mActivityManagerInternal = Objects.requireNonNull(
+                LocalServices.getService(ActivityManagerInternal.class));
         mAtmInternal = Objects.requireNonNull(
                 LocalServices.getService(ActivityTaskManagerInternal.class));
         mPackageManager = LocalServices.getService(PackageManagerInternal.class);
@@ -391,6 +404,20 @@ public class ContextualSearchManagerService extends SystemService {
         }
     }
 
+    private void enforceForegroundApp(@NonNull final String func) {
+        final int callingUid = Binder.getCallingUid();
+        final String callingPackage = mPackageManager.getNameForUid(Binder.getCallingUid());
+        if (mActivityManagerInternal.getUidProcessState(callingUid)
+                > ActivityManager.PROCESS_STATE_TOP) {
+            // The calling process must be displaying an activity in foreground to
+            // trigger contextual search.
+            String msg = "Permission Denial: Cannot call " + func + " from pid="
+                    + Binder.getCallingPid() + ", uid=" + callingUid
+                    + ", package=" + callingPackage + " without a foreground activity.";
+            throw new SecurityException(msg);
+        }
+    }
+
     private void enforceOverridingPermission(@NonNull final String func) {
         if (!(Binder.getCallingUid() == Process.SHELL_UID
                 || Binder.getCallingUid() == Process.ROOT_UID
@@ -448,27 +475,41 @@ public class ContextualSearchManagerService extends SystemService {
         }
 
         @Override
+        public void startContextualSearchForForegroundApp() {
+            synchronized (this) {
+                if (DEBUG) {
+                    Log.d(TAG, "Starting contextual search from: "
+                            + mPackageManager.getNameForUid(Binder.getCallingUid()));
+                }
+                enforceForegroundApp("startContextualSearchForForegroundApp");
+                startContextualSearchInternal(INTERNAL_ENTRYPOINT_APP);
+            }
+        }
+
+        @Override
         public void startContextualSearch(int entrypoint) {
             synchronized (this) {
                 if (DEBUG) Log.d(TAG, "startContextualSearch entrypoint: " + entrypoint);
                 enforcePermission("startContextualSearch");
-                final int callingUserId = Binder.getCallingUserHandle().getIdentifier();
-
-                mAssistDataRequester.cancel();
-                // Creates a new CallbackToken at mToken and an expiration handler.
-                issueToken();
-                // We get the launch intent with the system server's identity because the system
-                // server has READ_FRAME_BUFFER permission to get the screenshot and because only
-                // the system server can invoke non-exported activities.
-                Binder.withCleanCallingIdentity(() -> {
-                    Intent launchIntent =
-                        getContextualSearchIntent(entrypoint, callingUserId, mToken);
-                    if (launchIntent != null) {
-                        int result = invokeContextualSearchIntent(launchIntent, callingUserId);
-                        if (DEBUG) Log.d(TAG, "Launch result: " + result);
-                    }
-                });
+                startContextualSearchInternal(entrypoint);
             }
+        }
+
+        private void startContextualSearchInternal(int entrypoint) {
+            final int callingUserId = Binder.getCallingUserHandle().getIdentifier();
+            mAssistDataRequester.cancel();
+            // Creates a new CallbackToken at mToken and an expiration handler.
+            issueToken();
+            // We get the launch intent with the system server's identity because the system
+            // server has READ_FRAME_BUFFER permission to get the screenshot and because only
+            // the system server can invoke non-exported activities.
+            Binder.withCleanCallingIdentity(() -> {
+                Intent launchIntent = getContextualSearchIntent(entrypoint, callingUserId, mToken);
+                if (launchIntent != null) {
+                    int result = invokeContextualSearchIntent(launchIntent, callingUserId);
+                    if (DEBUG) Log.d(TAG, "Launch result: " + result);
+                }
+            });
         }
 
         @Override
