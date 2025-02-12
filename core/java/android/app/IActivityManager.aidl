@@ -401,6 +401,8 @@ interface IActivityManager {
     boolean dumpHeap(in String process, int userId, boolean managed, boolean mallocInfo,
             boolean runGc, in String dumpBitmaps, in String path, in ParcelFileDescriptor fd,
             in RemoteCallback finishCallback);
+    void dumpBitmapsProto(in ParcelFileDescriptor fd, in String[] processes,
+            int userId, boolean allPkgs, in String dumpFormat);
     @UnsupportedAppUsage
     boolean isUserRunning(int userid, int flags);
     @UnsupportedAppUsage(maxTargetSdk = 30, trackingBug = 170729553)
