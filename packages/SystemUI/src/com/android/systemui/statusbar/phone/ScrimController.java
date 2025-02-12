@@ -349,7 +349,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             DozeParameters dozeParameters,
             KeyguardStateController keyguardStateController,
             DelayedWakeLock.Factory delayedWakeLockFactory,
-            Handler handler,
+            @Main Handler handler,
             KeyguardUpdateMonitor keyguardUpdateMonitor,
             DockManager dockManager,
             ConfigurationController configurationController,
