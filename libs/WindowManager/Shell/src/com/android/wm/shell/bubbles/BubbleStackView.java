@@ -3548,7 +3548,7 @@ public class BubbleStackView extends FrameLayout
         }
     }
 
-    private void updateExpandedView() {
+    void updateExpandedView() {
         boolean isOverflowExpanded = mExpandedBubble != null
                 && BubbleOverflow.KEY.equals(mExpandedBubble.getKey());
         int[] paddings = mPositioner.getExpandedViewContainerPadding(
