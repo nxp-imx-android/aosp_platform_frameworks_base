@@ -1990,6 +1990,9 @@ class DesktopTasksController(
                 splitPosition,
                 options.toBundle(),
                 /* hideTaskToken= */ null,
+                if (enableFlexibleSplit())
+                    splitScreenController.determineNewInstanceIndex(callingTask)
+                else SPLIT_INDEX_UNDEFINED,
             )
         }
     }
