@@ -507,3 +507,10 @@ flag {
     description: "Use IoThread handler for AppOpsService background/IO work."
     bug: "394380603"
 }
+
+flag {
+    name: "enforce_default_device_id_in_my_attribution_source"
+    namespace: "permissions"
+    description: "Force AttributionSource.myAttributionSource() to return a default device id"
+    bug: "343121936"
+}
