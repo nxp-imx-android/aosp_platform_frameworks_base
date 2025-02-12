@@ -30,6 +30,7 @@ import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepos
 import com.android.systemui.keyguard.data.repository.keyguardClockRepository
 import com.android.systemui.keyguard.data.repository.keyguardRepository
 import com.android.systemui.keyguard.shared.model.ClockSize
+import com.android.systemui.keyguard.shared.model.ClockSizeSetting
 import com.android.systemui.keyguard.shared.model.DozeStateModel
 import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -68,10 +69,22 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
     fun clockSize_sceneContainerFlagOff_basedOnRepository() =
         testScope.runTest {
             val value by collectLastValue(underTest.clockSize)
+            kosmos.fakeKeyguardClockRepository.setSelectedClockSize(ClockSizeSetting.DYNAMIC)
             kosmos.keyguardClockRepository.setClockSize(ClockSize.LARGE)
             assertThat(value).isEqualTo(ClockSize.LARGE)
 
             kosmos.keyguardClockRepository.setClockSize(ClockSize.SMALL)
+            assertThat(value).isEqualTo(ClockSize.SMALL)
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun clockSize_sceneContainerFlagOff_smallClockSettingSelected_SMALL() =
+        testScope.runTest {
+            val value by collectLastValue(underTest.clockSize)
+            kosmos.fakeKeyguardClockRepository.setSelectedClockSize(ClockSizeSetting.SMALL)
+            kosmos.keyguardClockRepository.setClockSize(ClockSize.LARGE)
+
             assertThat(value).isEqualTo(ClockSize.SMALL)
         }
 
@@ -91,57 +104,76 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
-    fun clockSize_SceneContainerFlagOn_shadeModeSingle_hasNotifs_SMALL() =
+    fun clockSize_sceneContainerFlagOn_shadeModeSingle_hasNotifs_SMALL() =
         testScope.runTest {
             val value by collectLastValue(underTest.clockSize)
             kosmos.shadeRepository.setShadeLayoutWide(false)
             kosmos.activeNotificationListRepository.setActiveNotifs(1)
+
             assertThat(value).isEqualTo(ClockSize.SMALL)
         }
 
     @Test
     @EnableSceneContainer
-    fun clockSize_SceneContainerFlagOn_shadeModeSingle_hasMedia_SMALL() =
+    fun clockSize_sceneContainerFlagOn_shadeModeSingle_hasMedia_SMALL() =
         testScope.runTest {
             val value by collectLastValue(underTest.clockSize)
             kosmos.shadeRepository.setShadeLayoutWide(false)
             val userMedia = MediaData().copy(active = true)
             kosmos.mediaFilterRepository.addSelectedUserMediaEntry(userMedia)
+
             assertThat(value).isEqualTo(ClockSize.SMALL)
         }
 
     @Test
     @EnableSceneContainer
-    fun clockSize_SceneContainerFlagOn_shadeModeSplit_isMediaVisible_SMALL() =
+    fun clockSize_sceneContainerFlagOn_shadeModeSplit_isMediaVisible_SMALL() =
         testScope.runTest {
             val value by collectLastValue(underTest.clockSize)
             val userMedia = MediaData().copy(active = true)
             kosmos.shadeRepository.setShadeLayoutWide(true)
             kosmos.mediaFilterRepository.addSelectedUserMediaEntry(userMedia)
             kosmos.keyguardRepository.setIsDozing(false)
+
             assertThat(value).isEqualTo(ClockSize.SMALL)
         }
 
     @Test
     @EnableSceneContainer
-    fun clockSize_SceneContainerFlagOn_shadeModeSplit_noMedia_LARGE() =
+    fun clockSize_sceneContainerFlagOn_shadeModeSplit_noMedia_LARGE() =
         testScope.runTest {
             val value by collectLastValue(underTest.clockSize)
             kosmos.shadeRepository.setShadeLayoutWide(true)
             kosmos.keyguardRepository.setIsDozing(false)
+
             assertThat(value).isEqualTo(ClockSize.LARGE)
         }
 
     @Test
     @EnableSceneContainer
-    fun clockSize_SceneContainerFlagOn_shadeModeSplit_isDozing_LARGE() =
+    fun clockSize_sceneContainerFlagOn_shadeModeSplit_isDozing_LARGE() =
         testScope.runTest {
             val value by collectLastValue(underTest.clockSize)
             val userMedia = MediaData().copy(active = true)
             kosmos.shadeRepository.setShadeLayoutWide(true)
             kosmos.mediaFilterRepository.addSelectedUserMediaEntry(userMedia)
             kosmos.keyguardRepository.setIsDozing(true)
+
             assertThat(value).isEqualTo(ClockSize.LARGE)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun clockSize_sceneContainerFlagOn_shadeModeSplit_smallClockSettingSelectd_SMALL() =
+        testScope.runTest {
+            val value by collectLastValue(underTest.clockSize)
+            val userMedia = MediaData().copy(active = true)
+            kosmos.fakeKeyguardClockRepository.setSelectedClockSize(ClockSizeSetting.SMALL)
+            kosmos.shadeRepository.setShadeLayoutWide(true)
+            kosmos.mediaFilterRepository.addSelectedUserMediaEntry(userMedia)
+            kosmos.keyguardRepository.setIsDozing(true)
+
+            assertThat(value).isEqualTo(ClockSize.SMALL)
         }
 
     @Test

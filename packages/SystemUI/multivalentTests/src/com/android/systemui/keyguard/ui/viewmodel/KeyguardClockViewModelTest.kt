@@ -27,7 +27,6 @@ import com.android.systemui.keyguard.data.repository.fakeKeyguardClockRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.keyguardClockRepository
 import com.android.systemui.keyguard.shared.model.ClockSize
-import com.android.systemui.keyguard.shared.model.ClockSizeSetting
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel.ClockLayout
 import com.android.systemui.kosmos.testScope
@@ -55,17 +54,18 @@ import platform.test.runner.parameterized.Parameters
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
-    val kosmos = testKosmos()
-    val testScope = kosmos.testScope
-    val underTest by lazy { kosmos.keyguardClockViewModel }
-    val res = context.resources
 
-    @Mock lateinit var clockController: ClockController
-    @Mock lateinit var largeClock: ClockFaceController
-    @Mock lateinit var smallClock: ClockFaceController
+    private val kosmos = testKosmos()
+    private val testScope = kosmos.testScope
+    private val underTest by lazy { kosmos.keyguardClockViewModel }
+    private val res = context.resources
 
-    var config = ClockConfig("TEST", "Test", "")
-    var faceConfig = ClockFaceConfig()
+    @Mock private lateinit var clockController: ClockController
+    @Mock private lateinit var largeClock: ClockFaceController
+    @Mock private lateinit var smallClock: ClockFaceController
+
+    private var config = ClockConfig("TEST", "Test", "")
+    private var faceConfig = ClockFaceConfig()
 
     init {
         mSetFlagsRule.setFlagsParameterization(flags)
@@ -193,35 +193,6 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
             }
 
             assertThat(hasCustomPositionUpdatedAnimation).isEqualTo(false)
-        }
-
-    @Test
-    fun testClockSize_alwaysSmallClockSize() =
-        testScope.runTest {
-            val value by collectLastValue(underTest.clockSize)
-
-            with(kosmos) {
-                fakeKeyguardClockRepository.setSelectedClockSize(ClockSizeSetting.SMALL)
-                keyguardClockRepository.setClockSize(ClockSize.LARGE)
-            }
-
-            assertThat(value).isEqualTo(ClockSize.SMALL)
-        }
-
-    @Test
-    @DisableSceneContainer
-    fun testClockSize_dynamicClockSize() =
-        testScope.runTest {
-            with(kosmos) {
-                val value by collectLastValue(underTest.clockSize)
-                fakeKeyguardClockRepository.setSelectedClockSize(ClockSizeSetting.DYNAMIC)
-
-                keyguardClockRepository.setClockSize(ClockSize.SMALL)
-                assertThat(value).isEqualTo(ClockSize.SMALL)
-
-                keyguardClockRepository.setClockSize(ClockSize.LARGE)
-                assertThat(value).isEqualTo(ClockSize.LARGE)
-            }
         }
 
     @Test
