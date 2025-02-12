@@ -35,6 +35,7 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.os.SystemProperties;
 import android.os.Trace;
+import android.util.DisplayMetrics;
 import android.util.DisplayUtils;
 import android.util.LongSparseArray;
 import android.util.Slog;
@@ -84,6 +85,10 @@ final class LocalDisplayAdapter extends DisplayAdapter {
     private static final String PROPERTY_EMULATOR_CIRCULAR = "ro.boot.emulator.circular";
 
     private static final double DEFAULT_DISPLAY_SIZE = 24.0;
+    // Touch target size 10.4mm in inches (divided by mm per inch 25.4)
+    private static final double EXTERNAL_DISPLAY_BASE_TOUCH_TARGET_SIZE_IN_INCHES = 10.4 / 25.4;
+
+    private static final double BASE_TOUCH_TARGET_SIZE_DP = 48.0;
 
     private final LongSparseArray<LocalDisplayDevice> mDevices = new LongSparseArray<>();
 
@@ -530,17 +535,20 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             if (densityMapping == null) {
                 if (getFeatureFlags().isBaseDensityForExternalDisplaysEnabled()
                         && !mStaticDisplayInfo.isInternal) {
-                    double dpi;
+                    double ppi;
 
                     if (mActiveSfDisplayMode.xDpi > 0 && mActiveSfDisplayMode.yDpi > 0) {
-                        dpi = Math.sqrt((Math.pow(mActiveSfDisplayMode.xDpi, 2)
+                        ppi = Math.sqrt((Math.pow(mActiveSfDisplayMode.xDpi, 2)
                                 + Math.pow(mActiveSfDisplayMode.yDpi, 2)) / 2);
                     } else {
                         // xDPI and yDPI is missing, calculate DPI from display resolution and
                         // default display size
-                        dpi = Math.sqrt(Math.pow(mInfo.width, 2) + Math.pow(mInfo.height, 2))
+                        ppi = Math.sqrt(Math.pow(mInfo.width, 2) + Math.pow(mInfo.height, 2))
                                 / DEFAULT_DISPLAY_SIZE;
                     }
+                    double pixels = ppi * EXTERNAL_DISPLAY_BASE_TOUCH_TARGET_SIZE_IN_INCHES;
+                    double dpi =
+                            pixels * DisplayMetrics.DENSITY_DEFAULT / BASE_TOUCH_TARGET_SIZE_DP;
                     return (int) (dpi + 0.5);
                 }
                 return (int) (mStaticDisplayInfo.density * 160 + 0.5);
