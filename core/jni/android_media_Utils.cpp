@@ -19,10 +19,12 @@
 
 #include "android_media_Utils.h"
 
+#ifdef __ANDROID__ // Layoutlib does not support hardware
 #include <aidl/android/hardware/graphics/common/PixelFormat.h>
 #include <aidl/android/hardware/graphics/common/PlaneLayoutComponentType.h>
 #include <ui/GraphicBufferMapper.h>
 #include <ui/GraphicTypes.h>
+#endif
 #include <utils/Log.h>
 
 #define ALIGN(x, mask) ( ((x) + (mask) - 1) & ~((mask) - 1) )
@@ -34,7 +36,13 @@ namespace android {
 
 // -----------Utility functions used by ImageReader/Writer JNI-----------------
 
+#ifdef __ANDROID__
 using AidlPixelFormat = aidl::android::hardware::graphics::common::PixelFormat;
+#else
+namespace AidlPixelFormat {
+const int32_t YCBCR_P210 = 60;
+}
+#endif
 
 enum {
     IMAGE_MAX_NUM_PLANES = 3,
@@ -517,6 +525,7 @@ status_t getLockedImageInfo(LockedImage* buffer, int idx,
     return OK;
 }
 
+#ifdef __ANDROID__
 static status_t extractP010Gralloc4PlaneLayout(
         sp<GraphicBuffer> buffer, void *pData, int format, LockedImage *outputImage) {
     using aidl::android::hardware::graphics::common::PlaneLayoutComponent;
@@ -663,6 +672,7 @@ static status_t extractP210Gralloc4PlaneLayout(sp<GraphicBuffer> buffer, void *p
     outputImage->chromaStep = 4;
     return OK;
 }
+#endif
 
 status_t lockImageFromBuffer(sp<GraphicBuffer> buffer, uint32_t inUsage,
         const Rect& rect, int fenceFd, LockedImage* outputImage) {
@@ -701,6 +711,7 @@ status_t lockImageFromBuffer(sp<GraphicBuffer> buffer, uint32_t inUsage,
             ALOGE("Lock buffer failed!");
             return res;
         }
+#ifdef __ANDROID__
         if (isPossibly10BitYUV(format)) {
             if (format == HAL_PIXEL_FORMAT_YCBCR_P010 &&
                 OK == extractP010Gralloc4PlaneLayout(buffer, pData, format, outputImage)) {
@@ -713,6 +724,7 @@ status_t lockImageFromBuffer(sp<GraphicBuffer> buffer, uint32_t inUsage,
                 return OK;
             }
         }
+#endif
     }
 
     outputImage->data = reinterpret_cast<uint8_t*>(pData);
