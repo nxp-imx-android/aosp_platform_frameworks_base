@@ -27,7 +27,7 @@ import com.android.systemui.statusbar.chips.notification.domain.interactor.Statu
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.NotifPipelineFlags
 import com.android.systemui.statusbar.notification.collection.GroupEntry
-import com.android.systemui.statusbar.notification.collection.ListEntry
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotifCollection
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -103,7 +103,7 @@ constructor(
         mNotifPipeline = pipeline
         mHeadsUpManager.addListener(mOnHeadsUpChangedListener)
         pipeline.addCollectionListener(mNotifCollectionListener)
-        pipeline.addOnBeforeTransformGroupsListener(::onBeforeTransformGroups)
+        pipeline.addOnBeforeTransformGroupsListener { onBeforeTransformGroups() }
         pipeline.addOnBeforeFinalizeFilterListener(::onBeforeFinalizeFilter)
         pipeline.addPromoter(mNotifPromoter)
         pipeline.addNotificationLifetimeExtender(mLifetimeExtender)
@@ -170,7 +170,7 @@ constructor(
      * Once the pipeline starts running, we can look through posted entries and quickly process any
      * that don't have groups, and thus will never gave a group heads up edge case.
      */
-    fun onBeforeTransformGroups(list: List<ListEntry>) {
+    fun onBeforeTransformGroups() {
         mNow = mSystemClock.currentTimeMillis()
         if (mPostedEntries.isEmpty()) {
             return
@@ -191,7 +191,7 @@ constructor(
      * we know that stability and [NotifPromoter]s have been applied, so we can use the location of
      * notifications in this list to determine what kind of group heads up behavior should happen.
      */
-    fun onBeforeFinalizeFilter(list: List<ListEntry>) =
+    fun onBeforeFinalizeFilter(list: List<PipelineEntry>) =
         mHeadsUpManager.modifyHuns { hunMutator ->
             // Nothing to do if there are no other adds/updates
             if (mPostedEntries.isEmpty()) {
@@ -410,7 +410,7 @@ constructor(
             )
             .firstOrNull()
 
-    private fun getGroupLocationsByKey(list: List<ListEntry>): Map<String, GroupLocation> =
+    private fun getGroupLocationsByKey(list: List<PipelineEntry>): Map<String, GroupLocation> =
         mutableMapOf<String, GroupLocation>().also { map ->
             list.forEach { topLevelEntry ->
                 when (topLevelEntry) {
@@ -833,13 +833,13 @@ constructor(
 
     val sectioner =
         object : NotifSectioner("HeadsUp", BUCKET_HEADS_UP) {
-            override fun isInSection(entry: ListEntry): Boolean =
+            override fun isInSection(entry: PipelineEntry): Boolean =
                 // TODO: This check won't notice if a child of the group is going to HUN...
                 isGoingToShowHunNoRetract(entry)
 
             override fun getComparator(): NotifComparator {
                 return object : NotifComparator("HeadsUp") {
-                    override fun compare(o1: ListEntry, o2: ListEntry): Int =
+                    override fun compare(o1: PipelineEntry, o2: PipelineEntry): Int =
                         mHeadsUpManager.compare(o1.representativeEntry, o2.representativeEntry)
                 }
             }
@@ -867,7 +867,7 @@ constructor(
 
     private fun isSticky(entry: NotificationEntry) = mHeadsUpManager.isSticky(entry.key)
 
-    private fun isEntryBinding(entry: ListEntry): Boolean {
+    private fun isEntryBinding(entry: PipelineEntry): Boolean {
         val bindingUntil = mEntriesBindingUntil[entry.key]
         return bindingUntil != null && bindingUntil >= mNow
     }
@@ -875,12 +875,12 @@ constructor(
     /**
      * Whether the notification is already heads up or binding so that it can imminently heads up
      */
-    private fun isAttemptingToShowHun(entry: ListEntry) =
+    private fun isAttemptingToShowHun(entry: PipelineEntry) =
         mHeadsUpManager.isHeadsUpEntry(entry.key) ||
             isEntryBinding(entry) ||
             isHeadsUpAnimatingAway(entry)
 
-    private fun isHeadsUpAnimatingAway(entry: ListEntry): Boolean {
+    private fun isHeadsUpAnimatingAway(entry: PipelineEntry): Boolean {
         if (!GroupHunAnimationFix.isEnabled) return false
         return entry.representativeEntry?.row?.isHeadsUpAnimatingAway ?: false
     }
@@ -891,7 +891,7 @@ constructor(
      * returns `true` even if the update would (in isolation of its group) cause the heads up to be
      * retracted. This is important for not retracting transferred group heads ups.
      */
-    private fun isGoingToShowHunNoRetract(entry: ListEntry) =
+    private fun isGoingToShowHunNoRetract(entry: PipelineEntry) =
         mPostedEntries[entry.key]?.calculateShouldBeHeadsUpNoRetract ?: isAttemptingToShowHun(entry)
 
     /**
@@ -900,7 +900,7 @@ constructor(
      * strict because any update which would revoke the heads up supersedes the current heads
      * up/binding state.
      */
-    private fun isGoingToShowHunStrict(entry: ListEntry) =
+    private fun isGoingToShowHunStrict(entry: PipelineEntry) =
         mPostedEntries[entry.key]?.calculateShouldBeHeadsUpStrict ?: isAttemptingToShowHun(entry)
 
     private fun endNotifLifetimeExtensionIfExtended(entry: NotificationEntry) {

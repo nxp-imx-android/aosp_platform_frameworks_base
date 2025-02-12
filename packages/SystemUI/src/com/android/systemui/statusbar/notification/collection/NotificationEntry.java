@@ -305,8 +305,10 @@ public final class NotificationEntry extends ListEntry {
             if (isTopLevelEntry() || getParent() == null) {
                 return null;
             }
-            if (NotificationEntry.this.getParent().getSummary() != null) {
-                return NotificationEntry.this.getParent().getSummary().mEntryAdapter;
+            if (NotificationEntry.this.getParent() instanceof GroupEntry parentGroupEntry) {
+                if (parentGroupEntry.getSummary() != null) {
+                    return parentGroupEntry.getSummary().mEntryAdapter;
+                }
             }
             return null;
         }
@@ -588,7 +590,7 @@ public final class NotificationEntry extends ListEntry {
      * Get the children that are actually attached to this notification's row.
      *
      * TODO: Seems like most callers here should probably be using
-     * {@link GroupMembershipManager#getChildren(ListEntry)}
+     * {@link GroupMembershipManager#getChildren(PipelineEntry)}
      */
     public @Nullable List<NotificationEntry> getAttachedNotifChildren() {
         if (row == null) {

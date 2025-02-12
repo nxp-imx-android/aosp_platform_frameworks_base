@@ -21,6 +21,7 @@ import android.view.ViewGroup
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.TransitionAnimator
+import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.domain.interactor.NotificationLaunchAnimationInteractor
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.headsup.HeadsUpUtil
@@ -157,8 +158,8 @@ class NotificationTransitionAnimatorController(
 
     private val headsUpNotificationRow: ExpandableNotificationRow?
         get() {
-            val summaryEntry = notificationEntry.parent?.summary
-
+            val pipelineParent = notificationEntry.parent
+            val summaryEntry = (pipelineParent as? GroupEntry)?.summary
             return when {
                 headsUpManager.isHeadsUpEntry(notificationKey) -> notification
                 summaryEntry == null -> null

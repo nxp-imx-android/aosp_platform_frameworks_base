@@ -29,7 +29,7 @@ import com.android.app.tracing.traceSection
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.notification.collection.GroupEntry
-import com.android.systemui.statusbar.notification.collection.ListEntry
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.provider.SectionStyleProvider
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationListRepository
@@ -57,11 +57,11 @@ constructor(
     /**
      * Sets the current list of rendered notification entries as displayed in the notification list.
      */
-    fun setRenderedList(entries: List<ListEntry>) {
+    fun setRenderedList(entries: List<PipelineEntry>) {
         traceSection("RenderNotificationListInteractor.setRenderedList") {
             repository.activeNotifications.update { existingModels ->
                 buildActiveNotificationsStore(existingModels, sectionStyleProvider, context) {
-                    entries.forEach(::addListEntry)
+                    entries.forEach(::addPipelineEntry)
                     setRankingsMap(entries)
                 }
             }
@@ -89,11 +89,11 @@ private class ActiveNotificationsStoreBuilder(
     fun build(): ActiveNotificationsStore = builder.build()
 
     /**
-     * Convert a [ListEntry] into [ActiveNotificationEntryModel]s, and add them to the
+     * Convert a [PipelineEntry] into [ActiveNotificationEntryModel]s, and add them to the
      * [ActiveNotificationsStore]. Special care is taken to avoid re-allocating models if the result
      * would be identical to an existing model (at the expense of additional computations).
      */
-    fun addListEntry(entry: ListEntry) {
+    fun addPipelineEntry(entry: PipelineEntry) {
         when (entry) {
             is GroupEntry -> {
                 entry.summary?.let { summary ->
@@ -116,11 +116,11 @@ private class ActiveNotificationsStoreBuilder(
         }
     }
 
-    fun setRankingsMap(entries: List<ListEntry>) {
+    fun setRankingsMap(entries: List<PipelineEntry>) {
         builder.setRankingsMap(flatMapToRankingsMap(entries))
     }
 
-    fun flatMapToRankingsMap(entries: List<ListEntry>): Map<String, Int> {
+    fun flatMapToRankingsMap(entries: List<PipelineEntry>): Map<String, Int> {
         val result = ArrayMap<String, Int>()
         for (entry in entries) {
             if (entry is NotificationEntry) {

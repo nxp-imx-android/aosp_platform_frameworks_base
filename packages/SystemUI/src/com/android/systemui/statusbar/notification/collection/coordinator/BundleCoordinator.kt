@@ -20,7 +20,7 @@ import android.app.NotificationChannel.NEWS_ID
 import android.app.NotificationChannel.PROMOTIONS_ID
 import android.app.NotificationChannel.RECS_ID
 import android.app.NotificationChannel.SOCIAL_MEDIA_ID
-import com.android.systemui.statusbar.notification.collection.ListEntry
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
@@ -48,7 +48,7 @@ class BundleCoordinator @Inject constructor(
 
     val newsSectioner =
             object : NotifSectioner("News", BUCKET_NEWS) {
-                override fun isInSection(entry: ListEntry): Boolean {
+                override fun isInSection(entry: PipelineEntry): Boolean {
                     return entry.representativeEntry?.channel?.id == NEWS_ID
                 }
 
@@ -59,7 +59,7 @@ class BundleCoordinator @Inject constructor(
 
     val socialSectioner =
         object : NotifSectioner("Social", BUCKET_SOCIAL) {
-            override fun isInSection(entry: ListEntry): Boolean {
+            override fun isInSection(entry: PipelineEntry): Boolean {
                 return entry.representativeEntry?.channel?.id == SOCIAL_MEDIA_ID
             }
 
@@ -70,7 +70,7 @@ class BundleCoordinator @Inject constructor(
 
     val recsSectioner =
         object : NotifSectioner("Recommendations", BUCKET_RECS) {
-            override fun isInSection(entry: ListEntry): Boolean {
+            override fun isInSection(entry: PipelineEntry): Boolean {
                 return entry.representativeEntry?.channel?.id == RECS_ID
             }
 
@@ -81,7 +81,7 @@ class BundleCoordinator @Inject constructor(
 
     val promoSectioner =
         object : NotifSectioner("Promotions", BUCKET_PROMO) {
-            override fun isInSection(entry: ListEntry): Boolean {
+            override fun isInSection(entry: PipelineEntry): Boolean {
                 return entry.representativeEntry?.channel?.id == PROMOTIONS_ID
             }
 
