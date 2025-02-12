@@ -57,6 +57,9 @@ constexpr bool query_global_priority() {
 constexpr bool early_preload_gl_context() {
     return false;
 }
+constexpr bool calc_workload_orig_deadline() {
+    return false;
+}
 }  // namespace hwui_flags
 #endif
 
@@ -299,5 +302,10 @@ bool Properties::earlyPreloadGlContext() {
                                  hwui_flags::early_preload_gl_context());
 }
 
+bool Properties::calcWorkloadOrigDeadline() {
+    static bool sCalcWorkloadOrigDeadline = base::GetBoolProperty(
+            "debug.hwui.calc_workload_orig_deadline", hwui_flags::calc_workload_orig_deadline());
+    return sCalcWorkloadOrigDeadline;
+}
 }  // namespace uirenderer
 }  // namespace android

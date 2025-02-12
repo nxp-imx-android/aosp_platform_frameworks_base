@@ -92,6 +92,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.inject.Inject;
 
@@ -410,7 +411,8 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
 
         final ScrimState[] states = ScrimState.values();
         for (int i = 0; i < states.length; i++) {
-            states[i].init(mScrimInFront, mScrimBehind, mDozeParameters, mDockManager);
+            states[i].init(mScrimInFront, mScrimBehind, mDozeParameters, mDockManager,
+                    this::isBlurCurrentlySupported);
             states[i].setScrimBehindAlphaKeyguard(mScrimBehindAlphaKeyguard);
             states[i].setDefaultScrimAlpha(mDefaultScrimAlpha);
         }
@@ -489,7 +491,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
                         Edge.Companion.create(GLANCEABLE_HUB, LOCKSCREEN)),
                 mGlanceableHubConsumer, mMainDispatcher);
 
-        if (Flags.bouncerUiRevamp()) {
+        if (Flags.bouncerUiRevamp() || Flags.notificationShadeBlur()) {
             collectFlow(behindScrim,
                     mWindowRootViewBlurInteractor.get().isBlurCurrentlySupported(),
                     this::handleBlurSupportedChanged);
@@ -504,13 +506,25 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         applyAndDispatchState();
     }
 
+    private boolean isBlurCurrentlySupported() {
+        return mWindowRootViewBlurInteractor.get()
+                .isBlurCurrentlySupported()
+                .getValue();
+    }
+
     private void handleBlurSupportedChanged(boolean isBlurSupported) {
-        if (isBlurSupported) {
-            updateDefaultScrimAlpha(TRANSPARENT_BOUNCER_SCRIM_ALPHA);
-            ScrimState.BOUNCER_SCRIMMED.setNotifBlurRadius(mBlurConfig.getMaxBlurRadiusPx());
-        } else {
-            ScrimState.BOUNCER_SCRIMMED.setNotifBlurRadius(0f);
-            updateDefaultScrimAlpha(BUSY_SCRIM_ALPHA);
+        if (Flags.bouncerUiRevamp()) {
+            if (isBlurSupported) {
+                updateDefaultScrimAlpha(TRANSPARENT_BOUNCER_SCRIM_ALPHA);
+                ScrimState.BOUNCER_SCRIMMED.setNotifBlurRadius(mBlurConfig.getMaxBlurRadiusPx());
+            } else {
+                ScrimState.BOUNCER_SCRIMMED.setNotifBlurRadius(0f);
+                updateDefaultScrimAlpha(BUSY_SCRIM_ALPHA);
+            }
+        }
+        if (Flags.notificationShadeBlur()) {
+            mState.prepare(mState);
+            applyAndDispatchState();
         }
     }
 

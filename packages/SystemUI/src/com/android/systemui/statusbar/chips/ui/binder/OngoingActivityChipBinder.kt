@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.chips.ui.binder
 
 import android.annotation.IdRes
+import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.drawable.GradientDrawable
 import android.view.View
@@ -32,6 +33,7 @@ import com.android.systemui.common.ui.binder.IconViewBinder
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
+import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.view.ChipChronometer
@@ -76,8 +78,10 @@ object OngoingActivityChipBinder {
                 chipTimeView.setTextColor(textColor)
                 chipTextView.setTextColor(textColor)
                 chipShortTimeDeltaView.setTextColor(textColor)
-                (chipBackgroundView.background as GradientDrawable).color =
-                    chipModel.colors.background(chipContext)
+                (chipBackgroundView.background as GradientDrawable).setBackgroundColors(
+                    chipModel.colors,
+                    chipContext,
+                )
             }
             is OngoingActivityChipModel.Inactive -> {
                 // The Chronometer should be stopped to prevent leaks -- see b/192243808 and
@@ -458,6 +462,21 @@ object OngoingActivityChipBinder {
         // The root view needs the minimum width so the second chip can hide if there isn't enough
         // room for the chip -- see [SecondaryOngoingActivityChip].
         chipView.minimumWidth = minimumWidth
+    }
+
+    private fun GradientDrawable.setBackgroundColors(colors: ColorsModel, context: Context) {
+        this.color = colors.background(context)
+        val outline = colors.outline(context)
+        if (outline != null) {
+            this.setStroke(
+                context.resources.getDimensionPixelSize(
+                    R.dimen.ongoing_activity_chip_outline_width
+                ),
+                outline,
+            )
+        } else {
+            this.setStroke(0, /* color= */ 0)
+        }
     }
 
     @IdRes private val CUSTOM_ICON_VIEW_ID = R.id.ongoing_activity_chip_custom_icon

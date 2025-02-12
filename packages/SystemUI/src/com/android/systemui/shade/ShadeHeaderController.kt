@@ -31,16 +31,26 @@ import android.os.Trace.TRACE_TAG_APP
 import android.provider.AlarmClock
 import android.view.DisplayCutout
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.TextView
 import androidx.annotation.VisibleForTesting
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.core.view.doOnLayout
+import androidx.core.view.isVisible
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.app.animation.Interpolators
 import com.android.settingslib.Utils
 import com.android.systemui.Dumpable
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.battery.BatteryMeterView
+import com.android.systemui.battery.BatteryMeterView.MODE_ESTIMATE
 import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.demomode.DemoMode
@@ -60,12 +70,15 @@ import com.android.systemui.shade.carrier.ShadeCarrierGroup
 import com.android.systemui.shade.carrier.ShadeCarrierGroupController
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
+import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.phone.StatusOverlayHoverListenerFactory
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
+import com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithEstimate
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.NextAlarmController
@@ -76,6 +89,7 @@ import dagger.Lazy
 import java.io.PrintWriter
 import javax.inject.Inject
 import javax.inject.Named
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * Controller for QS header.
@@ -100,6 +114,7 @@ constructor(
     private val shadeDisplaysRepositoryLazy: Lazy<ShadeDisplaysRepository>,
     private val variableDateViewControllerFactory: VariableDateViewController.Factory,
     @Named(SHADE_HEADER) private val batteryMeterViewController: BatteryMeterViewController,
+    private val batteryViewModelFactory: BatteryViewModel.Factory,
     private val dumpManager: DumpManager,
     private val shadeCarrierGroupControllerBuilder: ShadeCarrierGroupController.Builder,
     private val combinedShadeHeadersConstraintManager: CombinedShadeHeadersConstraintManager,
@@ -161,6 +176,8 @@ constructor(
     private var cutout: DisplayCutout? = null
     private var lastInsets: WindowInsets? = null
     private var nextAlarmIntent: PendingIntent? = null
+
+    private val showBatteryEstimate = MutableStateFlow(false)
 
     private var qsDisabled = false
     private var visible = false
@@ -323,10 +340,6 @@ constructor(
 
     override fun onInit() {
         variableDateViewControllerFactory.create(date as VariableDateView).init()
-        batteryMeterViewController.init()
-
-        // battery settings same as in QS icons
-        batteryMeterViewController.ignoreTunerUpdates()
 
         val fgColor =
             Utils.getColorAttrDefaultColor(header.context, android.R.attr.textColorPrimary)
@@ -336,11 +349,36 @@ constructor(
         iconManager = tintedIconManagerFactory.create(iconContainer, StatusBarLocation.QS)
         iconManager.setTint(fgColor, bgColor)
 
-        batteryIcon.updateColors(
-            fgColor /* foreground */,
-            bgColor /* background */,
-            fgColor, /* single tone (current default) */
-        )
+        if (!NewStatusBarIcons.isEnabled) {
+            batteryMeterViewController.init()
+
+            // battery settings same as in QS icons
+            batteryMeterViewController.ignoreTunerUpdates()
+
+            batteryIcon.isVisible = true
+            batteryIcon.updateColors(
+                fgColor /* foreground */,
+                bgColor /* background */,
+                fgColor, /* single tone (current default) */
+            )
+        } else {
+            // Configure the compose battery view
+            val batteryComposeView =
+                ComposeView(mView.context).apply {
+                    setContent {
+                        val showBatteryEstimate by showBatteryEstimate.collectAsStateWithLifecycle()
+                        BatteryWithEstimate(
+                            modifier = Modifier.height(17.dp).wrapContentWidth(),
+                            viewModelFactory = batteryViewModelFactory,
+                            isDark = { true },
+                            showEstimate = showBatteryEstimate,
+                        )
+                    }
+                }
+            mView.requireViewById<ViewGroup>(R.id.hover_system_icons_container).apply {
+                addView(batteryComposeView, -1)
+            }
+        }
 
         carrierIconSlots =
             listOf(header.context.getString(com.android.internal.R.string.status_bar_mobile))
@@ -474,7 +512,11 @@ constructor(
 
     private fun updateBatteryMode() {
         qsBatteryModeController.getBatteryMode(cutout, qsExpandedFraction)?.let {
-            batteryIcon.setPercentShowMode(it)
+            if (NewStatusBarIcons.isEnabled) {
+                showBatteryEstimate.value = it == MODE_ESTIMATE
+            } else {
+                batteryIcon.setPercentShowMode(it)
+            }
         }
     }
 

@@ -72,7 +72,6 @@ import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
 import com.android.wm.shell.pip2.animation.PipEnterAnimator;
 import com.android.wm.shell.pip2.animation.PipExpandAnimator;
 import com.android.wm.shell.shared.TransitionUtil;
-import com.android.wm.shell.shared.pip.PipContentOverlay;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
@@ -422,7 +421,7 @@ public class PipTransition extends PipTransitionController implements
         final Rect destinationBounds = pipChange.getEndAbsBounds();
         final SurfaceControl swipePipToHomeOverlay = mPipTransitionState.getSwipePipToHomeOverlay();
         if (swipePipToHomeOverlay != null) {
-            final int overlaySize = PipContentOverlay.PipAppIconOverlay.getOverlaySize(
+            final int overlaySize = PipAppIconOverlay.getOverlaySize(
                     mPipTransitionState.getSwipePipToHomeAppBounds(), destinationBounds);
             // It is possible we reparent the PIP activity to a new PIP task (in multi-activity
             // apps), so we should also reparent the overlay to the final PIP task.

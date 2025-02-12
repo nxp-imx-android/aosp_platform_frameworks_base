@@ -22,7 +22,6 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.ObservableTransitionState.Idle
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
-import com.android.systemui.Flags.FLAG_COMMUNAL_SCENE_KTF_REFACTOR
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.data.repository.communalSceneRepository
 import com.android.systemui.communal.shared.model.CommunalScenes
@@ -64,7 +63,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(FLAG_COMMUNAL_HUB, FLAG_COMMUNAL_SCENE_KTF_REFACTOR)
+@EnableFlags(FLAG_COMMUNAL_HUB)
 @DisableSceneContainer
 class CommunalSceneTransitionInteractorTest : SysuiTestCase() {
 

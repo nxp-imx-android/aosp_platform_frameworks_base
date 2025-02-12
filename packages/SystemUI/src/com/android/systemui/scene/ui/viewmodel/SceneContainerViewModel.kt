@@ -40,6 +40,7 @@ import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.logger.SceneLogger
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.Overlay
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -218,39 +219,36 @@ constructor(
      * it being a false touch.
      */
     fun canChangeScene(toScene: SceneKey): Boolean {
-        val interactionTypeOrNull =
-            when (toScene) {
-                Scenes.Bouncer -> Classifier.BOUNCER_UNLOCK
-                Scenes.Gone -> Classifier.UNLOCK
-                Scenes.Shade -> Classifier.NOTIFICATION_DRAG_DOWN
-                Scenes.QuickSettings -> Classifier.QUICK_SETTINGS
-                else -> null
-            }
-
-        val fromScene = currentScene.value
-        val isAllowed =
-            interactionTypeOrNull?.let { interactionType ->
-                // It's important that the falsing system is always queried, even if no enforcement
-                // will occur. This helps build up the right signal in the system.
-                val isFalseTouch = falsingInteractor.isFalseTouch(interactionType)
-
-                // Only enforce falsing if moving from the lockscreen scene to a new scene.
-                val fromLockscreenScene = fromScene == Scenes.Lockscreen
-
-                !fromLockscreenScene || !isFalseTouch
-            } ?: true
-
-        if (isAllowed) {
+        return isInteractionAllowedByFalsing(toScene).also {
             // A scene change is guaranteed; log it.
             logger.logSceneChanged(
-                from = fromScene,
+                from = currentScene.value,
                 to = toScene,
                 sceneState = null,
                 reason = "user interaction",
                 isInstant = false,
             )
         }
-        return isAllowed
+    }
+
+    /**
+     * Returns `true` if showing the [newlyShown] overlay is currently allowed; `false` otherwise.
+     *
+     * This is invoked only for user-initiated transitions. The goal is to check with the falsing
+     * system whether the overlay change should be rejected due to it being a false touch.
+     */
+    fun canShowOrReplaceOverlay(
+        newlyShown: OverlayKey,
+        beingReplaced: OverlayKey? = null,
+    ): Boolean {
+        return isInteractionAllowedByFalsing(newlyShown).also {
+            // An overlay change is guaranteed; log it.
+            logger.logOverlayChangeRequested(
+                from = beingReplaced,
+                to = newlyShown,
+                reason = "user interaction",
+            )
+        }
     }
 
     /**
@@ -311,6 +309,34 @@ constructor(
         unfiltered: Flow<Map<UserAction, UserActionResult>>
     ): Flow<Map<UserAction, UserActionResult>> {
         return sceneInteractor.filteredUserActions(unfiltered)
+    }
+
+    /**
+     * Returns `true` if transitioning to [content] is permissible by the falsing system; `false`
+     * otherwise.
+     */
+    private fun isInteractionAllowedByFalsing(content: ContentKey): Boolean {
+        val interactionTypeOrNull =
+            when (content) {
+                Scenes.Bouncer -> Classifier.BOUNCER_UNLOCK
+                Scenes.Gone -> Classifier.UNLOCK
+                Scenes.Shade,
+                Overlays.NotificationsShade -> Classifier.NOTIFICATION_DRAG_DOWN
+                Scenes.QuickSettings,
+                Overlays.QuickSettingsShade -> Classifier.QUICK_SETTINGS
+                else -> null
+            }
+
+        return interactionTypeOrNull?.let { interactionType ->
+            // It's important that the falsing system is always queried, even if no enforcement
+            // will occur. This helps build up the right signal in the system.
+            val isFalseTouch = falsingInteractor.isFalseTouch(interactionType)
+
+            // Only enforce falsing if moving from the lockscreen scene to new content.
+            val fromLockscreenScene = currentScene.value == Scenes.Lockscreen
+
+            !fromLockscreenScene || !isFalseTouch
+        } ?: true
     }
 
     /** Defines interface for classes that can handle externally-reported [MotionEvent]s. */

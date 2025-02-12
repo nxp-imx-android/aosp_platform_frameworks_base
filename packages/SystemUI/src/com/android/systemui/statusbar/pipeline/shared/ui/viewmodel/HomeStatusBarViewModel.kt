@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 import android.annotation.ColorInt
 import android.graphics.Rect
 import android.view.View
+import androidx.compose.runtime.getValue
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
@@ -28,6 +29,8 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.keyguard.shared.model.TransitionState
+import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.plugins.DarkIconDispatcher
@@ -55,8 +58,10 @@ import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNoti
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
 import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor
+import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.phone.domain.interactor.LightsOutInteractor
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarIconBlockListInteractor
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
@@ -90,6 +95,9 @@ import kotlinx.coroutines.flow.stateIn
  * so that it's all in one place and easily testable outside of the fragment.
  */
 interface HomeStatusBarViewModel {
+    /** Factory to create the view model for the battery icon */
+    val batteryViewModelFactory: BatteryViewModel.Factory
+
     /**
      * True if the device is currently transitioning from lockscreen to occluded and false
      * otherwise.
@@ -171,6 +179,9 @@ interface HomeStatusBarViewModel {
      */
     val areaTint: Flow<StatusBarTintColor>
 
+    /** [IsAreaDark] applicable for this status bar's display and content area */
+    val areaDark: IsAreaDark
+
     /** Interface for the assisted factory, to allow for providing a fake in tests */
     interface HomeStatusBarViewModelFactory {
         fun create(displayId: Int): HomeStatusBarViewModel
@@ -181,6 +192,7 @@ class HomeStatusBarViewModelImpl
 @AssistedInject
 constructor(
     @Assisted thisDisplayId: Int,
+    override val batteryViewModelFactory: BatteryViewModel.Factory,
     tableLoggerFactory: TableLogBufferFactory,
     homeStatusBarInteractor: HomeStatusBarInteractor,
     homeStatusBarIconBlockListInteractor: HomeStatusBarIconBlockListInteractor,
@@ -201,7 +213,9 @@ constructor(
     statusBarContentInsetsViewModelStore: StatusBarContentInsetsViewModelStore,
     @Background bgScope: CoroutineScope,
     @Background bgDispatcher: CoroutineDispatcher,
-) : HomeStatusBarViewModel {
+) : HomeStatusBarViewModel, ExclusiveActivatable() {
+
+    private val hydrator = Hydrator(traceName = "HomeStatusBarViewModel.hydrator")
 
     val tableLogger = tableLoggerFactory.getOrCreate(tableLogBufferName(thisDisplayId), 200)
 
@@ -293,6 +307,13 @@ constructor(
             .conflate()
             .distinctUntilChanged()
             .flowOn(bgDispatcher)
+
+    override val areaDark: IsAreaDark by
+        hydrator.hydratedStateOf(
+            traceName = "areaDark",
+            initialValue = IsAreaDark { true },
+            source = darkIconInteractor.isAreaDark(thisDisplayId),
+        )
 
     /**
      * True if the current SysUI state can show the home status bar (aka this status bar), and false
@@ -472,6 +493,10 @@ constructor(
     // Similar to the above, but uses INVISIBLE in place of GONE
     @View.Visibility
     private fun Boolean.toVisibleOrInvisible(): Int = if (this) View.VISIBLE else View.INVISIBLE
+
+    override suspend fun onActivated(): Nothing {
+        hydrator.activate()
+    }
 
     /** Inject this to create the display-dependent view model */
     @AssistedFactory

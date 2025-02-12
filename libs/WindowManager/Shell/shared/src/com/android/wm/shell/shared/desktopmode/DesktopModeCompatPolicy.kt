@@ -50,7 +50,7 @@ class DesktopModeCompatPolicy(private val context: Context) {
         numActivities: Int, isTopActivityNoDisplay: Boolean, isActivityStackTransparent: Boolean) =
         DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue
                 && ((isSystemUiTask(packageName)
-                || isPartOfDefaultHomePackage(packageName)
+                || isPartOfDefaultHomePackageOrNoHomeAvailable(packageName)
                 || isTransparentTask(isActivityStackTransparent, numActivities))
                 && !isTopActivityNoDisplay)
 
@@ -85,10 +85,11 @@ class DesktopModeCompatPolicy(private val context: Context) {
     private fun isSystemUiTask(packageName: String?) = packageName == systemUiPackage
 
     /**
-     * Returns true if the tasks base activity is part of the default home package.
+     * Returns true if the tasks base activity is part of the default home package, or there is
+     * currently no default home package available.
      */
-    private fun isPartOfDefaultHomePackage(packageName: String?) =
-        packageName != null && packageName == defaultHomePackage
+    private fun isPartOfDefaultHomePackageOrNoHomeAvailable(packageName: String?) =
+        defaultHomePackage == null || (packageName != null && packageName == defaultHomePackage)
 
     private fun isAnyForceConsumptionFlagsEnabled(): Boolean =
         DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS.isTrue

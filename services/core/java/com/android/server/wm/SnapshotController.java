@@ -72,11 +72,6 @@ class SnapshotController {
         mActivitySnapshotController.notifyAppVisibilityChanged(appWindowToken, visible);
     }
 
-    // For legacy transition, which won't support activity snapshot
-    void onTransitionStarting(DisplayContent displayContent) {
-        mTaskSnapshotController.handleClosingApps(displayContent.mClosingApps);
-    }
-
     // For shell transition, record snapshots before transaction start.
     void onTransactionReady(@WindowManager.TransitionType int type,
             ArrayList<Transition.ChangeInfo> changeInfos) {

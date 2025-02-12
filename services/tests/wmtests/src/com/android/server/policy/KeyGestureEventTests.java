@@ -402,9 +402,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
 
     @Test
     @EnableFlags({com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_SHORTCUT_CONTROL,
-            com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_BOUNCE_KEYS_FLAG,
-            com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_SLOW_KEYS_FLAG,
-            com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_STICKY_KEYS_FLAG,
             com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_MOUSE_KEYS})
     @DisableFlags(com.android.hardware.input.Flags.FLAG_USE_KEY_GESTURE_EVENT_HANDLER)
     public void testKeyboardAccessibilityToggleShortcutPress() {

@@ -18,6 +18,11 @@ package com.android.server.accessibility.autoclick;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AutoclickType;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.ClickPanelControllerInterface;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
@@ -59,11 +64,25 @@ public class AutoclickTypePanelTest {
     private LinearLayout mDragButton;
     private LinearLayout mScrollButton;
 
+    private @AutoclickType int mActiveClickType = AUTOCLICK_TYPE_LEFT_CLICK;
+
+    private final ClickPanelControllerInterface clickPanelController =
+            new ClickPanelControllerInterface() {
+                @Override
+                public void handleAutoclickTypeChange(@AutoclickType int clickType) {
+                    mActiveClickType = clickType;
+                }
+
+                @Override
+                public void toggleAutoclickPause() {}
+            };
+
     @Before
     public void setUp() {
         mTestableContext.addMockSystemService(Context.WINDOW_SERVICE, mMockWindowManager);
 
-        mAutoclickTypePanel = new AutoclickTypePanel(mTestableContext, mMockWindowManager);
+        mAutoclickTypePanel =
+                new AutoclickTypePanel(mTestableContext, mMockWindowManager, clickPanelController);
         View contentView = mAutoclickTypePanel.getContentViewForTesting();
         mLeftClickButton = contentView.findViewById(R.id.accessibility_autoclick_left_click_layout);
         mRightClickButton =
@@ -134,6 +153,17 @@ public class AutoclickTypePanelTest {
         mScrollButton.callOnClick();
 
         verifyButtonHasSelectedStyle(mScrollButton);
+    }
+
+    @Test
+    public void togglePanelExpansion_selectButton_correctActiveClickType() {
+        // By first click, the panel is expanded.
+        mLeftClickButton.callOnClick();
+
+        // Clicks any button in the expanded state to select a type button.
+        mScrollButton.callOnClick();
+
+        assertThat(mActiveClickType).isEqualTo(AUTOCLICK_TYPE_SCROLL);
     }
 
     private void verifyButtonHasSelectedStyle(@NonNull LinearLayout button) {

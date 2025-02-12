@@ -48,6 +48,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.internal.jank.InteractionJankMonitor;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestShellExecutor;
@@ -96,7 +97,7 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
         mTransitionHandler = new DefaultTransitionHandler(
                 mContext, mShellInit, mDisplayController,
                 mTransactionPool, mMainExecutor, mMainHandler, mAnimExecutor,
-                mRootTaskDisplayAreaOrganizer);
+                mRootTaskDisplayAreaOrganizer, mock(InteractionJankMonitor.class));
         mShellInit.init();
     }
 

@@ -23,16 +23,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.assert
-import androidx.compose.ui.test.filter
-import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.text.AnnotatedString
@@ -112,20 +105,6 @@ class EditModeTest : SysuiTestCase() {
     private fun ComposeContentTestRule.assertAvailableTilesGridContainsExactly(
         specs: List<String>
     ) = assertGridContainsExactly(AVAILABLE_TILES_GRID_TEST_TAG, specs)
-
-    private fun ComposeContentTestRule.assertGridContainsExactly(
-        testTag: String,
-        specs: List<String>,
-    ) {
-        onNodeWithTag(testTag)
-            .onChildren()
-            .filter(SemanticsMatcher.keyIsDefined(SemanticsProperties.ContentDescription))
-            .apply {
-                fetchSemanticsNodes().forEachIndexed { index, _ ->
-                    get(index).assert(hasContentDescription(specs[index]))
-                }
-            }
-    }
 
     companion object {
         private const val CURRENT_TILES_GRID_TEST_TAG = "CurrentTilesGrid"

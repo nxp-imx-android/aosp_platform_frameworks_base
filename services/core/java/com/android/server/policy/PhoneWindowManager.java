@@ -3733,8 +3733,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
                 break;
             case KeyEvent.KEYCODE_3:
-                if (InputSettings.isAccessibilityBounceKeysFeatureEnabled()
-                        && keyboardA11yShortcutControl()) {
+                if (keyboardA11yShortcutControl()) {
                     if (firstDown && event.isMetaPressed()
                             && event.isAltPressed()) {
                         final boolean bounceKeysEnabled =
@@ -3765,8 +3764,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
                 break;
             case KeyEvent.KEYCODE_5:
-                if (InputSettings.isAccessibilityStickyKeysFeatureEnabled()
-                        && keyboardA11yShortcutControl()) {
+                if (keyboardA11yShortcutControl()) {
                     if (firstDown && event.isMetaPressed() && event.isAltPressed()) {
                         final boolean stickyKeysEnabled =
                                 InputSettings.isAccessibilityStickyKeysEnabled(
@@ -3780,8 +3778,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
                 break;
             case KeyEvent.KEYCODE_6:
-                if (InputSettings.isAccessibilitySlowKeysFeatureFlagEnabled()
-                        && keyboardA11yShortcutControl()) {
+                if (keyboardA11yShortcutControl()) {
                     if (firstDown && event.isMetaPressed() && event.isAltPressed()) {
                         final boolean slowKeysEnabled =
                                 InputSettings.isAccessibilitySlowKeysEnabled(mContext);

@@ -23,6 +23,8 @@ import android.widget.LinearLayout
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -34,9 +36,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.AlphaOptimizedLinearLayout
+import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
+import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.data.repository.DarkIconDispatcherStore
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
@@ -51,6 +55,9 @@ import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallController
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ui.DarkIconManager
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
+import com.android.systemui.statusbar.pipeline.battery.ui.composable.UnifiedBattery
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel.Companion.STATUS_BAR_BATTERY_HEIGHT
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel.Companion.STATUS_BAR_BATTERY_WIDTH
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarIconBlockListBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
@@ -73,14 +80,13 @@ constructor(
 ) {
     fun create(root: ViewGroup, andThen: (ViewGroup) -> Unit): ComposeView {
         val composeView = ComposeView(root.context)
-        val displayId = root.context.displayId
         val darkIconDispatcher =
             darkIconDispatcherStore.forDisplay(root.context.displayId) ?: return composeView
         composeView.apply {
             setContent {
                 StatusBarRoot(
                     parent = root,
-                    statusBarViewModel = homeStatusBarViewModelFactory.create(displayId),
+                    statusBarViewModelFactory = homeStatusBarViewModelFactory,
                     statusBarViewBinder = homeStatusBarViewBinder,
                     notificationIconsBinder = notificationIconsBinder,
                     darkIconManagerFactory = darkIconManagerFactory,
@@ -110,7 +116,7 @@ constructor(
 @Composable
 fun StatusBarRoot(
     parent: ViewGroup,
-    statusBarViewModel: HomeStatusBarViewModel,
+    statusBarViewModelFactory: HomeStatusBarViewModelFactory,
     statusBarViewBinder: HomeStatusBarViewBinder,
     notificationIconsBinder: NotificationIconContainerStatusBarViewBinder,
     darkIconManagerFactory: DarkIconManager.Factory,
@@ -120,6 +126,10 @@ fun StatusBarRoot(
     eventAnimationInteractor: SystemStatusEventAnimationInteractor,
     onViewCreated: (ViewGroup) -> Unit,
 ) {
+    val displayId = parent.context.displayId
+    val statusBarViewModel =
+        rememberViewModel("HomeStatusBar") { statusBarViewModelFactory.create(displayId) }
+
     Box(Modifier.fillMaxSize()) {
         // TODO(b/364360986): remove this before rolling the flag forward
         if (StatusBarRootModernization.SHOW_DISAMBIGUATION) {
@@ -158,10 +168,6 @@ fun StatusBarRoot(
                                         LinearLayout.LayoutParams.WRAP_CONTENT,
                                         LinearLayout.LayoutParams.WRAP_CONTENT,
                                     )
-
-                                setViewCompositionStrategy(
-                                    ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
-                                )
 
                                 setContent {
                                     PlatformTheme {
@@ -241,6 +247,12 @@ fun StatusBarRoot(
                         endSideContent.addView(composeView, 0)
                     }
 
+                    // If the flag is enabled, create and add a compose battery view to the end
+                    // of the system_icons container
+                    if (NewStatusBarIcons.isEnabled) {
+                        addBatteryComposable(phoneStatusBarView, statusBarViewModel)
+                    }
+
                     notificationIconsBinder.bindWhileAttached(
                         notificationIconContainer,
                         context.displayId,
@@ -260,6 +272,27 @@ fun StatusBarRoot(
                 }
             )
         }
+    }
+}
+
+/** Create a new [UnifiedBattery] and add it to the end of the system_icons container */
+private fun addBatteryComposable(
+    phoneStatusBarView: PhoneStatusBarView,
+    statusBarViewModel: HomeStatusBarViewModel,
+) {
+    val batteryComposeView =
+        ComposeView(phoneStatusBarView.context).apply {
+            setContent {
+                UnifiedBattery(
+                    modifier =
+                        Modifier.height(STATUS_BAR_BATTERY_HEIGHT).width(STATUS_BAR_BATTERY_WIDTH),
+                    viewModelFactory = statusBarViewModel.batteryViewModelFactory,
+                    isDark = statusBarViewModel.areaDark,
+                )
+            }
+        }
+    phoneStatusBarView.findViewById<ViewGroup>(R.id.system_icons).apply {
+        addView(batteryComposeView, -1)
     }
 }
 

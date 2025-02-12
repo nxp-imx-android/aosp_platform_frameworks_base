@@ -915,14 +915,15 @@ public abstract class WMShellModule {
             Transitions transitions,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
-            InteractionJankMonitor interactionJankMonitor) {
+            InteractionJankMonitor interactionJankMonitor,
+            Optional<BubbleController> bubbleController) {
         return ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX.isTrue()
                 ? new SpringDragToDesktopTransitionHandler(
                 context, transitions, rootTaskDisplayAreaOrganizer, desktopUserRepositories,
-                interactionJankMonitor)
+                interactionJankMonitor, bubbleController)
                 : new DefaultDragToDesktopTransitionHandler(
                         context, transitions, rootTaskDisplayAreaOrganizer, desktopUserRepositories,
-                        interactionJankMonitor);
+                        interactionJankMonitor, bubbleController);
     }
 
     @WMSingleton
@@ -1306,7 +1307,8 @@ public abstract class WMShellModule {
             WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
             DesktopWindowingEducationTooltipController desktopWindowingEducationTooltipController,
             @ShellMainThread CoroutineScope applicationScope,
-            @ShellBackgroundThread MainCoroutineDispatcher backgroundDispatcher) {
+            @ShellBackgroundThread MainCoroutineDispatcher backgroundDispatcher,
+            DesktopModeUiEventLogger desktopModeUiEventLogger) {
         return new AppHandleEducationController(
                 context,
                 appHandleEducationFilter,
@@ -1314,7 +1316,8 @@ public abstract class WMShellModule {
                 windowDecorCaptionHandleRepository,
                 desktopWindowingEducationTooltipController,
                 applicationScope,
-                backgroundDispatcher);
+                backgroundDispatcher,
+                desktopModeUiEventLogger);
     }
 
     @WMSingleton

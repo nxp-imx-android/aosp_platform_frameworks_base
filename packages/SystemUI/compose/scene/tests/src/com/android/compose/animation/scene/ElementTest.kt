@@ -227,7 +227,7 @@ class ElementTest {
             to = SceneB,
             transitionLayout = { state ->
                 coroutineScope = rememberCoroutineScope()
-                SceneTransitionLayout(state) {
+                SceneTransitionLayoutForTesting(state) {
                     scene(SceneA) {
                         Box(Modifier.size(layoutSize)) {
                             // Transformed element
@@ -247,7 +247,7 @@ class ElementTest {
                 rule.runOnUiThread {
                     // We snap to scene B so that the transition A => B is removed from the list of
                     // transitions.
-                    state.snapToScene(SceneB)
+                    state.snapTo(SceneB)
                     state.setTargetScene(SceneC, coroutineScope)
                 }
             }
@@ -633,7 +633,7 @@ class ElementTest {
 
         val scope =
             rule.setContentAndCreateMainScope {
-                SceneTransitionLayout(state) {
+                SceneTransitionLayoutForTesting(state) {
                     scene(SceneA) { Box(Modifier.element(TestElements.Foo).size(20.dp)) }
                     scene(SceneB) {}
                 }
@@ -674,7 +674,7 @@ class ElementTest {
             CompositionLocalProvider(
                 LocalOverscrollFactory provides rememberOffsetOverscrollEffectFactory()
             ) {
-                SceneTransitionLayout(state, Modifier.size(layoutWidth, layoutHeight)) {
+                SceneTransitionLayoutForTesting(state, Modifier.size(layoutWidth, layoutHeight)) {
                     scene(key = SceneA, userActions = mapOf(Swipe.Down to SceneB)) {
                         Spacer(Modifier.fillMaxSize())
                     }
@@ -734,7 +734,7 @@ class ElementTest {
             CompositionLocalProvider(
                 LocalOverscrollFactory provides rememberOffsetOverscrollEffectFactory()
             ) {
-                SceneTransitionLayout(state, Modifier.size(layoutWidth, layoutHeight)) {
+                SceneTransitionLayoutForTesting(state, Modifier.size(layoutWidth, layoutHeight)) {
                     scene(key = SceneA, userActions = mapOf(Swipe.Down to SceneB)) {
                         Spacer(
                             Modifier.overscroll(verticalOverscrollEffect)
@@ -834,7 +834,7 @@ class ElementTest {
             CompositionLocalProvider(
                 LocalOverscrollFactory provides rememberOffsetOverscrollEffectFactory()
             ) {
-                SceneTransitionLayout(state, Modifier.size(layoutWidth, layoutHeight)) {
+                SceneTransitionLayoutForTesting(state, Modifier.size(layoutWidth, layoutHeight)) {
                     scene(key = SceneA, userActions = mapOf(Swipe.Down to SceneB)) {
                         Spacer(Modifier.fillMaxSize())
                     }
@@ -893,7 +893,7 @@ class ElementTest {
             CompositionLocalProvider(
                 LocalOverscrollFactory provides rememberOffsetOverscrollEffectFactory()
             ) {
-                SceneTransitionLayout(
+                SceneTransitionLayoutForTesting(
                     state = state,
                     modifier = Modifier.size(layoutWidth, layoutHeight),
                 ) {
@@ -970,7 +970,7 @@ class ElementTest {
 
         rule.setContent {
             touchSlop = LocalViewConfiguration.current.touchSlop
-            SceneTransitionLayout(
+            SceneTransitionLayoutForTesting(
                 state = state,
                 modifier = Modifier.size(layoutWidth, layoutHeight),
             ) {
@@ -1057,7 +1057,7 @@ class ElementTest {
         rule.setContent {
             coroutineScope = rememberCoroutineScope()
 
-            SceneTransitionLayout(state) {
+            SceneTransitionLayoutForTesting(state) {
                 scene(SceneA) {
                     Box(Modifier.size(layoutSize)) {
                         Box(
@@ -1374,7 +1374,7 @@ class ElementTest {
 
         val scope =
             rule.setContentAndCreateMainScope {
-                SceneTransitionLayout(state, Modifier.size(layoutSize)) {
+                SceneTransitionLayoutForTesting(state, Modifier.size(layoutSize)) {
                     scene(SceneA) {
                         Box(Modifier.fillMaxSize()) { Foo(Modifier.align(Alignment.TopStart)) }
                     }
@@ -1742,7 +1742,7 @@ class ElementTest {
 
         val scope =
             rule.setContentAndCreateMainScope {
-                SceneTransitionLayout(state, Modifier.size(200.dp)) {
+                SceneTransitionLayoutForTesting(state, Modifier.size(200.dp)) {
                     scene(SceneA) { Foo(offset = 0.dp) }
                     scene(SceneB) { Foo(offset = 20.dp) }
                     scene(SceneC) { Foo(offset = 40.dp) }
@@ -1828,7 +1828,7 @@ class ElementTest {
 
         val scope =
             rule.setContentAndCreateMainScope {
-                SceneTransitionLayout(state) {
+                SceneTransitionLayoutForTesting(state) {
                     scene(SceneB) { Foo(Modifier.offset(40.dp, 60.dp)) }
 
                     // Define A after B so that Foo is placed in A during A <=> B.
@@ -1887,7 +1887,7 @@ class ElementTest {
 
         val scope =
             rule.setContentAndCreateMainScope {
-                SceneTransitionLayout(state) {
+                SceneTransitionLayoutForTesting(state) {
                     scene(SceneA) { Foo() }
                     scene(SceneB) { Foo(Modifier.offset(40.dp, 60.dp)) }
                 }

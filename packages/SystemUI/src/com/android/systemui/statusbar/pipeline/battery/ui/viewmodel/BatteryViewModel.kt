@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.pipeline.battery.ui.viewmodel
 
 import android.content.Context
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -223,6 +224,10 @@ constructor(interactor: BatteryInteractor, @Application context: Context) : Excl
     }
 
     companion object {
+        // Status bar battery height, based on a 21x12 base canvas
+        val STATUS_BAR_BATTERY_HEIGHT = 13.dp
+        val STATUS_BAR_BATTERY_WIDTH = 22.75.dp
+
         fun Int.glyphRepresentation(): List<BatteryGlyph> = toString().map { it.toGlyph() }
 
         private fun Char.toGlyph(): BatteryGlyph =

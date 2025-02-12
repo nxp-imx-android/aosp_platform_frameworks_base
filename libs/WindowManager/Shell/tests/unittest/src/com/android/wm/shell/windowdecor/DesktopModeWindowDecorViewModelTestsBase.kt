@@ -20,7 +20,9 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.app.WindowConfiguration.WindowingMode
+import android.content.ComponentName
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.hardware.input.InputManager
 import android.os.Handler
@@ -146,8 +148,10 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected val mockDesktopRepository: DesktopRepository = mock<DesktopRepository>()
     protected val mockRecentsTransitionHandler = mock<RecentsTransitionHandler>()
     protected val motionEvent = mock<MotionEvent>()
-    val displayLayout = mock<DisplayLayout>()
-    val display = mock<Display>()
+    private val displayLayout = mock<DisplayLayout>()
+    private val display = mock<Display>()
+    private val packageManager = mock<PackageManager>()
+    protected val homeComponentName = ComponentName(HOME_LAUNCHER_PACKAGE_NAME, /* class */ "")
     protected lateinit var spyContext: TestableContext
     private lateinit var desktopModeEventLogger: DesktopModeEventLogger
 
@@ -178,7 +182,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         whenever(mockDisplayController.getDisplay(any())).thenReturn(display)
         whenever(mockDesktopUserRepositories.getProfile(anyInt()))
             .thenReturn(mockDesktopRepository)
-        desktopModeCompatPolicy = DesktopModeCompatPolicy(context)
+        desktopModeCompatPolicy = DesktopModeCompatPolicy(spyContext)
         desktopModeWindowDecorViewModel = DesktopModeWindowDecorViewModel(
             spyContext,
             testShellExecutor,
@@ -273,6 +277,8 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(STABLE_BOUNDS)
         }
+        spyContext.setMockPackageManager(packageManager)
+        whenever(packageManager.getHomeActivities(ArrayList())).thenReturn(homeComponentName)
     }
 
     @After
@@ -354,5 +360,6 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         val STABLE_INSETS = Rect(0, 100, 0, 0)
         val INITIAL_BOUNDS = Rect(0, 0, 100, 100)
         val STABLE_BOUNDS = Rect(0, 0, 1000, 1000)
+        val HOME_LAUNCHER_PACKAGE_NAME = "com.android.launcher"
     }
 }

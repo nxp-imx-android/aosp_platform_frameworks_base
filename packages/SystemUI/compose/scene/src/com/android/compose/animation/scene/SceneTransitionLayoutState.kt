@@ -138,10 +138,13 @@ sealed interface MutableSceneTransitionLayoutState : SceneTransitionLayoutState 
         transitionKey: TransitionKey? = null,
     ): Pair<TransitionState.Transition, Job>?
 
-    /** Immediately snap to the given [scene]. */
-    fun snapToScene(
-        scene: SceneKey,
-        currentOverlays: Set<OverlayKey> = transitionState.currentOverlays,
+    /**
+     * Immediately snap to the given [scene] and/or [overlays], instantly interrupting all ongoing
+     * transitions and settling to a [TransitionState.Idle] state.
+     */
+    fun snapTo(
+        scene: SceneKey = transitionState.currentScene,
+        overlays: Set<OverlayKey> = transitionState.currentOverlays,
     )
 
     /**
@@ -554,7 +557,7 @@ internal class MutableSceneTransitionLayoutStateImpl(
         this.transitionStates = listOf(idle)
     }
 
-    override fun snapToScene(scene: SceneKey, currentOverlays: Set<OverlayKey>) {
+    override fun snapTo(scene: SceneKey, overlays: Set<OverlayKey>) {
         checkThread()
 
         // Force finish all transitions.
@@ -562,7 +565,7 @@ internal class MutableSceneTransitionLayoutStateImpl(
 
         check(transitionStates.size == 1)
         check(currentTransitions.isEmpty())
-        transitionStates = listOf(TransitionState.Idle(scene, currentOverlays))
+        transitionStates = listOf(TransitionState.Idle(scene, overlays))
     }
 
     override fun showOverlay(

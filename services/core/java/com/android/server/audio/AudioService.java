@@ -12598,7 +12598,7 @@ public class AudioService extends IAudioService.Stub
     //==========================================================================================
     static final int LOG_NB_EVENTS_LIFECYCLE = 20;
     static final int LOG_NB_EVENTS_PHONE_STATE = 20;
-    static final int LOG_NB_EVENTS_DEVICE_CONNECTION = 50;
+    static final int LOG_NB_EVENTS_DEVICE_CONNECTION = 200;
     static final int LOG_NB_EVENTS_FORCE_USE = 20;
     static final int LOG_NB_EVENTS_VOLUME = 100;
     static final int LOG_NB_EVENTS_DYN_POLICY = 10;

@@ -39,6 +39,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -98,6 +100,25 @@ constructor(
         delay(remainingTime)
         waitForDeviceConnection(deviceType)
     }
+
+    // This flow is used by the notification updater once an initial notification is launched. It
+    // listens to the device connection changes for both keyboard and touchpad. When either of the
+    // device is disconnected, resolve the tutorial type base on the latest connection state.
+    // Dropping the initial state because it's the existing notification. Filtering out BOTH because
+    // we only care about disconnections.
+    val tutorialTypeUpdates: Flow<TutorialType> =
+        keyboardRepository.isAnyKeyboardConnected
+            .combine(touchpadRepository.isAnyTouchpadConnected, ::Pair)
+            .map { (keyboardConnected, touchpadConnected) ->
+                when {
+                    keyboardConnected && touchpadConnected -> TutorialType.BOTH
+                    keyboardConnected -> TutorialType.KEYBOARD
+                    touchpadConnected -> TutorialType.TOUCHPAD
+                    else -> TutorialType.NONE
+                }
+            }
+            .drop(1)
+            .filter { it != TutorialType.BOTH }
 
     private suspend fun waitForDeviceConnection(deviceType: DeviceType) =
         isAnyDeviceConnected[deviceType]!!.filter { it }.first()
@@ -172,6 +193,7 @@ constructor(
                         pw.println(
                             "         launch time = ${repo.getScheduledTutorialLaunchTime(TOUCHPAD)}"
                         )
+                        pw.println("Delay time = ${LAUNCH_DELAY.seconds} sec")
                     }
                 "notify" -> {
                     if (args.size != 2) help(pw)

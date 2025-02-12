@@ -384,6 +384,7 @@ public:
     static bool initializeGlAlways();
     static bool resampleGainmapRegions();
     static bool earlyPreloadGlContext();
+    static bool calcWorkloadOrigDeadline();
 
 private:
     static StretchEffectBehavior stretchEffectBehavior;

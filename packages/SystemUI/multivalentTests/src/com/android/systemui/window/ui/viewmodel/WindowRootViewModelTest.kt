@@ -25,6 +25,8 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.testKosmos
+import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
+import com.android.systemui.window.data.repository.windowRootViewBlurRepository
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -34,7 +36,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(Flags.FLAG_BOUNCER_UI_REVAMP)
+@EnableFlags(Flags.FLAG_BOUNCER_UI_REVAMP, Flags.FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND)
 class WindowRootViewModelTest : SysuiTestCase() {
     val kosmos = testKosmos()
     val testScope = kosmos.testScope
@@ -49,6 +51,7 @@ class WindowRootViewModelTest : SysuiTestCase() {
     @Test
     fun bouncerTransitionChangesWindowBlurRadius() =
         testScope.runTest {
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
             val blurRadius by collectLastValue(underTest.blurRadius)
             val isBlurOpaque by collectLastValue(underTest.isBlurOpaque)
             runCurrent()
@@ -58,5 +61,28 @@ class WindowRootViewModelTest : SysuiTestCase() {
 
             assertThat(blurRadius).isEqualTo(30)
             assertThat(isBlurOpaque).isEqualTo(false)
+        }
+
+    @Test
+    fun blurRadiusDoesNotChangeWhenBlurIsNotSupported() =
+        testScope.runTest {
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = false
+            val blurRadius by collectLastValue(underTest.blurRadius)
+            runCurrent()
+
+            kosmos.fakeBouncerTransitions.first().windowBlurRadius.value = 30.0f
+            runCurrent()
+
+            assertThat(blurRadius).isEqualTo(0f)
+
+            kosmos.fakeGlanceableHubTransitions.first().windowBlurRadius.value = 50.0f
+            runCurrent()
+
+            assertThat(blurRadius).isEqualTo(0f)
+
+            kosmos.windowRootViewBlurRepository.blurRadius.value = 60
+            runCurrent()
+
+            assertThat(blurRadius).isEqualTo(0f)
         }
 }

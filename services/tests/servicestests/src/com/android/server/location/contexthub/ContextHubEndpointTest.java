@@ -20,10 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
+import android.hardware.contexthub.EndpointInfo;
 import android.hardware.contexthub.ErrorCode;
 import android.hardware.contexthub.HubEndpointInfo;
 import android.hardware.contexthub.HubEndpointInfo.HubEndpointIdentifier;
@@ -32,6 +34,7 @@ import android.hardware.contexthub.IContextHubEndpoint;
 import android.hardware.contexthub.IContextHubEndpointCallback;
 import android.hardware.contexthub.IEndpointCommunication;
 import android.hardware.contexthub.MessageDeliveryStatus;
+import android.hardware.contexthub.Reason;
 import android.os.Binder;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
@@ -60,6 +63,9 @@ public class ContextHubEndpointTest {
     private static final String ENDPOINT_NAME = "Example test endpoint";
     private static final int ENDPOINT_ID = 1;
     private static final String ENDPOINT_PACKAGE_NAME = "com.android.server.location.contexthub";
+
+    private static final String TARGET_ENDPOINT_NAME = "Example target endpoint";
+    private static final int TARGET_ENDPOINT_ID = 1;
 
     private ContextHubClientManager mClientManager;
     private ContextHubEndpointManager mEndpointManager;
@@ -95,23 +101,8 @@ public class ContextHubEndpointTest {
 
     @Test
     public void testRegisterEndpoint() throws RemoteException {
-        // Register an endpoint and confirm we can get a valid IContextHubEndoint reference
-        HubEndpointInfo info =
-                new HubEndpointInfo(
-                        ENDPOINT_NAME, ENDPOINT_ID, ENDPOINT_PACKAGE_NAME, Collections.emptyList());
-        IContextHubEndpoint endpoint =
-                mEndpointManager.registerEndpoint(
-                        info, mMockCallback, ENDPOINT_PACKAGE_NAME, /* attributionTag= */ null);
-        assertThat(mEndpointManager.getNumRegisteredClients()).isEqualTo(1);
-        assertThat(endpoint).isNotNull();
-        HubEndpointInfo assignedInfo = endpoint.getAssignedHubEndpointInfo();
-        assertThat(assignedInfo).isNotNull();
-        HubEndpointIdentifier assignedIdentifier = assignedInfo.getIdentifier();
-        assertThat(assignedIdentifier).isNotNull();
-
-        // Unregister the endpoint and confirm proper clean-up
-        mEndpointManager.unregisterEndpoint(assignedIdentifier.getEndpoint());
-        assertThat(mEndpointManager.getNumRegisteredClients()).isEqualTo(0);
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+        unregisterExampleEndpoint(endpoint);
     }
 
     @Test
@@ -145,5 +136,108 @@ public class ContextHubEndpointTest {
                 .sendMessageDeliveryStatusToEndpoint(eq(sessionId), statusCaptor.capture());
         assertThat(statusCaptor.getValue().messageSequenceNumber).isEqualTo(sequenceNumber);
         assertThat(statusCaptor.getValue().errorCode).isEqualTo(ErrorCode.DESTINATION_NOT_FOUND);
+    }
+
+    @Test
+    public void testHalRestart() throws RemoteException {
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+
+        // Verify that the endpoint is still registered after a HAL restart
+        HubEndpointInfo assignedInfo = endpoint.getAssignedHubEndpointInfo();
+        HubEndpointIdentifier assignedIdentifier = assignedInfo.getIdentifier();
+        mEndpointManager.onHalRestart();
+        ArgumentCaptor<EndpointInfo> statusCaptor = ArgumentCaptor.forClass(EndpointInfo.class);
+        verify(mMockEndpointCommunications, times(2)).registerEndpoint(statusCaptor.capture());
+        assertThat(statusCaptor.getValue().id.id).isEqualTo(assignedIdentifier.getEndpoint());
+        assertThat(statusCaptor.getValue().id.hubId).isEqualTo(assignedIdentifier.getHub());
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
+    @Test
+    public void testHalRestartOnOpenSession() throws RemoteException {
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+
+        HubEndpointInfo targetInfo =
+                new HubEndpointInfo(
+                        TARGET_ENDPOINT_NAME,
+                        TARGET_ENDPOINT_ID,
+                        ENDPOINT_PACKAGE_NAME,
+                        Collections.emptyList());
+        int sessionId = endpoint.openSession(targetInfo, /* serviceDescriptor= */ null);
+        mEndpointManager.onEndpointSessionOpenComplete(sessionId);
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE - 1);
+
+        mEndpointManager.onHalRestart();
+
+        HubEndpointInfo assignedInfo = endpoint.getAssignedHubEndpointInfo();
+        HubEndpointIdentifier assignedIdentifier = assignedInfo.getIdentifier();
+        ArgumentCaptor<EndpointInfo> statusCaptor = ArgumentCaptor.forClass(EndpointInfo.class);
+        verify(mMockEndpointCommunications, times(2)).registerEndpoint(statusCaptor.capture());
+        assertThat(statusCaptor.getValue().id.id).isEqualTo(assignedIdentifier.getEndpoint());
+        assertThat(statusCaptor.getValue().id.hubId).isEqualTo(assignedIdentifier.getHub());
+
+        verify(mMockCallback)
+                .onSessionClosed(
+                        sessionId, ContextHubServiceUtil.toAppHubEndpointReason(Reason.HUB_RESET));
+
+        unregisterExampleEndpoint(endpoint);
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+    }
+
+    @Test
+    public void testOpenSessionOnUnregistration() throws RemoteException {
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+
+        HubEndpointInfo targetInfo =
+                new HubEndpointInfo(
+                        TARGET_ENDPOINT_NAME,
+                        TARGET_ENDPOINT_ID,
+                        ENDPOINT_PACKAGE_NAME,
+                        Collections.emptyList());
+        int sessionId = endpoint.openSession(targetInfo, /* serviceDescriptor= */ null);
+        mEndpointManager.onEndpointSessionOpenComplete(sessionId);
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE - 1);
+
+        unregisterExampleEndpoint(endpoint);
+        verify(mMockEndpointCommunications).closeEndpointSession(sessionId, Reason.ENDPOINT_GONE);
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+    }
+
+    private IContextHubEndpoint registerExampleEndpoint() throws RemoteException {
+        HubEndpointInfo info =
+                new HubEndpointInfo(
+                        ENDPOINT_NAME, ENDPOINT_ID, ENDPOINT_PACKAGE_NAME, Collections.emptyList());
+        IContextHubEndpoint endpoint =
+                mEndpointManager.registerEndpoint(
+                        info, mMockCallback, ENDPOINT_PACKAGE_NAME, /* attributionTag= */ null);
+        assertThat(endpoint).isNotNull();
+        HubEndpointInfo assignedInfo = endpoint.getAssignedHubEndpointInfo();
+        assertThat(assignedInfo).isNotNull();
+        HubEndpointIdentifier assignedIdentifier = assignedInfo.getIdentifier();
+        assertThat(assignedIdentifier).isNotNull();
+
+        // Confirm registerEndpoint was called with the right contents
+        ArgumentCaptor<EndpointInfo> statusCaptor = ArgumentCaptor.forClass(EndpointInfo.class);
+        verify(mMockEndpointCommunications).registerEndpoint(statusCaptor.capture());
+        assertThat(statusCaptor.getValue().id.id).isEqualTo(assignedIdentifier.getEndpoint());
+        assertThat(statusCaptor.getValue().id.hubId).isEqualTo(assignedIdentifier.getHub());
+        assertThat(mEndpointManager.getNumRegisteredClients()).isEqualTo(1);
+
+        return endpoint;
+    }
+
+    private void unregisterExampleEndpoint(IContextHubEndpoint endpoint) throws RemoteException {
+        HubEndpointInfo expectedInfo = endpoint.getAssignedHubEndpointInfo();
+        endpoint.unregister();
+        ArgumentCaptor<EndpointInfo> statusCaptor = ArgumentCaptor.forClass(EndpointInfo.class);
+        verify(mMockEndpointCommunications).unregisterEndpoint(statusCaptor.capture());
+        assertThat(statusCaptor.getValue().id.id)
+                .isEqualTo(expectedInfo.getIdentifier().getEndpoint());
+        assertThat(statusCaptor.getValue().id.hubId)
+                .isEqualTo(expectedInfo.getIdentifier().getHub());
+        assertThat(mEndpointManager.getNumRegisteredClients()).isEqualTo(0);
     }
 }

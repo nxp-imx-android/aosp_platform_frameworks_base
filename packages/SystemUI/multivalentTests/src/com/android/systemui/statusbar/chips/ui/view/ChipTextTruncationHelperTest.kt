@@ -52,21 +52,10 @@ class ChipTextTruncationHelperTest : SysuiTestCase() {
     }
 
     @Test
-    fun shouldShowText_desiredSlightlyLargerThanMax_true() {
+    fun shouldShowText_desiredMoreThanMax_false() {
         val result =
             underTest.shouldShowText(
                 desiredTextWidthPx = (MAX_WIDTH * 1.1).toInt(),
-                widthMeasureSpec = UNLIMITED_WIDTH_SPEC,
-            )
-
-        assertThat(result).isTrue()
-    }
-
-    @Test
-    fun shouldShowText_desiredMoreThanTwiceMax_false() {
-        val result =
-            underTest.shouldShowText(
-                desiredTextWidthPx = (MAX_WIDTH * 2.2).toInt(),
                 widthMeasureSpec = UNLIMITED_WIDTH_SPEC,
             )
 
@@ -80,8 +69,8 @@ class ChipTextTruncationHelperTest : SysuiTestCase() {
                 View.MeasureSpec.makeMeasureSpec(MAX_WIDTH / 2, View.MeasureSpec.AT_MOST)
             )
 
-        // WHEN desired is more than twice the smallerWidthSpec
-        val desiredWidth = (MAX_WIDTH * 1.1).toInt()
+        // WHEN desired is more than the smallerWidthSpec
+        val desiredWidth = ((MAX_WIDTH / 2) * 1.1).toInt()
 
         val result =
             underTest.shouldShowText(
@@ -100,8 +89,8 @@ class ChipTextTruncationHelperTest : SysuiTestCase() {
                 View.MeasureSpec.makeMeasureSpec(MAX_WIDTH * 3, View.MeasureSpec.AT_MOST)
             )
 
-        // WHEN desired is more than twice the max
-        val desiredWidth = (MAX_WIDTH * 2.2).toInt()
+        // WHEN desired is more than the max
+        val desiredWidth = (MAX_WIDTH * 1.1).toInt()
 
         val result =
             underTest.shouldShowText(

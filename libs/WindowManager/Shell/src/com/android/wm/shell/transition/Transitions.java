@@ -77,6 +77,7 @@ import androidx.annotation.BinderThread;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -195,6 +196,9 @@ public class Transitions implements RemoteCallable<Transitions>,
 
     /** Transition type for app compat reachability. */
     public static final int TRANSIT_MOVE_LETTERBOX_REACHABILITY = TRANSIT_FIRST_CUSTOM + 23;
+
+    /** Transition type for converting a task to a bubble. */
+    public static final int TRANSIT_CONVERT_TO_BUBBLE = TRANSIT_FIRST_CUSTOM + 24;
 
     /** Transition type for desktop mode transitions. */
     public static final int TRANSIT_DESKTOP_MODE_TYPES =
@@ -335,7 +339,8 @@ public class Transitions implements RemoteCallable<Transitions>,
         mDisplayController = displayController;
         mPlayerImpl = new TransitionPlayerImpl();
         mDefaultTransitionHandler = new DefaultTransitionHandler(context, shellInit,
-                displayController, pool, mainExecutor, mainHandler, animExecutor, rootTDAOrganizer);
+                displayController, pool, mainExecutor, mainHandler, animExecutor, rootTDAOrganizer,
+                InteractionJankMonitor.getInstance());
         mRemoteTransitionHandler = new RemoteTransitionHandler(mMainExecutor);
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
@@ -1867,6 +1872,7 @@ public class Transitions implements RemoteCallable<Transitions>,
             case TRANSIT_MINIMIZE -> "MINIMIZE";
             case TRANSIT_START_RECENTS_TRANSITION -> "START_RECENTS_TRANSITION";
             case TRANSIT_END_RECENTS_TRANSITION -> "END_RECENTS_TRANSITION";
+            case TRANSIT_CONVERT_TO_BUBBLE -> "CONVERT_TO_BUBBLE";
             default -> "";
         };
         if (typeStr.isEmpty()) {

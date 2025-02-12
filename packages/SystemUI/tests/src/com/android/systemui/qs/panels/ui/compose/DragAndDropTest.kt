@@ -22,14 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.assert
-import androidx.compose.ui.test.filter
-import androidx.compose.ui.test.hasContentDescription
-import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -100,7 +93,10 @@ class DragAndDropTest : SysuiTestCase() {
         composeRule.onNodeWithText("Remove").assertExists()
 
         // Every other tile should still be in the same order
-        composeRule.assertTileGridContainsExactly(listOf("tileB", "tileC", "tileD_large", "tileE"))
+        composeRule.assertGridContainsExactly(
+            CURRENT_TILES_GRID_TEST_TAG,
+            listOf("tileB", "tileC", "tileD_large", "tileE"),
+        )
     }
 
     @Test
@@ -125,8 +121,9 @@ class DragAndDropTest : SysuiTestCase() {
         composeRule.onNodeWithText("Remove").assertDoesNotExist()
 
         // Tile A and B should swap places
-        composeRule.assertTileGridContainsExactly(
-            listOf("tileB", "tileA", "tileC", "tileD_large", "tileE")
+        composeRule.assertGridContainsExactly(
+            CURRENT_TILES_GRID_TEST_TAG,
+            listOf("tileB", "tileA", "tileC", "tileD_large", "tileE"),
         )
     }
 
@@ -152,7 +149,10 @@ class DragAndDropTest : SysuiTestCase() {
         composeRule.onNodeWithText("Remove").assertDoesNotExist()
 
         // Tile A is gone
-        composeRule.assertTileGridContainsExactly(listOf("tileB", "tileC", "tileD_large", "tileE"))
+        composeRule.assertGridContainsExactly(
+            CURRENT_TILES_GRID_TEST_TAG,
+            listOf("tileB", "tileC", "tileD_large", "tileE"),
+        )
     }
 
     @Test
@@ -166,7 +166,7 @@ class DragAndDropTest : SysuiTestCase() {
         }
         composeRule.waitForIdle()
 
-        listState.onStarted(createEditTile("newTile"), DragType.Add)
+        listState.onStarted(createEditTile("tile_new"), DragType.Add)
         // Insert after tileD, which is at index 4
         // [ a ] [ b ] [ c ] [ empty ]
         // [ tile d ] [ e ]
@@ -179,21 +179,11 @@ class DragAndDropTest : SysuiTestCase() {
         // Remove drop zone should disappear
         composeRule.onNodeWithText("Remove").assertDoesNotExist()
 
-        // newTile is added after tileD
-        composeRule.assertTileGridContainsExactly(
-            listOf("tileA", "tileB", "tileC", "tileD_large", "newTile", "tileE")
+        // tile_new is added after tileD
+        composeRule.assertGridContainsExactly(
+            CURRENT_TILES_GRID_TEST_TAG,
+            listOf("tileA", "tileB", "tileC", "tileD_large", "tile_new", "tileE"),
         )
-    }
-
-    private fun ComposeContentTestRule.assertTileGridContainsExactly(specs: List<String>) {
-        onNodeWithTag(CURRENT_TILES_GRID_TEST_TAG)
-            .onChildren()
-            .filter(SemanticsMatcher.keyIsDefined(SemanticsProperties.ContentDescription))
-            .apply {
-                fetchSemanticsNodes().forEachIndexed { index, _ ->
-                    get(index).assert(hasContentDescription(specs[index]))
-                }
-            }
     }
 
     companion object {

@@ -76,7 +76,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.AutoSize
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -1045,7 +1045,7 @@ private fun EmptyStateCta(contentPadding: PaddingValues, viewModel: BaseCommunal
                         color = colors.onPrimary,
                         textAlign = TextAlign.Center,
                     ),
-                autoSize = AutoSize.StepBased(maxFontSize = 36.sp, stepSize = 0.1.sp),
+                autoSize = TextAutoSize.StepBased(maxFontSize = 36.sp, stepSize = 0.1.sp),
                 modifier =
                     Modifier.focusable().semantics(mergeDescendants = true) {
                         contentDescription = titleForEmptyStateCTA

@@ -22,6 +22,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.ui.data.repository.configurationRepository
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.panels.data.repository.QSColumnsRepository
@@ -76,6 +77,7 @@ class QSColumnsInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableSceneContainer
     fun withDualShade_returnsCorrectValue() =
         with(kosmos) {
             testScope.runTest {

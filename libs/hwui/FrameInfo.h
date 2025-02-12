@@ -30,7 +30,8 @@
 namespace android {
 namespace uirenderer {
 
-static constexpr size_t UI_THREAD_FRAME_INFO_SIZE = 12;
+// This value must be in sync with `FRAME_INFO_SIZE` in FrameInfo.Java
+static constexpr size_t UI_THREAD_FRAME_INFO_SIZE = 13;
 
 enum class FrameInfoIndex {
     Flags = 0,
@@ -46,6 +47,11 @@ enum class FrameInfoIndex {
     FrameStartTime,
     FrameInterval,
     // End of UI frame info
+
+    // The target workload duration based on the original frame deadline and
+    // and intended vsync. Counted in UI_THREAD_FRAME_INFO_SIZE so its value
+    // can be set in setVsync().
+    WorkloadTarget,
 
     SyncQueued,
 
@@ -109,6 +115,7 @@ public:
         set(FrameInfoIndex::FrameStartTime) = vsyncTime;
         set(FrameInfoIndex::FrameDeadline) = frameDeadline;
         set(FrameInfoIndex::FrameInterval) = frameInterval;
+        set(FrameInfoIndex::WorkloadTarget) = frameDeadline - intendedVsync;
         return *this;
     }
 

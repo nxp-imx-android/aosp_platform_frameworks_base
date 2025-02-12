@@ -21,7 +21,6 @@ import android.annotation.SuppressLint
 import android.app.DreamManager
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.Flags.communalSceneKtfRefactor
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
@@ -155,9 +154,8 @@ constructor(
                 .sample(
                     communalInteractor.isCommunalAvailable,
                     communalInteractor.shouldShowCommunal,
-                    communalSceneInteractor.isIdleOnCommunal,
                 )
-                .collect { (_, isCommunalAvailable, shouldShowCommunal, isIdleOnCommunal) ->
+                .collect { (_, isCommunalAvailable, shouldShowCommunal) ->
                     val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
                     val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
                     val isKeyguardGoingAway = keyguardInteractor.isKeyguardGoingAway.value
@@ -187,10 +185,6 @@ constructor(
                         }
                     } else if (isKeyguardOccludedLegacy) {
                         startTransitionTo(KeyguardState.OCCLUDED)
-                    } else if (isIdleOnCommunal && !communalSceneKtfRefactor()) {
-                        if (!SceneContainerFlag.isEnabled) {
-                            startTransitionTo(KeyguardState.GLANCEABLE_HUB)
-                        }
                     } else if (
                         shouldTransitionToCommunal(shouldShowCommunal, isCommunalAvailable)
                     ) {
@@ -217,7 +211,6 @@ constructor(
                 .sample(
                     communalInteractor.shouldShowCommunal,
                     communalInteractor.isCommunalAvailable,
-                    communalSceneInteractor.isIdleOnCommunal,
                     keyguardInteractor.biometricUnlockState,
                     wakeToGoneInteractor.canWakeDirectlyToGone,
                     keyguardInteractor.primaryBouncerShowing,
@@ -227,7 +220,6 @@ constructor(
                         _,
                         shouldShowCommunal,
                         isCommunalAvailable,
-                        isIdleOnCommunal,
                         biometricUnlockState,
                         canWakeDirectlyToGone,
                         primaryBouncerShowing) ->
@@ -252,13 +244,6 @@ constructor(
                                     ownerReason = "waking from dozing",
                                 )
                             }
-                        } else if (isIdleOnCommunal && !communalSceneKtfRefactor()) {
-                            if (!SceneContainerFlag.isEnabled) {
-                                startTransitionTo(
-                                    KeyguardState.GLANCEABLE_HUB,
-                                    ownerReason = "waking from dozing",
-                                )
-                            }
                         } else if (
                             shouldTransitionToCommunal(shouldShowCommunal, isCommunalAvailable)
                         ) {
@@ -276,15 +261,11 @@ constructor(
         }
     }
 
-    private suspend fun transitionToGlanceableHub() {
-        if (communalSceneKtfRefactor()) {
-            communalSceneInteractor.snapToScene(
-                newScene = CommunalScenes.Communal,
-                loggingReason = "from dozing to hub",
-            )
-        } else {
-            startTransitionTo(KeyguardState.GLANCEABLE_HUB)
-        }
+    private fun transitionToGlanceableHub() {
+        communalSceneInteractor.snapToScene(
+            newScene = CommunalScenes.Communal,
+            loggingReason = "from dozing to hub",
+        )
     }
 
     /** Dismisses keyguard from the DOZING state. */

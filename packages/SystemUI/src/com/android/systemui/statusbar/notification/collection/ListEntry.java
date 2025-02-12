@@ -27,7 +27,7 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.NotifS
  * Abstract superclass for top-level entries, i.e. things that can appear in the final notification
  * list shown to users. In practice, this means either GroupEntries or NotificationEntries.
  */
-public abstract class ListEntry {
+public abstract class ListEntry extends PipelineEntry {
     private final String mKey;
     private final long mCreationTime;
 

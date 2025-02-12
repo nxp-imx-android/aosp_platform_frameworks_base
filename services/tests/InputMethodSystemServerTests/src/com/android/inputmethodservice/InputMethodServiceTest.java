@@ -18,6 +18,10 @@ package com.android.inputmethodservice;
 
 import static android.view.WindowInsets.Type.captionBar;
 
+import static com.android.apps.inputmethod.simpleime.ims.InputMethodServiceWrapper.EVENT_CONFIG;
+import static com.android.apps.inputmethod.simpleime.ims.InputMethodServiceWrapper.EVENT_HIDE;
+import static com.android.apps.inputmethod.simpleime.ims.InputMethodServiceWrapper.EVENT_SHOW;
+import static com.android.apps.inputmethod.simpleime.ims.InputMethodServiceWrapper.eventToString;
 import static com.android.compatibility.common.util.SystemUtil.eventually;
 import static com.android.cts.input.injectinputinprocess.InjectInputInProcessKt.clickOnViewCenter;
 import static com.android.internal.inputmethod.InputMethodNavButtonFlags.IME_DRAWS_IME_NAV_BAR;
@@ -31,7 +35,6 @@ import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 import android.app.Instrumentation;
-import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Insets;
 import android.os.RemoteException;
@@ -42,7 +45,6 @@ import android.provider.Settings;
 import android.server.wm.WindowManagerStateHelper;
 import android.util.Log;
 import android.view.WindowManagerGlobal;
-import android.view.WindowManagerPolicyConstants;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.Flags;
 import android.view.inputmethod.InputMethodManager;
@@ -58,7 +60,9 @@ import androidx.test.uiautomator.UiObject2;
 import androidx.test.uiautomator.Until;
 
 import com.android.apps.inputmethod.simpleime.ims.InputMethodServiceWrapper;
+import com.android.apps.inputmethod.simpleime.ims.InputMethodServiceWrapper.Event;
 import com.android.apps.inputmethod.simpleime.testing.TestActivity;
+import com.android.compatibility.common.util.GestureNavSwitchHelper;
 import com.android.compatibility.common.util.SystemUtil;
 
 import org.junit.After;
@@ -90,6 +94,8 @@ public class InputMethodServiceTest {
 
     private final WindowManagerStateHelper mWmState =  new WindowManagerStateHelper();
 
+    private final GestureNavSwitchHelper mGestureNavSwitchHelper = new GestureNavSwitchHelper();
+
     private final DeviceFlagsValueProvider mFlagsValueProvider = new DeviceFlagsValueProvider();
 
     @Rule
@@ -100,7 +106,6 @@ public class InputMethodServiceTest {
 
     private Instrumentation mInstrumentation;
     private UiDevice mUiDevice;
-    private Context mContext;
     private InputMethodManager mImm;
     private String mTargetPackageName;
     private String mInputMethodId;
@@ -112,8 +117,7 @@ public class InputMethodServiceTest {
     public void setUp() throws Exception {
         mInstrumentation = InstrumentationRegistry.getInstrumentation();
         mUiDevice = UiDevice.getInstance(mInstrumentation);
-        mContext = mInstrumentation.getContext();
-        mImm = mContext.getSystemService(InputMethodManager.class);
+        mImm = mInstrumentation.getContext().getSystemService(InputMethodManager.class);
         mTargetPackageName = mInstrumentation.getTargetContext().getPackageName();
         mInputMethodId = getInputMethodId();
         prepareIme();
@@ -169,6 +173,7 @@ public class InputMethodServiceTest {
         Log.i(TAG, "Click on EditText");
         verifyInputViewStatus(
                 () -> clickOnViewCenter(mActivity.getEditText()),
+                EVENT_SHOW,
                 true /* expected */,
                 true /* inputViewStarted */);
         assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -185,6 +190,7 @@ public class InputMethodServiceTest {
             verifyInputViewStatus(
                     () -> assertWithMessage("Home key press was handled")
                             .that(mUiDevice.pressHome()).isTrue(),
+                    EVENT_HIDE,
                     true /* expected */,
                     false /* inputViewStarted */);
             assertWithMessage("IME is not shown")
@@ -202,6 +208,7 @@ public class InputMethodServiceTest {
         // Triggers to show IME via public API.
         verifyInputViewStatusOnMainSync(
                 () -> assertThat(mActivity.showImeWithInputMethodManager(0 /* flags */)).isTrue(),
+                EVENT_SHOW,
                 true /* expected */,
                 true /* inputViewStarted */);
         assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -209,6 +216,7 @@ public class InputMethodServiceTest {
         // Triggers to hide IME via public API.
         verifyInputViewStatusOnMainSync(
                 () -> assertThat(mActivity.hideImeWithInputMethodManager(0 /* flags */)).isTrue(),
+                EVENT_HIDE,
                 true /* expected */,
                 false /* inputViewStarted */);
         if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
@@ -232,6 +240,7 @@ public class InputMethodServiceTest {
         // Triggers to show IME via public API.
         verifyInputViewStatusOnMainSync(
                 () -> mActivity.showImeWithWindowInsetsController(),
+                EVENT_SHOW,
                 true /* expected */,
                 true /* inputViewStarted */);
         assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -239,6 +248,7 @@ public class InputMethodServiceTest {
         // Triggers to hide IME via public API.
         verifyInputViewStatusOnMainSync(
                 () -> mActivity.hideImeWithWindowInsetsController(),
+                EVENT_HIDE,
                 true /* expected */,
                 false /* inputViewStarted */);
         if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
@@ -267,6 +277,7 @@ public class InputMethodServiceTest {
         Log.i(TAG, "Call IMS#requestShowSelf(0)");
         verifyInputViewStatusOnMainSync(
                 () -> mInputMethodService.requestShowSelf(0 /* flags */),
+                EVENT_SHOW,
                 true /* expected */,
                 true /* inputViewStarted */);
         assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -277,6 +288,7 @@ public class InputMethodServiceTest {
             verifyInputViewStatusOnMainSync(
                     () -> mInputMethodService.requestHideSelf(
                             InputMethodManager.HIDE_IMPLICIT_ONLY),
+                    EVENT_HIDE,
                     false /* expected */,
                     true /* inputViewStarted */);
             assertWithMessage("IME is still shown after HIDE_IMPLICIT_ONLY")
@@ -287,6 +299,7 @@ public class InputMethodServiceTest {
         Log.i(TAG, "Call IMS#requestHideSelf(0)");
         verifyInputViewStatusOnMainSync(
                 () -> mInputMethodService.requestHideSelf(0 /* flags */),
+                EVENT_HIDE,
                 true /* expected */,
                 false /* inputViewStarted */);
         if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
@@ -304,6 +317,7 @@ public class InputMethodServiceTest {
             Log.i(TAG, "Call IMS#requestShowSelf(InputMethodManager.SHOW_IMPLICIT)");
             verifyInputViewStatusOnMainSync(
                     () -> mInputMethodService.requestShowSelf(InputMethodManager.SHOW_IMPLICIT),
+                    EVENT_SHOW,
                     true /* expected */,
                     true /* inputViewStarted */);
             assertWithMessage("IME is shown with SHOW_IMPLICIT")
@@ -314,6 +328,7 @@ public class InputMethodServiceTest {
             verifyInputViewStatusOnMainSync(
                     () -> mInputMethodService.requestHideSelf(
                             InputMethodManager.HIDE_IMPLICIT_ONLY),
+                    EVENT_HIDE,
                     true /* expected */,
                     false /* inputViewStarted */);
             assertWithMessage("IME is not shown after HIDE_IMPLICIT_ONLY")
@@ -409,6 +424,7 @@ public class InputMethodServiceTest {
             verifyInputViewStatusOnMainSync(() -> assertThat(
                             mActivity.showImeWithInputMethodManager(
                                     InputMethodManager.SHOW_IMPLICIT)).isTrue(),
+                    EVENT_SHOW,
                     false /* expected */,
                     false /* inputViewStarted */);
             assertWithMessage("IME is not shown after SHOW_IMPLICIT")
@@ -417,6 +433,7 @@ public class InputMethodServiceTest {
             verifyInputViewStatusOnMainSync(
                     () -> assertThat(mActivity.showImeWithInputMethodManager(0 /* flags */))
                             .isTrue(),
+                    EVENT_SHOW,
                     false /* expected */,
                     false /* inputViewStarted */);
             assertWithMessage("IME is not shown after SHOW_EXPLICIT")
@@ -438,6 +455,7 @@ public class InputMethodServiceTest {
         // IME should be shown.
         verifyInputViewStatusOnMainSync(
                 () -> assertThat(mActivity.showImeWithInputMethodManager(0 /* flags */)).isTrue(),
+                EVENT_SHOW,
                 true /* expected */,
                 true /* inputViewStarted */);
         assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -454,6 +472,7 @@ public class InputMethodServiceTest {
         // the IME should be shown.
         verifyInputViewStatusOnMainSync(() -> assertThat(
                 mActivity.showImeWithInputMethodManager(InputMethodManager.SHOW_IMPLICIT)).isTrue(),
+                EVENT_SHOW,
                 true /* expected */,
                 true /* inputViewStarted */);
         assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -483,6 +502,7 @@ public class InputMethodServiceTest {
 
         verifyInputViewStatusOnMainSync(() -> assertThat(
                         mActivity.showImeWithInputMethodManager(0 /* flags */)).isTrue(),
+                EVENT_SHOW,
                 true /* expected */,
                 true /* inputViewStarted */);
         assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -517,6 +537,7 @@ public class InputMethodServiceTest {
 
         verifyInputViewStatusOnMainSync(() -> assertThat(
                 mActivity.showImeWithInputMethodManager(InputMethodManager.SHOW_IMPLICIT)).isTrue(),
+                EVENT_SHOW,
                 false /* expected */,
                 false /* inputViewStarted */);
         assertWithMessage("IME is not shown")
@@ -540,6 +561,7 @@ public class InputMethodServiceTest {
 
             verifyInputViewStatusOnMainSync(() -> assertThat(
                             mActivity.showImeWithInputMethodManager(0 /* flags */)).isTrue(),
+                    EVENT_SHOW,
                     true /* expected */,
                     true /* inputViewStarted */);
             assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -572,6 +594,7 @@ public class InputMethodServiceTest {
             verifyInputViewStatusOnMainSync(() ->assertThat(
                     mActivity.showImeWithInputMethodManager(InputMethodManager.SHOW_IMPLICIT))
                             .isTrue(),
+                    EVENT_SHOW,
                     false /* expected */,
                     false /* inputViewStarted */);
             assertWithMessage("IME is not shown")
@@ -600,6 +623,7 @@ public class InputMethodServiceTest {
             verifyInputViewStatusOnMainSync(
                     () -> assertThat(mActivity.showImeWithInputMethodManager(0 /* flags */))
                             .isTrue(),
+                    EVENT_SHOW,
                     true /* expected */,
                     true /* inputViewStarted */);
             assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -613,6 +637,7 @@ public class InputMethodServiceTest {
 
             verifyInputViewStatusOnMainSync(
                     () -> mInputMethodService.onConfigurationChanged(config),
+                    EVENT_CONFIG,
                     true /* expected */,
                     true /* inputViewStarted */);
             assertWithMessage("IME is still shown after a configuration change")
@@ -647,6 +672,7 @@ public class InputMethodServiceTest {
             verifyInputViewStatusOnMainSync(() -> assertThat(
                             mActivity.showImeWithInputMethodManager(
                                     InputMethodManager.SHOW_IMPLICIT)).isTrue(),
+                    EVENT_SHOW,
                     true /* expected */,
                     true /* inputViewStarted */);
             assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -666,6 +692,7 @@ public class InputMethodServiceTest {
             // still alive.
             verifyInputViewStatusOnMainSync(
                     () -> mInputMethodService.onConfigurationChanged(config),
+                    EVENT_CONFIG,
                     true /* expected */,
                     true /* inputViewStarted */);
             assertWithMessage("IME is not shown after a configuration change")
@@ -695,6 +722,7 @@ public class InputMethodServiceTest {
             // Explicit show request.
             verifyInputViewStatusOnMainSync(() -> assertThat(
                             mActivity.showImeWithInputMethodManager(0 /* flags */)).isTrue(),
+                    EVENT_SHOW,
                     true /* expected */,
                     true /* inputViewStarted */);
             assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -703,6 +731,7 @@ public class InputMethodServiceTest {
             verifyInputViewStatusOnMainSync(() -> assertThat(
                             mActivity.showImeWithInputMethodManager(
                                     InputMethodManager.SHOW_IMPLICIT)).isTrue(),
+                    EVENT_SHOW,
                     false /* expected */,
                     true /* inputViewStarted */);
             assertWithMessage("IME is still shown")
@@ -713,6 +742,7 @@ public class InputMethodServiceTest {
             // explicit show request, and thus not hide the IME.
             verifyInputViewStatusOnMainSync(
                     () -> mInputMethodService.onConfigurationChanged(config),
+                    EVENT_CONFIG,
                     true /* expected */,
                     true /* inputViewStarted */);
             assertWithMessage("IME is still shown after a configuration change")
@@ -739,12 +769,14 @@ public class InputMethodServiceTest {
 
         verifyInputViewStatusOnMainSync(() -> assertThat(
                 mActivity.showImeWithInputMethodManager(InputMethodManager.SHOW_FORCED)).isTrue(),
+                EVENT_SHOW,
                 true /* expected */,
                 true /* inputViewStarted */);
         assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
 
         verifyInputViewStatusOnMainSync(() -> assertThat(
                         mActivity.showImeWithInputMethodManager(0 /* flags */)).isTrue(),
+                EVENT_SHOW,
                 false /* expected */,
                 true /* inputViewStarted */);
         assertWithMessage("IME is still shown")
@@ -753,6 +785,7 @@ public class InputMethodServiceTest {
         verifyInputViewStatusOnMainSync(() -> assertThat(
                         mActivity.hideImeWithInputMethodManager(InputMethodManager.HIDE_NOT_ALWAYS))
                         .isTrue(),
+                EVENT_HIDE,
                 false /* expected */,
                 true /* inputViewStarted */);
         assertWithMessage("IME is still shown after HIDE_NOT_ALWAYS")
@@ -812,6 +845,7 @@ public class InputMethodServiceTest {
                     setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
                     mActivity.showImeWithWindowInsetsController();
                 },
+                EVENT_SHOW,
                 true /* expected */,
                 true /* inputViewStarted */);
         assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -849,6 +883,7 @@ public class InputMethodServiceTest {
                     setDrawsImeNavBarAndSwitcherButton(false /* enabled */);
                     mActivity.showImeWithWindowInsetsController();
                 },
+                EVENT_SHOW,
                 true /* expected */,
                 true /* inputViewStarted */);
         assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -872,35 +907,34 @@ public class InputMethodServiceTest {
      * Verifies that clicking on the IME navigation bar back button hides the IME.
      */
     @Test
-    public void testBackButtonClick() {
+    public void testBackButtonClick() throws Exception {
         assumeTrue("Must have a navigation bar", hasNavigationBar());
-        assumeTrue("Must be in gesture navigation mode", isGestureNavEnabled());
 
         waitUntilActivityReadyForInputInjection(mActivity);
 
         setShowImeWithHardKeyboard(true /* enabled */);
 
-        verifyInputViewStatusOnMainSync(
-                () -> {
-                    setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
-                    mActivity.showImeWithWindowInsetsController();
-                },
-                true /* expected */,
-                true /* inputViewStarted */);
-        assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
+        try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
+            verifyInputViewStatusOnMainSync(
+                    () -> mActivity.showImeWithWindowInsetsController(),
+                    EVENT_SHOW,
+                    true /* expected */,
+                    true /* inputViewStarted */);
+            assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
 
-        final var backButtonUiObject = getUiObject(By.res(INPUT_METHOD_NAV_BACK_ID));
-        backButtonUiObject.click();
-        mInstrumentation.waitForIdleSync();
+            final var backButton = getUiObject(By.res(INPUT_METHOD_NAV_BACK_ID));
+            backButton.click();
+            mInstrumentation.waitForIdleSync();
 
-        if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
-            // The IME visibility is only sent at the end of the animation. Therefore, we have to
-            // wait until the visibility was sent to the server and the IME window hidden.
-            eventually(() -> assertWithMessage("IME is not shown")
-                    .that(mInputMethodService.isInputViewShown()).isFalse());
-        } else {
-            assertWithMessage("IME is not shown")
-                    .that(mInputMethodService.isInputViewShown()).isFalse();
+            if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
+                // The IME visibility is only sent at the end of the animation. Therefore, we have
+                // to wait until the visibility was sent to the server and the IME window hidden.
+                eventually(() -> assertWithMessage("IME is not shown")
+                        .that(mInputMethodService.isInputViewShown()).isFalse());
+            } else {
+                assertWithMessage("IME is not shown")
+                        .that(mInputMethodService.isInputViewShown()).isFalse();
+            }
         }
     }
 
@@ -908,35 +942,34 @@ public class InputMethodServiceTest {
      * Verifies that long clicking on the IME navigation bar back button hides the IME.
      */
     @Test
-    public void testBackButtonLongClick() {
+    public void testBackButtonLongClick() throws Exception {
         assumeTrue("Must have a navigation bar", hasNavigationBar());
-        assumeTrue("Must be in gesture navigation mode", isGestureNavEnabled());
 
         waitUntilActivityReadyForInputInjection(mActivity);
 
         setShowImeWithHardKeyboard(true /* enabled */);
 
-        verifyInputViewStatusOnMainSync(
-                () -> {
-                    setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
-                    mActivity.showImeWithWindowInsetsController();
-                },
-                true /* expected */,
-                true /* inputViewStarted */);
-        assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
+        try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
+            verifyInputViewStatusOnMainSync(
+                    () -> mActivity.showImeWithWindowInsetsController(),
+                    EVENT_SHOW,
+                    true /* expected */,
+                    true /* inputViewStarted */);
+            assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
 
-        final var backButtonUiObject = getUiObject(By.res(INPUT_METHOD_NAV_BACK_ID));
-        backButtonUiObject.longClick();
-        mInstrumentation.waitForIdleSync();
+            final var backButton = getUiObject(By.res(INPUT_METHOD_NAV_BACK_ID));
+            backButton.longClick();
+            mInstrumentation.waitForIdleSync();
 
-        if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
-            // The IME visibility is only sent at the end of the animation. Therefore, we have to
-            // wait until the visibility was sent to the server and the IME window hidden.
-            eventually(() -> assertWithMessage("IME is not shown")
-                    .that(mInputMethodService.isInputViewShown()).isFalse());
-        } else {
-            assertWithMessage("IME is not shown")
-                    .that(mInputMethodService.isInputViewShown()).isFalse();
+            if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
+                // The IME visibility is only sent at the end of the animation. Therefore, we have
+                // to wait until the visibility was sent to the server and the IME window hidden.
+                eventually(() -> assertWithMessage("IME is not shown")
+                        .that(mInputMethodService.isInputViewShown()).isFalse());
+            } else {
+                assertWithMessage("IME is not shown")
+                        .that(mInputMethodService.isInputViewShown()).isFalse();
+            }
         }
     }
 
@@ -945,103 +978,108 @@ public class InputMethodServiceTest {
      * or switches the input method.
      */
     @Test
-    public void testImeSwitchButtonClick() {
+    public void testImeSwitchButtonClick() throws Exception {
         assumeTrue("Must have a navigation bar", hasNavigationBar());
-        assumeTrue("Must be in gesture navigation mode", isGestureNavEnabled());
 
         waitUntilActivityReadyForInputInjection(mActivity);
 
         setShowImeWithHardKeyboard(true /* enabled */);
 
-        verifyInputViewStatusOnMainSync(
-                () -> {
-                    setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
-                    mActivity.showImeWithWindowInsetsController();
-                },
-                true /* expected */,
-                true /* inputViewStarted */);
-        assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
+        try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
+            verifyInputViewStatusOnMainSync(
+                    () -> {
+                        setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
+                        mActivity.showImeWithWindowInsetsController();
+                    },
+                    EVENT_SHOW,
+                    true /* expected */,
+                    true /* inputViewStarted */);
+            assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
 
-        final var initialInfo = mImm.getCurrentInputMethodInfo();
+            final var initialInfo = mImm.getCurrentInputMethodInfo();
 
-        final var imeSwitchButtonUiObject = getUiObject(By.res(INPUT_METHOD_NAV_IME_SWITCHER_ID));
-        imeSwitchButtonUiObject.click();
-        mInstrumentation.waitForIdleSync();
+            final var imeSwitcherButton = getUiObject(By.res(INPUT_METHOD_NAV_IME_SWITCHER_ID));
+            imeSwitcherButton.click();
+            mInstrumentation.waitForIdleSync();
 
-        final var newInfo = mImm.getCurrentInputMethodInfo();
+            final var newInfo = mImm.getCurrentInputMethodInfo();
 
-        assertWithMessage("Input Method Switcher Menu is shown or input method was switched")
-                .that(isInputMethodPickerShown(mImm) || !Objects.equals(initialInfo, newInfo))
-                .isTrue();
+            assertWithMessage("Input Method Switcher Menu is shown or input method was switched")
+                    .that(isInputMethodPickerShown(mImm) || !Objects.equals(initialInfo, newInfo))
+                    .isTrue();
 
-        assertWithMessage("IME is still shown after IME Switcher button was clicked")
-                .that(mInputMethodService.isInputViewShown()).isTrue();
+            assertWithMessage("IME is still shown after IME Switcher button was clicked")
+                    .that(mInputMethodService.isInputViewShown()).isTrue();
 
-        // Hide the IME Switcher Menu before finishing.
-        mUiDevice.pressBack();
+            // Hide the IME Switcher Menu before finishing.
+            mUiDevice.pressBack();
+        }
     }
 
     /**
      * Verifies that long clicking on the IME switch button shows the Input Method Switcher Menu.
      */
     @Test
-    public void testImeSwitchButtonLongClick() {
+    public void testImeSwitchButtonLongClick() throws Exception {
         assumeTrue("Must have a navigation bar", hasNavigationBar());
-        assumeTrue("Must be in gesture navigation mode", isGestureNavEnabled());
 
         waitUntilActivityReadyForInputInjection(mActivity);
 
         setShowImeWithHardKeyboard(true /* enabled */);
 
-        verifyInputViewStatusOnMainSync(
-                () -> {
-                    setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
-                    mActivity.showImeWithWindowInsetsController();
-                },
-                true /* expected */,
-                true /* inputViewStarted */);
-        assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
+        try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
+            verifyInputViewStatusOnMainSync(
+                    () -> {
+                        setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
+                        mActivity.showImeWithWindowInsetsController();
+                    },
+                    EVENT_SHOW,
+                    true /* expected */,
+                    true /* inputViewStarted */);
+            assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
 
-        final var imeSwitchButtonUiObject = getUiObject(By.res(INPUT_METHOD_NAV_IME_SWITCHER_ID));
-        imeSwitchButtonUiObject.longClick();
-        mInstrumentation.waitForIdleSync();
+            final var imeSwitcherButton = getUiObject(By.res(INPUT_METHOD_NAV_IME_SWITCHER_ID));
+            imeSwitcherButton.longClick();
+            mInstrumentation.waitForIdleSync();
 
-        assertWithMessage("Input Method Switcher Menu is shown")
-                .that(isInputMethodPickerShown(mImm)).isTrue();
-        assertWithMessage("IME is still shown after IME Switcher button was long clicked")
-                .that(mInputMethodService.isInputViewShown()).isTrue();
+            assertWithMessage("Input Method Switcher Menu is shown")
+                    .that(isInputMethodPickerShown(mImm)).isTrue();
+            assertWithMessage("IME is still shown after IME Switcher button was long clicked")
+                    .that(mInputMethodService.isInputViewShown()).isTrue();
 
-        // Hide the IME Switcher Menu before finishing.
-        mUiDevice.pressBack();
+            // Hide the IME Switcher Menu before finishing.
+            mUiDevice.pressBack();
+        }
     }
 
-    private void verifyInputViewStatus(@NonNull Runnable runnable, boolean expected,
-            boolean inputViewStarted) {
-        verifyInputViewStatusInternal(runnable, expected, inputViewStarted,
+    private void verifyInputViewStatus(@NonNull Runnable runnable, @Event int event,
+            boolean expected, boolean inputViewStarted) {
+        verifyInputViewStatusInternal(runnable, event, expected, inputViewStarted,
                 false /* runOnMainSync */);
     }
 
-    private void verifyInputViewStatusOnMainSync(@NonNull Runnable runnable, boolean expected,
-            boolean inputViewStarted) {
-        verifyInputViewStatusInternal(runnable, expected, inputViewStarted,
+    private void verifyInputViewStatusOnMainSync(@NonNull Runnable runnable, @Event int event,
+            boolean expected, boolean inputViewStarted) {
+        verifyInputViewStatusInternal(runnable, event, expected, inputViewStarted,
                 true /* runOnMainSync */);
     }
 
     /**
-     * Verifies the status of the Input View after executing the given runnable.
+     * Verifies the status of the Input View after executing the given runnable, and waiting that
+     * the event was either triggered or not, based on the given expectation.
      *
-     * @param runnable         the runnable to execute for showing or hiding the IME.
-     * @param expected         whether the runnable is expected to trigger the signal.
+     * @param runnable         the runnable to trigger the event
+     * @param event            the event to await.
+     * @param expected         whether the event is expected to be triggered.
      * @param inputViewStarted the expected state of the Input View after executing the runnable.
      * @param runOnMainSync    whether to execute the runnable on the main thread.
      */
-    private void verifyInputViewStatusInternal(@NonNull Runnable runnable, boolean expected,
-            boolean inputViewStarted, boolean runOnMainSync) {
+    private void verifyInputViewStatusInternal(@NonNull Runnable runnable, @Event int event,
+            boolean expected, boolean inputViewStarted, boolean runOnMainSync) {
         final boolean completed;
         try {
             final var latch = new CountDownLatch(1);
-            mInputMethodService.setCountDownLatchForTesting(latch);
-            // Trigger onStartInputView() / onFinishInputView() / onConfigurationChanged()
+            mInputMethodService.setCountDownLatchForTesting(latch, event);
             if (runOnMainSync) {
                 mInstrumentation.runOnMainSync(runnable);
             } else {
@@ -1053,15 +1091,13 @@ public class InputMethodServiceTest {
             fail("Interrupted while waiting for latch: " + e.getMessage());
             return;
         } finally {
-            mInputMethodService.setCountDownLatchForTesting(null);
+            mInputMethodService.setCountDownLatchForTesting(null /* latch */, event);
         }
 
         if (expected && !completed) {
-            fail("Timed out waiting for"
-                    + " onStartInputView() / onFinishInputView() / onConfigurationChanged()");
+            fail("Timed out waiting for " + eventToString(event));
         } else if (!expected && completed) {
-            fail("Unexpected call"
-                    + " onStartInputView() / onFinishInputView() / onConfigurationChanged()");
+            fail("Unexpected call " + eventToString(event));
         }
         // Input is not finished.
         assertWithMessage("Input connection is still started")
@@ -1097,7 +1133,7 @@ public class InputMethodServiceTest {
      */
     private void verifyFullscreenMode(@NonNull Runnable runnable, boolean expected,
             boolean orientationPortrait) {
-        verifyInputViewStatus(runnable, expected, false /* inputViewStarted */);
+        verifyInputViewStatus(runnable, EVENT_CONFIG, expected, false /* inputViewStarted */);
         if (expected) {
             // Wait for the TestActivity to be recreated.
             eventually(() -> assertWithMessage("Activity was re-created after rotation")
@@ -1105,10 +1141,14 @@ public class InputMethodServiceTest {
             // Get the new TestActivity.
             mActivity = TestActivity.getLastCreatedInstance();
             assertWithMessage("Re-created activity is not null").that(mActivity).isNotNull();
+            // Wait for the new EditText to be served by InputMethodManager.
+            eventually(() -> assertWithMessage("Has an input connection to the re-created Activity")
+                    .that(mImm.hasActiveInputConnection(mActivity.getEditText())).isTrue());
         }
 
         verifyInputViewStatusOnMainSync(
                 () -> mActivity.showImeWithWindowInsetsController(),
+                EVENT_SHOW,
                 true /* expected */,
                 true /* inputViewStarted */);
         assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
@@ -1134,6 +1174,7 @@ public class InputMethodServiceTest {
         // Hide IME before finishing the run.
         verifyInputViewStatusOnMainSync(
                 () -> mActivity.hideImeWithWindowInsetsController(),
+                EVENT_HIDE,
                 true /* expected */,
                 false /* inputViewStarted */);
 
@@ -1214,18 +1255,12 @@ public class InputMethodServiceTest {
         return uiObject;
     }
 
-    /** Checks whether gesture navigation move is enabled. */
-    private boolean isGestureNavEnabled() {
-        return mContext.getResources().getInteger(
-                com.android.internal.R.integer.config_navBarInteractionMode)
-                == WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
-    }
-
     /** Checks whether the device has a navigation bar on the IME's display. */
     private boolean hasNavigationBar() {
         try {
             return WindowManagerGlobal.getWindowManagerService()
-                    .hasNavigationBar(mInputMethodService.getDisplayId());
+                    .hasNavigationBar(mInputMethodService.getDisplayId())
+                    && mGestureNavSwitchHelper.hasNavigationBar();
         } catch (RemoteException e) {
             fail("Failed to check whether the device has a navigation bar: " + e.getMessage());
             return false;

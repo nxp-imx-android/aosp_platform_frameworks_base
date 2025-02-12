@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.systemui.common.shared.colors
+package com.android.systemui.statusbar.notification
 
-import android.content.res.Resources
-import android.graphics.Color
-import com.android.internal.graphics.ColorUtils
-import com.android.systemui.res.R
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.util.mockito.mock
 
-object ShadeColors {
-    @JvmStatic
-    fun Resources.shadeBasePanel(): Int {
-        val layerAbove =
-            ColorUtils.setAlphaComponent(getColor(R.color.shade_panel), (0.4f * 255).toInt())
-        val layerBelow = ColorUtils.setAlphaComponent(Color.WHITE, (0.1f * 255).toInt())
-        return ColorUtils.compositeColors(layerAbove, layerBelow)
-    }
-}
+val Kosmos.conversationNotificationManager: ConversationNotificationManager by
+    Kosmos.Fixture { mock<ConversationNotificationManager>() }

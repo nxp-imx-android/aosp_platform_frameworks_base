@@ -97,7 +97,7 @@ class SceneTransitionLayoutTest {
             MutableSceneTransitionLayoutStateForTests(SceneA, EmptyTestTransitions)
         }
 
-        SceneTransitionLayout(state = layoutState, modifier = Modifier.size(LayoutSize)) {
+        SceneTransitionLayoutForTesting(state = layoutState, modifier = Modifier.size(LayoutSize)) {
             scene(SceneA, userActions = mapOf(Back to SceneB)) {
                 Box(Modifier.fillMaxSize()) {
                     SharedFoo(size = 50.dp, childOffset = 0.dp, Modifier.align(Alignment.TopEnd))
@@ -457,9 +457,9 @@ class SceneTransitionLayoutTest {
         }
 
         // Snap to B then C to compose these scenes at least once.
-        rule.runOnUiThread { state.snapToScene(SceneB) }
+        rule.runOnUiThread { state.snapTo(SceneB) }
         rule.waitForIdle()
-        rule.runOnUiThread { state.snapToScene(SceneC) }
+        rule.runOnUiThread { state.snapTo(SceneC) }
         rule.waitForIdle()
 
         assertThat(keyInA).isEqualTo(SceneA)

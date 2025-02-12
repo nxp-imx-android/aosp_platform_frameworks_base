@@ -35,6 +35,7 @@ import com.android.systemui.statusbar.notification.domain.interactor.activeNotif
 import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.darkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.lightsOutInteractor
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryViewModelFactory
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.homeStatusBarIconBlockListInteractor
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.homeStatusBarInteractor
 
@@ -42,6 +43,7 @@ var Kosmos.homeStatusBarViewModel: HomeStatusBarViewModel by
     Kosmos.Fixture {
         HomeStatusBarViewModelImpl(
             testableContext.displayId,
+            batteryViewModelFactory,
             tableLogBufferFactory,
             homeStatusBarInteractor,
             homeStatusBarIconBlockListInteractor,

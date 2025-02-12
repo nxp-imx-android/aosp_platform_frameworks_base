@@ -42,6 +42,7 @@
         <activity android:name="com.android.apps.inputmethod.simpleime.testing.TestActivity"
                   android:exported="false"
                   android:label="TestActivity"
+                  android:configChanges="assetsPaths"
                   android:launchMode="singleInstance"
                   android:excludeFromRecents="true"
                   android:noHistory="true"

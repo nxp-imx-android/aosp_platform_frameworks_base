@@ -17,9 +17,6 @@
 package com.android.systemui.common.shared.colors
 
 import android.content.res.Resources
-import android.graphics.Color
-import com.android.internal.graphics.ColorUtils
-import com.android.systemui.res.R
 
 object SurfaceEffectColors {
     @JvmStatic

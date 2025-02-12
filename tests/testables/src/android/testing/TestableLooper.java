@@ -34,6 +34,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.Objects;
@@ -74,17 +75,13 @@ public class TestableLooper {
      * Baklava introduces new {@link TestLooperManager} APIs that we can use instead of reflection.
      */
     private static boolean isAtLeastBaklava() {
-        TestLooperManager tlm =
-                InstrumentationRegistry.getInstrumentation()
-                        .acquireLooperManager(Looper.getMainLooper());
-        try {
-            Long unused = tlm.peekWhen();
-            return true;
-        } catch (NoSuchMethodError e) {
-            return false;
-        } finally {
-            tlm.release();
+        Method[] methods = TestLooperManager.class.getMethods();
+        for (Method method : methods) {
+            if (method.getName().equals("peekWhen")) {
+                return true;
+            }
         }
+        return false;
         // TODO(shayba): delete the above, uncomment the below.
         // SDK_INT has not yet ramped to Baklava in all 25Q2 builds.
         // return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA;

@@ -2455,10 +2455,28 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
     /** Whether the configuration changes are important to report back to an organizer. */
     static boolean configurationsAreEqualForOrganizer(
             Configuration newConfig, @Nullable Configuration oldConfig) {
+        return configurationsAreEqualForOrganizer(newConfig, oldConfig, 0 /* additionalMask */);
+    }
+
+    /**
+     * Whether the configuration changes are important to report back to an organizer.
+     *
+     * @param newConfig the new configuration
+     * @param oldConfig the old configuration
+     * @param additionalMask specifies additional configuration changes that the organizer is
+     *                       interested in. If the configuration change matches any bit in the mask,
+     *                       {@code false} is returned.
+     */
+    static boolean configurationsAreEqualForOrganizer(
+            Configuration newConfig, @Nullable Configuration oldConfig,
+            @ActivityInfo.Config int additionalMask) {
         if (oldConfig == null) {
             return false;
         }
         int cfgChanges = newConfig.diff(oldConfig);
+        if ((cfgChanges & additionalMask) != 0) {
+            return false;
+        }
         final int winCfgChanges = (cfgChanges & ActivityInfo.CONFIG_WINDOW_CONFIGURATION) != 0
                 ? (int) newConfig.windowConfiguration.diff(oldConfig.windowConfiguration,
                 true /* compareUndefined */) : 0;
@@ -2665,6 +2683,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 ownerActivity.getUid(), ownerActivity.info.processName);
         if (mTaskFragmentOrganizerController.isSystemOrganizer(organizerToken.asBinder())) {
             taskFragment.setOverrideOrientation(creationParams.getOverrideOrientation());
+            taskFragment.setConfigurationChangeMaskForOrganizer(
+                    creationParams.getConfigurationChangeMask());
         }
         final int position;
         if (creationParams.getPairedPrimaryFragmentToken() != null) {

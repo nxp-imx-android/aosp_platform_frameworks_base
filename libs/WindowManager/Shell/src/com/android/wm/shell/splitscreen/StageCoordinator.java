@@ -2859,14 +2859,6 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     prepareExitSplitScreen(dismissTop, out, EXIT_REASON_APP_FINISHED);
                     mSplitTransitions.setDismissTransition(transition, dismissTop,
                             EXIT_REASON_APP_FINISHED);
-                } else if (isOpening && !mPausingTasks.isEmpty()) {
-                    // One of the splitting task is opening while animating the split pair in
-                    // recents, which means to dismiss the split pair to this task.
-                    int dismissTop = getStageType(stage) == STAGE_TYPE_MAIN
-                            ? STAGE_TYPE_MAIN : STAGE_TYPE_SIDE;
-                    prepareExitSplitScreen(dismissTop, out, EXIT_REASON_APP_FINISHED);
-                    mSplitTransitions.setDismissTransition(transition, dismissTop,
-                            EXIT_REASON_APP_FINISHED);
                 } else if (!isSplitScreenVisible() && isOpening) {
                     // If split is running in the background and the trigger task is appearing into
                     // split, prepare to enter split screen.

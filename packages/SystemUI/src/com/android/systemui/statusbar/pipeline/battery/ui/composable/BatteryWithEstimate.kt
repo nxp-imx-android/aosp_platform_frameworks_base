@@ -54,7 +54,7 @@ fun BatteryWithEstimate(
         )
         if (showEstimate) {
             viewModel.batteryTimeRemainingEstimate?.let {
-                Spacer(modifier.width(2.dp))
+                Spacer(modifier.width(4.dp))
                 Text(text = it, color = Color.White)
             }
         }

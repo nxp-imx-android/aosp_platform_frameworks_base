@@ -17,6 +17,10 @@ package com.android.wm.shell.bubbles;
 
 import static android.view.WindowManager.TRANSIT_CHANGE;
 
+import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
+
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,12 +35,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
+import android.graphics.Rect;
 import android.os.IBinder;
 import android.view.SurfaceControl;
 import android.view.ViewRootImpl;
 import android.window.IWindowContainerToken;
 import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
+import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
@@ -65,6 +71,10 @@ import org.mockito.MockitoAnnotations;
  */
 @SmallTest
 public class BubbleTransitionsTest extends ShellTestCase {
+
+    private static final int FULLSCREEN_TASK_WIDTH = 200;
+    private static final int FULLSCREEN_TASK_HEIGHT = 100;
+
     @Mock
     private BubbleData mBubbleData;
     @Mock
@@ -117,10 +127,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
     private ActivityManager.RunningTaskInfo setupBubble() {
         ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
-        final IWindowContainerToken itoken = mock(IWindowContainerToken.class);
-        final IBinder asBinder = mock(IBinder.class);
-        when(itoken.asBinder()).thenReturn(asBinder);
-        WindowContainerToken token = new WindowContainerToken(itoken);
+        WindowContainerToken token = createMockToken();
         taskInfo.token = token;
         final TaskView tv = mock(TaskView.class);
         final TaskViewTaskController tvtc = mock(TaskViewTaskController.class);
@@ -131,13 +138,32 @@ public class BubbleTransitionsTest extends ShellTestCase {
         return taskInfo;
     }
 
+    private TransitionInfo setupFullscreenTaskTransition(ActivityManager.RunningTaskInfo taskInfo) {
+        final TransitionInfo info = new TransitionInfo(TRANSIT_CONVERT_TO_BUBBLE, 0);
+        final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token,
+                mock(SurfaceControl.class));
+        chg.setTaskInfo(taskInfo);
+        chg.setMode(TRANSIT_CHANGE);
+        chg.setStartAbsBounds(new Rect(0, 0, FULLSCREEN_TASK_WIDTH, FULLSCREEN_TASK_HEIGHT));
+        info.addChange(chg);
+        info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
+        return info;
+    }
+
+    private WindowContainerToken createMockToken() {
+        final IWindowContainerToken itoken = mock(IWindowContainerToken.class);
+        final IBinder asBinder = mock(IBinder.class);
+        when(itoken.asBinder()).thenReturn(asBinder);
+        return new WindowContainerToken(itoken);
+    }
+
     @Test
     public void testConvertToBubble() {
         // Basic walk-through of convert-to-bubble transition stages
         ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
                 mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                mStackView, mLayerView, mIconFactory, false);
+                mStackView, mLayerView, mIconFactory, null, false);
         final BubbleTransitions.ConvertToBubble ctb = (BubbleTransitions.ConvertToBubble) bt;
         ctb.onInflated(mBubble);
         when(mLayerView.canExpandView(any())).thenReturn(true);
@@ -146,13 +172,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         // Ensure we are communicating with the taskviewtransitions queue
         assertTrue(mTaskViewTransitions.hasPending());
 
-        final TransitionInfo info = new TransitionInfo(TRANSIT_CHANGE, 0);
-        final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token,
-                mock(SurfaceControl.class));
-        chg.setTaskInfo(taskInfo);
-        chg.setMode(TRANSIT_CHANGE);
-        info.addChange(chg);
-        info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
+        final TransitionInfo info = setupFullscreenTaskTransition(taskInfo);
         SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
         SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
         final boolean[] finishCalled = new boolean[]{false};
@@ -162,6 +182,8 @@ public class BubbleTransitionsTest extends ShellTestCase {
         };
         ctb.startAnimation(ctb.mTransition, info, startT, finishT, finishCb);
         assertFalse(mTaskViewTransitions.hasPending());
+
+        verify(startT).setPosition(any(), eq(0f), eq(0f));
 
         verify(mBubbleData).notificationEntryUpdated(eq(mBubble), anyBoolean(), anyBoolean());
         ctb.continueExpand();
@@ -176,6 +198,46 @@ public class BubbleTransitionsTest extends ShellTestCase {
         assertFalse(finishCalled[0]);
         animCb.getValue().run();
         assertTrue(finishCalled[0]);
+    }
+
+    @Test
+    public void testConvertToBubble_drag() {
+        ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+
+        Rect draggedTaskBounds = new Rect(10, 20, 30, 40);
+        WindowContainerTransaction pendingWct = new WindowContainerTransaction();
+        WindowContainerToken pendingDragOpToken = createMockToken();
+        pendingWct.reorder(pendingDragOpToken, /* onTop= */ false);
+
+        BubbleTransitions.DragData dragData = new BubbleTransitions.DragData(
+                draggedTaskBounds, pendingWct
+        );
+
+        final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
+                mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
+                mStackView, mLayerView, mIconFactory, dragData, false);
+        final BubbleTransitions.ConvertToBubble ctb = (BubbleTransitions.ConvertToBubble) bt;
+
+        ArgumentCaptor<WindowContainerTransaction> wctCaptor = ArgumentCaptor.forClass(
+                WindowContainerTransaction.class);
+        ctb.onInflated(mBubble);
+        verify(mTransitions).startTransition(anyInt(), wctCaptor.capture(), eq(ctb));
+
+        // Verify that the WCT has the pending operation from drag data
+        WindowContainerTransaction transitionWct = wctCaptor.getValue();
+        assertThat(transitionWct.getHierarchyOps().stream().anyMatch(op -> op.getType()
+                == WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
+                && op.getContainer() == pendingDragOpToken.asBinder())).isTrue();
+
+        final TransitionInfo info = setupFullscreenTaskTransition(taskInfo);
+        SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        Transitions.TransitionFinishCallback finishCb = wct -> {};
+        ctb.startAnimation(ctb.mTransition, info, startT, finishT, finishCb);
+
+        // Verify that dragged task bounds are used for the position
+        verify(startT).setPosition(any(), eq((float) draggedTaskBounds.left),
+                eq((float) draggedTaskBounds.top));
     }
 
     @Test

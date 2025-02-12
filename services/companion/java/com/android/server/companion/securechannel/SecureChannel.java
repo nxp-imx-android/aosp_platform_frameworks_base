@@ -59,6 +59,7 @@ public class SecureChannel {
     private final Callback mCallback;
     private final byte[] mPreSharedKey;
     private final AttestationVerifier mVerifier;
+    private final int mFlags;
 
     private volatile boolean mStopped;
     private volatile boolean mInProgress;
@@ -89,7 +90,7 @@ public class SecureChannel {
             @NonNull Callback callback,
             @NonNull byte[] preSharedKey
     ) {
-        this(in, out, callback, preSharedKey, null);
+        this(in, out, callback, preSharedKey, null, 0);
     }
 
     /**
@@ -100,14 +101,16 @@ public class SecureChannel {
      * @param out output stream from which data is sent out
      * @param callback subscription to received messages from the channel
      * @param context context for fetching the Attestation Verifier Framework system service
+     * @param flags flags for custom security settings on the channel
      */
     public SecureChannel(
             @NonNull final InputStream in,
             @NonNull final OutputStream out,
             @NonNull Callback callback,
-            @NonNull Context context
+            @NonNull Context context,
+            int flags
     ) {
-        this(in, out, callback, null, new AttestationVerifier(context));
+        this(in, out, callback, null, new AttestationVerifier(context, flags), flags);
     }
 
     public SecureChannel(
@@ -115,13 +118,15 @@ public class SecureChannel {
             final OutputStream out,
             Callback callback,
             byte[] preSharedKey,
-            AttestationVerifier verifier
+            AttestationVerifier verifier,
+            int flags
     ) {
         this.mInput = in;
         this.mOutput = out;
         this.mCallback = callback;
         this.mPreSharedKey = preSharedKey;
         this.mVerifier = verifier;
+        this.mFlags = flags;
     }
 
     /**

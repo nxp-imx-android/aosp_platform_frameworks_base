@@ -141,7 +141,10 @@ constructor(
         metricsLogger.logAddWidget(componentName.flattenToString(), rank)
     }
 
-    override fun onDeleteWidget(id: Int, componentName: ComponentName, rank: Int) {
+    override fun onDeleteWidget(id: Int, key: String, componentName: ComponentName, rank: Int) {
+        if (selectedKey.value == key) {
+            setSelectedKey(null)
+        }
         communalInteractor.deleteWidget(id)
         metricsLogger.logRemoveWidget(componentName.flattenToString(), rank)
     }

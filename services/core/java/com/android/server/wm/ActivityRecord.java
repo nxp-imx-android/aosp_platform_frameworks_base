@@ -113,7 +113,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 import static android.view.WindowManager.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENABLED;
 import static android.view.WindowManager.PROPERTY_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING_STATE_SHARING;
 import static android.view.WindowManager.TRANSIT_CLOSE;
-import static android.view.WindowManager.TRANSIT_FLAG_OPEN_BEHIND;
 import static android.view.WindowManager.TRANSIT_OLD_UNSET;
 import static android.view.WindowManager.TRANSIT_RELAUNCH;
 import static android.view.WindowManager.hasWindowExtensionsEnabled;
@@ -658,8 +657,6 @@ final class ActivityRecord extends WindowToken {
 
     private RemoteAnimationDefinition mRemoteAnimationDefinition;
 
-    AnimatingActivityRegistry mAnimatingActivityRegistry;
-
     // Set to the previous Task parent of the ActivityRecord when it is reparented to a new Task
     // due to picture-in-picture. This gets cleared whenever this activity or the Task
     // it references to gets removed. This should also be cleared when we move out of pip.
@@ -855,12 +852,6 @@ final class ActivityRecord extends WindowToken {
             SPLASH_SCREEN_BEHAVIOR_ICON_PREFERRED
     })
     @interface SplashScreenBehavior { }
-
-    // Force an app transition to be ran in the case the visibility of the app did not change.
-    // We use this for the case of moving a Root Task to the back with multiple activities, and the
-    // top activity enters PIP; the bottom activity's visibility stays the same, but we need to
-    // run the transition.
-    boolean mRequestForceTransition;
 
     boolean mEnteringAnimation;
     boolean mOverrideTaskTransition;
@@ -1586,9 +1577,6 @@ final class ActivityRecord extends WindowToken {
             }
         }
         final Task rootTask = getRootTask();
-
-        updateAnimatingActivityRegistry();
-
         if (task == mLastParentBeforePip && task != null) {
             // Notify the TaskFragmentOrganizer that the activity is reparented back from pip.
             mAtmService.mWindowOrganizerController.mTaskFragmentOrganizerController
@@ -1690,20 +1678,6 @@ final class ActivityRecord extends WindowToken {
         return !organizedTaskFragment.isAllowedToEmbedActivityInTrustedMode(this);
     }
 
-    void updateAnimatingActivityRegistry() {
-        final Task rootTask = getRootTask();
-        final AnimatingActivityRegistry registry = rootTask != null
-                ? rootTask.getAnimatingActivityRegistry()
-                : null;
-
-        // If we reparent, make sure to remove ourselves from the old animation registry.
-        if (mAnimatingActivityRegistry != null && mAnimatingActivityRegistry != registry) {
-            mAnimatingActivityRegistry.notifyFinished(this);
-        }
-
-        mAnimatingActivityRegistry = registry;
-    }
-
     boolean canAutoEnterPip() {
         // beforeStopping=false since the actual pip-ing will take place after startPausing()
         final boolean activityCanPip = checkEnterPictureInPictureState(
@@ -1788,7 +1762,6 @@ final class ActivityRecord extends WindowToken {
         if (prevDc.mOpeningApps.remove(this)) {
             // Transfer opening transition to new display.
             mDisplayContent.mOpeningApps.add(this);
-            mDisplayContent.transferAppTransitionFrom(prevDc);
             mDisplayContent.executeAppTransition();
         }
 
@@ -4631,12 +4604,6 @@ final class ActivityRecord extends WindowToken {
                 }
             }
 
-            // In this case, the starting icon has already been displayed, so start
-            // letting windows get shown immediately without any more transitions.
-            if (fromActivity.mVisible) {
-                mDisplayContent.mSkipAppTransitionAnimation = true;
-            }
-
             ProtoLog.v(WM_DEBUG_STARTING_WINDOW, "Moving existing starting %s"
                     + " from %s to %s", tStartingWindow, fromActivity, this);
 
@@ -5667,66 +5634,9 @@ final class ActivityRecord extends WindowToken {
             mTransitionController.mValidateCommitVis.add(this);
             return;
         }
-        // If we are preparing an app transition, then delay changing
-        // the visibility of this token until we execute that transition.
-        if (deferCommitVisibilityChange(visible)) {
-            return;
-        }
 
         commitVisibility(visible, true /* performLayout */);
         updateReportedVisibilityLocked();
-    }
-
-    /**
-     * Returns {@code true} if this activity is either added to opening-apps or closing-apps.
-     * Then its visibility will be committed until the transition is ready.
-     */
-    private boolean deferCommitVisibilityChange(boolean visible) {
-        if (mTransitionController.isShellTransitionsEnabled()) {
-            // Shell transition doesn't use opening/closing sets.
-            return false;
-        }
-        if (!mDisplayContent.mAppTransition.isTransitionSet()) {
-            return false;
-        }
-        if (mWaitForEnteringPinnedMode && mVisible == visible) {
-            // If the visibility is not changed during enter PIP, we don't want to include it in
-            // app transition to affect the animation theme, because the Pip organizer will
-            // animate the entering PIP instead.
-            return false;
-        }
-
-        // The animation will be visible soon so do not skip by screen off.
-        final boolean ignoreScreenOn = canTurnScreenOn() || mTaskSupervisor.getKeyguardController()
-                .isKeyguardGoingAway(mDisplayContent.mDisplayId);
-        // Ignore display frozen so the opening / closing transition type can be updated correctly
-        // even if the display is frozen. And it's safe since in applyAnimation will still check
-        // DC#okToAnimate again if the transition animation is fine to apply.
-        if (!okToAnimate(true /* ignoreFrozen */, ignoreScreenOn)) {
-            return false;
-        }
-        if (visible) {
-            mDisplayContent.mOpeningApps.add(this);
-            mEnteringAnimation = true;
-        } else if (mVisible) {
-            mDisplayContent.mClosingApps.add(this);
-            mEnteringAnimation = false;
-        }
-        if ((mDisplayContent.mAppTransition.getTransitFlags() & TRANSIT_FLAG_OPEN_BEHIND) != 0) {
-            // Add the launching-behind activity to mOpeningApps.
-            final WindowState win = mDisplayContent.findFocusedWindow();
-            if (win != null) {
-                final ActivityRecord focusedActivity = win.mActivityRecord;
-                if (focusedActivity != null) {
-                    ProtoLog.d(WM_DEBUG_APP_TRANSITIONS,
-                            "TRANSIT_FLAG_OPEN_BEHIND,  adding %s to mOpeningApps",
-                            focusedActivity);
-                    // Force animation to be loaded.
-                    mDisplayContent.mOpeningApps.add(focusedActivity);
-                }
-            }
-        }
-        return true;
     }
 
     @Override
@@ -5735,8 +5645,6 @@ final class ActivityRecord extends WindowToken {
         if ((mTransitionChangeFlags & FLAG_STARTING_WINDOW_TRANSFER_RECIPIENT) != 0) {
             return false;
         }
-        // If it was set to true, reset the last request to force the transition.
-        mRequestForceTransition = false;
         return super.applyAnimation(lp, transit, enter, isVoiceInteraction, sources);
     }
 
@@ -5896,27 +5804,6 @@ final class ActivityRecord extends WindowToken {
         if (committed) {
             requestUpdateWallpaperIfNeeded();
         }
-    }
-
-    /**
-     * Check if visibility of this {@link ActivityRecord} should be updated as part of an app
-     * transition.
-     *
-     * <p class="note><strong>Note:</strong> If the visibility of this {@link ActivityRecord} is
-     * already set to {@link #mVisible}, we don't need to update the visibility. So {@code false} is
-     * returned.</p>
-     *
-     * @param visible {@code true} if this {@link ActivityRecord} should become visible,
-     *                {@code false} if this should become invisible.
-     * @return {@code true} if visibility of this {@link ActivityRecord} should be updated, and
-     *         an app transition animation should be run.
-     */
-    boolean shouldApplyAnimation(boolean visible) {
-        // Allow for state update and animation to be applied if:
-        // * activity is transitioning visibility state
-        // * or the activity was marked as hidden and is exiting before we had a chance to play the
-        // transition animation
-        return isVisible() != visible || mRequestForceTransition || (!isVisible() && mIsExiting);
     }
 
     /**
@@ -7629,13 +7516,6 @@ final class ActivityRecord extends WindowToken {
     }
 
     @Override
-    public boolean shouldDeferAnimationFinish(Runnable endDeferFinishCallback) {
-        return mAnimatingActivityRegistry != null
-                && mAnimatingActivityRegistry.notifyAboutToFinish(
-                this, endDeferFinishCallback);
-    }
-
-    @Override
     boolean isWaitingForTransitionStart() {
         final DisplayContent dc = getDisplayContent();
         return dc != null && dc.mAppTransition.isTransitionSet()
@@ -7656,10 +7536,6 @@ final class ActivityRecord extends WindowToken {
 
     @Override
     public void onLeashAnimationStarting(Transaction t, SurfaceControl leash) {
-        if (mAnimatingActivityRegistry != null) {
-            mAnimatingActivityRegistry.notifyStarting(this);
-        }
-
         if (mNeedsLetterboxedAnimation) {
             updateLetterboxSurfaceIfNeeded(findMainWindow(), t);
             mNeedsAnimationBoundsLayer = true;
@@ -7670,17 +7546,7 @@ final class ActivityRecord extends WindowToken {
         // new layer.
         if (mNeedsAnimationBoundsLayer) {
             mTmpRect.setEmpty();
-            if (getDisplayContent().mAppTransitionController.isTransitWithinTask(
-                    getTransit(), task)) {
-                task.getBounds(mTmpRect);
-            } else {
-                final Task rootTask = getRootTask();
-                if (rootTask == null) {
-                    return;
-                }
-                // Set clip rect to root task bounds.
-                rootTask.getBounds(mTmpRect);
-            }
+            task.getBounds(mTmpRect);
             mAnimationBoundsLayer = createAnimationBoundsLayer(t);
 
             // Crop to root task bounds.
@@ -7835,10 +7701,6 @@ final class ActivityRecord extends WindowToken {
         if (mNeedsLetterboxedAnimation) {
             mNeedsLetterboxedAnimation = false;
             updateLetterboxSurfaceIfNeeded(findMainWindow(), t);
-        }
-
-        if (mAnimatingActivityRegistry != null) {
-            mAnimatingActivityRegistry.notifyFinished(this);
         }
     }
 

@@ -2532,6 +2532,46 @@ public class NotificationTest {
 
     @Test
     @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
+    public void progressStyle_addProgressPoint_dropsZeroPoints() {
+        // GIVEN
+        final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
+        // Points should not be a negative integer.
+        progressStyle
+                .addProgressPoint(new Notification.ProgressStyle.Point(0));
+
+        // THEN
+        assertThat(progressStyle.getProgressPoints()).isEmpty();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
+    public void progressStyle_setProgressPoint_dropsZeroPoints() {
+        // GIVEN
+        final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
+        // Points should not be a negative integer.
+        progressStyle
+                .setProgressPoints(List.of(new Notification.ProgressStyle.Point(0)));
+
+        // THEN
+        assertThat(progressStyle.getProgressPoints()).isEmpty();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
+    public void progressStyle_createProgressModel_ignoresPointsAtMax() {
+        // GIVEN
+        final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
+        progressStyle.addProgressSegment(new Notification.ProgressStyle.Segment(100));
+        // Points should not larger than progress maximum.
+        progressStyle
+                .addProgressPoint(new Notification.ProgressStyle.Point(100));
+
+        // THEN
+        assertThat(progressStyle.createProgressModel(Color.BLUE, Color.RED).getPoints()).isEmpty();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_RICH_ONGOING)
     public void progressStyle_createProgressModel_ignoresPointsExceedingMax() {
         // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
@@ -2573,14 +2613,14 @@ public class NotificationTest {
         // THEN
         assertThat(progressStyle.createProgressModel(defaultProgressColor, backgroundColor)
                 .getPoints()).isEqualTo(
-                        List.of(new Notification.ProgressStyle.Point(0)
-                                .setColor(expectedProgressColor),
-                                new Notification.ProgressStyle.Point(20)
+                        List.of(new Notification.ProgressStyle.Point(20)
                                 .setColor(expectedProgressColor),
                                 new Notification.ProgressStyle.Point(50)
                                 .setColor(expectedProgressColor),
                                 new Notification.ProgressStyle.Point(70)
-                                .setColor(expectedProgressColor)
+                                .setColor(expectedProgressColor),
+                                new Notification.ProgressStyle.Point(80)
+                                        .setColor(expectedProgressColor)
                         )
         );
     }

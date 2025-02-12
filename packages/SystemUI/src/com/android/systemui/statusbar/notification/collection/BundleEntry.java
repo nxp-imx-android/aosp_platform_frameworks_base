@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.internal.app;
+package com.android.systemui.statusbar.notification.collection;
 
-// This interface is also used by native code, so must
-// be kept in sync with frameworks/native/libs/permission/include/binder/IAppOpsCallback.h
-oneway interface IAppOpsCallback {
-    void opChanged(int op, int uid, String packageName, String persistentDeviceId);
+/**
+ * Abstract class to represent notification section bundled by AI.
+ */
+public class BundleEntry extends PipelineEntry {
+
+    public class BundleEntryAdapter implements EntryAdapter {
+    }
 }

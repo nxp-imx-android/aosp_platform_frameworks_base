@@ -2419,6 +2419,7 @@ package android {
     field public static final int accessibilityActionScrollRight = 16908347; // 0x102003b
     field public static final int accessibilityActionScrollToPosition = 16908343; // 0x1020037
     field public static final int accessibilityActionScrollUp = 16908344; // 0x1020038
+    field @FlaggedApi("android.view.accessibility.a11y_selection_api") public static final int accessibilityActionSetExtendedSelection;
     field public static final int accessibilityActionSetProgress = 16908349; // 0x102003d
     field public static final int accessibilityActionShowOnScreen = 16908342; // 0x1020036
     field public static final int accessibilityActionShowTextSuggestions = 16908376; // 0x1020058
@@ -56266,6 +56267,7 @@ package android.view.accessibility {
     method public android.view.accessibility.AccessibilityNodeInfo getParent();
     method @Nullable public android.view.accessibility.AccessibilityNodeInfo getParent(int);
     method public android.view.accessibility.AccessibilityNodeInfo.RangeInfo getRangeInfo();
+    method @FlaggedApi("android.view.accessibility.a11y_selection_api") @Nullable public android.view.accessibility.AccessibilityNodeInfo.Selection getSelection();
     method @Nullable public CharSequence getStateDescription();
     method @FlaggedApi("android.view.accessibility.supplemental_description") @Nullable public CharSequence getSupplementalDescription();
     method public CharSequence getText();
@@ -56374,6 +56376,7 @@ package android.view.accessibility {
     method public void setScreenReaderFocusable(boolean);
     method public void setScrollable(boolean);
     method public void setSelected(boolean);
+    method @FlaggedApi("android.view.accessibility.a11y_selection_api") public void setSelection(@Nullable android.view.accessibility.AccessibilityNodeInfo.Selection);
     method public void setShowingHintText(boolean);
     method public void setSource(android.view.View);
     method public void setSource(android.view.View, int);
@@ -56406,6 +56409,7 @@ package android.view.accessibility {
     field public static final String ACTION_ARGUMENT_ROW_INT = "android.view.accessibility.action.ARGUMENT_ROW_INT";
     field @FlaggedApi("android.view.accessibility.granular_scrolling") public static final String ACTION_ARGUMENT_SCROLL_AMOUNT_FLOAT = "android.view.accessibility.action.ARGUMENT_SCROLL_AMOUNT_FLOAT";
     field public static final String ACTION_ARGUMENT_SELECTION_END_INT = "ACTION_ARGUMENT_SELECTION_END_INT";
+    field @FlaggedApi("android.view.accessibility.a11y_selection_api") public static final String ACTION_ARGUMENT_SELECTION_PARCELABLE = "android.view.accessibility.action.ARGUMENT_SELECTION_PARCELABLE";
     field public static final String ACTION_ARGUMENT_SELECTION_START_INT = "ACTION_ARGUMENT_SELECTION_START_INT";
     field public static final String ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE = "ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE";
     field public static final int ACTION_CLEAR_ACCESSIBILITY_FOCUS = 128; // 0x80
@@ -56503,6 +56507,7 @@ package android.view.accessibility {
     field public static final android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction ACTION_SCROLL_TO_POSITION;
     field public static final android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction ACTION_SCROLL_UP;
     field public static final android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction ACTION_SELECT;
+    field @FlaggedApi("android.view.accessibility.a11y_selection_api") @NonNull public static final android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction ACTION_SET_EXTENDED_SELECTION;
     field public static final android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction ACTION_SET_PROGRESS;
     field public static final android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction ACTION_SET_SELECTION;
     field public static final android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction ACTION_SET_TEXT;
@@ -56586,6 +56591,26 @@ package android.view.accessibility {
     field @FlaggedApi("android.view.accessibility.indeterminate_range_info") public static final int RANGE_TYPE_INDETERMINATE = 3; // 0x3
     field public static final int RANGE_TYPE_INT = 0; // 0x0
     field public static final int RANGE_TYPE_PERCENT = 2; // 0x2
+  }
+
+  @FlaggedApi("android.view.accessibility.a11y_selection_api") public static final class AccessibilityNodeInfo.Selection implements android.os.Parcelable {
+    ctor public AccessibilityNodeInfo.Selection(@NonNull android.view.accessibility.AccessibilityNodeInfo.SelectionPosition, @NonNull android.view.accessibility.AccessibilityNodeInfo.SelectionPosition);
+    method public int describeContents();
+    method @NonNull public android.view.accessibility.AccessibilityNodeInfo.SelectionPosition getEnd();
+    method @NonNull public android.view.accessibility.AccessibilityNodeInfo.SelectionPosition getStart();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.view.accessibility.AccessibilityNodeInfo.Selection> CREATOR;
+  }
+
+  @FlaggedApi("android.view.accessibility.a11y_selection_api") public static final class AccessibilityNodeInfo.SelectionPosition implements android.os.Parcelable {
+    ctor public AccessibilityNodeInfo.SelectionPosition(@NonNull android.view.accessibility.AccessibilityNodeInfo, int);
+    ctor public AccessibilityNodeInfo.SelectionPosition(@NonNull android.view.View, int);
+    ctor public AccessibilityNodeInfo.SelectionPosition(@NonNull android.view.View, int, int);
+    method public int describeContents();
+    method @Nullable public android.view.accessibility.AccessibilityNodeInfo getNode();
+    method public int getOffset();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.view.accessibility.AccessibilityNodeInfo.SelectionPosition> CREATOR;
   }
 
   public static final class AccessibilityNodeInfo.TouchDelegateInfo implements android.os.Parcelable {

@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.chips.ui.compose
 import android.content.res.ColorStateList
 import android.view.ViewGroup
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -103,6 +104,13 @@ private fun ChipBody(
         } else {
             dimensionResource(id = R.dimen.ongoing_activity_chip_min_text_width) + chipSidePadding
         }
+
+    val outline = model.colors.outline(context)
+    val outlineWidth = dimensionResource(R.dimen.ongoing_activity_chip_outline_width)
+
+    val shape =
+        RoundedCornerShape(dimensionResource(id = R.dimen.ongoing_activity_chip_corner_radius))
+
     // Use a Box with `fillMaxHeight` to create a larger click surface for the chip. The visible
     // height of the chip is determined by the height of the background of the Row below.
     Box(
@@ -121,12 +129,7 @@ private fun ChipBody(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
             modifier =
-                Modifier.clip(
-                        RoundedCornerShape(
-                            dimensionResource(id = R.dimen.ongoing_activity_chip_corner_radius)
-                        )
-                    )
-                    .height(dimensionResource(R.dimen.ongoing_appops_chip_height))
+                Modifier.height(dimensionResource(R.dimen.ongoing_appops_chip_height))
                     .thenIf(isClickable) { Modifier.widthIn(min = minWidth) }
                     .layout { measurable, constraints ->
                         val placeable = measurable.measure(constraints)
@@ -136,7 +139,14 @@ private fun ChipBody(
                             }
                         }
                     }
-                    .background(Color(model.colors.background(context).defaultColor))
+                    .background(Color(model.colors.background(context).defaultColor), shape = shape)
+                    .thenIf(outline != null) {
+                        Modifier.border(
+                            width = outlineWidth,
+                            color = Color(outline!!),
+                            shape = shape,
+                        )
+                    }
                     .padding(
                         horizontal =
                             if (hasEmbeddedIcon) {

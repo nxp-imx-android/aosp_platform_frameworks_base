@@ -34,10 +34,12 @@ import android.provider.Settings;
 import android.util.MathUtils;
 import android.view.DisplayCutout;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.core.animation.Animator;
 import androidx.core.animation.AnimatorListenerAdapter;
 import androidx.core.animation.ValueAnimator;
@@ -62,6 +64,7 @@ import com.android.systemui.shade.ShadeViewStateProvider;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
+import com.android.systemui.statusbar.core.NewStatusBarIcons;
 import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore;
 import com.android.systemui.statusbar.disableflags.DisableStateTracker;
 import com.android.systemui.statusbar.events.SystemStatusAnimationCallback;
@@ -71,10 +74,13 @@ import com.android.systemui.statusbar.notification.AnimatableProperty;
 import com.android.systemui.statusbar.notification.PropertyAnimator;
 import com.android.systemui.statusbar.notification.stack.AnimationProperties;
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator;
+import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor;
 import com.android.systemui.statusbar.phone.fragment.StatusBarIconBlocklistKt;
 import com.android.systemui.statusbar.phone.fragment.StatusBarSystemEventDefaultAnimator;
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController;
 import com.android.systemui.statusbar.phone.ui.TintedIconManager;
+import com.android.systemui.statusbar.pipeline.battery.ui.binder.UnifiedBatteryViewBinder;
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel;
 import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
@@ -125,6 +131,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private final StatusBarIconController mStatusBarIconController;
     private final TintedIconManager.Factory mTintedIconManagerFactory;
     private final BatteryMeterViewController mBatteryMeterViewController;
+    private final BatteryViewModel.Factory mBatteryViewModelFactory;
     private final ShadeViewStateProvider mShadeViewStateProvider;
     private final KeyguardStateController mKeyguardStateController;
     private final KeyguardBypassController mKeyguardBypassController;
@@ -145,7 +152,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private final GlanceableHubToLockscreenTransitionViewModel mHubToLockscreenTransitionViewModel;
     private final LockscreenToGlanceableHubTransitionViewModel mLockscreenToHubTransitionViewModel;
 
-    private View mSystemIconsContainer;
+    private ViewGroup mSystemIconsContainer;
     private final StatusOverlayHoverListenerFactory mStatusOverlayHoverListenerFactory;
 
     private final ConfigurationController.ConfigurationListener mConfigurationListener =
@@ -327,6 +334,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
             StatusBarIconController statusBarIconController,
             TintedIconManager.Factory tintedIconManagerFactory,
             BatteryMeterViewController batteryMeterViewController,
+            BatteryViewModel.Factory batteryViewModelFactory,
             ShadeViewStateProvider shadeViewStateProvider,
             KeyguardStateController keyguardStateController,
             KeyguardBypassController bypassController,
@@ -360,6 +368,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         mStatusBarIconController = statusBarIconController;
         mTintedIconManagerFactory = tintedIconManagerFactory;
         mBatteryMeterViewController = batteryMeterViewController;
+        mBatteryViewModelFactory = batteryViewModelFactory;
         mShadeViewStateProvider = shadeViewStateProvider;
         mKeyguardStateController = keyguardStateController;
         mKeyguardBypassController = bypassController;
@@ -417,7 +426,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     protected void onInit() {
         super.onInit();
         mCarrierTextController.init();
-        mBatteryMeterViewController.init();
+        if (!NewStatusBarIcons.isEnabled()) {
+            mBatteryMeterViewController.init();
+        }
         if (isMigrationEnabled()) {
             KeyguardStatusBarViewBinder.bind(mView, mKeyguardStatusBarViewModel);
         }
@@ -469,6 +480,15 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                 mToGlanceableHubStatusBarAlphaConsumer, mCoroutineDispatcher);
         collectFlow(mView, mHubToLockscreenTransitionViewModel.getStatusBarAlpha(),
                 mFromGlanceableHubStatusBarAlphaConsumer, mCoroutineDispatcher);
+        if (NewStatusBarIcons.isEnabled()) {
+            ComposeView batteryComposeView = new ComposeView(mContext);
+            UnifiedBatteryViewBinder.bind(
+                    batteryComposeView,
+                    mBatteryViewModelFactory,
+                    DarkIconInteractor.toIsAreaDark(mView.darkChangeFlow()));
+
+            mSystemIconsContainer.addView(batteryComposeView, -1);
+        }
     }
 
     @Override

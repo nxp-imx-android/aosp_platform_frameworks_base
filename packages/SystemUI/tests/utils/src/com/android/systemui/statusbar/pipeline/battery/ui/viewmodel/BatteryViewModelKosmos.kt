@@ -22,3 +22,10 @@ import com.android.systemui.statusbar.pipeline.battery.domain.interactor.battery
 
 val Kosmos.batteryViewModel by
     Kosmos.Fixture { BatteryViewModel(batteryInteractor, testableContext) }
+
+val Kosmos.batteryViewModelFactory by
+    Kosmos.Fixture {
+        object : BatteryViewModel.Factory {
+            override fun create(): BatteryViewModel = batteryViewModel
+        }
+    }

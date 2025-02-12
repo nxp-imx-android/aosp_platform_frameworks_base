@@ -37,6 +37,9 @@ import android.view.WindowInsets.Type.systemBars
 import android.view.WindowManager
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.Space
+import android.widget.TextView
 import android.window.DesktopModeFlags
 import android.window.SurfaceSyncGroup
 import androidx.annotation.StringRes
@@ -480,16 +483,23 @@ class HandleMenu(
         private val splitscreenBtn = windowingPill.requireViewById<ImageButton>(
             R.id.split_screen_button)
         private val floatingBtn = windowingPill.requireViewById<ImageButton>(R.id.floating_button)
+        private val floatingBtnSpace = windowingPill.requireViewById<Space>(
+            R.id.floating_button_space)
+
         private val desktopBtn = windowingPill.requireViewById<ImageButton>(R.id.desktop_button)
+        private val desktopBtnSpace = windowingPill.requireViewById<Space>(
+            R.id.desktop_button_space)
 
         // More Actions Pill.
         private val moreActionsPill = rootView.requireViewById<View>(R.id.more_actions_pill)
-        private val screenshotBtn = moreActionsPill.requireViewById<View>(R.id.screenshot_button)
-        private val newWindowBtn = moreActionsPill.requireViewById<View>(R.id.new_window_button)
+        private val screenshotBtn = moreActionsPill.requireViewById<HandleMenuActionButton>(
+            R.id.screenshot_button)
+        private val newWindowBtn = moreActionsPill.requireViewById<HandleMenuActionButton>(
+            R.id.new_window_button)
         private val manageWindowBtn = moreActionsPill
-            .requireViewById<View>(R.id.manage_windows_button)
+            .requireViewById<HandleMenuActionButton>(R.id.manage_windows_button)
         private val changeAspectRatioBtn = moreActionsPill
-            .requireViewById<View>(R.id.change_aspect_ratio_button)
+            .requireViewById<HandleMenuActionButton>(R.id.change_aspect_ratio_button)
 
         // Open in Browser/App Pill.
         private val openInAppOrBrowserPill = rootView.requireViewById<View>(
@@ -682,6 +692,7 @@ class HandleMenu(
 
             if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
                 floatingBtn.visibility = View.GONE
+                floatingBtnSpace.visibility = View.GONE
             }
 
             fullscreenBtn.isSelected = taskInfo.isFullscreen
@@ -710,8 +721,10 @@ class HandleMenu(
             ).forEach {
                 val button = it.first
                 val shouldShow = it.second
-                val label = button.requireViewById<MarqueedTextView>(R.id.label)
-                val image = button.requireViewById<ImageView>(R.id.image)
+
+                val buttonRoot = button.requireViewById<LinearLayout>(R.id.action_button)
+                val label = buttonRoot.requireViewById<MarqueedTextView>(R.id.label)
+                val image = buttonRoot.requireViewById<ImageView>(R.id.image)
 
                 button.isGone = !shouldShow
                 label.apply {

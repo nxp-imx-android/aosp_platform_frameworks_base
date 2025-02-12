@@ -454,31 +454,6 @@ public class RootWindowContainerTests extends WindowTestsBase {
     }
 
     @Test
-    public void testMovingBottomMostRootTaskActivityToPinnedRootTask() {
-        final Task fullscreenTask = mRootWindowContainer.getDefaultTaskDisplayArea().createRootTask(
-                WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */);
-        final ActivityRecord firstActivity = new ActivityBuilder(mAtm)
-                .setTask(fullscreenTask).build();
-        final Task task = firstActivity.getTask();
-
-        final ActivityRecord secondActivity = new ActivityBuilder(mAtm)
-                .setTask(fullscreenTask).build();
-
-        fullscreenTask.moveTaskToBack(task);
-
-        // Ensure full screen task has both tasks.
-        ensureTaskPlacement(fullscreenTask, firstActivity, secondActivity);
-        assertEquals(task.getTopMostActivity(), secondActivity);
-        firstActivity.setState(STOPPED, "testMovingBottomMostRootTaskActivityToPinnedRootTask");
-
-
-        // Move first activity to pinned root task.
-        mRootWindowContainer.moveActivityToPinnedRootTask(secondActivity, "initialMove");
-
-        assertTrue(firstActivity.mRequestForceTransition);
-    }
-
-    @Test
     public void testMultipleActivitiesTaskEnterPip() {
         // Enable shell transition because the order of setting windowing mode is different.
         registerTestTransitionPlayer();

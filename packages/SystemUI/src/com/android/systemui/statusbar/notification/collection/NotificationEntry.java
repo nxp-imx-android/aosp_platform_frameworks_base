@@ -270,6 +270,9 @@ public final class NotificationEntry extends ListEntry {
         setRanking(ranking);
     }
 
+    public class NotifEntryAdapter implements EntryAdapter {
+    }
+
     @Override
     public NotificationEntry getRepresentativeEntry() {
         return this;

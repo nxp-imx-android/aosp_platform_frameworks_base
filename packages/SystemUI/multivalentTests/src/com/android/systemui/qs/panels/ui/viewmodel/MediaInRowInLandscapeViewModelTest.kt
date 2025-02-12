@@ -21,6 +21,7 @@ import android.content.res.mainResources
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QQS
@@ -36,6 +37,7 @@ import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -43,6 +45,7 @@ import org.junit.runner.RunWith
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(ParameterizedAndroidJunit4::class)
 @SmallTest
 class MediaInRowInLandscapeViewModelTest(private val testData: TestData) : SysuiTestCase() {
@@ -63,6 +66,7 @@ class MediaInRowInLandscapeViewModelTest(private val testData: TestData) : Sysui
     }
 
     @Test
+    @EnableSceneContainer
     fun shouldMediaShowInRow() =
         with(kosmos) {
             testScope.runTest {

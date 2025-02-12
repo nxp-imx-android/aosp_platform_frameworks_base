@@ -668,8 +668,10 @@ void NativeInputManager::setDisplayTopology(JNIEnv* env, jobject topologyGraph) 
     }
 
     // TODO(b/383092013): Add topology validation
-    mInputManager->getChoreographer().setDisplayTopology(
-            android_hardware_display_DisplayTopologyGraph_toNative(env, topologyGraph));
+    const DisplayTopologyGraph displayTopology =
+            android_hardware_display_DisplayTopologyGraph_toNative(env, topologyGraph);
+    mInputManager->getDispatcher().setDisplayTopology(displayTopology);
+    mInputManager->getChoreographer().setDisplayTopology(displayTopology);
 }
 
 base::Result<std::unique_ptr<InputChannel>> NativeInputManager::createInputChannel(

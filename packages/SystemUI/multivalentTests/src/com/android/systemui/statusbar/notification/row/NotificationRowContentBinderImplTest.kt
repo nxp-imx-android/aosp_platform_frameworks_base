@@ -587,6 +587,35 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
         Assert.assertFalse(hasText(publicView, contentTitle))
     }
 
+    @Test
+    @Throws(java.lang.Exception::class)
+    @EnableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION)
+    fun testAllMessagingStyleProcessedAsConversations() {
+        val displayName = "Display Name"
+        val messageText = "Message Text"
+        val personIcon = Icon.createWithResource(mContext, R.drawable.ic_person)
+        val testPerson = Person.Builder().setName(displayName).setIcon(personIcon).build()
+        val messagingStyle = Notification.MessagingStyle(testPerson)
+        messagingStyle.addMessage(
+            Notification.MessagingStyle.Message(messageText, System.currentTimeMillis(), testPerson)
+        )
+        val messageNotif =
+            Notification.Builder(mContext)
+                .setSmallIcon(R.drawable.ic_person)
+                .setStyle(messagingStyle)
+                .build()
+        val newRow: ExpandableNotificationRow = testHelper.createRow(messageNotif)
+
+        inflateAndWait(
+            false,
+            notificationInflater,
+            FLAG_CONTENT_VIEW_ALL,
+            REDACTION_TYPE_NONE,
+            newRow,
+        )
+        verify(conversationNotificationProcessor).processNotification(any(), any(), any())
+    }
+
     private class ExceptionHolder {
         var exception: Exception? = null
     }

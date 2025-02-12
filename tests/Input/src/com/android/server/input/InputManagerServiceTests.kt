@@ -559,9 +559,6 @@ class InputManagerServiceTests {
 
     @Test
     fun handleKeyGestures_a11yBounceKeysShortcut() {
-        ExtendedMockito.doReturn(true).`when` {
-            InputSettings.isAccessibilityBounceKeysFeatureEnabled()
-        }
         val toggleBounceKeysEvent =
             KeyGestureEvent.Builder()
                 .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS)
@@ -594,9 +591,6 @@ class InputManagerServiceTests {
 
     @Test
     fun handleKeyGestures_a11yStickyKeysShortcut() {
-        ExtendedMockito.doReturn(true).`when` {
-            InputSettings.isAccessibilityStickyKeysFeatureEnabled()
-        }
         val toggleStickyKeysEvent =
             KeyGestureEvent.Builder()
                 .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS)
@@ -610,9 +604,6 @@ class InputManagerServiceTests {
 
     @Test
     fun handleKeyGestures_a11ySlowKeysShortcut() {
-        ExtendedMockito.doReturn(true).`when` {
-            InputSettings.isAccessibilitySlowKeysFeatureFlagEnabled()
-        }
         val toggleSlowKeysEvent =
             KeyGestureEvent.Builder()
                 .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS)

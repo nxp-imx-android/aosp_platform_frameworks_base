@@ -21,7 +21,6 @@ import android.content.res.ColorStateList
 import androidx.annotation.ColorInt
 import com.android.settingslib.Utils
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 
 /** Model representing how the chip in the status bar should be colored. */
 sealed interface ColorsModel {
@@ -31,13 +30,38 @@ sealed interface ColorsModel {
     /** The color for the text (and icon) on the chip. */
     @ColorInt fun text(context: Context): Int
 
-    /** The chip should match the theme's primary color. */
-    data object Themed : ColorsModel {
+    /** The color to use for the chip outline, or null if the chip shouldn't have an outline. */
+    @ColorInt fun outline(context: Context): Int?
+
+    /** The chip should match the theme's primary accent color. */
+    // TODO(b/347717946): The chip's color isn't getting updated when the user switches theme, it
+    // only gets updated when a different configuration change happens, like a rotation.
+    data object AccentThemed : ColorsModel {
         override fun background(context: Context): ColorStateList =
             Utils.getColorAttr(context, com.android.internal.R.attr.colorAccent)
 
         override fun text(context: Context) =
             Utils.getColorAttrDefaultColor(context, com.android.internal.R.attr.colorPrimary)
+
+        override fun outline(context: Context) = null
+    }
+
+    /** The chip should match the system theme main color. */
+    // TODO(b/347717946): The chip's color isn't getting updated when the user switches theme, it
+    // only gets updated when a different configuration change happens, like a rotation.
+    data object SystemThemed : ColorsModel {
+        override fun background(context: Context): ColorStateList =
+            ColorStateList.valueOf(
+                context.getColor(com.android.internal.R.color.materialColorSurfaceDim)
+            )
+
+        override fun text(context: Context) =
+            context.getColor(com.android.internal.R.color.materialColorOnSurface)
+
+        override fun outline(context: Context) =
+            // Outline is required on the SystemThemed chip to guarantee the chip doesn't completely
+            // blend in with the background.
+            context.getColor(com.android.internal.R.color.materialColorOutlineVariant)
     }
 
     /** The chip should have the given background color and primary text color. */
@@ -46,6 +70,8 @@ sealed interface ColorsModel {
             ColorStateList.valueOf(backgroundColorInt)
 
         override fun text(context: Context): Int = primaryTextColorInt
+
+        override fun outline(context: Context) = null
     }
 
     /** The chip should have a red background with white text. */
@@ -55,15 +81,7 @@ sealed interface ColorsModel {
         }
 
         override fun text(context: Context) = context.getColor(android.R.color.white)
-    }
 
-    companion object {
-        /** Converts the promoted notification colors to a [Custom] colors model. */
-        fun PromotedNotificationContentModel.toCustomColorsModel(): Custom {
-            return Custom(
-                backgroundColorInt = this.colors.backgroundColor,
-                primaryTextColorInt = this.colors.primaryTextColor,
-            )
-        }
+        override fun outline(context: Context) = null
     }
 }

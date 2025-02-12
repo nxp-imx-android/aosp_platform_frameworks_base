@@ -177,3 +177,14 @@ flag {
   description: "Initialize GL context and GraphicBufferAllocater init on renderThread preload. This improves app startup time for apps using GL."
   bug: "383612849"
 }
+
+flag {
+  name: "calc_workload_orig_deadline"
+  namespace: "window_surfaces"
+  description: "Use original frame deadline to calculate the workload target deadline for jank tracking"
+  bug: "389939827"
+  is_fixed_read_only: true
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
