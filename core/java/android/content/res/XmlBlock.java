@@ -29,6 +29,8 @@ import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.TypedValue;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.pm.pkg.component.AconfigFlags;
+import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
 import com.android.internal.util.XmlUtils;
 
 import dalvik.annotation.optimization.CriticalNative;
@@ -50,6 +52,7 @@ import java.io.Reader;
 @RavenwoodClassLoadHook(RavenwoodClassLoadHook.LIBANDROID_LOADING_HOOK)
 public final class XmlBlock implements AutoCloseable {
     private static final boolean DEBUG=false;
+    public static final String ANDROID_RESOURCES = "http://schemas.android.com/apk/res/android";
 
     @UnsupportedAppUsage
     public XmlBlock(byte[] data) {
@@ -342,6 +345,23 @@ public final class XmlBlock implements AutoCloseable {
             int ev = nativeNext(mParseState);
             if (ev == ERROR_BAD_DOCUMENT) {
                 throw new XmlPullParserException("Corrupt XML binary file");
+            }
+            if (Flags.layoutReadwriteFlags() && ev == START_TAG) {
+                AconfigFlags flags = ParsingPackageUtils.getAconfigFlags();
+                if (flags.skipCurrentElement(/* pkg= */ null, this)) {
+                    int depth = 1;
+                    while (depth > 0) {
+                        int ev2 = nativeNext(mParseState);
+                        if (ev2 == ERROR_BAD_DOCUMENT) {
+                            throw new XmlPullParserException("Corrupt XML binary file");
+                        } else if (ev2 == START_TAG) {
+                            depth++;
+                        } else if (ev2 == END_TAG) {
+                            depth--;
+                        }
+                    }
+                    return next();
+                }
             }
             if (mDecNextDepth) {
                 mDepth--;
