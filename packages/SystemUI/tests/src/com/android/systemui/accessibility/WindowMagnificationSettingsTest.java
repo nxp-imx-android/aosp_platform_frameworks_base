@@ -552,9 +552,20 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
                 mockSeekBar,
                 OnSeekBarWithIconButtonsChangeListener.ControlUnitType.SLIDER);
 
-        // should trigger callback to update magnifier scale and persist the scale
+        // Should trigger callback to update magnifier scale and persist the scale.
         verify(mWindowMagnificationSettingsCallback)
                 .onMagnifierScale(/* scale= */ eq(4f), /* updatePersistence= */ eq(true));
+    }
+
+    @Test
+    public void onSeekbarUserInteractionFinalized_notFromUser_persistedScaleNotUpdated() {
+        OnSeekBarWithIconButtonsChangeListener onChangeListener =
+                mZoomSeekbar.getOnSeekBarWithIconButtonsChangeListener();
+        onChangeListener.onProgressChanged(mZoomSeekbar.getSeekbar(), 30, false);
+
+        // Should not trigger callback to update magnifier scale and persist the scale.
+        verify(mWindowMagnificationSettingsCallback, never())
+                .onMagnifierScale(/* scale= */ anyFloat(), /* updatePersistence= */ eq(true));
     }
 
     @Test
