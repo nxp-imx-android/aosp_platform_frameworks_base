@@ -54,11 +54,6 @@ public class FileIntegrityService extends SystemService {
             super(PermissionEnforcer.fromContext(context));
         }
 
-        @Override
-        public boolean isApkVeritySupported() {
-            return VerityUtils.isFsVeritySupported();
-        }
-
         private void checkCallerPackageName(String packageName) {
             final int callingUid = Binder.getCallingUid();
             final int callingUserId = UserHandle.getUserId(callingUid);
