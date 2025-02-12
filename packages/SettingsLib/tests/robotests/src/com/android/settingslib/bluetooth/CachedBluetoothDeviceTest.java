@@ -17,6 +17,7 @@ package com.android.settingslib.bluetooth;
 
 import static com.android.settingslib.flags.Flags.FLAG_ENABLE_LE_AUDIO_SHARING;
 import static com.android.settingslib.flags.Flags.FLAG_ENABLE_SET_PREFERRED_TRANSPORT_FOR_LE_AUDIO_DEVICE;
+import static com.android.settingslib.flags.Flags.FLAG_ENABLE_TEMPORARY_BOND_DEVICES_UI;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -78,11 +79,14 @@ public class CachedBluetoothDeviceTest {
     private static final String TWS_BATTERY_RIGHT = "25";
     private static final String TWS_LOW_BATTERY_THRESHOLD_LOW = "10";
     private static final String TWS_LOW_BATTERY_THRESHOLD_HIGH = "25";
+    private static final String TEMP_BOND_METADATA =
+            "<TEMP_BOND_TYPE>le_audio_sharing</TEMP_BOND_TYPE>";
     private static final short RSSI_1 = 10;
     private static final short RSSI_2 = 11;
     private static final boolean JUSTDISCOVERED_1 = true;
     private static final boolean JUSTDISCOVERED_2 = false;
     private static final int LOW_BATTERY_COLOR = android.R.color.holo_red_dark;
+    private static final int METADATA_FAST_PAIR_CUSTOMIZED_FIELDS = 25;
     @Mock
     private LocalBluetoothProfileManager mProfileManager;
     @Mock
@@ -128,6 +132,7 @@ public class CachedBluetoothDeviceTest {
         mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_TV_MEDIA_OUTPUT_DIALOG);
         mSetFlagsRule.enableFlags(FLAG_ENABLE_SET_PREFERRED_TRANSPORT_FOR_LE_AUDIO_DEVICE);
         mSetFlagsRule.enableFlags(FLAG_ENABLE_LE_AUDIO_SHARING);
+        mSetFlagsRule.enableFlags(FLAG_ENABLE_TEMPORARY_BOND_DEVICES_UI);
         mContext = RuntimeEnvironment.application;
         mAudioManager = mContext.getSystemService(AudioManager.class);
         mShadowBluetoothAdapter = Shadow.extract(BluetoothAdapter.getDefaultAdapter());
@@ -2072,6 +2077,87 @@ public class CachedBluetoothDeviceTest {
         when(mCachedDevice.getProfiles()).thenReturn(ImmutableList.of());
 
         assertThat(mCachedDevice.getConnectionSummary(false)).isNull();
+    }
+
+    @Test
+    public void getConnectionSummary_GuestDeviceBroadcastPrimary_activeDevice_returnActive() {
+        when(mBroadcast.isEnabled(any())).thenReturn(true);
+        when(mCachedDevice.getDevice()).thenReturn(mDevice);
+        Settings.Secure.putInt(
+                mContext.getContentResolver(),
+                BluetoothUtils.getPrimaryGroupIdUriForBroadcast(),
+                BluetoothCsipSetCoordinator.GROUP_ID_INVALID);
+        when(mDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(TEMP_BOND_METADATA.getBytes());
+
+        List<Long> bisSyncState = new ArrayList<>();
+        bisSyncState.add(1L);
+        when(mLeBroadcastReceiveState.getBisSyncState()).thenReturn(bisSyncState);
+        List<BluetoothLeBroadcastReceiveState> sourceList = new ArrayList<>();
+        sourceList.add(mLeBroadcastReceiveState);
+        when(mAssistant.getAllSources(any())).thenReturn(sourceList);
+
+        when(mCachedDevice.getGroupId()).thenReturn(1);
+        when(mCachedDevice.isActiveDevice(BluetoothProfile.LE_AUDIO)).thenReturn(true);
+
+        assertThat(mCachedDevice.getConnectionSummary(false))
+                .isEqualTo(mContext.getString(R.string.bluetooth_active_no_battery_level));
+    }
+
+    @Test
+    public void getConnectionSummary_GuestDeviceBroadcastSecondary_activeDevice_returnGuestMedia() {
+        when(mBroadcast.isEnabled(any())).thenReturn(true);
+        when(mCachedDevice.getDevice()).thenReturn(mDevice);
+        Settings.Secure.putInt(
+                mContext.getContentResolver(),
+                BluetoothUtils.getPrimaryGroupIdUriForBroadcast(),
+                1);
+        when(mDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(TEMP_BOND_METADATA.getBytes());
+
+        List<Long> bisSyncState = new ArrayList<>();
+        bisSyncState.add(1L);
+        when(mLeBroadcastReceiveState.getBisSyncState()).thenReturn(bisSyncState);
+        List<BluetoothLeBroadcastReceiveState> sourceList = new ArrayList<>();
+        sourceList.add(mLeBroadcastReceiveState);
+        when(mAssistant.getAllSources(any())).thenReturn(sourceList);
+
+        when(mCachedDevice.getGroupId()).thenReturn(BluetoothCsipSetCoordinator.GROUP_ID_INVALID);
+
+        assertThat(mCachedDevice.getConnectionSummary(false))
+                .isEqualTo(
+                        mContext.getString(R.string.bluetooth_guest_media_only_no_battery_level));
+    }
+
+    @Test
+    public void getConnectionSummary_GuestDeviceSupportsBroadcastConnected_returnGuestSupportLe() {
+        when(mBroadcast.isEnabled(any())).thenReturn(true);
+        when(mCachedDevice.getDevice()).thenReturn(mDevice);
+        when(mLeAudioProfile.isEnabled(mDevice)).thenReturn(true);
+        when(mDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(TEMP_BOND_METADATA.getBytes());
+
+        when(mCachedDevice.getProfiles()).thenReturn(ImmutableList.of(mLeAudioProfile));
+        when(mCachedDevice.isConnected()).thenReturn(true);
+
+        assertThat(mCachedDevice.getConnectionSummary(false))
+                .isEqualTo(
+                        mContext.getString(R.string.bluetooth_guest_no_battery_level_lea_support));
+    }
+
+    @Test
+    public void getConnectionSummary_GuestDeviceSupportsBroadcastNotConnected_returnSavedGuest() {
+        when(mBroadcast.isEnabled(any())).thenReturn(true);
+        when(mCachedDevice.getDevice()).thenReturn(mDevice);
+        when(mLeAudioProfile.isEnabled(mDevice)).thenReturn(true);
+        when(mDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(TEMP_BOND_METADATA.getBytes());
+
+        when(mCachedDevice.getProfiles()).thenReturn(ImmutableList.of(mLeAudioProfile));
+        when(mCachedDevice.isConnected()).thenReturn(false);
+
+        assertThat(mCachedDevice.getConnectionSummary(false))
+                .isEqualTo(mContext.getString(R.string.bluetooth_guest_saved_device_lea_support));
     }
 
     @Test
