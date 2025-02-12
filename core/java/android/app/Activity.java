@@ -292,13 +292,15 @@ import java.util.function.Consumer;
  *         to the user, it must be completely restarted and restored to its previous state.</li>
  * </ul>
  *
- * <p>The following diagram shows the important state paths of an Activity.
+ * <p>The following diagram shows the important state paths of an activity.
  * The square rectangles represent callback methods you can implement to
- * perform operations when the Activity moves between states.  The colored
- * ovals are major states the Activity can be in.</p>
+ * perform operations when the activity moves between states.  The colored
+ * ovals are major states the activity can be in.</p>
  *
- * <p><img src="../../../images/activity_lifecycle.png"
- *      alt="State diagram for an Android Activity Lifecycle." border="0" /></p>
+ * <p><img class="invert"
+ *         style="display: block; margin: auto;"
+ *         src="../../../images/activity_lifecycle.png"
+ *         alt="State diagram for the Android activity lifecycle." /></p>
  *
  * <p>There are three key loops you may be interested in monitoring within your
  * activity:
@@ -505,7 +507,7 @@ import java.util.function.Consumer;
  * changes.</p>
  *
  * <p>Unless you specify otherwise, a configuration change (such as a change
- * in screen orientation, language, input devices, etc) will cause your
+ * in screen orientation, language, input devices, etc.) will cause your
  * current activity to be <em>destroyed</em>, going through the normal activity
  * lifecycle process of {@link #onPause},
  * {@link #onStop}, and {@link #onDestroy} as appropriate.  If the activity
@@ -1838,7 +1840,7 @@ public class Activity extends ContextThemeWrapper
      *
      * <p>You can call {@link #finish} from within this function, in
      * which case onDestroy() will be immediately called after {@link #onCreate} without any of the
-     * rest of the activity lifecycle ({@link #onStart}, {@link #onResume}, {@link #onPause}, etc)
+     * rest of the activity lifecycle ({@link #onStart}, {@link #onResume}, {@link #onPause}, etc.)
      * executing.
      *
      * <p><em>Derived classes must call through to the super class's
@@ -2132,7 +2134,7 @@ public class Activity extends ContextThemeWrapper
      *
      * <p>You can call {@link #finish} from within this function, in
      * which case {@link #onStop} will be immediately called after {@link #onStart} without the
-     * lifecycle transitions in-between ({@link #onResume}, {@link #onPause}, etc) executing.
+     * lifecycle transitions in-between ({@link #onResume}, {@link #onPause}, etc.) executing.
      *
      * <p><em>Derived classes must call through to the super class's
      * implementation of this method.  If they do not, an exception will be
