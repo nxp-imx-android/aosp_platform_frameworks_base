@@ -43,6 +43,7 @@ import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.nullable
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
+import com.android.systemui.volume.domain.interactor.audioModeInteractor
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -146,6 +147,7 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
                     )
                 ),
                 kosmos.audioSharingInteractor,
+                kosmos.audioModeInteractor,
                 kosmos.audioSharingButtonViewModelFactory,
                 bluetoothDeviceMetadataInteractor,
                 mDialogTransitionAnimator,
