@@ -450,10 +450,7 @@ class DesktopTasksController(
         }
         // TODO(342378842): Instead of using default display, support multiple displays
         val displayId = runningTask?.displayId ?: DEFAULT_DISPLAY
-        val deskId =
-            checkNotNull(taskRepository.getDefaultDeskId(displayId)) {
-                "Expected a default desk to exist"
-            }
+        val deskId = getDefaultDeskId(displayId)
         return moveTaskToDesk(
             taskId = taskId,
             deskId = deskId,
@@ -697,10 +694,7 @@ class DesktopTasksController(
      * [startDragToDesktop].
      */
     private fun finalizeDragToDesktop(taskInfo: RunningTaskInfo) {
-        val deskId =
-            checkNotNull(taskRepository.getDefaultDeskId(taskInfo.displayId)) {
-                "Expected a default desk to exist"
-            }
+        val deskId = getDefaultDeskId(taskInfo.displayId)
         ProtoLog.v(
             WM_SHELL_DESKTOP_MODE,
             "DesktopTasksController: finalizeDragToDesktop taskId=%d deskId=%d",
@@ -1976,8 +1970,10 @@ class DesktopTasksController(
                     unminimizeReason = UnminimizeReason.APP_HANDLE_MENU_BUTTON,
                 )
             } else {
-                moveBackgroundTaskToDesktop(
+                val deskId = getDefaultDeskId(callingTask.displayId)
+                moveTaskToDesk(
                     requestedTaskId,
+                    deskId,
                     WindowContainerTransaction(),
                     DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON,
                 )
@@ -2534,10 +2530,7 @@ class DesktopTasksController(
         displayId: Int,
         remoteTransition: RemoteTransition? = null,
     ) {
-        val deskId =
-            checkNotNull(taskRepository.getDefaultDeskId(displayId)) {
-                "Expected a default desk to exist"
-            }
+        val deskId = getDefaultDeskId(displayId)
         activateDesk(deskId, remoteTransition)
     }
 
@@ -2584,12 +2577,14 @@ class DesktopTasksController(
     /** Removes the default desk in the given display. */
     @Deprecated("Deprecated with multi-desks.", ReplaceWith("removeDesk()"))
     fun removeDefaultDeskInDisplay(displayId: Int) {
-        val deskId =
-            checkNotNull(taskRepository.getDefaultDeskId(displayId)) {
-                "Expected a default desk to exist"
-            }
+        val deskId = getDefaultDeskId(displayId)
         removeDesk(displayId = displayId, deskId = deskId)
     }
+
+    private fun getDefaultDeskId(displayId: Int) =
+        checkNotNull(taskRepository.getDefaultDeskId(displayId)) {
+            "Expected a default desk to exist in display: $displayId"
+        }
 
     /** Removes the given desk. */
     fun removeDesk(deskId: Int) {
