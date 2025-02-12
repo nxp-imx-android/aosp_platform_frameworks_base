@@ -23,6 +23,7 @@ import android.app.backup.BackupAnnotations;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.app.backup.BackupManagerMonitor;
+import android.app.backup.BackupRestoreEventLogger;
 import android.app.backup.BackupRestoreEventLogger.DataTypeResult;
 import android.app.backup.BackupTransport;
 import android.app.backup.RestoreDescription;
@@ -52,7 +53,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -924,21 +924,9 @@ public class LocalTransport extends BackupTransport {
                         BackupManagerMonitor.EXTRA_LOG_AGENT_LOGGING_RESULTS,
                         DataTypeResult.class);
                 for (DataTypeResult result : results) {
-                    Log.i(TAG, "\tdataType: " + result.getDataType());
-                    Log.i(TAG, "\tsuccessCount: " + result.getSuccessCount());
-                    Log.i(TAG, "\tfailCount: " + result.getFailCount());
-                    Log.i(TAG, "\tmetadataHash: " + Arrays.toString(result.getMetadataHash()));
-
-                    if (!result.getErrors().isEmpty()) {
-                        Log.i(TAG, "\terrors {");
-                        for (String error : result.getErrors().keySet()) {
-                            Log.i(TAG, "\t\t" + error + ": " + result.getErrors().get(error));
-                        }
-                        Log.i(TAG, "\t}");
-                    }
-
-                    Log.i(TAG, "}");
+                    Log.i(TAG, "\t" + BackupRestoreEventLogger.toString(result));
                 }
+                Log.i(TAG, "}");
             }
         }
     }
