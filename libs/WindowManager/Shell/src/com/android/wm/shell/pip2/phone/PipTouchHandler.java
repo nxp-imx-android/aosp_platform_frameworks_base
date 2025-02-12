@@ -59,6 +59,7 @@ import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
+import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipDoubleTapHelper;
 import com.android.wm.shell.common.pip.PipPerfHintController;
@@ -187,6 +188,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
             @NonNull PipScheduler pipScheduler,
             @NonNull SizeSpecSource sizeSpecSource,
             @NonNull PipDisplayLayoutState pipDisplayLayoutState,
+            PipDesktopState pipDesktopState,
             DisplayController displayController,
             PipMotionHelper pipMotionHelper,
             FloatingContentCoordinator floatingContentCoordinator,
@@ -226,7 +228,8 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 mainExecutor);
         mPipResizeGestureHandler = new PipResizeGestureHandler(context, pipBoundsAlgorithm,
                 pipBoundsState, mTouchState, mPipScheduler, mPipTransitionState, pipUiEventLogger,
-                menuController, mPipDisplayLayoutState, mainExecutor, mPipPerfHintController);
+                menuController, this::getMovementBounds, mPipDisplayLayoutState, pipDesktopState,
+                mainExecutor, mPipPerfHintController);
         mPipBoundsState.addOnAspectRatioChangedCallback(aspectRatio -> {
             updateMinMaxSize(aspectRatio);
             onAspectRatioChanged();

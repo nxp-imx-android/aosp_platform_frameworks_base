@@ -44,13 +44,14 @@ import com.android.wm.shell.R;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
+import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipPerfHintController;
-import com.android.wm.shell.common.pip.PipPinchResizingAlgorithm;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
 
 import java.io.PrintWriter;
+import java.util.function.Function;
 
 /**
  * Helper on top of PipTouchHandler that handles inputs OUTSIDE of the PIP window, which is used to
@@ -72,8 +73,8 @@ public class PipResizeGestureHandler implements
     private final PipTransitionState mPipTransitionState;
     private final PhonePipMenuController mPhonePipMenuController;
     private final PipDisplayLayoutState mPipDisplayLayoutState;
+    private final PipDesktopState mPipDesktopState;
     private final PipUiEventLogger mPipUiEventLogger;
-    private final PipPinchResizingAlgorithm mPinchResizingAlgorithm;
     private final ShellExecutor mMainExecutor;
 
     private final PointF mDownPoint = new PointF();
@@ -93,16 +94,18 @@ public class PipResizeGestureHandler implements
     private boolean mIsAttached;
     private boolean mIsEnabled;
     private boolean mEnablePinchResize;
+    private boolean mEnableDragCornerResize;
     private boolean mIsSysUiStateValid;
     private boolean mThresholdCrossed;
     private boolean mOngoingPinchToResize = false;
     private boolean mWaitingForBoundsChangeTransition = false;
     private float mAngle = 0;
-    int mFirstIndex = -1;
-    int mSecondIndex = -1;
+
 
     private InputMonitor mInputMonitor;
     private InputEventReceiver mInputEventReceiver;
+    private PipDragToResizeHandler mPipDragToResizeHandler;
+    private PipPinchToResizeHandler mPipPinchToResizeHandler;
 
     @Nullable
     private final PipPerfHintController mPipPerfHintController;
@@ -121,7 +124,9 @@ public class PipResizeGestureHandler implements
             PipTransitionState pipTransitionState,
             PipUiEventLogger pipUiEventLogger,
             PhonePipMenuController menuActivityController,
+            Function<Rect, Rect> movementBoundsSupplier,
             PipDisplayLayoutState pipDisplayLayoutState,
+            PipDesktopState pipDesktopState,
             ShellExecutor mainExecutor,
             @Nullable PipPerfHintController pipPerfHintController) {
         mContext = context;
@@ -137,8 +142,13 @@ public class PipResizeGestureHandler implements
 
         mPhonePipMenuController = menuActivityController;
         mPipDisplayLayoutState = pipDisplayLayoutState;
+        mPipDesktopState = pipDesktopState;
         mPipUiEventLogger = pipUiEventLogger;
-        mPinchResizingAlgorithm = new PipPinchResizingAlgorithm();
+
+        mPipDragToResizeHandler = new PipDragToResizeHandler(context, this, pipBoundsState,
+                menuActivityController, pipBoundsAlgorithm, pipScheduler, movementBoundsSupplier);
+        mPipPinchToResizeHandler = new PipPinchToResizeHandler(this, pipBoundsState,
+                menuActivityController, pipScheduler);
     }
 
     void init() {
@@ -163,6 +173,7 @@ public class PipResizeGestureHandler implements
     }
 
     private void reloadResources() {
+        mPipDragToResizeHandler.reloadResources();
         mTouchSlop = ViewConfiguration.get(mContext).getScaledTouchSlop();
     }
 
@@ -180,6 +191,8 @@ public class PipResizeGestureHandler implements
     void onActivityPinned() {
         mIsAttached = true;
         updateIsEnabled();
+        // Only enable drag-corner-to-resize if PiP was entered when Desktop Mode session is active.
+        mEnableDragCornerResize = mPipDesktopState.isPipInDesktopMode();
     }
 
     void onActivityUnpinned() {
@@ -211,9 +224,44 @@ public class PipResizeGestureHandler implements
         }
     }
 
+    boolean getAllowGesture() {
+        return mAllowGesture;
+    }
+
+    void setAllowGesture(boolean allowGesture) {
+        mAllowGesture = allowGesture;
+    }
+
+    boolean getThresholdCrossed() {
+        return mThresholdCrossed;
+    }
+
+    void setThresholdCrossed(boolean thresholdCrossed) {
+        mThresholdCrossed = thresholdCrossed;
+    }
+
+    int getCtrlType() {
+        return mCtrlType;
+    }
+
+    void setCtrlType(int ctrlType) {
+        mCtrlType = ctrlType;
+    }
+
+    void setAngle(float angle) {
+        mAngle = angle;
+    }
+
+    void startHighPerfSession() {
+        if (mPipPerfHintController != null) {
+            mPipHighPerfSession = mPipPerfHintController.startSession(
+                    this::onHighPerfSessionTimeout, "onPinchResize");
+        }
+    }
+
     @VisibleForTesting
     void onInputEvent(InputEvent ev) {
-        if (!mEnablePinchResize) {
+        if (!mEnableDragCornerResize && !mEnablePinchResize) {
             // No need to handle anything if resizing isn't enabled.
             return;
         }
@@ -240,7 +288,12 @@ public class PipResizeGestureHandler implements
             }
 
             if (mOngoingPinchToResize) {
-                onPinchResize(mv);
+                mPipPinchToResizeHandler.onPinchResize(mv, mDownPoint, mDownSecondPoint,
+                        mDownBounds, mLastPoint, mLastSecondPoint, mLastResizeBounds, mTouchSlop,
+                        mMinSize, mMaxSize);
+            } else if (mEnableDragCornerResize) {
+                mPipDragToResizeHandler.onDragCornerResize(mv, mLastResizeBounds, mDownPoint,
+                        mDownBounds, mMinSize, mMaxSize, mTouchSlop);
             }
         }
     }
@@ -261,18 +314,29 @@ public class PipResizeGestureHandler implements
     }
 
     boolean willStartResizeGesture(MotionEvent ev) {
-        if (ev.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
-            if (mEnablePinchResize && ev.getPointerCount() == 2) {
-                onPinchResize(ev);
-                mOngoingPinchToResize = mAllowGesture;
-                return mAllowGesture;
-            }
+        switch (ev.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                if (mEnableDragCornerResize && mPipDragToResizeHandler.isWithinDragResizeRegion(
+                        (int) ev.getRawX(),
+                        (int) ev.getRawY())) {
+                    return true;
+                }
+                break;
+
+            case MotionEvent.ACTION_POINTER_DOWN:
+                if (mEnablePinchResize && ev.getPointerCount() == 2) {
+                    mPipPinchToResizeHandler.onPinchResize(ev, mDownPoint, mDownSecondPoint,
+                            mDownBounds, mLastPoint, mLastSecondPoint, mLastResizeBounds,
+                            mTouchSlop, mMinSize, mMaxSize);
+                    mOngoingPinchToResize = mAllowGesture;
+                    return mAllowGesture;
+                }
+                break;
+
+            default:
+                break;
         }
         return false;
-    }
-
-    private boolean isInValidSysUiState() {
-        return mIsSysUiStateValid;
     }
 
     private void onHighPerfSessionTimeout(PipPerfHintController.PipHighPerfSession session) {}
@@ -282,83 +346,6 @@ public class PipResizeGestureHandler implements
             // Close the high perf session once pointer interactions are over;
             mPipHighPerfSession.close();
             mPipHighPerfSession = null;
-        }
-    }
-
-    @VisibleForTesting
-    void onPinchResize(MotionEvent ev) {
-        int action = ev.getActionMasked();
-
-        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
-            mFirstIndex = -1;
-            mSecondIndex = -1;
-            mAllowGesture = false;
-            finishResize();
-        }
-
-        if (ev.getPointerCount() != 2) {
-            return;
-        }
-
-        final Rect pipBounds = mPipBoundsState.getBounds();
-        if (action == MotionEvent.ACTION_POINTER_DOWN) {
-            if (mFirstIndex == -1 && mSecondIndex == -1
-                    && pipBounds.contains((int) ev.getRawX(0), (int) ev.getRawY(0))
-                    && pipBounds.contains((int) ev.getRawX(1), (int) ev.getRawY(1))) {
-                mAllowGesture = true;
-                mFirstIndex = 0;
-                mSecondIndex = 1;
-                mDownPoint.set(ev.getRawX(mFirstIndex), ev.getRawY(mFirstIndex));
-                mDownSecondPoint.set(ev.getRawX(mSecondIndex), ev.getRawY(mSecondIndex));
-                mDownBounds.set(pipBounds);
-
-                mLastPoint.set(mDownPoint);
-                mLastSecondPoint.set(mLastSecondPoint);
-                mLastResizeBounds.set(mDownBounds);
-
-                // start the high perf session as the second pointer gets detected
-                if (mPipPerfHintController != null) {
-                    mPipHighPerfSession = mPipPerfHintController.startSession(
-                            this::onHighPerfSessionTimeout, "onPinchResize");
-                }
-            }
-        }
-
-        if (action == MotionEvent.ACTION_MOVE) {
-            if (mFirstIndex == -1 || mSecondIndex == -1) {
-                return;
-            }
-
-            float x0 = ev.getRawX(mFirstIndex);
-            float y0 = ev.getRawY(mFirstIndex);
-            float x1 = ev.getRawX(mSecondIndex);
-            float y1 = ev.getRawY(mSecondIndex);
-            mLastPoint.set(x0, y0);
-            mLastSecondPoint.set(x1, y1);
-
-            // Capture inputs
-            if (!mThresholdCrossed
-                    && (distanceBetween(mDownSecondPoint, mLastSecondPoint) > mTouchSlop
-                            || distanceBetween(mDownPoint, mLastPoint) > mTouchSlop)) {
-                pilferPointers();
-                mThresholdCrossed = true;
-                // Reset the down to begin resizing from this point
-                mDownPoint.set(mLastPoint);
-                mDownSecondPoint.set(mLastSecondPoint);
-
-                if (mPhonePipMenuController.isMenuVisible()) {
-                    mPhonePipMenuController.hideMenu();
-                }
-            }
-
-            if (mThresholdCrossed) {
-                mAngle = mPinchResizingAlgorithm.calculateBoundsAndAngle(mDownPoint,
-                        mDownSecondPoint, mLastPoint, mLastSecondPoint, mMinSize, mMaxSize,
-                        mDownBounds, mLastResizeBounds);
-
-                mPipScheduler.scheduleUserResizePip(mLastResizeBounds, mAngle);
-                mPipBoundsState.setHasUserResizedPip(true);
-            }
         }
     }
 
@@ -404,16 +391,20 @@ public class PipResizeGestureHandler implements
         // mPipTaskOrganizer.scheduleFinishResizePip(finalBounds, mUpdateResizeBoundsCallback);
     }
 
-    private void finishResize() {
+    /** Handles additional resizing and state changes after gesture resizing is done. */
+    void finishResize() {
         if (mLastResizeBounds.isEmpty()) {
             resetState();
-        }
-        if (!mOngoingPinchToResize) {
-            return;
         }
 
         // Cache initial bounds after release for animation before mLastResizeBounds are modified.
         mStartBoundsAfterRelease.set(mLastResizeBounds);
+
+        // Drag-corner-to-resize - we don't need to adjust the bounds at this point
+        if (!mOngoingPinchToResize) {
+            scheduleBoundsChange();
+            return;
+        }
 
         // If user resize is pretty close to max size, just auto resize to max.
         if (mLastResizeBounds.width() >= PINCH_RESIZE_AUTO_MAX_RATIO * mMaxSize.x
@@ -438,6 +429,10 @@ public class PipResizeGestureHandler implements
                 mLastResizeBounds, movementBounds);
         mPipBoundsAlgorithm.applySnapFraction(mLastResizeBounds, snapFraction);
 
+        scheduleBoundsChange();
+    }
+
+    private void scheduleBoundsChange() {
         // Update the transition state to schedule a resize transition.
         Bundle extra = new Bundle();
         extra.putBoolean(RESIZE_BOUNDS_CHANGE, true);
@@ -487,10 +482,6 @@ public class PipResizeGestureHandler implements
 
     void setOhmOffset(int offset) {
         mOhmOffset = offset;
-    }
-
-    private float distanceBetween(PointF p1, PointF p2) {
-        return (float) Math.hypot(p2.x - p1.x, p2.y - p1.y);
     }
 
     private void resizeRectAboutCenter(Rect rect, int w, int h) {
@@ -573,6 +564,7 @@ public class PipResizeGestureHandler implements
         pw.println(innerPrefix + "mIsAttached=" + mIsAttached);
         pw.println(innerPrefix + "mIsEnabled=" + mIsEnabled);
         pw.println(innerPrefix + "mEnablePinchResize=" + mEnablePinchResize);
+        pw.println(innerPrefix + "mEnableDragCornerResize=" + mEnableDragCornerResize);
         pw.println(innerPrefix + "mThresholdCrossed=" + mThresholdCrossed);
         pw.println(innerPrefix + "mOhmOffset=" + mOhmOffset);
         pw.println(innerPrefix + "mMinSize=" + mMinSize);

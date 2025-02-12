@@ -81,8 +81,8 @@ public class PipDesktopState {
         return false;
     }
 
-    /** Returns whether PiP is exiting while we're in a Desktop Mode session. */
-    private boolean isPipExitingToDesktopMode() {
+    /** Returns whether PiP is active in a display that is in active Desktop Mode session. */
+    public boolean isPipInDesktopMode() {
         // Early return if PiP in Desktop Windowing is not supported.
         if (!isDesktopWindowingPipEnabled()) {
             return false;
@@ -137,7 +137,7 @@ public class PipDesktopState {
         // 1) If the display windowing mode is freeform, set windowing mode to UNDEFINED so it will
         //    resolve the windowing mode to the display's windowing mode.
         // 2) If the display windowing mode is not FREEFORM, set windowing mode to FREEFORM.
-        if (isPipExitingToDesktopMode()) {
+        if (isPipInDesktopMode()) {
             if (isDisplayInFreeform()) {
                 return WINDOWING_MODE_UNDEFINED;
             } else {
