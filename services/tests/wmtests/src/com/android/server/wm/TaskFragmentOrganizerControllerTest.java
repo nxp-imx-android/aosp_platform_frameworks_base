@@ -29,14 +29,14 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.window.TaskFragmentOperation.OP_TYPE_CREATE_OR_MOVE_TASK_FRAGMENT_DECOR_SURFACE;
 import static android.window.TaskFragmentOperation.OP_TYPE_CREATE_TASK_FRAGMENT;
 import static android.window.TaskFragmentOperation.OP_TYPE_DELETE_TASK_FRAGMENT;
+import static android.window.TaskFragmentOperation.OP_TYPE_PRIVILEGED_REORDER_TO_BOTTOM_OF_TASK;
+import static android.window.TaskFragmentOperation.OP_TYPE_PRIVILEGED_REORDER_TO_TOP_OF_TASK;
+import static android.window.TaskFragmentOperation.OP_TYPE_PRIVILEGED_SET_CAN_AFFECT_SYSTEM_UI_FLAGS;
 import static android.window.TaskFragmentOperation.OP_TYPE_REMOVE_TASK_FRAGMENT_DECOR_SURFACE;
-import static android.window.TaskFragmentOperation.OP_TYPE_REORDER_TO_BOTTOM_OF_TASK;
 import static android.window.TaskFragmentOperation.OP_TYPE_REORDER_TO_FRONT;
-import static android.window.TaskFragmentOperation.OP_TYPE_REORDER_TO_TOP_OF_TASK;
 import static android.window.TaskFragmentOperation.OP_TYPE_REPARENT_ACTIVITY_TO_TASK_FRAGMENT;
 import static android.window.TaskFragmentOperation.OP_TYPE_SET_ADJACENT_TASK_FRAGMENTS;
 import static android.window.TaskFragmentOperation.OP_TYPE_SET_ANIMATION_PARAMS;
-import static android.window.TaskFragmentOperation.OP_TYPE_SET_CAN_AFFECT_SYSTEM_UI_FLAGS;
 import static android.window.TaskFragmentOperation.OP_TYPE_SET_DIM_ON_TASK;
 import static android.window.TaskFragmentOperation.OP_TYPE_START_ACTIVITY_IN_TASK_FRAGMENT;
 import static android.window.TaskFragmentOrganizer.KEY_ERROR_CALLBACK_OP_TYPE;
@@ -1821,7 +1821,7 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
 
         // Reorder TaskFragment to bottom
         final TaskFragmentOperation operation = new TaskFragmentOperation.Builder(
-                OP_TYPE_REORDER_TO_BOTTOM_OF_TASK).build();
+                OP_TYPE_PRIVILEGED_REORDER_TO_BOTTOM_OF_TASK).build();
         mTransaction.addTaskFragmentOperation(tf1.getFragmentToken(), operation);
         assertApplyTransactionAllowed(mTransaction);
 
@@ -1858,7 +1858,7 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
 
         // Reorder TaskFragment to top
         final TaskFragmentOperation operation = new TaskFragmentOperation.Builder(
-                OP_TYPE_REORDER_TO_TOP_OF_TASK).build();
+                OP_TYPE_PRIVILEGED_REORDER_TO_TOP_OF_TASK).build();
         mTransaction.addTaskFragmentOperation(tf0.getFragmentToken(), operation);
         assertApplyTransactionAllowed(mTransaction);
 
@@ -1903,13 +1903,13 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
     @Test
     public void testApplyTransaction_reorderToBottomOfTask_failsIfNotSystemOrganizer() {
         testApplyTransaction_reorder_failsIfNotSystemOrganizer_common(
-                OP_TYPE_REORDER_TO_BOTTOM_OF_TASK);
+                OP_TYPE_PRIVILEGED_REORDER_TO_BOTTOM_OF_TASK);
     }
 
     @Test
     public void testApplyTransaction_reorderToTopOfTask_failsIfNotSystemOrganizer() {
         testApplyTransaction_reorder_failsIfNotSystemOrganizer_common(
-                OP_TYPE_REORDER_TO_TOP_OF_TASK);
+                OP_TYPE_PRIVILEGED_REORDER_TO_TOP_OF_TASK);
     }
 
     @Test
@@ -1922,7 +1922,7 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
 
         // Setting the flag to false.
         TaskFragmentOperation operation = new TaskFragmentOperation.Builder(
-                OP_TYPE_SET_CAN_AFFECT_SYSTEM_UI_FLAGS).setBooleanValue(false).build();
+                OP_TYPE_PRIVILEGED_SET_CAN_AFFECT_SYSTEM_UI_FLAGS).setBooleanValue(false).build();
         mTransaction.addTaskFragmentOperation(tf.getFragmentToken(), operation);
 
         assertApplyTransactionAllowed(mTransaction);
@@ -1931,7 +1931,7 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
 
         // Setting the flag back to true.
         operation = new TaskFragmentOperation.Builder(
-                OP_TYPE_SET_CAN_AFFECT_SYSTEM_UI_FLAGS).setBooleanValue(true).build();
+                OP_TYPE_PRIVILEGED_SET_CAN_AFFECT_SYSTEM_UI_FLAGS).setBooleanValue(true).build();
         mTransaction.addTaskFragmentOperation(tf.getFragmentToken(), operation);
 
         assertApplyTransactionAllowed(mTransaction);
@@ -1945,7 +1945,7 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
         final TaskFragment tf = createTaskFragment(task);
 
         TaskFragmentOperation operation = new TaskFragmentOperation.Builder(
-                OP_TYPE_SET_CAN_AFFECT_SYSTEM_UI_FLAGS).setBooleanValue(false).build();
+                OP_TYPE_PRIVILEGED_SET_CAN_AFFECT_SYSTEM_UI_FLAGS).setBooleanValue(false).build();
         mTransaction
                 .addTaskFragmentOperation(tf.getFragmentToken(), operation)
                 .setErrorCallbackToken(mErrorToken);
@@ -1955,7 +1955,7 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
         // The pending event will be dispatched on the handler (from requestTraversal).
         waitHandlerIdle(mWm.mAnimationHandler);
 
-        assertTaskFragmentErrorTransaction(OP_TYPE_SET_CAN_AFFECT_SYSTEM_UI_FLAGS,
+        assertTaskFragmentErrorTransaction(OP_TYPE_PRIVILEGED_SET_CAN_AFFECT_SYSTEM_UI_FLAGS,
                 SecurityException.class);
     }
 
