@@ -27,6 +27,8 @@ import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.List;
 
@@ -34,7 +36,7 @@ import java.util.List;
  * Operation to Colors Color modes mMode = 0 two colors and a tween mMode = 1 color1 is a colorID.
  * mMode = 2 color2 is a colorID. mMode = 3 color1 & color2 are ids mMode = 4 H S V mode
  */
-public class ColorExpression extends Operation implements VariableSupport {
+public class ColorExpression extends Operation implements VariableSupport, Serializable {
     private static final int OP_CODE = Operations.COLOR_EXPRESSIONS;
     private static final String CLASS_NAME = "ColorExpression";
     public int mId;
@@ -501,5 +503,37 @@ public class ColorExpression extends Operation implements VariableSupport {
     @Override
     public String deepToString(@NonNull String indent) {
         return indent + toString();
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer.add("type", CLASS_NAME).add("id", mId);
+        switch (mMode) {
+            case COLOR_COLOR_INTERPOLATE:
+            case ID_COLOR_INTERPOLATE:
+            case COLOR_ID_INTERPOLATE:
+            case ID_ID_INTERPOLATE:
+                serializer.add("mode", "TWEEN");
+                serializer.add("startColor", mColor1, mOutColor1);
+                serializer.add("endColor", mColor2, mOutColor2);
+                serializer.add("startColor", mTween, mOutTween);
+                break;
+            case HSV_MODE:
+                serializer.add("mode", "HSV");
+                serializer.add("hue", mHue, mOutHue);
+                serializer.add("sat", mSat, mOutSat);
+                serializer.add("val", mValue, mOutValue);
+                break;
+            case ARGB_MODE:
+            case IDARGB_MODE:
+                serializer.add("mode", "ARGB");
+                serializer.add("a", mArgbAlpha, mOutArgbAlpha);
+                serializer.add("r", mArgbRed, mOutArgbRed);
+                serializer.add("g", mArgbGreen, mOutArgbGreen);
+                serializer.add("b", mArgbBlue, mOutArgbBlue);
+                break;
+            default:
+                serializer.add("mode", "NONE");
+        }
     }
 }

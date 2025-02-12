@@ -196,7 +196,7 @@ public class BackgroundModifierOperation extends DecoratorModifierOperation {
         mPaint.reset();
         mPaint.setStyle(PaintBundle.STYLE_FILL);
         mPaint.setColor(mR, mG, mB, mA);
-        context.applyPaint(mPaint);
+        context.replacePaint(mPaint);
         if (mShapeType == ShapeType.RECTANGLE) {
             context.drawRect(0f, 0f, mWidth, mHeight);
         } else if (mShapeType == ShapeType.CIRCLE) {

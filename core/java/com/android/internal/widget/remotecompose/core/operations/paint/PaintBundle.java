@@ -15,6 +15,8 @@
  */
 package com.android.internal.widget.remotecompose.core.operations.paint;
 
+import static com.android.internal.widget.remotecompose.core.serialize.MapSerializer.orderedOf;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
@@ -23,11 +25,16 @@ import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.operations.Utils;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /** Paint Bundle represents a delta of changes to a paint object */
-public class PaintBundle {
+public class PaintBundle implements Serializable {
     @NonNull int[] mArray = new int[200];
     @Nullable int[] mOutArray = null;
     int mPos = 0;
@@ -337,7 +344,6 @@ public class PaintBundle {
                         }
                     }
                 }
-
                 len = array[ret++]; // stops
                 for (int j = 0; j < len; j++) {
                     registerFloat(array[ret++], context, support);
@@ -1235,6 +1241,203 @@ public class PaintBundle {
                 break;
             default:
                 System.err.println("gradient type unknown");
+        }
+
+        return ret;
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer.add("type", "PaintBundle");
+        List<Map<String, Object>> list = new ArrayList<>();
+        int i = 0;
+        while (i < mPos) {
+            int cmd = mArray[i++];
+            int type = cmd & 0xFFFF;
+            switch (type) {
+                case TEXT_SIZE:
+                    list.add(orderedOf("type", "TextSize", "size", getVariable(mArray[i++])));
+                    break;
+                case TYPEFACE:
+                    int style = (cmd >> 16);
+                    float weight = (float) (style & 0x3ff);
+                    boolean italic = (style >> 10) > 0;
+                    int fontFamily = mArray[i++];
+                    list.add(orderedOf("type", "FontFamily", "fontFamily", fontFamily));
+                    list.add(orderedOf("type", "FontWeight", "weight", weight));
+                    list.add(orderedOf("type", "TypeFace", "italic", italic));
+                    break;
+                case COLOR:
+                    list.add(orderedOf("type", "Color", "color", colorInt(mArray[i++])));
+                    break;
+                case COLOR_ID:
+                    list.add(orderedOf("type", "ColorId", "id", mArray[i++]));
+                    break;
+                case STROKE_WIDTH:
+                    list.add(orderedOf("type", "StrokeWidth", "width", getVariable(mArray[i++])));
+                    break;
+                case STROKE_MITER:
+                    list.add(orderedOf("type", "StrokeMiter", "miter", getVariable(mArray[i++])));
+                    break;
+                case STROKE_CAP:
+                    list.add(orderedOf("type", "StrokeCap", "cap", cmd >> 16));
+                    break;
+                case STYLE:
+                    list.add(orderedOf("type", "Style", "style", cmd >> 16));
+                    break;
+                case COLOR_FILTER:
+                    list.add(
+                            orderedOf(
+                                    "type",
+                                    "ColorFilter",
+                                    "color",
+                                    colorInt(mArray[i++]),
+                                    "mode",
+                                    blendModeString(cmd >> 16)));
+                    break;
+                case COLOR_FILTER_ID:
+                    list.add(
+                            orderedOf(
+                                    "type",
+                                    "ColorFilterID",
+                                    "id",
+                                    mArray[i++],
+                                    "mode",
+                                    blendModeString(cmd >> 16)));
+                    break;
+                case CLEAR_COLOR_FILTER:
+                    list.add(orderedOf("type", "ClearColorFilter"));
+                    break;
+                case SHADER:
+                    list.add(orderedOf("type", "Shader", "id", mArray[i++]));
+                    break;
+                case ALPHA:
+                    list.add(orderedOf("type", "Alpha", "alpha", getVariable(mArray[i++])));
+                    break;
+                case IMAGE_FILTER_QUALITY:
+                    list.add(orderedOf("type", "ImageFilterQuality", "quality", cmd >> 16));
+                    break;
+                case BLEND_MODE:
+                    list.add(orderedOf("type", "BlendMode", "mode", blendModeString(cmd >> 16)));
+                    break;
+                case FILTER_BITMAP:
+                    list.add(orderedOf("type", "FilterBitmap", "enabled", !(cmd >> 16 == 0)));
+                    break;
+                case STROKE_JOIN:
+                    list.add(orderedOf("type", "StrokeJoin", "strokeJoin", cmd >> 16));
+                    break;
+                case ANTI_ALIAS:
+                    list.add(orderedOf("type", "AntiAlias", "enabled", !(cmd >> 16 == 0)));
+                    break;
+                case GRADIENT:
+                    i = serializeGradient(cmd, mArray, i, list);
+            }
+        }
+        serializer.add("operations", list);
+    }
+
+    private static Map<String, Object> getVariable(int value) {
+        float fValue = Float.intBitsToFloat(value);
+        if (Float.isNaN(fValue)) {
+            return orderedOf("type", "Variable", "id", Utils.idFromNan(fValue));
+        }
+        return orderedOf("type", "Value", "value", fValue);
+    }
+
+    private static int serializeGradient(
+            int cmd, int[] array, int i, List<Map<String, Object>> list) {
+        int ret = i;
+        int gradientType = (cmd >> 16);
+
+        int len = 0xFF & array[ret++]; // maximum 256 colors
+
+        String[] colors = null;
+        if (len > 0) {
+            colors = new String[len];
+            for (int j = 0; j < colors.length; j++) {
+                colors[j] = colorInt(array[ret++]);
+            }
+        }
+        len = array[ret++];
+        float[] stops = null;
+        if (len > 0) {
+            stops = new float[len];
+            for (int j = 0; j < colors.length; j++) {
+                stops[j] = Float.intBitsToFloat(array[ret++]);
+            }
+        }
+
+        if (colors == null) {
+            return ret;
+        }
+
+        int tileMode;
+        int centerX;
+        int centerY;
+
+        switch (gradientType) {
+            case LINEAR_GRADIENT:
+                int startX = array[ret++];
+                int startY = array[ret++];
+                int endX = array[ret++];
+                int endY = array[ret++];
+                tileMode = array[ret++];
+                list.add(
+                        orderedOf(
+                                "type",
+                                "LinearGradient",
+                                "colors",
+                                colors,
+                                "stops",
+                                stops == null ? List.of() : stops,
+                                "startX",
+                                getVariable(startX),
+                                "startY",
+                                getVariable(startY),
+                                "endX",
+                                getVariable(endX),
+                                "endY",
+                                getVariable(endY),
+                                "tileMode",
+                                tileMode));
+                break;
+            case RADIAL_GRADIENT:
+                centerX = array[ret++];
+                centerY = array[ret++];
+                int radius = array[ret++];
+                tileMode = array[ret++];
+                list.add(
+                        orderedOf(
+                                "type",
+                                "LinearGradient",
+                                "colors",
+                                colors,
+                                "stops",
+                                stops == null ? List.of() : stops,
+                                "centerX",
+                                getVariable(centerX),
+                                "centerY",
+                                getVariable(centerY),
+                                "radius",
+                                getVariable(radius),
+                                "tileMode",
+                                tileMode));
+                break;
+            case SWEEP_GRADIENT:
+                centerX = array[ret++];
+                centerY = array[ret++];
+                list.add(
+                        orderedOf(
+                                "type",
+                                "LinearGradient",
+                                "colors",
+                                colors,
+                                "stops",
+                                stops == null ? List.of() : stops,
+                                "centerX",
+                                getVariable(centerX),
+                                "centerY",
+                                getVariable(centerY)));
         }
 
         return ret;

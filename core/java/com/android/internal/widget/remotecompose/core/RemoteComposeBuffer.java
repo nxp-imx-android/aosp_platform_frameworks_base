@@ -191,6 +191,11 @@ public class RemoteComposeBuffer {
     // Supported operations on the buffer
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    /** Insert a header */
+    public void addHeader(short[] tags, Object[] values) {
+        Header.apply(mBuffer, tags, values);
+    }
+
     /**
      * Insert a header
      *
@@ -200,6 +205,28 @@ public class RemoteComposeBuffer {
      * @param capabilities bitmask indicating needed capabilities (unused for now)
      */
     public void header(
+            int width,
+            int height,
+            @Nullable String contentDescription,
+            float density,
+            long capabilities) {
+        Header.apply(mBuffer, width, height, density, capabilities);
+        int contentDescriptionId = 0;
+        if (contentDescription != null) {
+            contentDescriptionId = addText(contentDescription);
+            RootContentDescription.apply(mBuffer, contentDescriptionId);
+        }
+    }
+
+    /**
+     * Insert a header
+     *
+     * @param width the width of the document in pixels
+     * @param height the height of the document in pixels
+     * @param contentDescription content description of the document
+     * @param capabilities bitmask indicating needed capabilities (unused for now)
+     */
+    public void addHeader(
             int width,
             int height,
             @Nullable String contentDescription,

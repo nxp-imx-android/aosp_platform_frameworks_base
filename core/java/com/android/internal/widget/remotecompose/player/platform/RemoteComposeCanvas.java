@@ -31,6 +31,7 @@ import android.widget.FrameLayout;
 
 import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
+import com.android.internal.widget.remotecompose.core.operations.Header;
 import com.android.internal.widget.remotecompose.core.operations.RootContentBehavior;
 import com.android.internal.widget.remotecompose.core.operations.Theme;
 import com.android.internal.widget.remotecompose.player.RemoteComposeDocument;
@@ -105,10 +106,16 @@ public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachSta
         mARContext.setDensity(mDensity);
         mARContext.setUseChoreographer(true);
         setContentDescription(mDocument.getDocument().getContentDescription());
+
         updateClickAreas();
         requestLayout();
         mARContext.loadFloat(RemoteContext.ID_TOUCH_EVENT_TIME, -Float.MAX_VALUE);
         invalidate();
+        Integer fps = (Integer) mDocument.getDocument().getProperty(Header.DOC_DESIRED_FPS);
+        if (fps != null && fps > 0) {
+            mMaxFrameRate = fps;
+            mMaxFrameDelay = (long) (1000 / mMaxFrameRate);
+        }
     }
 
     @Override

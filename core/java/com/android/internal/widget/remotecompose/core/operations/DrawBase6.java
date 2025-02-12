@@ -173,11 +173,11 @@ public abstract class DrawBase6 extends PaintOperation implements VariableSuppor
             String v5Name,
             String v6Name) {
         return serializer
-                .add(v1Name, mV1, mValue1)
-                .add(v2Name, mV2, mValue2)
-                .add(v3Name, mV3, mValue3)
-                .add(v4Name, mV4, mValue4)
-                .add(v5Name, mV5, mValue5)
-                .add(v6Name, mV6, mValue6);
+                .add(v1Name, mValue1, mV1)
+                .add(v2Name, mValue2, mV2)
+                .add(v3Name, mValue3, mV3)
+                .add(v4Name, mValue4, mV4)
+                .add(v5Name, mValue5, mV5)
+                .add(v6Name, mValue6, mV6);
     }
 }

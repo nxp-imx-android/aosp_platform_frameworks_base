@@ -34,6 +34,9 @@ import com.android.internal.widget.remotecompose.core.operations.utilities.Anima
 import com.android.internal.widget.remotecompose.core.operations.utilities.NanMap;
 import com.android.internal.widget.remotecompose.core.operations.utilities.easing.FloatAnimation;
 import com.android.internal.widget.remotecompose.core.operations.utilities.easing.SpringStopEngine;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
+import com.android.internal.widget.remotecompose.core.serialize.SerializeTags;
 
 import java.util.List;
 
@@ -42,7 +45,7 @@ import java.util.List;
  * like injecting the width of the component int draw rect As well as supporting generalized
  * animation floats. The floats represent a RPN style calculator
  */
-public class FloatExpression extends Operation implements VariableSupport {
+public class FloatExpression extends Operation implements VariableSupport, Serializable {
     private static final int OP_CODE = Operations.ANIMATED_FLOAT;
     private static final String CLASS_NAME = "FloatExpression";
     public int mId;
@@ -335,5 +338,15 @@ public class FloatExpression extends Operation implements VariableSupport {
     @Override
     public String deepToString(@NonNull String indent) {
         return indent + toString();
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .addTags(SerializeTags.EXPRESSION)
+                .add("type", CLASS_NAME)
+                .add("id", mId)
+                .addFloatExpressionSrc("srcValues", mSrcValue)
+                .add("animation", mFloatAnimation);
     }
 }

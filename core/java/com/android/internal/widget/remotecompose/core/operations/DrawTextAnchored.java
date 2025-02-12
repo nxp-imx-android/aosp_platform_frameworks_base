@@ -26,11 +26,13 @@ import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.List;
 
 /** Draw Text in Anchored to a point */
-public class DrawTextAnchored extends PaintOperation implements VariableSupport {
+public class DrawTextAnchored extends PaintOperation implements VariableSupport, Serializable {
     private static final int OP_CODE = Operations.DRAW_TEXT_ANCHOR;
     private static final String CLASS_NAME = "DrawTextAnchored";
     int mTextID;
@@ -237,5 +239,17 @@ public class DrawTextAnchored extends PaintOperation implements VariableSupport 
         float x = mOutX + getHorizontalOffset();
         float y = Float.isNaN(mOutPanY) ? mOutY : mOutY + getVerticalOffset();
         context.drawTextRun(mTextID, 0, -1, 0, 1, x, y, (mFlags & ANCHOR_TEXT_RTL) == 1);
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .add("type", CLASS_NAME)
+                .add("textId", mTextID)
+                .add("x", mX, mOutX)
+                .add("y", mY, mOutY)
+                .add("panX", mPanX, mOutPanX)
+                .add("panY", mPanY, mOutPanY)
+                .add("flags", mFlags);
     }
 }

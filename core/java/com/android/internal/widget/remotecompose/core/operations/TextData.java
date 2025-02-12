@@ -27,11 +27,13 @@ import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
 import com.android.internal.widget.remotecompose.core.operations.utilities.StringSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.List;
 
 /** Operation to deal with Text data */
-public class TextData extends Operation implements SerializableToString {
+public class TextData extends Operation implements SerializableToString, Serializable {
     private static final int OP_CODE = Operations.DATA_TEXT;
     private static final String CLASS_NAME = "TextData";
     public final int mTextId;
@@ -130,5 +132,10 @@ public class TextData extends Operation implements SerializableToString {
     @NonNull
     private String getSerializedName() {
         return "DATA_TEXT";
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer.add("type", CLASS_NAME).add("textId", mTextId).add("text", mText);
     }
 }

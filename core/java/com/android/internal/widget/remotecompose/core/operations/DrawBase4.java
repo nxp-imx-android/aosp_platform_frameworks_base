@@ -158,9 +158,9 @@ public abstract class DrawBase4 extends PaintOperation implements VariableSuppor
     protected MapSerializer serialize(
             MapSerializer serializer, String x1Name, String y1Name, String x2Name, String y2Name) {
         return serializer
-                .add(x1Name, mX1, mX1Value)
-                .add(y1Name, mY1, mY1Value)
-                .add(x2Name, mX2, mX2Value)
-                .add(y2Name, mY2, mY2Value);
+                .add(x1Name, mX1Value, mX1)
+                .add(y1Name, mY1Value, mY1)
+                .add(x2Name, mX2Value, mX2)
+                .add(y2Name, mY2Value, mY2);
     }
 }

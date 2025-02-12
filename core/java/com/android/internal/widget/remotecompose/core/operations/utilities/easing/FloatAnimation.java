@@ -18,8 +18,11 @@ package com.android.internal.widget.remotecompose.core.operations.utilities.easi
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
+
 /** Support Animation of the FloatExpression */
-public class FloatAnimation extends Easing {
+public class FloatAnimation extends Easing implements Serializable {
     float[] mSpec;
     // mSpec[0] = duration
     // int(mSpec[1]) = num_of_param << 16 | type
@@ -390,5 +393,15 @@ public class FloatAnimation extends Easing {
      */
     public float getInitialValue() {
         return mInitialValue;
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .add("type", "FloatAnimation")
+                .add("initialValue", mInitialValue)
+                .add("targetValue", mInitialValue)
+                .add("duration", mInitialValue)
+                .add("easing", Easing.getString(mEasingCurve.getType()));
     }
 }

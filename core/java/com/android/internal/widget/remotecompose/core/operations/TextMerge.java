@@ -25,11 +25,13 @@ import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.List;
 
 /** Operation to deal with Text data */
-public class TextMerge extends Operation {
+public class TextMerge extends Operation implements Serializable {
     private static final int OP_CODE = Operations.TEXT_MERGE;
     private static final String CLASS_NAME = "TextMerge";
     public int mTextId;
@@ -125,5 +127,14 @@ public class TextMerge extends Operation {
     @Override
     public String deepToString(@NonNull String indent) {
         return indent + toString();
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .add("type", CLASS_NAME)
+                .add("id", mTextId)
+                .add("leftId", mSrcId1)
+                .add("rightId", mSrcId2);
     }
 }

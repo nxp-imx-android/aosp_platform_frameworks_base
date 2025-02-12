@@ -26,6 +26,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.Componen
 import com.android.internal.widget.remotecompose.core.operations.utilities.ArrayAccess;
 import com.android.internal.widget.remotecompose.core.operations.utilities.CollectionsAccess;
 import com.android.internal.widget.remotecompose.core.operations.utilities.DataMap;
+import com.android.internal.widget.remotecompose.core.operations.utilities.IntMap;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -392,6 +393,7 @@ public abstract class RemoteContext {
      * @param width original width of the document when created
      * @param height original height of the document when created
      * @param capabilities bitmask of capabilities used in the document (TBD)
+     * @param properties properties of the document (TBD)
      */
     public void header(
             int majorVersion,
@@ -399,13 +401,15 @@ public abstract class RemoteContext {
             int patchVersion,
             int width,
             int height,
-            long capabilities) {
+            long capabilities,
+            IntMap<Object> properties) {
         mRemoteComposeState.setWindowWidth(width);
         mRemoteComposeState.setWindowHeight(height);
         mDocument.setVersion(majorVersion, minorVersion, patchVersion);
         mDocument.setWidth(width);
         mDocument.setHeight(height);
         mDocument.setRequiredCapabilities(capabilities);
+        mDocument.setProperties(properties);
     }
 
     /**
