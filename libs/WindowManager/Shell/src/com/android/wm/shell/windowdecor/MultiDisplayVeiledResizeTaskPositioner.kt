@@ -237,8 +237,12 @@ class MultiDisplayVeiledResizeTaskPositioner(
             val startDisplayLayout = displayController.getDisplayLayout(startDisplayId)
             val currentDisplayLayout = displayController.getDisplayLayout(displayId)
 
-            if (startDisplayLayout == null || currentDisplayLayout == null) {
-                // Fall back to single-display drag behavior if any display layout is unavailable.
+            if (startDisplayId == displayId
+                || startDisplayLayout == null || currentDisplayLayout == null) {
+                // Fall back to single-display drag behavior if:
+                // 1. The drag destination display is the same as the start display. This prevents
+                // unnecessary animations caused by minor width/height changes due to DPI scaling.
+                // 2. Either the starting or current display layout is unavailable.
                 DragPositioningCallbackUtility.updateTaskBounds(
                     repositionTaskBounds,
                     taskBoundsAtDragStart,

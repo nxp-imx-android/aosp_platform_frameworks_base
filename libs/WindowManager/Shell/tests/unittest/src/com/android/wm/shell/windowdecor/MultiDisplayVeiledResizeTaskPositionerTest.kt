@@ -249,6 +249,25 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
+    fun testDragResize_movesTaskOnSameDisplay_noPxDpConversion() = runOnUiThread {
+        taskPositioner.onDragPositioningStart(
+            CTRL_TYPE_UNDEFINED,
+            DISPLAY_ID_0,
+            STARTING_BOUNDS.left.toFloat(),
+            STARTING_BOUNDS.top.toFloat(),
+        )
+
+        taskPositioner.onDragPositioningEnd(
+            DISPLAY_ID_0,
+            STARTING_BOUNDS.left.toFloat() + 70,
+            STARTING_BOUNDS.top.toFloat() + 20,
+        )
+
+        verify(spyDisplayLayout0, never()).localPxToGlobalDp(any(), any())
+        verify(spyDisplayLayout0, never()).globalDpToLocalPx(any(), any())
+    }
+
+    @Test
     fun testDragResize_movesTaskToNewDisplay() = runOnUiThread {
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_UNDEFINED,
