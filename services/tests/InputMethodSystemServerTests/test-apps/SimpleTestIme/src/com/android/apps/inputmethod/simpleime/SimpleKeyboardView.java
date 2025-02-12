@@ -23,6 +23,7 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.WindowInsets;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -105,6 +106,15 @@ final class SimpleKeyboardView extends FrameLayout {
         super(context, attrs, defStyleAttr, 0 /* defStyleRes */);
         LayoutInflater.from(context).inflate(R.layout.qwerty_10_9_9, this, true);
         mapSoftKeys();
+    }
+
+    @Override
+    public WindowInsets onApplyWindowInsets(WindowInsets insets) {
+        // Handle edge to edge for navigationBars insets (system nav bar)
+        // and captionBars insets (IME navigation bar).
+        final int insetBottom = insets.getInsets(WindowInsets.Type.systemBars()).bottom;
+        setPadding(getPaddingLeft(), getPaddingTop(), getPaddingRight(), insetBottom);
+        return insets.inset(0, 0, 0, insetBottom);
     }
 
     /**
