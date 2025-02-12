@@ -32,6 +32,7 @@ android_test {
         "androidx.test.rules",
         "hamcrest-library",
         "mockito-target-inline-minus-junit4",
+        "mockito-target-extended",
         "platform-compat-test-rules",
         "platform-test-annotations",
         "platformprotosnano",
