@@ -517,4 +517,9 @@
          capabilities. -->
     <string-array name="config_unsupported_network_capabilities" translatable="false"></string-array>
     <java-symbol type="array" name="config_unsupported_network_capabilities" />
+
+    <!-- Whether to enable APDU sender optimization i.e. a logical channel is opened and
+         kept open for multiple APDU commands within one session.-->
+    <bool name="euicc_optimize_apdu_sender">false</bool>
+    <java-symbol type="bool" name="euicc_optimize_apdu_sender" />
 </resources>
