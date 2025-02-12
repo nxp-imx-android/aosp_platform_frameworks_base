@@ -759,7 +759,6 @@ public abstract class WMShellModule {
             FocusTransitionObserver focusTransitionObserver,
             DesktopModeEventLogger desktopModeEventLogger,
             DesktopModeUiEventLogger desktopModeUiEventLogger,
-            DesktopTilingDecorViewModel desktopTilingDecorViewModel,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             Optional<BubbleController> bubbleController,
             OverviewToDesktopTransitionObserver overviewToDesktopTransitionObserver,
@@ -798,7 +797,6 @@ public abstract class WMShellModule {
                 mainHandler,
                 desktopModeEventLogger,
                 desktopModeUiEventLogger,
-                desktopTilingDecorViewModel,
                 desktopWallpaperActivityTokenProvider,
                 bubbleController,
                 overviewToDesktopTransitionObserver,
@@ -990,7 +988,8 @@ public abstract class WMShellModule {
             DesktopModeUiEventLogger desktopModeUiEventLogger,
             WindowDecorTaskResourceLoader taskResourceLoader,
             RecentsTransitionHandler recentsTransitionHandler,
-            DesktopModeCompatPolicy desktopModeCompatPolicy
+            DesktopModeCompatPolicy desktopModeCompatPolicy,
+            DesktopTilingDecorViewModel desktopTilingDecorViewModel
     ) {
         if (!DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)) {
             return Optional.empty();
@@ -1006,7 +1005,8 @@ public abstract class WMShellModule {
                 desktopTasksLimiter, appHandleEducationController, appToWebEducationController,
                 windowDecorCaptionHandleRepository, activityOrientationChangeHandler,
                 focusTransitionObserver, desktopModeEventLogger, desktopModeUiEventLogger,
-                taskResourceLoader, recentsTransitionHandler, desktopModeCompatPolicy));
+                taskResourceLoader, recentsTransitionHandler, desktopModeCompatPolicy,
+                desktopTilingDecorViewModel));
     }
 
     @WMSingleton
@@ -1278,10 +1278,10 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static DesktopWindowingEducationTooltipController
-            provideDesktopWindowingEducationTooltipController(
-                    Context context,
-                    AdditionalSystemViewContainer.Factory additionalSystemViewContainerFactory,
-                    DisplayController displayController) {
+    provideDesktopWindowingEducationTooltipController(
+            Context context,
+            AdditionalSystemViewContainer.Factory additionalSystemViewContainerFactory,
+            DisplayController displayController) {
         return new DesktopWindowingEducationTooltipController(
                 context, additionalSystemViewContainerFactory, displayController);
     }

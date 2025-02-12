@@ -149,6 +149,8 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.extension.InsetsStateKt;
 import com.android.wm.shell.windowdecor.extension.TaskInfoKt;
+import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel;
+import com.android.wm.shell.windowdecor.tiling.SnapEventHandler;
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder;
 
 import kotlin.Pair;
@@ -173,7 +175,7 @@ import java.util.function.Supplier;
  */
 
 public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
-        FocusTransitionListener {
+        FocusTransitionListener, SnapEventHandler {
     private static final String TAG = "DesktopModeWindowDecorViewModel";
 
     private final DesktopModeWindowDecoration.Factory mDesktopModeWindowDecorFactory;
@@ -255,6 +257,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final WindowDecorTaskResourceLoader mTaskResourceLoader;
     private final RecentsTransitionHandler mRecentsTransitionHandler;
     private final DesktopModeCompatPolicy mDesktopModeCompatPolicy;
+    private final DesktopTilingDecorViewModel mDesktopTilingDecorViewModel;
 
     public DesktopModeWindowDecorViewModel(
             Context context,
@@ -292,7 +295,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             DesktopModeUiEventLogger desktopModeUiEventLogger,
             WindowDecorTaskResourceLoader taskResourceLoader,
             RecentsTransitionHandler recentsTransitionHandler,
-            DesktopModeCompatPolicy desktopModeCompatPolicy) {
+            DesktopModeCompatPolicy desktopModeCompatPolicy,
+            DesktopTilingDecorViewModel desktopTilingDecorViewModel) {
         this(
                 context,
                 shellExecutor,
@@ -335,7 +339,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 desktopModeUiEventLogger,
                 taskResourceLoader,
                 recentsTransitionHandler,
-                desktopModeCompatPolicy);
+                desktopModeCompatPolicy,
+                desktopTilingDecorViewModel);
     }
 
     @VisibleForTesting
@@ -381,7 +386,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             DesktopModeUiEventLogger desktopModeUiEventLogger,
             WindowDecorTaskResourceLoader taskResourceLoader,
             RecentsTransitionHandler recentsTransitionHandler,
-            DesktopModeCompatPolicy desktopModeCompatPolicy) {
+            DesktopModeCompatPolicy desktopModeCompatPolicy,
+            DesktopTilingDecorViewModel desktopTilingDecorViewModel) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -452,7 +458,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mTaskResourceLoader = taskResourceLoader;
         mRecentsTransitionHandler = recentsTransitionHandler;
         mDesktopModeCompatPolicy = desktopModeCompatPolicy;
-
+        mDesktopTilingDecorViewModel = desktopTilingDecorViewModel;
+        mDesktopTasksController.setSnapEventHandler(this);
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -723,8 +730,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 decoration.mTaskInfo,
                 left ? SnapPosition.LEFT : SnapPosition.RIGHT,
                 left ? ResizeTrigger.SNAP_LEFT_MENU : ResizeTrigger.SNAP_RIGHT_MENU,
-                inputMethod,
-                decoration);
+                inputMethod);
 
         decoration.closeHandleMenu();
         decoration.closeMaximizeMenu();
@@ -883,6 +889,33 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             }
         }
         return snapshotList;
+    }
+
+    @Override
+    public boolean snapToHalfScreen(@NonNull RunningTaskInfo taskInfo,
+            @NonNull Rect currentDragBounds, @NonNull SnapPosition position) {
+        return mDesktopTilingDecorViewModel.snapToHalfScreen(taskInfo,
+                mWindowDecorByTaskId.get(taskInfo.taskId), position, currentDragBounds);
+    }
+
+    @Override
+    public void removeTaskIfTiled(int displayId, int taskId) {
+        mDesktopTilingDecorViewModel.removeTaskIfTiled(displayId, taskId);
+    }
+
+    @Override
+    public void onUserChange() {
+        mDesktopTilingDecorViewModel.onUserChange();
+    }
+
+    @Override
+    public void onOverviewAnimationStateChange(boolean running) {
+        mDesktopTilingDecorViewModel.onOverviewAnimationStateChange(running);
+    }
+
+    @Override
+    public boolean moveTaskToFrontIfTiled(@NonNull RunningTaskInfo taskInfo) {
+        return mDesktopTilingDecorViewModel.moveTaskToFrontIfTiled(taskInfo);
     }
 
     private class DesktopModeTouchEventListener extends GestureDetector.SimpleOnGestureListener
@@ -1238,8 +1271,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             taskInfo, decoration.mTaskSurface,
                             new PointF(e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)),
                             newTaskBounds, decoration.calculateValidDragArea(),
-                            new Rect(mOnDragStartInitialBounds), e,
-                            mWindowDecorByTaskId.get(taskInfo.taskId));
+                            new Rect(mOnDragStartInitialBounds), e);
                     if (touchingButton) {
                         // We need the input event to not be consumed here to end the ripple
                         // effect on the touched button. We will reset drag state in the ensuing
