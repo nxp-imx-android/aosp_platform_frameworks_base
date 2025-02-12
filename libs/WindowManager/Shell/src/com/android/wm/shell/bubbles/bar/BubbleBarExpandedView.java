@@ -46,6 +46,7 @@ import com.android.wm.shell.bubbles.BubbleTaskView;
 import com.android.wm.shell.bubbles.BubbleTaskViewHelper;
 import com.android.wm.shell.bubbles.Bubbles;
 import com.android.wm.shell.bubbles.RegionSamplingProvider;
+import com.android.wm.shell.dagger.HasWMComponent;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.handles.RegionSamplingHelper;
 import com.android.wm.shell.taskview.TaskView;
@@ -205,6 +206,9 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     protected void onFinishInflate() {
         super.onFinishInflate();
         Context context = getContext();
+        if (context instanceof HasWMComponent) {
+            ((HasWMComponent) context).getWMComponent().inject(this);
+        }
         setElevation(getResources().getDimensionPixelSize(R.dimen.bubble_elevation));
         mCaptionHeight = context.getResources().getDimensionPixelSize(
                 R.dimen.bubble_bar_expanded_view_caption_height);
