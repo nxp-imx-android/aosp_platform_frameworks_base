@@ -168,6 +168,10 @@ public class AutoclickTypePanel {
     }
 
     public void hide() {
+        // Sets the button background to unselected styling, this is necessary to make sure the
+        // button background styling is correct when the panel shows up next time.
+        toggleSelectedButtonStyle(mSelectedButton, /* isSelected= */ false);
+
         mWindowManager.removeView(mContentView);
     }
 
