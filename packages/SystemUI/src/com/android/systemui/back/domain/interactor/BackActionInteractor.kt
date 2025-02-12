@@ -23,9 +23,7 @@ import android.window.OnBackInvokedDispatcher
 import android.window.WindowOnBackInvokedDispatcher
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags.glanceableHubBackAction
 import com.android.systemui.Flags.predictiveBackAnimateShade
-import com.android.systemui.communal.domain.interactor.CommunalBackActionInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.plugins.statusbar.StatusBarStateController
@@ -52,7 +50,6 @@ constructor(
     private val windowRootViewVisibilityInteractor: WindowRootViewVisibilityInteractor,
     private val shadeBackActionInteractor: ShadeBackActionInteractor,
     private val qsController: QuickSettingsController,
-    private val communalBackActionInteractor: CommunalBackActionInteractor,
 ) : CoreStartable {
 
     private var isCallbackRegistered = false
@@ -113,12 +110,6 @@ constructor(
         if (qsController.expanded) {
             shadeBackActionInteractor.animateCollapseQs(false)
             return true
-        }
-        if (glanceableHubBackAction()) {
-            if (communalBackActionInteractor.canBeDismissed()) {
-                communalBackActionInteractor.onBackPressed()
-                return true
-            }
         }
         if (shouldBackBeHandled()) {
             if (shadeBackActionInteractor.canBeCollapsed()) {
