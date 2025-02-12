@@ -25,6 +25,7 @@ import com.android.systemui.res.R
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
 import com.android.systemui.volume.dialog.sliders.dagger.VolumeDialogSliderComponent
 import com.android.systemui.volume.dialog.sliders.ui.viewmodel.VolumeDialogSlidersViewModel
+import com.android.systemui.volume.dialog.ui.binder.ViewBinder
 import com.android.systemui.volume.dialog.ui.viewmodel.VolumeDialogViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -38,16 +39,16 @@ class VolumeDialogSlidersViewBinder
 constructor(
     private val viewModel: VolumeDialogSlidersViewModel,
     private val dialogViewModel: VolumeDialogViewModel,
-) {
+) : ViewBinder {
 
-    fun CoroutineScope.bind(view: View) {
+    override fun CoroutineScope.bind(view: View) {
         val floatingSlidersContainer: ViewGroup =
             view.requireViewById(R.id.volume_dialog_floating_sliders_container)
         val mainSliderContainer: View =
             view.requireViewById(R.id.volume_dialog_main_slider_container)
         val background: View = view.requireViewById(R.id.volume_dialog_background)
-        val settingsButton: View = view.requireViewById(R.id.volume_dialog_settings)
-        val ringerDrawer: View = view.requireViewById(R.id.volume_ringer_drawer)
+        val bottomSection: View = view.requireViewById(R.id.volume_dialog_bottom_section_container)
+        val topSection: View = view.requireViewById(R.id.volume_dialog_top_section_container)
 
         launch { dialogViewModel.addTouchableBounds(mainSliderContainer, floatingSlidersContainer) }
         viewModel.sliders
@@ -55,7 +56,7 @@ constructor(
                 bindSlider(
                     uiModel.sliderComponent,
                     mainSliderContainer,
-                    arrayOf(mainSliderContainer, background, settingsButton, ringerDrawer),
+                    arrayOf(mainSliderContainer, background, bottomSection, topSection),
                 )
 
                 val floatingSliderViewBinders = uiModel.floatingSliderComponent
