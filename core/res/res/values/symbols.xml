@@ -3264,6 +3264,7 @@
   <java-symbol type="dimen" name="notification_content_margin" />
   <java-symbol type="dimen" name="notification_2025_margin" />
   <java-symbol type="dimen" name="notification_2025_content_margin_top" />
+  <java-symbol type="dimen" name="notification_2025_content_margin_start" />
   <java-symbol type="dimen" name="notification_2025_expand_button_horizontal_icon_padding" />
   <java-symbol type="dimen" name="notification_2025_expand_button_reduced_end_padding" />
   <java-symbol type="dimen" name="notification_progress_margin_horizontal" />
@@ -4705,7 +4706,8 @@
   <java-symbol type="dimen" name="conversation_icon_container_top_padding" />
   <java-symbol type="dimen" name="conversation_icon_container_top_padding_small_avatar" />
   <java-symbol type="layout" name="notification_template_material_conversation" />
-  <java-symbol type="layout" name="notification_2025_template_conversation" />
+  <java-symbol type="layout" name="notification_2025_template_collapsed_conversation" />
+  <java-symbol type="layout" name="notification_2025_template_expanded_conversation" />
   <java-symbol type="dimen" name="button_padding_horizontal_material" />
   <java-symbol type="dimen" name="button_inset_horizontal_material" />
   <java-symbol type="layout" name="conversation_face_pile_layout" />

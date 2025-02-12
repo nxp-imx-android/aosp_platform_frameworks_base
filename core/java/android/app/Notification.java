@@ -18,6 +18,7 @@ package android.app;
 
 import static android.annotation.Dimension.DP;
 import static android.app.Flags.evenlyDividedCallStyleActionLayout;
+import static android.app.Flags.notificationsRedesignTemplates;
 import static android.app.admin.DevicePolicyResources.Drawables.Source.NOTIFICATION;
 import static android.app.admin.DevicePolicyResources.Drawables.Style.SOLID_COLORED;
 import static android.app.admin.DevicePolicyResources.Drawables.WORK_PROFILE_ICON;
@@ -818,7 +819,8 @@ public class Notification implements Parcelable
                      R.layout.notification_2025_template_expanded_base,
                      R.layout.notification_2025_template_heads_up_base,
                      R.layout.notification_2025_template_header,
-                     R.layout.notification_2025_template_conversation,
+                     R.layout.notification_2025_template_collapsed_conversation,
+                     R.layout.notification_2025_template_expanded_conversation,
                      R.layout.notification_2025_template_collapsed_call,
                      R.layout.notification_2025_template_expanded_call,
                      R.layout.notification_2025_template_collapsed_messaging,
@@ -5963,7 +5965,8 @@ public class Notification implements Parcelable
                     || resId == getCompactHeadsUpBaseLayoutResource()
                     || resId == getMessagingCompactHeadsUpLayoutResource()
                     || resId == getCollapsedMessagingLayoutResource()
-                    || resId == getCollapsedMediaLayoutResource());
+                    || resId == getCollapsedMediaLayoutResource()
+                    || resId == getCollapsedConversationLayoutResource());
             RemoteViews contentView = new BuilderRemoteViews(mContext.getApplicationInfo(), resId);
 
             resetStandardTemplate(contentView);
@@ -7673,12 +7676,18 @@ public class Notification implements Parcelable
             }
         }
 
+        // Note: In the 2025 redesign, we use two separate layouts for the collapsed and expanded
+        //  version of conversations. See below.
         private int getConversationLayoutResource() {
-            if (Flags.notificationsRedesignTemplates()) {
-                return R.layout.notification_2025_template_conversation;
-            } else {
-                return R.layout.notification_template_material_conversation;
-            }
+            return R.layout.notification_template_material_conversation;
+        }
+
+        private int getCollapsedConversationLayoutResource() {
+            return R.layout.notification_2025_template_collapsed_conversation;
+        }
+
+        private int getExpandedConversationLayoutResource() {
+            return R.layout.notification_2025_template_expanded_conversation;
         }
 
         private int getCollapsedCallLayoutResource() {
@@ -9483,7 +9492,8 @@ public class Notification implements Parcelable
             } else {
                 isOneToOne = !isGroupConversation();
             }
-            if (isHeaderless && isOneToOne && TextUtils.isEmpty(conversationTitle)) {
+            if ((isHeaderless || notificationsRedesignTemplates())
+                    && isOneToOne && TextUtils.isEmpty(conversationTitle)) {
                 conversationTitle = getOtherPersonName();
             }
 
@@ -9493,22 +9503,27 @@ public class Notification implements Parcelable
                     .viewType(viewType)
                     .highlightExpander(isConversationLayout)
                     .hideProgress(true)
-                    .title(isHeaderless ? conversationTitle : null)
                     .text(null)
                     .hideLeftIcon(isOneToOne)
-                    .hideRightIcon(hideRightIcons || isOneToOne)
-                    .headerTextSecondary(isHeaderless ? null : conversationTitle)
-                    .skipTopLineAlignment(true);
+                    .hideRightIcon(hideRightIcons || isOneToOne);
+            if (notificationsRedesignTemplates()) {
+                p.title((isConversationLayout || isCollapsed) ? conversationTitle : null)
+                        .headerTextSecondary(
+                                (isConversationLayout || isCollapsed) ? null : conversationTitle)
+                        .hideAppName(isCollapsed)
+                        .skipTopLineAlignment(!isConversationLayout && !isCollapsed);
+            } else {
+                p.title(isHeaderless ? conversationTitle : null)
+                        .headerTextSecondary(isHeaderless ? null : conversationTitle);
+            }
             RemoteViews contentView = mBuilder.applyStandardTemplateWithActions(
-                    isConversationLayout
-                            ? mBuilder.getConversationLayoutResource()
-                            : isCollapsed
-                                    ? mBuilder.getCollapsedMessagingLayoutResource()
-                                    : mBuilder.getExpandedMessagingLayoutResource(),
+                    getMessagingLayoutResource(isConversationLayout, isCollapsed),
                     p,
                     bindResult);
-            if (isConversationLayout) {
+            if (isConversationLayout && !notificationsRedesignTemplates()) {
+                // Redesign note: This view is replaced by the `title`, which is handled normally.
                 mBuilder.setTextViewColorPrimary(contentView, R.id.conversation_text, p);
+                // Redesign note: This special divider is no longer needed.
                 mBuilder.setTextViewColorSecondary(contentView, R.id.app_name_divider, p);
             }
 
@@ -9537,6 +9552,17 @@ public class Notification implements Parcelable
                         "setShortcutIcon", mShortcutIcon);
                 contentView.setBoolean(R.id.status_bar_latest_event_content,
                         "setIsImportantConversation", isImportantConversation);
+                if (notificationsRedesignTemplates() && !isCollapsed) {
+                    // Align the title to the app/small icon in the expanded form. In other layouts,
+                    // this margin is added directly to the notification_main_column parent, but for
+                    // messages we don't want the margin to be applied to the actual messaging
+                    // content since it can contain icons that are displayed below the app icon.
+                    Resources res = mBuilder.mContext.getResources();
+                    int marginStart = res.getDimensionPixelSize(
+                            R.dimen.notification_2025_content_margin_start);
+                    contentView.setViewLayoutMargin(R.id.title,
+                            RemoteViews.MARGIN_START, marginStart, TypedValue.COMPLEX_UNIT_PX);
+                }
             }
             if (isHeaderless) {
                 // Collapsed legacy messaging style has a 1-line limit.
@@ -9547,6 +9573,33 @@ public class Notification implements Parcelable
             contentView.setBundle(R.id.status_bar_latest_event_content, "setData",
                     mBuilder.mN.extras);
             return contentView;
+        }
+
+        private int getMessagingLayoutResource(boolean isConversationLayout, boolean isCollapsed) {
+            if (notificationsRedesignTemplates()) {
+                // Note: We eventually would like to use the same layouts for both conversations and
+                //  regular messaging notifications.
+                if (isConversationLayout) {
+                    if (isCollapsed) {
+                        return mBuilder.getCollapsedConversationLayoutResource();
+                    } else {
+                        return mBuilder.getExpandedConversationLayoutResource();
+                    }
+                } else {
+                    if (isCollapsed) {
+                        return mBuilder.getCollapsedMessagingLayoutResource();
+                    } else {
+                        return mBuilder.getExpandedMessagingLayoutResource();
+                    }
+                }
+
+            } else {
+                return isConversationLayout
+                        ? mBuilder.getConversationLayoutResource()
+                        : isCollapsed
+                                ? mBuilder.getCollapsedMessagingLayoutResource()
+                                : mBuilder.getExpandedMessagingLayoutResource();
+            }
         }
 
         private CharSequence getKey(Person person) {
