@@ -127,17 +127,17 @@ public class MediaQualityService extends SystemService {
         super(context);
         mContext = context;
         mHalAmbientBacklightCallback = new HalAmbientBacklightCallback();
-        mPictureProfileAdjListener = new PictureProfileAdjustmentListenerImpl(mContext);
-        mSoundProfileAdjListener = new SoundProfileAdjustmentListenerImpl(mContext);
         mPackageManager = mContext.getPackageManager();
         mPictureProfileTempIdMap = new BiMap<>();
         mSoundProfileTempIdMap = new BiMap<>();
         mMediaQualityDbHelper = new MediaQualityDbHelper(mContext);
-        mMqDatabaseUtils = new MqDatabaseUtils(mContext);
         mMediaQualityDbHelper.setWriteAheadLoggingEnabled(true);
         mMediaQualityDbHelper.setIdleConnectionTimeout(30);
-        mHalNotifier = new HalNotifier();
         mMqManagerNotifier = new MqManagerNotifier();
+        mMqDatabaseUtils = new MqDatabaseUtils();
+        mHalNotifier = new HalNotifier();
+        mPictureProfileAdjListener = new PictureProfileAdjustmentListenerImpl();
+        mSoundProfileAdjListener = new SoundProfileAdjustmentListenerImpl();
 
         // The package info in the context isn't initialized in the way it is for normal apps,
         // so the standard, name-based context.getSharedPreferences doesn't work. Instead, we
@@ -166,15 +166,17 @@ public class MediaQualityService extends SystemService {
         if (mMediaQuality != null) {
             try {
                 mMediaQuality.setAmbientBacklightCallback(mHalAmbientBacklightCallback);
+
+                mPpChangedListener = mMediaQuality.getPictureProfileListener();
+                mSpChangedListener = mMediaQuality.getSoundProfileListener();
+
                 mMediaQuality.setPictureProfileAdjustmentListener(mPictureProfileAdjListener);
                 mMediaQuality.setSoundProfileAdjustmentListener(mSoundProfileAdjListener);
+
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to set ambient backlight detector callback", e);
             }
         }
-
-        mPpChangedListener = IPictureProfileChangedListener.Stub.asInterface(binder);
-        mSpChangedListener = ISoundProfileChangedListener.Stub.asInterface(binder);
 
         publishBinderService(Context.MEDIA_QUALITY_SERVICE, new BinderService());
     }
@@ -225,7 +227,6 @@ public class MediaQualityService extends SystemService {
                         PictureProfile.ERROR_NO_PERMISSION,
                         Binder.getCallingUid(), Binder.getCallingPid());
             }
-
             synchronized (mPictureProfileLock) {
                 ContentValues values = MediaQualityUtils.getContentValues(dbId,
                         pp.getProfileType(),
@@ -233,7 +234,6 @@ public class MediaQualityService extends SystemService {
                         pp.getPackageName(),
                         pp.getInputId(),
                         pp.getParameters());
-
                 updateDatabaseOnPictureProfileAndNotifyManagerAndHal(values, pp.getParameters());
             }
         }
@@ -792,7 +792,6 @@ public class MediaQualityService extends SystemService {
             }
         }
 
-        //TODO: do I need a lock here?
         @Override
         public List<ParameterCapability> getParameterCapabilities(
                 List<String> names, UserHandle user) {
@@ -809,14 +808,20 @@ public class MediaQualityService extends SystemService {
 
         private List<ParameterCapability> getListParameterCapability(ParamCapability[] caps) {
             List<ParameterCapability> pcList = new ArrayList<>();
-            for (ParamCapability pcHal : caps) {
-                String name = MediaQualityUtils.getParameterName(pcHal.name);
-                boolean isSupported = pcHal.isSupported;
-                int type = pcHal.defaultValue == null ? 0 : pcHal.defaultValue.getTag() + 1;
-                Bundle bundle = MediaQualityUtils.convertToCaps(type, pcHal.range);
 
-                pcList.add(new ParameterCapability(name, isSupported, type, bundle));
+            if (caps != null) {
+                for (ParamCapability pcHal : caps) {
+                    if (pcHal != null) {
+                        String name = MediaQualityUtils.getParameterName(pcHal.name);
+                        boolean isSupported = pcHal.isSupported;
+                        int type = pcHal.defaultValue == null ? 0 : pcHal.defaultValue.getTag() + 1;
+                        Bundle bundle = MediaQualityUtils.convertToCaps(type, pcHal.range);
+
+                        pcList.add(new ParameterCapability(name, isSupported, type, bundle));
+                    }
+                }
             }
+
             return pcList;
         }
 
@@ -1112,8 +1117,6 @@ public class MediaQualityService extends SystemService {
 
     private final class MqDatabaseUtils {
 
-        MediaQualityDbHelper mMediaQualityDbHelper;
-
         private PictureProfile getPictureProfile(Long dbId) {
             String selection = BaseParameters.PARAMETER_ID + " = ?";
             String[] selectionArguments = {Long.toString(dbId)};
@@ -1205,8 +1208,7 @@ public class MediaQualityService extends SystemService {
                     /*groupBy=*/ null, /*having=*/ null, /*orderBy=*/ null);
         }
 
-        private MqDatabaseUtils(Context context) {
-            mMediaQualityDbHelper = new MediaQualityDbHelper(context);
+        private MqDatabaseUtils() {
         }
     }
 
@@ -1404,11 +1406,13 @@ public class MediaQualityService extends SystemService {
 
         private void notifyHalOnPictureProfileChange(Long dbId, PersistableBundle params) {
             // TODO: only notify HAL when the profile is active / being used
-            try {
-                mPpChangedListener.onPictureProfileChanged(convertToHalPictureProfile(dbId,
-                        params));
-            } catch (RemoteException e) {
-                Slog.e(TAG, "Failed to notify HAL on picture profile change.", e);
+            if (mPpChangedListener != null) {
+                try {
+                    mPpChangedListener.onPictureProfileChanged(convertToHalPictureProfile(dbId,
+                            params));
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Failed to notify HAL on picture profile change.", e);
+                }
             }
         }
 
@@ -1429,10 +1433,13 @@ public class MediaQualityService extends SystemService {
 
         private void notifyHalOnSoundProfileChange(Long dbId, PersistableBundle params) {
             // TODO: only notify HAL when the profile is active / being used
-            try {
-                mSpChangedListener.onSoundProfileChanged(convertToHalSoundProfile(dbId, params));
-            } catch (RemoteException e) {
-                Slog.e(TAG, "Failed to notify HAL on sound profile change.", e);
+            if (mSpChangedListener != null) {
+                try {
+                    mSpChangedListener
+                            .onSoundProfileChanged(convertToHalSoundProfile(dbId, params));
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Failed to notify HAL on sound profile change.", e);
+                }
             }
         }
 
@@ -1488,9 +1495,6 @@ public class MediaQualityService extends SystemService {
 
     private final class PictureProfileAdjustmentListenerImpl extends
             IPictureProfileAdjustmentListener.Stub {
-        MqDatabaseUtils mMqDatabaseUtils;
-        MqManagerNotifier mMqManagerNotifier;
-        HalNotifier mHalNotifier;
 
         @Override
         public void onPictureProfileAdjusted(
@@ -1542,18 +1546,13 @@ public class MediaQualityService extends SystemService {
             return null;
         }
 
-        private PictureProfileAdjustmentListenerImpl(Context context) {
-            mMqDatabaseUtils = new MqDatabaseUtils(context);
-            mMqManagerNotifier = new MqManagerNotifier();
-            mHalNotifier = new HalNotifier();
+        private PictureProfileAdjustmentListenerImpl() {
+
         }
     }
 
     private final class SoundProfileAdjustmentListenerImpl extends
             ISoundProfileAdjustmentListener.Stub {
-        MqDatabaseUtils mMqDatabaseUtils;
-        MqManagerNotifier mMqManagerNotifier;
-        HalNotifier mHalNotifier;
 
         @Override
         public void onSoundProfileAdjusted(
@@ -1598,10 +1597,8 @@ public class MediaQualityService extends SystemService {
             return null;
         }
 
-        private SoundProfileAdjustmentListenerImpl(Context context) {
-            mMqDatabaseUtils = new MqDatabaseUtils(context);
-            mMqManagerNotifier = new MqManagerNotifier();
-            mHalNotifier = new HalNotifier();
+        private SoundProfileAdjustmentListenerImpl() {
+
         }
     }
 
