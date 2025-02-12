@@ -37,7 +37,9 @@ import androidx.compose.ui.unit.constrain
 import androidx.compose.ui.unit.dp
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
+import com.android.systemui.statusbar.chips.ui.viewmodel.formatTimeRemainingData
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberChronometerState
+import com.android.systemui.statusbar.chips.ui.viewmodel.rememberTimeRemainingState
 import kotlin.math.min
 
 @Composable
@@ -119,7 +121,26 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
         }
 
         is OngoingActivityChipModel.Active.ShortTimeDelta -> {
-            // TODO(b/372657935): Implement ShortTimeDelta content in compose.
+            val timeRemainingState = rememberTimeRemainingState(futureTimeMillis = viewModel.time)
+
+            timeRemainingState.timeRemainingData?.let {
+                val text = formatTimeRemainingData(it)
+                Text(
+                    text = text,
+                    style = textStyle,
+                    color = textColor,
+                    softWrap = false,
+                    modifier =
+                        modifier.hideTextIfDoesNotFit(
+                            text = text,
+                            textStyle = textStyle,
+                            textMeasurer = textMeasurer,
+                            maxTextWidth = maxTextWidth,
+                            startPadding = startPadding,
+                            endPadding = endPadding,
+                        ),
+                )
+            }
         }
 
         is OngoingActivityChipModel.Active.IconOnly -> {
