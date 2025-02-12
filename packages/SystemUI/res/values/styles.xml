@@ -93,6 +93,19 @@
         <item name="android:textColor">?android:attr/colorPrimary</item>
     </style>
 
+    <style name="StatusBar.EventChip">
+        <item name="android:orientation">horizontal</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:clipToOutline">true</item>
+        <item name="android:background">@drawable/statusbar_chip_bg</item>
+        <item name="android:minHeight">@dimen/ongoing_appops_chip_height</item>
+        <item name="android:maxWidth">@dimen/ongoing_appops_chip_max_width</item>
+        <item name="android:minWidth">@dimen/ongoing_appops_chip_min_width</item>
+    </style>
+
     <style name="Chipbar" />
 
     <style name="Chipbar.Text" parent="@*android:style/TextAppearance.DeviceDefault.Notification.Title">

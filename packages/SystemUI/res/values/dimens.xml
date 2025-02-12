@@ -1254,6 +1254,8 @@
     <dimen name="ongoing_appops_chip_side_padding">8dp</dimen>
     <!-- Margin between icons of Ongoing App Ops chip -->
     <dimen name="ongoing_appops_chip_icon_margin">4dp</dimen>
+    <!-- Side margins for the content of an appops chip -->
+    <dimen name="ongoing_appops_chip_content_horizontal_margin">10dp</dimen>
     <!-- Icon size of Ongoing App Ops chip -->
     <dimen name="ongoing_appops_chip_icon_size">16sp</dimen>
     <!-- Radius of Ongoing App Ops chip corners -->
