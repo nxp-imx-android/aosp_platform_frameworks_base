@@ -185,6 +185,7 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             }
 
             boolean isDeviceGroup = false;
+            boolean hideGroupItem = false;
             GroupStatus groupStatus = null;
             OngoingSessionStatus ongoingSessionStatus = null;
             ConnectionState connectionState = ConnectionState.DISCONNECTED;
@@ -216,68 +217,38 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                     clickListener = v -> cancelMuteAwaitConnection();
                 } else if (device.getState() == MediaDeviceState.STATE_GROUPING) {
                     connectionState = ConnectionState.CONNECTING;
-                } else if (mShouldGroupSelectedMediaItems
-                        && mController.getSelectedMediaDevice().size() > 1
-                        && isDeviceIncluded(mController.getSelectedMediaDevice(), device)) {
-                    if (!mediaItem.isFirstDeviceInGroup()) {
-                        mItemLayout.setVisibility(View.GONE);
-                        return;
-                    } else {
+                } else if (mShouldGroupSelectedMediaItems && hasMultipleSelectedDevices()
+                        && isSelected) {
+                    if (mediaItem.isFirstDeviceInGroup()) {
                         isDeviceGroup = true;
-                    }
-                } else if (device.hasSubtext()) {
-                    subtitle = device.getSubtextString();
-                    boolean isActiveWithOngoingSession =
-                            device.hasOngoingSession() && (currentlyConnected || isSelected);
-                    if (isActiveWithOngoingSession) {
-                        ongoingSessionStatus = new OngoingSessionStatus(
-                                device.isHostForOngoingSession());
-                        connectionState = ConnectionState.CONNECTED;
                     } else {
-                        if (currentlyConnected) {
-                            connectionState = ConnectionState.CONNECTED;
-                        }
-                        clickListener = getClickListenerBasedOnSelectionBehavior(device);
-                        deviceDisabled = clickListener == null;
-                        deviceStatusIcon = getDeviceStatusIcon(device, device.hasOngoingSession());
+                        hideGroupItem = true;
                     }
-                } else if (device.getState() == MediaDeviceState.STATE_CONNECTING_FAILED) {
-                    deviceStatusIcon = mContext.getDrawable(R.drawable.media_output_status_failed);
-                    subtitle = mContext.getString(R.string.media_output_dialog_connect_failed);
-                    clickListener = v -> onItemClick(v, device);
-                } else if (mController.getSelectedMediaDevice().size() > 1 && isSelected) {
-                    // selected device in group
-                    groupStatus = new GroupStatus(
-                            true /* selected */,
-                            isDeselectable /* deselectable */);
-                    connectionState = ConnectionState.CONNECTED;
-                } else if (currentlyConnected) {
-                    connectionState = ConnectionState.CONNECTED;
-                    // single selected device
-                    if (device.hasOngoingSession()) {
-                        ongoingSessionStatus = new OngoingSessionStatus(
-                                device.isHostForOngoingSession());
-                    } else if (mController.isCurrentConnectedDeviceRemote()
-                            && !mController.getSelectableMediaDevice().isEmpty()) {
-                        //If device is connected and there's other selectable devices, layout as
-                        // one of selected devices.
-                        groupStatus = new GroupStatus(
-                                true /* selected */,
-                                isDeselectable /* isDeselectable */);
-                    }
-                } else if (isSelectable) {
-                    //groupable device
-                    groupStatus = new GroupStatus(false /* selected */, true /* deselectable */);
-                    if (!Flags.disableTransferWhenAppsDoNotSupport()
-                            || isTransferable
-                            || hasRouteListingPreferenceItem) {
+                } else { // A connected or disconnected device.
+                    subtitle = device.hasSubtext() ? device.getSubtextString() : null;
+                    ongoingSessionStatus = getOngoingSessionStatus(device);
+                    groupStatus = getGroupStatus(isSelected, isSelectable, isDeselectable);
+
+                    if (device.getState() == MediaDeviceState.STATE_CONNECTING_FAILED) {
+                        deviceStatusIcon = mContext.getDrawable(
+                                R.drawable.media_output_status_failed);
+                        subtitle = mContext.getString(R.string.media_output_dialog_connect_failed);
                         clickListener = v -> onItemClick(v, device);
+                    } else if (currentlyConnected || isSelected) {
+                        connectionState = ConnectionState.CONNECTED;
+                    } else { // disconnected
+                        if (isSelectable) { // groupable device
+                            if (!Flags.disableTransferWhenAppsDoNotSupport() || isTransferable
+                                    || hasRouteListingPreferenceItem) {
+                                clickListener = v -> onItemClick(v, device);
+                            }
+                        } else {
+                            deviceStatusIcon = getDeviceStatusIcon(device,
+                                    device.hasOngoingSession());
+                            clickListener = getClickListenerBasedOnSelectionBehavior(device);
+                        }
+                        deviceDisabled = clickListener == null;
                     }
-                    deviceDisabled = clickListener == null;
-                } else {
-                    deviceStatusIcon = getDeviceStatusIcon(device, device.hasOngoingSession());
-                    clickListener = getClickListenerBasedOnSelectionBehavior(device);
-                    deviceDisabled = clickListener == null;
                 }
             }
 
@@ -286,26 +257,69 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             }
 
             if (isDeviceGroup) {
-                String sessionName = mController.getSessionName() == null ? ""
-                        : mController.getSessionName().toString();
-                updateTitle(sessionName);
-                updateUnmutedVolumeIcon(null /* device */);
-                updateGroupSeekBar(getGroupItemContentDescription(sessionName));
-                updateEndAreaForDeviceGroup();
-                updateItemBackground(ConnectionState.CONNECTED);
+                renderDeviceGroupItem();
             } else {
-                updateTitle(device.getName());
-                updateTitleIcon(device, connectionState, restrictVolumeAdjustment);
-                updateSeekBar(device, connectionState, restrictVolumeAdjustment,
-                        getDeviceItemContentDescription(device));
-                updateEndArea(device, connectionState, groupStatus, ongoingSessionStatus);
-                updateLoadingIndicator(connectionState);
-                updateFullItemClickListener(clickListener);
-                updateContentAlpha(deviceDisabled);
-                updateSubtitle(subtitle);
-                updateDeviceStatusIcon(deviceStatusIcon);
-                updateItemBackground(connectionState);
+                renderDeviceItem(hideGroupItem, device, connectionState, restrictVolumeAdjustment,
+                        groupStatus, ongoingSessionStatus, clickListener, deviceDisabled, subtitle,
+                        deviceStatusIcon);
             }
+        }
+
+        private void renderDeviceItem(boolean hideGroupItem, MediaDevice device,
+                ConnectionState connectionState, boolean restrictVolumeAdjustment,
+                GroupStatus groupStatus, OngoingSessionStatus ongoingSessionStatus,
+                View.OnClickListener clickListener, boolean deviceDisabled, String subtitle,
+                Drawable deviceStatusIcon) {
+            if (hideGroupItem) {
+                mItemLayout.setVisibility(View.GONE);
+                return;
+            }
+            updateTitle(device.getName());
+            updateTitleIcon(device, connectionState, restrictVolumeAdjustment);
+            updateSeekBar(device, connectionState, restrictVolumeAdjustment,
+                    getDeviceItemContentDescription(device));
+            updateEndArea(device, connectionState, groupStatus, ongoingSessionStatus);
+            updateLoadingIndicator(connectionState);
+            updateFullItemClickListener(clickListener);
+            updateContentAlpha(deviceDisabled);
+            updateSubtitle(subtitle);
+            updateDeviceStatusIcon(deviceStatusIcon);
+            updateItemBackground(connectionState);
+        }
+
+        private void renderDeviceGroupItem() {
+            String sessionName = mController.getSessionName() == null ? ""
+                    : mController.getSessionName().toString();
+            updateTitle(sessionName);
+            updateUnmutedVolumeIcon(null /* device */);
+            updateGroupSeekBar(getGroupItemContentDescription(sessionName));
+            updateEndAreaForDeviceGroup();
+            updateItemBackground(ConnectionState.CONNECTED);
+        }
+
+        private OngoingSessionStatus getOngoingSessionStatus(MediaDevice device) {
+            return device.hasOngoingSession() ? new OngoingSessionStatus(
+                    device.isHostForOngoingSession()) : null;
+        }
+
+        private GroupStatus getGroupStatus(boolean isSelected, boolean isSelectable,
+                boolean isDeselectable) {
+            // A device should either be selectable or, when the device selected, the list should
+            // have other selectable or selected devices.
+            boolean selectedWithOtherGroupDevices =
+                    isSelected && (hasMultipleSelectedDevices() || hasSelectableDevices());
+            if (isSelectable || selectedWithOtherGroupDevices) {
+                return new GroupStatus(isSelected, isDeselectable);
+            }
+            return null;
+        }
+
+        private boolean hasMultipleSelectedDevices() {
+            return mController.getSelectedMediaDevice().size() > 1;
+        }
+
+        private boolean hasSelectableDevices() {
+            return !mController.getSelectableMediaDevice().isEmpty();
         }
 
         /** Renders the right side round pill button / checkbox. */
