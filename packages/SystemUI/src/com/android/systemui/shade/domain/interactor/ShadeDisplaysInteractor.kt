@@ -39,9 +39,7 @@ import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotif
 import com.android.systemui.statusbar.notification.row.NotificationRebindingTracker
 import com.android.systemui.statusbar.notification.stack.NotificationStackRebindingHider
 import com.android.systemui.statusbar.phone.ConfigurationForwarder
-import com.android.systemui.util.kotlin.getOrNull
 import com.android.window.flags.Flags
-import java.util.Optional
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
@@ -63,16 +61,13 @@ constructor(
     @Background private val bgScope: CoroutineScope,
     @Main private val mainThreadContext: CoroutineContext,
     private val shadeDisplayChangeLatencyTracker: ShadeDisplayChangeLatencyTracker,
-    shadeExpandedInteractor: Optional<ShadeExpandedStateInteractor>,
+    private val shadeExpandedInteractor: ShadeExpandedStateInteractor,
     private val shadeExpansionIntent: ShadeExpansionIntent,
     private val activeNotificationsInteractor: ActiveNotificationsInteractor,
     private val notificationRebindingTracker: NotificationRebindingTracker,
-    notificationStackRebindingHider: Optional<NotificationStackRebindingHider>,
+    private val notificationStackRebindingHider: NotificationStackRebindingHider,
     @ShadeDisplayAware private val configForwarder: ConfigurationForwarder,
 ) : CoreStartable {
-
-    private val shadeExpandedInteractor = requireOptional(shadeExpandedInteractor)
-    private val notificationStackRebindingHider = requireOptional(notificationStackRebindingHider)
 
     private val hasActiveNotifications: Boolean
         get() = activeNotificationsInteractor.areAnyNotificationsPresentValue
@@ -224,24 +219,5 @@ constructor(
         const val TAG = "ShadeDisplaysInteractor"
         const val COLLAPSE_EXPAND_REASON = "Shade window move"
         val TIMEOUT = 1.seconds
-
-        /**
-         * [ShadeDisplaysInteractor] is bound in the SystemUI module for all variants, but needs
-         * some specific dependencies to be bound from each variant (e.g.
-         * [ShadeExpandedStateInteractor] or [NotificationStackRebindingHider]). When those are not
-         * bound, this class is not expected to be instantiated, and trying to instantiate it would
-         * crash.
-         */
-        inline fun <reified T> requireOptional(optional: Optional<T>): T {
-            return optional.getOrNull()
-                ?: error(
-                    """
-                ${T::class.java.simpleName} must be provided for ShadeDisplaysInteractor to work.
-                If it is not, it means this is being instantiated in a SystemUI variant that
-                shouldn't.
-                """
-                        .trimIndent()
-                )
-        }
     }
 }

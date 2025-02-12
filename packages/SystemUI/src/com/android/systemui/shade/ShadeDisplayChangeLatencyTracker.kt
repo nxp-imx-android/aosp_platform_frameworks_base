@@ -24,8 +24,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.scene.ui.view.WindowRootView
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
-import com.android.systemui.util.kotlin.getOrNull
-import java.util.Optional
 import java.util.concurrent.CancellationException
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
@@ -51,22 +49,13 @@ import kotlinx.coroutines.withTimeout
 class ShadeDisplayChangeLatencyTracker
 @Inject
 constructor(
-    optionalShadeRootView: Optional<WindowRootView>,
+    private val shadeRootView: WindowRootView,
     @ShadeDisplayAware private val configurationRepository: ConfigurationRepository,
     private val latencyTracker: LatencyTracker,
     @Background private val bgScope: CoroutineScope,
     private val choreographerUtils: ChoreographerUtils,
 ) {
 
-    private val shadeRootView =
-        optionalShadeRootView.getOrNull()
-            ?: error(
-                """
-            ShadeRootView must be provided for ShadeDisplayChangeLatencyTracker to work.
-            If it is not, it means this is being instantiated in a SystemUI variant that shouldn't.
-            """
-                    .trimIndent()
-            )
     /**
      * We need to keep this always up to date eagerly to avoid delays receiving the new display ID.
      */

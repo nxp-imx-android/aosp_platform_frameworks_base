@@ -42,12 +42,12 @@ import com.android.systemui.shade.display.ShadeDisplayPolicyModule
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractorImpl
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
-import com.android.systemui.shade.domain.interactor.ShadeExpandedStateInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
+import com.android.systemui.statusbar.notification.stack.NotificationStackRebindingHider
+import com.android.systemui.statusbar.notification.stack.NotificationStackRebindingHiderImpl
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
 import com.android.systemui.statusbar.phone.ConfigurationForwarder
 import com.android.systemui.statusbar.policy.ConfigurationController
-import dagger.BindsOptionalOf
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
@@ -67,7 +67,7 @@ import javax.inject.Qualifier
  * By using this dedicated module, we ensure the notification shade window always utilizes the
  * correct display context and resources, regardless of the display it's on.
  */
-@Module(includes = [OptionalShadeDisplayAwareBindings::class, ShadeDisplayPolicyModule::class])
+@Module(includes = [ShadeDisplayPolicyModule::class])
 object ShadeDisplayAwareModule {
 
     /** Creates a new context for the shade window. */
@@ -242,17 +242,6 @@ object ShadeDisplayAwareModule {
         }
     }
 
-    @Provides
-    @IntoMap
-    @ClassKey(ShadeDisplaysInteractor::class)
-    fun provideShadeDisplaysInteractor(impl: Provider<ShadeDisplaysInteractor>): CoreStartable {
-        return if (ShadeWindowGoesAround.isEnabled) {
-            impl.get()
-        } else {
-            CoreStartable.NOP
-        }
-    }
-
     /**
      * Provided for making classes easier to test. In tests, a custom method to wait for the next
      * frame can be easily provided.
@@ -264,11 +253,25 @@ object ShadeDisplayAwareModule {
     fun provideShadeOnDefaultDisplayWhenLocked(): Boolean = true
 }
 
+/** Module that should be included only if the shade window [WindowRootView] is available. */
 @Module
-internal interface OptionalShadeDisplayAwareBindings {
-    @BindsOptionalOf fun bindOptionalOfWindowRootView(): WindowRootView
+object ShadeDisplayAwareWithShadeWindowModule {
+    @Provides
+    @IntoMap
+    @ClassKey(ShadeDisplaysInteractor::class)
+    fun provideShadeDisplaysInteractor(impl: Provider<ShadeDisplaysInteractor>): CoreStartable {
+        return if (ShadeWindowGoesAround.isEnabled) {
+            impl.get()
+        } else {
+            CoreStartable.NOP
+        }
+    }
 
-    @BindsOptionalOf fun bindOptionalOShadeExpandedStateInteractor(): ShadeExpandedStateInteractor
+    @Provides
+    @SysUISingleton
+    fun bindNotificationStackRebindingHider(
+        impl: NotificationStackRebindingHiderImpl
+    ): NotificationStackRebindingHider = impl
 }
 
 /**
