@@ -32,8 +32,6 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.SeekBar;
 
 import com.android.internal.R;
 
@@ -49,11 +47,6 @@ import com.android.internal.R;
  * TODO: Move this back into the API, as in the support library media router.
  */
 public class MediaRouteControllerDialog extends AlertDialog {
-    // Time to wait before updating the volume when the user lets go of the seek bar
-    // to allow the route provider time to propagate the change and publish a new
-    // route descriptor.
-    private static final int VOLUME_UPDATE_DELAY_MILLIS = 250;
-
     private final MediaRouter mRouter;
     private final MediaRouterCallback mCallback;
     private final MediaRouter.RouteInfo mRoute;
@@ -63,15 +56,14 @@ public class MediaRouteControllerDialog extends AlertDialog {
     private int[] mMediaRouteOnState = { R.attr.state_activated, R.attr.state_enabled };
     private Drawable mCurrentIconDrawable;
 
-    private LinearLayout mVolumeLayout;
-    private SeekBar mVolumeSlider;
-    private boolean mVolumeSliderTouched;
-
     private boolean mAttachedToWindow;
+
+    private final MediaRouteControllerContentManager mContentManager;
 
     public MediaRouteControllerDialog(Context context, int theme) {
         super(context, theme);
 
+        mContentManager = new MediaRouteControllerContentManager(context);
         mRouter = (MediaRouter) context.getSystemService(Context.MEDIA_ROUTER_SERVICE);
         mCallback = new MediaRouterCallback();
         mRoute = mRouter.getSelectedRoute();
@@ -96,47 +88,12 @@ public class MediaRouteControllerDialog extends AlertDialog {
         setView(customView, 0, 0, 0, 0);
         super.onCreate(savedInstanceState);
 
+        mContentManager.bindViews(customView);
+
         View customPanelView = getWindow().findViewById(R.id.customPanel);
         if (customPanelView != null) {
             customPanelView.setMinimumHeight(0);
         }
-        mVolumeLayout = customView.findViewById(R.id.media_route_volume_layout);
-        mVolumeSlider = customView.findViewById(R.id.media_route_volume_slider);
-        mVolumeSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            private final Runnable mStopTrackingTouch = new Runnable() {
-                @Override
-                public void run() {
-                    if (mVolumeSliderTouched) {
-                        mVolumeSliderTouched = false;
-                        updateVolume();
-                    }
-                }
-            };
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                if (mVolumeSliderTouched) {
-                    mVolumeSlider.removeCallbacks(mStopTrackingTouch);
-                } else {
-                    mVolumeSliderTouched = true;
-                }
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // Defer resetting mVolumeSliderTouched to allow the media route provider
-                // a little time to settle into its new state and publish the final
-                // volume update.
-                mVolumeSlider.postDelayed(mStopTrackingTouch, VOLUME_UPDATE_DELAY_MILLIS);
-            }
-
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    mRoute.requestSetVolume(progress);
-                }
-            }
-        });
 
         mMediaRouteButtonDrawable = obtainMediaRouteButtonDrawable();
         update();
@@ -184,7 +141,7 @@ public class MediaRouteControllerDialog extends AlertDialog {
         }
 
         setTitle(mRoute.getName());
-        updateVolume();
+        mContentManager.updateVolume();
 
         Drawable icon = getIconDrawable();
         if (icon != mCurrentIconDrawable) {
@@ -232,22 +189,6 @@ public class MediaRouteControllerDialog extends AlertDialog {
         }
     }
 
-    private void updateVolume() {
-        if (!mVolumeSliderTouched) {
-            if (isVolumeControlAvailable()) {
-                mVolumeLayout.setVisibility(View.VISIBLE);
-                mVolumeSlider.setMax(mRoute.getVolumeMax());
-                mVolumeSlider.setProgress(mRoute.getVolume());
-            } else {
-                mVolumeLayout.setVisibility(View.GONE);
-            }
-        }
-    }
-
-    private boolean isVolumeControlAvailable() {
-        return mRoute.getVolumeHandling() == MediaRouter.RouteInfo.PLAYBACK_VOLUME_VARIABLE;
-    }
-
     private final class MediaRouterCallback extends MediaRouter.SimpleCallback {
         @Override
         public void onRouteUnselected(MediaRouter router, int type, RouteInfo info) {
@@ -262,7 +203,7 @@ public class MediaRouteControllerDialog extends AlertDialog {
         @Override
         public void onRouteVolumeChanged(MediaRouter router, MediaRouter.RouteInfo route) {
             if (route == mRoute) {
-                updateVolume();
+                mContentManager.updateVolume();
             }
         }
 
