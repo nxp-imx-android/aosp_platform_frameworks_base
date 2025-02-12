@@ -32,6 +32,7 @@ import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.ITradeInMode;
+import android.os.RemoteException;
 import android.os.SystemProperties;
 import android.os.RemoteException;
 import android.provider.Settings;
@@ -245,6 +246,13 @@ public final class TradeInModeService extends SystemService {
             enforceTestingPermissions();
 
             return isForceEnabledForTesting();
+        }
+
+        @Override
+        @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
+        public int getHingeCount() throws RemoteException {
+            android.hardware.health.HingeInfo[] info = getHealthService().getHingeInfo();
+            return (info == null) ? 0 : info.length;
         }
 
         private void enforceTestingPermissions() {

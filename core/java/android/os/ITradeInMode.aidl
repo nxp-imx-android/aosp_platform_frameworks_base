@@ -92,4 +92,9 @@ interface ITradeInMode {
      * ENTER_TRADE_IN_MODE permission is required and ro.debuggable must be 1.
      */
     boolean isTesting();
+    /**
+     * Get HingeCount on device
+     *
+     */
+    int getHingeCount();
 }
