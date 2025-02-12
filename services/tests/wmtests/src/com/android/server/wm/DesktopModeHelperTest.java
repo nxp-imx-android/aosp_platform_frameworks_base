@@ -177,22 +177,41 @@ public class DesktopModeHelperTest {
     }
 
     @Test
-    public void isDeviceEligibleForDesktopMode_configDEModeOn_returnsTrue() {
+    public void isDeviceEligibleForDesktopMode_configDEModeOnAndIntDispHostsDesktop_returnsTrue() {
+        doReturn(true).when(mMockResources).getBoolean(eq(R.bool.config_isDesktopModeSupported));
+        doReturn(true).when(mMockResources)
+                .getBoolean(eq(R.bool.config_canInternalDisplayHostDesktops));
+
+        assertThat(DesktopModeHelper.isDeviceEligibleForDesktopMode(mMockContext)).isTrue();
+    }
+
+    @Test
+    public void isDeviceEligibleForDesktopMode_configDEModeOffAndIntDispHostsDesktop_returnsFalse() {
+        doReturn(true).when(mMockResources).getBoolean(eq(R.bool.config_isDesktopModeSupported));
+        doReturn(false).when(mMockResources)
+                .getBoolean(eq(R.bool.config_canInternalDisplayHostDesktops));
+
+        assertThat(DesktopModeHelper.isDeviceEligibleForDesktopMode(mMockContext)).isFalse();
+    }
+
+    @Test
+    public void isDeviceEligibleForDesktopMode_configDEModeOnAndIntDispHostsDesktopOff_returnsFalse() {
+        doReturn(false).when(mMockResources).getBoolean(eq(R.bool.config_isDesktopModeSupported));
         doReturn(true).when(mMockResources).getBoolean(eq(R.bool.config_canInternalDisplayHostDesktops));
 
-        assertThat(DesktopModeHelper.isInternalDisplayEligibleToHostDesktops(mMockContext)).isTrue();
+        assertThat(DesktopModeHelper.isDeviceEligibleForDesktopMode(mMockContext)).isFalse();
     }
 
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_MODE_THROUGH_DEV_OPTION)
     @Test
     public void isDeviceEligibleForDesktopMode_supportFlagOff_returnsFalse() {
-        assertThat(DesktopModeHelper.isInternalDisplayEligibleToHostDesktops(mMockContext)).isFalse();
+        assertThat(DesktopModeHelper.isDeviceEligibleForDesktopMode(mMockContext)).isFalse();
     }
 
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_MODE_THROUGH_DEV_OPTION)
     @Test
     public void isDeviceEligibleForDesktopMode_supportFlagOn_returnsFalse() {
-        assertThat(DesktopModeHelper.isInternalDisplayEligibleToHostDesktops(mMockContext)).isFalse();
+        assertThat(DesktopModeHelper.isDeviceEligibleForDesktopMode(mMockContext)).isFalse();
     }
 
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_MODE_THROUGH_DEV_OPTION)
@@ -202,7 +221,7 @@ public class DesktopModeHelperTest {
                 eq(R.bool.config_isDesktopModeDevOptionSupported)
         );
 
-        assertThat(DesktopModeHelper.isInternalDisplayEligibleToHostDesktops(mMockContext)).isTrue();
+        assertThat(DesktopModeHelper.isDeviceEligibleForDesktopMode(mMockContext)).isTrue();
     }
 
     private void resetEnforceDeviceRestriction() throws Exception {

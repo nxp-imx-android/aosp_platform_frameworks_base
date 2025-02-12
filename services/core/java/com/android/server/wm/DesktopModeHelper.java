@@ -51,13 +51,8 @@ public final class DesktopModeHelper {
     }
 
     /**
-     * Return {@code true} if the current device can hosts desktop sessions on its internal display.
+     * Return {@code true} if the current device supports desktop mode.
      */
-    @VisibleForTesting
-    static boolean canInternalDisplayHostDesktops(@NonNull Context context) {
-        return context.getResources().getBoolean(R.bool.config_canInternalDisplayHostDesktops);
-    }
-
     // TODO(b/337819319): use a companion object instead.
     private static boolean isDesktopModeSupported(@NonNull Context context) {
         return context.getResources().getBoolean(R.bool.config_isDesktopModeSupported);
@@ -68,32 +63,45 @@ public final class DesktopModeHelper {
     }
 
     /**
+     * Return {@code true} if the current device can hosts desktop sessions on its internal display.
+     */
+    @VisibleForTesting
+    static boolean canInternalDisplayHostDesktops(@NonNull Context context) {
+        return context.getResources().getBoolean(R.bool.config_canInternalDisplayHostDesktops);
+    }
+
+    /**
      * Check if Desktop mode should be enabled because the dev option is shown and enabled.
      */
     private static boolean isDesktopModeEnabledByDevOption(@NonNull Context context) {
         return DesktopModeFlags.isDesktopModeForcedEnabled() && (isDesktopModeDevOptionsSupported(
-                context) || isInternalDisplayEligibleToHostDesktops(context));
+                context) || isDeviceEligibleForDesktopMode(context));
     }
 
     @VisibleForTesting
-    static boolean isInternalDisplayEligibleToHostDesktops(@NonNull Context context) {
-        return !shouldEnforceDeviceRestrictions() || canInternalDisplayHostDesktops(context) || (
-                Flags.enableDesktopModeThroughDevOption() && isDesktopModeDevOptionsSupported(
-                        context));
+    static boolean isDeviceEligibleForDesktopMode(@NonNull Context context) {
+        if (!shouldEnforceDeviceRestrictions()) {
+            return true;
+        }
+        final boolean desktopModeSupported = isDesktopModeSupported(context)
+                && canInternalDisplayHostDesktops(context);
+        final boolean desktopModeSupportedByDevOptions =
+                Flags.enableDesktopModeThroughDevOption()
+                        && isDesktopModeDevOptionsSupported(context);
+        return desktopModeSupported || desktopModeSupportedByDevOptions;
     }
 
     /**
      * Return {@code true} if desktop mode can be entered on the current device.
      */
     static boolean canEnterDesktopMode(@NonNull Context context) {
-        return (isInternalDisplayEligibleToHostDesktops(context)
-                && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODE.isTrue()
-                && (isDesktopModeSupported(context) || !shouldEnforceDeviceRestrictions()))
+        return (isDeviceEligibleForDesktopMode(context)
+                && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODE.isTrue())
                 || isDesktopModeEnabledByDevOption(context);
     }
 
     /** Returns {@code true} if desktop experience wallpaper is supported on this device. */
     public static boolean isDeviceEligibleForDesktopExperienceWallpaper(@NonNull Context context) {
-        return enableConnectedDisplaysWallpaper() && canEnterDesktopMode(context);
+        return enableConnectedDisplaysWallpaper() && isDeviceEligibleForDesktopMode(context);
     }
 }
