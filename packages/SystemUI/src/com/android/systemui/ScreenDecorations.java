@@ -189,7 +189,7 @@ public class ScreenDecorations implements
 
     @VisibleForTesting
     protected void showCameraProtection(@NonNull Path protectionPath, @NonNull Rect bounds) {
-        if (mFaceScanningFactory.shouldShowFaceScanningAnim()) {
+        if (mDebug || mFaceScanningFactory.shouldShowFaceScanningAnim()) {
             DisplayCutoutView overlay = (DisplayCutoutView) getOverlayView(
                     mFaceScanningViewId);
             if (overlay != null) {
@@ -393,6 +393,12 @@ public class ScreenDecorations implements
                 removeAllOverlays();
                 removeHwcOverlay();
                 setupDecorations();
+            });
+        }
+
+        if (cmd.getFaceAuthScreen() != null) {
+            mExecutor.execute(() -> {
+                debugTriggerFaceAuth(cmd.getFaceAuthScreen());
             });
         }
     };
@@ -627,6 +633,15 @@ public class ScreenDecorations implements
             }
 
             overlay.removeView(id);
+        }
+    }
+
+    private void debugTriggerFaceAuth(int screen) {
+        DisplayCutoutView overlay = (DisplayCutoutView) getOverlayView(
+                mFaceScanningViewId);
+        if (overlay != null) {
+            overlay.setDebug(true);
+            mCameraListener.debugFaceAuth(screen);
         }
     }
 
@@ -1360,6 +1375,7 @@ public class ScreenDecorations implements
         final List<Rect> mBounds = new ArrayList();
         final Rect mBoundingRect = new Rect();
         Rect mTotalBounds = new Rect();
+        boolean mDebug = false;
 
         private int mColor = Color.BLACK;
         private int mRotation;
@@ -1376,6 +1392,10 @@ public class ScreenDecorations implements
                 getViewTreeObserver().addOnDrawListener(() -> Log.i(TAG,
                         getWindowTitleByPos(pos) + " drawn in rot " + mRotation));
             }
+        }
+
+        public void setDebug(boolean debug) {
+            mDebug = debug;
         }
 
         public void setColor(int color) {
