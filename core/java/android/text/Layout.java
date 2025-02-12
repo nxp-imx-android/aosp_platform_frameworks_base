@@ -672,7 +672,7 @@ public abstract class Layout {
         // LINT.IfChange(hct_darken)
         var lab = new double[3];
         ColorUtils.colorToLAB(color, lab);
-        return lab[0] < 50.0;
+        return lab[0] <= 50.0;
         // LINT.ThenChange(/libs/hwui/hwui/DrawTextFunctor.h:hct_darken)
     }
 
