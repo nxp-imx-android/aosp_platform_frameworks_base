@@ -76,7 +76,6 @@ import org.mockito.junit.MockitoJUnit
 class NotificationShadeDepthControllerTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
-    private val applicationScope = kosmos.testScope.backgroundScope
     @Mock private lateinit var windowRootViewBlurInteractor: WindowRootViewBlurInteractor
     @Mock private lateinit var statusBarStateController: StatusBarStateController
     @Mock private lateinit var blurUtils: BlurUtils
@@ -134,7 +133,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
                 context,
                 ResourcesSplitShadeStateController(),
                 windowRootViewBlurInteractor,
-                applicationScope,
                 appZoomOutOptional,
                 dumpManager,
                 configurationController,
