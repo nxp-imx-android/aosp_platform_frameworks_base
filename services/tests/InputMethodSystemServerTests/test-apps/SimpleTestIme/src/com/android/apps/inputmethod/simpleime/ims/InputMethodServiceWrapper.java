@@ -111,12 +111,6 @@ public class InputMethodServiceWrapper extends InputMethodService {
     }
 
     @Override
-    public void requestHideSelf(int flags) {
-        Log.i(TAG, "requestHideSelf() " + flags);
-        super.requestHideSelf(flags);
-    }
-
-    @Override
     public void onConfigurationChanged(Configuration newConfig) {
         Log.i(TAG, "onConfigurationChanged() " + newConfig);
         super.onConfigurationChanged(newConfig);
