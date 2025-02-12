@@ -977,6 +977,16 @@ flag {
 }
 
 flag {
+    name: "use_notif_inflation_thread_for_footer"
+    namespace: "systemui"
+    description: "use the @NotifInflation thread for FooterView and EmptyShadeView inflation"
+    bug: "375320642"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "notify_power_manager_user_activity_background"
     namespace: "systemui"
     description: "Decide whether to notify the user activity to power manager in the background thread."
