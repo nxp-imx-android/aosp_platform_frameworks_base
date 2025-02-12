@@ -640,7 +640,7 @@ final class WifiDisplayAdapter extends DisplayAdapter {
         }
 
         @Override
-        public void performTraversalLocked(SurfaceControl.Transaction t) {
+        public void configureSurfaceLocked(SurfaceControl.Transaction t) {
             if (mSurface != null) {
                 setSurfaceLocked(t, mSurface);
             }

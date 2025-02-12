@@ -228,14 +228,17 @@ final class LogicalDisplay {
      */
     private final boolean mIsAnisotropyCorrectionEnabled;
 
+    private final boolean mSyncedResolutionSwitchEnabled;
+
     private boolean mCanHostTasks;
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice) {
-        this(displayId, layerStack, primaryDisplayDevice, false, false);
+        this(displayId, layerStack, primaryDisplayDevice, false, false, false);
     }
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice,
-            boolean isAnisotropyCorrectionEnabled, boolean isAlwaysRotateDisplayDeviceEnabled) {
+            boolean isAnisotropyCorrectionEnabled, boolean isAlwaysRotateDisplayDeviceEnabled,
+            boolean isSyncedResolutionSwitchEnabled) {
         mDisplayId = displayId;
         mLayerStack = layerStack;
         mPrimaryDisplayDevice = primaryDisplayDevice;
@@ -248,6 +251,7 @@ final class LogicalDisplay {
         mBaseDisplayInfo.thermalBrightnessThrottlingDataId = mThermalBrightnessThrottlingDataId;
         mIsAnisotropyCorrectionEnabled = isAnisotropyCorrectionEnabled;
         mAlwaysRotateDisplayDeviceEnabled = isAlwaysRotateDisplayDeviceEnabled;
+        mSyncedResolutionSwitchEnabled = isSyncedResolutionSwitchEnabled;
         mCanHostTasks = (mDisplayId == Display.DEFAULT_DISPLAY);
     }
 
@@ -791,7 +795,12 @@ final class LogicalDisplay {
         }
 
         mDisplayPosition.set(mTempDisplayRect.left, mTempDisplayRect.top);
+
+        if (mSyncedResolutionSwitchEnabled || displayDeviceInfo.type == Display.TYPE_VIRTUAL) {
+            device.configureDisplaySizeLocked(t);
+        }
         device.setProjectionLocked(t, orientation, mTempLayerStackRect, mTempDisplayRect);
+        device.configureSurfaceLocked(t);
     }
 
     /**

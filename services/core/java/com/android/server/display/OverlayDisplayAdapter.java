@@ -341,7 +341,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
         }
 
         @Override
-        public void performTraversalLocked(SurfaceControl.Transaction t) {
+        public void configureSurfaceLocked(SurfaceControl.Transaction t) {
             if (mSurfaceTexture != null) {
                 if (mSurface == null) {
                     mSurface = new Surface(mSurfaceTexture);

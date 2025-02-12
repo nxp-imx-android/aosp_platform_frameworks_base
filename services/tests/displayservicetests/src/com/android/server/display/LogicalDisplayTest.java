@@ -159,7 +159,8 @@ public class LogicalDisplayTest {
         mDisplayDeviceInfo.type = Display.TYPE_INTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
                 /*isAnisotropyCorrectionEnabled=*/ true,
-                /*isAlwaysRotateDisplayDeviceEnabled=*/ true);
+                /*isAlwaysRotateDisplayDeviceEnabled=*/ true,
+                /*isSyncedResolutionSwitchEnabled=*/ true);
 
         // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
         // to using the whole screen. This is because display will rescale it back to fill the
@@ -188,7 +189,8 @@ public class LogicalDisplayTest {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
                 /*isAnisotropyCorrectionEnabled=*/ true,
-                /*isAlwaysRotateDisplayDeviceEnabled=*/ true);
+                /*isAlwaysRotateDisplayDeviceEnabled=*/ true,
+                /*isSyncedResolutionSwitchEnabled=*/ true);
 
         // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
         // to using the whole screen. This is because display will rescale it back to fill the
@@ -217,7 +219,8 @@ public class LogicalDisplayTest {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
                 /*isAnisotropyCorrectionEnabled=*/ true,
-                /*isAlwaysRotateDisplayDeviceEnabled=*/ true);
+                /*isAlwaysRotateDisplayDeviceEnabled=*/ true,
+                /*isSyncedResolutionSwitchEnabled=*/ true);
 
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.logicalWidth = DISPLAY_WIDTH;
@@ -275,7 +278,8 @@ public class LogicalDisplayTest {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
                 /*isAnisotropyCorrectionEnabled=*/ true,
-                /*isAlwaysRotateDisplayDeviceEnabled=*/ true);
+                /*isAlwaysRotateDisplayDeviceEnabled=*/ true,
+                /*isSyncedResolutionSwitchEnabled=*/ true);
 
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.logicalWidth = DISPLAY_WIDTH;
@@ -304,7 +308,8 @@ public class LogicalDisplayTest {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
                 /*isAnisotropyCorrectionEnabled=*/ true,
-                /*isAlwaysRotateDisplayDeviceEnabled=*/ true);
+                /*isAlwaysRotateDisplayDeviceEnabled=*/ true,
+                /*isSyncedResolutionSwitchEnabled=*/ true);
 
         // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
         // to using the whole screen. This is because display will rescale it back to fill the
@@ -379,11 +384,24 @@ public class LogicalDisplayTest {
     }
 
     @Test
+    public void testSetDisplaySizeIsCalledDuringConfigureDisplayLocked() {
+        mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
+                /*isAnisotropyCorrectionEnabled=*/ true,
+                /*isAlwaysRotateDisplayDeviceEnabled=*/ true,
+                /*isSyncedResolutionSwitchEnabled=*/ true);
+        mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
+        SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
+        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
+        verify(mDisplayDevice).configureDisplaySizeLocked(eq(t));
+    }
+
+    @Test
     public void testGetDisplayPositionAlwaysRotateDisplayEnabled() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
                 /*isAnisotropyCorrectionEnabled=*/ true,
-                /*isAlwaysRotateDisplayDeviceEnabled=*/ true);
+                /*isAlwaysRotateDisplayDeviceEnabled=*/ true,
+                /*isSyncedResolutionSwitchEnabled=*/ true);
         mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
         Point expectedPosition = new Point();
 
