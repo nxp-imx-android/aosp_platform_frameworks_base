@@ -2016,3 +2016,13 @@ flag {
     description: "Enables the clock fidget animation"
     bug: "364664389"
 }
+
+flag {
+    name: "notifications_launch_radius"
+    namespace: "systemui"
+    description: "Fixes a discrepancy in corner radius between expanding notification and opening window during launch animations."
+    bug: "396054791"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
