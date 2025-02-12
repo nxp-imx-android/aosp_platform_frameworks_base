@@ -249,6 +249,12 @@ public final class TradeInModeService extends SystemService {
 
         @Override
         @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
+        public int getScreenPartStatus() throws RemoteException {
+            return 0;
+        }
+
+        @Override
+        @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
         public int getHingeCount() throws RemoteException {
             android.hardware.health.HingeInfo[] info = getHealthService().getHingeInfo();
             return (info == null) ? 0 : info.length;
