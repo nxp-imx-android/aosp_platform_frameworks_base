@@ -538,6 +538,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
             return mActive;
         }
 
+        @VisibleForTesting
+        long getScheduledClickTimeForTesting() {
+            return mScheduledClickTime;
+        }
+
         /**
          * Updates delay that should be used when scheduling clicks. The delay will be used only for
          * clicks scheduled after this point (pending click tasks are not affected).
