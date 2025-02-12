@@ -1021,6 +1021,12 @@ public abstract class Layout {
             return;
         }
 
+        if (!mSpannedText || mSpanColors == null) {
+            if (mPaint.getAlpha() == 0) {
+                return;
+            }
+        }
+
         var padding = Math.max(HIGH_CONTRAST_TEXT_BORDER_WIDTH_MIN_PX,
                 mPaint.getTextSize() * HIGH_CONTRAST_TEXT_BORDER_WIDTH_FACTOR);
         var cornerRadius = mPaint.density * HIGH_CONTRAST_TEXT_BACKGROUND_CORNER_RADIUS_DP;
