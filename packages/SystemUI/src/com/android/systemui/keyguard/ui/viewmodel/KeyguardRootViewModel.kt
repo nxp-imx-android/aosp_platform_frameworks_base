@@ -25,6 +25,7 @@ import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
+import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.PulseExpansionInteractor
@@ -47,6 +48,7 @@ import com.android.systemui.statusbar.notification.icon.ui.viewmodel.Notificatio
 import com.android.systemui.statusbar.phone.DozeParameters
 import com.android.systemui.statusbar.phone.ScreenOffAnimationController
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
+import com.android.systemui.util.kotlin.FlowDumperImpl
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.kotlin.sample
 import com.android.systemui.util.ui.AnimatableEvent
@@ -134,17 +136,21 @@ constructor(
     private val aodBurnInViewModel: AodBurnInViewModel,
     private val shadeInteractor: ShadeInteractor,
     wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
-) {
+    dumpManager: DumpManager,
+) : FlowDumperImpl(dumpManager) {
     val burnInLayerVisibility: Flow<Int> =
         keyguardTransitionInteractor.startedKeyguardTransitionStep
             .filter { it.to == AOD || it.to == LOCKSCREEN }
             .map { VISIBLE }
+            .dumpWhileCollecting("burnInLayerVisibility")
 
     val goneToAodTransition =
-        keyguardTransitionInteractor.transition(
-            edge = Edge.create(Scenes.Gone, AOD),
-            edgeWithoutSceneContainer = Edge.create(GONE, AOD),
-        )
+        keyguardTransitionInteractor
+            .transition(
+                edge = Edge.create(Scenes.Gone, AOD),
+                edgeWithoutSceneContainer = Edge.create(GONE, AOD),
+            )
+            .dumpWhileCollecting("goneToAodTransition")
 
     private val goneToAodTransitionRunning: Flow<Boolean> =
         goneToAodTransition
@@ -222,13 +228,15 @@ constructor(
         )
 
     /** Last point that the root view was tapped */
-    val lastRootViewTapPosition: Flow<Point?> = keyguardInteractor.lastRootViewTapPosition
+    val lastRootViewTapPosition: Flow<Point?> =
+        keyguardInteractor.lastRootViewTapPosition.dumpWhileCollecting("lastRootViewTapPosition")
 
     /**
      * The keyguard root view can be clipped as the shade is pulled down, typically only for
      * non-split shade cases.
      */
-    val topClippingBounds: Flow<Int?> = keyguardInteractor.topClippingBounds
+    val topClippingBounds: Flow<Int?> =
+        keyguardInteractor.topClippingBounds.dumpWhileCollecting("topClippingBounds")
 
     /** An observable for the alpha level for the entire keyguard root view. */
     fun alpha(viewState: ViewStateAccessor): Flow<Float> {
@@ -287,30 +295,37 @@ constructor(
                 }
             }
             .distinctUntilChanged()
+            .dumpWhileCollecting("alpha")
     }
 
     val scaleFromZoomOut: Flow<Float> =
-        keyguardInteractor.zoomOut.map { 1 - it * PUSHBACK_SCALE_FOR_LOCKSCREEN }
+        keyguardInteractor.zoomOut
+            .map { 1 - it * PUSHBACK_SCALE_FOR_LOCKSCREEN }
+            .dumpWhileCollecting("scaleFromZoomOut")
 
-    val translationY: Flow<Float> = aodBurnInViewModel.movement.map { it.translationY.toFloat() }
+    val translationY: Flow<Float> =
+        aodBurnInViewModel.movement
+            .map { it.translationY.toFloat() }
+            .dumpWhileCollecting("translationY")
 
     val translationX: Flow<StateToValue> =
         merge(
-            aodBurnInViewModel.movement.map {
-                StateToValue(to = AOD, value = it.translationX.toFloat())
-            },
-            lockscreenToGlanceableHubTransitionViewModel.keyguardTranslationX,
-            glanceableHubToLockscreenTransitionViewModel.keyguardTranslationX,
-        )
+                aodBurnInViewModel.movement.map {
+                    StateToValue(to = AOD, value = it.translationX.toFloat())
+                },
+                lockscreenToGlanceableHubTransitionViewModel.keyguardTranslationX,
+                glanceableHubToLockscreenTransitionViewModel.keyguardTranslationX,
+            )
+            .dumpWhileCollecting("translationX")
 
     fun updateBurnInParams(params: BurnInParameters) {
         aodBurnInViewModel.updateBurnInParams(params)
     }
 
     val scale: Flow<BurnInScaleViewModel> =
-        aodBurnInViewModel.movement.map {
-            BurnInScaleViewModel(scale = it.scale, scaleClockOnly = it.scaleClockOnly)
-        }
+        aodBurnInViewModel.movement
+            .map { BurnInScaleViewModel(scale = it.scale, scaleClockOnly = it.scaleClockOnly) }
+            .dumpWhileCollecting("scale")
 
     val isAodPromotedNotifVisible: StateFlow<Boolean> =
         keyguardTransitionInteractor
@@ -321,6 +336,7 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = false,
             )
+            .dumpValue("isAodPromotedNotifVisible")
 
     /** Is the notification icon container visible? */
     val isNotifIconContainerVisible: StateFlow<AnimatedValue<Boolean>> =
@@ -376,6 +392,7 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = AnimatedValue.NotAnimating(false),
             )
+            .dumpValue("isNotifIconContainerVisible")
 
     fun onNotificationContainerBoundsChanged(top: Float, bottom: Float, animate: Boolean = false) {
         keyguardInteractor.setNotificationContainerBounds(
