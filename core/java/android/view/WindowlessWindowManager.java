@@ -89,7 +89,7 @@ public class WindowlessWindowManager implements IWindowSession {
     protected final SurfaceControl mRootSurface;
     private final Configuration mConfiguration;
     private final IWindowSession mRealWm;
-    final InputTransferToken mHostInputTransferToken;
+    InputTransferToken mHostInputTransferToken;
     private final InputTransferToken mInputTransferToken = new InputTransferToken();
     private InsetsState mInsetsState;
     private final ClientWindowFrames mTmpFrames = new ClientWindowFrames();
@@ -128,9 +128,11 @@ public class WindowlessWindowManager implements IWindowSession {
         return null;
     }
 
-    /**
-     * Utility API.
-     */
+    void setHostInputTransferToken(InputTransferToken token) {
+        mHostInputTransferToken = token;
+    }
+
+    /** Utility API. */
     void setCompletionCallback(IBinder window, ResizeCompleteCallback callback) {
         if (mResizeCompletionForWindow.get(window) != null) {
             Log.w(TAG, "Unsupported overlapping resizes");
@@ -151,11 +153,25 @@ public class WindowlessWindowManager implements IWindowSession {
                 return;
             }
             state.mInputRegion = region != null ? new Region(region) : null;
+            updateInputChannel(window);
+        }
+    }
+
+    protected void updateInputChannel(IBinder window) {
+        State state;
+        synchronized (this) {
+            // Do everything while locked so that we synchronize with relayout. This should be a
+            // very infrequent operation.
+            state = mStateForWindow.get(window);
+            if (state == null) {
+                return;
+            }
             if (state.mInputChannelToken != null) {
                 try {
-                    mRealWm.updateInputChannel(state.mInputChannelToken, state.mDisplayId,
-                            state.mSurfaceControl, state.mParams.flags, state.mParams.privateFlags,
-                            state.mParams.inputFeatures, state.mInputRegion);
+                    mRealWm.updateInputChannel(state.mInputChannelToken, mHostInputTransferToken,
+                            state.mDisplayId, state.mSurfaceControl, state.mParams.flags,
+                            state.mParams.privateFlags, state.mParams.inputFeatures,
+                            state.mInputRegion);
                 } catch (RemoteException e) {
                     Log.e(TAG, "Failed to update surface input channel: ", e);
                 }
@@ -174,9 +190,7 @@ public class WindowlessWindowManager implements IWindowSession {
         }
     }
 
-    /**
-     * IWindowSession implementation.
-     */
+    /** IWindowSession implementation. */
     @Override
     public int addToDisplay(IWindow window, WindowManager.LayoutParams attrs,
             int viewVisibility, int displayId, @InsetsType int requestedVisibleTypes,
@@ -437,14 +451,15 @@ public class WindowlessWindowManager implements IWindowSession {
         if ((attrChanges & inputChangeMask) != 0 && state.mInputChannelToken != null) {
             try {
                 if (mRealWm instanceof IWindowSession.Stub) {
-                    mRealWm.updateInputChannel(state.mInputChannelToken, state.mDisplayId,
+                    mRealWm.updateInputChannel(state.mInputChannelToken, mHostInputTransferToken,
+                            state.mDisplayId,
                             new SurfaceControl(sc, "WindowlessWindowManager.relayout"),
                             attrs.flags, attrs.privateFlags, attrs.inputFeatures,
                             state.mInputRegion);
                 } else {
-                    mRealWm.updateInputChannel(state.mInputChannelToken, state.mDisplayId, sc,
-                            attrs.flags, attrs.privateFlags, attrs.inputFeatures,
-                            state.mInputRegion);
+                    mRealWm.updateInputChannel(state.mInputChannelToken, mHostInputTransferToken,
+                            state.mDisplayId, sc, attrs.flags, attrs.privateFlags,
+                            attrs.inputFeatures, state.mInputRegion);
                 }
             } catch (RemoteException e) {
                 Log.e(TAG, "Failed to update surface input channel: ", e);
@@ -623,8 +638,9 @@ public class WindowlessWindowManager implements IWindowSession {
     }
 
     @Override
-    public void updateInputChannel(IBinder channelToken, int displayId, SurfaceControl surface,
-            int flags, int privateFlags, int inputFeatures, Region region) {
+    public void updateInputChannel(IBinder channelToken, InputTransferToken hostInputToken,
+            int displayId, SurfaceControl surface, int flags, int privateFlags, int inputFeatures,
+            Region region) {
     }
 
     @Override

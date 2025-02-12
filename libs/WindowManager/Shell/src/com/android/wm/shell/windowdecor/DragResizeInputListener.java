@@ -23,12 +23,12 @@ import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERL
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_CONSUMER;
 
+import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE;
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_BOTTOM;
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_LEFT;
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_RIGHT;
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_TOP;
-import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger;
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.isEdgeResizePermitted;
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.isEventFromTouchscreen;
 
@@ -332,6 +332,7 @@ class DragResizeInputListener implements AutoCloseable {
         try {
             mWindowSession.updateInputChannel(
                     mInputChannel.getToken(),
+                    null /* hostInputToken */,
                     mDisplayId,
                     mDecorationSurface,
                     FLAG_NOT_FOCUSABLE,
@@ -373,6 +374,7 @@ class DragResizeInputListener implements AutoCloseable {
         try {
             mWindowSession.updateInputChannel(
                     mSinkInputChannel.getToken(),
+                    null /* hostInputToken */,
                     mDisplayId,
                     mInputSinkSurface,
                     FLAG_NOT_FOCUSABLE,
