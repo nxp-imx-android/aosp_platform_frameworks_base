@@ -3096,6 +3096,67 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
+    public void getPackagesWithAnyChannels_noChannels() {
+        assertThat(mHelper.getPackagesWithAnyChannels(UserHandle.getUserId(UID_O))).isEmpty();
+    }
+
+    @Test
+    public void getPackagesWithAnyChannels_someChannels() {
+        // 2 channels under PKG_N_MR1, 1 under PKG_O
+        NotificationChannel channel1 = new NotificationChannel("1", "something",
+                IMPORTANCE_DEFAULT);
+        mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel1, true, false, UID_N_MR1,
+                false);
+        NotificationChannel channel2 = new NotificationChannel("2", "another", IMPORTANCE_DEFAULT);
+        mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel2, true, false, UID_N_MR1,
+                false);
+
+        NotificationChannel other = new NotificationChannel("3", "still another",
+                IMPORTANCE_DEFAULT);
+        mHelper.createNotificationChannel(PKG_O, UID_O, other, true, false, UID_O, false);
+
+        assertThat(mHelper.getPackagesWithAnyChannels(USER.getIdentifier())).containsExactly(
+                PKG_N_MR1, PKG_O);
+    }
+
+    @Test
+    public void getPackagesWithAnyChannels_onlyDeleted() {
+        NotificationChannel channel1 = new NotificationChannel("1", "something",
+                IMPORTANCE_DEFAULT);
+        channel1.setDeleted(true);
+        mHelper.createNotificationChannel(PKG_O, UID_O, channel1, true, false, UID_O,
+                false);
+        NotificationChannel channel2 = new NotificationChannel("2", "another", IMPORTANCE_DEFAULT);
+        channel2.setDeleted(true);
+        mHelper.createNotificationChannel(PKG_O, UID_O, channel2, true, false, UID_O,
+                false);
+
+        assertThat(mHelper.getPackagesWithAnyChannels(UserHandle.getUserId(UID_O))).isEmpty();
+    }
+
+    @Test
+    public void getPackagesWithAnyChannels_distinguishesUsers() throws Exception {
+        // Set a package up for both users 0 and 10
+        String pkgName = "test.package";
+        int uid0 = UserHandle.getUid(0, 1234);
+        int uid10 = UserHandle.getUid(10, 1234);
+        setUpPackageWithUid(pkgName, uid0);
+        setUpPackageWithUid(pkgName, uid10);
+
+        // but only user 10 has channels
+        NotificationChannel channel1 = new NotificationChannel("1", "something",
+                IMPORTANCE_DEFAULT);
+        mHelper.createNotificationChannel(pkgName, uid10, channel1, true, false, uid10,
+                false);
+        NotificationChannel channel2 = new NotificationChannel("2", "another", IMPORTANCE_DEFAULT);
+        mHelper.createNotificationChannel(pkgName, uid10, channel2, true, false, uid10,
+                false);
+
+        assertThat(mHelper.getPackagesWithAnyChannels(0)).isEmpty();
+        assertThat(mHelper.getPackagesWithAnyChannels(10)).containsExactly(pkgName);
+    }
+
+    @Test
     public void testOnlyHasDefaultChannel() throws Exception {
         assertTrue(mHelper.onlyHasDefaultChannel(PKG_N_MR1, UID_N_MR1));
         assertFalse(mHelper.onlyHasDefaultChannel(PKG_O, UID_O));
