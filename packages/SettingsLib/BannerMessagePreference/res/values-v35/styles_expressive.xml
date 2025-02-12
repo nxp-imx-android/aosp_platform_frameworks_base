@@ -33,7 +33,6 @@
     <style name="Banner.Title.SettingsLib.Expressive"
         parent="">
         <item name="android:layout_gravity">start</item>
-        <item name="android:layout_marginLeft">@dimen/settingslib_expressive_space_extrasmall4</item>
         <item name="android:textAlignment">viewStart</item>
         <item name="android:textAppearance">@style/TextAppearance.SettingsLib.TitleLarge.Emphasized</item>
         <item name="android:textColor">?android:attr/textColorPrimary</item>
@@ -72,5 +71,12 @@
     <style name="Banner.NegativeButton.SettingsLib.Expressive"
         parent="@style/SettingsLibButtonStyle.Expressive.Outline.Extra">
         <item name="materialSizeOverlay">@style/SizeOverlay.Material3Expressive.Button.Small</item>
+    </style>
+
+    <style name="Banner.ResolvedText.SettingsLib.Expressive" parent="">
+        <item name="android:layout_gravity">center</item>
+        <item name="android:drawablePadding">@dimen/settingslib_expressive_space_small1</item>
+        <item name="android:textAppearance">@style/TextAppearance.SettingsLib.BodyMedium</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
 </resources>
