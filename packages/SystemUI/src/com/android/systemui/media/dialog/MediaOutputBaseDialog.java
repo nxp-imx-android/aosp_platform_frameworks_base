@@ -342,7 +342,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
                 WallpaperColors wallpaperColors = WallpaperColors.fromBitmap(icon.getBitmap());
                 colorSetUpdated = !wallpaperColors.equals(mWallpaperColors);
                 if (colorSetUpdated) {
-                    mAdapter.updateColorScheme(wallpaperColors, isDarkThemeOn);
+                    mMediaSwitchingController.setCurrentColorScheme(wallpaperColors, isDarkThemeOn);
                     updateButtonBackgroundColorFilter();
                     updateDialogBackgroundColor();
                 }

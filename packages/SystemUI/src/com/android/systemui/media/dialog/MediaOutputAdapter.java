@@ -20,23 +20,17 @@ import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECT
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_NONE;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_TRANSFER;
 
-import android.annotation.DrawableRes;
-import android.annotation.StringRes;
 import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.TextView;
 
 import androidx.annotation.DoNotInline;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.core.widget.CompoundButtonCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -53,16 +47,49 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class MediaOutputAdapter extends MediaOutputBaseAdapter {
 
+    private int mCurrentActivePosition;
+    private boolean mIsDragging;
     private static final String TAG = "MediaOutputAdapter";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
-    private static final float DEVICE_DISABLED_ALPHA = 0.5f;
-    private static final float DEVICE_ACTIVE_ALPHA = 1f;
-    protected List<MediaItem> mMediaItemList = new CopyOnWriteArrayList<>();
+    private final List<MediaItem> mMediaItemList = new CopyOnWriteArrayList<>();
     private boolean mShouldGroupSelectedMediaItems = Flags.enableOutputSwitcherDeviceGrouping();
 
     public MediaOutputAdapter(MediaSwitchingController controller) {
         super(controller);
+        mCurrentActivePosition = -1;
+        mIsDragging = false;
         setHasStableIds(true);
+    }
+
+    boolean isCurrentlyConnected(MediaDevice device) {
+        return TextUtils.equals(device.getId(),
+                mController.getCurrentConnectedMediaDevice().getId())
+                || (mController.getSelectedMediaDevice().size() == 1
+                && isDeviceIncluded(mController.getSelectedMediaDevice(), device));
+    }
+
+    boolean isDeviceIncluded(List<MediaDevice> deviceList, MediaDevice targetDevice) {
+        for (MediaDevice device : deviceList) {
+            if (TextUtils.equals(device.getId(), targetDevice.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    boolean isDragging() {
+        return mIsDragging;
+    }
+
+    @Override
+    void setIsDragging(boolean isDragging) {
+        mIsDragging = isDragging;
+    }
+
+    @Override
+    int getCurrentActivePosition() {
+        return mCurrentActivePosition;
     }
 
     @Override
@@ -198,7 +225,6 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             if (mCurrentActivePosition == position) {
                 mCurrentActivePosition = -1;
             }
-            mItemLayout.setVisibility(View.VISIBLE);
 
             if (mController.isAnyDeviceTransferring()) {
                 if (device.getState() == MediaDeviceState.STATE_CONNECTING) {
@@ -265,38 +291,6 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             }
         }
 
-        private void renderDeviceItem(boolean hideGroupItem, MediaDevice device,
-                ConnectionState connectionState, boolean restrictVolumeAdjustment,
-                GroupStatus groupStatus, OngoingSessionStatus ongoingSessionStatus,
-                View.OnClickListener clickListener, boolean deviceDisabled, String subtitle,
-                Drawable deviceStatusIcon) {
-            if (hideGroupItem) {
-                mItemLayout.setVisibility(View.GONE);
-                return;
-            }
-            updateTitle(device.getName());
-            updateTitleIcon(device, connectionState, restrictVolumeAdjustment);
-            updateSeekBar(device, connectionState, restrictVolumeAdjustment,
-                    getDeviceItemContentDescription(device));
-            updateEndArea(device, connectionState, groupStatus, ongoingSessionStatus);
-            updateLoadingIndicator(connectionState);
-            updateFullItemClickListener(clickListener);
-            updateContentAlpha(deviceDisabled);
-            updateSubtitle(subtitle);
-            updateDeviceStatusIcon(deviceStatusIcon);
-            updateItemBackground(connectionState);
-        }
-
-        private void renderDeviceGroupItem() {
-            String sessionName = mController.getSessionName() == null ? ""
-                    : mController.getSessionName().toString();
-            updateTitle(sessionName);
-            updateUnmutedVolumeIcon(null /* device */);
-            updateGroupSeekBar(getGroupItemContentDescription(sessionName));
-            updateEndAreaForDeviceGroup();
-            updateItemBackground(ConnectionState.CONNECTED);
-        }
-
         private OngoingSessionStatus getOngoingSessionStatus(MediaDevice device) {
             return device.hasOngoingSession() ? new OngoingSessionStatus(
                     device.isHostForOngoingSession()) : null;
@@ -322,95 +316,6 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             return !mController.getSelectableMediaDevice().isEmpty();
         }
 
-        /** Renders the right side round pill button / checkbox. */
-        private void updateEndArea(@NonNull MediaDevice device, ConnectionState connectionState,
-                @Nullable GroupStatus groupStatus,
-                @Nullable OngoingSessionStatus ongoingSessionStatus) {
-            boolean showEndArea = false;
-            boolean isCheckbox = false;
-            // If both group status and the ongoing session status are present, only the ongoing
-            // session controls are displayed. The current layout design doesn't allow both group
-            // and ongoing session controls to be rendered simultaneously.
-            if (ongoingSessionStatus != null && connectionState == ConnectionState.CONNECTED) {
-                showEndArea = true;
-                updateEndAreaForOngoingSession(device, ongoingSessionStatus.host());
-            } else if (groupStatus != null && shouldShowGroupCheckbox(groupStatus)) {
-                showEndArea = true;
-                isCheckbox = true;
-                updateEndAreaForGroupCheckBox(device, groupStatus);
-            }
-            updateEndAreaVisibility(showEndArea, isCheckbox);
-        }
-
-        private boolean shouldShowGroupCheckbox(@NonNull GroupStatus groupStatus) {
-            if (Flags.enableOutputSwitcherDeviceGrouping()) {
-                return isGroupCheckboxEnabled(groupStatus);
-            }
-            return true;
-        }
-
-        private boolean isGroupCheckboxEnabled(@NonNull GroupStatus groupStatus) {
-            boolean disabled = groupStatus.selected() && !groupStatus.deselectable();
-            return !disabled;
-        }
-
-        public void setCheckBoxColor(CheckBox checkBox, int color) {
-            int[][] states = {{android.R.attr.state_checked}, {}};
-            int[] colors = {color, color};
-            CompoundButtonCompat.setButtonTintList(checkBox, new
-                    ColorStateList(states, colors));
-        }
-
-        private void updateContentAlpha(boolean deviceDisabled) {
-            float alphaValue = deviceDisabled ? DEVICE_DISABLED_ALPHA : DEVICE_ACTIVE_ALPHA;
-            mTitleIcon.setAlpha(alphaValue);
-            mTitleText.setAlpha(alphaValue);
-            mSubTitleText.setAlpha(alphaValue);
-            mStatusIcon.setAlpha(alphaValue);
-        }
-
-        private void updateEndAreaForDeviceGroup() {
-            updateEndAreaWithIcon(
-                    v -> {
-                        mShouldGroupSelectedMediaItems = false;
-                        notifyDataSetChanged();
-                    },
-                    R.drawable.media_output_item_expand_group,
-                    R.string.accessibility_expand_group);
-            updateEndAreaVisibility(true /* showEndArea */, false /* isCheckbox */);
-        }
-
-        private void updateEndAreaForOngoingSession(@NonNull MediaDevice device, boolean isHost) {
-            updateEndAreaWithIcon(
-                    v -> mController.tryToLaunchInAppRoutingIntent(device.getId(), v),
-                    isHost ? R.drawable.media_output_status_edit_session
-                            : R.drawable.ic_sound_bars_anim,
-                    R.string.accessibility_open_application);
-        }
-
-        private void updateEndAreaWithIcon(View.OnClickListener clickListener,
-                @DrawableRes int iconDrawableId,
-                @StringRes int accessibilityStringId) {
-            updateEndAreaColor(mController.getColorSeekbarProgress());
-            mEndClickIcon.setImageTintList(
-                    ColorStateList.valueOf(mController.getColorItemContent()));
-            mEndClickIcon.setOnClickListener(clickListener);
-            mEndTouchArea.setOnClickListener(v -> mEndClickIcon.performClick());
-            Drawable drawable = mContext.getDrawable(iconDrawableId);
-            mEndClickIcon.setImageDrawable(drawable);
-            if (drawable instanceof AnimatedVectorDrawable) {
-                ((AnimatedVectorDrawable) drawable).start();
-            }
-            if (Flags.enableOutputSwitcherDeviceGrouping()) {
-                mEndClickIcon.setContentDescription(mContext.getString(accessibilityStringId));
-            }
-        }
-
-        public void updateEndAreaColor(int color) {
-            mEndTouchArea.setBackgroundTintList(
-                    ColorStateList.valueOf(color));
-        }
-
         @Nullable
         private View.OnClickListener getClickListenerBasedOnSelectionBehavior(
                 @NonNull MediaDevice device) {
@@ -427,57 +332,14 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             }
         }
 
-        void updateDeviceStatusIcon(@Nullable Drawable deviceStatusIcon) {
-            if (deviceStatusIcon == null) {
-                mStatusIcon.setVisibility(View.GONE);
-            } else {
-                mStatusIcon.setImageDrawable(deviceStatusIcon);
-                mStatusIcon.setImageTintList(
-                        ColorStateList.valueOf(mController.getColorItemContent()));
-                if (deviceStatusIcon instanceof AnimatedVectorDrawable) {
-                    ((AnimatedVectorDrawable) deviceStatusIcon).start();
-                }
-                mStatusIcon.setVisibility(View.VISIBLE);
-            }
+        @Override
+        protected void onExpandGroupButtonClicked() {
+            mShouldGroupSelectedMediaItems = false;
+            notifyDataSetChanged();
         }
 
-        public void updateEndAreaForGroupCheckBox(@NonNull MediaDevice device,
-                @NonNull GroupStatus groupStatus) {
-            boolean isEnabled = isGroupCheckboxEnabled(groupStatus);
-            mEndTouchArea.setOnClickListener(
-                    isEnabled ? (v) -> mCheckBox.performClick() : null);
-            mEndTouchArea.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
-            updateEndAreaColor(groupStatus.selected() ? mController.getColorSeekbarProgress()
-                    : mController.getColorItemBackground());
-            mEndTouchArea.setContentDescription(getDeviceItemContentDescription(device));
-            mCheckBox.setOnCheckedChangeListener(null);
-            mCheckBox.setChecked(groupStatus.selected());
-            mCheckBox.setOnCheckedChangeListener(
-                    isEnabled ? (buttonView, isChecked) -> onGroupActionTriggered(
-                            !groupStatus.selected(), device) : null);
-            mCheckBox.setEnabled(isEnabled);
-            setCheckBoxColor(mCheckBox, mController.getColorItemContent());
-        }
-
-        private void updateFullItemClickListener(@Nullable View.OnClickListener listener) {
-            mContainerLayout.setOnClickListener(listener);
-            updateIconAreaClickListener(listener);
-        }
-
-        /** Binds a ViewHolder for a "Connect a device" item. */
-        void onBindPairNewDevice() {
-            mTitleText.setTextColor(mController.getColorItemContent());
-            mCheckBox.setVisibility(View.GONE);
-            updateTitle(mContext.getText(R.string.media_output_dialog_pairing_new));
-            updateItemBackground(ConnectionState.DISCONNECTED);
-            final Drawable addDrawable = mContext.getDrawable(R.drawable.ic_add);
-            mTitleIcon.setImageDrawable(addDrawable);
-            mTitleIcon.setImageTintList(
-                    ColorStateList.valueOf(mController.getColorItemContent()));
-            mContainerLayout.setOnClickListener(mController::launchBluetoothPairing);
-        }
-
-        private void onGroupActionTriggered(boolean isChecked, MediaDevice device) {
+        @Override
+        protected void onGroupActionTriggered(boolean isChecked, MediaDevice device) {
             disableSeekBar();
             if (isChecked && isDeviceIncluded(mController.getSelectableMediaDevice(), device)) {
                 mController.addDeviceToPlayMedia(device);
@@ -523,29 +385,17 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             notifyDataSetChanged();
         }
 
-        private String getDeviceItemContentDescription(@NonNull MediaDevice device) {
+        @Override
+        protected String getDeviceItemContentDescription(@NonNull MediaDevice device) {
             return mContext.getString(
                     device.getDeviceType() == MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE
                             ? R.string.accessibility_bluetooth_name
                             : R.string.accessibility_cast_name, device.getName());
         }
 
-        private String getGroupItemContentDescription(String sessionName) {
+        @Override
+        protected String getGroupItemContentDescription(String sessionName) {
             return mContext.getString(R.string.accessibility_cast_name, sessionName);
-        }
-    }
-
-    class MediaGroupDividerViewHolder extends RecyclerView.ViewHolder {
-        final TextView mTitleText;
-
-        MediaGroupDividerViewHolder(@NonNull View itemView) {
-            super(itemView);
-            mTitleText = itemView.requireViewById(R.id.title);
-        }
-
-        void onBind(String groupDividerTitle) {
-            mTitleText.setTextColor(mController.getColorItemContent());
-            mTitleText.setText(groupDividerTitle);
         }
     }
 

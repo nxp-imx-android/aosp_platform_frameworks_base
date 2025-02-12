@@ -33,8 +33,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.app.WallpaperColors;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -896,16 +894,6 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
         assertThat(mViewHolder.mSeekBar.isEnabled()).isTrue();
-    }
-
-    @Test
-    public void updateColorScheme_triggerController() {
-        WallpaperColors wallpaperColors = WallpaperColors.fromBitmap(
-                Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888));
-
-        mMediaOutputAdapter.updateColorScheme(wallpaperColors, true);
-
-        verify(mMediaSwitchingController).setCurrentColorScheme(wallpaperColors, true);
     }
 
     @Test
