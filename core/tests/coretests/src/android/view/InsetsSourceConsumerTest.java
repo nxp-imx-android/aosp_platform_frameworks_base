@@ -230,7 +230,9 @@ public class InsetsSourceConsumerTest {
                     new InsetsSourceControl(ID_STATUS_BAR, statusBars(), mLeash,
                             false /* initialVisible */, new Point(), Insets.NONE),
                     new int[1], hideTypes, new int[1], new int[1]);
-            assertTrue(mRemoveSurfaceCalled);
+            if (!android.view.inputmethod.Flags.refactorInsetsController()) {
+                assertTrue(mRemoveSurfaceCalled);
+            }
             assertEquals(0, hideTypes[0]);
         });
 

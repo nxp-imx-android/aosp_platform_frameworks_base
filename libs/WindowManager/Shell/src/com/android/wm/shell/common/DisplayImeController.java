@@ -324,8 +324,10 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                         }
                         applyVisibilityToLeash(imeSourceControl);
                     }
-                    if (!mImeShowing) {
-                        removeImeSurface(mDisplayId);
+                    if (!android.view.inputmethod.Flags.refactorInsetsController()) {
+                        if (!mImeShowing) {
+                            removeImeSurface(mDisplayId);
+                        }
                     }
                 }
             } else {
@@ -663,7 +665,9 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                         ImeTracker.forLogging().onProgress(mStatsToken,
                                 ImeTracker.PHASE_WM_ANIMATION_RUNNING);
                         t.hide(animatingLeash);
-                        removeImeSurface(mDisplayId);
+                        if (!android.view.inputmethod.Flags.refactorInsetsController()) {
+                            removeImeSurface(mDisplayId);
+                        }
                         if (android.view.inputmethod.Flags.refactorInsetsController()) {
                             setVisibleDirectly(false /* visible */, statsToken);
                         }
