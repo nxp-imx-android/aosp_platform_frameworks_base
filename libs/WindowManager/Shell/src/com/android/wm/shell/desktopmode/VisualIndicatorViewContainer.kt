@@ -49,7 +49,8 @@ import com.android.wm.shell.windowdecor.WindowDecoration.SurfaceControlViewHostF
  * Container for the view / viewhost of the indicator, ensuring it is created / animated off the
  * main thread.
  */
-private class VisualIndicatorViewContainer
+@VisibleForTesting
+class VisualIndicatorViewContainer
 @JvmOverloads
 constructor(
     @ShellDesktopThread private val desktopExecutor: ShellExecutor,
