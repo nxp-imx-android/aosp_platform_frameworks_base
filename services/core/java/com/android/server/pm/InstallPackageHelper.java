@@ -1021,7 +1021,7 @@ final class InstallPackageHelper {
      *
      * Failure at any phase will result in a full failure to install all packages.
      */
-    void installPackagesTraced(List<InstallRequest> requests) {
+    void installPackagesTraced(List<InstallRequest> requests, MoveInfo moveInfo) {
         Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "installPackages");
         boolean success = false;
         final Map<String, Boolean> createdAppId = new ArrayMap<>(requests.size());
@@ -1049,7 +1049,34 @@ final class InstallPackageHelper {
         } finally {
             completeInstallProcess(requests, createdAppId, success);
             Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
+            doPostInstall(requests, moveInfo);
             releaseWakeLock(acquireTime, requests.size());
+        }
+    }
+
+    private void doPostInstall(List<InstallRequest> requests, MoveInfo moveInfo) {
+        for (InstallRequest request : requests) {
+            doPostInstallCleanUp(request, moveInfo);
+        }
+
+        for (InstallRequest request : requests) {
+            restoreAndPostInstall(request);
+        }
+    }
+
+    private void doPostInstallCleanUp(InstallRequest request, MoveInfo moveInfo) {
+        if (moveInfo != null) {
+            if (request.getReturnCode() == PackageManager.INSTALL_SUCCEEDED) {
+                mRemovePackageHelper.cleanUpForMoveInstall(moveInfo.mFromUuid,
+                        moveInfo.mPackageName, moveInfo.mFromCodePath);
+            } else {
+                mRemovePackageHelper.cleanUpForMoveInstall(moveInfo.mToUuid,
+                        moveInfo.mPackageName, moveInfo.mFromCodePath);
+            }
+        } else {
+            if (request.getReturnCode() != PackageManager.INSTALL_SUCCEEDED) {
+                mRemovePackageHelper.removeCodePath(request.getCodeFile());
+            }
         }
     }
 

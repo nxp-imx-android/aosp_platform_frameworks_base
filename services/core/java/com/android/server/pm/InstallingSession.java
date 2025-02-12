@@ -550,31 +550,11 @@ class InstallingSession {
                     cleanUpForFailedInstall(request);
                 }
             }
-        } else {
-            mPm.installPackagesTraced(installRequests);
-
             for (InstallRequest request : installRequests) {
-                doPostInstall(request);
-            }
-        }
-        for (InstallRequest request : installRequests) {
-            mPm.restoreAndPostInstall(request);
-        }
-    }
-
-    private void doPostInstall(InstallRequest request) {
-        if (mMoveInfo != null) {
-            if (request.getReturnCode() == PackageManager.INSTALL_SUCCEEDED) {
-                mPm.cleanUpForMoveInstall(mMoveInfo.mFromUuid,
-                        mMoveInfo.mPackageName, mMoveInfo.mFromCodePath);
-            } else {
-                mPm.cleanUpForMoveInstall(mMoveInfo.mToUuid,
-                        mMoveInfo.mPackageName, mMoveInfo.mFromCodePath);
+                mPm.restoreAndPostInstall(request);
             }
         } else {
-            if (request.getReturnCode() != PackageManager.INSTALL_SUCCEEDED) {
-                mPm.removeCodePath(request.getCodeFile());
-            }
+            mPm.installPackagesTraced(installRequests, mMoveInfo);
         }
     }
 
