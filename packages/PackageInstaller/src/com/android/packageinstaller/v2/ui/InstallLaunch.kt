@@ -16,9 +16,6 @@
 
 package com.android.packageinstaller.v2.ui
 
-import android.app.Activity.RESULT_CANCELED
-import android.app.Activity.RESULT_FIRST_USER
-import android.app.Activity.RESULT_OK
 import android.app.AppOpsManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -67,6 +64,7 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
             InstallLaunch::class.java.packageName + ".callingPkgName"
         private val LOG_TAG = InstallLaunch::class.java.simpleName
         private const val TAG_DIALOG = "dialog"
+        private const val ARGS_SAVED_INTENT = "saved_intent"
     }
 
     /**
@@ -96,7 +94,15 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
             intent.getStringExtra(EXTRA_CALLING_PKG_NAME),
             intent.getIntExtra(EXTRA_CALLING_PKG_UID, Process.INVALID_UID)
         )
-        installViewModel!!.preprocessIntent(intent, info)
+
+        var savedIntent: Intent? = null
+        if (savedInstanceState != null) {
+            savedIntent = savedInstanceState.getParcelable(ARGS_SAVED_INTENT, Intent::class.java)
+        }
+        if (!intent.filterEquals(savedIntent)) {
+            installViewModel!!.preprocessIntent(intent, info)
+        }
+
         installViewModel!!.currentInstallStage.observe(this) { installStage: InstallStage ->
             onInstallStageChange(installStage)
         }
@@ -342,6 +348,11 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
     private fun unregisterAppOpChangeListener(listener: UnknownSourcesListener) {
         activeUnknownSourcesListeners.remove(listener)
         appOpsManager!!.stopWatchingMode(listener)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putParcelable(ARGS_SAVED_INTENT, intent)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroy() {
