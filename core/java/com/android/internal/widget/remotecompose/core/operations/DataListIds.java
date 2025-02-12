@@ -29,11 +29,13 @@ import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
 import com.android.internal.widget.remotecompose.core.operations.utilities.ArrayAccess;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class DataListIds extends Operation implements VariableSupport, ArrayAccess {
+public class DataListIds extends Operation implements VariableSupport, ArrayAccess, Serializable {
     private static final int OP_CODE = Operations.ID_LIST;
     private static final String CLASS_NAME = "IdListData";
     private final int mId;
@@ -146,5 +148,10 @@ public class DataListIds extends Operation implements VariableSupport, ArrayAcce
     @Override
     public int getIntValue(int index) {
         return 0;
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer.add("type", CLASS_NAME).add("id", mId).add("ids", List.of(mIds));
     }
 }

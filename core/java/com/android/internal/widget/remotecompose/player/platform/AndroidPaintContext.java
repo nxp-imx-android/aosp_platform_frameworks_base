@@ -246,6 +246,12 @@ public class AndroidPaintContext extends PaintContext {
     }
 
     @Override
+    public void replacePaint(PaintBundle paintBundle) {
+        mPaint.reset();
+        applyPaint(paintBundle);
+    }
+
+    @Override
     public void drawRoundRect(
             float left, float top, float right, float bottom, float radiusX, float radiusY) {
         mCanvas.drawRoundRect(left, top, right, bottom, radiusX, radiusY, mPaint);

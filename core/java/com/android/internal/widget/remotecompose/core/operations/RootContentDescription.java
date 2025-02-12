@@ -25,12 +25,14 @@ import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
 import com.android.internal.widget.remotecompose.core.semantics.AccessibleComponent;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.List;
 
 /** Describe a content description for the document */
 public class RootContentDescription extends Operation
-        implements RemoteComposeOperation, AccessibleComponent {
+        implements RemoteComposeOperation, AccessibleComponent, Serializable {
     private static final int OP_CODE = Operations.ROOT_CONTENT_DESCRIPTION;
     private static final String CLASS_NAME = "RootContentDescription";
     int mContentDescription;
@@ -127,5 +129,10 @@ public class RootContentDescription extends Operation
         doc.operation("Protocol Operations", OP_CODE, CLASS_NAME)
                 .description("Content description of root")
                 .field(DocumentedOperation.INT, "id", "id of Int");
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer.add("type", CLASS_NAME).add("contentDescriptionId", mContentDescription);
     }
 }

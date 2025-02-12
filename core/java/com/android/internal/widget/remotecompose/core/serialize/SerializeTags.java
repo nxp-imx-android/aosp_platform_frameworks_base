@@ -22,4 +22,5 @@ public enum SerializeTags {
     A11Y,
     ACTION,
     DRAW_OPERATION,
+    EXPRESSION,
 }

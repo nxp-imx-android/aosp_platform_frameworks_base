@@ -27,11 +27,13 @@ import com.android.internal.widget.remotecompose.core.PaintContext;
 import com.android.internal.widget.remotecompose.core.PaintOperation;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.List;
 
 /** Operation to Measure Text data */
-public class TextAttribute extends PaintOperation {
+public class TextAttribute extends PaintOperation implements Serializable {
     private static final int OP_CODE = Operations.ATTRIBUTE_TEXT;
     private static final String CLASS_NAME = "TextMeasure";
     public int mId;
@@ -165,6 +167,36 @@ public class TextAttribute extends PaintOperation {
             case TEXT_LENGTH:
                 context.getContext().loadFloat(mId, context.getText(mTextId).length());
                 break;
+        }
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .add("type", CLASS_NAME)
+                .add("id", mId)
+                .add("textId", mTextId)
+                .add("measureType", typeToString());
+    }
+
+    private String typeToString() {
+        switch (mType) {
+            case MEASURE_WIDTH:
+                return "MEASURE_WIDTH";
+            case MEASURE_HEIGHT:
+                return "MEASURE_HEIGHT";
+            case MEASURE_LEFT:
+                return "MEASURE_LEFT";
+            case MEASURE_RIGHT:
+                return "MEASURE_RIGHT";
+            case MEASURE_TOP:
+                return "MEASURE_TOP";
+            case MEASURE_BOTTOM:
+                return "MEASURE_BOTTOM";
+            case TEXT_LENGTH:
+                return "TEXT_LENGTH";
+            default:
+                return "INVALID_TYPE";
         }
     }
 }

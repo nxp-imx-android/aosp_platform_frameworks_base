@@ -29,7 +29,6 @@ import android.hardware.SensorManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.HapticFeedbackConstants;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
@@ -596,29 +595,34 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAwa
         }
     }
 
-    private static int[] sHapticTable = {
-        HapticFeedbackConstants.NO_HAPTICS,
-        HapticFeedbackConstants.LONG_PRESS,
-        HapticFeedbackConstants.VIRTUAL_KEY,
-        HapticFeedbackConstants.KEYBOARD_TAP,
-        HapticFeedbackConstants.CLOCK_TICK,
-        HapticFeedbackConstants.CONTEXT_CLICK,
-        HapticFeedbackConstants.KEYBOARD_PRESS,
-        HapticFeedbackConstants.KEYBOARD_RELEASE,
-        HapticFeedbackConstants.VIRTUAL_KEY_RELEASE,
-        HapticFeedbackConstants.TEXT_HANDLE_MOVE,
-        HapticFeedbackConstants.GESTURE_START,
-        HapticFeedbackConstants.GESTURE_END,
-        HapticFeedbackConstants.CONFIRM,
-        HapticFeedbackConstants.REJECT,
-        HapticFeedbackConstants.TOGGLE_ON,
-        HapticFeedbackConstants.TOGGLE_OFF,
-        HapticFeedbackConstants.GESTURE_THRESHOLD_ACTIVATE,
-        HapticFeedbackConstants.GESTURE_THRESHOLD_DEACTIVATE,
-        HapticFeedbackConstants.DRAG_START,
-        HapticFeedbackConstants.SEGMENT_TICK,
-        HapticFeedbackConstants.SEGMENT_FREQUENT_TICK,
-    };
+    private static final int[] sHapticTable;
+
+    static {
+        sHapticTable =
+                new int[] {
+                    android.view.HapticFeedbackConstants.NO_HAPTICS,
+                    android.view.HapticFeedbackConstants.LONG_PRESS,
+                    android.view.HapticFeedbackConstants.VIRTUAL_KEY,
+                    android.view.HapticFeedbackConstants.KEYBOARD_TAP,
+                    android.view.HapticFeedbackConstants.CLOCK_TICK,
+                    android.view.HapticFeedbackConstants.CONTEXT_CLICK,
+                    android.view.HapticFeedbackConstants.KEYBOARD_PRESS,
+                    android.view.HapticFeedbackConstants.KEYBOARD_RELEASE,
+                    android.view.HapticFeedbackConstants.VIRTUAL_KEY_RELEASE,
+                    android.view.HapticFeedbackConstants.TEXT_HANDLE_MOVE,
+                    android.view.HapticFeedbackConstants.GESTURE_START,
+                    android.view.HapticFeedbackConstants.GESTURE_END,
+                    android.view.HapticFeedbackConstants.CONFIRM,
+                    android.view.HapticFeedbackConstants.REJECT,
+                    android.view.HapticFeedbackConstants.TOGGLE_ON,
+                    android.view.HapticFeedbackConstants.TOGGLE_OFF,
+                    android.view.HapticFeedbackConstants.GESTURE_THRESHOLD_ACTIVATE,
+                    android.view.HapticFeedbackConstants.GESTURE_THRESHOLD_DEACTIVATE,
+                    android.view.HapticFeedbackConstants.DRAG_START,
+                    android.view.HapticFeedbackConstants.SEGMENT_TICK,
+                    android.view.HapticFeedbackConstants.SEGMENT_FREQUENT_TICK,
+                };
+    }
 
     private void provideHapticFeedback(int type) {
         performHapticFeedback(sHapticTable[type % sHapticTable.length]);

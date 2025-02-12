@@ -26,11 +26,13 @@ import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.List;
 
 /** Draw text along a path. */
-public class DrawTextOnPath extends PaintOperation implements VariableSupport {
+public class DrawTextOnPath extends PaintOperation implements VariableSupport, Serializable {
     private static final int OP_CODE = Operations.DRAW_TEXT_ON_PATH;
     private static final String CLASS_NAME = "DrawTextOnPath";
     int mPathId;
@@ -152,5 +154,15 @@ public class DrawTextOnPath extends PaintOperation implements VariableSupport {
     @Override
     public void paint(@NonNull PaintContext context) {
         context.drawTextOnPath(mTextId, mPathId, mOutHOffset, mOutVOffset);
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .add("type", CLASS_NAME)
+                .add("pathId", mPathId)
+                .add("textId", mTextId)
+                .add("vOffset", mVOffset, mOutVOffset)
+                .add("hOffset", mHOffset, mOutHOffset);
     }
 }

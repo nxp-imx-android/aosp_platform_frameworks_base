@@ -29,11 +29,13 @@ import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.operations.paint.PaintBundle;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.List;
 
 /** Paint data operation */
-public class PaintData extends PaintOperation implements VariableSupport {
+public class PaintData extends PaintOperation implements VariableSupport, Serializable {
     private static final int OP_CODE = Operations.PAINT_VALUES;
     private static final String CLASS_NAME = "PaintData";
     @NonNull public PaintBundle mPaintData = new PaintBundle();
@@ -125,5 +127,10 @@ public class PaintData extends PaintOperation implements VariableSupport {
     @Override
     public void paint(@NonNull PaintContext context) {
         context.applyPaint(mPaintData);
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer.add("type", CLASS_NAME).add("paintBundle", mPaintData);
     }
 }

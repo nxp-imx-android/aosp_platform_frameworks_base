@@ -207,6 +207,13 @@ public abstract class PaintContext {
     public abstract void restorePaint();
 
     /**
+     * Replace the current paint with the PaintBundle
+     *
+     * @param paint
+     */
+    public abstract void replacePaint(PaintBundle paint);
+
+    /**
      * draw a round rect
      *
      * @param left left coordinate of the rectangle

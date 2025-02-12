@@ -25,14 +25,18 @@ import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.List;
 
 /** Used to represent a long */
-public class LongConstant extends Operation {
+public class LongConstant extends Operation implements Serializable {
+    private static final String CLASS_NAME = "LongConstant";
+
     private static final int OP_CODE = Operations.DATA_LONG;
-    private long mValue;
-    private int mId;
+    private final long mValue;
+    private final int mId;
 
     public LongConstant(int id, long value) {
         mId = id;
@@ -106,5 +110,10 @@ public class LongConstant extends Operation {
                 .description("A boolean and its associated id")
                 .field(DocumentedOperation.INT, "id", "id of Int")
                 .field(LONG, "value", "The long Value");
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer.add("type", CLASS_NAME).add("id", mId).add("value", mValue);
     }
 }
