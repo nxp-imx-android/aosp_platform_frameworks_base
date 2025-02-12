@@ -95,12 +95,15 @@ constructor(
             notificationTargetsHelper.findMagneticTargets(
                 expandableNotificationRow,
                 stackScrollLayout,
+                sectionsManager,
                 MAGNETIC_TRANSLATION_MULTIPLIERS.size,
             )
-        currentMagneticListeners.swipedListener()?.cancelTranslationAnimations()
         newListeners.forEach {
             if (currentMagneticListeners.contains(it)) {
                 it?.cancelMagneticAnimations()
+                if (it == currentMagneticListeners.swipedListener()) {
+                    it?.cancelTranslationAnimations()
+                }
             }
         }
         currentMagneticListeners = newListeners
