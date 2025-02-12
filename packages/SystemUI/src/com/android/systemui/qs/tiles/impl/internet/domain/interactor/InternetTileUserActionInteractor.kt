@@ -26,7 +26,6 @@ import com.android.systemui.qs.tiles.base.interactor.QSTileInput
 import com.android.systemui.qs.tiles.base.interactor.QSTileUserActionInteractor
 import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.dialog.InternetDialogManager
-import com.android.systemui.qs.tiles.dialog.WifiStateWorker
 import com.android.systemui.qs.tiles.impl.internet.domain.model.InternetTileModel
 import com.android.systemui.qs.tiles.viewmodel.QSTileUserAction
 import com.android.systemui.statusbar.connectivity.AccessPointController
@@ -40,7 +39,6 @@ class InternetTileUserActionInteractor
 constructor(
     @Main private val mainContext: CoroutineContext,
     private val internetDialogManager: InternetDialogManager,
-    private val wifiStateWorker: WifiStateWorker,
     private val accessPointController: AccessPointController,
     private val qsTileIntentUserActionHandler: QSTileIntentUserInputHandler,
     private val internetDetailsViewModelFactory: InternetDetailsViewModel.Factory,
@@ -59,24 +57,17 @@ constructor(
                         )
                     }
                 }
-                is QSTileUserAction.ToggleClick -> {
-                    // TODO(b/358352265): Figure out the correct action for the secondary click
-                    // Toggle Wifi
-                    wifiStateWorker.isWifiEnabled = !wifiStateWorker.isWifiEnabled
-                }
                 is QSTileUserAction.LongClick -> {
                     handleLongClick(action.expandable)
                 }
+                else -> {}
             }
         }
 
     override val detailsViewModel: TileDetailsViewModel =
         internetDetailsViewModelFactory.create { handleLongClick(null) }
 
-    private fun handleLongClick(expandable:Expandable?){
-        qsTileIntentUserActionHandler.handle(
-            expandable,
-            Intent(Settings.ACTION_WIFI_SETTINGS)
-        )
+    private fun handleLongClick(expandable: Expandable?) {
+        qsTileIntentUserActionHandler.handle(expandable, Intent(Settings.ACTION_WIFI_SETTINGS))
     }
 }
