@@ -31,21 +31,18 @@ class MutableSelectionStateTest : SysuiTestCase() {
 
     @Test
     fun selectTile_isCorrectlySelected() {
-        assertThat(underTest.selection?.tileSpec).isNotEqualTo(TEST_SPEC)
+        assertThat(underTest.selection).isNotEqualTo(TEST_SPEC)
 
-        underTest.select(TEST_SPEC, manual = true)
-        assertThat(underTest.selection?.tileSpec).isEqualTo(TEST_SPEC)
-        assertThat(underTest.selection?.manual).isTrue()
+        underTest.select(TEST_SPEC)
+        assertThat(underTest.selection).isEqualTo(TEST_SPEC)
 
         underTest.unSelect()
         assertThat(underTest.selection).isNull()
 
         val newSpec = TileSpec.create("newSpec")
-        underTest.select(TEST_SPEC, manual = true)
-        underTest.select(newSpec, manual = false)
-        assertThat(underTest.selection?.tileSpec).isNotEqualTo(TEST_SPEC)
-        assertThat(underTest.selection?.tileSpec).isEqualTo(newSpec)
-        assertThat(underTest.selection?.manual).isFalse()
+        underTest.select(TEST_SPEC)
+        underTest.select(newSpec)
+        assertThat(underTest.selection).isEqualTo(newSpec)
     }
 
     companion object {
