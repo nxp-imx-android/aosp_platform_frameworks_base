@@ -2949,13 +2949,16 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         }
 
         private boolean isOpaqueInner(@NonNull WindowContainer<?> container) {
-            // If it's a leaf task fragment, then opacity is calculated based on its activities.
-            if (container.asTaskFragment() != null
-                    && ((TaskFragment) container).isLeafTaskFragment()) {
+            final boolean isActivity = container.asActivityRecord() != null;
+            final boolean isLeafTaskFragment = container.asTaskFragment() != null
+                    && ((TaskFragment) container).isLeafTaskFragment();
+            if (isActivity || isLeafTaskFragment) {
+                // When it is an activity or leaf task fragment, then opacity is calculated based
+                // on itself or its activities.
                 return container.getActivity(this,
                         true /* traverseTopToBottom */, null /* boundary */) != null;
             }
-            // When not a leaf, it's considered opaque if any of its opaque children fill this
+            // Otherwise, it's considered opaque if any of its opaque children fill this
             // container, unless the children are adjacent fragments, in which case as long as they
             // are all opaque then |container| is also considered opaque, even if the adjacent
             // task fragment aren't filling.

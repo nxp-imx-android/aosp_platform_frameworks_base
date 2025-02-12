@@ -509,6 +509,32 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
         assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(rootTask)).isTrue();
     }
 
+    @Test
+    public void testOpaque_nonLeafTaskFragmentWithDirectActivity_opaque() {
+        final ActivityRecord directChildActivity = new ActivityBuilder(mAtm).setCreateTask(true)
+                .build();
+        directChildActivity.setOccludesParent(true);
+        final Task nonLeafTask = directChildActivity.getTask();
+        final TaskFragment directChildFragment = new TaskFragment(mAtm, new Binder(),
+                true /* createdByOrganizer */, false /* isEmbedded */);
+        nonLeafTask.addChild(directChildFragment, 0);
+
+        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(nonLeafTask)).isTrue();
+    }
+
+    @Test
+    public void testOpaque_nonLeafTaskFragmentWithDirectActivity_transparent() {
+        final ActivityRecord directChildActivity = new ActivityBuilder(mAtm).setCreateTask(true)
+                .build();
+        directChildActivity.setOccludesParent(false);
+        final Task nonLeafTask = directChildActivity.getTask();
+        final TaskFragment directChildFragment = new TaskFragment(mAtm, new Binder(),
+                true /* createdByOrganizer */, false /* isEmbedded */);
+        nonLeafTask.addChild(directChildFragment, 0);
+
+        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(nonLeafTask)).isFalse();
+    }
+
     @NonNull
     private TaskFragment createChildTaskFragment(@NonNull Task parent,
             @WindowConfiguration.WindowingMode int windowingMode,
