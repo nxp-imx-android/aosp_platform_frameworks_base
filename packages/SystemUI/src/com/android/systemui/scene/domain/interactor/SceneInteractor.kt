@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.domain.interactor
 
+import com.android.app.tracing.coroutines.flow.stateInTraced
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
@@ -52,7 +53,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -124,7 +124,8 @@ constructor(
     val transitionState: StateFlow<ObservableTransitionState> =
         repository.transitionState
             .onEach { logger.logSceneTransition(it) }
-            .stateIn(
+            .stateInTraced(
+                name = "transitionState",
                 scope = applicationScope,
                 started = SharingStarted.Eagerly,
                 initialValue = repository.transitionState.value,
@@ -145,7 +146,8 @@ constructor(
                     is ObservableTransitionState.Transition -> state.toContent
                 }
             }
-            .stateIn(
+            .stateInTraced(
+                name = "transitioningTo",
                 scope = applicationScope,
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = null,
@@ -164,7 +166,8 @@ constructor(
                     is ObservableTransitionState.Idle -> flowOf(false)
                 }
             }
-            .stateIn(
+            .stateInTraced(
+                name = "isTransitionUserInputOngoing",
                 scope = applicationScope,
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = false,
@@ -183,7 +186,8 @@ constructor(
                     activeTransitionAnimationCount = activeTransitionAnimationCount,
                 )
             }
-            .stateIn(
+            .stateInTraced(
+                name = "isVisible",
                 scope = applicationScope,
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = isVisibleInternal(),
