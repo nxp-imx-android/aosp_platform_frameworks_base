@@ -816,7 +816,7 @@ public class Cuj {
             case CUJ_LAUNCHER_WORK_UTILITY_VIEW_SHRINK:
                 return "LAUNCHER_WORK_UTILITY_VIEW_SHRINK";
             case CUJ_DEFAULT_TASK_TO_TASK_ANIMATION:
-                return "CUJ_DEFAULT_TASK_TO_TASK_ANIMATION";
+                return "DEFAULT_TASK_TO_TASK_ANIMATION";
         }
         return "UNKNOWN";
     }
