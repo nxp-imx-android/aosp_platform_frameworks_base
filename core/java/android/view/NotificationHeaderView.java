@@ -32,7 +32,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
@@ -266,20 +265,14 @@ public class NotificationHeaderView extends RelativeLayout {
                 ? R.style.TextAppearance_DeviceDefault_Notification_Title
                 : R.style.TextAppearance_DeviceDefault_Notification_Info;
         // Most of the time, we're showing text in the minimized state
-        if (findViewById(R.id.header_text) instanceof TextView headerText) {
-            headerText.setTextAppearance(styleResId);
-            if (notificationsRedesignTemplates()) {
-                // TODO: b/378660052 - When inlining the redesign flag, this should be updated
-                //  directly in TextAppearance_DeviceDefault_Notification_Title so we won't need to
-                //  override it here.
-                float textSize = getContext().getResources().getDimension(
-                        R.dimen.notification_2025_title_text_size);
-                headerText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
-            }
+        View headerText = findViewById(R.id.header_text);
+        if (headerText instanceof TextView) {
+            ((TextView) headerText).setTextAppearance(styleResId);
         }
         // If there's no summary or text, we show the app name instead of nothing
-        if (findViewById(R.id.app_name_text) instanceof TextView appNameText) {
-            appNameText.setTextAppearance(styleResId);
+        View appNameText = findViewById(R.id.app_name_text);
+        if (appNameText instanceof TextView) {
+            ((TextView) appNameText).setTextAppearance(styleResId);
         }
     }
 
