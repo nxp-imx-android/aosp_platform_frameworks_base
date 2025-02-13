@@ -42,4 +42,7 @@ sealed class DeskTransition {
         val deskId: Int,
         val enterTaskId: Int,
     ) : DeskTransition()
+
+    /** A transition to deactivate a desk. */
+    data class DeactivateDesk(override val token: IBinder, val deskId: Int) : DeskTransition()
 }

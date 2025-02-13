@@ -16,7 +16,7 @@
 
 package com.android.wm.shell.desktopmode
 
-import com.android.window.flags.Flags
+import android.window.DesktopExperienceFlags
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.UNKNOWN
 import com.android.wm.shell.sysui.ShellCommandHandler
 import java.io.PrintWriter
@@ -56,7 +56,7 @@ class DesktopModeShellCommandHandler(private val controller: DesktopTasksControl
                 pw.println("Error: task id should be an integer")
                 return false
             }
-        if (!Flags.enableMultipleDesktopsBackend()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             return controller.moveTaskToDefaultDeskAndActivate(taskId, transitionSource = UNKNOWN)
         }
         if (args.size < 3) {
@@ -95,7 +95,7 @@ class DesktopModeShellCommandHandler(private val controller: DesktopTasksControl
     }
 
     private fun runCreateDesk(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!Flags.enableMultipleDesktopsBackend()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             pw.println("Not supported.")
             return false
         }
@@ -116,7 +116,7 @@ class DesktopModeShellCommandHandler(private val controller: DesktopTasksControl
     }
 
     private fun runActivateDesk(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!Flags.enableMultipleDesktopsBackend()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             pw.println("Not supported.")
             return false
         }
@@ -137,7 +137,7 @@ class DesktopModeShellCommandHandler(private val controller: DesktopTasksControl
     }
 
     private fun runRemoveDesk(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!Flags.enableMultipleDesktopsBackend()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             pw.println("Not supported.")
             return false
         }
@@ -158,7 +158,7 @@ class DesktopModeShellCommandHandler(private val controller: DesktopTasksControl
     }
 
     private fun runRemoveAllDesks(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!Flags.enableMultipleDesktopsBackend()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             pw.println("Not supported.")
             return false
         }
@@ -167,7 +167,7 @@ class DesktopModeShellCommandHandler(private val controller: DesktopTasksControl
     }
 
     private fun runMoveTaskToFront(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!Flags.enableMultipleDesktopsBackend()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             pw.println("Not supported.")
             return false
         }
@@ -188,7 +188,7 @@ class DesktopModeShellCommandHandler(private val controller: DesktopTasksControl
     }
 
     private fun runMoveTaskOutOfDesk(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!Flags.enableMultipleDesktopsBackend()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             pw.println("Not supported.")
             return false
         }
@@ -204,12 +204,12 @@ class DesktopModeShellCommandHandler(private val controller: DesktopTasksControl
                 pw.println("Error: task id should be an integer")
                 return false
             }
-        pw.println("Not implemented.")
-        return false
+        controller.moveToFullscreen(taskId, transitionSource = UNKNOWN)
+        return true
     }
 
     private fun runCanCreateDesk(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!Flags.enableMultipleDesktopsBackend()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             pw.println("Not supported.")
             return false
         }
@@ -225,7 +225,7 @@ class DesktopModeShellCommandHandler(private val controller: DesktopTasksControl
     }
 
     private fun runGetActiveDeskId(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!Flags.enableMultipleDesktopsBackend()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             pw.println("Not supported.")
             return false
         }
@@ -246,7 +246,7 @@ class DesktopModeShellCommandHandler(private val controller: DesktopTasksControl
     }
 
     override fun printShellCommandHelp(pw: PrintWriter, prefix: String) {
-        if (!Flags.enableMultipleDesktopsBackend()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             pw.println("$prefix moveTaskToDesk <taskId> ")
             pw.println("$prefix  Move a task with given id to desktop mode.")
             pw.println("$prefix moveToNextDisplay <taskId> ")

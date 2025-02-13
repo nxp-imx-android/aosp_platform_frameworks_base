@@ -54,6 +54,7 @@ import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_PIP
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.widget.Toast
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.DesktopModeFlags.DISABLE_NON_RESIZABLE_APP_SNAP_RESIZE
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER
@@ -429,7 +430,7 @@ class DesktopTasksController(
 
     /** Creates a new desk in the given display. */
     fun createDesk(displayId: Int) {
-        if (Flags.enableMultipleDesktopsBackend()) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksOrganizer.createDesk(displayId) { deskId ->
                 taskRepository.addDesk(displayId = displayId, deskId = deskId)
             }
@@ -608,7 +609,7 @@ class DesktopTasksController(
             addPendingMinimizeTransition(transition, it, MinimizeReason.TASK_LIMIT)
         }
         exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
-        if (Flags.enableMultipleDesktopsBackend()) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksTransitionObserver.addPendingTransition(
                 DeskTransition.ActiveDeskWithTask(
                     token = transition,
@@ -636,7 +637,7 @@ class DesktopTasksController(
         task: RunningTaskInfo,
     ): Int? {
         val taskIdToMinimize =
-            if (Flags.enableMultipleDesktopsBackend()) {
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
                 // Activate the desk first.
                 prepareForDeskActivation(displayId, wct)
                 desksOrganizer.activateDesk(wct, deskId)
@@ -656,7 +657,7 @@ class DesktopTasksController(
                 // Bring other apps to front first.
                 bringDesktopAppsToFrontBeforeShowingNewTask(displayId, wct, task.taskId)
             }
-        if (Flags.enableMultipleDesktopsBackend()) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             prepareMoveTaskToDesk(wct, task, deskId)
         } else {
             addMoveToDesktopChanges(wct, task)
@@ -715,7 +716,7 @@ class DesktopTasksController(
         )
         val wct = WindowContainerTransaction()
         exitSplitIfApplicable(wct, taskInfo)
-        if (!Flags.enableMultipleDesktopsBackend()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             // |moveHomeTask| is also called in |bringDesktopAppsToFrontBeforeShowingNewTask|, so
             // this shouldn't be necessary at all.
             if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
@@ -747,7 +748,7 @@ class DesktopTasksController(
                 addPendingMinimizeTransition(it, taskId, MinimizeReason.TASK_LIMIT)
             }
             exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
-            if (Flags.enableMultipleDesktopsBackend()) {
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
                 desksTransitionObserver.addPendingTransition(
                     DeskTransition.ActiveDeskWithTask(
                         token = transition,
@@ -791,6 +792,8 @@ class DesktopTasksController(
     ): ((IBinder) -> Unit)? {
         val taskId = taskInfo.taskId
         snapEventHandler.removeTaskIfTiled(displayId, taskId)
+        // TODO: b/394268248 - desk needs to be deactivated when closing the last task and going
+        //  home.
         performDesktopExitCleanupIfNeeded(taskId, displayId, wct, forceToFullscreen = false)
         taskRepository.addClosingTask(displayId, taskId)
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
@@ -840,6 +843,8 @@ class DesktopTasksController(
         val displayId = taskInfo.displayId
         val wct = WindowContainerTransaction()
         snapEventHandler.removeTaskIfTiled(displayId, taskId)
+        // TODO: b/394268248 - desk needs to be deactivated when minimizing the last task and going
+        //  home.
         performDesktopExitCleanupIfNeeded(taskId, displayId, wct, forceToFullscreen = false)
         // Notify immersive handler as it might need to exit immersive state.
         val exitResult =
@@ -909,7 +914,8 @@ class DesktopTasksController(
     ) {
         logV("moveToFullscreenWithAnimation taskId=%d", task.taskId)
         val wct = WindowContainerTransaction()
-        addMoveToFullscreenChanges(wct, task)
+        val willExitDesktop = willExitDesktop(task.taskId, task.displayId, forceToFullscreen = true)
+        val deactivatingDeskId = addMoveToFullscreenChanges(wct, task, willExitDesktop)
 
         // We are moving a freeform task to fullscreen, put the home task under the fullscreen task.
         if (!forceEnterDesktop(task.displayId)) {
@@ -917,12 +923,18 @@ class DesktopTasksController(
             wct.reorder(task.token, /* onTop= */ true)
         }
 
-        exitDesktopTaskTransitionHandler.startTransition(
-            transitionSource,
-            wct,
-            position,
-            mOnAnimationFinishedCallback,
-        )
+        val transition =
+            exitDesktopTaskTransitionHandler.startTransition(
+                transitionSource,
+                wct,
+                position,
+                mOnAnimationFinishedCallback,
+            )
+        if (deactivatingDeskId != null) {
+            desksTransitionObserver.addPendingTransition(
+                DeskTransition.DeactivateDesk(token = transition, deskId = deactivatingDeskId)
+            )
+        }
 
         // handles case where we are moving to full screen without closing all DW tasks.
         if (!taskRepository.isOnlyVisibleNonClosingTask(task.taskId)) {
@@ -1181,6 +1193,8 @@ class DesktopTasksController(
             wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
         }
 
+        // TODO: b/394268248 - desk needs to be deactivated when moving the last task and going
+        //  home.
         if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
             performDesktopExitCleanupIfNeeded(
                 task.taskId,
@@ -1544,7 +1558,7 @@ class DesktopTasksController(
     private fun prepareForDeskActivation(displayId: Int, wct: WindowContainerTransaction) {
         // Move home to front, ensures that we go back home when all desktop windows are closed
         val useParamDisplayId =
-            Flags.enableMultipleDesktopsBackend() ||
+            DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ||
                 Flags.enablePerDisplayDesktopWallpaperActivity()
         moveHomeTask(displayId = if (useParamDisplayId) displayId else context.displayId, wct = wct)
         // Currently, we only handle the desktop on the default display really.
@@ -1727,10 +1741,29 @@ class DesktopTasksController(
         }
     }
 
-    /**
-     * Remove wallpaper activity if task provided is last task and wallpaper activity token is not
-     * null
-     */
+    private fun willExitDesktop(
+        triggerTaskId: Int,
+        displayId: Int,
+        forceToFullscreen: Boolean,
+    ): Boolean {
+        if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
+            if (!taskRepository.isOnlyVisibleNonClosingTask(triggerTaskId, displayId)) {
+                return false
+            }
+        } else if (
+            Flags.enableDesktopWindowingPip() &&
+                taskRepository.isMinimizedPipPresentInDisplay(displayId) &&
+                !forceToFullscreen
+        ) {
+            return false
+        } else {
+            if (!taskRepository.isOnlyVisibleNonClosingTask(triggerTaskId)) {
+                return false
+            }
+        }
+        return true
+    }
+
     private fun performDesktopExitCleanupIfNeeded(
         taskId: Int,
         displayId: Int,
@@ -1738,22 +1771,18 @@ class DesktopTasksController(
         forceToFullscreen: Boolean,
         shouldEndUpAtHome: Boolean = true,
     ) {
-        taskRepository.setPipShouldKeepDesktopActive(displayId, !forceToFullscreen)
-        if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
-            if (!taskRepository.isOnlyVisibleNonClosingTask(taskId, displayId)) {
-                return
-            }
-        } else if (
-            Flags.enableDesktopWindowingPip() &&
-                taskRepository.isMinimizedPipPresentInDisplay(displayId) &&
-                !forceToFullscreen
-        ) {
+        taskRepository.setPipShouldKeepDesktopActive(displayId, keepActive = !forceToFullscreen)
+        if (!willExitDesktop(taskId, displayId, forceToFullscreen)) {
             return
-        } else {
-            if (!taskRepository.isOnlyVisibleNonClosingTask(taskId)) {
-                return
-            }
         }
+        performDesktopExitCleanUp(wct, displayId, shouldEndUpAtHome)
+    }
+
+    private fun performDesktopExitCleanUp(
+        wct: WindowContainerTransaction,
+        displayId: Int,
+        shouldEndUpAtHome: Boolean = true,
+    ) {
         desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
             FULLSCREEN_ANIMATION_DURATION
         )
@@ -2092,7 +2121,16 @@ class DesktopTasksController(
     ): WindowContainerTransaction? {
         logV("DesktopTasksController: handleMidRecentsFreeformTaskLaunch")
         val wct = WindowContainerTransaction()
-        addMoveToFullscreenChanges(wct, task)
+        addMoveToFullscreenChanges(
+            wct = wct,
+            taskInfo = task,
+            willExitDesktop =
+                willExitDesktop(
+                    triggerTaskId = task.taskId,
+                    displayId = task.displayId,
+                    forceToFullscreen = true,
+                ),
+        )
         wct.reorder(task.token, true)
         return wct
     }
@@ -2116,7 +2154,16 @@ class DesktopTasksController(
                 // launched. We should make this task go to fullscreen instead of freeform. Note
                 // that this means any re-launch of a freeform window outside of desktop will be in
                 // fullscreen as long as default-desktop flag is disabled.
-                addMoveToFullscreenChanges(wct, task)
+                addMoveToFullscreenChanges(
+                    wct = wct,
+                    taskInfo = task,
+                    willExitDesktop =
+                        willExitDesktop(
+                            triggerTaskId = task.taskId,
+                            displayId = task.displayId,
+                            forceToFullscreen = true,
+                        ),
+                )
                 return wct
             }
             bringDesktopAppsToFrontBeforeShowingNewTask(task.displayId, wct, task.taskId)
@@ -2212,7 +2259,16 @@ class DesktopTasksController(
             // changes we do for similar transitions. The task not having WINDOWING_MODE_UNDEFINED
             // set when needed can interfere with future split / multi-instance transitions.
             return WindowContainerTransaction().also { wct ->
-                addMoveToFullscreenChanges(wct, task)
+                addMoveToFullscreenChanges(
+                    wct = wct,
+                    taskInfo = task,
+                    willExitDesktop =
+                        willExitDesktop(
+                            triggerTaskId = task.taskId,
+                            displayId = task.displayId,
+                            forceToFullscreen = true,
+                        ),
+                )
             }
         }
         return null
@@ -2240,10 +2296,25 @@ class DesktopTasksController(
         }
         // Already fullscreen, no-op.
         if (task.isFullscreen) return null
-        return WindowContainerTransaction().also { wct -> addMoveToFullscreenChanges(wct, task) }
+        return WindowContainerTransaction().also { wct ->
+            addMoveToFullscreenChanges(
+                wct = wct,
+                taskInfo = task,
+                willExitDesktop =
+                    willExitDesktop(
+                        triggerTaskId = task.taskId,
+                        displayId = task.displayId,
+                        forceToFullscreen = true,
+                    ),
+            )
+        }
     }
 
-    /** Handle task closing by removing wallpaper activity if it's the last active task */
+    /**
+     * Handle task closing by removing wallpaper activity if it's the last active task.
+     *
+     * TODO: b/394268248 - desk needs to be deactivated.
+     */
     private fun handleTaskClosing(
         task: RunningTaskInfo,
         transition: IBinder,
@@ -2310,7 +2381,7 @@ class DesktopTasksController(
         taskInfo: RunningTaskInfo,
         deskId: Int,
     ) {
-        if (!Flags.enableMultipleDesktopsBackend()) return
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         val displayId = taskRepository.getDisplayForDesk(deskId)
         val displayLayout = displayController.getDisplayLayout(displayId) ?: return
         val initialBounds = getInitialBounds(displayLayout, taskInfo, displayId)
@@ -2394,10 +2465,15 @@ class DesktopTasksController(
         return bounds
     }
 
+    /**
+     * Applies the changes needed to enter fullscreen and returns the id of the desk that needs to
+     * be deactivated.
+     */
     private fun addMoveToFullscreenChanges(
         wct: WindowContainerTransaction,
         taskInfo: RunningTaskInfo,
-    ) {
+        willExitDesktop: Boolean,
+    ): Int? {
         val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(taskInfo.displayId)!!
         val tdaWindowingMode = tdaInfo.configuration.windowConfiguration.windowingMode
         val targetWindowingMode =
@@ -2412,14 +2488,19 @@ class DesktopTasksController(
         if (useDesktopOverrideDensity()) {
             wct.setDensityDpi(taskInfo.token, getDefaultDensityDpi())
         }
-
-        performDesktopExitCleanupIfNeeded(
-            taskInfo.taskId,
-            taskInfo.displayId,
-            wct,
-            forceToFullscreen = true,
-            shouldEndUpAtHome = false,
-        )
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            wct.reparent(taskInfo.token, tdaInfo.token, /* onTop= */ true)
+        }
+        taskRepository.setPipShouldKeepDesktopActive(taskInfo.displayId, keepActive = false)
+        if (willExitDesktop) {
+            performDesktopExitCleanUp(wct, taskInfo.displayId, shouldEndUpAtHome = false)
+            val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue && deskId != null) {
+                desksOrganizer.deactivateDesk(wct, deskId)
+                return deskId
+            }
+        }
+        return null
     }
 
     private fun cascadeWindow(bounds: Rect, displayLayout: DisplayLayout, displayId: Int) {
@@ -2442,6 +2523,8 @@ class DesktopTasksController(
     /**
      * Adds split screen changes to a transaction. Note that bounds are not reset here due to
      * animation; see {@link onDesktopSplitSelectAnimComplete}
+     *
+     * TODO: b/394268248 - desk needs to be deactivated.
      */
     private fun addMoveToSplitChanges(wct: WindowContainerTransaction, taskInfo: RunningTaskInfo) {
         // This windowing mode is to get the transition animation started; once we complete
@@ -2542,7 +2625,7 @@ class DesktopTasksController(
     fun activateDesk(deskId: Int, remoteTransition: RemoteTransition? = null) {
         val displayId = taskRepository.getDisplayForDesk(deskId)
         val wct = WindowContainerTransaction()
-        if (Flags.enableMultipleDesktopsBackend()) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             prepareForDeskActivation(displayId, wct)
             desksOrganizer.activateDesk(wct, deskId)
             if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
@@ -2563,7 +2646,7 @@ class DesktopTasksController(
 
         val transition = transitions.startTransition(transitionType, wct, handler)
         handler?.setTransition(transition)
-        if (Flags.enableMultipleDesktopsBackend()) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksTransitionObserver.addPendingTransition(
                 DeskTransition.ActivateDesk(
                     token = transition,
@@ -2599,7 +2682,7 @@ class DesktopTasksController(
         logV("removeDesk deskId=%d from displayId=%d", deskId, displayId)
 
         val tasksToRemove =
-            if (Flags.enableMultipleDesktopsBackend()) {
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
                 taskRepository.getActiveTaskIdsInDesk(deskId)
             } else {
                 // TODO: 362720497 - make sure minimized windows are also removed in WM
@@ -2608,7 +2691,7 @@ class DesktopTasksController(
             }
 
         val wct = WindowContainerTransaction()
-        if (!Flags.enableMultipleDesktopsBackend()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             tasksToRemove.forEach {
                 val task = shellTaskOrganizer.getRunningTaskInfo(it)
                 if (task != null) {
@@ -2621,9 +2704,9 @@ class DesktopTasksController(
             // TODO: 362720497 - double check background tasks are also removed.
             desksOrganizer.removeDesk(wct, deskId)
         }
-        if (!Flags.enableMultipleDesktopsBackend() && wct.isEmpty) return
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue && wct.isEmpty) return
         val transition = transitions.startTransition(TRANSIT_CLOSE, wct, /* handler= */ null)
-        if (Flags.enableMultipleDesktopsBackend()) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksTransitionObserver.addPendingTransition(
                 DeskTransition.RemoveDesk(
                     token = transition,

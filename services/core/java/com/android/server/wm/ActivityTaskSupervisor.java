@@ -145,6 +145,7 @@ import android.util.SparseIntArray;
 import android.view.Display;
 import android.webkit.URLUtil;
 import android.window.ActivityWindowInfo;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import com.android.internal.R;
@@ -2916,6 +2917,8 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
 
     /** The helper to calculate whether a container is opaque. */
     static class OpaqueContainerHelper implements Predicate<ActivityRecord> {
+        private final boolean mEnableMultipleDesktopsBackend =
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue();
         private ActivityRecord mStarting;
         private boolean mIgnoringInvisibleActivity;
         private boolean mIgnoringKeyguard;
@@ -2938,7 +2941,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             mIgnoringKeyguard = ignoringKeyguard;
 
             final boolean isOpaque;
-            if (!Flags.enableMultipleDesktopsBackend()) {
+            if (!mEnableMultipleDesktopsBackend) {
                 isOpaque = container.getActivity(this,
                         true /* traverseTopToBottom */, null /* boundary */) != null;
             } else {

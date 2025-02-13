@@ -26,6 +26,7 @@ import android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERN
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.IWindowManager
 import android.view.WindowManager.TRANSIT_CHANGE
+import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags
@@ -62,7 +63,7 @@ class DesktopDisplayEventHandler(
     private fun onInit() {
         displayController.addDisplayWindowListener(this)
 
-        if (Flags.enableMultipleDesktopsBackend()) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
             desktopTasksController.onDeskRemovedListener = this
         }
     }

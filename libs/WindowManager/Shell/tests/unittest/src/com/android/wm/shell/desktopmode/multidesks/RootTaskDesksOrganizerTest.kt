@@ -23,11 +23,13 @@ import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.HierarchyOp
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
+import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer.DeskRoot
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
@@ -104,54 +106,45 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
 
     @Test
     fun testOnTaskVanished_removesRoot() {
-        val callback = FakeOnCreateCallback()
-        organizer.createDesk(Display.DEFAULT_DISPLAY, callback)
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
+        val desk = createDesk()
 
-        organizer.onTaskVanished(freeformRoot)
+        organizer.onTaskVanished(desk.taskInfo)
 
-        assertThat(organizer.roots.contains(freeformRoot.taskId)).isFalse()
+        assertThat(organizer.roots.contains(desk.deskId)).isFalse()
     }
 
     @Test
     fun testDesktopWindowAppearsInDesk() {
-        organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
-        val child = createFreeformTask().apply { parentTaskId = freeformRoot.taskId }
+        val desk = createDesk()
+        val child = createFreeformTask().apply { parentTaskId = desk.deskId }
 
         organizer.onTaskAppeared(child, SurfaceControl())
 
-        assertThat(organizer.roots[freeformRoot.taskId].children).contains(child.taskId)
+        assertThat(desk.children).contains(child.taskId)
     }
 
     @Test
     fun testDesktopWindowDisappearsFromDesk() {
-        organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
-        val child = createFreeformTask().apply { parentTaskId = freeformRoot.taskId }
+        val desk = createDesk()
+        val child = createFreeformTask().apply { parentTaskId = desk.deskId }
 
         organizer.onTaskAppeared(child, SurfaceControl())
         organizer.onTaskVanished(child)
 
-        assertThat(organizer.roots[freeformRoot.taskId].children).doesNotContain(child.taskId)
+        assertThat(desk.children).doesNotContain(child.taskId)
     }
 
     @Test
     fun testRemoveDesk() {
-        organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
+        val desk = createDesk()
 
         val wct = WindowContainerTransaction()
-        organizer.removeDesk(wct, freeformRoot.taskId)
+        organizer.removeDesk(wct, desk.deskId)
 
         assertThat(
                 wct.hierarchyOps.any { hop ->
                     hop.type == HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_ROOT_TASK &&
-                        hop.container == freeformRoot.token.asBinder()
+                        hop.container == desk.taskInfo.token.asBinder()
                 }
             )
             .isTrue()
@@ -167,25 +160,23 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
 
     @Test
     fun testActivateDesk() {
-        organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
+        val desk = createDesk()
 
         val wct = WindowContainerTransaction()
-        organizer.activateDesk(wct, freeformRoot.taskId)
+        organizer.activateDesk(wct, desk.deskId)
 
         assertThat(
                 wct.hierarchyOps.any { hop ->
                     hop.type == HierarchyOp.HIERARCHY_OP_TYPE_REORDER &&
                         hop.toTop &&
-                        hop.container == freeformRoot.token.asBinder()
+                        hop.container == desk.taskInfo.token.asBinder()
                 }
             )
             .isTrue()
         assertThat(
                 wct.hierarchyOps.any { hop ->
                     hop.type == HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT &&
-                        hop.container == freeformRoot.token.asBinder()
+                        hop.container == desk.taskInfo.token.asBinder()
                 }
             )
             .isTrue()
@@ -201,20 +192,18 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
 
     @Test
     fun testMoveTaskToDesk() {
-        organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
+        val desk = createDesk()
 
         val desktopTask = createFreeformTask().apply { parentTaskId = -1 }
         val wct = WindowContainerTransaction()
-        organizer.moveTaskToDesk(wct, freeformRoot.taskId, desktopTask)
+        organizer.moveTaskToDesk(wct, desk.deskId, desktopTask)
 
         assertThat(
                 wct.hierarchyOps.any { hop ->
                     hop.isReparent &&
                         hop.toTop &&
                         hop.container == desktopTask.token.asBinder() &&
-                        hop.newParent == freeformRoot.token.asBinder()
+                        hop.newParent == desk.taskInfo.token.asBinder()
                 }
             )
             .isTrue()
@@ -240,17 +229,15 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
 
     @Test
     fun testGetDeskAtEnd() {
-        organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
+        val desk = createDesk()
 
-        val task = createFreeformTask().apply { parentTaskId = freeformRoot.taskId }
+        val task = createFreeformTask().apply { parentTaskId = desk.deskId }
         val endDesk =
             organizer.getDeskAtEnd(
                 TransitionInfo.Change(task.token, SurfaceControl()).apply { taskInfo = task }
             )
 
-        assertThat(endDesk).isEqualTo(freeformRoot.taskId)
+        assertThat(endDesk).isEqualTo(desk.deskId)
     }
 
     @Test
@@ -271,6 +258,47 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
             )
 
         assertThat(isActive).isTrue()
+    }
+
+    @Test
+    fun deactivateDesk_clearsLaunchRoot() {
+        val wct = WindowContainerTransaction()
+        val desk = createDesk()
+        organizer.activateDesk(wct, desk.deskId)
+
+        organizer.deactivateDesk(wct, desk.deskId)
+
+        assertThat(
+                wct.hierarchyOps.any { hop ->
+                    hop.type == HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT &&
+                        hop.container == desk.taskInfo.token.asBinder() &&
+                        hop.windowingModes == null &&
+                        hop.activityTypes == null
+                }
+            )
+            .isTrue()
+    }
+
+    @Test
+    fun isDeskChange() {
+        val desk = createDesk()
+
+        assertThat(
+                organizer.isDeskChange(
+                    TransitionInfo.Change(desk.taskInfo.token, desk.leash).apply {
+                        taskInfo = desk.taskInfo
+                    },
+                    desk.deskId,
+                )
+            )
+            .isTrue()
+    }
+
+    private fun createDesk(): DeskRoot {
+        organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
+        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
+        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
+        return organizer.roots[freeformRoot.taskId]
     }
 
     private class FakeOnCreateCallback : DesksOrganizer.OnCreateCallback {

@@ -27,6 +27,7 @@ import android.hardware.display.DisplayManager;
 import android.os.SystemProperties;
 import android.view.Display;
 import android.view.WindowManager;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import com.android.internal.R;
@@ -271,7 +272,7 @@ public class DesktopModeStatus {
      * frontend implementations).
      */
     public static boolean enableMultipleDesktops(@NonNull Context context) {
-        return Flags.enableMultipleDesktopsBackend()
+        return DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()
                 && Flags.enableMultipleDesktopsFrontend()
                 && canEnterDesktopMode(context);
     }
