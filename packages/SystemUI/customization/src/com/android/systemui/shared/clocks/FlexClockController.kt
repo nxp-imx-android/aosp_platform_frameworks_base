@@ -130,39 +130,25 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
 
         private val FONT_AXES =
             listOf(
-                ClockFontAxis(
-                    key = GSFAxes.WEIGHT,
+                GSFAxes.WEIGHT.toClockAxis(
                     type = AxisType.Float,
-                    minValue = 25f,
                     currentValue = 400f,
-                    maxValue = 1000f,
                     name = "Weight",
                     description = "Glyph Weight",
                 ),
-                ClockFontAxis(
-                    key = GSFAxes.WIDTH,
+                GSFAxes.WIDTH.toClockAxis(
                     type = AxisType.Float,
-                    minValue = 25f,
                     currentValue = 85f,
-                    maxValue = 151f,
                     name = "Width",
                     description = "Glyph Width",
                 ),
-                ClockFontAxis(
-                    key = GSFAxes.ROUND,
+                GSFAxes.ROUND.toClockAxis(
                     type = AxisType.Boolean,
-                    minValue = 0f,
-                    currentValue = 0f,
-                    maxValue = 100f,
                     name = "Round",
                     description = "Glyph Roundness",
                 ),
-                ClockFontAxis(
-                    key = GSFAxes.SLANT,
+                GSFAxes.SLANT.toClockAxis(
                     type = AxisType.Boolean,
-                    minValue = 0f,
-                    currentValue = 0f,
-                    maxValue = -10f,
                     name = "Slant",
                     description = "Glyph Slant",
                 ),
@@ -170,10 +156,10 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
 
         private val LEGACY_FLEX_SETTINGS =
             listOf(
-                ClockFontAxisSetting(GSFAxes.WEIGHT, 600f),
-                ClockFontAxisSetting(GSFAxes.WIDTH, 100f),
-                ClockFontAxisSetting(GSFAxes.ROUND, 100f),
-                ClockFontAxisSetting(GSFAxes.SLANT, 0f),
+                GSFAxes.WEIGHT.toClockAxisSetting(600f),
+                GSFAxes.WIDTH.toClockAxisSetting(100f),
+                GSFAxes.ROUND.toClockAxisSetting(100f),
+                GSFAxes.SLANT.toClockAxisSetting(0f),
             )
     }
 }

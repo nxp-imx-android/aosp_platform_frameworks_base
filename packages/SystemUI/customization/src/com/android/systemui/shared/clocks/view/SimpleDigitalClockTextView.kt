@@ -49,6 +49,7 @@ import com.android.systemui.shared.clocks.DigitTranslateAnimator
 import com.android.systemui.shared.clocks.DimensionParser
 import com.android.systemui.shared.clocks.FLEX_CLOCK_ID
 import com.android.systemui.shared.clocks.FontTextStyle
+import com.android.systemui.shared.clocks.toClockAxisSetting
 import java.lang.Thread
 import kotlin.math.max
 import kotlin.math.min
@@ -594,25 +595,25 @@ open class SimpleDigitalClockTextView(
         val FIDGET_INTERPOLATOR = PathInterpolator(0.26873f, 0f, 0.45042f, 1f)
         val FIDGET_DISTS =
             mapOf(
-                GSFAxes.WEIGHT to Pair(200f, 500f),
-                GSFAxes.WIDTH to Pair(30f, 75f),
-                GSFAxes.ROUND to Pair(0f, 50f),
-                GSFAxes.SLANT to Pair(0f, -5f),
+                GSFAxes.WEIGHT.tag to Pair(200f, 500f),
+                GSFAxes.WIDTH.tag to Pair(30f, 75f),
+                GSFAxes.ROUND.tag to Pair(0f, 50f),
+                GSFAxes.SLANT.tag to Pair(0f, -5f),
             )
 
         val AOD_COLOR = Color.WHITE
-        val LS_WEIGHT_AXIS = ClockFontAxisSetting(GSFAxes.WEIGHT, 400f)
-        val AOD_WEIGHT_AXIS = ClockFontAxisSetting(GSFAxes.WEIGHT, 200f)
-        val WIDTH_AXIS = ClockFontAxisSetting(GSFAxes.WIDTH, 85f)
-        val ROUND_AXIS = ClockFontAxisSetting(GSFAxes.ROUND, 0f)
-        val SLANT_AXIS = ClockFontAxisSetting(GSFAxes.SLANT, 0f)
+        val LS_WEIGHT_AXIS = GSFAxes.WEIGHT.toClockAxisSetting(400f)
+        val AOD_WEIGHT_AXIS = GSFAxes.WEIGHT.toClockAxisSetting(200f)
+        val WIDTH_AXIS = GSFAxes.WIDTH.toClockAxisSetting(85f)
+        val ROUND_AXIS = GSFAxes.ROUND.toClockAxisSetting(0f)
+        val SLANT_AXIS = GSFAxes.SLANT.toClockAxisSetting(0f)
 
         // Axes for Legacy version of the Flex Clock
-        val FLEX_LS_WEIGHT_AXIS = ClockFontAxisSetting(GSFAxes.WEIGHT, 600f)
-        val FLEX_AOD_LARGE_WEIGHT_AXIS = ClockFontAxisSetting(GSFAxes.WEIGHT, 74f)
-        val FLEX_AOD_SMALL_WEIGHT_AXIS = ClockFontAxisSetting(GSFAxes.WEIGHT, 133f)
-        val FLEX_LS_WIDTH_AXIS = ClockFontAxisSetting(GSFAxes.WIDTH, 100f)
-        val FLEX_AOD_WIDTH_AXIS = ClockFontAxisSetting(GSFAxes.WIDTH, 43f)
-        val FLEX_ROUND_AXIS = ClockFontAxisSetting(GSFAxes.ROUND, 100f)
+        val FLEX_LS_WEIGHT_AXIS = GSFAxes.WEIGHT.toClockAxisSetting(600f)
+        val FLEX_AOD_LARGE_WEIGHT_AXIS = GSFAxes.WEIGHT.toClockAxisSetting(74f)
+        val FLEX_AOD_SMALL_WEIGHT_AXIS = GSFAxes.WEIGHT.toClockAxisSetting(133f)
+        val FLEX_LS_WIDTH_AXIS = GSFAxes.WIDTH.toClockAxisSetting(100f)
+        val FLEX_AOD_WIDTH_AXIS = GSFAxes.WIDTH.toClockAxisSetting(43f)
+        val FLEX_ROUND_AXIS = GSFAxes.ROUND.toClockAxisSetting(100f)
     }
 }
