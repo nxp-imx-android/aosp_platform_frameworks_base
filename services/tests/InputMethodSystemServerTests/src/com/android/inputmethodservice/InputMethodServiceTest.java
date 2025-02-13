@@ -38,6 +38,7 @@ import android.app.ActivityManager;
 import android.app.Instrumentation;
 import android.content.res.Configuration;
 import android.graphics.Insets;
+import android.os.Build;
 import android.os.RemoteException;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
@@ -85,7 +86,16 @@ public class InputMethodServiceTest {
             "android:id/input_method_nav_back";
     private static final String INPUT_METHOD_NAV_IME_SWITCHER_ID =
             "android:id/input_method_nav_ime_switcher";
-    private static final long TIMEOUT_IN_SECONDS = 3;
+
+    /** Timeout until the uiObject should be found. */
+    private static final long TIMEOUT_MS = 5000L * Build.HW_TIMEOUT_MULTIPLIER;
+
+    /** Timeout until the event is expected. */
+    private static final long EXPECT_TIMEOUT_MS = 3000L * Build.HW_TIMEOUT_MULTIPLIER;
+
+    /** Timeout during which the event is not expected. */
+    private static final long NOT_EXCEPT_TIMEOUT_MS = 2000L * Build.HW_TIMEOUT_MULTIPLIER;
+
     /** Command to set showing the IME when a hardware keyboard is connected. */
     private static final String SET_SHOW_IME_WITH_HARD_KEYBOARD_CMD =
             "settings put secure " + Settings.Secure.SHOW_IME_WITH_HARD_KEYBOARD;
@@ -1013,7 +1023,8 @@ public class InputMethodServiceTest {
                 runnable.run();
             }
             mInstrumentation.waitForIdleSync();
-            eventCalled = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+            eventCalled = latch.await(eventExpected ? EXPECT_TIMEOUT_MS : NOT_EXCEPT_TIMEOUT_MS,
+                    TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             fail("Interrupted while waiting for latch: " + e.getMessage());
             return;
@@ -1199,8 +1210,7 @@ public class InputMethodServiceTest {
 
     @NonNull
     private UiObject2 getUiObject(@NonNull BySelector bySelector) {
-        final var uiObject = mUiDevice.wait(Until.findObject(bySelector),
-                TimeUnit.SECONDS.toMillis(TIMEOUT_IN_SECONDS));
+        final var uiObject = mUiDevice.wait(Until.findObject(bySelector), TIMEOUT_MS);
         assertWithMessage("UiObject with " + bySelector + " was found").that(uiObject).isNotNull();
         return uiObject;
     }
