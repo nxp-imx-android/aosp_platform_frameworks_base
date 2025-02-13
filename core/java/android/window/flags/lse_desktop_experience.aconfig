@@ -79,6 +79,16 @@ flag {
 }
 
 flag {
+    name: "enable_drag_resize_set_up_in_bg_thread"
+    namespace: "lse_desktop_experience"
+    description: "Enables setting up the drag-resize input listener in a bg thread"
+    bug: "396445663"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_windowing_wallpaper_activity"
     namespace: "lse_desktop_experience"
     description: "Enables desktop wallpaper activity to show wallpaper in the desktop mode"
