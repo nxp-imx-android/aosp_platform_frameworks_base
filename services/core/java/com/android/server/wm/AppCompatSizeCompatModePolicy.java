@@ -17,14 +17,13 @@
 package com.android.server.wm;
 
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
-import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.content.pm.ActivityInfo.SIZE_CHANGES_SUPPORTED_METADATA;
 import static android.content.pm.ActivityInfo.SIZE_CHANGES_SUPPORTED_OVERRIDE;
 import static android.content.pm.ActivityInfo.SIZE_CHANGES_UNSUPPORTED_METADATA;
 import static android.content.pm.ActivityInfo.SIZE_CHANGES_UNSUPPORTED_OVERRIDE;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 
-import static com.android.server.wm.DesktopModeHelper.canEnterDesktopMode;
+import static com.android.server.wm.AppCompatUtils.isInDesktopMode;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -545,9 +544,8 @@ class AppCompatSizeCompatModePolicy {
         // Allow an application to be up-scaled if its window is smaller than its
         // original container or if it's a freeform window in desktop mode.
         boolean shouldAllowUpscaling = !(contentW <= viewportW && contentH <= viewportH)
-                || (canEnterDesktopMode(mActivityRecord.mAtmService.mContext)
-                && newParentConfig.windowConfiguration.getWindowingMode()
-                    == WINDOWING_MODE_FREEFORM);
+                || isInDesktopMode(mActivityRecord.mAtmService.mContext,
+                newParentConfig.windowConfiguration.getWindowingMode());
         return shouldAllowUpscaling ? Math.min(
                 (float) viewportW / contentW, (float) viewportH / contentH) : 1f;
     }
