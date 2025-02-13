@@ -2969,9 +2969,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val captor = argumentCaptor<WindowContainerTransaction>()
         verify(freeformTaskTransitionStarter)
             .startMinimizedModeTransition(captor.capture(), eq(task.taskId), eq(false))
-        captor.firstValue.hierarchyOps.none { hop ->
-            hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK && hop.container == wallpaperToken.asBinder()
-        }
+        assertThat(
+                captor.firstValue.hierarchyOps.none { hop ->
+                    hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK &&
+                        hop.container == wallpaperToken.asBinder()
+                }
+            )
+            .isTrue()
     }
 
     @Test
@@ -3060,9 +3064,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val captor = argumentCaptor<WindowContainerTransaction>()
         verify(freeformTaskTransitionStarter).startPipTransition(captor.capture())
-        captor.firstValue.hierarchyOps.none { hop ->
-            hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK && hop.container == wallpaperToken.asBinder()
-        }
+        assertThat(
+                captor.firstValue.hierarchyOps.none { hop ->
+                    hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK &&
+                        hop.container == wallpaperToken.asBinder()
+                }
+            )
+            .isTrue()
     }
 
     @Test
@@ -3083,7 +3091,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val captor = argumentCaptor<WindowContainerTransaction>()
         verify(freeformTaskTransitionStarter)
             .startMinimizedModeTransition(captor.capture(), eq(task.taskId), eq(true))
-        captor.firstValue.hierarchyOps.none { hop -> hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK }
+        assertThat(
+                captor.firstValue.hierarchyOps.none { hop ->
+                    hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK
+                }
+            )
+            .isTrue()
     }
 
     @Test
@@ -3130,9 +3143,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val captor = argumentCaptor<WindowContainerTransaction>()
         verify(freeformTaskTransitionStarter)
             .startMinimizedModeTransition(captor.capture(), eq(task.taskId), eq(false))
-        captor.firstValue.hierarchyOps.none { hop ->
-            hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK && hop.container == wallpaperToken.asBinder()
-        }
+        assertThat(
+                captor.firstValue.hierarchyOps.none { hop ->
+                    hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK &&
+                        hop.container == wallpaperToken.asBinder()
+                }
+            )
+            .isTrue()
     }
 
     @Test
@@ -3154,9 +3171,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val captor = argumentCaptor<WindowContainerTransaction>()
         verify(freeformTaskTransitionStarter)
             .startMinimizedModeTransition(captor.capture(), eq(task1.taskId), eq(false))
-        captor.firstValue.hierarchyOps.none { hop ->
-            hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK && hop.container == wallpaperToken.asBinder()
-        }
+        assertThat(
+                captor.firstValue.hierarchyOps.none { hop ->
+                    hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK &&
+                        hop.container == wallpaperToken.asBinder()
+                }
+            )
+            .isTrue()
     }
 
     @Test
