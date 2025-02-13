@@ -148,7 +148,7 @@ public class NumPadKey extends ViewGroup implements NumPadAnimationListener {
 
         if (bouncerUiRevamp2()) {
             mDigitText.setTypeface(
-                    Typeface.create(FontStyles.GSF_LABEL_LARGE_EMPHASIZED, Typeface.NORMAL));
+                    Typeface.create(FontStyles.GSF_LABEL_SMALL_EMPHASIZED, Typeface.NORMAL));
         }
     }
 
