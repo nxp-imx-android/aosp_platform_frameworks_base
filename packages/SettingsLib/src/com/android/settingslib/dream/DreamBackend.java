@@ -295,9 +295,9 @@ public class DreamBackend {
     @WhenToDream
     public int getWhenToDreamSetting() {
         return isActivatedOnDock() && isActivatedOnSleep() ? WHILE_CHARGING_OR_DOCKED
-                : isActivatedOnDock() ? WHILE_DOCKED
-                        : isActivatedOnPostured() ? WHILE_POSTURED
-                                : isActivatedOnSleep() ? WHILE_CHARGING
+                : isActivatedOnSleep() ? WHILE_CHARGING
+                        : isActivatedOnDock() ? WHILE_DOCKED
+                                : isActivatedOnPostured() ? WHILE_POSTURED
                                         : NEVER;
     }
 
