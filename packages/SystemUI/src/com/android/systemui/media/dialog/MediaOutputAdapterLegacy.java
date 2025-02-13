@@ -29,6 +29,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.Icon;
 import android.graphics.drawable.LayerDrawable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,56 +54,67 @@ import com.android.settingslib.utils.ThreadUtils;
 import com.android.systemui.res.R;
 
 /**
- * Base adapter for media output dialog.
+ * A RecyclerView adapter for the legacy UI media output dialog device list.
  */
-public abstract class MediaOutputBaseAdapter extends
-        RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-    record OngoingSessionStatus(boolean host) {}
-
-    record GroupStatus(Boolean selected, Boolean deselectable) {}
-
-    enum ConnectionState {
-        CONNECTED,
-        CONNECTING,
-        DISCONNECTED,
-    }
-
-    protected final MediaSwitchingController mController;
+public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
+    private static final String TAG = "MediaOutputAdapterL";
+    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     private static final int UNMUTE_DEFAULT_VOLUME = 2;
     private static final float DEVICE_DISABLED_ALPHA = 0.5f;
     private static final float DEVICE_ACTIVE_ALPHA = 1f;
-
-    Context mContext;
     View mHolderView;
     private boolean mIsInitVolumeFirstTime;
 
-    public MediaOutputBaseAdapter(MediaSwitchingController controller) {
-        mController = controller;
+    public MediaOutputAdapterLegacy(MediaSwitchingController controller) {
+        super(controller);
         mIsInitVolumeFirstTime = true;
     }
-
-    /**
-     * Refresh current dataset
-     */
-    public abstract void updateItems();
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup,
             int viewType) {
-        mContext = viewGroup.getContext();
-        mHolderView = LayoutInflater.from(mContext).inflate(MediaItem.getMediaLayoutId(viewType),
+
+        Context context = viewGroup.getContext();
+        mHolderView = LayoutInflater.from(viewGroup.getContext()).inflate(
+                MediaItem.getMediaLayoutId(viewType),
                 viewGroup, false);
 
-        return null;
+        switch (viewType) {
+            case MediaItem.MediaItemType.TYPE_GROUP_DIVIDER:
+                return new MediaGroupDividerViewHolderLegacy(mHolderView);
+            case MediaItem.MediaItemType.TYPE_PAIR_NEW_DEVICE:
+            case MediaItem.MediaItemType.TYPE_DEVICE:
+            default:
+                return new MediaDeviceViewHolderLegacy(mHolderView, context);
+        }
     }
 
-    abstract boolean isDragging();
-
-    abstract void setIsDragging(boolean isDragging);
-
-    abstract int getCurrentActivePosition();
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int position) {
+        if (position >= getItemCount()) {
+            if (DEBUG) {
+                Log.d(TAG, "Incorrect position: " + position + " list size: "
+                        + getItemCount());
+            }
+            return;
+        }
+        MediaItem currentMediaItem = mMediaItemList.get(position);
+        switch (currentMediaItem.getMediaItemType()) {
+            case MediaItem.MediaItemType.TYPE_GROUP_DIVIDER:
+                ((MediaGroupDividerViewHolderLegacy) viewHolder).onBind(
+                        currentMediaItem.getTitle());
+                break;
+            case MediaItem.MediaItemType.TYPE_PAIR_NEW_DEVICE:
+                ((MediaDeviceViewHolderLegacy) viewHolder).onBindPairNewDevice();
+                break;
+            case MediaItem.MediaItemType.TYPE_DEVICE:
+                ((MediaDeviceViewHolderLegacy) viewHolder).onBindDevice(currentMediaItem, position);
+                break;
+            default:
+                Log.d(TAG, "Incorrect position: " + position);
+        }
+    }
 
     public MediaSwitchingController getController() {
         return mController;
@@ -111,7 +123,7 @@ public abstract class MediaOutputBaseAdapter extends
     /**
      * ViewHolder for binding device view.
      */
-    abstract class MediaDeviceBaseViewHolder extends RecyclerView.ViewHolder {
+    class MediaDeviceViewHolderLegacy extends MediaDeviceViewHolderBase {
 
         private static final int ANIM_DURATION = 500;
 
@@ -136,8 +148,8 @@ public abstract class MediaOutputBaseAdapter extends
         private ValueAnimator mVolumeAnimator;
         private int mLatestUpdateVolume = -1;
 
-        MediaDeviceBaseViewHolder(View view) {
-            super(view);
+        MediaDeviceViewHolderLegacy(View view, Context context) {
+            super(view, context);
             mContainerLayout = view.requireViewById(R.id.device_container);
             mItemLayout = view.requireViewById(R.id.item_layout);
             mTitleText = view.requireViewById(R.id.title);
@@ -158,7 +170,8 @@ public abstract class MediaOutputBaseAdapter extends
             initAnimator();
         }
 
-        void onBind(MediaDevice device, int position) {
+        void onBindDevice(MediaItem mediaItem, int position) {
+            MediaDevice device = mediaItem.getMediaDevice().get();
             mDeviceId = device.getId();
             mItemLayout.setVisibility(View.VISIBLE);
             mCheckBox.setVisibility(View.GONE);
@@ -175,6 +188,7 @@ public abstract class MediaOutputBaseAdapter extends
             mSeekBar.setProgressTintList(
                     ColorStateList.valueOf(mController.getColorSeekbarProgress()));
             enableFocusPropertyForView(mContainerLayout);
+            renderItem(mediaItem, position);
         }
 
         /** Binds a ViewHolder for a "Connect a device" item. */
@@ -190,6 +204,7 @@ public abstract class MediaOutputBaseAdapter extends
             mContainerLayout.setOnClickListener(mController::launchBluetoothPairing);
         }
 
+        @Override
         protected void renderDeviceItem(boolean hideGroupItem, MediaDevice device,
                 ConnectionState connectionState, boolean restrictVolumeAdjustment,
                 GroupStatus groupStatus, OngoingSessionStatus ongoingSessionStatus,
@@ -212,6 +227,7 @@ public abstract class MediaOutputBaseAdapter extends
             updateItemBackground(connectionState);
         }
 
+        @Override
         protected void renderDeviceGroupItem() {
             String sessionName = mController.getSessionName() == null ? ""
                     : mController.getSessionName().toString();
@@ -536,8 +552,6 @@ public abstract class MediaOutputBaseAdapter extends
             updateEndAreaVisibility(true /* showEndArea */, false /* isCheckbox */);
         }
 
-        protected abstract void onExpandGroupButtonClicked();
-
         private void updateEndAreaForOngoingSession(@NonNull MediaDevice device, boolean isHost) {
             updateEndAreaWithIcon(
                     v -> mController.tryToLaunchInAppRoutingIntent(device.getId(), v),
@@ -581,12 +595,6 @@ public abstract class MediaOutputBaseAdapter extends
             mCheckBox.setEnabled(isEnabled);
             setCheckBoxColor(mCheckBox, mController.getColorItemContent());
         }
-
-        protected abstract void onGroupActionTriggered(boolean isChecked, MediaDevice device);
-
-        protected abstract String getDeviceItemContentDescription(@NonNull MediaDevice device);
-
-        protected abstract String getGroupItemContentDescription(String sessionName);
 
         private void setCheckBoxColor(CheckBox checkBox, int color) {
             int[][] states = {{android.R.attr.state_checked}, {}};
@@ -656,6 +664,7 @@ public abstract class MediaOutputBaseAdapter extends
             });
         }
 
+        @Override
         protected void disableSeekBar() {
             mSeekBar.setEnabled(false);
             mSeekBar.setOnTouchListener((v, event) -> true);
@@ -770,10 +779,10 @@ public abstract class MediaOutputBaseAdapter extends
         };
     }
 
-    class MediaGroupDividerViewHolder extends RecyclerView.ViewHolder {
+    class MediaGroupDividerViewHolderLegacy extends RecyclerView.ViewHolder {
         final TextView mTitleText;
 
-        MediaGroupDividerViewHolder(@NonNull View itemView) {
+        MediaGroupDividerViewHolderLegacy(@NonNull View itemView) {
             super(itemView);
             mTitleText = itemView.requireViewById(R.id.title);
         }

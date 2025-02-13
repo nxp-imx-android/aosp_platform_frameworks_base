@@ -84,7 +84,7 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
     private final Kosmos mKosmos = SysuiTestCaseExtKt.testKosmos(this);
 
     // Mock
-    private MediaOutputBaseAdapter mMediaOutputBaseAdapter = mock(MediaOutputBaseAdapter.class);
+    private MediaOutputAdapterBase mMediaOutputBaseAdapter = mock(MediaOutputAdapterBase.class);
     private MediaController mMediaController = mock(MediaController.class);
     private PlaybackState mPlaybackState = mock(PlaybackState.class);
     private MediaSessionManager mMediaSessionManager = mock(MediaSessionManager.class);
@@ -219,7 +219,6 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
     public void refresh_withIconCompat_iconIsVisible() {
         mIconCompat = IconCompat.createWithBitmap(
                 Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888));
-        when(mMediaOutputBaseAdapter.getController()).thenReturn(mMediaSwitchingController);
 
         mMediaOutputBaseDialogImpl.refresh();
         final ImageView view = mMediaOutputBaseDialogImpl.mDialogView.requireViewById(

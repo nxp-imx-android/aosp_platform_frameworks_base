@@ -66,7 +66,7 @@ import java.util.stream.Collectors;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-public class MediaOutputAdapterTest extends SysuiTestCase {
+public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
 
     private static final String TEST_DEVICE_NAME_1 = "test_device_name_1";
     private static final String TEST_DEVICE_NAME_2 = "test_device_name_2";
@@ -90,8 +90,8 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
 
     @Captor
     private ArgumentCaptor<SeekBar.OnSeekBarChangeListener> mOnSeekBarChangeListenerCaptor;
-    private MediaOutputAdapter mMediaOutputAdapter;
-    private MediaOutputAdapter.MediaDeviceViewHolder mViewHolder;
+    private MediaOutputAdapterLegacy mMediaOutputAdapter;
+    private MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy mViewHolder;
     private List<MediaDevice> mMediaDevices = new ArrayList<>();
     private List<MediaItem> mMediaItems = new ArrayList<>();
     MediaOutputSeekbar mSpyMediaOutputSeekbar;
@@ -122,9 +122,9 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         mMediaItems.add(MediaItem.createDeviceMediaItem(mMediaDevice1, true));
         mMediaItems.add(MediaItem.createDeviceMediaItem(mMediaDevice2, false));
 
-        mMediaOutputAdapter = new MediaOutputAdapter(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
         mMediaOutputAdapter.updateItems();
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mSpyMediaOutputSeekbar = spy(mViewHolder.mSeekBar);
     }
@@ -148,9 +148,9 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
 
     @Test
     public void onBindViewHolder_bindPairNew_verifyView() {
-        mMediaOutputAdapter = new MediaOutputAdapter(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
         mMediaOutputAdapter.updateItems();
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaItems.add(MediaItem.createPairNewDeviceMediaItem());
         mMediaItems.add(MediaItem.createPairNewDeviceMediaItem());
@@ -173,9 +173,9 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
                                 .map((item) -> item.getMediaDevice().get())
                                 .collect(Collectors.toList()));
         when(mMediaSwitchingController.getSessionName()).thenReturn(TEST_SESSION_NAME);
-        mMediaOutputAdapter = new MediaOutputAdapter(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
         mMediaOutputAdapter.updateItems();
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.getItemCount();
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
@@ -195,9 +195,9 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
                                 .map((item) -> item.getMediaDevice().get())
                                 .collect(Collectors.toList()));
         when(mMediaSwitchingController.getSessionName()).thenReturn(null);
-        mMediaOutputAdapter = new MediaOutputAdapter(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
         mMediaOutputAdapter.updateItems();
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.getItemCount();
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
@@ -223,7 +223,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
     @Test
     public void onBindViewHolder_bindNonRemoteConnectedDevice_verifyView() {
         when(mMediaSwitchingController.isActiveRemoteDevice(mMediaDevice1)).thenReturn(false);
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
@@ -243,7 +243,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         when(mMediaSwitchingController.getSelectableMediaDevice())
                 .thenReturn(ImmutableList.of(mMediaDevice2));
         when(mMediaSwitchingController.isCurrentConnectedDeviceRemote()).thenReturn(true);
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
@@ -262,7 +262,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         when(mMediaSwitchingController.getSelectableMediaDevice())
                 .thenReturn(ImmutableList.of(mMediaDevice2));
         when(mMediaSwitchingController.isCurrentConnectedDeviceRemote()).thenReturn(true);
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
@@ -274,7 +274,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
     public void onBindViewHolder_bindSingleConnectedRemoteDevice_verifyView() {
         when(mMediaSwitchingController.getSelectableMediaDevice()).thenReturn(ImmutableList.of());
         when(mMediaSwitchingController.isCurrentConnectedDeviceRemote()).thenReturn(true);
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
@@ -292,7 +292,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         when(mMediaDevice1.hasOngoingSession()).thenReturn(true);
         when(mMediaSwitchingController.getSelectableMediaDevice()).thenReturn(ImmutableList.of());
         when(mMediaSwitchingController.isCurrentConnectedDeviceRemote()).thenReturn(true);
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
@@ -313,7 +313,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         when(mMediaDevice1.isHostForOngoingSession()).thenReturn(true);
         when(mMediaSwitchingController.getSelectableMediaDevice()).thenReturn(ImmutableList.of());
         when(mMediaSwitchingController.isCurrentConnectedDeviceRemote()).thenReturn(true);
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
@@ -346,7 +346,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         when(mMediaDevice1.isMutingExpectedDevice()).thenReturn(true);
         when(mMediaSwitchingController.isCurrentConnectedDeviceRemote()).thenReturn(false);
         when(mMediaSwitchingController.isActiveRemoteDevice(mMediaDevice1)).thenReturn(false);
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
@@ -496,7 +496,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         when(mMediaDevice1.getSubtextString()).thenReturn(TEST_CUSTOM_SUBTEXT);
         when(mMediaDevice1.hasOngoingSession()).thenReturn(true);
         when(mMediaDevice1.getSelectionBehavior()).thenReturn(SELECTION_BEHAVIOR_GO_TO_APP);
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
@@ -520,7 +520,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         when(mMediaDevice2.getSubtext()).thenReturn(SUBTEXT_SUBSCRIPTION_REQUIRED);
         when(mMediaDevice2.getSubtextString()).thenReturn(deviceStatus);
         when(mMediaDevice2.getSelectionBehavior()).thenReturn(SELECTION_BEHAVIOR_GO_TO_APP);
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 1);
 
@@ -543,7 +543,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         when(mMediaDevice2.getSubtext()).thenReturn(SUBTEXT_AD_ROUTING_DISALLOWED);
         when(mMediaDevice2.getSubtextString()).thenReturn(deviceStatus);
         when(mMediaDevice2.getSelectionBehavior()).thenReturn(SELECTION_BEHAVIOR_NONE);
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 1);
 
@@ -565,7 +565,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         when(mMediaDevice1.getSubtextString()).thenReturn(TEST_CUSTOM_SUBTEXT);
         when(mMediaDevice1.hasOngoingSession()).thenReturn(true);
         when(mMediaDevice1.getSelectionBehavior()).thenReturn(SELECTION_BEHAVIOR_GO_TO_APP);
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
@@ -625,9 +625,9 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
 
     @Test
     public void onItemClick_clickPairNew_verifyLaunchBluetoothPairing() {
-        mMediaOutputAdapter = new MediaOutputAdapter(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
         mMediaOutputAdapter.updateItems();
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaItems.add(MediaItem.createPairNewDeviceMediaItem());
         mMediaOutputAdapter.updateItems();
@@ -643,9 +643,9 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         assertThat(mMediaDevice2.getState()).isEqualTo(
                 LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED);
         when(mMediaDevice2.getSelectionBehavior()).thenReturn(SELECTION_BEHAVIOR_TRANSFER);
-        mMediaOutputAdapter = new MediaOutputAdapter(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
         mMediaOutputAdapter.updateItems();
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.getItemCount();
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
@@ -661,11 +661,12 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         assertThat(mMediaDevice2.getState()).isEqualTo(
                 LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED);
         when(mMediaDevice2.getSelectionBehavior()).thenReturn(SELECTION_BEHAVIOR_TRANSFER);
-        mMediaOutputAdapter = new MediaOutputAdapter(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
         mMediaOutputAdapter.updateItems();
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
-        MediaOutputAdapter.MediaDeviceViewHolder spyMediaDeviceViewHolder = spy(mViewHolder);
+        MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy spyMediaDeviceViewHolder = spy(
+                mViewHolder);
         mMediaOutputAdapter.getItemCount();
 
         mMediaOutputAdapter.onBindViewHolder(spyMediaDeviceViewHolder, 0);
@@ -682,11 +683,12 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         when(mMediaDevice2.getState()).thenReturn(
                 LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED);
         when(mMediaDevice2.getSelectionBehavior()).thenReturn(SELECTION_BEHAVIOR_GO_TO_APP);
-        mMediaOutputAdapter = new MediaOutputAdapter(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
         mMediaOutputAdapter.updateItems();
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
-        MediaOutputAdapter.MediaDeviceViewHolder spyMediaDeviceViewHolder = spy(mViewHolder);
+        MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy spyMediaDeviceViewHolder = spy(
+                mViewHolder);
 
         mMediaOutputAdapter.onBindViewHolder(spyMediaDeviceViewHolder, 1);
         spyMediaDeviceViewHolder.mContainerLayout.performClick();
@@ -713,7 +715,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         List<MediaDevice> selectableDevices = new ArrayList<>();
         selectableDevices.add(mMediaDevice2);
         when(mMediaSwitchingController.getSelectableMediaDevice()).thenReturn(selectableDevices);
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 1);
 
@@ -857,7 +859,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         when(mMediaSwitchingController.getSelectedMediaDevice())
                 .thenReturn(ImmutableList.of(mMediaDevice1));
         when(mMediaSwitchingController.isCurrentConnectedDeviceRemote()).thenReturn(true);
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
@@ -978,7 +980,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
     public void multipleSelectedDevices_verifySessionView() {
         initializeSession();
 
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
@@ -999,7 +1001,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
     public void multipleSelectedDevices_verifyCollapsedView() {
         initializeSession();
 
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 1);
@@ -1012,13 +1014,13 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
     @Test
     public void multipleSelectedDevices_expandIconClicked_verifyInitialView() {
         initializeSession();
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
         mViewHolder.mEndTouchArea.performClick();
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
@@ -1035,13 +1037,13 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
     @Test
     public void multipleSelectedDevices_expandIconClicked_verifyCollapsedView() {
         initializeSession();
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
         mViewHolder.mEndTouchArea.performClick();
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 1);
@@ -1063,7 +1065,7 @@ public class MediaOutputAdapterTest extends SysuiTestCase {
         when(mMediaSwitchingController.getSelectedMediaDevice()).thenReturn(selectedDevices);
         when(mMediaSwitchingController.getDeselectableMediaDevice()).thenReturn(new ArrayList<>());
 
-        mViewHolder = (MediaOutputAdapter.MediaDeviceViewHolder) mMediaOutputAdapter
+        mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);

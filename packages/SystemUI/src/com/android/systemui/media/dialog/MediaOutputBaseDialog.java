@@ -105,7 +105,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     private boolean mIsLeBroadcastCallbackRegistered;
     private boolean mDismissing;
 
-    MediaOutputBaseAdapter mAdapter;
+    MediaOutputAdapterBase mAdapter;
 
     protected Executor mExecutor;
 

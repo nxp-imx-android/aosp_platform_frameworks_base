@@ -25,7 +25,6 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.DoNotInline;
 import androidx.annotation.NonNull;
@@ -43,19 +42,30 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Adapter for media output dialog.
+ * A parent RecyclerView adapter for the media output dialog device list. This class doesn't
+ * manipulate the layout directly.
  */
-public class MediaOutputAdapter extends MediaOutputBaseAdapter {
+public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    record OngoingSessionStatus(boolean host) {}
 
+    record GroupStatus(Boolean selected, Boolean deselectable) {}
+
+    enum ConnectionState {
+        CONNECTED,
+        CONNECTING,
+        DISCONNECTED,
+    }
+
+    protected final MediaSwitchingController mController;
     private int mCurrentActivePosition;
     private boolean mIsDragging;
-    private static final String TAG = "MediaOutputAdapter";
+    private static final String TAG = "MediaOutputAdapterBase";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
-    private final List<MediaItem> mMediaItemList = new CopyOnWriteArrayList<>();
+    protected final List<MediaItem> mMediaItemList = new CopyOnWriteArrayList<>();
     private boolean mShouldGroupSelectedMediaItems = Flags.enableOutputSwitcherDeviceGrouping();
 
-    public MediaOutputAdapter(MediaSwitchingController controller) {
-        super(controller);
+    public MediaOutputAdapterBase(MediaSwitchingController controller) {
+        mController = controller;
         mCurrentActivePosition = -1;
         mIsDragging = false;
         setHasStableIds(true);
@@ -77,22 +87,19 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
         return false;
     }
 
-    @Override
     boolean isDragging() {
         return mIsDragging;
     }
 
-    @Override
     void setIsDragging(boolean isDragging) {
         mIsDragging = isDragging;
     }
 
-    @Override
     int getCurrentActivePosition() {
         return mCurrentActivePosition;
     }
 
-    @Override
+    /** Refreshes the RecyclerView dataset and forces re-render. */
     public void updateItems() {
         mMediaItemList.clear();
         mMediaItemList.addAll(mController.getMediaItemList());
@@ -103,47 +110,6 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             }
         }
         notifyDataSetChanged();
-    }
-
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup,
-            int viewType) {
-        super.onCreateViewHolder(viewGroup, viewType);
-        switch (viewType) {
-            case MediaItem.MediaItemType.TYPE_GROUP_DIVIDER:
-                return new MediaGroupDividerViewHolder(mHolderView);
-            case MediaItem.MediaItemType.TYPE_PAIR_NEW_DEVICE:
-            case MediaItem.MediaItemType.TYPE_DEVICE:
-            default:
-                return new MediaDeviceViewHolder(mHolderView);
-        }
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int position) {
-        if (position >= mMediaItemList.size()) {
-            if (DEBUG) {
-                Log.d(TAG, "Incorrect position: " + position + " list size: "
-                        + mMediaItemList.size());
-            }
-            return;
-        }
-        MediaItem currentMediaItem = mMediaItemList.get(position);
-        switch (currentMediaItem.getMediaItemType()) {
-            case MediaItem.MediaItemType.TYPE_GROUP_DIVIDER:
-                ((MediaGroupDividerViewHolder) viewHolder).onBind(currentMediaItem.getTitle());
-                break;
-            case MediaItem.MediaItemType.TYPE_PAIR_NEW_DEVICE:
-                ((MediaDeviceViewHolder) viewHolder).onBindPairNewDevice();
-                break;
-            case MediaItem.MediaItemType.TYPE_DEVICE:
-                ((MediaDeviceViewHolder) viewHolder).onBind(
-                        currentMediaItem,
-                        position);
-                break;
-            default:
-                Log.d(TAG, "Incorrect position: " + position);
-        }
     }
 
     @Override
@@ -172,15 +138,17 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
         return mMediaItemList.size();
     }
 
-    class MediaDeviceViewHolder extends MediaDeviceBaseViewHolder {
+    abstract class MediaDeviceViewHolderBase extends RecyclerView.ViewHolder {
 
-        MediaDeviceViewHolder(View view) {
+        Context mContext;
+
+        MediaDeviceViewHolderBase(View view, Context context) {
             super(view);
+            mContext = context;
         }
 
-        void onBind(MediaItem mediaItem, int position) {
+        void renderItem(MediaItem mediaItem, int position) {
             MediaDevice device = mediaItem.getMediaDevice().get();
-            super.onBind(device, position);
             boolean isMutingExpectedDeviceExist = mController.hasMutingExpectedDevice();
             final boolean currentlyConnected = isCurrentlyConnected(device);
             boolean isSelected = isDeviceIncluded(mController.getSelectedMediaDevice(), device);
@@ -291,6 +259,16 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             }
         }
 
+        protected abstract void renderDeviceItem(boolean hideGroupItem, MediaDevice device,
+                ConnectionState connectionState, boolean restrictVolumeAdjustment,
+                GroupStatus groupStatus, OngoingSessionStatus ongoingSessionStatus,
+                View.OnClickListener clickListener, boolean deviceDisabled, String subtitle,
+                Drawable deviceStatusIcon);
+
+        protected abstract void renderDeviceGroupItem();
+
+        protected abstract void disableSeekBar();
+
         private OngoingSessionStatus getOngoingSessionStatus(MediaDevice device) {
             return device.hasOngoingSession() ? new OngoingSessionStatus(
                     device.isHostForOngoingSession()) : null;
@@ -332,13 +310,11 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             }
         }
 
-        @Override
         protected void onExpandGroupButtonClicked() {
             mShouldGroupSelectedMediaItems = false;
             notifyDataSetChanged();
         }
 
-        @Override
         protected void onGroupActionTriggered(boolean isChecked, MediaDevice device) {
             disableSeekBar();
             if (isChecked && isDeviceIncluded(mController.getSelectableMediaDevice(), device)) {
@@ -385,7 +361,6 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
             notifyDataSetChanged();
         }
 
-        @Override
         protected String getDeviceItemContentDescription(@NonNull MediaDevice device) {
             return mContext.getString(
                     device.getDeviceType() == MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE
@@ -393,7 +368,6 @@ public class MediaOutputAdapter extends MediaOutputBaseAdapter {
                             : R.string.accessibility_cast_name, device.getName());
         }
 
-        @Override
         protected String getGroupItemContentDescription(String sessionName) {
             return mContext.getString(R.string.accessibility_cast_name, sessionName);
         }

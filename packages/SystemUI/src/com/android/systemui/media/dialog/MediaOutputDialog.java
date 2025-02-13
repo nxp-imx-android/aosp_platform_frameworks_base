@@ -53,7 +53,7 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
         super(context, broadcastSender, mediaSwitchingController, includePlaybackAndAppMetadata);
         mDialogTransitionAnimator = dialogTransitionAnimator;
         mUiEventLogger = uiEventLogger;
-        mAdapter = new MediaOutputAdapter(mMediaSwitchingController);
+        mAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
         if (!aboveStatusbar) {
             getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
         }
