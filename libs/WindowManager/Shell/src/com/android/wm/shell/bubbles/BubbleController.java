@@ -1295,6 +1295,11 @@ public class BubbleController implements ConfigurationChangeListener,
                         mContext.getResources().getDimensionPixelSize(
                                 com.android.internal.R.dimen.importance_ring_stroke_width));
                 mStackView.onDisplaySizeChanged();
+                // TODO b/392893178: Merge the unfold and the task view transition so that we don't
+                //  have to post a delayed runnable to the looper to update the bounds
+                if (mStackView.isExpanded()) {
+                    mStackView.postDelayed(() -> mStackView.updateExpandedView(), 500);
+                }
             }
             if (newConfig.fontScale != mFontScale) {
                 mFontScale = newConfig.fontScale;
