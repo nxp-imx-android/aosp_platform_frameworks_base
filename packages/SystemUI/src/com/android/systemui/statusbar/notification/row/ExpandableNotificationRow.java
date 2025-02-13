@@ -3227,11 +3227,14 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         boolean oldShowingPublic = mShowingPublic;
         mShowingPublic = mSensitive && hideSensitive;
-        if (mShowingPublicInitialized && mShowingPublic == oldShowingPublic) {
+        boolean isShowingLayoutNotChanged = mShowingPublic == oldShowingPublic;
+        if (mShowingPublicInitialized && isShowingLayoutNotChanged) {
             return;
         }
 
-        if (!animated) {
+        final boolean shouldSkipHideSensitiveAnimation =
+                Flags.skipHideSensitiveNotifAnimation() && isShowingLayoutNotChanged;
+        if (!animated || shouldSkipHideSensitiveAnimation) {
             if (!NotificationContentAlphaOptimization.isEnabled()
                     || mShowingPublic != oldShowingPublic) {
                 // Don't reset the alpha or cancel the animation if the showing layout doesn't
