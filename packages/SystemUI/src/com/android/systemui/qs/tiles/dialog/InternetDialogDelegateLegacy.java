@@ -589,8 +589,10 @@ public class InternetDialogDelegateLegacy implements
                 }
                 mSecondaryMobileNetworkLayout = mDialogView.findViewById(
                         R.id.secondary_mobile_network_layout);
-                mSecondaryMobileNetworkLayout.setOnClickListener(
-                        this::onClickConnectedSecondarySub);
+                if (mCanConfigMobileData) {
+                    mSecondaryMobileNetworkLayout.setOnClickListener(
+                            this::onClickConnectedSecondarySub);
+                }
                 mSecondaryMobileNetworkLayout.setBackground(mBackgroundOn);
 
                 TextView mSecondaryMobileTitleText = mDialogView.requireViewById(
@@ -623,6 +625,8 @@ public class InternetDialogDelegateLegacy implements
                         mDialogView.requireViewById(R.id.secondary_settings_icon);
                 mSecondaryMobileSettingsIcon.setColorFilter(
                         dialog.getContext().getColor(R.color.connected_network_primary_color));
+                mSecondaryMobileSettingsIcon.setVisibility(mCanConfigMobileData ?
+                        View.VISIBLE : View.INVISIBLE);
 
                 // set secondary visual for default data sub
                 mMobileNetworkLayout.setBackground(mBackgroundOff);
