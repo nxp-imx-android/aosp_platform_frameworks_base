@@ -45170,6 +45170,7 @@ package android.telephony {
     field public static final String KEY_RTT_UPGRADE_SUPPORTED_BOOL = "rtt_upgrade_supported_bool";
     field public static final String KEY_RTT_UPGRADE_SUPPORTED_FOR_DOWNGRADED_VT_CALL_BOOL = "rtt_upgrade_supported_for_downgraded_vt_call";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_ATTACH_SUPPORTED_BOOL = "satellite_attach_supported_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_25q4_apis") public static final String KEY_SATELLITE_CONNECTED_NOTIFICATION_THROTTLE_MILLIS_INT = "satellite_connected_notification_throttle_millis_int";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_CONNECTION_HYSTERESIS_SEC_INT = "satellite_connection_hysteresis_sec_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_DATA_SUPPORT_MODE_INT = "satellite_data_support_mode_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_DISPLAY_NAME_STRING = "satellite_display_name_string";
