@@ -827,7 +827,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     SplitScreenController.EXIT_REASON_DESKTOP_MODE);
         } else {
             mDesktopTasksController.moveToFullscreen(taskId,
-                    DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON);
+                    DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON,
+                    /* remoteTransition= */ null);
         }
         mDesktopModeUiEventLogger.log(decoration.mTaskInfo,
                 DesktopUiEventEnum.DESKTOP_WINDOW_APP_HANDLE_MENU_TAP_TO_FULL_SCREEN);

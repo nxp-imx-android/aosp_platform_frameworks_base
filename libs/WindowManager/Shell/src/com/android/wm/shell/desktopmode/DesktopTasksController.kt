@@ -18,6 +18,7 @@ package com.android.wm.shell.desktopmode
 
 import android.annotation.UserIdInt
 import android.app.ActivityManager
+import android.app.ActivityManager.RecentTaskInfo
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
 import android.app.KeyguardManager
@@ -950,11 +951,28 @@ class DesktopTasksController(
         )
     }
 
-    /** Move a task with given `taskId` to fullscreen */
-    fun moveToFullscreen(taskId: Int, transitionSource: DesktopModeTransitionSource) {
-        shellTaskOrganizer.getRunningTaskInfo(taskId)?.let { task ->
+    /** Move or launch a task with given [taskId] to fullscreen */
+    @JvmOverloads
+    fun moveToFullscreen(
+        taskId: Int,
+        transitionSource: DesktopModeTransitionSource,
+        remoteTransition: RemoteTransition? = null,
+    ) {
+        val taskInfo: TaskInfo? =
+            shellTaskOrganizer.getRunningTaskInfo(taskId)
+                ?: if (com.android.launcher3.Flags.enableAltTabKqsFlatenning()) {
+                    recentTasksController?.findTaskInBackground(taskId)
+                } else {
+                    null
+                }
+        taskInfo?.let { task ->
             snapEventHandler.removeTaskIfTiled(task.displayId, taskId)
-            moveToFullscreenWithAnimation(task, task.positionInParent, transitionSource)
+            moveToFullscreenWithAnimation(
+                task,
+                task.positionInParent,
+                transitionSource,
+                remoteTransition,
+            )
         }
     }
 
@@ -989,28 +1007,64 @@ class DesktopTasksController(
     }
 
     private fun moveToFullscreenWithAnimation(
-        task: RunningTaskInfo,
+        task: TaskInfo,
         position: Point,
         transitionSource: DesktopModeTransitionSource,
+        remoteTransition: RemoteTransition? = null,
     ) {
         logV("moveToFullscreenWithAnimation taskId=%d", task.taskId)
+        val displayId =
+            when {
+                task.displayId != INVALID_DISPLAY -> task.displayId
+                focusTransitionObserver.globallyFocusedDisplayId != INVALID_DISPLAY ->
+                    focusTransitionObserver.globallyFocusedDisplayId
+                else -> DEFAULT_DISPLAY
+            }
         val wct = WindowContainerTransaction()
-        val willExitDesktop = willExitDesktop(task.taskId, task.displayId, forceExitDesktop = true)
-        val deactivationRunnable = addMoveToFullscreenChanges(wct, task, willExitDesktop)
+
+        // When a task is background, update wct to start task.
+        if (
+            com.android.launcher3.Flags.enableAltTabKqsFlatenning() &&
+                shellTaskOrganizer.getRunningTaskInfo(task.taskId) == null &&
+                task is RecentTaskInfo
+        ) {
+            wct.startTask(
+                task.taskId,
+                // TODO(b/400817258): Use ActivityOptions Utils when available.
+                ActivityOptions.makeBasic()
+                    .apply {
+                        launchWindowingMode = WINDOWING_MODE_FULLSCREEN
+                        launchDisplayId = displayId
+                        pendingIntentBackgroundActivityStartMode =
+                            ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
+                    }
+                    .toBundle(),
+            )
+        }
+        val willExitDesktop = willExitDesktop(task.taskId, displayId, forceExitDesktop = true)
+        val deactivationRunnable = addMoveToFullscreenChanges(wct, task, willExitDesktop, displayId)
 
         // We are moving a freeform task to fullscreen, put the home task under the fullscreen task.
-        if (!forceEnterDesktop(task.displayId)) {
-            moveHomeTask(task.displayId, wct)
+        if (!forceEnterDesktop(displayId)) {
+            moveHomeTask(displayId, wct)
             wct.reorder(task.token, /* onTop= */ true)
         }
 
         val transition =
-            exitDesktopTaskTransitionHandler.startTransition(
-                transitionSource,
-                wct,
-                position,
-                mOnAnimationFinishedCallback,
-            )
+            if (remoteTransition != null) {
+                val transitionType = transitionType(remoteTransition)
+                val remoteTransitionHandler = OneShotRemoteHandler(mainExecutor, remoteTransition)
+                transitions.startTransition(transitionType, wct, remoteTransitionHandler).also {
+                    remoteTransitionHandler.setTransition(it)
+                }
+            } else {
+                exitDesktopTaskTransitionHandler.startTransition(
+                    transitionSource,
+                    wct,
+                    position,
+                    mOnAnimationFinishedCallback,
+                )
+            }
         deactivationRunnable?.invoke(transition)
 
         // handles case where we are moving to full screen without closing all DW tasks.
@@ -2751,10 +2805,11 @@ class DesktopTasksController(
      */
     private fun addMoveToFullscreenChanges(
         wct: WindowContainerTransaction,
-        taskInfo: RunningTaskInfo,
+        taskInfo: TaskInfo,
         willExitDesktop: Boolean,
+        displayId: Int = taskInfo.displayId,
     ): RunOnTransitStart? {
-        val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(taskInfo.displayId)!!
+        val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)!!
         val tdaWindowingMode = tdaInfo.configuration.windowConfiguration.windowingMode
         val targetWindowingMode =
             if (tdaWindowingMode == WINDOWING_MODE_FULLSCREEN) {
@@ -2771,11 +2826,19 @@ class DesktopTasksController(
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             wct.reparent(taskInfo.token, tdaInfo.token, /* onTop= */ true)
         }
-        val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
+
+        val deskId =
+            taskRepository.getDeskIdForTask(taskInfo.taskId)
+                ?: if (com.android.launcher3.Flags.enableAltTabKqsFlatenning()) {
+                    taskRepository.getActiveDeskId(displayId)
+                } else {
+                    null
+                }
+
         return performDesktopExitCleanUp(
             wct = wct,
             deskId = deskId,
-            displayId = taskInfo.displayId,
+            displayId = displayId,
             willExitDesktop = willExitDesktop,
             shouldEndUpAtHome = false,
         )
@@ -3930,6 +3993,16 @@ class DesktopTasksController(
         ) {
             executeRemoteCallWithTaskPermission(controller, "showDesktopApp") { c ->
                 c.moveTaskToFront(taskId, remoteTransition, toFrontReason.toUnminimizeReason())
+            }
+        }
+
+        override fun moveToFullscreen(
+            taskId: Int,
+            transitionSource: DesktopModeTransitionSource,
+            remoteTransition: RemoteTransition?,
+        ) {
+            executeRemoteCallWithTaskPermission(controller, "moveToFullscreen") { c ->
+                c.moveToFullscreen(taskId, transitionSource, remoteTransition)
             }
         }
 
