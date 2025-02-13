@@ -18,18 +18,13 @@ package com.android.systemui.window.ui.viewmodel
 
 import android.os.Build
 import android.util.Log
-import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.Flags
 import com.android.systemui.keyguard.ui.transitions.GlanceableHubTransition
 import com.android.systemui.keyguard.ui.transitions.PrimaryBouncerTransition
-import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -37,8 +32,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
-
-typealias BlurAppliedUiEvent = Int
 
 /** View model for window root view. */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -48,9 +41,7 @@ constructor(
     primaryBouncerTransitions: Set<@JvmSuppressWildcards PrimaryBouncerTransition>,
     glanceableHubTransitions: Set<@JvmSuppressWildcards GlanceableHubTransition>,
     private val blurInteractor: WindowRootViewBlurInteractor,
-) : ExclusiveActivatable() {
-
-    private val blurEvents = Channel<BlurAppliedUiEvent>(Channel.BUFFERED)
+) {
 
     private val bouncerBlurRadiusFlows =
         if (Flags.bouncerUiRevamp())
@@ -88,22 +79,11 @@ constructor(
             }
         }
 
-    override suspend fun onActivated(): Nothing {
-        coroutineScope {
-            launchTraced("WindowRootViewModel#blurEvents") {
-                for (event in blurEvents) {
-                    if (isLoggable) {
-                        Log.d(TAG, "blur applied for $event")
-                    }
-                    blurInteractor.onBlurApplied(event)
-                }
-            }
-        }
-        awaitCancellation()
-    }
-
     fun onBlurApplied(blurRadius: Int) {
-        blurEvents.trySend(blurRadius)
+        if (isLoggable) {
+            Log.d(TAG, "blur applied for radius $blurRadius")
+        }
+        blurInteractor.onBlurApplied(blurRadius)
     }
 
     @AssistedFactory
@@ -120,9 +100,3 @@ constructor(
         }
     }
 }
-
-/**
- * @property radius Radius of blur to be applied on the window root view.
- * @property isOpaque Whether the blur applied is opaque or transparent.
- */
-data class BlurState(val radius: Int, val isOpaque: Boolean)

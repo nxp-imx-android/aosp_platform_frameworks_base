@@ -50,9 +50,11 @@ import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource;
 import com.android.wm.shell.transition.Transitions;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 
@@ -69,7 +71,7 @@ public class ExitDesktopTaskTransitionHandler implements Transitions.TransitionH
     @ShellMainThread
     private final Handler mHandler;
     private final List<IBinder> mPendingTransitionTokens = new ArrayList<>();
-    private Consumer<SurfaceControl.Transaction> mOnAnimationFinishedCallback;
+    private Function0<Unit> mOnAnimationFinishedCallback;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
     private Point mPosition;
 
@@ -106,7 +108,7 @@ public class ExitDesktopTaskTransitionHandler implements Transitions.TransitionH
      */
     public void startTransition(@NonNull DesktopModeTransitionSource transitionSource,
             @NonNull WindowContainerTransaction wct, Point position,
-            Consumer<SurfaceControl.Transaction> onAnimationEndCallback) {
+            Function0<Unit> onAnimationEndCallback) {
         mPosition = position;
         mOnAnimationFinishedCallback = onAnimationEndCallback;
         final IBinder token = mTransitions.startTransition(getExitTransitionType(transitionSource),
@@ -192,7 +194,7 @@ public class ExitDesktopTaskTransitionHandler implements Transitions.TransitionH
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     if (mOnAnimationFinishedCallback != null) {
-                        mOnAnimationFinishedCallback.accept(finishT);
+                        mOnAnimationFinishedCallback.invoke();
                     }
                     mInteractionJankMonitor.end(Cuj.CUJ_DESKTOP_MODE_EXIT_MODE);
                     mTransitions.getMainExecutor().execute(

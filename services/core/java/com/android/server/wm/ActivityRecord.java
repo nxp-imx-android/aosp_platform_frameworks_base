@@ -46,9 +46,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.app.WindowConfiguration.activityTypeToString;
-import static android.app.admin.DevicePolicyResources.Drawables.Source.PROFILE_SWITCH_ANIMATION;
-import static android.app.admin.DevicePolicyResources.Drawables.Style.OUTLINE;
-import static android.app.admin.DevicePolicyResources.Drawables.WORK_PROFILE_ICON;
 import static android.content.Context.CONTEXT_RESTRICTED;
 import static android.content.Intent.ACTION_MAIN;
 import static android.content.Intent.CATEGORY_HOME;
@@ -189,7 +186,6 @@ import static com.android.server.wm.ActivityRecordProto.STARTING_DISPLAYED;
 import static com.android.server.wm.ActivityRecordProto.STARTING_MOVED;
 import static com.android.server.wm.ActivityRecordProto.STARTING_WINDOW;
 import static com.android.server.wm.ActivityRecordProto.STATE;
-import static com.android.server.wm.ActivityRecordProto.THUMBNAIL;
 import static com.android.server.wm.ActivityRecordProto.TRANSLUCENT;
 import static com.android.server.wm.ActivityRecordProto.VISIBLE;
 import static com.android.server.wm.ActivityRecordProto.VISIBLE_REQUESTED;
@@ -265,7 +261,6 @@ import android.app.PictureInPictureParams;
 import android.app.ResultInfo;
 import android.app.WaitResult;
 import android.app.WindowConfiguration;
-import android.app.admin.DevicePolicyManager;
 import android.app.assist.ActivityId;
 import android.app.compat.CompatChanges;
 import android.app.servertransaction.ActivityConfigurationChangeItem;
@@ -300,7 +295,6 @@ import android.graphics.Insets;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.gui.DropInputMode;
 import android.hardware.HardwareBuffer;
 import android.net.Uri;
@@ -333,7 +327,6 @@ import android.view.IAppTransitionAnimationSpecsFuture;
 import android.view.InputApplicationHandle;
 import android.view.RemoteAnimationAdapter;
 import android.view.RemoteAnimationDefinition;
-import android.view.RemoteAnimationTarget;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
 import android.view.WindowInsets;
@@ -341,7 +334,6 @@ import android.view.WindowInsets.Type;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.WindowManager.TransitionOldType;
-import android.view.animation.Animation;
 import android.window.ActivityWindowInfo;
 import android.window.ITaskFragmentOrganizer;
 import android.window.RemoteTransition;
@@ -380,7 +372,6 @@ import com.android.server.uri.UriPermissionOwner;
 import com.android.server.wm.ActivityMetricsLogger.TransitionInfoSnapshot;
 import com.android.server.wm.SurfaceAnimator.AnimationType;
 import com.android.server.wm.WindowManagerService.H;
-import com.android.server.wm.utils.InsetUtils;
 import com.android.window.flags.Flags;
 
 import dalvik.annotation.optimization.NeverCompile;
@@ -4701,8 +4692,6 @@ final class ActivityRecord extends WindowToken {
             return true;
         }
 
-        // TODO: Transfer thumbnail
-
         return false;
     }
 
@@ -5707,7 +5696,21 @@ final class ActivityRecord extends WindowToken {
         displayContent.getInputMonitor().updateInputWindowsLw(false /*force*/);
         mTransitionChangeFlags = 0;
 
-        postApplyAnimation(visible, fromTransition);
+        // Set client visibility if:
+        // 1. The activity is becoming visible. This is usually no-op because assume that
+        //    setVisibility(true) should have been called. Just in case if that was missed.
+        // 2. The activity is becoming invisible and not RESUMED state (it is usually PAUSED unless
+        //    the activity is transient-hide). If the state is RESUMED, setVisibility(false) will be
+        //    called until activityStopped. This is to avoid crashing apps that assume its view root
+        //    won't be invisible before the activity is paused.
+        if (visible || mState != RESUMED) {
+            setClientVisible(visible);
+        }
+        // Notify the visibility change outside of transition in case onTransitionFinish is not
+        // called for updating snapshot states.
+        if (!fromTransition) {
+            mWmService.mSnapshotController.notifyAppVisibilityChanged(this, visible);
+        }
     }
 
     void commitVisibility(boolean visible, boolean performLayout) {
@@ -5724,75 +5727,6 @@ final class ActivityRecord extends WindowToken {
 
     boolean isInLetterboxAnimation() {
         return mNeedsLetterboxedAnimation && isAnimating();
-    }
-
-    /**
-     * Post process after applying an app transition animation.
-     *
-     * <p class="note"><strong>Note: </strong> This function must be called after the animations
-     * have been applied and {@link #commitVisibility}.</p>
-     *
-     * @param visible {@code true} if this {@link ActivityRecord} has become visible, otherwise
-     *                this has become invisible.
-     * @param fromTransition {@code true} if this call is part of finishing a transition. This is
-     *                       needed because the shell transition is no-longer active by the time
-     *                       commitVisibility is called.
-     */
-    private void postApplyAnimation(boolean visible, boolean fromTransition) {
-        final boolean usingShellTransitions = mTransitionController.isShellTransitionsEnabled();
-        final boolean delayed = !usingShellTransitions && isAnimating(PARENTS | CHILDREN,
-                ANIMATION_TYPE_APP_TRANSITION | ANIMATION_TYPE_WINDOW_ANIMATION);
-        if (!delayed && !usingShellTransitions) {
-            // We aren't delayed anything, but exiting windows rely on the animation finished
-            // callback being called in case the ActivityRecord was pretending to be delayed,
-            // which we might have done because we were in closing/opening apps list.
-            onAnimationFinished(ANIMATION_TYPE_APP_TRANSITION, null /* AnimationAdapter */);
-            if (visible) {
-                // The token was made immediately visible, there will be no entrance animation.
-                // We need to inform the client the enter animation was finished.
-                mEnteringAnimation = true;
-                mWmService.mActivityManagerAppTransitionNotifier.onAppTransitionFinishedLocked(
-                        token);
-            }
-        }
-
-        // If we're becoming visible, immediately change client visibility as well. there seem
-        // to be some edge cases where we change our visibility but client visibility never gets
-        // updated.
-        // If we're becoming invisible, update the client visibility if we are not running an
-        // animation and aren't in RESUMED state. Otherwise, we'll update client visibility in
-        // onAnimationFinished or activityStopped.
-        if (visible || (mState != RESUMED && (usingShellTransitions || !isAnimating(
-                PARENTS, ANIMATION_TYPE_APP_TRANSITION)))) {
-            setClientVisible(visible);
-        }
-
-        final DisplayContent displayContent = getDisplayContent();
-        if (!displayContent.mClosingApps.contains(this)
-                && !displayContent.mOpeningApps.contains(this)
-                && !fromTransition) {
-            // Take the screenshot before possibly hiding the WSA, otherwise the screenshot
-            // will not be taken.
-            mWmService.mSnapshotController.notifyAppVisibilityChanged(this, visible);
-        }
-
-        // If we are hidden but there is no delay needed we immediately
-        // apply the Surface transaction so that the ActivityManager
-        // can have some guarantee on the Surface state following
-        // setting the visibility. This captures cases like dismissing
-        // the docked or root pinned task where there is no app transition.
-        //
-        // In the case of a "Null" animation, there will be
-        // no animation but there will still be a transition set.
-        // We still need to delay hiding the surface such that it
-        // can be synchronized with showing the next surface in the transition.
-        if (!usingShellTransitions && !isVisible() && !delayed
-                && !displayContent.mAppTransition.isTransitionSet()) {
-            forAllWindows(win -> {
-                win.mWinAnimator.hide(getPendingTransaction(), "immediately hidden");
-            }, true);
-            scheduleAnimation();
-        }
     }
 
     /** Updates draw state and shows drawn windows. */
@@ -7597,9 +7531,6 @@ final class ActivityRecord extends WindowToken {
                 mActivityRecordInputSink.applyChangesToSurfaceIfChanged(getPendingTransaction());
             }
         }
-        if (mThumbnail != null) {
-            mThumbnail.setShowing(getPendingTransaction(), show);
-        }
         mLastSurfaceShowing = show;
         super.prepareSurfaces();
     }
@@ -7609,84 +7540,6 @@ final class ActivityRecord extends WindowToken {
      */
     boolean isSurfaceShowing() {
         return mLastSurfaceShowing;
-    }
-
-    void attachThumbnailAnimation() {
-        if (!isAnimating(PARENTS, ANIMATION_TYPE_APP_TRANSITION)) {
-            return;
-        }
-        final HardwareBuffer thumbnailHeader =
-                getDisplayContent().mAppTransition.getAppTransitionThumbnailHeader(task);
-        if (thumbnailHeader == null) {
-            ProtoLog.d(WM_DEBUG_APP_TRANSITIONS, "No thumbnail header bitmap for: %s", task);
-            return;
-        }
-        clearThumbnail();
-        final Transaction transaction = getAnimatingContainer().getPendingTransaction();
-        mThumbnail = new WindowContainerThumbnail(transaction, getAnimatingContainer(),
-                thumbnailHeader);
-        mThumbnail.startAnimation(transaction, loadThumbnailAnimation(thumbnailHeader));
-    }
-
-    /**
-     * Attaches a surface with a thumbnail for the
-     * {@link android.app.ActivityOptions#ANIM_OPEN_CROSS_PROFILE_APPS} animation.
-     */
-    void attachCrossProfileAppsThumbnailAnimation() {
-        if (!isAnimating(PARENTS, ANIMATION_TYPE_APP_TRANSITION)) {
-            return;
-        }
-        clearThumbnail();
-
-        final WindowState win = findMainWindow();
-        if (win == null) {
-            return;
-        }
-        final Rect frame = win.getRelativeFrame();
-        final Context context = mAtmService.getUiContext();
-        final Drawable thumbnailDrawable;
-        if (task.mUserId == mWmService.mCurrentUserId) {
-            thumbnailDrawable = context.getDrawable(R.drawable.ic_account_circle);
-        } else {
-            final DevicePolicyManager dpm = context.getSystemService(DevicePolicyManager.class);
-            thumbnailDrawable = dpm.getResources().getDrawable(
-                    WORK_PROFILE_ICON, OUTLINE, PROFILE_SWITCH_ANIMATION,
-                    () -> context.getDrawable(R.drawable.ic_corp_badge));
-        }
-        final HardwareBuffer thumbnail = getDisplayContent().mAppTransition
-                .createCrossProfileAppsThumbnail(thumbnailDrawable, frame);
-        if (thumbnail == null) {
-            return;
-        }
-        final Transaction transaction = getPendingTransaction();
-        mThumbnail = new WindowContainerThumbnail(transaction, getTask(), thumbnail);
-        final Animation animation =
-                getDisplayContent().mAppTransition.createCrossProfileAppsThumbnailAnimationLocked(
-                        frame);
-        mThumbnail.startAnimation(transaction, animation, new Point(frame.left, frame.top));
-    }
-
-    private Animation loadThumbnailAnimation(HardwareBuffer thumbnailHeader) {
-        final DisplayInfo displayInfo = mDisplayContent.getDisplayInfo();
-
-        // If this is a multi-window scenario, we use the windows frame as
-        // destination of the thumbnail header animation. If this is a full screen
-        // window scenario, we use the whole display as the target.
-        WindowState win = findMainWindow();
-        Rect insets;
-        Rect appRect;
-        if (win != null) {
-            insets = win.getInsetsStateWithVisibilityOverride().calculateInsets(
-                    win.getFrame(), Type.systemBars(), false /* ignoreVisibility */).toRect();
-            appRect = new Rect(win.getFrame());
-            appRect.inset(insets);
-        } else {
-            insets = null;
-            appRect = new Rect(0, 0, displayInfo.appWidth, displayInfo.appHeight);
-        }
-        final Configuration displayConfig = mDisplayContent.getConfiguration();
-        return getDisplayContent().mAppTransition.createThumbnailAspectScaleAnimationLocked(
-                appRect, insets, thumbnailHeader, task, displayConfig.orientation);
     }
 
     @Override
@@ -7715,7 +7568,6 @@ final class ActivityRecord extends WindowToken {
         setAppLayoutChanges(FINISH_LAYOUT_REDO_ANIM | FINISH_LAYOUT_REDO_WALLPAPER,
                 "ActivityRecord");
 
-        clearThumbnail();
         setClientVisible(isVisible() || mVisibleRequested);
 
         getDisplayContent().computeImeTargetIfNeeded(this);
@@ -7724,12 +7576,6 @@ final class ActivityRecord extends WindowToken {
                 + ": reportedVisible=%b okToDisplay=%b okToAnimate=%b startingDisplayed=%b",
                 this, reportedVisible, okToDisplay(), okToAnimate(),
                 isStartingWindowDisplayed());
-
-        // clean up thumbnail window
-        if (mThumbnail != null) {
-            mThumbnail.destroy();
-            mThumbnail = null;
-        }
 
         // WindowState.onExitAnimationDone might modify the children list, so make a copy and then
         // traverse the copy.
@@ -7767,20 +7613,6 @@ final class ActivityRecord extends WindowToken {
         if (wallpaperMightChange) {
             requestUpdateWallpaperIfNeeded();
         }
-    }
-
-    @Override
-    void cancelAnimation() {
-        super.cancelAnimation();
-        clearThumbnail();
-    }
-
-    private void clearThumbnail() {
-        if (mThumbnail == null) {
-            return;
-        }
-        mThumbnail.destroy();
-        mThumbnail = null;
     }
 
     public @TransitionOldType int getTransit() {
@@ -9728,9 +9560,6 @@ final class ActivityRecord extends WindowToken {
         proto.write(IS_WAITING_FOR_TRANSITION_START, isWaitingForTransitionStart());
         proto.write(IS_ANIMATING, isAnimating(TRANSITION | PARENTS | CHILDREN,
                 ANIMATION_TYPE_APP_TRANSITION | ANIMATION_TYPE_WINDOW_ANIMATION));
-        if (mThumbnail != null){
-            mThumbnail.dumpDebug(proto, THUMBNAIL);
-        }
         proto.write(FILLS_PARENT, fillsParent());
         proto.write(APP_STOPPED, mAppStopped);
         proto.write(TRANSLUCENT, !occludesParent());
@@ -9831,31 +9660,6 @@ final class ActivityRecord extends WindowToken {
             System.arraycopy(matrix, 0, mMatrix, 0, mMatrix.length);
             System.arraycopy(translation, 0, mTranslation, 0, mTranslation.length);
         }
-    }
-
-    @Override
-    RemoteAnimationTarget createRemoteAnimationTarget(
-            RemoteAnimationController.RemoteAnimationRecord record) {
-        final WindowState mainWindow = findMainWindow();
-        if (task == null || mainWindow == null) {
-            return null;
-        }
-        final Rect insets = mainWindow.getInsetsStateWithVisibilityOverride().calculateInsets(
-                task.getBounds(), Type.systemBars(), false /* ignoreVisibility */).toRect();
-        InsetUtils.addInsets(insets, getLetterboxInsets());
-
-        final RemoteAnimationTarget target = new RemoteAnimationTarget(task.mTaskId,
-                record.getMode(), record.mAdapter.mCapturedLeash, !fillsParent(),
-                new Rect(), insets,
-                getPrefixOrderIndex(), record.mAdapter.mPosition, record.mAdapter.mLocalBounds,
-                record.mAdapter.mEndBounds, task.getWindowConfiguration(),
-                false /*isNotInRecents*/,
-                record.mThumbnailAdapter != null ? record.mThumbnailAdapter.mCapturedLeash : null,
-                record.mStartBounds, task.getTaskInfo(), checkEnterPictureInPictureAppOpsState());
-        target.setShowBackdrop(record.mShowBackdrop);
-        target.setWillShowImeOnTarget(mStartingData != null && mStartingData.hasImeSurface());
-        target.hasAnimatingParent = record.hasAnimatingParent();
-        return target;
     }
 
     @Override

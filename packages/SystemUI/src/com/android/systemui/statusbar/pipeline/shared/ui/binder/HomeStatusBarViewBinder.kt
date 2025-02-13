@@ -93,10 +93,11 @@ constructor(
 
         // CollapsedStatusBarFragment doesn't need this
         if (StatusBarRootModernization.isEnabled) {
-            primaryChipView.isVisible = false
-            systemInfoView.isVisible = false
-            clockView.isVisible = false
-            notificationIconsArea.isVisible = false
+            // GONE because this shouldn't take space in the layout
+            primaryChipView.hideInitially(state = View.GONE)
+            systemInfoView.hideInitially()
+            clockView.hideInitially()
+            notificationIconsArea.hideInitially()
         }
 
         view.repeatWhenAttached {
@@ -363,6 +364,17 @@ constructor(
         } else {
             this.hide(model.visibility, model.shouldAnimateChange)
         }
+    }
+
+    /**
+     * Hide the view for initialization, but skip if it's already hidden and does not cancel
+     * animations.
+     */
+    private fun View.hideInitially(state: Int = View.INVISIBLE) {
+        if (visibility == View.INVISIBLE || visibility == View.GONE) {
+            return
+        }
+        visibility = state
     }
 
     // See CollapsedStatusBarFragment#hide.

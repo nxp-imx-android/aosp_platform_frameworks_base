@@ -17,6 +17,7 @@
 package com.android.systemui.keyguard.domain.interactor
 
 import android.app.StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
@@ -30,7 +31,6 @@ import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.communal.domain.interactor.CommunalSceneTransitionInteractor
-import com.android.systemui.communal.domain.interactor.communalInteractor
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.domain.interactor.communalSceneTransitionInteractor
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
@@ -126,14 +126,14 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
     }
 
     private val powerInteractor by lazy { kosmos.powerInteractor }
-    private val communalInteractor by lazy { kosmos.communalInteractor }
     private val communalSceneInteractor by lazy { kosmos.communalSceneInteractor }
 
     companion object {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf().andSceneContainer()
+            return FlagsParameterization.allCombinationsOf(FLAG_GLANCEABLE_HUB_V2)
+                .andSceneContainer()
         }
     }
 
@@ -902,6 +902,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
 
     @Test
     @DisableSceneContainer
+    @DisableFlags(FLAG_GLANCEABLE_HUB_V2)
     fun primaryBouncerToGlanceableHubWhileDreaming() =
         testScope.runTest {
             // Setup - Move past initial delay with [KeyguardInteractor#isAbleToDream]

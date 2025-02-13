@@ -1281,6 +1281,7 @@ public class WindowStateTests extends WindowTestsBase {
 
         // Simulate app plays closing transition to app2.
         app.mActivityRecord.commitVisibility(false, false);
+        mDisplayContent.computeImeTarget(true /* updateImeTarget */);
         assertTrue(app.mActivityRecord.mLastImeShown);
 
         // Verify the IME insets is visible on app, but not for app2 during app task switching.

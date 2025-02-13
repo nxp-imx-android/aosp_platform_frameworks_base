@@ -1242,8 +1242,11 @@
     <dimen name="min_window_blur_radius">1px</dimen>
     <dimen name="max_window_blur_radius">23px</dimen>
 
+    <!-- Blur radius of the Notification Shade content (notifications, footer, shelf) -->
+    <dimen name="max_shade_content_blur_radius">@dimen/max_window_blur_radius</dimen>
+
     <!-- Blur radius behind Notification Shade -->
-    <dimen name="max_shade_window_blur_radius">60dp</dimen>
+    <dimen name="max_shade_window_blur_radius">34dp</dimen>
 
     <!-- How much into a DisplayCutout's bounds we can go, on each side -->
     <dimen name="display_cutout_margin_consumption">0px</dimen>
@@ -1254,6 +1257,8 @@
     <dimen name="ongoing_appops_chip_side_padding">8dp</dimen>
     <!-- Margin between icons of Ongoing App Ops chip -->
     <dimen name="ongoing_appops_chip_icon_margin">4dp</dimen>
+    <!-- Side margins for the content of an appops chip -->
+    <dimen name="ongoing_appops_chip_content_horizontal_margin">10dp</dimen>
     <!-- Icon size of Ongoing App Ops chip -->
     <dimen name="ongoing_appops_chip_icon_size">16sp</dimen>
     <!-- Radius of Ongoing App Ops chip corners -->
@@ -2136,18 +2141,25 @@
     <dimen name="volume_dialog_width">60dp</dimen>
 
     <dimen name="volume_dialog_background_corner_radius">30dp</dimen>
-    <dimen name="volume_dialog_background_vertical_margin">-10dp</dimen>
+    <dimen name="volume_dialog_background_vertical_margin">
+        @dimen/volume_dialog_buttons_margin_negative
+    </dimen>
     <!-- top margin covers half the ringer button + components spacing -->
     <dimen name="volume_dialog_background_top_margin">-28dp</dimen>
 
+    <dimen name="volume_dialog_window_margin">14dp</dimen>
     <dimen name="volume_dialog_components_spacing">8dp</dimen>
     <dimen name="volume_dialog_floating_sliders_spacing">8dp</dimen>
     <dimen name="volume_dialog_floating_sliders_vertical_padding">10dp</dimen>
-    <dimen name="volume_dialog_floating_sliders_vertical_padding_negative">-10dp</dimen>
+    <dimen name="volume_dialog_floating_sliders_vertical_padding_negative">
+        @dimen/volume_dialog_buttons_margin_negative
+    </dimen>
     <dimen name="volume_dialog_floating_sliders_horizontal_padding">4dp</dimen>
     <dimen name="volume_dialog_button_size">40dp</dimen>
     <dimen name="volume_dialog_slider_width">52dp</dimen>
     <dimen name="volume_dialog_slider_height">254dp</dimen>
+    <dimen name="volume_dialog_buttons_margin">10dp</dimen>
+    <dimen name="volume_dialog_buttons_margin_negative">-10dp</dimen>
     <!--
         A primary goal of this margin is to vertically constraint slider height in the landscape
         orientation when the vertical space is limited
@@ -2160,7 +2172,11 @@
 
     <dimen name="volume_dialog_background_square_corner_radius">12dp</dimen>
 
-    <dimen name="volume_dialog_ringer_drawer_margin">10dp</dimen>
+    <dimen name="volume_dialog_ringer_drawer_margin">@dimen/volume_dialog_buttons_margin</dimen>
+    <!--
+     (volume_dialog_slider_width - volume_dialog_button_size) / 2
+     This centers ringer drawer against the volume slider
+    -->
     <dimen name="volume_dialog_ringer_drawer_diff_end_margin">6dp</dimen>
     <dimen name="volume_dialog_ringer_drawer_button_size">@dimen/volume_dialog_button_size</dimen>
     <dimen name="volume_dialog_ringer_drawer_button_icon_radius">10dp</dimen>

@@ -123,7 +123,7 @@
     <string name="bluetooth_hearing_aid_media_only_left_active" msgid="1632152540901488645">"有効（メディアのみ）、左のみ"</string>
     <string name="bluetooth_hearing_aid_media_only_right_active" msgid="3854140683042617230">"有効（メディアのみ）、右のみ"</string>
     <string name="bluetooth_hearing_aid_media_only_left_and_right_active" msgid="1299913413062528417">"有効（メディアのみ）、左右"</string>
-    <string name="bluetooth_profile_a2dp" msgid="4632426382762851724">"メディアの音声"</string>
+    <string name="bluetooth_profile_a2dp" msgid="4632426382762851724">"メディアのオーディオ"</string>
     <string name="bluetooth_profile_headset" msgid="5395952236133499331">"電話"</string>
     <string name="bluetooth_profile_opp" msgid="6692618568149493430">"ファイル転送"</string>
     <string name="bluetooth_profile_hid" msgid="2969922922664315866">"入力デバイス"</string>

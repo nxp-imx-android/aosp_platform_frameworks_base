@@ -97,7 +97,6 @@ import android.view.InsetsSource;
 import android.view.InsetsState;
 import android.view.MagnificationSpec;
 import android.view.RemoteAnimationDefinition;
-import android.view.RemoteAnimationTarget;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Builder;
@@ -303,7 +302,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * This gets used during some open/close transitions as well as during a change transition
      * where it represents the starting-state snapshot.
      */
-    WindowContainerThumbnail mThumbnail;
     final Point mTmpPoint = new Point();
     protected final Rect mTmpRect = new Rect();
     final Rect mTmpPrevBounds = new Rect();
@@ -2097,12 +2095,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return getActivity((r) -> !r.finishing && !r.isTaskOverlay());
     }
 
-    void forAllWallpaperWindows(Consumer<WallpaperWindowToken> callback) {
-        for (int i = mChildren.size() - 1; i >= 0; --i) {
-            mChildren.get(i).forAllWallpaperWindows(callback);
-        }
-    }
-
     /**
      * Calls the given {@param callback} for all tasks in depth-first top-down z-order at or below
      * this container.
@@ -3174,61 +3166,10 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         getAnimationPosition(mTmpPoint);
         mTmpRect.offsetTo(0, 0);
 
-        final AppTransition appTransition = getDisplayContent().mAppTransition;
-        final RemoteAnimationController controller = appTransition.getRemoteAnimationController();
         final boolean isChanging = AppTransition.isChangeTransitOld(transit) && enter
                 && isChangingAppTransition();
 
-        if (controller != null) {
-            // Here we load App XML in order to read com.android.R.styleable#Animation_showBackdrop.
-            boolean showBackdrop = false;
-            // Optionally set backdrop color if App explicitly provides it through
-            // {@link Activity#overridePendingTransition(int, int, int)}.
-            @ColorInt int backdropColor = 0;
-            if (controller.isFromActivityEmbedding()) {
-                if (isChanging) {
-                    // When there are more than one changing containers, it may leave part of the
-                    // screen empty. Show background color to cover that.
-                    showBackdrop = getDisplayContent().mChangingContainers.size() > 1;
-                    backdropColor = appTransition.getNextAppTransitionBackgroundColor();
-                } else {
-                    // Check whether the app has requested to show backdrop for open/close
-                    // transition.
-                    final Animation a = appTransition.getNextAppRequestedAnimation(enter);
-                    if (a != null) {
-                        showBackdrop = a.getShowBackdrop();
-                        backdropColor = a.getBackdropColor();
-                    }
-                }
-            }
-            final Rect localBounds = new Rect(mTmpRect);
-            localBounds.offsetTo(mTmpPoint.x, mTmpPoint.y);
-            final RemoteAnimationController.RemoteAnimationRecord adapters;
-            if (!isChanging && !enter && isClosingWhenResizing()) {
-                // Container that is closing while resizing. Pass in the closing start bounds, so
-                // the animation can start with the correct bounds, there won't be a snapshot.
-                // Cleanup the mClosingChangingContainers so that when the animation is finished, it
-                // will reset the surface.
-                final Rect closingStartBounds = getDisplayContent().mClosingChangingContainers
-                        .remove(this);
-                adapters = controller.createRemoteAnimationRecord(
-                        this, mTmpPoint, localBounds, screenBounds, closingStartBounds,
-                        showBackdrop, false /* shouldCreateSnapshot */);
-            } else {
-                final Rect startBounds = null;
-                adapters = controller.createRemoteAnimationRecord(
-                        this, mTmpPoint, localBounds, screenBounds, startBounds, showBackdrop);
-            }
-            if (backdropColor != 0) {
-                adapters.setBackDropColor(backdropColor);
-            }
-            if (!isChanging) {
-                adapters.setMode(enter
-                        ? RemoteAnimationTarget.MODE_OPENING
-                        : RemoteAnimationTarget.MODE_CLOSING);
-            }
-            resultAdapters = new Pair<>(adapters.mAdapter, adapters.mThumbnailAdapter);
-        } else if (isChanging) {
+        if (isChanging) {
             final float durationScale = mWmService.getTransitionAnimationScaleLocked();
             final DisplayInfo displayInfo = getDisplayContent().getDisplayInfo();
             mTmpRect.offsetTo(mTmpPoint.x, mTmpPoint.y);
@@ -3415,11 +3356,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             a.scaleCurrentDuration(mWmService.getTransitionAnimationScaleLocked());
         }
         return a;
-    }
-
-    RemoteAnimationTarget createRemoteAnimationTarget(
-            RemoteAnimationController.RemoteAnimationRecord record) {
-        return null;
     }
 
     boolean canCreateRemoteAnimationTarget() {

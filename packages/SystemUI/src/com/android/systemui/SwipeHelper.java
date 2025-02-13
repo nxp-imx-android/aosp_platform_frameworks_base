@@ -126,7 +126,7 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
         }
     };
 
-    private final int mFalsingThreshold;
+    private int mFalsingThreshold;
     private boolean mTouchAboveFalsingThreshold;
     private boolean mDisableHwLayers;
     private final boolean mFadeDependingOnAmountSwiped;
@@ -149,8 +149,7 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
         // Extra long-press!
         mLongPressTimeout = (long) (ViewConfiguration.getLongPressTimeout() * 1.5f);
 
-        mDensityScale =  resources.getDisplayMetrics().density;
-        mFalsingThreshold = resources.getDimensionPixelSize(R.dimen.swipe_helper_falsing_threshold);
+        updateResourceProperties(resources);
         mFadeDependingOnAmountSwiped = resources.getBoolean(
                 R.bool.config_fadeDependingOnAmountSwiped);
         mFalsingManager = falsingManager;
@@ -163,6 +162,14 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
         }
         mFlingAnimationUtils = new FlingAnimationUtils(resources.getDisplayMetrics(),
                 getMaxEscapeAnimDuration() / 1000f);
+    }
+
+    /** Update ane properties that depend on Resources */
+    public void updateResourceProperties(Resources resources) {
+        float density = resources.getDisplayMetrics().density;
+        setDensityScale(density);
+        mCallback.onDensityScaleChange(density);
+        mFalsingThreshold = resources.getDimensionPixelSize(R.dimen.swipe_helper_falsing_threshold);
     }
 
     public void setDensityScale(float densityScale) {
@@ -1001,5 +1008,8 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
          * @return If true, the given view is draggable.
          */
         default boolean canChildBeDragged(@NonNull View animView) { return true; }
+
+        /** The density scale has changed */
+        void onDensityScaleChange(float density);
     }
 }

@@ -2252,6 +2252,14 @@
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Dpad střed"</string>
     <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"Panel nastavení typu automatického kliknutí"</string>
     <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"Kliknutí levým"</string>
+    <!-- no translation found for accessibility_autoclick_right_click (4353495816526181293) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_double_click (2103826849116176478) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_drag (1499559489796843224) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll (3499385943728726933) -->
+    <skip />
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pozastavit"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Pozice"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"Balíček <xliff:g id="PACKAGE_NAME">%1$s</xliff:g> byl vložen do sekce OMEZENO"</string>

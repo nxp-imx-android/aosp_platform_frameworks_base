@@ -19,6 +19,7 @@ package com.android.systemui.keyguard.domain.interactor
 
 import android.annotation.SuppressLint
 import android.util.Log
+import com.android.app.tracing.coroutines.flow.traceAs
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
@@ -90,6 +91,7 @@ constructor(
                     onBufferOverflow = BufferOverflow.DROP_OLDEST,
                 )
                 .also { it.tryEmit(0f) }
+                .traceAs("KTF-${state.name}")
         }
     }
 
@@ -222,10 +224,11 @@ constructor(
 
         val flow: Flow<TransitionStep> =
             transitionMap.getOrPut(mappedEdge) {
-                MutableSharedFlow(
-                    extraBufferCapacity = 10,
-                    onBufferOverflow = BufferOverflow.DROP_OLDEST,
-                )
+                MutableSharedFlow<TransitionStep>(
+                        extraBufferCapacity = 10,
+                        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+                    )
+                    .traceAs("KTF-${mappedEdge.from}-to-${mappedEdge.to}")
             }
 
         if (!SceneContainerFlag.isEnabled) {

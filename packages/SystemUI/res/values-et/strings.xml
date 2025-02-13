@@ -133,7 +133,7 @@
     <string name="screenrecord_save_error" msgid="5862648532560118815">"Viga ekraanisalvestise salvestamisel"</string>
     <string name="screenrecord_start_error" msgid="2200660692479682368">"Viga ekraanikuva salvestamise alustamisel"</string>
     <string name="screenrecord_stop_dialog_title" msgid="8716193661764511095">"Kas peatada salvestamine?"</string>
-    <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Salvestate praegu kogu oma ekraanikuva"</string>
+    <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Salvestate praegu kogu oma ekraanikuva."</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Salvestate praegu rakendust <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Peata salvestamine"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ekraani jagamine"</string>
@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Kuvatakse mullina vestluste märguannete ülaosas ja profiilipildina lukustuskuval ning katkestab režiimi Mitte segada"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Prioriteetne"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ei toeta vestlusfunktsioone"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Tagasiside"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Loobu"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Ära enam näita"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Neid märguandeid ei saa muuta."</string>
@@ -1395,6 +1394,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Volditava seadme lahtivoltimine"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Volditava seadme ümberpööramine"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Esiekraan on sisse lülitatud"</string>
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Lohistamine sisemisele ekraanile"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"kokku volditud"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"lahti volditud"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s/%2$s"</string>

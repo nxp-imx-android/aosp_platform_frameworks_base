@@ -1291,6 +1291,29 @@ public class BtHelper {
         return 0; // 0 is not a valid profile
     }
 
+    /*package */ static int getTypeFromProfile(int profile, boolean isLeOutput) {
+        switch (profile) {
+            case BluetoothProfile.A2DP_SINK:
+                return AudioSystem.DEVICE_IN_BLUETOOTH_A2DP;
+            case BluetoothProfile.A2DP:
+                return AudioSystem.DEVICE_OUT_BLUETOOTH_A2DP;
+            case BluetoothProfile.HEARING_AID:
+                return AudioSystem.DEVICE_OUT_HEARING_AID;
+            case BluetoothProfile.LE_AUDIO:
+                if (isLeOutput) {
+                    return AudioSystem.DEVICE_OUT_BLE_HEADSET;
+                } else {
+                    return AudioSystem.DEVICE_IN_BLE_HEADSET;
+                }
+            case BluetoothProfile.LE_AUDIO_BROADCAST:
+                return AudioSystem.DEVICE_OUT_BLE_BROADCAST;
+            case BluetoothProfile.HEADSET:
+                return AudioSystem.DEVICE_OUT_BLUETOOTH_SCO;
+            default:
+                throw new IllegalArgumentException("Invalid profile " + profile);
+        }
+    }
+
     /*package */ static Bundle getPreferredAudioProfiles(String address) {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         return adapter.getPreferredAudioProfiles(adapter.getRemoteDevice(address));

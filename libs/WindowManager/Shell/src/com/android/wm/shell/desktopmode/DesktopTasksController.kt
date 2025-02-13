@@ -116,6 +116,7 @@ import com.android.wm.shell.recents.RecentsTransitionStateListener.RecentsTransi
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.annotations.ExternalThread
+import com.android.wm.shell.shared.annotations.ShellDesktopThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
@@ -176,6 +177,7 @@ class DesktopTasksController(
     private val recentsTransitionHandler: RecentsTransitionHandler,
     private val multiInstanceHelper: MultiInstanceHelper,
     @ShellMainThread private val mainExecutor: ShellExecutor,
+    @ShellDesktopThread private val desktopExecutor: ShellExecutor,
     private val desktopTasksLimiter: Optional<DesktopTasksLimiter>,
     private val recentTasksController: RecentTasksController?,
     private val interactionJankMonitor: InteractionJankMonitor,
@@ -202,26 +204,19 @@ class DesktopTasksController(
     private var userId: Int
     private val desktopModeShellCommandHandler: DesktopModeShellCommandHandler =
         DesktopModeShellCommandHandler(this)
-    private val mOnAnimationFinishedCallback =
-        Consumer<SurfaceControl.Transaction> { t: SurfaceControl.Transaction ->
-            visualIndicator?.releaseVisualIndicator(t)
-            visualIndicator = null
-        }
+    private val mOnAnimationFinishedCallback = { releaseVisualIndicator() }
     private val dragToDesktopStateListener =
         object : DragToDesktopStateListener {
-            override fun onCommitToDesktopAnimationStart(tx: SurfaceControl.Transaction) {
-                removeVisualIndicator(tx)
+            override fun onCommitToDesktopAnimationStart() {
+                removeVisualIndicator()
             }
 
-            override fun onCancelToDesktopAnimationEnd(tx: SurfaceControl.Transaction) {
-                removeVisualIndicator(tx)
+            override fun onCancelToDesktopAnimationEnd() {
+                removeVisualIndicator()
             }
 
-            private fun removeVisualIndicator(tx: SurfaceControl.Transaction) {
-                visualIndicator?.fadeOutIndicator {
-                    visualIndicator?.releaseVisualIndicator(tx)
-                    visualIndicator = null
-                }
+            private fun removeVisualIndicator() {
+                visualIndicator?.fadeOutIndicator { releaseVisualIndicator() }
             }
         }
 
@@ -838,6 +833,7 @@ class DesktopTasksController(
         val taskId = taskInfo.taskId
         val displayId = taskInfo.displayId
         val wct = WindowContainerTransaction()
+        desktopTilingDecorViewModel.removeTaskIfTiled(displayId, taskId)
         performDesktopExitCleanupIfNeeded(taskId, displayId, wct, forceToFullscreen = false)
         // Notify immersive handler as it might need to exit immersive state.
         val exitResult =
@@ -1773,13 +1769,8 @@ class DesktopTasksController(
     }
 
     fun releaseVisualIndicator() {
-        val t = SurfaceControl.Transaction()
-        visualIndicator?.releaseVisualIndicator(t)
+        visualIndicator?.releaseVisualIndicator()
         visualIndicator = null
-        syncQueue.runInSync { transaction ->
-            transaction.merge(t)
-            t.close()
-        }
     }
 
     override fun getContext(): Context = context
@@ -1999,6 +1990,9 @@ class DesktopTasksController(
                 splitPosition,
                 options.toBundle(),
                 /* hideTaskToken= */ null,
+                if (enableFlexibleSplit())
+                    splitScreenController.determineNewInstanceIndex(callingTask)
+                else SPLIT_INDEX_UNDEFINED,
             )
         }
     }
@@ -2757,6 +2751,8 @@ class DesktopTasksController(
         val indicator =
             visualIndicator
                 ?: DesktopModeVisualIndicator(
+                    desktopExecutor,
+                    mainExecutor,
                     syncQueue,
                     taskInfo,
                     displayController,

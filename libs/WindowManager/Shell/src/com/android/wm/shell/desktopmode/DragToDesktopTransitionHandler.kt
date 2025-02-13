@@ -642,7 +642,7 @@ sealed class DragToDesktopTransitionHandler(
                 startPosition.y.toInt() + unscaledStartHeight,
             )
 
-        dragToDesktopStateListener?.onCommitToDesktopAnimationStart(startTransaction)
+        dragToDesktopStateListener?.onCommitToDesktopAnimationStart()
         // Accept the merge by applying the merging transaction (applied by #showResizeVeil)
         // and finish callback. Show the veil and position the task at the first frame before
         // starting the final animation.
@@ -773,7 +773,7 @@ sealed class DragToDesktopTransitionHandler(
                 addListener(
                     object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator) {
-                            dragToDesktopStateListener?.onCancelToDesktopAnimationEnd(tx)
+                            dragToDesktopStateListener?.onCancelToDesktopAnimationEnd()
                             // Start the cancel transition to restore order.
                             startCancelDragToDesktopTransition()
                         }
@@ -866,9 +866,9 @@ sealed class DragToDesktopTransitionHandler(
     )
 
     interface DragToDesktopStateListener {
-        fun onCommitToDesktopAnimationStart(tx: SurfaceControl.Transaction)
+        fun onCommitToDesktopAnimationStart()
 
-        fun onCancelToDesktopAnimationEnd(tx: SurfaceControl.Transaction)
+        fun onCancelToDesktopAnimationEnd()
     }
 
     sealed class TransitionState {
@@ -1081,7 +1081,7 @@ constructor(
         val startBoundsWithOffset =
             Rect(startBounds).apply { offset(startPosition.x.toInt(), startPosition.y.toInt()) }
 
-        dragToDesktopStateListener?.onCommitToDesktopAnimationStart(startTransaction)
+        dragToDesktopStateListener?.onCommitToDesktopAnimationStart()
         // Accept the merge by applying the merging transaction (applied by #showResizeVeil)
         // and finish callback. Show the veil and position the task at the first frame before
         // starting the final animation.

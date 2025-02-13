@@ -35,6 +35,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.LoopOper
 import com.android.internal.widget.remotecompose.core.operations.layout.RootLayoutComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentModifiers;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.utilities.IntMap;
 import com.android.internal.widget.remotecompose.core.operations.utilities.StringSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.Serializable;
@@ -64,7 +65,7 @@ public class CoreDocument implements Serializable {
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.0f;
+    static final float BUILD = 0.1f;
 
     @NonNull ArrayList<Operation> mOperations = new ArrayList<>();
 
@@ -98,6 +99,8 @@ public class CoreDocument implements Serializable {
     private HashSet<Component> mAppliedTouchOperations = new HashSet<>();
 
     private int mLastId = 1; // last component id when inflating the file
+
+    private IntMap<Object> mDocProperties;
 
     /** Returns a version number that is monotonically increasing. */
     public static int getDocumentApiLevel() {
@@ -407,10 +410,31 @@ public class CoreDocument implements Serializable {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", "CoreDocument");
-        serializer.add("width", mWidth);
-        serializer.add("height", mHeight);
-        serializer.add("operations", mOperations);
+        serializer
+                .add("type", "CoreDocument")
+                .add("width", mWidth)
+                .add("height", mHeight)
+                .add("operations", mOperations);
+    }
+
+    /**
+     * Set the properties of the document
+     *
+     * @param properties the properties to set
+     */
+    public void setProperties(IntMap<Object> properties) {
+        mDocProperties = properties;
+    }
+
+    /**
+     * @param key the key
+     * @return the value associated with the key
+     */
+    public Object getProperty(short key) {
+        if (mDocProperties == null) {
+            return null;
+        }
+        return mDocProperties.get(key);
     }
 
     // ============== Haptic support ==================

@@ -18,7 +18,7 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4470785958457506021">"કમ્પેનિયન ડિવાઇસ મેનેજર"</string>
     <string name="confirmation_title" msgid="2244241995958340998">"શું &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;ને ઍક્સેસ કરવા માટે, &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ઍપને મંજૂરી આપીએ?"</string>
-    <string name="message_discovery_soft_timeout" msgid="473346859407859161">"ખાતરી કરો કે આ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> દ્વારા <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> ચાલુ કરવામાં આવી છે અને તમારી <xliff:g id="PROFILE_NAME">%3$s</xliff:g> નજીકમાં રાખો."</string>
+    <string name="message_discovery_soft_timeout" msgid="473346859407859161">"ખાતરી કરો કે આ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> દ્વારા <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> ચાલુ કરવામાં આવ્યું છે અને તમારી <xliff:g id="PROFILE_NAME">%3$s</xliff:g> નજીકમાં રાખો."</string>
     <string name="message_discovery_hard_timeout" msgid="677514663495711424">"કોઈ ડિવાઇસ મળ્યું નથી. કૃપા કરીને થોડા સમય પછી ફરી પ્રયાસ કરો."</string>
     <string name="discovery_bluetooth" msgid="5693557668470016164">"બ્લૂટૂથ"</string>
     <string name="discovery_wifi" msgid="1551782459721758773">"વાઇ-ફાઇ"</string>

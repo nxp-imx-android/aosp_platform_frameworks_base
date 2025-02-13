@@ -251,7 +251,7 @@
     <string name="enable_adb_summary" msgid="3711526030096574316">"‏وضع تصحيح الأخطاء عند توصيل USB"</string>
     <string name="clear_adb_keys" msgid="3010148733140369917">"‏إلغاء عمليات تفويض تصحيح أخطاء USB"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"تصحيح الأخطاء اللاسلكي"</string>
-    <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"‏وضع تصحيح الأخطاء عندما يتم الاتصال بشبكة Wi‑Fi"</string>
+    <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"‏بدء تصحيح الأخطاء عند الاتصال بشبكة Wi‑Fi"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"خطأ"</string>
     <string name="adb_wireless_settings" msgid="2295017847215680229">"تصحيح الأخطاء اللاسلكي"</string>
     <string name="adb_wireless_list_empty_off" msgid="1713707973837255490">"لعرض الأجهزة المتاحة واستخدامها، فعِّل ميزة \"تصحيح الأخطاء اللاسلكي\"."</string>
@@ -674,7 +674,7 @@
     <string name="not_grant_admin" msgid="3557849576157702485">"لا أريد منح هذا المستخدم امتيازات المشرف."</string>
     <string name="guest_exit_dialog_button" msgid="1736401897067442044">"خروج"</string>
     <string name="guest_exit_dialog_title_non_ephemeral" msgid="7675327443743162986">"هل تريد حفظ النشاط في وضع الضيف؟"</string>
-    <string name="guest_exit_dialog_message_non_ephemeral" msgid="223385323235719442">"يمكنك حفظ نشاط من الجلسة الحالية أو حذف كلّ التطبيقات والبيانات."</string>
+    <string name="guest_exit_dialog_message_non_ephemeral" msgid="223385323235719442">"يمكنك حفظ نشاطك من الجلسة الحالية أو حذف كلّ التطبيقات والبيانات."</string>
     <string name="guest_exit_clear_data_button" msgid="3425812652180679014">"حذف"</string>
     <string name="guest_exit_save_data_button" msgid="3690974510644963547">"حِفظ"</string>
     <string name="guest_exit_button" msgid="5774985819191803960">"الخروج من وضع الضيف"</string>

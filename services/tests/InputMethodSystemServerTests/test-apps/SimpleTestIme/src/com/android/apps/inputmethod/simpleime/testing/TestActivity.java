@@ -45,29 +45,12 @@ import java.lang.ref.WeakReference;
 public final class TestActivity extends Activity {
 
     private static final String TAG = "TestActivity";
-    private static WeakReference<TestActivity> sLastCreatedInstance = new WeakReference<>(null);
 
-    /**
-     * Start a new test activity with an editor and wait for it to begin running before returning.
-     *
-     * @param instrumentation application instrumentation
-     * @return the newly started activity
-     */
+    /** Last created instance of this activity. */
     @NonNull
-    public static TestActivity startSync(@NonNull Instrumentation instrumentation) {
-        final var intent = new Intent()
-                .setAction(Intent.ACTION_MAIN)
-                .setClass(instrumentation.getTargetContext(), TestActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        return (TestActivity) instrumentation.startActivitySync(intent);
-    }
+    private static WeakReference<TestActivity> sInstance = new WeakReference<>(null);
 
     private EditText mEditText;
-
-    public EditText getEditText() {
-        return mEditText;
-    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -80,13 +63,11 @@ public final class TestActivity extends Activity {
         rootView.setFitsSystemWindows(true);
         setContentView(rootView);
         mEditText.requestFocus();
-        sLastCreatedInstance = new WeakReference<>(this);
+        sInstance = new WeakReference<>(this);
     }
 
-    /** Get the last created TestActivity instance, if available. */
-    @Nullable
-    public static TestActivity getLastCreatedInstance() {
-        return sLastCreatedInstance.get();
+    public EditText getEditText() {
+        return mEditText;
     }
 
     /** Shows soft keyboard via InputMethodManager. */
@@ -117,5 +98,27 @@ public final class TestActivity extends Activity {
         final var controller = mEditText.getWindowInsetsController();
         controller.hide(WindowInsets.Type.ime());
         Log.i(TAG, "hideIme() via WindowInsetsController");
+    }
+
+    /** Gets the last created instance of this activity, if available. */
+    @Nullable
+    public static TestActivity getInstance() {
+        return sInstance.get();
+    }
+
+    /**
+     * Start a new test activity with an editor and wait for it to begin running before returning.
+     *
+     * @param instrumentation application instrumentation.
+     * @return the newly started activity.
+     */
+    @NonNull
+    public static TestActivity startSync(@NonNull Instrumentation instrumentation) {
+        final var intent = new Intent()
+                .setAction(Intent.ACTION_MAIN)
+                .setClass(instrumentation.getTargetContext(), TestActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        return (TestActivity) instrumentation.startActivitySync(intent);
     }
 }

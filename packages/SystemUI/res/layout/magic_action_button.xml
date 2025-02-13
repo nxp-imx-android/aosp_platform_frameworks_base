@@ -1,4 +1,5 @@
-<Button xmlns:android="http://schemas.android.com/apk/res/android"
+<com.android.systemui.statusbar.notification.row.MagicActionButton
+    xmlns:android="http://schemas.android.com/apk/res/android"
     style="@android:style/Widget.Material.Button"
     android:layout_width="wrap_content"
     android:layout_height="@dimen/magic_action_button_touch_target_height"

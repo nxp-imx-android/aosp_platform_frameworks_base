@@ -17,8 +17,11 @@
 package com.android.systemui.statusbar.notification.promoted.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dump.DumpManager
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
+import com.android.systemui.util.kotlin.FlowDumperImpl
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -26,9 +29,17 @@ import kotlinx.coroutines.flow.map
 @SysUISingleton
 class AODPromotedNotificationInteractor
 @Inject
-constructor(activeNotificationsInteractor: ActiveNotificationsInteractor) {
+constructor(
+    activeNotificationsInteractor: ActiveNotificationsInteractor,
+    dumpManager: DumpManager,
+) : FlowDumperImpl(dumpManager) {
     val content: Flow<PromotedNotificationContentModel?> =
         activeNotificationsInteractor.topLevelRepresentativeNotifications.map { notifs ->
             notifs.firstNotNullOfOrNull { it.promotedContent }
         }
+
+    val isPresent: Flow<Boolean> =
+        content
+            .map { (it != null) && (it.style != Style.Ineligible) }
+            .dumpWhileCollecting("isPresent")
 }

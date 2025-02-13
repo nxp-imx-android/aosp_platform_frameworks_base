@@ -80,7 +80,7 @@ class BluetoothTileDialogDelegateTest : SysuiTestCase() {
     @Mock private lateinit var dialogTransitionAnimator: DialogTransitionAnimator
 
     private val uiProperties =
-        BluetoothTileDialogViewModel.UiProperties.build(
+        BluetoothDetailsContentViewModel.UiProperties.build(
             isBluetoothEnabled = ENABLED,
             isAutoOnToggleFeatureAvailable = ENABLED,
         )

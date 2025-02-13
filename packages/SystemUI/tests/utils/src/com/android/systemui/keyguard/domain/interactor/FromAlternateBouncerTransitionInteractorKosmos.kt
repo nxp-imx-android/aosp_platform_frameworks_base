@@ -18,6 +18,8 @@ package com.android.systemui.keyguard.domain.interactor
 
 import com.android.systemui.bouncer.domain.interactor.primaryBouncerInteractor
 import com.android.systemui.communal.domain.interactor.communalInteractor
+import com.android.systemui.communal.domain.interactor.communalSceneInteractor
+import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
 import com.android.systemui.keyguard.data.repository.keyguardTransitionRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -39,5 +41,7 @@ val Kosmos.fromAlternateBouncerTransitionInteractor by
             powerInteractor = powerInteractor,
             keyguardOcclusionInteractor = keyguardOcclusionInteractor,
             primaryBouncerInteractor = primaryBouncerInteractor,
+            communalSceneInteractor = communalSceneInteractor,
+            communalSettingsInteractor = communalSettingsInteractor,
         )
     }

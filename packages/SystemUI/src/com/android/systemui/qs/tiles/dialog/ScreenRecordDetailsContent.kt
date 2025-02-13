@@ -28,13 +28,6 @@ import com.android.systemui.screenrecord.ScreenRecordPermissionViewBinder
 
 @Composable
 fun ScreenRecordDetailsContent(viewModel: ScreenRecordDetailsViewModel) {
-    // TODO(b/378514312): Finish implementing this function.
-
-    if (viewModel.recordingController.isScreenCaptureDisabled) {
-        // TODO(b/388345506): Show disabled page here.
-        return
-    }
-
     val viewBinder: ScreenRecordPermissionViewBinder = remember {
         viewModel.recordingController.createScreenRecordPermissionViewBinder(
             viewModel.onStartRecordingClicked

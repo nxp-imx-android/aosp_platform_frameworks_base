@@ -638,6 +638,14 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     }
 
     /**
+     * Starts an existing task via StageCoordinator.
+     */
+    public void startTask(int taskId, @SplitPosition int position, @Nullable Bundle options,
+            @Nullable WindowContainerToken hideTaskToken, @SplitIndex int index) {
+        mStageCoordinator.startTask(taskId, position, options, hideTaskToken, index);
+    }
+
+    /**
      * See {@link #startShortcut(String, String, int, Bundle, UserHandle)}
      * @param instanceId to be used by {@link SplitscreenEventLogger}
      */

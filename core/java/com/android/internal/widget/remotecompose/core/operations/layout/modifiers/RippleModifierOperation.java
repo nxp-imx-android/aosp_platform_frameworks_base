@@ -126,7 +126,7 @@ public class RippleModifierOperation extends DecoratorModifierOperation implemen
 
         float radius = Math.max(mWidth, mHeight) * tweenRadius;
         mPaint.setColor(paintedColor);
-        context.applyPaint(mPaint);
+        context.replacePaint(mPaint);
         context.clipRect(0f, 0f, mWidth, mHeight);
         context.drawCircle(mAnimateRippleX, mAnimateRippleY, radius);
         context.restorePaint();

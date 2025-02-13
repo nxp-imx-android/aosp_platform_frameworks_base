@@ -87,7 +87,7 @@ class FaceScanningOverlay(
 
     override fun enableShowProtection(isCameraActive: Boolean) {
         val scanningAnimationRequiredWhenCameraActive =
-                keyguardUpdateMonitor.isFaceDetectionRunning || authController.isShowing
+                keyguardUpdateMonitor.isFaceDetectionRunning || authController.isShowing || mDebug
         val faceAuthSucceeded = keyguardUpdateMonitor.isFaceAuthenticated
         val showScanningAnimationNow = scanningAnimationRequiredWhenCameraActive && isCameraActive
         if (showScanningAnimationNow == showScanningAnim) {

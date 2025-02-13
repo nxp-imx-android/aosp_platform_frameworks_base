@@ -3313,7 +3313,6 @@
         <!-- Provides brief supplemental information for the view, such as the purpose of
              the view when that purpose is not conveyed within its textual representation.
              This property is used primarily for accessibility. -->
-        <!-- @FlaggedApi("android.view.accessibility.supplemental_description") -->
         <attr name="supplementalDescription" format="string" localization="suggested" />
 
         <!-- Sets the id of a view that screen readers are requested to visit after this view.

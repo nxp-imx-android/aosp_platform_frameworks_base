@@ -17,11 +17,30 @@ package com.android.internal.widget.remotecompose.core.serialize;
 
 import android.annotation.Nullable;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /** Represents a serializer for a map */
 public interface MapSerializer {
+
+    /**
+     * Add a float expression
+     *
+     * @param key
+     * @param value
+     * @return
+     */
+    MapSerializer addFloatExpressionSrc(String key, float[] value);
+
+    /**
+     * Add an int expression
+     *
+     * @param key The key
+     * @param value The int src
+     * @param mask For determining ID from int
+     */
+    MapSerializer addIntExpressionSrc(String key, int[] value, int mask);
 
     /**
      * Add metadata to this map for filtering by the data format generator.
@@ -146,4 +165,19 @@ public interface MapSerializer {
      * @param value The Enum
      */
     <T extends Enum<T>> MapSerializer add(String key, @Nullable Enum<T> value);
+
+    /**
+     * Similar to Map.of, but create a LinkedHashMap preserving insertion order for predictable
+     * serialization.
+     *
+     * @param keysAndValues a even number of items, repeating String key and Object value.
+     * @return A LinkedHashMap.
+     */
+    static LinkedHashMap<String, Object> orderedOf(Object... keysAndValues) {
+        final LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+        for (int i = 0; i < keysAndValues.length; i += 2) {
+            map.put((String) keysAndValues[i], keysAndValues[i + 1]);
+        }
+        return map;
+    }
 }

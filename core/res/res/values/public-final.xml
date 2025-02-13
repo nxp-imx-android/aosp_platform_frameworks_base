@@ -3941,7 +3941,7 @@
     <!-- @FlaggedApi("android.permission.flags.replace_body_sensor_permission_enabled")
          @hide @SystemApi -->
     <public name="backgroundPermission"/>
-    <!-- @FlaggedApi(android.view.accessibility.supplemental_description) -->
+    <!-- @FlaggedApi("android.view.accessibility.supplemental_description") -->
     <public name="supplementalDescription"/>
     <!-- @FlaggedApi("android.security.enable_intent_matching_flags") -->
     <public name="intentMatchingFlags"/>
@@ -3969,7 +3969,7 @@
   <!-- @FlaggedApi("android.permission.flags.replace_body_sensor_permission_enabled")
        @hide @SystemApi -->
   <public type="attr" name="backgroundPermission" id="0x010106a7" />
-  <!-- @FlaggedApi(android.view.accessibility.supplemental_description) -->
+  <!-- @FlaggedApi("android.view.accessibility.supplemental_description") -->
   <public type="attr" name="supplementalDescription" id="0x010106a8" />
   <!-- @FlaggedApi("android.security.enable_intent_matching_flags") -->
   <public type="attr" name="intentMatchingFlags" id="0x010106a9" />

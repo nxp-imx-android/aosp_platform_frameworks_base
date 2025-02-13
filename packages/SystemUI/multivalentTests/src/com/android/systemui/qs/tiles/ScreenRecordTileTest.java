@@ -345,7 +345,17 @@ public class ScreenRecordTileTest extends SysuiTestCase {
     public void testNotStartingAndRecording_returnDetailsViewModel() {
         when(mController.isStarting()).thenReturn(false);
         when(mController.isRecording()).thenReturn(false);
+        when(mController.isScreenCaptureDisabled()).thenReturn(false);
         mTile.getDetailsViewModel(Assert::assertNotNull);
+    }
+
+    @Test
+    @EnableFlags(QsDetailedView.FLAG_NAME)
+    public void testRecordingDisabled_notReturnDetailsViewModel() {
+        when(mController.isStarting()).thenReturn(false);
+        when(mController.isRecording()).thenReturn(false);
+        when(mController.isScreenCaptureDisabled()).thenReturn(true);
+        mTile.getDetailsViewModel(Assert::assertNull);
     }
 
     @Test

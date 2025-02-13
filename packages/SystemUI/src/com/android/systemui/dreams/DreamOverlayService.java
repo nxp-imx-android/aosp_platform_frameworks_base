@@ -53,7 +53,6 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.internal.policy.PhoneWindow;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
-import com.android.systemui.Flags;
 import com.android.systemui.ambient.touch.TouchHandler;
 import com.android.systemui.ambient.touch.TouchMonitor;
 import com.android.systemui.ambient.touch.dagger.AmbientTouchComponent;
@@ -211,7 +210,6 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
                 mCommunalVisible = communalVisible;
 
                 updateLifecycleStateLocked();
-                updateGestureBlockingLocked();
             });
         }
     };
@@ -594,8 +592,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
     private void updateGestureBlockingLocked() {
         final boolean shouldBlock = mStarted && !mShadeExpanded && !mBouncerShowing
-                && !isDreamInPreviewMode()
-                && !(Flags.glanceableHubBackAction() && mCommunalVisible);
+                && !isDreamInPreviewMode();
 
         if (shouldBlock) {
             mGestureInteractor.addGestureBlockedMatcher(DREAM_TYPE_MATCHER,

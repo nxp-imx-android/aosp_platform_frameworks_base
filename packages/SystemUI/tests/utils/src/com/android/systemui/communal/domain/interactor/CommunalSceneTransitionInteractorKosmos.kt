@@ -22,6 +22,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.power.domain.interactor.powerInteractor
 
 val Kosmos.communalSceneTransitionInteractor: CommunalSceneTransitionInteractor by
     Kosmos.Fixture {
@@ -33,5 +34,6 @@ val Kosmos.communalSceneTransitionInteractor: CommunalSceneTransitionInteractor 
             sceneInteractor = communalSceneInteractor,
             repository = communalSceneTransitionRepository,
             keyguardInteractor = keyguardInteractor,
+            powerInteractor = powerInteractor,
         )
     }

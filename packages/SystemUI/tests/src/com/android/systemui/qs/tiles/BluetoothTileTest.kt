@@ -16,7 +16,7 @@ import com.android.internal.telephony.flags.Flags
 import com.android.settingslib.Utils
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.bluetooth.qsdialog.BluetoothTileDialogViewModel
+import com.android.systemui.bluetooth.qsdialog.BluetoothDetailsContentViewModel
 import com.android.systemui.classifier.FalsingManagerFake
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.plugins.ActivityStarter
@@ -71,7 +71,7 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Mock private lateinit var bluetoothController: BluetoothController
     @Mock private lateinit var uiEventLogger: QsEventLogger
     @Mock private lateinit var featureFlags: FeatureFlagsClassic
-    @Mock private lateinit var bluetoothTileDialogViewModel: BluetoothTileDialogViewModel
+    @Mock private lateinit var bluetoothDetailsContentViewModel: BluetoothDetailsContentViewModel
     @Mock private lateinit var clickJob: Job
     private lateinit var testableLooper: TestableLooper
     private lateinit var tile: FakeBluetoothTile
@@ -96,7 +96,7 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
                 qsLogger,
                 bluetoothController,
                 featureFlags,
-                bluetoothTileDialogViewModel,
+                bluetoothDetailsContentViewModel,
             )
 
         tile.initialize()
@@ -238,7 +238,7 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
 
         tile.handleClick(null)
 
-        verify(bluetoothTileDialogViewModel)
+        verify(bluetoothDetailsContentViewModel)
             .showDetailsContent(/* expandable= */ null, /* view= */ null)
     }
 
@@ -308,7 +308,7 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
         qsLogger: QSLogger,
         bluetoothController: BluetoothController,
         featureFlags: FeatureFlagsClassic,
-        bluetoothTileDialogViewModel: BluetoothTileDialogViewModel,
+        bluetoothDetailsContentViewModel: BluetoothDetailsContentViewModel,
     ) :
         BluetoothTile(
             qsHost,
@@ -322,7 +322,7 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
             qsLogger,
             bluetoothController,
             featureFlags,
-            bluetoothTileDialogViewModel,
+            bluetoothDetailsContentViewModel,
         ) {
         var restrictionChecked: String? = null
 

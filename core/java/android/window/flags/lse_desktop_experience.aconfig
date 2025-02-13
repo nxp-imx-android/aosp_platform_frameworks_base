@@ -623,6 +623,13 @@ flag {
 }
 
 flag {
+    name: "enable_multi_display_split"
+    namespace: "lse_desktop_experience"
+    description: "Enables split screen on multiple displays at the same time"
+    bug: "395943397"
+}
+
+flag {
   name: "exclude_caption_from_app_bounds"
   namespace: "lse_desktop_experience"
   description: "Whether caption insets are excluded from app bounds in freeform"
@@ -702,6 +709,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Fix the window-close keyboard shortcut in Desktop Mode."
     bug: "394599430"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_desktop_indicator_in_separate_thread_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables running visual indicator view operations in ShellDesktopThread."
+    bug: "366413536"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

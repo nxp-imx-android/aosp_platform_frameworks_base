@@ -94,6 +94,7 @@ constructor(
                 }
             }
             launch { viewModel.qsExpandFraction.collectTraced { view.setQsExpandFraction(it) } }
+            launch { viewModel.blurRadius(maxBlurRadius).collect(view::setBlurRadius) }
             launch {
                 viewModel.isShowingStackOnLockscreen.collectTraced {
                     view.setShowingStackOnLockscreen(it)
@@ -145,6 +146,10 @@ constructor(
                 }
             }
         }
+
+    /** blur radius to be applied when the QS panel is fully expanded */
+    private val maxBlurRadius: Flow<Int> =
+        configuration.getDimensionPixelSize(R.dimen.max_shade_content_blur_radius)
 
     /** flow of the scrim clipping radius */
     private val scrimRadius: Flow<Int>

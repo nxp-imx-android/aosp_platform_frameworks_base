@@ -32,7 +32,7 @@ import dagger.assisted.AssistedInject
 class BluetoothTileDialogDelegate
 @AssistedInject
 constructor(
-    @Assisted private val initialUiProperties: BluetoothTileDialogViewModel.UiProperties,
+    @Assisted private val initialUiProperties: BluetoothDetailsContentViewModel.UiProperties,
     @Assisted private val cachedContentHeight: Int,
     @Assisted private val bluetoothTileDialogCallback: BluetoothTileDialogCallback,
     @Assisted private val dismissListener: Runnable,
@@ -48,7 +48,7 @@ constructor(
     @AssistedFactory
     interface Factory {
         fun create(
-            initialUiProperties: BluetoothTileDialogViewModel.UiProperties,
+            initialUiProperties: BluetoothDetailsContentViewModel.UiProperties,
             cachedContentHeight: Int,
             dialogCallback: BluetoothTileDialogCallback,
             dimissListener: Runnable,

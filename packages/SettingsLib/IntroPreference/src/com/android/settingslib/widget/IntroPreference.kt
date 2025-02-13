@@ -33,8 +33,8 @@ class IntroPreference @JvmOverloads constructor(
     defStyleRes: Int = 0
 ) : Preference(context, attrs, defStyleAttr, defStyleRes), GroupSectionDividerMixin {
 
-    private var isCollapsable: Boolean = false
-    private var minLines: Int = 2
+    private var isCollapsable: Boolean = true
+    private var minLines: Int = DEFAULT_MIN_LINES
     private var hyperlinkListener: View.OnClickListener? = null
     private var learnMoreListener: View.OnClickListener? = null
     private var learnMoreText: CharSequence? = null
@@ -42,22 +42,6 @@ class IntroPreference @JvmOverloads constructor(
     init {
         layoutResource = R.layout.settingslib_expressive_preference_intro
         isSelectable = false
-
-        initAttributes(context, attrs, defStyleAttr)
-    }
-
-    private fun initAttributes(context: Context, attrs: AttributeSet?, defStyleAttr: Int) {
-        context.obtainStyledAttributes(
-            attrs,
-            COLLAPSABLE_TEXT_VIEW_ATTRS, defStyleAttr, 0
-        ).apply {
-            isCollapsable = getBoolean(IS_COLLAPSABLE, false)
-            minLines = getInt(
-                MIN_LINES,
-                if (isCollapsable) DEFAULT_MIN_LINES else DEFAULT_MAX_LINES
-            ).coerceIn(1, DEFAULT_MAX_LINES)
-            recycle()
-        }
     }
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
@@ -139,13 +123,6 @@ class IntroPreference @JvmOverloads constructor(
 
     companion object {
         private const val DEFAULT_MAX_LINES = 10
-        private const val DEFAULT_MIN_LINES = 2
-
-        private val COLLAPSABLE_TEXT_VIEW_ATTRS =
-            com.android.settingslib.widget.theme.R.styleable.CollapsableTextView
-        private val MIN_LINES =
-            com.android.settingslib.widget.theme.R.styleable.CollapsableTextView_android_minLines
-        private val IS_COLLAPSABLE =
-            com.android.settingslib.widget.theme.R.styleable.CollapsableTextView_isCollapsable
+        private const val DEFAULT_MIN_LINES = 1
     }
 }

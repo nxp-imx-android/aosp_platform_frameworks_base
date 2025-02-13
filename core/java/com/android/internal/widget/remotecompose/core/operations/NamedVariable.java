@@ -26,11 +26,13 @@ import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.List;
 
 /** Operation to deal with Text data */
-public class NamedVariable extends Operation {
+public class NamedVariable extends Operation implements Serializable {
     private static final int OP_CODE = Operations.NAMED_VARIABLE;
     private static final String CLASS_NAME = "NamedVariable";
     public final int mVarId;
@@ -134,5 +136,29 @@ public class NamedVariable extends Operation {
     @Override
     public String deepToString(@NonNull String indent) {
         return indent + toString();
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .add("type", CLASS_NAME)
+                .add("varId", mVarId)
+                .add("varName", mVarName)
+                .add("varType", typeToString());
+    }
+
+    private String typeToString() {
+        switch (mVarType) {
+            case COLOR_TYPE:
+                return "COLOR_TYPE";
+            case FLOAT_TYPE:
+                return "FLOAT_TYPE";
+            case STRING_TYPE:
+                return "STRING_TYPE";
+            case IMAGE_TYPE:
+                return "IMAGE_TYPE";
+            default:
+                return "INVALID_TYPE";
+        }
     }
 }

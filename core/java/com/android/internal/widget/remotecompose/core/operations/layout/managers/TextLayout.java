@@ -209,7 +209,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
         mPaint.setColor(mColor);
         mPaint.setTextSize(mFontSize);
         mPaint.setTextStyle(mType, (int) mFontWeight, mFontStyle == 1);
-        context.applyPaint(mPaint);
+        context.replacePaint(mPaint);
         if (mCachedString == null) {
             return;
         }
@@ -330,7 +330,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
         mPaint.setTextSize(mFontSize);
         mPaint.setTextStyle(mType, (int) mFontWeight, mFontStyle == 1);
         mPaint.setColor(mColor);
-        context.applyPaint(mPaint);
+        context.replacePaint(mPaint);
         float[] bounds = new float[4];
         if (mCachedString == null) {
             return;
@@ -343,7 +343,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
             flags |= PaintContext.TEXT_COMPLEX;
         }
         context.getTextBounds(mTextId, 0, mCachedString.length(), flags, bounds);
-        if (bounds[2] - bounds[1] > maxWidth) {
+        if (bounds[2] - bounds[1] > maxWidth && mMaxLines > 1) {
             mComputedTextLayout =
                     context.layoutComplexText(
                             mTextId,

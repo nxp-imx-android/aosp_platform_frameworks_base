@@ -28,11 +28,13 @@ import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
 import com.android.internal.widget.remotecompose.core.operations.utilities.ArrayAccess;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class DataListFloat extends Operation implements VariableSupport, ArrayAccess {
+public class DataListFloat extends Operation implements VariableSupport, ArrayAccess, Serializable {
     private static final int OP_CODE = Operations.FLOAT_LIST;
     private static final String CLASS_NAME = "IdListData";
     private final int mId;
@@ -144,5 +146,10 @@ public class DataListFloat extends Operation implements VariableSupport, ArrayAc
     @Override
     public int getLength() {
         return mValues.length;
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer.add("type", CLASS_NAME).add("id", mId).add("values", List.of(mValues));
     }
 }

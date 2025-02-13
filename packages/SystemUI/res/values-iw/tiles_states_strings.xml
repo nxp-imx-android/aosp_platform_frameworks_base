@@ -194,6 +194,6 @@
   <string-array name="tile_states_notes">
     <item msgid="5894333929299989301">"לא זמין"</item>
     <item msgid="6419996398343291862">"מושבת"</item>
-    <item msgid="5908720590832378783">"מופעל"</item>
+    <item msgid="5908720590832378783">"מצב פעיל"</item>
   </string-array>
 </resources>

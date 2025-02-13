@@ -22,7 +22,6 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
@@ -33,7 +32,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -91,14 +89,10 @@ constructor(
 ) : ShadeModeInteractor {
 
     private val isDualShadeEnabled: Flow<Boolean> =
-        if (SceneContainerFlag.isEnabled) {
-            secureSettingsRepository.boolSetting(
-                Settings.Secure.DUAL_SHADE,
-                defaultValue = DUAL_SHADE_ENABLED_DEFAULT,
-            )
-        } else {
-            flowOf(false)
-        }
+        secureSettingsRepository.boolSetting(
+            Settings.Secure.DUAL_SHADE,
+            defaultValue = DUAL_SHADE_ENABLED_DEFAULT,
+        )
 
     override val isShadeLayoutWide: StateFlow<Boolean> = repository.isShadeLayoutWide
 

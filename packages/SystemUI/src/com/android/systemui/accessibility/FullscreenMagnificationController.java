@@ -352,7 +352,13 @@ public class FullscreenMagnificationController implements ComponentCallbacks {
         mTransaction
                 .addTransactionCommittedListener(
                         mExecutor,
-                        this::showBorder)
+                        () -> {
+                            if (getState() == ENABLING) {
+                                // Ensure that we are in the ENABLING process to avoid performing
+                                // animation on a null view.
+                                mShowBorderRunnable.run();
+                            }
+                        })
                 .setPosition(mBorderSurfaceControl, -mBorderOffset, -mBorderOffset)
                 .setLayer(mBorderSurfaceControl, Integer.MAX_VALUE)
                 .show(mBorderSurfaceControl)

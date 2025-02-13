@@ -126,6 +126,16 @@ flag {
 }
 
 flag {
+    name: "internal_log_event_listener"
+    namespace: "hardware_backed_security"
+    description: "Use internal callback to gather SecurityMonitor logs."
+    bug: "389732143"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "protect_device_config_flags"
     namespace: "psap_ai"
     description: "Feature flag to limit adb shell to allowlisted flags"

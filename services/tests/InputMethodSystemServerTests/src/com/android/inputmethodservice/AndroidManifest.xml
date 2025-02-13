@@ -32,8 +32,8 @@
         <uses-library android:name="android.test.runner" />
     </application>
 
-    <!-- The "targetPackage" reference the instruments APK package, which is the FakeImeApk, while
-    the test package is "com.android.inputmethod.imetests" (FrameworksImeTests.apk).-->
+    <!-- The "targetPackage" reference the instruments APK package, which is the SimpleTestIme.apk,
+    while the test package is "com.android.inputmethod.imetests" (FrameworksImeTests.apk).-->
     <instrumentation
         android:name="androidx.test.runner.AndroidJUnitRunner"
         android:targetPackage="com.android.apps.inputmethod.simpleime"

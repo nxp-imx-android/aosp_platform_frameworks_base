@@ -64,6 +64,7 @@ public final class NotificationProgressBar extends ProgressBar implements
         NotificationProgressDrawable.BoundsChangeListener {
     private static final String TAG = "NotificationProgressBar";
     private static final boolean DEBUG = false;
+    private static final float FADED_OPACITY = 0.5f;
 
     private NotificationProgressDrawable mNotificationProgressDrawable;
     private final Rect mProgressDrawableBounds = new Rect();
@@ -851,12 +852,12 @@ public final class NotificationProgressBar extends ProgressBar implements
     }
 
     /**
-     * Get a color with an opacity that's 50% of the input color.
+     * Get a color that's the input color with opacity updated to FADED_OPACITY.
      */
     @ColorInt
     static int getFadedColor(@ColorInt int color) {
         return Color.argb(
-                (int) (Color.alpha(color) * 0.5f + 0.5f),
+                (int) (Color.alpha(color) * FADED_OPACITY + 0.5f),
                 Color.red(color),
                 Color.green(color),
                 Color.blue(color));
@@ -1200,7 +1201,7 @@ public final class NotificationProgressBar extends ProgressBar implements
          * <p>
          * <pre>
          *     When mFaded is set to true, a combination of the following is done to the segment:
-         *       1. The drawing color is mColor with opacity updated to 50%.
+         *       1. The drawing color is mColor with opacity updated to FADED_OPACITY.
          *       2. The gap between faded and non-faded segments is:
          *          - the segment-segment gap, when there is no tracker icon
          *          - 0, when there is tracker icon

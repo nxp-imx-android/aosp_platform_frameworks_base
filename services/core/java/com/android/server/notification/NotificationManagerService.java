@@ -5244,6 +5244,21 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
+        @FlaggedApi(android.app.Flags.FLAG_NM_BINDER_PERF_GET_APPS_WITH_CHANNELS)
+        public List<String> getPackagesWithAnyChannels(int userId) throws RemoteException {
+            checkCallerIsSystem();
+            UserHandle user = UserHandle.of(userId);
+            List<String> packages = mPreferencesHelper.getPackagesWithAnyChannels(userId);
+            for (int i = packages.size() - 1; i >= 0; i--) {
+                String pkg = packages.get(i);
+                if (!areNotificationsEnabledForPackage(pkg, getUidForPackageAndUser(pkg, user))) {
+                    packages.remove(i);
+                }
+            }
+            return packages;
+        }
+
+        @Override
         public void clearData(String packageName, int uid, boolean fromApp) throws RemoteException {
             boolean packagesChanged = false;
             checkCallerIsSystem();

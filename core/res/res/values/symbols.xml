@@ -3235,6 +3235,8 @@
   <java-symbol type="id" name="header_text" />
   <java-symbol type="id" name="header_text_secondary" />
   <java-symbol type="id" name="expand_button" />
+  <java-symbol type="id" name="expand_button_spacer" />
+  <java-symbol type="id" name="expand_button_container" />
   <java-symbol type="id" name="expand_button_pill" />
   <java-symbol type="id" name="expand_button_pill_colorized_layer" />
   <java-symbol type="id" name="expand_button_number" />

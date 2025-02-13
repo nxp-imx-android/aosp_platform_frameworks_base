@@ -39,6 +39,7 @@ import com.android.systemui.volume.dialog.ringer.ui.viewmodel.RingerDrawerState
 import com.android.systemui.volume.dialog.ringer.ui.viewmodel.RingerViewModel
 import com.android.systemui.volume.dialog.ringer.ui.viewmodel.RingerViewModelState
 import com.android.systemui.volume.dialog.ringer.ui.viewmodel.VolumeDialogRingerDrawerViewModel
+import com.android.systemui.volume.dialog.ui.binder.ViewBinder
 import com.android.systemui.volume.dialog.ui.utils.suspendAnimate
 import com.android.systemui.volume.dialog.ui.viewmodel.VolumeDialogViewModel
 import javax.inject.Inject
@@ -60,7 +61,7 @@ class VolumeDialogRingerViewBinder
 constructor(
     private val viewModel: VolumeDialogRingerDrawerViewModel,
     private val dialogViewModel: VolumeDialogViewModel,
-) {
+) : ViewBinder {
     private val roundnessSpringForce =
         SpringForce(1F).apply {
             stiffness = 800F
@@ -73,10 +74,11 @@ constructor(
         }
     private val rgbEvaluator = ArgbEvaluator()
 
-    fun CoroutineScope.bind(view: View) {
+    override fun CoroutineScope.bind(view: View) {
         val volumeDialogBackgroundView = view.requireViewById<View>(R.id.volume_dialog_background)
         val ringerBackgroundView = view.requireViewById<View>(R.id.ringer_buttons_background)
         val drawerContainer = view.requireViewById<MotionLayout>(R.id.volume_ringer_drawer)
+
         val unselectedButtonUiModel = RingerButtonUiModel.getUnselectedButton(view.context)
         val selectedButtonUiModel = RingerButtonUiModel.getSelectedButton(view.context)
         val volumeDialogBgSmallRadius =

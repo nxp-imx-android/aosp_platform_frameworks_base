@@ -25,12 +25,15 @@ import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /** Represents the repeating part of an Impulse. */
-public class ImpulseProcess extends PaintOperation implements VariableSupport, Container {
+public class ImpulseProcess extends PaintOperation
+        implements VariableSupport, Container, Serializable {
     private static final int OP_CODE = Operations.IMPULSE_PROCESS;
     private static final String CLASS_NAME = "ImpulseProcess";
 
@@ -150,5 +153,10 @@ public class ImpulseProcess extends PaintOperation implements VariableSupport, C
      */
     public int estimateIterations() {
         return 1;
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer.add("type", CLASS_NAME).add("list", mList);
     }
 }

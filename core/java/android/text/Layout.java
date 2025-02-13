@@ -672,7 +672,7 @@ public abstract class Layout {
         // LINT.IfChange(hct_darken)
         var lab = new double[3];
         ColorUtils.colorToLAB(color, lab);
-        return lab[0] < 50.0;
+        return lab[0] <= 50.0;
         // LINT.ThenChange(/libs/hwui/hwui/DrawTextFunctor.h:hct_darken)
     }
 
@@ -1019,6 +1019,12 @@ public abstract class Layout {
     private void drawHighContrastBackground(@NonNull Canvas canvas, int firstLine, int lastLine) {
         if (!shouldDrawHighlightsOnTop(canvas)) {
             return;
+        }
+
+        if (!mSpannedText || mSpanColors == null) {
+            if (mPaint.getAlpha() == 0) {
+                return;
+            }
         }
 
         var padding = Math.max(HIGH_CONTRAST_TEXT_BORDER_WIDTH_MIN_PX,

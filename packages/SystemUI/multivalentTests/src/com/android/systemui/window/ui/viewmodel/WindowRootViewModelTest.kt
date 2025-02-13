@@ -23,14 +23,12 @@ import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.testKosmos
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import com.android.systemui.window.data.repository.windowRootViewBlurRepository
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -42,11 +40,6 @@ class WindowRootViewModelTest : SysuiTestCase() {
     val testScope = kosmos.testScope
 
     val underTest by lazy { kosmos.windowRootViewModel }
-
-    @Before
-    fun setup() {
-        underTest.activateIn(testScope)
-    }
 
     @Test
     fun bouncerTransitionChangesWindowBlurRadius() =

@@ -1030,38 +1030,10 @@ public class AudioDeviceBroker {
         }
     }
 
-    BtDeviceInfo createBtDeviceInfo(@NonNull BtDeviceChangedData d, @NonNull BluetoothDevice device,
-                int state) {
-        int audioDevice;
-        int codec = AudioSystem.AUDIO_FORMAT_DEFAULT;
-        switch (d.mInfo.getProfile()) {
-            case BluetoothProfile.A2DP_SINK:
-                audioDevice = AudioSystem.DEVICE_IN_BLUETOOTH_A2DP;
-                break;
-            case BluetoothProfile.A2DP:
-                audioDevice = AudioSystem.DEVICE_OUT_BLUETOOTH_A2DP;
-                break;
-            case BluetoothProfile.HEARING_AID:
-                audioDevice = AudioSystem.DEVICE_OUT_HEARING_AID;
-                break;
-            case BluetoothProfile.LE_AUDIO:
-                if (d.mInfo.isLeOutput()) {
-                    audioDevice = AudioSystem.DEVICE_OUT_BLE_HEADSET;
-                } else {
-                    audioDevice = AudioSystem.DEVICE_IN_BLE_HEADSET;
-                }
-                break;
-            case BluetoothProfile.LE_AUDIO_BROADCAST:
-                audioDevice = AudioSystem.DEVICE_OUT_BLE_BROADCAST;
-                break;
-            case BluetoothProfile.HEADSET:
-                // the actual device type is not important at this point and
-                // will be set by BtHelper.handleBtScoActiveDeviceChange()
-                audioDevice = AudioSystem.DEVICE_OUT_BLUETOOTH_SCO;
-                break;
-            default: throw new IllegalArgumentException("Invalid profile " + d.mInfo.getProfile());
-        }
-        return new BtDeviceInfo(d, device, state, audioDevice, codec);
+    /*package*/ static BtDeviceInfo createBtDeviceInfo(@NonNull BtDeviceChangedData d,
+            @NonNull BluetoothDevice device, int state) {
+        int audioDevice = BtHelper.getTypeFromProfile(d.mInfo.getProfile(), d.mInfo.isLeOutput());
+        return new BtDeviceInfo(d, device, state, audioDevice, AudioSystem.AUDIO_FORMAT_DEFAULT);
     }
 
     private void btMediaMetricRecord(@NonNull BluetoothDevice device, String state,
@@ -1728,8 +1700,8 @@ public class AudioDeviceBroker {
     }
 
     // must be called synchronized on mConnectedDevices
-    /*package*/ boolean hasScheduledA2dpConnection(BluetoothDevice btDevice) {
-        final BtDeviceInfo devInfoToCheck = new BtDeviceInfo(btDevice, BluetoothProfile.A2DP);
+    /*package*/ boolean hasScheduledA2dpConnection(BluetoothDevice btDevice, int profile) {
+        final BtDeviceInfo devInfoToCheck = new BtDeviceInfo(btDevice, profile);
         return mBrokerHandler.hasEqualMessages(MSG_L_SET_BT_ACTIVE_DEVICE, devInfoToCheck);
     }
 

@@ -29,6 +29,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.ActivityInfo.CONFIG_DENSITY
@@ -52,6 +53,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableContext
+import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DragEvent
 import android.view.Gravity
@@ -210,6 +212,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock lateinit var shellController: ShellController
     @Mock lateinit var displayController: DisplayController
     @Mock lateinit var displayLayout: DisplayLayout
+    @Mock lateinit var display: Display
     @Mock lateinit var shellTaskOrganizer: ShellTaskOrganizer
     @Mock lateinit var syncQueue: SyncTransactionQueue
     @Mock lateinit var rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
@@ -258,6 +261,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var userProfileContexts: UserProfileContexts
     @Mock private lateinit var desksTransitionsObserver: DesksTransitionObserver
     @Mock private lateinit var packageManager: PackageManager
+    @Mock private lateinit var mockDisplayContext: Context
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -270,6 +274,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private lateinit var spyContext: TestableContext
 
     private val shellExecutor = TestShellExecutor()
+    private val bgExecutor = TestShellExecutor()
 
     // Mock running tasks are registered here so we can get the list from mock shell task organizer
     private val runningTasks = mutableListOf<RunningTaskInfo>()
@@ -326,6 +331,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(transitions.startTransition(anyInt(), any(), isNull())).thenAnswer { Binder() }
         whenever(enterDesktopTransitionHandler.moveToDesktop(any(), any())).thenAnswer { Binder() }
         whenever(displayController.getDisplayLayout(anyInt())).thenReturn(displayLayout)
+        whenever(displayController.getDisplayContext(anyInt())).thenReturn(mockDisplayContext)
+        whenever(displayController.getDisplay(anyInt())).thenReturn(display)
         whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(STABLE_BOUNDS)
         }
@@ -408,6 +415,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             recentsTransitionHandler,
             multiInstanceHelper,
             shellExecutor,
+            bgExecutor,
             Optional.of(desktopTasksLimiter),
             recentTasksController,
             mockInteractionJankMonitor,
@@ -4857,7 +4865,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val optionsCaptor = argumentCaptor<Bundle>()
         runOpenInstance(task, taskToRequest.taskId)
         verify(splitScreenController)
-            .startTask(anyInt(), anyInt(), optionsCaptor.capture(), anyOrNull())
+            .startTask(anyInt(), anyInt(), optionsCaptor.capture(), anyOrNull(), any())
         assertThat(ActivityOptions.fromBundle(optionsCaptor.firstValue).launchWindowingMode)
             .isEqualTo(WINDOWING_MODE_MULTI_WINDOW)
     }
@@ -4871,7 +4879,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val optionsCaptor = argumentCaptor<Bundle>()
         runOpenInstance(task, taskToRequest.taskId)
         verify(splitScreenController)
-            .startTask(anyInt(), anyInt(), optionsCaptor.capture(), anyOrNull())
+            .startTask(anyInt(), anyInt(), optionsCaptor.capture(), anyOrNull(), any())
         assertThat(ActivityOptions.fromBundle(optionsCaptor.firstValue).launchWindowingMode)
             .isEqualTo(WINDOWING_MODE_MULTI_WINDOW)
     }

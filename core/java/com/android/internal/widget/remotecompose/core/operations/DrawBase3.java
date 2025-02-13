@@ -126,8 +126,8 @@ public abstract class DrawBase3 extends PaintOperation implements VariableSuppor
     protected MapSerializer serialize(
             MapSerializer serializer, String v1Name, String v2Name, String v3Name) {
         return serializer
-                .add(v1Name, mV1, mValue1)
-                .add(v2Name, mV2, mValue2)
-                .add(v3Name, mV3, mValue3);
+                .add(v1Name, mValue1, mV1)
+                .add(v2Name, mValue2, mV2)
+                .add(v3Name, mValue3, mV3);
     }
 }

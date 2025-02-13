@@ -2006,6 +2006,29 @@ public class PreferencesHelper implements RankingConfig {
     }
 
     /**
+     * Gets all apps for this user that have a nonzero number of channels. This count does not
+     * include deleted channels.
+     */
+    @FlaggedApi(android.app.Flags.FLAG_NM_BINDER_PERF_GET_APPS_WITH_CHANNELS)
+    public @NonNull List<String> getPackagesWithAnyChannels(@UserIdInt int userId) {
+        List<String> pkgs = new ArrayList<>();
+        synchronized (mLock) {
+            for (PackagePreferences p : mPackagePreferences.values()) {
+                if (UserHandle.getUserId(p.uid) != userId) {
+                    continue;
+                }
+                for (NotificationChannel c : p.channels.values()) {
+                    if (!c.isDeleted()) {
+                        pkgs.add(p.pkg);
+                        break;
+                    }
+                }
+            }
+        }
+        return pkgs;
+    }
+
+    /**
      * True for pre-O apps that only have the default channel, or pre O apps that have no
      * channels yet. This method will create the default channel for pre-O apps that don't have it.
      * Should never be true for O+ targeting apps, but that's enforced on boot/when an app

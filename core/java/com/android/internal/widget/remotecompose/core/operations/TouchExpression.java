@@ -35,6 +35,8 @@ import com.android.internal.widget.remotecompose.core.operations.layout.RootLayo
 import com.android.internal.widget.remotecompose.core.operations.utilities.AnimatedFloatExpression;
 import com.android.internal.widget.remotecompose.core.operations.utilities.NanMap;
 import com.android.internal.widget.remotecompose.core.operations.utilities.touch.VelocityEasing;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,7 +46,8 @@ import java.util.List;
  * touch behaviours. Including animating to Notched, positions. and tweaking the dynamics of the
  * animation.
  */
-public class TouchExpression extends Operation implements VariableSupport, TouchListener {
+public class TouchExpression extends Operation
+        implements VariableSupport, TouchListener, Serializable {
     private static final int OP_CODE = Operations.TOUCH_EXPRESSION;
     private static final String CLASS_NAME = "TouchExpression";
     private float mDefValue;
@@ -708,5 +711,17 @@ public class TouchExpression extends Operation implements VariableSupport, Touch
     @Override
     public String deepToString(@NonNull String indent) {
         return indent + toString();
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .add("type", CLASS_NAME)
+                .add("id", mId)
+                .add("mDefValue", mDefValue, mOutDefValue)
+                .add("min", mMin, mOutMin)
+                .add("max", mMax, mOutMax)
+                .add("mode", mMode)
+                .addFloatExpressionSrc("srcExp", mSrcExp);
     }
 }

@@ -29,11 +29,13 @@ import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class PathCreate extends PaintOperation implements VariableSupport {
+public class PathCreate extends PaintOperation implements VariableSupport, Serializable {
     private static final int OP_CODE = Operations.PATH_CREATE;
     private static final String CLASS_NAME = "PathCreate";
     int mInstanceId;
@@ -236,5 +238,13 @@ public class PathCreate extends PaintOperation implements VariableSupport {
     @Override
     public void apply(@NonNull RemoteContext context) {
         context.loadPathData(mInstanceId, mOutputPath);
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .add("type", CLASS_NAME)
+                .add("id", mInstanceId)
+                .add("path", pathString(mFloatPath));
     }
 }

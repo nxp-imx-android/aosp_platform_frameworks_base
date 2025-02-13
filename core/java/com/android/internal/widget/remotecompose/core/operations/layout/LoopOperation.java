@@ -27,12 +27,16 @@ import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
 import com.android.internal.widget.remotecompose.core.operations.Utils;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
+import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /** Represents a loop of operations */
-public class LoopOperation extends PaintOperation implements Container, VariableSupport {
+public class LoopOperation extends PaintOperation
+        implements Container, VariableSupport, Serializable {
+    private static final String CLASS_NAME = "LoopOperation";
 
     private static final int OP_CODE = Operations.LOOP_START;
 
@@ -197,5 +201,17 @@ public class LoopOperation extends PaintOperation implements Container, Variable
             return (int) (0.5f + (mUntil - mFrom) / mStep);
         }
         return 10; // this is a generic estmate if the values are variables;
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .add("type", CLASS_NAME)
+                .add("indexVariableId", mIndexVariableId)
+                .add("until", mUntil, mUntilOut)
+                .add("from", mFrom, mFromOut)
+                .add("step", mStep, mStepOut)
+                .add("mUntilOut", mUntilOut)
+                .add("list", mList);
     }
 }

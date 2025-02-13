@@ -62,7 +62,7 @@ import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.protolog.ProtoLogConfigurationServiceImpl.RegisterClientArgs;
+import com.android.internal.protolog.IProtoLogConfigurationService.RegisterClientArgs;
 import com.android.internal.protolog.common.ILogger;
 import com.android.internal.protolog.common.IProtoLog;
 import com.android.internal.protolog.common.IProtoLogGroup;
@@ -164,11 +164,15 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             try {
                 var args = createConfigurationServiceRegisterClientArgs();
 
-                final var groupArgs = mLogGroups.values().stream()
-                        .map(group -> new RegisterClientArgs
-                                .GroupConfig(group.name(), group.isLogToLogcat()))
-                        .toArray(RegisterClientArgs.GroupConfig[]::new);
-                args.setGroups(groupArgs);
+                args.groups = new String[mLogGroups.size()];
+                args.groupsDefaultLogcatStatus = new boolean[mLogGroups.size()];
+
+                var groups = mLogGroups.values().stream().toList();
+                for (var i = 0; i < groups.size(); i++) {
+                    var group = groups.get(i);
+                    args.groups[i] = group.name();
+                    args.groupsDefaultLogcatStatus[i] = group.isLogToLogcat();
+                }
 
                 mConfigurationService.registerClient(this, args);
             } catch (RemoteException e) {

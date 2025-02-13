@@ -52,6 +52,9 @@ import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.RenderEffect;
+import android.graphics.RenderNode;
+import android.graphics.Shader;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.os.Trace;
@@ -513,6 +516,13 @@ public class NotificationStackScrollLayout
     /** The clip path defining where we are NOT allowed to draw. */
     private final Path mNegativeRoundedClipPath = new Path();
 
+    /** RenderNode to blur notifications which will be reused (redrawn) whenever NSSL is drawn. */
+    private final RenderNode mBlurNode = new RenderNode("BlurNode");
+
+    /** Radius of the blur effect applied to the content of the NSSL. */
+    private float mBlurRadius = 0f;
+    @Nullable private RenderEffect mBlurEffect = null;
+
     /**
      * The clip Path used to clip the launching notification. This may be different
      * from the normal path, as the views launch animation could start clipped.
@@ -896,6 +906,7 @@ public class NotificationStackScrollLayout
         mOverflingDistance = configuration.getScaledOverflingDistance();
 
         Resources res = context.getResources();
+        mSwipeHelper.updateResourceProperties(res);
         final boolean isSmallScreenLandscape = res.getBoolean(R.bool.is_small_screen_landscape);
         boolean useSmallLandscapeLockscreenResources = mIsSmallLandscapeLockscreenEnabled
                 && isSmallScreenLandscape;
@@ -2073,8 +2084,6 @@ public class NotificationStackScrollLayout
         Resources res = getResources();
         updateSplitNotificationShade();
         mStatusBarHeight = SystemBarUtils.getStatusBarHeight(mContext);
-        float densityScale = res.getDisplayMetrics().density;
-        mSwipeHelper.setDensityScale(densityScale);
         float pagingTouchSlop = ViewConfiguration.get(getContext()).getScaledPagingTouchSlop();
         mSwipeHelper.setPagingTouchSlop(pagingTouchSlop);
         reinitView();
@@ -5974,6 +5983,24 @@ public class NotificationStackScrollLayout
         invalidate();
     }
 
+    @Override
+    public void setBlurRadius(float blurRadius) {
+        if (mBlurRadius != blurRadius) {
+            mBlurRadius = blurRadius;
+            updateBlurEffect();
+            invalidate();
+        }
+    }
+
+    private void updateBlurEffect() {
+        if (mBlurRadius > 0) {
+            mBlurEffect =
+                    RenderEffect.createBlurEffect(mBlurRadius, mBlurRadius, Shader.TileMode.CLAMP);
+        } else {
+            mBlurEffect = null;
+        }
+    }
+
     /**
      * Set rounded rect clipping bounds on this view.
      */
@@ -6144,26 +6171,64 @@ public class NotificationStackScrollLayout
 
     @Override
     protected void dispatchDraw(@NonNull Canvas canvas) {
-        if (!mLaunchingNotification) {
-            // When launching notifications, we're clipping the children individually instead of in
-            // dispatchDraw
-            if (mShouldUseRoundedRectClipping) {
-                // Let's clip rounded.
-                canvas.clipPath(mRoundedClipPath);
+        if (mBlurEffect != null) {
+            // reuse the cached RenderNode to blur
+            mBlurNode.setPosition(0, 0, canvas.getWidth(), canvas.getHeight());
+            mBlurNode.setRenderEffect(mBlurEffect);
+            Canvas blurCanvas = mBlurNode.beginRecording();
+            // draw all the children (except HUNs) on the blurred canvas
+            super.dispatchDraw(blurCanvas);
+            mBlurNode.endRecording();
+            // apply clipping to the canvas
+            int saveCount = canvas.save();
+            applyClipToCanvas(canvas);
+            // draw the blurred content to the clipped canvas
+            canvas.drawRenderNode(mBlurNode);
+            // restore the canvas, so it doesn't clip anymore
+            canvas.restoreToCount(saveCount);
+            // draw the children that were left out during the dispatchDraw phase
+            for (int i = 0; i < getChildCount(); i++) {
+                // TODO(b/388469101) draw these children in z-order
+                ExpandableView child = getChildAtIndex(i);
+                if (shouldSkipBlurForChild(child)) {
+                    super.drawChild(canvas, child, getDrawingTime());
+                }
             }
-            if (mShouldUseNegativeRoundedRectClipping) {
-                // subtract the negative path if it is defined
-                canvas.clipOutPath(mNegativeRoundedClipPath);
+        } else {
+            if (!mLaunchingNotification) {
+                // When launching notifications, we're clipping the children individually instead
+                //  of in dispatchDraw
+                applyClipToCanvas(canvas);
             }
+            super.dispatchDraw(canvas);
         }
-        super.dispatchDraw(canvas);
+    }
+
+    private void applyClipToCanvas(Canvas canvas) {
+        if (mShouldUseRoundedRectClipping) {
+            // clip by the positive path if it is defined
+            canvas.clipPath(mRoundedClipPath);
+        }
+        if (mShouldUseNegativeRoundedRectClipping) {
+            // subtract the negative path if it is defined
+            canvas.clipOutPath(mNegativeRoundedClipPath);
+        }
     }
 
     @Override
     protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
         boolean shouldUseClipping =
                 mShouldUseRoundedRectClipping || mShouldUseNegativeRoundedRectClipping;
-        if (mLaunchingNotification && shouldUseClipping) {
+        if (mBlurEffect != null) {
+            if (shouldSkipBlurForChild(child)) {
+                // skip drawing this child during the regular dispatchDraw pass
+                return false;
+            } else {
+                // draw the child as if nothing happened, non-blurred elements shouldn't be
+                // affected by clipping either
+                return super.drawChild(canvas, child, drawingTime);
+            }
+        } else if (mLaunchingNotification && shouldUseClipping) {
             // Let's clip children individually during notification launch
             canvas.save();
             ExpandableView expandableView = (ExpandableView) child;
@@ -6191,6 +6256,14 @@ public class NotificationStackScrollLayout
             return result;
         } else {
             return super.drawChild(canvas, child, drawingTime);
+        }
+    }
+
+    private boolean shouldSkipBlurForChild(View child) {
+        if (child instanceof ExpandableView row) {
+            return row.isHeadsUpState();
+        } else {
+            return false;
         }
     }
 

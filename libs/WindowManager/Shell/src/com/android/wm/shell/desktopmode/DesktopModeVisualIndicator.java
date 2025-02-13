@@ -18,9 +18,6 @@ package com.android.wm.shell.desktopmode;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
-import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-import static android.view.WindowManager.LayoutParams.INPUT_FEATURE_NO_INPUT_CHANNEL;
-import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR;
@@ -28,37 +25,27 @@ import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.Indica
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.RectEvaluator;
-import android.animation.ValueAnimator;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.PixelFormat;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.Region;
-import android.graphics.drawable.LayerDrawable;
-import android.util.DisplayMetrics;
 import android.view.SurfaceControl;
-import android.view.SurfaceControlViewHost;
-import android.view.View;
-import android.view.WindowManager;
-import android.view.WindowlessWindowManager;
-import android.view.animation.DecelerateInterpolator;
+import android.window.DesktopModeFlags;
 
 import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.policy.SystemBarUtils;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayLayout;
+import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
+import com.android.wm.shell.shared.annotations.ShellDesktopThread;
+import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider;
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
@@ -115,37 +102,54 @@ public class DesktopModeVisualIndicator {
         }
     }
 
+    private final VisualIndicatorViewContainer mVisualIndicatorViewContainer;
+
     private final Context mContext;
     private final DisplayController mDisplayController;
-    private final RootTaskDisplayAreaOrganizer mRootTdaOrganizer;
     private final ActivityManager.RunningTaskInfo mTaskInfo;
-    private final SurfaceControl mTaskSurface;
-    private final @Nullable BubbleDropTargetBoundsProvider mBubbleBoundsProvider;
-    private SurfaceControl mLeash;
 
-    private final SyncTransactionQueue mSyncQueue;
-    private SurfaceControlViewHost mViewHost;
-
-    private View mView;
     private IndicatorType mCurrentType;
-    private DragStartState mDragStartState;
-    private boolean mIsReleased;
+    private final DragStartState mDragStartState;
 
-    public DesktopModeVisualIndicator(SyncTransactionQueue syncQueue,
+    public DesktopModeVisualIndicator(@ShellDesktopThread ShellExecutor desktopExecutor,
+            @ShellMainThread ShellExecutor mainExecutor,
+            SyncTransactionQueue syncQueue,
             ActivityManager.RunningTaskInfo taskInfo, DisplayController displayController,
             Context context, SurfaceControl taskSurface,
             RootTaskDisplayAreaOrganizer taskDisplayAreaOrganizer,
             DragStartState dragStartState,
             @Nullable BubbleDropTargetBoundsProvider bubbleBoundsProvider) {
-        mSyncQueue = syncQueue;
+        SurfaceControl.Builder builder = new SurfaceControl.Builder();
+        taskDisplayAreaOrganizer.attachToDisplayArea(taskInfo.displayId, builder);
+        mVisualIndicatorViewContainer = new VisualIndicatorViewContainer(
+                DesktopModeFlags.ENABLE_DESKTOP_INDICATOR_IN_SEPARATE_THREAD_BUGFIX.isTrue()
+                        ? desktopExecutor : mainExecutor,
+                mainExecutor, builder, syncQueue, bubbleBoundsProvider);
         mTaskInfo = taskInfo;
         mDisplayController = displayController;
         mContext = context;
-        mTaskSurface = taskSurface;
-        mRootTdaOrganizer = taskDisplayAreaOrganizer;
-        mBubbleBoundsProvider = bubbleBoundsProvider;
         mCurrentType = NO_INDICATOR;
         mDragStartState = dragStartState;
+        mVisualIndicatorViewContainer.createView(
+                mContext,
+                mDisplayController.getDisplay(mTaskInfo.displayId),
+                mDisplayController.getDisplayLayout(mTaskInfo.displayId),
+                mTaskInfo,
+                taskSurface
+        );
+    }
+
+    /** Start the fade out animation, running the callback on the main thread once it is done. */
+    public void fadeOutIndicator(
+            @NonNull Runnable callback) {
+        mVisualIndicatorViewContainer.fadeOutIndicator(
+                mDisplayController.getDisplayLayout(mTaskInfo.displayId), mCurrentType, callback
+        );
+    }
+
+    /** Release the visual indicator view and its viewhost. */
+    public void releaseVisualIndicator() {
+        mVisualIndicatorViewContainer.releaseVisualIndicator();
     }
 
     /**
@@ -202,7 +206,10 @@ public class DesktopModeVisualIndicator {
             }
         }
         if (mDragStartState != DragStartState.DRAGGED_INTENT) {
-            transitionIndicator(result);
+            mVisualIndicatorViewContainer.transitionIndicator(
+                    mTaskInfo, mDisplayController, mCurrentType, result
+            );
+            mCurrentType = result;
         }
         return result;
     }
@@ -283,338 +290,8 @@ public class DesktopModeVisualIndicator {
                 layout.width(), layout.height());
     }
 
-    /**
-     * Create a fullscreen indicator with no animation
-     */
-    private void createView() {
-        if (mIsReleased) return;
-        final SurfaceControl.Transaction t = new SurfaceControl.Transaction();
-        final Resources resources = mContext.getResources();
-        final DisplayMetrics metrics = resources.getDisplayMetrics();
-        final int screenWidth;
-        final int screenHeight;
-        if (Flags.enableBugFixesForSecondaryDisplay()) {
-            final DisplayLayout displayLayout =
-                    mDisplayController.getDisplayLayout(mTaskInfo.displayId);
-            screenWidth = displayLayout.width();
-            screenHeight = displayLayout.height();
-        } else {
-            screenWidth = metrics.widthPixels;
-            screenHeight = metrics.heightPixels;
-        }
-        mView = new View(mContext);
-        final SurfaceControl.Builder builder = new SurfaceControl.Builder();
-        mRootTdaOrganizer.attachToDisplayArea(mTaskInfo.displayId, builder);
-        mLeash = builder
-                .setName("Desktop Mode Visual Indicator")
-                .setContainerLayer()
-                .setCallsite("DesktopModeVisualIndicator.createView")
-                .build();
-        t.show(mLeash);
-        final WindowManager.LayoutParams lp =
-                new WindowManager.LayoutParams(screenWidth, screenHeight, TYPE_APPLICATION,
-                        FLAG_NOT_FOCUSABLE, PixelFormat.TRANSPARENT);
-        lp.setTitle("Desktop Mode Visual Indicator");
-        lp.setTrustedOverlay();
-        lp.inputFeatures |= INPUT_FEATURE_NO_INPUT_CHANNEL;
-        final WindowlessWindowManager windowManager = new WindowlessWindowManager(
-                mTaskInfo.configuration, mLeash,
-                /* hostInputToken= */ null);
-        mViewHost = new SurfaceControlViewHost(mContext,
-                mDisplayController.getDisplay(mTaskInfo.displayId), windowManager,
-                "DesktopModeVisualIndicator");
-        mViewHost.setView(mView, lp);
-        // We want this indicator to be behind the dragged task, but in front of all others.
-        t.setRelativeLayer(mLeash, mTaskSurface, -1);
-
-        mSyncQueue.runInSync(transaction -> {
-            transaction.merge(t);
-            t.close();
-        });
-    }
-
     @VisibleForTesting
     Rect getIndicatorBounds() {
-        return mView.getBackground().getBounds();
-    }
-
-    /**
-     * Fade indicator in as provided type. Animator fades it in while expanding the bounds outwards.
-     */
-    private void fadeInIndicator(IndicatorType type) {
-        mView.setBackgroundResource(R.drawable.desktop_windowing_transition_background);
-        final VisualIndicatorAnimator animator = VisualIndicatorAnimator
-                .fadeBoundsIn(mView, type,
-                        mDisplayController.getDisplayLayout(mTaskInfo.displayId),
-                        mBubbleBoundsProvider);
-        animator.start();
-        mCurrentType = type;
-    }
-
-    /**
-     * Fade out indicator without fully releasing it. Animator fades it out while shrinking bounds.
-     *
-     * @param finishCallback called when animation ends or gets cancelled
-     */
-    void fadeOutIndicator(@Nullable Runnable finishCallback) {
-        if (mCurrentType == NO_INDICATOR) {
-            // In rare cases, fade out can be requested before the indicator has determined its
-            // initial type and started animating in. In this case, no animator is needed.
-            finishCallback.run();
-            return;
-        }
-        final VisualIndicatorAnimator animator = VisualIndicatorAnimator
-                .fadeBoundsOut(mView, mCurrentType,
-                        mDisplayController.getDisplayLayout(mTaskInfo.displayId),
-                        mBubbleBoundsProvider);
-        animator.start();
-        if (finishCallback != null) {
-            animator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    finishCallback.run();
-                }
-            });
-        }
-        mCurrentType = NO_INDICATOR;
-    }
-
-    /**
-     * Takes existing indicator and animates it to bounds reflecting a new indicator type.
-     */
-    private void transitionIndicator(IndicatorType newType) {
-        if (mCurrentType == newType) return;
-        if (mView == null) {
-            createView();
-        }
-        if (mCurrentType == NO_INDICATOR) {
-            fadeInIndicator(newType);
-        } else if (newType == NO_INDICATOR) {
-            fadeOutIndicator(/* finishCallback= */ null);
-        } else {
-            final VisualIndicatorAnimator animator = VisualIndicatorAnimator.animateIndicatorType(
-                    mView, mDisplayController.getDisplayLayout(mTaskInfo.displayId), mCurrentType,
-                    newType, mBubbleBoundsProvider);
-            mCurrentType = newType;
-            animator.start();
-        }
-    }
-
-    /**
-     * Release the indicator and its components when it is no longer needed.
-     */
-    public void releaseVisualIndicator(SurfaceControl.Transaction t) {
-        mIsReleased = true;
-        if (mViewHost == null) return;
-        if (mViewHost != null) {
-            mViewHost.release();
-            mViewHost = null;
-        }
-
-        if (mLeash != null) {
-            t.remove(mLeash);
-            mLeash = null;
-        }
-    }
-
-    /**
-     * Animator for Desktop Mode transitions which supports bounds and alpha animation.
-     */
-    private static class VisualIndicatorAnimator extends ValueAnimator {
-        private static final int FULLSCREEN_INDICATOR_DURATION = 200;
-        private static final float FULLSCREEN_SCALE_ADJUSTMENT_PERCENT = 0.015f;
-        private static final float INDICATOR_FINAL_OPACITY = 0.35f;
-        private static final int MAXIMUM_OPACITY = 255;
-
-        /**
-         * Determines how this animator will interact with the view's alpha:
-         * Fade in, fade out, or no change to alpha
-         */
-        private enum AlphaAnimType {
-            ALPHA_FADE_IN_ANIM, ALPHA_FADE_OUT_ANIM, ALPHA_NO_CHANGE_ANIM
-        }
-
-        private final View mView;
-        private final Rect mStartBounds;
-        private final Rect mEndBounds;
-        private final RectEvaluator mRectEvaluator;
-
-        private VisualIndicatorAnimator(View view, Rect startBounds,
-                Rect endBounds) {
-            mView = view;
-            mStartBounds = new Rect(startBounds);
-            mEndBounds = endBounds;
-            setFloatValues(0, 1);
-            mRectEvaluator = new RectEvaluator(new Rect());
-        }
-
-        private static VisualIndicatorAnimator fadeBoundsIn(
-                @NonNull View view, IndicatorType type, @NonNull DisplayLayout displayLayout,
-                @Nullable BubbleDropTargetBoundsProvider bubbleBoundsProvider) {
-            final Rect endBounds = getIndicatorBounds(displayLayout, type, bubbleBoundsProvider);
-            final Rect startBounds = getMinBounds(endBounds);
-            view.getBackground().setBounds(startBounds);
-
-            final VisualIndicatorAnimator animator = new VisualIndicatorAnimator(
-                    view, startBounds, endBounds);
-            animator.setInterpolator(new DecelerateInterpolator());
-            setupIndicatorAnimation(animator, AlphaAnimType.ALPHA_FADE_IN_ANIM);
-            return animator;
-        }
-
-        private static VisualIndicatorAnimator fadeBoundsOut(
-                @NonNull View view, IndicatorType type, @NonNull DisplayLayout displayLayout,
-                @Nullable BubbleDropTargetBoundsProvider bubbleBoundsProvider) {
-            final Rect startBounds = getIndicatorBounds(displayLayout, type, bubbleBoundsProvider);
-            final Rect endBounds = getMinBounds(startBounds);
-            view.getBackground().setBounds(startBounds);
-
-            final VisualIndicatorAnimator animator = new VisualIndicatorAnimator(
-                    view, startBounds, endBounds);
-            animator.setInterpolator(new DecelerateInterpolator());
-            setupIndicatorAnimation(animator, AlphaAnimType.ALPHA_FADE_OUT_ANIM);
-            return animator;
-        }
-
-        /**
-         * Create animator for visual indicator changing type (i.e., fullscreen to freeform,
-         * freeform to split, etc.)
-         *
-         * @param view                 the view for this indicator
-         * @param displayLayout        information about the display the transitioning task is
-         *                             currently on
-         * @param origType             the original indicator type
-         * @param newType              the new indicator type
-         * @param bubbleBoundsProvider provides bounds for bubbles indicators
-         */
-        private static VisualIndicatorAnimator animateIndicatorType(@NonNull View view,
-                @NonNull DisplayLayout displayLayout, IndicatorType origType, IndicatorType newType,
-                @Nullable BubbleDropTargetBoundsProvider bubbleBoundsProvider) {
-            final Rect startBounds = getIndicatorBounds(displayLayout, origType,
-                    bubbleBoundsProvider);
-            final Rect endBounds = getIndicatorBounds(displayLayout, newType, bubbleBoundsProvider);
-            final VisualIndicatorAnimator animator = new VisualIndicatorAnimator(
-                    view, startBounds, endBounds);
-            animator.setInterpolator(new DecelerateInterpolator());
-            setupIndicatorAnimation(animator, AlphaAnimType.ALPHA_NO_CHANGE_ANIM);
-            return animator;
-        }
-
-        /** Calculates the bounds the indicator should have when fully faded in. */
-        private static Rect getIndicatorBounds(DisplayLayout layout, IndicatorType type,
-                @Nullable BubbleDropTargetBoundsProvider bubbleBoundsProvider) {
-            final Rect desktopStableBounds = new Rect();
-            layout.getStableBounds(desktopStableBounds);
-            final int padding = desktopStableBounds.top;
-            switch (type) {
-                case TO_FULLSCREEN_INDICATOR:
-                    desktopStableBounds.top += padding;
-                    desktopStableBounds.bottom -= padding;
-                    desktopStableBounds.left += padding;
-                    desktopStableBounds.right -= padding;
-                    return desktopStableBounds;
-                case TO_DESKTOP_INDICATOR:
-                    final float adjustmentPercentage = 1f
-                            - DesktopTasksController.DESKTOP_MODE_INITIAL_BOUNDS_SCALE;
-                    return new Rect((int) (adjustmentPercentage * desktopStableBounds.width() / 2),
-                            (int) (adjustmentPercentage * desktopStableBounds.height() / 2),
-                            (int) (desktopStableBounds.width()
-                                    - (adjustmentPercentage * desktopStableBounds.width() / 2)),
-                            (int) (desktopStableBounds.height()
-                                    - (adjustmentPercentage * desktopStableBounds.height() / 2)));
-                case TO_SPLIT_LEFT_INDICATOR:
-                    return new Rect(padding, padding,
-                            desktopStableBounds.width() / 2 - padding,
-                            desktopStableBounds.height());
-                case TO_SPLIT_RIGHT_INDICATOR:
-                    return new Rect(desktopStableBounds.width() / 2 + padding, padding,
-                            desktopStableBounds.width() - padding,
-                            desktopStableBounds.height());
-                case TO_BUBBLE_LEFT_INDICATOR:
-                    if (bubbleBoundsProvider == null) {
-                        return new Rect();
-                    }
-                    return bubbleBoundsProvider.getBubbleBarExpandedViewDropTargetBounds(
-                            /* onLeft= */ true);
-                case TO_BUBBLE_RIGHT_INDICATOR:
-                    if (bubbleBoundsProvider == null) {
-                        return new Rect();
-                    }
-                    return bubbleBoundsProvider.getBubbleBarExpandedViewDropTargetBounds(
-                            /* onLeft= */ false);
-                default:
-                    throw new IllegalArgumentException("Invalid indicator type provided.");
-            }
-        }
-
-        /**
-         * Add necessary listener for animation of indicator
-         */
-        private static void setupIndicatorAnimation(@NonNull VisualIndicatorAnimator animator,
-                AlphaAnimType animType) {
-            animator.addUpdateListener(a -> {
-                if (animator.mView != null) {
-                    animator.updateBounds(a.getAnimatedFraction(), animator.mView);
-                    if (animType == AlphaAnimType.ALPHA_FADE_IN_ANIM) {
-                        animator.updateIndicatorAlpha(a.getAnimatedFraction(), animator.mView);
-                    } else if (animType == AlphaAnimType.ALPHA_FADE_OUT_ANIM) {
-                        animator.updateIndicatorAlpha(1 - a.getAnimatedFraction(), animator.mView);
-                    }
-                } else {
-                    animator.cancel();
-                }
-            });
-            animator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    animator.mView.getBackground().setBounds(animator.mEndBounds);
-                }
-            });
-            animator.setDuration(FULLSCREEN_INDICATOR_DURATION);
-        }
-
-        /**
-         * Update bounds of view based on current animation fraction.
-         * Use of delta is to animate bounds independently, in case we need to
-         * run multiple animations simultaneously.
-         *
-         * @param fraction fraction to use, compared against previous fraction
-         * @param view     the view to update
-         */
-        private void updateBounds(float fraction, View view) {
-            if (mStartBounds.equals(mEndBounds)) {
-                return;
-            }
-            final Rect currentBounds = mRectEvaluator.evaluate(fraction, mStartBounds, mEndBounds);
-            view.getBackground().setBounds(currentBounds);
-        }
-
-        /**
-         * Fade in the fullscreen indicator
-         *
-         * @param fraction current animation fraction
-         */
-        private void updateIndicatorAlpha(float fraction, View view) {
-            final LayerDrawable drawable = (LayerDrawable) view.getBackground();
-            drawable.findDrawableByLayerId(R.id.indicator_stroke)
-                    .setAlpha((int) (MAXIMUM_OPACITY * fraction));
-            drawable.findDrawableByLayerId(R.id.indicator_solid)
-                    .setAlpha((int) (MAXIMUM_OPACITY * fraction * INDICATOR_FINAL_OPACITY));
-        }
-
-        /**
-         * Return the minimum bounds of a visual indicator, to be used at the end of fading out
-         * and the start of fading in.
-         */
-        private static Rect getMinBounds(Rect maxBounds) {
-            return new Rect((int) (maxBounds.left
-                    + (FULLSCREEN_SCALE_ADJUSTMENT_PERCENT * maxBounds.width())),
-                    (int) (maxBounds.top
-                            + (FULLSCREEN_SCALE_ADJUSTMENT_PERCENT * maxBounds.height())),
-                    (int) (maxBounds.right
-                            - (FULLSCREEN_SCALE_ADJUSTMENT_PERCENT * maxBounds.width())),
-                    (int) (maxBounds.bottom
-                            - (FULLSCREEN_SCALE_ADJUSTMENT_PERCENT * maxBounds.height())));
-        }
+        return mVisualIndicatorViewContainer.getIndicatorBounds();
     }
 }

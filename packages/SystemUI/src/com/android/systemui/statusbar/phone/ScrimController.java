@@ -168,6 +168,27 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
      */
     @FloatRange(from = 0, to = 1)
     private float mBouncerHiddenFraction = KeyguardBouncerConstants.EXPANSION_HIDDEN;
+    private boolean mIsBlurSupported = false;
+
+    private float getDefaultScrimAlpha(boolean ignoreCurrentState) {
+        if (Flags.bouncerUiRevamp() && mIsBlurSupported) {
+            // Hack to not make the shade transparent when shade blur is not enabled.
+            if (!Flags.notificationShadeBlur() && !ignoreCurrentState) {
+                // When we expand directly to full quick settings, shade state is KEYGUARD
+                if (mState == ScrimState.SHADE_LOCKED || (mState == ScrimState.KEYGUARD
+                        && mQsExpansion == 1)) {
+                    return BUSY_SCRIM_ALPHA;
+                }
+            }
+            return TRANSPARENT_BOUNCER_SCRIM_ALPHA;
+        } else {
+            return BUSY_SCRIM_ALPHA;
+        }
+    }
+
+    private float getDefaultScrimAlpha() {
+        return getDefaultScrimAlpha(false);
+    }
 
     @IntDef(prefix = {"VISIBILITY_"}, value = {
             TRANSPARENT,
@@ -230,7 +251,6 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     private float mScrimBehindAlphaKeyguard = KEYGUARD_SCRIM_ALPHA;
 
     static final float TRANSPARENT_BOUNCER_SCRIM_ALPHA = 0.54f;
-    private float mDefaultScrimAlpha;
 
     private float mRawPanelExpansionFraction;
     private float mPanelScrimMinFraction;
@@ -329,7 +349,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             DozeParameters dozeParameters,
             KeyguardStateController keyguardStateController,
             DelayedWakeLock.Factory delayedWakeLockFactory,
-            Handler handler,
+            @Main Handler handler,
             KeyguardUpdateMonitor keyguardUpdateMonitor,
             DockManager dockManager,
             ConfigurationController configurationController,
@@ -350,7 +370,6 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         mLargeScreenShadeInterpolator = largeScreenShadeInterpolator;
         mBlurConfig = blurConfig;
         mWindowRootViewBlurInteractor = windowRootViewBlurInteractor;
-        mDefaultScrimAlpha = BUSY_SCRIM_ALPHA;
 
         mKeyguardStateController = keyguardStateController;
         mDarkenWhileDragging = !mKeyguardStateController.canDismissLockScreen();
@@ -414,7 +433,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             states[i].init(mScrimInFront, mScrimBehind, mDozeParameters, mDockManager,
                     this::isBlurCurrentlySupported);
             states[i].setScrimBehindAlphaKeyguard(mScrimBehindAlphaKeyguard);
-            states[i].setDefaultScrimAlpha(mDefaultScrimAlpha);
+            states[i].setDefaultScrimAlpha(getDefaultScrimAlpha());
         }
 
         mTransparentScrimBackground = notificationsScrim.getResources()
@@ -498,10 +517,9 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         }
     }
 
-    private void updateDefaultScrimAlpha(float alpha) {
-        mDefaultScrimAlpha = alpha;
+    private void updateDefaultScrimAlphas() {
         for (ScrimState state : ScrimState.values()) {
-            state.setDefaultScrimAlpha(mDefaultScrimAlpha);
+            state.setDefaultScrimAlpha(getDefaultScrimAlpha(true));
         }
         applyAndDispatchState();
     }
@@ -513,13 +531,13 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     }
 
     private void handleBlurSupportedChanged(boolean isBlurSupported) {
+        this.mIsBlurSupported = isBlurSupported;
         if (Flags.bouncerUiRevamp()) {
+            updateDefaultScrimAlphas();
             if (isBlurSupported) {
-                updateDefaultScrimAlpha(TRANSPARENT_BOUNCER_SCRIM_ALPHA);
                 ScrimState.BOUNCER_SCRIMMED.setNotifBlurRadius(mBlurConfig.getMaxBlurRadiusPx());
             } else {
                 ScrimState.BOUNCER_SCRIMMED.setNotifBlurRadius(0f);
-                updateDefaultScrimAlpha(BUSY_SCRIM_ALPHA);
             }
         }
         if (Flags.notificationShadeBlur()) {
@@ -1003,7 +1021,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
                     float behindFraction = getInterpolatedFraction();
                     behindFraction = (float) Math.pow(behindFraction, 0.8f);
                     mBehindAlpha = 1;
-                    mNotificationsAlpha = behindFraction * mDefaultScrimAlpha;
+                    mNotificationsAlpha = behindFraction * getDefaultScrimAlpha();
                 } else {
                     if (Flags.notificationShadeBlur()) {
                         // TODO (b/390730594): match any spec for controlling alpha based on shade
@@ -1014,7 +1032,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
                         mNotificationsTint = mState.getNotifTint();
                     } else {
                         mBehindAlpha = mLargeScreenShadeInterpolator.getBehindScrimAlpha(
-                                mPanelExpansionFraction * mDefaultScrimAlpha);
+                                mPanelExpansionFraction * getDefaultScrimAlpha());
                         mNotificationsAlpha =
                                 mLargeScreenShadeInterpolator.getNotificationScrimAlpha(
                                         mPanelExpansionFraction);
@@ -1030,7 +1048,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
                 final float interpolatedFraction =
                         BouncerPanelExpansionCalculator.aboutToShowBouncerProgress(
                                 mBouncerHiddenFraction);
-                mBehindAlpha = MathUtils.lerp(mDefaultScrimAlpha, mBehindAlpha,
+                mBehindAlpha = MathUtils.lerp(getDefaultScrimAlpha(), mBehindAlpha,
                         interpolatedFraction);
                 mBehindTint = ColorUtils.blendARGB(ScrimState.BOUNCER.getBehindTint(),
                         mBehindTint,
@@ -1120,7 +1138,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         float behindAlpha;
         int behindTint = state.getBehindTint();
         if (mDarkenWhileDragging) {
-            behindAlpha = MathUtils.lerp(mDefaultScrimAlpha, stateBehind,
+            behindAlpha = MathUtils.lerp(getDefaultScrimAlpha(), stateBehind,
                     interpolatedFract);
         } else {
             behindAlpha = MathUtils.lerp(0 /* start */, stateBehind,
@@ -1136,7 +1154,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             }
         }
         if (mQsExpansion > 0) {
-            behindAlpha = MathUtils.lerp(behindAlpha, mDefaultScrimAlpha, mQsExpansion);
+            behindAlpha = MathUtils.lerp(behindAlpha, getDefaultScrimAlpha(), mQsExpansion);
             float tintProgress = mQsExpansion;
             if (mStatusBarKeyguardViewManager.isPrimaryBouncerInTransit()) {
                 // this is case of - on lockscreen - going from expanded QS to bouncer.
@@ -1653,7 +1671,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         pw.println(mTransitionToLockScreenFullShadeNotificationsProgress);
 
         pw.print("  mDefaultScrimAlpha=");
-        pw.println(mDefaultScrimAlpha);
+        pw.println(getDefaultScrimAlpha());
         pw.print("  mPanelExpansionFraction=");
         pw.println(mPanelExpansionFraction);
         pw.print("  mExpansionAffectsAlpha=");

@@ -10269,6 +10269,16 @@ public final class Settings {
         public static final String DOZE_ALWAYS_ON = "doze_always_on";
 
         /**
+         * Indicates whether ambient wallpaper is visible with AOD.
+         * <p>
+         * Type: int (0 for false, 1 for true)
+         *
+         * @hide
+         */
+        public static final String DOZE_ALWAYS_ON_WALLPAPER_ENABLED =
+                "doze_always_on_wallpaper_enabled";
+
+        /**
          * Whether the device should pulse on pick up gesture.
          * @hide
          */

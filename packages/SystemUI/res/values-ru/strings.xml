@@ -804,8 +804,7 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Появляется в верхней части уведомлений о сообщениях, в виде всплывающего чата, а также в качестве фото профиля на заблокированном экране, прерывает режим \"Не беспокоить\"."</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Приоритет"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"Приложение \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" не поддерживает функции разговоров."</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Оставить отзыв"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Закрыть"</string>
     <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Больше не показывать"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Эти уведомления нельзя изменить."</string>
@@ -1395,6 +1394,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Складное устройство в разложенном виде"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Перевернутое складное устройство"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Передний экран включен"</string>
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Проведите пальцем, чтобы переключиться на внутренний экран."</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"устройство сложено"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"устройство разложено"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s/%2$s"</string>
@@ -1418,7 +1418,7 @@
     <string name="assistant_attention_content_description" msgid="4166330881435263596">"Обнаружен пользователь"</string>
     <string name="set_default_notes_app_toast_content" msgid="2812374329662610753">"Задайте стандартное приложение для заметок в настройках."</string>
     <string name="install_app" msgid="5066668100199613936">"Установить приложение"</string>
-    <string name="dismissible_keyguard_swipe" msgid="8377597870094949432">"Чтобы продолжить, проведите вверх."</string>
+    <string name="dismissible_keyguard_swipe" msgid="8377597870094949432">"Чтобы продолжить, проведите вверх"</string>
     <string name="connected_display_dialog_start_mirroring" msgid="6237895789920854982">"Дублировать на внешний дисплей?"</string>
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"Для внутреннего экрана включится дублирование. Передний экран будет отключен."</string>
     <string name="mirror_display" msgid="2515262008898122928">"Дублировать"</string>

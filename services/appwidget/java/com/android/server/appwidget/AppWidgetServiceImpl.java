@@ -16,7 +16,6 @@
 
 package com.android.server.appwidget;
 
-import static android.appwidget.flags.Flags.checkRemoteViewsUriPermission;
 import static android.appwidget.flags.Flags.remoteAdapterConversion;
 import static android.appwidget.flags.Flags.remoteViewsProto;
 import static android.appwidget.flags.Flags.removeAppWidgetServiceIoFromCriticalPath;
@@ -2560,9 +2559,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         // Make sure the package runs under the caller uid.
         mSecurityPolicy.enforceCallFromPackage(callingPackage);
         // Make sure RemoteViews do not contain URIs that the caller cannot access.
-        if (checkRemoteViewsUriPermission()) {
-            checkRemoteViewsUris(views);
-        }
+        checkRemoteViewsUris(views);
         synchronized (mLock) {
             ensureGroupStateLoadedLocked(userId);
 

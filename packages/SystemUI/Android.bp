@@ -60,6 +60,7 @@ filegroup {
         "src-release/**/*.kt",
         "src-release/**/*.java",
     ],
+    path: "src-release",
     visibility: ["//visibility:private"],
 }
 
@@ -69,6 +70,7 @@ filegroup {
         "src-debug/**/*.kt",
         "src-debug/**/*.java",
     ],
+    path: "src-debug",
     visibility: ["//visibility:private"],
 }
 
@@ -315,11 +317,11 @@ filegroup {
         "tests/src/**/systemui/temporarydisplay/TemporaryViewDisplayControllerTest.kt",
         "tests/src/**/systemui/statusbar/policy/WalletControllerImplTest.kt",
         "tests/src/**/keyguard/ClockEventControllerTest.kt",
-        "tests/src/**/systemui/bluetooth/qsdialog/BluetoothStateInteractorTest.kt",
         "tests/src/**/systemui/bluetooth/qsdialog/BluetoothDetailsContentManagerTest.kt",
+        "tests/src/**/systemui/bluetooth/qsdialog/BluetoothDetailsContentViewModelTest.kt",
+        "tests/src/**/systemui/bluetooth/qsdialog/BluetoothStateInteractorTest.kt",
         "tests/src/**/systemui/bluetooth/qsdialog/BluetoothTileDialogDelegateTest.kt",
         "tests/src/**/systemui/bluetooth/qsdialog/BluetoothTileDialogRepositoryTest.kt",
-        "tests/src/**/systemui/bluetooth/qsdialog/BluetoothTileDialogViewModelTest.kt",
         "tests/src/**/systemui/bluetooth/qsdialog/DeviceItemFactoryTest.kt",
         "tests/src/**/systemui/bluetooth/qsdialog/DeviceItemInteractorTest.kt",
         "tests/src/**/systemui/broadcast/UserBroadcastDispatcherTest.kt",
@@ -430,12 +432,21 @@ android_library {
     ],
 }
 
-android_library {
-    name: "SystemUI-core",
+filegroup {
+    name: "SystemUI-core-srcs",
     srcs: [
         "src/**/*.kt",
         "src/**/*.java",
         "src/**/I*.aidl",
+    ],
+    path: "src",
+    visibility: ["//visibility:private"],
+}
+
+android_library {
+    name: "SystemUI-core",
+    srcs: [
+        ":SystemUI-core-srcs",
         ":ReleaseJavaFiles",
         "compose/features/src/**/*.kt",
         "compose/facade/enabled/src/**/*.kt",
@@ -731,9 +742,7 @@ android_library {
     srcs: [
         "tests/src/**/*.kt",
         "tests/src/**/*.java",
-        "src/**/*.kt",
-        "src/**/*.java",
-        "src/**/I*.aidl",
+        ":SystemUI-core-srcs",
         ":ReleaseJavaFiles",
         ":SystemUI-tests-multivalent",
         ":SystemUI-tests-utils",
@@ -841,7 +850,7 @@ java_library {
         "androidx.test.uiautomator_uiautomator",
         "androidx.core_core-animation-testing",
         "androidx.test.ext.junit",
-        "inline-mockito-robolectric-prebuilt",
+        "inline-mockito5-robolectric-prebuilt",
         "mockito-kotlin-nodeps",
         "platform-parametric-runner-lib",
         "SystemUICustomizationTestUtils",

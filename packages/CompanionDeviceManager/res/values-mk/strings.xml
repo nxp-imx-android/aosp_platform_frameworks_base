@@ -17,7 +17,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4470785958457506021">"Companion Device Manager"</string>
-    <string name="confirmation_title" msgid="2244241995958340998">"Дозволувате апликацијата &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; да пристапува до &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
+    <string name="confirmation_title" msgid="2244241995958340998">"Дали дозволувате апликацијата &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; да пристапува до &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="message_discovery_soft_timeout" msgid="473346859407859161">"Погрижете се <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> да биде вклучен на овој <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> и вашиот <xliff:g id="PROFILE_NAME">%3$s</xliff:g> да биде во близина."</string>
     <string name="message_discovery_hard_timeout" msgid="677514663495711424">"Не се најдени уреди. Обидете се повторно подоцна."</string>
     <string name="discovery_bluetooth" msgid="5693557668470016164">"Bluetooth"</string>
@@ -77,8 +77,8 @@
     <string name="permission_notifications_summary" msgid="2272810466047367030">"• Ги чита сите известувања, меѓу кои и податоци како контакти, пораки и фотографии&lt;br/&gt;• Испраќа известувања&lt;br/&gt;&lt;br/&gt;Може да управувате со способноста на апликацијава да чита и испраќа известувања кога било во „Поставки &gt; Известувања“."</string>
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Пристап до списокот со достапни уреди и контрола кои стримуваат или емитуваат аудио или видео од други апликации"</string>
-    <string name="device_type" product="default" msgid="8268703872070046263">"Телефон"</string>
-    <string name="device_type" product="tablet" msgid="5038791954983067774">"Таблет"</string>
+    <string name="device_type" product="default" msgid="8268703872070046263">"телефон"</string>
+    <string name="device_type" product="tablet" msgid="5038791954983067774">"таблет"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"ТВ"</string>
     <string name="device_type" product="device" msgid="1526125965802507189">"уред"</string>
 </resources>

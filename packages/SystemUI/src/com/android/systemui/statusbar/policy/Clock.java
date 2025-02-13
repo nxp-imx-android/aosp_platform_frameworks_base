@@ -55,6 +55,7 @@ import com.android.systemui.plugins.DarkIconDispatcher.DarkReceiver;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.CommandQueue;
+import com.android.systemui.statusbar.core.StatusBarRootModernization;
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController;
 import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener;
 import com.android.systemui.tuner.TunerService;
@@ -216,7 +217,9 @@ public class Clock extends TextView implements
 
         // Make sure we update to the current time
         updateClock();
-        updateClockVisibility();
+        if (!StatusBarRootModernization.isEnabled()) {
+            updateClockVisibility();
+        }
         updateShowSeconds();
     }
 
@@ -275,19 +278,25 @@ public class Clock extends TextView implements
 
     @Override
     public void setVisibility(int visibility) {
-        if (visibility == View.VISIBLE && !shouldBeVisible()) {
-            return;
+        if (!StatusBarRootModernization.isEnabled()) {
+            if (visibility == View.VISIBLE && !shouldBeVisible()) {
+                return;
+            }
         }
 
         super.setVisibility(visibility);
     }
 
-    public void setClockVisibleByUser(boolean visible) {
+    private void setClockVisibleByUser(boolean visible) {
+        StatusBarRootModernization.assertInLegacyMode();
+
         mClockVisibleByUser = visible;
         updateClockVisibility();
     }
 
-    public void setClockVisibilityByPolicy(boolean visible) {
+    private void setClockVisibilityByPolicy(boolean visible) {
+        StatusBarRootModernization.assertInLegacyMode();
+
         mClockVisibleByPolicy = visible;
         updateClockVisibility();
     }
@@ -297,6 +306,8 @@ public class Clock extends TextView implements
     }
 
     private void updateClockVisibility() {
+        StatusBarRootModernization.assertInLegacyMode();
+
         boolean visible = shouldBeVisible();
         int visibility = visible ? View.VISIBLE : View.GONE;
         super.setVisibility(visibility);
@@ -346,15 +357,23 @@ public class Clock extends TextView implements
         if (CLOCK_SECONDS.equals(key)) {
             mShowSeconds = TunerService.parseIntegerSwitch(newValue, false);
             updateShowSeconds();
-        } else if (StatusBarIconController.ICON_HIDE_LIST.equals(key)) {
-            setClockVisibleByUser(!StatusBarIconController.getIconHideList(getContext(), newValue)
-                    .contains("clock"));
-            updateClockVisibility();
+        } else if (!StatusBarRootModernization.isEnabled()) {
+            if (StatusBarIconController.ICON_HIDE_LIST.equals(key)) {
+                setClockVisibleByUser(
+                        !StatusBarIconController
+                                .getIconHideList(getContext(), newValue)
+                                .contains("clock"));
+                updateClockVisibility();
+            }
         }
     }
 
     @Override
     public void disable(int displayId, int state1, int state2, boolean animate) {
+        if (StatusBarRootModernization.isEnabled()) {
+            return;
+        }
+
         if (displayId != getDisplay().getDisplayId()) {
             return;
         }
