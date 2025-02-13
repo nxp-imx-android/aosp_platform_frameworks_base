@@ -392,7 +392,7 @@ public class InputSettings {
      */
     public static boolean isTouchpadAccelerationEnabled(@NonNull Context context) {
         if (!isPointerAccelerationFeatureFlagEnabled()) {
-            return false;
+            return true;
         }
 
         return Settings.System.getIntForUser(context.getContentResolver(),
@@ -839,7 +839,7 @@ public class InputSettings {
      */
     public static boolean isMousePointerAccelerationEnabled(@NonNull Context context) {
         if (!isPointerAccelerationFeatureFlagEnabled()) {
-            return false;
+            return true;
         }
 
         return Settings.System.getIntForUser(context.getContentResolver(),
