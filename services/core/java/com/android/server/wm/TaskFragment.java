@@ -24,7 +24,6 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_RECENTS;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
-import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
@@ -2519,7 +2518,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             inOutConfig.windowConfiguration.setAppBounds(mTmpFullBounds);
             outAppBounds = inOutConfig.windowConfiguration.getAppBounds();
 
-            if (!customContainerPolicy && windowingMode != WINDOWING_MODE_FREEFORM) {
+            // Floating tasks shouldn't be restricted by containing app bounds.
+            if (!customContainerPolicy && !isFloating(windowingMode)) {
                 final Rect containingAppBounds;
                 if (insideParentBounds) {
                     containingAppBounds = useOverrideInsetsForConfig
