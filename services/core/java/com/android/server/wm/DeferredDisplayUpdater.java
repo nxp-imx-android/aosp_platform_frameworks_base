@@ -60,10 +60,11 @@ class DeferredDisplayUpdater {
      */
     @VisibleForTesting
     static final DisplayInfoFieldsUpdater DEFERRABLE_FIELDS = (out, override) -> {
-        // Treat unique id and address change as WM-specific display change as we re-query display
-        // settings and parameters based on it which could cause window changes
+        // Treat unique id, address, and canHostTasks change as WM-specific display change as we
+        // re-query display settings and parameters based on it which could cause window changes.
         out.uniqueId = override.uniqueId;
         out.address = override.address;
+        out.canHostTasks = override.canHostTasks;
 
         // Also apply WM-override fields, since they might produce differences in window hierarchy
         WM_OVERRIDE_FIELDS.setFields(out, override);
@@ -433,7 +434,7 @@ class DeferredDisplayUpdater {
                 second.thermalRefreshRateThrottling)
                 || !Objects.equals(first.thermalBrightnessThrottlingDataId,
                 second.thermalBrightnessThrottlingDataId)
-                || first.canHostTasks != second.canHostTasks) {
+        ) {
             diff |= DIFF_NOT_WM_DEFERRABLE;
         }
 
@@ -454,6 +455,7 @@ class DeferredDisplayUpdater {
                 || !Objects.equals(first.displayShape, second.displayShape)
                 || !Objects.equals(first.uniqueId, second.uniqueId)
                 || !Objects.equals(first.address, second.address)
+                || first.canHostTasks != second.canHostTasks
         ) {
             diff |= DIFF_WM_DEFERRABLE;
         }
