@@ -126,5 +126,8 @@ object PinBouncerConstants {
         @JvmField
         val contractionColorInterpolator =
             c(old = Interpolators.LINEAR, new = Interpolators.STANDARD)!!
+
+        const val pressedTextScaleX = 1.35f
+        const val normalTextScaleX = 1.0f
     }
 }
