@@ -280,6 +280,11 @@ public class DisplayManagerFlags {
             Flags::refreshRateEventForForegroundApps
     );
 
+    private final FlagState mCommittedStateSeparateEvent = new FlagState(
+            Flags.FLAG_COMMITTED_STATE_SEPARATE_EVENT,
+            Flags::committedStateSeparateEvent
+    );
+
     /**
      * @return {@code true} if 'port' is allowed in display layout configuration file.
      */
@@ -603,6 +608,14 @@ public class DisplayManagerFlags {
     }
 
     /**
+     * @return {@code true} if the flag for having a separate event for display's committed state
+     * is enabled
+     */
+    public boolean isCommittedStateSeparateEventEnabled() {
+        return mCommittedStateSeparateEvent.isEnabled();
+    }
+
+    /**
      * dumps all flagstates
      * @param pw printWriter
      */
@@ -659,6 +672,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mBaseDensityForExternalDisplays);
         pw.println(" " + mFramerateOverrideTriggersRrCallbacks);
         pw.println(" " + mRefreshRateEventForForegroundApps);
+        pw.println(" " + mCommittedStateSeparateEvent);
     }
 
     private static class FlagState {

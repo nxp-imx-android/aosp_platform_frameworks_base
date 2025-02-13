@@ -1595,8 +1595,17 @@ public abstract class WallpaperService extends Service {
             mWindow.setSession(mSession);
 
             mLayout.packageName = getPackageName();
-            mIWallpaperEngine.mDisplayManager.registerDisplayListener(mDisplayListener,
-                    mCaller.getHandler());
+            if (com.android.server.display.feature.flags.Flags
+                    .displayListenerPerformanceImprovements()
+                    && com.android.server.display.feature.flags.Flags
+                    .committedStateSeparateEvent()) {
+                mIWallpaperEngine.mDisplayManager.registerDisplayListener(mDisplayListener,
+                        mCaller.getHandler(), DisplayManager.EVENT_TYPE_DISPLAY_CHANGED,
+                        DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_COMMITTED_STATE_CHANGED);
+            } else {
+                mIWallpaperEngine.mDisplayManager.registerDisplayListener(mDisplayListener,
+                        mCaller.getHandler());
+            }
             mDisplay = mIWallpaperEngine.mDisplay;
             // Use window context of TYPE_WALLPAPER so client can access UI resources correctly.
             mDisplayContext = createDisplayContext(mDisplay)
