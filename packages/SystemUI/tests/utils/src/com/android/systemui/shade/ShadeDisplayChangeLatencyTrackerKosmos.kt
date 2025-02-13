@@ -27,7 +27,7 @@ import java.util.Optional
 
 val Kosmos.shadeDisplayChangeLatencyTracker by Fixture {
     ShadeDisplayChangeLatencyTracker(
-        Optional.of(mockShadeRootView),
+        mockShadeRootView,
         configurationRepository,
         latencyTracker,
         testScope.backgroundScope,

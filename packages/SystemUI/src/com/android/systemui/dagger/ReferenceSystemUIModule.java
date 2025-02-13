@@ -74,7 +74,6 @@ import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.dagger.CentralSurfacesModule;
 import com.android.systemui.statusbar.dagger.StartCentralSurfacesModule;
-import com.android.systemui.statusbar.notification.dagger.NotificationStackModule;
 import com.android.systemui.statusbar.notification.dagger.ReferenceNotificationsModule;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpModule;
 import com.android.systemui.statusbar.phone.CentralSurfaces;
@@ -170,7 +169,6 @@ import javax.inject.Named;
         WallpaperModule.class,
         ShortcutHelperModule.class,
         ContextualEducationModule.class,
-        NotificationStackModule.class,
 })
 public abstract class ReferenceSystemUIModule {
 
