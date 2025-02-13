@@ -23,7 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.dimensionResource
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -34,6 +34,13 @@ import com.android.systemui.keyguard.ui.composable.blueprint.rememberBurnIn
 import com.android.systemui.keyguard.ui.composable.section.DefaultClockSection
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.media.controls.ui.composable.MediaCarousel
+import com.android.systemui.media.controls.ui.composable.isLandscape
+import com.android.systemui.media.controls.ui.controller.MediaCarouselController
+import com.android.systemui.media.controls.ui.view.MediaHost
+import com.android.systemui.media.controls.ui.view.MediaHostState.Companion.COLLAPSED
+import com.android.systemui.media.controls.ui.view.MediaHostState.Companion.EXPANDED
+import com.android.systemui.media.dagger.MediaModule.QUICK_QS_PANEL
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayActionsViewModel
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayContentViewModel
 import com.android.systemui.res.R
@@ -42,10 +49,11 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.ui.composable.Overlay
 import com.android.systemui.shade.ui.composable.OverlayShade
 import com.android.systemui.shade.ui.composable.OverlayShadeHeader
-import com.android.systemui.shade.ui.composable.SingleShadeMeasurePolicy
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
+import com.android.systemui.util.Utils
 import dagger.Lazy
 import javax.inject.Inject
+import javax.inject.Named
 import kotlinx.coroutines.flow.Flow
 
 @SysUISingleton
@@ -58,6 +66,8 @@ constructor(
     private val stackScrollView: Lazy<NotificationScrollView>,
     private val clockSection: DefaultClockSection,
     private val keyguardClockViewModel: KeyguardClockViewModel,
+    private val mediaCarouselController: MediaCarouselController,
+    @Named(QUICK_QS_PANEL) private val mediaHost: Lazy<MediaHost>,
 ) : Overlay {
     override val key = Overlays.NotificationsShade
 
@@ -84,6 +94,11 @@ constructor(
                 viewModel.notificationsPlaceholderViewModelFactory.create()
             }
 
+        val usingCollapsedLandscapeMedia =
+            Utils.useCollapsedMediaInLandscape(LocalResources.current)
+        mediaHost.get().expansion =
+            if (usingCollapsedLandscapeMedia && isLandscape()) COLLAPSED else EXPANDED
+
         OverlayShade(
             panelElement = NotificationsShade.Elements.Panel,
             alignmentOnWideScreens = Alignment.TopStart,
@@ -96,9 +111,7 @@ constructor(
                     }
                 OverlayShadeHeader(
                     viewModel = headerViewModel,
-                    modifier =
-                        Modifier.element(NotificationsShade.Elements.StatusBar)
-                            .layoutId(SingleShadeMeasurePolicy.LayoutId.ShadeHeader),
+                    modifier = Modifier.element(NotificationsShade.Elements.StatusBar),
                 )
             },
         ) {
@@ -115,6 +128,19 @@ constructor(
                             )
                         }
                     }
+
+                    MediaCarousel(
+                        isVisible = viewModel.showMedia,
+                        mediaHost = mediaHost.get(),
+                        carouselController = mediaCarouselController,
+                        usingCollapsedLandscapeMedia = usingCollapsedLandscapeMedia,
+                        modifier =
+                            Modifier.padding(
+                                top = notificationStackPadding,
+                                start = notificationStackPadding,
+                                end = notificationStackPadding,
+                            ),
+                    )
 
                     NotificationScrollingStack(
                         shadeSession = shadeSession,
