@@ -151,8 +151,7 @@ import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.ENABLE_SHELL_TRANSITIONS
 import com.android.wm.shell.transition.Transitions.TransitionHandler
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModelTestsBase.Companion.HOME_LAUNCHER_PACKAGE_NAME
-import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
-import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel
+import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import java.util.Optional
@@ -234,6 +233,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock lateinit var multiInstanceHelper: MultiInstanceHelper
     @Mock lateinit var desktopModeVisualIndicator: DesktopModeVisualIndicator
     @Mock lateinit var recentTasksController: RecentTasksController
+    @Mock lateinit var snapEventHandler: SnapEventHandler
     @Mock private lateinit var mockInteractionJankMonitor: InteractionJankMonitor
     @Mock private lateinit var mockSurface: SurfaceControl
     @Mock private lateinit var taskbarDesktopTaskListener: TaskbarDesktopTaskListener
@@ -246,9 +246,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock lateinit var repositoryInitializer: DesktopRepositoryInitializer
     @Mock private lateinit var mockToast: Toast
     private lateinit var mockitoSession: StaticMockitoSession
-    @Mock private lateinit var desktopTilingDecorViewModel: DesktopTilingDecorViewModel
     @Mock private lateinit var bubbleController: BubbleController
-    @Mock private lateinit var desktopWindowDecoration: DesktopModeWindowDecoration
     @Mock private lateinit var resources: Resources
     @Mock
     lateinit var desktopModeEnterExitTransitionListener: DesktopModeEntryExitTransitionListener
@@ -380,6 +378,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         recentsTransitionStateListener = captor.firstValue
 
         controller.taskbarDesktopTaskListener = taskbarDesktopTaskListener
+        controller.setSnapEventHandler(snapEventHandler)
 
         assumeTrue(ENABLE_SHELL_TRANSITIONS)
 
@@ -423,7 +422,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             mockHandler,
             desktopModeEventLogger,
             desktopModeUiEventLogger,
-            desktopTilingDecorViewModel,
             desktopWallpaperActivityTokenProvider,
             Optional.of(bubbleController),
             overviewToDesktopTransitionObserver,
@@ -4483,7 +4481,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             validDragArea = Rect(0, 50, 2000, 2000),
             dragStartBounds = Rect(),
             motionEvent,
-            desktopWindowDecoration,
         )
         val rectAfterEnd = Rect(100, 50, 500, 1150)
         verify(transitions)
@@ -4521,7 +4518,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             validDragArea = Rect(0, 50, 2000, 2000),
             dragStartBounds = Rect(),
             motionEvent,
-            desktopWindowDecoration,
         )
 
         verify(transitions)
@@ -4561,7 +4557,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             validDragArea = Rect(0, 50, 2000, 2000),
             dragStartBounds = Rect(),
             motionEvent,
-            desktopWindowDecoration,
         )
 
         verify(transitions)
@@ -4602,7 +4597,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             validDragArea = Rect(0, 50, 2000, 2000),
             dragStartBounds = Rect(),
             motionEvent,
-            desktopWindowDecoration,
         )
 
         // Assert the task exits desktop mode
@@ -4640,7 +4634,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             validDragArea = Rect(0, 50, 2000, 2000),
             dragStartBounds = Rect(),
             motionEvent,
-            desktopWindowDecoration,
         )
 
         // Assert bounds set to stable bounds
@@ -4696,7 +4689,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             validDragArea = Rect(0, 50, 2000, 2000),
             dragStartBounds = Rect(),
             motionEvent,
-            desktopWindowDecoration,
         )
 
         // Assert that task is NOT updated via WCT
@@ -5116,7 +5108,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             SnapPosition.LEFT,
             ResizeTrigger.SNAP_LEFT_MENU,
             InputMethod.TOUCH,
-            desktopWindowDecoration,
         )
         // Assert bounds set to stable bounds
         val wct = getLatestToggleResizeDesktopTaskWct(currentDragBounds)
@@ -5162,7 +5153,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             SnapPosition.LEFT,
             ResizeTrigger.SNAP_LEFT_MENU,
             InputMethod.TOUCH,
-            desktopWindowDecoration,
         )
         // Assert that task is NOT updated via WCT
         verify(toggleResizeDesktopTaskTransitionHandler, never()).startTransition(any(), any())
@@ -5206,7 +5196,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             currentDragBounds,
             preDragBounds,
             motionEvent,
-            desktopWindowDecoration,
         )
         val wct = getLatestToggleResizeDesktopTaskWct(currentDragBounds)
         assertThat(findBoundsChange(wct, task)).isEqualTo(expectedBounds)
@@ -5236,7 +5225,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             currentDragBounds,
             preDragBounds,
             motionEvent,
-            desktopWindowDecoration,
         )
         verify(mReturnToDragStartAnimator)
             .start(
@@ -5261,7 +5249,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             SnapPosition.LEFT,
             ResizeTrigger.SNAP_LEFT_MENU,
             InputMethod.MOUSE,
-            desktopWindowDecoration,
         )
 
         // Assert that task is NOT updated via WCT
@@ -5288,7 +5275,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             SnapPosition.LEFT,
             ResizeTrigger.SNAP_LEFT_MENU,
             InputMethod.MOUSE,
-            desktopWindowDecoration,
         )
 
         // Assert bounds set to half of the stable bounds
