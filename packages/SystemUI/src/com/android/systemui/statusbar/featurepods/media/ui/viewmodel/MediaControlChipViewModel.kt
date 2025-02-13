@@ -55,8 +55,8 @@ constructor(
      * whenever the underlying [MediaControlChipModel] changes.
      */
     override val chip: StateFlow<PopupChipModel> =
-        mediaControlChipInteractor.mediaControlModel
-            .map { mediaControlModel -> toPopupChipModel(mediaControlModel) }
+        mediaControlChipInteractor.mediaControlChipModel
+            .map { mediaControlChipModel -> toPopupChipModel(mediaControlChipModel) }
             .stateIn(
                 backgroundScope,
                 SharingStarted.WhileSubscribed(),

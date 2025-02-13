@@ -16,26 +16,57 @@
 
 package com.android.systemui.statusbar.featurepods.media.ui.viewmodel
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.flags.parameterizeSceneContainerFlag
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.media.controls.data.repository.mediaFilterRepository
+import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.shared.model.MediaDataLoadingModel
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.statusbar.featurepods.media.domain.interactor.mediaControlChipInteractor
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
+import org.junit.Before
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
+import org.mockito.Captor
+import org.mockito.MockitoAnnotations
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class MediaControlChipViewModelTest : SysuiTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+class MediaControlChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val underTest = kosmos.mediaControlChipViewModel
+    private val mediaControlChipInteractor by lazy { kosmos.mediaControlChipInteractor }
+    private val Kosmos.underTest by Kosmos.Fixture { kosmos.mediaControlChipViewModel }
+    @Captor lateinit var listener: ArgumentCaptor<MediaDataManager.Listener>
+
+    companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return parameterizeSceneContainerFlag()
+        }
+    }
+
+    @Before
+    fun setUp() {
+        MockitoAnnotations.initMocks(this)
+        mediaControlChipInteractor.initialize()
+    }
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @Test
     fun chip_noActiveMedia_IsHidden() =
@@ -51,10 +82,7 @@ class MediaControlChipViewModelTest : SysuiTestCase() {
             val chip by collectLastValue(underTest.chip)
 
             val userMedia = MediaData(active = true, song = "test")
-            val instanceId = userMedia.instanceId
-
-            mediaFilterRepository.addSelectedUserMediaEntry(userMedia)
-            mediaFilterRepository.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId))
+            updateMedia(userMedia)
 
             assertThat(chip).isInstanceOf(PopupChipModel.Shown::class.java)
         }
@@ -67,16 +95,25 @@ class MediaControlChipViewModelTest : SysuiTestCase() {
             val initialSongName = "Initial Song"
             val newSongName = "New Song"
             val userMedia = MediaData(active = true, song = initialSongName)
-            val instanceId = userMedia.instanceId
-
-            mediaFilterRepository.addSelectedUserMediaEntry(userMedia)
-            mediaFilterRepository.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId))
-
+            updateMedia(userMedia)
+            assertThat(chip).isInstanceOf(PopupChipModel.Shown::class.java)
             assertThat((chip as PopupChipModel.Shown).chipText).isEqualTo(initialSongName)
 
             val updatedUserMedia = userMedia.copy(song = newSongName)
-            mediaFilterRepository.addSelectedUserMediaEntry(updatedUserMedia)
+            updateMedia(updatedUserMedia)
 
             assertThat((chip as PopupChipModel.Shown).chipText).isEqualTo(newSongName)
         }
+
+    private fun updateMedia(mediaData: MediaData) {
+        if (SceneContainerFlag.isEnabled) {
+            val instanceId = mediaData.instanceId
+            kosmos.mediaFilterRepository.addSelectedUserMediaEntry(mediaData)
+            kosmos.mediaFilterRepository.addMediaDataLoadingState(
+                MediaDataLoadingModel.Loaded(instanceId)
+            )
+        } else {
+            mediaControlChipInteractor.updateMediaControlChipModelLegacy(mediaData)
+        }
+    }
 }

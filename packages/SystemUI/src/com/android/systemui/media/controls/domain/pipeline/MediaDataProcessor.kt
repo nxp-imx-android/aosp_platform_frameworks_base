@@ -1434,6 +1434,9 @@ class MediaDataProcessor(
          *   place immediately.
          */
         fun onSmartspaceMediaDataRemoved(key: String, immediately: Boolean = true) {}
+
+        /** Called whenever the current active media notification changes */
+        fun onCurrentActiveMediaChanged(key: String?, data: MediaData?) {}
     }
 
     /**

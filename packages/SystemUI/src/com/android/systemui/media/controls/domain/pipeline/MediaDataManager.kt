@@ -143,6 +143,12 @@ interface MediaDataManager {
          *   place immediately.
          */
         override fun onSmartspaceMediaDataRemoved(key: String, immediately: Boolean) {}
+
+        /**
+         * Called whenever the current active media notification changes. Should only be used if
+         * [SceneContainerFlag] is disabled
+         */
+        override fun onCurrentActiveMediaChanged(key: String?, data: MediaData?) {}
     }
 
     companion object {

@@ -66,6 +66,7 @@ import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.statusbar.featurepods.media.domain.interactor.mediaControlChipInteractor
 import com.android.systemui.statusbar.notification.collection.provider.OnReorderingAllowedListener
 import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider
 import com.android.systemui.statusbar.policy.ConfigurationController
@@ -203,6 +204,7 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
                 mediaCarouselViewModel = kosmos.mediaCarouselViewModel,
                 mediaViewControllerFactory = mediaViewControllerFactory,
                 deviceEntryInteractor = kosmos.deviceEntryInteractor,
+                mediaControlChipInteractor = kosmos.mediaControlChipInteractor,
             )
         verify(configurationController).addCallback(capture(configListener))
         verify(visualStabilityProvider)

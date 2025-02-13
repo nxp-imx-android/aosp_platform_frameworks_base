@@ -17,100 +17,119 @@
 package com.android.systemui.statusbar.featurepods.media.domain.interactor
 
 import android.graphics.drawable.Drawable
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.flags.parameterizeSceneContainerFlag
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.media.controls.data.repository.mediaFilterRepository
+import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.shared.model.MediaAction
 import com.android.systemui.media.controls.shared.model.MediaButton
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.shared.model.MediaDataLoadingModel
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
+import org.mockito.Captor
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.mock
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
+@RunWith(ParameterizedAndroidJunit4::class)
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class MediaControlChipInteractorTest : SysuiTestCase() {
-
+class MediaControlChipInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val underTest = kosmos.mediaControlChipInteractor
+    private val mediaFilterRepository = kosmos.mediaFilterRepository
+    private val Kosmos.underTest by Kosmos.Fixture { kosmos.mediaControlChipInteractor }
+    @Captor lateinit var listener: ArgumentCaptor<MediaDataManager.Listener>
+
+    companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return parameterizeSceneContainerFlag()
+        }
+    }
+
+    @Before
+    fun setUp() {
+        kosmos.underTest.initialize()
+        MockitoAnnotations.initMocks(this)
+    }
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @Test
-    fun mediaControlModel_noActiveMedia_null() =
+    fun mediaControlChipModel_noActiveMedia_null() =
         kosmos.runTest {
-            val model by collectLastValue(underTest.mediaControlModel)
+            val model by collectLastValue(underTest.mediaControlChipModel)
 
             assertThat(model).isNull()
         }
 
     @Test
-    fun mediaControlModel_activeMedia_notNull() =
+    fun mediaControlChipModel_activeMedia_notNull() =
         kosmos.runTest {
-            val model by collectLastValue(underTest.mediaControlModel)
+            val model by collectLastValue(underTest.mediaControlChipModel)
 
             val userMedia = MediaData(active = true)
-            val instanceId = userMedia.instanceId
 
-            mediaFilterRepository.addSelectedUserMediaEntry(userMedia)
-            mediaFilterRepository.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId))
+            updateMedia(userMedia)
 
             assertThat(model).isNotNull()
         }
 
     @Test
-    fun mediaControlModel_mediaRemoved_null() =
+    fun mediaControlChipModel_mediaRemoved_null() =
         kosmos.runTest {
-            val model by collectLastValue(underTest.mediaControlModel)
+            val model by collectLastValue(underTest.mediaControlChipModel)
 
             val userMedia = MediaData(active = true)
-            val instanceId = userMedia.instanceId
 
-            mediaFilterRepository.addSelectedUserMediaEntry(userMedia)
-            mediaFilterRepository.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId))
+            updateMedia(userMedia)
 
             assertThat(model).isNotNull()
 
-            assertThat(mediaFilterRepository.removeSelectedUserMediaEntry(instanceId, userMedia))
-                .isTrue()
-            mediaFilterRepository.addMediaDataLoadingState(
-                MediaDataLoadingModel.Removed(instanceId)
-            )
+            removeMedia(userMedia)
 
             assertThat(model).isNull()
         }
 
     @Test
-    fun mediaControlModel_songNameChanged_emitsUpdatedModel() =
+    fun mediaControlChipModel_songNameChanged_emitsUpdatedModel() =
         kosmos.runTest {
-            val model by collectLastValue(underTest.mediaControlModel)
+            val model by collectLastValue(underTest.mediaControlChipModel)
 
             val initialSongName = "Initial Song"
             val newSongName = "New Song"
             val userMedia = MediaData(active = true, song = initialSongName)
-            val instanceId = userMedia.instanceId
 
-            mediaFilterRepository.addSelectedUserMediaEntry(userMedia)
-            mediaFilterRepository.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId))
+            updateMedia(userMedia)
 
             assertThat(model).isNotNull()
             assertThat(model?.songName).isEqualTo(initialSongName)
 
             val updatedUserMedia = userMedia.copy(song = newSongName)
-            mediaFilterRepository.addSelectedUserMediaEntry(updatedUserMedia)
+            updateMedia(updatedUserMedia)
 
             assertThat(model?.songName).isEqualTo(newSongName)
         }
 
     @Test
-    fun mediaControlModel_playPauseActionChanges_emitsUpdatedModel() =
+    fun mediaControlChipModel_playPauseActionChanges_emitsUpdatedModel() =
         kosmos.runTest {
-            val model by collectLastValue(underTest.mediaControlModel)
+            val model by collectLastValue(underTest.mediaControlChipModel)
 
             val mockDrawable = mock<Drawable>()
 
@@ -123,9 +142,7 @@ class MediaControlChipInteractorTest : SysuiTestCase() {
                 )
             val mediaButton = MediaButton(playOrPause = initialAction)
             val userMedia = MediaData(active = true, semanticActions = mediaButton)
-            val instanceId = userMedia.instanceId
-            mediaFilterRepository.addSelectedUserMediaEntry(userMedia)
-            mediaFilterRepository.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId))
+            updateMedia(userMedia)
 
             assertThat(model).isNotNull()
             assertThat(model?.playOrPause).isEqualTo(initialAction)
@@ -139,15 +156,15 @@ class MediaControlChipInteractorTest : SysuiTestCase() {
                 )
             val updatedMediaButton = MediaButton(playOrPause = newAction)
             val updatedUserMedia = userMedia.copy(semanticActions = updatedMediaButton)
-            mediaFilterRepository.addSelectedUserMediaEntry(updatedUserMedia)
+            updateMedia(updatedUserMedia)
 
             assertThat(model?.playOrPause).isEqualTo(newAction)
         }
 
     @Test
-    fun mediaControlModel_playPauseActionRemoved_playPauseNull() =
+    fun mediaControlChipModel_playPauseActionRemoved_playPauseNull() =
         kosmos.runTest {
-            val model by collectLastValue(underTest.mediaControlModel)
+            val model by collectLastValue(underTest.mediaControlChipModel)
 
             val mockDrawable = mock<Drawable>()
 
@@ -160,16 +177,36 @@ class MediaControlChipInteractorTest : SysuiTestCase() {
                 )
             val mediaButton = MediaButton(playOrPause = initialAction)
             val userMedia = MediaData(active = true, semanticActions = mediaButton)
-            val instanceId = userMedia.instanceId
-            mediaFilterRepository.addSelectedUserMediaEntry(userMedia)
-            mediaFilterRepository.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId))
+            updateMedia(userMedia)
 
             assertThat(model).isNotNull()
             assertThat(model?.playOrPause).isEqualTo(initialAction)
 
             val updatedUserMedia = userMedia.copy(semanticActions = MediaButton())
-            mediaFilterRepository.addSelectedUserMediaEntry(updatedUserMedia)
+            updateMedia(updatedUserMedia)
 
             assertThat(model?.playOrPause).isNull()
         }
+
+    private fun updateMedia(mediaData: MediaData) {
+        if (SceneContainerFlag.isEnabled) {
+            val instanceId = mediaData.instanceId
+            mediaFilterRepository.addSelectedUserMediaEntry(mediaData)
+            mediaFilterRepository.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId))
+        } else {
+            kosmos.underTest.updateMediaControlChipModelLegacy(mediaData)
+        }
+    }
+
+    private fun removeMedia(mediaData: MediaData) {
+        if (SceneContainerFlag.isEnabled) {
+            val instanceId = mediaData.instanceId
+            mediaFilterRepository.removeSelectedUserMediaEntry(instanceId, mediaData)
+            mediaFilterRepository.addMediaDataLoadingState(
+                MediaDataLoadingModel.Removed(instanceId)
+            )
+        } else {
+            kosmos.underTest.updateMediaControlChipModelLegacy(null)
+        }
+    }
 }
