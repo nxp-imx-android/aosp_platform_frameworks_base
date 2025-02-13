@@ -35,12 +35,12 @@ class FrameMetricsReporter {
 public:
     FrameMetricsReporter() {}
 
-    void addObserver(FrameMetricsObserver* observer) {
+    void addObserver(sp<FrameMetricsObserver>&& observer) {
         std::lock_guard lock(mObserversLock);
-        mObservers.push_back(observer);
+        mObservers.push_back(std::move(observer));
     }
 
-    bool removeObserver(FrameMetricsObserver* observer) {
+    bool removeObserver(const sp<FrameMetricsObserver>& observer) {
         std::lock_guard lock(mObserversLock);
         for (size_t i = 0; i < mObservers.size(); i++) {
             if (mObservers[i].get() == observer) {

@@ -420,15 +420,15 @@ void RenderProxy::setFrameCompleteCallback(std::function<void()>&& callback) {
     mDrawFrameTask.setFrameCompleteCallback(std::move(callback));
 }
 
-void RenderProxy::addFrameMetricsObserver(FrameMetricsObserver* observerPtr) {
-    mRenderThread.queue().post([this, observer = sp{observerPtr}]() {
-        mContext->addFrameMetricsObserver(observer.get());
+void RenderProxy::addFrameMetricsObserver(sp<FrameMetricsObserver>&& observer) {
+    mRenderThread.queue().post([this, observer = std::move(observer)]() mutable {
+        mContext->addFrameMetricsObserver(std::move(observer));
     });
 }
 
-void RenderProxy::removeFrameMetricsObserver(FrameMetricsObserver* observerPtr) {
-    mRenderThread.queue().post([this, observer = sp{observerPtr}]() {
-        mContext->removeFrameMetricsObserver(observer.get());
+void RenderProxy::removeFrameMetricsObserver(sp<FrameMetricsObserver>&& observer) {
+    mRenderThread.queue().post([this, observer = std::move(observer)]() {
+        mContext->removeFrameMetricsObserver(observer);
     });
 }
 

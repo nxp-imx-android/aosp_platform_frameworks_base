@@ -134,7 +134,7 @@ private:
 
 class FrameInfo {
 public:
-    void importUiThreadInfo(int64_t* info);
+    void importUiThreadInfo(const int64_t* info);
 
     void markSyncStart() { set(FrameInfoIndex::SyncStart) = systemTime(SYSTEM_TIME_MONOTONIC); }
 
