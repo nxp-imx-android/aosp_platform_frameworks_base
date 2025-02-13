@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.notification.domain.interactor
 
+import com.android.systemui.activity.data.model.AppVisibilityModel
 import com.android.systemui.activity.data.repository.ActivityManagerRepository
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
@@ -30,8 +31,6 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 
 /**
  * Interactor representing a single notification's status bar chip.
@@ -53,6 +52,7 @@ constructor(
     @StatusBarChipsLog private val logBuffer: LogBuffer,
 ) {
     private val key = startingModel.key
+    private val uid = startingModel.uid
     private val logger = Logger(logBuffer, "Notif".pad())
     // [StatusBarChipLogTag] recommends a max tag length of 20, so [extraLogTag] should NOT be the
     // top-level tag. It should instead be provided as the first string in each log message.
@@ -88,28 +88,36 @@ constructor(
             }
             return
         }
+
+        if (model.uid != uid) {
+            logger.e({
+                "$str1: received model with different uid, which shouldn't happen. " +
+                    "Original UID: $int1, New UID: $int2. " +
+                    "Proceeding as usual, but app visibility changes will be for *old* UID."
+            }) {
+                str1 = extraLogTag
+                int1 = uid
+                int2 = model.uid
+            }
+        }
         _notificationModel.value = model
     }
 
-    private val uid: Flow<Int> = _notificationModel.map { it.uid }
-
-    /** True if the application managing the notification is visible to the user. */
-    private val isAppVisible: Flow<Boolean> =
-        uid.flatMapLatest { currentUid ->
-            activityManagerRepository.createIsAppVisibleFlow(currentUid, logger, extraLogTag)
-        }
+    /** Details about when the app managing the notification was & is visible to the user. */
+    private val appVisibility: Flow<AppVisibilityModel> =
+        activityManagerRepository.createAppVisibilityFlow(uid, logger, extraLogTag)
 
     /**
      * Emits this notification's status bar chip, or null if this notification shouldn't show a
      * status bar chip.
      */
     val notificationChip: Flow<NotificationChipModel?> =
-        combine(_notificationModel, isAppVisible) { notif, isAppVisible ->
-            notif.toNotificationChipModel(isAppVisible)
+        combine(_notificationModel, appVisibility) { notif, appVisibility ->
+            notif.toNotificationChipModel(appVisibility)
         }
 
     private fun ActiveNotificationModel.toNotificationChipModel(
-        isVisible: Boolean
+        appVisibility: AppVisibilityModel
     ): NotificationChipModel? {
         val promotedContent = this.promotedContent
         if (promotedContent == null) {
@@ -134,11 +142,13 @@ constructor(
         }
 
         return NotificationChipModel(
-            key,
-            appName,
-            statusBarChipIconView,
-            promotedContent,
-            isVisible,
+            key = key,
+            appName = appName,
+            statusBarChipIconView = statusBarChipIconView,
+            promotedContent = promotedContent,
+            creationTime = creationTime,
+            isAppVisible = appVisibility.isAppCurrentlyVisible,
+            lastAppVisibleTime = appVisibility.lastAppVisibleTime,
         )
     }
 
