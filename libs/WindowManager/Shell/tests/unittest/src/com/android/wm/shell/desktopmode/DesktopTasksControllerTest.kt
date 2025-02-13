@@ -3225,6 +3225,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    fun onDesktopWindowMinimize_triesToStopTiling() {
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
+        val transition = Binder()
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(transition)
+
+        controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
+
+        verify(snapEventHandler).removeTaskIfTiled(eq(DEFAULT_DISPLAY), eq(task.taskId))
+    }
+
+    @Test
     fun handleRequest_fullscreenTask_freeformVisible_returnSwitchToFreeformWCT() {
         val homeTask = setUpHomeTask()
         val freeformTask = setUpFreeformTask()
