@@ -210,3 +210,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "managed_services_concurrent_multiuser"
+  namespace: "systemui"
+  description: "Enables ManagedServices to support Concurrent multi user environment"
+  bug: "380297485"
+}
