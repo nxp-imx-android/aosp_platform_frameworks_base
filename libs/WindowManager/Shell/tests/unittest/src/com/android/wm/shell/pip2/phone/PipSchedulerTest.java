@@ -19,6 +19,7 @@ package com.android.wm.shell.pip2.phone;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
@@ -26,6 +27,7 @@ import static org.mockito.kotlin.MatchersKt.eq;
 import static org.mockito.kotlin.VerificationKt.times;
 import static org.mockito.kotlin.VerificationKt.verify;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Matrix;
@@ -44,14 +46,18 @@ import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
+import com.android.wm.shell.splitscreen.SplitScreenController;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.Optional;
 
 /**
  * Unit test against {@link PipScheduler}
@@ -77,6 +83,8 @@ public class PipSchedulerTest {
     @Mock private PipSurfaceTransactionHelper.SurfaceControlTransactionFactory mMockFactory;
     @Mock private SurfaceControl.Transaction mMockTransaction;
     @Mock private PipAlphaAnimator mMockAlphaAnimator;
+    @Mock private SplitScreenController mMockSplitScreenController;
+
     @Captor private ArgumentCaptor<Runnable> mRunnableArgumentCaptor;
     @Captor private ArgumentCaptor<WindowContainerTransaction> mWctArgumentCaptor;
 
@@ -93,7 +101,8 @@ public class PipSchedulerTest {
                 .thenReturn(mMockTransaction);
 
         mPipScheduler = new PipScheduler(mMockContext, mMockPipBoundsState, mMockMainExecutor,
-                mMockPipTransitionState, mMockPipDesktopState);
+                mMockPipTransitionState, Optional.of(mMockSplitScreenController),
+                mMockPipDesktopState);
         mPipScheduler.setPipTransitionController(mMockPipTransitionController);
         mPipScheduler.setSurfaceControlTransactionFactory(mMockFactory);
         mPipScheduler.setPipAlphaAnimatorSupplier((context, leash, startTx, finishTx, direction) ->
@@ -119,12 +128,18 @@ public class PipSchedulerTest {
         assertNotNull(mRunnableArgumentCaptor.getValue());
         mRunnableArgumentCaptor.getValue().run();
 
-        verify(mMockPipTransitionController, never()).startExpandTransition(any());
+        verify(mMockPipTransitionController, never()).startExpandTransition(any(), anyBoolean());
     }
 
     @Test
-    public void scheduleExitPipViaExpand_exitTransitionCalled() {
+    public void scheduleExitPipViaExpand_noSplit_expandTransitionCalled() {
         setMockPipTaskToken();
+        ActivityManager.RunningTaskInfo pipTaskInfo = getTaskInfoWithLastParentBeforePip(1);
+        when(mMockPipTransitionState.getPipTaskInfo()).thenReturn(pipTaskInfo);
+
+        // Make sure task with the id = 1 isn't in split-screen.
+        when(mMockSplitScreenController.isTaskInSplitScreen(
+                ArgumentMatchers.eq(1))).thenReturn(false);
 
         mPipScheduler.scheduleExitPipViaExpand();
 
@@ -132,7 +147,29 @@ public class PipSchedulerTest {
         assertNotNull(mRunnableArgumentCaptor.getValue());
         mRunnableArgumentCaptor.getValue().run();
 
-        verify(mMockPipTransitionController, times(1)).startExpandTransition(any());
+        verify(mMockPipTransitionController, times(1)).startExpandTransition(any(), anyBoolean());
+    }
+
+    @Test
+    public void scheduleExitPipViaExpand_lastParentInSplit_prepareSplitAndExpand() {
+        setMockPipTaskToken();
+        ActivityManager.RunningTaskInfo pipTaskInfo = getTaskInfoWithLastParentBeforePip(1);
+        when(mMockPipTransitionState.getPipTaskInfo()).thenReturn(pipTaskInfo);
+
+        // Make sure task with the id = 1 is in split-screen.
+        when(mMockSplitScreenController.isTaskInSplitScreen(
+                ArgumentMatchers.eq(1))).thenReturn(true);
+
+        mPipScheduler.scheduleExitPipViaExpand();
+
+        verify(mMockMainExecutor, times(1)).execute(mRunnableArgumentCaptor.capture());
+        assertNotNull(mRunnableArgumentCaptor.getValue());
+        mRunnableArgumentCaptor.getValue().run();
+
+        // We need to both prepare the split screen with the last parent and start expanding.
+        verify(mMockSplitScreenController,
+                times(1)).prepareEnterSplitScreen(any(), any(), anyInt());
+        verify(mMockPipTransitionController, times(1)).startExpandTransition(any(), anyBoolean());
     }
 
     @Test
@@ -258,5 +295,11 @@ public class PipSchedulerTest {
 
     private void setMockPipTaskToken() {
         when(mMockPipTransitionState.getPipTaskToken()).thenReturn(mMockPipTaskToken);
+    }
+
+    private ActivityManager.RunningTaskInfo getTaskInfoWithLastParentBeforePip(int lastParentId) {
+        final ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
+        taskInfo.lastParentTaskIdBeforePip = lastParentId;
+        return taskInfo;
     }
 }
