@@ -437,6 +437,42 @@ public class NotifierTest {
     }
 
     @Test
+    public void testOnGroupChanged_perDisplayWakeByTouchEnabled() {
+        createNotifier();
+        // GIVEN per-display wake by touch is enabled and one display group has been defined with
+        // two displays
+        when(mPowerManagerFlags.isPerDisplayWakeByTouchEnabled()).thenReturn(true);
+        final int groupId = 121;
+        final int displayId1 = 1221;
+        final int displayId2 = 1222;
+        final int[] displays = new int[]{displayId1, displayId2};
+        when(mDisplayManagerInternal.getDisplayIds()).thenReturn(IntArray.wrap(displays));
+        when(mDisplayManagerInternal.getDisplayIdsForGroup(groupId)).thenReturn(displays);
+        SparseArray<int[]> displayIdsByGroupId = new SparseArray<>();
+        displayIdsByGroupId.put(groupId, displays);
+        when(mDisplayManagerInternal.getDisplayIdsByGroupsIds()).thenReturn(displayIdsByGroupId);
+        mNotifier.onGroupWakefulnessChangeStarted(
+                groupId, WAKEFULNESS_AWAKE, PowerManager.WAKE_REASON_TAP, /* eventTime= */ 1000);
+        final SparseBooleanArray expectedDisplayInteractivities = new SparseBooleanArray();
+        expectedDisplayInteractivities.put(displayId1, true);
+        expectedDisplayInteractivities.put(displayId2, true);
+        verify(mInputManagerInternal).setDisplayInteractivities(expectedDisplayInteractivities);
+
+        // WHEN display group is changed to only contain one display
+        SparseArray<int[]> newDisplayIdsByGroupId = new SparseArray<>();
+        newDisplayIdsByGroupId.put(groupId, new int[]{displayId1});
+        when(mDisplayManagerInternal.getDisplayIdsByGroupsIds()).thenReturn(newDisplayIdsByGroupId);
+        mNotifier.onGroupChanged();
+
+        // THEN native input manager is informed that the displays in the group have changed
+        final SparseBooleanArray expectedDisplayInteractivitiesAfterChange =
+            new SparseBooleanArray();
+        expectedDisplayInteractivitiesAfterChange.put(displayId1, true);
+        verify(mInputManagerInternal).setDisplayInteractivities(
+            expectedDisplayInteractivitiesAfterChange);
+    }
+
+    @Test
     public void testOnWakeLockReleased_FrameworkStatsLogged_NoChains() {
         when(mPowerManagerFlags.isMoveWscLoggingToNotifierEnabled()).thenReturn(true);
         createNotifier();
