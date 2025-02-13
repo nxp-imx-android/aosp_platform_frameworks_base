@@ -60,6 +60,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -127,6 +128,7 @@ private fun AddShortcutDialog(
             shouldShowError = uiState.errorMessage.isNotEmpty(),
             onShortcutKeyCombinationSelected = onShortcutKeyCombinationSelected,
             pressedKeys = uiState.pressedKeys,
+            contentDescription = uiState.pressedKeysDescription,
             onConfirmSetShortcut = onConfirmSetShortcut,
             onClearSelectedKeyCombination = onClearSelectedKeyCombination,
         )
@@ -267,6 +269,7 @@ private fun SelectedKeyCombinationContainer(
     shouldShowError: Boolean,
     onShortcutKeyCombinationSelected: (KeyEvent) -> Boolean,
     pressedKeys: List<ShortcutKey>,
+    contentDescription: String,
     onConfirmSetShortcut: () -> Unit,
     onClearSelectedKeyCombination: () -> Unit,
 ) {
@@ -313,6 +316,7 @@ private fun SelectedKeyCombinationContainer(
             } else {
                 null
             },
+        contentDescription = contentDescription,
     )
 }
 
@@ -331,8 +335,7 @@ private fun ErrorIcon(shouldShowError: Boolean) {
 @Composable
 private fun PressedKeysTextContainer(pressedKeys: List<ShortcutKey>) {
     Row(
-        modifier =
-            Modifier.semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
+        modifier = Modifier.semantics { hideFromAccessibility() },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         pressedKeys.forEachIndexed { keyIndex, key ->
@@ -495,6 +498,7 @@ private fun OutlinedInputField(
     trailingIcon: @Composable () -> Unit,
     isError: Boolean,
     modifier: Modifier = Modifier,
+    contentDescription: String,
 ) {
     OutlinedTextField(
         value = "",
@@ -502,7 +506,10 @@ private fun OutlinedInputField(
         placeholder = if (content == null) placeholder else null,
         prefix = content,
         singleLine = true,
-        modifier = modifier,
+        modifier =
+            modifier.semantics(mergeDescendants = true) {
+                this.contentDescription = contentDescription
+            },
         trailingIcon = trailingIcon,
         colors =
             OutlinedTextFieldDefaults.colors()
