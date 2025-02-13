@@ -5488,37 +5488,37 @@ package android.app {
     method public android.net.Uri getConditionId();
     method @Nullable public android.content.ComponentName getConfigurationActivity();
     method public long getCreationTime();
-    method @FlaggedApi("android.app.modes_api") @Nullable public android.service.notification.ZenDeviceEffects getDeviceEffects();
-    method @FlaggedApi("android.app.modes_api") @DrawableRes public int getIconResId();
+    method @Nullable public android.service.notification.ZenDeviceEffects getDeviceEffects();
+    method @DrawableRes public int getIconResId();
     method public int getInterruptionFilter();
     method public String getName();
     method public android.content.ComponentName getOwner();
-    method @FlaggedApi("android.app.modes_api") @Nullable public String getTriggerDescription();
-    method @FlaggedApi("android.app.modes_api") public int getType();
+    method @Nullable public String getTriggerDescription();
+    method public int getType();
     method @Nullable public android.service.notification.ZenPolicy getZenPolicy();
     method public boolean isEnabled();
-    method @FlaggedApi("android.app.modes_api") public boolean isManualInvocationAllowed();
+    method public boolean isManualInvocationAllowed();
     method public void setConditionId(android.net.Uri);
     method public void setConfigurationActivity(@Nullable android.content.ComponentName);
-    method @FlaggedApi("android.app.modes_api") public void setDeviceEffects(@Nullable android.service.notification.ZenDeviceEffects);
+    method public void setDeviceEffects(@Nullable android.service.notification.ZenDeviceEffects);
     method public void setEnabled(boolean);
     method public void setInterruptionFilter(int);
     method public void setName(String);
     method public void setZenPolicy(@Nullable android.service.notification.ZenPolicy);
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.AutomaticZenRule> CREATOR;
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_BEDTIME = 3; // 0x3
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_DRIVING = 4; // 0x4
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_IMMERSIVE = 5; // 0x5
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_MANAGED = 7; // 0x7
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_OTHER = 0; // 0x0
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_SCHEDULE_CALENDAR = 2; // 0x2
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_SCHEDULE_TIME = 1; // 0x1
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_THEATER = 6; // 0x6
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_UNKNOWN = -1; // 0xffffffff
+    field public static final int TYPE_BEDTIME = 3; // 0x3
+    field public static final int TYPE_DRIVING = 4; // 0x4
+    field public static final int TYPE_IMMERSIVE = 5; // 0x5
+    field public static final int TYPE_MANAGED = 7; // 0x7
+    field public static final int TYPE_OTHER = 0; // 0x0
+    field public static final int TYPE_SCHEDULE_CALENDAR = 2; // 0x2
+    field public static final int TYPE_SCHEDULE_TIME = 1; // 0x1
+    field public static final int TYPE_THEATER = 6; // 0x6
+    field public static final int TYPE_UNKNOWN = -1; // 0xffffffff
   }
 
-  @FlaggedApi("android.app.modes_api") public static final class AutomaticZenRule.Builder {
+  public static final class AutomaticZenRule.Builder {
     ctor public AutomaticZenRule.Builder(@NonNull android.app.AutomaticZenRule);
     ctor public AutomaticZenRule.Builder(@NonNull String, @NonNull android.net.Uri);
     method @NonNull public android.app.AutomaticZenRule build();
@@ -7136,7 +7136,7 @@ package android.app {
 
   public class NotificationManager {
     method public String addAutomaticZenRule(android.app.AutomaticZenRule);
-    method @FlaggedApi("android.app.modes_api") public boolean areAutomaticZenRulesUserManaged();
+    method public boolean areAutomaticZenRulesUserManaged();
     method @Deprecated public boolean areBubblesAllowed();
     method public boolean areBubblesEnabled();
     method public boolean areNotificationsEnabled();
@@ -7156,7 +7156,7 @@ package android.app {
     method public void deleteNotificationChannelGroup(String);
     method public android.service.notification.StatusBarNotification[] getActiveNotifications();
     method public android.app.AutomaticZenRule getAutomaticZenRule(String);
-    method @FlaggedApi("android.app.modes_api") public int getAutomaticZenRuleState(@NonNull String);
+    method public int getAutomaticZenRuleState(@NonNull String);
     method public java.util.Map<java.lang.String,android.app.AutomaticZenRule> getAutomaticZenRules();
     method public int getBubblePreference();
     method @NonNull public android.app.NotificationManager.Policy getConsolidatedNotificationPolicy();
@@ -7185,14 +7185,14 @@ package android.app {
     field public static final String ACTION_APP_BLOCK_STATE_CHANGED = "android.app.action.APP_BLOCK_STATE_CHANGED";
     field public static final String ACTION_AUTOMATIC_ZEN_RULE = "android.app.action.AUTOMATIC_ZEN_RULE";
     field public static final String ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED = "android.app.action.AUTOMATIC_ZEN_RULE_STATUS_CHANGED";
-    field @FlaggedApi("android.app.modes_api") public static final String ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED = "android.app.action.CONSOLIDATED_NOTIFICATION_POLICY_CHANGED";
+    field public static final String ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED = "android.app.action.CONSOLIDATED_NOTIFICATION_POLICY_CHANGED";
     field public static final String ACTION_INTERRUPTION_FILTER_CHANGED = "android.app.action.INTERRUPTION_FILTER_CHANGED";
     field public static final String ACTION_NOTIFICATION_CHANNEL_BLOCK_STATE_CHANGED = "android.app.action.NOTIFICATION_CHANNEL_BLOCK_STATE_CHANGED";
     field public static final String ACTION_NOTIFICATION_CHANNEL_GROUP_BLOCK_STATE_CHANGED = "android.app.action.NOTIFICATION_CHANNEL_GROUP_BLOCK_STATE_CHANGED";
     field public static final String ACTION_NOTIFICATION_POLICY_ACCESS_GRANTED_CHANGED = "android.app.action.NOTIFICATION_POLICY_ACCESS_GRANTED_CHANGED";
     field public static final String ACTION_NOTIFICATION_POLICY_CHANGED = "android.app.action.NOTIFICATION_POLICY_CHANGED";
-    field @FlaggedApi("android.app.modes_api") public static final int AUTOMATIC_RULE_STATUS_ACTIVATED = 4; // 0x4
-    field @FlaggedApi("android.app.modes_api") public static final int AUTOMATIC_RULE_STATUS_DEACTIVATED = 5; // 0x5
+    field public static final int AUTOMATIC_RULE_STATUS_ACTIVATED = 4; // 0x4
+    field public static final int AUTOMATIC_RULE_STATUS_DEACTIVATED = 5; // 0x5
     field public static final int AUTOMATIC_RULE_STATUS_DISABLED = 2; // 0x2
     field public static final int AUTOMATIC_RULE_STATUS_ENABLED = 1; // 0x1
     field public static final int AUTOMATIC_RULE_STATUS_REMOVED = 3; // 0x3
@@ -7206,7 +7206,7 @@ package android.app {
     field public static final String EXTRA_BLOCKED_STATE = "android.app.extra.BLOCKED_STATE";
     field public static final String EXTRA_NOTIFICATION_CHANNEL_GROUP_ID = "android.app.extra.NOTIFICATION_CHANNEL_GROUP_ID";
     field public static final String EXTRA_NOTIFICATION_CHANNEL_ID = "android.app.extra.NOTIFICATION_CHANNEL_ID";
-    field @FlaggedApi("android.app.modes_api") public static final String EXTRA_NOTIFICATION_POLICY = "android.app.extra.NOTIFICATION_POLICY";
+    field public static final String EXTRA_NOTIFICATION_POLICY = "android.app.extra.NOTIFICATION_POLICY";
     field public static final int IMPORTANCE_DEFAULT = 3; // 0x3
     field public static final int IMPORTANCE_HIGH = 4; // 0x4
     field public static final int IMPORTANCE_LOW = 2; // 0x2
@@ -38280,7 +38280,7 @@ package android.provider {
     field public static final String ACTION_APP_OPEN_BY_DEFAULT_SETTINGS = "android.settings.APP_OPEN_BY_DEFAULT_SETTINGS";
     field public static final String ACTION_APP_SEARCH_SETTINGS = "android.settings.APP_SEARCH_SETTINGS";
     field public static final String ACTION_APP_USAGE_SETTINGS = "android.settings.action.APP_USAGE_SETTINGS";
-    field @FlaggedApi("android.app.modes_api") public static final String ACTION_AUTOMATIC_ZEN_RULE_SETTINGS = "android.settings.AUTOMATIC_ZEN_RULE_SETTINGS";
+    field public static final String ACTION_AUTOMATIC_ZEN_RULE_SETTINGS = "android.settings.AUTOMATIC_ZEN_RULE_SETTINGS";
     field public static final String ACTION_AUTO_ROTATE_SETTINGS = "android.settings.AUTO_ROTATE_SETTINGS";
     field public static final String ACTION_BATTERY_SAVER_SETTINGS = "android.settings.BATTERY_SAVER_SETTINGS";
     field public static final String ACTION_BIOMETRIC_ENROLL = "android.settings.BIOMETRIC_ENROLL";
@@ -38374,7 +38374,7 @@ package android.provider {
     field public static final String EXTRA_AIRPLANE_MODE_ENABLED = "airplane_mode_enabled";
     field public static final String EXTRA_APP_PACKAGE = "android.provider.extra.APP_PACKAGE";
     field public static final String EXTRA_AUTHORITIES = "authorities";
-    field @FlaggedApi("android.app.modes_api") public static final String EXTRA_AUTOMATIC_ZEN_RULE_ID = "android.provider.extra.AUTOMATIC_ZEN_RULE_ID";
+    field public static final String EXTRA_AUTOMATIC_ZEN_RULE_ID = "android.provider.extra.AUTOMATIC_ZEN_RULE_ID";
     field public static final String EXTRA_BATTERY_SAVER_MODE_ENABLED = "android.settings.extra.battery_saver_mode_enabled";
     field public static final String EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED = "android.provider.extra.BIOMETRIC_AUTHENTICATORS_ALLOWED";
     field public static final String EXTRA_CHANNEL_FILTER_LIST = "android.provider.extra.CHANNEL_FILTER_LIST";
@@ -42166,9 +42166,9 @@ package android.service.notification {
 
   public final class Condition implements android.os.Parcelable {
     ctor public Condition(android.net.Uri, String, int);
-    ctor @FlaggedApi("android.app.modes_api") public Condition(@Nullable android.net.Uri, @Nullable String, int, int);
+    ctor public Condition(@Nullable android.net.Uri, @Nullable String, int, int);
     ctor public Condition(android.net.Uri, String, String, String, int, int, int);
-    ctor @FlaggedApi("android.app.modes_api") public Condition(@Nullable android.net.Uri, @Nullable String, @Nullable String, @Nullable String, int, int, int, int);
+    ctor public Condition(@Nullable android.net.Uri, @Nullable String, @Nullable String, @Nullable String, int, int, int, int);
     ctor public Condition(android.os.Parcel);
     method public android.service.notification.Condition copy();
     method public int describeContents();
@@ -42181,10 +42181,10 @@ package android.service.notification {
     field public static final int FLAG_RELEVANT_ALWAYS = 2; // 0x2
     field public static final int FLAG_RELEVANT_NOW = 1; // 0x1
     field public static final String SCHEME = "condition";
-    field @FlaggedApi("android.app.modes_api") public static final int SOURCE_CONTEXT = 3; // 0x3
-    field @FlaggedApi("android.app.modes_api") public static final int SOURCE_SCHEDULE = 2; // 0x2
-    field @FlaggedApi("android.app.modes_api") public static final int SOURCE_UNKNOWN = 0; // 0x0
-    field @FlaggedApi("android.app.modes_api") public static final int SOURCE_USER_ACTION = 1; // 0x1
+    field public static final int SOURCE_CONTEXT = 3; // 0x3
+    field public static final int SOURCE_SCHEDULE = 2; // 0x2
+    field public static final int SOURCE_UNKNOWN = 0; // 0x0
+    field public static final int SOURCE_USER_ACTION = 1; // 0x1
     field public static final int STATE_ERROR = 3; // 0x3
     field public static final int STATE_FALSE = 0; // 0x0
     field public static final int STATE_TRUE = 1; // 0x1
@@ -42194,7 +42194,7 @@ package android.service.notification {
     field public final android.net.Uri id;
     field public final String line1;
     field public final String line2;
-    field @FlaggedApi("android.app.modes_api") public final int source;
+    field public final int source;
     field public final int state;
     field public final String summary;
   }
@@ -42365,7 +42365,7 @@ package android.service.notification {
     field @NonNull public static final android.os.Parcelable.Creator<android.service.notification.StatusBarNotification> CREATOR;
   }
 
-  @FlaggedApi("android.app.modes_api") public final class ZenDeviceEffects implements android.os.Parcelable {
+  public final class ZenDeviceEffects implements android.os.Parcelable {
     method public int describeContents();
     method public boolean shouldDimWallpaper();
     method public boolean shouldDisplayGrayscale();
@@ -42375,7 +42375,7 @@ package android.service.notification {
     field @NonNull public static final android.os.Parcelable.Creator<android.service.notification.ZenDeviceEffects> CREATOR;
   }
 
-  @FlaggedApi("android.app.modes_api") public static final class ZenDeviceEffects.Builder {
+  public static final class ZenDeviceEffects.Builder {
     ctor public ZenDeviceEffects.Builder();
     ctor public ZenDeviceEffects.Builder(@NonNull android.service.notification.ZenDeviceEffects);
     method @NonNull public android.service.notification.ZenDeviceEffects build();
@@ -42397,7 +42397,7 @@ package android.service.notification {
     method public int getPriorityCategoryReminders();
     method public int getPriorityCategoryRepeatCallers();
     method public int getPriorityCategorySystem();
-    method @FlaggedApi("android.app.modes_api") public int getPriorityChannelsAllowed();
+    method public int getPriorityChannelsAllowed();
     method public int getPriorityConversationSenders();
     method public int getPriorityMessageSenders();
     method public int getVisualEffectAmbient();
@@ -42432,7 +42432,7 @@ package android.service.notification {
     method @NonNull public android.service.notification.ZenPolicy.Builder allowEvents(boolean);
     method @NonNull public android.service.notification.ZenPolicy.Builder allowMedia(boolean);
     method @NonNull public android.service.notification.ZenPolicy.Builder allowMessages(int);
-    method @FlaggedApi("android.app.modes_api") @NonNull public android.service.notification.ZenPolicy.Builder allowPriorityChannels(boolean);
+    method @NonNull public android.service.notification.ZenPolicy.Builder allowPriorityChannels(boolean);
     method @NonNull public android.service.notification.ZenPolicy.Builder allowReminders(boolean);
     method @NonNull public android.service.notification.ZenPolicy.Builder allowRepeatCallers(boolean);
     method @NonNull public android.service.notification.ZenPolicy.Builder allowSystem(boolean);

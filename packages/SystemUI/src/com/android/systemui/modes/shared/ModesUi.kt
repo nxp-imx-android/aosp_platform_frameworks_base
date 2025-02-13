@@ -25,7 +25,7 @@ object ModesUi {
     /** Is the refactor enabled */
     @JvmStatic
     inline val isEnabled
-        get() = Flags.modesApi() && Flags.modesUi()
+        get() = Flags.modesUi()
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the

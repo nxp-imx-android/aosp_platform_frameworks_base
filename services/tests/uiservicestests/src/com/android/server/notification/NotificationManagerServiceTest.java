@@ -11030,7 +11030,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void testAddAutomaticZenRule_typeManagedCanBeUsedByDeviceOwners() throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
         mService.setCallerIsNormalPackage();
@@ -11048,20 +11047,17 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void testAddAutomaticZenRule_typeManagedCanBeUsedBySystem() throws Exception {
         addAutomaticZenRule_restrictedRuleTypeCanBeUsedBySystem(AutomaticZenRule.TYPE_MANAGED);
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void testAddAutomaticZenRule_typeManagedCannotBeUsedByRegularApps() throws Exception {
         addAutomaticZenRule_restrictedRuleTypeCannotBeUsedByRegularApps(
                 AutomaticZenRule.TYPE_MANAGED);
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void testAddAutomaticZenRule_typeBedtimeCanBeUsedByWellbeing() throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
         mService.setCallerIsNormalPackage();
@@ -11084,7 +11080,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void testAddAutomaticZenRule_typeBedtimeCanBeUsedBySystem() throws Exception {
         reset(mPackageManagerInternal);
         when(mPackageManagerInternal.isSameApp(eq(mPkg), eq(mUid), anyInt())).thenReturn(true);
@@ -11092,7 +11087,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void testAddAutomaticZenRule_typeBedtimeCannotBeUsedByRegularApps() throws Exception {
         reset(mPackageManagerInternal);
         when(mPackageManagerInternal.isSameApp(eq(mPkg), eq(mUid), anyInt())).thenReturn(true);
@@ -11135,7 +11129,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void addAutomaticZenRule_fromUser_mappedToOriginUser() throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
         mService.isSystemUid = true;
@@ -11147,7 +11140,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void addAutomaticZenRule_fromSystemNotUser_mappedToOriginSystem() throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
         mService.isSystemUid = true;
@@ -11159,7 +11151,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void addAutomaticZenRule_fromApp_mappedToOriginApp() throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
         mService.setCallerIsNormalPackage();
@@ -11171,7 +11162,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void addAutomaticZenRule_fromAppFromUser_blocked() throws Exception {
         setUpMockZenTest();
         mService.setCallerIsNormalPackage();
@@ -11181,7 +11171,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void updateAutomaticZenRule_fromUserFromSystem_allowed() throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
         mService.isSystemUid = true;
@@ -11193,7 +11182,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void updateAutomaticZenRule_fromUserFromApp_blocked() throws Exception {
         setUpMockZenTest();
         mService.setCallerIsNormalPackage();
@@ -11203,7 +11191,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void removeAutomaticZenRule_fromUserFromSystem_allowed() throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
         mService.isSystemUid = true;
@@ -11215,7 +11202,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void removeAutomaticZenRule_fromUserFromApp_blocked() throws Exception {
         setUpMockZenTest();
         mService.setCallerIsNormalPackage();
@@ -11225,7 +11211,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void setAutomaticZenRuleState_fromAppWithConditionFromUser_originUserInApp()
             throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
@@ -11240,7 +11225,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void setAutomaticZenRuleState_fromAppWithConditionNotFromUser_originApp()
             throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
@@ -11255,7 +11239,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void setAutomaticZenRuleState_fromSystemWithConditionFromUser_originUserInSystemUi()
             throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
@@ -11269,7 +11252,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 eq(ZenModeConfig.ORIGIN_USER_IN_SYSTEMUI), anyInt());
     }
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void setAutomaticZenRuleState_fromSystemWithConditionNotFromUser_originSystem()
             throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
@@ -11440,7 +11422,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void onAutomaticRuleStatusChanged_sendsBroadcastToRuleOwner() throws Exception {
         mService.mZenModeHelper.getCallbacks().forEach(c -> c.onAutomaticRuleStatusChanged(
                 mUserId, "rule.owner.pkg", "rule_id", AUTOMATIC_RULE_STATUS_ACTIVATED));
@@ -16304,7 +16285,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         InOrder inOrder = inOrder(mPreferencesHelper, mService.mZenModeHelper);
         inOrder.verify(mService.mZenModeHelper).onUserSwitched(eq(20));
-        inOrder.verify(mPreferencesHelper).syncChannelsBypassingDnd();
+        inOrder.verify(mPreferencesHelper).syncHasPriorityChannels();
         inOrder.verifyNoMoreInteractions();
     }
 
@@ -16320,7 +16301,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         InOrder inOrder = inOrder(mPreferencesHelper, mService.mZenModeHelper);
         inOrder.verify(mService.mZenModeHelper).onUserSwitched(eq(20));
-        inOrder.verify(mPreferencesHelper).syncChannelsBypassingDnd();
+        inOrder.verify(mPreferencesHelper).syncHasPriorityChannels();
         inOrder.verifyNoMoreInteractions();
     }
 
@@ -16641,7 +16622,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void setDeviceEffectsApplier_succeeds() throws Exception {
         initNMS(SystemService.PHASE_SYSTEM_SERVICES_READY);
 
@@ -16652,7 +16632,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void setDeviceEffectsApplier_tooLate_throws() throws Exception {
         initNMS(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
 
@@ -16661,7 +16640,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     public void setDeviceEffectsApplier_calledTwice_throws() throws Exception {
         initNMS(SystemService.PHASE_SYSTEM_SERVICES_READY);
 
@@ -16673,7 +16651,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void setNotificationPolicy_mappedToImplicitRule() throws RemoteException {
-        mSetFlagsRule.enableFlags(android.app.Flags.FLAG_MODES_API);
         mService.setCallerIsNormalPackage();
         ZenModeHelper zenHelper = mock(ZenModeHelper.class);
         mService.mZenModeHelper = zenHelper;
@@ -16690,7 +16667,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void setNotificationPolicy_systemCaller_setsGlobalPolicy() throws RemoteException {
-        mSetFlagsRule.enableFlags(android.app.Flags.FLAG_MODES_API);
         ZenModeHelper zenModeHelper = mock(ZenModeHelper.class);
         mService.mZenModeHelper = zenModeHelper;
         when(mConditionProviders.isPackageOrComponentAllowed(anyString(), anyInt()))
@@ -16730,7 +16706,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     private void setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
             @AssociationRequest.DeviceProfile String deviceProfile, boolean canSetGlobalPolicy)
             throws RemoteException {
-        mSetFlagsRule.enableFlags(android.app.Flags.FLAG_MODES_API);
         mService.setCallerIsNormalPackage();
         ZenModeHelper zenModeHelper = mock(ZenModeHelper.class);
         mService.mZenModeHelper = zenModeHelper;
@@ -16757,7 +16732,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     @DisableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void setNotificationPolicy_withoutCompat_setsGlobalPolicy() throws RemoteException {
-        mSetFlagsRule.enableFlags(android.app.Flags.FLAG_MODES_API);
         mService.setCallerIsNormalPackage();
         ZenModeHelper zenModeHelper = mock(ZenModeHelper.class);
         mService.mZenModeHelper = zenModeHelper;
@@ -16773,7 +16747,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void getNotificationPolicy_mappedFromImplicitRule() throws RemoteException {
-        mSetFlagsRule.enableFlags(android.app.Flags.FLAG_MODES_API);
         mService.setCallerIsNormalPackage();
         ZenModeHelper zenHelper = mock(ZenModeHelper.class);
         mService.mZenModeHelper = zenHelper;
@@ -16788,7 +16761,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void setInterruptionFilter_mappedToImplicitRule() throws RemoteException {
-        mSetFlagsRule.enableFlags(android.app.Flags.FLAG_MODES_API);
         mService.setCallerIsNormalPackage();
         ZenModeHelper zenHelper = mock(ZenModeHelper.class);
         mService.mZenModeHelper = zenHelper;
@@ -16804,7 +16776,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void setInterruptionFilter_systemCaller_setsGlobalPolicy() throws RemoteException {
-        mSetFlagsRule.enableFlags(android.app.Flags.FLAG_MODES_API);
         mService.setCallerIsNormalPackage();
         ZenModeHelper zenModeHelper = mock(ZenModeHelper.class);
         mService.mZenModeHelper = zenModeHelper;
@@ -16843,7 +16814,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     private void setInterruptionFilter_dependingOnCompanionAppDevice_maySetGlobalZen(
             @AssociationRequest.DeviceProfile String deviceProfile, boolean canSetGlobalPolicy)
             throws RemoteException {
-        mSetFlagsRule.enableFlags(android.app.Flags.FLAG_MODES_API);
         ZenModeHelper zenModeHelper = mock(ZenModeHelper.class);
         mService.mZenModeHelper = zenModeHelper;
         mService.setCallerIsNormalPackage();
@@ -16868,7 +16838,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void requestInterruptionFilterFromListener_fromApp_doesNotSetGlobalZen()
             throws Exception {
@@ -16886,7 +16855,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void requestInterruptionFilterFromListener_fromSystem_setsGlobalZen()
             throws Exception {
@@ -16905,24 +16873,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(android.app.Flags.FLAG_MODES_API)
-    public void requestInterruptionFilterFromListener_flagOff_callsRequestFromListener()
-            throws Exception {
-        mService.setCallerIsNormalPackage();
-        mService.mZenModeHelper = mock(ZenModeHelper.class);
-        ManagedServices.ManagedServiceInfo info = mock(ManagedServices.ManagedServiceInfo.class);
-        when(mListeners.checkServiceTokenLocked(any())).thenReturn(info);
-        info.component = new ComponentName("pkg", "cls");
-
-        mBinderService.requestInterruptionFilterFromListener(mock(INotificationListener.class),
-                INTERRUPTION_FILTER_PRIORITY);
-
-        verify(mService.mZenModeHelper).requestFromListener(eq(info.component),
-                eq(INTERRUPTION_FILTER_PRIORITY), eq(mUid), /* fromSystemOrSystemUi= */ eq(false));
-    }
-
-    @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void updateAutomaticZenRule_implicitRuleWithoutCPS_disallowedFromApp() throws Exception {
         setUpRealZenTest();
@@ -16948,7 +16898,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_API)
     @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void updateAutomaticZenRule_implicitRuleWithoutCPS_allowedFromSystem() throws Exception {
         setUpRealZenTest();
@@ -16974,7 +16923,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({android.app.Flags.FLAG_MODES_API, android.app.Flags.FLAG_MODES_UI})
+    @EnableFlags(android.app.Flags.FLAG_MODES_UI)
     public void setNotificationPolicy_fromSystemApp_appliesPriorityChannelsAllowed()
             throws Exception {
         setUpRealZenTest();
@@ -17004,7 +16953,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({android.app.Flags.FLAG_MODES_API, android.app.Flags.FLAG_MODES_UI})
+    @EnableFlags(android.app.Flags.FLAG_MODES_UI)
     @DisableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void setNotificationPolicy_fromRegularAppThatCanModifyPolicy_ignoresState()
             throws Exception {

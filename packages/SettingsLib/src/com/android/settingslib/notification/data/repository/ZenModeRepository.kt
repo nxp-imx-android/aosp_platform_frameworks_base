@@ -93,10 +93,9 @@ class ZenModeRepositoryImpl(
                     IntentFilter().apply {
                         addAction(NotificationManager.ACTION_INTERRUPTION_FILTER_CHANGED)
                         addAction(NotificationManager.ACTION_NOTIFICATION_POLICY_CHANGED)
-                        if (android.app.Flags.modesApi())
-                            addAction(
-                                NotificationManager.ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED
-                            )
+                        addAction(
+                            NotificationManager.ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED
+                        )
                     },
                     /* broadcastPermission = */ null,
                     /* scheduler = */ backgroundHandler,
@@ -109,16 +108,13 @@ class ZenModeRepositoryImpl(
     }
 
     override val consolidatedNotificationPolicy: StateFlow<NotificationManager.Policy?> by lazy {
-        if (android.app.Flags.modesApi())
-            flowFromBroadcast(NotificationManager.ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED) {
-                // If available, get the value from extras to avoid a potential binder call.
-                it?.extras?.getParcelable(EXTRA_NOTIFICATION_POLICY)
-                    ?: notificationManager.consolidatedNotificationPolicy
-            }
-        else
-            flowFromBroadcast(NotificationManager.ACTION_NOTIFICATION_POLICY_CHANGED) {
-                notificationManager.consolidatedNotificationPolicy
-            }
+        flowFromBroadcast(NotificationManager.ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED) {
+            // If available, get the value from extras to avoid a potential binder call.
+            it?.extras?.getParcelable(
+                EXTRA_NOTIFICATION_POLICY,
+                NotificationManager.Policy::class.java
+            ) ?: notificationManager.consolidatedNotificationPolicy
+        }
     }
 
     override val globalZenMode: StateFlow<Int?> by lazy {

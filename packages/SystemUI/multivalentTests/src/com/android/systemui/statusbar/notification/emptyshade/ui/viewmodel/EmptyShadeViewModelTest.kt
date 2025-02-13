@@ -140,7 +140,7 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableFlags(ModesEmptyShadeFix.FLAG_NAME)
-    @DisableFlags(Flags.FLAG_MODES_UI, Flags.FLAG_MODES_API)
+    @DisableFlags(Flags.FLAG_MODES_UI)
     fun text_changesWhenNotifsHiddenInShade() =
         testScope.runTest {
             val text by collectLastValue(underTest.text)
@@ -163,7 +163,7 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI, Flags.FLAG_MODES_API)
+    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun text_changesWhenLocaleChanges() =
         testScope.runTest {
             val text by collectLastValue(underTest.text)
@@ -186,7 +186,7 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI, Flags.FLAG_MODES_API)
+    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun text_reflectsModesHidingNotifications() =
         testScope.runTest {
             val text by collectLastValue(underTest.text)
@@ -250,7 +250,7 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI, Flags.FLAG_MODES_API)
+    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun onClick_whenHistoryDisabled_leadsToSettingsPage() =
         testScope.runTest {
             val onClick by collectLastValue(underTest.onClick)
@@ -264,7 +264,7 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI, Flags.FLAG_MODES_API)
+    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun onClick_whenHistoryEnabled_leadsToHistoryPage() =
         testScope.runTest {
             val onClick by collectLastValue(underTest.onClick)
@@ -279,7 +279,7 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI, Flags.FLAG_MODES_API)
+    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun onClick_whenOneModeHidingNotifications_leadsToModeSettings() =
         testScope.runTest {
             val onClick by collectLastValue(underTest.onClick)
@@ -305,7 +305,7 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI, Flags.FLAG_MODES_API)
+    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun onClick_whenMultipleModesHidingNotifications_leadsToGeneralModesSettings() =
         testScope.runTest {
             val onClick by collectLastValue(underTest.onClick)
