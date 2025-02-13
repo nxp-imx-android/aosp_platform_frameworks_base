@@ -30,8 +30,6 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.shade.data.repository.shadeRepository
-import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
-import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.testKosmos
 import com.android.systemui.wallpapers.data.repository.fakeWallpaperFocalAreaRepository
@@ -110,7 +108,7 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             )
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
             kosmos.shadeRepository.setShadeLayoutWide(false)
-            kosmos.activeNotificationListRepository.setActiveNotifs(0)
+
             kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
             kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
             kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(400F)
@@ -130,7 +128,6 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             )
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
             kosmos.shadeRepository.setShadeLayoutWide(false)
-            kosmos.activeNotificationListRepository.setActiveNotifs(1)
             kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
             kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
             kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(600F)
@@ -139,7 +136,7 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun focalAreaBounds_withNotifications_inUnfoldLandscape() =
+    fun focalAreaBounds_inUnfoldLandscape() =
         testScope.runTest {
             overrideMockedResources(
                 OverrideResources(
@@ -150,32 +147,11 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             )
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
             kosmos.shadeRepository.setShadeLayoutWide(true)
-            kosmos.activeNotificationListRepository.setActiveNotifs(1)
-            kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1400F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(600F)
-
-            assertThat(bounds).isEqualTo(RectF(500f, 600F, 1000F, 1100F))
-        }
-
-    @Test
-    fun focalAreaBounds_withoutNotifications_inUnfoldLandscape() =
-        testScope.runTest {
-            overrideMockedResources(
-                OverrideResources(
-                    screenWidth = 2000,
-                    screenHeight = 1600,
-                    centerAlignFocalArea = false,
-                )
-            )
-            val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
-            kosmos.shadeRepository.setShadeLayoutWide(true)
-            kosmos.activeNotificationListRepository.setActiveNotifs(0)
             kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1400F)
             kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
             kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(400F)
 
-            assertThat(bounds).isEqualTo(RectF(1000f, 600F, 1500F, 1100F))
+            assertThat(bounds).isEqualTo(RectF(600f, 600F, 1400F, 1100F))
         }
 
     @Test
@@ -190,7 +166,6 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             )
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
             kosmos.shadeRepository.setShadeLayoutWide(false)
-            kosmos.activeNotificationListRepository.setActiveNotifs(1)
             kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
             kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
             kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(600F)
@@ -210,7 +185,6 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             )
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
             kosmos.shadeRepository.setShadeLayoutWide(false)
-            kosmos.activeNotificationListRepository.setActiveNotifs(0)
             kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
             kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
             kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(600F)
@@ -219,7 +193,7 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun focalAreaBounds_withNotifications_inTabletLandscape() =
+    fun focalAreaBounds_inTabletLandscape() =
         testScope.runTest {
             overrideMockedResources(
                 OverrideResources(
@@ -230,30 +204,9 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             )
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
             kosmos.shadeRepository.setShadeLayoutWide(true)
-            kosmos.activeNotificationListRepository.setActiveNotifs(1)
             kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
             kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(200F)
             kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(200F)
-
-            assertThat(bounds).isEqualTo(RectF(1000f, 600F, 2000F, 1400F))
-        }
-
-    @Test
-    fun focalAreaBounds_withoutNotifications_inTabletLandscape() =
-        testScope.runTest {
-            overrideMockedResources(
-                OverrideResources(
-                    screenWidth = 3000,
-                    screenHeight = 2000,
-                    centerAlignFocalArea = true,
-                )
-            )
-            val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
-            kosmos.shadeRepository.setShadeLayoutWide(true)
-            kosmos.activeNotificationListRepository.setActiveNotifs(0)
-            kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(400F)
 
             assertThat(bounds).isEqualTo(RectF(1000f, 600F, 2000F, 1400F))
         }
