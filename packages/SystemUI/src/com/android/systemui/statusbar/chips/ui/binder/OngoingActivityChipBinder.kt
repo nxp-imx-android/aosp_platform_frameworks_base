@@ -408,10 +408,12 @@ object OngoingActivityChipBinder {
     private fun View.setBackgroundPaddingForEmbeddedPaddingIcon() {
         val sidePadding =
             if (StatusBarNotifChips.isEnabled) {
-                0
-            } else {
                 context.resources.getDimensionPixelSize(
                     R.dimen.ongoing_activity_chip_side_padding_for_embedded_padding_icon
+                )
+            } else {
+                context.resources.getDimensionPixelSize(
+                    R.dimen.ongoing_activity_chip_side_padding_for_embedded_padding_icon_legacy
                 )
             }
         setPaddingRelative(sidePadding, paddingTop, sidePadding, paddingBottom)

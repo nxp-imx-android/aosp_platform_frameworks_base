@@ -41,7 +41,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.animation.Expandable
 import com.android.compose.modifiers.thenIf
@@ -160,7 +159,10 @@ private fun ChipBody(
                     .padding(
                         horizontal =
                             if (hasEmbeddedIcon) {
-                                0.dp
+                                dimensionResource(
+                                    R.dimen
+                                        .ongoing_activity_chip_side_padding_for_embedded_padding_icon
+                                )
                             } else {
                                 dimensionResource(id = R.dimen.ongoing_activity_chip_side_padding)
                             }
