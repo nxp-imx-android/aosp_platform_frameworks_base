@@ -156,6 +156,44 @@ class NotificationStackScrollLogger @Inject constructor(
                 { "removeTransientRow from NSSL: childKey: $str1" }
         )
     }
+
+    fun logUpdateSensitivenessWithAnimation(
+        shouldAnimate: Boolean,
+        isSensitive: Boolean,
+        isSensitiveContentProtectionActive: Boolean,
+        isAnyProfilePublic: Boolean,
+    ) {
+        notificationRenderBuffer.log(
+            TAG,
+            INFO,
+            {
+                bool1 = shouldAnimate
+                bool2 = isSensitive
+                bool3 = isSensitiveContentProtectionActive
+                bool4 = isAnyProfilePublic
+            },
+            {
+                "updateSensitivenessWithAnimation from NSSL: shouldAnimate=$bool1 " +
+                        "isSensitive(hideSensitive)=$bool2 isSensitiveContentProtectionActive=$bool3 " +
+                        "isAnyProfilePublic=$bool4"
+            },
+        )
+    }
+
+    fun logUpdateSensitivenessWithAnimation(animate: Boolean, anyProfilePublicMode: Boolean) {
+        notificationRenderBuffer.log(
+            TAG,
+            INFO,
+            {
+                bool1 = animate
+                bool2 = anyProfilePublicMode
+            },
+            {
+                "updateSensitivenessWithAnimation from NSSL: animate=$bool1 " +
+                        "anyProfilePublicMode(hideSensitive)=$bool2"
+            },
+        )
+    }
 }
 
 private const val TAG = "NotificationStackScroll"

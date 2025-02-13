@@ -382,9 +382,15 @@ public class NotificationStackScrollLayoutController implements Dumpable {
 
             // Only animate if in a non-sensitive state (not screen sharing)
             boolean shouldAnimate = animate && !isSensitiveContentProtectionActive;
+            mLogger.logUpdateSensitivenessWithAnimation(shouldAnimate,
+                    isSensitive,
+                    isSensitiveContentProtectionActive,
+                    isAnyProfilePublic);
             mView.updateSensitiveness(shouldAnimate, isSensitive);
         } else {
-            mView.updateSensitiveness(animate, mLockscreenUserManager.isAnyProfilePublicMode());
+            boolean anyProfilePublicMode = mLockscreenUserManager.isAnyProfilePublicMode();
+            mLogger.logUpdateSensitivenessWithAnimation(animate, anyProfilePublicMode);
+            mView.updateSensitiveness(animate, anyProfilePublicMode);
         }
         Trace.endSection();
     }
