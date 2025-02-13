@@ -48,6 +48,8 @@ import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.AssistantFeedbackController;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
+import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
+import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -56,8 +58,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-
-import java.util.concurrent.CountDownLatch;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -81,6 +81,10 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
     private MetricsLogger mMetricsLogger;
     @Mock
     private INotificationManager mMockINotificationManager;
+    @Mock
+    private AppIconProvider mMockAppIconProvider;
+    @Mock
+    private NotificationIconStyleProvider mMockIconStyleProvider;
     @Mock
     private PackageManager mMockPackageManager;
     @Mock
@@ -127,10 +131,11 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
     public void testBindNotification_setsOnClickListenerForFeedback() throws Exception {
 
         // Bind the notification to the Info object
-        final CountDownLatch latch = new CountDownLatch(1);
         mInfo.bindNotification(
                 mMockPackageManager,
                 mMockINotificationManager,
+                mMockAppIconProvider,
+                mMockIconStyleProvider,
                 mOnUserInteractionCallback,
                 mChannelEditorDialogController,
                 TEST_PACKAGE_NAME,

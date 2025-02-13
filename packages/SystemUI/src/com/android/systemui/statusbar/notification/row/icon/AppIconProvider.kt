@@ -58,7 +58,7 @@ interface AppIconProvider {
         packageName: String,
         context: Context,
         withWorkProfileBadge: Boolean = false,
-        themed: Boolean = true,
+        themed: Boolean = false,
     ): Drawable
 
     /**

@@ -67,6 +67,8 @@ import com.android.systemui.statusbar.notification.collection.provider.HighPrior
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
+import com.android.systemui.statusbar.notification.row.icon.appIconProvider
+import com.android.systemui.statusbar.notification.row.icon.notificationIconStyleProvider
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import com.android.systemui.statusbar.notificationLockscreenUserManager
 import com.android.systemui.statusbar.policy.deviceProvisionedController
@@ -128,6 +130,8 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
     private val statusBarStateController = kosmos.statusBarStateController
     private val headsUpManager = kosmos.mockHeadsUpManager
     private val activityStarter = kosmos.activityStarter
+    private val appIconProvider = kosmos.appIconProvider
+    private val iconStyleProvider = kosmos.notificationIconStyleProvider
     private val userManager = kosmos.userManager
     private val activeNotificationsInteractor = kosmos.activeNotificationsInteractor
     private val sceneInteractor = kosmos.sceneInteractor
@@ -174,6 +178,8 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 accessibilityManager,
                 highPriorityProvider,
                 notificationManager,
+                appIconProvider,
+                iconStyleProvider,
                 userManager,
                 peopleSpaceWidgetManager,
                 launcherApps,
@@ -429,6 +435,8 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
             .bindNotification(
                 any<PackageManager>(),
                 any<INotificationManager>(),
+                eq(appIconProvider),
+                eq(iconStyleProvider),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
                 eq(statusBarNotification.packageName),
@@ -463,6 +471,8 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
             .bindNotification(
                 any<PackageManager>(),
                 any<INotificationManager>(),
+                eq(appIconProvider),
+                eq(iconStyleProvider),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
                 eq(statusBarNotification.packageName),
@@ -497,6 +507,8 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
             .bindNotification(
                 any<PackageManager>(),
                 any<INotificationManager>(),
+                eq(appIconProvider),
+                eq(iconStyleProvider),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
                 eq(statusBarNotification.packageName),
@@ -529,8 +541,8 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 .setChannel(testNotificationChannel)
                 .build()
             row
-        } catch (e: Exception) {
-            org.junit.Assert.fail()
+        } catch (_: Exception) {
+            Assert.fail()
             null
         }
     }

@@ -64,6 +64,10 @@ import com.android.systemui.statusbar.RankingBuilder
 import com.android.systemui.statusbar.notification.AssistantFeedbackController
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
+import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
+import com.android.systemui.statusbar.notification.row.icon.appIconProvider
+import com.android.systemui.statusbar.notification.row.icon.notificationIconStyleProvider
 import com.android.telecom.telecomManager
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.CountDownLatch
@@ -862,6 +866,8 @@ class NotificationInfoTest : SysuiTestCase() {
     private fun bindNotification(
         pm: PackageManager = this.mockPackageManager,
         iNotificationManager: INotificationManager = this.mockINotificationManager,
+        appIconProvider: AppIconProvider = kosmos.appIconProvider,
+        iconStyleProvider: NotificationIconStyleProvider = kosmos.notificationIconStyleProvider,
         onUserInteractionCallback: OnUserInteractionCallback = this.onUserInteractionCallback,
         channelEditorDialogController: ChannelEditorDialogController =
             this.channelEditorDialogController,
@@ -882,6 +888,8 @@ class NotificationInfoTest : SysuiTestCase() {
         underTest.bindNotification(
             pm,
             iNotificationManager,
+            appIconProvider,
+            iconStyleProvider,
             onUserInteractionCallback,
             channelEditorDialogController,
             pkg,

@@ -71,6 +71,10 @@ import com.android.systemui.statusbar.notification.collection.provider.HighPrior
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
+import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
+import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
+import com.android.systemui.statusbar.notification.row.icon.appIconProvider
+import com.android.systemui.statusbar.notification.row.icon.notificationIconStyleProvider
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
 import com.android.systemui.testKosmos
@@ -203,6 +207,8 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 accessibilityManager,
                 highPriorityProvider,
                 iNotificationManager,
+                kosmos.appIconProvider,
+                kosmos.notificationIconStyleProvider,
                 userManager,
                 peopleSpaceWidgetManager,
                 launcherApps,
@@ -512,6 +518,8 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
             .bindNotification(
                 any<PackageManager>(),
                 any<INotificationManager>(),
+                any<AppIconProvider>(),
+                any<NotificationIconStyleProvider>(),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
                 eq(statusBarNotification.packageName),
@@ -550,6 +558,8 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
             .bindNotification(
                 any<PackageManager>(),
                 any<INotificationManager>(),
+                any<AppIconProvider>(),
+                any<NotificationIconStyleProvider>(),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
                 eq(statusBarNotification.packageName),
@@ -586,6 +596,8 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
             .bindNotification(
                 any<PackageManager>(),
                 any<INotificationManager>(),
+                any<AppIconProvider>(),
+                any<NotificationIconStyleProvider>(),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
                 eq(statusBarNotification.packageName),
