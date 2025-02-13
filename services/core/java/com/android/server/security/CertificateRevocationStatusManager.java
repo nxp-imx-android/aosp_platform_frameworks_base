@@ -42,6 +42,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -66,6 +67,8 @@ class CertificateRevocationStatusManager {
      * The number of days since last update for which a stored revocation status can be accepted.
      */
     @VisibleForTesting static final int MAX_DAYS_SINCE_LAST_CHECK = 30;
+
+    @VisibleForTesting static final int NUM_HOURS_BEFORE_NEXT_CHECK = 24;
 
     /**
      * The number of days since issue date for an intermediary certificate to be considered fresh
@@ -127,6 +130,17 @@ class CertificateRevocationStatusManager {
             serialNumbers.add(serialNumber);
         }
         try {
+            if (isLastCheckedWithin(Duration.ofHours(NUM_HOURS_BEFORE_NEXT_CHECK), serialNumbers)) {
+                Slog.d(
+                        TAG,
+                        "All certificates have been checked for revocation recently. No need to"
+                                + " check this time.");
+                return;
+            }
+        } catch (IOException ignored) {
+            // Proceed to check the revocation status
+        }
+        try {
             JSONObject revocationList = fetchRemoteRevocationList();
             Map<String, Boolean> areCertificatesRevoked = new HashMap<>();
             for (String serialNumber : serialNumbers) {
@@ -151,25 +165,32 @@ class CertificateRevocationStatusManager {
                     serialNumbers.remove(serialNumber);
                 }
             }
-            Map<String, LocalDateTime> lastRevocationCheckData;
             try {
-                lastRevocationCheckData = getLastRevocationCheckData();
+                if (!isLastCheckedWithin(
+                        Duration.ofDays(MAX_DAYS_SINCE_LAST_CHECK), serialNumbers)) {
+                    throw new CertPathValidatorException(
+                            "Unable to verify the revocation status of one of the certificates "
+                                    + serialNumbers);
+                }
             } catch (IOException ex2) {
                 throw new CertPathValidatorException(
                         "Unable to load stored revocation status", ex2);
             }
-            for (String serialNumber : serialNumbers) {
-                if (!lastRevocationCheckData.containsKey(serialNumber)
-                        || lastRevocationCheckData
-                                .get(serialNumber)
-                                .isBefore(
-                                        LocalDateTime.now().minusDays(MAX_DAYS_SINCE_LAST_CHECK))) {
-                    throw new CertPathValidatorException(
-                            "Unable to verify the revocation status of certificate "
-                                    + serialNumber);
-                }
+        }
+    }
+
+    private boolean isLastCheckedWithin(Duration lastCheckedWithin, List<String> serialNumbers)
+            throws IOException {
+        Map<String, LocalDateTime> lastRevocationCheckData = getLastRevocationCheckData();
+        for (String serialNumber : serialNumbers) {
+            if (!lastRevocationCheckData.containsKey(serialNumber)
+                    || lastRevocationCheckData
+                            .get(serialNumber)
+                            .isBefore(LocalDateTime.now().minus(lastCheckedWithin))) {
+                return false;
             }
         }
+        return true;
     }
 
     private static boolean needToCheckRevocationStatus(

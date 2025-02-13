@@ -303,7 +303,11 @@ class AttestationVerificationPeerDeviceVerifier {
         if (mRevocationEnabled) {
             // Checks Revocation Status List based on
             // https://developer.android.com/training/articles/security-key-attestation#certificate_status
-            mCertificateRevocationStatusManager.checkRevocationStatus(certificates);
+            // The first certificate is the leaf, which is generated at runtime with the attestation
+            // attributes such as the challenge. It is specific to this attestation instance and
+            // does not need to be checked for revocation.
+            mCertificateRevocationStatusManager.checkRevocationStatus(
+                    new ArrayList<>(certificates.subList(1, certificates.size())));
         }
     }
 

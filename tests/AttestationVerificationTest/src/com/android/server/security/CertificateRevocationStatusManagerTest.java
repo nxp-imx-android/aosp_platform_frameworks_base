@@ -277,6 +277,72 @@ public class CertificateRevocationStatusManagerTest {
         }
     }
 
+    @Test
+    public void checkRevocationStatus_allCertificatesRecentlyChecked_doesNotFetchRemoteCrl()
+            throws Exception {
+        copyFromAssetToFile(
+                REVOCATION_LIST_WITHOUT_CERTIFICATES_USED_IN_THIS_TEST, mRevocationListFile);
+        mCertificateRevocationStatusManager =
+                new CertificateRevocationStatusManager(
+                        mContext, mRevocationListUrl, mRevocationStatusFile, false);
+        mCertificateRevocationStatusManager.checkRevocationStatus(mCertificates1);
+        // indirectly verifies the remote list is not fetched by simulating a remote revocation
+        copyFromAssetToFile(
+                REVOCATION_LIST_WITH_CERTIFICATES_USED_IN_THIS_TEST, mRevocationListFile);
+
+        // no exception
+        mCertificateRevocationStatusManager.checkRevocationStatus(mCertificates1);
+    }
+
+    @Test
+    public void checkRevocationStatus_allCertificatesBarelyRecentlyChecked_doesNotFetchRemoteCrl()
+            throws Exception {
+        copyFromAssetToFile(
+                REVOCATION_LIST_WITH_CERTIFICATES_USED_IN_THIS_TEST, mRevocationListFile);
+        mCertificateRevocationStatusManager =
+                new CertificateRevocationStatusManager(
+                        mContext, mRevocationListUrl, mRevocationStatusFile, false);
+        Map<String, LocalDateTime> lastCheckedDates = new HashMap<>();
+        LocalDateTime barelyRecently =
+                LocalDateTime.now()
+                        .minusHours(
+                                CertificateRevocationStatusManager.NUM_HOURS_BEFORE_NEXT_CHECK - 1);
+        for (X509Certificate certificate : mCertificates1) {
+            lastCheckedDates.put(getSerialNumber(certificate), barelyRecently);
+        }
+        mCertificateRevocationStatusManager.storeLastRevocationCheckData(lastCheckedDates);
+
+        // Indirectly verify the remote CRL is not checked by checking there is no exception despite
+        // a certificate being revoked. This test differs from the next only in the lastCheckedDate,
+        // one before the NUM_HOURS_BEFORE_NEXT_CHECK cutoff and one after
+        mCertificateRevocationStatusManager.checkRevocationStatus(mCertificates1);
+    }
+
+    @Test
+    public void checkRevocationStatus_certificatesRevokedAfterCheck_throwsException()
+            throws Exception {
+        copyFromAssetToFile(
+                REVOCATION_LIST_WITH_CERTIFICATES_USED_IN_THIS_TEST, mRevocationListFile);
+        mCertificateRevocationStatusManager =
+                new CertificateRevocationStatusManager(
+                        mContext, mRevocationListUrl, mRevocationStatusFile, false);
+        Map<String, LocalDateTime> lastCheckedDates = new HashMap<>();
+        // To save network use, we do not check the remote CRL if all the certificates are recently
+        // checked, so we set the lastCheckDate to some time not recent.
+        LocalDateTime notRecently =
+                LocalDateTime.now()
+                        .minusHours(
+                                CertificateRevocationStatusManager.NUM_HOURS_BEFORE_NEXT_CHECK + 1);
+        for (X509Certificate certificate : mCertificates1) {
+            lastCheckedDates.put(getSerialNumber(certificate), notRecently);
+        }
+        mCertificateRevocationStatusManager.storeLastRevocationCheckData(lastCheckedDates);
+
+        assertThrows(
+                CertPathValidatorException.class,
+                () -> mCertificateRevocationStatusManager.checkRevocationStatus(mCertificates1));
+    }
+
     private List<X509Certificate> getCertificateChain(String fileName) throws Exception {
         Collection<? extends Certificate> certificates =
                 mFactory.generateCertificates(mContext.getResources().getAssets().open(fileName));
