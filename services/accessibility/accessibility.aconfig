@@ -145,6 +145,13 @@ flag {
 }
 
 flag {
+    name: "enable_magnification_follows_mouse_with_pointer_motion_filter"
+    namespace: "accessibility"
+    description: "Whether to enable mouse following using pointer motion filter"
+    bug: "361817142"
+}
+
+flag {
     name: "enable_magnification_keyboard_control"
     namespace: "accessibility"
     description: "Whether to enable keyboard control for magnification"
