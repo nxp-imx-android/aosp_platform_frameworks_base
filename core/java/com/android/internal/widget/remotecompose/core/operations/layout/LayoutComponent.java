@@ -75,6 +75,7 @@ public class LayoutComponent extends Component {
     protected ArrayList<Component> mChildrenComponents = new ArrayList<>(); // members are not null
 
     protected boolean mChildrenHaveZIndex = false;
+    private CanvasOperations mDrawContentOperations;
 
     public LayoutComponent(
             @Nullable Component parent,
@@ -138,6 +139,7 @@ public class LayoutComponent extends Component {
                 mChildrenComponents.clear();
                 LayoutComponentContent content = (LayoutComponentContent) op;
                 content.getComponents(mChildrenComponents);
+                mDrawContentOperations = content.getCanvasOperations(this);
                 if (USE_IMAGE_TEMP_FIX) {
                     if (mChildrenComponents.isEmpty() && !mContent.mList.isEmpty()) {
                         CanvasContent canvasContent =
@@ -312,6 +314,31 @@ public class LayoutComponent extends Component {
 
     public void setScrollY(float value) {
         mScrollY = value;
+    }
+
+    @Override
+    public void paint(@NonNull PaintContext context) {
+        if (mDrawContentOperations != null) {
+            context.save();
+            context.translate(mX, mY);
+            mDrawContentOperations.paint(context);
+            context.restore();
+            return;
+        }
+        super.paint(context);
+    }
+
+    /**
+     * Paint the component content. Used by the DrawContent operation. (back out mX/mY -- TODO:
+     * refactor paintingComponent instead, to not include mX/mY etc.)
+     *
+     * @param context painting context
+     */
+    public void drawContent(@NonNull PaintContext context) {
+        context.save();
+        context.translate(-mX, -mY);
+        paintingComponent(context);
+        context.restore();
     }
 
     @Override
@@ -513,5 +540,12 @@ public class LayoutComponent extends Component {
         }
 
         return null;
+    }
+
+    @Override
+    public void registerVariables(RemoteContext context) {
+        if (mDrawContentOperations != null) {
+            mDrawContentOperations.registerListening(context);
+        }
     }
 }

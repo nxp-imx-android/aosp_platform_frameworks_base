@@ -329,6 +329,15 @@ public class Component extends PaintOperation
         mAnimationSpec = animationSpec;
     }
 
+    /**
+     * If the component contains variables beside mList, make sure to register them here
+     *
+     * @param context
+     */
+    public void registerVariables(RemoteContext context) {
+        // Nothing here
+    }
+
     public enum Visibility {
         GONE,
         VISIBLE,
@@ -974,6 +983,17 @@ public class Component extends PaintOperation
                 components.add((Component) op);
             }
         }
+    }
+
+    /** Extract CanvasOperations if present */
+    public @Nullable CanvasOperations getCanvasOperations(LayoutComponent layoutComponent) {
+        for (Operation op : mList) {
+            if (op instanceof CanvasOperations) {
+                ((CanvasOperations) op).setComponent(layoutComponent);
+                return (CanvasOperations) op;
+            }
+        }
+        return null;
     }
 
     /**
