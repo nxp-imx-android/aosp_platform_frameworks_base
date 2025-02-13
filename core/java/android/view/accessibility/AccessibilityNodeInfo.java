@@ -2684,9 +2684,10 @@ public class AccessibilityNodeInfo implements Parcelable {
      * <p><b>Note:</b> The start and end {@link SelectionPosition} of the provided {@link Selection}
      * should be constructed with {@code this} node or a descendant of it.
      *
-     * <p><b>Note:</b> {@link AccessibilityNodeInfo#setFocusable} and {@link
-     * AccessibilityNodeInfo#setFocused} should both be called with {@code true} before setting the
-     * selection in order to make {@code this} node a candidate to contain a selection.
+     * <p><b>Note:</b> {@link AccessibilityNodeInfo#setFocusable} and
+     * {@link AccessibilityNodeInfo#setFocused} should both be called with {@code true}
+     * before setting the selection in order to make {@code this} node a candidate to
+     * contain a selection.
      *
      * <p><b>Note:</b> Cannot be called from an AccessibilityService. This class is made immutable
      * before being delivered to an AccessibilityService.
@@ -2706,12 +2707,10 @@ public class AccessibilityNodeInfo implements Parcelable {
      * Gets the extended selection, which is a representation of selection that spans multiple nodes
      * that exist within the subtree of the node defining selection.
      *
-     * <p><b>Note:</b> The start and end {@link SelectionPosition} of the provided {@link Selection}
-     * should be constructed with {@code this} node or a descendant of it.
-     *
-     * <p><b>Note:</b> In order for a node to be a candidate to contain a selection, {@link
-     * AccessibilityNodeInfo#isFocusable()} ()} and {@link AccessibilityNodeInfo#isFocused()} should
-     * both be return with {@code true}.
+     * <p><b>Note:</b> Nodes that are candidates to contain a selection should return
+     * {@code true} from {@link #isFocusable()} and {@link #isFocused()}.
+     * The start and end {@link SelectionPosition}s of this {@link Selection}
+     * should exist within {@code this} node or its descendants.
      *
      * @return The extended selection within the node's subtree, or {@code null} if no selection
      *     exists.
@@ -5840,8 +5839,8 @@ public class AccessibilityNodeInfo implements Parcelable {
         /**
          * Instantiates a new SelectionPosition.
          *
-         * @param view The {@link View} containing the virtual descendant associated with the
-         *     selection position.
+         * @param view The {@link View} containing the text associated with this selection
+         *     position.
          * @param offset The offset for a selection position within {@code view}'s text content,
          *     which should be a value between 0 and the length of {@code view}'s text.
          */
