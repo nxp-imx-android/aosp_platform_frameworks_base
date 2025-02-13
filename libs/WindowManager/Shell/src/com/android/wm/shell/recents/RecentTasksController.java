@@ -381,7 +381,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
     private void notifyRunningTaskAppeared(RunningTaskInfo taskInfo) {
         if (mListener == null
                 || !shouldEnableRunningTasksForDesktopMode()
-                || taskInfo.realActivity == null) {
+                || taskInfo.realActivity == null
+                || excludeTaskFromGeneratedList(taskInfo)) {
             return;
         }
         try {
@@ -397,7 +398,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
     private void notifyRunningTaskChanged(RunningTaskInfo taskInfo) {
         if (mListener == null
                 || !shouldEnableRunningTasksForDesktopMode()
-                || taskInfo.realActivity == null) {
+                || taskInfo.realActivity == null
+                || excludeTaskFromGeneratedList(taskInfo)) {
             return;
         }
         try {
@@ -413,7 +415,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
     private void notifyRunningTaskVanished(RunningTaskInfo taskInfo) {
         if (mListener == null
                 || !shouldEnableRunningTasksForDesktopMode()
-                || taskInfo.realActivity == null) {
+                || taskInfo.realActivity == null
+                || excludeTaskFromGeneratedList(taskInfo)) {
             return;
         }
         try {
@@ -430,7 +433,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
         if (mListener == null
                 || !DesktopModeFlags.ENABLE_TASK_STACK_OBSERVER_IN_SHELL.isTrue()
                 || taskInfo.realActivity == null
-                || enableShellTopTaskTracking()) {
+                || enableShellTopTaskTracking()
+                || excludeTaskFromGeneratedList(taskInfo)) {
             return;
         }
         try {
@@ -447,7 +451,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
         if (mListener == null
                 || !DesktopModeFlags.ENABLE_TASK_STACK_OBSERVER_IN_SHELL.isTrue()
                 || taskInfo.realActivity == null
-                || enableShellTopTaskTracking()) {
+                || enableShellTopTaskTracking()
+                || excludeTaskFromGeneratedList(taskInfo)) {
             return;
         }
         try {
