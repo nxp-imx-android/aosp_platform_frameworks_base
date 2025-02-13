@@ -41,6 +41,7 @@ import androidx.annotation.CallSuper;
 
 import com.android.app.animation.Interpolators;
 import com.android.internal.widget.LockscreenCredential;
+import com.android.systemui.Flags;
 import com.android.systemui.res.R;
 
 import java.util.ArrayList;
@@ -178,7 +179,13 @@ public abstract class KeyguardPinBasedInputView extends KeyguardAbsKeyInputView 
 
         mOkButton = findViewById(R.id.key_enter);
 
+        if (Flags.bouncerUiRevamp2()) {
+            mOkButton.setImageResource(R.drawable.pin_bouncer_confirm);
+        }
         mDeleteButton = findViewById(R.id.delete_button);
+        if (Flags.bouncerUiRevamp2()) {
+            mDeleteButton.setImageResource(R.drawable.pin_bouncer_delete);
+        }
         mDeleteButton.setVisibility(View.VISIBLE);
 
         mButtons[0] = findViewById(R.id.key0);
