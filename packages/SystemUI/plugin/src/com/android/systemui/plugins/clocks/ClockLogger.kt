@@ -83,11 +83,26 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
         }
     }
 
+    fun updateAxes(lsFVar: String, aodFVar: String) {
+        i({ "updateAxes(LS = $str1, AOD = $str2)" }) {
+            str1 = lsFVar
+            str2 = aodFVar
+        }
+    }
+
     fun addView(child: View) {
         d({ "addView($str1 @$int1)" }) {
             str1 = child::class.simpleName!!
             int1 = child.id
         }
+    }
+
+    fun animateDoze() {
+        d("animateDoze()")
+    }
+
+    fun animateCharge() {
+        d("animateCharge()")
     }
 
     fun animateFidget(x: Float, y: Float) {
