@@ -5230,6 +5230,182 @@
         android:protectionLevel="signature|privileged" />
 
     <!-- ==================================== -->
+    <!-- Permissions for XR perception data   -->
+    <!-- ==================================== -->
+    <eat-comment />
+
+    <!-- Used for permissions that are associated with accessing XR
+         tracked information about the person using the device and the
+         environment around them.
+
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
+    <permission-group android:name="android.permission-group.XR_TRACKING"
+                      android:label="@string/permgrouplab_xr_tracking"
+                      android:description="@string/permgroupdesc_xr_tracking"
+                      android:priority="100"
+                      android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Allows an application to get approximate eye gaze.
+
+         <p>Protection level: dangerous
+
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
+    <permission android:name="android.permission.EYE_TRACKING_COARSE"
+                android:protectionLevel="dangerous"
+                android:permissionGroup="android.permission-group.UNDEFINED"
+                android:label="@string/permlab_eye_tracking_coarse"
+                android:description="@string/permdesc_eye_tracking_coarse"
+                android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Allows an application to get face tracking data.
+
+         <p>Protection level: dangerous
+
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
+    <permission android:name="android.permission.FACE_TRACKING"
+                android:protectionLevel="dangerous"
+                android:permissionGroup="android.permission-group.UNDEFINED"
+                android:label="@string/permlab_face_tracking"
+                android:description="@string/permdesc_face_tracking"
+                android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Allows an application to get hand tracking data.
+
+         <p>Protection level: dangerous
+
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
+    <permission android:name="android.permission.HAND_TRACKING"
+                android:protectionLevel="dangerous"
+                android:permissionGroup="android.permission-group.UNDEFINED"
+                android:label="@string/permlab_hand_tracking"
+                android:description="@string/permdesc_hand_tracking"
+                android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Allows an application to get data derived by sensing the
+         user's environment.
+
+         <p>Protection level: dangerous
+
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
+    <permission android:name="android.permission.SCENE_UNDERSTANDING_COARSE"
+                android:protectionLevel="dangerous"
+                android:permissionGroup="android.permission-group.UNDEFINED"
+                android:description="@string/permdesc_scene_understanding_coarse"
+                android:label="@string/permlab_scene_understanding_coarse"
+                android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Used for permissions that are associated with accessing
+         particularly sensitive XR tracking data.
+
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
+    <permission-group android:name="android.permission-group.XR_TRACKING_SENSITIVE"
+                      android:label="@string/permgrouplab_xr_tracking_sensitive"
+                      android:description="@string/permgroupdesc_xr_tracking_sensitive"
+                      android:priority="100"
+                      android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Allows an application to get precise eye gaze data.
+
+         <p>Protection level: dangerous
+
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
+    <permission android:name="android.permission.EYE_TRACKING_FINE"
+                android:protectionLevel="dangerous"
+                android:permissionGroup="android.permission-group.UNDEFINED"
+                android:label="@string/permlab_eye_tracking_fine"
+                android:description="@string/permdesc_eye_tracking_fine"
+                android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Allows an application to get head tracking data.  Unmanaged
+         activities (OpenXR activities with the manifest property
+         "android.window.PROPERTY_XR_ACTIVITY_START_MODE" set to
+         "XR_ACTIVITY_START_MODE_FULL_SPACE_UNMANAGED") do not require
+         this permission to get head tracking data.
+
+         {@see https://developer.android.com/develop/xr/get-started#property_activity_xr_start_mode_property}
+
+         <p>Protection level: dangerous
+
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
+    <permission android:name="android.permission.HEAD_TRACKING"
+                android:protectionLevel="dangerous"
+                android:permissionGroup="android.permission-group.UNDEFINED"
+                android:label="@string/permlab_head_tracking"
+                android:description="@string/permdesc_head_tracking"
+                android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Allows an application to get highly precise data derived by sensing the
+         user's environment, such as a depth map.
+
+         <p>Protection level: dangerous
+
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
+    <permission android:name="android.permission.SCENE_UNDERSTANDING_FINE"
+                android:protectionLevel="dangerous"
+                android:permissionGroup="android.permission-group.UNDEFINED"
+                android:description="@string/permdesc_scene_understanding_fine"
+                android:label="@string/permlab_scene_understanding_fine"
+                android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Allows an application to trigger Eye Calibration, which
+         calibrates for IPD (inter-pupillary distance) adjustment and
+         eye tracking.
+
+         <p>Protection level: signature|privileged
+
+         @SystemApi
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
+         @hide -->
+    <permission android:name="android.permission.EYE_CALIBRATION"
+                android:protectionLevel="signature|privileged"
+                android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Allows an application to trigger Face Tracking Calibration.
+
+         <p>Protection level: signature|privileged
+
+         @SystemApi
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
+         @hide -->
+    <permission android:name="android.permission.FACE_TRACKING_CALIBRATION"
+                android:protectionLevel="signature|privileged"
+                android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Allows an application to import an anchor created and
+         exported by another application.
+
+         <p>Protection level: signature|privileged
+
+         @SystemApi
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
+         @hide -->
+    <permission android:name="android.permission.IMPORT_XR_ANCHOR"
+                android:protectionLevel="signature|privileged"
+                android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Allows an application to access XR tracking data while in the
+         background. Without this permission, XR tracking data such as
+         head tracking, hand tracking, eye tracking, or face tracking
+         is only available to an activity it is in the
+         foreground. With this permission, such data is also available
+         to services and to activities that are in the background.
+
+         <p>This permission must be granted in addition to the
+         corresponding permission such as {@link #HEAD_TRACKING} or
+         {@link #FACE_TRACKING} for the data being accessed.
+
+         <p>Protection level: normal|appop
+
+         @SystemApi
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
+         @hide -->
+    <permission android:name="android.permission.XR_TRACKING_IN_BACKGROUND"
+                android:protectionLevel="normal|appop"
+                android:description="@string/permdesc_xr_tracking_in_background"
+                android:label="@string/permlab_xr_tracking_in_background"
+                android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- ==================================== -->
     <!-- Private permissions                  -->
     <!-- ==================================== -->
     <eat-comment />
