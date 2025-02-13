@@ -118,7 +118,8 @@ public class HeadsUpManagerImpl
     @VisibleForTesting
     final ArrayMap<String, HeadsUpEntry> mHeadsUpEntryMap = new ArrayMap<>();
     private final HeadsUpManagerLogger mLogger;
-    private final int mMinimumDisplayTime;
+    private final int mMinimumDisplayTimeDefault;
+    private final int mMinimumDisplayTimeForUserInitiated;
     private final int mStickyForSomeTimeAutoDismissTime;
     private final int mAutoDismissTime;
     private final DelayableExecutor mExecutor;
@@ -215,9 +216,11 @@ public class HeadsUpManagerImpl
         mGroupMembershipManager = groupMembershipManager;
         mVisualStabilityProvider = visualStabilityProvider;
         Resources resources = context.getResources();
-        mMinimumDisplayTime = NotificationThrottleHun.isEnabled()
+        mMinimumDisplayTimeDefault = NotificationThrottleHun.isEnabled()
                 ? resources.getInteger(R.integer.heads_up_notification_minimum_time_with_throttling)
                 : resources.getInteger(R.integer.heads_up_notification_minimum_time);
+        mMinimumDisplayTimeForUserInitiated = resources.getInteger(
+                R.integer.heads_up_notification_minimum_time_for_user_initiated);
         mStickyForSomeTimeAutoDismissTime = resources.getInteger(
                 R.integer.sticky_heads_up_notification_time);
         mAutoDismissTime = resources.getInteger(R.integer.heads_up_notification_decay);
@@ -1358,7 +1361,12 @@ public class HeadsUpManagerImpl
 
                 final long now = mSystemClock.elapsedRealtime();
                 if (updateEarliestRemovalTime) {
-                    mEarliestRemovalTime = now + mMinimumDisplayTime;
+                    if (StatusBarNotifChips.isEnabled()
+                            && mPinnedStatus.getValue() == PinnedStatus.PinnedByUser) {
+                        mEarliestRemovalTime = now + mMinimumDisplayTimeForUserInitiated;
+                    } else {
+                        mEarliestRemovalTime = now + mMinimumDisplayTimeDefault;
+                    }
                 }
 
                 if (updatePostTime) {
@@ -1377,7 +1385,7 @@ public class HeadsUpManagerImpl
                 final long now = mSystemClock.elapsedRealtime();
                 return NotificationThrottleHun.isEnabled()
                         ? Math.max(finishTime, mEarliestRemovalTime) - now
-                        : Math.max(finishTime - now, mMinimumDisplayTime);
+                        : Math.max(finishTime - now, mMinimumDisplayTimeDefault);
             };
             scheduleAutoRemovalCallback(finishTimeCalculator, "updateEntry (not sticky)");
 
