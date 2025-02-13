@@ -4060,6 +4060,7 @@ final public class MediaCodec {
          * Finish building a queue request and queue the buffers with tunings.
          */
         public void queue() {
+            Trace.traceBegin(Trace.TRACE_TAG_VIDEO, "MediaCodec::queueRequest-queue#java");
             if (!isAccessible()) {
                 throw new IllegalStateException("The request is stale");
             }
@@ -4088,6 +4089,7 @@ final public class MediaCodec {
                         mTuningKeys, mTuningValues);
             }
             clear();
+            Trace.traceEnd(Trace.TRACE_TAG_VIDEO);
         }
 
         @NonNull QueueRequest clear() {
