@@ -2740,6 +2740,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         invalidateOutline();
 
         mBackgroundNormal.setExpandAnimationSize(params.getWidth(), actualHeight);
+
+        if (Flags.notificationsLaunchRadius()) {
+            mBackgroundNormal.setRadius(params.getTopCornerRadius(),
+                    params.getBottomCornerRadius());
+        }
     }
 
     public void setExpandAnimationRunning(boolean expandAnimationRunning) {
