@@ -120,6 +120,8 @@ public class MediaQualityService extends SystemService {
     private final Object mPictureProfileLock = new Object();
     // A global lock for sound profile objects.
     private final Object mSoundProfileLock = new Object();
+    // A global lock for user state objects.
+    private final Object mUserStateLock = new Object();
     // A global lock for ambient backlight objects.
     private final Object mAmbientBacklightLock = new Object();
 
@@ -181,7 +183,6 @@ public class MediaQualityService extends SystemService {
         publishBinderService(Context.MEDIA_QUALITY_SERVICE, new BinderService());
     }
 
-    // TODO: Add additional APIs. b/373951081
     private final class BinderService extends IMediaQualityManager.Stub {
 
         @GuardedBy("mPictureProfileLock")
@@ -269,12 +270,13 @@ public class MediaQualityService extends SystemService {
                         mMqManagerNotifier.notifyOnPictureProfileError(id,
                                 PictureProfile.ERROR_INVALID_ARGUMENT,
                                 Binder.getCallingUid(), Binder.getCallingPid());
+                    } else {
+                        mMqManagerNotifier.notifyOnPictureProfileRemoved(
+                                mPictureProfileTempIdMap.getValue(dbId), toDelete,
+                                Binder.getCallingUid(), Binder.getCallingPid());
+                        mPictureProfileTempIdMap.remove(dbId);
+                        mHalNotifier.notifyHalOnPictureProfileChange(dbId, null);
                     }
-                    mMqManagerNotifier.notifyOnPictureProfileRemoved(
-                            mPictureProfileTempIdMap.getValue(dbId), toDelete,
-                            Binder.getCallingUid(), Binder.getCallingPid());
-                    mPictureProfileTempIdMap.remove(dbId);
-                    mHalNotifier.notifyHalOnPictureProfileChange(dbId, null);
                 }
             }
         }
@@ -520,12 +522,13 @@ public class MediaQualityService extends SystemService {
                         mMqManagerNotifier.notifyOnSoundProfileError(id,
                                 SoundProfile.ERROR_INVALID_ARGUMENT,
                                 Binder.getCallingUid(), Binder.getCallingPid());
+                    } else {
+                        mMqManagerNotifier.notifyOnSoundProfileRemoved(
+                                mSoundProfileTempIdMap.getValue(dbId), toDelete,
+                                Binder.getCallingUid(), Binder.getCallingPid());
+                        mSoundProfileTempIdMap.remove(dbId);
+                        mHalNotifier.notifyHalOnSoundProfileChange(dbId, null);
                     }
-                    mMqManagerNotifier.notifyOnSoundProfileRemoved(
-                            mSoundProfileTempIdMap.getValue(dbId), toDelete,
-                            Binder.getCallingUid(), Binder.getCallingPid());
-                    mSoundProfileTempIdMap.remove(dbId);
-                    mHalNotifier.notifyHalOnSoundProfileChange(dbId, null);
                 }
             }
         }
@@ -684,24 +687,22 @@ public class MediaQualityService extends SystemService {
                     mContext.getPackageName()) == mPackageManager.PERMISSION_GRANTED;
         }
 
-        //TODO: need lock here?
         @Override
         public void registerPictureProfileCallback(final IPictureProfileCallback callback) {
             int callingPid = Binder.getCallingPid();
             int callingUid = Binder.getCallingUid();
 
-            UserState userState = getOrCreateUserStateLocked(Binder.getCallingUid());
+            UserState userState = getOrCreateUserState(Binder.getCallingUid());
             userState.mPictureProfileCallbackPidUidMap.put(callback,
                     Pair.create(callingPid, callingUid));
         }
 
-        //TODO: need lock here?
         @Override
         public void registerSoundProfileCallback(final ISoundProfileCallback callback) {
             int callingPid = Binder.getCallingPid();
             int callingUid = Binder.getCallingUid();
 
-            UserState userState = getOrCreateUserStateLocked(Binder.getCallingUid());
+            UserState userState = getOrCreateUserState(Binder.getCallingUid());
             userState.mSoundProfileCallbackPidUidMap.put(callback,
                     Pair.create(callingPid, callingUid));
         }
@@ -1060,7 +1061,7 @@ public class MediaQualityService extends SystemService {
             synchronized (mPictureProfileLock) {
                 for (int i = 0; i < mUserStates.size(); i++) {
                     int userId = mUserStates.keyAt(i);
-                    UserState userState = getOrCreateUserStateLocked(userId);
+                    UserState userState = getOrCreateUserState(userId);
                     userState.mPictureProfileCallbackPidUidMap.remove(callback);
                 }
             }
@@ -1074,7 +1075,7 @@ public class MediaQualityService extends SystemService {
             synchronized (mSoundProfileLock) {
                 for (int i = 0; i < mUserStates.size(); i++) {
                     int userId = mUserStates.keyAt(i);
-                    UserState userState = getOrCreateUserStateLocked(userId);
+                    UserState userState = getOrCreateUserState(userId);
                     userState.mSoundProfileCallbackPidUidMap.remove(callback);
                 }
             }
@@ -1100,19 +1101,23 @@ public class MediaQualityService extends SystemService {
         }
     }
 
-    //TODO: used by both picture and sound. can i add both locks?
-    private UserState getOrCreateUserStateLocked(int userId) {
-        UserState userState = getUserStateLocked(userId);
+    @GuardedBy("mUserStateLock")
+    private UserState getOrCreateUserState(int userId) {
+        UserState userState = getUserState(userId);
         if (userState == null) {
             userState = new UserState(mContext, userId);
-            mUserStates.put(userId, userState);
+            synchronized (mUserStateLock) {
+                mUserStates.put(userId, userState);
+            }
         }
         return userState;
     }
 
-    //TODO: used by both picture and sound. can i add both locks?
-    private UserState getUserStateLocked(int userId) {
-        return mUserStates.get(userId);
+    @GuardedBy("mUserStateLock")
+    private UserState getUserState(int userId) {
+        synchronized (mUserStateLock) {
+            return mUserStates.get(userId);
+        }
     }
 
     private final class MqDatabaseUtils {
@@ -1266,7 +1271,7 @@ public class MediaQualityService extends SystemService {
         private void notifyPictureProfileHelper(int mode, String profileId,
                 PictureProfile profile, Integer errorCode,
                 List<ParameterCapability> paramCaps, int uid, int pid) {
-            UserState userState = getOrCreateUserStateLocked(UserHandle.USER_SYSTEM);
+            UserState userState = getOrCreateUserState(UserHandle.USER_SYSTEM);
             int n = userState.mPictureProfileCallbacks.beginBroadcast();
 
             for (int i = 0; i < n; ++i) {
@@ -1351,7 +1356,7 @@ public class MediaQualityService extends SystemService {
         private void notifySoundProfileHelper(int mode, String profileId,
                 SoundProfile profile, Integer errorCode,
                 List<ParameterCapability> paramCaps, int uid, int pid) {
-            UserState userState = getOrCreateUserStateLocked(UserHandle.USER_SYSTEM);
+            UserState userState = getOrCreateUserState(UserHandle.USER_SYSTEM);
             int n = userState.mSoundProfileCallbacks.beginBroadcast();
 
             for (int i = 0; i < n; ++i) {
