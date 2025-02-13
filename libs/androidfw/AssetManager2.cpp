@@ -1467,8 +1467,6 @@ base::expected<uint32_t, NullOrIOError> AssetManager2::GetResourceId(
   }
 
   const StringPiece16 kAttr16 = u"attr";
-  const static std::u16string kAttrPrivate16 = u"^attr-private";
-
   for (const PackageGroup& package_group : package_groups_) {
     for (const ConfiguredPackage& package_impl : package_group.packages_) {
       const LoadedPackage* package = package_impl.loaded_package_;
@@ -1480,12 +1478,13 @@ base::expected<uint32_t, NullOrIOError> AssetManager2::GetResourceId(
       base::expected<uint32_t, NullOrIOError> resid = package->FindEntryByName(type16, entry16);
       if (UNLIKELY(IsIOError(resid))) {
          return base::unexpected(resid.error());
-       }
+      }
 
       if (!resid.has_value() && kAttr16 == type16) {
         // Private attributes in libraries (such as the framework) are sometimes encoded
         // under the type '^attr-private' in order to leave the ID space of public 'attr'
         // free for future additions. Check '^attr-private' for the same name.
+        const static std::u16string kAttrPrivate16 = u"^attr-private";
         resid = package->FindEntryByName(kAttrPrivate16, entry16);
       }
 
