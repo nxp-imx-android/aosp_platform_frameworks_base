@@ -2501,6 +2501,49 @@ public class PowerManagerServiceTest {
     }
 
     @Test
+    public void testMultiDisplay_twoDisplays_onlyDefaultDisplayCanDream() {
+        final int nonDefaultDisplayGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
+        final int nonDefaultDisplay = Display.DEFAULT_DISPLAY + 1;
+        final AtomicReference<DisplayManagerInternal.DisplayGroupListener> listener =
+                new AtomicReference<>();
+        doAnswer((Answer<Void>) invocation -> {
+            listener.set(invocation.getArgument(0));
+            return null;
+        }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
+        final DisplayInfo info = new DisplayInfo();
+        info.displayGroupId = nonDefaultDisplayGroupId;
+        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultDisplay)).thenReturn(info);
+        when(mBatteryManagerInternalMock.isPowered(anyInt())).thenReturn(true);
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1);
+        doAnswer(inv -> {
+            when(mDreamManagerInternalMock.isDreaming()).thenReturn(true);
+            return null;
+        }).when(mDreamManagerInternalMock).startDream(anyBoolean(), anyString());
+
+        setMinimumScreenOffTimeoutConfig(5);
+        createService();
+        startSystem();
+
+        listener.get().onDisplayGroupAdded(nonDefaultDisplayGroupId);
+
+        assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP)).isEqualTo(
+                WAKEFULNESS_AWAKE);
+        assertThat(mService.getWakefulnessLocked(nonDefaultDisplayGroupId)).isEqualTo(
+                WAKEFULNESS_AWAKE);
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+
+        advanceTime(15000);
+
+        // Only the default display group is dreaming.
+        assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP)).isEqualTo(
+                WAKEFULNESS_DREAMING);
+        assertThat(mService.getWakefulnessLocked(nonDefaultDisplayGroupId)).isEqualTo(
+                WAKEFULNESS_DOZING);
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_DREAMING);
+    }
+
+    @Test
     public void testMultiDisplay_addNewDisplay_becomeGloballyAwakeButDefaultRemainsDozing() {
         final int nonDefaultDisplayGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
         final int nonDefaultDisplay = Display.DEFAULT_DISPLAY + 1;
