@@ -65,13 +65,7 @@ public final class FileIntegrityManager {
      * other fs-verity APIs.
      */
     public boolean isApkVeritySupported() {
-        try {
-            // Go through the service just to avoid exposing the vendor controlled system property
-            // to all apps.
-            return mService.isApkVeritySupported();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return VerityUtils.isFsVeritySupported();
     }
 
     /**
