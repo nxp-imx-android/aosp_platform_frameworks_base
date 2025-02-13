@@ -41,6 +41,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.SystemProperties
 import android.os.UserHandle
+import android.util.Slog
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DragEvent
 import android.view.MotionEvent
@@ -2743,6 +2744,12 @@ class DesktopTasksController(
         taskTop: Float,
         dragStartState: DragStartState,
     ): DesktopModeVisualIndicator.IndicatorType {
+        // If the visual indicator has the wrong start state, it was never cleared from a previous
+        // drag event and needs to be cleared
+        if (visualIndicator != null && visualIndicator?.dragStartState != dragStartState) {
+            Slog.e(TAG, "Visual indicator from previous motion event was never released")
+            releaseVisualIndicator()
+        }
         // If the visual indicator does not exist, create it.
         val indicator =
             visualIndicator
