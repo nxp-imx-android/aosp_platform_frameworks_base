@@ -244,6 +244,7 @@ constructor(
     ) {
         val currentSceneKey = currentScene.value
         val resolvedScene = sceneFamilyResolvers.get()[toScene]?.resolvedScene?.value ?: toScene
+
         if (
             !validateSceneChange(
                 from = currentSceneKey,
@@ -523,14 +524,32 @@ constructor(
         }
 
         if (from == to) {
+            logger.logSceneChangeRejection(
+                from = from,
+                to = to,
+                originalChangeReason = loggingReason,
+                rejectionReason = "${from.debugName} is the same as ${to.debugName}",
+            )
             return false
         }
 
         if (to !in repository.allContentKeys) {
+            logger.logSceneChangeRejection(
+                from = from,
+                to = to,
+                originalChangeReason = loggingReason,
+                rejectionReason = "${to.debugName} isn't present in allContentKeys",
+            )
             return false
         }
 
         if (disabledContentInteractor.isDisabled(to)) {
+            logger.logSceneChangeRejection(
+                from = from,
+                to = to,
+                originalChangeReason = loggingReason,
+                rejectionReason = "${to.debugName} is currently disabled",
+            )
             return false
         }
 
@@ -580,14 +599,58 @@ constructor(
         }
 
         if (to != null && disabledContentInteractor.isDisabled(to)) {
+            logger.logSceneChangeRejection(
+                from = from,
+                to = to,
+                originalChangeReason = loggingReason,
+                rejectionReason = "${to.debugName} is currently disabled",
+            )
             return false
         }
 
-        val isFromValid = (from == null) || (from in currentOverlays.value)
-        val isToValid =
-            (to == null) || (to !in currentOverlays.value && to in repository.allContentKeys)
+        return when {
+            to != null && from != null && to == from -> {
+                logger.logSceneChangeRejection(
+                    from = from,
+                    to = to,
+                    originalChangeReason = loggingReason,
+                    rejectionReason = "${from.debugName} is the same as ${to.debugName}",
+                )
+                false
+            }
 
-        return isFromValid && isToValid && from != to
+            to != null && to !in repository.allContentKeys -> {
+                logger.logSceneChangeRejection(
+                    from = from,
+                    to = to,
+                    originalChangeReason = loggingReason,
+                    rejectionReason = "${to.debugName} is not in allContentKeys",
+                )
+                false
+            }
+
+            from != null && from !in currentOverlays.value -> {
+                logger.logSceneChangeRejection(
+                    from = from,
+                    to = to,
+                    originalChangeReason = loggingReason,
+                    rejectionReason = "${from.debugName} is not a current overlay",
+                )
+                false
+            }
+
+            to != null && to in currentOverlays.value -> {
+                logger.logSceneChangeRejection(
+                    from = from,
+                    to = to,
+                    originalChangeReason = loggingReason,
+                    rejectionReason = "${to.debugName} is already a current overlay",
+                )
+                false
+            }
+
+            else -> true
+        }
     }
 
     /** Returns a flow indicating if the currently visible scene can be resolved from [family]. */
