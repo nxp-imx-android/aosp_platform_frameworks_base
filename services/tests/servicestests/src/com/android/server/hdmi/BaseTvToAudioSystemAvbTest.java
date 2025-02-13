@@ -112,7 +112,7 @@ public abstract class BaseTvToAudioSystemAvbTest extends BaseAbsoluteVolumeBehav
                         .setMaxVolumeIndex(AudioStatus.MAX_VOLUME)
                         .setMinVolumeIndex(AudioStatus.MIN_VOLUME)
                         .build()),
-                any(), any(), anyBoolean());
+                anyBoolean(), any(), any());
     }
 
 
@@ -135,7 +135,7 @@ public abstract class BaseTvToAudioSystemAvbTest extends BaseAbsoluteVolumeBehav
                         .setMaxVolumeIndex(AudioStatus.MAX_VOLUME)
                         .setMinVolumeIndex(AudioStatus.MIN_VOLUME)
                         .build()),
-                any(), any(), anyBoolean());
+                anyBoolean(), any(), any());
     }
 
     @Test
@@ -160,7 +160,7 @@ public abstract class BaseTvToAudioSystemAvbTest extends BaseAbsoluteVolumeBehav
                         .setMaxVolumeIndex(AudioStatus.MAX_VOLUME)
                         .setMinVolumeIndex(AudioStatus.MIN_VOLUME)
                         .build()),
-                any(), any(), anyBoolean());
+                anyBoolean(), any(), any());
     }
 
     @Test

@@ -432,7 +432,7 @@ public abstract class BaseAbsoluteVolumeBehaviorTest {
                         .setMaxVolumeIndex(AudioStatus.MAX_VOLUME)
                         .setMinVolumeIndex(AudioStatus.MIN_VOLUME)
                         .build()),
-                any(), any(), anyBoolean());
+                anyBoolean(), any(), any());
     }
 
     @Test
