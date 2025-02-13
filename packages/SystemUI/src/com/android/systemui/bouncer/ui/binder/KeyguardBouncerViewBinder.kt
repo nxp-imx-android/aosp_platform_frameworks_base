@@ -191,7 +191,6 @@ object KeyguardBouncerViewBinder {
                             .filter { it == EXPANSION_VISIBLE }
                             .collect {
                                 securityContainerController.onResume(KeyguardSecurityView.SCREEN_ON)
-                                view.announceForAccessibility(securityContainerController.title)
                             }
                     }
 
