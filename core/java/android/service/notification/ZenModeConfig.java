@@ -309,6 +309,7 @@ public class ZenModeConfig implements Parcelable {
     private static final String RULE_ATT_DISABLED_ORIGIN = "disabledOrigin";
     private static final String RULE_ATT_LEGACY_SUPPRESSED_EFFECTS = "legacySuppressedEffects";
     private static final String RULE_ATT_CONDITION_OVERRIDE = "conditionOverride";
+    private static final String RULE_ATT_LAST_ACTIVATION = "lastActivation";
 
     private static final String DEVICE_EFFECT_DISPLAY_GRAYSCALE = "zdeDisplayGrayscale";
     private static final String DEVICE_EFFECT_SUPPRESS_AMBIENT_DISPLAY =
@@ -1187,11 +1188,7 @@ public class ZenModeConfig implements Parcelable {
         rt.zenPolicyUserModifiedFields = safeInt(parser, POLICY_USER_MODIFIED_FIELDS, 0);
         rt.zenDeviceEffectsUserModifiedFields = safeInt(parser,
                 DEVICE_EFFECT_USER_MODIFIED_FIELDS, 0);
-        Long deletionInstant = tryParseLong(
-                parser.getAttributeValue(null, RULE_ATT_DELETION_INSTANT), null);
-        if (deletionInstant != null) {
-            rt.deletionInstant = Instant.ofEpochMilli(deletionInstant);
-        }
+        rt.deletionInstant = safeInstant(parser, RULE_ATT_DELETION_INSTANT, null);
         if (Flags.modesUi()) {
             rt.disabledOrigin = safeInt(parser, RULE_ATT_DISABLED_ORIGIN,
                     ORIGIN_UNKNOWN);
@@ -1199,6 +1196,9 @@ public class ZenModeConfig implements Parcelable {
                     RULE_ATT_LEGACY_SUPPRESSED_EFFECTS, 0);
             rt.conditionOverride = safeInt(parser, RULE_ATT_CONDITION_OVERRIDE,
                     ZenRule.OVERRIDE_NONE);
+            if (Flags.modesCleanupImplicit()) {
+                rt.lastActivation = safeInstant(parser, RULE_ATT_LAST_ACTIVATION, null);
+            }
         }
 
         return rt;
@@ -1249,10 +1249,7 @@ public class ZenModeConfig implements Parcelable {
         out.attributeInt(null, POLICY_USER_MODIFIED_FIELDS, rule.zenPolicyUserModifiedFields);
         out.attributeInt(null, DEVICE_EFFECT_USER_MODIFIED_FIELDS,
                 rule.zenDeviceEffectsUserModifiedFields);
-        if (rule.deletionInstant != null) {
-            out.attributeLong(null, RULE_ATT_DELETION_INSTANT,
-                    rule.deletionInstant.toEpochMilli());
-        }
+        writeXmlAttributeInstant(out, RULE_ATT_DELETION_INSTANT, rule.deletionInstant);
         if (Flags.modesUi()) {
             out.attributeInt(null, RULE_ATT_DISABLED_ORIGIN, rule.disabledOrigin);
             out.attributeInt(null, RULE_ATT_LEGACY_SUPPRESSED_EFFECTS,
@@ -1260,6 +1257,16 @@ public class ZenModeConfig implements Parcelable {
             if (rule.conditionOverride == ZenRule.OVERRIDE_ACTIVATE && !forBackup) {
                 out.attributeInt(null, RULE_ATT_CONDITION_OVERRIDE, rule.conditionOverride);
             }
+            if (Flags.modesCleanupImplicit()) {
+                writeXmlAttributeInstant(out, RULE_ATT_LAST_ACTIVATION, rule.lastActivation);
+            }
+        }
+    }
+
+    private static void writeXmlAttributeInstant(TypedXmlSerializer out, String att,
+            @Nullable Instant instant) throws IOException {
+        if (instant != null) {
+            out.attributeLong(null, att, instant.toEpochMilli());
         }
     }
 
@@ -1598,6 +1605,19 @@ public class ZenModeConfig implements Parcelable {
             }
         }
         return values;
+    }
+
+    @Nullable
+    private static Instant safeInstant(TypedXmlPullParser parser, String att,
+            @Nullable Instant defValue) {
+        final String strValue = parser.getAttributeValue(null, att);
+        if (!TextUtils.isEmpty(strValue)) {
+            Long longValue = tryParseLong(strValue, null);
+            if (longValue != null) {
+                return Instant.ofEpochMilli(longValue);
+            }
+        }
+        return defValue;
     }
 
     @Override
@@ -2598,6 +2618,18 @@ public class ZenModeConfig implements Parcelable {
         @ConditionOverride
         int conditionOverride = OVERRIDE_NONE;
 
+        /**
+         * Last time at which the rule was activated (for any reason, including overrides).
+         * If {@code null}, the rule has never been activated since its creation.
+         *
+         * <p>Note that this was previously untracked, so it will also be {@code null} for rules
+         * created before we started tracking and never activated since -- make sure to account for
+         * it, for example by falling back to {@link #creationTime} in logic involving this field.
+         */
+        @Nullable
+        @FlaggedApi(Flags.FLAG_MODES_CLEANUP_IMPLICIT)
+        public Instant lastActivation;
+
         public ZenRule() { }
 
         public ZenRule(Parcel source) {
@@ -2635,24 +2667,29 @@ public class ZenModeConfig implements Parcelable {
                 disabledOrigin = source.readInt();
                 legacySuppressedEffects = source.readInt();
                 conditionOverride = source.readInt();
+                if (Flags.modesCleanupImplicit()) {
+                    if (source.readInt() == 1) {
+                        lastActivation = Instant.ofEpochMilli(source.readLong());
+                    }
+                }
             }
         }
 
         /**
-         * Whether this ZenRule can be updated by an app. In general, rules that have been
-         * customized by the user cannot be further updated by an app, with some exceptions:
+         * Whether this ZenRule has been customized by the user in any way.
+
+         * <p>In general, rules that have been customized by the user cannot be further updated by
+         * an app, with some exceptions:
          * <ul>
          *     <li>Non user-configurable fields, like type, icon, configurationActivity, etc.
          *     <li>Name, if the name was not specifically modified by the user (to support language
          *          switches).
          * </ul>
          */
-        public boolean canBeUpdatedByApp() {
-            // The rule is considered updateable if its bitmask has no user modifications, and
-            // the bitmasks of the policy and device effects have no modification.
-            return userModifiedFields == 0
-                    && zenPolicyUserModifiedFields == 0
-                    && zenDeviceEffectsUserModifiedFields == 0;
+        public boolean isUserModified() {
+            return userModifiedFields != 0
+                    || zenPolicyUserModifiedFields != 0
+                    || zenDeviceEffectsUserModifiedFields != 0;
         }
 
         @Override
@@ -2708,6 +2745,14 @@ public class ZenModeConfig implements Parcelable {
                 dest.writeInt(disabledOrigin);
                 dest.writeInt(legacySuppressedEffects);
                 dest.writeInt(conditionOverride);
+                if (Flags.modesCleanupImplicit()) {
+                    if (lastActivation != null) {
+                        dest.writeInt(1);
+                        dest.writeLong(lastActivation.toEpochMilli());
+                    } else {
+                        dest.writeInt(0);
+                    }
+                }
             }
         }
 
@@ -2760,6 +2805,9 @@ public class ZenModeConfig implements Parcelable {
             if (Flags.modesUi()) {
                 sb.append(",disabledOrigin=").append(disabledOrigin);
                 sb.append(",legacySuppressedEffects=").append(legacySuppressedEffects);
+                if (Flags.modesCleanupImplicit()) {
+                    sb.append(",lastActivation=").append(lastActivation);
+                }
             }
 
             return sb.append(']').toString();
@@ -2838,6 +2886,10 @@ public class ZenModeConfig implements Parcelable {
                         && other.disabledOrigin == disabledOrigin
                         && other.legacySuppressedEffects == legacySuppressedEffects
                         && other.conditionOverride == conditionOverride;
+                if (Flags.modesCleanupImplicit()) {
+                    finalEquals = finalEquals
+                            && Objects.equals(other.lastActivation, lastActivation);
+                }
             }
 
             return finalEquals;
@@ -2846,13 +2898,23 @@ public class ZenModeConfig implements Parcelable {
         @Override
         public int hashCode() {
             if (Flags.modesUi()) {
-                return Objects.hash(enabled, snoozing, name, zenMode, conditionId, condition,
-                        component, configurationActivity, pkg, id, enabler, zenPolicy,
-                        zenDeviceEffects, allowManualInvocation, iconResName,
-                        triggerDescription, type, userModifiedFields,
-                        zenPolicyUserModifiedFields, zenDeviceEffectsUserModifiedFields,
-                        deletionInstant, disabledOrigin, legacySuppressedEffects,
-                        conditionOverride);
+                if (Flags.modesCleanupImplicit()) {
+                    return Objects.hash(enabled, snoozing, name, zenMode, conditionId, condition,
+                            component, configurationActivity, pkg, id, enabler, zenPolicy,
+                            zenDeviceEffects, allowManualInvocation, iconResName,
+                            triggerDescription, type, userModifiedFields,
+                            zenPolicyUserModifiedFields, zenDeviceEffectsUserModifiedFields,
+                            deletionInstant, disabledOrigin, legacySuppressedEffects,
+                            conditionOverride, lastActivation);
+                } else {
+                    return Objects.hash(enabled, snoozing, name, zenMode, conditionId, condition,
+                            component, configurationActivity, pkg, id, enabler, zenPolicy,
+                            zenDeviceEffects, allowManualInvocation, iconResName,
+                            triggerDescription, type, userModifiedFields,
+                            zenPolicyUserModifiedFields, zenDeviceEffectsUserModifiedFields,
+                            deletionInstant, disabledOrigin, legacySuppressedEffects,
+                            conditionOverride);
+                }
             } else {
                 return Objects.hash(enabled, snoozing, name, zenMode, conditionId, condition,
                         component, configurationActivity, pkg, id, enabler, zenPolicy,

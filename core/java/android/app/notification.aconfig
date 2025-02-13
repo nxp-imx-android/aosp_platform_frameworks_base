@@ -83,6 +83,13 @@ flag {
 }
 
 flag {
+  name: "modes_cleanup_implicit"
+  namespace: "systemui"
+  description: "Deletes implicit modes if never customized and not used for some time. Depends on MODES_UI"
+  bug: "394087495"
+}
+
+flag {
   name: "api_tvextender"
   is_exported: true
   namespace: "systemui"

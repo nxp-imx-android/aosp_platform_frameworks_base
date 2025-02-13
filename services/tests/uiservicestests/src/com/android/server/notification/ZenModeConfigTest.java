@@ -488,33 +488,33 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         ZenModeConfig.ZenRule rule = new ZenModeConfig.ZenRule();
         rule.zenPolicy = null;
         rule.zenDeviceEffects = null;
-        assertThat(rule.canBeUpdatedByApp()).isTrue();
+        assertThat(rule.isUserModified()).isFalse();
 
         rule.userModifiedFields = 1;
 
-        assertThat(rule.canBeUpdatedByApp()).isFalse();
+        assertThat(rule.isUserModified()).isTrue();
     }
 
     @Test
     public void testCanBeUpdatedByApp_policyModified() throws Exception {
         ZenModeConfig.ZenRule rule = new ZenModeConfig.ZenRule();
         rule.zenPolicy = new ZenPolicy();
-        assertThat(rule.canBeUpdatedByApp()).isTrue();
+        assertThat(rule.isUserModified()).isFalse();
 
         rule.zenPolicyUserModifiedFields = 1;
 
-        assertThat(rule.canBeUpdatedByApp()).isFalse();
+        assertThat(rule.isUserModified()).isTrue();
     }
 
     @Test
     public void testCanBeUpdatedByApp_deviceEffectsModified() throws Exception {
         ZenModeConfig.ZenRule rule = new ZenModeConfig.ZenRule();
         rule.zenDeviceEffects = new ZenDeviceEffects.Builder().build();
-        assertThat(rule.canBeUpdatedByApp()).isTrue();
+        assertThat(rule.isUserModified()).isFalse();
 
         rule.zenDeviceEffectsUserModifiedFields = 1;
 
-        assertThat(rule.canBeUpdatedByApp()).isFalse();
+        assertThat(rule.isUserModified()).isTrue();
     }
 
     @Test
@@ -563,6 +563,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.deletionInstant = Instant.ofEpochMilli(1701790147000L);
         if (Flags.modesUi()) {
             rule.disabledOrigin = ZenModeConfig.ORIGIN_USER_IN_SYSTEMUI;
+            if (Flags.modesCleanupImplicit()) {
+                rule.lastActivation = Instant.ofEpochMilli(456);
+            }
         }
         config.automaticRules.put(rule.id, rule);
 
@@ -600,6 +603,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         assertEquals(rule.deletionInstant, ruleActual.deletionInstant);
         if (Flags.modesUi()) {
             assertEquals(rule.disabledOrigin, ruleActual.disabledOrigin);
+            if (Flags.modesCleanupImplicit()) {
+                assertEquals(rule.lastActivation, ruleActual.lastActivation);
+            }
         }
         if (Flags.backupRestoreLogging()) {
             verify(logger).logItemsBackedUp(DATA_TYPE_ZEN_RULES, 2);
@@ -633,6 +639,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.deletionInstant = Instant.ofEpochMilli(1701790147000L);
         if (Flags.modesUi()) {
             rule.disabledOrigin = ZenModeConfig.ORIGIN_USER_IN_SYSTEMUI;
+            if (Flags.modesCleanupImplicit()) {
+                rule.lastActivation = Instant.ofEpochMilli(789);
+            }
         }
 
         Parcel parcel = Parcel.obtain();
@@ -664,6 +673,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         assertEquals(rule.deletionInstant, parceled.deletionInstant);
         if (Flags.modesUi()) {
             assertEquals(rule.disabledOrigin, parceled.disabledOrigin);
+            if (Flags.modesCleanupImplicit()) {
+                assertEquals(rule.lastActivation, parceled.lastActivation);
+            }
         }
 
         assertEquals(rule, parceled);
@@ -746,6 +758,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.deletionInstant = Instant.ofEpochMilli(1701790147000L);
         if (Flags.modesUi()) {
             rule.disabledOrigin = ZenModeConfig.ORIGIN_APP;
+            if (Flags.modesCleanupImplicit()) {
+                rule.lastActivation = Instant.ofEpochMilli(123);
+            }
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -781,6 +796,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         assertEquals(rule.deletionInstant, fromXml.deletionInstant);
         if (Flags.modesUi()) {
             assertEquals(rule.disabledOrigin, fromXml.disabledOrigin);
+            if (Flags.modesCleanupImplicit()) {
+                assertEquals(rule.lastActivation, fromXml.lastActivation);
+            }
         }
     }
 
@@ -908,7 +926,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         ZenModeConfig.ZenRule rule = new ZenModeConfig.ZenRule();
         rule.userModifiedFields |= AutomaticZenRule.FIELD_NAME;
         assertThat(rule.userModifiedFields).isEqualTo(1);
-        assertThat(rule.canBeUpdatedByApp()).isFalse();
+        assertThat(rule.isUserModified()).isTrue();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         writeRuleXml(rule, baos);
@@ -916,7 +934,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         ZenModeConfig.ZenRule fromXml = readRuleXml(bais);
 
         assertThat(fromXml.userModifiedFields).isEqualTo(rule.userModifiedFields);
-        assertThat(fromXml.canBeUpdatedByApp()).isFalse();
+        assertThat(fromXml.isUserModified()).isTrue();
     }
 
     @Test
