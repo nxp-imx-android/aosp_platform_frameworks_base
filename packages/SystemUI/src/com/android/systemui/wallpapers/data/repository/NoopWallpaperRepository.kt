@@ -17,6 +17,8 @@
 package com.android.systemui.wallpapers.data.repository
 
 import android.app.WallpaperInfo
+import android.graphics.PointF
+import android.graphics.RectF
 import android.view.View
 import com.android.systemui.dagger.SysUISingleton
 import javax.inject.Inject
@@ -37,4 +39,8 @@ class NoopWallpaperRepository @Inject constructor() : WallpaperRepository {
     override val wallpaperSupportsAmbientMode = flowOf(false)
     override var rootView: View? = null
     override val shouldSendFocalArea: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
+
+    override fun sendLockScreenLayoutChangeCommand(wallpaperFocalAreaBounds: RectF) {}
+
+    override fun sendTapCommand(tapPosition: PointF) {}
 }

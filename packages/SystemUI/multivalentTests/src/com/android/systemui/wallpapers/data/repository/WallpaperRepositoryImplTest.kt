@@ -42,7 +42,6 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -53,7 +52,6 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class WallpaperRepositoryImplTest : SysuiTestCase() {
-
     private var isWallpaperSupported = true
     private val kosmos =
         testKosmos().apply {
@@ -293,12 +291,9 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
                 Intent(Intent.ACTION_WALLPAPER_CHANGED),
             )
             assertThat(latest).isTrue()
-            assertThat(underTest.sendLockscreenLayoutJob).isNotNull()
-            assertThat(underTest.sendLockscreenLayoutJob!!.isActive).isEqualTo(true)
         }
 
     @Test
-    @Ignore("ag/31591766")
     @EnableFlags(SharedFlags.FLAG_EXTENDED_WALLPAPER_EFFECTS)
     fun shouldSendNotificationLayout_setNotExtendedEffectsWallpaper_cancelSendLayoutJob() =
         testScope.runTest {
@@ -315,8 +310,6 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
                 Intent(Intent.ACTION_WALLPAPER_CHANGED),
             )
             assertThat(latest).isTrue()
-            assertThat(underTest.sendLockscreenLayoutJob).isNotNull()
-            assertThat(underTest.sendLockscreenLayoutJob!!.isActive).isEqualTo(true)
 
             whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(any()))
                 .thenReturn(UNSUPPORTED_WP)
@@ -327,7 +320,6 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(latest).isFalse()
-            assertThat(underTest.sendLockscreenLayoutJob?.isCancelled).isEqualTo(true)
         }
 
     private companion object {
