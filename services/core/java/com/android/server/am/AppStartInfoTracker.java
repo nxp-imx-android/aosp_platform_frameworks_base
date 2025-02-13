@@ -54,15 +54,21 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.ProcessMap;
 import com.android.internal.os.Clock;
 import com.android.internal.os.MonotonicClock;
+import com.android.modules.utils.TypedXmlPullParser;
+import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.IoThread;
 import com.android.server.ServiceThread;
 import com.android.server.SystemServiceManager;
 import com.android.server.wm.WindowProcessController;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1006,6 +1012,12 @@ public final class AppStartInfoTracker {
             throws IOException, WireTypeMismatchException, ClassNotFoundException {
         long token = proto.start(fieldId);
         String pkgName = "";
+
+        // Create objects for reuse.
+        ByteArrayInputStream byteArrayInputStream = null;
+        ObjectInputStream objectInputStream = null;
+        TypedXmlPullParser typedXmlPullParser = null;
+
         for (int next = proto.nextField();
                 next != ProtoInputStream.NO_MORE_FIELDS;
                 next = proto.nextField()) {
@@ -1017,7 +1029,7 @@ public final class AppStartInfoTracker {
                     AppStartInfoContainer container =
                             new AppStartInfoContainer(mAppStartInfoHistoryListSize);
                     int uid = container.readFromProto(proto, AppsStartInfoProto.Package.USERS,
-                            pkgName);
+                            pkgName, byteArrayInputStream, objectInputStream, typedXmlPullParser);
 
                     // If the isolated process flag is enabled and the uid is that of an isolated
                     // process, then break early so that the container will not be added to mData.
@@ -1052,6 +1064,12 @@ public final class AppStartInfoTracker {
             out = af.startWrite();
             ProtoOutputStream proto = new ProtoOutputStream(out);
             proto.write(AppsStartInfoProto.LAST_UPDATE_TIMESTAMP, now);
+
+            // Create objects for reuse.
+            ByteArrayOutputStream byteArrayOutputStream = null;
+            ObjectOutputStream objectOutputStream = null;
+            TypedXmlSerializer typedXmlSerializer = null;
+
             synchronized (mLock) {
                 succeeded = forEachPackageLocked(
                         (packageName, records) -> {
@@ -1060,8 +1078,9 @@ public final class AppStartInfoTracker {
                             int uidArraySize = records.size();
                             for (int j = 0; j < uidArraySize; j++) {
                                 try {
-                                    records.valueAt(j)
-                                            .writeToProto(proto, AppsStartInfoProto.Package.USERS);
+                                    records.valueAt(j).writeToProto(proto,
+                                            AppsStartInfoProto.Package.USERS, byteArrayOutputStream,
+                                            objectOutputStream, typedXmlSerializer);
                                 } catch (IOException e) {
                                     Slog.w(TAG, "Unable to write app start info into persistent"
                                             + "storage: " + e);
@@ -1414,19 +1433,23 @@ public final class AppStartInfoTracker {
         }
 
         @GuardedBy("mLock")
-        void writeToProto(ProtoOutputStream proto, long fieldId) throws IOException {
+        void writeToProto(ProtoOutputStream proto, long fieldId,
+                ByteArrayOutputStream byteArrayOutputStream, ObjectOutputStream objectOutputStream,
+                TypedXmlSerializer typedXmlSerializer) throws IOException {
             long token = proto.start(fieldId);
             proto.write(AppsStartInfoProto.Package.User.UID, mUid);
             int size = mInfos.size();
             for (int i = 0; i < size; i++) {
-                mInfos.get(i)
-                        .writeToProto(proto, AppsStartInfoProto.Package.User.APP_START_INFO);
+                mInfos.get(i).writeToProto(proto, AppsStartInfoProto.Package.User.APP_START_INFO,
+                        byteArrayOutputStream, objectOutputStream, typedXmlSerializer);
             }
             proto.write(AppsStartInfoProto.Package.User.MONITORING_ENABLED, mMonitoringModeEnabled);
             proto.end(token);
         }
 
-        int readFromProto(ProtoInputStream proto, long fieldId, String packageName)
+        int readFromProto(ProtoInputStream proto, long fieldId, String packageName,
+                ByteArrayInputStream byteArrayInputStream, ObjectInputStream objectInputStream,
+                TypedXmlPullParser typedXmlPullParser)
                 throws IOException, WireTypeMismatchException, ClassNotFoundException {
             long token = proto.start(fieldId);
             for (int next = proto.nextField();
@@ -1440,7 +1463,8 @@ public final class AppStartInfoTracker {
                         // Create record with monotonic time 0 in case the persisted record does not
                         // have a create time.
                         ApplicationStartInfo info = new ApplicationStartInfo(0);
-                        info.readFromProto(proto, AppsStartInfoProto.Package.User.APP_START_INFO);
+                        info.readFromProto(proto, AppsStartInfoProto.Package.User.APP_START_INFO,
+                                byteArrayInputStream, objectInputStream, typedXmlPullParser);
                         info.setPackageName(packageName);
                         mInfos.add(info);
                         break;
