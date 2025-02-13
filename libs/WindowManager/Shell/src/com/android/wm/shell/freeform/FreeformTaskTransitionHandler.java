@@ -93,7 +93,8 @@ public class FreeformTaskTransitionHandler
     }
 
     @Override
-    public IBinder startMinimizedModeTransition(WindowContainerTransaction wct) {
+    public IBinder startMinimizedModeTransition(
+            WindowContainerTransaction wct, int taskId, boolean isLastTask) {
         final int type = Transitions.TRANSIT_MINIMIZE;
         final IBinder token = mTransitions.startTransition(type, wct, this);
         mPendingTransitionTokens.add(token);
