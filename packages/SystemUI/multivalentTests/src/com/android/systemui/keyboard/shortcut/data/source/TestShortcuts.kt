@@ -541,7 +541,7 @@ object TestShortcuts {
             simpleShortcutCategory(System, "System apps", "Take a note"),
             simpleShortcutCategory(System, "System controls", "Take screenshot"),
             simpleShortcutCategory(System, "System controls", "Go back"),
-            simpleShortcutCategory(MultiTasking, "Split screen", "Switch to full screen"),
+            simpleShortcutCategory(MultiTasking, "Split screen", "Use full screen"),
             simpleShortcutCategory(
                 MultiTasking,
                 "Split screen",
