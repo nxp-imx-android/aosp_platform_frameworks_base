@@ -1444,15 +1444,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         relevantDecor.mTaskInfo.configuration.windowConfiguration.getBounds());
                 boolean dragFromStatusBarAllowed = false;
                 final int windowingMode = relevantDecor.mTaskInfo.getWindowingMode();
-                if (DesktopModeStatus.canEnterDesktopMode(mContext)) {
+                if (DesktopModeStatus.canEnterDesktopMode(mContext)
+                        || BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
                     // In proto2 any full screen or multi-window task can be dragged to
                     // freeform.
                     dragFromStatusBarAllowed = windowingMode == WINDOWING_MODE_FULLSCREEN
                             || windowingMode == WINDOWING_MODE_MULTI_WINDOW;
-                }
-                if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
-                    // TODO(b/388851898): add support for split screen (multi-window wm mode)
-                    dragFromStatusBarAllowed = windowingMode == WINDOWING_MODE_FULLSCREEN;
                 }
                 final boolean shouldStartTransitionDrag =
                         relevantDecor.checkTouchEventInFocusedCaptionHandle(ev)
