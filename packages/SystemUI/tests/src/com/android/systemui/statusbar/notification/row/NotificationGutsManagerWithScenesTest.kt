@@ -427,7 +427,6 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
             .setUserSentiment(Ranking.USER_SENTIMENT_NEGATIVE)
             .setImportance(NotificationManager.IMPORTANCE_HIGH)
             .build()
-        whenever(row.getIsNonblockable()).thenReturn(false)
         whenever(highPriorityProvider.isHighPriority(entry)).thenReturn(true)
         val statusBarNotification = entry.sbn
         gutsManager.initializeNotificationInfo(row, notificationInfoView)
@@ -463,7 +462,6 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
         NotificationEntryHelper.modifyRanking(row.entry)
             .setUserSentiment(Ranking.USER_SENTIMENT_NEGATIVE)
             .build()
-        whenever(row.getIsNonblockable()).thenReturn(false)
         val statusBarNotification = row.entry.sbn
         val entry = row.entry
         gutsManager.initializeNotificationInfo(row, notificationInfoView)
@@ -499,7 +497,6 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
         NotificationEntryHelper.modifyRanking(row.entry)
             .setUserSentiment(Ranking.USER_SENTIMENT_NEGATIVE)
             .build()
-        whenever(row.getIsNonblockable()).thenReturn(false)
         val statusBarNotification = row.entry.sbn
         val entry = row.entry
         gutsManager.initializeNotificationInfo(row, notificationInfoView)
@@ -566,7 +563,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
     ): NotificationMenuRowPlugin.MenuItem {
         val menuRow: NotificationMenuRowPlugin =
             NotificationMenuRow(mContext, peopleNotificationIdentifier)
-        menuRow.createMenu(row, row!!.entry.sbn)
+        menuRow.createMenu(row)
         val menuItem = menuRow.getLongpressMenuItem(mContext)
         Assert.assertNotNull(menuItem)
         return menuItem

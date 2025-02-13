@@ -73,6 +73,7 @@ import com.android.systemui.statusbar.notification.collection.render.NotifGutsVi
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
 import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
@@ -436,7 +437,9 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 onNasFeedbackClick,
                 mUiEventLogger,
                 mDeviceProvisionedController.isDeviceProvisioned(),
-                row.getIsNonblockable(),
+                NotificationBundleUi.isEnabled()
+                        ? !row.getEntry().isBlockable()
+                        : row.getIsNonblockable(),
                 mHighPriorityProvider.isHighPriority(row.getEntry()),
                 mAssistantFeedbackController,
                 mMetricsLogger,
@@ -480,7 +483,9 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 row.getEntry(),
                 onSettingsClick,
                 mDeviceProvisionedController.isDeviceProvisioned(),
-                row.getIsNonblockable());
+                NotificationBundleUi.isEnabled()
+                        ? !row.getEntry().isBlockable()
+                        : row.getIsNonblockable());
     }
 
     /**

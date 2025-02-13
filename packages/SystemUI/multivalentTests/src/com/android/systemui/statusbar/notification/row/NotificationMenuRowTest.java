@@ -72,7 +72,7 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
     public void testAttachDetach() {
         NotificationMenuRowPlugin row =
                 new NotificationMenuRow(mContext, mPeopleNotificationIdentifier);
-        row.createMenu(mRow, null);
+        row.createMenu(mRow);
         ViewUtils.attachView(row.getMenuView());
         TestableLooper.get(this).processAllMessages();
         ViewUtils.detachView(row.getMenuView());
@@ -83,9 +83,9 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
     public void testRecreateMenu() {
         NotificationMenuRowPlugin row =
                 new NotificationMenuRow(mContext, mPeopleNotificationIdentifier);
-        row.createMenu(mRow, null);
+        row.createMenu(mRow);
         assertTrue(row.getMenuView() != null);
-        row.createMenu(mRow, null);
+        row.createMenu(mRow);
         assertTrue(row.getMenuView() != null);
     }
 
@@ -103,7 +103,7 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
         Settings.Global.putInt(mContext.getContentResolver(), SHOW_NEW_NOTIF_DISMISS, 0);
 
         NotificationMenuRow row = new NotificationMenuRow(mContext, mPeopleNotificationIdentifier);
-        row.createMenu(mRow, null);
+        row.createMenu(mRow);
 
         ViewGroup container = (ViewGroup) row.getMenuView();
         // noti blocking
@@ -116,7 +116,7 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
         Settings.Global.putInt(mContext.getContentResolver(), SHOW_NEW_NOTIF_DISMISS, 0);
 
         NotificationMenuRow row = new NotificationMenuRow(mContext, mPeopleNotificationIdentifier);
-        row.createMenu(mRow, null);
+        row.createMenu(mRow);
 
         ViewGroup container = (ViewGroup) row.getMenuView();
         // just for noti blocking
@@ -129,7 +129,7 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
         Settings.Global.putInt(mContext.getContentResolver(), SHOW_NEW_NOTIF_DISMISS, 0);
 
         NotificationMenuRow row = new NotificationMenuRow(mContext, mPeopleNotificationIdentifier);
-        row.createMenu(mRow, null);
+        row.createMenu(mRow);
 
         ViewGroup container = (ViewGroup) row.getMenuView();
         // one for snooze and one for noti blocking
@@ -142,7 +142,7 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
         Settings.Global.putInt(mContext.getContentResolver(), SHOW_NEW_NOTIF_DISMISS, 1);
 
         NotificationMenuRow row = new NotificationMenuRow(mContext, mPeopleNotificationIdentifier);
-        row.createMenu(mRow, null);
+        row.createMenu(mRow);
 
         ViewGroup container = (ViewGroup) row.getMenuView();
         // Clear menu
@@ -417,7 +417,7 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
     public void testOnTouchMove() {
         NotificationMenuRow row = Mockito.spy(
                 new NotificationMenuRow(mContext, mPeopleNotificationIdentifier));
-        row.createMenu(mRow, null);
+        row.createMenu(mRow);
         doReturn(50f).when(row).getDismissThreshold();
         doReturn(true).when(row).canBeDismissed();
         doReturn(mView).when(row).getMenuView();

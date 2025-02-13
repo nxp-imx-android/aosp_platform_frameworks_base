@@ -374,7 +374,11 @@ public class ExpandableNotificationRowController implements NotifViewController 
         mView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View v) {
-                mView.getEntry().setInitializationTime(mClock.elapsedRealtime());
+                if (NotificationBundleUi.isEnabled()) {
+                    mView.setInitializationTime(mClock.elapsedRealtime());
+                } else {
+                    mView.getEntry().setInitializationTime(mClock.elapsedRealtime());
+                }
                 mPluginManager.addPluginListener(mView,
                         NotificationMenuRowPlugin.class, false /* Allow multiple */);
                 if (!SceneContainerFlag.isEnabled()) {
