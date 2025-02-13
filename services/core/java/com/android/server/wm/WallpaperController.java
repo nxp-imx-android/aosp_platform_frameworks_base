@@ -166,14 +166,6 @@ class WallpaperController {
                 mFindResults.setWallpaperTarget(w);
                 return false;
             }
-        } else if (mService.mFlags.mAodTransition
-                && mDisplayContent.isKeyguardLockedOrAodShowing()) {
-            if (mService.mPolicy.isKeyguardHostWindow(w.mAttrs)
-                    && w.mTransitionController.isInAodAppearTransition()) {
-                if (DEBUG_WALLPAPER) Slog.v(TAG, "Found aod transition wallpaper target: " + w);
-                mFindResults.setWallpaperTarget(w);
-                return true;
-            }
         }
 
         final boolean animationWallpaper = animatingContainer != null
@@ -692,8 +684,7 @@ class WallpaperController {
     private WallpaperWindowToken getTokenForTarget(WindowState target) {
         if (target == null) return null;
         WindowState window = mFindResults.getTopWallpaper(
-                (target.canShowWhenLocked() && mService.isKeyguardLocked())
-                        || (mService.mFlags.mAodTransition && mDisplayContent.isAodShowing()));
+                target.canShowWhenLocked() && mService.isKeyguardLocked());
         return window == null ? null : window.mToken.asWallpaperToken();
     }
 
@@ -736,9 +727,7 @@ class WallpaperController {
 
         if (mFindResults.wallpaperTarget == null && mFindResults.useTopWallpaperAsTarget) {
             mFindResults.setWallpaperTarget(
-                    mFindResults.getTopWallpaper(mService.mFlags.mAodTransition
-                            ? mDisplayContent.isKeyguardLockedOrAodShowing()
-                            : mDisplayContent.isKeyguardLocked()));
+                    mFindResults.getTopWallpaper(mDisplayContent.isKeyguardLocked()));
         }
     }
 
@@ -910,17 +899,11 @@ class WallpaperController {
         if (mDisplayContent.mWmService.mFlags.mEnsureWallpaperInTransitions) {
             visibleRequested = mWallpaperTarget != null && mWallpaperTarget.isVisibleRequested();
         }
-        updateWallpaperTokens(visibleRequested,
-                mService.mFlags.mAodTransition
-                        ? mDisplayContent.isKeyguardLockedOrAodShowing()
-                        : mDisplayContent.isKeyguardLocked());
+        updateWallpaperTokens(visibleRequested, mDisplayContent.isKeyguardLocked());
 
         ProtoLog.v(WM_DEBUG_WALLPAPER,
                 "Wallpaper at display %d - visibility: %b, keyguardLocked: %b",
-                mDisplayContent.getDisplayId(), visible,
-                mService.mFlags.mAodTransition
-                        ? mDisplayContent.isKeyguardLockedOrAodShowing()
-                        : mDisplayContent.isKeyguardLocked());
+                mDisplayContent.getDisplayId(), visible, mDisplayContent.isKeyguardLocked());
 
         if (visible && mLastFrozen != mFindResults.isWallpaperTargetForLetterbox) {
             mLastFrozen = mFindResults.isWallpaperTargetForLetterbox;

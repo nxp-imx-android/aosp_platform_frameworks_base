@@ -36,7 +36,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_STARTING;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
-import static android.view.WindowManager.TRANSIT_FLAG_AOD_APPEARING;
 import static android.view.WindowManager.TRANSIT_FLAG_IS_RECENTS;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_LOCKED;
 import static android.view.WindowManager.TRANSIT_OPEN;
@@ -972,10 +971,6 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             if (mParticipants.contains(p)) return true;
         }
         return false;
-    }
-
-    boolean isInAodAppearTransition() {
-        return (mFlags & TRANSIT_FLAG_AOD_APPEARING) != 0;
     }
 
     /**
