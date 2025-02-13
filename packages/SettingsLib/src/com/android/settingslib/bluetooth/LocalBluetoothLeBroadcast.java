@@ -142,8 +142,8 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
     private ContentResolver mContentResolver;
     private ContentObserver mSettingsObserver;
     // Cached broadcast callbacks being register before service is connected.
-    private Map<BluetoothLeBroadcast.Callback, Executor> mCachedBroadcastCallbackExecutorMap =
-            new ConcurrentHashMap<>();
+    private ConcurrentHashMap<BluetoothLeBroadcast.Callback, Executor>
+            mCachedBroadcastCallbackExecutorMap = new ConcurrentHashMap<>();
 
     private final ServiceListener mServiceListener =
             new ServiceListener() {
@@ -873,7 +873,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
             @NonNull @CallbackExecutor Executor executor,
             @NonNull BluetoothLeBroadcast.Callback callback) {
         if (mServiceBroadcast == null) {
-            Log.d(TAG, "registerServiceCallBack failed, the BluetoothLeBroadcast is null.");
+            Log.d(TAG, "registerServiceCallBack failed, proxy not attached.");
             mCachedBroadcastCallbackExecutorMap.putIfAbsent(callback, executor);
             return;
         }
@@ -895,10 +895,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
             @NonNull @CallbackExecutor Executor executor,
             @NonNull BluetoothLeBroadcastAssistant.Callback callback) {
         if (mServiceBroadcastAssistant == null) {
-            Log.d(
-                    TAG,
-                    "registerBroadcastAssistantCallback failed, "
-                            + "the BluetoothLeBroadcastAssistant is null.");
+            Log.d(TAG, "registerBroadcastAssistantCallback failed, proxy not attached.");
             return;
         }
 
@@ -913,7 +910,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
     public void unregisterServiceCallBack(@NonNull BluetoothLeBroadcast.Callback callback) {
         mCachedBroadcastCallbackExecutorMap.remove(callback);
         if (mServiceBroadcast == null) {
-            Log.d(TAG, "unregisterServiceCallBack failed, the BluetoothLeBroadcast is null.");
+            Log.d(TAG, "unregisterServiceCallBack failed, proxy not attached.");
             return;
         }
 
@@ -932,10 +929,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
     private void unregisterBroadcastAssistantCallback(
             @NonNull BluetoothLeBroadcastAssistant.Callback callback) {
         if (mServiceBroadcastAssistant == null) {
-            Log.d(
-                    TAG,
-                    "unregisterBroadcastAssistantCallback, "
-                            + "the BluetoothLeBroadcastAssistant is null.");
+            Log.d(TAG, "unregisterBroadcastAssistantCallback, proxy not attched.");
             return;
         }
 
@@ -1128,7 +1122,9 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
 
     /** Update fallback active device if needed. */
     public void updateFallbackActiveDeviceIfNeeded() {
-        if (Flags.disableAudioSharingAutoPickFallbackInUi()) {
+        if (Flags.disableAudioSharingAutoPickFallbackInUi() || (mContext != null
+                && Flags.audioSharingDeveloperOption()
+                && BluetoothUtils.getAudioSharingPreviewValue(mContext.getContentResolver()))) {
             Log.d(TAG, "Skip updateFallbackActiveDeviceIfNeeded, disable flag is on");
             return;
         }
