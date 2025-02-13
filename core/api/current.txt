@@ -17603,7 +17603,6 @@ package android.graphics {
     method public void setIntUniform(@NonNull String, int, int, int);
     method public void setIntUniform(@NonNull String, int, int, int, int);
     method public void setIntUniform(@NonNull String, @NonNull int[]);
-    method @FlaggedApi("com.android.graphics.hwui.flags.shader_color_space") public void setWorkingColorSpace(@Nullable android.graphics.ColorSpace);
   }
 
   @FlaggedApi("com.android.graphics.hwui.flags.runtime_color_filters_blenders") public class RuntimeXfermode extends android.graphics.Xfermode {
