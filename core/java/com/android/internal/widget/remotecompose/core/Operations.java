@@ -35,6 +35,7 @@ import com.android.internal.widget.remotecompose.core.operations.DrawBitmapFontT
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmapInt;
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmapScaled;
 import com.android.internal.widget.remotecompose.core.operations.DrawCircle;
+import com.android.internal.widget.remotecompose.core.operations.DrawContent;
 import com.android.internal.widget.remotecompose.core.operations.DrawLine;
 import com.android.internal.widget.remotecompose.core.operations.DrawOval;
 import com.android.internal.widget.remotecompose.core.operations.DrawPath;
@@ -81,6 +82,7 @@ import com.android.internal.widget.remotecompose.core.operations.Theme;
 import com.android.internal.widget.remotecompose.core.operations.TimeAttribute;
 import com.android.internal.widget.remotecompose.core.operations.TouchExpression;
 import com.android.internal.widget.remotecompose.core.operations.layout.CanvasContent;
+import com.android.internal.widget.remotecompose.core.operations.layout.CanvasOperations;
 import com.android.internal.widget.remotecompose.core.operations.layout.ClickModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.ComponentStart;
 import com.android.internal.widget.remotecompose.core.operations.layout.ContainerEnd;
@@ -105,6 +107,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.modifier
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.BorderModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ClipRectModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentVisibilityOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.DrawContentOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.GraphicsLayerModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HeightInModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HeightModifierOperation;
@@ -172,6 +175,7 @@ public class Operations {
     public static final int DATA_PATH = 123;
     public static final int DRAW_PATH = 124;
     public static final int DRAW_TWEEN_PATH = 125;
+    public static final int DRAW_CONTENT = 139;
     public static final int MATRIX_SCALE = 126;
     public static final int MATRIX_TRANSLATE = 127;
     public static final int MATRIX_SKEW = 128;
@@ -215,6 +219,8 @@ public class Operations {
     public static final int ATTRIBUTE_TEXT = 170;
     public static final int ATTRIBUTE_IMAGE = 171;
     public static final int ATTRIBUTE_TIME = 172;
+    public static final int CANVAS_OPERATIONS = 173;
+    public static final int MODIFIER_DRAW_CONTENT = 174;
 
     ///////////////////////////////////////// ======================
 
@@ -366,6 +372,7 @@ public class Operations {
         map.put(MODIFIER_SCROLL, ScrollModifierOperation::read);
         map.put(MODIFIER_MARQUEE, MarqueeModifierOperation::read);
         map.put(MODIFIER_RIPPLE, RippleModifierOperation::read);
+        map.put(MODIFIER_DRAW_CONTENT, DrawContentOperation::read);
 
         map.put(CONTAINER_END, ContainerEnd::read);
 
@@ -393,6 +400,7 @@ public class Operations {
         map.put(LAYOUT_TEXT, TextLayout::read);
 
         map.put(LAYOUT_STATE, StateLayout::read);
+        map.put(DRAW_CONTENT, DrawContent::read);
 
         map.put(COMPONENT_VALUE, ComponentValue::read);
         map.put(DRAW_ARC, DrawArc::read);
@@ -409,6 +417,7 @@ public class Operations {
         map.put(PARTICLE_LOOP, ParticlesLoop::read);
         map.put(FUNCTION_CALL, FloatFunctionCall::read);
         map.put(FUNCTION_DEFINE, FloatFunctionDefine::read);
+        map.put(CANVAS_OPERATIONS, CanvasOperations::read);
 
         map.put(ACCESSIBILITY_SEMANTICS, CoreSemantics::read);
         map.put(ATTRIBUTE_IMAGE, ImageAttribute::read);
