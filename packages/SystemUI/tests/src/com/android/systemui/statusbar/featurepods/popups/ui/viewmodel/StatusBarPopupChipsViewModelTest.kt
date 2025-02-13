@@ -71,4 +71,25 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
                 assertThat(shownPopupChips.first().chipId).isEqualTo(PopupChipId.MediaControl)
             }
         }
+
+    @Test
+    fun shownPopupChips_mediaChipToggled_popupShown() =
+        kosmos.runTest {
+            val shownPopupChips = underTest.shownPopupChips
+
+            val userMedia = MediaData(active = true, song = "test")
+            val instanceId = userMedia.instanceId
+
+            mediaFilterRepository.addSelectedUserMediaEntry(userMedia)
+            mediaFilterRepository.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId))
+
+            Snapshot.takeSnapshot {
+                assertThat(shownPopupChips).hasSize(1)
+                val mediaChip = shownPopupChips.first()
+                assertThat(mediaChip.isPopupShown).isFalse()
+
+                mediaChip.showPopup.invoke()
+                assertThat(shownPopupChips.first().isPopupShown).isTrue()
+            }
+        }
 }

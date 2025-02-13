@@ -18,6 +18,8 @@ package com.android.systemui.statusbar.featurepods.popups.ui.viewmodel
 
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.statusbar.featurepods.media.ui.viewmodel.MediaControlChipViewModel
@@ -37,6 +39,9 @@ class StatusBarPopupChipsViewModel
 constructor(mediaControlChip: MediaControlChipViewModel) : ExclusiveActivatable() {
     private val hydrator: Hydrator = Hydrator("StatusBarPopupChipsViewModel.hydrator")
 
+    /** The ID of the current chip that is showing its popup, or `null` if no chip is shown. */
+    private var currentShownPopupChipId by mutableStateOf<PopupChipId?>(null)
+
     private val incomingPopupChipBundle: PopupChipBundle by
         hydrator.hydratedStateOf(
             traceName = "incomingPopupChipBundle",
@@ -47,7 +52,14 @@ constructor(mediaControlChip: MediaControlChipViewModel) : ExclusiveActivatable(
     val shownPopupChips: List<PopupChipModel.Shown> by derivedStateOf {
         if (StatusBarPopupChips.isEnabled) {
             val bundle = incomingPopupChipBundle
-            listOfNotNull(bundle.media).filterIsInstance<PopupChipModel.Shown>()
+
+            listOfNotNull(bundle.media).filterIsInstance<PopupChipModel.Shown>().map { chip ->
+                chip.copy(
+                    isPopupShown = chip.chipId == currentShownPopupChipId,
+                    showPopup = { currentShownPopupChipId = chip.chipId },
+                    hidePopup = { currentShownPopupChipId = null },
+                )
+            }
         } else {
             emptyList()
         }

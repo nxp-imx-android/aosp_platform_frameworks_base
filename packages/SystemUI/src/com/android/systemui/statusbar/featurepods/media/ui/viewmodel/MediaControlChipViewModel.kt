@@ -82,10 +82,6 @@ constructor(
             chipId = PopupChipId.MediaControl,
             icon = defaultIcon,
             chipText = model.songName.toString(),
-            isToggled = false,
-            // TODO(b/385202114): Show a popup containing the media carousal when the chip is
-            // toggled.
-            onToggle = {},
             hoverBehavior = createHoverBehavior(model),
         )
     }
