@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.pip;
+package com.android.wm.shell.common.pip;
 
 import static org.junit.Assert.assertEquals;
 
@@ -25,8 +25,6 @@ import android.testing.TestableLooper;
 import androidx.test.filters.SmallTest;
 
 import com.android.wm.shell.ShellTestCase;
-import com.android.wm.shell.common.pip.PipBoundsState;
-import com.android.wm.shell.common.pip.PipSnapAlgorithm;
 
 import org.junit.Before;
 import org.junit.Test;
