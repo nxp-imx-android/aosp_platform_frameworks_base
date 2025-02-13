@@ -7759,7 +7759,17 @@
          @FlaggedApi("com.android.server.telecom.flags.telecom_resolve_hidden_dependencies")
          @hide -->
     <permission android:name="android.permission.READ_BLOCKED_NUMBERS"
-                android:protectionLevel="signature" />
+                android:protectionLevel="signature"
+                android:featureFlag="!android.permission.flags.grant_read_blocked_numbers_to_system_ui_intelligence" />
+
+    <!-- Allows the holder to read blocked numbers. See
+         {@link android.provider.BlockedNumberContract}.
+         @SystemApi
+         @FlaggedApi("com.android.server.telecom.flags.telecom_resolve_hidden_dependencies")
+         @hide -->
+    <permission android:name="android.permission.READ_BLOCKED_NUMBERS"
+                android:protectionLevel="signature|role"
+                android:featureFlag="android.permission.flags.grant_read_blocked_numbers_to_system_ui_intelligence" />
 
     <!-- Allows the holder to write blocked numbers. See
          {@link android.provider.BlockedNumberContract}.
