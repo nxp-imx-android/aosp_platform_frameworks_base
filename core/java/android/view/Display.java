@@ -1599,7 +1599,6 @@ public final class Display {
             mGlobal.registerDisplayListener(toRegister, executor,
                     DisplayManagerGlobal
                                     .INTERNAL_EVENT_FLAG_DISPLAY_BASIC_CHANGED
-                            | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_REFRESH_RATE
                             | DisplayManagerGlobal
                                     .INTERNAL_EVENT_FLAG_DISPLAY_HDR_SDR_RATIO_CHANGED,
                     ActivityThread.currentPackageName());
