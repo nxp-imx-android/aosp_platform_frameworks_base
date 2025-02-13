@@ -91,7 +91,8 @@
     <!-- Accessibility action for moving docked stack divider to make the right screen full screen [CHAR LIMIT=NONE] -->
     <string name="accessibility_action_divider_right_full">Right full screen</string>
     <!-- Accessibility action for swapping the apps around the divider (double tap action) [CHAR LIMIT=NONE] -->
-    <string name="accessibility_action_divider_swap">Swap Apps</string>
+    <string name="accessibility_action_divider_swap_vertical">Swap top app with bottom</string>
+    <string name="accessibility_action_divider_swap_horizontal">Swap left app with right</string>
 
     <!-- Accessibility action for moving docked stack divider to make the top screen full screen [CHAR LIMIT=NONE] -->
     <string name="accessibility_action_divider_top_full">Top full screen</string>
