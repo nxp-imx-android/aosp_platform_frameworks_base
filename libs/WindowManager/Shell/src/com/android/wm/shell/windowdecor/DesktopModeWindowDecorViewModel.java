@@ -1502,7 +1502,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     // Do not create an indicator at all if we're not past transition height.
                     DisplayLayout layout = mDisplayController
                             .getDisplayLayout(relevantDecor.mTaskInfo.displayId);
-                    if (ev.getRawY() < 2 * layout.stableInsets().top
+                    // It's possible task is not at the top of the screen (e.g. bottom of vertical
+                    // Splitscreen)
+                    final int taskTop = relevantDecor.mTaskInfo.configuration.windowConfiguration
+                            .getBounds().top;
+                    if (ev.getRawY() < 2 * layout.stableInsets().top + taskTop
                             && mMoveToDesktopAnimator == null) {
                         return;
                     }
