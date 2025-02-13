@@ -321,7 +321,7 @@ flag {
   name: "no_sbnholder"
   namespace: "systemui"
   description: "removes sbnholder from NLS"
-  bug: "362981561"
+  bug: "378128805"
 }
 
 flag {
