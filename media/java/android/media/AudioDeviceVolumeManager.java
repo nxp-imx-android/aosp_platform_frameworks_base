@@ -16,6 +16,9 @@
 
 package android.media;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+import static android.media.audio.Flags.FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT;
+
 import static com.android.media.flags.Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL;
 
 import android.Manifest;
@@ -91,6 +94,8 @@ public class AudioDeviceVolumeManager {
      * @see #setDeviceAbsoluteVolumeBehavior(AudioDeviceAttributes, VolumeInfo, boolean, Executor,
      *          OnAudioDeviceVolumeChangedListener)
      */
+    @SystemApi(client = MODULE_LIBRARIES)
+    @FlaggedApi(FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT)
     public interface OnAudioDeviceVolumeChangedListener {
         /**
          * Called the device for the given audio device has changed.
@@ -203,6 +208,30 @@ public class AudioDeviceVolumeManager {
      * volume updates to apply on that device
      * @param device the audio device set to absolute volume mode
      * @param volume the type of volume this device responds to
+     * @param executor the Executor used for receiving volume updates through the listener
+     * @param vclistener the callback for volume updates
+     */
+    @SystemApi(client = MODULE_LIBRARIES)
+    @RequiresPermission(anyOf = { android.Manifest.permission.MODIFY_AUDIO_ROUTING,
+            android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED,
+            android.Manifest.permission.BLUETOOTH_PRIVILEGED,
+            android.Manifest.permission.BLUETOOTH_STACK})
+    @FlaggedApi(FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT)
+    public void setDeviceAbsoluteVolumeBehavior(
+            @NonNull AudioDeviceAttributes device,
+            @NonNull VolumeInfo volume,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull OnAudioDeviceVolumeChangedListener vclistener) {
+        setDeviceAbsoluteVolumeBehavior(device, volume, /*handlesVolumeAdjustment=*/false, executor,
+                vclistener);
+    }
+
+    /**
+     * @hide
+     * Configures a device to use absolute volume model, and registers a listener for receiving
+     * volume updates to apply on that device
+     * @param device the audio device set to absolute volume mode
+     * @param volume the type of volume this device responds to
      * @param handlesVolumeAdjustment whether the controller handles volume adjustments separately
      * from volume changes. If true, adjustments from {@link AudioManager#adjustStreamVolume}
      * will be sent via {@link OnAudioDeviceVolumeChangedListener#onAudioDeviceVolumeAdjusted}.
@@ -210,7 +239,7 @@ public class AudioDeviceVolumeManager {
      * @param vclistener the callback for volume updates
      */
     @RequiresPermission(anyOf = { android.Manifest.permission.MODIFY_AUDIO_ROUTING,
-            android.Manifest.permission.BLUETOOTH_PRIVILEGED })
+            android.Manifest.permission.BLUETOOTH_PRIVILEGED})
     public void setDeviceAbsoluteVolumeBehavior(
             @NonNull AudioDeviceAttributes device,
             @NonNull VolumeInfo volume,
@@ -229,6 +258,30 @@ public class AudioDeviceVolumeManager {
      * registers a listener for receiving volume updates to apply on that device
      * @param device the audio device set to absolute multi-volume mode
      * @param volumes the list of volumes the given device responds to
+     * @param executor the Executor used for receiving volume updates through the listener
+     * @param vclistener the callback for volume updates
+     */
+    @SystemApi(client = MODULE_LIBRARIES)
+    @RequiresPermission(anyOf = { android.Manifest.permission.MODIFY_AUDIO_ROUTING,
+            android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED,
+            android.Manifest.permission.BLUETOOTH_PRIVILEGED,
+            android.Manifest.permission.BLUETOOTH_STACK})
+    @FlaggedApi(FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT)
+    public void setDeviceAbsoluteMultiVolumeBehavior(
+            @NonNull AudioDeviceAttributes device,
+            @NonNull List<VolumeInfo> volumes,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull OnAudioDeviceVolumeChangedListener vclistener) {
+        setDeviceAbsoluteMultiVolumeBehavior(device, volumes, /*handlesVolumeAdjustment=*/false,
+                executor, vclistener);
+    }
+
+    /**
+     * @hide
+     * Configures a device to use absolute volume model applied to different volume types, and
+     * registers a listener for receiving volume updates to apply on that device
+     * @param device the audio device set to absolute multi-volume mode
+     * @param volumes the list of volumes the given device responds to
      * @param handlesVolumeAdjustment whether the controller handles volume adjustments separately
      * from volume changes. If true, adjustments from {@link AudioManager#adjustStreamVolume}
      * will be sent via {@link OnAudioDeviceVolumeChangedListener#onAudioDeviceVolumeAdjusted}.
@@ -236,7 +289,7 @@ public class AudioDeviceVolumeManager {
      * @param vclistener the callback for volume updates
      */
     @RequiresPermission(anyOf = { android.Manifest.permission.MODIFY_AUDIO_ROUTING,
-            android.Manifest.permission.BLUETOOTH_PRIVILEGED })
+            android.Manifest.permission.BLUETOOTH_PRIVILEGED})
     public void setDeviceAbsoluteMultiVolumeBehavior(
             @NonNull AudioDeviceAttributes device,
             @NonNull List<VolumeInfo> volumes,
