@@ -25,7 +25,7 @@ import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimati
 import com.android.systemui.keyguard.shared.transition.keyguardTransitionAnimationCallbackDelegator
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.shade.domain.interactor.shadeInteractor
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.unfold.domain.interactor.unfoldTransitionInteractor
 
 val Kosmos.lockscreenContentViewModelFactory by Fixture {
@@ -38,7 +38,7 @@ val Kosmos.lockscreenContentViewModelFactory by Fixture {
                 interactor = keyguardBlueprintInteractor,
                 authController = authController,
                 touchHandling = keyguardTouchHandlingViewModel,
-                shadeInteractor = shadeInteractor,
+                shadeModeInteractor = shadeModeInteractor,
                 unfoldTransitionInteractor = unfoldTransitionInteractor,
                 deviceEntryInteractor = deviceEntryInteractor,
                 transitionInteractor = keyguardTransitionInteractor,

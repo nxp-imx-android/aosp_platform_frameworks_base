@@ -41,16 +41,13 @@ constructor(
 ) {
 
     @Composable
-    fun ContentScope.KeyguardMediaCarousel(
-        isShadeLayoutWide: Boolean,
-        modifier: Modifier = Modifier,
-    ) {
+    fun ContentScope.KeyguardMediaCarousel(modifier: Modifier = Modifier) {
         val viewModel =
             rememberViewModel(traceName = "KeyguardMediaCarousel") {
                 keyguardMediaViewModelFactory.create()
             }
         val horizontalPadding =
-            if (isShadeLayoutWide) {
+            if (viewModel.isShadeLayoutWide) {
                 dimensionResource(id = R.dimen.notification_side_paddings)
             } else {
                 dimensionResource(id = R.dimen.notification_side_paddings) +
