@@ -3256,7 +3256,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
     }
 
-    private boolean allowContentModeSwitch() {
+     /**
+      * Note that we only allow displays that are able to show system decorations to use the content
+      * mode switch; however, not all displays that are able to show system decorations are allowed
+      * to use the content mode switch.
+      */
+     boolean allowContentModeSwitch() {
         // The default display should always show system decorations.
         if (isDefaultDisplay) {
             return false;

@@ -247,12 +247,7 @@ class DisplayWindowSettings {
 
     void setShouldShowSystemDecorsLocked(@NonNull DisplayContent dc, boolean shouldShow) {
         final boolean changed = (shouldShow != shouldShowSystemDecorsLocked(dc));
-
-        final DisplayInfo displayInfo = dc.getDisplayInfo();
-        final SettingsProvider.SettingsEntry overrideSettings =
-                mSettingsProvider.getOverrideSettings(displayInfo);
-        overrideSettings.mShouldShowSystemDecors = shouldShow;
-        mSettingsProvider.updateOverrideSettings(displayInfo, overrideSettings);
+        setShouldShowSystemDecorsInternalLocked(dc, shouldShow);
 
         if (enableDisplayContentModeManagement()) {
             if (dc.isDefaultDisplay || dc.isPrivate() || !changed) {
@@ -267,6 +262,15 @@ class DisplayWindowSettings {
                 dc.getDisplayPolicy().notifyDisplayRemoveSystemDecorations();
             }
         }
+    }
+
+     void setShouldShowSystemDecorsInternalLocked(@NonNull DisplayContent dc,
+            boolean shouldShow) {
+        final DisplayInfo displayInfo = dc.getDisplayInfo();
+        final SettingsProvider.SettingsEntry overrideSettings =
+                mSettingsProvider.getOverrideSettings(displayInfo);
+        overrideSettings.mShouldShowSystemDecors = shouldShow;
+        mSettingsProvider.updateOverrideSettings(displayInfo, overrideSettings);
     }
 
     boolean isHomeSupportedLocked(@NonNull DisplayContent dc) {
