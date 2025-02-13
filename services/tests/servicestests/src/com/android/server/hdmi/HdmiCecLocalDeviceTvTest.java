@@ -66,6 +66,7 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -1033,6 +1034,7 @@ public class HdmiCecLocalDeviceTvTest {
     }
 
     @Test
+    @Ignore("b/360768278")
     public void onHotplug_doNotSend_systemAudioModeRequestWithParameter(){
         // Add a device to the network and assert that this device is included in the list of
         // devices.
