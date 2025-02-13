@@ -1040,13 +1040,19 @@ constructor(
                 expandedLayout.load(context, R.xml.media_recommendations_expanded)
             }
         }
-        readjustPlayPauseWidth()
+        readjustUIUpdateConstraints()
         refreshState()
     }
 
-    private fun readjustPlayPauseWidth() {
+    private fun readjustUIUpdateConstraints() {
         // TODO: move to xml file when flag is removed.
         if (Flags.mediaControlsUiUpdate()) {
+            collapsedLayout.setGuidelineEnd(
+                R.id.action_button_guideline,
+                context.resources.getDimensionPixelSize(
+                    R.dimen.qs_media_session_collapsed_guideline
+                ),
+            )
             collapsedLayout.constrainWidth(
                 R.id.actionPlayPause,
                 context.resources.getDimensionPixelSize(R.dimen.qs_media_action_play_pause_width),
