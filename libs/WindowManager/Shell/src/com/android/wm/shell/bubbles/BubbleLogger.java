@@ -156,6 +156,12 @@ public class BubbleLogger {
         @UiEvent(doc = "while bubble bar is expanded, switch to another/existing bubble")
         BUBBLE_BAR_BUBBLE_SWITCHED(1977),
 
+        @UiEvent(doc = "bubble bar moved to the left edge of the screen by dragging a task")
+        BUBBLE_BAR_MOVED_LEFT_DRAG_TASK(2146),
+
+        @UiEvent(doc = "bubble bar moved to the right edge of the screen by dragging a task")
+        BUBBLE_BAR_MOVED_RIGHT_DRAG_TASK(2147),
+
         // endregion
         ;
 

@@ -257,8 +257,8 @@ sealed class DragToDesktopTransitionHandler(
                 // Animation is handled by BubbleController
                 val wct = WindowContainerTransaction()
                 restoreWindowOrder(wct, state)
-                // TODO(b/388851898): pass along information about left or right side
-                requestBubbleFromScaledTask(wct)
+                val onLeft = cancelState == CancelState.CANCEL_BUBBLE_LEFT
+                requestBubbleFromScaledTask(wct, onLeft)
             }
         } else {
             // There's no dragged task, this can happen when the "cancel" happened too quickly
@@ -318,23 +318,27 @@ sealed class DragToDesktopTransitionHandler(
         splitScreenController.requestEnterSplitSelect(taskInfo, wct, splitPosition, taskBounds)
     }
 
-    private fun requestBubbleFromScaledTask(wct: WindowContainerTransaction) {
+    private fun requestBubbleFromScaledTask(wct: WindowContainerTransaction, onLeft: Boolean) {
         // TODO(b/391928049): update density once we can drag from desktop to bubble
         val state = requireTransitionState()
         val taskInfo = state.draggedTaskChange?.taskInfo ?: error("Expected non-null taskInfo")
         val taskBounds = getAnimatedTaskBounds()
         state.dragAnimator.cancelAnimator()
-        requestBubble(wct, taskInfo, taskBounds)
+        requestBubble(wct, taskInfo, onLeft, taskBounds)
     }
 
     private fun requestBubble(
         wct: WindowContainerTransaction,
         taskInfo: RunningTaskInfo,
+        onLeft: Boolean,
         taskBounds: Rect = Rect(taskInfo.configuration.windowConfiguration.bounds),
     ) {
         val controller =
             bubbleController.orElseThrow { IllegalStateException("BubbleController not set") }
-        controller.expandStackAndSelectBubble(taskInfo, BubbleTransitions.DragData(taskBounds, wct))
+        controller.expandStackAndSelectBubble(
+            taskInfo,
+            BubbleTransitions.DragData(taskBounds, wct, onLeft),
+        )
     }
 
     override fun startAnimation(
@@ -497,8 +501,8 @@ sealed class DragToDesktopTransitionHandler(
                 state.draggedTaskChange?.taskInfo ?: error("Expected non-null task info.")
             val wct = WindowContainerTransaction()
             restoreWindowOrder(wct)
-            // TODO(b/388851898): pass along information about left or right side
-            requestBubble(wct, taskInfo)
+            val onLeft = state.cancelState == CancelState.CANCEL_BUBBLE_LEFT
+            requestBubble(wct, taskInfo, onLeft)
         }
         return true
     }
