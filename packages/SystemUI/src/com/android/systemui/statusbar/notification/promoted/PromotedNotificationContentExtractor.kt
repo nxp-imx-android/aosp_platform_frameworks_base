@@ -48,6 +48,7 @@ import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider
 import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider.ImageSizeClass.MediumSquare
 import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider.ImageSizeClass.SmallSquare
 import com.android.systemui.statusbar.notification.row.shared.SkeletonImageTransform
+import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 
 interface PromotedNotificationContentExtractor {
@@ -64,6 +65,7 @@ class PromotedNotificationContentExtractorImpl
 constructor(
     @ShadeDisplayAware private val context: Context,
     private val skeletonImageTransform: SkeletonImageTransform,
+    private val systemClock: SystemClock,
     private val logger: PromotedNotificationLogger,
 ) : PromotedNotificationContentExtractor {
     override fun extractContent(
@@ -168,15 +170,17 @@ constructor(
         extras?.getBoolean(EXTRA_PROGRESS_INDETERMINATE)
 
     private fun Notification.extractWhen(): When? {
-        val time = `when`
-        val showsTime = showsTime()
-        val showsChronometer = showsChronometer()
-        val countDown = chronometerCountDown()
-
         return when {
-            showsTime -> When(time, When.Mode.BasicTime)
-            showsChronometer ->
-                When(time, if (countDown) When.Mode.CountDown else When.Mode.CountUp)
+            showsChronometer() -> {
+                When.Chronometer(
+                    elapsedRealtimeMillis =
+                        `when` + systemClock.elapsedRealtime() - systemClock.currentTimeMillis(),
+                    isCountDown = chronometerCountDown(),
+                )
+            }
+
+            showsTime() -> When.Time(currentTimeMillis = `when`)
+
             else -> null
         }
     }

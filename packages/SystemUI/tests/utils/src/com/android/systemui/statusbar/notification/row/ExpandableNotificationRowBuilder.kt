@@ -228,6 +228,7 @@ class ExpandableNotificationRowBuilder(
             PromotedNotificationContentExtractorImpl(
                 context,
                 SkeletonImageTransform(context),
+                mFakeSystemClock,
                 PromotedNotificationLogger(logcatLogBuffer("PromotedNotifLog")),
             )
 

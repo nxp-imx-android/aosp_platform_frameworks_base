@@ -45,6 +45,7 @@ import com.android.systemui.statusbar.notification.data.repository.UnconfinedFak
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
@@ -295,11 +296,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
                     this.shortCriticalText = "Arrived"
-                    this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime + 30.minutes.inWholeMilliseconds,
-                            mode = PromotedNotificationContentModel.When.Mode.BasicTime,
-                        )
+                    this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
                 }
             setNotifs(
                 listOf(
@@ -351,11 +348,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
                     this.wasPromotedAutomatically = true
-                    this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime + 30.minutes.inWholeMilliseconds,
-                            mode = PromotedNotificationContentModel.When.Mode.BasicTime,
-                        )
+                    this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
                 }
             setNotifs(
                 listOf(
@@ -383,11 +376,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
                     this.wasPromotedAutomatically = false
-                    this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime + 30.minutes.inWholeMilliseconds,
-                            mode = PromotedNotificationContentModel.When.Mode.BasicTime,
-                        )
+                    this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
                 }
             setNotifs(
                 listOf(
@@ -414,11 +403,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
-                    this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime + 13.minutes.inWholeMilliseconds,
-                            mode = PromotedNotificationContentModel.When.Mode.BasicTime,
-                        )
+                    this.time = When.Time(currentTime + 13.minutes.inWholeMilliseconds)
                 }
 
             setNotifs(
@@ -446,11 +431,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
-                    this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime + 500,
-                            mode = PromotedNotificationContentModel.When.Mode.BasicTime,
-                        )
+                    this.time = When.Time(currentTime + 500)
                 }
 
             setNotifs(
@@ -478,11 +459,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
-                    this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime,
-                            mode = PromotedNotificationContentModel.When.Mode.BasicTime,
-                        )
+                    this.time = When.Time(currentTime)
                 }
 
             setNotifs(
@@ -510,11 +487,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
-                    this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime - 2.minutes.inWholeMilliseconds,
-                            mode = PromotedNotificationContentModel.When.Mode.BasicTime,
-                        )
+                    this.time = When.Time(currentTime - 2.minutes.inWholeMilliseconds)
                 }
 
             setNotifs(
@@ -543,11 +516,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
-                    this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime + 3.minutes.inWholeMilliseconds,
-                            mode = PromotedNotificationContentModel.When.Mode.BasicTime,
-                        )
+                    this.time = When.Time(currentTime + 3.minutes.inWholeMilliseconds)
                 }
 
             setNotifs(
@@ -579,13 +548,16 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val currentTime = 30.minutes.inWholeMilliseconds
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
+            val currentElapsed =
+                currentTime + fakeSystemClock.elapsedRealtime() -
+                    fakeSystemClock.currentTimeMillis()
+
+            val whenElapsed = currentElapsed - 1.minutes.inWholeMilliseconds
+
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
                     this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime + 10.minutes.inWholeMilliseconds,
-                            mode = PromotedNotificationContentModel.When.Mode.CountUp,
-                        )
+                        When.Chronometer(elapsedRealtimeMillis = whenElapsed, isCountDown = false)
                 }
             setNotifs(
                 listOf(
@@ -599,6 +571,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             assertThat(latest).hasSize(1)
             assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest!![0] as OngoingActivityChipModel.Active.Timer).startTimeMs)
+                .isEqualTo(whenElapsed)
         }
 
     @Test
@@ -609,13 +583,16 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val currentTime = 30.minutes.inWholeMilliseconds
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
+            val currentElapsed =
+                currentTime + fakeSystemClock.elapsedRealtime() -
+                    fakeSystemClock.currentTimeMillis()
+
+            val whenElapsed = currentElapsed + 10.minutes.inWholeMilliseconds
+
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
                     this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime + 10.minutes.inWholeMilliseconds,
-                            mode = PromotedNotificationContentModel.When.Mode.CountDown,
-                        )
+                        When.Chronometer(elapsedRealtimeMillis = whenElapsed, isCountDown = true)
                 }
             setNotifs(
                 listOf(
@@ -629,6 +606,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             assertThat(latest).hasSize(1)
             assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest!![0] as OngoingActivityChipModel.Active.Timer).startTimeMs)
+                .isEqualTo(whenElapsed)
         }
 
     @Test
@@ -641,11 +620,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
-                    this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime + 10.minutes.inWholeMilliseconds,
-                            mode = PromotedNotificationContentModel.When.Mode.BasicTime,
-                        )
+                    this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
                 }
             setNotifs(
                 listOf(
@@ -675,11 +650,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
-                    this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime + 10.minutes.inWholeMilliseconds,
-                            mode = PromotedNotificationContentModel.When.Mode.BasicTime,
-                        )
+                    this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
                 }
             setNotifs(
                 listOf(
@@ -716,19 +687,11 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
-                    this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime + 10.minutes.inWholeMilliseconds,
-                            mode = PromotedNotificationContentModel.When.Mode.BasicTime,
-                        )
+                    this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
                 }
             val otherPromotedContentBuilder =
                 PromotedNotificationContentModel.Builder("other notif").apply {
-                    this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime + 10.minutes.inWholeMilliseconds,
-                            mode = PromotedNotificationContentModel.When.Mode.BasicTime,
-                        )
+                    this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
                 }
             val icon = createStatusBarIconViewOrNull()
             val otherIcon = createStatusBarIconViewOrNull()
@@ -772,11 +735,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             val promotedContentBuilder =
                 PromotedNotificationContentModel.Builder("notif").apply {
-                    this.time =
-                        PromotedNotificationContentModel.When(
-                            time = currentTime + 10.minutes.inWholeMilliseconds,
-                            mode = PromotedNotificationContentModel.When.Mode.BasicTime,
-                        )
+                    this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
                 }
             setNotifs(
                 listOf(
