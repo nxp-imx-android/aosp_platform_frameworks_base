@@ -471,6 +471,20 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
     }
 
     /**
+     * This is similar to {@link #isOptingOutEdgeToEdgeEnforcement} but the caller needs to check
+     * whether the app declares style to opt out.
+     */
+    public static boolean isOptOutEdgeToEdgeEnabled(ApplicationInfo info, boolean local) {
+        final boolean disabled = Flags.disableOptOutEdgeToEdge()
+                && (local
+                        // Calling this doesn't require a permission.
+                        ? CompatChanges.isChangeEnabled(DISABLE_OPT_OUT_EDGE_TO_EDGE)
+                        // Calling this requires permissions.
+                        : info.isChangeEnabled(DISABLE_OPT_OUT_EDGE_TO_EDGE));
+        return !disabled;
+    }
+
+    /**
      * Returns whether the given application is opting out edge-to-edge enforcement.
      *
      * @param info The application to query.
@@ -480,13 +494,7 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
      */
     public static boolean isOptingOutEdgeToEdgeEnforcement(ApplicationInfo info, boolean local,
             TypedArray windowStyle) {
-        final boolean disabled = Flags.disableOptOutEdgeToEdge()
-                && (local
-                        // Calling this doesn't require a permission.
-                        ? CompatChanges.isChangeEnabled(DISABLE_OPT_OUT_EDGE_TO_EDGE)
-                        // Calling this requires permissions.
-                        : info.isChangeEnabled(DISABLE_OPT_OUT_EDGE_TO_EDGE));
-        return !disabled && windowStyle.getBoolean(
+        return isOptOutEdgeToEdgeEnabled(info, local) && windowStyle.getBoolean(
                 R.styleable.Window_windowOptOutEdgeToEdgeEnforcement, false /* default */);
 
     }
