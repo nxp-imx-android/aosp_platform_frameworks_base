@@ -1066,7 +1066,6 @@ public final class DisplayPowerControllerTest {
                 com.android.internal.R.bool.config_allowAutoBrightnessWhileDozing, true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
         when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
-        when(mDisplayManagerFlagsMock.offloadControlsDozeAutoBrightness()).thenReturn(true);
         when(mDisplayOffloadSession.allowAutoBrightnessInDoze()).thenReturn(true);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
 
@@ -1172,7 +1171,6 @@ public final class DisplayPowerControllerTest {
                 com.android.internal.R.bool.config_allowAutoBrightnessWhileDozing, true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
         when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
-        when(mDisplayManagerFlagsMock.offloadControlsDozeAutoBrightness()).thenReturn(true);
         when(mDisplayOffloadSession.allowAutoBrightnessInDoze()).thenReturn(false);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
 
