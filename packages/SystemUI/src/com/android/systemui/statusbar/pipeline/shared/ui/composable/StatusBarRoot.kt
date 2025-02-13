@@ -255,10 +255,9 @@ fun StatusBarRoot(
                                 )
 
                                 setContent {
-                                    val chips =
-                                        statusBarViewModel.statusBarPopupChips
-                                            .collectAsStateWithLifecycle()
-                                    StatusBarPopupChipsContainer(chips = chips.value)
+                                    StatusBarPopupChipsContainer(
+                                        chips = statusBarViewModel.popupChips
+                                    )
                                 }
                             }
                         endSideContent.addView(composeView, 0)
