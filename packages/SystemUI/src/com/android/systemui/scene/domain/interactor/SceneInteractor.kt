@@ -234,6 +234,10 @@ constructor(
      * The change is animated. Therefore, it will be some time before the UI will switch to the
      * desired scene. Once enough of the transition has occurred, the [currentScene] will become
      * [toScene] (unless the transition is canceled by user action or another call to this method).
+     *
+     * If [forceSettleToTargetScene] is `true` and the target scene is the same as the current
+     * scene, any current transition will be canceled and an animation to the target scene will be
+     * started.
      */
     @JvmOverloads
     fun changeScene(
@@ -241,9 +245,18 @@ constructor(
         loggingReason: String,
         transitionKey: TransitionKey? = null,
         sceneState: Any? = null,
+        forceSettleToTargetScene: Boolean = false,
     ) {
         val currentSceneKey = currentScene.value
         val resolvedScene = sceneFamilyResolvers.get()[toScene]?.resolvedScene?.value ?: toScene
+
+        if (resolvedScene == currentSceneKey && forceSettleToTargetScene) {
+            logger.logSceneChangeCancellation(scene = resolvedScene, sceneState = sceneState)
+            onSceneAboutToChangeListener.forEach {
+                it.onSceneAboutToChange(resolvedScene, sceneState)
+            }
+            repository.freezeAndAnimateToCurrentState()
+        }
 
         if (
             !validateSceneChange(

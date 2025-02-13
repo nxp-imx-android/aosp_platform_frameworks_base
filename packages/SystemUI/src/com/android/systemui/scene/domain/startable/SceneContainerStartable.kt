@@ -554,6 +554,7 @@ constructor(
                         targetSceneKey = Scenes.Lockscreen,
                         loggingReason = "device is starting to sleep",
                         sceneState = keyguardInteractor.asleepKeyguardState.value,
+                        freezeAndAnimateToCurrentState = true,
                     )
                 } else {
                     val canSwipeToEnter = deviceEntryInteractor.canSwipeToEnter.value
@@ -933,11 +934,13 @@ constructor(
         targetSceneKey: SceneKey,
         loggingReason: String,
         sceneState: Any? = null,
+        freezeAndAnimateToCurrentState: Boolean = false,
     ) {
         sceneInteractor.changeScene(
             toScene = targetSceneKey,
             loggingReason = loggingReason,
             sceneState = sceneState,
+            forceSettleToTargetScene = freezeAndAnimateToCurrentState,
         )
     }
 
