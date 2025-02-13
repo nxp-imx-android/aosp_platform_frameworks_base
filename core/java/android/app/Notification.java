@@ -6594,13 +6594,8 @@ public class Notification implements Parcelable
             int notifMargin = resources.getDimensionPixelSize(R.dimen.notification_2025_margin);
             // Spacing between the text lines, scaling with the font size (originally in sp)
             int spacing = resources.getDimensionPixelSize(spacingRes);
-
             // Size of the text in the notification top line (originally in sp)
-            int[] textSizeAttr = new int[] { android.R.attr.textSize };
-            TypedArray typedArray = context.obtainStyledAttributes(
-                    R.style.TextAppearance_DeviceDefault_Notification_Info, textSizeAttr);
-            int textSize = typedArray.getDimensionPixelSize(0 /* index */, -1 /* default */);
-            typedArray.recycle();
+            int textSize = resources.getDimensionPixelSize(R.dimen.notification_subtext_size);
 
             // Adding up all the values as pixels
             return notifMargin + spacing + textSize;
