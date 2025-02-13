@@ -190,7 +190,9 @@ class BackNavigationController {
             currentActivity = window.mActivityRecord;
             currentTask = window.getTask();
             if ((currentTask != null && !currentTask.isVisibleRequested())
-                    || (currentActivity != null && !currentActivity.isVisibleRequested())) {
+                    || (currentActivity != null && !currentActivity.isVisibleRequested())
+                    || (currentActivity != null && currentTask != null
+                            && currentTask.getTopNonFinishingActivity() != currentActivity)) {
                 // Closing transition is happening on focus window and should be update soon,
                 // don't drive back navigation with it.
                 ProtoLog.d(WM_DEBUG_BACK_PREVIEW, "Focus window is closing.");
