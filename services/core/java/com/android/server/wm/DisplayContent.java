@@ -46,6 +46,7 @@ import static android.view.Display.FLAG_PRIVATE;
 import static android.view.Display.FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.Display.STATE_UNKNOWN;
+import static android.view.Display.TYPE_EXTERNAL;
 import static android.view.Display.isSuspendedState;
 import static android.view.InsetsSource.ID_IME;
 import static android.view.Surface.ROTATION_0;
@@ -155,6 +156,7 @@ import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELD
 import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFields;
 import static com.android.server.wm.utils.RegionUtils.forEachRectReverse;
 import static com.android.server.wm.utils.RegionUtils.rectListToRegion;
+import static com.android.window.flags.Flags.enablePersistingDensityScaleForConnectedDisplays;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -426,6 +428,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @see WindowManagerService#setForcedDisplayDensityForUser(int, int, int)
      */
     int mBaseDisplayDensity = 0;
+
+    /**
+     * Ratio between overridden display density for current user and the initial display density,
+     * used only for external displays.
+     */
+    float mExternalDisplayForcedDensityRatio = 0.0f;
     boolean mIsDensityForced = false;
 
     /**
@@ -3065,6 +3073,17 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mDisplayPolicy.physicalDisplayChanged();
             }
 
+            // Real display metrics changed, so we should also update initial values.
+            mInitialDisplayWidth = newWidth;
+            mInitialDisplayHeight = newHeight;
+            mInitialDisplayDensity = newDensity;
+            mInitialPhysicalXDpi = newXDpi;
+            mInitialPhysicalYDpi = newYDpi;
+            mInitialDisplayCutout = newCutout;
+            mInitialRoundedCorners = newRoundedCorners;
+            mInitialDisplayShape = newDisplayShape;
+            mCurrentUniqueDisplayId = newUniqueId;
+
             // If there is an override set for base values - use it, otherwise use new values.
             updateBaseDisplayMetrics(mIsSizeForced ? mBaseDisplayWidth : newWidth,
                     mIsSizeForced ? mBaseDisplayHeight : newHeight,
@@ -3081,16 +3100,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mWmService.mDisplayWindowSettings.applyRotationSettingsToDisplayLocked(this);
             }
 
-            // Real display metrics changed, so we should also update initial values.
-            mInitialDisplayWidth = newWidth;
-            mInitialDisplayHeight = newHeight;
-            mInitialDisplayDensity = newDensity;
-            mInitialPhysicalXDpi = newXDpi;
-            mInitialPhysicalYDpi = newYDpi;
-            mInitialDisplayCutout = newCutout;
-            mInitialRoundedCorners = newRoundedCorners;
-            mInitialDisplayShape = newDisplayShape;
-            mCurrentUniqueDisplayId = newUniqueId;
             reconfigureDisplayLocked();
 
             if (physicalDisplayChanged) {
@@ -3143,6 +3152,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                         + mBaseDisplayHeight + " on display:" + getDisplayId());
             }
         }
+        // Update the base density if there is a forced density ratio.
+        if (enablePersistingDensityScaleForConnectedDisplays()
+                && mIsDensityForced && mExternalDisplayForcedDensityRatio != 0.0f) {
+            mBaseDisplayDensity = (int)
+                    (mInitialDisplayDensity * mExternalDisplayForcedDensityRatio + 0.5);
+        }
         if (mDisplayReady && !mDisplayPolicy.shouldKeepCurrentDecorInsets()) {
             mDisplayPolicy.mDecorInsets.invalidate();
         }
@@ -3171,6 +3186,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         if (density == getInitialDisplayDensity()) {
             density = 0;
+        }
+        // Save the new density ratio to settings for external displays.
+        if (enablePersistingDensityScaleForConnectedDisplays()
+                && mDisplayInfo.type == TYPE_EXTERNAL) {
+            mExternalDisplayForcedDensityRatio = (float)
+                    mBaseDisplayDensity / getInitialDisplayDensity();
+            mWmService.mDisplayWindowSettings.setForcedDensityRatio(getDisplayInfo(),
+                    mExternalDisplayForcedDensityRatio);
         }
         mWmService.mDisplayWindowSettings.setForcedDensity(getDisplayInfo(), density, userId);
     }
