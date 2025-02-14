@@ -83,4 +83,10 @@ interface SceneDataSource {
 
     /** Asks for [overlay] to be instantly hidden, without an animated transition of any kind. */
     fun instantlyHideOverlay(overlay: OverlayKey)
+
+    /**
+     * If currently in a transition between contents, cancel that transition and go back to the
+     * pre-transition state.
+     */
+    fun freezeAndAnimateToCurrentState()
 }

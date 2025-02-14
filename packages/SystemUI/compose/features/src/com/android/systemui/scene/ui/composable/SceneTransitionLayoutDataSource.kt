@@ -21,6 +21,7 @@ import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.observableTransitionState
 import com.android.systemui.scene.shared.model.SceneDataSource
 import kotlinx.coroutines.CoroutineScope
@@ -102,5 +103,9 @@ class SceneTransitionLayoutDataSource(
 
     override fun instantlyHideOverlay(overlay: OverlayKey) {
         state.snapTo(overlays = state.currentOverlays - overlay)
+    }
+
+    override fun freezeAndAnimateToCurrentState() {
+        (state.transitionState as? TransitionState.Transition)?.freezeAndAnimateToCurrentState()
     }
 }

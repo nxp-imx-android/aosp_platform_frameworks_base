@@ -44,6 +44,8 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
     var pendingOverlays: Set<OverlayKey>? = null
         private set
 
+    var freezeAndAnimateToCurrentStateCallCount = 0
+
     override fun changeScene(toScene: SceneKey, transitionKey: TransitionKey?) {
         if (_isPaused) {
             _pendingScene = toScene
@@ -83,6 +85,10 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
 
     override fun instantlyHideOverlay(overlay: OverlayKey) {
         hideOverlay(overlay)
+    }
+
+    override fun freezeAndAnimateToCurrentState() {
+        freezeAndAnimateToCurrentStateCallCount++
     }
 
     /**

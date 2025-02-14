@@ -151,5 +151,7 @@ constructor(
         override fun instantlyShowOverlay(overlay: OverlayKey) = Unit
 
         override fun instantlyHideOverlay(overlay: OverlayKey) = Unit
+
+        override fun freezeAndAnimateToCurrentState() = Unit
     }
 }

@@ -82,6 +82,10 @@ class SceneDataSourceDelegator(applicationScope: CoroutineScope, config: SceneCo
         delegateMutable.value.instantlyHideOverlay(overlay)
     }
 
+    override fun freezeAndAnimateToCurrentState() {
+        delegateMutable.value.freezeAndAnimateToCurrentState()
+    }
+
     /**
      * Binds the current, dependency injection provided [SceneDataSource] to the given object.
      *
@@ -120,5 +124,7 @@ class SceneDataSourceDelegator(applicationScope: CoroutineScope, config: SceneCo
         override fun instantlyShowOverlay(overlay: OverlayKey) = Unit
 
         override fun instantlyHideOverlay(overlay: OverlayKey) = Unit
+
+        override fun freezeAndAnimateToCurrentState() = Unit
     }
 }

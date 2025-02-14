@@ -163,4 +163,12 @@ constructor(
     fun setTransitionState(transitionState: Flow<ObservableTransitionState>?) {
         _transitionState.value = transitionState
     }
+
+    /**
+     * If currently in a transition between contents, cancel that transition and go back to the
+     * pre-transition state.
+     */
+    fun freezeAndAnimateToCurrentState() {
+        dataSource.freezeAndAnimateToCurrentState()
+    }
 }

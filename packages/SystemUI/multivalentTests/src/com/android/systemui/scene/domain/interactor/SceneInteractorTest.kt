@@ -757,4 +757,46 @@ class SceneInteractorTest : SysuiTestCase() {
 
             verify(processor, never()).onSceneAboutToChange(any(), any())
         }
+
+    @Test
+    fun changeScene_sameScene_withFreeze() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(underTest.currentScene)
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            val processor = mock<SceneInteractor.OnSceneAboutToChangeListener>()
+            underTest.registerSceneStateProcessor(processor)
+            verify(processor, never()).onSceneAboutToChange(any(), any())
+            assertThat(fakeSceneDataSource.freezeAndAnimateToCurrentStateCallCount).isEqualTo(0)
+
+            underTest.changeScene(
+                toScene = Scenes.Lockscreen,
+                loggingReason = "test",
+                sceneState = KeyguardState.AOD,
+                forceSettleToTargetScene = true,
+            )
+
+            verify(processor).onSceneAboutToChange(Scenes.Lockscreen, KeyguardState.AOD)
+            assertThat(fakeSceneDataSource.freezeAndAnimateToCurrentStateCallCount).isEqualTo(1)
+        }
+
+    @Test
+    fun changeScene_sameScene_withoutFreeze() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(underTest.currentScene)
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            val processor = mock<SceneInteractor.OnSceneAboutToChangeListener>()
+            underTest.registerSceneStateProcessor(processor)
+            verify(processor, never()).onSceneAboutToChange(any(), any())
+            assertThat(fakeSceneDataSource.freezeAndAnimateToCurrentStateCallCount).isEqualTo(0)
+
+            underTest.changeScene(
+                toScene = Scenes.Lockscreen,
+                loggingReason = "test",
+                sceneState = KeyguardState.AOD,
+                forceSettleToTargetScene = false,
+            )
+
+            verify(processor, never()).onSceneAboutToChange(any(), any())
+            assertThat(fakeSceneDataSource.freezeAndAnimateToCurrentStateCallCount).isEqualTo(0)
+        }
 }
