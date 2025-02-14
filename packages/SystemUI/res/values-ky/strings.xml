@@ -534,6 +534,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"виджетти тандоодон чыгаруу"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Бийиктигин азайтуу"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Бийиктигин көбөйтүү"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Кийинкини көрсөтүү"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Мурункуну көрсөтүү"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Кулпуланган экрандагы виджеттер"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"Колдонмону виджет аркылуу ачуу үчүн өзүңүздү ырасташыңыз керек. Алар кулпуланган планшетиңизде да көрүнүп турат. Кээ бир виджеттерди кулпуланган экранда колдоно албайсыз, андыктан аларды ал жерге кошпой эле койгонуңуз оң."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"Түшүндүм"</string>
@@ -806,7 +808,12 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> колдонмосунда оозеки сүйлөшкөнгө болбойт"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Пикир билдирүү"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Жабуу"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Экинчи көрсөтүлбөсүн"</string>
+    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
+    <skip />
+    <!-- no translation found for live_notifications_title (1586553354601345379) -->
+    <skip />
+    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
+    <skip />
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Бул билдирмелерди өзгөртүүгө болбойт."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Чалуу билдирмелерин өзгөртүүгө болбойт."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Бул билдирмелердин тобун бул жерде конфигурациялоого болбойт"</string>
@@ -1394,8 +1401,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Ачылып турган бүктөлмө түзмөк"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Оодарылып жаткан бүктөлмө түзмөк"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Маңдайкы экран күйгүзүлдү"</string>
-    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
-    <skip />
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Ички экранды колдонуу үчүн экранды сүрүп коюңуз"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"бүктөлгөн"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"ачылган"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>
