@@ -79,11 +79,20 @@ public class AutoclickTypePanel {
     // An interface exposed to {@link AutoclickController) to handle different actions on the panel,
     // including changing autoclick type, pausing/resuming autoclick.
     public interface ClickPanelControllerInterface {
-        // Allows users to change a different autoclick type.
+        /**
+         * Allows users to change a different autoclick type.
+         *
+         * @param clickType The new autoclick type to use. Should be one of the values defined in
+         *                  {@link AutoclickType}.
+         */
         void handleAutoclickTypeChange(@AutoclickType int clickType);
 
-        // Allows users to pause/resume the autoclick.
-        void toggleAutoclickPause();
+        /**
+         * Allows users to pause or resume autoclick.
+         *
+         * @param paused {@code true} to pause autoclick, {@code false} to resume.
+         */
+        void toggleAutoclickPause(boolean paused);
     }
 
     private final Context mContext;
@@ -211,6 +220,10 @@ public class AutoclickTypePanel {
         mWindowManager.removeView(mContentView);
     }
 
+    public boolean isPaused() {
+        return mPaused;
+    }
+
     /** Toggles the panel expanded or collapsed state. */
     private void togglePanelExpansion(@AutoclickType int clickType) {
         final LinearLayout button = getButtonFromClickType(clickType);
@@ -234,6 +247,7 @@ public class AutoclickTypePanel {
 
     private void togglePause() {
         mPaused = !mPaused;
+        mClickPanelController.toggleAutoclickPause(mPaused);
 
         ImageButton imageButton = (ImageButton) mPauseButton.getChildAt(/* index= */ 0);
         if (mPaused) {
