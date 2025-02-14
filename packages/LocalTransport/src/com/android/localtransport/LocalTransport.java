@@ -70,7 +70,7 @@ import java.util.List;
 
 public class LocalTransport extends BackupTransport {
     static final String TAG = "LocalTransport";
-    static final boolean DEBUG = false;
+    static final boolean DEBUG = Log.isLoggable(TAG, Log.VERBOSE);
 
     private static final String TRANSPORT_DIR_NAME
             = "com.android.localtransport.LocalTransport";
@@ -131,7 +131,8 @@ public class LocalTransport extends BackupTransport {
     }
 
     public LocalTransport(Context context, LocalTransportParameters parameters) {
-        Log.i(TAG, "Creating LocalTransport for user " + context.getUserId());
+        Log.i(TAG, "Creating LocalTransport for user " + context.getUserId()
+                + " (DEBUG=" + DEBUG + ")");
         mContext = context;
         mParameters = parameters;
         makeDataDirs();
