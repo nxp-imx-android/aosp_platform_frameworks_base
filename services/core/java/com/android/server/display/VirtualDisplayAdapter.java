@@ -113,6 +113,11 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
             public void destroyDisplay(IBinder displayToken) {
                 DisplayControl.destroyVirtualDisplay(displayToken);
             }
+
+            @Override
+            public void setDisplayPowerMode(IBinder displayToken, int mode) {
+                SurfaceControl.setDisplayPowerMode(displayToken, mode);
+            }
         }, featureFlags);
     }
 
@@ -340,6 +345,7 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
         private Display.Mode mMode;
         private int mDisplayIdToMirror;
         private boolean mIsWindowManagerMirroring;
+        private final boolean mNeverBlank;
         private final DisplayCutout mDisplayCutout;
         private final float mDefaultBrightness;
         private final float mDimBrightness;
@@ -371,7 +377,11 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
             mCallback = callback;
             mProjection = projection;
             mMediaProjectionCallback = mediaProjectionCallback;
-            if (android.companion.virtualdevice.flags.Flags.correctVirtualDisplayPowerState()) {
+            // Private non-mirror displays are never blank and always on.
+            mNeverBlank = (flags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) == 0
+                    && (flags & VIRTUAL_DISPLAY_FLAG_PUBLIC) == 0;
+            if (android.companion.virtualdevice.flags.Flags.correctVirtualDisplayPowerState()
+                    && !mNeverBlank) {
                 // The display's power state depends on the power state of the state of its
                 // display / power group, which we don't know here. Initializing to UNKNOWN allows
                 // the first call to requestDisplayStateLocked() to set the correct state.
@@ -471,7 +481,15 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
         @Override
         public Runnable requestDisplayStateLocked(int state, float brightnessState,
                 float sdrBrightnessState, DisplayOffloadSessionImpl displayOffloadSession) {
+            Runnable runnable = null;
             if (state != mDisplayState) {
+                Slog.d(TAG, "Changing state of virtual display " + mName + " from "
+                        + Display.stateToString(mDisplayState) + " to "
+                        + Display.stateToString(state));
+                if (state != Display.STATE_ON && state != Display.STATE_OFF) {
+                    Slog.wtf(TAG, "Unexpected display state for Virtual Display: "
+                            + Display.stateToString(state));
+                }
                 mDisplayState = state;
                 mInfo = null;
                 sendDisplayDeviceEventLocked(this, DISPLAY_DEVICE_EVENT_CHANGED);
@@ -479,6 +497,15 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
                     mCallback.dispatchDisplayPaused();
                 } else {
                     mCallback.dispatchDisplayResumed();
+                }
+
+                if (android.companion.virtualdevice.flags.Flags.correctVirtualDisplayPowerState()) {
+                    final IBinder token = getDisplayTokenLocked();
+                    runnable = () -> {
+                        final int mode = getPowerModeForState(state);
+                        Slog.d(TAG, "Requesting power mode for display " + mName + " to " + mode);
+                        mSurfaceControlDisplayFactory.setDisplayPowerMode(token, mode);
+                    };
                 }
             }
             if (android.companion.virtualdevice.flags.Flags.deviceAwareDisplayPower()
@@ -488,7 +515,7 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
                 mCurrentBrightness = brightnessState;
                 mCallback.dispatchRequestedBrightnessChanged(mCurrentBrightness);
             }
-            return null;
+            return runnable;
         }
 
         @Override
@@ -572,23 +599,14 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
                 mInfo.yDpi = mDensityDpi;
                 mInfo.presentationDeadlineNanos = 1000000000L / (int) getRefreshRate(); // 1 frame
                 mInfo.flags = 0;
-                if (android.companion.virtualdevice.flags.Flags.correctVirtualDisplayPowerState()) {
-                    if ((mFlags & VIRTUAL_DISPLAY_FLAG_PUBLIC) == 0) {
-                        mInfo.flags |= DisplayDeviceInfo.FLAG_PRIVATE;
-                    }
-                    if ((mFlags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) == 0) {
-                        mInfo.flags |= DisplayDeviceInfo.FLAG_OWN_CONTENT_ONLY;
-                    }
-                } else {
-                    if ((mFlags & VIRTUAL_DISPLAY_FLAG_PUBLIC) == 0) {
-                        mInfo.flags |= DisplayDeviceInfo.FLAG_PRIVATE
-                                | DisplayDeviceInfo.FLAG_NEVER_BLANK;
-                    }
-                    if ((mFlags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) != 0) {
-                        mInfo.flags &= ~DisplayDeviceInfo.FLAG_NEVER_BLANK;
-                    } else {
-                        mInfo.flags |= DisplayDeviceInfo.FLAG_OWN_CONTENT_ONLY;
-                    }
+                if ((mFlags & VIRTUAL_DISPLAY_FLAG_PUBLIC) == 0) {
+                    mInfo.flags |= DisplayDeviceInfo.FLAG_PRIVATE;
+                }
+                if ((mFlags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) == 0) {
+                    mInfo.flags |= DisplayDeviceInfo.FLAG_OWN_CONTENT_ONLY;
+                }
+                if (mNeverBlank) {
+                    mInfo.flags |= DisplayDeviceInfo.FLAG_NEVER_BLANK;
                 }
                 if ((mFlags & VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP) != 0) {
                     mInfo.flags |= DisplayDeviceInfo.FLAG_OWN_DISPLAY_GROUP;
@@ -782,5 +800,13 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
          * @param displayToken The display token for the display to be destroyed.
          */
         void destroyDisplay(IBinder displayToken);
+
+        /**
+         * Set the display power mode in SurfaceFlinger.
+         *
+         * @param displayToken The display token for the display.
+         * @param mode the SurfaceControl power mode, e.g. {@link SurfaceControl#POWER_MODE_OFF}.
+         */
+        void setDisplayPowerMode(IBinder displayToken, int mode);
     }
 }

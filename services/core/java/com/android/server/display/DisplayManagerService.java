@@ -2618,8 +2618,7 @@ public final class DisplayManagerService extends SystemService {
         // Blank or unblank the display immediately to match the state requested
         // by the display power controller (if known).
         DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
-        if ((info.flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0
-                || android.companion.virtualdevice.flags.Flags.correctVirtualDisplayPowerState()) {
+        if ((info.flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0) {
             final LogicalDisplay display = mLogicalDisplayMapper.getDisplayLocked(device);
             if (display == null) {
                 return null;
@@ -5580,9 +5579,7 @@ public final class DisplayManagerService extends SystemService {
                     final DisplayDevice displayDevice = mLogicalDisplayMapper.getDisplayLocked(
                             id).getPrimaryDisplayDeviceLocked();
                     final int flags = displayDevice.getDisplayDeviceInfoLocked().flags;
-                    if ((flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0
-                            || android.companion.virtualdevice.flags.Flags
-                                    .correctVirtualDisplayPowerState()) {
+                    if ((flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0) {
                         final DisplayPowerController displayPowerController =
                                 mDisplayPowerControllers.get(id);
                         if (displayPowerController != null) {
