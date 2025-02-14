@@ -37,6 +37,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.notification.FeedbackIcon
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
@@ -82,8 +83,21 @@ class NotificationContentViewTest : SysuiTestCase() {
         val mockEntry = createMockNotificationEntry()
         row =
             spy(
-                ExpandableNotificationRow(mContext, /* attrs= */ null, mockEntry).apply {
-                    entry = mockEntry
+                when (NotificationBundleUi.isEnabled) {
+                    true -> {
+                        ExpandableNotificationRow(
+                            mContext,
+                            /* attrs= */ null,
+                            UserHandle.CURRENT
+                        ).apply {
+                            entry = mockEntry
+                        }
+                    }
+                    false -> {
+                        ExpandableNotificationRow(mContext, /* attrs= */ null, mockEntry).apply {
+                            entry = mockEntry
+                        }
+                    }
                 }
             )
         ViewUtils.attachView(fakeParent)

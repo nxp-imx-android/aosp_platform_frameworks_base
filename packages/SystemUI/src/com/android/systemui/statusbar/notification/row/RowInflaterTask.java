@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.row;
 
 import android.content.Context;
+import android.os.UserHandle;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,8 +31,10 @@ import androidx.asynclayoutinflater.view.AsyncLayoutFactory;
 import androidx.asynclayoutinflater.view.AsyncLayoutInflater;
 
 import com.android.systemui.res.R;
+import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.InflationTask;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.util.time.SystemClock;
 
 import java.util.concurrent.Executor;
@@ -53,11 +56,14 @@ public class RowInflaterTask implements InflationTask, AsyncLayoutInflater.OnInf
     private final SystemClock mSystemClock;
     private final RowInflaterTaskLogger mLogger;
     private long mInflateStartTimeMs;
+    private UserTracker mUserTracker;
 
     @Inject
-    public RowInflaterTask(SystemClock systemClock, RowInflaterTaskLogger logger) {
+    public RowInflaterTask(SystemClock systemClock, RowInflaterTaskLogger logger,
+            UserTracker userTracker) {
         mSystemClock = systemClock;
         mLogger = logger;
+        mUserTracker = userTracker;
     }
 
     /**
@@ -107,7 +113,8 @@ public class RowInflaterTask implements InflationTask, AsyncLayoutInflater.OnInf
     }
 
     private RowAsyncLayoutInflater makeRowInflater(NotificationEntry entry) {
-        return new RowAsyncLayoutInflater(entry, mSystemClock, mLogger);
+        return new RowAsyncLayoutInflater(
+                entry, mSystemClock, mLogger, mUserTracker.getUserHandle());
     }
 
     /**
@@ -148,12 +155,14 @@ public class RowInflaterTask implements InflationTask, AsyncLayoutInflater.OnInf
         private final NotificationEntry mEntry;
         private final SystemClock mSystemClock;
         private final RowInflaterTaskLogger mLogger;
+        private final UserHandle mTargetUser;
 
         public RowAsyncLayoutInflater(NotificationEntry entry, SystemClock systemClock,
-                RowInflaterTaskLogger logger) {
+                RowInflaterTaskLogger logger, UserHandle targetUser) {
             mEntry = entry;
             mSystemClock = systemClock;
             mLogger = logger;
+            mTargetUser = targetUser;
         }
 
         @Nullable
@@ -165,8 +174,12 @@ public class RowInflaterTask implements InflationTask, AsyncLayoutInflater.OnInf
             }
 
             final long startMs = mSystemClock.elapsedRealtime();
-            final ExpandableNotificationRow row =
-                    new ExpandableNotificationRow(context, attrs, mEntry);
+            ExpandableNotificationRow row = null;
+            if (NotificationBundleUi.isEnabled()) {
+                row = new ExpandableNotificationRow(context, attrs, mTargetUser);
+            } else {
+                row = new ExpandableNotificationRow(context, attrs, mEntry);
+            }
             final long elapsedMs = mSystemClock.elapsedRealtime() - startMs;
 
             mLogger.logCreatedRow(mEntry, elapsedMs);

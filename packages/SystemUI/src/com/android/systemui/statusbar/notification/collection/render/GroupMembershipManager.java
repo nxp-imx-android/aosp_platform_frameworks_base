@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.collection.render;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.ListEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 
@@ -29,6 +30,13 @@ import java.util.List;
  * generally assumes that the notification is attached (aka its parent is not null).
  */
 public interface GroupMembershipManager {
+
+    /**
+     * @return whether a given entry is the root (GroupEntry or BundleEntry) in a collection which
+     * has children
+     */
+    boolean isGroupRoot(@NonNull EntryAdapter entry);
+
     /**
      * @return whether a given notification is the summary in a group which has children
      */
@@ -42,16 +50,15 @@ public interface GroupMembershipManager {
     NotificationEntry getGroupSummary(@NonNull NotificationEntry entry);
 
     /**
-     * Similar to {@link #getGroupSummary(NotificationEntry)} but doesn't get the visual summary
-     * but the logical summary, i.e when a child is isolated, it still returns the summary as if
-     * it wasn't isolated.
-     * TODO: remove this when migrating to the new pipeline, this is taken care of in the
-     * dismissal logic built into NotifCollection
+     * Gets the EntryAdapter that is the nearest root of the collection of rows the given entry
+     * belongs to. If the given entry is a BundleEntry or an isolated child of a BundleEntry, the
+     * BundleEntry will be returned. If the given notification is a group summary NotificationEntry,
+     * or a child of a group summary, the summary NotificationEntry will be returned, even if that
+     * summary belongs to a BundleEntry. If the entry is a notification that does not belong to any
+     * group or bundle grouping, null will be returned.
      */
     @Nullable
-    default NotificationEntry getLogicalGroupSummary(@NonNull NotificationEntry entry) {
-        return getGroupSummary(entry);
-    }
+    EntryAdapter getGroupRoot(@NonNull EntryAdapter entry);
 
     /**
      * @return whether a given notification is a child in a group
@@ -59,9 +66,10 @@ public interface GroupMembershipManager {
     boolean isChildInGroup(@NonNull NotificationEntry entry);
 
     /**
-     * Whether this is the only child in a group
+     * @return whether a given notification is a child in a group. The group may be a notification
+     * group or a bundle.
      */
-    boolean isOnlyChildInGroup(@NonNull NotificationEntry entry);
+    boolean isChildInGroup(@NonNull EntryAdapter entry);
 
     /**
      * Get the children that are in the summary's group, not including those isolated.

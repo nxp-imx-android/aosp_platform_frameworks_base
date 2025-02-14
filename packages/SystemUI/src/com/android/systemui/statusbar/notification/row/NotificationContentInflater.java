@@ -56,6 +56,7 @@ import com.android.systemui.statusbar.NotificationRemoteInputManager;
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor;
 import com.android.systemui.statusbar.notification.InflationException;
 import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
@@ -1457,12 +1458,12 @@ public class NotificationContentInflater implements NotificationRowContentBinder
         }
 
         @Override
-        public void handleInflationException(NotificationEntry entry, Exception e) {
+        public void handleInflationException(Exception e) {
             handleError(e);
         }
 
         @Override
-        public void onAsyncInflationFinished(NotificationEntry entry) {
+        public void onAsyncInflationFinished() {
             mEntry.onInflationTaskFinished();
             mRow.onNotificationUpdated();
             if (mCallback != null) {

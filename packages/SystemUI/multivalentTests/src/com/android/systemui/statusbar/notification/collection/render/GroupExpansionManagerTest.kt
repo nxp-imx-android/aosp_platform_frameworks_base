@@ -17,23 +17,29 @@
 package com.android.systemui.statusbar.notification.collection.render
 
 import android.os.Build
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.log.assertLogsWtf
+import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
 import com.android.systemui.statusbar.notification.collection.ListEntry
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager.OnGroupExpansionChangeListener
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.withArgCaptor
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assume
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.never
@@ -44,6 +50,9 @@ import org.mockito.Mockito.`when` as whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class GroupExpansionManagerTest : SysuiTestCase() {
+    @get:Rule
+    val setFlagsRule = SetFlagsRule()
+
     private lateinit var underTest: GroupExpansionManagerImpl
 
     private val dumpManager: DumpManager = mock()
@@ -52,8 +61,8 @@ class GroupExpansionManagerTest : SysuiTestCase() {
     private val pipeline: NotifPipeline = mock()
     private lateinit var beforeRenderListListener: OnBeforeRenderListListener
 
-    private val summary1 = notificationEntry("foo", 1)
-    private val summary2 = notificationEntry("bar", 1)
+    private val summary1 = notificationSummaryEntry("foo", 1)
+    private val summary2 = notificationSummaryEntry("bar", 1)
     private val entries =
         listOf<ListEntry>(
             GroupEntryBuilder()
@@ -82,15 +91,25 @@ class GroupExpansionManagerTest : SysuiTestCase() {
     private fun notificationEntry(pkg: String, id: Int) =
         NotificationEntryBuilder().setPkg(pkg).setId(id).build().apply { row = mock() }
 
+    private fun notificationSummaryEntry(pkg: String, id: Int) =
+        NotificationEntryBuilder().setPkg(pkg).setId(id).setParent(GroupEntry.ROOT_ENTRY).build()
+            .apply { row = mock() }
+
     @Before
     fun setUp() {
         whenever(groupMembershipManager.getGroupSummary(summary1)).thenReturn(summary1)
         whenever(groupMembershipManager.getGroupSummary(summary2)).thenReturn(summary2)
 
+        whenever(groupMembershipManager.getGroupRoot(summary1.entryAdapter))
+            .thenReturn(summary1.entryAdapter)
+        whenever(groupMembershipManager.getGroupRoot(summary2.entryAdapter))
+            .thenReturn(summary2.entryAdapter)
+
         underTest = GroupExpansionManagerImpl(dumpManager, groupMembershipManager)
     }
 
     @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun notifyOnlyOnChange() {
         var listenerCalledCount = 0
         underTest.registerGroupExpansionChangeListener { _, _ -> listenerCalledCount++ }
@@ -108,6 +127,25 @@ class GroupExpansionManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun notifyOnlyOnChange_withEntryAdapter() {
+        var listenerCalledCount = 0
+        underTest.registerGroupExpansionChangeListener { _, _ -> listenerCalledCount++ }
+
+        underTest.setGroupExpanded(summary1.entryAdapter, false)
+        assertThat(listenerCalledCount).isEqualTo(0)
+        underTest.setGroupExpanded(summary1.entryAdapter, true)
+        assertThat(listenerCalledCount).isEqualTo(1)
+        underTest.setGroupExpanded(summary2.entryAdapter, true)
+        assertThat(listenerCalledCount).isEqualTo(2)
+        underTest.setGroupExpanded(summary1.entryAdapter, true)
+        assertThat(listenerCalledCount).isEqualTo(2)
+        underTest.setGroupExpanded(summary2.entryAdapter, false)
+        assertThat(listenerCalledCount).isEqualTo(3)
+    }
+
+    @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun expandUnattachedEntry() {
         // First, expand the entry when it is attached.
         underTest.setGroupExpanded(summary1, true)
@@ -122,6 +160,22 @@ class GroupExpansionManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun expandUnattachedEntryAdapter() {
+        // First, expand the entry when it is attached.
+        underTest.setGroupExpanded(summary1.entryAdapter, true)
+        assertThat(underTest.isGroupExpanded(summary1.entryAdapter)).isTrue()
+
+        // Un-attach it, and un-expand it.
+        NotificationEntryBuilder.setNewParent(summary1, null)
+        underTest.setGroupExpanded(summary1.entryAdapter, false)
+
+        // Expanding again should throw.
+        assertLogsWtf { underTest.setGroupExpanded(summary1.entryAdapter, true) }
+    }
+
+    @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun syncWithPipeline() {
         underTest.attach(pipeline)
         beforeRenderListListener = withArgCaptor {
@@ -136,6 +190,30 @@ class GroupExpansionManagerTest : SysuiTestCase() {
 
         // Expand one of the groups.
         underTest.setGroupExpanded(summary1, true)
+        verify(listener).onGroupExpansionChange(summary1.row, true)
+
+        // Empty the pipeline list and verify that the group is no longer expanded.
+        beforeRenderListListener.onBeforeRenderList(emptyList())
+        verify(listener).onGroupExpansionChange(summary1.row, false)
+        verifyNoMoreInteractions(listener)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun syncWithPipeline_withEntryAdapter() {
+        underTest.attach(pipeline)
+        beforeRenderListListener = withArgCaptor {
+            verify(pipeline).addOnBeforeRenderListListener(capture())
+        }
+
+        val listener: OnGroupExpansionChangeListener = mock()
+        underTest.registerGroupExpansionChangeListener(listener)
+
+        beforeRenderListListener.onBeforeRenderList(entries)
+        verify(listener, never()).onGroupExpansionChange(any(), any())
+
+        // Expand one of the groups.
+        underTest.setGroupExpanded(summary1.entryAdapter, true)
         verify(listener).onGroupExpansionChange(summary1.row, true)
 
         // Empty the pipeline list and verify that the group is no longer expanded.

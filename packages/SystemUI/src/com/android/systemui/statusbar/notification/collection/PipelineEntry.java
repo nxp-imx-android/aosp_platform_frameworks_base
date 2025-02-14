@@ -19,5 +19,5 @@ package com.android.systemui.statusbar.notification.collection;
 /**
  * Class to represent a notification, group, or bundle in the pipeline.
  */
-public class PipelineEntry {
+public abstract class PipelineEntry {
 }

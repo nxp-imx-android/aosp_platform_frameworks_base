@@ -615,7 +615,7 @@ public class NotificationTestHelper {
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(
                 Context.LAYOUT_INFLATER_SERVICE);
         inflater.setFactory2(new RowInflaterTask.RowAsyncLayoutInflater(entry, mSystemClock,
-                mRowInflaterTaskLogger));
+                mRowInflaterTaskLogger, UserHandle.of(entry.getSbn().getNormalizedUserId())));
         mRow = (ExpandableNotificationRow) inflater.inflate(
                 R.layout.status_bar_notification_row,
                 null /* root */,

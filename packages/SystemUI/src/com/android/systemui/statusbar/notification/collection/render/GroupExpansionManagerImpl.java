@@ -23,11 +23,13 @@ import androidx.annotation.NonNull;
 import com.android.systemui.Dumpable;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dump.DumpManager;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
 import com.android.systemui.statusbar.notification.collection.ListEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -55,6 +57,8 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
      */
     private final Set<NotificationEntry> mExpandedGroups = new HashSet<>();
 
+    private final Set<EntryAdapter> mExpandedCollections = new HashSet<>();
+
     @Inject
     public GroupExpansionManagerImpl(DumpManager dumpManager,
             GroupMembershipManager groupMembershipManager) {
@@ -63,11 +67,17 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
     }
 
     /**
-     * Cleanup entries from mExpandedGroups that no longer exist in the pipeline.
+     * Cleanup entries from internal tracking that no longer exist in the pipeline.
      */
     private final OnBeforeRenderListListener mNotifTracker = (entries) -> {
-        if (mExpandedGroups.isEmpty()) {
-            return; // nothing to do
+        if (NotificationBundleUi.isEnabled())  {
+            if (mExpandedCollections.isEmpty()) {
+                return; // nothing to do
+            }
+        } else {
+            if (mExpandedGroups.isEmpty()) {
+                return; // nothing to do
+            }
         }
 
         final Set<NotificationEntry> renderingSummaries = new HashSet<>();
@@ -77,10 +87,25 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
             }
         }
 
-        // If a group is in mExpandedGroups but not in the pipeline entries, collapse it.
-        final var groupsToRemove = setDifference(mExpandedGroups, renderingSummaries);
-        for (NotificationEntry entry : groupsToRemove) {
-            setGroupExpanded(entry, false);
+        if (NotificationBundleUi.isEnabled()) {
+            for (EntryAdapter entryAdapter : mExpandedCollections) {
+                boolean isInPipeline = false;
+                for (NotificationEntry entry : renderingSummaries) {
+                    if (entry.getKey().equals(entryAdapter.getKey())) {
+                        isInPipeline = true;
+                        break;
+                    }
+                }
+                if (!isInPipeline) {
+                    setGroupExpanded(entryAdapter, false);
+                }
+            }
+        } else {
+            // If a group is in mExpandedGroups but not in the pipeline entries, collapse it.
+            final var groupsToRemove = setDifference(mExpandedGroups, renderingSummaries);
+            for (NotificationEntry entry : groupsToRemove) {
+                setGroupExpanded(entry, false);
+            }
         }
     };
 
@@ -96,11 +121,13 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
 
     @Override
     public boolean isGroupExpanded(NotificationEntry entry) {
+        NotificationBundleUi.assertInLegacyMode();
         return mExpandedGroups.contains(mGroupMembershipManager.getGroupSummary(entry));
     }
 
     @Override
     public void setGroupExpanded(NotificationEntry entry, boolean expanded) {
+        NotificationBundleUi.assertInLegacyMode();
         NotificationEntry groupSummary = mGroupMembershipManager.getGroupSummary(entry);
         if (entry.getParent() == null) {
             if (expanded) {
@@ -127,14 +154,61 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
 
     @Override
     public boolean toggleGroupExpansion(NotificationEntry entry) {
+        NotificationBundleUi.assertInLegacyMode();
+        setGroupExpanded(entry, !isGroupExpanded(entry));
+        return isGroupExpanded(entry);
+    }
+
+    @Override
+    public boolean isGroupExpanded(EntryAdapter entry) {
+        NotificationBundleUi.assertInNewMode();
+        return mExpandedCollections.contains(mGroupMembershipManager.getGroupRoot(entry));
+    }
+
+    @Override
+    public void setGroupExpanded(EntryAdapter entry, boolean expanded) {
+        NotificationBundleUi.assertInNewMode();
+        EntryAdapter groupParent = mGroupMembershipManager.getGroupRoot(entry);
+        if (!entry.isAttached()) {
+            if (expanded) {
+                Log.wtf(TAG, "Cannot expand group that is not attached");
+            } else {
+                // The entry is no longer attached, but we still want to make sure we don't have
+                // a stale expansion state.
+                groupParent = entry;
+            }
+        }
+
+        boolean changed;
+        if (expanded) {
+            changed = mExpandedCollections.add(groupParent);
+        } else {
+            changed = mExpandedCollections.remove(groupParent);
+        }
+
+        // Only notify listeners if something changed.
+        if (changed) {
+            sendOnGroupExpandedChange(entry, expanded);
+        }
+    }
+
+    @Override
+    public boolean toggleGroupExpansion(EntryAdapter entry) {
+        NotificationBundleUi.assertInNewMode();
         setGroupExpanded(entry, !isGroupExpanded(entry));
         return isGroupExpanded(entry);
     }
 
     @Override
     public void collapseGroups() {
-        for (NotificationEntry entry : new ArrayList<>(mExpandedGroups)) {
-            setGroupExpanded(entry, false);
+        if (NotificationBundleUi.isEnabled()) {
+            for (EntryAdapter entry : new ArrayList<>(mExpandedCollections)) {
+                setGroupExpanded(entry, false);
+            }
+        } else {
+            for (NotificationEntry entry : new ArrayList<>(mExpandedGroups)) {
+                setGroupExpanded(entry, false);
+            }
         }
     }
 
@@ -145,9 +219,21 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
         for (NotificationEntry entry : mExpandedGroups) {
             pw.println("  * " + entry.getKey());
         }
+        pw.println("  mExpandedCollection: " + mExpandedCollections.size());
+        for (EntryAdapter entry : mExpandedCollections) {
+            pw.println("  * " + entry.getKey());
+        }
     }
 
     private void sendOnGroupExpandedChange(NotificationEntry entry, boolean expanded) {
+        NotificationBundleUi.assertInLegacyMode();
+        for (OnGroupExpansionChangeListener listener : mOnGroupChangeListeners) {
+            listener.onGroupExpansionChange(entry.getRow(), expanded);
+        }
+    }
+
+    private void sendOnGroupExpandedChange(EntryAdapter entry, boolean expanded) {
+        NotificationBundleUi.assertInNewMode();
         for (OnGroupExpansionChangeListener listener : mOnGroupChangeListeners) {
             listener.onGroupExpansionChange(entry.getRow(), expanded);
         }

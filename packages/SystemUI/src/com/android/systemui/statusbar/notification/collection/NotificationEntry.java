@@ -29,6 +29,8 @@ import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_NOTIFICAT
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_PEEK;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_STATUS_BAR;
 
+import static com.android.systemui.statusbar.notification.collection.BundleEntry.ROOT_BUNDLES;
+import static com.android.systemui.statusbar.notification.collection.GroupEntry.ROOT_ENTRY;
 import static com.android.systemui.statusbar.notification.collection.NotifCollection.REASON_NOT_CANCELED;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_ALERTING;
 
@@ -107,6 +109,7 @@ public final class NotificationEntry extends ListEntry {
     private final String mKey;
     private StatusBarNotification mSbn;
     private Ranking mRanking;
+    private final NotifEntryAdapter mEntryAdapter;
 
     /*
      * Bookkeeping members
@@ -268,9 +271,48 @@ public final class NotificationEntry extends ListEntry {
         mKey = sbn.getKey();
         setSbn(sbn);
         setRanking(ranking);
+        mEntryAdapter = new NotifEntryAdapter();
     }
 
     public class NotifEntryAdapter implements EntryAdapter {
+        @Override
+        public PipelineEntry getParent() {
+            return NotificationEntry.this.getParent();
+        }
+
+        @Override
+        public boolean isTopLevelEntry() {
+            return getParent() != null
+                    && (getParent() == ROOT_ENTRY || ROOT_BUNDLES.contains(getParent()));
+        }
+
+        @Override
+        public String getKey() {
+            return NotificationEntry.this.getKey();
+        }
+
+        @Override
+        public ExpandableNotificationRow getRow() {
+            return NotificationEntry.this.getRow();
+        }
+
+        @Nullable
+        @Override
+        public EntryAdapter getGroupRoot() {
+            // TODO (b/395857098): for backwards compatibility this will return null if called
+            // on a group summary that's not in a bundles, but it should return itself.
+            if (isTopLevelEntry() || getParent() == null) {
+                return null;
+            }
+            if (NotificationEntry.this.getParent().getSummary() != null) {
+                return NotificationEntry.this.getParent().getSummary().mEntryAdapter;
+            }
+            return null;
+        }
+    }
+
+    public EntryAdapter getEntryAdapter() {
+        return mEntryAdapter;
     }
 
     @Override

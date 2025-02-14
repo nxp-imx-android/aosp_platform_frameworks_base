@@ -16,34 +16,46 @@
 
 package com.android.systemui.statusbar.notification.collection.render
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.google.common.truth.Truth.assertThat
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class GroupMembershipManagerTest : SysuiTestCase() {
+
+    @get:Rule
+    val setFlagsRule = SetFlagsRule()
+
     private var underTest = GroupMembershipManagerImpl()
 
     @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun isChildInGroup_topLevel() {
         val topLevelEntry = NotificationEntryBuilder().setParent(GroupEntry.ROOT_ENTRY).build()
         assertThat(underTest.isChildInGroup(topLevelEntry)).isFalse()
     }
 
     @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun isChildInGroup_noParent() {
         val noParentEntry = NotificationEntryBuilder().setParent(null).build()
         assertThat(underTest.isChildInGroup(noParentEntry)).isFalse()
     }
 
     @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun isChildInGroup_summary() {
         val groupKey = "group"
         val summary =
@@ -57,12 +69,14 @@ class GroupMembershipManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun isGroupSummary_topLevelEntry() {
         val entry = NotificationEntryBuilder().setParent(GroupEntry.ROOT_ENTRY).build()
         assertThat(underTest.isGroupSummary(entry)).isFalse()
     }
 
     @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun isGroupSummary_summary() {
         val groupKey = "group"
         val summary =
@@ -76,6 +90,7 @@ class GroupMembershipManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun isGroupSummary_child() {
         val groupKey = "group"
         val summary =
@@ -90,12 +105,14 @@ class GroupMembershipManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun getGroupSummary_topLevelEntry() {
         val entry = NotificationEntryBuilder().setParent(GroupEntry.ROOT_ENTRY).build()
         assertThat(underTest.getGroupSummary(entry)).isNull()
     }
 
     @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun getGroupSummary_summary() {
         val groupKey = "group"
         val summary =
@@ -109,6 +126,7 @@ class GroupMembershipManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun getGroupSummary_child() {
         val groupKey = "group"
         val summary =
@@ -120,5 +138,105 @@ class GroupMembershipManagerTest : SysuiTestCase() {
         GroupEntryBuilder().setKey(groupKey).setSummary(summary).addChild(entry).build()
 
         assertThat(underTest.getGroupSummary(entry)).isEqualTo(summary)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun isChildEntryAdapterInGroup_topLevel() {
+        val topLevelEntry = NotificationEntryBuilder().setParent(GroupEntry.ROOT_ENTRY).build()
+        assertThat(underTest.isChildInGroup(topLevelEntry.entryAdapter)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun isChildEntryAdapterInGroup_noParent() {
+        val noParentEntry = NotificationEntryBuilder().setParent(null).build()
+        assertThat(underTest.isChildInGroup(noParentEntry.entryAdapter)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun isChildEntryAdapterInGroup_summary() {
+        val groupKey = "group"
+        val summary =
+            NotificationEntryBuilder()
+                .setGroup(mContext, groupKey)
+                .setGroupSummary(mContext, true)
+                .build()
+        GroupEntryBuilder().setKey(groupKey).setSummary(summary).build()
+
+        assertThat(underTest.isChildInGroup(summary.entryAdapter)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun isGroupRoot_topLevelEntry() {
+        val entry = NotificationEntryBuilder().setParent(GroupEntry.ROOT_ENTRY).build()
+        assertThat(underTest.isGroupRoot(entry.entryAdapter)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun isGroupRoot_summary() {
+        val groupKey = "group"
+        val summary =
+            NotificationEntryBuilder()
+                .setGroup(mContext, groupKey)
+                .setGroupSummary(mContext, true)
+                .build()
+        GroupEntryBuilder().setKey(groupKey).setSummary(summary).build()
+
+        assertThat(underTest.isGroupRoot(summary.entryAdapter)).isTrue()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun isGroupRoot_child() {
+        val groupKey = "group"
+        val summary =
+            NotificationEntryBuilder()
+                .setGroup(mContext, groupKey)
+                .setGroupSummary(mContext, true)
+                .build()
+        val entry = NotificationEntryBuilder().setGroup(mContext, groupKey).build()
+        GroupEntryBuilder().setKey(groupKey).setSummary(summary).addChild(entry).build()
+
+        assertThat(underTest.isGroupRoot(entry.entryAdapter)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getGroupRoot_topLevelEntry() {
+        val entry = NotificationEntryBuilder().setParent(GroupEntry.ROOT_ENTRY).build()
+        assertThat(underTest.getGroupRoot(entry.entryAdapter)).isNull()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getGroupRoot_summary() {
+        val groupKey = "group"
+        val summary =
+            NotificationEntryBuilder()
+                .setGroup(mContext, groupKey)
+                .setGroupSummary(mContext, true)
+                .build()
+        GroupEntryBuilder().setKey(groupKey).setSummary(summary).build()
+
+        assertThat(underTest.getGroupRoot(summary.entryAdapter)).isEqualTo(summary.entryAdapter)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getGroupRoot_child() {
+        val groupKey = "group"
+        val summary =
+            NotificationEntryBuilder()
+                .setGroup(mContext, groupKey)
+                .setGroupSummary(mContext, true)
+                .build()
+        val entry = NotificationEntryBuilder().setGroup(mContext, groupKey).build()
+        GroupEntryBuilder().setKey(groupKey).setSummary(summary).addChild(entry).build()
+
+        assertThat(underTest.getGroupRoot(entry.entryAdapter)).isEqualTo(summary.entryAdapter)
     }
 }
