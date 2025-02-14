@@ -63,6 +63,9 @@ import static android.view.WindowManager.LayoutParams.TYPE_SCREENSHOT;
 import static android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR;
 import static android.view.WindowManager.LayoutParams.TYPE_VOICE_INTERACTION;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
+import static android.view.WindowManager.TRANSIT_FLAG_AOD_APPEARING;
+import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_GOING_AWAY;
+import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_APPEARING;
 import static android.window.DisplayAreaOrganizer.FEATURE_WINDOWED_MAGNIFICATION;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.any;
@@ -80,6 +83,7 @@ import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_TOKEN_TRANSFO
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
+import static com.android.server.wm.TransitionSubject.assertThat;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
@@ -146,6 +150,7 @@ import com.android.internal.logging.nano.MetricsProto;
 import com.android.server.LocalServices;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.wm.utils.WmDisplayCutout;
+import com.android.window.flags.Flags;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -2619,6 +2624,7 @@ public class DisplayContentTests extends WindowTestsBase {
         final KeyguardController keyguard = mAtm.mKeyguardController;
         final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
         final int displayId = mDisplayContent.getDisplayId();
+        final TestTransitionPlayer transitions = registerTestTransitionPlayer();
 
         final BooleanSupplier keyguardShowing = () -> keyguard.isKeyguardShowing(displayId);
         final BooleanSupplier keyguardGoingAway = () -> keyguard.isKeyguardGoingAway(displayId);
@@ -2628,21 +2634,40 @@ public class DisplayContentTests extends WindowTestsBase {
         keyguard.setKeyguardShown(displayId, true /* keyguard */, true /* aod */);
         assertFalse(keyguardGoingAway.getAsBoolean());
         assertFalse(appVisible.getAsBoolean());
+        transitions.flush();
 
         // Start unlocking from AOD.
         keyguard.keyguardGoingAway(displayId, 0x0 /* flags */);
         assertTrue(keyguardGoingAway.getAsBoolean());
         assertTrue(appVisible.getAsBoolean());
 
+        if (Flags.ensureKeyguardDoesTransitionStarting()) {
+            assertThat(transitions.mLastTransit).isNull();
+        } else {
+            assertThat(transitions.mLastTransit).flags()
+                    .containsExactly(TRANSIT_FLAG_KEYGUARD_GOING_AWAY);
+        }
+        transitions.flush();
+
         // Clear AOD. This does *not* clear the going-away status.
         keyguard.setKeyguardShown(displayId, true /* keyguard */, false /* aod */);
         assertTrue(keyguardGoingAway.getAsBoolean());
         assertTrue(appVisible.getAsBoolean());
 
+        if (Flags.aodTransition()) {
+            assertThat(transitions.mLastTransit).flags()
+                    .containsExactly(TRANSIT_FLAG_AOD_APPEARING);
+        } else {
+            assertThat(transitions.mLastTransit).isNull();
+        }
+        transitions.flush();
+
         // Finish unlock
         keyguard.setKeyguardShown(displayId, false /* keyguard */, false /* aod */);
         assertFalse(keyguardGoingAway.getAsBoolean());
         assertTrue(appVisible.getAsBoolean());
+
+        assertThat(transitions.mLastTransit).isNull();
     }
 
     @Test
@@ -2652,6 +2677,7 @@ public class DisplayContentTests extends WindowTestsBase {
         final KeyguardController keyguard = mAtm.mKeyguardController;
         final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
         final int displayId = mDisplayContent.getDisplayId();
+        final TestTransitionPlayer transitions = registerTestTransitionPlayer();
 
         final BooleanSupplier keyguardShowing = () -> keyguard.isKeyguardShowing(displayId);
         final BooleanSupplier keyguardGoingAway = () -> keyguard.isKeyguardGoingAway(displayId);
@@ -2661,22 +2687,44 @@ public class DisplayContentTests extends WindowTestsBase {
         keyguard.setKeyguardShown(displayId, true /* keyguard */, true /* aod */);
         assertFalse(keyguardGoingAway.getAsBoolean());
         assertFalse(appVisible.getAsBoolean());
+        transitions.flush();
 
         // Start unlocking from AOD.
         keyguard.keyguardGoingAway(displayId, 0x0 /* flags */);
         assertTrue(keyguardGoingAway.getAsBoolean());
         assertTrue(appVisible.getAsBoolean());
 
+        if (!Flags.ensureKeyguardDoesTransitionStarting()) {
+            assertThat(transitions.mLastTransit).flags()
+                    .containsExactly(TRANSIT_FLAG_KEYGUARD_GOING_AWAY);
+        }
+        transitions.flush();
+
         // Clear AOD. This does *not* clear the going-away status.
         keyguard.setKeyguardShown(displayId, true /* keyguard */, false /* aod */);
         assertTrue(keyguardGoingAway.getAsBoolean());
         assertTrue(appVisible.getAsBoolean());
+
+        if (Flags.aodTransition()) {
+            assertThat(transitions.mLastTransit).flags()
+                    .containsExactly(TRANSIT_FLAG_AOD_APPEARING);
+        } else {
+            assertThat(transitions.mLastTransit).isNull();
+        }
+        transitions.flush();
 
         // Same API call a second time cancels the unlock, because AOD isn't changing.
         keyguard.setKeyguardShown(displayId, true /* keyguard */, false /* aod */);
         assertTrue(keyguardShowing.getAsBoolean());
         assertFalse(keyguardGoingAway.getAsBoolean());
         assertFalse(appVisible.getAsBoolean());
+
+        if (Flags.ensureKeyguardDoesTransitionStarting()) {
+            assertThat(transitions.mLastTransit).isNull();
+        } else {
+            assertThat(transitions.mLastTransit).flags()
+                    .containsExactly(TRANSIT_FLAG_KEYGUARD_APPEARING);
+        }
     }
 
     @Test
