@@ -498,14 +498,6 @@
     <!-- The default minimum allowed window height when resizing a window in desktop mode. -->
     <dimen name="desktop_mode_minimum_window_height">352dp</dimen>
 
-    <!-- The width of the maximize menu in desktop mode, depending on the number of options -->
-    <dimen name="desktop_mode_maximize_menu_width_one_options">126dp</dimen>
-    <dimen name="desktop_mode_maximize_menu_width_two_options">228dp</dimen>
-    <dimen name="desktop_mode_maximize_menu_width_three_options">330dp</dimen>
-
-    <!-- The height of the maximize menu in desktop mode. -->
-    <dimen name="desktop_mode_maximize_menu_height">114dp</dimen>
-
     <!-- The padding of the maximize menu in desktop mode. -->
     <dimen name="desktop_mode_menu_padding">16dp</dimen>
 

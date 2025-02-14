@@ -803,8 +803,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         if (!mTaskInfo.isVisible()) {
             closeMaximizeMenu();
         } else {
-            final int menuWidth = calculateMaximizeMenuWidth();
-            mMaximizeMenu.positionMenu(calculateMaximizeMenuPosition(menuWidth), startT);
+            mMaximizeMenu.positionMenu(startT);
         }
     }
 
@@ -1069,27 +1068,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         return Resources.ID_NULL;
     }
 
-    private int calculateMaximizeMenuWidth() {
-        final boolean showImmersive = DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
-                && TaskInfoKt.getRequestingImmersive(mTaskInfo);
-        final boolean showMaximize = true;
-        final boolean showSnaps = mTaskInfo.isResizeable;
-        int showCount = 0;
-        if (showImmersive) showCount++;
-        if (showMaximize) showCount++;
-        if (showSnaps) showCount++;
-        return switch (showCount) {
-            case 1 -> loadDimensionPixelSize(mContext.getResources(),
-                    R.dimen.desktop_mode_maximize_menu_width_one_options);
-            case 2 -> loadDimensionPixelSize(mContext.getResources(),
-                    R.dimen.desktop_mode_maximize_menu_width_two_options);
-            case 3 -> loadDimensionPixelSize(mContext.getResources(),
-                    R.dimen.desktop_mode_maximize_menu_width_three_options);
-            default -> throw new IllegalArgumentException("");
-        };
-    }
-
-    private PointF calculateMaximizeMenuPosition(int menuWidth) {
+    private PointF calculateMaximizeMenuPosition(int menuWidth, int menuHeight) {
         final PointF position = new PointF();
         final Resources resources = mContext.getResources();
         final DisplayLayout displayLayout =
@@ -1104,9 +1083,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 mResult.mRootView.findViewById(R.id.maximize_window);
         final int[] maximizeButtonLocation = new int[2];
         maximizeWindowButton.getLocationInWindow(maximizeButtonLocation);
-
-        final int menuHeight = loadDimensionPixelSize(
-                resources, R.dimen.desktop_mode_maximize_menu_height);
 
         float menuLeft = (mPositionInParent.x + maximizeButtonLocation[0] - ((float) (menuWidth
                 - maximizeWindowButton.getWidth()) / 2));
@@ -1294,17 +1270,16 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      * Create and display maximize menu window
      */
     void createMaximizeMenu() {
-        final int menuWidth = calculateMaximizeMenuWidth();
         mMaximizeMenu = mMaximizeMenuFactory.create(mSyncQueue, mRootTaskDisplayAreaOrganizer,
                 mDisplayController, mTaskInfo, mContext,
-                calculateMaximizeMenuPosition(menuWidth), mSurfaceControlTransactionSupplier);
+                (width, height) -> calculateMaximizeMenuPosition(width, height),
+                mSurfaceControlTransactionSupplier);
 
         mMaximizeMenu.show(
                 /* isTaskInImmersiveMode= */
                 DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
                         && mDesktopUserRepositories.getProfile(mTaskInfo.userId)
                             .isTaskInFullImmersiveState(mTaskInfo.taskId),
-                /* menuWidth= */ menuWidth,
                 /* showImmersiveOption= */
                 DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
                         && TaskInfoKt.getRequestingImmersive(mTaskInfo),
