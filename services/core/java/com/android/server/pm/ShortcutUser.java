@@ -21,16 +21,12 @@ import android.annotation.UserIdInt;
 import android.content.pm.ShortcutManager;
 import android.content.pm.UserPackage;
 import android.metrics.LogMaker;
-import android.os.Binder;
-import android.os.FileUtils;
-import android.os.UserHandle;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Slog;
 
-import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
@@ -49,8 +45,6 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
@@ -63,7 +57,7 @@ class ShortcutUser {
     private static final String TAG = ShortcutService.TAG;
 
     static final String DIRECTORY_PACKAGES = "packages";
-    static final String DIRECTORY_LUANCHERS = "launchers";
+    static final String DIRECTORY_LAUNCHERS = "launchers";
 
     static final String TAG_ROOT = "user";
     private static final String TAG_LAUNCHER = "launcher";
@@ -322,41 +316,43 @@ class ShortcutUser {
                     mService.injectBuildFingerprint());
         }
 
-        if (!forBackup) {
-            // Since we are not handling package deletion yet, or any single package changes, just
-            // clean the directory and rewrite all the ShortcutPackageItems.
-            final File root = mService.injectUserDataPath(mUserId);
-            FileUtils.deleteContents(new File(root, DIRECTORY_PACKAGES));
-            FileUtils.deleteContents(new File(root, DIRECTORY_LUANCHERS));
-        }
         // Can't use forEachPackageItem due to the checked exceptions.
-        {
-            final int size = mLaunchers.size();
+        if (forBackup) {
+            int size = mLaunchers.size();
             for (int i = 0; i < size; i++) {
-                saveShortcutPackageItem(out, mLaunchers.valueAt(i), forBackup);
+                saveShortcutPackageItem(out, mLaunchers.valueAt(i));
             }
-        }
-        {
-            final int size = mPackages.size();
+            size = mPackages.size();
             for (int i = 0; i < size; i++) {
-                saveShortcutPackageItem(out, mPackages.valueAt(i), forBackup);
+                saveShortcutPackageItem(out, mPackages.valueAt(i));
             }
         }
 
         out.endTag(null, TAG_ROOT);
     }
 
-    private void saveShortcutPackageItem(TypedXmlSerializer out, ShortcutPackageItem spi,
-            boolean forBackup) throws IOException, XmlPullParserException {
-        if (forBackup) {
-            if (spi.getPackageUserId() != spi.getOwnerUserId()) {
-                return; // Don't save cross-user information.
+    void scheduleSaveAllLaunchersAndPackages() {
+        {
+            final int size = mLaunchers.size();
+            for (int i = 0; i < size; i++) {
+                mLaunchers.valueAt(i).scheduleSave();
             }
-            spi.waitForBitmapSaves();
-            spi.saveToXml(out, forBackup);
-        } else {
-            spi.scheduleSave();
         }
+        {
+            final int size = mPackages.size();
+            for (int i = 0; i < size; i++) {
+                mPackages.valueAt(i).scheduleSave();
+            }
+        }
+    }
+
+    private void saveShortcutPackageItem(TypedXmlSerializer out, ShortcutPackageItem spi)
+            throws IOException, XmlPullParserException {
+        if (spi.getPackageUserId() != spi.getOwnerUserId()) {
+            return; // Don't save cross-user information.
+        }
+        spi.waitForBitmapSaves();
+        spi.saveToXml(out, true /* forBackup */);
     }
 
     public static ShortcutUser loadFromXml(ShortcutService s, TypedXmlPullParser parser, int userId,
@@ -429,7 +425,7 @@ class ShortcutUser {
                 }
             });
 
-            forMainFilesIn(new File(root, DIRECTORY_LUANCHERS), (File f) -> {
+            forMainFilesIn(new File(root, DIRECTORY_LAUNCHERS), (File f) -> {
                 final ShortcutLauncher sl =
                         ShortcutLauncher.loadFromFile(f, ret, userId, fromBackup);
                 if (sl != null) {
