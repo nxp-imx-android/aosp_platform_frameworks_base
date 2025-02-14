@@ -33,7 +33,8 @@ interface WallpaperFocalAreaRepository {
 
     val wallpaperFocalAreaBounds: StateFlow<RectF>
 
-    val wallpaperFocalAreaTapPosition: StateFlow<PointF>
+    /** It will be true when wallpaper requires focal area info. */
+    val hasFocalArea: StateFlow<Boolean>
 
     /** top of notifications without bcsmartspace in small clock settings */
     val notificationDefaultTop: StateFlow<Float>
@@ -51,7 +52,9 @@ interface WallpaperFocalAreaRepository {
 }
 
 @SysUISingleton
-class WallpaperFocalAreaRepositoryImpl @Inject constructor() : WallpaperFocalAreaRepository {
+class WallpaperFocalAreaRepositoryImpl
+@Inject
+constructor(val wallpaperRepository: WallpaperRepository) : WallpaperFocalAreaRepository {
 
     private val _shortcutAbsoluteTop = MutableStateFlow(0F)
     override val shortcutAbsoluteTop = _shortcutAbsoluteTop.asStateFlow()
@@ -63,12 +66,10 @@ class WallpaperFocalAreaRepositoryImpl @Inject constructor() : WallpaperFocalAre
     override val wallpaperFocalAreaBounds: StateFlow<RectF> =
         _wallpaperFocalAreaBounds.asStateFlow()
 
-    private val _wallpaperFocalAreaTapPosition = MutableStateFlow(PointF(0F, 0F))
-    override val wallpaperFocalAreaTapPosition: StateFlow<PointF> =
-        _wallpaperFocalAreaTapPosition.asStateFlow()
-
     private val _notificationDefaultTop = MutableStateFlow(0F)
     override val notificationDefaultTop: StateFlow<Float> = _notificationDefaultTop.asStateFlow()
+
+    override val hasFocalArea = wallpaperRepository.shouldSendFocalArea
 
     override fun setShortcutAbsoluteTop(top: Float) {
         _shortcutAbsoluteTop.value = top
@@ -84,9 +85,10 @@ class WallpaperFocalAreaRepositoryImpl @Inject constructor() : WallpaperFocalAre
 
     override fun setWallpaperFocalAreaBounds(bounds: RectF) {
         _wallpaperFocalAreaBounds.value = bounds
+        wallpaperRepository.sendLockScreenLayoutChangeCommand(bounds)
     }
 
-    override fun setTapPosition(point: PointF) {
-        _wallpaperFocalAreaTapPosition.value = point
+    override fun setTapPosition(tapPosition: PointF) {
+        wallpaperRepository.sendTapCommand(tapPosition)
     }
 }

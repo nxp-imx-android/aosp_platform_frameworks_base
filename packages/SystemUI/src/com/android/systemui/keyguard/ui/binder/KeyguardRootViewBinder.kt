@@ -370,6 +370,14 @@ object KeyguardRootViewBinder {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     if (wallpaperFocalAreaViewModel.hasFocalArea.value) {
                         launch {
+                            wallpaperFocalAreaViewModel.wallpaperFocalAreaBounds.collect {
+                                wallpaperFocalAreaBounds ->
+                                wallpaperFocalAreaViewModel.setFocalAreaBounds(
+                                    wallpaperFocalAreaBounds
+                                )
+                            }
+                        }
+                        launch {
                             wallpaperFocalAreaViewModel.wallpaperFocalAreaBounds
                                 .filterNotNull()
                                 .collect { wallpaperFocalAreaViewModel.setFocalAreaBounds(it) }

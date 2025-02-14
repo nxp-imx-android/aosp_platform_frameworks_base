@@ -16,10 +16,14 @@
 
 package com.android.systemui.wallpapers.ui.viewmodel
 
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.wallpapers.domain.interactor.wallpaperFocalAreaInteractor
 
 var Kosmos.wallpaperFocalAreaViewModel by
     Kosmos.Fixture {
-        WallpaperFocalAreaViewModel(wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor)
+        WallpaperFocalAreaViewModel(
+            wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor,
+            keyguardTransitionInteractor = keyguardTransitionInteractor,
+        )
     }

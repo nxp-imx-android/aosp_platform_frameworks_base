@@ -17,15 +17,41 @@
 package com.android.systemui.wallpapers.ui.viewmodel
 
 import android.graphics.RectF
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.keyguard.shared.model.Edge
+import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.TransitionState
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
 import javax.inject.Inject
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 
 class WallpaperFocalAreaViewModel
 @Inject
-constructor(private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor) {
+constructor(
+    private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
+    val keyguardTransitionInteractor: KeyguardTransitionInteractor,
+) {
     val hasFocalArea = wallpaperFocalAreaInteractor.hasFocalArea
 
-    val wallpaperFocalAreaBounds = wallpaperFocalAreaInteractor.wallpaperFocalAreaBounds
+    val wallpaperFocalAreaBounds =
+        combine(
+                wallpaperFocalAreaInteractor.wallpaperFocalAreaBounds,
+                keyguardTransitionInteractor
+                    .transition(
+                        edge = Edge.create(to = Scenes.Lockscreen),
+                        edgeWithoutSceneContainer = Edge.create(to = KeyguardState.LOCKSCREEN),
+                    )
+                    .filter { transitionStep ->
+                        // Should not filter by TransitionState.STARTED, it may race with
+                        // wakingup command, causing layout change command not be received.
+                        transitionStep.transitionState == TransitionState.FINISHED
+                    },
+                ::Pair,
+            )
+            .map { (bounds, _) -> bounds }
 
     fun setFocalAreaBounds(bounds: RectF) {
         wallpaperFocalAreaInteractor.setFocalAreaBounds(bounds)
