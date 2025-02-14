@@ -24,7 +24,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.dimensionResource
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder
 
@@ -35,10 +36,13 @@ fun OngoingActivityChips(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        // TODO(b/372657935): Remove magic numbers for padding and spacing.
-        modifier = modifier.fillMaxHeight().padding(horizontal = 6.dp),
+        modifier =
+            modifier
+                .fillMaxHeight()
+                .padding(start = dimensionResource(R.dimen.ongoing_activity_chip_margin_start)),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement =
+            Arrangement.spacedBy(dimensionResource(R.dimen.ongoing_activity_chip_margin_start)),
     ) {
         chips.active
             .filter { !it.isHidden }
