@@ -296,6 +296,7 @@ public class PipDismissTargetHandler implements ViewTreeObserver.OnPreDrawListen
             return;
         }
 
+        mMagneticTarget.updateLocationOnScreen();
         createOrUpdateDismissTarget();
 
         if (mTargetViewContainer.getVisibility() != View.VISIBLE) {
