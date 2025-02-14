@@ -102,10 +102,9 @@ constructor(
     }
 
     // This flow is used by the notification updater once an initial notification is launched. It
-    // listens to the device connection changes for both keyboard and touchpad. When either of the
-    // device is disconnected, resolve the tutorial type base on the latest connection state.
-    // Dropping the initial state because it's the existing notification. Filtering out BOTH because
-    // we only care about disconnections.
+    // listens to the changes of keyboard and touchpad connection and resolve the tutorial type base
+    // on the latest connection state.
+    // Dropping the initial state because it represents the existing notification.
     val tutorialTypeUpdates: Flow<TutorialType> =
         keyboardRepository.isAnyKeyboardConnected
             .combine(touchpadRepository.isAnyTouchpadConnected, ::Pair)
@@ -118,7 +117,6 @@ constructor(
                 }
             }
             .drop(1)
-            .filter { it != TutorialType.BOTH }
 
     private suspend fun waitForDeviceConnection(deviceType: DeviceType) =
         isAnyDeviceConnected[deviceType]!!.filter { it }.first()
