@@ -2183,15 +2183,6 @@ class SettingsProtoDumpUtil {
                 Settings.Secure.ENHANCED_VOICE_PRIVACY_ENABLED,
                 SecureSettingsProto.ENHANCED_VOICE_PRIVACY_ENABLED);
 
-        final long evenDimmerToken = p.start(SecureSettingsProto.EVEN_DIMMER);
-        dumpSetting(s, p,
-                Settings.Secure.EVEN_DIMMER_ACTIVATED,
-                SecureSettingsProto.EvenDimmer.EVEN_DIMMER_ACTIVATED);
-        dumpSetting(s, p,
-                Settings.Secure.EVEN_DIMMER_MIN_NITS,
-                SecureSettingsProto.EvenDimmer.EVEN_DIMMER_MIN_NITS);
-        p.end(evenDimmerToken);
-
         dumpSetting(s, p,
                 Settings.Secure.EM_VALUE,
                 SecureSettingsProto.Accessibility.EM_VALUE);
