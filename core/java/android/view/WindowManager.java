@@ -625,12 +625,6 @@ public interface WindowManager extends ViewManager {
     int TRANSIT_FLAG_PHYSICAL_DISPLAY_SWITCH = (1 << 14); // 0x4000
 
     /**
-     * Transition flag: Indicates that aod is showing hidden by entering doze
-     * @hide
-     */
-    int TRANSIT_FLAG_AOD_APPEARING = (1 << 15); // 0x8000
-
-    /**
      * @hide
      */
     @IntDef(flag = true, prefix = { "TRANSIT_FLAG_" }, value = {
@@ -649,7 +643,6 @@ public interface WindowManager extends ViewManager {
             TRANSIT_FLAG_KEYGUARD_OCCLUDING,
             TRANSIT_FLAG_KEYGUARD_UNOCCLUDING,
             TRANSIT_FLAG_PHYSICAL_DISPLAY_SWITCH,
-            TRANSIT_FLAG_AOD_APPEARING,
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface TransitionFlags {}
@@ -666,8 +659,7 @@ public interface WindowManager extends ViewManager {
             (TRANSIT_FLAG_KEYGUARD_GOING_AWAY
             | TRANSIT_FLAG_KEYGUARD_APPEARING
             | TRANSIT_FLAG_KEYGUARD_OCCLUDING
-            | TRANSIT_FLAG_KEYGUARD_UNOCCLUDING
-            | TRANSIT_FLAG_AOD_APPEARING);
+            | TRANSIT_FLAG_KEYGUARD_UNOCCLUDING);
 
     /**
      * Remove content mode: Indicates remove content mode is currently not defined.

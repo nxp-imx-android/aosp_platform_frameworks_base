@@ -26,6 +26,7 @@ flag {
   bug: "378660052"
 }
 
+# Flag for finalized API: In Nextfood but exported (and therefore must stay).
 flag {
   name: "modes_api"
   is_exported: true
@@ -321,7 +322,7 @@ flag {
   name: "no_sbnholder"
   namespace: "systemui"
   description: "removes sbnholder from NLS"
-  bug: "362981561"
+  bug: "378128805"
 }
 
 flag {

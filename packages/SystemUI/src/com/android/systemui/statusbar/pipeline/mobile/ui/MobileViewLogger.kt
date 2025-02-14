@@ -31,22 +31,24 @@ import javax.inject.Inject
 @SysUISingleton
 class MobileViewLogger
 @Inject
-constructor(
-    @MobileViewLog private val buffer: LogBuffer,
-    dumpManager: DumpManager,
-) : Dumpable {
+constructor(@MobileViewLog private val buffer: LogBuffer, dumpManager: DumpManager) : Dumpable {
     init {
         dumpManager.registerNormalDumpable(this)
     }
 
     private val collectionStatuses = mutableMapOf<String, Boolean>()
 
-    fun logUiAdapterSubIdsSentToIconController(subs: List<Int>) {
+    fun logUiAdapterSubIdsSentToIconController(subs: List<Int>, isStackable: Boolean) {
         buffer.log(
             TAG,
             LogLevel.INFO,
-            { str1 = subs.toString() },
-            { "Sub IDs in MobileUiAdapter being sent to icon controller: $str1" },
+            {
+                str1 = subs.toString()
+                bool1 = isStackable
+            },
+            {
+                "Sub IDs in MobileUiAdapter being sent to icon controller: $str1, isStackable=$bool1"
+            },
         )
     }
 

@@ -38,6 +38,7 @@ import com.android.internal.widget.remotecompose.core.operations.DrawBitmapFontT
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmapInt;
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmapScaled;
 import com.android.internal.widget.remotecompose.core.operations.DrawCircle;
+import com.android.internal.widget.remotecompose.core.operations.DrawContent;
 import com.android.internal.widget.remotecompose.core.operations.DrawLine;
 import com.android.internal.widget.remotecompose.core.operations.DrawOval;
 import com.android.internal.widget.remotecompose.core.operations.DrawPath;
@@ -84,6 +85,7 @@ import com.android.internal.widget.remotecompose.core.operations.TimeAttribute;
 import com.android.internal.widget.remotecompose.core.operations.TouchExpression;
 import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.core.operations.layout.CanvasContent;
+import com.android.internal.widget.remotecompose.core.operations.layout.CanvasOperations;
 import com.android.internal.widget.remotecompose.core.operations.layout.ComponentStart;
 import com.android.internal.widget.remotecompose.core.operations.layout.ContainerEnd;
 import com.android.internal.widget.remotecompose.core.operations.layout.ImpulseOperation;
@@ -1887,7 +1889,7 @@ public class RemoteComposeBuffer {
     }
 
     /** Add a component end tag */
-    public void addComponentEnd() {
+    public void addContainerEnd() {
         ContainerEnd.apply(mBuffer);
     }
 
@@ -2231,6 +2233,11 @@ public class RemoteComposeBuffer {
         LayoutComponentContent.apply(mBuffer, mLastComponentId);
     }
 
+    /** Add a canvas operations start tag */
+    public void addCanvasOperationsStart() {
+        CanvasOperations.apply(mBuffer);
+    }
+
     /**
      * Add a component width value
      *
@@ -2426,5 +2433,10 @@ public class RemoteComposeBuffer {
         int id = mRemoteComposeState.nextId();
         TimeAttribute.apply(mBuffer, id, timeId, attribute, args);
         return Utils.asNan(id);
+    }
+
+    /** In the context of a component draw modifier, draw the content of the component */
+    public void drawComponentContent() {
+        DrawContent.apply(mBuffer);
     }
 }

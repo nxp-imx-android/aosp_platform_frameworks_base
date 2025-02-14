@@ -214,6 +214,13 @@ public class DesktopModeVisualIndicator {
         return result;
     }
 
+    /**
+     * Returns the [DragStartState] of the visual indicator.
+     */
+    DragStartState getDragStartState() {
+        return mDragStartState;
+    }
+
     @VisibleForTesting
     Region calculateFullscreenRegion(DisplayLayout layout, int captionHeight) {
         final Region region = new Region();

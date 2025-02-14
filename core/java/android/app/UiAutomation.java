@@ -956,10 +956,9 @@ public final class UiAutomation {
      * <p>
      * <strong>Note:</strong> It is caller's responsibility to recycle the event.
      * </p>
-     *
-     * @param event The event to inject.
-     * @param sync Whether to inject the event synchronously.
-     * @return Whether event injection succeeded.
+     * @param event the event to inject
+     * @param sync whether to inject the event synchronously
+     * @return {@code true} if event injection succeeded
      */
     public boolean injectInputEvent(InputEvent event, boolean sync) {
         return injectInputEvent(event, sync, true /* waitForAnimations */);
@@ -972,15 +971,21 @@ public final class UiAutomation {
      * <strong>Note:</strong> It is caller's responsibility to recycle the event.
      * </p>
      *
-     * @param event The event to inject.
-     * @param sync  Whether to inject the event synchronously.
-     * @param waitForAnimations Whether to wait for all window container animations and surface
-     *   operations to complete.
-     * @return Whether event injection succeeded.
+     * @param event the event to inject
+     * @param sync  whether to inject the event synchronously.
+     * @param waitForAnimations whether to wait for all window container animations and surface
+     *   operations to complete
+     * @return {@code true} if event injection succeeded
      *
+     * @deprecated for CTS tests prefer inject input events using uinput
+     *   (com.android.cts.input.UinputDevice) or hid devices (com.android.cts.input.HidDevice).
+     *   Alternatively, InjectInputInProcess (com.android.cts.input.InjectInputProcess) can be used
+     *   for in-process injection.
      * @hide
      */
     @TestApi
+    @Deprecated  // Deprecated for CTS tests
+    @SuppressLint("UnflaggedApi")  // @FlaggedApi breaks previously released @TestApi, b/395889250
     public boolean injectInputEvent(@NonNull InputEvent event, boolean sync,
             boolean waitForAnimations) {
         try {
@@ -1003,9 +1008,15 @@ public final class UiAutomation {
      * Events injected to the input subsystem using the standard {@link #injectInputEvent} method
      * skip the accessibility input filter to avoid feedback loops.
      *
+     * @deprecated for CTS tests prefer inject input events using uinput
+     *   (com.android.cts.input.UinputDevice) or hid devices (com.android.cts.input.HidDevice).
+     *   Alternatively, InjectInputInProcess (com.android.cts.input.InjectInputProcess) can be used
+     *   for in-process injection.
      * @hide
      */
     @TestApi
+    @Deprecated
+    @SuppressLint("UnflaggedApi")  // @FlaggedApi breaks previously released @TestApi, b/395889250
     public void injectInputEventToInputFilter(@NonNull InputEvent event) {
         try {
             mUiAutomationConnection.injectInputEventToInputFilter(event);

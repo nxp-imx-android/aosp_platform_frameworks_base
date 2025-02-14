@@ -71,9 +71,31 @@ class DesktopMixedTransitionHandler(
         wct: WindowContainerTransaction?,
     ) = freeformTaskTransitionHandler.startWindowingModeTransition(targetWindowingMode, wct)
 
-    /** Delegates starting minimized mode transition to [FreeformTaskTransitionHandler]. */
-    override fun startMinimizedModeTransition(wct: WindowContainerTransaction?): IBinder =
-        freeformTaskTransitionHandler.startMinimizedModeTransition(wct)
+    /**
+     * Starts a minimize transition for [taskId], with [isLastTask] which is true if the task going
+     * to be minimized is the last visible task.
+     */
+    override fun startMinimizedModeTransition(
+        wct: WindowContainerTransaction?,
+        taskId: Int,
+        isLastTask: Boolean,
+    ): IBinder {
+        if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_EXIT_BY_MINIMIZE_TRANSITION_BUGFIX.isTrue) {
+            return freeformTaskTransitionHandler.startMinimizedModeTransition(
+                wct,
+                taskId,
+                isLastTask,
+            )
+        }
+        requireNotNull(wct)
+        return transitions
+            .startTransition(Transitions.TRANSIT_MINIMIZE, wct, /* handler= */ this)
+            .also { transition ->
+                pendingMixedTransitions.add(
+                    PendingMixedTransition.Minimize(transition, taskId, isLastTask)
+                )
+            }
+    }
 
     /** Delegates starting PiP transition to [FreeformTaskTransitionHandler]. */
     override fun startPipTransition(wct: WindowContainerTransaction?): IBinder =
@@ -298,7 +320,15 @@ class DesktopMixedTransitionHandler(
         finishTransaction: SurfaceControl.Transaction,
         finishCallback: TransitionFinishCallback,
     ): Boolean {
-        if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue) return false
+        val shouldAnimate =
+            if (info.type == Transitions.TRANSIT_MINIMIZE) {
+                DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_EXIT_BY_MINIMIZE_TRANSITION_BUGFIX.isTrue
+            } else {
+                DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue
+            }
+        if (!shouldAnimate) {
+            return false
+        }
 
         val minimizeChange = findTaskChange(info, pending.minimizingTask)
         if (minimizeChange == null) {

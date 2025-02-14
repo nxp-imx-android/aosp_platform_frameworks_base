@@ -16,12 +16,10 @@
 
 package android.service.notification;
 
-import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.TestApi;
-import android.app.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -37,7 +35,6 @@ import java.util.Set;
  * Represents the set of device effects (affecting display and device behavior in general) that
  * are applied whenever an {@link android.app.AutomaticZenRule} is active.
  */
-@FlaggedApi(Flags.FLAG_MODES_API)
 public final class ZenDeviceEffects implements Parcelable {
 
     /**
@@ -157,7 +154,6 @@ public final class ZenDeviceEffects implements Parcelable {
     }
 
     /** @hide */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     public void validate() {
         int extraEffectsLength = 0;
         for (String extraEffect : mExtraEffects) {
@@ -435,7 +431,6 @@ public final class ZenDeviceEffects implements Parcelable {
     }
 
     /** Builder class for {@link ZenDeviceEffects} objects. */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     public static final class Builder {
 
         private boolean mGrayscale;

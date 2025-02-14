@@ -18,6 +18,7 @@ package com.android.wm.shell.shared.bubbles
 
 import android.content.Context
 import android.graphics.Rect
+import android.util.TypedValue
 import androidx.annotation.DimenRes
 import com.android.wm.shell.shared.R
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.SplitScreenModeChecker.SplitScreenMode
@@ -49,6 +50,60 @@ class DragZoneFactory(
     private var vSplitFromExpandedViewDragZoneHeightTablet = 0
     private var vSplitFromExpandedViewDragZoneHeightFoldTall = 0
     private var vSplitFromExpandedViewDragZoneHeightFoldShort = 0
+
+    private var fullScreenDropTargetPadding = 0
+    private var desktopWindowDropTargetPaddingSmall = 0
+    private var desktopWindowDropTargetPaddingLarge = 0
+    private var expandedViewDropTargetWidth = 0
+    private var expandedViewDropTargetHeight = 0
+    private var expandedViewDropTargetPaddingBottom = 0
+    private var expandedViewDropTargetPaddingHorizontal = 0
+
+    private val fullScreenDropTarget: Rect
+        get() =
+            Rect(windowBounds).apply {
+                inset(fullScreenDropTargetPadding, fullScreenDropTargetPadding)
+            }
+
+    private val desktopWindowDropTarget: Rect
+        get() =
+            Rect(windowBounds).apply {
+                if (deviceConfig.isLandscape) {
+                    inset(
+                        /* dx= */ desktopWindowDropTargetPaddingLarge,
+                        /* dy= */ desktopWindowDropTargetPaddingSmall
+                    )
+                } else {
+                    inset(
+                        /* dx= */ desktopWindowDropTargetPaddingSmall,
+                        /* dy= */ desktopWindowDropTargetPaddingLarge
+                    )
+                }
+            }
+
+    private val expandedViewDropTargetLeft: Rect
+        get() =
+            Rect(
+                expandedViewDropTargetPaddingHorizontal,
+                windowBounds.bottom -
+                    expandedViewDropTargetPaddingBottom -
+                    expandedViewDropTargetHeight,
+                expandedViewDropTargetWidth + expandedViewDropTargetPaddingHorizontal,
+                windowBounds.bottom - expandedViewDropTargetPaddingBottom
+            )
+
+    private val expandedViewDropTargetRight: Rect
+        get() =
+            Rect(
+                windowBounds.right -
+                    expandedViewDropTargetPaddingHorizontal -
+                    expandedViewDropTargetWidth,
+                windowBounds.bottom -
+                    expandedViewDropTargetPaddingBottom -
+                    expandedViewDropTargetHeight,
+                windowBounds.right - expandedViewDropTargetPaddingHorizontal,
+                windowBounds.bottom - expandedViewDropTargetPaddingBottom
+            )
 
     init {
         onConfigurationUpdated()
@@ -88,10 +143,31 @@ class DragZoneFactory(
             context.resolveDimension(R.dimen.drag_zone_v_split_from_expanded_view_height_fold_tall)
         vSplitFromExpandedViewDragZoneHeightFoldShort =
             context.resolveDimension(R.dimen.drag_zone_v_split_from_expanded_view_height_fold_short)
+        fullScreenDropTargetPadding =
+            context.resolveDimension(R.dimen.drop_target_full_screen_padding)
+        desktopWindowDropTargetPaddingSmall =
+            context.resolveDimension(R.dimen.drop_target_desktop_window_padding_small)
+        desktopWindowDropTargetPaddingLarge =
+            context.resolveDimension(R.dimen.drop_target_desktop_window_padding_large)
+
+        // TODO b/393172431: Use the shared xml resources once we can easily access them from
+        //  launcher
+        expandedViewDropTargetWidth = 364.dpToPx()
+        expandedViewDropTargetHeight = 578.dpToPx()
+        expandedViewDropTargetPaddingBottom = 108.dpToPx()
+        expandedViewDropTargetPaddingHorizontal = 24.dpToPx()
     }
 
     private fun Context.resolveDimension(@DimenRes dimension: Int) =
         resources.getDimensionPixelSize(dimension)
+
+    private fun Int.dpToPx() =
+        TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                this.toFloat(),
+                context.resources.displayMetrics
+            )
+            .toInt()
 
     /**
      * Creates the list of drag zones for the dragged object.
@@ -155,7 +231,7 @@ class DragZoneFactory(
             DragZone.Bubble.Left(
                 bounds =
                     Rect(0, windowBounds.bottom - dragZoneSize, dragZoneSize, windowBounds.bottom),
-                dropTarget = Rect(0, 0, 0, 0),
+                dropTarget = expandedViewDropTargetLeft,
             ),
             DragZone.Bubble.Right(
                 bounds =
@@ -165,7 +241,7 @@ class DragZoneFactory(
                         windowBounds.right,
                         windowBounds.bottom,
                     ),
-                dropTarget = Rect(0, 0, 0, 0),
+                dropTarget = expandedViewDropTargetRight,
             )
         )
     }
@@ -174,7 +250,7 @@ class DragZoneFactory(
         return listOf(
             DragZone.Bubble.Left(
                 bounds = Rect(0, 0, windowBounds.right / 2, windowBounds.bottom),
-                dropTarget = Rect(0, 0, 0, 0),
+                dropTarget = expandedViewDropTargetLeft,
             ),
             DragZone.Bubble.Right(
                 bounds =
@@ -184,7 +260,7 @@ class DragZoneFactory(
                         windowBounds.right,
                         windowBounds.bottom,
                     ),
-                dropTarget = Rect(0, 0, 0, 0),
+                dropTarget = expandedViewDropTargetRight,
             )
         )
     }
@@ -198,7 +274,7 @@ class DragZoneFactory(
                     windowBounds.right / 2 + fullScreenDragZoneWidth / 2,
                     fullScreenDragZoneHeight
                 ),
-            dropTarget = Rect(0, 0, 0, 0)
+            dropTarget = fullScreenDropTarget
         )
     }
 
@@ -223,7 +299,7 @@ class DragZoneFactory(
                         windowBounds.bottom / 2 + desktopWindowDragZoneHeight / 2
                     )
                 },
-            dropTarget = Rect(0, 0, 0, 0)
+            dropTarget = desktopWindowDropTarget
         )
     }
 
@@ -236,7 +312,7 @@ class DragZoneFactory(
                     windowBounds.right / 2 + desktopWindowFromExpandedViewDragZoneWidth / 2,
                     windowBounds.bottom / 2 + desktopWindowFromExpandedViewDragZoneHeight / 2
                 ),
-            dropTarget = Rect(0, 0, 0, 0)
+            dropTarget = desktopWindowDropTarget
         )
     }
 

@@ -2776,7 +2776,7 @@ public class UserManager {
     }
 
     /**
-     * Returns whether logging out is currently allowed for the context user.
+     * Returns whether logging out is currently allowed for the specified user.
      *
      * <p>Logging out is not allowed in the following cases:
      * <ol>
@@ -2794,11 +2794,10 @@ public class UserManager {
      * {@link #LOGOUTABILITY_STATUS_CANNOT_SWITCH}.
      * @hide
      */
-    @UserHandleAware
     @RequiresPermission(Manifest.permission.MANAGE_USERS)
-    public @UserLogoutability int getUserLogoutability() {
+    public @UserLogoutability int getUserLogoutability(@UserIdInt int userId) {
         try {
-            return mService.getUserLogoutability(mUserId);
+            return mService.getUserLogoutability(userId);
         } catch (RemoteException re) {
             throw re.rethrowFromSystemServer();
         }

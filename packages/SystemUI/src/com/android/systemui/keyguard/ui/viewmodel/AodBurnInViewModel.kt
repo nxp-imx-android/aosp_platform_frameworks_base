@@ -26,7 +26,6 @@ import com.android.systemui.keyguard.domain.interactor.BurnInInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.BurnInModel
-import com.android.systemui.keyguard.shared.model.ClockSize
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.StateToValue
@@ -35,6 +34,7 @@ import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 import kotlin.math.max
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -51,6 +51,7 @@ import kotlinx.coroutines.flow.stateIn
  * Models UI state for elements that need to apply anti-burn-in tactics when showing in AOD
  * (always-on display).
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
 class AodBurnInViewModel
 @Inject
@@ -184,10 +185,9 @@ constructor(
                 keyguardClockViewModel.currentClock.value
                     ?.config
                     ?.useAlternateSmartspaceAODTransition == true
-            // Only scale large non-weather clocks
-            // elements in large weather clock will translate the same as smartspace
-            val useScaleOnly =
-                (!useAltAod) && keyguardClockViewModel.clockSize.value == ClockSize.LARGE
+            // Only scale large non-weather clocks elements in large weather clock will translate
+            // the same as smartspace
+            val useScaleOnly = (!useAltAod) && keyguardClockViewModel.isLargeClockVisible.value
 
             val burnInY = MathUtils.lerp(0, burnIn.translationY, interpolated).toInt()
             val translationY = max(params.topInset - params.minViewY, burnInY)

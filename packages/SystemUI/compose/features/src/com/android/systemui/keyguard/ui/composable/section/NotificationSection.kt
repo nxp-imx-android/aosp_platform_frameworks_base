@@ -18,6 +18,8 @@ package com.android.systemui.keyguard.ui.composable.section
 
 import android.view.ViewGroup
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -115,12 +117,19 @@ constructor(
 
         val isVisible by
             keyguardRootViewModel.isAodPromotedNotifVisible.collectAsStateWithLifecycle()
+        val transitionState = remember { MutableTransitionState(isVisible.value) }
+        LaunchedEffect(key1 = isVisible, key2 = transitionState.isIdle) {
+            transitionState.targetState = isVisible.value
+            if (isVisible.isAnimating && transitionState.isIdle) {
+                isVisible.stopAnimating()
+            }
+        }
         val burnIn = rememberBurnIn(keyguardClockViewModel)
 
         AnimatedVisibility(
-            visible = isVisible,
-            enter = fadeIn(),
-            exit = fadeOut(),
+            visibleState = transitionState,
+            enter = if (isVisible.isAnimating) fadeIn() else EnterTransition.None,
+            exit = if (isVisible.isAnimating) fadeOut() else ExitTransition.None,
             modifier = modifier.burnInAware(aodBurnInViewModel, burnIn.parameters),
         ) {
             AODPromotedNotification(aodPromotedNotificationViewModelFactory)

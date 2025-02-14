@@ -2119,7 +2119,6 @@ public final class Settings {
      * <p>
      * Output: Nothing.
      */
-    @FlaggedApi(android.app.Flags.FLAG_MODES_API)
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_AUTOMATIC_ZEN_RULE_SETTINGS
             = "android.settings.AUTOMATIC_ZEN_RULE_SETTINGS";
@@ -2129,7 +2128,6 @@ public final class Settings {
      * <p>
      * This must be passed as an extra field to the {@link #ACTION_AUTOMATIC_ZEN_RULE_SETTINGS}.
      */
-    @FlaggedApi(android.app.Flags.FLAG_MODES_API)
     public static final String EXTRA_AUTOMATIC_ZEN_RULE_ID
             = "android.provider.extra.AUTOMATIC_ZEN_RULE_ID";
 

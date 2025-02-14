@@ -74,8 +74,14 @@ interface BooleanValuePreferenceBinding : PreferenceBinding {
     override fun bind(preference: Preference, metadata: PreferenceMetadata) {
         super.bind(preference, metadata)
         (preference as TwoStatePreference).apply {
+            // MUST suppress persistent when initializing the checked state:
+            //   1. default value is written to datastore if not set (b/396260949)
+            //   2. avoid redundant read to the datastore
+            val suppressPersistent = isPersistent
+            if (suppressPersistent) isPersistent = false
             // "false" is kind of placeholder, metadata datastore should provide the default value
             isChecked = preferenceDataStore!!.getBoolean(key, false)
+            if (suppressPersistent) isPersistent = true
         }
     }
 }

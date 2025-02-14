@@ -7,7 +7,7 @@ package android {
     field public static final String ACCESS_BROADCAST_RADIO = "android.permission.ACCESS_BROADCAST_RADIO";
     field public static final String ACCESS_BROADCAST_RESPONSE_STATS = "android.permission.ACCESS_BROADCAST_RESPONSE_STATS";
     field public static final String ACCESS_CACHE_FILESYSTEM = "android.permission.ACCESS_CACHE_FILESYSTEM";
-    field @FlaggedApi("android.app.contextualsearch.flags.enable_service") public static final String ACCESS_CONTEXTUAL_SEARCH = "android.permission.ACCESS_CONTEXTUAL_SEARCH";
+    field public static final String ACCESS_CONTEXTUAL_SEARCH = "android.permission.ACCESS_CONTEXTUAL_SEARCH";
     field public static final String ACCESS_CONTEXT_HUB = "android.permission.ACCESS_CONTEXT_HUB";
     field public static final String ACCESS_DRM_CERTIFICATES = "android.permission.ACCESS_DRM_CERTIFICATES";
     field @FlaggedApi("android.permission.flags.fine_power_monitor_permission") public static final String ACCESS_FINE_POWER_MONITORS = "android.permission.ACCESS_FINE_POWER_MONITORS";
@@ -151,6 +151,8 @@ package android {
     field @FlaggedApi("android.content.pm.emergency_install_permission") public static final String EMERGENCY_INSTALL_PACKAGES = "android.permission.EMERGENCY_INSTALL_PACKAGES";
     field public static final String ENTER_CAR_MODE_PRIORITIZED = "android.permission.ENTER_CAR_MODE_PRIORITIZED";
     field public static final String EXEMPT_FROM_AUDIO_RECORD_RESTRICTIONS = "android.permission.EXEMPT_FROM_AUDIO_RECORD_RESTRICTIONS";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String EYE_CALIBRATION = "android.permission.EYE_CALIBRATION";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String FACE_TRACKING_CALIBRATION = "android.permission.FACE_TRACKING_CALIBRATION";
     field public static final String FORCE_BACK = "android.permission.FORCE_BACK";
     field public static final String FORCE_STOP_PACKAGES = "android.permission.FORCE_STOP_PACKAGES";
     field public static final String GET_APP_METADATA = "android.permission.GET_APP_METADATA";
@@ -168,6 +170,7 @@ package android {
     field public static final String HARDWARE_TEST = "android.permission.HARDWARE_TEST";
     field public static final String HDMI_CEC = "android.permission.HDMI_CEC";
     field @Deprecated public static final String HIDE_NON_SYSTEM_OVERLAY_WINDOWS = "android.permission.HIDE_NON_SYSTEM_OVERLAY_WINDOWS";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String IMPORT_XR_ANCHOR = "android.permission.IMPORT_XR_ANCHOR";
     field public static final String INJECT_EVENTS = "android.permission.INJECT_EVENTS";
     field @FlaggedApi("android.content.pm.sdk_dependency_installer") public static final String INSTALL_DEPENDENCY_SHARED_LIBRARIES = "android.permission.INSTALL_DEPENDENCY_SHARED_LIBRARIES";
     field public static final String INSTALL_DPC_PACKAGES = "android.permission.INSTALL_DPC_PACKAGES";
@@ -450,6 +453,7 @@ package android {
     field public static final String WRITE_SECURITY_LOG = "android.permission.WRITE_SECURITY_LOG";
     field public static final String WRITE_SMS = "android.permission.WRITE_SMS";
     field @FlaggedApi("android.provider.user_keys") public static final String WRITE_VERIFICATION_STATE_E2EE_CONTACT_KEYS = "android.permission.WRITE_VERIFICATION_STATE_E2EE_CONTACT_KEYS";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String XR_TRACKING_IN_BACKGROUND = "android.permission.XR_TRACKING_IN_BACKGROUND";
   }
 
   public static final class Manifest.permission_group {
@@ -2231,7 +2235,7 @@ package android.app.contextualsearch {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.contextualsearch.CallbackToken> CREATOR;
   }
 
-  public final class ContextualSearchManager {
+  @FlaggedApi("android.app.contextualsearch.flags.self_invocation") public final class ContextualSearchManager {
     method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXTUAL_SEARCH) public void startContextualSearch(int);
     field public static final String ACTION_LAUNCH_CONTEXTUAL_SEARCH = "android.app.contextualsearch.action.LAUNCH_CONTEXTUAL_SEARCH";
     field public static final int ENTRYPOINT_LONG_PRESS_HOME = 2; // 0x2

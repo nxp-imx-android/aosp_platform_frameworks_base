@@ -122,7 +122,7 @@ class DragState {
     float mThumbOffsetX, mThumbOffsetY;
     InputInterceptor mInputInterceptor;
     ArrayList<WindowState> mNotifiedWindows;
-    boolean mDragInProgress;
+    private boolean mDragInProgress;
     // Set to non -1 value if a valid app requests DRAG_FLAG_HIDE_CALLING_TASK_ON_DRAG_START
     int mCallingTaskIdToHide;
     /**
@@ -161,7 +161,7 @@ class DragState {
     private boolean mIsClosing;
 
     // Stores the last drop event which was reported to a valid drop target window, or null
-    // otherwise.  This drop event will contain private info and should only be consumed by the
+    // otherwise. This drop event will contain private info and should only be consumed by the
     // unhandled drag listener.
     DragEvent mUnhandledDropEvent;
 
@@ -243,7 +243,7 @@ class DragState {
             for (WindowState ws : mNotifiedWindows) {
                 float inWindowX = 0;
                 float inWindowY = 0;
-                SurfaceControl dragSurface = null;
+                boolean includeDragSurface = false;
                 if (!mDragResult && (ws.mSession.mPid == mPid)) {
                     // Report unconsumed drop location back to the app that started the drag.
                     inWindowX = ws.translateToWindowX(mCurrentDisplayX);
@@ -251,13 +251,10 @@ class DragState {
                     if (relinquishDragSurfaceToDragSource()) {
                         // If requested (and allowed), report the drag surface back to the app
                         // starting the drag to handle the return animation
-                        dragSurface = mSurfaceControl;
+                        includeDragSurface = true;
                     }
                 }
-                DragEvent event = DragEvent.obtain(DragEvent.ACTION_DRAG_ENDED, inWindowX,
-                        inWindowY, mThumbOffsetX, mThumbOffsetY,
-                        mCurrentDisplayContent.getDisplayId(), mFlags, null, null, null,
-                        dragSurface, null, mDragResult);
+                DragEvent event = obtainDragEndedEvent(inWindowX, inWindowY, includeDragSurface);
                 try {
                     if (DEBUG_DRAG) Slog.d(TAG_WM, "Sending DRAG_ENDED to " + ws);
                     ws.mClient.dispatchDragEvent(event);
@@ -310,10 +307,10 @@ class DragState {
 
     /**
      * Creates the drop event for dispatching to the unhandled drag.
-     * TODO(b/384841906): Update `inWindowX` and `inWindowY` to be display-coordinate.
      */
-    private DragEvent createUnhandledDropEvent(float inWindowX, float inWindowY) {
-        return obtainDragEvent(DragEvent.ACTION_DROP, inWindowX, inWindowY, mDataDescription, mData,
+    private DragEvent createUnhandledDropEvent(float inDisplayX, float inDisplayY) {
+        return obtainDragEvent(DragEvent.ACTION_DROP, inDisplayX, inDisplayY, mDataDescription,
+                mData,
                 /* includeDragSurface= */ true,
                 /* includeDragFlags= */ true, null /* dragAndDropPermissions */);
     }
@@ -370,11 +367,8 @@ class DragState {
         }
 
         final WindowState touchedWin = mService.mInputToWindowMap.get(token);
-        // TODO(b/384841906): The x, y here when sent to a window and unhandled, will still be
-        //  relative to the window it was originally sent to. Need to update this to actually be
-        //  display-coordinate.
-        final DragEvent unhandledDropEvent = createUnhandledDropEvent(inWindowX, inWindowY);
         if (!isWindowNotified(touchedWin)) {
+            final DragEvent unhandledDropEvent = createUnhandledDropEvent(inWindowX, inWindowY);
             // Delegate to the unhandled drag listener as a first pass
             if (mDragDropController.notifyUnhandledDrop(unhandledDropEvent, "unhandled-drop")) {
                 // The unhandled drag listener will call back to notify whether it has consumed
@@ -392,6 +386,8 @@ class DragState {
         }
 
         if (DEBUG_DRAG) Slog.d(TAG_WM, "Sending DROP to " + touchedWin);
+        final DragEvent unhandledDropEvent = createUnhandledDropEvent(
+                touchedWin.getBounds().left + inWindowX, touchedWin.getBounds().top + inWindowY);
 
         final IBinder clientToken = touchedWin.mClient.asBinder();
         final DragEvent event = createDropEvent(inWindowX, inWindowY, touchedWin);
@@ -776,28 +772,37 @@ class DragState {
                 displayId, (int) (displayX - mThumbOffsetX), (int) (displayY - mThumbOffsetY));
     }
 
-    /**
-     * Returns true if it has sent DRAG_STARTED broadcast out but has not been sent DRAG_END
-     * broadcast.
-     */
-    boolean isInProgress() {
-        return mDragInProgress;
+    private DragEvent obtainDragEndedEvent(float x, float y, boolean includeDragSurface) {
+        return obtainDragEvent(DragEvent.ACTION_DRAG_ENDED, x, y, /* description= */
+                null, /* data= */ null, includeDragSurface, /* includeDragFlags= */
+                true, /* dragAndDropPermissions= */ null, mDragResult);
+    }
+
+    private DragEvent obtainDragEvent(int action, float x, float y, ClipDescription description,
+            ClipData data, boolean includeDragSurface, boolean includeDragFlags,
+            IDragAndDropPermissions dragAndDropPermissions) {
+        return obtainDragEvent(action, x, y, description, data, includeDragSurface,
+                includeDragFlags, dragAndDropPermissions, /* dragResult= */ false);
     }
 
     /**
      * `x` and `y` here varies between local window coordinate, relative coordinate to another
      * window and local display coordinate, all depending on the `action`. Please take a look
      * at the callers to determine the type.
-     * TODO(b/384845022): Properly document the events sent based on the event type.
+     * - ACTION_DRAG_STARTED: (x, y) is relative coordinate to the target window's origin
+     *                          (possible to have negative values).
+     * - ACTION_DROP:
+     * --- UnhandledDropEvent: (x, y) is in display space coordinate.
+     * --- DropEvent: (x, y) is in local window coordinate where event is targeted to.
+     * - ACTION_DRAG_ENDED: (x, y) is in local window coordinate where event is targeted to.
      */
     private DragEvent obtainDragEvent(int action, float x, float y, ClipDescription description,
             ClipData data, boolean includeDragSurface, boolean includeDragFlags,
-            IDragAndDropPermissions dragAndDropPermissions) {
+            IDragAndDropPermissions dragAndDropPermissions, boolean dragResult) {
         return DragEvent.obtain(action, x, y, mThumbOffsetX, mThumbOffsetY,
                 mCurrentDisplayContent.getDisplayId(), includeDragFlags ? mFlags : 0,
                 null  /* localState */, description, data,
-                includeDragSurface ? mSurfaceControl : null, dragAndDropPermissions,
-                false /* result */);
+                includeDragSurface ? mSurfaceControl : null, dragAndDropPermissions, dragResult);
     }
 
     private ValueAnimator createReturnAnimationLocked() {

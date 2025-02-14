@@ -393,25 +393,25 @@ package android.app {
   }
 
   public class NotificationManager {
-    method @FlaggedApi("android.app.modes_api") @NonNull public String addAutomaticZenRule(@NonNull android.app.AutomaticZenRule, boolean);
+    method @NonNull public String addAutomaticZenRule(@NonNull android.app.AutomaticZenRule, boolean);
     method @FlaggedApi("android.service.notification.notification_classification") public void allowAssistantAdjustment(@NonNull String);
     method public void cleanUpCallersAfter(long);
     method @FlaggedApi("android.service.notification.notification_classification") public void disallowAssistantAdjustment(@NonNull String);
-    method @FlaggedApi("android.app.modes_api") @NonNull public android.service.notification.ZenPolicy getDefaultZenPolicy();
+    method @NonNull public android.service.notification.ZenPolicy getDefaultZenPolicy();
     method public android.content.ComponentName getEffectsSuppressor();
     method @FlaggedApi("android.service.notification.notification_classification") @NonNull public java.util.Set<java.lang.String> getUnsupportedAdjustmentTypes();
     method public boolean isNotificationPolicyAccessGrantedForPackage(@NonNull String);
-    method @FlaggedApi("android.app.modes_api") public boolean removeAutomaticZenRule(@NonNull String, boolean);
+    method public boolean removeAutomaticZenRule(@NonNull String, boolean);
     method @FlaggedApi("android.service.notification.notification_classification") public void setAssistantAdjustmentKeyTypeState(int, boolean);
     method @FlaggedApi("android.app.api_rich_ongoing") public void setCanPostPromotedNotifications(@NonNull String, int, boolean);
     method @RequiresPermission(android.Manifest.permission.MANAGE_NOTIFICATION_LISTENERS) public void setNotificationListenerAccessGranted(@NonNull android.content.ComponentName, boolean, boolean);
     method @RequiresPermission(android.Manifest.permission.MANAGE_TOAST_RATE_LIMITING) public void setToastRateLimitingEnabled(boolean);
-    method @FlaggedApi("android.app.modes_api") public boolean updateAutomaticZenRule(@NonNull String, @NonNull android.app.AutomaticZenRule, boolean);
+    method public boolean updateAutomaticZenRule(@NonNull String, @NonNull android.app.AutomaticZenRule, boolean);
     method public void updateNotificationChannel(@NonNull String, int, @NonNull android.app.NotificationChannel);
   }
 
   public static class NotificationManager.Policy implements android.os.Parcelable {
-    method @FlaggedApi("android.app.modes_api") public boolean allowPriorityChannels();
+    method public boolean allowPriorityChannels();
   }
 
   public final class PendingIntent implements android.os.Parcelable {
@@ -478,8 +478,8 @@ package android.app {
     method public void destroy();
     method @NonNull public java.util.Set<java.lang.String> getAdoptedShellPermissions();
     method @Deprecated public boolean grantRuntimePermission(String, String, android.os.UserHandle);
-    method public boolean injectInputEvent(@NonNull android.view.InputEvent, boolean, boolean);
-    method public void injectInputEventToInputFilter(@NonNull android.view.InputEvent);
+    method @Deprecated public boolean injectInputEvent(@NonNull android.view.InputEvent, boolean, boolean);
+    method @Deprecated public void injectInputEventToInputFilter(@NonNull android.view.InputEvent);
     method public boolean isNodeInCache(@NonNull android.view.accessibility.AccessibilityNodeInfo);
     method public void removeOverridePermissionState(int, @NonNull String);
     method @Deprecated public boolean revokeRuntimePermission(String, String, android.os.UserHandle);
@@ -490,15 +490,15 @@ package android.app {
   }
 
   public class UiModeManager {
-    method @FlaggedApi("android.app.modes_api") @RequiresPermission(android.Manifest.permission.MODIFY_DAY_NIGHT_MODE) public int getAttentionModeThemeOverlay();
+    method @RequiresPermission(android.Manifest.permission.MODIFY_DAY_NIGHT_MODE) public int getAttentionModeThemeOverlay();
     method public boolean isNightModeLocked();
     method public boolean isUiModeLocked();
     method @RequiresPermission(value=android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION, conditional=true) public boolean releaseProjection(int);
     method @RequiresPermission(value=android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION, conditional=true) public boolean requestProjection(int);
-    field @FlaggedApi("android.app.modes_api") public static final int MODE_ATTENTION_THEME_OVERLAY_DAY = 1002; // 0x3ea
-    field @FlaggedApi("android.app.modes_api") public static final int MODE_ATTENTION_THEME_OVERLAY_NIGHT = 1001; // 0x3e9
-    field @FlaggedApi("android.app.modes_api") public static final int MODE_ATTENTION_THEME_OVERLAY_OFF = 1000; // 0x3e8
-    field @FlaggedApi("android.app.modes_api") public static final int MODE_ATTENTION_THEME_OVERLAY_UNKNOWN = -1; // 0xffffffff
+    field public static final int MODE_ATTENTION_THEME_OVERLAY_DAY = 1002; // 0x3ea
+    field public static final int MODE_ATTENTION_THEME_OVERLAY_NIGHT = 1001; // 0x3e9
+    field public static final int MODE_ATTENTION_THEME_OVERLAY_OFF = 1000; // 0x3e8
+    field public static final int MODE_ATTENTION_THEME_OVERLAY_UNKNOWN = -1; // 0xffffffff
     field public static final int PROJECTION_TYPE_ALL = -1; // 0xffffffff
     field public static final int PROJECTION_TYPE_AUTOMOTIVE = 1; // 0x1
     field public static final int PROJECTION_TYPE_NONE = 0; // 0x0
@@ -1716,7 +1716,7 @@ package android.hardware.display {
   }
 
   public final class ColorDisplayManager {
-    method @FlaggedApi("android.app.modes_api") @RequiresPermission(android.Manifest.permission.CONTROL_DISPLAY_COLOR_TRANSFORMS) public boolean isSaturationActivated();
+    method @RequiresPermission(android.Manifest.permission.CONTROL_DISPLAY_COLOR_TRANSFORMS) public boolean isSaturationActivated();
   }
 
   public final class DisplayManager {
@@ -3237,16 +3237,16 @@ package android.service.notification {
     method @Deprecated public boolean isBound();
   }
 
-  @FlaggedApi("android.app.modes_api") public final class ZenDeviceEffects implements android.os.Parcelable {
+  public final class ZenDeviceEffects implements android.os.Parcelable {
     method @NonNull public java.util.Set<java.lang.String> getExtraEffects();
   }
 
-  @FlaggedApi("android.app.modes_api") public static final class ZenDeviceEffects.Builder {
+  public static final class ZenDeviceEffects.Builder {
     method @NonNull public android.service.notification.ZenDeviceEffects.Builder setExtraEffects(@NonNull java.util.Set<java.lang.String>);
   }
 
   public final class ZenPolicy implements android.os.Parcelable {
-    method @FlaggedApi("android.app.modes_api") @NonNull public android.service.notification.ZenPolicy overwrittenWith(@Nullable android.service.notification.ZenPolicy);
+    method @NonNull public android.service.notification.ZenPolicy overwrittenWith(@Nullable android.service.notification.ZenPolicy);
   }
 
   public static final class ZenPolicy.Builder {

@@ -27,6 +27,7 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.ui.viewmodel.notificationShadeWindowModel
 import com.android.systemui.statusbar.notification.icon.ui.viewmodel.notificationIconContainerAlwaysOnDisplayViewModel
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.aodPromotedNotificationInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationsKeyguardInteractor
 import com.android.systemui.statusbar.phone.dozeParameters
 import com.android.systemui.statusbar.phone.screenOffAnimationController
@@ -42,6 +43,7 @@ val Kosmos.keyguardRootViewModel by Fixture {
         keyguardTransitionInteractor = keyguardTransitionInteractor,
         notificationsKeyguardInteractor = notificationsKeyguardInteractor,
         pulseExpansionInteractor = pulseExpansionInteractor,
+        aodPromotedNotificationInteractor = aodPromotedNotificationInteractor,
         aodNotificationIconViewModel = notificationIconContainerAlwaysOnDisplayViewModel,
         notificationShadeWindowModel = notificationShadeWindowModel,
         alternateBouncerToAodTransitionViewModel = alternateBouncerToAodTransitionViewModel,

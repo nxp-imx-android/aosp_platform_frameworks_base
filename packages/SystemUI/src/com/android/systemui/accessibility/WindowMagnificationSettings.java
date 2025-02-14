@@ -174,13 +174,14 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // Notify the service to update the magnifier scale only when the progress changed is
-            // triggered by user interaction on seekbar
-            if (fromUser) {
-                final float scale = transformProgressToScale(progress);
-                // We don't need to update the persisted scale when the seekbar progress is
-                // changing. The update should be triggered when the changing is ended.
-                mCallback.onMagnifierScale(scale, /* updatePersistence= */ false);
+            // triggered by user interaction on seekbar.
+            if (!fromUser) {
+                return;
             }
+            final float scale = transformProgressToScale(progress);
+            // We don't need to update the persisted scale when the seekbar progress is
+            // changing. The update should be triggered when the changing is ended.
+            mCallback.onMagnifierScale(scale, /* updatePersistence= */ false);
         }
 
         @Override
@@ -195,7 +196,7 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
 
         @Override
         public void onUserInteractionFinalized(SeekBar seekBar, @ControlUnitType int control) {
-            // Update the Settings persisted scale only when user interaction with seekbar ends
+            // Update the Settings persisted scale only when user interaction with seekbar ends.
             final int progress = seekBar.getProgress();
             final float scale = transformProgressToScale(progress);
             mCallback.onMagnifierScale(scale, /* updatePersistence= */ true);

@@ -21,6 +21,7 @@ import com.android.systemui.haptics.slider.sliderHapticsViewModelFactory
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.volume.mediaDeviceSessionInteractor
 import com.android.systemui.volume.panel.component.mediaoutput.shared.model.MediaDeviceSession
+import com.android.systemui.volume.shared.volumePanelLogger
 import kotlinx.coroutines.CoroutineScope
 
 val Kosmos.castVolumeSliderViewModelFactory by
@@ -36,6 +37,7 @@ val Kosmos.castVolumeSliderViewModelFactory by
                     applicationContext,
                     mediaDeviceSessionInteractor,
                     sliderHapticsViewModelFactory,
+                    volumePanelLogger,
                 )
             }
         }

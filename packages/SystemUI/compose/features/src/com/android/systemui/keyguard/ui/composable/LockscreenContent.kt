@@ -20,11 +20,8 @@ import android.view.View
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.internal.jank.Cuj
 import com.android.internal.jank.Cuj.CujType
@@ -70,8 +67,7 @@ class LockscreenContent(
             rememberViewModel("LockscreenContent-scrimViewModel") {
                 notificationScrimViewModelFactory.create()
             }
-        val isContentVisible: Boolean by viewModel.isContentVisible.collectAsStateWithLifecycle()
-        if (!isContentVisible) {
+        if (!viewModel.isContentVisible) {
             // If the content isn't supposed to be visible, show a large empty box as it's needed
             // for scene transition animations (can't just skip rendering everything or shared
             // elements won't have correct final/initial bounds from animating in and out of the
@@ -80,15 +76,13 @@ class LockscreenContent(
             return
         }
 
-        val coroutineScope = rememberCoroutineScope()
-        val blueprintId by viewModel.blueprintId(coroutineScope).collectAsStateWithLifecycle()
         DisposableEffect(view) {
             clockInteractor.clockEventController.registerListeners(view)
 
             onDispose { clockInteractor.clockEventController.unregisterListeners() }
         }
 
-        val blueprint = blueprintByBlueprintId[blueprintId] ?: return
+        val blueprint = blueprintByBlueprintId[viewModel.blueprintId] ?: return
         with(blueprint) {
             Content(viewModel, modifier.sysuiResTag("keyguard_root_view"))
             NotificationLockscreenScrim(notificationLockscreenScrimViewModel)

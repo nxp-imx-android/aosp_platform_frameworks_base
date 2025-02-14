@@ -56,8 +56,7 @@ public abstract class VerityUtils {
     private static final int HASH_SIZE_BYTES = 32;
 
     public static boolean isFsVeritySupported() {
-        return Build.VERSION.DEVICE_INITIAL_SDK_INT >= Build.VERSION_CODES.R
-                || SystemProperties.getInt("ro.apk_verity.mode", 0) == 2;
+        return Build.VERSION.DEVICE_INITIAL_SDK_INT >= Build.VERSION_CODES.R;
     }
 
     /** Enables fs-verity for the file without signature. */

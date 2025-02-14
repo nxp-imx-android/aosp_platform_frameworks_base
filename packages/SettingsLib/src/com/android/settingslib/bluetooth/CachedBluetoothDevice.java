@@ -16,8 +16,7 @@
 
 package com.android.settingslib.bluetooth;
 
-import static com.android.settingslib.flags.Flags.enableSetPreferredTransportForLeAudioDevice;
-import static com.android.settingslib.flags.Flags.ignoreA2dpDisconnectionForAndroidAuto;
+import static com.android.settingslib.media.flags.Flags.enableTvMediaOutputDialog;
 
 import android.annotation.CallbackExecutor;
 import android.annotation.StringRes;
@@ -53,7 +52,7 @@ import androidx.annotation.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
 import com.android.settingslib.R;
 import com.android.settingslib.Utils;
-import com.android.settingslib.media.flags.Flags;
+import com.android.settingslib.flags.Flags;
 import com.android.settingslib.utils.ThreadUtils;
 import com.android.settingslib.widget.AdaptiveOutlineDrawable;
 
@@ -264,7 +263,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                             mHandler.removeMessages(profile.getProfileId());
                             if (profile.getConnectionPolicy(mDevice) >
                                     BluetoothProfile.CONNECTION_POLICY_FORBIDDEN) {
-                                if (ignoreA2dpDisconnectionForAndroidAuto()
+                                if (Flags.ignoreA2dpDisconnectionForAndroidAuto()
                                         && profile instanceof A2dpProfile && isAndroidAuto()) {
                                     Log.w(TAG,
                                             "onProfileStateChanged(): Skip setting A2DP "
@@ -306,7 +305,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                         mLocalNapRoleConnected = true;
                     }
                 }
-                if (enableSetPreferredTransportForLeAudioDevice()
+                if (Flags.enableSetPreferredTransportForLeAudioDevice()
                         && profile instanceof HidProfile) {
                     updatePreferredTransport();
                 }
@@ -322,7 +321,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                 mLocalNapRoleConnected = false;
             }
 
-            if (enableSetPreferredTransportForLeAudioDevice()
+            if (Flags.enableSetPreferredTransportForLeAudioDevice()
                     && profile instanceof LeAudioProfile) {
                 updatePreferredTransport();
             }
@@ -1345,6 +1344,8 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         if (mBluetoothManager == null) {
             mBluetoothManager = LocalBluetoothManager.getInstance(mContext, null);
         }
+        boolean isTempBond = Flags.enableTemporaryBondDevicesUi()
+                && BluetoothUtils.isTemporaryBondDevice(getDevice());
         if (BluetoothUtils.hasConnectedBroadcastSource(this, mBluetoothManager)) {
             // Gets summary for the buds which are in the audio sharing.
             int groupId = BluetoothUtils.getGroupId(this);
@@ -1363,14 +1364,23 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                         shortSummary);
             } else {
                 // The buds are not primary buds
-                return getSummaryWithBatteryInfo(
-                        R.string.bluetooth_active_media_only_battery_level_untethered,
-                        R.string.bluetooth_active_media_only_battery_level,
-                        R.string.bluetooth_active_media_only_no_battery_level,
-                        leftBattery,
-                        rightBattery,
-                        batteryLevelPercentageString,
-                        shortSummary);
+                return isTempBond
+                        ? getSummaryWithBatteryInfo(
+                                R.string.bluetooth_guest_media_only_battery_level_untethered,
+                                R.string.bluetooth_guest_media_only_battery_level,
+                                R.string.bluetooth_guest_media_only_no_battery_level,
+                                leftBattery,
+                                rightBattery,
+                                batteryLevelPercentageString,
+                                shortSummary)
+                        : getSummaryWithBatteryInfo(
+                                R.string.bluetooth_active_media_only_battery_level_untethered,
+                                R.string.bluetooth_active_media_only_battery_level,
+                                R.string.bluetooth_active_media_only_no_battery_level,
+                                leftBattery,
+                                rightBattery,
+                                batteryLevelPercentageString,
+                                shortSummary);
             }
         } else {
             // Gets summary for the buds which are not in the audio sharing.
@@ -1381,16 +1391,28 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                                             && profile.isEnabled(getDevice()))) {
                 // The buds support le audio.
                 if (isConnected()) {
-                    return getSummaryWithBatteryInfo(
-                            R.string.bluetooth_battery_level_untethered_lea_support,
-                            R.string.bluetooth_battery_level_lea_support,
-                            R.string.bluetooth_no_battery_level_lea_support,
-                            leftBattery,
-                            rightBattery,
-                            batteryLevelPercentageString,
-                            shortSummary);
+                    return isTempBond
+                            ? getSummaryWithBatteryInfo(
+                                    R.string.bluetooth_guest_battery_level_untethered_lea_support,
+                                    R.string.bluetooth_guest_battery_level_lea_support,
+                                    R.string.bluetooth_guest_no_battery_level_lea_support,
+                                    leftBattery,
+                                    rightBattery,
+                                    batteryLevelPercentageString,
+                                    shortSummary)
+                            : getSummaryWithBatteryInfo(
+                                    R.string.bluetooth_battery_level_untethered_lea_support,
+                                    R.string.bluetooth_battery_level_lea_support,
+                                    R.string.bluetooth_no_battery_level_lea_support,
+                                    leftBattery,
+                                    rightBattery,
+                                    batteryLevelPercentageString,
+                                    shortSummary);
                 } else {
-                    return mContext.getString(R.string.bluetooth_saved_device_lea_support);
+                    return isTempBond
+                            ? mContext.getString(
+                                    R.string.bluetooth_guest_saved_device_lea_support)
+                            : mContext.getString(R.string.bluetooth_saved_device_lea_support);
                 }
             }
         }
@@ -1509,11 +1531,19 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             leftBattery = getLeftBatteryLevel();
             rightBattery = getRightBatteryLevel();
 
+            boolean isTempBond = Flags.enableTemporaryBondDevicesUi()
+                    && BluetoothUtils.isTemporaryBondDevice(getDevice());
             // Set default string with battery level in device connected situation.
             if (isTwsBatteryAvailable(leftBattery, rightBattery)) {
-                stringRes = R.string.bluetooth_battery_level_untethered;
+                stringRes =
+                        isTempBond
+                                ? R.string.bluetooth_guest_battery_level_untethered
+                                : R.string.bluetooth_battery_level_untethered;
             } else if (batteryLevelPercentageString != null && !shortSummary) {
-                stringRes = R.string.bluetooth_battery_level;
+                stringRes =
+                        isTempBond
+                                ? R.string.bluetooth_guest_battery_level
+                                : R.string.bluetooth_battery_level;
             }
 
             // Set active string in following device connected situation, also show battery
@@ -1529,11 +1559,20 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                         || (mIsActiveDeviceA2dp && !isOnCall)
                         || mIsActiveDeviceLeAudio) {
                     if (isTwsBatteryAvailable(leftBattery, rightBattery) && !shortSummary) {
-                        stringRes = R.string.bluetooth_active_battery_level_untethered;
+                        stringRes =
+                                isTempBond
+                                        ? R.string.bluetooth_guest_battery_level_untethered
+                                        : R.string.bluetooth_active_battery_level_untethered;
                     } else if (batteryLevelPercentageString != null && !shortSummary) {
-                        stringRes = R.string.bluetooth_active_battery_level;
+                        stringRes =
+                                isTempBond
+                                        ? R.string.bluetooth_guest_battery_level
+                                        : R.string.bluetooth_active_battery_level;
                     } else {
-                        stringRes = R.string.bluetooth_active_no_battery_level;
+                        stringRes =
+                                isTempBond
+                                        ? R.string.bluetooth_guest_no_battery_level
+                                        : R.string.bluetooth_active_no_battery_level;
                     }
                 }
 
@@ -1559,7 +1598,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                 || stringRes == R.string.bluetooth_active_battery_level_untethered_left
                 || stringRes == R.string.bluetooth_active_battery_level_untethered_right
                 || stringRes == R.string.bluetooth_battery_level_untethered;
-        if (isTvSummary && summaryIncludesBatteryLevel && Flags.enableTvMediaOutputDialog()) {
+        if (isTvSummary && summaryIncludesBatteryLevel && enableTvMediaOutputDialog()) {
             return getTvBatterySummary(
                     getMinBatteryLevelWithMemberDevices(),
                     leftBattery,

@@ -312,7 +312,6 @@ public class UiModeManager {
      * #getAttentionModeThemeOverlay()}: Keeps night mode as set by {@link #setNightMode(int)}.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     @TestApi
     public static final int MODE_ATTENTION_THEME_OVERLAY_OFF = 1000;
 
@@ -321,7 +320,6 @@ public class UiModeManager {
      * #getAttentionModeThemeOverlay()}: Maintains night mode always on.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     @TestApi
     public static final int MODE_ATTENTION_THEME_OVERLAY_NIGHT = 1001;
 
@@ -330,7 +328,6 @@ public class UiModeManager {
      * #getAttentionModeThemeOverlay()}: Maintains night mode always off (Light).
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     @TestApi
     public static final int MODE_ATTENTION_THEME_OVERLAY_DAY = 1002;
 
@@ -338,7 +335,6 @@ public class UiModeManager {
      * Constant for {@link #getAttentionModeThemeOverlay()}: Error communication with server.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     @TestApi
     public static final int MODE_ATTENTION_THEME_OVERLAY_UNKNOWN = -1;
 
@@ -940,7 +936,6 @@ public class UiModeManager {
      *                                  {@code AttentionModeThemeOverlayType}.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     @RequiresPermission(android.Manifest.permission.MODIFY_DAY_NIGHT_MODE)
     public void setAttentionModeThemeOverlay(
             @AttentionModeThemeOverlayType int attentionModeThemeOverlayType) {
@@ -967,7 +962,6 @@ public class UiModeManager {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_MODES_API)
     @TestApi
     @RequiresPermission(android.Manifest.permission.MODIFY_DAY_NIGHT_MODE)
     public @AttentionModeThemeOverlayReturnType int getAttentionModeThemeOverlay() {

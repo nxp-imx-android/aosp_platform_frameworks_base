@@ -1,0 +1,30 @@
+<!--
+  ~ Copyright (C) 2025 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportHeight="40"
+    android:viewportWidth="40">
+    <path
+        android:fillColor="#F7DAEE"
+        android:fillType="evenOdd"
+        android:pathData="M20.76,19C21.65,19 22.096,17.924 21.467,17.294L19.284,15.105C18.895,14.716 18.895,14.085 19.285,13.695C19.674,13.306 20.306,13.306 20.695,13.695L26.293,19.293C26.683,19.683 26.683,20.317 26.293,20.707L20.705,26.295C20.315,26.685 19.683,26.686 19.292,26.298C18.9,25.907 18.898,25.272 19.29,24.88L21.463,22.707C22.093,22.077 21.647,21 20.756,21H10C9.448,21 9,20.552 9,20C9,19.448 9.448,19 10,19H20.76ZM32,26C32,26.552 31.552,27 31,27C30.448,27 30,26.552 30,26V14C30,13.448 30.448,13 31,13C31.552,13 32,13.448 32,14V26Z"
+        android:strokeColor="#F7DAEE"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2" />
+</vector>

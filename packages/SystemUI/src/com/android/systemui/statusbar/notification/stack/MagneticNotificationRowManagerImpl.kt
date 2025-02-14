@@ -190,7 +190,8 @@ constructor(
         currentMagneticListeners.forEachIndexed { i, target ->
             target?.let {
                 if (i != currentMagneticListeners.size / 2) {
-                    snapBack(it, velocity)
+                    val velocityMultiplier = MAGNETIC_TRANSLATION_MULTIPLIERS[i]
+                    snapBack(it, velocity?.times(velocityMultiplier))
                 }
             }
         }

@@ -69,6 +69,7 @@ public class SystemBackupAgent extends BackupAgentHelper {
     private static final String SYSTEM_GENDER_HELPER = "system_gender";
     private static final String DISPLAY_HELPER = "display";
     private static final String INPUT_HELPER = "input";
+    private static final String WEAR_BACKUP_HELPER = "wear";
 
     // These paths must match what the WallpaperManagerService uses.  The leaf *_FILENAME
     // are also used in the full-backup file format, so must not change unless steps are
@@ -113,7 +114,7 @@ public class SystemBackupAgent extends BackupAgentHelper {
     private static final Set<String> sEligibleHelpersForNonSystemUser =
             SetUtils.union(sEligibleHelpersForProfileUser,
                     Sets.newArraySet(ACCOUNT_MANAGER_HELPER, USAGE_STATS_HELPER, PREFERRED_HELPER,
-                            SHORTCUT_MANAGER_HELPER, INPUT_HELPER));
+                            SHORTCUT_MANAGER_HELPER, INPUT_HELPER, WEAR_BACKUP_HELPER));
 
     private int mUserId = UserHandle.USER_SYSTEM;
     private boolean mIsProfileUser = false;
@@ -152,6 +153,11 @@ public class SystemBackupAgent extends BackupAgentHelper {
         addHelperIfEligibleForUser(DISPLAY_HELPER, new DisplayBackupHelper(mUserId));
         if (com.android.hardware.input.Flags.enableBackupAndRestoreForInputGestures()) {
             addHelperIfEligibleForUser(INPUT_HELPER, new InputBackupHelper(mUserId));
+        }
+
+        // Add Wear helper only if the device is a watch
+        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)) {
+            addHelperIfEligibleForUser(WEAR_BACKUP_HELPER, new WearBackupHelper());
         }
     }
 

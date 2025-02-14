@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
 
-import android.app.Flags;
 import android.os.Parcel;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.notification.ZenDeviceEffects;
@@ -31,7 +30,6 @@ import com.android.server.UiServiceTestCase;
 
 import com.google.common.collect.ImmutableSet;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,11 +39,6 @@ public class ZenDeviceEffectsTest extends UiServiceTestCase {
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
-
-    @Before
-    public final void setUp() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_MODES_API);
-    }
 
     @Test
     public void builder() {

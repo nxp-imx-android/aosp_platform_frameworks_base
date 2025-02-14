@@ -300,6 +300,9 @@ public class PipTransition extends PipTransitionController implements
             mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
             return startRemoveAnimation(info, startTransaction, finishTransaction, finishCallback);
         }
+        // For any unhandled transition, make sure the PiP surface is properly updated,
+        // i.e. corner and shadow radius.
+        syncPipSurfaceState(info, startTransaction, finishTransaction);
         return false;
     }
 

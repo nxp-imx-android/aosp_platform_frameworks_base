@@ -226,6 +226,21 @@ public class AconfigFlags {
     }
 
     private Boolean getFlagValueFromNewStorage(String flagPackageAndName) {
+        // We still need to check mFlagValues in case addFlagValuesForTesting() was called for
+        // testing purposes.
+        if (!mFlagValues.isEmpty() && mFlagValues.containsKey(flagPackageAndName)) {
+            Boolean value = mFlagValues.get(flagPackageAndName);
+            if (DEBUG) {
+                Slog.v(
+                        LOG_TAG,
+                        "Aconfig flag value (FOR TESTING) for "
+                                + flagPackageAndName
+                                + " = "
+                                + value);
+            }
+            return value;
+        }
+
         int index = flagPackageAndName.lastIndexOf('.');
         if (index < 0) {
             Slog.e(LOG_TAG, "Unable to parse package name from " + flagPackageAndName);

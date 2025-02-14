@@ -18,7 +18,6 @@ package com.android.server.security.intrusiondetection;
 
 import android.app.admin.ConnectEvent;
 import android.app.admin.DnsEvent;
-import android.content.Context;
 import android.content.pm.PackageManagerInternal;
 import android.net.IIpConnectivityMetrics;
 import android.net.INetdEventCallback;
@@ -44,8 +43,7 @@ public class NetworkLogSource implements DataSource {
     private IIpConnectivityMetrics mIpConnectivityMetrics;
     private long mId;
 
-    public NetworkLogSource(Context context, DataAggregator dataAggregator)
-            throws SecurityException {
+    public NetworkLogSource(DataAggregator dataAggregator) throws SecurityException {
         mDataAggregator = dataAggregator;
         mPm = LocalServices.getService(PackageManagerInternal.class);
         mId = 0;

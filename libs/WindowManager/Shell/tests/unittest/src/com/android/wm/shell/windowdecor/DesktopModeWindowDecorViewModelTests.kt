@@ -484,7 +484,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             eq(SnapPosition.LEFT),
             eq(ResizeTrigger.SNAP_LEFT_MENU),
             eq(InputMethod.UNKNOWN_INPUT_METHOD),
-            eq(decor)
         )
     }
 
@@ -520,7 +519,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             eq(SnapPosition.LEFT),
             eq(ResizeTrigger.SNAP_LEFT_MENU),
             eq(InputMethod.UNKNOWN_INPUT_METHOD),
-            eq(decor),
         )
     }
 
@@ -542,7 +540,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 eq(decor.mTaskInfo), any(), eq(currentBounds), eq(SnapPosition.LEFT),
                 eq(ResizeTrigger.MAXIMIZE_BUTTON),
                 eq(InputMethod.UNKNOWN_INPUT_METHOD),
-                eq(decor),
             )
     }
 
@@ -562,7 +559,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             eq(SnapPosition.RIGHT),
             eq(ResizeTrigger.SNAP_RIGHT_MENU),
             eq(InputMethod.UNKNOWN_INPUT_METHOD),
-            eq(decor),
         )
     }
 
@@ -598,7 +594,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             eq(SnapPosition.RIGHT),
             eq(ResizeTrigger.SNAP_RIGHT_MENU),
             eq(InputMethod.UNKNOWN_INPUT_METHOD),
-            eq(decor),
         )
     }
 
@@ -620,7 +615,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 eq(decor.mTaskInfo), any(), eq(currentBounds), eq(SnapPosition.RIGHT),
                 eq(ResizeTrigger.MAXIMIZE_BUTTON),
                 eq(InputMethod.UNKNOWN_INPUT_METHOD),
-                eq(decor),
             )
     }
 

@@ -21,6 +21,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -31,6 +32,7 @@ class KeyguardMediaViewModel
 constructor(
     mediaCarouselInteractor: MediaCarouselInteractor,
     keyguardInteractor: KeyguardInteractor,
+    shadeModeInteractor: ShadeModeInteractor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("KeyguardMediaViewModel.hydrator")
@@ -52,6 +54,12 @@ constructor(
             initialValue =
                 !keyguardInteractor.isDozing.value &&
                     mediaCarouselInteractor.hasActiveMediaOrRecommendation.value,
+        )
+
+    val isShadeLayoutWide: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isShadeLayoutWide",
+            source = shadeModeInteractor.isShadeLayoutWide,
         )
 
     override suspend fun onActivated(): Nothing {

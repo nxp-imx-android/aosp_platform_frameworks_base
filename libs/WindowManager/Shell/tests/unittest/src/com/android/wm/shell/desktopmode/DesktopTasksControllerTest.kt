@@ -151,8 +151,7 @@ import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.ENABLE_SHELL_TRANSITIONS
 import com.android.wm.shell.transition.Transitions.TransitionHandler
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModelTestsBase.Companion.HOME_LAUNCHER_PACKAGE_NAME
-import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
-import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel
+import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import java.util.Optional
@@ -179,6 +178,7 @@ import org.mockito.ArgumentMatchers.isA
 import org.mockito.ArgumentMatchers.isNull
 import org.mockito.Mock
 import org.mockito.Mockito
+import org.mockito.Mockito.anyBoolean
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.mock
@@ -233,6 +233,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock lateinit var multiInstanceHelper: MultiInstanceHelper
     @Mock lateinit var desktopModeVisualIndicator: DesktopModeVisualIndicator
     @Mock lateinit var recentTasksController: RecentTasksController
+    @Mock lateinit var snapEventHandler: SnapEventHandler
     @Mock private lateinit var mockInteractionJankMonitor: InteractionJankMonitor
     @Mock private lateinit var mockSurface: SurfaceControl
     @Mock private lateinit var taskbarDesktopTaskListener: TaskbarDesktopTaskListener
@@ -245,9 +246,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock lateinit var repositoryInitializer: DesktopRepositoryInitializer
     @Mock private lateinit var mockToast: Toast
     private lateinit var mockitoSession: StaticMockitoSession
-    @Mock private lateinit var desktopTilingDecorViewModel: DesktopTilingDecorViewModel
     @Mock private lateinit var bubbleController: BubbleController
-    @Mock private lateinit var desktopWindowDecoration: DesktopModeWindowDecoration
     @Mock private lateinit var resources: Resources
     @Mock
     lateinit var desktopModeEnterExitTransitionListener: DesktopModeEntryExitTransitionListener
@@ -379,6 +378,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         recentsTransitionStateListener = captor.firstValue
 
         controller.taskbarDesktopTaskListener = taskbarDesktopTaskListener
+        controller.setSnapEventHandler(snapEventHandler)
 
         assumeTrue(ENABLE_SHELL_TRANSITIONS)
 
@@ -422,7 +422,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             mockHandler,
             desktopModeEventLogger,
             desktopModeUiEventLogger,
-            desktopTilingDecorViewModel,
             desktopWallpaperActivityTokenProvider,
             Optional.of(bubbleController),
             overviewToDesktopTransitionObserver,
@@ -2763,13 +2762,20 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun onDesktopWindowMinimize_noActiveTask_doesntRemoveWallpaper() {
         val task = setUpFreeformTask(active = false)
         val transition = Binder()
-        whenever(freeformTaskTransitionStarter.startMinimizedModeTransition(any()))
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
             .thenReturn(transition)
 
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
 
         val captor = argumentCaptor<WindowContainerTransaction>()
-        verify(freeformTaskTransitionStarter).startMinimizedModeTransition(captor.capture())
+        verify(freeformTaskTransitionStarter)
+            .startMinimizedModeTransition(captor.capture(), eq(task.taskId), eq(false))
         captor.firstValue.hierarchyOps.none { hop ->
             hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK && hop.container == wallpaperToken.asBinder()
         }
@@ -2785,18 +2791,26 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
 
         verify(freeformTaskTransitionStarter).startPipTransition(any())
-        verify(freeformTaskTransitionStarter, never()).startMinimizedModeTransition(any())
+        verify(freeformTaskTransitionStarter, never())
+            .startMinimizedModeTransition(any(), anyInt(), anyBoolean())
     }
 
     @Test
     fun onPipTaskMinimize_autoEnterDisabled_startMinimizeTransition() {
         val task = setUpPipTask(autoEnterEnabled = false)
-        whenever(freeformTaskTransitionStarter.startMinimizedModeTransition(any()))
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
             .thenReturn(Binder())
 
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
 
-        verify(freeformTaskTransitionStarter).startMinimizedModeTransition(any())
+        verify(freeformTaskTransitionStarter)
+            .startMinimizedModeTransition(any(), eq(task.taskId), anyBoolean())
         verify(freeformTaskTransitionStarter, never()).startPipTransition(any())
     }
 
@@ -2820,13 +2834,20 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun onDesktopWindowMinimize_singleActiveTask_noWallpaperActivityToken_doesntRemoveWallpaper() {
         val task = setUpFreeformTask(active = true)
         val transition = Binder()
-        whenever(freeformTaskTransitionStarter.startMinimizedModeTransition(any()))
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
             .thenReturn(transition)
 
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
 
         val captor = argumentCaptor<WindowContainerTransaction>()
-        verify(freeformTaskTransitionStarter).startMinimizedModeTransition(captor.capture())
+        verify(freeformTaskTransitionStarter)
+            .startMinimizedModeTransition(captor.capture(), eq(task.taskId), eq(true))
         captor.firstValue.hierarchyOps.none { hop -> hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK }
     }
 
@@ -2835,14 +2856,21 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun onTaskMinimize_singleActiveTask_hasWallpaperActivityToken_removesWallpaper() {
         val task = setUpFreeformTask()
         val transition = Binder()
-        whenever(freeformTaskTransitionStarter.startMinimizedModeTransition(any()))
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
             .thenReturn(transition)
 
         // The only active task is being minimized.
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
 
         val captor = argumentCaptor<WindowContainerTransaction>()
-        verify(freeformTaskTransitionStarter).startMinimizedModeTransition(captor.capture())
+        verify(freeformTaskTransitionStarter)
+            .startMinimizedModeTransition(captor.capture(), eq(task.taskId), eq(true))
         // Adds remove wallpaper operation
         captor.firstValue.assertReorderAt(index = 0, wallpaperToken, toTop = false)
     }
@@ -2851,7 +2879,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun onDesktopWindowMinimize_singleActiveTask_alreadyMinimized_doesntRemoveWallpaper() {
         val task = setUpFreeformTask()
         val transition = Binder()
-        whenever(freeformTaskTransitionStarter.startMinimizedModeTransition(any()))
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
             .thenReturn(transition)
         taskRepository.minimizeTask(DEFAULT_DISPLAY, task.taskId)
 
@@ -2859,7 +2893,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
 
         val captor = argumentCaptor<WindowContainerTransaction>()
-        verify(freeformTaskTransitionStarter).startMinimizedModeTransition(captor.capture())
+        verify(freeformTaskTransitionStarter)
+            .startMinimizedModeTransition(captor.capture(), eq(task.taskId), eq(false))
         captor.firstValue.hierarchyOps.none { hop ->
             hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK && hop.container == wallpaperToken.asBinder()
         }
@@ -2870,13 +2905,20 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task1 = setUpFreeformTask(active = true)
         setUpFreeformTask(active = true)
         val transition = Binder()
-        whenever(freeformTaskTransitionStarter.startMinimizedModeTransition(any()))
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
             .thenReturn(transition)
 
         controller.minimizeTask(task1, MinimizeReason.MINIMIZE_BUTTON)
 
         val captor = argumentCaptor<WindowContainerTransaction>()
-        verify(freeformTaskTransitionStarter).startMinimizedModeTransition(captor.capture())
+        verify(freeformTaskTransitionStarter)
+            .startMinimizedModeTransition(captor.capture(), eq(task1.taskId), eq(false))
         captor.firstValue.hierarchyOps.none { hop ->
             hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK && hop.container == wallpaperToken.asBinder()
         }
@@ -2888,7 +2930,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task1 = setUpFreeformTask(active = true)
         val task2 = setUpFreeformTask(active = true)
         val transition = Binder()
-        whenever(freeformTaskTransitionStarter.startMinimizedModeTransition(any()))
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
             .thenReturn(transition)
         taskRepository.minimizeTask(DEFAULT_DISPLAY, task2.taskId)
 
@@ -2896,7 +2944,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.minimizeTask(task1, MinimizeReason.MINIMIZE_BUTTON)
         // Adds remove wallpaper operation
         val captor = argumentCaptor<WindowContainerTransaction>()
-        verify(freeformTaskTransitionStarter).startMinimizedModeTransition(captor.capture())
+        verify(freeformTaskTransitionStarter)
+            .startMinimizedModeTransition(captor.capture(), eq(task1.taskId), eq(true))
         // Adds remove wallpaper operation
         captor.firstValue.assertReorderAt(index = 0, wallpaperToken, toTop = false)
     }
@@ -2905,7 +2954,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun onDesktopWindowMinimize_triesToExitImmersive() {
         val task = setUpFreeformTask()
         val transition = Binder()
-        whenever(freeformTaskTransitionStarter.startMinimizedModeTransition(any()))
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
             .thenReturn(transition)
 
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
@@ -2918,7 +2973,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task = setUpFreeformTask()
         val transition = Binder()
         val runOnTransit = RunOnStartTransitionCallback()
-        whenever(freeformTaskTransitionStarter.startMinimizedModeTransition(any()))
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
             .thenReturn(transition)
         whenever(mMockDesktopImmersiveController.exitImmersiveIfApplicable(any(), eq(task), any()))
             .thenReturn(
@@ -4420,7 +4481,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             validDragArea = Rect(0, 50, 2000, 2000),
             dragStartBounds = Rect(),
             motionEvent,
-            desktopWindowDecoration,
         )
         val rectAfterEnd = Rect(100, 50, 500, 1150)
         verify(transitions)
@@ -4458,7 +4518,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             validDragArea = Rect(0, 50, 2000, 2000),
             dragStartBounds = Rect(),
             motionEvent,
-            desktopWindowDecoration,
         )
 
         verify(transitions)
@@ -4498,7 +4557,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             validDragArea = Rect(0, 50, 2000, 2000),
             dragStartBounds = Rect(),
             motionEvent,
-            desktopWindowDecoration,
         )
 
         verify(transitions)
@@ -4539,7 +4597,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             validDragArea = Rect(0, 50, 2000, 2000),
             dragStartBounds = Rect(),
             motionEvent,
-            desktopWindowDecoration,
         )
 
         // Assert the task exits desktop mode
@@ -4577,7 +4634,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             validDragArea = Rect(0, 50, 2000, 2000),
             dragStartBounds = Rect(),
             motionEvent,
-            desktopWindowDecoration,
         )
 
         // Assert bounds set to stable bounds
@@ -4633,7 +4689,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             validDragArea = Rect(0, 50, 2000, 2000),
             dragStartBounds = Rect(),
             motionEvent,
-            desktopWindowDecoration,
         )
 
         // Assert that task is NOT updated via WCT
@@ -5053,7 +5108,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             SnapPosition.LEFT,
             ResizeTrigger.SNAP_LEFT_MENU,
             InputMethod.TOUCH,
-            desktopWindowDecoration,
         )
         // Assert bounds set to stable bounds
         val wct = getLatestToggleResizeDesktopTaskWct(currentDragBounds)
@@ -5099,7 +5153,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             SnapPosition.LEFT,
             ResizeTrigger.SNAP_LEFT_MENU,
             InputMethod.TOUCH,
-            desktopWindowDecoration,
         )
         // Assert that task is NOT updated via WCT
         verify(toggleResizeDesktopTaskTransitionHandler, never()).startTransition(any(), any())
@@ -5143,7 +5196,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             currentDragBounds,
             preDragBounds,
             motionEvent,
-            desktopWindowDecoration,
         )
         val wct = getLatestToggleResizeDesktopTaskWct(currentDragBounds)
         assertThat(findBoundsChange(wct, task)).isEqualTo(expectedBounds)
@@ -5173,7 +5225,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             currentDragBounds,
             preDragBounds,
             motionEvent,
-            desktopWindowDecoration,
         )
         verify(mReturnToDragStartAnimator)
             .start(
@@ -5198,7 +5249,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             SnapPosition.LEFT,
             ResizeTrigger.SNAP_LEFT_MENU,
             InputMethod.MOUSE,
-            desktopWindowDecoration,
         )
 
         // Assert that task is NOT updated via WCT
@@ -5225,7 +5275,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             SnapPosition.LEFT,
             ResizeTrigger.SNAP_LEFT_MENU,
             InputMethod.MOUSE,
-            desktopWindowDecoration,
         )
 
         // Assert bounds set to half of the stable bounds

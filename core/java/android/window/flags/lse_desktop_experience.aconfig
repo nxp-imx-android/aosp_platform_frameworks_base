@@ -165,6 +165,16 @@ flag {
 }
 
 flag {
+    name: "enable_camera_compat_track_task_and_app_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Whether to use taskId and app process to track camera apps, and notify the policies only on first camera open and final close"
+    bug: "380840084"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_task_stack_observer_in_shell"
     namespace: "lse_desktop_experience"
     description: "Introduces a new observer in shell to track the task stack."

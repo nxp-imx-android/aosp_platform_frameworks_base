@@ -44,6 +44,8 @@ class AppCompatController {
     private final AppCompatLetterboxPolicy mLetterboxPolicy;
     @NonNull
     private final AppCompatSizeCompatModePolicy mSizeCompatModePolicy;
+    @NonNull
+    private final AppCompatSandboxingPolicy mSandboxingPolicy;
 
     AppCompatController(@NonNull WindowManagerService wmService,
                         @NonNull ActivityRecord activityRecord) {
@@ -66,6 +68,7 @@ class AppCompatController {
                 mAppCompatOverrides, mTransparentPolicy, wmService.mAppCompatConfiguration);
         mSizeCompatModePolicy = new AppCompatSizeCompatModePolicy(activityRecord,
                 mAppCompatOverrides);
+        mSandboxingPolicy = new AppCompatSandboxingPolicy(activityRecord);
     }
 
     @NonNull
@@ -141,6 +144,11 @@ class AppCompatController {
     @NonNull
     AppCompatSizeCompatModePolicy getSizeCompatModePolicy() {
         return mSizeCompatModePolicy;
+    }
+
+    @NonNull
+    AppCompatSandboxingPolicy getSandboxingPolicy() {
+        return mSandboxingPolicy;
     }
 
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {

@@ -15,6 +15,7 @@
  */
 package com.android.keyguard;
 
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
@@ -32,6 +33,9 @@ import androidx.annotation.StyleRes;
 import com.android.systemui.Flags;
 import com.android.systemui.bouncer.shared.constants.PinBouncerConstants.Animation;
 import com.android.systemui.bouncer.shared.constants.PinBouncerConstants.Color;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Provides background color and radius animations for key pad buttons.
@@ -141,6 +145,7 @@ class NumPadAnimator {
         mExpandAnimator.addUpdateListener(
                 anim -> mBackground.setCornerRadius((float) anim.getAnimatedValue()));
 
+        List<Animator> expandAnimators = new ArrayList<>();
         ValueAnimator expandBackgroundColorAnimator = ValueAnimator.ofObject(new ArgbEvaluator(),
                 mNormalBackgroundColor, mPressedBackgroundColor);
         expandBackgroundColorAnimator.setDuration(Animation.expansionColorDuration);
@@ -162,10 +167,27 @@ class NumPadAnimator {
             }
         });
 
-        mExpandAnimatorSet = new AnimatorSet();
-        mExpandAnimatorSet.playTogether(mExpandAnimator,
-                expandBackgroundColorAnimator, expandTextColorAnimator);
+        expandAnimators.add(mExpandAnimator);
+        expandAnimators.add(expandBackgroundColorAnimator);
+        expandAnimators.add(expandTextColorAnimator);
 
+        if (Flags.bouncerUiRevamp2()) {
+            ValueAnimator expandTextScaleAnimator = ValueAnimator.ofFloat(
+                    Animation.normalTextScaleX, Animation.pressedTextScaleX);
+            expandTextScaleAnimator.setInterpolator(Animation.expansionInterpolator);
+            expandTextScaleAnimator.setDuration(Animation.expansionDuration);
+            expandTextScaleAnimator.addUpdateListener(valueAnimator -> {
+                if (mDigitTextView != null) {
+                    mDigitTextView.setTextScaleX((Float) valueAnimator.getAnimatedValue());
+                }
+            });
+            expandAnimators.add(expandTextScaleAnimator);
+        }
+
+        mExpandAnimatorSet = new AnimatorSet();
+        mExpandAnimatorSet.playTogether(expandAnimators);
+
+        List<Animator> contractAnimators = new ArrayList<>();
         mContractAnimator = ValueAnimator.ofFloat(1f, 0f);
         mContractAnimator.setStartDelay(Animation.contractionStartDelay);
         mContractAnimator.setDuration(Animation.contractionDuration);
@@ -195,9 +217,24 @@ class NumPadAnimator {
             }
         });
 
+        contractAnimators.add(mContractAnimator);
+        contractAnimators.add(contractBackgroundColorAnimator);
+        contractAnimators.add(contractTextColorAnimator);
+
+        if (Flags.bouncerUiRevamp2()) {
+            ValueAnimator contractTextScaleAnimator = ValueAnimator.ofFloat(
+                    Animation.pressedTextScaleX, Animation.normalTextScaleX);
+            contractTextScaleAnimator.setInterpolator(Animation.contractionRadiusInterpolator);
+            contractTextScaleAnimator.setDuration(Animation.contractionDuration);
+            contractTextScaleAnimator.addUpdateListener(valueAnimator -> {
+                if (mDigitTextView != null) {
+                    mDigitTextView.setTextScaleX((Float) valueAnimator.getAnimatedValue());
+                }
+            });
+            contractAnimators.add(contractTextScaleAnimator);
+        }
         mContractAnimatorSet = new AnimatorSet();
-        mContractAnimatorSet.playTogether(mContractAnimator,
-                contractBackgroundColorAnimator, contractTextColorAnimator);
+        mContractAnimatorSet.playTogether(contractAnimators);
     }
 }
 

@@ -183,13 +183,8 @@ public class NotificationShellCmd extends ShellCommand {
                             interruptionFilter = INTERRUPTION_FILTER_ALL;
                     }
                     final int filter = interruptionFilter;
-                    if (android.app.Flags.modesApi()) {
-                        mBinderService.setInterruptionFilter(callingPackage, filter,
-                                /* fromUser= */ true);
-                    } else {
-                        mBinderService.setInterruptionFilter(callingPackage, filter,
-                                /* fromUser= */ false);
-                    }
+                    mBinderService.setInterruptionFilter(callingPackage, filter,
+                            /* fromUser= */ true);
                 }
                 break;
                 case "allow_dnd": {

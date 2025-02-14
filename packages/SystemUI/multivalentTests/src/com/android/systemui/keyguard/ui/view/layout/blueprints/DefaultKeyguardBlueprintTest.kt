@@ -40,7 +40,6 @@ import com.android.systemui.keyguard.ui.view.layout.sections.DefaultStatusBarSec
 import com.android.systemui.keyguard.ui.view.layout.sections.DefaultUdfpsAccessibilityOverlaySection
 import com.android.systemui.keyguard.ui.view.layout.sections.KeyguardSliceViewSection
 import com.android.systemui.keyguard.ui.view.layout.sections.SmartspaceSection
-import com.android.systemui.keyguard.ui.view.layout.sections.SplitShadeGuidelines
 import com.android.systemui.util.mockito.whenever
 import java.util.Optional
 import org.junit.Before
@@ -66,7 +65,6 @@ class DefaultKeyguardBlueprintTest : SysuiTestCase() {
     @Mock private lateinit var defaultSettingsPopupMenuSection: DefaultSettingsPopupMenuSection
     @Mock private lateinit var defaultStatusBarViewSection: DefaultStatusBarSection
     @Mock private lateinit var defaultNSSLSection: DefaultNotificationStackScrollLayoutSection
-    @Mock private lateinit var splitShadeGuidelines: SplitShadeGuidelines
     @Mock private lateinit var aodPromotedNotificationSection: AodPromotedNotificationSection
     @Mock private lateinit var aodNotificationIconsSection: AodNotificationIconsSection
     @Mock private lateinit var aodBurnInSection: AodBurnInSection

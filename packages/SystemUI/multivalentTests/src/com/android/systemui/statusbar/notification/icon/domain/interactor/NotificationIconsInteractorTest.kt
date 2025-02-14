@@ -32,8 +32,12 @@ import com.android.systemui.statusbar.notification.data.repository.activeNotific
 import com.android.systemui.statusbar.notification.data.repository.notificationsKeyguardViewStateRepository
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.headsUpNotificationIconInteractor
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.aodPromotedNotificationInteractor
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style.Base
 import com.android.systemui.statusbar.notification.shared.byIsAmbient
 import com.android.systemui.statusbar.notification.shared.byIsLastMessageFromReply
+import com.android.systemui.statusbar.notification.shared.byIsPromoted
 import com.android.systemui.statusbar.notification.shared.byIsPulsing
 import com.android.systemui.statusbar.notification.shared.byIsRowDismissed
 import com.android.systemui.statusbar.notification.shared.byIsSilent
@@ -58,12 +62,14 @@ class NotificationIconsInteractorTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
     private val activeNotificationListRepository = kosmos.activeNotificationListRepository
     private val notificationsKeyguardInteractor = kosmos.notificationsKeyguardInteractor
+    private val aodPromotedNotificationInteractor = kosmos.aodPromotedNotificationInteractor
 
     private val underTest =
         NotificationIconsInteractor(
             kosmos.activeNotificationsInteractor,
             kosmos.bubblesOptional,
             kosmos.headsUpNotificationIconInteractor,
+            kosmos.aodPromotedNotificationInteractor,
             kosmos.notificationsKeyguardViewStateRepository,
         )
 
@@ -141,6 +147,22 @@ class NotificationIconsInteractorTest : SysuiTestCase() {
             notificationsKeyguardInteractor.setNotificationsFullyHidden(true)
             assertThat(filteredSet).comparingElementsUsing(byIsPulsing).contains(true)
         }
+
+    @Test
+    fun filteredEntrySet_showAodPromoted() {
+        testScope.runTest {
+            val filteredSet by collectLastValue(underTest.filteredNotifSet(showAodPromoted = true))
+            assertThat(filteredSet).comparingElementsUsing(byIsPromoted).contains(true)
+        }
+    }
+
+    @Test
+    fun filteredEntrySet_noAodPromoted() {
+        testScope.runTest {
+            val filteredSet by collectLastValue(underTest.filteredNotifSet(showAodPromoted = false))
+            assertThat(filteredSet).comparingElementsUsing(byIsPromoted).doesNotContain(true)
+        }
+    }
 }
 
 @SmallTest
@@ -326,4 +348,12 @@ private val testIcons =
         activeNotificationModel(key = "notif5", isLastMessageFromReply = true),
         activeNotificationModel(key = "notif6", isSuppressedFromStatusBar = true),
         activeNotificationModel(key = "notif7", isPulsing = true),
+        activeNotificationModel(key = "notif8", promotedContent = promotedContent("notif8", Base)),
     )
+
+private fun promotedContent(
+    key: String,
+    style: PromotedNotificationContentModel.Style,
+): PromotedNotificationContentModel {
+    return PromotedNotificationContentModel.Builder(key).apply { this.style = style }.build()
+}

@@ -31,6 +31,8 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.AssistantFeedbackController;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
+import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 
 /**
  * The guts of a notification revealed when performing a long press, specifically
@@ -50,6 +52,8 @@ public class PromotedNotificationInfo extends NotificationInfo {
     public void bindNotification(
             PackageManager pm,
             INotificationManager iNotificationManager,
+            AppIconProvider appIconProvider,
+            NotificationIconStyleProvider iconStyleProvider,
             OnUserInteractionCallback onUserInteractionCallback,
             ChannelEditorDialogController channelEditorDialogController,
             String pkg,
@@ -64,11 +68,11 @@ public class PromotedNotificationInfo extends NotificationInfo {
             boolean wasShownHighPriority,
             AssistantFeedbackController assistantFeedbackController,
             MetricsLogger metricsLogger, OnClickListener onCloseClick) throws RemoteException {
-        super.bindNotification(pm, iNotificationManager, onUserInteractionCallback,
-                channelEditorDialogController, pkg, notificationChannel, entry, onSettingsClick,
-                onAppSettingsClick, feedbackClickListener, uiEventLogger, isDeviceProvisioned,
-                isNonblockable, wasShownHighPriority, assistantFeedbackController, metricsLogger,
-                onCloseClick);
+        super.bindNotification(pm, iNotificationManager, appIconProvider, iconStyleProvider,
+                onUserInteractionCallback, channelEditorDialogController, pkg, notificationChannel,
+                entry, onSettingsClick, onAppSettingsClick, feedbackClickListener, uiEventLogger,
+                isDeviceProvisioned, isNonblockable, wasShownHighPriority,
+                assistantFeedbackController, metricsLogger, onCloseClick);
 
         mNotificationManager = iNotificationManager;
 

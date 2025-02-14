@@ -28,6 +28,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.util.Log;
 
+import androidx.test.filters.FlakyTest;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
@@ -52,6 +53,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 @SmallTest
+@FlakyTest(bugId = 395832204)
 @RunWith(AndroidJUnit4.class)
 public class PluginInstanceTest extends SysuiTestCase {
 

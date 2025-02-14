@@ -137,6 +137,14 @@ flag {
 }
 
 flag {
+  name: "shader_color_space"
+  is_exported: true
+  namespace: "core_graphics"
+  description: "API to set the working colorspace of a Shader or ColorFilter"
+  bug: "299670828"
+}
+
+flag {
   name: "query_global_priority"
   namespace: "core_graphics"
   description: "Attempt to query whether the vulkan driver supports the requested global priority before queue creation."
@@ -174,7 +182,7 @@ flag {
 flag {
   name: "early_preload_gl_context"
   namespace: "core_graphics"
-  description: "Initialize GL context and GraphicBufferAllocater init on renderThread preload. This improves app startup time for apps using GL."
+  description: "Preload GL context on renderThread preload. This improves app startup time for apps using GL."
   bug: "383612849"
 }
 
@@ -187,4 +195,12 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
+}
+
+flag {
+  name: "early_preinit_buffer_allocator"
+  namespace: "core_graphics"
+  description: "Initialize GraphicBufferAllocater on ViewRootImpl init, to avoid blocking on init during buffer allocation, improving app launch latency."
+  bug: "389908734"
+  is_fixed_read_only: true
 }

@@ -1635,11 +1635,11 @@ class MediaRouter2ServiceImpl {
                             manager));
         }
 
-        List<MediaRoute2Info> routes =
-                userRecord.mHandler.mLastNotifiedRoutesToPrivilegedRouters.values().stream()
-                        .toList();
         userRecord.mHandler.sendMessage(
-                obtainMessage(ManagerRecord::notifyRoutesUpdated, managerRecord, routes));
+                obtainMessage(
+                        UserHandler::dispatchRoutesToManagerOnHandler,
+                        userRecord.mHandler,
+                        managerRecord));
     }
 
     @GuardedBy("mLock")
@@ -2119,6 +2119,9 @@ class MediaRouter2ServiceImpl {
             mHasBluetoothRoutingPermission.set(checkCallerHasBluetoothPermissions(mPid, mUid));
             boolean newSystemRoutingPermissionValue = hasSystemRoutingPermission();
             if (oldSystemRoutingPermissionValue != newSystemRoutingPermissionValue) {
+                // TODO: b/379788233 - Ensure access to fields like
+                // mLastNotifiedRoutesToPrivilegedRouters happens on the right thread. We might need
+                // to run this on the handler.
                 Map<String, MediaRoute2Info> routesToReport =
                         newSystemRoutingPermissionValue
                                 ? mUserRecord.mHandler.mLastNotifiedRoutesToPrivilegedRouters
@@ -2543,6 +2546,8 @@ class MediaRouter2ServiceImpl {
          * both system route providers and user route providers.
          *
          * <p>See {@link #getRouterRecords(boolean hasModifyAudioRoutingPermission)}.
+         *
+         * <p>Must be accessed on this handler's thread.
          */
         private final Map<String, MediaRoute2Info> mLastNotifiedRoutesToPrivilegedRouters =
                 new ArrayMap<>();
@@ -2558,6 +2563,8 @@ class MediaRouter2ServiceImpl {
          * (e.g. volume changes) to non-privileged routers.
          *
          * <p>See {@link SystemMediaRoute2Provider#mDefaultRoute}.
+         *
+         * <p>Must be accessed on this handler's thread.
          */
         private final Map<String, MediaRoute2Info> mLastNotifiedRoutesToNonPrivilegedRouters =
                 new ArrayMap<>();
@@ -2800,7 +2807,7 @@ class MediaRouter2ServiceImpl {
                                 removedRoutes));
             }
 
-            dispatchUpdates(
+            dispatchUpdatesOnHandler(
                     hasAddedOrModifiedRoutes,
                     hasRemovedRoutes,
                     provider.mIsSystemRouteProvider,
@@ -2822,6 +2829,13 @@ class MediaRouter2ServiceImpl {
                     source, providerId, routesString);
         }
 
+        /** Notifies the given manager of the current routes. */
+        public void dispatchRoutesToManagerOnHandler(ManagerRecord managerRecord) {
+            List<MediaRoute2Info> routes =
+                    mLastNotifiedRoutesToPrivilegedRouters.values().stream().toList();
+            managerRecord.notifyRoutesUpdated(routes);
+        }
+
         /**
          * Dispatches the latest route updates in {@link #mLastNotifiedRoutesToPrivilegedRouters}
          * and {@link #mLastNotifiedRoutesToNonPrivilegedRouters} to registered {@link
@@ -2834,7 +2848,7 @@ class MediaRouter2ServiceImpl {
          * @param isSystemProvider whether the latest update was caused by a system provider.
          * @param defaultRoute the current default route in {@link #mSystemProvider}.
          */
-        private void dispatchUpdates(
+        private void dispatchUpdatesOnHandler(
                 boolean hasAddedOrModifiedRoutes,
                 boolean hasRemovedRoutes,
                 boolean isSystemProvider,

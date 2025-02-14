@@ -333,7 +333,7 @@ class InputManagerServiceTests {
     fun testKeyActivenessNotifyEventsLifecycle() {
         service.systemRunning()
 
-        fakePermissionEnforcer.grant(android.Manifest.permission.LISTEN_FOR_KEY_ACTIVITY);
+        fakePermissionEnforcer.grant(android.Manifest.permission.LISTEN_FOR_KEY_ACTIVITY)
 
         val inputManager = context.getSystemService(InputManager::class.java)
 

@@ -100,6 +100,9 @@ package android {
     field public static final String EXECUTE_APP_ACTION = "android.permission.EXECUTE_APP_ACTION";
     field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public static final String EXECUTE_APP_FUNCTIONS = "android.permission.EXECUTE_APP_FUNCTIONS";
     field public static final String EXPAND_STATUS_BAR = "android.permission.EXPAND_STATUS_BAR";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String EYE_TRACKING_COARSE = "android.permission.EYE_TRACKING_COARSE";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String EYE_TRACKING_FINE = "android.permission.EYE_TRACKING_FINE";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String FACE_TRACKING = "android.permission.FACE_TRACKING";
     field public static final String FACTORY_TEST = "android.permission.FACTORY_TEST";
     field public static final String FOREGROUND_SERVICE = "android.permission.FOREGROUND_SERVICE";
     field public static final String FOREGROUND_SERVICE_CAMERA = "android.permission.FOREGROUND_SERVICE_CAMERA";
@@ -120,6 +123,8 @@ package android {
     field public static final String GET_PACKAGE_SIZE = "android.permission.GET_PACKAGE_SIZE";
     field @Deprecated public static final String GET_TASKS = "android.permission.GET_TASKS";
     field public static final String GLOBAL_SEARCH = "android.permission.GLOBAL_SEARCH";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String HAND_TRACKING = "android.permission.HAND_TRACKING";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String HEAD_TRACKING = "android.permission.HEAD_TRACKING";
     field public static final String HIDE_OVERLAY_WINDOWS = "android.permission.HIDE_OVERLAY_WINDOWS";
     field public static final String HIGH_SAMPLING_RATE_SENSORS = "android.permission.HIGH_SAMPLING_RATE_SENSORS";
     field public static final String INSTALL_LOCATION_PROVIDER = "android.permission.INSTALL_LOCATION_PROVIDER";
@@ -295,6 +300,8 @@ package android {
     field public static final String REQUEST_PASSWORD_COMPLEXITY = "android.permission.REQUEST_PASSWORD_COMPLEXITY";
     field @Deprecated public static final String RESTART_PACKAGES = "android.permission.RESTART_PACKAGES";
     field public static final String RUN_USER_INITIATED_JOBS = "android.permission.RUN_USER_INITIATED_JOBS";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String SCENE_UNDERSTANDING_COARSE = "android.permission.SCENE_UNDERSTANDING_COARSE";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String SCENE_UNDERSTANDING_FINE = "android.permission.SCENE_UNDERSTANDING_FINE";
     field public static final String SCHEDULE_EXACT_ALARM = "android.permission.SCHEDULE_EXACT_ALARM";
     field public static final String SEND_RESPOND_VIA_MESSAGE = "android.permission.SEND_RESPOND_VIA_MESSAGE";
     field public static final String SEND_SMS = "android.permission.SEND_SMS";
@@ -362,6 +369,8 @@ package android {
     field public static final String SENSORS = "android.permission-group.SENSORS";
     field public static final String SMS = "android.permission-group.SMS";
     field public static final String STORAGE = "android.permission-group.STORAGE";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String XR_TRACKING = "android.permission-group.XR_TRACKING";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String XR_TRACKING_SENSITIVE = "android.permission-group.XR_TRACKING_SENSITIVE";
   }
 
   public final class R {
@@ -5479,37 +5488,37 @@ package android.app {
     method public android.net.Uri getConditionId();
     method @Nullable public android.content.ComponentName getConfigurationActivity();
     method public long getCreationTime();
-    method @FlaggedApi("android.app.modes_api") @Nullable public android.service.notification.ZenDeviceEffects getDeviceEffects();
-    method @FlaggedApi("android.app.modes_api") @DrawableRes public int getIconResId();
+    method @Nullable public android.service.notification.ZenDeviceEffects getDeviceEffects();
+    method @DrawableRes public int getIconResId();
     method public int getInterruptionFilter();
     method public String getName();
     method public android.content.ComponentName getOwner();
-    method @FlaggedApi("android.app.modes_api") @Nullable public String getTriggerDescription();
-    method @FlaggedApi("android.app.modes_api") public int getType();
+    method @Nullable public String getTriggerDescription();
+    method public int getType();
     method @Nullable public android.service.notification.ZenPolicy getZenPolicy();
     method public boolean isEnabled();
-    method @FlaggedApi("android.app.modes_api") public boolean isManualInvocationAllowed();
+    method public boolean isManualInvocationAllowed();
     method public void setConditionId(android.net.Uri);
     method public void setConfigurationActivity(@Nullable android.content.ComponentName);
-    method @FlaggedApi("android.app.modes_api") public void setDeviceEffects(@Nullable android.service.notification.ZenDeviceEffects);
+    method public void setDeviceEffects(@Nullable android.service.notification.ZenDeviceEffects);
     method public void setEnabled(boolean);
     method public void setInterruptionFilter(int);
     method public void setName(String);
     method public void setZenPolicy(@Nullable android.service.notification.ZenPolicy);
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.AutomaticZenRule> CREATOR;
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_BEDTIME = 3; // 0x3
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_DRIVING = 4; // 0x4
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_IMMERSIVE = 5; // 0x5
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_MANAGED = 7; // 0x7
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_OTHER = 0; // 0x0
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_SCHEDULE_CALENDAR = 2; // 0x2
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_SCHEDULE_TIME = 1; // 0x1
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_THEATER = 6; // 0x6
-    field @FlaggedApi("android.app.modes_api") public static final int TYPE_UNKNOWN = -1; // 0xffffffff
+    field public static final int TYPE_BEDTIME = 3; // 0x3
+    field public static final int TYPE_DRIVING = 4; // 0x4
+    field public static final int TYPE_IMMERSIVE = 5; // 0x5
+    field public static final int TYPE_MANAGED = 7; // 0x7
+    field public static final int TYPE_OTHER = 0; // 0x0
+    field public static final int TYPE_SCHEDULE_CALENDAR = 2; // 0x2
+    field public static final int TYPE_SCHEDULE_TIME = 1; // 0x1
+    field public static final int TYPE_THEATER = 6; // 0x6
+    field public static final int TYPE_UNKNOWN = -1; // 0xffffffff
   }
 
-  @FlaggedApi("android.app.modes_api") public static final class AutomaticZenRule.Builder {
+  public static final class AutomaticZenRule.Builder {
     ctor public AutomaticZenRule.Builder(@NonNull android.app.AutomaticZenRule);
     ctor public AutomaticZenRule.Builder(@NonNull String, @NonNull android.net.Uri);
     method @NonNull public android.app.AutomaticZenRule build();
@@ -7127,7 +7136,7 @@ package android.app {
 
   public class NotificationManager {
     method public String addAutomaticZenRule(android.app.AutomaticZenRule);
-    method @FlaggedApi("android.app.modes_api") public boolean areAutomaticZenRulesUserManaged();
+    method public boolean areAutomaticZenRulesUserManaged();
     method @Deprecated public boolean areBubblesAllowed();
     method public boolean areBubblesEnabled();
     method public boolean areNotificationsEnabled();
@@ -7147,7 +7156,7 @@ package android.app {
     method public void deleteNotificationChannelGroup(String);
     method public android.service.notification.StatusBarNotification[] getActiveNotifications();
     method public android.app.AutomaticZenRule getAutomaticZenRule(String);
-    method @FlaggedApi("android.app.modes_api") public int getAutomaticZenRuleState(@NonNull String);
+    method public int getAutomaticZenRuleState(@NonNull String);
     method public java.util.Map<java.lang.String,android.app.AutomaticZenRule> getAutomaticZenRules();
     method public int getBubblePreference();
     method @NonNull public android.app.NotificationManager.Policy getConsolidatedNotificationPolicy();
@@ -7176,14 +7185,14 @@ package android.app {
     field public static final String ACTION_APP_BLOCK_STATE_CHANGED = "android.app.action.APP_BLOCK_STATE_CHANGED";
     field public static final String ACTION_AUTOMATIC_ZEN_RULE = "android.app.action.AUTOMATIC_ZEN_RULE";
     field public static final String ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED = "android.app.action.AUTOMATIC_ZEN_RULE_STATUS_CHANGED";
-    field @FlaggedApi("android.app.modes_api") public static final String ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED = "android.app.action.CONSOLIDATED_NOTIFICATION_POLICY_CHANGED";
+    field public static final String ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED = "android.app.action.CONSOLIDATED_NOTIFICATION_POLICY_CHANGED";
     field public static final String ACTION_INTERRUPTION_FILTER_CHANGED = "android.app.action.INTERRUPTION_FILTER_CHANGED";
     field public static final String ACTION_NOTIFICATION_CHANNEL_BLOCK_STATE_CHANGED = "android.app.action.NOTIFICATION_CHANNEL_BLOCK_STATE_CHANGED";
     field public static final String ACTION_NOTIFICATION_CHANNEL_GROUP_BLOCK_STATE_CHANGED = "android.app.action.NOTIFICATION_CHANNEL_GROUP_BLOCK_STATE_CHANGED";
     field public static final String ACTION_NOTIFICATION_POLICY_ACCESS_GRANTED_CHANGED = "android.app.action.NOTIFICATION_POLICY_ACCESS_GRANTED_CHANGED";
     field public static final String ACTION_NOTIFICATION_POLICY_CHANGED = "android.app.action.NOTIFICATION_POLICY_CHANGED";
-    field @FlaggedApi("android.app.modes_api") public static final int AUTOMATIC_RULE_STATUS_ACTIVATED = 4; // 0x4
-    field @FlaggedApi("android.app.modes_api") public static final int AUTOMATIC_RULE_STATUS_DEACTIVATED = 5; // 0x5
+    field public static final int AUTOMATIC_RULE_STATUS_ACTIVATED = 4; // 0x4
+    field public static final int AUTOMATIC_RULE_STATUS_DEACTIVATED = 5; // 0x5
     field public static final int AUTOMATIC_RULE_STATUS_DISABLED = 2; // 0x2
     field public static final int AUTOMATIC_RULE_STATUS_ENABLED = 1; // 0x1
     field public static final int AUTOMATIC_RULE_STATUS_REMOVED = 3; // 0x3
@@ -7197,7 +7206,7 @@ package android.app {
     field public static final String EXTRA_BLOCKED_STATE = "android.app.extra.BLOCKED_STATE";
     field public static final String EXTRA_NOTIFICATION_CHANNEL_GROUP_ID = "android.app.extra.NOTIFICATION_CHANNEL_GROUP_ID";
     field public static final String EXTRA_NOTIFICATION_CHANNEL_ID = "android.app.extra.NOTIFICATION_CHANNEL_ID";
-    field @FlaggedApi("android.app.modes_api") public static final String EXTRA_NOTIFICATION_POLICY = "android.app.extra.NOTIFICATION_POLICY";
+    field public static final String EXTRA_NOTIFICATION_POLICY = "android.app.extra.NOTIFICATION_POLICY";
     field public static final int IMPORTANCE_DEFAULT = 3; // 0x3
     field public static final int IMPORTANCE_HIGH = 4; // 0x4
     field public static final int IMPORTANCE_LOW = 2; // 0x2
@@ -9184,6 +9193,14 @@ package android.app.blob {
     method public boolean isSameSignatureAccessAllowed() throws java.io.IOException;
     method @NonNull public android.os.ParcelFileDescriptor openRead() throws java.io.IOException;
     method @NonNull public android.os.ParcelFileDescriptor openWrite(long, long) throws java.io.IOException;
+  }
+
+}
+
+package android.app.contextualsearch {
+
+  @FlaggedApi("android.app.contextualsearch.flags.self_invocation") public final class ContextualSearchManager {
+    method @FlaggedApi("android.app.contextualsearch.flags.self_invocation") public void startContextualSearch();
   }
 
 }
@@ -17604,6 +17621,7 @@ package android.graphics {
     method public void setIntUniform(@NonNull String, int, int, int);
     method public void setIntUniform(@NonNull String, int, int, int, int);
     method public void setIntUniform(@NonNull String, @NonNull int[]);
+    method @FlaggedApi("com.android.graphics.hwui.flags.shader_color_space") public void setWorkingColorSpace(@Nullable android.graphics.ColorSpace);
   }
 
   @FlaggedApi("com.android.graphics.hwui.flags.runtime_color_filters_blenders") public class RuntimeXfermode extends android.graphics.Xfermode {
@@ -25039,8 +25057,10 @@ package android.media {
     method public final void notifySessionCreated(long, @NonNull android.media.RoutingSessionInfo);
     method public final void notifySessionReleased(@NonNull String);
     method public final void notifySessionUpdated(@NonNull android.media.RoutingSessionInfo);
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @Nullable @RequiresPermission("android.permission.MODIFY_AUDIO_ROUTING") public final android.media.MediaRoute2ProviderService.MediaStreams notifySystemRoutingSessionCreated(long, @NonNull android.media.RoutingSessionInfo, @NonNull android.media.MediaRoute2ProviderService.MediaStreamsFormats);
     method @CallSuper @Nullable public android.os.IBinder onBind(@NonNull android.content.Intent);
     method public abstract void onCreateSession(long, @NonNull String, @NonNull String, @Nullable android.os.Bundle);
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public void onCreateSystemRoutingSession(long, @NonNull String, @NonNull android.media.MediaRoute2ProviderService.SystemRoutingSessionParams);
     method public abstract void onDeselectRoute(long, @NonNull String, @NonNull String);
     method public void onDiscoveryPreferenceChanged(@NonNull android.media.RouteDiscoveryPreference);
     method public abstract void onReleaseSession(long, @NonNull String);
@@ -25048,13 +25068,42 @@ package android.media {
     method public abstract void onSetRouteVolume(long, @NonNull String, int);
     method public abstract void onSetSessionVolume(long, @NonNull String, int);
     method public abstract void onTransferToRoute(long, @NonNull String, @NonNull String);
+    field @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final String CATEGORY_SYSTEM_MEDIA = "android.media.MediaRoute2ProviderService.SYSTEM_MEDIA";
+    field @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final int REASON_FAILED_TO_REROUTE_SYSTEM_MEDIA = 6; // 0x6
     field public static final int REASON_INVALID_COMMAND = 4; // 0x4
     field public static final int REASON_NETWORK_ERROR = 2; // 0x2
     field public static final int REASON_REJECTED = 1; // 0x1
     field public static final int REASON_ROUTE_NOT_AVAILABLE = 3; // 0x3
+    field @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final int REASON_UNIMPLEMENTED = 5; // 0x5
     field public static final int REASON_UNKNOWN_ERROR = 0; // 0x0
     field public static final long REQUEST_ID_NONE = 0L; // 0x0L
     field public static final String SERVICE_INTERFACE = "android.media.MediaRoute2ProviderService";
+  }
+
+  @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final class MediaRoute2ProviderService.MediaStreams {
+    method @Nullable public android.media.AudioRecord getAudioRecord();
+  }
+
+  @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final class MediaRoute2ProviderService.MediaStreamsFormats {
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @Nullable public android.media.AudioFormat getAudioFormat();
+  }
+
+  @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final class MediaRoute2ProviderService.MediaStreamsFormats.Builder {
+    ctor public MediaRoute2ProviderService.MediaStreamsFormats.Builder();
+    method @NonNull public android.media.MediaRoute2ProviderService.MediaStreamsFormats build();
+    method @NonNull public android.media.MediaRoute2ProviderService.MediaStreamsFormats.Builder setAudioFormat(@NonNull android.media.AudioFormat);
+  }
+
+  @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public static final class MediaRoute2ProviderService.SystemRoutingSessionParams {
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @NonNull public android.os.Bundle getExtras();
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @NonNull public String getPackageName();
+  }
+
+  public static final class MediaRoute2ProviderService.SystemRoutingSessionParams.Builder {
+    ctor public MediaRoute2ProviderService.SystemRoutingSessionParams.Builder();
+    method @NonNull public android.media.MediaRoute2ProviderService.SystemRoutingSessionParams build();
+    method @NonNull public android.media.MediaRoute2ProviderService.SystemRoutingSessionParams.Builder setExtras(@NonNull android.os.Bundle);
+    method @NonNull public android.media.MediaRoute2ProviderService.SystemRoutingSessionParams.Builder setPackageName(@NonNull String);
   }
 
   public class MediaRouter {
@@ -38232,7 +38281,7 @@ package android.provider {
     field public static final String ACTION_APP_OPEN_BY_DEFAULT_SETTINGS = "android.settings.APP_OPEN_BY_DEFAULT_SETTINGS";
     field public static final String ACTION_APP_SEARCH_SETTINGS = "android.settings.APP_SEARCH_SETTINGS";
     field public static final String ACTION_APP_USAGE_SETTINGS = "android.settings.action.APP_USAGE_SETTINGS";
-    field @FlaggedApi("android.app.modes_api") public static final String ACTION_AUTOMATIC_ZEN_RULE_SETTINGS = "android.settings.AUTOMATIC_ZEN_RULE_SETTINGS";
+    field public static final String ACTION_AUTOMATIC_ZEN_RULE_SETTINGS = "android.settings.AUTOMATIC_ZEN_RULE_SETTINGS";
     field public static final String ACTION_AUTO_ROTATE_SETTINGS = "android.settings.AUTO_ROTATE_SETTINGS";
     field public static final String ACTION_BATTERY_SAVER_SETTINGS = "android.settings.BATTERY_SAVER_SETTINGS";
     field public static final String ACTION_BIOMETRIC_ENROLL = "android.settings.BIOMETRIC_ENROLL";
@@ -38326,7 +38375,7 @@ package android.provider {
     field public static final String EXTRA_AIRPLANE_MODE_ENABLED = "airplane_mode_enabled";
     field public static final String EXTRA_APP_PACKAGE = "android.provider.extra.APP_PACKAGE";
     field public static final String EXTRA_AUTHORITIES = "authorities";
-    field @FlaggedApi("android.app.modes_api") public static final String EXTRA_AUTOMATIC_ZEN_RULE_ID = "android.provider.extra.AUTOMATIC_ZEN_RULE_ID";
+    field public static final String EXTRA_AUTOMATIC_ZEN_RULE_ID = "android.provider.extra.AUTOMATIC_ZEN_RULE_ID";
     field public static final String EXTRA_BATTERY_SAVER_MODE_ENABLED = "android.settings.extra.battery_saver_mode_enabled";
     field public static final String EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED = "android.provider.extra.BIOMETRIC_AUTHENTICATORS_ALLOWED";
     field public static final String EXTRA_CHANNEL_FILTER_LIST = "android.provider.extra.CHANNEL_FILTER_LIST";
@@ -42118,9 +42167,9 @@ package android.service.notification {
 
   public final class Condition implements android.os.Parcelable {
     ctor public Condition(android.net.Uri, String, int);
-    ctor @FlaggedApi("android.app.modes_api") public Condition(@Nullable android.net.Uri, @Nullable String, int, int);
+    ctor public Condition(@Nullable android.net.Uri, @Nullable String, int, int);
     ctor public Condition(android.net.Uri, String, String, String, int, int, int);
-    ctor @FlaggedApi("android.app.modes_api") public Condition(@Nullable android.net.Uri, @Nullable String, @Nullable String, @Nullable String, int, int, int, int);
+    ctor public Condition(@Nullable android.net.Uri, @Nullable String, @Nullable String, @Nullable String, int, int, int, int);
     ctor public Condition(android.os.Parcel);
     method public android.service.notification.Condition copy();
     method public int describeContents();
@@ -42133,10 +42182,10 @@ package android.service.notification {
     field public static final int FLAG_RELEVANT_ALWAYS = 2; // 0x2
     field public static final int FLAG_RELEVANT_NOW = 1; // 0x1
     field public static final String SCHEME = "condition";
-    field @FlaggedApi("android.app.modes_api") public static final int SOURCE_CONTEXT = 3; // 0x3
-    field @FlaggedApi("android.app.modes_api") public static final int SOURCE_SCHEDULE = 2; // 0x2
-    field @FlaggedApi("android.app.modes_api") public static final int SOURCE_UNKNOWN = 0; // 0x0
-    field @FlaggedApi("android.app.modes_api") public static final int SOURCE_USER_ACTION = 1; // 0x1
+    field public static final int SOURCE_CONTEXT = 3; // 0x3
+    field public static final int SOURCE_SCHEDULE = 2; // 0x2
+    field public static final int SOURCE_UNKNOWN = 0; // 0x0
+    field public static final int SOURCE_USER_ACTION = 1; // 0x1
     field public static final int STATE_ERROR = 3; // 0x3
     field public static final int STATE_FALSE = 0; // 0x0
     field public static final int STATE_TRUE = 1; // 0x1
@@ -42146,7 +42195,7 @@ package android.service.notification {
     field public final android.net.Uri id;
     field public final String line1;
     field public final String line2;
-    field @FlaggedApi("android.app.modes_api") public final int source;
+    field public final int source;
     field public final int state;
     field public final String summary;
   }
@@ -42317,7 +42366,7 @@ package android.service.notification {
     field @NonNull public static final android.os.Parcelable.Creator<android.service.notification.StatusBarNotification> CREATOR;
   }
 
-  @FlaggedApi("android.app.modes_api") public final class ZenDeviceEffects implements android.os.Parcelable {
+  public final class ZenDeviceEffects implements android.os.Parcelable {
     method public int describeContents();
     method public boolean shouldDimWallpaper();
     method public boolean shouldDisplayGrayscale();
@@ -42327,7 +42376,7 @@ package android.service.notification {
     field @NonNull public static final android.os.Parcelable.Creator<android.service.notification.ZenDeviceEffects> CREATOR;
   }
 
-  @FlaggedApi("android.app.modes_api") public static final class ZenDeviceEffects.Builder {
+  public static final class ZenDeviceEffects.Builder {
     ctor public ZenDeviceEffects.Builder();
     ctor public ZenDeviceEffects.Builder(@NonNull android.service.notification.ZenDeviceEffects);
     method @NonNull public android.service.notification.ZenDeviceEffects build();
@@ -42349,7 +42398,7 @@ package android.service.notification {
     method public int getPriorityCategoryReminders();
     method public int getPriorityCategoryRepeatCallers();
     method public int getPriorityCategorySystem();
-    method @FlaggedApi("android.app.modes_api") public int getPriorityChannelsAllowed();
+    method public int getPriorityChannelsAllowed();
     method public int getPriorityConversationSenders();
     method public int getPriorityMessageSenders();
     method public int getVisualEffectAmbient();
@@ -42384,7 +42433,7 @@ package android.service.notification {
     method @NonNull public android.service.notification.ZenPolicy.Builder allowEvents(boolean);
     method @NonNull public android.service.notification.ZenPolicy.Builder allowMedia(boolean);
     method @NonNull public android.service.notification.ZenPolicy.Builder allowMessages(int);
-    method @FlaggedApi("android.app.modes_api") @NonNull public android.service.notification.ZenPolicy.Builder allowPriorityChannels(boolean);
+    method @NonNull public android.service.notification.ZenPolicy.Builder allowPriorityChannels(boolean);
     method @NonNull public android.service.notification.ZenPolicy.Builder allowReminders(boolean);
     method @NonNull public android.service.notification.ZenPolicy.Builder allowRepeatCallers(boolean);
     method @NonNull public android.service.notification.ZenPolicy.Builder allowSystem(boolean);
@@ -45122,6 +45171,7 @@ package android.telephony {
     field public static final String KEY_RTT_UPGRADE_SUPPORTED_BOOL = "rtt_upgrade_supported_bool";
     field public static final String KEY_RTT_UPGRADE_SUPPORTED_FOR_DOWNGRADED_VT_CALL_BOOL = "rtt_upgrade_supported_for_downgraded_vt_call";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_ATTACH_SUPPORTED_BOOL = "satellite_attach_supported_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_25q4_apis") public static final String KEY_SATELLITE_CONNECTED_NOTIFICATION_THROTTLE_MILLIS_INT = "satellite_connected_notification_throttle_millis_int";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_CONNECTION_HYSTERESIS_SEC_INT = "satellite_connection_hysteresis_sec_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_DATA_SUPPORT_MODE_INT = "satellite_data_support_mode_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_DISPLAY_NAME_STRING = "satellite_display_name_string";

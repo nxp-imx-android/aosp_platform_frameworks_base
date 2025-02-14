@@ -16,7 +16,6 @@
 
 package com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel
 
-import android.content.Context
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Flags
 import com.android.systemui.common.shared.model.Icon
@@ -24,6 +23,7 @@ import com.android.systemui.haptics.slider.SliderHapticFeedbackFilter
 import com.android.systemui.haptics.slider.compose.ui.SliderHapticsViewModel
 import com.android.systemui.res.R
 import com.android.systemui.volume.domain.interactor.AudioSharingInteractor
+import com.android.systemui.volume.panel.shared.VolumePanelLogger
 import com.android.systemui.volume.panel.ui.VolumePanelUiEvent
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -43,21 +44,25 @@ class AudioSharingStreamSliderViewModel
 @AssistedInject
 constructor(
     @Assisted private val coroutineScope: CoroutineScope,
-    private val context: Context,
     private val audioSharingInteractor: AudioSharingInteractor,
     private val uiEventLogger: UiEventLogger,
     private val hapticsViewModelFactory: SliderHapticsViewModel.Factory,
+    private val volumePanelLogger: VolumePanelLogger,
 ) : SliderViewModel {
     private val volumeChanges = MutableStateFlow<Int?>(null)
 
     override val slider: StateFlow<SliderState> =
-        combine(audioSharingInteractor.volume, audioSharingInteractor.secondaryDevice) {
-                volume,
-                device ->
+        combine(
+                audioSharingInteractor.volume.distinctUntilChanged().onEach {
+                    it?.let(volumePanelLogger::onAudioSharingVolumeUpdateReceived)
+                },
+                audioSharingInteractor.secondaryDevice,
+            ) { volume, device ->
                 val deviceName = device?.name ?: return@combine SliderState.Empty
                 if (volume == null) {
                     SliderState.Empty
                 } else {
+
                     State(
                         value = volume.toFloat(),
                         valueRange =
@@ -74,13 +79,15 @@ constructor(
     init {
         volumeChanges
             .filterNotNull()
-            .onEach { audioSharingInteractor.setStreamVolume(it) }
+            .onEach {
+                volumePanelLogger.onSetAudioSharingVolumeRequested(it)
+                audioSharingInteractor.setStreamVolume(it)
+            }
             .launchIn(coroutineScope)
     }
 
     override fun onValueChanged(state: SliderState, newValue: Float) {
-        val audioViewModel = state as? State
-        audioViewModel ?: return
+        if (state !is State) return
         volumeChanges.tryEmit(newValue.roundToInt())
     }
 

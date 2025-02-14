@@ -67,6 +67,13 @@ flag {
 }
 
 flag {
+  name: "notifications_redesign_guts"
+  namespace: "systemui"
+  description: "Notifications Redesign: Update the look of the notification guts (that appear on long press). This includes using the new cache for app icons."
+  bug: "394822197"
+}
+
+flag {
    name: "notification_row_content_binder_refactor"
    namespace: "systemui"
    description: "Convert the NotificationContentInflater to Kotlin and restructure it to support modern views"
@@ -951,16 +958,6 @@ flag {
     namespace: "systemui"
     description: "Prevents the interactive clipboard UI from appearing when device is locked"
     bug: "317048495"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "dedicated_notif_inflation_thread"
-    namespace: "systemui"
-    description: "Create a separate background thread for inflating notifications"
-    bug: "308967184"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -1990,6 +1987,16 @@ flag {
 }
 
 flag {
+  name: "expand_collapse_privacy_dialog"
+  namespace: "systemui"
+  description: "Add expand and collapse actions to accessibility, to allow announcement in TalkBack when state changes."
+  bug: "380161221"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "show_locked_by_your_watch_keyguard_indicator"
     namespace: "systemui"
     description: "Show a Locked by your watch indicator on the keyguard when the device is locked by the watch."
@@ -2008,4 +2015,14 @@ flag {
     namespace: "systemui"
     description: "Enables the clock fidget animation"
     bug: "364664389"
+}
+
+flag {
+    name: "notifications_launch_radius"
+    namespace: "systemui"
+    description: "Fixes a discrepancy in corner radius between expanding notification and opening window during launch animations."
+    bug: "396054791"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

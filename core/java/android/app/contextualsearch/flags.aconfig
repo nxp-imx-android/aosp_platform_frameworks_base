@@ -39,3 +39,11 @@ flag {
     description: "Add audio playing status to the contextual search invocation intent."
     bug: "372935419"
 }
+
+flag {
+  name: "self_invocation"
+  namespace: "sysui_integrations"
+  description: "Enable apps to self-invoke Contextual Search."
+  bug: "368653769"
+  is_exported: true
+}

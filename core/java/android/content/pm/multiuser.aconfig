@@ -622,3 +622,10 @@ flag {
      description: "Add API to logout user"
      bug: "350045389"
 }
+
+flag {
+    name: "enable_moving_content_into_private_space"
+    namespace: "profile_experiences"
+    description: "Enable moving content into the Private Space"
+    bug: "360066001"
+}

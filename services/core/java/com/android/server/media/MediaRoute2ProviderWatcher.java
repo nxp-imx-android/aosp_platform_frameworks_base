@@ -141,8 +141,7 @@ final class MediaRoute2ProviderWatcher {
                         isSelfScanOnlyProvider |=
                                 MediaRoute2ProviderService.CATEGORY_SELF_SCAN_ONLY.equals(category);
                         supportsSystemMediaRouting |=
-                                MediaRoute2ProviderService.SERVICE_INTERFACE_SYSTEM_MEDIA.equals(
-                                        category);
+                                MediaRoute2ProviderService.CATEGORY_SYSTEM_MEDIA.equals(category);
                     }
                 }
                 int sourceIndex = findProvider(serviceInfo.packageName, serviceInfo.name);

@@ -203,7 +203,7 @@
     <!-- Size of the view displaying the mobile signal icon in the status bar. This value should
         match the core/status_bar_system_icon_size and change to sp unit -->
     <dimen name="status_bar_mobile_signal_size">15sp</dimen>
-    <dimen name="status_bar_mobile_signal_size_updated">14sp</dimen>
+    <dimen name="status_bar_mobile_signal_size_updated">12sp</dimen>
     <!-- Size of the view displaying the mobile signal icon in the status bar. This value should
         match the viewport height of mobile signal drawables such as ic_lte_mobiledata -->
     <dimen name="status_bar_mobile_type_size">16sp</dimen>
@@ -1310,7 +1310,8 @@
     <dimen name="qs_media_seekbar_progress_amplitude">1.5dp</dimen>
     <dimen name="qs_media_seekbar_progress_phase">8dp</dimen>
     <dimen name="qs_media_seekbar_progress_stroke_width">2dp</dimen>
-    <dimen name="qs_media_session_collapsed_guideline">144dp</dimen>
+    <dimen name="qs_media_session_collapsed_legacy_guideline">144dp</dimen>
+    <dimen name="qs_media_session_collapsed_guideline">168dp</dimen>
 
     <!-- Size of Smartspace media recommendations cards in the QSPanel carousel -->
     <dimen name="qs_media_rec_default_width">380dp</dimen>

@@ -29,7 +29,6 @@ import com.android.systemui.statusbar.notification.domain.interactor.activeNotif
 import com.android.systemui.statusbar.notification.row.notificationRebindingTracker
 import com.android.systemui.statusbar.notification.stack.notificationStackRebindingHider
 import com.android.systemui.statusbar.policy.configurationController
-import java.util.Optional
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -55,11 +54,11 @@ val Kosmos.shadeDisplaysInteractor by
             testScope.backgroundScope,
             testScope.backgroundScope.coroutineContext,
             mockedShadeDisplayChangeLatencyTracker,
-            Optional.of(shadeExpandedStateInteractor),
+            shadeExpandedStateInteractor,
             shadeExpansionIntent,
             activeNotificationsInteractor,
             notificationRebindingTracker,
-            Optional.of(notificationStackRebindingHider),
+            notificationStackRebindingHider,
             configurationController,
         )
     }

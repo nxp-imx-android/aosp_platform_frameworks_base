@@ -426,6 +426,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
         chronometer = chronometerStub?.inflate() as Chronometer
         chronometerStub = null
+
+        chronometer?.appendFontFeatureSetting("tnum")
     }
 
     private fun inflateOldProgressBar() {
@@ -499,6 +501,10 @@ private fun Notification.ProgressStyle.Point.toSkeleton(): Notification.Progress
         it.id = id
         it.color = SecondaryText.colorInt
     }
+}
+
+private fun TextView.appendFontFeatureSetting(newSetting: String) {
+    fontFeatureSettings = (fontFeatureSettings?.let { "$it," } ?: "") + newSetting
 }
 
 private enum class AodPromotedNotificationColor(val colorInt: Int) {

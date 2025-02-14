@@ -19,12 +19,17 @@ package com.android.systemui.keyguard.ui.viewmodel
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 
 val Kosmos.keyguardMediaViewModelFactory by
     Kosmos.Fixture {
         object : KeyguardMediaViewModel.Factory {
             override fun create(): KeyguardMediaViewModel {
-                return KeyguardMediaViewModel(mediaCarouselInteractor, keyguardInteractor)
+                return KeyguardMediaViewModel(
+                    mediaCarouselInteractor = mediaCarouselInteractor,
+                    keyguardInteractor = keyguardInteractor,
+                    shadeModeInteractor = shadeModeInteractor,
+                )
             }
         }
     }

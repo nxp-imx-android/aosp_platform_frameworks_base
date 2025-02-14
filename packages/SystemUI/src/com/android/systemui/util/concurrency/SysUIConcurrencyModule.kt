@@ -107,10 +107,7 @@ object SysUIConcurrencyModule {
     @Provides
     @SysUISingleton
     @NotifInflation
-    fun provideNotifInflationLooper(@Background bgLooper: Looper): Looper {
-        if (!Flags.dedicatedNotifInflationThread()) {
-            return bgLooper
-        }
+    fun provideNotifInflationLooper(): Looper {
         val thread = HandlerThread("NotifInflation", Process.THREAD_PRIORITY_BACKGROUND)
         thread.start()
         val looper = thread.getLooper()

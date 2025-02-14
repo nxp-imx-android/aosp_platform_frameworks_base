@@ -65,7 +65,7 @@ public class CoreDocument implements Serializable {
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.1f;
+    static final float BUILD = 0.2f;
 
     @NonNull ArrayList<Operation> mOperations = new ArrayList<>();
 
@@ -742,6 +742,7 @@ public class CoreDocument implements Serializable {
             if (op instanceof Component) {
                 mComponentMap.put(((Component) op).getComponentId(), (Component) op);
                 registerVariables(context, ((Component) op).getList());
+                ((Component) op).registerVariables(context);
             }
             if (op instanceof ComponentValue) {
                 ComponentValue v = (ComponentValue) op;

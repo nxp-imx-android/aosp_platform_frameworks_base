@@ -105,17 +105,12 @@ constructor(
      */
     val notificationChip: Flow<NotificationChipModel?> =
         combine(_notificationModel, isAppVisible) { notif, isAppVisible ->
-            if (isAppVisible) {
-                // If the app that posted this notification is visible, we want to hide the chip
-                // because information between the status bar chip and the app itself could be
-                // out-of-sync (like a timer that's slightly off)
-                null
-            } else {
-                notif.toNotificationChipModel()
-            }
+            notif.toNotificationChipModel(isAppVisible)
         }
 
-    private fun ActiveNotificationModel.toNotificationChipModel(): NotificationChipModel? {
+    private fun ActiveNotificationModel.toNotificationChipModel(
+        isVisible: Boolean
+    ): NotificationChipModel? {
         val promotedContent = this.promotedContent
         if (promotedContent == null) {
             logger.w({
@@ -138,7 +133,13 @@ constructor(
             }
         }
 
-        return NotificationChipModel(key, appName, statusBarChipIconView, promotedContent)
+        return NotificationChipModel(
+            key,
+            appName,
+            statusBarChipIconView,
+            promotedContent,
+            isVisible,
+        )
     }
 
     @AssistedFactory

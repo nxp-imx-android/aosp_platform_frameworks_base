@@ -45,6 +45,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarV
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarViewVisibilityHelper
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.StatusBarViewBinderConstants.ALPHA_ACTIVE
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.StatusBarViewBinderConstants.ALPHA_INACTIVE
+import com.android.systemui.util.kotlin.pairwiseBy
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -131,19 +132,37 @@ object MobileIconBinder {
 
                     // Set the icon for the triangle
                     launch {
-                        viewModel.icon.distinctUntilChanged().collect { icon ->
-                            viewModel.verboseLogger?.logBinderReceivedSignalIcon(
-                                view,
-                                viewModel.subscriptionId,
-                                icon,
-                            )
-                            if (icon is SignalIconModel.Cellular) {
-                                iconView.setImageDrawable(mobileDrawable)
-                                mobileDrawable.level = icon.toSignalDrawableState()
-                            } else if (icon is SignalIconModel.Satellite) {
-                                IconViewBinder.bind(icon.icon, iconView)
+                        viewModel.icon
+                            .pairwiseBy(initialValue = null) { oldIcon, newIcon ->
+                                // Make sure we requestLayout if the number of levels changes
+                                val shouldRequestLayout =
+                                    when {
+                                        oldIcon == null -> true
+                                        oldIcon is SignalIconModel.Cellular &&
+                                            newIcon is SignalIconModel.Cellular -> {
+                                            oldIcon.numberOfLevels != newIcon.numberOfLevels
+                                        }
+                                        else -> false
+                                    }
+                                Pair(shouldRequestLayout, newIcon)
                             }
-                        }
+                            .collect { (shouldRequestLayout, newIcon) ->
+                                viewModel.verboseLogger?.logBinderReceivedSignalIcon(
+                                    view,
+                                    viewModel.subscriptionId,
+                                    newIcon,
+                                )
+                                if (newIcon is SignalIconModel.Cellular) {
+                                    iconView.setImageDrawable(mobileDrawable)
+                                    mobileDrawable.level = newIcon.toSignalDrawableState()
+                                } else if (newIcon is SignalIconModel.Satellite) {
+                                    IconViewBinder.bind(newIcon.icon, iconView)
+                                }
+
+                                if (shouldRequestLayout) {
+                                    iconView.requestLayout()
+                                }
+                            }
                     }
 
                     launch {
