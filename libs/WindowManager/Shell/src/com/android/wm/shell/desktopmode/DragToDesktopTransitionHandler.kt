@@ -251,7 +251,8 @@ sealed class DragToDesktopTransitionHandler(
                 (cancelState == CancelState.CANCEL_BUBBLE_LEFT ||
                     cancelState == CancelState.CANCEL_BUBBLE_RIGHT)
         ) {
-            if (!bubbleController.isPresent) {
+            if (bubbleController.isEmpty || state !is TransitionState.FromFullscreen) {
+                // TODO(b/388853233): add support for dragging split task to bubble
                 startCancelAnimation()
             } else {
                 // Animation is handled by BubbleController
@@ -497,6 +498,11 @@ sealed class DragToDesktopTransitionHandler(
             state.cancelState == CancelState.CANCEL_BUBBLE_LEFT ||
                 state.cancelState == CancelState.CANCEL_BUBBLE_RIGHT
         ) {
+            if (bubbleController.isEmpty || state !is TransitionState.FromFullscreen) {
+                // TODO(b/388853233): add support for dragging split task to bubble
+                startCancelDragToDesktopTransition()
+                return true
+            }
             val taskInfo =
                 state.draggedTaskChange?.taskInfo ?: error("Expected non-null task info.")
             val wct = WindowContainerTransaction()
