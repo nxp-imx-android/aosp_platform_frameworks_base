@@ -119,7 +119,7 @@
     <string name="handle_text" msgid="4419667835599523257">"مقبض التطبيق"</string>
     <string name="app_icon_text" msgid="2823268023931811747">"رمز التطبيق"</string>
     <string name="fullscreen_text" msgid="1162316685217676079">"ملء الشاشة"</string>
-    <string name="desktop_text" msgid="1077633567027630454">"وضع سطح المكتب"</string>
+    <string name="desktop_text" msgid="1582173066857454541">"العرض المخصّص للكمبيوتر المكتبي"</string>
     <string name="split_screen_text" msgid="1396336058129570886">"تقسيم الشاشة"</string>
     <string name="more_button_text" msgid="3655388105592893530">"المزيد"</string>
     <string name="float_button_text" msgid="9221657008391364581">"نافذة عائمة"</string>
@@ -132,7 +132,7 @@
     <string name="change_aspect_ratio_text" msgid="9104456064548212806">"تغيير نسبة العرض إلى الارتفاع"</string>
     <string name="close_text" msgid="4986518933445178928">"إغلاق"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"إغلاق القائمة"</string>
-    <string name="desktop_mode_app_header_chip_text" msgid="6366422614991687237">"فتح القائمة"</string>
+    <string name="desktop_mode_app_header_chip_text" msgid="8300164817452574565">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> (العرض المخصّص للكمبيوتر المكتبي)"</string>
     <string name="desktop_mode_maximize_menu_maximize_text" msgid="3275717276171114411">"تكبير الشاشة إلى أقصى حدّ"</string>
     <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"تغيير الحجم"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"لا يمكن نقل التطبيق إلى هنا"</string>
@@ -145,8 +145,8 @@
     <string name="desktop_mode_a11y_action_snap_left" msgid="2932955411661734668">"تغيير حجم نافذة التطبيق بمحاذاتها إلى اليمين"</string>
     <string name="desktop_mode_a11y_action_snap_right" msgid="4577032451624261787">"تغيير حجم نافذة التطبيق بمحاذاتها إلى اليسار"</string>
     <string name="desktop_mode_a11y_action_maximize_restore" msgid="8026037983417986686">"تكبير حجم النافذة أو استعادته"</string>
-    <string name="app_handle_menu_talkback_split_screen_mode_button_text" msgid="7182959681057464802">"تفعيل \"وضع تقسيم الشاشة\""</string>
-    <string name="app_handle_menu_talkback_desktop_mode_button_text" msgid="1230110046930843630">"تفعيل وضع عرض المحتوى في النافذة الحالية على سطح المكتب"</string>
+    <string name="app_handle_chip_accessibility_announce" msgid="499881698947450536">"فتح القائمة"</string>
+    <string name="app_handle_menu_accessibility_announce" msgid="7928858564852785398">"تفعيل \"<xliff:g id="WINDOWING_MODE">%1$s</xliff:g>\""</string>
     <string name="maximize_menu_talkback_action_snap_left_text" msgid="500309467459084564">"تغيير حجم النافذة بمحاذاتها إلى اليمين"</string>
     <string name="maximize_menu_talkback_action_snap_right_text" msgid="7010831426654467163">"تغيير حجم النافذة بمحاذاتها إلى اليسار"</string>
     <string name="maximize_menu_talkback_action_maximize_restore_text" msgid="4942610897847934859">"تكبير حجم النافذة أو استعادته"</string>
