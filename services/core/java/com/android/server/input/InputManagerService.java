@@ -193,15 +193,11 @@ public class InputManagerService extends IInputManager.Stub
     private static final int MSG_SYSTEM_READY = 5;
 
     private static final int DEFAULT_VIBRATION_MAGNITUDE = 192;
-    private static final AdditionalDisplayInputProperties
-            DEFAULT_ADDITIONAL_DISPLAY_INPUT_PROPERTIES = new AdditionalDisplayInputProperties();
 
     private final NativeInputManagerService mNative;
 
     private final Context mContext;
     private final InputManagerHandler mHandler;
-    @UserIdInt
-    private int mCurrentUserId = UserHandle.USER_SYSTEM;
     private DisplayManagerInternal mDisplayManagerInternal;
 
     private WindowManagerInternal mWindowManagerInternal;
@@ -289,7 +285,7 @@ public class InputManagerService extends IInputManager.Stub
 
     final Object mKeyEventActivityLock = new Object();
     @GuardedBy("mKeyEventActivityLock")
-    private List<IKeyEventActivityListener> mKeyEventActivityListenersToNotify =
+    private final List<IKeyEventActivityListener> mKeyEventActivityListenersToNotify =
             new ArrayList<>();
 
     // Rate limit for key event activity detection. Prevent the listener from being notified
@@ -3240,7 +3236,6 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     private void handleCurrentUserChanged(@UserIdInt int userId) {
-        mCurrentUserId = userId;
         mKeyGestureController.setCurrentUserId(userId);
     }
 
