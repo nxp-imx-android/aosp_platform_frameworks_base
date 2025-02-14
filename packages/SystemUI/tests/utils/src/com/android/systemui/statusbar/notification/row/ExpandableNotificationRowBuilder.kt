@@ -354,7 +354,8 @@ class ExpandableNotificationRowBuilder(
             RowInflaterTask(
                 mFakeSystemClock,
                 Mockito.mock(RowInflaterTaskLogger::class.java, STUB_ONLY),
-                userTracker
+                userTracker,
+                Mockito.mock(AsyncRowInflater::class.java, STUB_ONLY),
             )
         val row = rowInflaterTask.inflateSynchronously(context, null, entry)
 

@@ -30,6 +30,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.asynclayoutinflater.view.AsyncLayoutFactory;
 import androidx.asynclayoutinflater.view.AsyncLayoutInflater;
 
+import com.android.systemui.Flags;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.InflationTask;
@@ -44,7 +45,8 @@ import javax.inject.Inject;
 /**
  * An inflater task that asynchronously inflates a ExpandableNotificationRow
  */
-public class RowInflaterTask implements InflationTask, AsyncLayoutInflater.OnInflateFinishedListener {
+public class RowInflaterTask implements InflationTask,
+        AsyncLayoutInflater.OnInflateFinishedListener, AsyncRowInflater.OnInflateFinishedListener {
 
     private static final String TAG = "RowInflaterTask";
     private static final boolean TRACE_ORIGIN = true;
@@ -55,15 +57,17 @@ public class RowInflaterTask implements InflationTask, AsyncLayoutInflater.OnInf
     private Throwable mInflateOrigin;
     private final SystemClock mSystemClock;
     private final RowInflaterTaskLogger mLogger;
+    private final AsyncRowInflater mAsyncRowInflater;
     private long mInflateStartTimeMs;
     private UserTracker mUserTracker;
 
     @Inject
     public RowInflaterTask(SystemClock systemClock, RowInflaterTaskLogger logger,
-            UserTracker userTracker) {
+            UserTracker userTracker, AsyncRowInflater asyncRowInflater) {
         mSystemClock = systemClock;
         mLogger = logger;
         mUserTracker = userTracker;
+        mAsyncRowInflater = asyncRowInflater;
     }
 
     /**
@@ -87,13 +91,19 @@ public class RowInflaterTask implements InflationTask, AsyncLayoutInflater.OnInf
             mInflateOrigin = new Throwable("inflate requested here");
         }
         mListener = listener;
-        AsyncLayoutInflater inflater = new AsyncLayoutInflater(context, makeRowInflater(entry));
+        RowAsyncLayoutInflater asyncLayoutFactory = makeRowInflater(entry);
         mEntry = entry;
         entry.setInflationTask(this);
 
         mLogger.logInflateStart(entry);
         mInflateStartTimeMs = mSystemClock.elapsedRealtime();
-        inflater.inflate(R.layout.status_bar_notification_row, parent, listenerExecutor, this);
+        if (Flags.useNotifInflationThreadForRow()) {
+            mAsyncRowInflater.inflate(context, asyncLayoutFactory,
+                    R.layout.status_bar_notification_row, parent, this);
+        } else {
+            AsyncLayoutInflater inflater = new AsyncLayoutInflater(context, asyncLayoutFactory);
+            inflater.inflate(R.layout.status_bar_notification_row, parent, listenerExecutor, this);
+        }
     }
 
     /**
@@ -115,39 +125,6 @@ public class RowInflaterTask implements InflationTask, AsyncLayoutInflater.OnInf
     private RowAsyncLayoutInflater makeRowInflater(NotificationEntry entry) {
         return new RowAsyncLayoutInflater(
                 entry, mSystemClock, mLogger, mUserTracker.getUserHandle());
-    }
-
-    /**
-     * A {@link LayoutInflater} that is copy of BasicLayoutInflater.
-     */
-    private static class BasicRowInflater extends LayoutInflater {
-        private static final String[] sClassPrefixList =
-                {"android.widget.", "android.webkit.", "android.app."};
-        BasicRowInflater(Context context) {
-            super(context);
-        }
-
-        @Override
-        public LayoutInflater cloneInContext(Context newContext) {
-            return new BasicRowInflater(newContext);
-        }
-
-        @Override
-        protected View onCreateView(String name, AttributeSet attrs) throws ClassNotFoundException {
-            for (String prefix : sClassPrefixList) {
-                try {
-                    View view = createView(name, prefix, attrs);
-                    if (view != null) {
-                        return view;
-                    }
-                } catch (ClassNotFoundException e) {
-                    // In this case we want to let the base class take a crack
-                    // at it.
-                }
-            }
-
-            return super.onCreateView(name, attrs);
-        }
     }
 
     @VisibleForTesting
