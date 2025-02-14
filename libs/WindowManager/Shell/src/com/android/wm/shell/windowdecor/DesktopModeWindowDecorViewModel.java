@@ -984,7 +984,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             mDesktopTasksController.onDesktopWindowClose(
                                     wct, mDisplayId, decoration.mTaskInfo);
                     final IBinder transition = mTaskOperations.closeTask(mTaskToken, wct);
-                    if (transition != null && runOnTransitionStart != null) {
+                    if (transition != null) {
                         runOnTransitionStart.invoke(transition);
                     }
                 }

@@ -92,10 +92,11 @@ class DesksTransitionObserver(
                 }
             }
             is DeskTransition.DeactivateDesk -> {
+                var visibleDeactivation = false
                 for (change in info.changes) {
                     val isDeskChange = desksOrganizer.isDeskChange(change, deskTransition.deskId)
                     if (isDeskChange) {
-                        desktopRepository.setDeskInactive(deskId = deskTransition.deskId)
+                        visibleDeactivation = true
                         continue
                     }
                     val taskId = change.taskInfo?.taskId ?: continue
@@ -109,6 +110,14 @@ class DesksTransitionObserver(
                         )
                     }
                 }
+                // Always deactivate even if there's no change that confirms the desk was
+                // deactivated. Some interactions, such as the desk deactivating because it's
+                // occluded by a fullscreen task result in a transition change, but others, such
+                // as transitioning from an empty desk to home may not.
+                if (!visibleDeactivation) {
+                    logD("Deactivating desk without transition change")
+                }
+                desktopRepository.setDeskInactive(deskId = deskTransition.deskId)
             }
         }
     }

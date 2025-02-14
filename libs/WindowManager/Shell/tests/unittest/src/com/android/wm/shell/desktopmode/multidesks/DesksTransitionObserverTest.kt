@@ -227,4 +227,21 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
         assertThat(repository.isActiveTaskInDesk(deskId = 5, taskId = exitingTask.taskId)).isFalse()
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_deactivateDeskWithoutVisibleChange_updatesRepository() {
+        val transition = Binder()
+        val deactivateTransition = DeskTransition.DeactivateDesk(transition, deskId = 5)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+        repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 5)
+
+        observer.addPendingTransition(deactivateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0),
+        )
+
+        assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isNull()
+    }
 }
