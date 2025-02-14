@@ -137,14 +137,6 @@ flag {
 }
 
 flag {
-  name: "shader_color_space"
-  is_exported: true
-  namespace: "core_graphics"
-  description: "API to set the working colorspace of a Shader or ColorFilter"
-  bug: "299670828"
-}
-
-flag {
   name: "query_global_priority"
   namespace: "core_graphics"
   description: "Attempt to query whether the vulkan driver supports the requested global priority before queue creation."
