@@ -29,7 +29,6 @@ import androidx.annotation.NonNull;
 
 import com.android.settingslib.devicestate.DeviceStateRotationLockSettingsManager;
 import com.android.systemui.Dumpable;
-import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.util.wrapper.RotationPolicyWrapper;
@@ -43,7 +42,6 @@ import javax.inject.Inject;
  * Handles reading and writing of rotation lock settings per device state, as well as setting the
  * rotation lock when device state changes.
  */
-@SysUISingleton
 public final class DeviceStateRotationLockSettingController
         implements Listenable, RotationLockController.RotationLockControllerCallback, Dumpable {
 
