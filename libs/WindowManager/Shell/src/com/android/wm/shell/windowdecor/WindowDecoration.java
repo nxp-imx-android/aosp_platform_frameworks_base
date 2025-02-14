@@ -361,6 +361,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         }
 
         outResult.mRootView = rootView;
+        final boolean fontScaleChanged = mWindowDecorConfig != null
+                && mWindowDecorConfig.fontScale != mTaskInfo.configuration.fontScale;
         final int oldDensityDpi = mWindowDecorConfig != null
                 ? mWindowDecorConfig.densityDpi : DENSITY_DPI_UNDEFINED;
         final int oldNightMode =  mWindowDecorConfig != null
@@ -375,7 +377,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                 || mDisplay.getDisplayId() != mTaskInfo.displayId
                 || oldLayoutResId != mLayoutResId
                 || oldNightMode != newNightMode
-                || mDecorWindowContext == null) {
+                || mDecorWindowContext == null
+                || fontScaleChanged) {
             releaseViews(wct);
 
             if (!obtainDisplayOrRegisterListener()) {
