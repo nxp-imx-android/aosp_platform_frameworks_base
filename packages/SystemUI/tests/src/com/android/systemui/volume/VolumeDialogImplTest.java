@@ -465,9 +465,9 @@ public class VolumeDialogImplTest extends SysuiTestCase {
     public void notificationVolumeSeparated_theRingerIconChangesToSpeakerIcon() {
         // already separated. assert icon is new based on res id
         assertEquals(mDialog.mVolumeRingerIconDrawableId,
-                R.drawable.ic_speaker_on);
+                R.drawable.ic_legacy_speaker_on);
         assertEquals(mDialog.mVolumeRingerMuteIconDrawableId,
-                R.drawable.ic_speaker_mute);
+                R.drawable.ic_legacy_speaker_mute);
     }
 
     @Test
