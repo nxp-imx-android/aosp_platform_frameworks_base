@@ -26,27 +26,32 @@ import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_ALIGN_CENTE
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_DISMISSING;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_FLEX;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_NONE;
-import static com.android.wm.shell.shared.animation.Interpolators.DIM_INTERPOLATOR;
-import static com.android.wm.shell.shared.animation.Interpolators.SLOWDOWN_INTERPOLATOR;
 
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.SurfaceControl;
-import android.view.WindowManager;
 
 /**
  * This class governs how and when parallax and dimming effects are applied to task surfaces,
  * usually when the divider is being moved around by the user (or during an animation).
  */
 class ResizingEffectPolicy {
+    /** The default amount to dim an app that is partially offscreen. */
+    public static float DEFAULT_OFFSCREEN_DIM = 0.32f;
+
     private final SplitLayout mSplitLayout;
     /** The parallax algorithm we are currently using. */
     private final int mParallaxType;
+    /**
+     * A convenience class, corresponding to {@link #mParallaxType}, that performs all the
+     * calculations for parallax and dimming values.
+     */
+    private final ParallaxSpec mParallaxSpec;
 
     int mShrinkSide = DOCKED_INVALID;
 
     // The current dismissing side.
-    int mDismissingSide = DOCKED_INVALID;
+    int mDimmingSide = DOCKED_INVALID;
 
     /**
      * A {@link Point} that stores a single x and y value, representing the parallax translation
@@ -62,7 +67,7 @@ class ResizingEffectPolicy {
     final Point mAdvancingSideParallax = new Point();
 
     // The dimming value to hint the dismissing side and progress.
-    float mDismissingDimValue = 0.0f;
+    float mDimValue = 0.0f;
 
     /**
      * Content bounds for the app that the divider is moving toward. This is the content that is
@@ -95,35 +100,38 @@ class ResizingEffectPolicy {
     ResizingEffectPolicy(int parallaxType, SplitLayout splitLayout) {
         mParallaxType = parallaxType;
         mSplitLayout = splitLayout;
+        switch (mParallaxType) {
+            case PARALLAX_DISMISSING:
+                mParallaxSpec = new DismissingParallaxSpec();
+                break;
+            case PARALLAX_ALIGN_CENTER:
+                mParallaxSpec = new CenterParallaxSpec();
+                break;
+            case PARALLAX_FLEX:
+                mParallaxSpec = new FlexParallaxSpec();
+                break;
+            case PARALLAX_NONE:
+            default:
+                mParallaxSpec = new NoParallaxSpec();
+                break;
+        }
     }
 
     /**
-     * Calculates the desired parallax values and stores them in {@link #mRetreatingSideParallax}
-     * and {@link #mAdvancingSideParallax}. These values will be then be applied in
-     * {@link #adjustRootSurface}.
-     *
-     * @param position    The divider's position on the screen (x-coordinate in left-right split,
-     *                    y-coordinate in top-bottom split).
+     * Calculates the desired parallax and dimming values for a task surface and stores them in
+     * {@link #mRetreatingSideParallax}, {@link #mAdvancingSideParallax}, and
+     * {@link #mDimValue} These values will be then be applied in
+     * {@link #adjustRootSurface} and {@link #adjustDimSurface} respectively.
      */
     void applyDividerPosition(
             int position, boolean isLeftRightSplit, DividerSnapAlgorithm snapAlgorithm) {
-        mDismissingSide = DOCKED_INVALID;
+        mDimmingSide = DOCKED_INVALID;
         mRetreatingSideParallax.set(0, 0);
         mAdvancingSideParallax.set(0, 0);
-        mDismissingDimValue = 0;
+        mDimValue = 0;
         Rect displayBounds = mSplitLayout.getRootBounds();
 
-        int totalDismissingDistance = 0;
-        if (position < snapAlgorithm.getFirstSplitTarget().position) {
-            mDismissingSide = isLeftRightSplit ? DOCKED_LEFT : DOCKED_TOP;
-            totalDismissingDistance = snapAlgorithm.getDismissStartTarget().position
-                    - snapAlgorithm.getFirstSplitTarget().position;
-        } else if (position > snapAlgorithm.getLastSplitTarget().position) {
-            mDismissingSide = isLeftRightSplit ? DOCKED_RIGHT : DOCKED_BOTTOM;
-            totalDismissingDistance = snapAlgorithm.getLastSplitTarget().position
-                    - snapAlgorithm.getDismissEndTarget().position;
-        }
-
+        // Figure out which side is shrinking, and assign retreating/advancing bounds
         final boolean topLeftShrink = isLeftRightSplit
                 ? position < mSplitLayout.getTopLeftContentBounds().right
                 : position < mSplitLayout.getTopLeftContentBounds().bottom;
@@ -141,106 +149,20 @@ class ResizingEffectPolicy {
             mAdvancingSurface.set(mSplitLayout.getTopLeftBounds());
         }
 
-        if (mDismissingSide != DOCKED_INVALID) {
-            float fraction =
-                    Math.max(0, Math.min(snapAlgorithm.calculateDismissingFraction(position), 1f));
-            mDismissingDimValue = DIM_INTERPOLATOR.getInterpolation(fraction);
-            if (mParallaxType == PARALLAX_DISMISSING) {
-                fraction = calculateParallaxDismissingFraction(fraction, mDismissingSide);
-                if (isLeftRightSplit) {
-                    mRetreatingSideParallax.x = (int) (fraction * totalDismissingDistance);
-                } else {
-                    mRetreatingSideParallax.y = (int) (fraction * totalDismissingDistance);
-                }
-            }
+        // Figure out if we should be dimming one side
+        mDimmingSide = mParallaxSpec.getDimmingSide(position, snapAlgorithm, isLeftRightSplit);
+
+        // If so, calculate dimming
+        if (mDimmingSide != DOCKED_INVALID) {
+            mDimValue = mParallaxSpec.getDimValue(position, snapAlgorithm);
         }
 
-        if (mParallaxType == PARALLAX_ALIGN_CENTER) {
-            if (isLeftRightSplit) {
-                mRetreatingSideParallax.x =
-                        (mRetreatingSurface.width() - mRetreatingContent.width()) / 2;
-            } else {
-                mRetreatingSideParallax.y =
-                        (mRetreatingSurface.height() - mRetreatingContent.height()) / 2;
-            }
-        } else if (mParallaxType == PARALLAX_FLEX) {
-            // Whether an app is getting pushed offscreen by the divider.
-            boolean isRetreatingOffscreen = !displayBounds.contains(mRetreatingSurface);
-            // Whether an app was getting pulled onscreen at the beginning of the drag.
-            boolean advancingSideStartedOffscreen = !displayBounds.contains(mAdvancingContent);
-
-            // The simpler case when an app gets pushed offscreen (e.g. 50:50 -> 90:10)
-            if (isRetreatingOffscreen && !advancingSideStartedOffscreen) {
-                // On the left side, we use parallax to simulate the contents sticking to the
-                // divider. This is because surfaces naturally expand to the bottom and right,
-                // so when a surface's area expands, the contents stick to the left. This is
-                // correct behavior on the right-side surface, but not the left.
-                if (topLeftShrink) {
-                    if (isLeftRightSplit) {
-                        mRetreatingSideParallax.x =
-                                mRetreatingSurface.width() - mRetreatingContent.width();
-                    } else {
-                        mRetreatingSideParallax.y =
-                                mRetreatingSurface.height() - mRetreatingContent.height();
-                    }
-                }
-                // All other cases (e.g. 10:90 -> 50:50, 10:90 -> 90:10, 10:90 -> dismiss)
-            } else {
-                mTempRect.set(mRetreatingSurface);
-                Point rootOffset = new Point();
-                // 10:90 -> 50:50, 10:90, or dismiss right
-                if (advancingSideStartedOffscreen) {
-                    // We have to handle a complicated case here to keep the parallax smooth.
-                    // When the divider crosses the 50% mark, the retreating-side app surface
-                    // will start expanding offscreen. This is expected and unavoidable, but
-                    // makes the parallax look disjointed. In order to preserve the illusion,
-                    // we add another offset (rootOffset) to simulate the surface staying
-                    // onscreen.
-                    mTempRect.intersect(displayBounds);
-                    if (mRetreatingSurface.left < displayBounds.left) {
-                        rootOffset.x = displayBounds.left - mRetreatingSurface.left;
-                    }
-                    if (mRetreatingSurface.top < displayBounds.top) {
-                        rootOffset.y = displayBounds.top - mRetreatingSurface.top;
-                    }
-
-                    // On the left side, we again have to simulate the contents sticking to the
-                    // divider.
-                    if (!topLeftShrink) {
-                        if (isLeftRightSplit) {
-                            mAdvancingSideParallax.x =
-                                    mAdvancingSurface.width() - mAdvancingContent.width();
-                        } else {
-                            mAdvancingSideParallax.y =
-                                    mAdvancingSurface.height() - mAdvancingContent.height();
-                        }
-                    }
-                }
-
-                // In all these cases, the shrinking app also receives a center parallax.
-                if (isLeftRightSplit) {
-                    mRetreatingSideParallax.x = rootOffset.x
-                            + ((mTempRect.width() - mRetreatingContent.width()) / 2);
-                } else {
-                    mRetreatingSideParallax.y = rootOffset.y
-                            + ((mTempRect.height() - mRetreatingContent.height()) / 2);
-                }
-            }
-        }
-    }
-
-    /**
-     * @return for a specified {@code fraction}, this returns an adjusted value that simulates a
-     * slowing down parallax effect
-     */
-    private float calculateParallaxDismissingFraction(float fraction, int dockSide) {
-        float result = SLOWDOWN_INTERPOLATOR.getInterpolation(fraction) / 3.5f;
-
-        // Less parallax at the top, just because.
-        if (dockSide == WindowManager.DOCKED_TOP) {
-            result /= 2f;
-        }
-        return result;
+        // Calculate parallax and modify mRetreatingSideParallax and mAdvancingSideParallax, for use
+        // in adjustRootSurface().
+        mParallaxSpec.getParallax(mRetreatingSideParallax, mAdvancingSideParallax, position,
+                snapAlgorithm, isLeftRightSplit, displayBounds, mRetreatingSurface,
+                mRetreatingContent, mAdvancingSurface, mAdvancingContent, mDimmingSide,
+                topLeftShrink);
     }
 
     /** Applies the calculated parallax and dimming values to task surfaces. */
@@ -250,7 +172,7 @@ class ResizingEffectPolicy {
         SurfaceControl advancingLeash = null;
 
         if (mParallaxType == PARALLAX_DISMISSING) {
-            switch (mDismissingSide) {
+            switch (mDimmingSide) {
                 case DOCKED_TOP:
                 case DOCKED_LEFT:
                     retreatingLeash = leash1;
@@ -303,14 +225,17 @@ class ResizingEffectPolicy {
     void adjustDimSurface(SurfaceControl.Transaction t,
             SurfaceControl dimLayer1, SurfaceControl dimLayer2) {
         SurfaceControl targetDimLayer;
-        switch (mDismissingSide) {
+        SurfaceControl oppositeDimLayer;
+        switch (mDimmingSide) {
             case DOCKED_TOP:
             case DOCKED_LEFT:
                 targetDimLayer = dimLayer1;
+                oppositeDimLayer = dimLayer2;
                 break;
             case DOCKED_BOTTOM:
             case DOCKED_RIGHT:
                 targetDimLayer = dimLayer2;
+                oppositeDimLayer = dimLayer1;
                 break;
             case DOCKED_INVALID:
             default:
@@ -318,7 +243,9 @@ class ResizingEffectPolicy {
                 t.setAlpha(dimLayer2, 0).hide(dimLayer2);
                 return;
         }
-        t.setAlpha(targetDimLayer, mDismissingDimValue)
-                .setVisibility(targetDimLayer, mDismissingDimValue > 0.001f);
+        t.setAlpha(targetDimLayer, mDimValue)
+                .setVisibility(targetDimLayer, mDimValue > 0.001f);
+        t.setAlpha(oppositeDimLayer, 0f)
+                .setVisibility(oppositeDimLayer, false);
     }
 }
