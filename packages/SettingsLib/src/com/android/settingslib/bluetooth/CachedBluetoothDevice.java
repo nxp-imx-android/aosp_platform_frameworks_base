@@ -1988,6 +1988,17 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
     }
 
     /**
+     * @return {@code true} if {@code cachedBluetoothDevice} has member which is LeAudio device
+     */
+    public boolean hasConnectedLeAudioMemberDevice() {
+        LeAudioProfile leAudio = mProfileManager.getLeAudioProfile();
+        return leAudio != null && getMemberDevice().stream().anyMatch(
+                cachedDevice -> cachedDevice != null && cachedDevice.getDevice() != null
+                        && leAudio.getConnectionStatus(cachedDevice.getDevice())
+                        == BluetoothProfile.STATE_CONNECTED);
+    }
+
+    /**
      * @return {@code true} if {@code cachedBluetoothDevice} supports broadcast assistant profile
      */
     public boolean isConnectedLeAudioBroadcastAssistantDevice() {
