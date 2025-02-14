@@ -61,4 +61,8 @@
     <dimen name="disabled_alpha_wear_material3">0.12</dimen>
     <!-- Alpha transparency applied to elements which are considered primary (e.g. primary text) -->
     <dimen name="primary_content_alpha_wear_material3">0.38</dimen>
+
+    <!--  watch's indeterminate progress bar dimens -->
+    <dimen name="loader_horizontal_min_width">68dp</dimen>
+    <dimen name="loader_horizontal_min_height">13dp</dimen>
 </resources>
