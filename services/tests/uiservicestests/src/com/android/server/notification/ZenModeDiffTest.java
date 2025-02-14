@@ -475,7 +475,8 @@ public class ZenModeDiffTest extends UiServiceTestCase {
         // "Metadata" fields are never compared.
         Set<String> exemptFields = new LinkedHashSet<>(
                 Set.of("userModifiedFields", "zenPolicyUserModifiedFields",
-                        "zenDeviceEffectsUserModifiedFields", "deletionInstant", "disabledOrigin"));
+                        "zenDeviceEffectsUserModifiedFields", "deletionInstant", "disabledOrigin",
+                        "lastActivation"));
         // Flagged fields are only compared if their flag is on.
         if (Flags.modesUi()) {
             exemptFields.add(RuleDiff.FIELD_SNOOZING); // Obsolete.
