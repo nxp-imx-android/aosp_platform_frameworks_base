@@ -19,8 +19,8 @@ import android.perftests.utils.PerfStatusReporter
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.VelocityTracker
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import androidx.test.runner.AndroidJUnit4
 import java.time.Duration
 import org.junit.Assert
 import org.junit.Before
