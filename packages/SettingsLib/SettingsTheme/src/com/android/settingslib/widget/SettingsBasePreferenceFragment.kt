@@ -17,7 +17,9 @@
 package com.android.settingslib.widget
 
 import android.os.Bundle
+import android.view.LayoutInflater;
 import android.view.View
+import android.view.ViewGroup;
 import androidx.annotation.CallSuper
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
@@ -25,6 +27,15 @@ import androidx.recyclerview.widget.RecyclerView
 
 /** Base class for Settings to use PreferenceFragmentCompat */
 abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
+
+    @CallSuper
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return super.onCreateView(inflater, container, savedInstanceState)
+    }
 
     @CallSuper
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
