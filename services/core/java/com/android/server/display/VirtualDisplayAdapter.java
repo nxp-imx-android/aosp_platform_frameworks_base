@@ -371,7 +371,15 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
             mCallback = callback;
             mProjection = projection;
             mMediaProjectionCallback = mediaProjectionCallback;
-            mDisplayState = Display.STATE_ON;
+            if (android.companion.virtualdevice.flags.Flags.correctVirtualDisplayPowerState()) {
+                // The display's power state depends on the power state of the state of its
+                // display / power group, which we don't know here. Initializing to UNKNOWN allows
+                // the first call to requestDisplayStateLocked() to set the correct state.
+                // This also triggers VirtualDisplay.Callback to tell the owner the initial state.
+                mDisplayState = Display.STATE_UNKNOWN;
+            } else {
+                mDisplayState = Display.STATE_ON;
+            }
             mPendingChanges |= PENDING_SURFACE_CHANGE;
             mDisplayIdToMirror = virtualDisplayConfig.getDisplayIdToMirror();
             mIsWindowManagerMirroring = virtualDisplayConfig.isWindowManagerMirroringEnabled();
@@ -564,14 +572,23 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
                 mInfo.yDpi = mDensityDpi;
                 mInfo.presentationDeadlineNanos = 1000000000L / (int) getRefreshRate(); // 1 frame
                 mInfo.flags = 0;
-                if ((mFlags & VIRTUAL_DISPLAY_FLAG_PUBLIC) == 0) {
-                    mInfo.flags |= DisplayDeviceInfo.FLAG_PRIVATE
-                            | DisplayDeviceInfo.FLAG_NEVER_BLANK;
-                }
-                if ((mFlags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) != 0) {
-                    mInfo.flags &= ~DisplayDeviceInfo.FLAG_NEVER_BLANK;
+                if (android.companion.virtualdevice.flags.Flags.correctVirtualDisplayPowerState()) {
+                    if ((mFlags & VIRTUAL_DISPLAY_FLAG_PUBLIC) == 0) {
+                        mInfo.flags |= DisplayDeviceInfo.FLAG_PRIVATE;
+                    }
+                    if ((mFlags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) == 0) {
+                        mInfo.flags |= DisplayDeviceInfo.FLAG_OWN_CONTENT_ONLY;
+                    }
                 } else {
-                    mInfo.flags |= DisplayDeviceInfo.FLAG_OWN_CONTENT_ONLY;
+                    if ((mFlags & VIRTUAL_DISPLAY_FLAG_PUBLIC) == 0) {
+                        mInfo.flags |= DisplayDeviceInfo.FLAG_PRIVATE
+                                | DisplayDeviceInfo.FLAG_NEVER_BLANK;
+                    }
+                    if ((mFlags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) != 0) {
+                        mInfo.flags &= ~DisplayDeviceInfo.FLAG_NEVER_BLANK;
+                    } else {
+                        mInfo.flags |= DisplayDeviceInfo.FLAG_OWN_CONTENT_ONLY;
+                    }
                 }
                 if ((mFlags & VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP) != 0) {
                     mInfo.flags |= DisplayDeviceInfo.FLAG_OWN_DISPLAY_GROUP;
