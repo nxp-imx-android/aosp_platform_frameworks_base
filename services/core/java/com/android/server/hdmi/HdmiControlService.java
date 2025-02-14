@@ -4798,15 +4798,15 @@ public class HdmiControlService extends SystemService {
             Slog.d(TAG, "Enabling absolute volume behavior");
             for (AudioDeviceAttributes device : getAvbCapableAudioOutputDevices()) {
                 getAudioDeviceVolumeManager().setDeviceAbsoluteVolumeBehavior(
-                        device, volumeInfo, mServiceThreadExecutor,
-                        mAbsoluteVolumeChangedListener, true);
+                        device, volumeInfo, true, mServiceThreadExecutor,
+                        mAbsoluteVolumeChangedListener);
             }
         } else if (tv() != null) {
             Slog.d(TAG, "Enabling adjust-only absolute volume behavior");
             for (AudioDeviceAttributes device : getAvbCapableAudioOutputDevices()) {
                 getAudioDeviceVolumeManager().setDeviceAbsoluteVolumeAdjustOnlyBehavior(
-                        device, volumeInfo, mServiceThreadExecutor,
-                        mAbsoluteVolumeChangedListener, true);
+                        device, volumeInfo, true, mServiceThreadExecutor,
+                        mAbsoluteVolumeChangedListener);
             }
         }
 

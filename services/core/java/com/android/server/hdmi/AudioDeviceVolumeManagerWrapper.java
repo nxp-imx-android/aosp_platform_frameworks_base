@@ -58,9 +58,9 @@ public interface AudioDeviceVolumeManagerWrapper {
     void setDeviceAbsoluteVolumeBehavior(
             @NonNull AudioDeviceAttributes device,
             @NonNull VolumeInfo volume,
+            boolean handlesVolumeAdjustment,
             @NonNull @CallbackExecutor Executor executor,
-            @NonNull AudioDeviceVolumeManager.OnAudioDeviceVolumeChangedListener vclistener,
-            boolean handlesVolumeAdjustment);
+            @NonNull AudioDeviceVolumeManager.OnAudioDeviceVolumeChangedListener vclistener);
 
     /**
      * Wrapper for {@link AudioDeviceVolumeManager#setDeviceAbsoluteVolumeAdjustOnlyBehavior(
@@ -69,7 +69,7 @@ public interface AudioDeviceVolumeManagerWrapper {
     void setDeviceAbsoluteVolumeAdjustOnlyBehavior(
             @NonNull AudioDeviceAttributes device,
             @NonNull VolumeInfo volume,
+            boolean handlesVolumeAdjustment,
             @NonNull @CallbackExecutor Executor executor,
-            @NonNull AudioDeviceVolumeManager.OnAudioDeviceVolumeChangedListener vclistener,
-            boolean handlesVolumeAdjustment);
+            @NonNull AudioDeviceVolumeManager.OnAudioDeviceVolumeChangedListener vclistener);
 }
