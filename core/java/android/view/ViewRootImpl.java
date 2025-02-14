@@ -118,6 +118,7 @@ import static android.view.flags.Flags.addSchandleToVriSurface;
 import static android.view.flags.Flags.disableDrawWakeLock;
 import static android.view.flags.Flags.sensitiveContentAppProtection;
 import static android.view.flags.Flags.sensitiveContentPrematureProtectionRemovedFix;
+import static android.view.flags.Flags.toolkitFrameRateDebug;
 import static android.view.flags.Flags.toolkitFrameRateFunctionEnablingReadOnly;
 import static android.view.flags.Flags.toolkitFrameRateTouchBoost25q1;
 import static android.view.flags.Flags.toolkitFrameRateTypingReadOnly;
@@ -1227,6 +1228,7 @@ public final class ViewRootImpl implements ViewParent,
             com.android.graphics.surfaceflinger.flags.Flags.vrrBugfix24q4();
     private static final boolean sEnableVrr = ViewProperties.vrr_enabled().orElse(true);
     private static final boolean sToolkitInitialTouchBoostFlagValue = toolkitInitialTouchBoost();
+    private static boolean sToolkitFrameRateDebugFlagValue =  toolkitFrameRateDebug();
 
     static {
         sToolkitSetFrameRateReadOnlyFlagValue = toolkitSetFrameRateReadOnly();
@@ -13139,6 +13141,11 @@ public final class ViewRootImpl implements ViewParent,
                 if (sToolkitFrameRateFunctionEnablingReadOnlyFlagValue) {
                     mFrameRateTransaction.setFrameRateCategory(mSurfaceControl,
                         frameRateCategory, false).applyAsyncUnsafe();
+
+                    if (sToolkitFrameRateDebugFlagValue) {
+                        Log.v(mTag, "### ViewRootImpl setFrameRateCategory '"
+                                + categoryToString(frameRateCategory) + "'");
+                    }
                 }
                 mLastPreferredFrameRateCategory = frameRateCategory;
             }
@@ -13201,8 +13208,15 @@ public final class ViewRootImpl implements ViewParent,
                     if (preferredFrameRate > 0) {
                         mFrameRateTransaction.setFrameRate(mSurfaceControl, preferredFrameRate,
                                 mFrameRateCompatibility);
+                        if (sToolkitFrameRateDebugFlagValue) {
+                            Log.v(mTag, "### ViewRootImpl setFrameRate '"
+                                    + preferredFrameRate + "'");
+                        }
                     } else {
                         mFrameRateTransaction.clearFrameRate(mSurfaceControl);
+                        if (sToolkitFrameRateDebugFlagValue) {
+                            Log.v(mTag, "### ViewRootImpl setFrameRate 0 Hz");
+                        }
                     }
                     mFrameRateTransaction.applyAsyncUnsafe();
                 }
@@ -13256,6 +13270,12 @@ public final class ViewRootImpl implements ViewParent,
             // mFrameRateCategoryView = view == null ? "-" : view.getClass().getSimpleName();
         }
         mDrawnThisFrame = true;
+
+        if (sToolkitFrameRateDebugFlagValue) {
+            String viewName = view == null ? "-" : view.getClass().getSimpleName();
+            Log.v(mTag, "### View: " + viewName +  " votes '"
+                    + categoryToString(frameRateCategory) + "'");
+        }
     }
 
     /**
