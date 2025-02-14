@@ -2643,6 +2643,15 @@
     <!-- MMS user agent prolfile url -->
     <string name="config_mms_user_agent_profile_url" translatable="false"></string>
 
+    <!-- The default list of possible CMF Names|Style|ColorSource. This array can be
+         overridden device-specific resources. A wildcard (fallback) must be supplied.
+         Name   - Read from `ro.boot.hardware.color` sysprop. Fallback (*) required.
+         Styles - frameworks/libs/systemui/monet/src/com/android/systemui/monet/Style.java
+         Color  - `home_wallpaper` (for color extraction) or a hexadecimal int (#FFcc99) -->
+    <string-array name="theming_defaults">
+        <item>*|TONAL_SPOT|home_wallpaper</item>
+    </string-array>
+
     <!-- National Language Identifier codes for the following two config items.
          (from 3GPP TS 23.038 V9.1.1 Table 6.2.1.2.4.1):
           0  - reserved
