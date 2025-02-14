@@ -2115,6 +2115,12 @@ package android.media {
     method public android.media.PlaybackParams setAudioStretchMode(int);
   }
 
+  public class Utils {
+    ctor public Utils();
+    field public static final String SYNCHRONIZED_VIBRATION = "synchronized";
+    field public static final String VIBRATION_URI_PARAM = "vibration_uri";
+  }
+
   public final class VolumePolicy implements android.os.Parcelable {
     ctor public VolumePolicy(boolean, boolean, boolean, int);
     method public int describeContents();
