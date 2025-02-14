@@ -24,14 +24,14 @@ import java.lang.ref.WeakReference
  * A registry to temporarily store the view being transitioned into a Dialog (using
  * [DialogTransitionAnimator]) or an Activity (using [ActivityTransitionAnimator])
  */
-class ViewTransitionRegistry {
+class ViewTransitionRegistry : IViewTransitionRegistry {
 
     /**
      * A map of a unique token to a WeakReference of the View being transitioned. WeakReference
      * ensures that Views are garbage collected whenever they become eligible and avoid any
      * memory leaks
      */
-    private val registry by lazy {  mutableMapOf<ViewTransitionToken, WeakReference<View>>() }
+    private val registry by lazy { mutableMapOf<ViewTransitionToken, WeakReference<View>>() }
 
     /**
      * A [View.OnAttachStateChangeListener] to be attached to all views stored in the registry to
@@ -45,8 +45,7 @@ class ViewTransitionRegistry {
             }
 
             override fun onViewDetachedFromWindow(view: View) {
-                (view.getTag(R.id.tag_view_transition_token)
-                        as? ViewTransitionToken)?.let { token -> unregister(token) }
+                getViewToken(view)?.let { token -> unregister(token) }
             }
         }
     }
@@ -57,12 +56,12 @@ class ViewTransitionRegistry {
      * @param token unique token associated with the transitioning view
      * @param view view undergoing transitions
      */
-    fun register(token: ViewTransitionToken, view: View) {
+    override fun register(token: ViewTransitionToken, view: View) {
         // token embedded as a view tag enables to use a single listener for all views
         view.setTag(R.id.tag_view_transition_token, token)
         view.addOnAttachStateChangeListener(listener)
         registry[token] = WeakReference(view)
-        emitCountForTrace()
+        onRegistryUpdate()
     }
 
     /**
@@ -70,23 +69,40 @@ class ViewTransitionRegistry {
      *
      * @param token unique token associated with the transitioning view
      */
-    fun unregister(token: ViewTransitionToken) {
+    override fun unregister(token: ViewTransitionToken) {
         registry.remove(token)?.let {
             it.get()?.let { view ->
                 view.removeOnAttachStateChangeListener(listener)
                 view.setTag(R.id.tag_view_transition_token, null)
             }
             it.clear()
+            onRegistryUpdate()
         }
-        emitCountForTrace()
     }
 
     /**
      * Access a view from registry using unique "token" associated with it
      * WARNING - this returns a StrongReference to the View stored in the registry
      */
-    fun getView(token: ViewTransitionToken): View? {
+    override fun getView(token: ViewTransitionToken): View? {
         return registry[token]?.get()
+    }
+
+    /**
+     * Return token mapped to the [view], if it is present in the registry
+     *
+     * @param view the transitioning view whose token we are requesting
+     * @return token associated with the [view] if present, else null
+     */
+    override fun getViewToken(view: View): ViewTransitionToken? {
+        return (view.getTag(R.id.tag_view_transition_token) as? ViewTransitionToken)?.let { token ->
+            getView(token)?.let { token }
+        }
+    }
+
+    /** Event call to run on registry update (on both [register] and [unregister]) */
+    override fun onRegistryUpdate() {
+        emitCountForTrace()
     }
 
     /**
@@ -95,5 +111,9 @@ class ViewTransitionRegistry {
      */
     private fun emitCountForTrace() {
         Trace.setCounter("transition_registry_view_count", registry.count().toLong())
+    }
+
+    companion object {
+        val instance by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { ViewTransitionRegistry() }
     }
 }
