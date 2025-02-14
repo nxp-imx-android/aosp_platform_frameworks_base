@@ -16,11 +16,19 @@
 
 package android.app.supervision;
 
+import static android.Manifest.permission.INTERACT_ACROSS_USERS;
+import static android.Manifest.permission.MANAGE_USERS;
+import static android.Manifest.permission.QUERY_USERS;
+
+import android.annotation.FlaggedApi;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SystemApi;
 import android.annotation.SystemService;
+import android.annotation.TestApi;
 import android.annotation.UserHandleAware;
 import android.annotation.UserIdInt;
+import android.app.supervision.flags.Flags;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
 import android.os.RemoteException;
@@ -31,6 +39,8 @@ import android.os.RemoteException;
  * @hide
  */
 @SystemService(Context.SUPERVISION_SERVICE)
+@SystemApi
+@FlaggedApi(Flags.FLAG_SUPERVISION_MANAGER_APIS)
 public class SupervisionManager {
     private final Context mContext;
     @Nullable private final ISupervisionManager mService;
@@ -47,7 +57,8 @@ public class SupervisionManager {
      *
      * @hide
      */
-    public static final String ACTION_ENABLE_SUPERVISION = "android.app.action.ENABLE_SUPERVISION";
+    public static final String ACTION_ENABLE_SUPERVISION =
+            "android.app.supervision.action.ENABLE_SUPERVISION";
 
     /**
      * Activity action: ask the human user to disable supervision for this user. Only the app that
@@ -62,7 +73,7 @@ public class SupervisionManager {
      * @hide
      */
     public static final String ACTION_DISABLE_SUPERVISION =
-            "android.app.action.DISABLE_SUPERVISION";
+            "android.app.supervision.action.DISABLE_SUPERVISION";
 
     /** @hide */
     @UnsupportedAppUsage
@@ -76,7 +87,10 @@ public class SupervisionManager {
      *
      * @hide
      */
-    @UserHandleAware
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SUPERVISION_MANAGER_APIS)
+    @RequiresPermission(anyOf = {MANAGE_USERS, QUERY_USERS})
+    @UserHandleAware(requiresPermissionIfNotCaller = INTERACT_ACROSS_USERS)
     public boolean isSupervisionEnabled() {
         return isSupervisionEnabledForUser(mContext.getUserId());
     }
@@ -84,14 +98,10 @@ public class SupervisionManager {
     /**
      * Returns whether the device is supervised.
      *
-     * <p>The caller must be from the same user as the target or hold the {@link
-     * android.Manifest.permission#INTERACT_ACROSS_USERS} permission.
-     *
      * @hide
      */
-    @RequiresPermission(
-            value = android.Manifest.permission.INTERACT_ACROSS_USERS,
-            conditional = true)
+    @RequiresPermission(anyOf = {MANAGE_USERS, QUERY_USERS})
+    @UserHandleAware(requiresPermissionIfNotCaller = INTERACT_ACROSS_USERS)
     public boolean isSupervisionEnabledForUser(@UserIdInt int userId) {
         if (mService != null) {
             try {
@@ -108,7 +118,8 @@ public class SupervisionManager {
      *
      * @hide
      */
-    @UserHandleAware
+    @TestApi
+    @UserHandleAware(requiresPermissionIfNotCaller = INTERACT_ACROSS_USERS)
     public void setSupervisionEnabled(boolean enabled) {
         setSupervisionEnabledForUser(mContext.getUserId(), enabled);
     }
@@ -116,14 +127,9 @@ public class SupervisionManager {
     /**
      * Sets whether the device is supervised for a given user.
      *
-     * <p>The caller must be from the same user as the target or hold the {@link
-     * android.Manifest.permission#INTERACT_ACROSS_USERS} permission.
-     *
      * @hide
      */
-    @RequiresPermission(
-            value = android.Manifest.permission.INTERACT_ACROSS_USERS,
-            conditional = true)
+    @UserHandleAware(requiresPermissionIfNotCaller = INTERACT_ACROSS_USERS)
     public void setSupervisionEnabledForUser(@UserIdInt int userId, boolean enabled) {
         if (mService != null) {
             try {
