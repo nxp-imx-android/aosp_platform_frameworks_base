@@ -42,6 +42,7 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntryB
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifFilter
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Pluggable
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
+import com.android.systemui.statusbar.notification.collection.notifcollection.UpdateSource
 import com.android.systemui.statusbar.notification.domain.interactor.SeenNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.lockScreenShowOnlyUnseenNotificationsSetting
 import com.android.systemui.statusbar.notification.domain.interactor.seenNotificationsInteractor
@@ -586,7 +587,7 @@ class OriginalUnseenKeyguardCoordinatorTest(flags: FlagsParameterization) : Sysu
             testScheduler.runCurrent()
 
             // WHEN: the notification is updated
-            collectionListener.onEntryUpdated(entry)
+            collectionListener.onEntryUpdated(entry, UpdateSource.App)
             testScheduler.runCurrent()
 
             // WHEN: four more seconds have passed
