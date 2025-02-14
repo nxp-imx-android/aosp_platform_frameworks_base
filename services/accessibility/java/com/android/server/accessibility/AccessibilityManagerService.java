@@ -2148,9 +2148,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                         this, 0, oldUserState.mUserId));
             }
 
-            // Announce user changes only if more than one exist.
-            final boolean announceNewUser = mUserManager.getUsers().size() > 1;
-
             // The user changed.
             mCurrentUserId = userId;
             AccessibilityUserState userState = getCurrentUserStateLocked();
@@ -2177,13 +2174,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             // As an initialization step, update the shortcuts for the current user.
             updateShortcutsForCurrentNavigationMode();
 
-            if (announceNewUser) {
-                // Schedule announcement of the current user if needed.
-                mMainHandler.sendMessageDelayed(
-                        obtainMessage(AccessibilityManagerService::announceNewUserIfNeeded, this),
-                        WAIT_FOR_USER_STATE_FULLY_INITIALIZED_MILLIS);
-            }
-
             for (IUserInitializationCompleteCallback callback
                     : mUserInitializationCompleteCallbacks) {
                 try {
@@ -2193,20 +2183,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                             "Error while dispatching userInitializationComplete callback: ",
                             re);
                 }
-            }
-        }
-    }
-
-    private void announceNewUserIfNeeded() {
-        synchronized (mLock) {
-            AccessibilityUserState userState = getCurrentUserStateLocked();
-            if (userState.isHandlingAccessibilityEventsLocked()) {
-                String message = mContext.getString(R.string.user_switched,
-                        mUserManager.getUserInfo(mCurrentUserId).name);
-                AccessibilityEvent event = AccessibilityEvent.obtain(
-                        AccessibilityEvent.TYPE_ANNOUNCEMENT);
-                event.getText().add(message);
-                sendAccessibilityEventLocked(event, mCurrentUserId);
             }
         }
     }
