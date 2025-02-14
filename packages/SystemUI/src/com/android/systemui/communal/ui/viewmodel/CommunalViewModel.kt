@@ -359,7 +359,13 @@ constructor(
     /** See [CommunalSettingsInteractor.isV2FlagEnabled] */
     fun v2FlagEnabled(): Boolean = communalSettingsInteractor.isV2FlagEnabled()
 
-    fun swipeToHubEnabled(): Boolean = swipeToHub
+    val swipeToHubEnabled: StateFlow<Boolean> by lazy {
+        if (v2FlagEnabled()) {
+            communalInteractor.shouldShowCommunal
+        } else {
+            MutableStateFlow(swipeToHub)
+        }
+    }
 
     companion object {
         const val POPUP_AUTO_HIDE_TIMEOUT_MS = 12000L

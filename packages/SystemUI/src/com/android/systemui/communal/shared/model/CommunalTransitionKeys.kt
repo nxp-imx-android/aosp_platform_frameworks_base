@@ -31,4 +31,6 @@ object CommunalTransitionKeys {
     val ToEditMode = TransitionKey("ToEditMode")
     /** Transition to the glanceable hub after exiting edit mode */
     val FromEditMode = TransitionKey("FromEditMode")
+    /** Swipes the glanceable hub in/out of view */
+    val Swipe = TransitionKey("Swipe")
 }
