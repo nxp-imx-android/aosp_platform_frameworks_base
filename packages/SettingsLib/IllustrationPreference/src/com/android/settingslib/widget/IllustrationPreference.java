@@ -183,7 +183,9 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
         if (mLottieDynamicColor) {
             LottieColorUtils.applyDynamicColors(getContext(), illustrationView);
         }
-        LottieColorUtils.applyMaterialColor(getContext(), illustrationView);
+        if (SettingsThemeHelper.isExpressiveTheme(getContext())) {
+            LottieColorUtils.applyMaterialColor(getContext(), illustrationView);
+        }
 
         if (mOnBindListener != null) {
             mOnBindListener.onBind(illustrationView);
