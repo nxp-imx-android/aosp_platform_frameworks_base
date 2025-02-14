@@ -113,13 +113,23 @@
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Couldn’t update surroundings"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Active (media only). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> battery."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Active (media only). L: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, R: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> battery."</string>
+    <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Guest device. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> battery."</string>
+    <string name="bluetooth_guest_battery_level_untethered" msgid="5404013822067644960">"Guest device. L: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, R: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> battery."</string>
+    <string name="bluetooth_guest_media_only_battery_level" msgid="7928347900623812299">"Guest device (media only). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> battery."</string>
+    <string name="bluetooth_guest_media_only_battery_level_untethered" msgid="4458143141394300892">"Guest device (media only). L: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, R: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> battery."</string>
     <string name="bluetooth_battery_level_lea_support" msgid="5968584103507988820">"Connected (supports audio sharing). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> battery."</string>
     <string name="bluetooth_battery_level_untethered_lea_support" msgid="803110681688633362">"Connected (supports audio sharing). L: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, R: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> battery."</string>
     <string name="bluetooth_battery_level_untethered_left_lea_support" msgid="7707464334346454950">"Connected (supports audio sharing). Left: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> battery."</string>
     <string name="bluetooth_battery_level_untethered_right_lea_support" msgid="8941549024377771038">"Connected (supports audio sharing). Right: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> battery."</string>
     <string name="bluetooth_no_battery_level_lea_support" msgid="5721725041048434075">"Connected (supports audio sharing)"</string>
+    <string name="bluetooth_guest_battery_level_lea_support" msgid="8098327939585013928">"Guest device (supports audio sharing). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> battery."</string>
+    <string name="bluetooth_guest_battery_level_untethered_lea_support" msgid="3701035025565668360">"Guest device (supports audio sharing). L: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, R: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> battery."</string>
+    <string name="bluetooth_guest_no_battery_level_lea_support" msgid="2977038548753103470">"Guest device (supports audio sharing)"</string>
     <string name="bluetooth_active_media_only_no_battery_level" msgid="71106861912593126">"Active (media only)"</string>
+    <string name="bluetooth_guest_no_battery_level" msgid="9122974160381136920">"Guest device"</string>
+    <string name="bluetooth_guest_media_only_no_battery_level" msgid="7666347601796705721">"Guest device (media only)"</string>
     <string name="bluetooth_saved_device_lea_support" msgid="7231323139968285768">"Supports audio sharing"</string>
+    <string name="bluetooth_guest_saved_device_lea_support" msgid="5621291599518569876">"Guest device. Supports audio sharing"</string>
     <string name="bluetooth_hearing_aid_media_only_left_active" msgid="1632152540901488645">"Active (media only), left only"</string>
     <string name="bluetooth_hearing_aid_media_only_right_active" msgid="3854140683042617230">"Active (media only), right only"</string>
     <string name="bluetooth_hearing_aid_media_only_left_and_right_active" msgid="1299913413062528417">"Active (media only), left and right"</string>
@@ -376,6 +386,8 @@
     <string name="debug_hw_drawing_category" msgid="5830815169336975162">"Hardware accelerated rendering"</string>
     <string name="media_category" msgid="8122076702526144053">"Media"</string>
     <string name="debug_monitoring_category" msgid="1597387133765424994">"Monitoring"</string>
+    <!-- no translation found for window_management_category (2015535427098365170) -->
+    <skip />
     <string name="strict_mode" msgid="889864762140862437">"Strict mode enabled"</string>
     <string name="strict_mode_summary" msgid="1838248687233554654">"Flash screen when apps do long operations on main thread"</string>
     <string name="pointer_location" msgid="7516929526199520173">"Pointer location"</string>
@@ -470,6 +482,9 @@
     <string name="select_webview_provider_title" msgid="3917815648099445503">"WebView implementation"</string>
     <string name="select_webview_provider_dialog_title" msgid="2444261109877277714">"Set WebView implementation"</string>
     <string name="select_webview_provider_toast_text" msgid="8512254949169359848">"This choice is no longer valid. Try again."</string>
+    <string name="webview_launch_devtools_title" msgid="8009687433555367112">"WebView DevTools"</string>
+    <string name="webview_launch_devtools_no_package" msgid="3182544553665113721">"WebView package not found."</string>
+    <string name="webview_launch_devtools_no_activity" msgid="4066006313619617140">"Could not launch DevTools."</string>
     <string name="picture_color_mode" msgid="1013807330552931903">"Picture color mode"</string>
     <string name="picture_color_mode_desc" msgid="151780973768136200">"Use sRGB"</string>
     <string name="daltonizer_mode_disabled" msgid="403424372812399228">"Disabled"</string>
