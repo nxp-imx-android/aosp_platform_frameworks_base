@@ -612,8 +612,8 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         Assert.assertTrue(group.getAttachedChildren().isEmpty());
         Assert.assertNotEquals(group, child.getNotificationParent());
         verify(mNotificationTestHelper.getMockLogger()).logSkipAttachingKeepInParentChild(
-                /*child=*/ child.getEntry(),
-                /*newParent=*/ group.getEntry()
+                /*child=*/ child.getLoggingKey(),
+                /*newParent=*/ group.getLoggingKey()
         );
     }
 
@@ -629,7 +629,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         Assert.assertNull(child.getNotificationParent());
         Assert.assertFalse(child.keepInParentForDismissAnimation());
         verify(mNotificationTestHelper.getMockLogger())
-                .logCancelAppearDrawing(child.getEntry(), false);
+                .logCancelAppearDrawing(child.getLoggingKey(), false);
         verifyNoMoreInteractions(mNotificationTestHelper.getMockLogger());
     }
 
@@ -645,8 +645,8 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         Assert.assertNull(child.getNotificationParent());
         Assert.assertFalse(child.keepInParentForDismissAnimation());
         verify(mNotificationTestHelper.getMockLogger()).logKeepInParentChildDetached(
-                /*child=*/ child.getEntry(),
-                /*oldParent=*/ group.getEntry()
+                /*child=*/ child.getLoggingKey(),
+                /*oldParent=*/ group.getLoggingKey()
         );
     }
 

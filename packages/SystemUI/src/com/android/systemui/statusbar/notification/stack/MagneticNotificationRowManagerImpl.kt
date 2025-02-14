@@ -73,7 +73,7 @@ constructor(
             updateMagneticAndRoundableTargets(swipingRow, stackScrollLayout, sectionsManager)
             currentState = State.TARGETS_SET
         } else {
-            logger.logMagneticAndRoundableTargetsNotSet(currentState, swipingRow.entry)
+            logger.logMagneticAndRoundableTargetsNotSet(currentState, swipingRow.loggingKey)
         }
     }
 
@@ -116,7 +116,7 @@ constructor(
             currentMagneticListeners.swipedListener()?.canRowBeDismissed() ?: false
         when (currentState) {
             State.IDLE -> {
-                logger.logMagneticRowTranslationNotSet(currentState, row.entry)
+                logger.logMagneticRowTranslationNotSet(currentState, row.getLoggingKey())
                 return false
             }
             State.TARGETS_SET -> {
