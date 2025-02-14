@@ -22,8 +22,6 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
-import android.provider.Settings
-import android.provider.Settings.Global.DEVELOPMENT_OVERRIDE_DESKTOP_MODE_FEATURES
 import android.window.DesktopModeFlags
 import androidx.test.filters.SmallTest
 import com.android.internal.R
@@ -63,14 +61,12 @@ class DesktopModeStatusTest : ShellTestCase() {
         doReturn(context.contentResolver).whenever(mockContext).contentResolver
         resetDesktopModeFlagsCache()
         resetEnforceDeviceRestriction()
-        resetFlagOverride()
     }
 
     @After
     fun tearDown() {
         resetDesktopModeFlagsCache()
         resetEnforceDeviceRestriction()
-        resetFlagOverride()
     }
 
     @DisableFlags(
@@ -246,18 +242,11 @@ class DesktopModeStatusTest : ShellTestCase() {
         cachedToggleOverride.set(null, null)
     }
 
-    private fun resetFlagOverride() {
-        Settings.Global.putString(
-            context.contentResolver,
-            DEVELOPMENT_OVERRIDE_DESKTOP_MODE_FEATURES, null
-        )
-    }
-
     private fun setFlagOverride(override: DesktopModeFlags.ToggleOverride) {
-        Settings.Global.putInt(
-            context.contentResolver,
-            DEVELOPMENT_OVERRIDE_DESKTOP_MODE_FEATURES, override.setting
-        )
+        val cachedToggleOverride =
+            DesktopModeFlags::class.java.getDeclaredField("sCachedToggleOverride")
+        cachedToggleOverride.isAccessible = true
+        cachedToggleOverride.set(null, override)
     }
 
     private fun setDeviceEligibleForDesktopMode(eligible: Boolean) {
