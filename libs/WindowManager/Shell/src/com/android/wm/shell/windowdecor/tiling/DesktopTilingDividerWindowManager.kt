@@ -57,6 +57,7 @@ class DesktopTilingDividerWindowManager(
     private val transactionSupplier: Supplier<SurfaceControl.Transaction>,
     private var dividerBounds: Rect,
     private val displayContext: Context,
+    private val isDarkMode: Boolean,
 ) : WindowlessWindowManager(config, leash, null), DividerMoveCallback, View.OnLayoutChangeListener {
     private lateinit var viewHost: SurfaceControlViewHost
     private var tilingDividerView: TilingDividerView? = null
@@ -153,7 +154,7 @@ class DesktopTilingDividerWindowManager(
         surfaceControlViewHost.setView(dividerView, lp)
         val tmpDividerBounds = Rect()
         getDividerBounds(tmpDividerBounds)
-        dividerView.setup(this, tmpDividerBounds, handleRegionSize)
+        dividerView.setup(this, tmpDividerBounds, handleRegionSize, isDarkMode)
         t.setRelativeLayer(leash, relativeLeash, 1)
             .setPosition(
                 leash,
@@ -170,6 +171,11 @@ class DesktopTilingDividerWindowManager(
         dividerView.addOnLayoutChangeListener(this)
         tilingDividerView = dividerView
         updateTouchRegion()
+    }
+
+    /** Changes divider colour if dark/light mode is toggled. */
+    fun onUiModeChange(isDarkMode: Boolean) {
+        tilingDividerView?.onUiModeChange(isDarkMode)
     }
 
     /** Hides the divider bar. */

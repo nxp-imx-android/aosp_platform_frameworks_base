@@ -556,6 +556,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         } else {
             decoration.relayout(taskInfo, taskInfo.isFocused, decoration.mExclusionRegion);
         }
+        mDesktopTilingDecorViewModel.onTaskInfoChange(taskInfo);
         mActivityOrientationChangeHandler.ifPresent(handler ->
                 handler.handleActivityOrientationChange(oldTaskInfo, taskInfo));
     }

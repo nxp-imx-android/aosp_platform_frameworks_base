@@ -321,6 +321,19 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    fun testOnTaskInfoChanged_tilingNotified() {
+        val task = createTask(
+            windowingMode = WINDOWING_MODE_FREEFORM
+        )
+        setUpMockDecorationsForTasks(task)
+
+        onTaskOpening(task)
+        desktopModeWindowDecorViewModel.onTaskInfoChanged(task)
+
+        verify(mockTilingWindowDecoration).onTaskInfoChange(task)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_IMMERSIVE_HANDLE_HIDING)
     fun testInsetsStateChanged_notifiesAllDecorsInDisplay() {
         val task1 = createTask(windowingMode = WINDOWING_MODE_FREEFORM, displayId = 1)

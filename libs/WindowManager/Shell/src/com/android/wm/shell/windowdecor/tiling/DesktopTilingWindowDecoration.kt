@@ -36,7 +36,6 @@ import android.window.WindowContainerTransaction
 import com.android.internal.annotations.VisibleForTesting
 import com.android.launcher3.icons.BaseIconFactory
 import com.android.window.flags.Flags
-import com.android.wm.shell.shared.FocusTransitionListener
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
@@ -50,6 +49,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
+import com.android.wm.shell.shared.FocusTransitionListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.transition.FocusTransitionObserver
@@ -103,6 +103,7 @@ class DesktopTilingWindowDecoration(
     @VisibleForTesting
     var desktopTilingDividerWindowManager: DesktopTilingDividerWindowManager? = null
     private lateinit var dividerBounds: Rect
+    private var isDarkMode = false
     private var isResizing = false
     private var isTilingFocused = false
 
@@ -129,6 +130,7 @@ class DesktopTilingWindowDecoration(
         val isTiled = destinationBounds != taskInfo.configuration.windowConfiguration.bounds
 
         initTilingApps(resizeMetadata, position, taskInfo)
+        isDarkMode = isTaskInDarkMode(taskInfo)
         // Observe drag resizing to break tiling if a task is drag resized.
         desktopModeWindowDecoration.addDragResizeListener(this)
 
@@ -232,6 +234,7 @@ class DesktopTilingWindowDecoration(
                     transactionSupplier,
                     dividerBounds,
                     displayContext,
+                    isDarkMode,
                 )
             }
         // a leash to present the divider on top of, without re-parenting.
@@ -355,6 +358,17 @@ class DesktopTilingWindowDecoration(
         wct.setBounds(rightTiledTask.taskInfo.token, rightTiledTask.bounds)
         transitions.startTransition(TRANSIT_CHANGE, wct, this)
     }
+
+    fun onTaskInfoChange(taskInfo: RunningTaskInfo) {
+        val isCurrentTaskInDarkMode = isTaskInDarkMode(taskInfo)
+        if (isCurrentTaskInDarkMode == isDarkMode || !isTilingManagerInitialised) return
+        isDarkMode = isCurrentTaskInDarkMode
+        desktopTilingDividerWindowManager?.onUiModeChange(isDarkMode)
+    }
+
+    fun isTaskInDarkMode(taskInfo: RunningTaskInfo): Boolean =
+        (taskInfo.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+            Configuration.UI_MODE_NIGHT_YES
 
     override fun startAnimation(
         transition: IBinder,
@@ -502,9 +516,11 @@ class DesktopTilingWindowDecoration(
     }
 
     // Overriding FocusTransitionListener
-    override fun onFocusedTaskChanged(taskId: Int,
-            isFocusedOnDisplay: Boolean,
-            isFocusedGlobally: Boolean) {
+    override fun onFocusedTaskChanged(
+        taskId: Int,
+        isFocusedOnDisplay: Boolean,
+        isFocusedGlobally: Boolean,
+    ) {
         if (!Flags.enableDisplayFocusInShellTransitions()) return
         moveTiledPairToFront(taskId, isFocusedOnDisplay)
     }
@@ -512,7 +528,7 @@ class DesktopTilingWindowDecoration(
     // Only called if [taskInfo] relates to a focused task
     private fun isTilingRefocused(taskId: Int): Boolean {
         return taskId == leftTaskResizingHelper?.taskInfo?.taskId ||
-                taskId == rightTaskResizingHelper?.taskInfo?.taskId
+            taskId == rightTaskResizingHelper?.taskInfo?.taskId
     }
 
     private fun buildTiledTasksMoveToFront(leftOnTop: Boolean): WindowContainerTransaction {
@@ -623,22 +639,12 @@ class DesktopTilingWindowDecoration(
         val t = transactionSupplier.get()
         if (!Flags.enableDisplayFocusInShellTransitions()) isTilingFocused = true
         if (taskId == leftTaskResizingHelper?.taskInfo?.taskId) {
-          desktopTilingDividerWindowManager?.onRelativeLeashChanged(
-              leftTiledTask.getLeash(),
-              t,
-          )
+            desktopTilingDividerWindowManager?.onRelativeLeashChanged(leftTiledTask.getLeash(), t)
         }
         if (taskId == rightTaskResizingHelper?.taskInfo?.taskId) {
-          desktopTilingDividerWindowManager?.onRelativeLeashChanged(
-              rightTiledTask.getLeash(),
-              t,
-          )
+            desktopTilingDividerWindowManager?.onRelativeLeashChanged(rightTiledTask.getLeash(), t)
         }
-        transitions.startTransition(
-            TRANSIT_TO_FRONT,
-            buildTiledTasksMoveToFront(isLeftOnTop),
-            null,
-        )
+        transitions.startTransition(TRANSIT_TO_FRONT, buildTiledTasksMoveToFront(isLeftOnTop), null)
         t.apply()
         return true
     }
