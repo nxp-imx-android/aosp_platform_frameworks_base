@@ -97,6 +97,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.Unminim
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.DragStartState
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType
+import com.android.wm.shell.desktopmode.DesktopRepository.DeskChangeListener
 import com.android.wm.shell.desktopmode.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion.DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.DragToDesktopStateListener
@@ -3446,7 +3447,47 @@ class DesktopTasksController(
         private lateinit var remoteListener:
             SingleInstanceRemoteListener<DesktopTasksController, IDesktopTaskListener>
 
-        private val listener: VisibleTasksListener =
+        private val deskChangeListener: DeskChangeListener =
+            object : DeskChangeListener {
+                override fun onDeskAdded(displayId: Int, deskId: Int) {
+                    ProtoLog.v(
+                        WM_SHELL_DESKTOP_MODE,
+                        "IDesktopModeImpl: onDeskAdded display=%d deskId=%d",
+                        displayId,
+                        deskId,
+                    )
+                    remoteListener.call { l -> l.onDeskAdded(displayId, deskId) }
+                }
+
+                override fun onDeskRemoved(displayId: Int, deskId: Int) {
+                    ProtoLog.v(
+                        WM_SHELL_DESKTOP_MODE,
+                        "IDesktopModeImpl: onDeskRemoved display=%d deskId=%d",
+                        displayId,
+                        deskId,
+                    )
+                    remoteListener.call { l -> l.onDeskRemoved(displayId, deskId) }
+                }
+
+                override fun onActiveDeskChanged(
+                    displayId: Int,
+                    newActiveDeskId: Int,
+                    oldActiveDeskId: Int,
+                ) {
+                    ProtoLog.v(
+                        WM_SHELL_DESKTOP_MODE,
+                        "IDesktopModeImpl: onActiveDeskChanged display=%d new=%d old=%d",
+                        displayId,
+                        newActiveDeskId,
+                        oldActiveDeskId,
+                    )
+                    remoteListener.call { l ->
+                        l.onActiveDeskChanged(displayId, newActiveDeskId, oldActiveDeskId)
+                    }
+                }
+            }
+
+        private val visibleTasksListener: VisibleTasksListener =
             object : VisibleTasksListener {
                 override fun onTasksVisibilityChanged(displayId: Int, visibleTasksCount: Int) {
                     ProtoLog.v(
@@ -3510,7 +3551,14 @@ class DesktopTasksController(
                     controller,
                     { c ->
                         run {
-                            c.taskRepository.addVisibleTasksListener(listener, c.mainExecutor)
+                            c.taskRepository.addDeskChangeListener(
+                                deskChangeListener,
+                                c.mainExecutor,
+                            )
+                            c.taskRepository.addVisibleTasksListener(
+                                visibleTasksListener,
+                                c.mainExecutor,
+                            )
                             c.taskbarDesktopTaskListener = taskbarDesktopTaskListener
                             c.desktopModeEnterExitTransitionListener =
                                 desktopModeEntryExitTransitionListener
@@ -3518,7 +3566,8 @@ class DesktopTasksController(
                     },
                     { c ->
                         run {
-                            c.taskRepository.removeVisibleTasksListener(listener)
+                            c.taskRepository.removeDeskChangeListener(deskChangeListener)
+                            c.taskRepository.removeVisibleTasksListener(visibleTasksListener)
                             c.taskbarDesktopTaskListener = null
                             c.desktopModeEnterExitTransitionListener = null
                         }
