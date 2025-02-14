@@ -4960,6 +4960,9 @@
     <!-- Title of hearing aids feature, shown in the warning dialog about the accessibility shortcut. [CHAR LIMIT=none] -->
     <string name="hearing_aids_feature_name">Hearing devices</string>
 
+    <!-- Title of autoclick feature, shown in the warning dialog about the accessibility shortcut. [CHAR LIMIT=none] -->
+    <string name="autoclick_feature_name">Autoclick</string>
+
     <!-- Text of hearing device disconnected state. [CHAR LIMIT=20] -->
     <string name="hearing_device_status_disconnected">Disconnected</string>
 
