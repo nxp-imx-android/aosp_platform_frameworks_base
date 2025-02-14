@@ -3233,12 +3233,20 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     public void setSensitive(boolean sensitive, boolean hideSensitive) {
+        if (notificationsRedesignTemplates()
+                && sensitive == mSensitive && hideSensitive == mSensitiveHiddenInGeneral) {
+            return; // nothing has changed
+        }
+
         int intrinsicBefore = getIntrinsicHeight();
         mSensitive = sensitive;
         mSensitiveHiddenInGeneral = hideSensitive;
         int intrinsicAfter = getIntrinsicHeight();
         if (intrinsicBefore != intrinsicAfter) {
             notifyHeightChanged(/* needsAnimation= */ true);
+        } else if (notificationsRedesignTemplates()) {
+            // Just request the correct layout, even if the height hasn't changed
+            getShowingLayout().requestSelectLayout(/* needsAnimation= */ true);
         }
     }
 
