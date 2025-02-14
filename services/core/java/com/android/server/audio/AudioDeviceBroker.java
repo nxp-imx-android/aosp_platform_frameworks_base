@@ -1204,6 +1204,8 @@ public class AudioDeviceBroker {
             AudioSystem.setParameters("A2dpSuspended=true");
             AudioSystem.setParameters("LeAudioSuspended=true");
             AudioSystem.setParameters("BT_SCO=on");
+            mBluetoothA2dpSuspendedApplied = true;
+            mBluetoothLeSuspendedApplied = true;
         } else {
             AudioSystem.setParameters("BT_SCO=off");
             if (mBluetoothA2dpSuspendedApplied) {
@@ -1784,6 +1786,18 @@ public class AudioDeviceBroker {
         pw.println("\n" + prefix + "mAudioModeOwner: " + mAudioModeOwner);
 
         pw.println("\n" + prefix + "mScoManagedByAudio: " + mScoManagedByAudio);
+
+        pw.println("\n" + prefix + "Bluetooth SCO on"
+                + ", requested: " + mBluetoothScoOn
+                + ", applied: " + mBluetoothScoOnApplied);
+        pw.println("\n" + prefix +  "Bluetooth A2DP suspended"
+                + ", requested ext: " + mBluetoothA2dpSuspendedExt
+                + ", requested int: " + mBluetoothA2dpSuspendedInt
+                + ", applied " + mBluetoothA2dpSuspendedApplied);
+        pw.println("\n" + prefix +  "Bluetooth LE Audio suspended"
+                + ", requested ext: " + mBluetoothLeSuspendedExt
+                + ", requested int: " + mBluetoothLeSuspendedInt
+                + ", applied " + mBluetoothLeSuspendedApplied);
 
         mBtHelper.dump(pw, prefix);
     }
