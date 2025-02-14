@@ -3596,4 +3596,15 @@ interface ITelephony {
      * @hide
      */
     int getCarrierIdFromIdentifier(in CarrierIdentifier carrierIdentifier);
+
+
+    /**
+     * Get list of applications that are optimized for low bandwidth satellite data.
+     *
+     * @return List of Application Name with data optimized network property.
+     * {@link #PROPERTY_SATELLITE_DATA_OPTIMIZED}
+     */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
+                      + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    List<String> getSatelliteDataOptimizedApps();
 }
