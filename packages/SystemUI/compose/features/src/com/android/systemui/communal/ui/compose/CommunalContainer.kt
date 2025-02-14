@@ -42,6 +42,7 @@ import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.Swipe
+import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.observableTransitionState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
@@ -87,9 +88,25 @@ val sceneTransitionsV2 = transitions {
         spec = tween(durationMillis = TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS)
         fade(AllElements)
     }
+    to(CommunalScenes.Communal, key = CommunalTransitionKeys.Swipe) {
+        spec = tween(durationMillis = TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS)
+        translate(Communal.Elements.Grid, Edge.End)
+        timestampRange(startMillis = 167, endMillis = 334) { fade(AllElements) }
+    }
     to(CommunalScenes.Blank) {
         spec = tween(durationMillis = TO_GONE_DURATION.toInt(DurationUnit.MILLISECONDS))
         fade(AllElements)
+    }
+    to(CommunalScenes.Blank, key = CommunalTransitionKeys.Swipe) {
+        spec = tween(durationMillis = TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS)
+        translate(Communal.Elements.Grid, Edge.End)
+        timestampRange(endMillis = 167) {
+            fade(Communal.Elements.Grid)
+            fade(Communal.Elements.IndicationArea)
+            fade(Communal.Elements.LockIcon)
+            fade(Communal.Elements.StatusBar)
+        }
+        timestampRange(startMillis = 167, endMillis = 334) { fade(Communal.Elements.Scrim) }
     }
 }
 
@@ -165,6 +182,7 @@ fun CommunalContainer(
         viewModel.communalBackground.collectAsStateWithLifecycle(
             initialValue = CommunalBackgroundType.ANIMATED
         )
+    val swipeToHubEnabled by viewModel.swipeToHubEnabled.collectAsStateWithLifecycle()
     val state: MutableSceneTransitionLayoutState =
         rememberMutableSceneTransitionLayoutState(
             initialScene = currentSceneKey,
@@ -200,15 +218,27 @@ fun CommunalContainer(
         scene(
             CommunalScenes.Blank,
             userActions =
-                if (viewModel.swipeToHubEnabled())
-                    mapOf(Swipe.Start(fromSource = Edge.End) to CommunalScenes.Communal)
-                else emptyMap(),
+                if (swipeToHubEnabled) {
+                    mapOf(
+                        Swipe.Start(fromSource = Edge.End) to
+                            UserActionResult(CommunalScenes.Communal, CommunalTransitionKeys.Swipe)
+                    )
+                } else {
+                    emptyMap()
+                },
         ) {
             // This scene shows nothing only allowing for transitions to the communal scene.
             Box(modifier = Modifier.fillMaxSize())
         }
 
-        scene(CommunalScenes.Communal, userActions = mapOf(Swipe.End to CommunalScenes.Blank)) {
+        scene(
+            CommunalScenes.Communal,
+            userActions =
+                mapOf(
+                    Swipe.End to
+                        UserActionResult(CommunalScenes.Blank, CommunalTransitionKeys.Swipe)
+                ),
+        ) {
             CommunalScene(
                 backgroundType = backgroundType,
                 colors = colors,
