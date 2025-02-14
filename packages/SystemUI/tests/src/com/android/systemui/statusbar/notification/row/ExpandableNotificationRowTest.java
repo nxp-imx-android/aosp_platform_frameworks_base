@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.notification.row;
 
+import static android.app.Flags.FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES;
+
 import static com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_ALL;
 import static com.android.systemui.statusbar.notification.row.NotificationTestHelper.PKG;
 import static com.android.systemui.statusbar.notification.row.NotificationTestHelper.USER_HANDLE;
@@ -29,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -189,6 +192,54 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES)
+    public void setSensitive_doesNothingIfCalledAgain() throws Exception {
+        ExpandableNotificationRow row = mNotificationTestHelper.createRow();
+        measureAndLayout(row);
+
+        // GIVEN a mocked public layout
+        NotificationContentView mockPublicLayout = mock(NotificationContentView.class);
+        row.setPublicLayout(mockPublicLayout);
+
+        // GIVEN a sensitive notification row that's currently redacted
+        row.setHideSensitiveForIntrinsicHeight(true);
+        row.setSensitive(true, true);
+        assertThat(row.getShowingLayout()).isSameInstanceAs(row.getPublicLayout());
+        verify(mockPublicLayout).requestSelectLayout(eq(true));
+        clearInvocations(mockPublicLayout);
+
+        // WHEN the row is set to the same sensitive settings
+        row.setSensitive(true, true);
+
+        // VERIFY that the layout is not updated again
+        assertThat(row.getShowingLayout()).isSameInstanceAs(row.getPublicLayout());
+        verify(mockPublicLayout, never()).requestSelectLayout(anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES)
+    public void testSetSensitiveOnNotifRowUpdatesLayout() throws Exception {
+        // GIVEN a sensitive notification row that's currently redacted
+        ExpandableNotificationRow row = mNotificationTestHelper.createRow();
+        measureAndLayout(row);
+        row.setHideSensitiveForIntrinsicHeight(true);
+        row.setSensitive(true, true);
+        assertThat(row.getShowingLayout()).isSameInstanceAs(row.getPublicLayout());
+
+        // GIVEN a mocked private layout
+        NotificationContentView mockPrivateLayout = mock(NotificationContentView.class);
+        row.setPrivateLayout(mockPrivateLayout);
+
+        // WHEN the row is set to no longer be sensitive
+        row.setSensitive(false, true);
+
+        // VERIFY that the layout is updated
+        assertThat(row.getShowingLayout()).isSameInstanceAs(row.getPrivateLayout());
+        verify(mockPrivateLayout).requestSelectLayout(eq(true));
+    }
+
+    @Test
+    @DisableFlags(FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES)
     public void testSetSensitiveOnNotifRowNotifiesOfHeightChange() throws Exception {
         // GIVEN a sensitive notification row that's currently redacted
         ExpandableNotificationRow row = mNotificationTestHelper.createRow();
