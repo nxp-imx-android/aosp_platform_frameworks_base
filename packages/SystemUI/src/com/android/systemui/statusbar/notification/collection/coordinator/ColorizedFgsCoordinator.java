@@ -23,6 +23,7 @@ import android.app.Notification;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.statusbar.notification.collection.ListEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
@@ -31,29 +32,50 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.PromotedNotificationsInteractor;
 import com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt;
+import com.android.systemui.util.kotlin.JavaAdapterKt;
 
-import com.google.common.primitives.Booleans;
+import kotlinx.coroutines.CoroutineScope;
+
+import java.util.Collections;
+import java.util.List;
 
 import javax.inject.Inject;
 
 /**
  * Handles sectioning for foreground service notifications.
- *  Puts non-min colorized foreground service notifications into the FGS section. See
- *  {@link NotifCoordinators} for section ordering priority.
+ * Puts non-min colorized foreground service notifications into the FGS section. See
+ * {@link NotifCoordinators} for section ordering priority.
  */
 @CoordinatorScope
 public class ColorizedFgsCoordinator implements Coordinator {
     private static final String TAG = "ColorizedCoordinator";
+    private final PromotedNotificationsInteractor mPromotedNotificationsInteractor;
+    private final CoroutineScope mMainScope;
+
+    private List<String> mOrderedPromotedNotifKeys = Collections.emptyList();
 
     @Inject
-    public ColorizedFgsCoordinator() {
+    public ColorizedFgsCoordinator(
+            @Application CoroutineScope mainScope,
+            PromotedNotificationsInteractor promotedNotificationsInteractor
+    ) {
+        mPromotedNotificationsInteractor = promotedNotificationsInteractor;
+        mMainScope = mainScope;
     }
 
     @Override
-    public void attach(NotifPipeline pipeline) {
+    public void attach(@NonNull NotifPipeline pipeline) {
         if (PromotedNotificationUi.isEnabled()) {
             pipeline.addPromoter(mPromotedOngoingPromoter);
+
+            JavaAdapterKt.collectFlow(mMainScope,
+                    mPromotedNotificationsInteractor.getOrderedChipNotificationKeys(),
+                    (List<String> keys) -> {
+                        mOrderedPromotedNotifKeys = keys;
+                        mNotifSectioner.invalidateList("updated mOrderedPromotedNotifKeys");
+                    });
         }
     }
 
@@ -82,12 +104,24 @@ public class ColorizedFgsCoordinator implements Coordinator {
             return false;
         }
 
-        private NotifComparator mPreferPromoted = new NotifComparator("PreferPromoted") {
+        /** get the sort key for any entry in the ongoing section */
+        private int getSortKey(@Nullable NotificationEntry entry) {
+            if (entry == null) return Integer.MAX_VALUE;
+            // Order all promoted notif keys first, using their order in the list
+            final int index = mOrderedPromotedNotifKeys.indexOf(entry.getKey());
+            if (index >= 0) return index;
+            // Next, prioritize promoted ongoing over other notifications
+            return isPromotedOngoing(entry) ? Integer.MAX_VALUE - 1 : Integer.MAX_VALUE;
+        }
+
+        private final NotifComparator mOngoingComparator = new NotifComparator(
+                "OngoingComparator") {
             @Override
             public int compare(@NonNull ListEntry o1, @NonNull ListEntry o2) {
-                return -1 * Booleans.compare(
-                        isPromotedOngoing(o1.getRepresentativeEntry()),
-                        isPromotedOngoing(o2.getRepresentativeEntry()));
+                return Integer.compare(
+                        getSortKey(o1.getRepresentativeEntry()),
+                        getSortKey(o2.getRepresentativeEntry())
+                );
             }
         };
 
@@ -95,7 +129,7 @@ public class ColorizedFgsCoordinator implements Coordinator {
         @Override
         public NotifComparator getComparator() {
             if (PromotedNotificationUi.isEnabled()) {
-                return mPreferPromoted;
+                return mOngoingComparator;
             } else {
                 return null;
             }
