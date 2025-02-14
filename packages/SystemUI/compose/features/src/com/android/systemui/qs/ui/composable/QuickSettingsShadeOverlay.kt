@@ -50,6 +50,8 @@ import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.media.controls.ui.composable.MediaCarousel
+import com.android.systemui.media.controls.ui.view.MediaHostState.Companion.COLLAPSED
 import com.android.systemui.notifications.ui.composable.SnoozeableHeadsUpNotificationSpace
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.flags.QsDetailedView
@@ -104,7 +106,10 @@ constructor(
             }
         val quickSettingsContainerViewModel =
             rememberViewModel("QuickSettingsShadeOverlayContainer") {
-                quickSettingsContainerViewModelFactory.create(supportsBrightnessMirroring = true)
+                quickSettingsContainerViewModelFactory.create(
+                    supportsBrightnessMirroring = true,
+                    expansion = COLLAPSED,
+                )
             }
         val hunPlaceholderViewModel =
             rememberViewModel("QuickSettingsShadeOverlayPlaceholder") {
@@ -232,12 +237,20 @@ fun ContentScope.QuickSettingsLayout(
         Toolbar(
             modifier =
                 Modifier.fillMaxWidth().requiredHeight(QuickSettingsShade.Dimensions.ToolbarHeight),
-            toolbarViewModelFactory = viewModel.toolbarViewModelFactory,
+            viewModel = viewModel.toolbarViewModel,
         )
         Column(
             verticalArrangement = Arrangement.spacedBy(QuickSettingsShade.Dimensions.Padding),
             modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
         ) {
+            MediaCarousel(
+                isVisible = viewModel.showMedia,
+                mediaHost = viewModel.mediaHost,
+                carouselController = viewModel.mediaCarouselController,
+                usingCollapsedLandscapeMedia = true,
+                modifier = Modifier.padding(horizontal = QuickSettingsShade.Dimensions.Padding),
+            )
+
             BrightnessSliderContainer(
                 viewModel = viewModel.brightnessSliderViewModel,
                 containerColor = OverlayShade.Colors.PanelBackground,
@@ -245,6 +258,7 @@ fun ContentScope.QuickSettingsLayout(
                     Modifier.fillMaxWidth()
                         .height(QuickSettingsShade.Dimensions.BrightnessSliderHeight),
             )
+
             Box {
                 GridAnchor()
                 TileGrid(

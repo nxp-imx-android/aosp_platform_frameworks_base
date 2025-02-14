@@ -16,7 +16,6 @@
 
 package com.android.systemui.qs.panels.ui.viewmodel
 
-import androidx.compose.runtime.getValue
 import com.android.systemui.classifier.Classifier.QS_SWIPE_SIDE
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.development.ui.viewmodel.BuildNumberViewModel
