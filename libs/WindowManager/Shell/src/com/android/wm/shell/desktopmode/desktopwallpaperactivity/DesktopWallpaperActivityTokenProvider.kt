@@ -20,7 +20,7 @@ import android.util.SparseArray
 import android.util.SparseBooleanArray
 import android.view.Display.DEFAULT_DISPLAY
 import android.window.WindowContainerToken
-import androidx.core.util.forEach
+import androidx.core.util.keyIterator
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 
@@ -45,11 +45,13 @@ class DesktopWallpaperActivityTokenProvider {
     }
 
     fun removeToken(token: WindowContainerToken) {
-        wallpaperActivityTokenByDisplayId.forEach { displayId, value ->
-            if (value == token) {
-                logV("Remove desktop wallpaper activity token for display %s", displayId)
-                wallpaperActivityTokenByDisplayId.delete(displayId)
+        val displayId =
+            wallpaperActivityTokenByDisplayId.keyIterator().asSequence().find {
+                wallpaperActivityTokenByDisplayId[it] == token
             }
+        if (displayId != null) {
+            logV("Remove desktop wallpaper activity token for display %s", displayId)
+            wallpaperActivityTokenByDisplayId.delete(displayId)
         }
     }
 
