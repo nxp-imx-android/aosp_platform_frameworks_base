@@ -1,0 +1,364 @@
+{
+  "frame_ids": [
+    0,
+    16,
+    32,
+    48,
+    64,
+    80,
+    96,
+    112,
+    128,
+    144,
+    160,
+    176,
+    192,
+    208,
+    224,
+    240,
+    256,
+    272,
+    288,
+    304,
+    320,
+    336,
+    352,
+    368,
+    384,
+    400,
+    416,
+    432,
+    448,
+    464,
+    480,
+    496,
+    512,
+    528
+  ],
+  "features": [
+    {
+      "name": "RevealElement_position",
+      "type": "dpOffset",
+      "data_points": [
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "x": 62.4,
+          "y": 50
+        },
+        {
+          "x": 61.2,
+          "y": 50
+        },
+        {
+          "x": 59.2,
+          "y": 50
+        },
+        {
+          "x": 57.2,
+          "y": 50
+        },
+        {
+          "x": 54.8,
+          "y": 50
+        },
+        {
+          "x": 52.4,
+          "y": 50
+        },
+        {
+          "x": 52.4,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        },
+        {
+          "x": 50,
+          "y": 50
+        }
+      ]
+    },
+    {
+      "name": "RevealElement_size",
+      "type": "dpSize",
+      "data_points": [
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "width": 163.2,
+          "height": 2
+        },
+        {
+          "width": 166,
+          "height": 4.4
+        },
+        {
+          "width": 170,
+          "height": 6.8
+        },
+        {
+          "width": 174,
+          "height": 10
+        },
+        {
+          "width": 178.4,
+          "height": 13.2
+        },
+        {
+          "width": 183.6,
+          "height": 16.8
+        },
+        {
+          "width": 183.6,
+          "height": 16.8
+        },
+        {
+          "width": 188,
+          "height": 42.4
+        },
+        {
+          "width": 188,
+          "height": 100
+        },
+        {
+          "width": 188,
+          "height": 161.6
+        },
+        {
+          "width": 188,
+          "height": 218
+        },
+        {
+          "width": 188,
+          "height": 265.6
+        },
+        {
+          "width": 188,
+          "height": 303.6
+        },
+        {
+          "width": 188,
+          "height": 332.4
+        },
+        {
+          "width": 188,
+          "height": 354
+        },
+        {
+          "width": 188,
+          "height": 369.2
+        },
+        {
+          "width": 188,
+          "height": 380
+        },
+        {
+          "width": 188,
+          "height": 387.2
+        },
+        {
+          "width": 188,
+          "height": 392
+        },
+        {
+          "width": 188,
+          "height": 395.2
+        },
+        {
+          "width": 188,
+          "height": 397.6
+        },
+        {
+          "width": 188,
+          "height": 398.4
+        },
+        {
+          "width": 188,
+          "height": 398.8
+        },
+        {
+          "width": 188,
+          "height": 399.2
+        },
+        {
+          "width": 188,
+          "height": 399.6
+        },
+        {
+          "width": 188,
+          "height": 399.6
+        }
+      ]
+    },
+    {
+      "name": "RevealElement_alpha",
+      "type": "float",
+      "data_points": [
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        0,
+        0,
+        0.008216977,
+        0.06259775,
+        0.19032806,
+        0.39281356,
+        0.57081985,
+        0.7082821,
+        0.80721295,
+        0.8752918,
+        0.9206928,
+        0.95026827,
+        0.9691833,
+        0.98110056,
+        0.988515,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  ]
+}

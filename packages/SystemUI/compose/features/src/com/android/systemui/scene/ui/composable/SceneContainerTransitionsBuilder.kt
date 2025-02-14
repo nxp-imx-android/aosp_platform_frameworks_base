@@ -19,6 +19,7 @@ package com.android.systemui.scene.ui.composable
 import com.android.compose.animation.scene.SceneTransitions
 import com.android.compose.animation.scene.reveal.ContainerRevealHaptics
 import com.android.compose.animation.scene.transitions
+import com.android.mechanics.behavior.EdgeContainerExpansionSpec
 
 /**
  * Builder of the comprehensive definition of all transitions between scenes and overlays in the
@@ -27,7 +28,10 @@ import com.android.compose.animation.scene.transitions
 interface SceneContainerTransitionsBuilder {
 
     /** Build the [SceneContainer] transitions spec. */
-    fun build(revealHaptics: ContainerRevealHaptics): SceneTransitions
+    fun build(
+        shadeExpansionMotion: EdgeContainerExpansionSpec,
+        revealHaptics: ContainerRevealHaptics,
+    ): SceneTransitions
 }
 
 /**
@@ -37,5 +41,8 @@ interface SceneContainerTransitionsBuilder {
 class ConstantSceneContainerTransitionsBuilder(
     private val transitions: SceneTransitions = transitions { /* No transitions */ }
 ) : SceneContainerTransitionsBuilder {
-    override fun build(revealHaptics: ContainerRevealHaptics): SceneTransitions = transitions
+    override fun build(
+        shadeExpansionMotion: EdgeContainerExpansionSpec,
+        revealHaptics: ContainerRevealHaptics,
+    ): SceneTransitions = transitions
 }

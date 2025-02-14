@@ -6,6 +6,7 @@ import com.android.compose.animation.scene.TransitionKey
 import com.android.compose.animation.scene.reveal.ContainerRevealHaptics
 import com.android.compose.animation.scene.transitions
 import com.android.internal.jank.Cuj
+import com.android.mechanics.behavior.EdgeContainerExpansionSpec
 import com.android.systemui.notifications.ui.composable.Notifications
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -48,7 +49,10 @@ import com.android.systemui.shade.ui.composable.Shade
  * Please keep the list sorted alphabetically.
  */
 class SceneContainerTransitions : SceneContainerTransitionsBuilder {
-    override fun build(revealHaptics: ContainerRevealHaptics): SceneTransitions {
+    override fun build(
+        shadeExpansionMotion: EdgeContainerExpansionSpec,
+        revealHaptics: ContainerRevealHaptics,
+    ): SceneTransitions {
         return transitions {
             interruptionHandler = DefaultInterruptionHandler
 
@@ -201,13 +205,19 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 Overlays.NotificationsShade,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE, // NOTYPO
             ) {
-                toNotificationsShadeTransition(revealHaptics = revealHaptics)
+                toNotificationsShadeTransition(
+                    shadeExpansionMotion = shadeExpansionMotion,
+                    revealHaptics = revealHaptics,
+                )
             }
             to(
                 Overlays.QuickSettingsShade,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE, // NOTYPO
             ) {
-                toQuickSettingsShadeTransition(revealHaptics = revealHaptics)
+                toQuickSettingsShadeTransition(
+                    shadeExpansionMotion = shadeExpansionMotion,
+                    revealHaptics = revealHaptics,
+                )
             }
             from(
                 Scenes.Gone,
@@ -215,7 +225,11 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 key = SlightlyFasterShadeCollapse,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE, // NOTYPO
             ) {
-                toNotificationsShadeTransition(durationScale = 0.9, revealHaptics = revealHaptics)
+                toNotificationsShadeTransition(
+                    durationScale = 0.9,
+                    shadeExpansionMotion = shadeExpansionMotion,
+                    revealHaptics = revealHaptics,
+                )
             }
             from(
                 Scenes.Gone,
@@ -223,7 +237,11 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 key = SlightlyFasterShadeCollapse,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE, // NOTYPO
             ) {
-                toQuickSettingsShadeTransition(durationScale = 0.9, revealHaptics = revealHaptics)
+                toQuickSettingsShadeTransition(
+                    durationScale = 0.9,
+                    shadeExpansionMotion = shadeExpansionMotion,
+                    revealHaptics = revealHaptics,
+                )
             }
             from(
                 Scenes.Lockscreen,
@@ -231,7 +249,11 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 key = SlightlyFasterShadeCollapse,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE, // NOTYPO
             ) {
-                toNotificationsShadeTransition(durationScale = 0.9, revealHaptics = revealHaptics)
+                toNotificationsShadeTransition(
+                    durationScale = 0.9,
+                    shadeExpansionMotion = shadeExpansionMotion,
+                    revealHaptics = revealHaptics,
+                )
             }
             from(
                 Scenes.Lockscreen,
@@ -239,7 +261,11 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 key = SlightlyFasterShadeCollapse,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE, // NOTYPO
             ) {
-                toQuickSettingsShadeTransition(durationScale = 0.9, revealHaptics = revealHaptics)
+                toQuickSettingsShadeTransition(
+                    durationScale = 0.9,
+                    shadeExpansionMotion = shadeExpansionMotion,
+                    revealHaptics = revealHaptics,
+                )
             }
         }
     }
