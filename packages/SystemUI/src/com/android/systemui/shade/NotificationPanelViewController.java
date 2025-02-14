@@ -2201,7 +2201,7 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
     @Override
     @Deprecated
     public void onStatusBarLongPress(MotionEvent event) {
-        mShadeLog.d("Status Bar was long pressed.");
+        Log.i(TAG, "Status Bar was long pressed.");
         ShadeExpandsOnStatusBarLongPress.assertInNewMode();
         mStatusBarLongPressDowntime = event.getDownTime();
         if (isTracking()) {
