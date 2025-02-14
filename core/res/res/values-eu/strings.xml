@@ -353,6 +353,14 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"atzitu bizi-konstanteei buruzko sentsorearen datuak"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Jakinarazpenak"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"jakinarazpenak erakutsi"</string>
+    <!-- no translation found for permgrouplab_xr_tracking (7418994009794287471) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking (6777198859446500821) -->
+    <skip />
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (1194833982988144536) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (9178027369004805829) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Leihoko edukia eskuratu."</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Arakatu irekita daukazun leihoko edukia."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"\"Arakatu ukituta\" aktibatu."</string>
@@ -648,6 +656,38 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"Argazki bilduma aldatzeko baimena ematen dio aplikazioari."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"multimedia-edukien bildumako kokapena irakurri"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"Multimedia-edukien bildumako kokapena irakurtzeko baimena ematen dio aplikazioari."</string>
+    <!-- no translation found for permlab_eye_tracking_coarse (7989596289790269059) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_coarse (870510233930553355) -->
+    <skip />
+    <!-- no translation found for permlab_eye_tracking_fine (6914457357027049512) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_fine (5788889152304524730) -->
+    <skip />
+    <!-- no translation found for permlab_face_tracking (2272048395128283324) -->
+    <skip />
+    <!-- no translation found for permdesc_face_tracking (2622783922311211866) -->
+    <skip />
+    <!-- no translation found for permlab_hand_tracking (6478233866595566940) -->
+    <skip />
+    <!-- no translation found for permdesc_hand_tracking (8639715900104966456) -->
+    <skip />
+    <!-- no translation found for permlab_head_tracking (1309731456372087270) -->
+    <skip />
+    <!-- no translation found for permdesc_head_tracking (231597390513699188) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_coarse (6518646430502858641) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_coarse (4508880777646198656) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_fine (409126403264393251) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_fine (6223368011593524179) -->
+    <skip />
+    <!-- no translation found for permlab_xr_tracking_in_background (7117098718465619023) -->
+    <skip />
+    <!-- no translation found for permdesc_xr_tracking_in_background (939504041387836853) -->
+    <skip />
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Erabili sistema biometrikoak"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Erabili sistema biometrikoak edo pantailaren blokeoa"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Egiaztatu zeu zarela"</string>
@@ -2247,14 +2287,10 @@
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Norabide-kontrolagailuko erdiko botoia"</string>
     <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"Automatikoki klik egiteko eginbide motaren ezarpenen panela"</string>
     <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"Egin klik ezkerreko botoiarekin"</string>
-    <!-- no translation found for accessibility_autoclick_right_click (4353495816526181293) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_double_click (2103826849116176478) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_drag (1499559489796843224) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll (3499385943728726933) -->
-    <skip />
+    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"Egin klik eskuineko botoiarekin"</string>
+    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Egin klik bikoitza"</string>
+    <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Arrastatu"</string>
+    <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Egin gora eta behera"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pausatu"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Ezarri posizioan"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"Murriztuen edukiontzian ezarri da <xliff:g id="PACKAGE_NAME">%1$s</xliff:g>"</string>

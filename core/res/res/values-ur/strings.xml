@@ -353,6 +353,14 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"اپنی علامات حیات کے متعلق سنسر ڈیٹا تک رسائی حاصل کریں"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"اطلاعات"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"اطلاعات دکھائیں"</string>
+    <!-- no translation found for permgrouplab_xr_tracking (7418994009794287471) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking (6777198859446500821) -->
+    <skip />
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (1194833982988144536) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (9178027369004805829) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ونڈو مواد بازیافت کرنے کی"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"کسی ایسی ونڈو کے مواد کا معائنہ کریں جس کے ساتھ آپ تعامل کر رہے ہیں۔"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"ٹچ کے ذریعے دریافت کریں کو آن کرنے کی"</string>
@@ -648,6 +656,38 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"ایپ کو آپ کی تصویر کے مجموعے میں ترمیم کی اجازت دیتا ہے۔"</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"اپنی میڈيا کے مجموعے سے مقامات پڑھیں"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"ایپ کو آپ کی میڈيا کے مجموعے سے مقامات پڑھنے کی اجازت دیتا ہے۔"</string>
+    <!-- no translation found for permlab_eye_tracking_coarse (7989596289790269059) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_coarse (870510233930553355) -->
+    <skip />
+    <!-- no translation found for permlab_eye_tracking_fine (6914457357027049512) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_fine (5788889152304524730) -->
+    <skip />
+    <!-- no translation found for permlab_face_tracking (2272048395128283324) -->
+    <skip />
+    <!-- no translation found for permdesc_face_tracking (2622783922311211866) -->
+    <skip />
+    <!-- no translation found for permlab_hand_tracking (6478233866595566940) -->
+    <skip />
+    <!-- no translation found for permdesc_hand_tracking (8639715900104966456) -->
+    <skip />
+    <!-- no translation found for permlab_head_tracking (1309731456372087270) -->
+    <skip />
+    <!-- no translation found for permdesc_head_tracking (231597390513699188) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_coarse (6518646430502858641) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_coarse (4508880777646198656) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_fine (409126403264393251) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_fine (6223368011593524179) -->
+    <skip />
+    <!-- no translation found for permlab_xr_tracking_in_background (7117098718465619023) -->
+    <skip />
+    <!-- no translation found for permdesc_xr_tracking_in_background (939504041387836853) -->
+    <skip />
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"بایو میٹرکس استعمال کریں"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"بایو میٹرکس یا اسکرین لاک استعمال کریں"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"توثیق کریں کہ یہ آپ ہیں"</string>
