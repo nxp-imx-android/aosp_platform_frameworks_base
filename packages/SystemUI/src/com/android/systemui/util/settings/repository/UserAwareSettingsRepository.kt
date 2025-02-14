@@ -33,7 +33,8 @@ import kotlinx.coroutines.withContext
 /**
  * Repository for observing values of a [UserSettingsProxy], for the currently active user. That
  * means that when the user is switched and the new user has a different value, the flow will emit
- * the new value.
+ * the new value. For any system that tracks the desired user internally (e.g. the Quick Settings
+ * tiles system), use a [SettingsForUserRepository] instead.
  */
 // TODO: b/377244768 - Make internal when UserAwareSecureSettingsRepository can be made internal.
 abstract class UserAwareSettingsRepository(
