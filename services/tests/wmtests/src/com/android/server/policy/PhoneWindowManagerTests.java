@@ -272,6 +272,19 @@ public class PhoneWindowManagerTests {
     }
 
     @Test
+    public void powerPress_withoutDreamManagerInternal_doesNotCrash() {
+        when(mDisplayPolicy.isAwake()).thenReturn(true);
+        mDreamManagerInternal = null;
+        initPhoneWindowManager();
+
+        // Power button pressed.
+        int eventTime = 0;
+        mPhoneWindowManager.powerPress(eventTime, 1, 0);
+
+        // verify no crash
+    }
+
+    @Test
     public void powerPress_hubOrDreamOrSleep_hubAvailableLocks() {
         when(mDisplayPolicy.isAwake()).thenReturn(true);
         mContext.getTestablePermissions().setPermission(android.Manifest.permission.DEVICE_POWER,
@@ -351,6 +364,11 @@ public class PhoneWindowManagerTests {
          */
         WindowWakeUpPolicy getWindowWakeUpPolicy() {
             return mock(WindowWakeUpPolicy.class);
+        }
+
+        @Override
+        DreamManagerInternal getDreamManagerInternal() {
+            return mDreamManagerInternal;
         }
     }
 }
