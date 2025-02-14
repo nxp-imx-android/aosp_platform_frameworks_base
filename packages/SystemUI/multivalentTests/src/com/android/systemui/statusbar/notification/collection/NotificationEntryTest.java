@@ -542,7 +542,7 @@ public class NotificationEntryTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    public void getGroupRoot_adapter_groupSummary() {
+    public void isGroupRoot_adapter_groupSummary() {
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
         Notification notification = new Notification.Builder(mContext, "")
                 .setSmallIcon(R.drawable.ic_person)
@@ -562,12 +562,12 @@ public class NotificationEntryTest extends SysuiTestCase {
                 .build();
         entry.setRow(row);
 
-        assertThat(entry.getEntryAdapter().getGroupRoot()).isNull();
+        assertThat(entry.getEntryAdapter().isGroupRoot()).isFalse();
     }
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    public void getGroupRoot_adapter_groupChild() {
+    public void isGroupRoot_adapter_groupChild() {
         Notification notification = new Notification.Builder(mContext, "")
                 .setSmallIcon(R.drawable.ic_person)
                 .setGroupSummary(true)
@@ -591,7 +591,7 @@ public class NotificationEntryTest extends SysuiTestCase {
                 .setParent(groupEntry.build())
                 .build();
 
-        assertThat(entry.getEntryAdapter().getGroupRoot()).isEqualTo(parent.getEntryAdapter());
+        assertThat(entry.getEntryAdapter().isGroupRoot()).isFalse();
     }
 
     @Test
