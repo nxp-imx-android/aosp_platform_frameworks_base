@@ -365,7 +365,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         return mCurrentImeUserId;
     }
 
-   /**
+    /**
      * Figures out the target IME user ID associated with the given {@code displayId}.
      *
      * @param displayId the display ID to be queried about
