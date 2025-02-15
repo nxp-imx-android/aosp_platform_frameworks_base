@@ -7080,7 +7080,8 @@ public class TelephonyManager {
      */
     @Deprecated
     public boolean isVoiceCapable() {
-        return hasCapability(PackageManager.FEATURE_TELEPHONY_CALLING,
+        if (mContext == null) return true;
+        return mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_voice_capable);
     }
 
@@ -7104,7 +7105,8 @@ public class TelephonyManager {
      * @see SubscriptionInfo#getServiceCapabilities()
      */
     public boolean isDeviceVoiceCapable() {
-        return isVoiceCapable();
+        return hasCapability(PackageManager.FEATURE_TELEPHONY_CALLING,
+                com.android.internal.R.bool.config_voice_capable);
     }
 
     /**
