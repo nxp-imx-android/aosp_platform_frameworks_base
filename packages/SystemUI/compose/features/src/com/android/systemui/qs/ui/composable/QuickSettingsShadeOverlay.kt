@@ -38,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -66,7 +65,6 @@ import com.android.systemui.scene.ui.composable.Overlay
 import com.android.systemui.shade.ui.composable.OverlayShade
 import com.android.systemui.shade.ui.composable.OverlayShadeHeader
 import com.android.systemui.shade.ui.composable.QuickSettingsOverlayHeader
-import com.android.systemui.shade.ui.composable.SingleShadeMeasurePolicy
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
@@ -108,6 +106,11 @@ constructor(
             rememberViewModel("QuickSettingsShadeOverlayContainer") {
                 quickSettingsContainerViewModelFactory.create(supportsBrightnessMirroring = true)
             }
+        val hunPlaceholderViewModel =
+            rememberViewModel("QuickSettingsShadeOverlayPlaceholder") {
+                notificationsPlaceholderViewModelFactory.create()
+            }
+
         val panelCornerRadius =
             with(LocalDensity.current) { OverlayShade.Dimensions.PanelCornerRadius.toPx().toInt() }
         val showBrightnessMirror =
@@ -119,13 +122,6 @@ constructor(
         DisposableEffect(Unit) { onDispose { contentViewModel.onPanelShapeChanged(null) } }
 
         Box(modifier = modifier.graphicsLayer { alpha = contentAlphaFromBrightnessMirror }) {
-            SnoozeableHeadsUpNotificationSpace(
-                stackScrollView = notificationStackScrollView.get(),
-                viewModel =
-                    rememberViewModel("QuickSettingsShadeOverlayPlaceholder") {
-                        notificationsPlaceholderViewModelFactory.create()
-                    },
-            )
             OverlayShade(
                 panelElement = QuickSettingsShade.Elements.Panel,
                 alignmentOnWideScreens = Alignment.TopEnd,
@@ -133,50 +129,34 @@ constructor(
                 header = {
                     OverlayShadeHeader(
                         viewModel = quickSettingsContainerViewModel.shadeHeaderViewModel,
-                        modifier =
-                            Modifier.element(QuickSettingsShade.Elements.StatusBar)
-                                .layoutId(SingleShadeMeasurePolicy.LayoutId.ShadeHeader),
+                        modifier = Modifier.element(QuickSettingsShade.Elements.StatusBar),
                     )
                 },
             ) {
-                ShadeBody(
+                QuickSettingsContainer(
                     viewModel = quickSettingsContainerViewModel,
                     modifier =
                         Modifier.onPlaced { coordinates ->
-                            val boundsInWindow = coordinates.boundsInWindow()
-                            val shadeScrimBounds =
-                                ShadeScrimBounds(
-                                    left = boundsInWindow.left,
-                                    top = boundsInWindow.top,
-                                    right = boundsInWindow.right,
-                                    bottom = boundsInWindow.bottom,
-                                )
                             val shape =
                                 ShadeScrimShape(
-                                    bounds = shadeScrimBounds,
+                                    bounds = ShadeScrimBounds(coordinates.boundsInWindow()),
                                     topRadius = 0,
                                     bottomRadius = panelCornerRadius,
                                 )
                             contentViewModel.onPanelShapeChanged(shape)
                         },
-                    header = {
-                        if (quickSettingsContainerViewModel.showHeader) {
-                            QuickSettingsOverlayHeader(
-                                viewModel = quickSettingsContainerViewModel.shadeHeaderViewModel,
-                                modifier =
-                                    Modifier.element(QuickSettingsShade.Elements.Header)
-                                        .padding(top = QuickSettingsShade.Dimensions.Padding),
-                            )
-                        }
-                    },
                 )
             }
+            SnoozeableHeadsUpNotificationSpace(
+                stackScrollView = notificationStackScrollView.get(),
+                viewModel = hunPlaceholderViewModel,
+            )
         }
     }
 }
 
-// The possible states of the `ShadeBody`.
-sealed interface ShadeBodyState {
+/** The possible states of the `ShadeBody`. */
+private sealed interface ShadeBodyState {
     data object Editing : ShadeBodyState
 
     data object TileDetails : ShadeBodyState
@@ -185,10 +165,9 @@ sealed interface ShadeBodyState {
 }
 
 @Composable
-fun ContentScope.ShadeBody(
+fun ContentScope.QuickSettingsContainer(
     viewModel: QuickSettingsContainerViewModel,
     modifier: Modifier = Modifier,
-    header: @Composable () -> Unit,
 ) {
     val isEditing by viewModel.editModeViewModel.isEditing.collectAsStateWithLifecycle()
     val tileDetails =
@@ -216,11 +195,10 @@ fun ContentScope.ShadeBody(
                 TileDetails(modifier = modifier, viewModel.detailsViewModel)
             }
 
-            else -> {
+            ShadeBodyState.Default -> {
                 QuickSettingsLayout(
                     viewModel = viewModel,
                     modifier = modifier.sysuiResTag("quick_settings_panel"),
-                    header = header,
                 )
             }
         }
@@ -232,7 +210,6 @@ fun ContentScope.ShadeBody(
 fun ContentScope.QuickSettingsLayout(
     viewModel: QuickSettingsContainerViewModel,
     modifier: Modifier = Modifier,
-    header: @Composable () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(QuickSettingsShade.Dimensions.Padding),
@@ -244,7 +221,14 @@ fun ContentScope.QuickSettingsLayout(
                 bottom = QuickSettingsShade.Dimensions.Padding,
             ),
     ) {
-        header()
+        if (viewModel.showHeader) {
+            QuickSettingsOverlayHeader(
+                viewModel = viewModel.shadeHeaderViewModel,
+                modifier =
+                    Modifier.element(QuickSettingsShade.Elements.Header)
+                        .padding(top = QuickSettingsShade.Dimensions.Padding),
+            )
+        }
         Toolbar(
             modifier =
                 Modifier.fillMaxWidth().requiredHeight(QuickSettingsShade.Dimensions.ToolbarHeight),
