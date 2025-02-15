@@ -778,3 +778,10 @@ flag {
     description: "Show recent apps in the taskbar overflow."
     bug: "368119679"
 }
+
+flag {
+    name: "enable_projected_display_desktop_mode"
+    namespace: "lse_desktop_experience"
+    description: "Enable Desktop Mode on Projected Mode devices but constrained to the external display."
+    bug: "384568161"
+}
