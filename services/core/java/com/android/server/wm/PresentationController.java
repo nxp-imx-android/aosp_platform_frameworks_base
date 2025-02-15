@@ -56,11 +56,6 @@ class PresentationController {
         ProtoLog.v(WmProtoLogGroups.WM_DEBUG_PRESENTATION, "Presentation added to display %d: %s",
                 win.getDisplayId(), win);
         mPresentingDisplayIds.add(win.getDisplayId());
-        if (enablePresentationForConnectedDisplays()) {
-            // A presentation hides all activities behind on the same display.
-            win.mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
-                    /*notifyClients=*/ true);
-        }
         win.mWmService.mDisplayManagerInternal.onPresentation(displayId, /*isShown=*/ true);
     }
 
@@ -75,11 +70,6 @@ class PresentationController {
         final int displayIdIndex = mPresentingDisplayIds.indexOf(displayId);
         if (displayIdIndex != -1) {
             mPresentingDisplayIds.remove(displayIdIndex);
-        }
-        if (enablePresentationForConnectedDisplays()) {
-            // A presentation hides all activities behind on the same display.
-            win.mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
-                    /*notifyClients=*/ true);
         }
         win.mWmService.mDisplayManagerInternal.onPresentation(displayId, /*isShown=*/ false);
     }
