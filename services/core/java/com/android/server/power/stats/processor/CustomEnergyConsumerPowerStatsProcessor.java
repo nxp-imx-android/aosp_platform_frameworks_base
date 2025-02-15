@@ -72,9 +72,12 @@ class CustomEnergyConsumerPowerStatsProcessor extends PowerStatsProcessor {
                     int uid = uids.get(k);
                     if (stats.getUidStats(mTmpUidStatsArray, uid,
                             proportionalEstimate.stateValues)) {
-                        sLayout.setUidPowerEstimate(mTmpUidStatsArray,
-                                uCtoMah(sLayout.getUidConsumedEnergy(mTmpUidStatsArray, 0)));
-                        stats.setUidStats(uid, proportionalEstimate.stateValues, mTmpUidStatsArray);
+                        double power = uCtoMah(sLayout.getUidConsumedEnergy(mTmpUidStatsArray, 0));
+                        if (power != 0) {
+                            sLayout.setUidPowerEstimate(mTmpUidStatsArray, power);
+                            stats.setUidStats(uid, proportionalEstimate.stateValues,
+                                    mTmpUidStatsArray);
+                        }
                     }
                 }
             }

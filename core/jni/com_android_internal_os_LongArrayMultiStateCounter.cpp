@@ -97,7 +97,13 @@ static void native_updateValues(JNIEnv *env, jclass, jlong nativePtr, jlongArray
 static void native_incrementValues(JNIEnv *env, jclass, jlong nativePtr, jlongArray values,
                                    jlong timestamp) {
     auto *counter = reinterpret_cast<LongArrayMultiStateCounter *>(nativePtr);
-    counter->incrementValue(JavaUint64Array(env, values), timestamp);
+    if (values != nullptr) {
+        counter->incrementValue(JavaUint64Array(env, values), timestamp);
+    } else {
+        // Pass an empty Uint64Array, which is equivalent to an array of zeros.
+        // This is done to ensure that the timestamp is still updated in the counter.
+        counter->incrementValue(Uint64Array(), timestamp);
+    }
 }
 
 static void native_addCounts(JNIEnv *env, jclass, jlong nativePtr, jlongArray values) {

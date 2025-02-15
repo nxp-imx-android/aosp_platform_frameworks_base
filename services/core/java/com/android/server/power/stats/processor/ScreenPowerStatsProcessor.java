@@ -230,9 +230,11 @@ class ScreenPowerStatsProcessor extends PowerStatsProcessor {
                 int uid = uids.get(j);
                 if (stats.getUidStats(mTmpUidStatsArray, uid, uidStateValues)) {
                     long duration = mStatsLayout.getUidTopActivityDuration(mTmpUidStatsArray);
-                    double power = intermediates.power * duration / totalTopActivityDuration;
-                    mStatsLayout.setUidPowerEstimate(mTmpUidStatsArray, power);
-                    stats.setUidStats(uid, uidStateValues, mTmpUidStatsArray);
+                    if (duration != 0) {
+                        double power = intermediates.power * duration / totalTopActivityDuration;
+                        mStatsLayout.setUidPowerEstimate(mTmpUidStatsArray, power);
+                        stats.setUidStats(uid, uidStateValues, mTmpUidStatsArray);
+                    }
                 }
             }
         }

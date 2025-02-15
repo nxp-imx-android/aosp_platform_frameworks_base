@@ -72,7 +72,6 @@ class PowerComponentAggregatedPowerStats {
     private MultiStateStats mDeviceStats;
     private final SparseArray<MultiStateStats> mStateStats = new SparseArray<>();
     private final SparseArray<UidStats> mUidStats = new SparseArray<>();
-    private long[] mZeroArray;
 
     private static class UidStats {
         public int[] states;
@@ -251,11 +250,8 @@ class PowerComponentAggregatedPowerStats {
         for (int i = mUidStats.size() - 1; i >= 0; i--) {
             PowerComponentAggregatedPowerStats.UidStats uidStats = mUidStats.valueAt(i);
             if (!uidStats.updated && uidStats.stats != null) {
-                if (mZeroArray == null
-                        || mZeroArray.length != mPowerStatsDescriptor.uidStatsArrayLength) {
-                    mZeroArray = new long[mPowerStatsDescriptor.uidStatsArrayLength];
-                }
-                uidStats.stats.increment(mZeroArray, timestampMs);
+                // Null stands for an array of zeros
+                uidStats.stats.increment(null, timestampMs);
             }
             uidStats.updated = false;
         }

@@ -545,8 +545,10 @@ class CpuPowerStatsProcessor extends PowerStatsProcessor {
                 power = Math.max(0, power - wakelockPowerEstimate);
             }
 
-            mStatsLayout.setUidPowerEstimate(mTmpUidStatsArray, power);
-            stats.setUidStats(uid, proportionalEstimate.stateValues, mTmpUidStatsArray);
+            if (power != 0) {
+                mStatsLayout.setUidPowerEstimate(mTmpUidStatsArray, power);
+                stats.setUidStats(uid, proportionalEstimate.stateValues, mTmpUidStatsArray);
+            }
         }
     }
 }

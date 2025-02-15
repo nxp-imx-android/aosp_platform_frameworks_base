@@ -375,8 +375,10 @@ class WifiPowerStatsProcessor extends PowerStatsProcessor {
                             / intermediates.batchedScanDuration;
                 }
             }
-            mStatsLayout.setUidPowerEstimate(mTmpUidStatsArray, power);
-            stats.setUidStats(uid, proportionalEstimate.stateValues, mTmpUidStatsArray);
+            if (power != 0) {
+                mStatsLayout.setUidPowerEstimate(mTmpUidStatsArray, power);
+                stats.setUidStats(uid, proportionalEstimate.stateValues, mTmpUidStatsArray);
+            }
 
             if (DEBUG) {
                 Slog.d(TAG, "UID: " + uid
