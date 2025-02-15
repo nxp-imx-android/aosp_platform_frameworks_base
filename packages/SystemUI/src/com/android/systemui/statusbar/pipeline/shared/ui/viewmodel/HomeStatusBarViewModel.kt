@@ -149,6 +149,9 @@ interface HomeStatusBarViewModel : Activatable {
      */
     val isHomeStatusBarAllowedByScene: StateFlow<Boolean>
 
+    /** True if the home status bar is showing, and there is no HUN happening */
+    val canShowOngoingActivityChips: Flow<Boolean>
+
     /** True if the operator name view is not hidden due to HUN or other visibility state */
     val shouldShowOperatorNameView: Flow<Boolean>
     val isClockVisible: Flow<VisibilityModel>
@@ -411,6 +414,15 @@ constructor(
                 initialValue = false,
             )
             .flowOn(bgDispatcher)
+
+    override val canShowOngoingActivityChips: Flow<Boolean> =
+        combine(
+            isHomeStatusBarAllowed,
+            keyguardInteractor.isSecureCameraActive,
+            headsUpNotificationInteractor.statusBarHeadsUpStatus,
+        ) { isHomeStatusBarAllowed, isSecureCameraActive, headsUpState ->
+            isHomeStatusBarAllowed && !isSecureCameraActive && !headsUpState.isPinned
+        }
 
     override val isClockVisible: Flow<VisibilityModel> =
         combine(

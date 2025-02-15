@@ -31,6 +31,8 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.ui.binder.OngoingActivityChipBinder
+import com.android.systemui.statusbar.chips.ui.binder.OngoingActivityChipViewBinding
+import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModelLegacy
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.core.StatusBarRootModernization
@@ -149,6 +151,7 @@ constructor(
                 if (!StatusBarNotifChips.isEnabled && !StatusBarChipsModernization.isEnabled) {
                     val primaryChipViewBinding =
                         OngoingActivityChipBinder.createBinding(primaryChipView)
+
                     launch {
                         viewModel.primaryOngoingActivityChip.collect { primaryChipModel ->
                             OngoingActivityChipBinder.bind(
@@ -156,18 +159,14 @@ constructor(
                                 primaryChipViewBinding,
                                 iconViewStore,
                             )
-                            if (StatusBarRootModernization.isEnabled) {
-                                when (primaryChipModel) {
-                                    is OngoingActivityChipModel.Active ->
-                                        primaryChipViewBinding.rootView.show(
-                                            shouldAnimateChange = true
-                                        )
 
-                                    is OngoingActivityChipModel.Inactive ->
-                                        primaryChipViewBinding.rootView.hide(
-                                            state = View.GONE,
-                                            shouldAnimateChange = primaryChipModel.shouldAnimate,
-                                        )
+                            if (StatusBarRootModernization.isEnabled) {
+                                launch {
+                                    bindLegacyPrimaryOngoingActivityChipWithVisibility(
+                                        viewModel,
+                                        primaryChipModel,
+                                        primaryChipViewBinding,
+                                    )
                                 }
                             } else {
                                 when (primaryChipModel) {
@@ -213,12 +212,14 @@ constructor(
                             )
 
                             if (StatusBarRootModernization.isEnabled) {
-                                primaryChipViewBinding.rootView.adjustVisibility(
-                                    chips.primary.toVisibilityModel()
-                                )
-                                secondaryChipViewBinding.rootView.adjustVisibility(
-                                    chips.secondary.toVisibilityModel()
-                                )
+                                launch {
+                                    bindOngoingActivityChipsWithVisibility(
+                                        viewModel,
+                                        chips,
+                                        primaryChipViewBinding,
+                                        secondaryChipViewBinding,
+                                    )
+                                }
                             } else {
                                 listener?.onOngoingActivityStatusChanged(
                                     hasPrimaryOngoingActivity =
@@ -312,6 +313,52 @@ constructor(
         }
     }
 
+    /** Bind the (legacy) single primary ongoing activity chip with the status bar visibility */
+    private suspend fun bindLegacyPrimaryOngoingActivityChipWithVisibility(
+        viewModel: HomeStatusBarViewModel,
+        primaryChipModel: OngoingActivityChipModel,
+        primaryChipViewBinding: OngoingActivityChipViewBinding,
+    ) {
+        viewModel.canShowOngoingActivityChips.collectLatest { visible ->
+            if (!visible) {
+                primaryChipViewBinding.rootView.hide(shouldAnimateChange = false)
+            } else {
+                when (primaryChipModel) {
+                    is OngoingActivityChipModel.Active -> {
+                        primaryChipViewBinding.rootView.show(shouldAnimateChange = true)
+                    }
+
+                    is OngoingActivityChipModel.Inactive -> {
+                        primaryChipViewBinding.rootView.hide(
+                            state = View.GONE,
+                            shouldAnimateChange = primaryChipModel.shouldAnimate,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    /** Bind the primary/secondary chips along with the home status bar's visibility */
+    private suspend fun bindOngoingActivityChipsWithVisibility(
+        viewModel: HomeStatusBarViewModel,
+        chips: MultipleOngoingActivityChipsModelLegacy,
+        primaryChipViewBinding: OngoingActivityChipViewBinding,
+        secondaryChipViewBinding: OngoingActivityChipViewBinding,
+    ) {
+        viewModel.canShowOngoingActivityChips.collectLatest { canShow ->
+            if (!canShow) {
+                primaryChipViewBinding.rootView.hide(shouldAnimateChange = false)
+                secondaryChipViewBinding.rootView.hide(shouldAnimateChange = false)
+            } else {
+                primaryChipViewBinding.rootView.adjustVisibility(chips.primary.toVisibilityModel())
+                secondaryChipViewBinding.rootView.adjustVisibility(
+                    chips.secondary.toVisibilityModel()
+                )
+            }
+        }
+    }
+
     private fun SystemEventAnimationState.isAnimatingChip() =
         when (this) {
             AnimatingIn,
@@ -374,43 +421,42 @@ constructor(
         if (visibility == View.INVISIBLE || visibility == View.GONE) {
             return
         }
+        alpha = 0f
         visibility = state
     }
 
     // See CollapsedStatusBarFragment#hide.
     private fun View.hide(state: Int = View.INVISIBLE, shouldAnimateChange: Boolean) {
+        animate().cancel()
         if (visibility == View.INVISIBLE || visibility == View.GONE) {
             return
         }
-        val v = this
-        v.animate().cancel()
         if (!shouldAnimateChange) {
-            v.alpha = 0f
-            v.visibility = state
+            alpha = 0f
+            visibility = state
             return
         }
 
-        v.animate()
+        animate()
             .alpha(0f)
             .setDuration(CollapsedStatusBarFragment.FADE_OUT_DURATION.toLong())
             .setStartDelay(0)
             .setInterpolator(Interpolators.ALPHA_OUT)
-            .withEndAction { v.visibility = state }
+            .withEndAction { visibility = state }
     }
 
     // See CollapsedStatusBarFragment#show.
     private fun View.show(shouldAnimateChange: Boolean) {
-        if (visibility == View.VISIBLE) {
+        animate().cancel()
+        if (visibility == View.VISIBLE && alpha >= 1f) {
             return
         }
-        val v = this
-        v.animate().cancel()
-        v.visibility = View.VISIBLE
+        visibility = View.VISIBLE
         if (!shouldAnimateChange) {
-            v.alpha = 1f
+            alpha = 1f
             return
         }
-        v.animate()
+        animate()
             .alpha(1f)
             .setDuration(CollapsedStatusBarFragment.FADE_IN_DURATION.toLong())
             .setInterpolator(Interpolators.ALPHA_IN)
