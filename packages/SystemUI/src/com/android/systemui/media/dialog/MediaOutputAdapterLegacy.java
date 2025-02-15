@@ -185,6 +185,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             mSubTitleText.setTextColor(mController.getColorItemContent());
             mVolumeValueText.setTextColor(mController.getColorItemContent());
             mIconAreaLayout.setBackground(null);
+            updateIconAreaClickListener(null);
             mSeekBar.setProgressTintList(
                     ColorStateList.valueOf(mController.getColorSeekbarProgress()));
             enableFocusPropertyForView(mContainerLayout);
@@ -392,6 +393,11 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
 
                 @Override
                 public void onMute() {
+                    mController.logInteractionMuteDevice(device);
+                }
+
+                @Override
+                public void onUnmute() {
                     mController.logInteractionUnmuteDevice(device);
                 }
             };
@@ -430,6 +436,9 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
 
                 @Override
                 public void onMute() {}
+
+                @Override
+                public void onUnmute() {}
             };
 
             if (!mController.isVolumeControlEnabledForSession()) {
@@ -622,11 +631,13 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
 
         private void updateFullItemClickListener(@Nullable View.OnClickListener listener) {
             mContainerLayout.setOnClickListener(listener);
-            updateIconAreaClickListener(listener);
         }
 
         void updateIconAreaClickListener(@Nullable View.OnClickListener listener) {
             mIconAreaLayout.setOnClickListener(listener);
+            if (listener == null) {
+                mIconAreaLayout.setClickable(false); // clickable is not removed automatically.
+            }
         }
 
         private void initAnimator() {
@@ -677,6 +688,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             mSeekBar.setOnTouchListener((v, event) -> false);
             updateIconAreaClickListener((v) -> {
                 if (volumeControl.getVolume() == 0) {
+                    volumeControl.onUnmute();
                     mSeekBar.setVolume(UNMUTE_DEFAULT_VOLUME);
                     volumeControl.setVolume(UNMUTE_DEFAULT_VOLUME);
                     updateUnmutedVolumeIcon(null);
@@ -713,6 +725,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             int getVolume();
             void setVolume(int volume);
             void onMute();
+            void onUnmute();
         }
 
         private abstract class MediaSeekBarChangedListener

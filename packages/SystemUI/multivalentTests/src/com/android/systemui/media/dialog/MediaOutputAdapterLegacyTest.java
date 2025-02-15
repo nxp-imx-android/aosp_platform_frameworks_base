@@ -369,6 +369,37 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
     }
 
     @Test
+    public void onBindViewHolder_initSeekbarWithUnmutedVolume_displaysMuteIcon() {
+        when(mMediaSwitchingController.isVolumeControlEnabled(mMediaDevice1)).thenReturn(true);
+        when(mMediaDevice1.getMaxVolume()).thenReturn(TEST_MAX_VOLUME);
+        when(mMediaDevice1.getCurrentVolume()).thenReturn(TEST_CURRENT_VOLUME);
+        mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
+
+        assertThat(mViewHolder.mSeekBar.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(mViewHolder.mIconAreaLayout.getVisibility()).isEqualTo(View.VISIBLE);
+
+        mViewHolder.mIconAreaLayout.performClick();
+        verify(mMediaSwitchingController).adjustVolume(mMediaDevice1, 0);
+        verify(mMediaSwitchingController).logInteractionMuteDevice(mMediaDevice1);
+    }
+
+    @Test
+    public void onBindViewHolder_initSeekbarWithMutedVolume_displaysUnmuteIcon() {
+        when(mMediaSwitchingController.isVolumeControlEnabled(mMediaDevice1)).thenReturn(true);
+        when(mMediaDevice1.getMaxVolume()).thenReturn(TEST_MAX_VOLUME);
+        when(mMediaDevice1.getCurrentVolume()).thenReturn(0); // muted.
+        mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
+
+        assertThat(mViewHolder.mSeekBar.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(mViewHolder.mIconAreaLayout.getVisibility()).isEqualTo(View.VISIBLE);
+
+        mViewHolder.mIconAreaLayout.performClick();
+        // Default unmute volume is 2.
+        verify(mMediaSwitchingController).adjustVolume(mMediaDevice1, 2);
+        verify(mMediaSwitchingController).logInteractionUnmuteDevice(mMediaDevice1);
+    }
+
+    @Test
     public void onBindViewHolder_dragSeekbar_setsVolume() {
         mOnSeekBarChangeListenerCaptor = ArgumentCaptor.forClass(
                 SeekBar.OnSeekBarChangeListener.class);
