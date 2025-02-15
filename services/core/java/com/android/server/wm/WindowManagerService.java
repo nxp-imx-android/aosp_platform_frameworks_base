@@ -1820,125 +1820,138 @@ public class WindowManagerService extends IWindowManager.Stub
             final boolean hideSystemAlertWindows = shouldHideNonSystemOverlayWindow(win);
             win.setForceHideNonSystemOverlayWindowIfNeeded(hideSystemAlertWindows);
 
-            boolean imMayMove = true;
-
-            win.mToken.addWindow(win);
-            displayPolicy.addWindowLw(win, attrs);
-            displayPolicy.setDropInputModePolicy(win, win.mAttrs);
-            if (type == TYPE_APPLICATION_STARTING && activity != null) {
-                activity.attachStartingWindow(win);
-                ProtoLog.v(WM_DEBUG_STARTING_WINDOW, "addWindow: %s startingWindow=%s",
-                        activity, win);
-            } else if (type == TYPE_INPUT_METHOD
-                    // IME window is always touchable.
-                    // Ignore non-touchable windows e.g. Stylus InkWindow.java.
-                    && (win.getAttrs().flags & FLAG_NOT_TOUCHABLE) == 0) {
-                displayContent.setInputMethodWindowLocked(win);
-                imMayMove = false;
-            } else if (type == TYPE_INPUT_METHOD_DIALOG) {
-                displayContent.computeImeTarget(true /* updateImeTarget */);
-                imMayMove = false;
-            } else {
-                if (type == TYPE_WALLPAPER) {
-                    displayContent.mWallpaperController.clearLastWallpaperTimeoutTime();
-                    displayContent.pendingLayoutChanges |= FINISH_LAYOUT_REDO_WALLPAPER;
-                } else if (win.hasWallpaper()) {
-                    displayContent.pendingLayoutChanges |= FINISH_LAYOUT_REDO_WALLPAPER;
-                } else if (displayContent.mWallpaperController.isBelowWallpaperTarget(win)) {
-                    // If there is currently a wallpaper being shown, and
-                    // the base layer of the new window is below the current
-                    // layer of the target window, then adjust the wallpaper.
-                    // This is to avoid a new window being placed between the
-                    // wallpaper and its target.
-                    displayContent.pendingLayoutChanges |= FINISH_LAYOUT_REDO_WALLPAPER;
-                }
-            }
-
-            final WindowStateAnimator winAnimator = win.mWinAnimator;
-            winAnimator.mEnterAnimationPending = true;
-            winAnimator.mEnteringAnimation = true;
-
-            if (displayPolicy.areSystemBarsForcedConsumedLw()) {
-                res |= WindowManagerGlobal.ADD_FLAG_ALWAYS_CONSUME_SYSTEM_BARS;
-            }
-            if (displayContent.isInTouchMode()) {
-                res |= WindowManagerGlobal.ADD_FLAG_IN_TOUCH_MODE;
-            }
-            if (win.mActivityRecord == null || win.mActivityRecord.isClientVisible()) {
-                res |= WindowManagerGlobal.ADD_FLAG_APP_VISIBLE;
-            }
-
-            displayContent.getInputMonitor().setUpdateInputWindowsNeededLw();
-
-            boolean focusChanged = false;
-            if (win.canReceiveKeys()) {
-                focusChanged = updateFocusedWindowLocked(UPDATE_FOCUS_WILL_ASSIGN_LAYERS,
-                        false /*updateInputWindows*/);
-                if (focusChanged) {
-                    imMayMove = false;
-                }
-            }
-
-            if (imMayMove) {
-                displayContent.computeImeTarget(true /* updateImeTarget */);
-                if (win.isImeOverlayLayeringTarget()) {
-                    dispatchImeTargetOverlayVisibilityChanged(client.asBinder(), win.mAttrs.type,
-                            win.isVisibleRequestedOrAdding(), false /* removed */,
-                            displayContent.getDisplayId());
-                }
-            }
-
-            // Don't do layout here, the window must call
-            // relayout to be displayed, so we'll do it there.
-            if (win.mActivityRecord != null && win.mActivityRecord.isEmbedded()) {
-                // Assign child layers from the parent Task if the Activity is embedded.
-                win.getTask().assignChildLayers();
-            } else {
-                win.getParent().assignChildLayers();
-            }
-
-            if (focusChanged) {
-                displayContent.getInputMonitor().setInputFocusLw(displayContent.mCurrentFocus,
-                        false /*updateInputWindows*/);
-            }
-            displayContent.getInputMonitor().updateInputWindowsLw(false /*force*/);
-
-            ProtoLog.v(WM_DEBUG_ADD_REMOVE, "addWindow: New client %s"
-                    + ": window=%s Callers=%s", client.asBinder(), win, Debug.getCallers(5));
-
-            boolean needToSendNewConfiguration =
-                    win.isVisibleRequestedOrAdding() && displayContent.updateOrientation();
-            if (win.providesDisplayDecorInsets()) {
-                needToSendNewConfiguration |= displayPolicy.updateDecorInsetsInfo();
-            }
-            if (needToSendNewConfiguration) {
-                displayContent.sendNewConfiguration();
-            }
-
-            // This window doesn't have a frame yet. Don't let this window cause the insets change.
-            displayContent.getInsetsStateController().updateAboveInsetsState(
-                    false /* notifyInsetsChanged */);
-
-            win.fillInsetsState(outInsetsState, true /* copySources */);
-            getInsetsSourceControls(win, outActiveControls);
-
-            if (win.mLayoutAttached) {
-                outAttachedFrame.set(win.getParentWindow().getFrame());
-                if (win.mInvGlobalScale != 1f) {
-                    outAttachedFrame.scale(win.mInvGlobalScale);
-                }
-            } else {
-                // Make this invalid which indicates a null attached frame.
-                outAttachedFrame.set(0, 0, -1, -1);
-            }
-            outSizeCompatScale[0] = win.getCompatScaleForClient();
-
-            if (res >= ADD_OKAY && win.isPresentation()) {
-                mPresentationController.onPresentationAdded(win);
-            }
+            res |= addWindowInner(win, displayPolicy, activity, displayContent, outInsetsState,
+                    outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs);
         }
 
         Binder.restoreCallingIdentity(origId);
+
+        return res;
+    }
+
+    private int addWindowInner(@NonNull WindowState win, @NonNull DisplayPolicy displayPolicy,
+            @NonNull ActivityRecord activity, @NonNull DisplayContent displayContent,
+            @NonNull InsetsState outInsetsState, @NonNull Rect outAttachedFrame,
+            @NonNull InsetsSourceControl.Array outActiveControls, @NonNull IWindow client,
+            @NonNull float[] outSizeCompatScale, @NonNull LayoutParams attrs) {
+        int res = 0;
+        final int type = attrs.type;
+        boolean imMayMove = true;
+
+        win.mToken.addWindow(win);
+        displayPolicy.addWindowLw(win, attrs);
+        displayPolicy.setDropInputModePolicy(win, win.mAttrs);
+        if (type == TYPE_APPLICATION_STARTING && activity != null) {
+            activity.attachStartingWindow(win);
+            ProtoLog.v(WM_DEBUG_STARTING_WINDOW, "addWindow: %s startingWindow=%s",
+                    activity, win);
+        } else if (type == TYPE_INPUT_METHOD
+                // IME window is always touchable.
+                // Ignore non-touchable windows e.g. Stylus InkWindow.java.
+                && (win.getAttrs().flags & FLAG_NOT_TOUCHABLE) == 0) {
+            displayContent.setInputMethodWindowLocked(win);
+            imMayMove = false;
+        } else if (type == TYPE_INPUT_METHOD_DIALOG) {
+            displayContent.computeImeTarget(true /* updateImeTarget */);
+            imMayMove = false;
+        } else {
+            if (type == TYPE_WALLPAPER) {
+                displayContent.mWallpaperController.clearLastWallpaperTimeoutTime();
+                displayContent.pendingLayoutChanges |= FINISH_LAYOUT_REDO_WALLPAPER;
+            } else if (win.hasWallpaper()) {
+                displayContent.pendingLayoutChanges |= FINISH_LAYOUT_REDO_WALLPAPER;
+            } else if (displayContent.mWallpaperController.isBelowWallpaperTarget(win)) {
+                // If there is currently a wallpaper being shown, and
+                // the base layer of the new window is below the current
+                // layer of the target window, then adjust the wallpaper.
+                // This is to avoid a new window being placed between the
+                // wallpaper and its target.
+                displayContent.pendingLayoutChanges |= FINISH_LAYOUT_REDO_WALLPAPER;
+            }
+        }
+
+        final WindowStateAnimator winAnimator = win.mWinAnimator;
+        winAnimator.mEnterAnimationPending = true;
+        winAnimator.mEnteringAnimation = true;
+
+        if (displayPolicy.areSystemBarsForcedConsumedLw()) {
+            res |= WindowManagerGlobal.ADD_FLAG_ALWAYS_CONSUME_SYSTEM_BARS;
+        }
+        if (displayContent.isInTouchMode()) {
+            res |= WindowManagerGlobal.ADD_FLAG_IN_TOUCH_MODE;
+        }
+        if (win.mActivityRecord == null || win.mActivityRecord.isClientVisible()) {
+            res |= WindowManagerGlobal.ADD_FLAG_APP_VISIBLE;
+        }
+
+        displayContent.getInputMonitor().setUpdateInputWindowsNeededLw();
+
+        boolean focusChanged = false;
+        if (win.canReceiveKeys()) {
+            focusChanged = updateFocusedWindowLocked(UPDATE_FOCUS_WILL_ASSIGN_LAYERS,
+                    false /*updateInputWindows*/);
+            if (focusChanged) {
+                imMayMove = false;
+            }
+        }
+
+        if (imMayMove) {
+            displayContent.computeImeTarget(true /* updateImeTarget */);
+            if (win.isImeOverlayLayeringTarget()) {
+                dispatchImeTargetOverlayVisibilityChanged(client.asBinder(), win.mAttrs.type,
+                        win.isVisibleRequestedOrAdding(), false /* removed */,
+                        displayContent.getDisplayId());
+            }
+        }
+
+        // Don't do layout here, the window must call
+        // relayout to be displayed, so we'll do it there.
+        if (win.mActivityRecord != null && win.mActivityRecord.isEmbedded()) {
+            // Assign child layers from the parent Task if the Activity is embedded.
+            win.getTask().assignChildLayers();
+        } else {
+            win.getParent().assignChildLayers();
+        }
+
+        if (focusChanged) {
+            displayContent.getInputMonitor().setInputFocusLw(displayContent.mCurrentFocus,
+                    false /*updateInputWindows*/);
+        }
+        displayContent.getInputMonitor().updateInputWindowsLw(false /*force*/);
+
+        ProtoLog.v(WM_DEBUG_ADD_REMOVE, "addWindow: New client %s"
+                + ": window=%s Callers=%s", client.asBinder(), win, Debug.getCallers(5));
+
+        boolean needToSendNewConfiguration =
+                win.isVisibleRequestedOrAdding() && displayContent.updateOrientation();
+        if (win.providesDisplayDecorInsets()) {
+            needToSendNewConfiguration |= displayPolicy.updateDecorInsetsInfo();
+        }
+        if (needToSendNewConfiguration) {
+            displayContent.sendNewConfiguration();
+        }
+
+        // This window doesn't have a frame yet. Don't let this window cause the insets change.
+        displayContent.getInsetsStateController().updateAboveInsetsState(
+                false /* notifyInsetsChanged */);
+
+        win.fillInsetsState(outInsetsState, true /* copySources */);
+        getInsetsSourceControls(win, outActiveControls);
+
+        if (win.mLayoutAttached) {
+            outAttachedFrame.set(win.getParentWindow().getFrame());
+            if (win.mInvGlobalScale != 1f) {
+                outAttachedFrame.scale(win.mInvGlobalScale);
+            }
+        } else {
+            // Make this invalid which indicates a null attached frame.
+            outAttachedFrame.set(0, 0, -1, -1);
+        }
+        outSizeCompatScale[0] = win.getCompatScaleForClient();
+
+        if (res >= ADD_OKAY && win.isPresentation()) {
+            mPresentationController.onPresentationAdded(win);
+        }
 
         return res;
     }
