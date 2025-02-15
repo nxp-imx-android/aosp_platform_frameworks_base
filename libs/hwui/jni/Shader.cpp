@@ -356,6 +356,10 @@ static void RuntimeShader_updateChild(JNIEnv* env, jobject, jlong shaderBuilder,
     UpdateChild(env, builder, name.c_str(), childEffect);
 }
 
+static void RuntimeShader_no(JNIEnv* env) {
+    jniThrowRuntimeException(env, "Not supported");
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 static const JNINativeMethod gShaderMethods[] = {
@@ -385,6 +389,7 @@ static const JNINativeMethod gComposeShaderMethods[] = {
 
 static const JNINativeMethod gRuntimeShaderMethods[] = {
         {"nativeGetFinalizer", "()J", (void*)RuntimeShader_getNativeFinalizer},
+        {"nativeCreateShader", "(JJ)J", (void*)RuntimeShader_no},
         {"nativeCreateShader", "(JJJ)J", (void*)RuntimeShader_create},
         {"nativeCreateBuilder", "(Ljava/lang/String;)J", (void*)RuntimeShader_createShaderBuilder},
         {"nativeUpdateUniforms", "(JLjava/lang/String;[FZ)V",

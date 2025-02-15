@@ -17,8 +17,8 @@
 package com.android.wm.shell.desktopmode.persistence
 
 import android.content.Context
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
-import com.android.window.flags.Flags
 import com.android.wm.shell.desktopmode.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.shared.annotations.ShellMainThread
@@ -58,7 +58,7 @@ class DesktopRepositoryInitializerImpl(
                     repository.addDesk(
                         displayId = persistentDesktop.displayId,
                         deskId =
-                            if (Flags.enableMultipleDesktopsBackend()) {
+                            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
                                 persistentDesktop.desktopId
                             } else {
                                 // When disabled, desk ids are always the display id.

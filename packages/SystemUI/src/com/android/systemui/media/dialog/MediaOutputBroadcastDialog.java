@@ -245,7 +245,7 @@ public class MediaOutputBroadcastDialog extends MediaOutputBaseDialog {
                 broadcastSender,
                 mediaSwitchingController, /* includePlaybackAndAppMetadata */
                 true);
-        mAdapter = new MediaOutputAdapter(mMediaSwitchingController);
+        mAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
         // TODO(b/226710953): Move the part to MediaOutputBaseDialog for every class
         //  that extends MediaOutputBaseDialog
         if (!aboveStatusbar) {

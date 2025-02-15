@@ -16,11 +16,14 @@
 
 package android.app.supervision;
 
+import android.content.Intent;
+
 /**
  * Internal IPC interface to the supervision service.
  * {@hide}
  */
 interface ISupervisionManager {
+    Intent createConfirmSupervisionCredentialsIntent();
     boolean isSupervisionEnabledForUser(int userId);
     void setSupervisionEnabledForUser(int userId, boolean enabled);
     String getActiveSupervisionAppPackage(int userId);

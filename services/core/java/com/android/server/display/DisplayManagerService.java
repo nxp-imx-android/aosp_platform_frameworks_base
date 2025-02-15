@@ -2587,6 +2587,11 @@ public final class DisplayManagerService extends SystemService {
         sendDisplayEventIfEnabledLocked(display, DisplayManagerGlobal.EVENT_DISPLAY_STATE_CHANGED);
     }
 
+    private void handleLogicalDisplayCommittedStateChangedLocked(@NonNull LogicalDisplay display) {
+        sendDisplayEventIfEnabledLocked(display,
+                DisplayManagerGlobal.EVENT_DISPLAY_COMMITTED_STATE_CHANGED);
+    }
+
     private void notifyDefaultDisplayDeviceUpdated(LogicalDisplay display) {
         mDisplayModeDirector.defaultDisplayDeviceUpdated(display.getPrimaryDisplayDeviceLocked()
                 .mDisplayDeviceConfig);
@@ -2609,7 +2614,8 @@ public final class DisplayManagerService extends SystemService {
         // Blank or unblank the display immediately to match the state requested
         // by the display power controller (if known).
         DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
-        if ((info.flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0) {
+        if ((info.flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0
+                || android.companion.virtualdevice.flags.Flags.correctVirtualDisplayPowerState()) {
             final LogicalDisplay display = mLogicalDisplayMapper.getDisplayLocked(device);
             if (display == null) {
                 return null;
@@ -4165,6 +4171,9 @@ public final class DisplayManagerService extends SystemService {
                 case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_STATE_CHANGED:
                     handleLogicalDisplayStateChangedLocked(display);
                     break;
+                case LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED:
+                    handleLogicalDisplayCommittedStateChangedLocked(display);
+                    break;
             }
         }
 
@@ -4419,6 +4428,9 @@ public final class DisplayManagerService extends SystemService {
                 case DisplayManagerGlobal.EVENT_DISPLAY_STATE_CHANGED:
                     return (mask & DisplayManagerGlobal
                             .INTERNAL_EVENT_FLAG_DISPLAY_STATE) != 0;
+                case DisplayManagerGlobal.EVENT_DISPLAY_COMMITTED_STATE_CHANGED:
+                    return (mask & DisplayManagerGlobal
+                            .INTERNAL_EVENT_FLAG_DISPLAY_COMMITTED_STATE_CHANGED) != 0;
                 default:
                     // This should never happen.
                     Slog.e(TAG, "Unknown display event " + event);
@@ -5563,7 +5575,9 @@ public final class DisplayManagerService extends SystemService {
                     final DisplayDevice displayDevice = mLogicalDisplayMapper.getDisplayLocked(
                             id).getPrimaryDisplayDeviceLocked();
                     final int flags = displayDevice.getDisplayDeviceInfoLocked().flags;
-                    if ((flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0) {
+                    if ((flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0
+                            || android.companion.virtualdevice.flags.Flags
+                                    .correctVirtualDisplayPowerState()) {
                         final DisplayPowerController displayPowerController =
                                 mDisplayPowerControllers.get(id);
                         if (displayPowerController != null) {

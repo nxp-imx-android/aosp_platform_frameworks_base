@@ -87,6 +87,7 @@ import com.android.systemui.shared.system.SysUiStatsLog.SMART_SPACE_CARD_REPORTE
 import com.android.systemui.shared.system.SysUiStatsLog.SMART_SPACE_CARD_REPORTED__DISPLAY_SURFACE__DREAM_OVERLAY as SSPACE_CARD_REPORTED__DREAM_OVERLAY
 import com.android.systemui.shared.system.SysUiStatsLog.SMART_SPACE_CARD_REPORTED__DISPLAY_SURFACE__LOCKSCREEN as SSPACE_CARD_REPORTED__LOCKSCREEN
 import com.android.systemui.shared.system.SysUiStatsLog.SMART_SPACE_CARD_REPORTED__DISPLAY_SURFACE__SHADE
+import com.android.systemui.statusbar.featurepods.media.domain.interactor.MediaControlChipInteractor
 import com.android.systemui.statusbar.notification.collection.provider.OnReorderingAllowedListener
 import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider
 import com.android.systemui.statusbar.policy.ConfigurationController
@@ -155,6 +156,7 @@ constructor(
     private val mediaCarouselViewModel: MediaCarouselViewModel,
     private val mediaViewControllerFactory: Provider<MediaViewController>,
     private val deviceEntryInteractor: DeviceEntryInteractor,
+    private val mediaControlChipInteractor: MediaControlChipInteractor,
 ) : Dumpable {
     /** The current width of the carousel */
     var currentCarouselWidth: Int = 0
@@ -957,6 +959,9 @@ constructor(
                 }
         }
         mediaCarouselScrollHandler.onPlayersChanged()
+        mediaControlChipInteractor.updateMediaControlChipModelLegacy(
+            MediaPlayerData.getFirstActiveMediaData()
+        )
         MediaPlayerData.updateVisibleMediaPlayers()
         // Automatically scroll to the active player if needed
         if (shouldScrollToKey) {
@@ -1015,6 +1020,9 @@ constructor(
                             )
                             updatePageIndicator()
                             mediaCarouselScrollHandler.onPlayersChanged()
+                            mediaControlChipInteractor.updateMediaControlChipModelLegacy(
+                                MediaPlayerData.getFirstActiveMediaData()
+                            )
                             mediaFrame.requiresRemeasuring = true
                             onUiExecutionEnd?.run()
                         }
@@ -1023,6 +1031,9 @@ constructor(
                     updatePlayer(key, data, isSsReactivated, curVisibleMediaKey, existingPlayer)
                     updatePageIndicator()
                     mediaCarouselScrollHandler.onPlayersChanged()
+                    mediaControlChipInteractor.updateMediaControlChipModelLegacy(
+                        MediaPlayerData.getFirstActiveMediaData()
+                    )
                     mediaFrame.requiresRemeasuring = true
                     onUiExecutionEnd?.run()
                 }
@@ -1036,6 +1047,9 @@ constructor(
                 }
                 updatePageIndicator()
                 mediaCarouselScrollHandler.onPlayersChanged()
+                mediaControlChipInteractor.updateMediaControlChipModelLegacy(
+                    MediaPlayerData.getFirstActiveMediaData()
+                )
                 mediaFrame.requiresRemeasuring = true
                 onUiExecutionEnd?.run()
             }
@@ -1194,6 +1208,9 @@ constructor(
             mediaContent.removeView(removed.recommendationViewHolder?.recommendations)
             removed.onDestroy()
             mediaCarouselScrollHandler.onPlayersChanged()
+            mediaControlChipInteractor.updateMediaControlChipModelLegacy(
+                MediaPlayerData.getFirstActiveMediaData()
+            )
             updatePageIndicator()
 
             if (dismissMediaData) {
@@ -1927,6 +1944,16 @@ internal object MediaPlayerData {
     fun playerKeys() = mediaPlayers.keys
 
     fun visiblePlayerKeys() = visibleMediaPlayers.values
+
+    /** Returns the [MediaData] associated with the first mediaPlayer in the mediaCarousel. */
+    fun getFirstActiveMediaData(): MediaData? {
+        mediaPlayers.entries.forEach { entry ->
+            if (!entry.key.isSsMediaRec && entry.key.data.active) {
+                return entry.key.data
+            }
+        }
+        return null
+    }
 
     /** Returns the index of the first non-timeout media. */
     fun firstActiveMediaIndex(): Int {

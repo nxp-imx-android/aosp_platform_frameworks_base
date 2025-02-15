@@ -55,6 +55,7 @@ object SubtitleArrayMapping {
         subtitleIdsMap["font_scaling"] = R.array.tile_states_font_scaling
         subtitleIdsMap["hearing_devices"] = R.array.tile_states_hearing_devices
         subtitleIdsMap["notes"] = R.array.tile_states_notes
+        subtitleIdsMap["desktopeffects"] = R.array.tile_states_desktopeffects
     }
 
     /** Get the subtitle resource id of the given tile */

@@ -46,6 +46,7 @@ import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.coordinator.HeadsUpCoordinator;
 import com.android.systemui.statusbar.notification.collection.provider.OnReorderingAllowedListener;
@@ -55,6 +56,7 @@ import com.android.systemui.statusbar.notification.collection.render.GroupMember
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository;
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRowRepository;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
 import com.android.systemui.statusbar.phone.ExpandHeadsUpOnInlineReply;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
@@ -118,7 +120,8 @@ public class HeadsUpManagerImpl
     @VisibleForTesting
     final ArrayMap<String, HeadsUpEntry> mHeadsUpEntryMap = new ArrayMap<>();
     private final HeadsUpManagerLogger mLogger;
-    private final int mMinimumDisplayTime;
+    private final int mMinimumDisplayTimeDefault;
+    private final int mMinimumDisplayTimeForUserInitiated;
     private final int mStickyForSomeTimeAutoDismissTime;
     private final int mAutoDismissTime;
     private final DelayableExecutor mExecutor;
@@ -215,9 +218,11 @@ public class HeadsUpManagerImpl
         mGroupMembershipManager = groupMembershipManager;
         mVisualStabilityProvider = visualStabilityProvider;
         Resources resources = context.getResources();
-        mMinimumDisplayTime = NotificationThrottleHun.isEnabled()
+        mMinimumDisplayTimeDefault = NotificationThrottleHun.isEnabled()
                 ? resources.getInteger(R.integer.heads_up_notification_minimum_time_with_throttling)
                 : resources.getInteger(R.integer.heads_up_notification_minimum_time);
+        mMinimumDisplayTimeForUserInitiated = resources.getInteger(
+                R.integer.heads_up_notification_minimum_time_for_user_initiated);
         mStickyForSomeTimeAutoDismissTime = resources.getInteger(
                 R.integer.sticky_heads_up_notification_time);
         mAutoDismissTime = resources.getInteger(R.integer.heads_up_notification_decay);
@@ -871,14 +876,24 @@ public class HeadsUpManagerImpl
         if (!hasPinnedHeadsUp() || topEntry == null) {
             return null;
         } else {
+            ExpandableNotificationRow topRow = topEntry.getRow();
             if (topEntry.rowIsChildInGroup()) {
-                final NotificationEntry groupSummary =
-                        mGroupMembershipManager.getGroupSummary(topEntry);
-                if (groupSummary != null) {
-                    topEntry = groupSummary;
+                if (NotificationBundleUi.isEnabled()) {
+                    final EntryAdapter adapter = mGroupMembershipManager.getGroupRoot(
+                            topRow.getEntryAdapter());
+                    if (adapter != null) {
+                        topRow = adapter.getRow();
+                    }
+                } else {
+                    final NotificationEntry groupSummary =
+                            mGroupMembershipManager.getGroupSummary(topEntry);
+                    if (groupSummary != null) {
+                        topEntry = groupSummary;
+                        topRow = topEntry.getRow();
+                    }
                 }
             }
-            ExpandableNotificationRow topRow = topEntry.getRow();
+
             int[] tmpArray = new int[2];
             topRow.getLocationOnScreen(tmpArray);
             int minX = tmpArray[0];
@@ -1358,7 +1373,12 @@ public class HeadsUpManagerImpl
 
                 final long now = mSystemClock.elapsedRealtime();
                 if (updateEarliestRemovalTime) {
-                    mEarliestRemovalTime = now + mMinimumDisplayTime;
+                    if (StatusBarNotifChips.isEnabled()
+                            && mPinnedStatus.getValue() == PinnedStatus.PinnedByUser) {
+                        mEarliestRemovalTime = now + mMinimumDisplayTimeForUserInitiated;
+                    } else {
+                        mEarliestRemovalTime = now + mMinimumDisplayTimeDefault;
+                    }
                 }
 
                 if (updatePostTime) {
@@ -1377,7 +1397,7 @@ public class HeadsUpManagerImpl
                 final long now = mSystemClock.elapsedRealtime();
                 return NotificationThrottleHun.isEnabled()
                         ? Math.max(finishTime, mEarliestRemovalTime) - now
-                        : Math.max(finishTime - now, mMinimumDisplayTime);
+                        : Math.max(finishTime - now, mMinimumDisplayTimeDefault);
             };
             scheduleAutoRemovalCallback(finishTimeCalculator, "updateEntry (not sticky)");
 

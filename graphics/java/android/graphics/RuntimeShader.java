@@ -622,6 +622,7 @@ public class RuntimeShader extends Shader {
 
     private static native long nativeGetFinalizer();
     private static native long nativeCreateBuilder(String agsl);
+    private static native long nativeCreateShader(long shaderBuilder, long matrix);
     private static native long nativeCreateShader(long shaderBuilder, long matrix,
             long colorSpacePtr);
     private static native void nativeUpdateUniforms(

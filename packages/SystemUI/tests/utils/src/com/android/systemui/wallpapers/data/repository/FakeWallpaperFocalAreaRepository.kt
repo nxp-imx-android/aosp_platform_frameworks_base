@@ -34,11 +34,14 @@ class FakeWallpaperFocalAreaRepository : WallpaperFocalAreaRepository {
         _wallpaperFocalAreaBounds.asStateFlow()
 
     private val _wallpaperFocalAreaTapPosition = MutableStateFlow(PointF(0F, 0F))
-    override val wallpaperFocalAreaTapPosition: StateFlow<PointF> =
+    val wallpaperFocalAreaTapPosition: StateFlow<PointF> =
         _wallpaperFocalAreaTapPosition.asStateFlow()
 
     private val _notificationDefaultTop = MutableStateFlow(0F)
     override val notificationDefaultTop: StateFlow<Float> = _notificationDefaultTop.asStateFlow()
+
+    private val _hasFocalArea = MutableStateFlow(false)
+    override val hasFocalArea: StateFlow<Boolean> = _hasFocalArea.asStateFlow()
 
     override fun setShortcutAbsoluteTop(top: Float) {
         _shortcutAbsoluteTop.value = top
@@ -56,7 +59,7 @@ class FakeWallpaperFocalAreaRepository : WallpaperFocalAreaRepository {
         _wallpaperFocalAreaBounds.value = bounds
     }
 
-    override fun setTapPosition(point: PointF) {
-        _wallpaperFocalAreaTapPosition.value = point
+    override fun setTapPosition(tapPosition: PointF) {
+        _wallpaperFocalAreaTapPosition.value = tapPosition
     }
 }

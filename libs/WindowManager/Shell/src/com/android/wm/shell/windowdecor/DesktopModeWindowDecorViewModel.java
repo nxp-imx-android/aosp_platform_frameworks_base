@@ -984,7 +984,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             mDesktopTasksController.onDesktopWindowClose(
                                     wct, mDisplayId, decoration.mTaskInfo);
                     final IBinder transition = mTaskOperations.closeTask(mTaskToken, wct);
-                    if (transition != null && runOnTransitionStart != null) {
+                    if (transition != null) {
                         runOnTransitionStart.invoke(transition);
                     }
                 }
@@ -1476,15 +1476,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         relevantDecor.mTaskInfo.configuration.windowConfiguration.getBounds());
                 boolean dragFromStatusBarAllowed = false;
                 final int windowingMode = relevantDecor.mTaskInfo.getWindowingMode();
-                if (DesktopModeStatus.canEnterDesktopMode(mContext)) {
+                if (DesktopModeStatus.canEnterDesktopMode(mContext)
+                        || BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
                     // In proto2 any full screen or multi-window task can be dragged to
                     // freeform.
                     dragFromStatusBarAllowed = windowingMode == WINDOWING_MODE_FULLSCREEN
                             || windowingMode == WINDOWING_MODE_MULTI_WINDOW;
-                }
-                if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
-                    // TODO(b/388851898): add support for split screen (multi-window wm mode)
-                    dragFromStatusBarAllowed = windowingMode == WINDOWING_MODE_FULLSCREEN;
                 }
                 final boolean shouldStartTransitionDrag =
                         relevantDecor.checkTouchEventInFocusedCaptionHandle(ev)
@@ -1534,7 +1531,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     // Do not create an indicator at all if we're not past transition height.
                     DisplayLayout layout = mDisplayController
                             .getDisplayLayout(relevantDecor.mTaskInfo.displayId);
-                    if (ev.getRawY() < 2 * layout.stableInsets().top
+                    // It's possible task is not at the top of the screen (e.g. bottom of vertical
+                    // Splitscreen)
+                    final int taskTop = relevantDecor.mTaskInfo.configuration.windowConfiguration
+                            .getBounds().top;
+                    if (ev.getRawY() < 2 * layout.stableInsets().top + taskTop
                             && mMoveToDesktopAnimator == null) {
                         return;
                     }

@@ -31,3 +31,6 @@ val Kosmos.systemClock by
     }
 
 val Kosmos.fakeSystemClock by Kosmos.Fixture { FakeSystemClock() }
+
+val SystemClock.fake
+    get() = this as FakeSystemClock

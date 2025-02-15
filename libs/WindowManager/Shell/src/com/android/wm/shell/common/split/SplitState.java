@@ -57,4 +57,9 @@ public class SplitState {
     public List<RectF> getLayout(@SplitScreenState int state) {
         return mSplitSpec.getSpec(state);
     }
+
+    /** Returns the layout associated with the current split state. */
+    public List<RectF> getCurrentLayout() {
+        return getLayout(mState);
+    }
 }

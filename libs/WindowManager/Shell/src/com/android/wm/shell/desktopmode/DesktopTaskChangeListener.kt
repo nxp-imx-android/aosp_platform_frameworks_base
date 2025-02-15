@@ -42,6 +42,12 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
             desktopUserRepositories.getProfile(taskInfo.userId)
         if (!desktopRepository.isActiveTask(taskInfo.taskId)) return
 
+        // TODO: b/394281403 - with multiple desks, it's possible to have a non-freeform task
+        //  inside a desk, so this should be decoupled from windowing mode.
+        //  Also, changes in/out of desks are handled by the [DesksTransitionObserver], which has
+        //  more specific information about the desk involved in the transition, which might be
+        //  more accurate than assuming it's always the default/active desk in the display, as this
+        //  method does.
         // Case 1: Freeform task is changed in Desktop Mode.
         if (isFreeformTask(taskInfo)) {
             if (taskInfo.isVisible) {

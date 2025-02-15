@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.shared.logger
 
+import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
@@ -69,6 +70,50 @@ class SceneLogger @Inject constructor(@SceneFrameworkLog private val logBuffer: 
                         append(" (instant)")
                     }
                     append(", reason: $str2")
+                }
+            },
+        )
+    }
+
+    fun logSceneChangeCancellation(scene: SceneKey, sceneState: Any?) {
+        logBuffer.log(
+            tag = TAG,
+            level = LogLevel.INFO,
+            messageInitializer = {
+                str1 = scene.debugName
+                str2 = sceneState?.toString()
+            },
+            messagePrinter = { "CANCELED scene change. scene: $str1, sceneState: $str2" },
+        )
+    }
+
+    fun logSceneChangeRejection(
+        from: ContentKey?,
+        to: ContentKey?,
+        originalChangeReason: String,
+        rejectionReason: String,
+    ) {
+        logBuffer.log(
+            tag = TAG,
+            level = LogLevel.INFO,
+            messageInitializer = {
+                str1 = "${from?.debugName ?: "<none>"} → ${to?.debugName ?: "<none>"}"
+                str2 = rejectionReason
+                str3 = originalChangeReason
+                bool1 = to is OverlayKey
+            },
+            messagePrinter = {
+                buildString {
+                    append("REJECTED ")
+                    append(
+                        if (bool1) {
+                            "overlay "
+                        } else {
+                            "scene "
+                        }
+                    )
+                    append("change $str1 because \"$str2\" ")
+                    append("(original change reason: \"$str3\")")
                 }
             },
         )

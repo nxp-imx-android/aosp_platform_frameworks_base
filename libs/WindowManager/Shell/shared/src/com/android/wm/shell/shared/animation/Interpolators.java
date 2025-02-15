@@ -93,8 +93,19 @@ public class Interpolators {
     public static final PathInterpolator SLOWDOWN_INTERPOLATOR =
             new PathInterpolator(0.5f, 1f, 0.5f, 1f);
 
+    /**
+     * An interpolator used for dimming a task as it travels offscreen, or towards a distant dismiss
+     * point. A sharp rise, followed by a steady middle, and ending with another sharp rise.
+     */
     public static final PathInterpolator DIM_INTERPOLATOR =
             new PathInterpolator(.23f, .87f, .52f, -0.11f);
+
+    /**
+     * An interpolator used for dimming a task very quickly. Roughly approximates one of the "sharp
+     * rises" of {@link #DIM_INTERPOLATOR}.
+     */
+    public static final PathInterpolator FAST_DIM_INTERPOLATOR =
+            new PathInterpolator(0.23f, 0.87f, 0.83f, 0.83f);
 
     /**
      * Use this interpolator for animating progress values coming from the back callback to get

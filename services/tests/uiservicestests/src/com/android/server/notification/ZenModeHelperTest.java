@@ -23,6 +23,7 @@ import static android.app.AutomaticZenRule.TYPE_SCHEDULE_TIME;
 import static android.app.AutomaticZenRule.TYPE_THEATER;
 import static android.app.AutomaticZenRule.TYPE_UNKNOWN;
 import static android.app.Flags.FLAG_BACKUP_RESTORE_LOGGING;
+import static android.app.Flags.FLAG_MODES_CLEANUP_IMPLICIT;
 import static android.app.Flags.FLAG_MODES_MULTIUSER;
 import static android.app.Flags.FLAG_MODES_UI;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_ACTIVATED;
@@ -124,7 +125,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 import android.Manifest;
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
@@ -219,7 +223,6 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -2233,8 +2236,7 @@ public class ZenModeHelperTest extends UiServiceTestCase {
         mZenModeHelper.mConfig.automaticRules.put(implicitRuleBeforeModesUi.id,
                 implicitRuleBeforeModesUi);
         // Plus one other normal rule.
-        ZenRule anotherRule = newZenRule("other_pkg", Instant.now(), null);
-        anotherRule.id = "other_rule";
+        ZenRule anotherRule = newZenRule("other_rule", "other_pkg", Instant.now());
         anotherRule.iconResName = "other_icon";
         anotherRule.type = TYPE_IMMERSIVE;
         mZenModeHelper.mConfig.automaticRules.put(anotherRule.id, anotherRule);
@@ -2271,8 +2273,7 @@ public class ZenModeHelperTest extends UiServiceTestCase {
                 implicitRuleWithModesUi);
 
         // Plus one other normal rule.
-        ZenRule anotherRule = newZenRule("other_pkg", Instant.now(), null);
-        anotherRule.id = "other_rule";
+        ZenRule anotherRule = newZenRule("other_rule", "other_pkg", Instant.now());
         anotherRule.iconResName = "other_icon";
         anotherRule.type = TYPE_IMMERSIVE;
         mZenModeHelper.mConfig.automaticRules.put(anotherRule.id, anotherRule);
@@ -4611,7 +4612,7 @@ public class ZenModeHelperTest extends UiServiceTestCase {
         assertThat(rule.getDeviceEffects().shouldDisplayGrayscale()).isTrue();
 
         ZenRule storedRule = mZenModeHelper.mConfig.automaticRules.get(ruleId);
-        assertThat(storedRule.canBeUpdatedByApp()).isTrue();
+        assertThat(storedRule.isUserModified()).isFalse();
     }
 
     @Test
@@ -4719,7 +4720,7 @@ public class ZenModeHelperTest extends UiServiceTestCase {
                 STATE_DISALLOW);
 
         ZenRule storedRule = mZenModeHelper.mConfig.automaticRules.get(ruleId);
-        assertThat(storedRule.canBeUpdatedByApp()).isFalse();
+        assertThat(storedRule.isUserModified()).isTrue();
         assertThat(storedRule.zenPolicyUserModifiedFields).isEqualTo(
                 ZenPolicy.FIELD_ALLOW_CHANNELS
                         | ZenPolicy.FIELD_PRIORITY_CATEGORY_REMINDERS
@@ -4761,7 +4762,7 @@ public class ZenModeHelperTest extends UiServiceTestCase {
         assertThat(rule.getDeviceEffects().shouldDisplayGrayscale()).isTrue();
 
         ZenRule storedRule = mZenModeHelper.mConfig.automaticRules.get(ruleId);
-        assertThat(storedRule.canBeUpdatedByApp()).isFalse();
+        assertThat(storedRule.isUserModified()).isTrue();
         assertThat(storedRule.zenDeviceEffectsUserModifiedFields).isEqualTo(
                 ZenDeviceEffects.FIELD_GRAYSCALE);
     }
@@ -5713,8 +5714,8 @@ public class ZenModeHelperTest extends UiServiceTestCase {
 
         // Start with deleted rules from 2 different packages.
         Instant now = Instant.ofEpochMilli(1701796461000L);
-        ZenRule pkg1Rule = newZenRule("pkg1", now.minus(1, ChronoUnit.DAYS), now);
-        ZenRule pkg2Rule = newZenRule("pkg2", now.minus(2, ChronoUnit.DAYS), now);
+        ZenRule pkg1Rule = newDeletedZenRule("1", "pkg1", now.minus(1, DAYS), now);
+        ZenRule pkg2Rule = newDeletedZenRule("2", "pkg2", now.minus(2, DAYS), now);
         mZenModeHelper.mConfig.deletedRules.put(ZenModeConfig.deletedRuleKey(pkg1Rule), pkg1Rule);
         mZenModeHelper.mConfig.deletedRules.put(ZenModeConfig.deletedRuleKey(pkg2Rule), pkg2Rule);
 
@@ -5832,9 +5833,9 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     @Test
     public void testRuleCleanup() throws Exception {
         Instant now = Instant.ofEpochMilli(1701796461000L);
-        Instant yesterday = now.minus(1, ChronoUnit.DAYS);
-        Instant aWeekAgo = now.minus(7, ChronoUnit.DAYS);
-        Instant twoMonthsAgo = now.minus(60, ChronoUnit.DAYS);
+        Instant yesterday = now.minus(1, DAYS);
+        Instant aWeekAgo = now.minus(7, DAYS);
+        Instant twoMonthsAgo = now.minus(60, DAYS);
         mTestClock.setNowMillis(now.toEpochMilli());
 
         when(mPackageManager.getPackageInfo(eq("good_pkg"), anyInt()))
@@ -5847,24 +5848,28 @@ public class ZenModeHelperTest extends UiServiceTestCase {
         config.user = 42;
         mZenModeHelper.mConfigs.put(42, config);
         // okay rules (not deleted, package exists, with a range of creation dates).
-        config.automaticRules.put("ar1", newZenRule("good_pkg", now, null));
-        config.automaticRules.put("ar2", newZenRule("good_pkg", yesterday, null));
-        config.automaticRules.put("ar3", newZenRule("good_pkg", twoMonthsAgo, null));
+        config.automaticRules.put("ar1", newZenRule("ar1", "good_pkg", now));
+        config.automaticRules.put("ar2", newZenRule("ar2", "good_pkg", yesterday));
+        config.automaticRules.put("ar3", newZenRule("ar3", "good_pkg", twoMonthsAgo));
         // newish rules for a missing package
-        config.automaticRules.put("ar4", newZenRule("bad_pkg", yesterday, null));
+        config.automaticRules.put("ar4", newZenRule("ar4", "bad_pkg", yesterday));
         // oldish rules belonging to a missing package
-        config.automaticRules.put("ar5", newZenRule("bad_pkg", aWeekAgo, null));
+        config.automaticRules.put("ar5", newZenRule("ar5", "bad_pkg", aWeekAgo));
         // rules deleted recently
-        config.deletedRules.put("del1", newZenRule("good_pkg", twoMonthsAgo, yesterday));
-        config.deletedRules.put("del2", newZenRule("good_pkg", twoMonthsAgo, aWeekAgo));
+        config.deletedRules.put("del1",
+                newDeletedZenRule("del1", "good_pkg", twoMonthsAgo, yesterday));
+        config.deletedRules.put("del2",
+                newDeletedZenRule("del2", "good_pkg", twoMonthsAgo, aWeekAgo));
         // rules deleted a long time ago
-        config.deletedRules.put("del3", newZenRule("good_pkg", twoMonthsAgo, twoMonthsAgo));
+        config.deletedRules.put("del3",
+                newDeletedZenRule("del3", "good_pkg", twoMonthsAgo, twoMonthsAgo));
         // rules for a missing package, created recently and deleted recently
-        config.deletedRules.put("del4", newZenRule("bad_pkg", yesterday, now));
+        config.deletedRules.put("del4", newDeletedZenRule("del4", "bad_pkg", yesterday, now));
         // rules for a missing package, created a long time ago and deleted recently
-        config.deletedRules.put("del5", newZenRule("bad_pkg", twoMonthsAgo, now));
+        config.deletedRules.put("del5", newDeletedZenRule("del5", "bad_pkg", twoMonthsAgo, now));
         // rules for a missing package, created a long time ago and deleted a long time ago
-        config.deletedRules.put("del6", newZenRule("bad_pkg", twoMonthsAgo, twoMonthsAgo));
+        config.deletedRules.put("del6",
+                newDeletedZenRule("del6", "bad_pkg", twoMonthsAgo, twoMonthsAgo));
 
         mZenModeHelper.onUserSwitched(42); // copies config and cleans it up.
 
@@ -5874,14 +5879,115 @@ public class ZenModeHelperTest extends UiServiceTestCase {
                 .containsExactly("del1", "del2", "del4");
     }
 
-    private static ZenRule newZenRule(String pkg, Instant createdAt, @Nullable Instant deletedAt) {
+    @Test
+    @EnableFlags({FLAG_MODES_UI, FLAG_MODES_CLEANUP_IMPLICIT})
+    public void testRuleCleanup_removesNotRecentlyUsedNotModifiedImplicitRules() throws Exception {
+        Instant now = Instant.ofEpochMilli(1701796461000L);
+        Instant yesterday = now.minus(1, DAYS);
+        Instant aWeekAgo = now.minus(7, DAYS);
+        Instant twoMonthsAgo = now.minus(60, DAYS);
+        Instant aYearAgo = now.minus(365, DAYS);
+        mTestClock.setNowMillis(now.toEpochMilli());
+        when(mPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(new PackageInfo());
+
+        // Set up a config to be loaded, containing a bunch of implicit rules
+        ZenModeConfig config = new ZenModeConfig();
+        config.user = 42;
+        mZenModeHelper.mConfigs.put(42, config);
+        // used recently
+        ZenRule usedRecently1 = newImplicitZenRule("pkg1", aYearAgo, yesterday);
+        ZenRule usedRecently2 = newImplicitZenRule("pkg2", aYearAgo, aWeekAgo);
+        config.automaticRules.put(usedRecently1.id, usedRecently1);
+        config.automaticRules.put(usedRecently2.id, usedRecently2);
+        // not used in a long time
+        ZenRule longUnused = newImplicitZenRule("pkg3", aYearAgo, twoMonthsAgo);
+        config.automaticRules.put(longUnused.id, longUnused);
+        // created a long time ago, before lastActivation tracking
+        ZenRule oldAndLastUsageUnknown = newImplicitZenRule("pkg4", twoMonthsAgo, null);
+        config.automaticRules.put(oldAndLastUsageUnknown.id, oldAndLastUsageUnknown);
+        // created a short time ago, before lastActivation tracking
+        ZenRule newAndLastUsageUnknown = newImplicitZenRule("pkg5", aWeekAgo, null);
+        config.automaticRules.put(newAndLastUsageUnknown.id, newAndLastUsageUnknown);
+        // not used in a long time, but was customized by user
+        ZenRule longUnusedButCustomized = newImplicitZenRule("pkg6", aYearAgo, twoMonthsAgo);
+        longUnusedButCustomized.zenPolicyUserModifiedFields = ZenPolicy.FIELD_CONVERSATIONS;
+        config.automaticRules.put(longUnusedButCustomized.id, longUnusedButCustomized);
+        // created a long time ago, before lastActivation tracking, and was customized by user
+        ZenRule oldAndLastUsageUnknownAndCustomized = newImplicitZenRule("pkg7", twoMonthsAgo,
+                null);
+        oldAndLastUsageUnknownAndCustomized.userModifiedFields = AutomaticZenRule.FIELD_ICON;
+        config.automaticRules.put(oldAndLastUsageUnknownAndCustomized.id,
+                oldAndLastUsageUnknownAndCustomized);
+
+        mZenModeHelper.onUserSwitched(42); // copies config and cleans it up.
+
+        // The recently used OR modified OR last-used-unknown rules stay.
+        assertThat(mZenModeHelper.mConfig.automaticRules.values())
+                .comparingElementsUsing(IGNORE_METADATA)
+                .containsExactly(usedRecently1, usedRecently2, oldAndLastUsageUnknown,
+                        newAndLastUsageUnknown, longUnusedButCustomized,
+                        oldAndLastUsageUnknownAndCustomized);
+    }
+
+    @Test
+    @EnableFlags({FLAG_MODES_UI, FLAG_MODES_CLEANUP_IMPLICIT})
+    public void testRuleCleanup_assignsLastActivationToImplicitRules() throws Exception {
+        Instant now = Instant.ofEpochMilli(1701796461000L);
+        Instant aWeekAgo = now.minus(7, DAYS);
+        Instant aYearAgo = now.minus(365, DAYS);
+        mTestClock.setNowMillis(now.toEpochMilli());
+        when(mPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(new PackageInfo());
+
+        // Set up a config to be loaded, containing implicit rules.
+        ZenModeConfig config = new ZenModeConfig();
+        config.user = 42;
+        mZenModeHelper.mConfigs.put(42, config);
+        // with last activation known
+        ZenRule usedRecently = newImplicitZenRule("pkg1", aYearAgo, aWeekAgo);
+        config.automaticRules.put(usedRecently.id, usedRecently);
+        // created a long time ago, with last activation unknown
+        ZenRule oldAndLastUsageUnknown = newImplicitZenRule("pkg4", aYearAgo, null);
+        config.automaticRules.put(oldAndLastUsageUnknown.id, oldAndLastUsageUnknown);
+        // created a short time ago, with last activation unknown
+        ZenRule newAndLastUsageUnknown = newImplicitZenRule("pkg5", aWeekAgo, null);
+        config.automaticRules.put(newAndLastUsageUnknown.id, newAndLastUsageUnknown);
+
+        mZenModeHelper.onUserSwitched(42); // copies config and cleans it up.
+
+        // All rules stayed.
+        usedRecently = getZenRule(usedRecently.id);
+        oldAndLastUsageUnknown = getZenRule(oldAndLastUsageUnknown.id);
+        newAndLastUsageUnknown = getZenRule(newAndLastUsageUnknown.id);
+
+        // The rules with an unknown last usage have been assigned a placeholder one.
+        assertThat(usedRecently.lastActivation).isEqualTo(aWeekAgo);
+        assertThat(oldAndLastUsageUnknown.lastActivation).isEqualTo(now);
+        assertThat(newAndLastUsageUnknown.lastActivation).isEqualTo(now);
+    }
+
+    private static ZenRule newDeletedZenRule(String id, String pkg, Instant createdAt,
+            @NonNull Instant deletedAt) {
+        ZenRule rule = newZenRule(id, pkg, createdAt);
+        rule.deletionInstant = deletedAt;
+        return rule;
+    }
+
+    private static ZenRule newImplicitZenRule(String pkg, @NonNull Instant createdAt,
+            @Nullable Instant lastActivatedAt) {
+        ZenRule implicitRule = newZenRule(implicitRuleId(pkg), pkg, createdAt);
+        implicitRule.lastActivation = lastActivatedAt;
+        return implicitRule;
+    }
+
+    private static ZenRule newZenRule(String id, String pkg, Instant createdAt) {
         ZenRule rule = new ZenRule();
+        rule.id = id;
         rule.pkg = pkg;
         rule.creationTime = createdAt.toEpochMilli();
         rule.enabled = true;
-        rule.deletionInstant = deletedAt;
+        rule.deletionInstant = null;
         // Plus stuff so that isValidAutomaticRule() passes
-        rule.name = "A rule from " + pkg + " created on " + createdAt;
+        rule.name = "Rule " + id;
         rule.conditionId = Uri.parse(rule.name);
         return rule;
     }
@@ -5919,11 +6025,11 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     @Test
     public void getAutomaticZenRuleState_notOwnedRule_returnsStateUnknown() {
         // Assume existence of a system-owned rule that is currently ACTIVE.
-        ZenRule systemRule = newZenRule("android", Instant.now(), null);
+        ZenRule systemRule = newZenRule("systemRule", "android", Instant.now());
         systemRule.zenMode = ZEN_MODE_ALARMS;
         systemRule.condition = new Condition(systemRule.conditionId, "on", Condition.STATE_TRUE);
         ZenModeConfig config = mZenModeHelper.mConfig.copy();
-        config.automaticRules.put("systemRule", systemRule);
+        config.automaticRules.put(systemRule.id, systemRule);
         mZenModeHelper.setConfig(config, null, ORIGIN_INIT, "", SYSTEM_UID);
         assertThat(mZenModeHelper.getZenMode()).isEqualTo(ZEN_MODE_ALARMS);
 
@@ -5935,11 +6041,11 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     public void setAutomaticZenRuleState_idForNotOwnedRule_ignored() {
         // Assume existence of an other-package-owned rule that is currently ACTIVE.
         assertThat(mZenModeHelper.getZenMode()).isEqualTo(ZEN_MODE_OFF);
-        ZenRule otherRule = newZenRule("another.package", Instant.now(), null);
+        ZenRule otherRule = newZenRule("otherRule", "another.package", Instant.now());
         otherRule.zenMode = ZEN_MODE_ALARMS;
         otherRule.condition = new Condition(otherRule.conditionId, "on", Condition.STATE_TRUE);
         ZenModeConfig config = mZenModeHelper.mConfig.copy();
-        config.automaticRules.put("otherRule", otherRule);
+        config.automaticRules.put(otherRule.id, otherRule);
         mZenModeHelper.setConfig(config, null, ORIGIN_INIT, "", SYSTEM_UID);
         assertThat(mZenModeHelper.getZenMode()).isEqualTo(ZEN_MODE_ALARMS);
 
@@ -5955,11 +6061,11 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     public void setAutomaticZenRuleStateFromConditionProvider_conditionForNotOwnedRule_ignored() {
         // Assume existence of an other-package-owned rule that is currently ACTIVE.
         assertThat(mZenModeHelper.getZenMode()).isEqualTo(ZEN_MODE_OFF);
-        ZenRule otherRule = newZenRule("another.package", Instant.now(), null);
+        ZenRule otherRule = newZenRule("otherRule", "another.package", Instant.now());
         otherRule.zenMode = ZEN_MODE_ALARMS;
         otherRule.condition = new Condition(otherRule.conditionId, "on", Condition.STATE_TRUE);
         ZenModeConfig config = mZenModeHelper.mConfig.copy();
-        config.automaticRules.put("otherRule", otherRule);
+        config.automaticRules.put(otherRule.id, otherRule);
         mZenModeHelper.setConfig(config, null, ORIGIN_INIT, "", SYSTEM_UID);
         assertThat(mZenModeHelper.getZenMode()).isEqualTo(ZEN_MODE_ALARMS);
 
@@ -7255,6 +7361,125 @@ public class ZenModeHelperTest extends UiServiceTestCase {
                 "config: setAzrStateFromCps: cond/cond (ORIGIN_APP) from uid " + CUSTOM_PKG_UID);
     }
 
+    @Test
+    @EnableFlags({FLAG_MODES_UI, FLAG_MODES_CLEANUP_IMPLICIT})
+    public void setAutomaticZenRuleState_updatesLastActivation() {
+        String ruleOne = mZenModeHelper.addAutomaticZenRule(UserHandle.CURRENT, mPkg,
+                new AutomaticZenRule.Builder("rule", CONDITION_ID)
+                        .setConfigurationActivity(new ComponentName(mPkg, "cls"))
+                        .setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY)
+                        .build(),
+                ORIGIN_APP, "reason", CUSTOM_PKG_UID);
+        String ruleTwo = mZenModeHelper.addAutomaticZenRule(UserHandle.CURRENT, mPkg,
+                new AutomaticZenRule.Builder("unrelated", Uri.parse("other.condition"))
+                        .setConfigurationActivity(new ComponentName(mPkg, "cls"))
+                        .setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY)
+                        .build(),
+                ORIGIN_APP, "reason", CUSTOM_PKG_UID);
+
+        assertThat(getZenRule(ruleOne).lastActivation).isNull();
+        assertThat(getZenRule(ruleTwo).lastActivation).isNull();
+
+        Instant firstActivation = Instant.ofEpochMilli(100);
+        mTestClock.setNow(firstActivation);
+        mZenModeHelper.setAutomaticZenRuleState(UserHandle.CURRENT, ruleOne, CONDITION_TRUE,
+                ORIGIN_APP, CUSTOM_PKG_UID);
+
+        assertThat(getZenRule(ruleOne).lastActivation).isEqualTo(firstActivation);
+        assertThat(getZenRule(ruleTwo).lastActivation).isNull();
+
+        mTestClock.setNow(Instant.ofEpochMilli(300));
+        mZenModeHelper.setAutomaticZenRuleState(UserHandle.CURRENT, ruleOne, CONDITION_FALSE,
+                ORIGIN_APP, CUSTOM_PKG_UID);
+
+        assertThat(getZenRule(ruleOne).lastActivation).isEqualTo(firstActivation);
+        assertThat(getZenRule(ruleTwo).lastActivation).isNull();
+
+        Instant secondActivation = Instant.ofEpochMilli(500);
+        mTestClock.setNow(secondActivation);
+        mZenModeHelper.setAutomaticZenRuleState(UserHandle.CURRENT, ruleOne, CONDITION_TRUE,
+                ORIGIN_APP, CUSTOM_PKG_UID);
+
+        assertThat(getZenRule(ruleOne).lastActivation).isEqualTo(secondActivation);
+        assertThat(getZenRule(ruleTwo).lastActivation).isNull();
+    }
+
+    @Test
+    @EnableFlags({FLAG_MODES_UI, FLAG_MODES_CLEANUP_IMPLICIT})
+    public void setManualZenMode_updatesLastActivation() {
+        assertThat(mZenModeHelper.mConfig.manualRule.lastActivation).isNull();
+        Instant instant = Instant.ofEpochMilli(100);
+        mTestClock.setNow(instant);
+
+        mZenModeHelper.setManualZenMode(UserHandle.CURRENT, ZEN_MODE_ALARMS, null,
+                ORIGIN_USER_IN_SYSTEMUI, "reason", "systemui", SYSTEM_UID);
+
+        assertThat(mZenModeHelper.mConfig.manualRule.lastActivation).isEqualTo(instant);
+    }
+
+    @Test
+    @EnableFlags({FLAG_MODES_UI, FLAG_MODES_CLEANUP_IMPLICIT})
+    public void applyGlobalZenModeAsImplicitZenRule_updatesLastActivation() {
+        Instant instant = Instant.ofEpochMilli(100);
+        mTestClock.setNow(instant);
+
+        mZenModeHelper.applyGlobalZenModeAsImplicitZenRule(UserHandle.CURRENT, CUSTOM_PKG_NAME,
+                CUSTOM_PKG_UID, ZEN_MODE_ALARMS);
+
+        ZenRule implicitRule = getZenRule(implicitRuleId(CUSTOM_PKG_NAME));
+        assertThat(implicitRule.lastActivation).isEqualTo(instant);
+    }
+
+    @Test
+    @EnableFlags({FLAG_MODES_UI, FLAG_MODES_CLEANUP_IMPLICIT})
+    public void setAutomaticZenRuleState_notChangingActiveState_doesNotUpdateLastActivation() {
+        String ruleId = mZenModeHelper.addAutomaticZenRule(UserHandle.CURRENT, mPkg,
+                new AutomaticZenRule.Builder("rule", CONDITION_ID)
+                        .setConfigurationActivity(new ComponentName(mPkg, "cls"))
+                        .setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY)
+                        .build(),
+                ORIGIN_APP, "reason", CUSTOM_PKG_UID);
+
+        assertThat(getZenRule(ruleId).lastActivation).isNull();
+
+        // Manual activation comes first
+        Instant firstActivation = Instant.ofEpochMilli(100);
+        mTestClock.setNow(firstActivation);
+        mZenModeHelper.setAutomaticZenRuleState(UserHandle.CURRENT, ruleId, CONDITION_TRUE,
+                ORIGIN_USER_IN_SYSTEMUI, SYSTEM_UID);
+
+        assertThat(getZenRule(ruleId).lastActivation).isEqualTo(firstActivation);
+
+        // Now the app says the rule should be active (assume it's on a schedule, and the app
+        // doesn't listen to broadcasts so it doesn't know an override was present). This doesn't
+        // change the activation state.
+        mTestClock.setNow(Instant.ofEpochMilli(300));
+        mZenModeHelper.setAutomaticZenRuleState(UserHandle.CURRENT, ruleId, CONDITION_TRUE,
+                ORIGIN_APP, CUSTOM_PKG_UID);
+
+        assertThat(getZenRule(ruleId).lastActivation).isEqualTo(firstActivation);
+    }
+
+    @Test
+    @EnableFlags({FLAG_MODES_UI, FLAG_MODES_CLEANUP_IMPLICIT})
+    public void addOrUpdateRule_doesNotUpdateLastActivation() {
+        AutomaticZenRule azr = new AutomaticZenRule.Builder("rule", CONDITION_ID)
+                .setConfigurationActivity(new ComponentName(mPkg, "cls"))
+                .setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY)
+                .build();
+
+        String ruleId = mZenModeHelper.addAutomaticZenRule(UserHandle.CURRENT, mPkg, azr,
+                ORIGIN_APP, "reason", CUSTOM_PKG_UID);
+
+        assertThat(getZenRule(ruleId).lastActivation).isNull();
+
+        mZenModeHelper.updateAutomaticZenRule(UserHandle.CURRENT, ruleId,
+                new AutomaticZenRule.Builder(azr).setName("New name").build(), ORIGIN_APP, "reason",
+                CUSTOM_PKG_UID);
+
+        assertThat(getZenRule(ruleId).lastActivation).isNull();
+    }
+
     private static void addZenRule(ZenModeConfig config, String id, String ownerPkg, int zenMode,
             @Nullable ZenPolicy zenPolicy) {
         ZenRule rule = new ZenRule();
@@ -7272,22 +7497,27 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     private static final Correspondence<ZenRule, ZenRule> IGNORE_METADATA =
-            Correspondence.transforming(zr -> {
-                        Parcel p = Parcel.obtain();
-                        try {
-                            zr.writeToParcel(p, 0);
-                            p.setDataPosition(0);
-                            ZenRule copy = new ZenRule(p);
-                            copy.creationTime = 0;
-                            copy.userModifiedFields = 0;
-                            copy.zenPolicyUserModifiedFields = 0;
-                            copy.zenDeviceEffectsUserModifiedFields = 0;
-                            return copy;
-                        } finally {
-                            p.recycle();
-                        }
-                    },
-                    "Ignoring timestamp and userModifiedFields");
+            Correspondence.transforming(
+                    ZenModeHelperTest::cloneWithoutMetadata,
+                    ZenModeHelperTest::cloneWithoutMetadata,
+                    "Ignoring timestamps and userModifiedFields");
+
+    private static ZenRule cloneWithoutMetadata(ZenRule rule) {
+        Parcel p = Parcel.obtain();
+        try {
+            rule.writeToParcel(p, 0);
+            p.setDataPosition(0);
+            ZenRule copy = new ZenRule(p);
+            copy.creationTime = 0;
+            copy.userModifiedFields = 0;
+            copy.zenPolicyUserModifiedFields = 0;
+            copy.zenDeviceEffectsUserModifiedFields = 0;
+            copy.lastActivation = null;
+            return copy;
+        } finally {
+            p.recycle();
+        }
+    }
 
     private ZenRule expectedImplicitRule(String ownerPkg, int zenMode, ZenPolicy policy,
             @Nullable Boolean conditionActive) {
@@ -7691,6 +7921,10 @@ public class ZenModeHelperTest extends UiServiceTestCase {
         @Override
         public long millis() {
             return mNowMillis;
+        }
+
+        private void setNow(Instant instant) {
+            mNowMillis = instant.toEpochMilli();
         }
 
         private void setNowMillis(long millis) {

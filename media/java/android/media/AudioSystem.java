@@ -1754,13 +1754,21 @@ public class AudioSystem
     @UnsupportedAppUsage
     public static int setDeviceConnectionState(AudioDeviceAttributes attributes, int state,
             int codecFormat) {
+        return setDeviceConnectionState(attributes, state, codecFormat, false /*deviceSwitch*/);
+    }
+
+    /**
+     * @hide
+     */
+    public static int setDeviceConnectionState(AudioDeviceAttributes attributes, int state,
+            int codecFormat, boolean deviceSwitch) {
         android.media.audio.common.AudioPort port =
                 AidlConversion.api2aidl_AudioDeviceAttributes_AudioPort(attributes);
         Parcel parcel = Parcel.obtain();
         port.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
         try {
-            return setDeviceConnectionState(state, parcel, codecFormat);
+            return setDeviceConnectionState(state, parcel, codecFormat, deviceSwitch);
         } finally {
             parcel.recycle();
         }
@@ -1769,7 +1777,10 @@ public class AudioSystem
      * @hide
      */
     @UnsupportedAppUsage
-    public static native int setDeviceConnectionState(int state, Parcel parcel, int codecFormat);
+    public static native int setDeviceConnectionState(int state, Parcel parcel, int codecFormat,
+                                                      boolean deviceSwitch);
+
+
     /** @hide */
     @UnsupportedAppUsage
     public static native int getDeviceConnectionState(int device, String device_address);

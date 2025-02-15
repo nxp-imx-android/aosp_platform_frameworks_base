@@ -23,12 +23,12 @@ import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.util.SparseArray
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_TO_FRONT
+import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 import androidx.core.util.forEach
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer.OnCreateCallback
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -47,7 +47,7 @@ class RootTaskDesksOrganizer(
     @VisibleForTesting val roots = SparseArray<DeskRoot>()
 
     init {
-        if (Flags.enableMultipleDesktopsBackend()) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             shellInit.addInitCallback(
                 { shellCommandHandler.addDumpCallback(this::dump, this) },
                 this,
@@ -83,6 +83,16 @@ class RootTaskDesksOrganizer(
         )
     }
 
+    override fun deactivateDesk(wct: WindowContainerTransaction, deskId: Int) {
+        logV("deactivateDesk %d", deskId)
+        val root = checkNotNull(roots[deskId]) { "Root not found for desk: $deskId" }
+        wct.setLaunchRoot(
+            /* container= */ root.taskInfo.token,
+            /* windowingModes= */ null,
+            /* activityTypes= */ null,
+        )
+    }
+
     override fun moveTaskToDesk(
         wct: WindowContainerTransaction,
         deskId: Int,
@@ -92,6 +102,9 @@ class RootTaskDesksOrganizer(
         wct.setWindowingMode(task.token, WINDOWING_MODE_UNDEFINED)
         wct.reparent(task.token, root.taskInfo.token, /* onTop= */ true)
     }
+
+    override fun isDeskChange(change: TransitionInfo.Change, deskId: Int): Boolean =
+        roots.contains(deskId) && change.taskInfo?.taskId == deskId
 
     override fun getDeskAtEnd(change: TransitionInfo.Change): Int? =
         change.taskInfo?.parentTaskId?.takeIf { it in roots }

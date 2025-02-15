@@ -365,7 +365,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         return mCurrentImeUserId;
     }
 
-   /**
+    /**
      * Figures out the target IME user ID associated with the given {@code displayId}.
      *
      * @param displayId the display ID to be queried about
@@ -1332,8 +1332,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         // Do not reset the default (current) IME when it is a 3rd-party IME
         String selectedMethodId = bindingController.getSelectedMethodId();
         final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
-        if (selectedMethodId != null && settings.getMethodMap().get(selectedMethodId) != null
-                && !settings.getMethodMap().get(selectedMethodId).isSystem()) {
+        final InputMethodInfo selectedImi = settings.getMethodMap().get(selectedMethodId);
+        if (selectedImi != null && !selectedImi.isSystem()) {
             return;
         }
         final List<InputMethodInfo> suitableImes = InputMethodInfoUtils.getDefaultEnabledImes(

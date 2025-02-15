@@ -575,7 +575,6 @@
   <java-symbol type="dimen" name="notification_text_size" />
   <java-symbol type="dimen" name="notification_title_text_size" />
   <java-symbol type="dimen" name="notification_subtext_size" />
-  <java-symbol type="dimen" name="notification_2025_title_text_size" />
   <java-symbol type="dimen" name="notification_top_pad" />
   <java-symbol type="dimen" name="notification_top_pad_narrow" />
   <java-symbol type="dimen" name="notification_top_pad_large_text" />
@@ -5903,6 +5902,9 @@
   <java-symbol type="array" name="config_notificationDefaultUnsupportedAdjustments" />
   <java-symbol type="drawable" name="ic_notification_summarization" />
   <java-symbol type="dimen" name="notification_collapsed_height_with_summarization" />
+
+  <!-- Device CMF Theming Settings -->
+  <java-symbol type="array" name="theming_defaults" />
 
   <!-- Advanced Protection Service USB feature -->
   <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_title" />

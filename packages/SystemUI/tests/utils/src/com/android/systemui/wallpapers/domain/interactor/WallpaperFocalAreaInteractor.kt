@@ -18,20 +18,14 @@ package com.android.systemui.wallpapers.domain.interactor
 
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.shade.data.repository.shadeRepository
-import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.wallpapers.data.repository.wallpaperFocalAreaRepository
-import com.android.systemui.wallpapers.data.repository.wallpaperRepository
 
-val Kosmos.wallpaperFocalAreaInteractor by
+var Kosmos.wallpaperFocalAreaInteractor by
     Kosmos.Fixture {
         WallpaperFocalAreaInteractor(
-            applicationScope = applicationCoroutineScope,
             context = applicationContext,
             wallpaperFocalAreaRepository = wallpaperFocalAreaRepository,
             shadeRepository = shadeRepository,
-            activeNotificationsInteractor = activeNotificationsInteractor,
-            wallpaperRepository = wallpaperRepository,
         )
     }

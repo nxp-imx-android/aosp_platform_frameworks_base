@@ -34,6 +34,7 @@ import static com.android.server.display.DisplayAdapter.DISPLAY_DEVICE_EVENT_REM
 import static com.android.server.display.DisplayDeviceInfo.DIFF_EVERYTHING;
 import static com.android.server.display.DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_ADDED;
+import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_CONNECTED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_DISCONNECTED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_REMOVED;
@@ -1180,13 +1181,21 @@ public class LogicalDisplayMapperTest {
         assertEquals(LOGICAL_DISPLAY_EVENT_STATE_CHANGED,
                 mLogicalDisplayMapper.updateAndGetMaskForDisplayPropertyChanges(newDisplayInfo));
 
+        // Change the display committed state
+        when(mFlagsMock.isCommittedStateSeparateEventEnabled()).thenReturn(true);
+        newDisplayInfo = new DisplayInfo();
+        newDisplayInfo.committedState = STATE_OFF;
+        assertEquals(LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED,
+                mLogicalDisplayMapper.updateAndGetMaskForDisplayPropertyChanges(newDisplayInfo));
 
         // Change multiple properties
         newDisplayInfo = new DisplayInfo();
         newDisplayInfo.refreshRateOverride = 30;
         newDisplayInfo.state = STATE_OFF;
+        newDisplayInfo.committedState = STATE_OFF;
         assertEquals(LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED
-                        | LOGICAL_DISPLAY_EVENT_STATE_CHANGED,
+                        | LOGICAL_DISPLAY_EVENT_STATE_CHANGED
+                        | LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED,
                 mLogicalDisplayMapper.updateAndGetMaskForDisplayPropertyChanges(newDisplayInfo));
     }
 

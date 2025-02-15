@@ -24,31 +24,25 @@ import android.util.Log
 import android.util.TypedValue
 import com.android.app.animation.MathUtils
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.ShadeRepository
-import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.wallpapers.data.repository.WallpaperFocalAreaRepository
-import com.android.systemui.wallpapers.data.repository.WallpaperRepository
 import javax.inject.Inject
 import kotlin.math.min
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 
 @SysUISingleton
 class WallpaperFocalAreaInteractor
 @Inject
 constructor(
-    @Application private val applicationScope: CoroutineScope,
     private val context: Context,
     private val wallpaperFocalAreaRepository: WallpaperFocalAreaRepository,
     shadeRepository: ShadeRepository,
-    activeNotificationsInteractor: ActiveNotificationsInteractor,
-    val wallpaperRepository: WallpaperRepository,
 ) {
-    val hasFocalArea = wallpaperRepository.shouldSendFocalArea
+    val hasFocalArea = wallpaperFocalAreaRepository.hasFocalArea
 
     val wallpaperFocalAreaBounds: Flow<RectF> =
         combine(
@@ -126,6 +120,8 @@ constructor(
                 val bottom = scaledBounds.bottom - scaledBottomMargin
                 RectF(left, top, right, bottom).also { Log.d(TAG, "Focal area changes to $it") }
             }
+            // Make sure a valid rec
+            .filter { it.width() >= 0 && it.height() >= 0 }
             .distinctUntilChanged()
 
     fun setFocalAreaBounds(bounds: RectF) {

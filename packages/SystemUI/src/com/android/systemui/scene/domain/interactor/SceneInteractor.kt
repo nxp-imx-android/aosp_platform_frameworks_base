@@ -234,6 +234,10 @@ constructor(
      * The change is animated. Therefore, it will be some time before the UI will switch to the
      * desired scene. Once enough of the transition has occurred, the [currentScene] will become
      * [toScene] (unless the transition is canceled by user action or another call to this method).
+     *
+     * If [forceSettleToTargetScene] is `true` and the target scene is the same as the current
+     * scene, any current transition will be canceled and an animation to the target scene will be
+     * started.
      */
     @JvmOverloads
     fun changeScene(
@@ -241,9 +245,19 @@ constructor(
         loggingReason: String,
         transitionKey: TransitionKey? = null,
         sceneState: Any? = null,
+        forceSettleToTargetScene: Boolean = false,
     ) {
         val currentSceneKey = currentScene.value
         val resolvedScene = sceneFamilyResolvers.get()[toScene]?.resolvedScene?.value ?: toScene
+
+        if (resolvedScene == currentSceneKey && forceSettleToTargetScene) {
+            logger.logSceneChangeCancellation(scene = resolvedScene, sceneState = sceneState)
+            onSceneAboutToChangeListener.forEach {
+                it.onSceneAboutToChange(resolvedScene, sceneState)
+            }
+            repository.freezeAndAnimateToCurrentState()
+        }
+
         if (
             !validateSceneChange(
                 from = currentSceneKey,
@@ -523,14 +537,32 @@ constructor(
         }
 
         if (from == to) {
+            logger.logSceneChangeRejection(
+                from = from,
+                to = to,
+                originalChangeReason = loggingReason,
+                rejectionReason = "${from.debugName} is the same as ${to.debugName}",
+            )
             return false
         }
 
         if (to !in repository.allContentKeys) {
+            logger.logSceneChangeRejection(
+                from = from,
+                to = to,
+                originalChangeReason = loggingReason,
+                rejectionReason = "${to.debugName} isn't present in allContentKeys",
+            )
             return false
         }
 
         if (disabledContentInteractor.isDisabled(to)) {
+            logger.logSceneChangeRejection(
+                from = from,
+                to = to,
+                originalChangeReason = loggingReason,
+                rejectionReason = "${to.debugName} is currently disabled",
+            )
             return false
         }
 
@@ -580,14 +612,58 @@ constructor(
         }
 
         if (to != null && disabledContentInteractor.isDisabled(to)) {
+            logger.logSceneChangeRejection(
+                from = from,
+                to = to,
+                originalChangeReason = loggingReason,
+                rejectionReason = "${to.debugName} is currently disabled",
+            )
             return false
         }
 
-        val isFromValid = (from == null) || (from in currentOverlays.value)
-        val isToValid =
-            (to == null) || (to !in currentOverlays.value && to in repository.allContentKeys)
+        return when {
+            to != null && from != null && to == from -> {
+                logger.logSceneChangeRejection(
+                    from = from,
+                    to = to,
+                    originalChangeReason = loggingReason,
+                    rejectionReason = "${from.debugName} is the same as ${to.debugName}",
+                )
+                false
+            }
 
-        return isFromValid && isToValid && from != to
+            to != null && to !in repository.allContentKeys -> {
+                logger.logSceneChangeRejection(
+                    from = from,
+                    to = to,
+                    originalChangeReason = loggingReason,
+                    rejectionReason = "${to.debugName} is not in allContentKeys",
+                )
+                false
+            }
+
+            from != null && from !in currentOverlays.value -> {
+                logger.logSceneChangeRejection(
+                    from = from,
+                    to = to,
+                    originalChangeReason = loggingReason,
+                    rejectionReason = "${from.debugName} is not a current overlay",
+                )
+                false
+            }
+
+            to != null && to in currentOverlays.value -> {
+                logger.logSceneChangeRejection(
+                    from = from,
+                    to = to,
+                    originalChangeReason = loggingReason,
+                    rejectionReason = "${to.debugName} is already a current overlay",
+                )
+                false
+            }
+
+            else -> true
+        }
     }
 
     /** Returns a flow indicating if the currently visible scene can be resolved from [family]. */

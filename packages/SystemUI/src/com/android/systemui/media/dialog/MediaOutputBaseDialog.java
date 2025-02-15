@@ -105,7 +105,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     private boolean mIsLeBroadcastCallbackRegistered;
     private boolean mDismissing;
 
-    MediaOutputBaseAdapter mAdapter;
+    MediaOutputAdapterBase mAdapter;
 
     protected Executor mExecutor;
 
@@ -342,7 +342,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
                 WallpaperColors wallpaperColors = WallpaperColors.fromBitmap(icon.getBitmap());
                 colorSetUpdated = !wallpaperColors.equals(mWallpaperColors);
                 if (colorSetUpdated) {
-                    mAdapter.updateColorScheme(wallpaperColors, isDarkThemeOn);
+                    mMediaSwitchingController.setCurrentColorScheme(wallpaperColors, isDarkThemeOn);
                     updateButtonBackgroundColorFilter();
                     updateDialogBackgroundColor();
                 }

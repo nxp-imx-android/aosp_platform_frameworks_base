@@ -25,7 +25,7 @@ import com.android.internal.logging.MetricsLogger
 import com.android.internal.logging.nano.MetricsProto
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.view.setImportantForAccessibilityYesNo
-import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dagger.qualifiers.NotifInflation
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.repeatWhenAttachedToWindow
 import com.android.systemui.plugins.FalsingManager
@@ -76,7 +76,7 @@ import kotlinx.coroutines.flow.stateIn
 class NotificationListViewBinder
 @Inject
 constructor(
-    @Background private val backgroundDispatcher: CoroutineDispatcher,
+    @NotifInflation private val inflationDispatcher: CoroutineDispatcher,
     private val hiderTracker: DisplaySwitchNotificationsHiderTracker,
     @ShadeDisplayAware private val configuration: ConfigurationState,
     private val falsingManager: FalsingManager,
@@ -155,7 +155,7 @@ constructor(
                 parentView,
                 attachToRoot = false,
             )
-            .flowOn(backgroundDispatcher)
+            .flowOn(inflationDispatcher)
             .collectLatest { footerView: FooterView ->
                 traceAsync("bind FooterView") {
                     parentView.setFooterView(footerView)
@@ -240,7 +240,7 @@ constructor(
                 parentView,
                 attachToRoot = false,
             )
-            .flowOn(backgroundDispatcher)
+            .flowOn(inflationDispatcher)
             .collectLatest { emptyShadeView: EmptyShadeView ->
                 traceAsync("bind EmptyShadeView") {
                     parentView.setEmptyShadeView(emptyShadeView)

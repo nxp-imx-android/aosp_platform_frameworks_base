@@ -23,6 +23,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.authController
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardClockRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
@@ -47,6 +48,7 @@ import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.testKosmos
 import com.android.systemui.unfold.fakeUnfoldTransitionProgressProvider
@@ -123,6 +125,7 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    @EnableSceneContainer
     fun notificationsPlacement_dualShadeSmallClock_below() =
         kosmos.runTest {
             setupState(
@@ -135,6 +138,7 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    @EnableSceneContainer
     fun notificationsPlacement_dualShadeLargeClock_topStart() =
         kosmos.runTest {
             setupState(
@@ -156,6 +160,7 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    @EnableSceneContainer
     fun areNotificationsVisible_dualShadeWideOnLockscreen_true() =
         kosmos.runTest {
             setupState(
@@ -298,6 +303,7 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
     ) {
         val isShadeLayoutWide by collectLastValue(kosmos.shadeRepository.isShadeLayoutWide)
         val collectedClockSize by collectLastValue(kosmos.keyguardClockInteractor.clockSize)
+        val collectedShadeMode by collectLastValue(kosmos.shadeModeInteractor.shadeMode)
         when (shadeMode) {
             ShadeMode.Dual -> kosmos.enableDualShade(wideLayout = shadeLayoutWide)
             ShadeMode.Single -> kosmos.enableSingleShade()
@@ -309,6 +315,7 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
         if (shadeLayoutWide != null) {
             assertThat(isShadeLayoutWide).isEqualTo(shadeLayoutWide)
         }
+        assertThat(collectedShadeMode).isEqualTo(shadeMode)
         assertThat(collectedClockSize).isEqualTo(clockSize)
     }
 

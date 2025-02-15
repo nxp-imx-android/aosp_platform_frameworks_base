@@ -145,6 +145,7 @@ import android.util.SparseIntArray;
 import android.view.Display;
 import android.webkit.URLUtil;
 import android.window.ActivityWindowInfo;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import com.android.internal.R;
@@ -2916,6 +2917,8 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
 
     /** The helper to calculate whether a container is opaque. */
     static class OpaqueContainerHelper implements Predicate<ActivityRecord> {
+        private final boolean mEnableMultipleDesktopsBackend =
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue();
         private ActivityRecord mStarting;
         private boolean mIgnoringInvisibleActivity;
         private boolean mIgnoringKeyguard;
@@ -2938,7 +2941,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             mIgnoringKeyguard = ignoringKeyguard;
 
             final boolean isOpaque;
-            if (!Flags.enableMultipleDesktopsBackend()) {
+            if (!mEnableMultipleDesktopsBackend) {
                 isOpaque = container.getActivity(this,
                         true /* traverseTopToBottom */, null /* boundary */) != null;
             } else {
@@ -2949,13 +2952,16 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         }
 
         private boolean isOpaqueInner(@NonNull WindowContainer<?> container) {
-            // If it's a leaf task fragment, then opacity is calculated based on its activities.
-            if (container.asTaskFragment() != null
-                    && ((TaskFragment) container).isLeafTaskFragment()) {
+            final boolean isActivity = container.asActivityRecord() != null;
+            final boolean isLeafTaskFragment = container.asTaskFragment() != null
+                    && ((TaskFragment) container).isLeafTaskFragment();
+            if (isActivity || isLeafTaskFragment) {
+                // When it is an activity or leaf task fragment, then opacity is calculated based
+                // on itself or its activities.
                 return container.getActivity(this,
                         true /* traverseTopToBottom */, null /* boundary */) != null;
             }
-            // When not a leaf, it's considered opaque if any of its opaque children fill this
+            // Otherwise, it's considered opaque if any of its opaque children fill this
             // container, unless the children are adjacent fragments, in which case as long as they
             // are all opaque then |container| is also considered opaque, even if the adjacent
             // task fragment aren't filling.

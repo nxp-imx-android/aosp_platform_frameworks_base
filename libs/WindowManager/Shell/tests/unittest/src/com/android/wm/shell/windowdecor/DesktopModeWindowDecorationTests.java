@@ -120,6 +120,7 @@ import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function2;
 
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.MainCoroutineDispatcher;
@@ -998,8 +999,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
         createMaximizeMenu(decoration);
 
-        verify(menu).show(anyBoolean(), anyInt(), anyBoolean(), anyBoolean(), any(), any(), any(),
-                any(), mOnMaxMenuHoverChangeListener.capture(), any());
+        verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(), any(), any(), any(), any(),
+                mOnMaxMenuHoverChangeListener.capture(), any());
         assertTrue(decoration.isMaximizeMenuActive());
     }
 
@@ -1011,8 +1012,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 new FakeMaximizeMenuFactory(menu));
         decoration.setAppHeaderMaximizeButtonHovered(false);
         createMaximizeMenu(decoration);
-        verify(menu).show(anyBoolean(), anyInt(), anyBoolean(), anyBoolean(), any(), any(), any(),
-                any(), mOnMaxMenuHoverChangeListener.capture(), any());
+        verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(), any(), any(), any(), any(),
+                mOnMaxMenuHoverChangeListener.capture(), any());
 
         mOnMaxMenuHoverChangeListener.getValue().invoke(false);
 
@@ -1050,8 +1051,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         final DesktopModeWindowDecoration decoration = createWindowDecoration(taskInfo,
                 new FakeMaximizeMenuFactory(menu));
         createMaximizeMenu(decoration);
-        verify(menu).show(anyBoolean(), anyInt(), anyBoolean(), anyBoolean(), any(), any(), any(),
-                any(), mOnMaxMenuHoverChangeListener.capture(), any());
+        verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(), any(), any(), any(), any(),
+                mOnMaxMenuHoverChangeListener.capture(), any());
 
         mOnMaxMenuHoverChangeListener.getValue().invoke(true);
 
@@ -1065,8 +1066,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         final DesktopModeWindowDecoration decoration = createWindowDecoration(taskInfo,
                 new FakeMaximizeMenuFactory(menu));
         createMaximizeMenu(decoration);
-        verify(menu).show(anyBoolean(), anyInt(), anyBoolean(), anyBoolean(), any(), any(), any(),
-                any(), mOnMaxMenuHoverChangeListener.capture(), any());
+        verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(), any(), any(), any(), any(),
+                mOnMaxMenuHoverChangeListener.capture(), any());
 
         decoration.setAppHeaderMaximizeButtonHovered(true);
 
@@ -1086,7 +1087,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
         verify(menu).show(
                 anyBoolean(),
-                anyInt(),
                 /* showImmersiveOption= */ eq(true),
                 anyBoolean(),
                 any(),
@@ -1111,7 +1111,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
         verify(menu).show(
                 anyBoolean(),
-                anyInt(),
                 /* showImmersiveOption= */ eq(false),
                 anyBoolean(),
                 any(),
@@ -1136,7 +1135,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
         verify(menu).show(
                 anyBoolean(),
-                anyInt(),
                 anyBoolean(),
                 /* showSnapOptions= */ eq(true),
                 any(),
@@ -1161,7 +1159,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
         verify(menu).show(
                 anyBoolean(),
-                anyInt(),
                 anyBoolean(),
                 /* showSnapOptions= */ eq(false),
                 any(),
@@ -1766,7 +1763,9 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 @NonNull RootTaskDisplayAreaOrganizer rootTdaOrganizer,
                 @NonNull DisplayController displayController,
                 @NonNull ActivityManager.RunningTaskInfo taskInfo,
-                @NonNull Context decorWindowContext, @NonNull PointF menuPosition,
+                @NonNull Context decorWindowContext,
+                @NonNull Function2<? super Integer,? super Integer,? extends PointF>
+                    positionSupplier,
                 @NonNull Supplier<SurfaceControl.Transaction> transactionSupplier) {
             return mMaximizeMenu;
         }

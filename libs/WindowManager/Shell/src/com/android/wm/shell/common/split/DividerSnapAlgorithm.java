@@ -465,5 +465,9 @@ public class DividerSnapAlgorithm {
             this.snapPosition = snapPosition;
             this.distanceMultiplier = distanceMultiplier;
         }
+
+        public int getPosition() {
+            return position;
+        }
     }
 }

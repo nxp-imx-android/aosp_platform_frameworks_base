@@ -35,6 +35,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
@@ -44,6 +45,7 @@ import org.junit.runner.RunWith
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 class CommunalTransitionViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
@@ -65,7 +67,7 @@ class CommunalTransitionViewModelTest(flags: FlagsParameterization) : SysuiTestC
 
     private val keyguardTransitionRepository = kosmos.fakeKeyguardTransitionRepository
     private val communalSceneRepository = kosmos.fakeCommunalSceneRepository
-    private val sceneInteractor = kosmos.sceneInteractor
+    private val sceneInteractor by lazy { kosmos.sceneInteractor }
 
     private val underTest: CommunalTransitionViewModel by lazy {
         kosmos.communalTransitionViewModel

@@ -418,7 +418,9 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
                         evictedEvents.addAll(mCache);
                         mCache.clear();
                     }
-                    mSqliteWriteHandler.obtainMessage(WRITE_CACHE_EVICTED_OP_EVENTS, evictedEvents);
+                    Message msg = mSqliteWriteHandler.obtainMessage(
+                            WRITE_CACHE_EVICTED_OP_EVENTS, evictedEvents);
+                    mSqliteWriteHandler.sendMessage(msg);
                 }
             }
         }

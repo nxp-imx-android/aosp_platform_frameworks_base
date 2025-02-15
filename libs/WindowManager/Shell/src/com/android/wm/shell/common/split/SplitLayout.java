@@ -128,6 +128,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     // The touch layer is on a stage root, and is sibling with things like the app activity itself
     // and the app veil. We want it to be above all those.
     public static final int RESTING_TOUCH_LAYER = Integer.MAX_VALUE;
+    // The dim layer is also on the stage root, and stays under the touch layer.
+    public static final int RESTING_DIM_LAYER = RESTING_TOUCH_LAYER - 1;
 
     // Animation specs for the swap animation
     private static final int SWAP_ANIMATION_TOTAL_DURATION = 500;
@@ -1200,6 +1202,12 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             t.setPosition(dividerLeash, mTempRect.left, mTempRect.top);
             // Resets layer of divider bar to make sure it is always on top.
             t.setLayer(dividerLeash, RESTING_DIVIDER_LAYER);
+        }
+        if (dimLayer1 != null) {
+            t.setLayer(dimLayer1, RESTING_DIM_LAYER);
+        }
+        if (dimLayer2 != null) {
+            t.setLayer(dimLayer2, RESTING_DIM_LAYER);
         }
         copyTopLeftRefBounds(mTempRect);
         t.setPosition(leash1, mTempRect.left, mTempRect.top)

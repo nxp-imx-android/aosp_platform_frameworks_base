@@ -50,9 +50,8 @@ class ReusableWindowDecorViewHost(
     @VisibleForTesting
     val viewHostAdapter: SurfaceControlViewHostAdapter =
         SurfaceControlViewHostAdapter(context, display),
+    private val rootView: FrameLayout = FrameLayout(context)
 ) : WindowDecorViewHost, Warmable {
-    @VisibleForTesting val rootView = FrameLayout(context)
-
     private var currentUpdateJob: Job? = null
 
     override val surfaceControl: SurfaceControl
@@ -131,8 +130,10 @@ class ReusableWindowDecorViewHost(
         Trace.beginSection("ReusableWindowDecorViewHost#updateViewHost")
         viewHostAdapter.prepareViewHost(configuration, touchableRegion)
         onDrawTransaction?.let { viewHostAdapter.applyTransactionOnDraw(it) }
-        rootView.removeAllViews()
-        rootView.addView(view)
+        if (view.parent != rootView) {
+            rootView.removeAllViews()
+            rootView.addView(view)
+        }
         viewHostAdapter.updateView(rootView, attrs)
         Trace.endSection()
     }

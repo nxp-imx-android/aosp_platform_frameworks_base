@@ -16,8 +16,52 @@
 
 package com.android.systemui.statusbar.notification.collection;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
+
 /**
  * Adapter interface for UI to get relevant info.
  */
 public interface EntryAdapter {
+
+    /**
+     * Gets the parent of this entry, or null if the entry's view is not attached
+     */
+    @Nullable PipelineEntry getParent();
+
+    /**
+     * Returns whether the entry is attached and appears at the top level of the shade
+     */
+    boolean isTopLevelEntry();
+
+    /**
+     * @return the unique identifier for this entry
+     */
+    @NonNull String getKey();
+
+    /**
+     * Gets the view that this entry is backing.
+     */
+    @NonNull
+    ExpandableNotificationRow getRow();
+
+    /**
+     * Gets the EntryAdapter that is the nearest root of the collection of rows the given entry
+     * belongs to. If the given entry is a BundleEntry or an isolated child of a BundleEntry, the
+     * BundleEntry will be returned. If the given notification is a group summary NotificationEntry,
+     * or a child of a group summary, the summary NotificationEntry will be returned, even if that
+     * summary belongs to a BundleEntry. If the entry is a notification that does not belong to any
+     * group or bundle grouping, null will be returned.
+     */
+    @Nullable
+    EntryAdapter getGroupRoot();
+
+    /**
+     * Returns whether the entry is attached to the current shade list
+     */
+    default boolean isAttached() {
+        return getParent() != null;
+    }
 }

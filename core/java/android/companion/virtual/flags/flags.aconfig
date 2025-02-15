@@ -120,6 +120,16 @@ flag {
 }
 
 flag {
+    name: "correct_virtual_display_power_state"
+    namespace: "virtual_devices"
+    description: "Fix the virtual display power state"
+    bug: "371125136"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "vdm_settings"
     namespace: "virtual_devices"
     description: "Show virtual devices in Settings"

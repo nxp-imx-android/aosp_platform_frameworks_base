@@ -40,6 +40,7 @@ import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.inOrder;
@@ -384,6 +385,49 @@ public class WindowDecorationTests extends ShellTestCase {
         assertThat(mRelayoutResult.mRootView).isSameInstanceAs(mMockView);
         verify(mMockWindowDecorViewHostSupplier).acquire(any(), eq(mockDisplay));
         verify(mMockWindowDecorViewHost).updateView(same(mMockView), any(), any(), any(), any());
+    }
+
+
+    @Test
+    public void testReinflateViewsOnFontScaleChange() {
+        final Display defaultDisplay = mock(Display.class);
+        doReturn(defaultDisplay).when(mMockDisplayController)
+                .getDisplay(Display.DEFAULT_DISPLAY);
+
+        final ActivityManager.RunningTaskInfo taskInfo = new TestRunningTaskInfoBuilder()
+                .setVisible(true)
+                .setDisplayId(Display.DEFAULT_DISPLAY)
+                .build();
+        final TestWindowDecoration windowDecor = spy(createWindowDecoration(taskInfo));
+        windowDecor.relayout(taskInfo, true /* hasGlobalFocus */, Region.obtain());
+        clearInvocations(windowDecor);
+        final ActivityManager.RunningTaskInfo taskInfo2 = new TestRunningTaskInfoBuilder()
+                .setVisible(true)
+                .setDisplayId(Display.DEFAULT_DISPLAY)
+                .build();
+        taskInfo2.configuration.fontScale = taskInfo.configuration.fontScale + 1;
+        windowDecor.relayout(taskInfo2, true /* hasGlobalFocus */, Region.obtain());
+        // WindowDecoration#releaseViews should be called since the font scale has changed.
+        verify(windowDecor).releaseViews(any());
+    }
+
+    @Test
+    public void testViewNotReinflatedWhenFontScaleNotChanged() {
+        final Display defaultDisplay = mock(Display.class);
+        doReturn(defaultDisplay).when(mMockDisplayController)
+                .getDisplay(Display.DEFAULT_DISPLAY);
+
+        final ActivityManager.RunningTaskInfo taskInfo = new TestRunningTaskInfoBuilder()
+                .setVisible(true)
+                .setDisplayId(Display.DEFAULT_DISPLAY)
+                .build();
+        final TestWindowDecoration windowDecor = spy(createWindowDecoration(taskInfo));
+        windowDecor.relayout(taskInfo, true /* hasGlobalFocus */, Region.obtain());
+        clearInvocations(windowDecor);
+        windowDecor.relayout(taskInfo, true /* hasGlobalFocus */, Region.obtain());
+        // WindowDecoration#releaseViews should be called since task info (and therefore the
+        // fontScale) has not changed.
+        verify(windowDecor, never()).releaseViews(any());
     }
 
     @Test

@@ -16,13 +16,22 @@
 
 package android.app.supervision;
 
+import static android.Manifest.permission.INTERACT_ACROSS_USERS;
+import static android.Manifest.permission.MANAGE_USERS;
+import static android.Manifest.permission.QUERY_USERS;
+
+import android.annotation.FlaggedApi;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SystemApi;
 import android.annotation.SystemService;
+import android.annotation.TestApi;
 import android.annotation.UserHandleAware;
 import android.annotation.UserIdInt;
+import android.app.supervision.flags.Flags;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
+import android.content.Intent;
 import android.os.RemoteException;
 
 /**
@@ -31,6 +40,8 @@ import android.os.RemoteException;
  * @hide
  */
 @SystemService(Context.SUPERVISION_SERVICE)
+@SystemApi
+@FlaggedApi(Flags.FLAG_SUPERVISION_MANAGER_APIS)
 public class SupervisionManager {
     private final Context mContext;
     @Nullable private final ISupervisionManager mService;
@@ -47,7 +58,8 @@ public class SupervisionManager {
      *
      * @hide
      */
-    public static final String ACTION_ENABLE_SUPERVISION = "android.app.action.ENABLE_SUPERVISION";
+    public static final String ACTION_ENABLE_SUPERVISION =
+            "android.app.supervision.action.ENABLE_SUPERVISION";
 
     /**
      * Activity action: ask the human user to disable supervision for this user. Only the app that
@@ -62,7 +74,7 @@ public class SupervisionManager {
      * @hide
      */
     public static final String ACTION_DISABLE_SUPERVISION =
-            "android.app.action.DISABLE_SUPERVISION";
+            "android.app.supervision.action.DISABLE_SUPERVISION";
 
     /** @hide */
     @UnsupportedAppUsage
@@ -72,11 +84,46 @@ public class SupervisionManager {
     }
 
     /**
+     * Creates an {@link Intent} that can be used with {@link Context#startActivity(Intent)} to
+     * launch the activity to verify supervision credentials.
+     *
+     * <p>A valid {@link Intent} is always returned if supervision is enabled at the time this API
+     * is called, the launched activity still need to perform validity checks as the supervision
+     * state can change when the activity is launched. A null intent is returned if supervision is
+     * disabled at the time of this API call.
+     *
+     * <p>A result code of {@link android.app.Activity#RESULT_OK} indicates successful verification
+     * of the supervision credentials.
+     *
+     * @hide
+     */
+    @RequiresPermission(value = android.Manifest.permission.QUERY_USERS)
+    @Nullable
+    public Intent createConfirmSupervisionCredentialsIntent() {
+        if (mService != null) {
+            try {
+                Intent result = mService.createConfirmSupervisionCredentialsIntent();
+                if (result != null) {
+                    result.prepareToEnterProcess(
+                            Intent.LOCAL_FLAG_FROM_SYSTEM, mContext.getAttributionSource());
+                }
+                return result;
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns whether the device is supervised.
      *
      * @hide
      */
-    @UserHandleAware
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SUPERVISION_MANAGER_APIS)
+    @RequiresPermission(anyOf = {MANAGE_USERS, QUERY_USERS})
+    @UserHandleAware(requiresPermissionIfNotCaller = INTERACT_ACROSS_USERS)
     public boolean isSupervisionEnabled() {
         return isSupervisionEnabledForUser(mContext.getUserId());
     }
@@ -84,14 +131,10 @@ public class SupervisionManager {
     /**
      * Returns whether the device is supervised.
      *
-     * <p>The caller must be from the same user as the target or hold the {@link
-     * android.Manifest.permission#INTERACT_ACROSS_USERS} permission.
-     *
      * @hide
      */
-    @RequiresPermission(
-            value = android.Manifest.permission.INTERACT_ACROSS_USERS,
-            conditional = true)
+    @RequiresPermission(anyOf = {MANAGE_USERS, QUERY_USERS})
+    @UserHandleAware(requiresPermissionIfNotCaller = INTERACT_ACROSS_USERS)
     public boolean isSupervisionEnabledForUser(@UserIdInt int userId) {
         if (mService != null) {
             try {
@@ -108,7 +151,8 @@ public class SupervisionManager {
      *
      * @hide
      */
-    @UserHandleAware
+    @TestApi
+    @UserHandleAware(requiresPermissionIfNotCaller = INTERACT_ACROSS_USERS)
     public void setSupervisionEnabled(boolean enabled) {
         setSupervisionEnabledForUser(mContext.getUserId(), enabled);
     }
@@ -116,14 +160,9 @@ public class SupervisionManager {
     /**
      * Sets whether the device is supervised for a given user.
      *
-     * <p>The caller must be from the same user as the target or hold the {@link
-     * android.Manifest.permission#INTERACT_ACROSS_USERS} permission.
-     *
      * @hide
      */
-    @RequiresPermission(
-            value = android.Manifest.permission.INTERACT_ACROSS_USERS,
-            conditional = true)
+    @UserHandleAware(requiresPermissionIfNotCaller = INTERACT_ACROSS_USERS)
     public void setSupervisionEnabledForUser(@UserIdInt int userId, boolean enabled) {
         if (mService != null) {
             try {

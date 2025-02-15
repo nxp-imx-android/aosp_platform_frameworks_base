@@ -1358,6 +1358,45 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
             )
         }
 
+    /**
+     * When a transition away from the lockscreen is interrupted by an `Idle(Lockscreen)`, a
+     * `sceneState` that was set during the transition is consumed and passed to KTF.
+     */
+    @Test
+    fun transition_from_ls_scene_sceneStateSet_then_interrupted_by_idle_on_ls() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Lockscreen,
+                    Scenes.Gone,
+                    flowOf(Scenes.Lockscreen),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+            progress.value = 0.4f
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            val sceneState = KeyguardState.AOD
+            underTest.onSceneAboutToChange(toScene = Scenes.Lockscreen, sceneState = sceneState)
+            sceneTransitions.value = ObservableTransitionState.Idle(Scenes.Lockscreen)
+
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.AOD,
+                state = TransitionState.FINISHED,
+                progress = 1f,
+            )
+        }
+
     private fun assertTransition(
         step: TransitionStep,
         from: KeyguardState? = null,

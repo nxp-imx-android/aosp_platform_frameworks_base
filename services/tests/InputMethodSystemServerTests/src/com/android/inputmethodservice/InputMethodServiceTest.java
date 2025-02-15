@@ -34,12 +34,12 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
+import android.app.ActivityManager;
 import android.app.Instrumentation;
 import android.content.res.Configuration;
 import android.graphics.Insets;
+import android.os.Build;
 import android.os.RemoteException;
-import android.platform.test.annotations.RequiresFlagsDisabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
 import android.server.wm.WindowManagerStateHelper;
@@ -86,23 +86,34 @@ public class InputMethodServiceTest {
             "android:id/input_method_nav_back";
     private static final String INPUT_METHOD_NAV_IME_SWITCHER_ID =
             "android:id/input_method_nav_ime_switcher";
-    private static final long TIMEOUT_IN_SECONDS = 3;
-    private static final String ENABLE_SHOW_IME_WITH_HARD_KEYBOARD_CMD =
-            "settings put secure " + Settings.Secure.SHOW_IME_WITH_HARD_KEYBOARD + " 1";
-    private static final String DISABLE_SHOW_IME_WITH_HARD_KEYBOARD_CMD =
-            "settings put secure " + Settings.Secure.SHOW_IME_WITH_HARD_KEYBOARD + " 0";
+
+    /** Timeout until the uiObject should be found. */
+    private static final long TIMEOUT_MS = 5000L * Build.HW_TIMEOUT_MULTIPLIER;
+
+    /** Timeout until the event is expected. */
+    private static final long EXPECT_TIMEOUT_MS = 3000L * Build.HW_TIMEOUT_MULTIPLIER;
+
+    /** Timeout during which the event is not expected. */
+    private static final long NOT_EXCEPT_TIMEOUT_MS = 2000L * Build.HW_TIMEOUT_MULTIPLIER;
+
+    /** Command to set showing the IME when a hardware keyboard is connected. */
+    private static final String SET_SHOW_IME_WITH_HARD_KEYBOARD_CMD =
+            "settings put secure " + Settings.Secure.SHOW_IME_WITH_HARD_KEYBOARD;
+    /** Command to get verbose ImeTracker logging state. */
+    private static final String GET_VERBOSE_IME_TRACKER_LOGGING_CMD =
+            "getprop persist.debug.imetracker";
+    /** Command to set verbose ImeTracker logging state. */
+    private static final String SET_VERBOSE_IME_TRACKER_LOGGING_CMD =
+            "setprop persist.debug.imetracker";
 
     /** The ids of the subtypes of SimpleIme. */
     private static final int[] SUBTYPE_IDS = new int[]{1, 2};
 
-    private final WindowManagerStateHelper mWmState =  new WindowManagerStateHelper();
+    private final WindowManagerStateHelper mWmState = new WindowManagerStateHelper();
 
     private final GestureNavSwitchHelper mGestureNavSwitchHelper = new GestureNavSwitchHelper();
 
     private final DeviceFlagsValueProvider mFlagsValueProvider = new DeviceFlagsValueProvider();
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = new CheckFlagsRule(mFlagsValueProvider);
 
     @Rule
     public final TestName mName = new TestName();
@@ -114,7 +125,8 @@ public class InputMethodServiceTest {
     private String mInputMethodId;
     private TestActivity mActivity;
     private InputMethodServiceWrapper mInputMethodService;
-    private boolean mShowImeWithHardKeyboardEnabled;
+    private boolean mOriginalVerboseImeTrackerLoggingEnabled;
+    private boolean mOriginalShowImeWithHardKeyboardEnabled;
 
     @Before
     public void setUp() throws Exception {
@@ -123,9 +135,12 @@ public class InputMethodServiceTest {
         mImm = mInstrumentation.getContext().getSystemService(InputMethodManager.class);
         mTargetPackageName = mInstrumentation.getTargetContext().getPackageName();
         mInputMethodId = getInputMethodId();
+        mOriginalVerboseImeTrackerLoggingEnabled = getVerboseImeTrackerLogging();
+        if (!mOriginalVerboseImeTrackerLoggingEnabled) {
+            setVerboseImeTrackerLogging(true);
+        }
         prepareIme();
         prepareActivity();
-        mInstrumentation.waitForIdleSync();
         mUiDevice.freezeRotation();
         mUiDevice.setOrientationNatural();
         // Waits for input binding ready.
@@ -148,17 +163,18 @@ public class InputMethodServiceTest {
                     .that(mInputMethodService.getCurrentInputViewStarted()).isFalse();
         });
         // Save the original value of show_ime_with_hard_keyboard from Settings.
-        mShowImeWithHardKeyboardEnabled =
+        mOriginalShowImeWithHardKeyboardEnabled =
                 mInputMethodService.getShouldShowImeWithHardKeyboardForTesting();
     }
 
     @After
     public void tearDown() throws Exception {
         mUiDevice.unfreezeRotation();
+        if (!mOriginalVerboseImeTrackerLoggingEnabled) {
+            setVerboseImeTrackerLogging(false);
+        }
         // Change back the original value of show_ime_with_hard_keyboard in Settings.
-        executeShellCommand(mShowImeWithHardKeyboardEnabled
-                ? ENABLE_SHOW_IME_WITH_HARD_KEYBOARD_CMD
-                : DISABLE_SHOW_IME_WITH_HARD_KEYBOARD_CMD);
+        setShowImeWithHardKeyboard(mOriginalShowImeWithHardKeyboardEnabled);
         executeShellCommand("ime disable " + mInputMethodId);
     }
 
@@ -170,7 +186,7 @@ public class InputMethodServiceTest {
     public void testShowHideKeyboard_byUserAction() {
         waitUntilActivityReadyForInputInjection(mActivity);
 
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
         // Performs click on EditText to bring up the IME.
         Log.i(TAG, "Click on EditText");
@@ -201,14 +217,12 @@ public class InputMethodServiceTest {
      */
     @Test
     public void testShowHideKeyboard_byInputMethodManager() {
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
-        // Triggers to show IME via public API.
         verifyInputViewStatusOnMainSync(
                 () -> assertThat(mActivity.showImeWithInputMethodManager(0 /* flags */)).isTrue(),
                 EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
 
-        // Triggers to hide IME via public API.
         verifyInputViewStatusOnMainSync(
                 () -> assertThat(mActivity.hideImeWithInputMethodManager(0 /* flags */)).isTrue(),
                 EVENT_HIDE, true /* eventExpected */, false /* shown */, "IME is not shown");
@@ -219,14 +233,12 @@ public class InputMethodServiceTest {
      */
     @Test
     public void testShowHideKeyboard_byInsetsController() {
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
-        // Triggers to show IME via public API.
         verifyInputViewStatusOnMainSync(
                 () -> mActivity.showImeWithWindowInsetsController(),
                 EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
 
-        // Triggers to hide IME via public API.
         verifyInputViewStatusOnMainSync(
                 () -> mActivity.hideImeWithWindowInsetsController(),
                 EVENT_HIDE, true /* eventExpected */, false /* shown */, "IME is not shown");
@@ -234,53 +246,18 @@ public class InputMethodServiceTest {
 
     /**
      * This checks the result of calling IMS#requestShowSelf and IMS#requestHideSelf.
-     *
-     * <p>With the refactor in b/298172246, all calls to IMMS#{show,hide}MySoftInputLocked
-     * will be just apply the requested visibility (by using the callback). Therefore, we will
-     * lose flags like HIDE_IMPLICIT_ONLY.
      */
     @Test
     public void testShowHideSelf() {
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
-        // IME request to show itself without any flags, expect shown.
-        Log.i(TAG, "Call IMS#requestShowSelf(0)");
         verifyInputViewStatusOnMainSync(
                 () -> mInputMethodService.requestShowSelf(0 /* flags */),
                 EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
 
-        if (!mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
-            // IME request to hide itself with flag HIDE_IMPLICIT_ONLY, expect not hide (shown).
-            Log.i(TAG, "Call IMS#requestHideSelf(InputMethodManager.HIDE_IMPLICIT_ONLY)");
-            verifyInputViewStatusOnMainSync(
-                    () -> mInputMethodService.requestHideSelf(
-                            InputMethodManager.HIDE_IMPLICIT_ONLY),
-                    EVENT_HIDE, false /* eventExpected */, true /* shown */,
-                    "IME is still shown after HIDE_IMPLICIT_ONLY");
-        }
-
-        // IME request to hide itself without any flags, expect hidden.
-        Log.i(TAG, "Call IMS#requestHideSelf(0)");
         verifyInputViewStatusOnMainSync(
                 () -> mInputMethodService.requestHideSelf(0 /* flags */),
                 EVENT_HIDE, true /* eventExpected */, false /* shown */, "IME is not shown");
-
-        if (!mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
-            // IME request to show itself with flag SHOW_IMPLICIT, expect shown.
-            Log.i(TAG, "Call IMS#requestShowSelf(InputMethodManager.SHOW_IMPLICIT)");
-            verifyInputViewStatusOnMainSync(
-                    () -> mInputMethodService.requestShowSelf(InputMethodManager.SHOW_IMPLICIT),
-                    EVENT_SHOW, true /* eventExpected */, true /* shown */,
-                    "IME is shown with SHOW_IMPLICIT");
-
-            // IME request to hide itself with flag HIDE_IMPLICIT_ONLY, expect hidden.
-            Log.i(TAG, "Call IMS#requestHideSelf(InputMethodManager.HIDE_IMPLICIT_ONLY)");
-            verifyInputViewStatusOnMainSync(
-                    () -> mInputMethodService.requestHideSelf(
-                            InputMethodManager.HIDE_IMPLICIT_ONLY),
-                    EVENT_HIDE, true /* eventExpected */, false /* shown */,
-                    "IME is not shown after HIDE_IMPLICIT_ONLY");
-        }
     }
 
     /**
@@ -289,28 +266,25 @@ public class InputMethodServiceTest {
      */
     @Test
     public void testOnEvaluateInputViewShown_showImeWithHardKeyboard() {
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
         final var config = mInputMethodService.getResources().getConfiguration();
         final var initialConfig = new Configuration(config);
         try {
             config.keyboard = Configuration.KEYBOARD_QWERTY;
             config.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_NO;
-            eventually(() ->
-                    assertWithMessage("InputView should show with visible hardware keyboard")
-                            .that(mInputMethodService.onEvaluateInputViewShown()).isTrue());
+            assertWithMessage("InputView should show with visible hardware keyboard")
+                    .that(mInputMethodService.onEvaluateInputViewShown()).isTrue();
 
             config.keyboard = Configuration.KEYBOARD_NOKEYS;
             config.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_NO;
-            eventually(() ->
-                    assertWithMessage("InputView should show without hardware keyboard")
-                            .that(mInputMethodService.onEvaluateInputViewShown()).isTrue());
+            assertWithMessage("InputView should show without hardware keyboard")
+                    .that(mInputMethodService.onEvaluateInputViewShown()).isTrue();
 
             config.keyboard = Configuration.KEYBOARD_QWERTY;
             config.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_YES;
-            eventually(() ->
-                    assertWithMessage("InputView should show with hidden hardware keyboard")
-                         .that(mInputMethodService.onEvaluateInputViewShown()).isTrue());
+            assertWithMessage("InputView should show with hidden hardware keyboard")
+                    .that(mInputMethodService.onEvaluateInputViewShown()).isTrue();
         } finally {
             mInputMethodService.getResources()
                     .updateConfiguration(initialConfig, null /* metrics */, null /* compat */);
@@ -323,28 +297,25 @@ public class InputMethodServiceTest {
      */
     @Test
     public void testOnEvaluateInputViewShown_disableShowImeWithHardKeyboard() {
-        setShowImeWithHardKeyboard(false /* enabled */);
+        setShowImeWithHardKeyboard(false /* enable */);
 
         final var config = mInputMethodService.getResources().getConfiguration();
         final var initialConfig = new Configuration(config);
         try {
             config.keyboard = Configuration.KEYBOARD_QWERTY;
             config.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_NO;
-            eventually(() ->
-                    assertWithMessage("InputView should not show with visible hardware keyboard")
-                            .that(mInputMethodService.onEvaluateInputViewShown()).isFalse());
+            assertWithMessage("InputView should not show with visible hardware keyboard")
+                    .that(mInputMethodService.onEvaluateInputViewShown()).isFalse();
 
             config.keyboard = Configuration.KEYBOARD_NOKEYS;
             config.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_NO;
-            eventually(() ->
-                    assertWithMessage("InputView should show without hardware keyboard")
-                            .that(mInputMethodService.onEvaluateInputViewShown()).isTrue());
+            assertWithMessage("InputView should show without hardware keyboard")
+                    .that(mInputMethodService.onEvaluateInputViewShown()).isTrue();
 
             config.keyboard = Configuration.KEYBOARD_QWERTY;
             config.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_YES;
-            eventually(() ->
-                    assertWithMessage("InputView should show with hidden hardware keyboard")
-                            .that(mInputMethodService.onEvaluateInputViewShown()).isTrue());
+            assertWithMessage("InputView should show with hidden hardware keyboard")
+                    .that(mInputMethodService.onEvaluateInputViewShown()).isTrue();
         } finally {
             mInputMethodService.getResources()
                     .updateConfiguration(initialConfig, null /* metrics */, null /* compat */);
@@ -357,7 +328,7 @@ public class InputMethodServiceTest {
      */
     @Test
     public void testShowSoftInput_disableShowImeWithHardKeyboard() {
-        setShowImeWithHardKeyboard(false /* enabled */);
+        setShowImeWithHardKeyboard(false /* enable */);
 
         final var config = mInputMethodService.getResources().getConfiguration();
         final var initialConfig = new Configuration(config);
@@ -386,49 +357,17 @@ public class InputMethodServiceTest {
     }
 
     /**
-     * This checks that an explicit show request results in the IME being shown.
-     */
-    @Test
-    public void testShowSoftInputExplicitly() {
-        setShowImeWithHardKeyboard(true /* enabled */);
-
-        // When InputMethodService#onEvaluateInputViewShown() returns true and flag is EXPLICIT, the
-        // IME should be shown.
-        verifyInputViewStatusOnMainSync(
-                () -> assertThat(mActivity.showImeWithInputMethodManager(0 /* flags */)).isTrue(),
-                EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
-    }
-
-    /**
-     * This checks that an implicit show request results in the IME being shown.
-     */
-    @Test
-    public void testShowSoftInputImplicitly() {
-        setShowImeWithHardKeyboard(true /* enabled */);
-
-        // When InputMethodService#onEvaluateInputViewShown() returns true and flag is IMPLICIT,
-        // the IME should be shown.
-        verifyInputViewStatusOnMainSync(() -> assertThat(
-                mActivity.showImeWithInputMethodManager(InputMethodManager.SHOW_IMPLICIT)).isTrue(),
-                EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
-    }
-
-    /**
      * This checks that an explicit show request when the IME is not previously shown,
      * and it should be shown in fullscreen mode, results in the IME being shown.
      */
     @Test
     public void testShowSoftInputExplicitly_fullScreenMode() {
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
         // Set orientation landscape to enable fullscreen mode.
         setOrientation(2);
-        eventually(() -> assertWithMessage("No longer in natural orientation")
-                .that(mUiDevice.isNaturalOrientation()).isFalse());
-        // Wait for the TestActivity to be recreated.
         eventually(() -> assertWithMessage("Activity was re-created after rotation")
                 .that(TestActivity.getInstance()).isNotEqualTo(mActivity));
-        // Get the new TestActivity.
         mActivity = TestActivity.getInstance();
         assertWithMessage("Re-created activity is not null").that(mActivity).isNotNull();
         // Wait for the new EditText to be served by InputMethodManager.
@@ -442,34 +381,40 @@ public class InputMethodServiceTest {
 
     /**
      * This checks that an implicit show request when the IME is not previously shown,
-     * and it should be shown in fullscreen mode, results in the IME not being shown.
+     * and it should be shown in fullscreen mode behaves like an explicit show request, resulting
+     * in the IME being shown. This is due to the refactor in b/298172246, causing us to lose flag
+     * information like {@link InputMethodManager#SHOW_IMPLICIT}.
      *
-     * <p>With the refactor in b/298172246, all calls from InputMethodManager#{show,hide}SoftInput
-     * will be redirected to InsetsController#{show,hide}. Therefore, we will lose flags like
-     * SHOW_IMPLICIT.
+     * <p>Previously, an implicit show request when the IME is not previously shown,
+     * and it should be shown in fullscreen mode, would result in the IME not being shown.
      */
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
     public void testShowSoftInputImplicitly_fullScreenMode() {
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
         // Set orientation landscape to enable fullscreen mode.
         setOrientation(2);
-        eventually(() -> assertWithMessage("No longer in natural orientation")
-                .that(mUiDevice.isNaturalOrientation()).isFalse());
-        // Wait for the TestActivity to be recreated.
         eventually(() -> assertWithMessage("Activity was re-created after rotation")
                 .that(TestActivity.getInstance()).isNotEqualTo(mActivity));
-        // Get the new TestActivity.
         mActivity = TestActivity.getInstance();
         assertWithMessage("Re-created activity is not null").that(mActivity).isNotNull();
         // Wait for the new EditText to be served by InputMethodManager.
         eventually(() -> assertWithMessage("Has an input connection to the re-created Activity")
                 .that(mImm.hasActiveInputConnection(mActivity.getEditText())).isTrue());
 
-        verifyInputViewStatusOnMainSync(() -> assertThat(
-                mActivity.showImeWithInputMethodManager(InputMethodManager.SHOW_IMPLICIT)).isTrue(),
-                EVENT_SHOW, false /* eventExpected */, false /* shown */, "IME is not shown");
+        if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
+            verifyInputViewStatusOnMainSync(() -> assertThat(
+                            mActivity.showImeWithInputMethodManager(
+                                    InputMethodManager.SHOW_IMPLICIT))
+                            .isTrue(),
+                    EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
+        } else {
+            verifyInputViewStatusOnMainSync(() -> assertThat(
+                            mActivity.showImeWithInputMethodManager(
+                                    InputMethodManager.SHOW_IMPLICIT))
+                            .isTrue(),
+                    EVENT_SHOW, false /* eventExpected */, false /* shown */, "IME is not shown");
+        }
     }
 
     /**
@@ -478,7 +423,7 @@ public class InputMethodServiceTest {
      */
     @Test
     public void testShowSoftInputExplicitly_withHardKeyboard() {
-        setShowImeWithHardKeyboard(false /* enabled */);
+        setShowImeWithHardKeyboard(false /* enable */);
 
         final var config = mInputMethodService.getResources().getConfiguration();
         final var initialConfig = new Configuration(config);
@@ -497,17 +442,17 @@ public class InputMethodServiceTest {
     }
 
     /**
-     * This checks that an implicit show request when a hardware keyboard is connected,
-     * results in the IME not being shown.
+     * This checks that an implicit show request when a hardware keyboard is connected behaves
+     * like an explicit show request, resulting in the IME being shown. This is due to the
+     * refactor in b/298172246, causing us to lose flag information like
+     * {@link InputMethodManager#SHOW_IMPLICIT}.
      *
-     * <p>With the refactor in b/298172246, all calls from InputMethodManager#{show,hide}SoftInput
-     * will be redirected to InsetsController#{show,hide}. Therefore, we will lose flags like
-     * SHOW_IMPLICIT.
+     * <p>Previously, an implicit show request when a hardware keyboard is connected would
+     * result in the IME not being shown.
      */
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
     public void testShowSoftInputImplicitly_withHardKeyboard() {
-        setShowImeWithHardKeyboard(false /* enabled */);
+        setShowImeWithHardKeyboard(false /* enable */);
 
         final var config = mInputMethodService.getResources().getConfiguration();
         final var initialConfig = new Configuration(config);
@@ -516,10 +461,20 @@ public class InputMethodServiceTest {
             config.keyboard = Configuration.KEYBOARD_QWERTY;
             config.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_YES;
 
-            verifyInputViewStatusOnMainSync(() ->assertThat(
-                    mActivity.showImeWithInputMethodManager(InputMethodManager.SHOW_IMPLICIT))
-                            .isTrue(),
-                    EVENT_SHOW, false /* eventExpected */, false /* shown */, "IME is not shown");
+            if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
+                verifyInputViewStatusOnMainSync(() -> assertThat(
+                                mActivity.showImeWithInputMethodManager(
+                                        InputMethodManager.SHOW_IMPLICIT))
+                                .isTrue(),
+                        EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
+            } else {
+                verifyInputViewStatusOnMainSync(() -> assertThat(
+                                mActivity.showImeWithInputMethodManager(
+                                        InputMethodManager.SHOW_IMPLICIT))
+                                .isTrue(),
+                        EVENT_SHOW, false /* eventExpected */, false /* shown */,
+                        "IME is not shown");
+            }
         } finally {
             mInputMethodService.getResources()
                     .updateConfiguration(initialConfig, null /* metrics */, null /* compat */);
@@ -532,7 +487,7 @@ public class InputMethodServiceTest {
      */
     @Test
     public void testShowSoftInputExplicitly_thenConfigurationChanged() {
-        setShowImeWithHardKeyboard(false /* enabled */);
+        setShowImeWithHardKeyboard(false /* enable */);
 
         final var config = mInputMethodService.getResources().getConfiguration();
         final var initialConfig = new Configuration(config);
@@ -565,17 +520,17 @@ public class InputMethodServiceTest {
 
     /**
      * This checks that an implicit show request followed by connecting a hardware keyboard
-     * and a configuration change, does not trigger IMS#onFinishInputView,
-     * but results in the IME being hidden.
+     * and a configuration change behaves like an explicit show request, resulting in the IME
+     * still being shown. This is due to the refactor in b/298172246, causing us to lose flag
+     * information like {@link InputMethodManager#SHOW_IMPLICIT}.
      *
-     * <p>With the refactor in b/298172246, all calls from InputMethodManager#{show,hide}SoftInput
-     * will be redirected to InsetsController#{show,hide}. Therefore, we will lose flags like
-     * SHOW_IMPLICIT.
+     * <p>Previously, an implicit show request followed by connecting a hardware keyboard
+     * and a configuration change, would not trigger IMS#onFinishInputView, but resulted in the
+     * IME being hidden.
      */
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
     public void testShowSoftInputImplicitly_thenConfigurationChanged() {
-        setShowImeWithHardKeyboard(false /* enabled */);
+        setShowImeWithHardKeyboard(false /* enable */);
 
         final var config = mInputMethodService.getResources().getConfiguration();
         final var initialConfig = new Configuration(config);
@@ -596,16 +551,23 @@ public class InputMethodServiceTest {
             // Simulate a fake configuration change to avoid the recreation of TestActivity.
             config.orientation = Configuration.ORIENTATION_LANDSCAPE;
 
-            // Normally, IMS#onFinishInputView will be called when finishing the input view by
-            // the user. But if IMS#hideWindow is called when receiving a new configuration change,
-            // we don't expect that it's user-driven to finish the lifecycle of input view with
-            // IMS#onFinishInputView, because the input view will be re-initialized according
-            // to the last #mShowInputRequested state. So in this case we treat the input view as
-            // still alive.
-            verifyInputViewStatusOnMainSync(
-                    () -> mInputMethodService.onConfigurationChanged(config),
-                    EVENT_CONFIG, true /* eventExpected */, true /* inputViewStarted */,
-                    false /* shown */, "IME is not shown after a configuration change");
+            if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
+                verifyInputViewStatusOnMainSync(
+                        () -> mInputMethodService.onConfigurationChanged(config),
+                        EVENT_CONFIG, true /* eventExpected */, true /* shown */,
+                        "IME is still shown after a configuration change");
+            } else {
+                // Normally, IMS#onFinishInputView will be called when finishing the input view by
+                // the user. But if IMS#hideWindow is called when receiving a new configuration
+                // change, we don't expect that it's user-driven to finish the lifecycle of input
+                // view with IMS#onFinishInputView, because the input view will be re-initialized
+                // according to the last #mShowInputRequested state. So in this case we treat the
+                // input view as still alive.
+                verifyInputViewStatusOnMainSync(
+                        () -> mInputMethodService.onConfigurationChanged(config),
+                        EVENT_CONFIG, true /* eventExpected */, true /* inputViewStarted */,
+                        false /* shown */, "IME is not shown after a configuration change");
+            }
         } finally {
             mInputMethodService.getResources()
                     .updateConfiguration(initialConfig, null /* metrics */, null /* compat */);
@@ -619,7 +581,7 @@ public class InputMethodServiceTest {
      */
     @Test
     public void testShowSoftInputExplicitly_thenShowSoftInputImplicitly_withHardKeyboard() {
-        setShowImeWithHardKeyboard(false /* enabled */);
+        setShowImeWithHardKeyboard(false /* enable */);
 
         final var config = mInputMethodService.getResources().getConfiguration();
         final var initialConfig = new Configuration(config);
@@ -628,12 +590,10 @@ public class InputMethodServiceTest {
             config.keyboard = Configuration.KEYBOARD_QWERTY;
             config.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_YES;
 
-            // Explicit show request.
             verifyInputViewStatusOnMainSync(() -> assertThat(
                             mActivity.showImeWithInputMethodManager(0 /* flags */)).isTrue(),
                     EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
 
-            // Implicit show request.
             verifyInputViewStatusOnMainSync(() -> assertThat(
                             mActivity.showImeWithInputMethodManager(
                                     InputMethodManager.SHOW_IMPLICIT)).isTrue(),
@@ -654,17 +614,18 @@ public class InputMethodServiceTest {
 
     /**
      * This checks that a forced show request directly followed by an explicit show request,
-     * and then a hide not always request, still results in the IME being shown
-     * (i.e. the explicit show request retains the forced state).
+     * and then a not always hide request behaves like a normal hide request, resulting in the
+     * IME being hidden (i.e. the explicit show request does not retain the forced state). This is
+     * due to the refactor in b/298172246, causing us to lose flag information like
+     * {@link InputMethodManager#SHOW_FORCED}.
      *
-     * <p>With the refactor in b/298172246, all calls from InputMethodManager#{show,hide}SoftInput
-     * will be redirected to InsetsController#{show,hide}. Therefore, we will lose flags like
-     * HIDE_NOT_ALWAYS.
+     * <p>Previously, a forced show request directly followed by an explicit show request,
+     * and then a not always hide request, would result in the IME still being shown
+     * (i.e. the explicit show request would retain the forced state).
      */
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
     public void testShowSoftInputForced_testShowSoftInputExplicitly_thenHideSoftInputNotAlways() {
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
         verifyInputViewStatusOnMainSync(() -> assertThat(
                 mActivity.showImeWithInputMethodManager(InputMethodManager.SHOW_FORCED)).isTrue(),
@@ -674,11 +635,123 @@ public class InputMethodServiceTest {
                         mActivity.showImeWithInputMethodManager(0 /* flags */)).isTrue(),
                 EVENT_SHOW, false /* eventExpected */, true /* shown */, "IME is still shown");
 
-        verifyInputViewStatusOnMainSync(() -> assertThat(
-                        mActivity.hideImeWithInputMethodManager(InputMethodManager.HIDE_NOT_ALWAYS))
-                        .isTrue(),
-                EVENT_HIDE, false /* eventExpected */, true /* shown */,
-                "IME is still shown after HIDE_NOT_ALWAYS");
+        if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
+            verifyInputViewStatusOnMainSync(() -> assertThat(mActivity
+                            .hideImeWithInputMethodManager(InputMethodManager.HIDE_NOT_ALWAYS))
+                            .isTrue(),
+                    EVENT_HIDE, true /* eventExpected */, false /* shown */,
+                    "IME is not shown after HIDE_NOT_ALWAYS");
+        } else {
+            verifyInputViewStatusOnMainSync(() -> assertThat(mActivity
+                            .hideImeWithInputMethodManager(InputMethodManager.HIDE_NOT_ALWAYS))
+                            .isTrue(),
+                    EVENT_HIDE, false /* eventExpected */, true /* shown */,
+                    "IME is still shown after HIDE_NOT_ALWAYS");
+        }
+    }
+
+    /**
+     * This checks that an explicit show request followed by an implicit only hide request
+     * behaves like a normal hide request, resulting in the IME being hidden. This is due to
+     * the refactor in b/298172246, causing us to lose flag information like
+     * {@link InputMethodManager#SHOW_IMPLICIT} and {@link InputMethodManager#HIDE_IMPLICIT_ONLY}.
+     *
+     * <p>Previously, an explicit show request followed by an implicit only hide request
+     * would result in the IME still being shown.
+     */
+    @Test
+    public void testShowSoftInputExplicitly_thenHideSoftInputImplicitOnly() {
+        setShowImeWithHardKeyboard(true /* enable */);
+
+        verifyInputViewStatusOnMainSync(
+                () -> mActivity.showImeWithInputMethodManager(0 /* flags */),
+                EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
+
+        if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
+            verifyInputViewStatusOnMainSync(
+                    () -> mActivity.hideImeWithInputMethodManager(
+                            InputMethodManager.HIDE_IMPLICIT_ONLY),
+                    EVENT_HIDE, true /* eventExpected */, false /* shown */,
+                    "IME is not shown after HIDE_IMPLICIT_ONLY");
+        } else {
+            verifyInputViewStatusOnMainSync(
+                    () -> mActivity.hideImeWithInputMethodManager(
+                            InputMethodManager.HIDE_IMPLICIT_ONLY),
+                    EVENT_HIDE, false /* eventExpected */, true /* shown */,
+                    "IME is still shown after HIDE_IMPLICIT_ONLY");
+        }
+    }
+
+    /**
+     * This checks that an implicit show request followed by an implicit only hide request
+     * results in the IME being hidden.
+     */
+    @Test
+    public void testShowSoftInputImplicitly_thenHideSoftInputImplicitOnly() {
+        setShowImeWithHardKeyboard(true /* enable */);
+
+        verifyInputViewStatusOnMainSync(
+                () -> mActivity.showImeWithInputMethodManager(InputMethodManager.SHOW_IMPLICIT),
+                EVENT_SHOW, true /* eventExpected */, true /* shown */,
+                "IME is shown with SHOW_IMPLICIT");
+
+        verifyInputViewStatusOnMainSync(
+                () -> mActivity.hideImeWithInputMethodManager(
+                        InputMethodManager.HIDE_IMPLICIT_ONLY),
+                EVENT_HIDE, true /* eventExpected */, false /* shown */,
+                "IME is not shown after HIDE_IMPLICIT_ONLY");
+    }
+
+    /**
+     * This checks that an explicit show self request followed by an implicit only hide self request
+     * behaves like a normal hide self request, resulting in the IME being hidden. This is due to
+     * the refactor in b/298172246, causing us to lose flag information like
+     * {@link InputMethodManager#SHOW_IMPLICIT} and {@link InputMethodManager#HIDE_IMPLICIT_ONLY}.
+     *
+     * <p>Previously, an explicit show self request followed by an implicit only hide self request
+     * would result in the IME still being shown.
+     */
+    @Test
+    public void testShowSelfExplicitly_thenHideSelfImplicitOnly() {
+        setShowImeWithHardKeyboard(true /* enable */);
+
+        verifyInputViewStatusOnMainSync(
+                () -> mInputMethodService.requestShowSelf(0 /* flags */),
+                EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
+
+        if (mFlagsValueProvider.getBoolean(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)) {
+            verifyInputViewStatusOnMainSync(
+                    () -> mInputMethodService.requestHideSelf(
+                            InputMethodManager.HIDE_IMPLICIT_ONLY),
+                    EVENT_HIDE, true /* eventExpected */, false /* shown */,
+                    "IME is not shown after HIDE_IMPLICIT_ONLY");
+        } else {
+            verifyInputViewStatusOnMainSync(
+                    () -> mInputMethodService.requestHideSelf(
+                            InputMethodManager.HIDE_IMPLICIT_ONLY),
+                    EVENT_HIDE, false /* eventExpected */, true /* shown */,
+                    "IME is still shown after HIDE_IMPLICIT_ONLY");
+        }
+    }
+
+    /**
+     * This checks that an implicit show self request followed by an implicit only hide self request
+     * results in the IME being hidden.
+     */
+    @Test
+    public void testShowSelfImplicitly_thenHideSelfImplicitOnly() {
+        setShowImeWithHardKeyboard(true /* enable */);
+
+        verifyInputViewStatusOnMainSync(
+                () -> mInputMethodService.requestShowSelf(InputMethodManager.SHOW_IMPLICIT),
+                EVENT_SHOW, true /* eventExpected */, true /* shown */,
+                "IME is shown with SHOW_IMPLICIT");
+
+        verifyInputViewStatusOnMainSync(
+                () -> mInputMethodService.requestHideSelf(
+                        InputMethodManager.HIDE_IMPLICIT_ONLY),
+                EVENT_HIDE, true /* eventExpected */, false /* shown */,
+                "IME is not shown after HIDE_IMPLICIT_ONLY");
     }
 
     /**
@@ -686,7 +759,7 @@ public class InputMethodServiceTest {
      */
     @Test
     public void testFullScreenMode() {
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
         Log.i(TAG, "Set orientation natural");
         verifyFullscreenMode(() -> setOrientation(0), false /* eventExpected */,
@@ -723,25 +796,22 @@ public class InputMethodServiceTest {
     public void testShowHideImeNavigationBar_doesDrawImeNavBar() {
         assumeTrue("Must have a navigation bar", hasNavigationBar());
 
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
-        // Show IME
         verifyInputViewStatusOnMainSync(
                 () -> {
-                    setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
+                    setDrawsImeNavBarAndSwitcherButton(true /* enable */);
                     mActivity.showImeWithWindowInsetsController();
                 },
                 EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
         assertWithMessage("IME navigation bar is initially shown")
                 .that(mInputMethodService.isImeNavigationBarShownForTesting()).isTrue();
 
-        // Try to hide IME nav bar
         mInstrumentation.runOnMainSync(() -> setShowImeNavigationBar(false /* show */));
         mInstrumentation.waitForIdleSync();
         assertWithMessage("IME navigation bar is not shown after hide request")
                 .that(mInputMethodService.isImeNavigationBarShownForTesting()).isFalse();
 
-        // Try to show IME nav bar
         mInstrumentation.runOnMainSync(() -> setShowImeNavigationBar(true /* show */));
         mInstrumentation.waitForIdleSync();
         assertWithMessage("IME navigation bar is shown after show request")
@@ -758,25 +828,22 @@ public class InputMethodServiceTest {
     public void testShowHideImeNavigationBar_doesNotDrawImeNavBar() {
         assumeTrue("Must have a navigation bar", hasNavigationBar());
 
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
-        // Show IME
         verifyInputViewStatusOnMainSync(
                 () -> {
-                    setDrawsImeNavBarAndSwitcherButton(false /* enabled */);
+                    setDrawsImeNavBarAndSwitcherButton(false /* enable */);
                     mActivity.showImeWithWindowInsetsController();
                 },
                 EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
         assertWithMessage("IME navigation bar is initially not shown")
                 .that(mInputMethodService.isImeNavigationBarShownForTesting()).isFalse();
 
-        // Try to hide IME nav bar
         mInstrumentation.runOnMainSync(() -> setShowImeNavigationBar(false /* show */));
         mInstrumentation.waitForIdleSync();
         assertWithMessage("IME navigation bar is not shown after hide request")
                 .that(mInputMethodService.isImeNavigationBarShownForTesting()).isFalse();
 
-        // Try to show IME nav bar
         mInstrumentation.runOnMainSync(() -> setShowImeNavigationBar(true /* show */));
         mInstrumentation.waitForIdleSync();
         assertWithMessage("IME navigation bar is not shown after show request")
@@ -792,7 +859,7 @@ public class InputMethodServiceTest {
 
         waitUntilActivityReadyForInputInjection(mActivity);
 
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
         try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
             verifyInputViewStatusOnMainSync(
@@ -818,7 +885,7 @@ public class InputMethodServiceTest {
 
         waitUntilActivityReadyForInputInjection(mActivity);
 
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
         try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
             verifyInputViewStatusOnMainSync(
@@ -844,7 +911,7 @@ public class InputMethodServiceTest {
 
         waitUntilActivityReadyForInputInjection(mActivity);
 
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
         final var info = mImm.getCurrentInputMethodInfo();
         assertWithMessage("InputMethodInfo is not null").that(info).isNotNull();
@@ -855,7 +922,7 @@ public class InputMethodServiceTest {
         try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
             verifyInputViewStatusOnMainSync(
                     () -> {
-                        setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
+                        setDrawsImeNavBarAndSwitcherButton(true /* enable */);
                         mActivity.showImeWithWindowInsetsController();
                     },
                     EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
@@ -884,7 +951,7 @@ public class InputMethodServiceTest {
 
         waitUntilActivityReadyForInputInjection(mActivity);
 
-        setShowImeWithHardKeyboard(true /* enabled */);
+        setShowImeWithHardKeyboard(true /* enable */);
 
         final var info = mImm.getCurrentInputMethodInfo();
         assertWithMessage("InputMethodInfo is not null").that(info).isNotNull();
@@ -893,7 +960,7 @@ public class InputMethodServiceTest {
         try (var ignored = mGestureNavSwitchHelper.withGestureNavigationMode()) {
             verifyInputViewStatusOnMainSync(
                     () -> {
-                        setDrawsImeNavBarAndSwitcherButton(true /* enabled */);
+                        setDrawsImeNavBarAndSwitcherButton(true /* enable */);
                         mActivity.showImeWithWindowInsetsController();
                     },
                     EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
@@ -956,7 +1023,8 @@ public class InputMethodServiceTest {
                 runnable.run();
             }
             mInstrumentation.waitForIdleSync();
-            eventCalled = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+            eventCalled = latch.await(eventExpected ? EXPECT_TIMEOUT_MS : NOT_EXCEPT_TIMEOUT_MS,
+                    TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             fail("Interrupted while waiting for latch: " + e.getMessage());
             return;
@@ -1016,10 +1084,8 @@ public class InputMethodServiceTest {
         verifyInputViewStatus(runnable, EVENT_CONFIG, eventExpected, false /* shown */,
                 "IME is not shown");
         if (eventExpected) {
-            // Wait for the TestActivity to be recreated.
             eventually(() -> assertWithMessage("Activity was re-created after rotation")
                     .that(TestActivity.getInstance()).isNotEqualTo(mActivity));
-            // Get the new TestActivity.
             mActivity = TestActivity.getInstance();
             assertWithMessage("Re-created activity is not null").that(mActivity).isNotNull();
             // Wait for the new EditText to be served by InputMethodManager.
@@ -1062,6 +1128,7 @@ public class InputMethodServiceTest {
 
     private void prepareActivity() {
         mActivity = TestActivity.startSync(mInstrumentation);
+        mInstrumentation.waitForIdleSync();
         Log.i(TAG, "Finish preparing activity with editor.");
     }
 
@@ -1086,21 +1153,51 @@ public class InputMethodServiceTest {
      * @param enable the value to be set.
      */
     private void setShowImeWithHardKeyboard(boolean enable) {
+        if (mInputMethodService == null) {
+            // If the IME is no longer around, reset the setting unconditionally.
+            executeShellCommand(SET_SHOW_IME_WITH_HARD_KEYBOARD_CMD + " " + (enable ? "1" : "0"));
+            return;
+        }
+
         final boolean currentEnabled =
                 mInputMethodService.getShouldShowImeWithHardKeyboardForTesting();
         if (currentEnabled != enable) {
-            executeShellCommand(enable
-                    ? ENABLE_SHOW_IME_WITH_HARD_KEYBOARD_CMD
-                    : DISABLE_SHOW_IME_WITH_HARD_KEYBOARD_CMD);
+            executeShellCommand(SET_SHOW_IME_WITH_HARD_KEYBOARD_CMD + " " + (enable ? "1" : "0"));
             eventually(() -> assertWithMessage("showImeWithHardKeyboard updated")
                     .that(mInputMethodService.getShouldShowImeWithHardKeyboardForTesting())
                     .isEqualTo(enable));
         }
     }
 
-    private static void executeShellCommand(@NonNull String cmd) {
+    /**
+     * Gets the verbose logging state in {@link android.view.inputmethod.ImeTracker}.
+     *
+     * @return {@code true} iff verbose logging is enabled.
+     */
+    private static boolean getVerboseImeTrackerLogging() {
+        return executeShellCommand(GET_VERBOSE_IME_TRACKER_LOGGING_CMD).trim().equals("1");
+    }
+
+    /**
+     * Sets verbose logging in {@link android.view.inputmethod.ImeTracker}.
+     *
+     * @param enabled whether to enable or disable verbose logging.
+     *
+     * @implNote This must use {@link ActivityManager#notifySystemPropertiesChanged()} to listen
+     *           for changes to the system property for the verbose ImeTracker logging.
+     */
+    private void setVerboseImeTrackerLogging(boolean enabled) {
+        final var context = mInstrumentation.getContext();
+        final var am = context.getSystemService(ActivityManager.class);
+
+        executeShellCommand(SET_VERBOSE_IME_TRACKER_LOGGING_CMD + " " + (enabled ? "1" : "0"));
+        am.notifySystemPropertiesChanged();
+    }
+
+    @NonNull
+    private static String executeShellCommand(@NonNull String cmd) {
         Log.i(TAG, "Run command: " + cmd);
-        SystemUtil.runShellCommandOrThrow(cmd);
+        return SystemUtil.runShellCommandOrThrow(cmd);
     }
 
     /**
@@ -1113,8 +1210,7 @@ public class InputMethodServiceTest {
 
     @NonNull
     private UiObject2 getUiObject(@NonNull BySelector bySelector) {
-        final var uiObject = mUiDevice.wait(Until.findObject(bySelector),
-                TimeUnit.SECONDS.toMillis(TIMEOUT_IN_SECONDS));
+        final var uiObject = mUiDevice.wait(Until.findObject(bySelector), TIMEOUT_MS);
         assertWithMessage("UiObject with " + bySelector + " was found").that(uiObject).isNotNull();
         return uiObject;
     }
@@ -1137,10 +1233,10 @@ public class InputMethodServiceTest {
      *
      * <p>Note, neither of these are normally drawn when in three button navigation mode.
      *
-     * @param enabled whether the IME nav bar and IME Switcher button are drawn.
+     * @param enable whether the IME nav bar and IME Switcher button are drawn.
      */
-    private void setDrawsImeNavBarAndSwitcherButton(boolean enabled) {
-        final int flags = enabled ? IME_DRAWS_IME_NAV_BAR | SHOW_IME_SWITCHER_WHEN_IME_IS_SHOWN : 0;
+    private void setDrawsImeNavBarAndSwitcherButton(boolean enable) {
+        final int flags = enable ? IME_DRAWS_IME_NAV_BAR | SHOW_IME_SWITCHER_WHEN_IME_IS_SHOWN : 0;
         mInputMethodService.getInputMethodInternal().onNavButtonFlagsChanged(flags);
     }
 

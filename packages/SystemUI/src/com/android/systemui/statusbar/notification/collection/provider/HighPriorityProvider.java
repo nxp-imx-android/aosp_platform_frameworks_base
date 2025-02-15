@@ -27,6 +27,7 @@ import com.android.systemui.statusbar.notification.collection.ListEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.util.List;
 
@@ -129,21 +130,42 @@ public class HighPriorityProvider {
                                 >= NotificationManager.IMPORTANCE_DEFAULT);
     }
 
+    /**
+     * Returns whether the given ListEntry has a high priority child or is in a group with a child
+     * that's high priority
+     */
     private boolean hasHighPriorityChild(ListEntry entry, boolean allowImplicit) {
-        if (entry instanceof NotificationEntry
-                && !mGroupMembershipManager.isGroupSummary((NotificationEntry) entry)) {
-            return false;
-        }
-
-        List<NotificationEntry> children = mGroupMembershipManager.getChildren(entry);
-        if (children != null) {
-            for (NotificationEntry child : children) {
-                if (child != entry && isHighPriority(child, allowImplicit)) {
-                    return true;
+        if (NotificationBundleUi.isEnabled()) {
+            GroupEntry representativeGroupEntry = null;
+            if (entry instanceof GroupEntry) {
+                representativeGroupEntry = (GroupEntry) entry;
+            } else if (entry instanceof NotificationEntry){
+                final NotificationEntry notificationEntry = entry.getRepresentativeEntry();
+                if (notificationEntry.getParent() != null
+                        && notificationEntry.getParent().getSummary() != null
+                        && notificationEntry.getParent().getSummary() == notificationEntry) {
+                    representativeGroupEntry = notificationEntry.getParent();
                 }
             }
+            return representativeGroupEntry != null &&
+                    representativeGroupEntry.getChildren().stream().anyMatch(
+                            childEntry -> isHighPriority(childEntry, allowImplicit));
+
+        } else {
+            if (entry instanceof NotificationEntry
+                    && !mGroupMembershipManager.isGroupSummary((NotificationEntry) entry)) {
+                return false;
+            }
+            List<NotificationEntry> children = mGroupMembershipManager.getChildren(entry);
+            if (children != null) {
+                for (NotificationEntry child : children) {
+                    if (child != entry && isHighPriority(child, allowImplicit)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
-        return false;
     }
 
     private boolean hasHighPriorityCharacteristics(NotificationEntry entry) {

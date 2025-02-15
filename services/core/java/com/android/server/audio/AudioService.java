@@ -63,6 +63,7 @@ import static com.android.media.audio.Flags.audioserverPermissions;
 import static com.android.media.audio.Flags.disablePrescaleAbsoluteVolume;
 import static com.android.media.audio.Flags.deferWearPermissionUpdates;
 import static com.android.media.audio.Flags.equalScoLeaVcIndexRange;
+import static com.android.media.audio.Flags.optimizeBtDeviceSwitch;
 import static com.android.media.audio.Flags.replaceStreamBtSco;
 import static com.android.media.audio.Flags.ringMyCar;
 import static com.android.media.audio.Flags.ringerModeAffectsAlarm;
@@ -4990,6 +4991,8 @@ public class AudioService extends IAudioService.Stub
                 + cacheGetStreamMinMaxVolume());
         pw.println("\tandroid.media.audio.Flags.cacheGetStreamVolume:"
                 + cacheGetStreamVolume());
+        pw.println("\tcom.android.media.audio.optimizeBtDeviceSwitch:"
+                + optimizeBtDeviceSwitch());
     }
 
     private void dumpAudioMode(PrintWriter pw) {

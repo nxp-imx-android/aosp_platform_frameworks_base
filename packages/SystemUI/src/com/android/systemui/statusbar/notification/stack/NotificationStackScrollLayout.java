@@ -122,6 +122,7 @@ import com.android.systemui.statusbar.notification.row.ActivatableNotificationVi
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.row.StackScrollerDecorView;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationContentAlphaOptimization;
 import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
@@ -2958,9 +2959,13 @@ public class NotificationStackScrollLayout
     }
 
     private boolean isChildInGroup(View child) {
-        return child instanceof ExpandableNotificationRow
-                && mGroupMembershipManager.isChildInGroup(
-                ((ExpandableNotificationRow) child).getEntry());
+        if (child instanceof ExpandableNotificationRow) {
+            ExpandableNotificationRow childRow = (ExpandableNotificationRow) child;
+            return NotificationBundleUi.isEnabled()
+                    ? mGroupMembershipManager.isChildInGroup(childRow.getEntryAdapter())
+                    : mGroupMembershipManager.isChildInGroup(childRow.getEntry());
+        }
+        return false;
     }
 
     /**

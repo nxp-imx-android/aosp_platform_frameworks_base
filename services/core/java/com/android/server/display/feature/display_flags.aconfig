@@ -456,9 +456,8 @@ flag {
 flag {
     name: "enable_display_content_mode_management"
     namespace: "lse_desktop_experience"
-    description: "Enable switching the content mode of connected displays between mirroring and extened. Also change the default content mode to extended mode."
+    description: "Enable switching the content mode of connected displays between mirroring and extended. Also change the default content mode to extended mode."
     bug: "378385869"
-    is_fixed_read_only: true
 }
 
 flag {
@@ -508,4 +507,15 @@ flag {
     description: "Add a new category to get the built in displays."
     bug: "293651324"
     is_fixed_read_only: false
+}
+
+flag {
+    name: "committed_state_separate_event"
+    namespace: "display_manager"
+    description: "Move Display committed state into a separate event"
+    bug: "342192387"
+    is_fixed_read_only: true
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
 }

@@ -3379,7 +3379,7 @@ public final class PowerManagerService extends SystemService
                 }
                 changed = sleepPowerGroupLocked(powerGroup, time,
                         PowerManager.GO_TO_SLEEP_REASON_INATTENTIVE, Process.SYSTEM_UID);
-            } else if (shouldNapAtBedTimeLocked()) {
+            } else if (shouldNapAtBedTimeLocked(powerGroup)) {
                 changed = dreamPowerGroupLocked(powerGroup, time,
                         Process.SYSTEM_UID, /* allowWake= */ false);
             } else {
@@ -3395,7 +3395,10 @@ public final class PowerManagerService extends SystemService
      * activity timeout has expired and it's bedtime.
      */
     @GuardedBy("mLock")
-    private boolean shouldNapAtBedTimeLocked() {
+    private boolean shouldNapAtBedTimeLocked(PowerGroup powerGroup) {
+        if (!powerGroup.supportsSandmanLocked()) {
+            return false;
+        }
         return mDreamsActivateOnSleepSetting
                 || (mDreamsActivateOnDockSetting
                         && mDockState != Intent.EXTRA_DOCK_STATE_UNDOCKED)
@@ -3617,9 +3620,10 @@ public final class PowerManagerService extends SystemService
         if (!mDreamsDisabledByAmbientModeSuppressionConfig) {
             return;
         }
+        final PowerGroup defaultPowerGroup = mPowerGroups.get(Display.DEFAULT_DISPLAY_GROUP);
         if (!isSuppressed && mIsPowered && mDreamsSupportedConfig && mDreamsEnabledSetting
-                && shouldNapAtBedTimeLocked() && isItBedTimeYetLocked(
-                mPowerGroups.get(Display.DEFAULT_DISPLAY_GROUP))) {
+                && shouldNapAtBedTimeLocked(defaultPowerGroup)
+                && isItBedTimeYetLocked(defaultPowerGroup)) {
             napInternal(SystemClock.uptimeMillis(), Process.SYSTEM_UID, /* allowWake= */ true);
         } else if (isSuppressed) {
             mDirty |= DIRTY_SETTINGS;

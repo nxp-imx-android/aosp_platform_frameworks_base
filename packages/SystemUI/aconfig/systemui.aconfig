@@ -974,6 +974,26 @@ flag {
 }
 
 flag {
+    name: "use_notif_inflation_thread_for_footer"
+    namespace: "systemui"
+    description: "use the @NotifInflation thread for FooterView and EmptyShadeView inflation"
+    bug: "375320642"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "use_notif_inflation_thread_for_row"
+    namespace: "systemui"
+    description: "use the @NotifInflation thread for ExpandableNotificationRow inflation"
+    bug: "375320642"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "notify_power_manager_user_activity_background"
     namespace: "systemui"
     description: "Decide whether to notify the user activity to power manager in the background thread."
@@ -1977,6 +1997,16 @@ flag {
 }
 
 flag {
+    name: "hardware_color_styles"
+    namespace: "systemui"
+    description: "Enables loading initial colors based ion hardware color"
+    bug: "347286986"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "shade_launch_accessibility"
    namespace: "systemui"
    description: "Intercept accessibility focus events for the Shade during launch animations to avoid stray TalkBack events."
@@ -2025,4 +2055,14 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "skip_hide_sensitive_notif_animation"
+    namespace: "systemui"
+    description: "Skip hide sensitive notification animation when the showing layout is not changed."
+    bug: "390624334"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+   }
 }

@@ -17,9 +17,11 @@ package com.android.wm.shell.desktopmode.multidesks
 
 import android.os.IBinder
 import android.view.WindowManager.TRANSIT_CLOSE
+import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
-import com.android.window.flags.Flags
+import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 
 /**
  * Observer of desk-related transitions, such as adding, removing or activating a whole desk. It
@@ -33,7 +35,7 @@ class DesksTransitionObserver(
 
     /** Adds a pending desk transition to be tracked. */
     fun addPendingTransition(transition: DeskTransition) {
-        if (!Flags.enableMultipleDesktopsBackend()) return
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         deskTransitions[transition.token] = transition
     }
 
@@ -42,8 +44,9 @@ class DesksTransitionObserver(
      * observer.
      */
     fun onTransitionReady(transition: IBinder, info: TransitionInfo) {
-        if (!Flags.enableMultipleDesktopsBackend()) return
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         val deskTransition = deskTransitions.remove(transition) ?: return
+        logD("Desk transition ready: %s", deskTransition)
         val desktopRepository = desktopUserRepositories.current
         when (deskTransition) {
             is DeskTransition.RemoveDesk -> {
@@ -88,6 +91,42 @@ class DesksTransitionObserver(
                     )
                 }
             }
+            is DeskTransition.DeactivateDesk -> {
+                var visibleDeactivation = false
+                for (change in info.changes) {
+                    val isDeskChange = desksOrganizer.isDeskChange(change, deskTransition.deskId)
+                    if (isDeskChange) {
+                        visibleDeactivation = true
+                        continue
+                    }
+                    val taskId = change.taskInfo?.taskId ?: continue
+                    val removedFromDesk =
+                        desktopRepository.getDeskIdForTask(taskId) == deskTransition.deskId &&
+                            desksOrganizer.getDeskAtEnd(change) == null
+                    if (removedFromDesk) {
+                        desktopRepository.removeTaskFromDesk(
+                            deskId = deskTransition.deskId,
+                            taskId = taskId,
+                        )
+                    }
+                }
+                // Always deactivate even if there's no change that confirms the desk was
+                // deactivated. Some interactions, such as the desk deactivating because it's
+                // occluded by a fullscreen task result in a transition change, but others, such
+                // as transitioning from an empty desk to home may not.
+                if (!visibleDeactivation) {
+                    logD("Deactivating desk without transition change")
+                }
+                desktopRepository.setDeskInactive(deskId = deskTransition.deskId)
+            }
         }
+    }
+
+    private fun logD(msg: String, vararg arguments: Any?) {
+        ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private companion object {
+        private const val TAG = "DesksTransitionObserver"
     }
 }

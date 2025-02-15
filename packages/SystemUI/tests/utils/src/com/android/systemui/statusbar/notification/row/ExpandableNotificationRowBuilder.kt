@@ -41,6 +41,7 @@ import com.android.systemui.media.controls.util.MediaFeatureFlag
 import com.android.systemui.media.dialog.MediaOutputDialogManager
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.settings.UserTracker
 import com.android.systemui.shared.system.ActivityManagerWrapper
 import com.android.systemui.shared.system.DevicePolicyManagerWrapper
 import com.android.systemui.shared.system.PackageManagerWrapper
@@ -346,10 +347,15 @@ class ExpandableNotificationRowBuilder(
         // NOTE: This flag is read when the ExpandableNotificationRow is inflated, so it needs to be
         //  set, but we do not want to override an existing value that is needed by a specific test.
 
+        val userTracker = Mockito.mock(UserTracker::class.java, STUB_ONLY)
+        whenever(userTracker.userHandle).thenReturn(context.user)
+
         val rowInflaterTask =
             RowInflaterTask(
                 mFakeSystemClock,
                 Mockito.mock(RowInflaterTaskLogger::class.java, STUB_ONLY),
+                userTracker,
+                Mockito.mock(AsyncRowInflater::class.java, STUB_ONLY),
             )
         val row = rowInflaterTask.inflateSynchronously(context, null, entry)
 

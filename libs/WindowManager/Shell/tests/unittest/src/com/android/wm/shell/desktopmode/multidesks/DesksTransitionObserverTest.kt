@@ -20,6 +20,7 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.TransitionInfo
@@ -177,4 +178,70 @@ class DesksTransitionObserverTest : ShellTestCase() {
             assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isEqualTo(deskId)
             assertThat(repository.getActiveTaskIdsInDesk(deskId)).contains(task.taskId)
         }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_deactivateDesk_updatesRepository() {
+        val transition = Binder()
+        val deskChange = Change(mock(), mock())
+        whenever(mockDesksOrganizer.isDeskChange(deskChange, deskId = 5)).thenReturn(true)
+        val deactivateTransition = DeskTransition.DeactivateDesk(transition, deskId = 5)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+        repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 5)
+
+        observer.addPendingTransition(deactivateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0).apply { addChange(deskChange) },
+        )
+
+        assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_deactivateDeskWithExitingTask_updatesRepository() {
+        val transition = Binder()
+        val exitingTask = createFreeformTask(DEFAULT_DISPLAY)
+        val exitingTaskChange = Change(mock(), mock()).apply { taskInfo = exitingTask }
+        whenever(mockDesksOrganizer.getDeskAtEnd(exitingTaskChange)).thenReturn(null)
+        val deactivateTransition = DeskTransition.DeactivateDesk(transition, deskId = 5)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+        repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 5)
+        repository.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 5,
+            taskId = exitingTask.taskId,
+            isVisible = true,
+        )
+        assertThat(repository.isActiveTaskInDesk(deskId = 5, taskId = exitingTask.taskId)).isTrue()
+
+        observer.addPendingTransition(deactivateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info =
+                TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0).apply {
+                    addChange(exitingTaskChange)
+                },
+        )
+
+        assertThat(repository.isActiveTaskInDesk(deskId = 5, taskId = exitingTask.taskId)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_deactivateDeskWithoutVisibleChange_updatesRepository() {
+        val transition = Binder()
+        val deactivateTransition = DeskTransition.DeactivateDesk(transition, deskId = 5)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+        repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 5)
+
+        observer.addPendingTransition(deactivateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0),
+        )
+
+        assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isNull()
+    }
 }

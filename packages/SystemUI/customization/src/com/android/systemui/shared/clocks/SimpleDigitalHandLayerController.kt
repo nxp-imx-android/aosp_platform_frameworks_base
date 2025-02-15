@@ -21,6 +21,7 @@ import android.view.ViewGroup
 import android.view.animation.Interpolator
 import android.widget.RelativeLayout
 import androidx.annotation.VisibleForTesting
+import com.android.systemui.animation.TextAnimator
 import com.android.systemui.customization.R
 import com.android.systemui.log.core.Logger
 import com.android.systemui.plugins.clocks.AlarmData
@@ -65,7 +66,7 @@ data class DigitalAlignment(
 data class FontTextStyle(
     val lineHeight: Float? = null,
     val fontSizeScale: Float? = null,
-    val transitionDuration: Long = -1L,
+    val transitionDuration: Long = TextAnimator.DEFAULT_ANIMATION_DURATION,
     val transitionInterpolator: Interpolator? = null,
 )
 

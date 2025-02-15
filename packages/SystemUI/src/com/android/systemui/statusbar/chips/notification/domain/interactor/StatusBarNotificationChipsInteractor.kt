@@ -32,6 +32,7 @@ import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotif
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
+import kotlin.math.max
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -39,9 +40,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 
 /** An interactor for the notification chips shown in the status bar. */
 @SysUISingleton
@@ -132,9 +135,6 @@ constructor(
                         }
                     interactor.setNotification(notif)
                 }
-                logger.d({ "Interactors: $str1" }) {
-                    str1 = promotedNotificationInteractorMap.keys.joinToString(separator = " /// ")
-                }
                 promotedNotificationInteractors.value =
                     promotedNotificationInteractorMap.values.toList()
             }
@@ -145,26 +145,23 @@ constructor(
      * Emits all notifications that are eligible to show as chips in the status bar. This is
      * different from which chips will *actually* show, see [shownNotificationChips] for that.
      */
-    private val allNotificationChips: Flow<List<NotificationChipModel>> =
+    val allNotificationChips: Flow<List<NotificationChipModel>> =
         if (StatusBarNotifChips.isEnabled) {
             // For all our current interactors...
-            promotedNotificationInteractors.flatMapLatest { intrs ->
-                // Stable-sort the promoted notifications by when they first appeared so that:
-                // 1) The chips don't switch places if the older chip gets a notification update.
-                // 2) The chips don't switch places when the second chip is tapped. (Whichever
-                // notification is showing heads-up is considered to be the top notification, which
-                // means tapping the second chip would move it to be the first chip if we didn't
-                // sort by appearance time here.)
-                // 3) Older chips get hidden if there's not enough room for all chips.
-                val interactors = intrs.sortedByDescending { it.creationTime }
+            // TODO(b/364653005): When a promoted notification is added or removed, each individual
+            // interactor's [notificationChip] flow becomes un-collected then re-collected, which
+            // can cause some flows to remove then add callbacks when they don't need to. Is there a
+            // better structure for this? Maybe Channels or a StateFlow with a short timeout?
+            promotedNotificationInteractors.flatMapLatest { interactors ->
                 if (interactors.isNotEmpty()) {
                     // Combine each interactor's [notificationChip] flow...
                     val allNotificationChips: List<Flow<NotificationChipModel?>> =
                         interactors.map { interactor -> interactor.notificationChip }
                     combine(allNotificationChips) {
-                        // ... and emit just the non-null chips
-                        it.filterNotNull()
-                    }
+                            // ... and emit just the non-null & sorted chips
+                            it.filterNotNull().sortedWith(chipComparator)
+                        }
+                        .logSort()
                 } else {
                     flowOf(emptyList())
                 }
@@ -181,4 +178,35 @@ constructor(
             // out-of-sync (like a timer that's slightly off)
             chipsList.filter { !it.isAppVisible }
         }
+
+    /*
+    Stable sort the promoted notifications by two criteria:
+    Criteria #1: Whichever app was most recently visible has higher ranking.
+    - Reasoning: If a user opened the app to see additional information, that's
+    likely the most important ongoing notification.
+    Criteria #2: Whichever notification first appeared more recently has higher ranking.
+    - Reasoning: Older chips get hidden if there's not enough room for all chips.
+    This semi-stable ordering ensures:
+    1) The chips don't switch places if the older chip gets a notification update.
+    2) The chips don't switch places when the second chip is tapped. (Whichever
+    notification is showing heads-up is considered to be the top notification, which
+    means tapping the second chip would move it to be the first chip if we didn't
+    sort by appearance time here.)
+    */
+    private val chipComparator =
+        compareByDescending<NotificationChipModel> {
+            max(it.creationTime, it.lastAppVisibleTime ?: Long.MIN_VALUE)
+        }
+
+    private fun Flow<List<NotificationChipModel>>.logSort(): Flow<List<NotificationChipModel>> {
+        return this.distinctUntilChanged().onEach { chips ->
+            val logString =
+                chips.joinToString {
+                    "{key=${it.key}. " +
+                        "lastVisibleAppTime=${it.lastAppVisibleTime}. " +
+                        "creationTime=${it.creationTime}}"
+                }
+            logger.d({ "Sorted chips: $str1" }) { str1 = logString }
+        }
+    }
 }

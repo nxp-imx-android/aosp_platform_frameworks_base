@@ -166,6 +166,7 @@ import android.view.InsetsState;
 import android.view.SurfaceControl;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.ITaskOrganizer;
 import android.window.PictureInPictureSurfaceTransaction;
@@ -2378,7 +2379,7 @@ class Task extends TaskFragment {
         // configurations and let its parent (organized task) to control it;
         final Task rootTask = getRootTask();
         boolean shouldInheritBounds = rootTask != this && rootTask.isOrganized();
-        if (Flags.enableMultipleDesktopsBackend()) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
             // Only inherit from organized parent when this task is not organized.
             shouldInheritBounds &= !isOrganized();
         }

@@ -344,4 +344,42 @@ public abstract class InputManagerInternal {
      */
     public abstract void applyBackupPayload(Map<Integer, byte[]> payload, int userId)
             throws XmlPullParserException, IOException;
+
+    /**
+     * An interface for filtering pointer motion event before cursor position is determined.
+     * <p>
+     * Different from {@code android.view.InputFilter}, this filter can filter motion events at
+     * an early stage of the input pipeline, but only called for pointer's relative motion events.
+     * Unless the user really needs to filter events before the cursor position in the display is
+     * determined, use {@code android.view.InputFilter} instead.
+     */
+    public interface AccessibilityPointerMotionFilter {
+        /**
+         * Called everytime pointer's relative motion event happens.
+         * The returned dx and dy will be used to move the cursor in the display.
+         * <p>
+         * This call happens on the input hot path and it is extremely performance sensitive. It
+         * also must not call back into native code.
+         *
+         * @param dx        delta x of the event in pixels.
+         * @param dy        delta y of the event in pixels.
+         * @param currentX  the cursor x coordinate on the screen before the motion event.
+         * @param currentY  the cursor y coordinate on the screen before the motion event.
+         * @param displayId the display ID of the current cursor.
+         * @return an array of length 2, delta x and delta y after filtering the motion. The delta
+         *         values are in pixels and must be between 0 and original delta.
+         */
+        @NonNull
+        float[] filterPointerMotionEvent(float dx, float dy, float currentX, float currentY,
+                int displayId);
+    }
+
+    /**
+     * Registers an {@code AccessibilityCursorFilter}.
+     *
+     * @param filter The filter to register. If a filter is already registered, the old filter is
+     *               unregistered. {@code null} unregisters the filter that is already registered.
+     */
+    public abstract void registerAccessibilityPointerMotionFilter(
+            @Nullable AccessibilityPointerMotionFilter filter);
 }

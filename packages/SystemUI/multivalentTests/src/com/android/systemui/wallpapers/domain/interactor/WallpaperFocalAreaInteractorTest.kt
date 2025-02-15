@@ -30,11 +30,8 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.shade.data.repository.shadeRepository
-import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.testKosmos
-import com.android.systemui.wallpapers.data.repository.fakeWallpaperFocalAreaRepository
 import com.android.systemui.wallpapers.data.repository.wallpaperFocalAreaRepository
-import com.android.systemui.wallpapers.data.repository.wallpaperRepository
 import com.android.systemui.wallpapers.ui.viewmodel.wallpaperFocalAreaViewModel
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -75,36 +72,22 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             .thenReturn(2f)
         underTest =
             WallpaperFocalAreaInteractor(
-                applicationScope = testScope.backgroundScope,
                 context = kosmos.mockedContext,
-                wallpaperFocalAreaRepository = kosmos.fakeWallpaperFocalAreaRepository,
+                wallpaperFocalAreaRepository = kosmos.wallpaperFocalAreaRepository,
                 shadeRepository = kosmos.shadeRepository,
-                activeNotificationsInteractor = kosmos.activeNotificationsInteractor,
-                wallpaperRepository = kosmos.wallpaperRepository,
             )
-    }
-
-    private fun overrideMockedResources(overrideResources: OverrideResources) {
-        val displayMetrics =
-            DisplayMetrics().apply {
-                widthPixels = overrideResources.screenWidth
-                heightPixels = overrideResources.screenHeight
-                density = 2f
-            }
-        whenever(mockedResources.displayMetrics).thenReturn(displayMetrics)
-        whenever(mockedResources.getBoolean(R.bool.center_align_focal_area_shape))
-            .thenReturn(overrideResources.centerAlignFocalArea)
     }
 
     @Test
     fun focalAreaBounds_withoutNotifications_inHandheldDevices() =
         testScope.runTest {
             overrideMockedResources(
+                mockedResources,
                 OverrideResources(
                     screenWidth = 1000,
                     screenHeight = 2000,
                     centerAlignFocalArea = false,
-                )
+                ),
             )
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
             kosmos.shadeRepository.setShadeLayoutWide(false)
@@ -120,11 +103,12 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
     fun focalAreaBounds_withNotifications_inHandheldDevices() =
         testScope.runTest {
             overrideMockedResources(
+                mockedResources,
                 OverrideResources(
                     screenWidth = 1000,
                     screenHeight = 2000,
                     centerAlignFocalArea = false,
-                )
+                ),
             )
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
             kosmos.shadeRepository.setShadeLayoutWide(false)
@@ -139,11 +123,12 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
     fun focalAreaBounds_inUnfoldLandscape() =
         testScope.runTest {
             overrideMockedResources(
+                mockedResources,
                 OverrideResources(
                     screenWidth = 2000,
                     screenHeight = 1600,
                     centerAlignFocalArea = false,
-                )
+                ),
             )
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
             kosmos.shadeRepository.setShadeLayoutWide(true)
@@ -158,11 +143,12 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
     fun focalAreaBounds_withNotifications_inUnfoldPortrait() =
         testScope.runTest {
             overrideMockedResources(
+                mockedResources,
                 OverrideResources(
                     screenWidth = 1600,
                     screenHeight = 2000,
                     centerAlignFocalArea = false,
-                )
+                ),
             )
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
             kosmos.shadeRepository.setShadeLayoutWide(false)
@@ -177,11 +163,12 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
     fun focalAreaBounds_withoutNotifications_inUnfoldPortrait() =
         testScope.runTest {
             overrideMockedResources(
+                mockedResources,
                 OverrideResources(
                     screenWidth = 1600,
                     screenHeight = 2000,
                     centerAlignFocalArea = false,
-                )
+                ),
             )
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
             kosmos.shadeRepository.setShadeLayoutWide(false)
@@ -196,11 +183,12 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
     fun focalAreaBounds_inTabletLandscape() =
         testScope.runTest {
             overrideMockedResources(
+                mockedResources,
                 OverrideResources(
                     screenWidth = 3000,
                     screenHeight = 2000,
                     centerAlignFocalArea = true,
-                )
+                ),
             )
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
             kosmos.shadeRepository.setShadeLayoutWide(true)
@@ -216,11 +204,12 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
         testScope.runTest {
             kosmos.wallpaperFocalAreaRepository.setTapPosition(PointF(0F, 0F))
             overrideMockedResources(
+                mockedResources,
                 OverrideResources(
                     screenWidth = 1000,
                     screenHeight = 2000,
                     centerAlignFocalArea = false,
-                )
+                ),
             )
             kosmos.wallpaperFocalAreaRepository.setWallpaperFocalAreaBounds(
                 RectF(250f, 700F, 750F, 1400F)
@@ -240,11 +229,12 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
         testScope.runTest {
             kosmos.wallpaperFocalAreaRepository.setTapPosition(PointF(0F, 0F))
             overrideMockedResources(
+                mockedResources,
                 OverrideResources(
                     screenWidth = 1000,
                     screenHeight = 2000,
                     centerAlignFocalArea = false,
-                )
+                ),
             )
             kosmos.wallpaperFocalAreaViewModel = mock()
             kosmos.wallpaperFocalAreaRepository.setWallpaperFocalAreaBounds(
@@ -262,4 +252,21 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
         val screenHeight: Int,
         val centerAlignFocalArea: Boolean,
     )
+
+    companion object {
+        fun overrideMockedResources(
+            mockedResources: Resources,
+            overrideResources: OverrideResources,
+        ) {
+            val displayMetrics =
+                DisplayMetrics().apply {
+                    widthPixels = overrideResources.screenWidth
+                    heightPixels = overrideResources.screenHeight
+                    density = 2f
+                }
+            whenever(mockedResources.displayMetrics).thenReturn(displayMetrics)
+            whenever(mockedResources.getBoolean(R.bool.center_align_focal_area_shape))
+                .thenReturn(overrideResources.centerAlignFocalArea)
+        }
+    }
 }

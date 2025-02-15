@@ -66,6 +66,8 @@ public class Utils {
 
     public static final String VIBRATION_URI_PARAM = "vibration_uri";
 
+    public static final String SYNCHRONIZED_VIBRATION = "synchronized";
+
     /**
      * Sorts distinct (non-intersecting) range array in ascending order.
      * @throws java.lang.IllegalArgumentException if ranges are not distinct
@@ -757,8 +759,8 @@ public class Utils {
             return null;
         }
         String filePath = vibrationUri.getPath();
-        if (filePath == null) {
-            Log.w(TAG, "The file path is null.");
+        if (filePath == null || filePath.equals(Utils.SYNCHRONIZED_VIBRATION)) {
+            Log.w(TAG, "Ignore the vibration parsing for file:" + filePath);
             return null;
         }
         File vibrationFile = new File(filePath);

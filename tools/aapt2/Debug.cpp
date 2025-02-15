@@ -349,20 +349,22 @@ void Debug::PrintTable(const ResourceTable& table, const DebugPrintTableOptions&
             value->value->Accept(&body_printer);
             printer->Undent();
           }
-          printer->Println("Flag disabled values:");
-          for (const auto& value : entry.flag_disabled_values) {
-            printer->Print("(");
-            printer->Print(value->config.to_string());
-            printer->Print(") ");
-            value->value->Accept(&headline_printer);
-            if (options.show_sources && !value->value->GetSource().path.empty()) {
-              printer->Print(" src=");
-              printer->Print(value->value->GetSource().to_string());
+          if (!entry.flag_disabled_values.empty()) {
+            printer->Println("Flag disabled values:");
+            for (const auto& value : entry.flag_disabled_values) {
+              printer->Print("(");
+              printer->Print(value->config.to_string());
+              printer->Print(") ");
+              value->value->Accept(&headline_printer);
+              if (options.show_sources && !value->value->GetSource().path.empty()) {
+                printer->Print(" src=");
+                printer->Print(value->value->GetSource().to_string());
+              }
+              printer->Println();
+              printer->Indent();
+              value->value->Accept(&body_printer);
+              printer->Undent();
             }
-            printer->Println();
-            printer->Indent();
-            value->value->Accept(&body_printer);
-            printer->Undent();
           }
           printer->Undent();
         }

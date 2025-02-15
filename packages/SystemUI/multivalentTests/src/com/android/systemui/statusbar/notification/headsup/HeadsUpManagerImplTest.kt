@@ -106,11 +106,15 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
             this.addOverride(R.integer.touch_acceptance_delay, TEST_TOUCH_ACCEPTANCE_TIME)
             this.addOverride(
                 R.integer.heads_up_notification_minimum_time,
-                TEST_MINIMUM_DISPLAY_TIME,
+                TEST_MINIMUM_DISPLAY_TIME_DEFAULT,
             )
             this.addOverride(
                 R.integer.heads_up_notification_minimum_time_with_throttling,
-                TEST_MINIMUM_DISPLAY_TIME,
+                TEST_MINIMUM_DISPLAY_TIME_DEFAULT,
+            )
+            this.addOverride(
+                R.integer.heads_up_notification_minimum_time_for_user_initiated,
+                TEST_MINIMUM_DISPLAY_TIME_FOR_USER_INITIATED,
             )
             this.addOverride(R.integer.heads_up_notification_decay, TEST_AUTO_DISMISS_TIME)
             this.addOverride(
@@ -414,7 +418,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    fun testRemoveNotification_beforeMinimumDisplayTime() {
+    fun testRemoveNotification_beforeMinimumDisplayTime_notUserInitiatedHun() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
         useAccessibilityTimeout(false)
 
@@ -429,18 +433,22 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         assertThat(removedImmediately).isFalse()
         assertThat(underTest.isHeadsUpEntry(entry.key)).isTrue()
 
-        systemClock.advanceTime(((TEST_MINIMUM_DISPLAY_TIME + TEST_AUTO_DISMISS_TIME) / 2).toLong())
+        systemClock.advanceTime(
+            ((TEST_MINIMUM_DISPLAY_TIME_DEFAULT + TEST_AUTO_DISMISS_TIME) / 2).toLong()
+        )
 
         assertThat(underTest.isHeadsUpEntry(entry.key)).isFalse()
     }
 
     @Test
-    fun testRemoveNotification_afterMinimumDisplayTime() {
+    fun testRemoveNotification_afterMinimumDisplayTime_notUserInitiatedHun() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
         useAccessibilityTimeout(false)
 
         underTest.showNotification(entry)
-        systemClock.advanceTime(((TEST_MINIMUM_DISPLAY_TIME + TEST_AUTO_DISMISS_TIME) / 2).toLong())
+        systemClock.advanceTime(
+            ((TEST_MINIMUM_DISPLAY_TIME_DEFAULT + TEST_AUTO_DISMISS_TIME) / 2).toLong()
+        )
 
         assertThat(underTest.isHeadsUpEntry(entry.key)).isTrue()
 
@@ -450,6 +458,57 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
                 /* releaseImmediately = */ false,
                 "afterMinimumDisplayTime",
             )
+        assertThat(removedImmediately).isTrue()
+        assertThat(underTest.isHeadsUpEntry(entry.key)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    fun testRemoveNotification_beforeMinimumDisplayTime_forUserInitiatedHun() {
+        useAccessibilityTimeout(false)
+
+        val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
+        entry.row = testHelper.createRow()
+        underTest.showNotification(entry, isPinnedByUser = true)
+
+        val removedImmediately =
+            underTest.removeNotification(
+                entry.key,
+                /* releaseImmediately = */ false,
+                "beforeMinimumDisplayTime",
+            )
+        assertThat(removedImmediately).isFalse()
+        assertThat(underTest.isHeadsUpEntry(entry.key)).isTrue()
+
+        systemClock.advanceTime(
+            ((TEST_MINIMUM_DISPLAY_TIME_FOR_USER_INITIATED + TEST_AUTO_DISMISS_TIME) / 2).toLong()
+        )
+
+        assertThat(underTest.isHeadsUpEntry(entry.key)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    fun testRemoveNotification_afterMinimumDisplayTime_forUserInitiatedHun() {
+        useAccessibilityTimeout(false)
+
+        val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
+        entry.row = testHelper.createRow()
+        underTest.showNotification(entry, isPinnedByUser = true)
+
+        systemClock.advanceTime(
+            ((TEST_MINIMUM_DISPLAY_TIME_FOR_USER_INITIATED + TEST_AUTO_DISMISS_TIME) / 2).toLong()
+        )
+
+        assertThat(underTest.isHeadsUpEntry(entry.key)).isTrue()
+
+        val removedImmediately =
+            underTest.removeNotification(
+                entry.key,
+                /* releaseImmediately = */ false,
+                "afterMinimumDisplayTime",
+            )
+
         assertThat(removedImmediately).isTrue()
         assertThat(underTest.isHeadsUpEntry(entry.key)).isFalse()
     }
@@ -1047,16 +1106,21 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     companion object {
-        const val TEST_TOUCH_ACCEPTANCE_TIME = 200
-        const val TEST_A11Y_AUTO_DISMISS_TIME = 1000
-        const val TEST_EXTENSION_TIME = 500
+        private const val TEST_TOUCH_ACCEPTANCE_TIME = 200
+        private const val TEST_A11Y_AUTO_DISMISS_TIME = 1000
+        private const val TEST_EXTENSION_TIME = 500
 
-        const val TEST_MINIMUM_DISPLAY_TIME = 400
-        const val TEST_AUTO_DISMISS_TIME = 600
-        const val TEST_STICKY_AUTO_DISMISS_TIME = 800
+        private const val TEST_MINIMUM_DISPLAY_TIME_DEFAULT = 400
+        private const val TEST_MINIMUM_DISPLAY_TIME_FOR_USER_INITIATED = 500
+        private const val TEST_AUTO_DISMISS_TIME = 600
+        private const val TEST_STICKY_AUTO_DISMISS_TIME = 800
 
         init {
-            assertThat(TEST_MINIMUM_DISPLAY_TIME).isLessThan(TEST_AUTO_DISMISS_TIME)
+            assertThat(TEST_MINIMUM_DISPLAY_TIME_DEFAULT)
+                .isLessThan(TEST_MINIMUM_DISPLAY_TIME_FOR_USER_INITIATED)
+            assertThat(TEST_MINIMUM_DISPLAY_TIME_DEFAULT).isLessThan(TEST_AUTO_DISMISS_TIME)
+            assertThat(TEST_MINIMUM_DISPLAY_TIME_FOR_USER_INITIATED)
+                .isLessThan(TEST_AUTO_DISMISS_TIME)
             assertThat(TEST_AUTO_DISMISS_TIME).isLessThan(TEST_STICKY_AUTO_DISMISS_TIME)
             assertThat(TEST_STICKY_AUTO_DISMISS_TIME).isLessThan(TEST_A11Y_AUTO_DISMISS_TIME)
         }

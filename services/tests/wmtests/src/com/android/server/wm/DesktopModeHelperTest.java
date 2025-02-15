@@ -16,8 +16,6 @@
 
 package com.android.server.wm;
 
-import static android.provider.Settings.Global.DEVELOPMENT_OVERRIDE_DESKTOP_MODE_FEATURES;
-
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.Mockito.doReturn;
@@ -30,7 +28,6 @@ import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.provider.Settings;
 import android.window.DesktopModeFlags;
 
 import androidx.test.filters.SmallTest;
@@ -74,14 +71,12 @@ public class DesktopModeHelperTest {
         doReturn(mContext.getContentResolver()).when(mMockContext).getContentResolver();
         resetDesktopModeFlagsCache();
         resetEnforceDeviceRestriction();
-        resetFlagOverride();
     }
 
     @After
     public void tearDown() throws Exception {
         resetDesktopModeFlagsCache();
         resetEnforceDeviceRestriction();
-        resetFlagOverride();
     }
 
     @DisableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
@@ -167,7 +162,8 @@ public class DesktopModeHelperTest {
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_MODE_THROUGH_DEV_OPTION)
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     @Test
-    public void canEnterDesktopMode_DWFlagEnabled_configDevOptionOn_flagOverrideOn_returnsTrue() {
+    public void canEnterDesktopMode_DWFlagEnabled_configDevOptionOn_flagOverrideOn_returnsTrue()
+            throws Exception {
         doReturn(true).when(mMockResources).getBoolean(
                 eq(R.bool.config_isDesktopModeDevOptionSupported)
         );
@@ -246,13 +242,10 @@ public class DesktopModeHelperTest {
         cachedToggleOverride.set(/* obj= */ null, /* value= */ null);
     }
 
-    private void resetFlagOverride() {
-        Settings.Global.putString(mContext.getContentResolver(),
-                DEVELOPMENT_OVERRIDE_DESKTOP_MODE_FEATURES, null);
-    }
-
-    private void setFlagOverride(DesktopModeFlags.ToggleOverride override) {
-        Settings.Global.putInt(mContext.getContentResolver(),
-                DEVELOPMENT_OVERRIDE_DESKTOP_MODE_FEATURES, override.getSetting());
+    private void setFlagOverride(DesktopModeFlags.ToggleOverride override) throws Exception {
+        Field cachedToggleOverride = DesktopModeFlags.class.getDeclaredField(
+                "sCachedToggleOverride");
+        cachedToggleOverride.setAccessible(true);
+        cachedToggleOverride.set(/* obj= */ null, /* value= */ override);
     }
 }

@@ -569,8 +569,7 @@ public final class DreamManagerService extends SystemService {
     }
 
     private void requestDreamInternal() {
-        if (isDreamingInternal() && !dreamIsFrontmost() && mController.bringDreamToFront()
-                && !isDozingInternal()) {
+        if (isDreamingInternal() && !dreamIsFrontmost() && mController.bringDreamToFront()) {
             return;
         }
 

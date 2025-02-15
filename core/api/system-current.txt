@@ -2938,6 +2938,14 @@ package android.app.smartspace.uitemplatedata {
 
 }
 
+package android.app.supervision {
+
+  @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public class SupervisionManager {
+    method @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.QUERY_USERS}) public boolean isSupervisionEnabled();
+  }
+
+}
+
 package android.app.time {
 
   public final class Capabilities {
@@ -3801,6 +3809,7 @@ package android.content {
     field public static final String SHARED_CONNECTIVITY_SERVICE = "shared_connectivity";
     field public static final String SMARTSPACE_SERVICE = "smartspace";
     field public static final String STATS_MANAGER = "stats";
+    field @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public static final String SUPERVISION_SERVICE = "supervision";
     field public static final String SYSTEM_CONFIG_SERVICE = "system_config";
     field public static final String SYSTEM_UPDATE_SERVICE = "system_update";
     field @FlaggedApi("com.android.net.thread.platform.flags.thread_enabled_platform") public static final String THREAD_NETWORK_SERVICE = "thread_network";
@@ -18584,6 +18593,7 @@ package android.telephony.satellite {
     method @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void deprovisionSatellite(@NonNull java.util.List<android.telephony.satellite.SatelliteSubscriberInfo>, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,android.telephony.satellite.SatelliteManager.SatelliteException>);
     method @FlaggedApi("com.android.internal.telephony.flags.oem_enabled_satellite_flag") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void deprovisionService(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
     method @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") @NonNull @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public java.util.Set<java.lang.Integer> getAttachRestrictionReasonsForCarrier(int);
+    method @FlaggedApi("com.android.internal.telephony.flags.satellite_25q4_apis") @NonNull @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public java.util.List<java.lang.String> getSatelliteDataOptimizedApps();
     method @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") @NonNull @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public int[] getSatelliteDisallowedReasons();
     method @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") @NonNull @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public java.util.List<java.lang.String> getSatellitePlmnsForCarrier(int);
     method @FlaggedApi("com.android.internal.telephony.flags.oem_enabled_satellite_flag") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void pollPendingDatagrams(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);

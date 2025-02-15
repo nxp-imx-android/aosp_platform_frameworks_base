@@ -28,6 +28,7 @@ package {
         "//frameworks/libs/systemui/tracinglib:__subpackages__",
         "//frameworks/base/services/accessibility:__subpackages__",
         "//frameworks/base/services/tests:__subpackages__",
+        "//packages/apps/Settings:__subpackages__",
         "//platform_testing:__subpackages__",
         "//vendor:__subpackages__",
         "//cts:__subpackages__",

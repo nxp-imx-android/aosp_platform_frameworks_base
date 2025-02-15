@@ -327,8 +327,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         desktopModeCompatPolicy = spy(DesktopModeCompatPolicy(spyContext))
 
         whenever(shellTaskOrganizer.getRunningTasks(anyInt())).thenAnswer { runningTasks }
-        whenever(transitions.startTransition(anyInt(), any(), isNull())).thenAnswer { Binder() }
+        whenever(transitions.startTransition(anyInt(), any(), anyOrNull())).thenAnswer { Binder() }
         whenever(enterDesktopTransitionHandler.moveToDesktop(any(), any())).thenAnswer { Binder() }
+        whenever(exitDesktopTransitionHandler.startTransition(any(), any(), any(), any()))
+            .thenReturn(Binder())
         whenever(displayController.getDisplayLayout(anyInt())).thenReturn(displayLayout)
         whenever(displayController.getDisplayContext(anyInt())).thenReturn(mockDisplayContext)
         whenever(displayController.getDisplay(anyInt())).thenReturn(display)
@@ -917,7 +919,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
+    @DisableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
     fun showDesktopApps_twoDisplays_bringsToFrontOnlyOneDisplay_desktopWallpaperDisabled() {
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         val homeTaskDefaultDisplay = setUpHomeTask(DEFAULT_DISPLAY)
@@ -2039,6 +2044,30 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveToFullscreen_fromDesk_reparentsToTaskDisplayArea() {
+        val task = setUpFreeformTask()
+        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
+
+        controller.moveToFullscreen(task.taskId, transitionSource = UNKNOWN)
+
+        val wct = getLatestExitDesktopWct()
+        wct.assertHop(ReparentPredicate(token = task.token, parentToken = tda.token, toTop = true))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveToFullscreen_fromDesk_deactivatesDesk() {
+        val task = setUpFreeformTask()
+        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
+
+        controller.moveToFullscreen(task.taskId, transitionSource = UNKNOWN)
+
+        val wct = getLatestExitDesktopWct()
+        verify(desksOrganizer).deactivateDesk(wct, deskId = 0)
+    }
+
+    @Test
     fun moveToFullscreen_tdaFullscreen_windowingModeSetToUndefined() {
         val task = setUpFreeformTask()
         val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
@@ -2053,6 +2082,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER)
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToFullscreen_tdaFullscreen_windowingModeUndefined_removesWallpaperActivity() {
         whenever(DesktopModeStatus.enterDesktopByDefaultOnFreeformDisplay(context)).thenReturn(true)
         val homeTask = setUpHomeTask()
@@ -2078,6 +2108,60 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun moveToFullscreen_tdaFullscreen_windowingModeUndefined_removesWallpaperActivity_multiDesksEnabled() {
+        whenever(DesktopModeStatus.enterDesktopByDefaultOnFreeformDisplay(context)).thenReturn(true)
+        setUpHomeTask()
+        val task = setUpFreeformTask()
+        assertNotNull(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY))
+            .configuration
+            .windowConfiguration
+            .windowingMode = WINDOWING_MODE_FULLSCREEN
+
+        controller.moveToFullscreen(task.taskId, transitionSource = UNKNOWN)
+
+        val wct = getLatestExitDesktopWct()
+        val taskChange = assertNotNull(wct.changes[task.token.asBinder()])
+        verify(desktopModeEnterExitTransitionListener)
+            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+        assertThat(taskChange.windowingMode).isEqualTo(WINDOWING_MODE_UNDEFINED)
+        // Removes wallpaper activity when leaving desktop
+        wct.assertReorder(wallpaperToken, toTop = false)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun moveToFullscreen_tdaFullscreen_windowingModeUndefined_homeBehindFullscreen_multiDesksEnabled() {
+        whenever(DesktopModeStatus.enterDesktopByDefaultOnFreeformDisplay(context)).thenReturn(true)
+        val homeTask = setUpHomeTask()
+        val task = setUpFreeformTask()
+        assertNotNull(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY))
+            .configuration
+            .windowConfiguration
+            .windowingMode = WINDOWING_MODE_FULLSCREEN
+
+        controller.moveToFullscreen(task.taskId, transitionSource = UNKNOWN)
+
+        val wct = getLatestExitDesktopWct()
+        val taskChange = assertNotNull(wct.changes[task.token.asBinder()])
+        verify(desktopModeEnterExitTransitionListener)
+            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+        assertThat(taskChange.windowingMode).isEqualTo(WINDOWING_MODE_UNDEFINED)
+        // Moves home task behind the fullscreen task
+        val homeReorderIndex = wct.indexOfReorder(homeTask, toTop = true)
+        val fullscreenReorderIndex = wct.indexOfReorder(task, toTop = true)
+        assertThat(homeReorderIndex).isNotEqualTo(-1)
+        assertThat(fullscreenReorderIndex).isNotEqualTo(-1)
+        assertThat(fullscreenReorderIndex).isGreaterThan(homeReorderIndex)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER)
     fun moveToFullscreen_tdaFreeform_enforcedDesktop_doesNotReorderHome() {
         whenever(DesktopModeStatus.enterDesktopByDefaultOnFreeformDisplay(context)).thenReturn(true)
@@ -2093,9 +2177,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val wct = getLatestExitDesktopWct()
         verify(desktopModeEnterExitTransitionListener)
             .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
-        assertThat(wct.hierarchyOps).hasSize(1)
         // Removes wallpaper activity when leaving desktop but doesn't reorder home or the task
-        wct.assertReorderAt(index = 0, wallpaperToken, toTop = false)
+        wct.assertReorder(wallpaperToken, toTop = false)
+        wct.assertWithoutHop(ReorderPredicate(homeTask.token, toTop = null))
     }
 
     @Test
@@ -2113,6 +2197,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER)
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToFullscreen_tdaFreeform_windowingModeFullscreen_removesWallpaperActivity() {
         val homeTask = setUpHomeTask()
         val task = setUpFreeformTask()
@@ -2138,6 +2223,61 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun moveToFullscreen_tdaFreeform_windowingModeFullscreen_removesWallpaperActivity_multiDesksEnabled() {
+        val homeTask = setUpHomeTask()
+        val task = setUpFreeformTask()
+
+        assertNotNull(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY))
+            .configuration
+            .windowConfiguration
+            .windowingMode = WINDOWING_MODE_FREEFORM
+
+        controller.moveToFullscreen(task.taskId, transitionSource = UNKNOWN)
+
+        val wct = getLatestExitDesktopWct()
+        val taskChange = assertNotNull(wct.changes[task.token.asBinder()])
+        assertThat(taskChange.windowingMode).isEqualTo(WINDOWING_MODE_FULLSCREEN)
+        verify(desktopModeEnterExitTransitionListener)
+            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+        // Removes wallpaper activity when leaving desktop
+        wct.assertReorder(wallpaperToken, toTop = false)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun moveToFullscreen_tdaFreeform_windowingModeFullscreen_homeBehindFullscreen_multiDesksEnabled() {
+        val homeTask = setUpHomeTask()
+        val task = setUpFreeformTask()
+
+        assertNotNull(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY))
+            .configuration
+            .windowConfiguration
+            .windowingMode = WINDOWING_MODE_FREEFORM
+
+        controller.moveToFullscreen(task.taskId, transitionSource = UNKNOWN)
+
+        val wct = getLatestExitDesktopWct()
+        val taskChange = assertNotNull(wct.changes[task.token.asBinder()])
+        assertThat(taskChange.windowingMode).isEqualTo(WINDOWING_MODE_FULLSCREEN)
+        verify(desktopModeEnterExitTransitionListener)
+            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+        // Moves home task behind the fullscreen task
+        val homeReorderIndex = wct.indexOfReorder(homeTask, toTop = true)
+        val fullscreenReorderIndex = wct.indexOfReorder(task, toTop = true)
+        assertThat(homeReorderIndex).isNotEqualTo(-1)
+        assertThat(fullscreenReorderIndex).isNotEqualTo(-1)
+        assertThat(fullscreenReorderIndex).isGreaterThan(homeReorderIndex)
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToFullscreen_multipleVisibleNonMinimizedTasks_doesNotRemoveWallpaperActivity() {
         val homeTask = setUpHomeTask()
         val task1 = setUpFreeformTask()
@@ -2161,6 +2301,29 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // Moves home task behind the fullscreen task
         wct.assertReorderAt(index = 0, homeTask.getToken(), toTop = true)
         wct.assertReorderAt(index = 1, task1.getToken(), toTop = true)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveToFullscreen_multipleVisibleNonMinimizedTasks_doesNotRemoveWallpaperActivity_multiDesksEnabled() {
+        val homeTask = setUpHomeTask()
+        val task1 = setUpFreeformTask()
+        // Setup task2
+        setUpFreeformTask()
+
+        val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)
+        assertNotNull(tdaInfo).configuration.windowConfiguration.windowingMode =
+            WINDOWING_MODE_FULLSCREEN
+
+        controller.moveToFullscreen(task1.taskId, transitionSource = UNKNOWN)
+
+        val wct = getLatestExitDesktopWct()
+        val task1Change = assertNotNull(wct.changes[task1.token.asBinder()])
+        assertThat(task1Change.windowingMode).isEqualTo(WINDOWING_MODE_UNDEFINED)
+        verify(desktopModeEnterExitTransitionListener)
+            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+        // Does not remove wallpaper activity, as desktop still has a visible desktop task
+        wct.assertWithoutHop(ReorderPredicate(wallpaperToken, toTop = false))
     }
 
     @Test
@@ -2759,6 +2922,32 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onDesktopWindowClose_lastWindow_deactivatesDesk() {
+        val task = setUpFreeformTask()
+        val wct = WindowContainerTransaction()
+
+        controller.onDesktopWindowClose(wct, displayId = DEFAULT_DISPLAY, task)
+
+        verify(desksOrganizer).deactivateDesk(wct, deskId = 0)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onDesktopWindowClose_lastWindow_addsPendingDeactivateTransition() {
+        val task = setUpFreeformTask()
+        val wct = WindowContainerTransaction()
+
+        val transition = Binder()
+        val runOnTransitStart =
+            controller.onDesktopWindowClose(wct, displayId = DEFAULT_DISPLAY, task)
+        runOnTransitStart(transition)
+
+        verify(desksTransitionsObserver)
+            .addPendingTransition(DeskTransition.DeactivateDesk(transition, deskId = 0))
+    }
+
+    @Test
     fun onDesktopWindowMinimize_noActiveTask_doesntRemoveWallpaper() {
         val task = setUpFreeformTask(active = false)
         val transition = Binder()
@@ -2779,6 +2968,48 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         captor.firstValue.hierarchyOps.none { hop ->
             hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK && hop.container == wallpaperToken.asBinder()
         }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onDesktopWindowMinimize_lastWindow_deactivatesDesk() {
+        val task = setUpFreeformTask()
+        val transition = Binder()
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(transition)
+
+        controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
+
+        val captor = argumentCaptor<WindowContainerTransaction>()
+        verify(freeformTaskTransitionStarter)
+            .startMinimizedModeTransition(captor.capture(), eq(task.taskId), eq(true))
+        verify(desksOrganizer).deactivateDesk(captor.firstValue, deskId = 0)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onDesktopWindowMinimize_lastWindow_addsPendingDeactivateTransition() {
+        val task = setUpFreeformTask()
+        val transition = Binder()
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(transition)
+
+        controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
+
+        verify(desksTransitionsObserver)
+            .addPendingTransition(DeskTransition.DeactivateDesk(token = transition, deskId = 0))
     }
 
     @Test
@@ -4033,10 +4264,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val taskChange = assertNotNull(wct.changes[task2.token.asBinder()])
         assertThat(taskChange.windowingMode)
             .isEqualTo(WINDOWING_MODE_UNDEFINED) // inherited FULLSCREEN
-        wct.assertReorderAt(index = 0, wallpaperToken, toTop = false)
+        wct.assertReorder(wallpaperToken, toTop = false)
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveFocusedTaskToFullscreen_multipleVisibleTasks_doesNotRemoveWallpaperActivity() {
         val homeTask = setUpHomeTask()
         val task1 = setUpFreeformTask()
@@ -4057,6 +4289,52 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // Moves home task behind the fullscreen task
         wct.assertReorderAt(index = 0, homeTask.getToken(), toTop = true)
         wct.assertReorderAt(index = 1, task2.getToken(), toTop = true)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveFocusedTaskToFullscreen_multipleVisibleTasks_doesNotRemoveWallpaperActivity_multiDesksEnabled() {
+        val homeTask = setUpHomeTask()
+        val task1 = setUpFreeformTask()
+        val task2 = setUpFreeformTask()
+        val task3 = setUpFreeformTask()
+
+        task1.isFocused = false
+        task2.isFocused = true
+        task3.isFocused = false
+        controller.enterFullscreen(DEFAULT_DISPLAY, transitionSource = UNKNOWN)
+
+        val wct = getLatestExitDesktopWct()
+        val taskChange = assertNotNull(wct.changes[task2.token.asBinder()])
+        assertThat(taskChange.windowingMode)
+            .isEqualTo(WINDOWING_MODE_UNDEFINED) // inherited FULLSCREEN
+        // Does not remove wallpaper activity
+        wct.assertWithoutHop(ReorderPredicate(wallpaperToken, toTop = null))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveFocusedTaskToFullscreen_multipleVisibleTasks_fullscreenOverHome_multiDesksEnabled() {
+        val homeTask = setUpHomeTask()
+        val task1 = setUpFreeformTask()
+        val task2 = setUpFreeformTask()
+        val task3 = setUpFreeformTask()
+
+        task1.isFocused = false
+        task2.isFocused = true
+        task3.isFocused = false
+        controller.enterFullscreen(DEFAULT_DISPLAY, transitionSource = UNKNOWN)
+
+        val wct = getLatestExitDesktopWct()
+        val taskChange = assertNotNull(wct.changes[task2.token.asBinder()])
+        assertThat(taskChange.windowingMode)
+            .isEqualTo(WINDOWING_MODE_UNDEFINED) // inherited FULLSCREEN
+        // Moves home task behind the fullscreen task
+        val homeReorderIndex = wct.indexOfReorder(homeTask, toTop = true)
+        val fullscreenReorderIndex = wct.indexOfReorder(task2, toTop = true)
+        assertThat(homeReorderIndex).isNotEqualTo(-1)
+        assertThat(fullscreenReorderIndex).isNotEqualTo(-1)
+        assertThat(fullscreenReorderIndex).isGreaterThan(homeReorderIndex)
     }
 
     @Test
@@ -6327,15 +6605,46 @@ private fun WindowContainerTransaction.assertWithoutHop(
     assertThat(hierarchyOps.none(predicate)).isTrue()
 }
 
+private fun WindowContainerTransaction.indexOfReorder(
+    task: RunningTaskInfo,
+    toTop: Boolean? = null,
+): Int {
+    val hop = hierarchyOps.singleOrNull(ReorderPredicate(task.token, toTop)) ?: return -1
+    return hierarchyOps.indexOf(hop)
+}
+
+private class ReorderPredicate(val token: WindowContainerToken, val toTop: Boolean? = null) :
+    ((WindowContainerTransaction.HierarchyOp) -> Boolean) {
+    override fun invoke(hop: WindowContainerTransaction.HierarchyOp): Boolean =
+        hop.type == HIERARCHY_OP_TYPE_REORDER &&
+            (toTop == null || hop.toTop == toTop) &&
+            hop.container == token.asBinder()
+}
+
+private class ReparentPredicate(
+    val token: WindowContainerToken,
+    val parentToken: WindowContainerToken,
+    val toTop: Boolean? = null,
+) : ((WindowContainerTransaction.HierarchyOp) -> Boolean) {
+    override fun invoke(hop: WindowContainerTransaction.HierarchyOp): Boolean =
+        hop.isReparent &&
+            (toTop == null || hop.toTop == toTop) &&
+            hop.container == token.asBinder() &&
+            hop.newParent == parentToken.asBinder()
+}
+
 private fun WindowContainerTransaction.assertReorder(
     task: RunningTaskInfo,
     toTop: Boolean? = null,
 ) {
-    assertHop { hop ->
-        hop.type == HIERARCHY_OP_TYPE_REORDER &&
-            (toTop == null || hop.toTop == toTop) &&
-            hop.container == task.token.asBinder()
-    }
+    assertReorder(task.token, toTop)
+}
+
+private fun WindowContainerTransaction.assertReorder(
+    token: WindowContainerToken,
+    toTop: Boolean? = null,
+) {
+    assertHop(ReorderPredicate(token, toTop))
 }
 
 private fun WindowContainerTransaction.assertReorderAt(

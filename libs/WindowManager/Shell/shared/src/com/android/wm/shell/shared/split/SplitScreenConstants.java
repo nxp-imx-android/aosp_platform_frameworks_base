@@ -262,6 +262,7 @@ public class SplitScreenConstants {
 
     /** Flag applied to a transition change to identify it as a divider bar for animation. */
     public static final int FLAG_IS_DIVIDER_BAR = TransitionUtil.FLAG_IS_DIVIDER_BAR;
+    public static final int FLAG_IS_DIM_LAYER = TransitionUtil.FLAG_IS_DIM_LAYER;
 
     public static final String splitPositionToString(@SplitPosition int pos) {
         switch (pos) {
