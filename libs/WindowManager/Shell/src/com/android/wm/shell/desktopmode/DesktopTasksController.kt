@@ -3442,11 +3442,15 @@ class DesktopTasksController(
         }
 
         override fun createDesk(displayId: Int) {
-            // TODO: b/362720497 - Implement this API.
+            executeRemoteCallWithTaskPermission(controller, "createDesk") { c ->
+                c.createDesk(displayId)
+            }
         }
 
         override fun activateDesk(deskId: Int, remoteTransition: RemoteTransition?) {
-            // TODO: b/362720497 - Implement this API.
+            executeRemoteCallWithTaskPermission(controller, "activateDesk") { c ->
+                c.activateDesk(deskId, remoteTransition)
+            }
         }
 
         override fun showDesktopApps(displayId: Int, remoteTransition: RemoteTransition?) {

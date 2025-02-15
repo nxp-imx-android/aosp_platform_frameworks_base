@@ -52,14 +52,14 @@ import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipM
  * the chip can show text containing contextual information.
  */
 @Composable
-fun StatusBarPopupChip(model: PopupChipModel.Shown, modifier: Modifier = Modifier) {
-    val hasHoverBehavior = model.hoverBehavior !is HoverBehavior.None
+fun StatusBarPopupChip(viewModel: PopupChipModel.Shown, modifier: Modifier = Modifier) {
+    val hasHoverBehavior = viewModel.hoverBehavior !is HoverBehavior.None
     val hoverInteractionSource = remember { MutableInteractionSource() }
     val isHovered by hoverInteractionSource.collectIsHoveredAsState()
-    val isToggled = model.isToggled
+    val isPopupShown = viewModel.isPopupShown
 
     val chipBackgroundColor =
-        if (isToggled) {
+        if (isPopupShown) {
             MaterialTheme.colorScheme.primaryContainer
         } else {
             MaterialTheme.colorScheme.surfaceContainerHighest
@@ -72,7 +72,7 @@ fun StatusBarPopupChip(model: PopupChipModel.Shown, modifier: Modifier = Modifie
                 .padding(vertical = 4.dp)
                 .animateContentSize()
                 .thenIf(hasHoverBehavior) { Modifier.hoverable(hoverInteractionSource) }
-                .clickable { model.onToggle() },
+                .thenIf(!isPopupShown) { Modifier.clickable { viewModel.showPopup() } },
         color = chipBackgroundColor,
     ) {
         Row(
@@ -82,14 +82,14 @@ fun StatusBarPopupChip(model: PopupChipModel.Shown, modifier: Modifier = Modifie
         ) {
             val iconColor =
                 if (isHovered) chipBackgroundColor else contentColorFor(chipBackgroundColor)
-            val hoverBehavior = model.hoverBehavior
+            val hoverBehavior = viewModel.hoverBehavior
             val iconBackgroundColor = contentColorFor(chipBackgroundColor)
             val iconInteractionSource = remember { MutableInteractionSource() }
             Icon(
                 icon =
                     when {
                         isHovered && hoverBehavior is HoverBehavior.Button -> hoverBehavior.icon
-                        else -> model.icon
+                        else -> viewModel.icon
                     },
                 modifier =
                     Modifier.thenIf(isHovered) {
@@ -109,7 +109,7 @@ fun StatusBarPopupChip(model: PopupChipModel.Shown, modifier: Modifier = Modifie
             )
 
             Text(
-                text = model.chipText,
+                text = viewModel.chipText,
                 style = MaterialTheme.typography.labelLarge,
                 softWrap = false,
                 overflow = TextOverflow.Ellipsis,

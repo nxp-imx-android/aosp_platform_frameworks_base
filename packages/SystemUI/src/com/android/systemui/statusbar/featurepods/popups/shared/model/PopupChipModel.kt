@@ -53,10 +53,11 @@ sealed class PopupChipModel {
         /** Default icon displayed on the chip */
         val icon: Icon,
         val chipText: String,
-        val isToggled: Boolean = false,
-        val onToggle: () -> Unit,
+        val isPopupShown: Boolean = false,
+        val showPopup: () -> Unit = {},
+        val hidePopup: () -> Unit = {},
         val hoverBehavior: HoverBehavior = HoverBehavior.None,
     ) : PopupChipModel() {
-        override val logName = "Shown(id=$chipId, toggled=$isToggled)"
+        override val logName = "Shown(id=$chipId, toggled=$isPopupShown)"
     }
 }

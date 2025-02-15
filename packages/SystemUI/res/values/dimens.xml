@@ -204,15 +204,31 @@
         match the core/status_bar_system_icon_size and change to sp unit -->
     <dimen name="status_bar_mobile_signal_size">15sp</dimen>
     <dimen name="status_bar_mobile_signal_size_updated">12sp</dimen>
+
     <!-- Size of the view displaying the mobile signal icon in the status bar. This value should
-        match the viewport height of mobile signal drawables such as ic_lte_mobiledata -->
+        match the viewport height of mobile signal drawables such as ic_lte_mobiledata
+        Note: can be removed once new_status_bar_icons is rolled out -->
     <dimen name="status_bar_mobile_type_size">16sp</dimen>
     <!-- Size of the view that contains the network type. Should be equal to
-    status_bar_mobile_type_size + 2, to account for 1sp top and bottom padding -->
+        status_bar_mobile_type_size + 2, to account for 1sp top and bottom padding
+        Note: can be removed once new_status_bar_icons is rolled out -->
     <dimen name="status_bar_mobile_container_height">18sp</dimen>
     <!-- Corner radius for the background of the network type indicator. Should be equal to
-        status_bar_mobile_container_height / 2 -->
+        status_bar_mobile_container_height / 2
+        Note: can be removed once new_status_bar_icons is rolled out -->
     <dimen name="status_bar_mobile_container_corner_radius">9sp</dimen>
+
+    <!-- Size of the view displaying the mobile signal icon in the status bar. This value should
+        match the viewport height of mobile signal drawables such as ic_lte_mobiledata -->
+    <dimen name="status_bar_mobile_type_size_updated">12sp</dimen>
+    <!-- Size of the view that contains the network type. Should be equal to
+   status_bar_mobile_type_size + 2, to account for 1sp top and bottom padding -->
+    <dimen name="status_bar_mobile_container_height_updated">14sp</dimen>
+    <dimen name="status_bar_mobile_container_margin_end">2sp</dimen>
+    <!-- Corner radius for the background of the network type indicator. Should be equal to
+        status_bar_mobile_container_height / 2 -->
+    <dimen name="status_bar_mobile_container_corner_radius_updated">7sp</dimen>
+
     <!-- Size of the view displaying the mobile roam icon in the status bar. This value should
         match the viewport size of drawable stat_sys_roaming -->
     <dimen name="status_bar_mobile_roam_size">8sp</dimen>
@@ -1806,7 +1822,8 @@
     <!-- The activity chip side padding, used with the default phone icon. -->
     <dimen name="ongoing_activity_chip_side_padding">12dp</dimen>
     <!-- The activity chip side padding, used with an icon that has embedded padding (e.g. if the icon comes from the notification's smallIcon field). If the icon has padding, the chip itself can have less padding. -->
-    <dimen name="ongoing_activity_chip_side_padding_for_embedded_padding_icon">6dp</dimen>
+    <dimen name="ongoing_activity_chip_side_padding_for_embedded_padding_icon">2dp</dimen>
+    <dimen name="ongoing_activity_chip_side_padding_for_embedded_padding_icon_legacy">6dp</dimen>
     <!-- The icon size, used with the default phone icon. -->
     <dimen name="ongoing_activity_chip_icon_size">16dp</dimen>
     <!-- The icon size, used with an icon that has embedded padding. (If the icon has embedded padding, we need to make the whole icon larger so the icon itself doesn't look small.) -->

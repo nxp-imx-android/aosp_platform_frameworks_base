@@ -231,6 +231,9 @@ constructor(
      */
     private var isDreaming = false
 
+    /** True if we should allow swiping open the glanceable hub. */
+    private var swipeToHubEnabled = false
+
     /** Observes and logs state when the lifecycle that controls the [touchMonitor] updates. */
     private val touchLifecycleLogger: LifecycleObserver = LifecycleEventObserver { _, event ->
         logger.d({
@@ -438,6 +441,7 @@ constructor(
             },
         )
         collectFlow(containerView, keyguardInteractor.isDreaming, { isDreaming = it })
+        collectFlow(containerView, communalViewModel.swipeToHubEnabled, { swipeToHubEnabled = it })
 
         communalContainerWrapper = CommunalWrapper(containerView.context)
         communalContainerWrapper?.addView(communalContainerView)
@@ -520,10 +524,7 @@ constructor(
         val glanceableHubV2 = communalSettingsInteractor.isV2FlagEnabled()
         if (
             !hubShowing &&
-                (touchOnNotifications ||
-                    touchOnUmo ||
-                    touchOnSmartspace ||
-                    !communalViewModel.swipeToHubEnabled())
+                (touchOnNotifications || touchOnUmo || touchOnSmartspace || !swipeToHubEnabled)
         ) {
             logger.d({
                 "Lockscreen touch ignored: touchOnNotifications: $bool1, touchOnUmo: $bool2, " +
