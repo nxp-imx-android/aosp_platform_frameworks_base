@@ -20,6 +20,7 @@ import android.annotation.ColorInt
 import android.graphics.Rect
 import android.view.View
 import androidx.compose.runtime.getValue
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
@@ -29,6 +30,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.keyguard.shared.model.TransitionState
+import com.android.systemui.lifecycle.Activatable
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.log.table.TableLogBufferFactory
@@ -49,6 +51,7 @@ import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
+import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
 import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.StatusBarPopupChipsViewModel
 import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior
@@ -71,6 +74,8 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -94,7 +99,7 @@ import kotlinx.coroutines.flow.stateIn
  * [StatusBarHideIconsForBouncerManager]. We should move those pieces of logic to this class instead
  * so that it's all in one place and easily testable outside of the fragment.
  */
-interface HomeStatusBarViewModel {
+interface HomeStatusBarViewModel : Activatable {
     /** Factory to create the view model for the battery icon */
     val batteryViewModelFactory: BatteryViewModel.Factory
 
@@ -133,7 +138,7 @@ interface HomeStatusBarViewModel {
     val operatorNameViewModel: StatusBarOperatorNameViewModel
 
     /** The popup chips that should be shown on the right-hand side of the status bar. */
-    val statusBarPopupChips: StateFlow<List<PopupChipModel.Shown>>
+    val popupChips: List<PopupChipModel.Shown>
 
     /**
      * True if the current scene can show the home status bar (aka this status bar), and false if
@@ -208,7 +213,7 @@ constructor(
     shadeInteractor: ShadeInteractor,
     shareToAppChipViewModel: ShareToAppChipViewModel,
     ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
-    statusBarPopupChipsViewModel: StatusBarPopupChipsViewModel,
+    statusBarPopupChipsViewModelFactory: StatusBarPopupChipsViewModel.Factory,
     animations: SystemStatusEventAnimationInteractor,
     statusBarContentInsetsViewModelStore: StatusBarContentInsetsViewModelStore,
     @Background bgScope: CoroutineScope,
@@ -218,6 +223,8 @@ constructor(
     private val hydrator = Hydrator(traceName = "HomeStatusBarViewModel.hydrator")
 
     val tableLogger = tableLoggerFactory.getOrCreate(tableLogBufferName(thisDisplayId), 200)
+
+    private val statusBarPopupChips by lazy { statusBarPopupChipsViewModelFactory.create() }
 
     override val isTransitioningFromLockscreenToOccluded: StateFlow<Boolean> =
         keyguardTransitionInteractor
@@ -246,7 +253,8 @@ constructor(
 
     override val ongoingActivityChipsLegacy = ongoingActivityChipsViewModel.chipsLegacy
 
-    override val statusBarPopupChips = statusBarPopupChipsViewModel.shownPopupChips
+    override val popupChips
+        get() = statusBarPopupChips.shownPopupChips
 
     override val isHomeStatusBarAllowedByScene: StateFlow<Boolean> =
         combine(
@@ -495,7 +503,13 @@ constructor(
     private fun Boolean.toVisibleOrInvisible(): Int = if (this) View.VISIBLE else View.INVISIBLE
 
     override suspend fun onActivated(): Nothing {
-        hydrator.activate()
+        coroutineScope {
+            launch { hydrator.activate() }
+            if (StatusBarPopupChips.isEnabled) {
+                launch { statusBarPopupChips.activate() }
+            }
+            awaitCancellation()
+        }
     }
 
     /** Inject this to create the display-dependent view model */

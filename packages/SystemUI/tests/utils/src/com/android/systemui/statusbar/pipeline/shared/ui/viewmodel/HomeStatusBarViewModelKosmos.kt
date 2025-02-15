@@ -29,7 +29,7 @@ import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.shareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ongoingActivityChipsViewModel
 import com.android.systemui.statusbar.events.domain.interactor.systemStatusEventAnimationInteractor
-import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.statusBarPopupChipsViewModel
+import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.statusBarPopupChipsViewModelFactory
 import com.android.systemui.statusbar.layout.ui.viewmodel.multiDisplayStatusBarContentInsetsViewModelStore
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
@@ -59,7 +59,7 @@ var Kosmos.homeStatusBarViewModel: HomeStatusBarViewModel by
             shadeInteractor,
             shareToAppChipViewModel,
             ongoingActivityChipsViewModel,
-            statusBarPopupChipsViewModel,
+            statusBarPopupChipsViewModelFactory,
             systemStatusEventAnimationInteractor,
             multiDisplayStatusBarContentInsetsViewModelStore,
             backgroundScope,

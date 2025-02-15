@@ -16,49 +16,65 @@
 
 package com.android.systemui.statusbar.featurepods.popups.ui.viewmodel
 
-import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Background
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.statusbar.featurepods.media.ui.viewmodel.MediaControlChipViewModel
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
-import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 
 /**
  * View model deciding which system process chips to show in the status bar. Emits a list of
  * PopupChipModels.
  */
-@SysUISingleton
 class StatusBarPopupChipsViewModel
-@Inject
-constructor(
-    @Background scope: CoroutineScope,
-    mediaControlChipViewModel: MediaControlChipViewModel,
-) {
+@AssistedInject
+constructor(mediaControlChip: MediaControlChipViewModel) : ExclusiveActivatable() {
+    private val hydrator: Hydrator = Hydrator("StatusBarPopupChipsViewModel.hydrator")
+
+    /** The ID of the current chip that is showing its popup, or `null` if no chip is shown. */
+    private var currentShownPopupChipId by mutableStateOf<PopupChipId?>(null)
+
+    private val incomingPopupChipBundle: PopupChipBundle by
+        hydrator.hydratedStateOf(
+            traceName = "incomingPopupChipBundle",
+            initialValue = PopupChipBundle(),
+            source = mediaControlChip.chip.map { chip -> PopupChipBundle(media = chip) },
+        )
+
+    val shownPopupChips: List<PopupChipModel.Shown> by derivedStateOf {
+        if (StatusBarPopupChips.isEnabled) {
+            val bundle = incomingPopupChipBundle
+
+            listOfNotNull(bundle.media).filterIsInstance<PopupChipModel.Shown>().map { chip ->
+                chip.copy(
+                    isPopupShown = chip.chipId == currentShownPopupChipId,
+                    showPopup = { currentShownPopupChipId = chip.chipId },
+                    hidePopup = { currentShownPopupChipId = null },
+                )
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    override suspend fun onActivated(): Nothing {
+        hydrator.activate()
+    }
+
     private data class PopupChipBundle(
         val media: PopupChipModel = PopupChipModel.Hidden(chipId = PopupChipId.MediaControl)
     )
 
-    private val incomingPopupChipBundle: StateFlow<PopupChipBundle?> =
-        mediaControlChipViewModel.chip
-            .map { chip -> PopupChipBundle(media = chip) }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), PopupChipBundle())
-
-    val shownPopupChips: StateFlow<List<PopupChipModel.Shown>> =
-        if (StatusBarPopupChips.isEnabled) {
-            incomingPopupChipBundle
-                .map { bundle ->
-                    listOfNotNull(bundle?.media).filterIsInstance<PopupChipModel.Shown>()
-                }
-                .stateIn(scope, SharingStarted.WhileSubscribed(), emptyList())
-        } else {
-            MutableStateFlow(emptyList<PopupChipModel.Shown>()).asStateFlow()
-        }
+    @AssistedFactory
+    interface Factory {
+        fun create(): StatusBarPopupChipsViewModel
+    }
 }
