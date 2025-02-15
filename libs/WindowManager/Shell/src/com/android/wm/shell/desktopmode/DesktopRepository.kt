@@ -314,29 +314,22 @@ class DesktopRepository(
         return false
     }
 
-    /**
-     * Adds given task to the closing task list for [displayId]'s active desk.
-     *
-     * TODO: b/389960283 - add explicit [deskId] argument.
-     */
-    fun addClosingTask(displayId: Int, taskId: Int) {
-        val activeDesk =
-            desktopData.getActiveDesk(displayId)
-                ?: error("Expected active desk in display: $displayId")
-        if (activeDesk.closingTasks.add(taskId)) {
-            logD(
-                "Added closing task=%d displayId=%d deskId=%d",
-                taskId,
-                displayId,
-                activeDesk.deskId,
-            )
+    /** Adds given task to the closing task list of its desk. */
+    fun addClosingTask(displayId: Int, deskId: Int?, taskId: Int) {
+        val desk =
+            deskId?.let { desktopData.getDesk(it) }
+                ?: checkNotNull(desktopData.getActiveDesk(displayId)) {
+                    "Expected active desk in display: $displayId"
+                }
+        if (desk.closingTasks.add(taskId)) {
+            logD("Added closing task=%d displayId=%d deskId=%d", taskId, displayId, desk.deskId)
         } else {
             // If the task hasn't been removed from closing list after it disappeared.
             logW(
                 "Task with taskId=%d displayId=%d deskId=%d is already closing",
                 taskId,
                 displayId,
-                activeDesk.deskId,
+                desk.deskId,
             )
         }
     }

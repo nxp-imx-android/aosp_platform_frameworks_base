@@ -801,6 +801,9 @@ class DesktopTasksController(
     ): ((IBinder) -> Unit) {
         val taskId = taskInfo.taskId
         val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
+        if (deskId == null && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            error("Did not find desk for task: $taskId")
+        }
         snapEventHandler.removeTaskIfTiled(displayId, taskId)
         val shouldExitDesktop =
             willExitDesktop(
@@ -818,7 +821,7 @@ class DesktopTasksController(
                 shouldEndUpAtHome = true,
             )
 
-        taskRepository.addClosingTask(displayId, taskId)
+        taskRepository.addClosingTask(displayId = displayId, deskId = deskId, taskId = taskId)
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
             doesAnyTaskRequireTaskbarRounding(displayId, taskId)
         )
@@ -1251,9 +1254,9 @@ class DesktopTasksController(
         //  home.
         if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
             performDesktopExitCleanupIfNeeded(
-                task.taskId,
-                task.displayId,
-                wct,
+                taskId = task.taskId,
+                displayId = task.displayId,
+                wct = wct,
                 forceToFullscreen = false,
                 // TODO: b/371096166 - Temporary turing home relaunch off to prevent home stealing
                 // display focus. Remove shouldEndUpAtHome = false when home focus handling
@@ -1820,6 +1823,7 @@ class DesktopTasksController(
 
     private fun performDesktopExitCleanupIfNeeded(
         taskId: Int,
+        deskId: Int? = null,
         displayId: Int,
         wct: WindowContainerTransaction,
         forceToFullscreen: Boolean,
@@ -1833,13 +1837,14 @@ class DesktopTasksController(
         //  |RunOnTransitStart| when the transition is started.
         return performDesktopExitCleanUp(
             wct = wct,
-            deskId = null,
+            deskId = deskId,
             displayId = displayId,
             willExitDesktop = true,
             shouldEndUpAtHome = shouldEndUpAtHome,
         )
     }
 
+    /** TODO: b/394268248 - update [deskId] to be non-null. */
     private fun performDesktopExitCleanUp(
         wct: WindowContainerTransaction,
         deskId: Int?,
@@ -2390,17 +2395,28 @@ class DesktopTasksController(
     ): WindowContainerTransaction? {
         logV("handleTaskClosing")
         if (!isDesktopModeShowing(task.displayId)) return null
+        val deskId = taskRepository.getDeskIdForTask(task.taskId)
+        if (deskId == null && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            return null
+        }
 
         val wct = WindowContainerTransaction()
-        performDesktopExitCleanupIfNeeded(
-            task.taskId,
-            task.displayId,
-            wct,
-            forceToFullscreen = false,
-        )
+        val deactivationRunnable =
+            performDesktopExitCleanupIfNeeded(
+                taskId = task.taskId,
+                deskId = deskId,
+                displayId = task.displayId,
+                wct = wct,
+                forceToFullscreen = false,
+            )
+        deactivationRunnable?.invoke(transition)
 
         if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue()) {
-            taskRepository.addClosingTask(task.displayId, task.taskId)
+            taskRepository.addClosingTask(
+                displayId = task.displayId,
+                deskId = deskId,
+                taskId = task.taskId,
+            )
             snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
         }
 
@@ -2604,9 +2620,9 @@ class DesktopTasksController(
         wct.setDensityDpi(taskInfo.token, getDefaultDensityDpi())
 
         performDesktopExitCleanupIfNeeded(
-            taskInfo.taskId,
-            taskInfo.displayId,
-            wct,
+            taskId = taskInfo.taskId,
+            displayId = taskInfo.displayId,
+            wct = wct,
             forceToFullscreen = false,
             shouldEndUpAtHome = false,
         )
