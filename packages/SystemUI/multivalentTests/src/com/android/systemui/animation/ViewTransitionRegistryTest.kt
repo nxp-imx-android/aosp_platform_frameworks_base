@@ -25,9 +25,9 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import kotlin.test.Test
 
 @SmallTest
@@ -36,24 +36,22 @@ class ViewTransitionRegistryTest : SysuiTestCase() {
 
     private lateinit var view: View
     private lateinit var underTest: ViewTransitionRegistry
-    private var token: ViewTransitionToken = ViewTransitionToken()
 
     @Before
     fun setup() {
         view = FrameLayout(mContext)
         underTest = ViewTransitionRegistry()
-        token = ViewTransitionToken()
     }
 
     @Test
     fun testSuccessfulRegisterInViewTransitionRegistry() {
-        underTest.register(token, view)
+        val token = underTest.register(view)
         assertThat(underTest.getView(token)).isNotNull()
     }
 
     @Test
     fun testSuccessfulUnregisterInViewTransitionRegistry() {
-        underTest.register(token, view)
+        val token = underTest.register(view)
         assertThat(underTest.getView(token)).isNotNull()
 
         underTest.unregister(token)
@@ -62,12 +60,13 @@ class ViewTransitionRegistryTest : SysuiTestCase() {
 
     @Test
     fun testSuccessfulUnregisterOnViewDetachedFromWindow() {
-        val view: View = mock {
-            on { getTag(R.id.tag_view_transition_token) } doReturn token
-        }
+        val view: View = mock()
 
-        underTest.register(token, view)
+        val token = underTest.register(view)
+        assertThat(token).isEqualTo(token)
         assertThat(underTest.getView(token)).isNotNull()
+
+        whenever(view.getTag(R.id.tag_view_transition_token)).thenReturn(token)
 
         argumentCaptor<View.OnAttachStateChangeListener>()
             .apply { verify(view).addOnAttachStateChangeListener(capture()) }
@@ -75,5 +74,59 @@ class ViewTransitionRegistryTest : SysuiTestCase() {
             .onViewDetachedFromWindow(view)
 
         assertThat(underTest.getView(token)).isNull()
+    }
+
+    @Test
+    fun testMultipleRegisterOnSameView() {
+        val token = underTest.register(view)
+
+        // multiple register on same view should return same token
+        assertThat(underTest.register(view)).isEqualTo(token)
+
+        // 1st unregister doesn't remove the token from registry as refCount = 2
+        underTest.unregister(token)
+        assertThat(underTest.getView(token)).isNotNull()
+
+        // 2nd unregister removes the token from registry
+        underTest.unregister(token)
+        assertThat(underTest.getView(token)).isNull()
+    }
+
+    @Test
+    fun testMultipleRegisterOnSameViewRemovedAfterViewDetached() {
+        val view: View = mock()
+
+        val token = underTest.register(view)
+        whenever(view.getTag(R.id.tag_view_transition_token)).thenReturn(token)
+
+        assertThat(underTest.getViewToken(view)).isEqualTo(token)
+
+        // mock view's detach event
+        val caller = argumentCaptor<View.OnAttachStateChangeListener>()
+            .apply { verify(view).addOnAttachStateChangeListener(capture()) }
+            .firstValue
+
+        // register 3 times
+        underTest.register(view)
+        underTest.register(view)
+        underTest.register(view)
+
+        // unregister 1 time and verify entry should still be present in registry
+        underTest.unregister(token)
+        assertThat(underTest.getView(token)).isNotNull()
+
+        // view's associated entry should be gone from registry, after view detaches
+        caller.onViewDetachedFromWindow(view)
+        assertThat(underTest.getView(token)).isNull()
+    }
+
+    @Test
+    fun testDistinctViewsSameClassRegisterWithDifferentToken() {
+        var prev: ViewTransitionToken? = underTest.register(FrameLayout(mContext))
+        for (i in 0 until 10) {
+            val curr = underTest.register(FrameLayout(mContext))
+            assertThat(curr).isNotEqualTo(prev)
+            prev = curr
+        }
     }
 }
