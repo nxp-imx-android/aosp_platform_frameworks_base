@@ -68,6 +68,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.view.WindowManagerGlobal;
 import android.widget.ImageButton;
 import android.window.DesktopModeFlags;
 import android.window.TaskSnapshot;
@@ -479,7 +480,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         if (shouldDelayUpdate) {
             return;
         }
-        updateDragResizeListener(mDecorationContainerSurface, inFullImmersive);
+        updateDragResizeListenerIfNeeded(mDecorationContainerSurface, inFullImmersive);
     }
 
 
@@ -587,7 +588,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             closeMaximizeMenu();
             notifyNoCaptionHandle();
         }
-        updateDragResizeListener(oldDecorationSurface, inFullImmersive);
+        updateDragResizeListenerIfNeeded(oldDecorationSurface, inFullImmersive);
         updateMaximizeMenu(startT, inFullImmersive);
         Trace.endSection(); // DesktopModeWindowDecoration#relayout
     }
@@ -665,22 +666,42 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         return mUserContext.getUser();
     }
 
-    private void updateDragResizeListener(SurfaceControl oldDecorationSurface,
+    private void updateDragResizeListenerIfNeeded(@Nullable SurfaceControl containerSurface,
             boolean inFullImmersive) {
+        final boolean taskPositionChanged = !mTaskInfo.positionInParent.equals(mPositionInParent);
         if (!isDragResizable(mTaskInfo, inFullImmersive)) {
-            if (!mTaskInfo.positionInParent.equals(mPositionInParent)) {
+            if (taskPositionChanged) {
                 // We still want to track caption bar's exclusion region on a non-resizeable task.
                 updateExclusionRegion(inFullImmersive);
             }
             closeDragResizeListener();
             return;
         }
+        updateDragResizeListener(containerSurface,
+                (geometryChanged) -> {
+                    if (geometryChanged || taskPositionChanged) {
+                        updateExclusionRegion(inFullImmersive);
+                    }
+                });
+    }
 
-        if (oldDecorationSurface != mDecorationContainerSurface || mDragResizeListener == null) {
+    private void updateDragResizeListener(@Nullable SurfaceControl containerSurface,
+            Consumer<Boolean> onUpdateFinished) {
+        final boolean containerSurfaceChanged = containerSurface != mDecorationContainerSurface;
+        final boolean isFirstDragResizeListener = mDragResizeListener == null;
+        final boolean shouldCreateListener = containerSurfaceChanged || isFirstDragResizeListener;
+        if (containerSurfaceChanged) {
             closeDragResizeListener();
-            Trace.beginSection("DesktopModeWindowDecoration#relayout-DragResizeInputListener");
+        }
+        if (shouldCreateListener) {
+            final ShellExecutor bgExecutor =
+                    DesktopModeFlags.ENABLE_DRAG_RESIZE_SET_UP_IN_BG_THREAD.isTrue()
+                            ? mBgExecutor : mMainExecutor;
             mDragResizeListener = new DragResizeInputListener(
                     mContext,
+                    WindowManagerGlobal.getWindowSession(),
+                    mMainExecutor,
+                    bgExecutor,
                     mTaskInfo,
                     mHandler,
                     mChoreographer,
@@ -691,24 +712,20 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mSurfaceControlTransactionSupplier,
                     mDisplayController,
                     mDesktopModeEventLogger);
-            Trace.endSection();
         }
-
+        final DragResizeInputListener newListener = mDragResizeListener;
         final int touchSlop = ViewConfiguration.get(mResult.mRootView.getContext())
                 .getScaledTouchSlop();
-
-        // If either task geometry or position have changed, update this task's
-        // exclusion region listener
         final Resources res = mResult.mRootView.getResources();
-        if (mDragResizeListener.setGeometry(
-                new DragResizeWindowGeometry(mRelayoutParams.mCornerRadius,
-                        new Size(mResult.mWidth, mResult.mHeight),
-                        getResizeEdgeHandleSize(res), getResizeHandleEdgeInset(res),
-                        getFineResizeCornerSize(res), getLargeResizeCornerSize(res),
-                        mDisabledResizingEdge), touchSlop)
-                || !mTaskInfo.positionInParent.equals(mPositionInParent)) {
-            updateExclusionRegion(inFullImmersive);
-        }
+        final DragResizeWindowGeometry newGeometry = new DragResizeWindowGeometry(
+                mRelayoutParams.mCornerRadius,
+                new Size(mResult.mWidth, mResult.mHeight),
+                getResizeEdgeHandleSize(res), getResizeHandleEdgeInset(res),
+                getFineResizeCornerSize(res), getLargeResizeCornerSize(res),
+                mDisabledResizingEdge);
+        newListener.addInitializedCallback(() -> {
+            onUpdateFinished.accept(newListener.setGeometry(newGeometry, touchSlop));
+        });
     }
 
     private static boolean isDragResizable(ActivityManager.RunningTaskInfo taskInfo,
@@ -1711,7 +1728,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     private Region getGlobalExclusionRegion(boolean inFullImmersive) {
         Region exclusionRegion;
-        if (mDragResizeListener != null && isDragResizable(mTaskInfo, inFullImmersive)) {
+        if (mDragResizeListener != null
+                && isDragResizable(mTaskInfo, inFullImmersive)) {
             exclusionRegion = mDragResizeListener.getCornersRegion();
         } else {
             exclusionRegion = new Region();

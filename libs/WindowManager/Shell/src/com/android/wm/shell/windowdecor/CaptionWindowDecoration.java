@@ -48,6 +48,8 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.view.WindowManagerGlobal;
+import android.window.DesktopModeFlags;
 import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -58,6 +60,7 @@ import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
+import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.extension.TaskInfoKt;
@@ -69,6 +72,7 @@ import com.android.wm.shell.windowdecor.extension.TaskInfoKt;
  */
 public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearLayout> {
     private final Handler mHandler;
+    private final @ShellMainThread ShellExecutor mMainExecutor;
     private final @ShellBackgroundThread ShellExecutor mBgExecutor;
     private final Choreographer mChoreographer;
     private final SyncTransactionQueue mSyncQueue;
@@ -90,6 +94,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
             RunningTaskInfo taskInfo,
             SurfaceControl taskSurface,
             Handler handler,
+            @ShellMainThread ShellExecutor mainExecutor,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             Choreographer choreographer,
             SyncTransactionQueue syncQueue,
@@ -97,6 +102,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
         super(context, userContext, displayController, taskOrganizer, taskInfo,
                 taskSurface, windowDecorViewHostSupplier);
         mHandler = handler;
+        mMainExecutor = mainExecutor;
         mBgExecutor = bgExecutor;
         mChoreographer = choreographer;
         mSyncQueue = syncQueue;
@@ -287,8 +293,14 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
 
         if (oldDecorationSurface != mDecorationContainerSurface || mDragResizeListener == null) {
             closeDragResizeListener();
+            final ShellExecutor bgExecutor =
+                    DesktopModeFlags.ENABLE_DRAG_RESIZE_SET_UP_IN_BG_THREAD.isTrue()
+                            ? mBgExecutor : mMainExecutor;
             mDragResizeListener = new DragResizeInputListener(
                     mContext,
+                    WindowManagerGlobal.getWindowSession(),
+                    mMainExecutor,
+                    bgExecutor,
                     mTaskInfo,
                     mHandler,
                     mChoreographer,
@@ -299,17 +311,19 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
                     mSurfaceControlTransactionSupplier,
                     mDisplayController);
         }
-
+        final DragResizeInputListener newListener = mDragResizeListener;
         final int touchSlop = ViewConfiguration.get(mResult.mRootView.getContext())
                 .getScaledTouchSlop();
-
         final Resources res = mResult.mRootView.getResources();
-        mDragResizeListener.setGeometry(new DragResizeWindowGeometry(0 /* taskCornerRadius */,
-                        new Size(mResult.mWidth, mResult.mHeight),
-                        getResizeEdgeHandleSize(res),
-                        getResizeHandleEdgeInset(res), getFineResizeCornerSize(res),
-                        getLargeResizeCornerSize(res), DragResizeWindowGeometry.DisabledEdge.NONE),
-                touchSlop);
+        final DragResizeWindowGeometry newGeometry = new DragResizeWindowGeometry(
+                0 /* taskCornerRadius */,
+                new Size(mResult.mWidth, mResult.mHeight),
+                getResizeEdgeHandleSize(res),
+                getResizeHandleEdgeInset(res), getFineResizeCornerSize(res),
+                getLargeResizeCornerSize(res), DragResizeWindowGeometry.DisabledEdge.NONE);
+        newListener.addInitializedCallback(() -> {
+            mDragResizeListener.setGeometry(newGeometry, touchSlop);
+        });
     }
 
     /**
