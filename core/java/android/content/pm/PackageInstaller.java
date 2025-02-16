@@ -3250,7 +3250,6 @@ public class PackageInstaller {
          */
         @SystemApi
         @RequiresPermission(android.Manifest.permission.MANAGE_ROLLBACKS)
-        @FlaggedApi(Flags.FLAG_RECOVERABILITY_DETECTION)
         public void setRollbackImpactLevel(@PackageManager.RollbackImpactLevel int impactLevel) {
             if ((installFlags & PackageManager.INSTALL_ENABLE_ROLLBACK) == 0) {
                 throw new IllegalArgumentException(
