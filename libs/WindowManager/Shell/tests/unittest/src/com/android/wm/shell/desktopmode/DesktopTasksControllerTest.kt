@@ -2900,7 +2900,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
+    @EnableFlags(
+        FLAG_ENABLE_DESKTOP_WINDOWING_PIP,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+    )
     fun onDesktopWindowClose_minimizedPipNotPresent_exitDesktop() {
         val freeformTask = setUpFreeformTask()
         val pipTask = setUpPipTask(autoEnterEnabled = true)
@@ -2915,10 +2918,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val wct = WindowContainerTransaction()
         controller.onDesktopWindowClose(wct, displayId = DEFAULT_DISPLAY, freeformTask)
 
-        // Remove wallpaper operation
-        wct.hierarchyOps.any { hop ->
-            hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK && hop.container == wallpaperToken.asBinder()
-        }
+        // Moves wallpaper activity to back when leaving desktop
+        wct.assertReorder(wallpaperToken, toTop = false)
     }
 
     @Test
@@ -4338,7 +4339,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
+    @EnableFlags(
+        FLAG_ENABLE_DESKTOP_WINDOWING_PIP,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+    )
     fun moveFocusedTaskToFullscreen_minimizedPipPresent_removeWallpaperActivity() {
         val freeformTask = setUpFreeformTask()
         val pipTask = setUpPipTask(autoEnterEnabled = true)
@@ -4356,10 +4360,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val taskChange = assertNotNull(wct.changes[freeformTask.token.asBinder()])
         assertThat(taskChange.windowingMode)
             .isEqualTo(WINDOWING_MODE_UNDEFINED) // inherited FULLSCREEN
-        // Remove wallpaper operation
-        wct.hierarchyOps.any { hop ->
-            hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK && hop.container == wallpaperToken.asBinder()
-        }
+        // Moves wallpaper activity to back when leaving desktop
+        wct.assertReorder(wallpaperToken, toTop = false)
     }
 
     @Test
