@@ -23,7 +23,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyLong;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyString;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.server.PackageWatchdog.MITIGATION_RESULT_SKIPPED;
 import static com.android.server.PackageWatchdog.MITIGATION_RESULT_SUCCESS;
@@ -34,8 +33,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 
 import android.content.ContentResolver;
@@ -43,12 +40,8 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.VersionedPackage;
-import android.crashrecovery.flags.Flags;
 import android.os.RecoverySystem;
 import android.os.SystemProperties;
-import android.os.UserHandle;
-import android.platform.test.flag.junit.FlagsParameterization;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
 
@@ -59,14 +52,8 @@ import com.android.server.am.SettingsToPropertiesMapper;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Answers;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoSession;
 import org.mockito.quality.Strictness;
@@ -75,34 +62,19 @@ import org.mockito.stubbing.Answer;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
 /**
  * Test RescueParty.
  */
-@RunWith(Parameterized.class)
 public class RescuePartyTest {
-    @Rule
-    public SetFlagsRule mSetFlagsRule;
     private static final long CURRENT_NETWORK_TIME_MILLIS = 0L;
-    private static final String FAKE_NATIVE_NAMESPACE1 = "native1";
-    private static final String FAKE_NATIVE_NAMESPACE2 = "native2";
-    private static final String[] FAKE_RESET_NATIVE_NAMESPACES =
-            {FAKE_NATIVE_NAMESPACE1, FAKE_NATIVE_NAMESPACE2};
 
     private static VersionedPackage sFailingPackage = new VersionedPackage("com.package.name", 1);
     private static final String PROP_DISABLE_RESCUE = "persist.sys.disable_rescue";
-    private static final String CALLING_PACKAGE1 = "com.package.name1";
-    private static final String CALLING_PACKAGE2 = "com.package.name2";
-    private static final String CALLING_PACKAGE3 = "com.package.name3";
     private static final String PERSISTENT_PACKAGE = "com.persistent.package";
     private static final String NON_PERSISTENT_PACKAGE = "com.nonpersistent.package";
-    private static final String NAMESPACE1 = "namespace1";
-    private static final String NAMESPACE2 = "namespace2";
-    private static final String NAMESPACE3 = "namespace3";
-    private static final String NAMESPACE4 = "namespace4";
     private static final String PROP_DEVICE_CONFIG_DISABLE_FLAG =
             "persist.device_config.configuration.disable_rescue_party";
     private static final String PROP_DISABLE_FACTORY_RESET_FLAG =
@@ -125,21 +97,6 @@ public class RescuePartyTest {
 
     // Mock only sysprop apis
     private PackageWatchdog.BootThreshold mSpyBootThreshold;
-
-    @Captor
-    private ArgumentCaptor<DeviceConfig.MonitorCallback> mMonitorCallbackCaptor;
-    @Captor
-    private ArgumentCaptor<List<String>> mPackageListCaptor;
-
-    @Parameters(name = "{0}")
-    public static List<FlagsParameterization> getFlags() {
-        return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_RECOVERABILITY_DETECTION);
-    }
-
-    public RescuePartyTest(FlagsParameterization flags) {
-        mSetFlagsRule = new SetFlagsRule(flags);
-    }
 
     @Before
     public void setUp() throws Exception {
@@ -418,25 +375,6 @@ public class RescuePartyTest {
         assertEquals(observer.onBootLoop(2), PackageHealthObserverImpact.USER_IMPACT_LEVEL_100);
     }
 
-
-    private void verifySettingsResets(int resetMode, String[] resetNamespaces,
-            HashMap<String, Integer> configResetVerifiedTimesMap) {
-        verifyOnlySettingsReset(resetMode);
-    }
-
-    private void verifyOnlySettingsReset(int resetMode) {
-        verify(() -> Settings.Global.resetToDefaultsAsUser(mMockContentResolver, null,
-                resetMode, UserHandle.USER_SYSTEM));
-        verify(() -> Settings.Secure.resetToDefaultsAsUser(eq(mMockContentResolver), isNull(),
-                eq(resetMode), anyInt()));
-    }
-
-    private void verifyNoSettingsReset(int resetMode) {
-        verify(() -> Settings.Global.resetToDefaultsAsUser(mMockContentResolver, null,
-                resetMode, UserHandle.USER_SYSTEM), never());
-        verify(() -> Settings.Secure.resetToDefaultsAsUser(eq(mMockContentResolver), isNull(),
-                eq(resetMode), anyInt()), never());
-    }
 
     private void noteBoot(int mitigationCount) {
         RescuePartyObserver.getInstance(mMockContext).onExecuteBootLoopMitigation(mitigationCount);
