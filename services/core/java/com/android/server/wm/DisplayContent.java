@@ -108,7 +108,6 @@ import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_W
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON_CHANGE_DISPLAY;
 import static com.android.server.wm.DisplayContentProto.APP_TRANSITION;
-import static com.android.server.wm.DisplayContentProto.CLOSING_APPS;
 import static com.android.server.wm.DisplayContentProto.CURRENT_FOCUS;
 import static com.android.server.wm.DisplayContentProto.DISPLAY_FRAMES;
 import static com.android.server.wm.DisplayContentProto.DISPLAY_INFO;
@@ -125,7 +124,6 @@ import static com.android.server.wm.DisplayContentProto.INPUT_METHOD_TARGET;
 import static com.android.server.wm.DisplayContentProto.IS_SLEEPING;
 import static com.android.server.wm.DisplayContentProto.KEEP_CLEAR_AREAS;
 import static com.android.server.wm.DisplayContentProto.MIN_SIZE_OF_RESIZEABLE_TASK_DP;
-import static com.android.server.wm.DisplayContentProto.OPENING_APPS;
 import static com.android.server.wm.DisplayContentProto.RESUMED_ACTIVITY;
 import static com.android.server.wm.DisplayContentProto.ROOT_DISPLAY_AREA;
 import static com.android.server.wm.DisplayContentProto.SLEEP_TOKENS;
@@ -196,7 +194,6 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.WorkSource;
 import android.provider.Settings;
-import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.DisplayMetrics;
 import android.util.DisplayUtils;
@@ -367,15 +364,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     final AppTransition mAppTransition;
 
-    final ArraySet<ActivityRecord> mOpeningApps = new ArraySet<>();
-    final ArraySet<ActivityRecord> mClosingApps = new ArraySet<>();
-    final ArraySet<WindowContainer> mChangingContainers = new ArraySet<>();
     final UnknownAppVisibilityController mUnknownAppVisibilityController;
-    /**
-     * If a container is closing when resizing, keeps track of its starting bounds when it is
-     * removed from {@link #mChangingContainers}.
-     */
-    final ArrayMap<WindowContainer, Rect> mClosingChangingContainers = new ArrayMap<>();
 
     private MetricsLogger mMetricsLogger;
 
@@ -1910,17 +1899,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             return false;
         }
         if (checkOpening) {
-            if (mTransitionController.isShellTransitionsEnabled()) {
-                if (!mTransitionController.isCollecting(r)) {
-                    return false;
-                }
-            } else {
-                if (!mAppTransition.isTransitionSet() || !mOpeningApps.contains(r)) {
-                    // Apply normal rotation animation in case of the activity set different
-                    // requested orientation without activity switch, or the transition is unset due
-                    // to starting window was transferred ({@link #mSkipAppTransitionAnimation}).
-                    return false;
-                }
+            if (!mTransitionController.isCollecting(r)) {
+                // Apply normal rotation animation in case the activity changes requested
+                // orientation without activity switch.
+                return false;
             }
             if (r.isState(RESUMED) && !r.getTask().mInResumeTopActivity) {
                 // If the activity is executing or has done the lifecycle callback, use normal
@@ -3372,10 +3354,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     void removeImmediately() {
         mDeferredRemoval = false;
         try {
-            // Clear all transitions & screen frozen states when removing display.
-            mOpeningApps.clear();
-            mClosingApps.clear();
-            mChangingContainers.clear();
             mUnknownAppVisibilityController.clear();
             mAppTransition.removeAppTransitionTimeoutCallbacks();
             mTransitionController.unregisterLegacyListener(mFixedRotationTransitionListener);
@@ -3566,12 +3544,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
         if (mFocusedApp != null) {
             mFocusedApp.writeNameToProto(proto, FOCUSED_APP);
-        }
-        for (int i = mOpeningApps.size() - 1; i >= 0; i--) {
-            mOpeningApps.valueAt(i).writeIdentifierToProto(proto, OPENING_APPS);
-        }
-        for (int i = mClosingApps.size() - 1; i >= 0; i--) {
-            mClosingApps.valueAt(i).writeIdentifierToProto(proto, CLOSING_APPS);
         }
 
         final Task focusedRootTask = getFocusedRootTask();
@@ -4828,19 +4800,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 token.dump(pw, "    ", dumpAll);
             } else {
                 pw.println();
-            }
-        }
-
-        if (!mOpeningApps.isEmpty() || !mClosingApps.isEmpty() || !mChangingContainers.isEmpty()) {
-            pw.println();
-            if (mOpeningApps.size() > 0) {
-                pw.print("  mOpeningApps="); pw.println(mOpeningApps);
-            }
-            if (mClosingApps.size() > 0) {
-                pw.print("  mClosingApps="); pw.println(mClosingApps);
-            }
-            if (mChangingContainers.size() > 0) {
-                pw.print("  mChangingApps="); pw.println(mChangingContainers);
             }
         }
 

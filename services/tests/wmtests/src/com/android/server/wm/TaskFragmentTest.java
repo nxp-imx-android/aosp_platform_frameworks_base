@@ -189,11 +189,12 @@ public class TaskFragmentTest extends WindowTestsBase {
         doReturn(true).when(mTaskFragment).isVisible();
         doReturn(true).when(mTaskFragment).isVisibleRequested();
 
+        spyOn(mTaskFragment.mTransitionController);
         clearInvocations(mTransaction);
         mTaskFragment.setBounds(endBounds);
 
         // No change transition, but update the organized surface position.
-        verify(mTaskFragment, never()).initializeChangeTransition(any(), any());
+        verify(mTaskFragment.mTransitionController, never()).collectVisibleChange(any());
         verify(mTransaction).setPosition(mLeash, endBounds.left, endBounds.top);
     }
 

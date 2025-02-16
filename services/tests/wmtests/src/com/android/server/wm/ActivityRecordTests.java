@@ -3326,16 +3326,13 @@ public class ActivityRecordTests extends WindowTestsBase {
         makeWindowVisibleAndDrawn(app);
 
         // Put the activity in close transition.
-        mDisplayContent.mOpeningApps.clear();
-        mDisplayContent.mClosingApps.add(app.mActivityRecord);
-        mDisplayContent.prepareAppTransition(TRANSIT_CLOSE);
+        requestTransition(app.mActivityRecord, WindowManager.TRANSIT_CLOSE);
 
         // Remove window during transition, so it is requested to hide, but won't be committed until
         // the transition is finished.
         app.mActivityRecord.onRemovedFromDisplay();
         app.mActivityRecord.prepareSurfaces();
 
-        assertTrue(mDisplayContent.mClosingApps.contains(app.mActivityRecord));
         assertFalse(app.mActivityRecord.isVisibleRequested());
         assertTrue(app.mActivityRecord.isVisible());
         assertTrue(app.mActivityRecord.isSurfaceShowing());
@@ -3352,11 +3349,6 @@ public class ActivityRecordTests extends WindowTestsBase {
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
         makeWindowVisibleAndDrawn(app);
         app.mActivityRecord.prepareSurfaces();
-
-        // Put the activity in close transition.
-        mDisplayContent.mOpeningApps.clear();
-        mDisplayContent.mClosingApps.add(app.mActivityRecord);
-        mDisplayContent.prepareAppTransition(TRANSIT_CLOSE);
 
         // Commit visibility before start transition.
         app.mActivityRecord.commitVisibility(false, false);

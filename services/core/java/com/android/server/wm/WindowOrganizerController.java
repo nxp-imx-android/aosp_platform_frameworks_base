@@ -1060,7 +1060,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         effects |= applyChanges(taskFragment, c);
 
         if (taskFragment.shouldStartChangeTransition(mTmpBounds0, mTmpBounds1)) {
-            taskFragment.initializeChangeTransition(mTmpBounds0);
+            mTransitionController.collectVisibleChange(taskFragment);
         }
         taskFragment.continueOrganizedTaskFragmentSurfaceUpdate();
         return effects;

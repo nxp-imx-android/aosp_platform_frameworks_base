@@ -89,7 +89,6 @@ import static com.android.internal.R.styleable.WindowAnimation_wallpaperIntraOpe
 import static com.android.internal.R.styleable.WindowAnimation_wallpaperOpenEnterAnimation;
 import static com.android.internal.R.styleable.WindowAnimation_wallpaperOpenExitAnimation;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_APP_TRANSITIONS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_APP_TRANSITIONS_ANIM;
 import static com.android.server.wm.AppTransitionProto.APP_TRANSITION_STATE;
 import static com.android.server.wm.AppTransitionProto.LAST_USED_APP_TRANSITION;
@@ -1554,26 +1553,6 @@ public class AppTransition implements Dump {
     }
 
     private void handleAppTransitionTimeout() {
-        synchronized (mService.mGlobalLock) {
-            final DisplayContent dc = mDisplayContent;
-            if (dc == null) {
-                return;
-            }
-            notifyAppTransitionTimeoutLocked();
-            if (isTransitionSet() || !dc.mOpeningApps.isEmpty() || !dc.mClosingApps.isEmpty()
-                    || !dc.mChangingContainers.isEmpty()) {
-                ProtoLog.v(WM_DEBUG_APP_TRANSITIONS,
-                            "*** APP TRANSITION TIMEOUT. displayId=%d isTransitionSet()=%b "
-                                    + "mOpeningApps.size()=%d mClosingApps.size()=%d "
-                                    + "mChangingApps.size()=%d",
-                            dc.getDisplayId(), dc.mAppTransition.isTransitionSet(),
-                            dc.mOpeningApps.size(), dc.mClosingApps.size(),
-                            dc.mChangingContainers.size());
-
-                setTimeout();
-                mService.mWindowPlacerLocked.performSurfacePlacement();
-            }
-        }
     }
 
     private static void doAnimationCallback(@NonNull IRemoteCallback callback) {
