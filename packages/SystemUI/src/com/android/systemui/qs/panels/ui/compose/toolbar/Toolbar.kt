@@ -32,18 +32,25 @@ fun Toolbar(toolbarViewModelFactory: ToolbarViewModel.Factory, modifier: Modifie
 
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         viewModel.userSwitcherViewModel?.let {
-            IconButton(it, Modifier.sysuiResTag("multi_user_switch"))
+            IconButton(
+                it,
+                useModifierBasedExpandable = true,
+                Modifier.sysuiResTag("multi_user_switch"),
+            )
         }
 
         EditModeButton(viewModel.editModeButtonViewModelFactory)
 
         IconButton(
             viewModel.settingsButtonViewModel,
+            useModifierBasedExpandable = true,
             Modifier.sysuiResTag("settings_button_container"),
         )
 
         Spacer(modifier = Modifier.weight(1f))
 
-        viewModel.powerButtonViewModel?.let { IconButton(it, Modifier.sysuiResTag("pm_lite")) }
+        viewModel.powerButtonViewModel?.let {
+            IconButton(it, useModifierBasedExpandable = true, Modifier.sysuiResTag("pm_lite"))
+        }
     }
 }
