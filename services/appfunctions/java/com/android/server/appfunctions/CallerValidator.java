@@ -17,11 +17,15 @@
 package com.android.server.appfunctions;
 
 import android.Manifest;
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.os.UserHandle;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.infra.AndroidFuture;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Interface for validating that the caller has the correct privilege to call an AppFunctionManager
@@ -70,13 +74,39 @@ public interface CallerValidator {
      * @param functionId The id of the app function to execute.
      * @return Whether the caller can execute the specified app function.
      */
-    AndroidFuture<Boolean> verifyCallerCanExecuteAppFunction(
+    @CanExecuteAppFunctionResult
+    AndroidFuture<Integer> verifyCallerCanExecuteAppFunction(
             int callingUid,
             int callingPid,
             @NonNull UserHandle targetUser,
             @NonNull String callerPackageName,
             @NonNull String targetPackageName,
             @NonNull String functionId);
+
+    @IntDef(
+            prefix = {"CAN_EXECUTE_APP_FUNCTIONS_"},
+            value = {
+                    CAN_EXECUTE_APP_FUNCTIONS_DENIED,
+                    CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_SAME_PACKAGE,
+                    CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION,
+            })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface CanExecuteAppFunctionResult {}
+
+    /** Callers are not allowed to execute app functions. */
+    int CAN_EXECUTE_APP_FUNCTIONS_DENIED = 0;
+
+    /**
+     * Callers can execute app functions because they are calling app functions from the same
+     * package.
+     */
+    int CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_SAME_PACKAGE = 1;
+
+    /**
+     * Callers can execute app functions because they have the necessary permission.
+     * This case also applies when a caller with the permission invokes their own app functions.
+     */
+    int CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION = 2;
 
     /**
      * Checks if the app function policy is allowed.
