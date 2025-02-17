@@ -176,14 +176,14 @@ final class VendorVibrationSession extends IVibrationSession.Stub
 
     @Override
     public void onCancel() {
-        Slog.d(TAG, "Cancellation signal received, cancelling vibration session...");
+        Slog.d(TAG, "Session cancellation signal received, aborting vibration session...");
         requestEndSession(Status.CANCELLED_BY_USER, /* shouldAbort= */ true,
                 /* isVendorRequest= */ true);
     }
 
     @Override
     public void binderDied() {
-        Slog.d(TAG, "Binder died, cancelling vibration session...");
+        Slog.d(TAG, "Session binder died, aborting vibration session...");
         requestEndSession(Status.CANCELLED_BINDER_DIED, /* shouldAbort= */ true,
                 /* isVendorRequest= */ false);
     }
@@ -219,18 +219,20 @@ final class VendorVibrationSession extends IVibrationSession.Stub
 
     @Override
     public void notifyVibratorCallback(int vibratorId, long vibrationId) {
-        // Ignore it, the session vibration playback doesn't depend on HAL timings
+        Slog.d(TAG, "Vibration callback received for vibration " + vibrationId
+                + " on vibrator " + vibratorId + ", ignoring...");
     }
 
     @Override
     public void notifySyncedVibratorsCallback(long vibrationId) {
-        // Ignore it, the session vibration playback doesn't depend on HAL timings
+        Slog.d(TAG, "Synced vibration callback received for vibration " + vibrationId
+                + ", ignoring...");
     }
 
     @Override
     public void notifySessionCallback() {
+        Slog.d(TAG, "Session callback received, ending vibration session...");
         synchronized (mLock) {
-            Slog.d(TAG, "Session callback received, ending vibration session...");
             // If end was not requested then the HAL has cancelled the session.
             maybeSetEndRequestLocked(Status.CANCELLED_BY_UNKNOWN_REASON,
                     /* isVendorRequest= */ false);
@@ -307,7 +309,7 @@ final class VendorVibrationSession extends IVibrationSession.Stub
             }
         }
         if (isAlreadyEnded) {
-            // Session already ended, make sure we end it in the HAL.
+            Slog.d(TAG, "Session already ended after starting the HAL, aborting...");
             mHandler.post(() -> mManagerHooks.endSession(mSessionId, /* shouldAbort= */ true));
         }
     }
@@ -335,8 +337,8 @@ final class VendorVibrationSession extends IVibrationSession.Stub
     public boolean maybeSetVibrationConductor(VibrationStepConductor conductor) {
         synchronized (mLock) {
             if (mConductor != null) {
-                Slog.d(TAG, "Vibration session still dispatching previous vibration,"
-                        + " new vibration ignored");
+                Slog.d(TAG, "Session still dispatching previous vibration, new vibration "
+                        + conductor.getVibration().id + " ignored");
                 return false;
             }
             mConductor = conductor;
@@ -345,19 +347,22 @@ final class VendorVibrationSession extends IVibrationSession.Stub
     }
 
     private void requestEndSession(Status status, boolean shouldAbort, boolean isVendorRequest) {
+        Slog.d(TAG, "Session end request received with status " + status);
         boolean shouldTriggerSessionHook = false;
         synchronized (mLock) {
             maybeSetEndRequestLocked(status, isVendorRequest);
-            if (isStarted()) {
-                // Always trigger session hook after it has started, in case new request aborts an
-                // already finishing session. Wait for HAL callback before actually ending here.
+            if (!isEnded() && isStarted()) {
+                // Trigger session hook even if it was already triggered, in case a second request
+                // is aborting the ongoing/ending session. This might cause it to end right away.
+                // Wait for HAL callback before setting the end status.
                 shouldTriggerSessionHook = true;
             } else {
-                // Session did not start in the HAL, end it right away.
+                // Session not active in the HAL, set end status right away.
                 maybeSetStatusToRequestedLocked();
             }
         }
         if (shouldTriggerSessionHook) {
+            Slog.d(TAG, "Requesting HAL session end with abort=" + shouldAbort);
             mHandler.post(() ->  mManagerHooks.endSession(mSessionId, shouldAbort));
         }
     }
@@ -368,6 +373,7 @@ final class VendorVibrationSession extends IVibrationSession.Stub
             // End already requested, keep first requested status and time.
             return;
         }
+        Slog.d(TAG, "Session end request accepted for status " + status);
         mEndStatusRequest = status;
         mEndedByVendor = isVendorRequest;
         mEndTime = System.currentTimeMillis();
@@ -400,6 +406,7 @@ final class VendorVibrationSession extends IVibrationSession.Stub
             // No end status was requested, nothing to set.
             return;
         }
+        Slog.d(TAG, "Session end request applied for status " + mEndStatusRequest);
         mStatus = mEndStatusRequest;
         // Run client callback in separate thread.
         final Status endStatus = mStatus;
@@ -407,7 +414,7 @@ final class VendorVibrationSession extends IVibrationSession.Stub
             try {
                 mCallback.onFinished(toSessionStatus(endStatus));
             } catch (RemoteException e) {
-                Slog.e(TAG, "Error notifying vendor session is finishing", e);
+                Slog.e(TAG, "Error notifying vendor session finished", e);
             }
         });
     }

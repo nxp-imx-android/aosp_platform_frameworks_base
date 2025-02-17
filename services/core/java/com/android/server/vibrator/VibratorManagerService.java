@@ -786,7 +786,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
 
         synchronized (mLock) {
             if (DEBUG) {
-                Slog.d(TAG, "Starting session " + session.getSessionId());
+                Slog.d(TAG, "Starting vendor session " + session.getSessionId());
             }
 
             Status ignoreStatus = null;
@@ -864,13 +864,16 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 // Session already ended, possibly cancelled by app cancellation signal.
                 return session.getStatus();
             }
-            int mode = startAppOpModeLocked(session.getCallerInfo());
+            CallerInfo callerInfo = session.getCallerInfo();
+            int mode = startAppOpModeLocked(callerInfo);
             switch (mode) {
                 case AppOpsManager.MODE_ALLOWED:
                     Trace.asyncTraceBegin(TRACE_TAG_VIBRATOR, "vibration", 0);
                     // Make sure mCurrentVibration is set while triggering the HAL.
                     mCurrentSession = session;
                     if (!session.linkToDeath()) {
+                        // Shouldn't happen. The method call already logs.
+                        finishAppOpModeLocked(callerInfo);
                         mCurrentSession = null;
                         return Status.IGNORED_ERROR_TOKEN;
                     }
@@ -878,14 +881,14 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                         Slog.e(TAG, "Error starting session " + sessionId + " on vibrators "
                                 + Arrays.toString(session.getVibratorIds()));
                         session.unlinkToDeath();
+                        finishAppOpModeLocked(callerInfo);
                         mCurrentSession = null;
                         return Status.IGNORED_UNSUPPORTED;
                     }
                     session.notifyStart();
                     return null;
                 case AppOpsManager.MODE_ERRORED:
-                    Slog.w(TAG, "Start AppOpsManager operation errored for uid "
-                            + session.getCallerInfo().uid);
+                    Slog.w(TAG, "Start AppOpsManager operation errored for uid " + callerInfo.uid);
                     return Status.IGNORED_ERROR_APP_OPS;
                 default:
                     return Status.IGNORED_APP_OPS;
@@ -1081,11 +1084,12 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     @Nullable
     private Status startVibrationOnThreadLocked(SingleVibrationSession session) {
         if (DEBUG) {
-            Slog.d(TAG, "Starting vibration " + session.getVibration().id +  " on thread");
+            Slog.d(TAG, "Starting vibration " + session.getVibration().id + " on thread");
         }
         VibrationStepConductor conductor = createVibrationStepConductor(session.getVibration());
         session.setVibrationConductor(conductor);
-        int mode = startAppOpModeLocked(session.getCallerInfo());
+        CallerInfo callerInfo = session.getCallerInfo();
+        int mode = startAppOpModeLocked(callerInfo);
         switch (mode) {
             case AppOpsManager.MODE_ALLOWED:
                 Trace.asyncTraceBegin(TRACE_TAG_VIBRATOR, "vibration", 0);
@@ -1093,19 +1097,21 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 mCurrentSession = session;
                 if (!mCurrentSession.linkToDeath()) {
                     // Shouldn't happen. The method call already logs.
+                    finishAppOpModeLocked(callerInfo);
                     mCurrentSession = null;  // Aborted.
                     return Status.IGNORED_ERROR_TOKEN;
                 }
                 if (!mVibrationThread.runVibrationOnVibrationThread(conductor)) {
                     // Shouldn't happen. The method call already logs.
                     session.setVibrationConductor(null); // Rejected by thread, clear it in session.
+                    mCurrentSession.unlinkToDeath();
+                    finishAppOpModeLocked(callerInfo);
                     mCurrentSession = null;  // Aborted.
                     return Status.IGNORED_ERROR_SCHEDULING;
                 }
                 return null;
             case AppOpsManager.MODE_ERRORED:
-                Slog.w(TAG, "Start AppOpsManager operation errored for uid "
-                        + session.getCallerInfo().uid);
+                Slog.w(TAG, "Start AppOpsManager operation errored for uid " + callerInfo.uid);
                 return Status.IGNORED_ERROR_APP_OPS;
             default:
                 return Status.IGNORED_APP_OPS;
@@ -1494,6 +1500,13 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     private int checkAppOpModeLocked(CallerInfo callerInfo) {
         int mode = mAppOps.checkAudioOpNoThrow(AppOpsManager.OP_VIBRATE,
                 callerInfo.attrs.getAudioUsage(), callerInfo.uid, callerInfo.opPkg);
+        if (DEBUG) {
+            int opMode = mAppOps.checkOpNoThrow(AppOpsManager.OP_VIBRATE, callerInfo.uid,
+                    callerInfo.opPkg);
+            Slog.d(TAG, "Check AppOp mode VIBRATE for uid " + callerInfo.uid + " and package "
+                    + callerInfo.opPkg + " returned audio=" + AppOpsManager.MODE_NAMES[mode]
+                    + ", op=" + AppOpsManager.MODE_NAMES[opMode]);
+        }
         int fixedMode = fixupAppOpModeLocked(mode, callerInfo.attrs);
         if (mode != fixedMode && fixedMode == AppOpsManager.MODE_ALLOWED) {
             // If we're just ignoring the vibration op then this is set by DND and we should ignore
@@ -1507,9 +1520,13 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     /** Start an operation in {@link AppOpsManager}, if allowed. */
     @GuardedBy("mLock")
     private int startAppOpModeLocked(CallerInfo callerInfo) {
-        return fixupAppOpModeLocked(
-                mAppOps.startOpNoThrow(AppOpsManager.OP_VIBRATE, callerInfo.uid, callerInfo.opPkg),
-                callerInfo.attrs);
+        int mode = mAppOps.startOpNoThrow(AppOpsManager.OP_VIBRATE, callerInfo.uid,
+                callerInfo.opPkg);
+        if (DEBUG) {
+            Slog.d(TAG, "Start AppOp mode VIBRATE for uid " + callerInfo.uid + " and package "
+                    + callerInfo.opPkg + " returned " + AppOpsManager.MODE_NAMES[mode]);
+        }
+        return fixupAppOpModeLocked(mode, callerInfo.attrs);
     }
 
     /**
@@ -1518,6 +1535,10 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
      */
     @GuardedBy("mLock")
     private void finishAppOpModeLocked(CallerInfo callerInfo) {
+        if (DEBUG) {
+            Slog.d(TAG, "Finish AppOp mode VIBRATE for uid " + callerInfo.uid + " and package "
+                    + callerInfo.opPkg);
+        }
         mAppOps.finishOp(AppOpsManager.OP_VIBRATE, callerInfo.uid, callerInfo.opPkg);
     }
 
