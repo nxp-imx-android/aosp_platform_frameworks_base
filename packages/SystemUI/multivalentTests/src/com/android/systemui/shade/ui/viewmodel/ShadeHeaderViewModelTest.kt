@@ -25,12 +25,15 @@ import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
+import com.android.systemui.shade.domain.interactor.shadeMode
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel.HeaderChipHighlight
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.fakeMobileIconsInteractor
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.argThat
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
@@ -43,6 +46,7 @@ import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
@@ -64,14 +68,15 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
     @Test
     fun mobileSubIds_update() =
         testScope.runTest {
-            val mobileSubIds by collectLastValue(underTest.mobileSubIds)
             mobileIconsInteractor.filteredSubscriptions.value = listOf(SUB_1)
+            runCurrent()
 
-            assertThat(mobileSubIds).isEqualTo(listOf(1))
+            assertThat(underTest.mobileSubIds).isEqualTo(listOf(1))
 
             mobileIconsInteractor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
+            runCurrent()
 
-            assertThat(mobileSubIds).isEqualTo(listOf(1, 2))
+            assertThat(underTest.mobileSubIds).isEqualTo(listOf(1, 2))
         }
 
     @Test
@@ -116,13 +121,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
     @Test
     fun onSystemIconChipClicked_lockedOnQsShade_collapsesShadeToLockscreen() =
         testScope.runTest {
-            kosmos.enableDualShade()
+            setupDualShadeState(scene = Scenes.Lockscreen, overlay = Overlays.QuickSettingsShade)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            setDeviceEntered(false)
-            setScene(Scenes.Lockscreen)
-            setOverlay(Overlays.QuickSettingsShade)
-            assertThat(currentOverlays).isNotEmpty()
 
             underTest.onSystemIconChipClicked()
             runCurrent()
@@ -134,13 +135,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
     @Test
     fun onSystemIconChipClicked_lockedOnNotifShade_expandsQsShade() =
         testScope.runTest {
-            kosmos.enableDualShade()
+            setupDualShadeState(scene = Scenes.Lockscreen, overlay = Overlays.NotificationsShade)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            setDeviceEntered(false)
-            setScene(Scenes.Lockscreen)
-            setOverlay(Overlays.NotificationsShade)
-            assertThat(currentOverlays).isNotEmpty()
 
             underTest.onSystemIconChipClicked()
             runCurrent()
@@ -166,13 +163,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
     @Test
     fun onSystemIconChipClicked_unlockedOnQsShade_collapsesShadeToGone() =
         testScope.runTest {
-            kosmos.enableDualShade()
+            setupDualShadeState(scene = Scenes.Gone, overlay = Overlays.QuickSettingsShade)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            setDeviceEntered(true)
-            setScene(Scenes.Gone)
-            setOverlay(Overlays.QuickSettingsShade)
-            assertThat(currentOverlays).isNotEmpty()
 
             underTest.onSystemIconChipClicked()
             runCurrent()
@@ -184,13 +177,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
     @Test
     fun onSystemIconChipClicked_unlockedOnNotifShade_expandsQsShade() =
         testScope.runTest {
-            kosmos.enableDualShade()
+            setupDualShadeState(scene = Scenes.Gone, overlay = Overlays.NotificationsShade)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            setDeviceEntered(true)
-            setScene(Scenes.Gone)
-            setOverlay(Overlays.NotificationsShade)
-            assertThat(currentOverlays).isNotEmpty()
 
             underTest.onSystemIconChipClicked()
             runCurrent()
@@ -203,13 +192,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
     @Test
     fun onNotificationIconChipClicked_lockedOnNotifShade_collapsesShadeToLockscreen() =
         testScope.runTest {
-            kosmos.enableDualShade()
+            setupDualShadeState(scene = Scenes.Lockscreen, overlay = Overlays.NotificationsShade)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            setDeviceEntered(false)
-            setScene(Scenes.Lockscreen)
-            setOverlay(Overlays.NotificationsShade)
-            assertThat(currentOverlays).isNotEmpty()
 
             underTest.onNotificationIconChipClicked()
             runCurrent()
@@ -221,13 +206,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
     @Test
     fun onNotificationIconChipClicked_lockedOnQsShade_expandsNotifShade() =
         testScope.runTest {
-            kosmos.enableDualShade()
+            setupDualShadeState(scene = Scenes.Lockscreen, overlay = Overlays.QuickSettingsShade)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            setDeviceEntered(false)
-            setScene(Scenes.Lockscreen)
-            setOverlay(Overlays.QuickSettingsShade)
-            assertThat(currentOverlays).isNotEmpty()
 
             underTest.onNotificationIconChipClicked()
             runCurrent()
@@ -240,13 +221,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
     @Test
     fun onNotificationIconChipClicked_unlockedOnNotifShade_collapsesShadeToGone() =
         testScope.runTest {
-            kosmos.enableDualShade()
+            setupDualShadeState(scene = Scenes.Gone, overlay = Overlays.NotificationsShade)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            setDeviceEntered(true)
-            setScene(Scenes.Gone)
-            setOverlay(Overlays.NotificationsShade)
-            assertThat(currentOverlays).isNotEmpty()
 
             underTest.onNotificationIconChipClicked()
             runCurrent()
@@ -258,13 +235,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
     @Test
     fun onNotificationIconChipClicked_unlockedOnQsShade_expandsNotifShade() =
         testScope.runTest {
-            kosmos.enableDualShade()
+            setupDualShadeState(scene = Scenes.Gone, overlay = Overlays.QuickSettingsShade)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            setDeviceEntered(true)
-            setScene(Scenes.Gone)
-            setOverlay(Overlays.QuickSettingsShade)
-            assertThat(currentOverlays).isNotEmpty()
 
             underTest.onNotificationIconChipClicked()
             runCurrent()
@@ -319,22 +292,13 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
     @Test
     fun highlightChips_notifsOpenInDualShade_notifsStrongQuickSettingsWeak() =
         testScope.runTest {
-            kosmos.enableDualShade()
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-
             // Test the lockscreen scenario.
-            setScene(Scenes.Lockscreen)
-            setOverlay(Overlays.NotificationsShade)
+            setupDualShadeState(scene = Scenes.Lockscreen, overlay = Overlays.NotificationsShade)
             assertThat(underTest.notificationsChipHighlight).isEqualTo(HeaderChipHighlight.Strong)
             assertThat(underTest.quickSettingsChipHighlight).isEqualTo(HeaderChipHighlight.Weak)
 
             // Test the unlocked scenario.
-            setDeviceEntered(true)
-            setScene(Scenes.Gone)
-            setOverlay(Overlays.NotificationsShade)
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
-            assertThat(currentOverlays).isNotEmpty()
+            setupDualShadeState(scene = Scenes.Gone, overlay = Overlays.NotificationsShade)
             assertThat(underTest.notificationsChipHighlight).isEqualTo(HeaderChipHighlight.Strong)
             assertThat(underTest.quickSettingsChipHighlight).isEqualTo(HeaderChipHighlight.Weak)
         }
@@ -342,22 +306,13 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
     @Test
     fun highlightChips_quickSettingsOpenInDualShade_notifsWeakQuickSettingsStrong() =
         testScope.runTest {
-            kosmos.enableDualShade()
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-
             // Test the lockscreen scenario.
-            setScene(Scenes.Lockscreen)
-            setOverlay(Overlays.QuickSettingsShade)
+            setupDualShadeState(scene = Scenes.Lockscreen, overlay = Overlays.QuickSettingsShade)
             assertThat(underTest.notificationsChipHighlight).isEqualTo(HeaderChipHighlight.Weak)
             assertThat(underTest.quickSettingsChipHighlight).isEqualTo(HeaderChipHighlight.Strong)
 
             // Test the unlocked scenario.
-            setDeviceEntered(true)
-            setScene(Scenes.Gone)
-            setOverlay(Overlays.QuickSettingsShade)
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
-            assertThat(currentOverlays).isNotEmpty()
+            setupDualShadeState(scene = Scenes.Gone, overlay = Overlays.QuickSettingsShade)
             assertThat(underTest.notificationsChipHighlight).isEqualTo(HeaderChipHighlight.Weak)
             assertThat(underTest.quickSettingsChipHighlight).isEqualTo(HeaderChipHighlight.Strong)
         }
@@ -365,21 +320,13 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
     @Test
     fun highlightChips_noOverlaysInDualShade_bothNone() =
         testScope.runTest {
-            kosmos.enableDualShade()
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-
             // Test the lockscreen scenario.
-            setScene(Scenes.Lockscreen)
-            assertThat(currentOverlays).isEmpty()
+            setupDualShadeState(scene = Scenes.Lockscreen)
             assertThat(underTest.notificationsChipHighlight).isEqualTo(HeaderChipHighlight.None)
             assertThat(underTest.quickSettingsChipHighlight).isEqualTo(HeaderChipHighlight.None)
 
             // Test the unlocked scenario.
-            setDeviceEntered(true)
-            setScene(Scenes.Gone)
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
-            assertThat(currentOverlays).isEmpty()
+            setupDualShadeState(scene = Scenes.Gone)
             assertThat(underTest.notificationsChipHighlight).isEqualTo(HeaderChipHighlight.None)
             assertThat(underTest.quickSettingsChipHighlight).isEqualTo(HeaderChipHighlight.None)
         }
@@ -401,21 +348,43 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
             )
     }
 
+    private fun TestScope.setupDualShadeState(scene: SceneKey, overlay: OverlayKey? = null) {
+        kosmos.enableDualShade()
+        val shadeMode by collectLastValue(kosmos.shadeMode)
+        val currentScene by collectLastValue(sceneInteractor.currentScene)
+        val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+        if (scene == Scenes.Gone) {
+            // Unlock the device, marking the device has been entered.
+            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+        }
+        runCurrent()
+        assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
+
+        sceneInteractor.changeScene(scene, "test")
+        checkNotNull(currentOverlays).forEach { sceneInteractor.instantlyHideOverlay(it, "test") }
+        runCurrent()
+        overlay?.let { sceneInteractor.showOverlay(it, "test") }
+        sceneInteractor.setTransitionState(
+            MutableStateFlow<ObservableTransitionState>(
+                ObservableTransitionState.Idle(scene, setOfNotNull(overlay))
+            )
+        )
+        runCurrent()
+
+        assertThat(currentScene).isEqualTo(scene)
+        if (overlay == null) {
+            assertThat(currentOverlays).isEmpty()
+        } else {
+            assertThat(currentOverlays).containsExactly(overlay)
+        }
+    }
+
     private fun setScene(key: SceneKey) {
         sceneInteractor.changeScene(key, "test")
         sceneInteractor.setTransitionState(
             MutableStateFlow<ObservableTransitionState>(ObservableTransitionState.Idle(key))
-        )
-        testScope.runCurrent()
-    }
-
-    private fun setOverlay(key: OverlayKey) {
-        val currentOverlays = sceneInteractor.currentOverlays.value + key
-        sceneInteractor.showOverlay(key, "test")
-        sceneInteractor.setTransitionState(
-            MutableStateFlow<ObservableTransitionState>(
-                ObservableTransitionState.Idle(sceneInteractor.currentScene.value, currentOverlays)
-            )
         )
         testScope.runCurrent()
     }
