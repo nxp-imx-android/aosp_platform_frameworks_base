@@ -1619,7 +1619,6 @@ public abstract class PackageManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(android.content.pm.Flags.FLAG_RECOVERABILITY_DETECTION)
     public static final int ROLLBACK_USER_IMPACT_LOW = 0;
 
     /**
@@ -1629,7 +1628,6 @@ public abstract class PackageManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(android.content.pm.Flags.FLAG_RECOVERABILITY_DETECTION)
     public static final int ROLLBACK_USER_IMPACT_HIGH = 1;
 
     /**
@@ -1638,7 +1636,6 @@ public abstract class PackageManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(android.content.pm.Flags.FLAG_RECOVERABILITY_DETECTION)
     public static final int ROLLBACK_USER_IMPACT_ONLY_MANUAL = 2;
 
     /** @hide */

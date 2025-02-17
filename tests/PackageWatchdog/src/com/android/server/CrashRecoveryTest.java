@@ -133,7 +133,6 @@ public class CrashRecoveryTest {
 
     @Before
     public void setUp() throws Exception {
-        mSetFlagsRule.enableFlags(Flags.FLAG_RECOVERABILITY_DETECTION);
         MockitoAnnotations.initMocks(this);
         new File(InstrumentationRegistry.getContext().getFilesDir(),
                 "package-watchdog.xml").delete();
@@ -766,8 +765,6 @@ public class CrashRecoveryTest {
             watchdog.notifyPackageFailure(packages, failureReason);
         }
         mTestLooper.dispatchAll();
-        if (Flags.recoverabilityDetection()) {
-            moveTimeForwardAndDispatch(watchdog.DEFAULT_MITIGATION_WINDOW_MS);
-        }
+        moveTimeForwardAndDispatch(watchdog.DEFAULT_MITIGATION_WINDOW_MS);
     }
 }
