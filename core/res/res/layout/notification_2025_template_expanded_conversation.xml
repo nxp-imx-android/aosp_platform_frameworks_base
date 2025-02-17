@@ -48,7 +48,7 @@
             android:clipChildren="false"
             >
 
-            <include layout="@layout/notification_template_part_line1"/>
+            <include layout="@layout/notification_2025_title"/>
 
             <com.android.internal.widget.MessagingLinearLayout
                 android:id="@+id/notification_messaging"

@@ -44,7 +44,7 @@
             android:layout_marginEnd="@dimen/notification_2025_margin"
             android:orientation="vertical"
             >
-            <include layout="@layout/notification_template_part_line1"/>
+            <include layout="@layout/notification_2025_title"/>
             <include layout="@layout/notification_template_text"/>
         </LinearLayout>
 
