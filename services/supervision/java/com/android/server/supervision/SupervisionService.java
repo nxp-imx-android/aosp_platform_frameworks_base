@@ -31,7 +31,9 @@ import android.annotation.UserIdInt;
 import android.app.KeyguardManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
+import android.app.supervision.ISupervisionAppService;
 import android.app.supervision.ISupervisionManager;
+import android.app.supervision.SupervisionAppService;
 import android.app.supervision.SupervisionManagerInternal;
 import android.app.supervision.SupervisionRecoveryInfo;
 import android.app.supervision.flags.Flags;
@@ -48,6 +50,7 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.os.UserHandle;
+import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.R;
@@ -57,6 +60,9 @@ import com.android.internal.util.DumpUtils;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.appbinding.AppBindingService;
+import com.android.server.appbinding.AppServiceConnection;
+import com.android.server.appbinding.finders.SupervisionAppServiceFinder;
 import com.android.server.pm.UserManagerInternal;
 
 import java.io.FileDescriptor;
@@ -119,6 +125,36 @@ public class SupervisionService extends ISupervisionManager.Stub {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
         setSupervisionEnabledForUserInternal(userId, enabled, getSystemSupervisionPackage());
+
+        if (Flags.enableSupervisionAppService()) {
+            List<AppServiceConnection> connections = getSupervisionAppServiceConnections(userId);
+            for (AppServiceConnection conn : connections) {
+                String targetPackage = conn.getFinder().getTargetPackage(userId);
+                ISupervisionAppService binder = (ISupervisionAppService) conn.getServiceBinder();
+                if (binder == null) {
+                    Slog.d(LOG_TAG, String.format(
+                            "Unable to toggle supervision for package %s. Binder is null.",
+                            targetPackage));
+                    continue;
+                }
+                try {
+                    if (enabled) {
+                        binder.onEnabled();
+                    } else {
+                        binder.onDisabled();
+                    }
+                } catch (RemoteException e) {
+                    Slog.d(LOG_TAG, String.format(
+                            "Unable to toggle supervision for package %s. e = %s",
+                            targetPackage, e));
+                }
+            }
+        }
+    }
+
+    private List<AppServiceConnection> getSupervisionAppServiceConnections(@UserIdInt int userId) {
+        AppBindingService abs = mInjector.getAppBindingService();
+        return abs.getAppServiceConnections(SupervisionAppServiceFinder.class, userId);
     }
 
     /**
@@ -345,12 +381,20 @@ public class SupervisionService extends ISupervisionManager.Stub {
     static class Injector {
         private final Context mContext;
         private DevicePolicyManagerInternal mDpmInternal;
+        private AppBindingService mAppBindingService;
         private KeyguardManager mKeyguardManager;
         private PackageManager mPackageManager;
         private UserManagerInternal mUserManagerInternal;
 
         Injector(Context context) {
             mContext = context;
+        }
+
+        AppBindingService getAppBindingService() {
+            if (mAppBindingService == null) {
+                mAppBindingService = LocalServices.getService(AppBindingService.class);
+            }
+            return mAppBindingService;
         }
 
         @Nullable

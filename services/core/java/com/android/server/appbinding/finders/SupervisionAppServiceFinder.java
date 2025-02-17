@@ -79,11 +79,6 @@ public class SupervisionAppServiceFinder
                 CollectionUtils.firstOrNull(
                         mRoleManager.getRoleHoldersAsUser(
                                 RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId)));
-
-        if (DEBUG) {
-            Slog.d(TAG, "getTargetPackage()=" + ret);
-        }
-
         return ret;
     }
 
@@ -107,12 +102,6 @@ public class SupervisionAppServiceFinder
 
     @Override
     protected String validateService(ServiceInfo service) {
-        final String packageName = service.packageName;
-        final String process = service.processName;
-
-        if (process == null || TextUtils.equals(packageName, process)) {
-            return "Service must not run on the main process";
-        }
         return null; // Null means accept this service.
     }
 
