@@ -97,6 +97,7 @@ import android.util.Slog;
 import android.view.Display;
 import android.view.DisplayAdjustments;
 import android.view.autofill.AutofillManager.AutofillClient;
+import android.window.SystemUiContext;
 import android.window.WindowContext;
 import android.window.WindowTokenClient;
 import android.window.WindowTokenClientController;
@@ -3477,15 +3478,28 @@ class ContextImpl extends Context {
      *                      {@link #createSystemContext(ActivityThread)}.
      * @param displayId The ID of the display where the UI is shown.
      */
-    static ContextImpl createSystemUiContext(ContextImpl systemContext, int displayId) {
+    static Context createSystemUiContext(ContextImpl systemContext, int displayId) {
+        // Step 1. Create a ContextImpl associated with its own resources.
         final WindowTokenClient token = new WindowTokenClient();
         final ContextImpl context = systemContext.createWindowContextBase(token, displayId);
-        token.attachContext(context);
+
+        // Step 2. Create a SystemUiContext to wrap the ContextImpl, which enables to listen to
+        // its config updates.
+        final Context systemUiContext;
+        if (com.android.window.flags.Flags.trackSystemUiContextBeforeWms()) {
+            systemUiContext = new SystemUiContext(context);
+            context.setOuterContext(systemUiContext);
+        } else {
+            systemUiContext = context;
+        }
+        token.attachContext(systemUiContext);
+
+        // Step 3. Associate the SystemUiContext with the display specified with ID.
         WindowTokenClientController.getInstance().attachToDisplayContent(token, displayId);
         context.mContextType = CONTEXT_TYPE_SYSTEM_OR_SYSTEM_UI;
         context.mOwnsToken = true;
 
-        return context;
+        return systemUiContext;
     }
 
     @UnsupportedAppUsage

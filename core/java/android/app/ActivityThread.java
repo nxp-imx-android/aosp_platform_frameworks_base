@@ -387,7 +387,7 @@ public final class ActivityThread extends ClientTransactionHandler
     @UnsupportedAppUsage
     private ContextImpl mSystemContext;
     @GuardedBy("this")
-    private ArrayList<WeakReference<ContextImpl>> mDisplaySystemUiContexts;
+    private ArrayList<WeakReference<Context>> mDisplaySystemUiContexts;
 
     @UnsupportedAppUsage
     static volatile IPackageManager sPackageManager;
@@ -3204,7 +3204,7 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @NonNull
-    public ContextImpl getSystemUiContext() {
+    public Context getSystemUiContext() {
         return getSystemUiContext(DEFAULT_DISPLAY);
     }
 
@@ -3214,7 +3214,7 @@ public final class ActivityThread extends ClientTransactionHandler
      * @see ContextImpl#createSystemUiContext(ContextImpl, int)
      */
     @NonNull
-    public ContextImpl getSystemUiContext(int displayId) {
+    public Context getSystemUiContext(int displayId) {
         synchronized (this) {
             if (mDisplaySystemUiContexts == null) {
                 mDisplaySystemUiContexts = new ArrayList<>();
@@ -3222,7 +3222,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
             mDisplaySystemUiContexts.removeIf(contextRef -> contextRef.refersTo(null));
 
-            ContextImpl context = getSystemUiContextNoCreateLocked(displayId);
+            Context context = getSystemUiContextNoCreateLocked(displayId);
             if (context != null) {
                 return context;
             }
@@ -3233,9 +3233,20 @@ public final class ActivityThread extends ClientTransactionHandler
         }
     }
 
+    /**
+     * Creates a {@code SystemUiContext} for testing.
+     * <p>
+     * DO NOT use it in production code.
+     */
+    @VisibleForTesting
+    @NonNull
+    public Context createSystemUiContextForTesting(int displayId) {
+        return ContextImpl.createSystemUiContext(getSystemContext(), displayId);
+    }
+
     @Nullable
     @Override
-    public ContextImpl getSystemUiContextNoCreate() {
+    public Context getSystemUiContextNoCreate() {
         synchronized (this) {
             if (mDisplaySystemUiContexts == null) {
                 return null;
@@ -3246,9 +3257,9 @@ public final class ActivityThread extends ClientTransactionHandler
 
     @GuardedBy("this")
     @Nullable
-    private ContextImpl getSystemUiContextNoCreateLocked(int displayId) {
+    private Context getSystemUiContextNoCreateLocked(int displayId) {
         for (int i = 0; i < mDisplaySystemUiContexts.size(); i++) {
-            ContextImpl context = mDisplaySystemUiContexts.get(i).get();
+            Context context = mDisplaySystemUiContexts.get(i).get();
             if (context != null && context.getDisplayId() == displayId) {
                 return context;
             }
@@ -3267,7 +3278,8 @@ public final class ActivityThread extends ClientTransactionHandler
     public void installSystemApplicationInfo(ApplicationInfo info, ClassLoader classLoader) {
         synchronized (this) {
             getSystemContext().installSystemApplicationInfo(info, classLoader);
-            getSystemUiContext().installSystemApplicationInfo(info, classLoader);
+            final ContextImpl sysUiContextImpl = ContextImpl.getImpl(getSystemUiContext());
+            sysUiContextImpl.installSystemApplicationInfo(info, classLoader);
 
             // give ourselves a default profiler
             mProfiler = new Profiler();
