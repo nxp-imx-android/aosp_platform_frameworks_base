@@ -109,7 +109,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_STARTING;
 import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 import static android.view.WindowManager.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENABLED;
 import static android.view.WindowManager.PROPERTY_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING_STATE_SHARING;
-import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OLD_UNSET;
 import static android.view.WindowManager.TRANSIT_RELAUNCH;
 import static android.view.WindowManager.hasWindowExtensionsEnabled;
@@ -321,9 +320,7 @@ import android.util.MergedConfiguration;
 import android.util.Slog;
 import android.util.TimeUtils;
 import android.util.proto.ProtoOutputStream;
-import android.view.AppTransitionAnimationSpec;
 import android.view.DisplayInfo;
-import android.view.IAppTransitionAnimationSpecsFuture;
 import android.view.InputApplicationHandle;
 import android.view.RemoteAnimationAdapter;
 import android.view.RemoteAnimationDefinition;
@@ -2348,7 +2345,8 @@ final class ActivityRecord extends WindowToken {
                 // The snapshot of home is only used once because it won't be updated while screen
                 // is on (see {@link TaskSnapshotController#screenTurningOff}).
                 mWmService.mTaskSnapshotController.removeSnapshotCache(task.mTaskId);
-                if ((mDisplayContent.mAppTransition.getTransitFlags()
+                final Transition transition = mTransitionController.getCollectingTransition();
+                if (transition != null && (transition.getFlags()
                         & WindowManager.TRANSIT_FLAG_KEYGUARD_GOING_AWAY_NO_ANIMATION) == 0) {
                     // Only use snapshot of home as starting window when unlocking directly.
                     return false;
@@ -3637,7 +3635,6 @@ final class ActivityRecord extends WindowToken {
                 if (DEBUG_VISIBILITY || DEBUG_TRANSITION) {
                     Slog.v(TAG_TRANSITION, "Prepare close transition: finishing " + this);
                 }
-                mDisplayContent.prepareAppTransition(TRANSIT_CLOSE);
 
                 // When finishing the activity preemptively take the snapshot before the app window
                 // is marked as hidden and any configuration changes take place
@@ -3739,7 +3736,6 @@ final class ActivityRecord extends WindowToken {
 
     private void prepareActivityHideTransitionAnimation() {
         final DisplayContent dc = mDisplayContent;
-        dc.prepareAppTransition(TRANSIT_CLOSE);
         setVisibility(false);
         dc.executeAppTransition();
     }
@@ -4389,13 +4385,6 @@ final class ActivityRecord extends WindowToken {
 
         if (mStartingData != null) {
             removeStartingWindow();
-        }
-
-        // If app transition animation was running for this activity, then we need to ensure that
-        // the app transition notifies that animations have completed in
-        // DisplayContent.handleAnimatingStoppedAndTransition(), so add to that list now
-        if (isAnimating(TRANSITION | PARENTS, ANIMATION_TYPE_APP_TRANSITION)) {
-            getDisplayContent().mNoAnimationNotifyOnTransitionFinished.add(token);
         }
 
         if (delayed && !isEmpty()) {
@@ -5069,8 +5058,6 @@ final class ActivityRecord extends WindowToken {
     void applyOptionsAnimation() {
         if (DEBUG_TRANSITION) Slog.i(TAG, "Applying options for " + this);
         if (mPendingRemoteAnimation != null) {
-            mDisplayContent.mAppTransition.overridePendingAppTransitionRemote(
-                    mPendingRemoteAnimation);
             mTransitionController.setStatusBarTransitionDelay(
                     mPendingRemoteAnimation.getStatusBarTransitionDelay());
         } else {
@@ -5100,14 +5087,6 @@ final class ActivityRecord extends WindowToken {
         IRemoteCallback finishCallback = null;
         switch (animationType) {
             case ANIM_CUSTOM:
-                displayContent.mAppTransition.overridePendingAppTransition(
-                        pendingOptions.getPackageName(),
-                        pendingOptions.getCustomEnterResId(),
-                        pendingOptions.getCustomExitResId(),
-                        pendingOptions.getCustomBackgroundColor(),
-                        pendingOptions.getAnimationStartedListener(),
-                        pendingOptions.getAnimationFinishedListener(),
-                        pendingOptions.getOverrideTaskTransition());
                 options = AnimationOptions.makeCustomAnimOptions(pendingOptions.getPackageName(),
                         pendingOptions.getCustomEnterResId(), pendingOptions.getCustomExitResId(),
                         pendingOptions.getCustomBackgroundColor(),
@@ -5116,9 +5095,6 @@ final class ActivityRecord extends WindowToken {
                 finishCallback = pendingOptions.getAnimationFinishedListener();
                 break;
             case ANIM_CLIP_REVEAL:
-                displayContent.mAppTransition.overridePendingAppTransitionClipReveal(
-                        pendingOptions.getStartX(), pendingOptions.getStartY(),
-                        pendingOptions.getWidth(), pendingOptions.getHeight());
                 options = AnimationOptions.makeClipRevealAnimOptions(
                         pendingOptions.getStartX(), pendingOptions.getStartY(),
                         pendingOptions.getWidth(), pendingOptions.getHeight());
@@ -5130,9 +5106,6 @@ final class ActivityRecord extends WindowToken {
                 }
                 break;
             case ANIM_SCALE_UP:
-                displayContent.mAppTransition.overridePendingAppTransitionScaleUp(
-                        pendingOptions.getStartX(), pendingOptions.getStartY(),
-                        pendingOptions.getWidth(), pendingOptions.getHeight());
                 options = AnimationOptions.makeScaleUpAnimOptions(
                         pendingOptions.getStartX(), pendingOptions.getStartY(),
                         pendingOptions.getWidth(), pendingOptions.getHeight(),
@@ -5148,10 +5121,6 @@ final class ActivityRecord extends WindowToken {
             case ANIM_THUMBNAIL_SCALE_DOWN:
                 final boolean scaleUp = (animationType == ANIM_THUMBNAIL_SCALE_UP);
                 final HardwareBuffer buffer = pendingOptions.getThumbnail();
-                displayContent.mAppTransition.overridePendingAppTransitionThumb(buffer,
-                        pendingOptions.getStartX(), pendingOptions.getStartY(),
-                        pendingOptions.getAnimationStartedListener(),
-                        scaleUp);
                 options = AnimationOptions.makeThumbnailAnimOptions(buffer,
                         pendingOptions.getStartX(), pendingOptions.getStartY(), scaleUp);
                 startCallback = pendingOptions.getAnimationStartedListener();
@@ -5164,36 +5133,9 @@ final class ActivityRecord extends WindowToken {
                 break;
             case ANIM_THUMBNAIL_ASPECT_SCALE_UP:
             case ANIM_THUMBNAIL_ASPECT_SCALE_DOWN:
-                final AppTransitionAnimationSpec[] specs = pendingOptions.getAnimSpecs();
-                final IAppTransitionAnimationSpecsFuture specsFuture =
-                        pendingOptions.getSpecsFuture();
-                if (specsFuture != null) {
-                    displayContent.mAppTransition.overridePendingAppTransitionMultiThumbFuture(
-                            specsFuture, pendingOptions.getAnimationStartedListener(),
-                            animationType == ANIM_THUMBNAIL_ASPECT_SCALE_UP);
-                } else if (animationType == ANIM_THUMBNAIL_ASPECT_SCALE_DOWN
-                        && specs != null) {
-                    displayContent.mAppTransition.overridePendingAppTransitionMultiThumb(
-                            specs, pendingOptions.getAnimationStartedListener(),
-                            pendingOptions.getAnimationFinishedListener(), false);
-                } else {
-                    displayContent.mAppTransition.overridePendingAppTransitionAspectScaledThumb(
-                            pendingOptions.getThumbnail(),
-                            pendingOptions.getStartX(), pendingOptions.getStartY(),
-                            pendingOptions.getWidth(), pendingOptions.getHeight(),
-                            pendingOptions.getAnimationStartedListener(),
-                            (animationType == ANIM_THUMBNAIL_ASPECT_SCALE_UP));
-                    if (intent.getSourceBounds() == null) {
-                        intent.setSourceBounds(new Rect(pendingOptions.getStartX(),
-                                pendingOptions.getStartY(),
-                                pendingOptions.getStartX() + pendingOptions.getWidth(),
-                                pendingOptions.getStartY() + pendingOptions.getHeight()));
-                    }
-                }
+                // TODO(b/397847511): remove the related types from ActivityOptions.
                 break;
             case ANIM_OPEN_CROSS_PROFILE_APPS:
-                displayContent.mAppTransition
-                        .overridePendingAppTransitionStartCrossProfileApps();
                 options = AnimationOptions.makeCrossProfileAnimOptions();
                 break;
             case ANIM_NONE:
@@ -5450,8 +5392,6 @@ final class ActivityRecord extends WindowToken {
     }
 
     private void setVisibility(boolean visible, boolean deferHidingClient) {
-        final AppTransition appTransition = getDisplayContent().mAppTransition;
-
         // Don't set visibility to false if we were already not visible. This prevents WM from
         // adding the app to the closing app list which doesn't make sense for something that is
         // already not visible. However, set visibility to true even if we are already visible.
@@ -5471,8 +5411,8 @@ final class ActivityRecord extends WindowToken {
         }
 
         ProtoLog.v(WM_DEBUG_APP_TRANSITIONS,
-                "setAppVisibility(%s, visible=%b): %s visible=%b mVisibleRequested=%b Callers=%s",
-                token, visible, appTransition, isVisible(), mVisibleRequested,
+                "setAppVisibility(%s, visible=%b): visible=%b mVisibleRequested=%b Callers=%s",
+                token, visible, isVisible(), mVisibleRequested,
                 Debug.getCallers(6));
 
         // Before setting mVisibleRequested so we can track changes.
@@ -5567,15 +5507,6 @@ final class ActivityRecord extends WindowToken {
 
         commitVisibility(visible, true /* performLayout */);
         updateReportedVisibilityLocked();
-    }
-
-    @Override
-    boolean applyAnimation(LayoutParams lp, @TransitionOldType int transit, boolean enter,
-            boolean isVoiceInteraction, @Nullable ArrayList<WindowContainer> sources) {
-        if ((mTransitionChangeFlags & FLAG_STARTING_WINDOW_TRANSFER_RECIPIENT) != 0) {
-            return false;
-        }
-        return super.applyAnimation(lp, transit, enter, isVoiceInteraction, sources);
     }
 
     /**
@@ -6639,9 +6570,7 @@ final class ActivityRecord extends WindowToken {
         // starting window is drawn, the transition can start earlier. Exclude finishing and bubble
         // because it may be a trampoline.
         if (app == null && !finishing && !mLaunchedFromBubble
-                && mVisibleRequested && !mDisplayContent.mAppTransition.isReady()
-                && !mDisplayContent.mAppTransition.isRunning()
-                && mDisplayContent.isNextTransitionForward()) {
+                && mVisibleRequested && mDisplayContent.isNextTransitionForward()) {
             // The pending transition state will be cleared after the transition is started, so
             // save the state for launching the client later (used by LaunchActivityItem).
             mStartingData.mIsTransitionForward = true;
@@ -7523,7 +7452,6 @@ final class ActivityRecord extends WindowToken {
             }
         }
 
-        getDisplayContent().mAppTransition.notifyAppTransitionFinishedLocked(token);
         scheduleAnimation();
 
         // Schedule to handle the stopping and finishing activities which the animation is done

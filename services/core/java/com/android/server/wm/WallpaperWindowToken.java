@@ -217,8 +217,7 @@ class WallpaperWindowToken extends WindowToken {
         }
 
         // If in a transition, defer commits for activities that are going invisible
-        if (!visible && (mTransitionController.inTransition()
-                || getDisplayContent().mAppTransition.isRunning())) {
+        if (!visible && mTransitionController.inTransition()) {
             return;
         }
 
