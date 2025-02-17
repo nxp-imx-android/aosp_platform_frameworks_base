@@ -2920,7 +2920,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (mIsSummaryWithChildren && !shouldShowPublic() && allowChildExpansion
                 && !mChildrenContainer.showingAsLowPriority()) {
             final boolean wasExpanded = isGroupExpanded();
-            mGroupExpansionManager.setGroupExpanded(mEntry, userExpanded);
+            if (NotificationBundleUi.isEnabled()) {
+                mGroupExpansionManager.setGroupExpanded(mEntryAdapter, userExpanded);
+            } else {
+                mGroupExpansionManager.setGroupExpanded(mEntry, userExpanded);
+            }
             onExpansionChanged(true /* userAction */, wasExpanded);
             return;
         }
@@ -3399,7 +3403,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     public void makeActionsVisibile() {
         setUserExpanded(true, true);
         if (isChildInGroup()) {
-            mGroupExpansionManager.setGroupExpanded(mEntry, true);
+            if (NotificationBundleUi.isEnabled()) {
+                mGroupExpansionManager.setGroupExpanded(mEntryAdapter, true);
+            } else {
+                mGroupExpansionManager.setGroupExpanded(mEntry, true);
+            }
         }
         notifyHeightChanged(/* needsAnimation= */ false);
     }
