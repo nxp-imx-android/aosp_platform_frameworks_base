@@ -337,6 +337,43 @@ class ShortcutCustomizationViewModelTest : SysuiTestCase() {
         }
     }
 
+    @Test
+    fun uiState_pressedKeysDescription_emptyByDefault() {
+        testScope.runTest {
+            val uiState by collectLastValue(viewModel.shortcutCustomizationUiState)
+            viewModel.onShortcutCustomizationRequested(standardAddShortcutRequest)
+
+            assertThat((uiState as AddShortcutDialog).pressedKeysDescription).isEmpty()
+        }
+    }
+
+    @Test
+    fun uiState_pressedKeysDescription_updatesToNonEmptyDescriptionWhenKeyCombinationIsPressed() {
+        testScope.runTest {
+            val uiState by collectLastValue(viewModel.shortcutCustomizationUiState)
+            viewModel.onShortcutCustomizationRequested(standardAddShortcutRequest)
+            viewModel.onShortcutKeyCombinationSelected(keyDownEventWithActionKeyPressed)
+            viewModel.onShortcutKeyCombinationSelected(keyUpEventWithActionKeyPressed)
+
+            // Note that Action Key is excluded as it's already displayed on the UI
+            assertThat((uiState as AddShortcutDialog).pressedKeysDescription)
+                .isEqualTo("Ctrl, plus A")
+        }
+    }
+
+    @Test
+    fun uiState_pressedKeysDescription_resetsToEmpty_onClearSelectedShortcutKeyCombination() {
+        testScope.runTest {
+            val uiState by collectLastValue(viewModel.shortcutCustomizationUiState)
+            viewModel.onShortcutCustomizationRequested(standardAddShortcutRequest)
+            viewModel.onShortcutKeyCombinationSelected(keyDownEventWithActionKeyPressed)
+            viewModel.onShortcutKeyCombinationSelected(keyUpEventWithActionKeyPressed)
+            viewModel.clearSelectedKeyCombination()
+
+            assertThat((uiState as AddShortcutDialog).pressedKeysDescription).isEmpty()
+        }
+    }
+
     private suspend fun openAddShortcutDialogAndSetShortcut() {
         openAddShortcutDialogAndPressKeyCombination()
         viewModel.onSetShortcut()
