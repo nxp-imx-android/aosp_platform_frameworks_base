@@ -3785,6 +3785,10 @@
          config_preventImeStartupUnlessTextEditor. -->
     <string-array name="config_nonPreemptibleInputMethods" translatable="false" />
 
+    <!-- These apps are exempt from the IME startup prevention behaviour that is enabled by
+         config_preventImeStartupUnlessTextEditor. -->
+    <string-array name="config_preventImeStartupBypassedApps" translatable="false" />
+
     <!-- Flag indicating that enhanced confirmation mode is enabled. -->
     <bool name="config_enhancedConfirmationModeEnabled">true</bool>
 

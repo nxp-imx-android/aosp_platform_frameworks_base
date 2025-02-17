@@ -2478,6 +2478,7 @@
   <java-symbol type="string" name="config_notificationAccessConfirmationActivity" />
   <java-symbol type="bool" name="config_preventImeStartupUnlessTextEditor" />
   <java-symbol type="array" name="config_nonPreemptibleInputMethods" />
+  <java-symbol type="array" name="config_preventImeStartupBypassedApps" />
   <java-symbol type="bool" name="config_enhancedConfirmationModeEnabled" />
   <java-symbol type="bool" name="config_persistBrightnessNitsForDefaultDisplay" />
   <java-symbol type="bool" name="config_isPreApprovalRequestAvailable" />

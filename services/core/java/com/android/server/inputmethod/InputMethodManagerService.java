@@ -296,8 +296,16 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
      * {@link #mPreventImeStartupUnlessTextEditor}.
      */
     @SharedByAllUsersField
-    @NonNull
+    @Nullable
     private final String[] mNonPreemptibleInputMethods;
+
+     /**
+     * These apps are exempt from the IME startup prevention behaviour that is enabled by
+     * {@link #mPreventImeStartupUnlessTextEditor}.
+     */
+    @SharedByAllUsersField
+    @Nullable
+    private final String[] mPreventImeStartupBypassedApps;
 
     /**
      * See {@link #shouldEnableConcurrentMultiUserMode(Context)} about when set to be {@code true}.
@@ -1281,8 +1289,15 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
             mPreventImeStartupUnlessTextEditor = mRes.getBoolean(
                     com.android.internal.R.bool.config_preventImeStartupUnlessTextEditor);
-            mNonPreemptibleInputMethods = mRes.getStringArray(
-                    com.android.internal.R.array.config_nonPreemptibleInputMethods);
+            if (mPreventImeStartupUnlessTextEditor) {
+                mPreventImeStartupBypassedApps = mRes.getStringArray(
+                        com.android.internal.R.array.config_preventImeStartupBypassedApps);
+                mNonPreemptibleInputMethods = mRes.getStringArray(
+                        com.android.internal.R.array.config_nonPreemptibleInputMethods);
+            } else {
+                mPreventImeStartupBypassedApps = null;
+                mNonPreemptibleInputMethods = null;
+            }
             Runnable discardDelegationTextRunnable = this::discardHandwritingDelegationText;
             mHwController = new HandwritingModeController(mContext, uiLooper,
                     new InkWindowInitializer(), discardDelegationTextRunnable);
@@ -2068,7 +2083,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
         // If configured, we want to avoid starting up the IME if it is not supposed to be showing
         if (shouldPreventImeStartupLocked(selectedImeId, startInputFlags,
-                unverifiedTargetSdkVersion, userId)) {
+                unverifiedTargetSdkVersion, userId, editorInfo)) {
             ProtoLog.v(IMMS_DEBUG, "Avoiding IME startup and unbinding current input method.");
             bindingController.unbindIme();
             unbindCurrentClientLocked(UnbindReason.DISCONNECT_IME, userId);
@@ -2213,7 +2228,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             @NonNull String selectedImeId,
             @StartInputFlags int startInputFlags,
             int unverifiedTargetSdkVersion,
-            @UserIdInt int userId) {
+            @UserIdInt int userId,
+            @NonNull EditorInfo editorInfo) {
         // Fast-path for the majority of cases
         if (!mPreventImeStartupUnlessTextEditor) {
             return false;
@@ -2222,6 +2238,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             return false;
         }
         if (isSoftInputModeStateVisibleAllowed(unverifiedTargetSdkVersion, startInputFlags)) {
+            return false;
+        }
+        if (Flags.preventImeStartupBypassedApps() && ArrayUtils.contains(
+                mPreventImeStartupBypassedApps, editorInfo.packageName)) {
             return false;
         }
         final InputMethodInfo selectedImi = InputMethodSettingsRepository.get(userId).getMethodMap()
