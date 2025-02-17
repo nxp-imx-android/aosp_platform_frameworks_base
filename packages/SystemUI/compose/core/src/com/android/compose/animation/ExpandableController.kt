@@ -27,6 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
@@ -52,6 +54,9 @@ import kotlin.math.roundToInt
 interface ExpandableController {
     /** The [Expandable] controlled by this controller. */
     val expandable: Expandable
+
+    /** Whether this controller is currently animating a launch. */
+    val isAnimating: Boolean
 
     /** Called when the [Expandable] stop being included in the composition. */
     fun onDispose()
@@ -181,6 +186,10 @@ internal class ExpandableControllerImpl(
                 return dialogController(cuj)
             }
         }
+
+    override val isAnimating: Boolean by derivedStateOf {
+        animatorState.value != null && overlay.value != null
+    }
 
     override fun onDispose() {
         activityControllerForDisposal?.onDispose()

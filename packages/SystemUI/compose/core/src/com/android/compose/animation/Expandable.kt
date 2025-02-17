@@ -39,7 +39,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
@@ -175,21 +174,7 @@ fun Expandable(
     val wrappedContent =
         remember(content) {
             movableContentOf { expandable: Expandable ->
-                CompositionLocalProvider(LocalContentColor provides contentColor) {
-                    // We make sure that the content itself (wrapped by the background) is at least
-                    // 40.dp, which is the same as the M3 buttons. This applies even if onClick is
-                    // null, to make it easier to write expandables that are sometimes clickable and
-                    // sometimes not. There shouldn't be any Expandable smaller than 40dp because if
-                    // the expandable is not clickable directly, then something in its content
-                    // should be (and with a size >= 40dp).
-                    val minSize = 40.dp
-                    Box(
-                        Modifier.defaultMinSize(minWidth = minSize, minHeight = minSize),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        content(expandable)
-                    }
-                }
+                WrappedContent(expandable, contentColor, content)
             }
         }
 
@@ -209,11 +194,7 @@ fun Expandable(
 
     // Make sure we don't read animatorState directly here to avoid recomposition every time the
     // state changes (i.e. every frame of the animation).
-    val isAnimating by remember {
-        derivedStateOf {
-            controller.animatorState.value != null && controller.overlay.value != null
-        }
-    }
+    val isAnimating = controller.isAnimating
 
     // If this expandable is expanded when it's being directly clicked on, let's ensure that it has
     // the minimum interactive size followed by all M3 components (48.dp).
@@ -262,28 +243,11 @@ fun Expandable(
             }
         }
         else -> {
-            val clickModifier =
-                if (onClick != null) {
-                    if (interactionSource != null) {
-                        // If the caller provided an interaction source, then that means that they
-                        // will draw the click indication themselves.
-                        Modifier.clickable(interactionSource, indication = null) {
-                            onClick(controller.expandable)
-                        }
-                    } else {
-                        // If no interaction source is provided, we draw the default indication (a
-                        // ripple) and make sure it's clipped by the expandable shape.
-                        Modifier.clip(shape).clickable { onClick(controller.expandable) }
-                    }
-                } else {
-                    Modifier
-                }
-
             Box(
                 modifier
                     .updateExpandableSize()
                     .then(minInteractiveSizeModifier)
-                    .then(clickModifier)
+                    .then(clickModifier(controller, onClick, interactionSource))
                     .background(color, shape)
                     .border(controller)
                     .onGloballyPositioned {
@@ -294,6 +258,50 @@ fun Expandable(
             }
         }
     }
+}
+
+@Composable
+private fun WrappedContent(
+    expandable: Expandable,
+    contentColor: Color,
+    content: @Composable (Expandable) -> Unit,
+) {
+    CompositionLocalProvider(LocalContentColor provides contentColor) {
+        // We make sure that the content itself (wrapped by the background) is at least 40.dp, which
+        // is the same as the M3 buttons. This applies even if onClick is null, to make it easier to
+        // write expandables that are sometimes clickable and sometimes not. There shouldn't be any
+        // Expandable smaller than 40dp because if the expandable is not clickable directly, then
+        // something in its content should be (and with a size >= 40dp).
+        val minSize = 40.dp
+        Box(
+            Modifier.defaultMinSize(minWidth = minSize, minHeight = minSize),
+            contentAlignment = Alignment.Center,
+        ) {
+            content(expandable)
+        }
+    }
+}
+
+private fun clickModifier(
+    controller: ExpandableControllerImpl,
+    onClick: ((Expandable) -> Unit)?,
+    interactionSource: MutableInteractionSource?,
+): Modifier {
+    if (onClick == null) {
+        return Modifier
+    }
+
+    if (interactionSource != null) {
+        // If the caller provided an interaction source, then that means that they will draw the
+        // click indication themselves.
+        return Modifier.clickable(interactionSource, indication = null) {
+            onClick(controller.expandable)
+        }
+    }
+
+    // If no interaction source is provided, we draw the default indication (a ripple) and make sure
+    // it's clipped by the expandable shape.
+    return Modifier.clip(controller.shape).clickable { onClick(controller.expandable) }
 }
 
 /** Draw [content] in [overlay] while respecting its screen position given by [animatorState]. */
