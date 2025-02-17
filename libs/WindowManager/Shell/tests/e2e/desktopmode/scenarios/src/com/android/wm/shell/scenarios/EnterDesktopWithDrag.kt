@@ -45,6 +45,7 @@ constructor(
         tapl.setExpectedRotation(rotation.value)
         ChangeDisplayOrientationRule.setRotation(rotation)
         tapl.enableTransientTaskbar(false)
+        testApp.exit(wmHelper)
     }
 
     @Test
