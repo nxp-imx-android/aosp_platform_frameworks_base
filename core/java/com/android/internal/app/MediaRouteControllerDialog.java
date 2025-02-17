@@ -16,13 +16,10 @@
 
 package com.android.internal.app;
 
-import com.android.internal.R;
-
 import android.app.AlertDialog;
 import android.app.MediaRouteActionProvider;
 import android.app.MediaRouteButton;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.AnimationDrawable;
@@ -38,6 +35,8 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
+
+import com.android.internal.R;
 
 /**
  * This class implements the route controller dialog for {@link MediaRouter}.
@@ -60,7 +59,6 @@ public class MediaRouteControllerDialog extends AlertDialog {
     private final MediaRouterCallback mCallback;
     private final MediaRouter.RouteInfo mRoute;
 
-    private boolean mCreated;
     private Drawable mMediaRouteButtonDrawable;
     private int[] mMediaRouteConnectingState = { R.attr.state_checked, R.attr.state_enabled };
     private int[] mMediaRouteOnState = { R.attr.state_activated, R.attr.state_enabled };
@@ -102,31 +100,6 @@ public class MediaRouteControllerDialog extends AlertDialog {
     }
 
     /**
-     * Gets the media control view that was created by {@link #onCreateMediaControlView(Bundle)}.
-     *
-     * @return The media control view, or null if none.
-     */
-    public View getMediaControlView() {
-        return mControlView;
-    }
-
-    /**
-     * Sets whether to enable the volume slider and volume control using the volume keys
-     * when the route supports it.
-     * <p>
-     * The default value is true.
-     * </p>
-     */
-    public void setVolumeControlEnabled(boolean enable) {
-        if (mVolumeControlEnabled != enable) {
-            mVolumeControlEnabled = enable;
-            if (mCreated) {
-                updateVolume();
-            }
-        }
-    }
-
-    /**
      * Returns whether to enable the volume slider and volume control using the volume keys
      * when the route supports it.
      */
@@ -139,18 +112,15 @@ public class MediaRouteControllerDialog extends AlertDialog {
         setTitle(mRoute.getName());
         Resources res = getContext().getResources();
         setButton(BUTTON_NEGATIVE, res.getString(R.string.media_route_controller_disconnect),
-                new OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int id) {
-                        if (mRoute.isSelected()) {
-                            if (mRoute.isBluetooth()) {
-                                mRouter.getDefaultRoute().select();
-                            } else {
-                                mRouter.getFallbackRoute().select();
-                            }
+                (dialogInterface, id) -> {
+                    if (mRoute.isSelected()) {
+                        if (mRoute.isBluetooth()) {
+                            mRouter.getDefaultRoute().select();
+                        } else {
+                            mRouter.getFallbackRoute().select();
                         }
-                        dismiss();
                     }
+                    dismiss();
                 });
         View customView = getLayoutInflater().inflate(R.layout.media_route_controller_dialog, null);
         setView(customView, 0, 0, 0, 0);
@@ -160,8 +130,8 @@ public class MediaRouteControllerDialog extends AlertDialog {
         if (customPanelView != null) {
             customPanelView.setMinimumHeight(0);
         }
-        mVolumeLayout = (LinearLayout) customView.findViewById(R.id.media_route_volume_layout);
-        mVolumeSlider = (SeekBar) customView.findViewById(R.id.media_route_volume_slider);
+        mVolumeLayout = customView.findViewById(R.id.media_route_volume_layout);
+        mVolumeSlider = customView.findViewById(R.id.media_route_volume_slider);
         mVolumeSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             private final Runnable mStopTrackingTouch = new Runnable() {
                 @Override
@@ -199,11 +169,10 @@ public class MediaRouteControllerDialog extends AlertDialog {
         });
 
         mMediaRouteButtonDrawable = obtainMediaRouteButtonDrawable();
-        mCreated = true;
         if (update()) {
             mControlView = onCreateMediaControlView(savedInstanceState);
             FrameLayout controlFrame =
-                    (FrameLayout) customView.findViewById(R.id.media_route_control_frame);
+                    customView.findViewById(R.id.media_route_control_frame);
             if (mControlView != null) {
                 controlFrame.addView(mControlView);
                 controlFrame.setVisibility(View.VISIBLE);
@@ -261,8 +230,7 @@ public class MediaRouteControllerDialog extends AlertDialog {
         Drawable icon = getIconDrawable();
         if (icon != mCurrentIconDrawable) {
             mCurrentIconDrawable = icon;
-            if (icon instanceof AnimationDrawable) {
-                AnimationDrawable animDrawable = (AnimationDrawable) icon;
+            if (icon instanceof AnimationDrawable animDrawable) {
                 if (!mAttachedToWindow && !mRoute.isConnecting()) {
                     // When the route is already connected before the view is attached, show the
                     // last frame of the connected animation immediately.
