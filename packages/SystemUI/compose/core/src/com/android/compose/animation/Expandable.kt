@@ -218,26 +218,23 @@ fun Expandable(
             // animating.
             AnimatedContentInOverlay(
                 color,
-                controller.boundsInComposeViewRoot.value.size,
-                controller.animatorState,
-                controller.overlay.value
+                controller.boundsInComposeViewRoot.size,
+                controller.overlay
                     ?: error("AnimatedContentInOverlay shouldn't be composed with null overlay."),
                 controller,
                 wrappedContent,
                 controller.composeViewRoot,
-                { controller.currentComposeViewInOverlay.value = it },
+                { controller.currentComposeViewInOverlay = it },
                 controller.density,
             )
         }
-        controller.isDialogShowing.value -> {
+        controller.isDialogShowing -> {
             Box(
                 modifier
                     .updateExpandableSize()
                     .then(minInteractiveSizeModifier)
                     .drawWithContent { /* Don't draw anything when the dialog is shown. */ }
-                    .onGloballyPositioned {
-                        controller.boundsInComposeViewRoot.value = it.boundsInRoot()
-                    }
+                    .onGloballyPositioned { controller.boundsInComposeViewRoot = it.boundsInRoot() }
             ) {
                 wrappedContent(controller.expandable)
             }
@@ -250,9 +247,7 @@ fun Expandable(
                     .then(clickModifier(controller, onClick, interactionSource))
                     .background(color, shape)
                     .border(controller)
-                    .onGloballyPositioned {
-                        controller.boundsInComposeViewRoot.value = it.boundsInRoot()
-                    }
+                    .onGloballyPositioned { controller.boundsInComposeViewRoot = it.boundsInRoot() }
             ) {
                 wrappedContent(controller.expandable)
             }
@@ -309,7 +304,6 @@ private fun clickModifier(
 private fun AnimatedContentInOverlay(
     color: Color,
     sizeInOriginalLayout: Size,
-    animatorState: State<TransitionAnimator.State?>,
     overlay: ViewGroupOverlay,
     controller: ExpandableControllerImpl,
     content: @Composable (Expandable) -> Unit,
@@ -332,7 +326,7 @@ private fun AnimatedContentInOverlay(
                     // so that its content is laid out exactly the same way.
                     .requiredSize(with(density) { sizeInOriginalLayout.toDpSize() })
                     .drawWithContent {
-                        val animatorState = animatorState.value ?: return@drawWithContent
+                        val animatorState = controller.animatorState ?: return@drawWithContent
 
                         // Scale the content with the background while keeping its aspect ratio.
                         val widthRatio =
@@ -356,7 +350,8 @@ private fun AnimatedContentInOverlay(
                     setContent {
                         Box(
                             Modifier.fillMaxSize().drawWithContent {
-                                val animatorState = animatorState.value ?: return@drawWithContent
+                                val animatorState =
+                                    controller.animatorState ?: return@drawWithContent
                                 if (!animatorState.visible) {
                                     return@drawWithContent
                                 }
@@ -393,7 +388,7 @@ private fun AnimatedContentInOverlay(
         overlay.add(composeViewInOverlay)
 
         val startState =
-            animatorState.value
+            controller.animatorState
                 ?: throw IllegalStateException(
                     "AnimatedContentInOverlay shouldn't be composed with null animatorState."
                 )
