@@ -15,14 +15,14 @@
  */
 package com.android.server.wm;
 
+import static android.window.DesktopModeFlags.EXCLUDE_CAPTION_FROM_APP_BOUNDS;
+
 import static com.android.server.wm.AppCompatUtils.isInDesktopMode;
 
 import android.annotation.NonNull;
 import android.app.WindowConfiguration.WindowingMode;
 import android.content.res.Configuration;
 import android.graphics.Rect;
-
-import com.android.window.flags.Flags;
 
 /**
  * Encapsulate logic related to sandboxing for app compatibility.
@@ -48,7 +48,7 @@ class AppCompatSandboxingPolicy {
      */
     void sandboxBoundsIfNeeded(@NonNull Configuration resolvedConfig,
             @WindowingMode int windowingMode) {
-        if (!Flags.excludeCaptionFromAppBounds()) {
+        if (!EXCLUDE_CAPTION_FROM_APP_BOUNDS.isTrue()) {
             return;
         }
 

@@ -16,13 +16,14 @@
 
 package com.android.server.wm;
 
-import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.view.WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_STARTING;
 import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
+import static android.window.DesktopModeFlags.EXCLUDE_CAPTION_FROM_APP_BOUNDS;
 
 import static com.android.server.wm.AppCompatConfiguration.LETTERBOX_BACKGROUND_WALLPAPER;
 import static com.android.server.wm.AppCompatConfiguration.letterboxBackgroundTypeToString;
@@ -311,7 +312,7 @@ class AppCompatLetterboxPolicy {
     }
 
     private boolean isFreeformActivityMatchParentAppBoundsHeight() {
-        if (!Flags.excludeCaptionFromAppBounds()) {
+        if (!EXCLUDE_CAPTION_FROM_APP_BOUNDS.isTrue()) {
             return false;
         }
         final Task task = mActivityRecord.getTask();
