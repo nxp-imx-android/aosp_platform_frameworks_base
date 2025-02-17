@@ -82,6 +82,7 @@ import com.android.wm.shell.desktopmode.CloseDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.DefaultDragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler;
 import com.android.wm.shell.desktopmode.DesktopDisplayEventHandler;
+import com.android.wm.shell.desktopmode.DesktopDisplayModeController;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
 import com.android.wm.shell.desktopmode.DesktopMinimizationTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopMixedTransitionHandler;
@@ -1230,13 +1231,10 @@ public abstract class WMShellModule {
     static Optional<DesktopDisplayEventHandler> provideDesktopDisplayEventHandler(
             Context context,
             ShellInit shellInit,
-            Transitions transitions,
             DisplayController displayController,
-            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
-            IWindowManager windowManager,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             Optional<DesktopTasksController> desktopTasksController,
-            ShellTaskOrganizer shellTaskOrganizer
+            Optional<DesktopDisplayModeController> desktopDisplayModeController
     ) {
         if (!DesktopModeStatus.canEnterDesktopMode(context)) {
             return Optional.empty();
@@ -1245,13 +1243,10 @@ public abstract class WMShellModule {
                 new DesktopDisplayEventHandler(
                         context,
                         shellInit,
-                        transitions,
                         displayController,
-                        rootTaskDisplayAreaOrganizer,
-                        windowManager,
                         desktopUserRepositories.get(),
                         desktopTasksController.get(),
-                        shellTaskOrganizer));
+                        desktopDisplayModeController.get()));
     }
 
     @WMSingleton
@@ -1379,6 +1374,27 @@ public abstract class WMShellModule {
             PackageManager packageManager
     ) {
         return new DesktopModeUiEventLogger(uiEventLogger, packageManager);
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<DesktopDisplayModeController> provideDesktopDisplayModeController(
+            Context context,
+            Transitions transitions,
+            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
+            IWindowManager windowManager,
+            ShellTaskOrganizer shellTaskOrganizer
+    ) {
+        if (!DesktopModeStatus.canEnterDesktopMode(context)) {
+            return Optional.empty();
+        }
+        return Optional.of(
+                new DesktopDisplayModeController(
+                        context,
+                        transitions,
+                        rootTaskDisplayAreaOrganizer,
+                        windowManager,
+                        shellTaskOrganizer));
     }
 
     //
