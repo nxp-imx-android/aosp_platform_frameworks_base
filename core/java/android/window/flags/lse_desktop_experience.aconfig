@@ -195,6 +195,13 @@ flag {
 }
 
 flag {
+    name: "enable_camera_compat_for_desktop_windowing_opt_out_api"
+    namespace: "lse_desktop_experience"
+    description: "Introduces a developer API to opt-out of Camera Compat treatment for fixed-orientation apps in desktop windowing mode"
+    bug: "397165621"
+}
+
+flag {
     name: "enable_task_stack_observer_in_shell"
     namespace: "lse_desktop_experience"
     description: "Introduces a new observer in shell to track the task stack."
