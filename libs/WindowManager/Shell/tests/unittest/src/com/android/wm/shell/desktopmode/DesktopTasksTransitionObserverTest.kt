@@ -24,6 +24,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager
@@ -168,7 +169,8 @@ class DesktopTasksTransitionObserverTest {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
-    fun backNavigation_withCloseTransitionLastTask_taskMinimized() {
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER)
+    fun backNavigation_withCloseTransitionLastTask_wallpaperActivityClosed_taskMinimized() {
         val task = createTaskInfo(1)
         val transition = mock<IBinder>()
         whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(1)
@@ -178,6 +180,35 @@ class DesktopTasksTransitionObserverTest {
         transitionObserver.onTransitionReady(
             transition = transition,
             info = createBackNavigationTransition(task, TRANSIT_CLOSE, true),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(taskRepository).minimizeTask(task.displayId, task.taskId)
+        val pendingTransition =
+            DesktopMixedTransitionHandler.PendingMixedTransition.Minimize(
+                transition,
+                task.taskId,
+                isLastTask = true,
+            )
+        verify(mixedHandler).addPendingMixedTransition(pendingTransition)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+    )
+    fun backNavigation_withCloseTransitionLastTask_wallpaperActivityReordered_taskMinimized() {
+        val task = createTaskInfo(1)
+        val transition = mock<IBinder>()
+        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(1)
+        whenever(taskRepository.isClosingTask(task.taskId)).thenReturn(false)
+        whenever(backAnimationController.latestTriggerBackTask).thenReturn(task.taskId)
+
+        transitionObserver.onTransitionReady(
+            transition = transition,
+            info = createBackNavigationTransition(task, TRANSIT_CLOSE, true, TRANSIT_TO_BACK),
             startTransaction = mock(),
             finishTransaction = mock(),
         )
@@ -434,6 +465,7 @@ class DesktopTasksTransitionObserverTest {
         task: RunningTaskInfo?,
         type: Int = TRANSIT_TO_BACK,
         withWallpaper: Boolean = false,
+        wallpaperChangeMode: Int = TRANSIT_CLOSE,
     ): TransitionInfo {
         return TransitionInfo(type, /* flags= */ 0).apply {
             addChange(
