@@ -481,9 +481,9 @@ public final class MediaRoute2Info implements Parcelable {
     /**
      * Indicates that a route supports routing playback to remote routes through control commands.
      *
-     * <p>This type of routing does not affect affect this system's audio or video, but instead
-     * relies on the device that corresponds to this route to fetch and play the media. It also
-     * requires the media app to take care of initializing and controlling playback.
+     * <p>This type of routing does not affect this system's audio or video, but instead relies on
+     * the device that corresponds to this route to fetch and play the media. It also requires the
+     * media app to take care of initializing and controlling playback.
      */
     @FlaggedApi(FLAG_ENABLE_MIRRORING_IN_MEDIA_ROUTER_2)
     public static final int FLAG_ROUTING_TYPE_REMOTE = 1 << 2;

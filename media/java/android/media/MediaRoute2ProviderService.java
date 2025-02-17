@@ -348,18 +348,21 @@ public abstract class MediaRoute2ProviderService extends Service {
      * <p>This method must only be called as the result of a prior call to {@link
      * #onCreateSystemRoutingSession}.
      *
+     * <p>This method returns a {@link MediaStreams} instance that holds the media streams to route
+     * as part of the newly created routing session. May be null if system media capture failed, in
+     * which case you can ignore the return value, as you will receive a call to {@link
+     * #onReleaseSession} where you can clean up this session. {@link AudioRecord#startRecording()}
+     * must be called immediately on {@link MediaStreams#getAudioRecord()} after calling this
+     * method, in order to start streaming audio to the receiver.
+     *
      * @param requestId the ID of the {@link #onCreateSystemRoutingSession} request which this call
      *     is in response to.
      * @param sessionInfo a {@link RoutingSessionInfo} that describes the newly created routing
      *     session.
      * @param formats the {@link MediaStreamsFormats} that describes the format for the {@link
      *     MediaStreams} to return.
-     * @return a {@link MediaStreams} instance that holds the media streams to route as part of the
-     *     newly created routing session. May be null if system media capture failed, in which case
-     *     you can ignore the return value, as you will receive a call to {@link #onReleaseSession}
-     *     where you can clean up this session. {@link AudioRecord#startRecording()} must be called
-     *     immediately on {@link MediaStreams#getAudioRecord()} after calling this method, in order
-     *     to start streaming audio to the receiver.
+     * @return The {@link MediaStreams} to route as part of the new session, or null if system media
+     *     capture failed and the result can be ignored.
      * @throws IllegalStateException If the provided {@code requestId} doesn't correspond to a
      *     previous call to {@link #onCreateSystemRoutingSession}.
      */
@@ -1191,8 +1194,8 @@ public abstract class MediaRoute2ProviderService extends Service {
              *
              * <p>The default value is an empty {@link Bundle}.
              *
-             * <p>Note that this bundle is not copied, so avoiding mutating the given {@link Bundle}
-             * after passing it to this method.
+             * <p>Do not mutate the given {@link Bundle} after passing it to this method. You can
+             * use {@link Bundle#deepCopy()} to keep a mutable copy.
              */
             @NonNull
             public Builder setExtras(@NonNull Bundle extras) {
