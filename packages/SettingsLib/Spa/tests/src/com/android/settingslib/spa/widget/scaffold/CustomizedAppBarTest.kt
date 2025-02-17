@@ -16,6 +16,8 @@
 
 package com.android.settingslib.spa.widget.scaffold
 
+import android.platform.test.annotations.RequiresFlagsDisabled
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -52,6 +54,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.settingslib.spa.testutils.rootWidth
 import com.android.settingslib.spa.testutils.setContentForSizeAssertions
+import com.android.settingslib.widget.theme.flags.Flags.FLAG_IS_EXPRESSIVE_DESIGN_ENABLED
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -62,6 +65,8 @@ import org.junit.runner.RunWith
 class CustomizedAppBarTest {
 
     @get:Rule val rule = createComposeRule()
+    @get:Rule
+    val mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     @Test
     fun smallTopAppBar_expandsToScreen() {
@@ -97,6 +102,7 @@ class CustomizedAppBarTest {
         assertThat(textStyle).isEqualTo(expectedTextStyle)
     }
 
+    @RequiresFlagsDisabled(FLAG_IS_EXPRESSIVE_DESIGN_ENABLED)
     @Test
     fun smallTopAppBar_contentColor() {
         var titleColor: Color = Color.Unspecified
