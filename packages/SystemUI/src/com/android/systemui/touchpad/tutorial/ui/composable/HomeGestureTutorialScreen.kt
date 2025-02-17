@@ -32,6 +32,7 @@ fun HomeGestureTutorialScreen(
     easterEggGestureViewModel: EasterEggGestureViewModel,
     onDoneButtonClicked: () -> Unit,
     onBack: () -> Unit,
+    isAutoProceed: Boolean = false,
 ) {
     val screenConfig =
         TutorialScreenConfig(
@@ -46,6 +47,7 @@ fun HomeGestureTutorialScreen(
                     bodyErrorResId = R.string.touchpad_home_gesture_error_body,
                 ),
             animations = TutorialScreenConfig.Animations(educationResId = R.raw.trackpad_home_edu),
+            hasNextButton = isAutoProceed,
         )
     GestureTutorialScreen(
         screenConfig = screenConfig,
