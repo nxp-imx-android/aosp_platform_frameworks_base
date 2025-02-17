@@ -466,6 +466,26 @@ public final class InputMethodManager {
     private static final long USE_ASYNC_SHOW_HIDE_METHOD = 352594277L; // This is a bug id.
 
     /**
+     * Always return {@code true} when {@link #hideSoftInputFromWindow(IBinder, int)} and
+     * {@link #hideSoftInputFromWindow(IBinder, int, ResultReceiver, int, ImeTracker.Token)} is
+     * called.
+     * <p>
+     * Apps can incorrectly rely on the return value of
+     * {@link #hideSoftInputFromWindow(IBinder, int)} to guess whether the IME was hidden.
+     * However, it was never a guarantee that the IME will actually hide.
+     * Therefore, it was recommended using the {@link View.OnApplyWindowInsetsListener}.
+     * <p>
+     * Starting Android {@link Build.VERSION_CODES.BAKLAVA}, the return value will always be
+     * true, independent from whether the request was eventually sent to system server or not.
+     * Apps that need to know when the IME visibility changes should use
+     * {@link View.OnApplyWindowInsetsListener}. For apps that target earlier releases, it
+     * returns an estimate ({@code true} if the IME was showing before).
+     */
+    @ChangeId
+    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
+    private static final long ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW = 395521150L; // bug id
+
+    /**
      * If {@code true}, avoid calling the
      * {@link com.android.server.inputmethod.InputMethodManagerService InputMethodManagerService}
      * by skipping the call to {@link IInputMethodManager#startInputOrWindowGainedFocus}
@@ -2531,9 +2551,14 @@ public final class InputMethodManager {
      *
      * @param windowToken The token of the window that is making the request,
      * as returned by {@link View#getWindowToken() View.getWindowToken()}.
-     * @return {@code true} if a request was sent to system_server, {@code false} otherwise. Note:
-     * this does not return result of the request. For result use {@link ResultReceiver} in
-     * {@link #hideSoftInputFromWindow(IBinder, int, ResultReceiver)} instead.
+     * @return <p>For apps targeting Android {@link Build.VERSION_CODES.BAKLAVA}, onwards, it
+     * will always return {@code true}. To see when the IME is hidden, use
+     * {@link View.OnApplyWindowInsetsListener} and verify the provided {@link WindowInsets} for
+     * the visibility of IME.
+     *
+     * <p>For apps targeting releases before Android Baklava: returns {@code true} if a request
+     * was sent to system_server, {@code false} otherwise. Note: This does not return the result
+     * of that request (i.e. whether the IME was actually hidden).
      */
     public boolean hideSoftInputFromWindow(IBinder windowToken, @HideFlags int flags) {
         return hideSoftInputFromWindow(windowToken, flags, null);
@@ -2563,7 +2588,8 @@ public final class InputMethodManager {
      * {@link #RESULT_UNCHANGED_HIDDEN}, {@link #RESULT_SHOWN}, or
      * {@link #RESULT_HIDDEN}.
      * @return {@code true} if a request was sent to system_server, {@code false} otherwise. Note:
-     * this does not return result of the request. For result use {@param resultReceiver} instead.
+     * This does not return the result of that request (i.e. whether the IME was actually hidden).
+     * For result use {@param resultReceiver} instead.
      *
      * @deprecated The {@link ResultReceiver} is not a reliable way of determining whether the
      * Input Method is actually shown or hidden. If result is needed, use
@@ -2603,7 +2629,10 @@ public final class InputMethodManager {
                 ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
                 ImeTracker.forLatency().onHideFailed(statsToken,
                         ImeTracker.PHASE_CLIENT_VIEW_SERVED, ActivityThread::currentApplication);
-                return false;
+                // with the flag enabled and targeting Android Baklava onwards, the return value
+                // should be always true (was false before).
+                return Flags.refactorInsetsController() && CompatChanges.isChangeEnabled(
+                        ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW);
             }
 
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
@@ -2618,15 +2647,18 @@ public final class InputMethodManager {
                         // under us. The current input has been closed before (from checkFocus).
                         ImeTracker.forLogging().onFailed(statsToken,
                                 ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
-                        return false;
+                        // with the flag enabled and targeting Android Baklava onwards, the
+                        // return value should be always true (was false before).
+                        return Flags.refactorInsetsController() && CompatChanges.isChangeEnabled(
+                                ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW);
                     }
                     ImeTracker.forLogging().onProgress(statsToken,
                             ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
 
+                    final boolean imeReqVisible =
+                            (viewRootImpl.getInsetsController().getRequestedVisibleTypes()
+                                    & WindowInsets.Type.ime()) != 0;
                     if (resultReceiver != null) {
-                        final boolean imeReqVisible =
-                                (viewRootImpl.getInsetsController().getRequestedVisibleTypes()
-                                        & WindowInsets.Type.ime()) != 0;
                         resultReceiver.send(
                                 !imeReqVisible ? InputMethodManager.RESULT_UNCHANGED_HIDDEN
                                         : InputMethodManager.RESULT_HIDDEN, null);
@@ -2642,8 +2674,16 @@ public final class InputMethodManager {
                         viewRootImpl.getInsetsController().hide(WindowInsets.Type.ime(),
                                 false /* fromIme */, statsToken);
                     }
+                    if (!CompatChanges.isChangeEnabled(
+                            ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW)) {
+                        // if the IME was not visible before, the additional hide won't change
+                        // anything.
+                        return imeReqVisible;
+                    }
                 }
-                return true;
+                // Targeting Android Baklava onwards, this method will always return true.
+                return CompatChanges.isChangeEnabled(
+                        ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW);
             } else {
                 return IInputMethodManagerGlobalInvoker.hideSoftInput(mClient, windowToken,
                         statsToken, flags, resultReceiver, reason, mAsyncShowHideMethodEnabled);
