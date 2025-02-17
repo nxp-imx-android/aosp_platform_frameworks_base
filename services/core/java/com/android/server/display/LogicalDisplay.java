@@ -489,6 +489,11 @@ final class LogicalDisplay {
             if ((deviceInfo.flags & DisplayDeviceInfo.FLAG_STEAL_TOP_FOCUS_DISABLED) != 0) {
                 mBaseDisplayInfo.flags |= Display.FLAG_STEAL_TOP_FOCUS_DISABLED;
             }
+            // Rear display should not be allowed to use the content mode switch.
+            if ((deviceInfo.flags & DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH) != 0
+                    && mDevicePosition != Layout.Display.POSITION_REAR) {
+                mBaseDisplayInfo.flags |= Display.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
+            }
             Rect maskingInsets = getMaskingInsets(deviceInfo);
             int maskedWidth = deviceInfo.width - maskingInsets.left - maskingInsets.right;
             int maskedHeight = deviceInfo.height - maskingInsets.top - maskingInsets.bottom;

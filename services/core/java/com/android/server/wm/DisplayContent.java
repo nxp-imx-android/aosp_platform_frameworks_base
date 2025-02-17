@@ -41,6 +41,7 @@ import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 import static android.util.TypedValue.COMPLEX_UNIT_MASK;
 import static android.util.TypedValue.COMPLEX_UNIT_SHIFT;
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.Display.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
 import static android.view.Display.FLAG_CAN_SHOW_WITH_INSECURE_KEYGUARD;
 import static android.view.Display.FLAG_PRIVATE;
 import static android.view.Display.FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
@@ -3283,26 +3284,30 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 /* inTopology= */ shouldShowContent);
     }
 
-     /**
-      * Whether the display is allowed to switch the content mode between extended and mirroring.
-      * If the content mode is extended, the display will start home activity and show system
-      * decorations, such as wallpapaer, status bar and navigation bar.
-      * If the content mode is mirroring, the display will not show home activity or system
-      * decorations.
-      * The content mode is switched when {@link Display#canHostTasks()} changes.
-      *
-      * Note that we only allow displays that are able to show system decorations to use the content
-      * mode switch; however, not all displays that are able to show system decorations are allowed
-      * to use the content mode switch.
-      */
-     boolean allowContentModeSwitch() {
+    /**
+     * Whether the display is allowed to switch the content mode between extended and mirroring.
+     * If the content mode is extended, the display will start home activity and show system
+     * decorations, such as wallpapaer, status bar and navigation bar.
+     * If the content mode is mirroring, the display will not show home activity or system
+     * decorations.
+     * The content mode is switched when {@link Display#canHostTasks()} changes.
+     *
+     * Note that we only allow displays that are able to show system decorations to use the content
+     * mode switch; however, not all displays that are able to show system decorations are allowed
+     * to use the content mode switch.
+     */
+    boolean allowContentModeSwitch() {
+        if ((mDisplay.getFlags() & FLAG_ALLOWS_CONTENT_MODE_SWITCH) == 0) {
+            return false;
+        }
+
         // The default display should always show system decorations.
         if (isDefaultDisplay) {
             return false;
         }
 
-        // Private display should never show system decorations.
-        if (isPrivate()) {
+        // Private or untrusted display should never show system decorations.
+        if (isPrivate() || !isTrusted()) {
             return false;
         }
 
@@ -3310,14 +3315,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             return false;
         }
 
-        // TODO(b/391965805): Remove this after introducing FLAG_ALLOW_CONTENT_MODE_SWITCH.
-        if ((mDisplay.getFlags() & Display.FLAG_REAR) != 0) {
-            return false;
-        }
-
-        // TODO(b/391965805): Remove this after introducing FLAG_ALLOW_CONTENT_MODE_SWITCH.
-        // Virtual displays cannot add or remove system decorations during their lifecycle.
-        if (mDisplay.getType() == Display.TYPE_VIRTUAL) {
+        // Display with FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS enabled should always show system
+        // decorations, and should not switch the content mode.
+        if ((mDisplay.getFlags() & FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS) != 0) {
             return false;
         }
 

@@ -766,7 +766,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                         mInfo.flags |= DisplayDeviceInfo.FLAG_ROUND;
                     }
                 } else {
-                    if (!res.getBoolean(R.bool.config_localDisplaysMirrorContent)) {
+                    if (shouldOwnContentOnly()) {
                         mInfo.flags |= DisplayDeviceInfo.FLAG_OWN_CONTENT_ONLY;
                     }
 
@@ -777,6 +777,15 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                     if (isDisplayStealTopFocusDisabled(physicalAddress)) {
                         mInfo.flags |= DisplayDeviceInfo.FLAG_OWN_FOCUS;
                         mInfo.flags |= DisplayDeviceInfo.FLAG_STEAL_TOP_FOCUS_DISABLED;
+                    }
+                }
+
+                if (getFeatureFlags().isDisplayContentModeManagementEnabled()) {
+                    // Public display with FLAG_OWN_CONTENT_ONLY disabled is allowed to switch the
+                    // content mode.
+                    if (mIsFirstDisplay
+                            || (!isDisplayPrivate(physicalAddress) && !shouldOwnContentOnly())) {
+                        mInfo.flags |= DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
                     }
                 }
 
@@ -822,6 +831,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                                 R.string.display_manager_hdmi_display_name);
                     }
                 }
+
                 mInfo.frameRateOverrides = mFrameRateOverrides;
 
                 // The display is trusted since it is created by system.
@@ -1465,6 +1475,11 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 }
             }
             return false;
+        }
+
+        private boolean shouldOwnContentOnly() {
+            final Resources res = getOverlayContext().getResources();
+            return !res.getBoolean(R.bool.config_localDisplaysMirrorContent);
         }
 
         private boolean isDisplayStealTopFocusDisabled(DisplayAddress.Physical physicalAddress) {
