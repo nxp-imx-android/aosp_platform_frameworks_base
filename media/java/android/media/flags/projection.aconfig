@@ -39,3 +39,12 @@ flag {
     }
     is_exported: true
 }
+
+flag {
+    namespace: "media_projection"
+    name: "app_content_sharing"
+    description: "Enable apps to share some sub-surface"
+    bug: "379989921"
+    is_exported: true
+}
+
