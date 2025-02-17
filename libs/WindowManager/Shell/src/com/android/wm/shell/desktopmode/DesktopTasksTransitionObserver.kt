@@ -186,14 +186,16 @@ class DesktopTasksTransitionObserver(
             for (change in info.changes) {
                 val taskInfo = change.taskInfo
                 if (taskInfo == null || taskInfo.taskId == -1) continue
-                if (change.mode != TRANSIT_CLOSE) continue
 
-                if (minimizingTask == null) {
-                    minimizingTask = getMinimizingTaskForClosingTransition(taskInfo)
+                if (
+                    TransitionUtil.isClosingMode(change.mode) &&
+                        DesktopWallpaperActivity.isWallpaperTask(taskInfo)
+                ) {
+                    hasWallpaperClosing = true
                 }
 
-                if (DesktopWallpaperActivity.isWallpaperTask(taskInfo)) {
-                    hasWallpaperClosing = true
+                if (change.mode == TRANSIT_CLOSE && minimizingTask == null) {
+                    minimizingTask = getMinimizingTaskForClosingTransition(taskInfo)
                 }
             }
 
