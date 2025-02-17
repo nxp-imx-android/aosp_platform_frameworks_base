@@ -26,7 +26,6 @@ import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.shade.domain.interactor.NotificationShadeElement
 import com.android.systemui.shade.domain.interactor.QSShadeElement
 import com.android.systemui.shade.domain.interactor.ShadeExpandedStateInteractor.ShadeElement
-import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import dagger.Lazy
 import java.util.concurrent.atomic.AtomicReference
@@ -53,7 +52,6 @@ class StatusBarTouchShadeDisplayPolicy
 constructor(
     displayRepository: DisplayRepository,
     @Background private val backgroundScope: CoroutineScope,
-    private val shadeInteractor: Lazy<ShadeInteractor>,
     private val qsShadeElement: Lazy<QSShadeElement>,
     private val notificationElement: Lazy<NotificationShadeElement>,
 ) : ShadeDisplayPolicy, ShadeExpansionIntent {
