@@ -47,7 +47,6 @@ import android.crashrecovery.flags.Flags;
 import android.os.RecoverySystem;
 import android.os.SystemProperties;
 import android.os.UserHandle;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.DeviceConfig;
@@ -135,8 +134,7 @@ public class RescuePartyTest {
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getFlags() {
         return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_RECOVERABILITY_DETECTION,
-                Flags.FLAG_DEPRECATE_FLAGS_AND_SETTINGS_RESETS);
+                Flags.FLAG_RECOVERABILITY_DETECTION);
     }
 
     public RescuePartyTest(FlagsParameterization flags) {
@@ -248,7 +246,6 @@ public class RescuePartyTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_DEPRECATE_FLAGS_AND_SETTINGS_RESETS)
     public void testBootLoopNoFlags() {
         // this is old test where the flag needs to be disabled
         noteBoot(1);
@@ -260,7 +257,6 @@ public class RescuePartyTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_DEPRECATE_FLAGS_AND_SETTINGS_RESETS)
     public void testPersistentAppCrashNoFlags() {
         // this is old test where the flag needs to be disabled
         noteAppCrash(1, true);
@@ -396,7 +392,6 @@ public class RescuePartyTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_DEPRECATE_FLAGS_AND_SETTINGS_RESETS)
     public void testHealthCheckLevelsNoFlags() {
         // this is old test where the flag needs to be disabled
         RescuePartyObserver observer = RescuePartyObserver.getInstance(mMockContext);
@@ -416,7 +411,6 @@ public class RescuePartyTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_DEPRECATE_FLAGS_AND_SETTINGS_RESETS)
     public void testBootLoopLevelsNoFlags() {
         RescuePartyObserver observer = RescuePartyObserver.getInstance(mMockContext);
 
