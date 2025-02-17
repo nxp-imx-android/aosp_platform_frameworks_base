@@ -178,11 +178,6 @@ public final class MessageQueue {
 
         // We can lift these restrictions in the future after we've made it possible for test
         // authors to test Looper and MessageQueue without resorting to reflection.
-
-        // Holdback study.
-        if (sIsProcessAllowedToUseConcurrent && Flags.messageQueueForceLegacy()) {
-            sIsProcessAllowedToUseConcurrent = false;
-        }
     }
 
     @RavenwoodReplace
