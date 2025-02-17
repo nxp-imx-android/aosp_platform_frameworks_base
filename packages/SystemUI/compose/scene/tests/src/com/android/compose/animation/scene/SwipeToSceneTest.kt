@@ -763,7 +763,7 @@ class SwipeToSceneTest {
         var touchSlop = 0f
         rule.setContent {
             touchSlop = LocalViewConfiguration.current.touchSlop
-            SceneTransitionLayoutForTesting(state, Modifier.size(layoutSize)) {
+            SceneTransitionLayout(state, Modifier.size(layoutSize)) {
                 scene(SceneA, userActions = mapOf(Swipe.Start to SceneB, Swipe.End to SceneC)) {
                     Box(Modifier.fillMaxSize())
                 }
@@ -837,7 +837,7 @@ class SwipeToSceneTest {
         rule.setContent {
             touchSlop = LocalViewConfiguration.current.touchSlop
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                SceneTransitionLayoutForTesting(state, Modifier.size(layoutSize)) {
+                SceneTransitionLayout(state, Modifier.size(layoutSize)) {
                     scene(SceneA, userActions = mapOf(Swipe.Start to SceneB, Swipe.End to SceneC)) {
                         Box(Modifier.fillMaxSize())
                     }

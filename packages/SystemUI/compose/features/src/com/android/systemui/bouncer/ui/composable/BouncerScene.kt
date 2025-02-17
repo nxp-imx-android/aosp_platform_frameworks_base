@@ -24,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
@@ -103,8 +102,6 @@ private fun ContentScope.BouncerScene(
             viewModel,
             dialogFactory,
             Modifier.element(Bouncer.Elements.Content)
-                // TODO(b/393516240): Use the same sysuiResTag() as views instead.
-                .testTag(Bouncer.Elements.Content.testTag)
                 .overscroll(verticalOverscrollEffect)
                 .sysuiResTag(Bouncer.TestTags.Root)
                 .fillMaxSize(),
