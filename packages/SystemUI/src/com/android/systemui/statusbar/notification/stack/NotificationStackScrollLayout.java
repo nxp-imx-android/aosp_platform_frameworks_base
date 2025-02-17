@@ -3644,6 +3644,9 @@ public class NotificationStackScrollLayout
                     mScrollViewFields.sendCurrentGestureInGuts(false);
                     mScrollViewFields.sendCurrentGestureOverscroll(false);
                     setIsBeingDragged(false);
+                    // dispatch to touchHandlers, so they can still finalize a previously started
+                    // motion, while the shade is being dragged
+                    return super.dispatchTouchEvent(ev);
                 }
                 return false;
             }
