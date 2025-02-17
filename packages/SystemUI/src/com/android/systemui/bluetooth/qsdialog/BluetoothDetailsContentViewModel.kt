@@ -31,6 +31,7 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.logging.UiEventLogger
 import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast
+import com.android.settingslib.volume.domain.interactor.AudioModeInteractor
 import com.android.systemui.Prefs
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
@@ -71,6 +72,7 @@ constructor(
     private val bluetoothStateInteractor: BluetoothStateInteractor,
     private val bluetoothAutoOnInteractor: BluetoothAutoOnInteractor,
     private val audioSharingInteractor: AudioSharingInteractor,
+    private val audioModeInteractor: AudioModeInteractor,
     private val audioSharingButtonViewModelFactory: AudioSharingButtonViewModel.Factory,
     private val bluetoothDeviceMetadataInteractor: BluetoothDeviceMetadataInteractor,
     private val dialogTransitionAnimator: DialogTransitionAnimator,
@@ -167,6 +169,7 @@ constructor(
                 // the device item list and animate the progress bar.
                 merge(
                         deviceItemInteractor.deviceItemUpdateRequest,
+                        audioModeInteractor.isOngoingCall,
                         bluetoothDeviceMetadataInteractor.metadataUpdate,
                         if (
                             audioSharingInteractor.audioSharingAvailable() &&

@@ -18,7 +18,6 @@ package com.android.systemui.bluetooth.qsdialog
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.media.AudioManager
 import com.android.settingslib.bluetooth.BluetoothUtils
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.settingslib.bluetooth.LocalBluetoothManager
@@ -43,7 +42,7 @@ abstract class DeviceItemFactory {
     abstract fun isFilterMatched(
         context: Context,
         cachedDevice: CachedBluetoothDevice,
-        audioManager: AudioManager,
+        isOngoingCall: Boolean,
         audioSharingAvailable: Boolean,
     ): Boolean
 
@@ -51,8 +50,8 @@ abstract class DeviceItemFactory {
     fun isFilterMatched(
         context: Context,
         cachedDevice: CachedBluetoothDevice,
-        audioManager: AudioManager,
-    ): Boolean = isFilterMatched(context, cachedDevice, audioManager, false)
+        isOngoingCall: Boolean,
+    ): Boolean = isFilterMatched(context, cachedDevice, isOngoingCall, false)
 
     abstract fun create(context: Context, cachedDevice: CachedBluetoothDevice): DeviceItem
 
@@ -88,11 +87,11 @@ internal open class ActiveMediaDeviceItemFactory : DeviceItemFactory() {
     override fun isFilterMatched(
         context: Context,
         cachedDevice: CachedBluetoothDevice,
-        audioManager: AudioManager,
+        isOngoingCall: Boolean,
         audioSharingAvailable: Boolean,
     ): Boolean {
         return BluetoothUtils.isActiveMediaDevice(cachedDevice) &&
-            BluetoothUtils.isAvailableMediaBluetoothDevice(cachedDevice, audioManager)
+            BluetoothUtils.isAvailableMediaBluetoothDevice(cachedDevice, isOngoingCall)
     }
 
     override fun create(context: Context, cachedDevice: CachedBluetoothDevice): DeviceItem {
@@ -113,10 +112,11 @@ internal class AudioSharingMediaDeviceItemFactory(
     override fun isFilterMatched(
         context: Context,
         cachedDevice: CachedBluetoothDevice,
-        audioManager: AudioManager,
+        isOngoingCall: Boolean,
         audioSharingAvailable: Boolean,
     ): Boolean {
         return audioSharingAvailable &&
+            !isOngoingCall &&
             BluetoothUtils.hasConnectedBroadcastSource(cachedDevice, localBluetoothManager)
     }
 
@@ -140,11 +140,12 @@ internal class AvailableAudioSharingMediaDeviceItemFactory(
     override fun isFilterMatched(
         context: Context,
         cachedDevice: CachedBluetoothDevice,
-        audioManager: AudioManager,
+        isOngoingCall: Boolean,
         audioSharingAvailable: Boolean,
     ): Boolean {
         return audioSharingAvailable &&
-            super.isFilterMatched(context, cachedDevice, audioManager, true) &&
+            !isOngoingCall &&
+            super.isFilterMatched(context, cachedDevice, false, true) &&
             BluetoothUtils.isAvailableAudioSharingMediaBluetoothDevice(
                 cachedDevice,
                 localBluetoothManager,
@@ -170,7 +171,7 @@ internal class ActiveHearingDeviceItemFactory : ActiveMediaDeviceItemFactory() {
     override fun isFilterMatched(
         context: Context,
         cachedDevice: CachedBluetoothDevice,
-        audioManager: AudioManager,
+        isOngoingCall: Boolean,
         audioSharingAvailable: Boolean,
     ): Boolean {
         return BluetoothUtils.isActiveMediaDevice(cachedDevice) &&
@@ -182,11 +183,11 @@ open class AvailableMediaDeviceItemFactory : DeviceItemFactory() {
     override fun isFilterMatched(
         context: Context,
         cachedDevice: CachedBluetoothDevice,
-        audioManager: AudioManager,
+        isOngoingCall: Boolean,
         audioSharingAvailable: Boolean,
     ): Boolean {
         return !BluetoothUtils.isActiveMediaDevice(cachedDevice) &&
-            BluetoothUtils.isAvailableMediaBluetoothDevice(cachedDevice, audioManager)
+            BluetoothUtils.isAvailableMediaBluetoothDevice(cachedDevice, isOngoingCall)
     }
 
     override fun create(context: Context, cachedDevice: CachedBluetoothDevice): DeviceItem {
@@ -206,7 +207,7 @@ internal class AvailableHearingDeviceItemFactory : AvailableMediaDeviceItemFacto
     override fun isFilterMatched(
         context: Context,
         cachedDevice: CachedBluetoothDevice,
-        audioManager: AudioManager,
+        isOngoingCall: Boolean,
         audioSharingAvailable: Boolean,
     ): Boolean {
         return !BluetoothUtils.isActiveMediaDevice(cachedDevice) &&
@@ -218,14 +219,14 @@ internal class ConnectedDeviceItemFactory : DeviceItemFactory() {
     override fun isFilterMatched(
         context: Context,
         cachedDevice: CachedBluetoothDevice,
-        audioManager: AudioManager,
+        isOngoingCall: Boolean,
         audioSharingAvailable: Boolean,
     ): Boolean {
         return if (Flags.enableHideExclusivelyManagedBluetoothDevice()) {
             !BluetoothUtils.isExclusivelyManagedBluetoothDevice(context, cachedDevice.device) &&
-                BluetoothUtils.isConnectedBluetoothDevice(cachedDevice, audioManager)
+                BluetoothUtils.isConnectedBluetoothDevice(cachedDevice, isOngoingCall)
         } else {
-            BluetoothUtils.isConnectedBluetoothDevice(cachedDevice, audioManager)
+            BluetoothUtils.isConnectedBluetoothDevice(cachedDevice, isOngoingCall)
         }
     }
 
@@ -246,7 +247,7 @@ internal open class SavedDeviceItemFactory : DeviceItemFactory() {
     override fun isFilterMatched(
         context: Context,
         cachedDevice: CachedBluetoothDevice,
-        audioManager: AudioManager,
+        isOngoingCall: Boolean,
         audioSharingAvailable: Boolean,
     ): Boolean {
         return if (Flags.enableHideExclusivelyManagedBluetoothDevice()) {
@@ -275,7 +276,7 @@ internal class SavedHearingDeviceItemFactory : SavedDeviceItemFactory() {
     override fun isFilterMatched(
         context: Context,
         cachedDevice: CachedBluetoothDevice,
-        audioManager: AudioManager,
+        isOngoingCall: Boolean,
         audioSharingAvailable: Boolean,
     ): Boolean {
         return if (Flags.enableHideExclusivelyManagedBluetoothDevice()) {
