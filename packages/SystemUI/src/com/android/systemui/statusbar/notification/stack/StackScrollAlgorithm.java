@@ -1227,13 +1227,17 @@ public class StackScrollAlgorithm {
         float baseZ = ambientState.getBaseZHeight();
 
         if (SceneContainerFlag.isEnabled()) {
-            // SceneContainer flags off this logic, and just sets the baseZ because:
+            // SceneContainer simplifies this logic, because:
             // - there are no overlapping HUNs anymore, no need for multiplying their shadows
             // - shadows for HUNs overlapping with the stack are now set from updateHeadsUpStates
-            // - shadows for HUNs overlapping with the shelf are NOT set anymore, because it only
-            // happens on AOD/Pulsing, where they're displayed on a black background so a shadow
-            // wouldn't be visible.
-            childViewState.setZTranslation(baseZ);
+            if (child.isPinned() || ambientState.getTrackedHeadsUpRow() == child) {
+                // set a default elevation on the HUN, which would be overridden
+                // from updateHeadsUpStates if it is displayed in the shade
+                childViewState.setZTranslation(baseZ + mPinnedZTranslationExtra);
+            } else {
+                // set baseZ for every notification
+                childViewState.setZTranslation(baseZ);
+            }
         } else {
             if (child.mustStayOnScreen() && !childViewState.headsUpIsVisible
                     && !ambientState.isDozingAndNotPulsing(child)
