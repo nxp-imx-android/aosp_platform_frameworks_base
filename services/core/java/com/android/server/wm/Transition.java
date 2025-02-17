@@ -3024,9 +3024,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             final Rect parentBounds = parent.getBounds();
             change.setEndRelOffset(bounds.left - parentBounds.left,
                     bounds.top - parentBounds.top);
-            if (Flags.activityEmbeddingOverlayPresentationFlag()) {
-                change.setEndParentSize(parentBounds.width(), parentBounds.height());
-            }
+            change.setEndParentSize(parentBounds.width(), parentBounds.height());
             int endRotation = target.getWindowConfiguration().getRotation();
             if (activityRecord != null) {
                 // TODO(b/227427984): Shell needs to aware letterbox.
@@ -3077,8 +3075,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             AnimationOptions animOptions = null;
             if (activityRecord != null && animOptionsForActivityTransition != null) {
                 animOptions = animOptionsForActivityTransition;
-            } else if (Flags.activityEmbeddingOverlayPresentationFlag()
-                    && isEmbeddedTaskFragment) {
+            } else if (isEmbeddedTaskFragment) {
                 final TaskFragmentAnimationParams params = taskFragment.getAnimationParams();
                 if (params.hasOverrideAnimation()) {
                     // Only set AnimationOptions if there's any animation override.

@@ -46,7 +46,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.activityembedding.ActivityEmbeddingAnimationAdapter.SnapshotAdapter;
 import com.android.wm.shell.common.ScreenshotUtils;
 import com.android.wm.shell.shared.TransitionUtil;
@@ -443,7 +442,7 @@ class ActivityEmbeddingAnimationRunner {
                 }
             }
 
-            calculateParentBounds(change, boundsAnimationChange, parentBounds);
+            calculateParentBounds(change, parentBounds);
             // There are two animations in the array. The first one is for the start leash
             // (snapshot), and the second one is for the end leash (TaskFragment).
             final Animation[] animations =
@@ -529,32 +528,19 @@ class ActivityEmbeddingAnimationRunner {
      */
     @VisibleForTesting
     static void calculateParentBounds(@NonNull TransitionInfo.Change change,
-              @NonNull TransitionInfo.Change boundsAnimationChange, @NonNull Rect outParentBounds) {
-        if (Flags.activityEmbeddingOverlayPresentationFlag()) {
-            final Point endParentSize = change.getEndParentSize();
-            if (endParentSize.equals(0, 0)) {
-                return;
-            }
-            final Point endRelPosition = change.getEndRelOffset();
-            final Point endAbsPosition = new Point(change.getEndAbsBounds().left,
-                    change.getEndAbsBounds().top);
-            final Point parentEndAbsPosition = new Point(endAbsPosition.x - endRelPosition.x,
-                    endAbsPosition.y - endRelPosition.y);
-            outParentBounds.set(parentEndAbsPosition.x, parentEndAbsPosition.y,
-                    parentEndAbsPosition.x + endParentSize.x,
-                    parentEndAbsPosition.y + endParentSize.y);
-        } else {
-            // The TaskFragment may be enter/exit split, so we take the union of both as
-            // the parent size.
-            outParentBounds.union(boundsAnimationChange.getStartAbsBounds());
-            outParentBounds.union(boundsAnimationChange.getEndAbsBounds());
-            if (boundsAnimationChange != change) {
-                // Union the change starting bounds in case the activity is resized and
-                // reparented to a TaskFragment. In that case, the TaskFragment may not cover
-                // the activity's starting bounds.
-                outParentBounds.union(change.getStartAbsBounds());
-            }
+            @NonNull Rect outParentBounds) {
+        final Point endParentSize = change.getEndParentSize();
+        if (endParentSize.equals(0, 0)) {
+            return;
         }
+        final Point endRelPosition = change.getEndRelOffset();
+        final Point endAbsPosition = new Point(change.getEndAbsBounds().left,
+                change.getEndAbsBounds().top);
+        final Point parentEndAbsPosition = new Point(endAbsPosition.x - endRelPosition.x,
+                endAbsPosition.y - endRelPosition.y);
+        outParentBounds.set(parentEndAbsPosition.x, parentEndAbsPosition.y,
+                parentEndAbsPosition.x + endParentSize.x,
+                parentEndAbsPosition.y + endParentSize.y);
     }
 
     /**

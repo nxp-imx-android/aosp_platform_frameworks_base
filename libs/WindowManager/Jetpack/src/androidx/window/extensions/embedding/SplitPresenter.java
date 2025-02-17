@@ -62,7 +62,6 @@ import androidx.window.extensions.layout.WindowLayoutInfo;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.window.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -465,9 +464,6 @@ class SplitPresenter extends JetpackTaskFragmentOrganizer {
     void setTaskFragmentIsolatedNavigation(@NonNull WindowContainerTransaction wct,
                                            @NonNull TaskFragmentContainer container,
                                            boolean isolatedNavigationEnabled) {
-        if (!Flags.activityEmbeddingOverlayPresentationFlag() && container.isOverlay()) {
-            return;
-        }
         if (container.isIsolatedNavigationEnabled() == isolatedNavigationEnabled) {
             return;
         }
@@ -488,9 +484,6 @@ class SplitPresenter extends JetpackTaskFragmentOrganizer {
     void setTaskFragmentPinned(@NonNull WindowContainerTransaction wct,
                                @NonNull TaskFragmentContainer container,
                                boolean pinned) {
-        if (!Flags.activityEmbeddingOverlayPresentationFlag() && container.isOverlay()) {
-            return;
-        }
         if (container.isPinned() == pinned) {
             return;
         }
@@ -692,7 +685,7 @@ class SplitPresenter extends JetpackTaskFragmentOrganizer {
         final TaskContainer taskContainer = container.getTaskContainer();
         final int windowingMode = taskContainer.getWindowingModeForTaskFragment(relativeBounds);
         updateTaskFragmentWindowingModeIfRegistered(wct, container, windowingMode);
-        if (container.isOverlay() && isOverlayTransitionSupported()) {
+        if (container.isOverlay()) {
             // Use the overlay transition for the overlay container if it's supported.
             final TaskFragmentAnimationParams params = createOverlayAnimationParams(relativeBounds,
                     taskContainer.getBounds(), container);
@@ -702,10 +695,6 @@ class SplitPresenter extends JetpackTaskFragmentOrganizer {
             updateAnimationParams(wct, fragmentToken, TaskFragmentAnimationParams.DEFAULT);
         }
         setTaskFragmentDimOnTask(wct, fragmentToken, dimOnTask);
-    }
-
-    private static boolean isOverlayTransitionSupported() {
-        return Flags.activityEmbeddingOverlayPresentationFlag();
     }
 
     @NonNull
