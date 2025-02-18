@@ -6004,8 +6004,7 @@ public class Notification implements Parcelable
             // Update margins to leave space for the top line (but not for headerless views like
             // HUNS, which use a different layout that already accounts for that). Templates that
             // have content that will be displayed under the small icon also use a different margin.
-            if (Flags.notificationsRedesignTemplates()
-                    && !p.mHeaderless && !p.mSkipTopLineAlignment) {
+            if (Flags.notificationsRedesignTemplates() && !p.mHeaderless) {
                 int margin = getContentMarginTop(mContext,
                         R.dimen.notification_2025_content_margin_top);
                 contentView.setViewLayoutMargin(R.id.notification_main_column,
@@ -9471,7 +9470,7 @@ public class Notification implements Parcelable
             boolean hideRightIcons = viewType != StandardTemplateParams.VIEW_TYPE_NORMAL;
             boolean isConversationLayout = mConversationType != CONVERSATION_TYPE_LEGACY;
             boolean isImportantConversation = mConversationType == CONVERSATION_TYPE_IMPORTANT;
-            boolean isHeaderless = !isConversationLayout && isCollapsed;
+            boolean isLegacyHeaderless = !isConversationLayout && isCollapsed;
 
             //TODO (b/217799515): ensure mConversationTitle always returns the correct
             // conversationTitle, probably set mConversationTitle = conversationTitle after this
@@ -9492,7 +9491,7 @@ public class Notification implements Parcelable
             } else {
                 isOneToOne = !isGroupConversation();
             }
-            if ((isHeaderless || notificationsRedesignTemplates())
+            if ((isLegacyHeaderless || notificationsRedesignTemplates())
                     && isOneToOne && TextUtils.isEmpty(conversationTitle)) {
                 conversationTitle = getOtherPersonName();
             }
@@ -9507,14 +9506,11 @@ public class Notification implements Parcelable
                     .hideLeftIcon(isOneToOne)
                     .hideRightIcon(hideRightIcons || isOneToOne);
             if (notificationsRedesignTemplates()) {
-                p.title((isConversationLayout || isCollapsed) ? conversationTitle : null)
-                        .headerTextSecondary(
-                                (isConversationLayout || isCollapsed) ? null : conversationTitle)
-                        .hideAppName(isCollapsed)
-                        .skipTopLineAlignment(!isConversationLayout && !isCollapsed);
+                p.title(conversationTitle)
+                        .hideAppName(isCollapsed);
             } else {
-                p.title(isHeaderless ? conversationTitle : null)
-                        .headerTextSecondary(isHeaderless ? null : conversationTitle);
+                p.title(isLegacyHeaderless ? conversationTitle : null)
+                        .headerTextSecondary(isLegacyHeaderless ? null : conversationTitle);
             }
             RemoteViews contentView = mBuilder.applyStandardTemplateWithActions(
                     getMessagingLayoutResource(isConversationLayout, isCollapsed),
@@ -9552,19 +9548,19 @@ public class Notification implements Parcelable
                         "setShortcutIcon", mShortcutIcon);
                 contentView.setBoolean(R.id.status_bar_latest_event_content,
                         "setIsImportantConversation", isImportantConversation);
-                if (notificationsRedesignTemplates() && !isCollapsed) {
-                    // Align the title to the app/small icon in the expanded form. In other layouts,
-                    // this margin is added directly to the notification_main_column parent, but for
-                    // messages we don't want the margin to be applied to the actual messaging
-                    // content since it can contain icons that are displayed below the app icon.
-                    Resources res = mBuilder.mContext.getResources();
-                    int marginStart = res.getDimensionPixelSize(
-                            R.dimen.notification_2025_content_margin_start);
-                    contentView.setViewLayoutMargin(R.id.title,
-                            RemoteViews.MARGIN_START, marginStart, TypedValue.COMPLEX_UNIT_PX);
-                }
             }
-            if (isHeaderless) {
+            if (notificationsRedesignTemplates() && !isCollapsed) {
+                // Align the title to the app/small icon in the expanded form. In other layouts,
+                // this margin is added directly to the notification_main_column parent, but for
+                // messages we don't want the margin to be applied to the actual messaging
+                // content since it can contain icons that are displayed below the app icon.
+                Resources res = mBuilder.mContext.getResources();
+                int marginStart = res.getDimensionPixelSize(
+                        R.dimen.notification_2025_content_margin_start);
+                contentView.setViewLayoutMargin(R.id.title,
+                        RemoteViews.MARGIN_START, marginStart, TypedValue.COMPLEX_UNIT_PX);
+            }
+            if (isLegacyHeaderless) {
                 // Collapsed legacy messaging style has a 1-line limit.
                 contentView.setInt(R.id.notification_messaging, "setMaxDisplayedLines", 1);
             }
@@ -14729,7 +14725,6 @@ public class Notification implements Parcelable
         Icon mPromotedPicture;
         boolean mCallStyleActions;
         boolean mAllowTextWithProgress;
-        boolean mSkipTopLineAlignment;
         int mTitleViewId;
         int mTextViewId;
         @Nullable CharSequence mTitle;
@@ -14755,7 +14750,6 @@ public class Notification implements Parcelable
             mPromotedPicture = null;
             mCallStyleActions = false;
             mAllowTextWithProgress = false;
-            mSkipTopLineAlignment = false;
             mTitleViewId = R.id.title;
             mTextViewId = R.id.text;
             mTitle = null;
@@ -14819,11 +14813,6 @@ public class Notification implements Parcelable
 
         final StandardTemplateParams allowTextWithProgress(boolean allowTextWithProgress) {
             this.mAllowTextWithProgress = allowTextWithProgress;
-            return this;
-        }
-
-        public StandardTemplateParams skipTopLineAlignment(boolean skipTopLineAlignment) {
-            mSkipTopLineAlignment = skipTopLineAlignment;
             return this;
         }
 
