@@ -31,14 +31,13 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.State
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
@@ -62,9 +61,17 @@ import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.findRootCoordinates
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Density
@@ -75,6 +82,8 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.android.compose.modifiers.thenIf
+import com.android.compose.ui.graphics.FullScreenComposeViewInOverlay
 import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.TransitionAnimator
 import kotlin.math.max
@@ -122,6 +131,9 @@ fun Expandable(
     borderStroke: BorderStroke? = null,
     onClick: ((Expandable) -> Unit)? = null,
     interactionSource: MutableInteractionSource? = null,
+    // TODO(b/285250939): Default this to true then remove once the Compose QS expandables have
+    // proven that the new implementation is robust.
+    useModifierBasedImplementation: Boolean = false,
     content: @Composable (Expandable) -> Unit,
 ) {
     Expandable(
@@ -129,6 +141,7 @@ fun Expandable(
         modifier,
         onClick,
         interactionSource,
+        useModifierBasedImplementation,
         content,
     )
 }
@@ -157,16 +170,26 @@ fun Expandable(
  * @sample com.android.systemui.compose.gallery.ActivityLaunchScreen
  * @sample com.android.systemui.compose.gallery.DialogLaunchScreen
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Expandable(
     controller: ExpandableController,
     modifier: Modifier = Modifier,
     onClick: ((Expandable) -> Unit)? = null,
     interactionSource: MutableInteractionSource? = null,
+    // TODO(b/285250939): Default this to true then remove once the Compose QS expandables have
+    // proven that the new implementation is robust.
+    useModifierBasedImplementation: Boolean = false,
     content: @Composable (Expandable) -> Unit,
 ) {
     val controller = controller as ExpandableControllerImpl
+
+    if (useModifierBasedImplementation) {
+        Box(modifier.expandable(controller, onClick, interactionSource)) {
+            WrappedContent(controller.expandable, controller.contentColor, content)
+        }
+        return
+    }
+
     val color = controller.color
     val contentColor = controller.contentColor
     val shape = controller.shape
@@ -273,6 +296,133 @@ private fun WrappedContent(
             contentAlignment = Alignment.Center,
         ) {
             content(expandable)
+        }
+    }
+}
+
+@Composable
+@Stable
+private fun Modifier.expandable(
+    controller: ExpandableController,
+    onClick: ((Expandable) -> Unit)? = null,
+    interactionSource: MutableInteractionSource? = null,
+): Modifier {
+    val controller = controller as ExpandableControllerImpl
+
+    val isAnimating = controller.isAnimating
+    val drawInOverlayModifier =
+        if (isAnimating) {
+            val graphicsLayer = rememberGraphicsLayer()
+
+            FullScreenComposeViewInOverlay { view ->
+                Modifier.then(DrawExpandableInOverlayElement(view, controller, graphicsLayer))
+            }
+
+            Modifier.drawWithContent { graphicsLayer.record { this@drawWithContent.drawContent() } }
+        } else {
+            null
+        }
+
+    return this.thenIf(onClick != null) { Modifier.minimumInteractiveComponentSize() }
+        .thenIf(!isAnimating) {
+            Modifier.border(controller)
+                .then(clickModifier(controller, onClick, interactionSource))
+                .background(controller.color, controller.shape)
+        }
+        .thenIf(drawInOverlayModifier != null) { drawInOverlayModifier!! }
+        .onPlaced { controller.boundsInComposeViewRoot = it.boundsInRoot() }
+        .thenIf(!isAnimating && controller.isDialogShowing) {
+            Modifier.layout { measurable, constraints ->
+                measurable.measure(constraints).run {
+                    layout(width, height) { /* Do not place/draw. */ }
+                }
+            }
+        }
+}
+
+private data class DrawExpandableInOverlayElement(
+    private val overlayComposeView: ComposeView,
+    private val controller: ExpandableControllerImpl,
+    private val contentGraphicsLayer: GraphicsLayer,
+) : ModifierNodeElement<DrawExpandableInOverlayNode>() {
+    override fun create(): DrawExpandableInOverlayNode {
+        return DrawExpandableInOverlayNode(overlayComposeView, controller, contentGraphicsLayer)
+    }
+
+    override fun update(node: DrawExpandableInOverlayNode) {
+        node.update(overlayComposeView, controller, contentGraphicsLayer)
+    }
+}
+
+private class DrawExpandableInOverlayNode(
+    composeView: ComposeView,
+    controller: ExpandableControllerImpl,
+    private var contentGraphicsLayer: GraphicsLayer,
+) : Modifier.Node(), DrawModifierNode {
+    private var controller = controller
+        set(value) {
+            resetCurrentNodeInOverlay()
+            field = value
+            setCurrentNodeInOverlay()
+        }
+
+    private var composeViewLocationOnScreen = composeView.locationOnScreen
+
+    fun update(
+        composeView: ComposeView,
+        controller: ExpandableControllerImpl,
+        contentGraphicsLayer: GraphicsLayer,
+    ) {
+        this.controller = controller
+        this.composeViewLocationOnScreen = composeView.locationOnScreen
+        this.contentGraphicsLayer = contentGraphicsLayer
+    }
+
+    override fun onAttach() {
+        setCurrentNodeInOverlay()
+    }
+
+    override fun onDetach() {
+        resetCurrentNodeInOverlay()
+    }
+
+    private fun setCurrentNodeInOverlay() {
+        controller.currentNodeInOverlay = this
+    }
+
+    private fun resetCurrentNodeInOverlay() {
+        if (controller.currentNodeInOverlay == this) {
+            controller.currentNodeInOverlay = null
+        }
+    }
+
+    override fun ContentDrawScope.draw() {
+        val state = controller.animatorState ?: return
+        val topOffset = state.top.toFloat() - composeViewLocationOnScreen[1]
+        val leftOffset = state.left.toFloat() - composeViewLocationOnScreen[0]
+
+        translate(top = topOffset, left = leftOffset) {
+            // Background.
+            this@draw.drawBackground(
+                state,
+                controller.color,
+                controller.borderStroke,
+                size = Size(state.width.toFloat(), state.height.toFloat()),
+            )
+
+            // Content, scaled & centered w.r.t. the animated state bounds.
+            val contentSize = controller.boundsInComposeViewRoot.size
+            val contentWidth = contentSize.width
+            val contentHeight = contentSize.height
+            val scale = min(state.width / contentWidth, state.height / contentHeight)
+            scale(scale, pivot = Offset(state.width / 2f, state.height / 2f)) {
+                translate(
+                    left = (state.width - contentWidth) / 2f,
+                    top = (state.height - contentHeight) / 2f,
+                ) {
+                    drawLayer(contentGraphicsLayer)
+                }
+            }
         }
     }
 }
@@ -447,6 +597,7 @@ private fun ContentDrawScope.drawBackground(
     animatorState: TransitionAnimator.State,
     color: Color,
     border: BorderStroke?,
+    size: Size = this.size,
 ) {
     val topRadius = animatorState.topCornerRadius
     val bottomRadius = animatorState.bottomCornerRadius
@@ -455,7 +606,7 @@ private fun ContentDrawScope.drawBackground(
         val cornerRadius = CornerRadius(topRadius)
 
         // Draw the background.
-        drawRoundRect(color, cornerRadius = cornerRadius)
+        drawRoundRect(color, cornerRadius = cornerRadius, size = size)
 
         // Draw the border.
         if (border != null) {
