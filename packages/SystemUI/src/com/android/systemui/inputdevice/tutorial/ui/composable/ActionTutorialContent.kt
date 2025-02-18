@@ -137,6 +137,7 @@ fun ActionTutorialContent(
             onDoneButtonClicked = onDoneButtonClicked,
             modifier = Modifier.padding(horizontal = 60.dp).graphicsLayer { alpha = buttonAlpha },
             enabled = actionState is Finished,
+            isNext = config.hasNextButton,
         )
     }
 }

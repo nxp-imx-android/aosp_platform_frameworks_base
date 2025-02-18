@@ -130,22 +130,32 @@ private class ScreensProvider(
     val easterEggGestureViewModel: EasterEggGestureViewModel,
 ) : TouchpadTutorialScreensProvider {
     @Composable
-    override fun BackGesture(onDoneButtonClicked: () -> Unit, onBack: () -> Unit) {
+    override fun BackGesture(
+        onDoneButtonClicked: () -> Unit,
+        onBack: () -> Unit,
+        isAutoProceed: Boolean,
+    ) {
         BackGestureTutorialScreen(
             backGestureScreenViewModel,
             easterEggGestureViewModel,
             onDoneButtonClicked,
             onBack,
+            isAutoProceed,
         )
     }
 
     @Composable
-    override fun HomeGesture(onDoneButtonClicked: () -> Unit, onBack: () -> Unit) {
+    override fun HomeGesture(
+        onDoneButtonClicked: () -> Unit,
+        onBack: () -> Unit,
+        isAutoProceed: Boolean,
+    ) {
         HomeGestureTutorialScreen(
             homeGestureScreenViewModel,
             easterEggGestureViewModel,
             onDoneButtonClicked,
             onBack,
+            isAutoProceed,
         )
     }
 }
