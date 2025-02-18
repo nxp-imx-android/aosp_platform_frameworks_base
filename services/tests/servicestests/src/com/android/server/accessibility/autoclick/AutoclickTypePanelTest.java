@@ -30,6 +30,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableContext;
 import android.testing.TestableLooper;
+import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
@@ -64,6 +65,7 @@ public class AutoclickTypePanelTest {
     private LinearLayout mDragButton;
     private LinearLayout mScrollButton;
     private LinearLayout mPauseButton;
+    private LinearLayout mPositionButton;
 
     private @AutoclickType int mActiveClickType = AUTOCLICK_TYPE_LEFT_CLICK;
 
@@ -93,6 +95,7 @@ public class AutoclickTypePanelTest {
         mScrollButton = contentView.findViewById(R.id.accessibility_autoclick_scroll_layout);
         mDragButton = contentView.findViewById(R.id.accessibility_autoclick_drag_layout);
         mPauseButton = contentView.findViewById(R.id.accessibility_autoclick_pause_layout);
+        mPositionButton = contentView.findViewById(R.id.accessibility_autoclick_position_layout);
     }
 
     @Test
@@ -175,9 +178,39 @@ public class AutoclickTypePanelTest {
         assertThat(mActiveClickType).isEqualTo(AUTOCLICK_TYPE_SCROLL);
     }
 
+    @Test
+    public void moveToNextCorner_positionButton_rotatesThroughAllPositions() {
+        // Define all positions in sequence
+        int[][] expectedPositions = {
+                {0, Gravity.END | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 90},
+                {1, Gravity.START | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 90},
+                {2, Gravity.START | Gravity.TOP, /*x=*/ 15, /*y=*/ 30},
+                {3, Gravity.END | Gravity.TOP, /*x=*/ 15, /*y=*/ 30},
+                {0, Gravity.END | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 90}
+        };
+
+        // Check initial position
+        verifyPanelPosition(expectedPositions[0]);
+
+        // Move through all corners.
+        for (int i = 1; i < expectedPositions.length; i++) {
+            mPositionButton.callOnClick();
+            verifyPanelPosition(expectedPositions[i]);
+        }
+    }
+
     private void verifyButtonHasSelectedStyle(@NonNull LinearLayout button) {
         GradientDrawable gradientDrawable = (GradientDrawable) button.getBackground();
         assertThat(gradientDrawable.getColor().getDefaultColor())
                 .isEqualTo(mTestableContext.getColor(R.color.materialColorPrimary));
+    }
+
+    private void verifyPanelPosition(int[] expectedPosition) {
+        WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParams();
+        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting()).isEqualTo(
+                expectedPosition[0]);
+        assertThat(params.gravity).isEqualTo(expectedPosition[1]);
+        assertThat(params.x).isEqualTo(expectedPosition[2]);
+        assertThat(params.y).isEqualTo(expectedPosition[3]);
     }
 }

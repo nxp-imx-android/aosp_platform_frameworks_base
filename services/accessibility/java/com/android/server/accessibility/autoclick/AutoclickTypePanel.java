@@ -46,6 +46,11 @@ public class AutoclickTypePanel {
     public static final int AUTOCLICK_TYPE_DRAG = 3;
     public static final int AUTOCLICK_TYPE_SCROLL = 4;
 
+    public static final int CORNER_BOTTOM_RIGHT = 0;
+    public static final int CORNER_BOTTOM_LEFT = 1;
+    public static final int CORNER_TOP_LEFT = 2;
+    public static final int CORNER_TOP_RIGHT = 3;
+
     // Types of click the AutoclickTypePanel supports.
     @IntDef({
         AUTOCLICK_TYPE_LEFT_CLICK,
@@ -55,6 +60,21 @@ public class AutoclickTypePanel {
         AUTOCLICK_TYPE_SCROLL,
     })
     public @interface AutoclickType {}
+
+    @IntDef({
+            CORNER_BOTTOM_RIGHT,
+            CORNER_BOTTOM_LEFT,
+            CORNER_TOP_LEFT,
+            CORNER_TOP_RIGHT
+    })
+    public @interface Corner {}
+
+    private static final @Corner int[] CORNER_ROTATION_ORDER = {
+            CORNER_BOTTOM_RIGHT,
+            CORNER_BOTTOM_LEFT,
+            CORNER_TOP_LEFT,
+            CORNER_TOP_RIGHT
+    };
 
     // An interface exposed to {@link AutoclickController) to handle different actions on the panel,
     // including changing autoclick type, pausing/resuming autoclick.
@@ -79,6 +99,10 @@ public class AutoclickTypePanel {
 
     // Whether autoclick is paused.
     private boolean mPaused = false;
+    // Tracks the current corner position of the panel using an index into CORNER_ROTATION_ORDER
+    // array. This allows the panel to cycle through screen corners in a defined sequence when
+    // repositioned.
+    private int mCurrentCornerIndex = 0;
 
     private final LinearLayout mLeftClickButton;
     private final LinearLayout mRightClickButton;
@@ -86,6 +110,7 @@ public class AutoclickTypePanel {
     private final LinearLayout mDragButton;
     private final LinearLayout mScrollButton;
     private final LinearLayout mPauseButton;
+    private final LinearLayout mPositionButton;
 
     private LinearLayout mSelectedButton;
 
@@ -117,6 +142,7 @@ public class AutoclickTypePanel {
         mScrollButton = mContentView.findViewById(R.id.accessibility_autoclick_scroll_layout);
         mDragButton = mContentView.findViewById(R.id.accessibility_autoclick_drag_layout);
         mPauseButton = mContentView.findViewById(R.id.accessibility_autoclick_pause_layout);
+        mPositionButton = mContentView.findViewById(R.id.accessibility_autoclick_position_layout);
 
         initializeButtonState();
     }
@@ -128,10 +154,8 @@ public class AutoclickTypePanel {
                 v -> togglePanelExpansion(AUTOCLICK_TYPE_DOUBLE_CLICK));
         mScrollButton.setOnClickListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_SCROLL));
         mDragButton.setOnClickListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_DRAG));
-
+        mPositionButton.setOnClickListener(v -> moveToNextCorner());
         mPauseButton.setOnClickListener(v -> togglePause());
-        // TODO(b/388847771): registers listener for position button and allows users to move the
-        // panel to a different position.
 
         // Initializes panel as collapsed state and only displays the left click button.
         hideAllClickTypeButtons();
@@ -248,6 +272,46 @@ public class AutoclickTypePanel {
         };
     }
 
+    /** Moves the panel to the next corner in clockwise direction. */
+    private void moveToNextCorner() {
+        @Corner int nextCornerIndex = (mCurrentCornerIndex + 1) % CORNER_ROTATION_ORDER.length;
+        mCurrentCornerIndex = nextCornerIndex;
+
+        // getLayoutParams() will update the panel position based on current corner.
+        WindowManager.LayoutParams params = getLayoutParams();
+        mWindowManager.updateViewLayout(mContentView, params);
+    }
+
+    private void setPanelPositionForCorner(WindowManager.LayoutParams params, @Corner int corner) {
+        //  TODO(b/396402941): Replace hardcoded pixel values with proper dimension calculations,
+        //  Current values are experimental and may not work correctly across different device
+        //  resolutions and configurations.
+        switch (corner) {
+            case CORNER_BOTTOM_RIGHT:
+                params.gravity = Gravity.END | Gravity.BOTTOM;
+                params.x = 15;
+                params.y = 90;
+                break;
+            case CORNER_BOTTOM_LEFT:
+                params.gravity = Gravity.START | Gravity.BOTTOM;
+                params.x = 15;
+                params.y = 90;
+                break;
+            case CORNER_TOP_LEFT:
+                params.gravity = Gravity.START | Gravity.TOP;
+                params.x = 15;
+                params.y = 30;
+                break;
+            case CORNER_TOP_RIGHT:
+                params.gravity = Gravity.END | Gravity.TOP;
+                params.x = 15;
+                params.y = 30;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid corner: " + corner);
+        }
+    }
+
     @VisibleForTesting
     boolean getExpansionStateForTesting() {
         return mExpanded;
@@ -259,12 +323,19 @@ public class AutoclickTypePanel {
         return mContentView;
     }
 
+    @VisibleForTesting
+    @Corner
+    int getCurrentCornerIndexForTesting() {
+        return mCurrentCornerIndex;
+    }
+
     /**
      * Retrieves the layout params for AutoclickIndicatorView, used when it's added to the Window
      * Manager.
      */
+    @VisibleForTesting
     @NonNull
-    private WindowManager.LayoutParams getLayoutParams() {
+    WindowManager.LayoutParams getLayoutParams() {
         final WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
@@ -277,11 +348,7 @@ public class AutoclickTypePanel {
                 mContext.getString(R.string.accessibility_autoclick_type_settings_panel_title);
         layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-        // TODO(b/388847771): Compute position based on user interaction.
-        layoutParams.x = 15;
-        layoutParams.y = 90;
-        layoutParams.gravity = Gravity.END | Gravity.BOTTOM;
-
+        setPanelPositionForCorner(layoutParams, mCurrentCornerIndex);
         return layoutParams;
     }
 }
