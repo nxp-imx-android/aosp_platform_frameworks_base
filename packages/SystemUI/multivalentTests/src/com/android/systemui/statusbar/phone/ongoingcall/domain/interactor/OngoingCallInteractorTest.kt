@@ -29,6 +29,7 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.StatusBarIconView
+import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
 import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
@@ -51,7 +52,7 @@ import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(StatusBarChipsModernization.FLAG_NAME)
+@EnableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
 class OngoingCallInteractorTest : SysuiTestCase() {
     private val kosmos = Kosmos().useUnconfinedTestDispatcher()
     private val repository = kosmos.activeNotificationListRepository
