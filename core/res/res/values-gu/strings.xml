@@ -353,6 +353,14 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"તમારા મહત્વપૂર્ણ ચિહ્નો વિશે સેન્સર ડેટા ઍક્સેસ કરો"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"નોટિફિકેશન"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"નોટિફિકેશન બતાવો"</string>
+    <!-- no translation found for permgrouplab_xr_tracking (7418994009794287471) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking (6777198859446500821) -->
+    <skip />
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (1194833982988144536) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (9178027369004805829) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"વિંડો કન્ટેન્ટ પુનઃપ્રાપ્ત કરો"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"તમે જેની સાથે ક્રિયા-પ્રતિક્રિયા કરી રહ્યાં છો તે વિંડોનું કન્ટેન્ટ તપાસો."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"સ્પર્શ કરીને શોધખોળ કરવું ચાલુ કરો"</string>
@@ -648,6 +656,38 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"એપને તમારો ફોટો સંગ્રહ સંશોધિત કરવાની મંજૂરી આપે છે."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"આપના મીડિયા સંગ્રહમાંથી સ્થાનો વાંચવા"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"એપને તમારા મીડિયા સંગ્રહમાંથી સ્થાનો વાંચવાની મંજૂરી આપે છે."</string>
+    <!-- no translation found for permlab_eye_tracking_coarse (7989596289790269059) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_coarse (870510233930553355) -->
+    <skip />
+    <!-- no translation found for permlab_eye_tracking_fine (6914457357027049512) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_fine (5788889152304524730) -->
+    <skip />
+    <!-- no translation found for permlab_face_tracking (2272048395128283324) -->
+    <skip />
+    <!-- no translation found for permdesc_face_tracking (2622783922311211866) -->
+    <skip />
+    <!-- no translation found for permlab_hand_tracking (6478233866595566940) -->
+    <skip />
+    <!-- no translation found for permdesc_hand_tracking (8639715900104966456) -->
+    <skip />
+    <!-- no translation found for permlab_head_tracking (1309731456372087270) -->
+    <skip />
+    <!-- no translation found for permdesc_head_tracking (231597390513699188) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_coarse (6518646430502858641) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_coarse (4508880777646198656) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_fine (409126403264393251) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_fine (6223368011593524179) -->
+    <skip />
+    <!-- no translation found for permlab_xr_tracking_in_background (7117098718465619023) -->
+    <skip />
+    <!-- no translation found for permdesc_xr_tracking_in_background (939504041387836853) -->
+    <skip />
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"બાયોમેટ્રિક્સનો ઉપયોગ કરો"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"બાયોમેટ્રિક્સ અથવા સ્ક્રીન લૉકનો ઉપયોગ કરો"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"આ તમે જ છો તેની ચકાસણી કરો"</string>
@@ -1408,7 +1448,7 @@
     <string name="install_carrier_app_notification_button" msgid="6257740533102594290">"ઍપ ડાઉનલોડ કરો"</string>
     <string name="carrier_app_notification_title" msgid="5815477368072060250">"નવું સિમ દાખલ કર્યું"</string>
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"તેને સેટ કરવા માટે ટૅપ કરો"</string>
-    <string name="time_zone_change_notification_title" msgid="5232503069219193218">"તમારો સમય ઝોન બદલાયો છે"</string>
+    <string name="time_zone_change_notification_title" msgid="5232503069219193218">"તમારો ટાઇમ ઝોન બદલાયો છે"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"તમે <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)માં છો"</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"સમય સેટ કરો"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"તારીખ સેટ કરો"</string>
