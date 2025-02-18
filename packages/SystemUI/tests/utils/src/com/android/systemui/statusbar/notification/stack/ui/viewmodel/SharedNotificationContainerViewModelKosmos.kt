@@ -25,6 +25,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInterac
 import com.android.systemui.keyguard.ui.viewmodel.alternateBouncerToGoneTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.alternateBouncerToPrimaryBouncerTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.aodBurnInViewModel
+import com.android.systemui.keyguard.ui.viewmodel.aodToGlanceableHubTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.aodToGoneTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.aodToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.aodToOccludedTransitionViewModel
@@ -35,6 +36,7 @@ import com.android.systemui.keyguard.ui.viewmodel.dozingToLockscreenTransitionVi
 import com.android.systemui.keyguard.ui.viewmodel.dozingToOccludedTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.dozingToPrimaryBouncerTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.dreamingToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.glanceableHubToAodTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.glanceableHubToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.goneToAodTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.goneToDozingTransitionViewModel
@@ -112,5 +114,7 @@ val Kosmos.sharedNotificationContainerViewModel by Fixture {
         headsUpNotificationInteractor = { headsUpNotificationInteractor },
         largeScreenHeaderHelperLazy = { largeScreenHeaderHelper },
         unfoldTransitionInteractor = unfoldTransitionInteractor,
+        glanceableHubToAodTransitionViewModel = glanceableHubToAodTransitionViewModel,
+        aodToGlanceableHubTransitionViewModel = aodToGlanceableHubTransitionViewModel,
     )
 }

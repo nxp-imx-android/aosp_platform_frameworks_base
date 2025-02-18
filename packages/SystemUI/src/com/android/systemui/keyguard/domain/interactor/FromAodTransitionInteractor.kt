@@ -20,6 +20,10 @@ import android.animation.ValueAnimator
 import android.util.Log
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.communal.domain.interactor.CommunalInteractor
+import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
+import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
+import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -54,6 +58,9 @@ constructor(
     keyguardOcclusionInteractor: KeyguardOcclusionInteractor,
     val deviceEntryRepository: DeviceEntryRepository,
     private val wakeToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor,
+    private val communalSettingsInteractor: CommunalSettingsInteractor,
+    private val communalSceneInteractor: CommunalSceneInteractor,
+    private val communalInteractor: CommunalInteractor,
 ) :
     TransitionInteractor(
         fromState = KeyguardState.AOD,
@@ -103,6 +110,7 @@ constructor(
                     val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
                     val biometricUnlockMode = keyguardInteractor.biometricUnlockState.value.mode
                     val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
+                    val shouldShowCommunal = communalInteractor.shouldShowCommunal.value
 
                     if (!maybeHandleInsecurePowerGesture()) {
                         val shouldTransitionToLockscreen =
@@ -129,6 +137,9 @@ constructor(
                             (!KeyguardWmStateRefactor.isEnabled && canDismissLockscreen()) ||
                                 (KeyguardWmStateRefactor.isEnabled && canWakeDirectlyToGone)
 
+                        val shouldTransitionToCommunal =
+                            communalSettingsInteractor.isV2FlagEnabled() && shouldShowCommunal
+
                         if (shouldTransitionToGone) {
                             // TODO(b/360368320): Adapt for scene framework
                             if (SceneContainerFlag.isEnabled) return@collect
@@ -136,6 +147,11 @@ constructor(
                                 toState = KeyguardState.GONE,
                                 modeOnCanceled = TransitionModeOnCanceled.REVERSE,
                                 ownerReason = "canWakeDirectlyToGone = true",
+                            )
+                        } else if (shouldTransitionToCommunal) {
+                            communalSceneInteractor.changeScene(
+                                CommunalScenes.Communal,
+                                "listen for aod to communal",
                             )
                         } else if (shouldTransitionToLockscreen) {
                             val modeOnCanceled =

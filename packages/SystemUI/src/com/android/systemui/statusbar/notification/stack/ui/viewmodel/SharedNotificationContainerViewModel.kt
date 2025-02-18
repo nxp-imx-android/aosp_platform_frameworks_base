@@ -44,6 +44,7 @@ import com.android.systemui.keyguard.ui.transitions.PrimaryBouncerTransition
 import com.android.systemui.keyguard.ui.viewmodel.AlternateBouncerToGoneTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AlternateBouncerToPrimaryBouncerTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
+import com.android.systemui.keyguard.ui.viewmodel.AodToGlanceableHubTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AodToGoneTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AodToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AodToOccludedTransitionViewModel
@@ -54,6 +55,7 @@ import com.android.systemui.keyguard.ui.viewmodel.DozingToLockscreenTransitionVi
 import com.android.systemui.keyguard.ui.viewmodel.DozingToOccludedTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.DozingToPrimaryBouncerTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.DreamingToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToAodTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.GoneToAodTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.GoneToDozingTransitionViewModel
@@ -136,6 +138,7 @@ constructor(
     private val aodToGoneTransitionViewModel: AodToGoneTransitionViewModel,
     private val aodToLockscreenTransitionViewModel: AodToLockscreenTransitionViewModel,
     private val aodToOccludedTransitionViewModel: AodToOccludedTransitionViewModel,
+    private val aodToGlanceableHubTransitionViewModel: AodToGlanceableHubTransitionViewModel,
     private val aodToPrimaryBouncerTransitionViewModel: AodToPrimaryBouncerTransitionViewModel,
     private val dozingToDreamingTransitionViewModel: DozingToDreamingTransitionViewModel,
     dozingToGlanceableHubTransitionViewModel: DozingToGlanceableHubTransitionViewModel,
@@ -146,6 +149,7 @@ constructor(
     private val dreamingToLockscreenTransitionViewModel: DreamingToLockscreenTransitionViewModel,
     private val glanceableHubToLockscreenTransitionViewModel:
         GlanceableHubToLockscreenTransitionViewModel,
+    private val glanceableHubToAodTransitionViewModel: GlanceableHubToAodTransitionViewModel,
     private val goneToAodTransitionViewModel: GoneToAodTransitionViewModel,
     private val goneToDozingTransitionViewModel: GoneToDozingTransitionViewModel,
     private val goneToDreamingTransitionViewModel: GoneToDreamingTransitionViewModel,
@@ -573,6 +577,7 @@ constructor(
             aodToGoneTransitionViewModel.notificationAlpha(viewState),
             aodToLockscreenTransitionViewModel.notificationAlpha,
             aodToOccludedTransitionViewModel.lockscreenAlpha(viewState),
+            aodToGlanceableHubTransitionViewModel.lockscreenAlpha(viewState),
             aodToPrimaryBouncerTransitionViewModel.notificationAlpha,
             dozingToDreamingTransitionViewModel.notificationAlpha,
             dozingToLockscreenTransitionViewModel.lockscreenAlpha,
@@ -594,6 +599,7 @@ constructor(
             offToLockscreenTransitionViewModel.lockscreenAlpha,
             primaryBouncerToLockscreenTransitionViewModel.lockscreenAlpha(viewState),
             glanceableHubToLockscreenTransitionViewModel.keyguardAlpha,
+            glanceableHubToAodTransitionViewModel.lockscreenAlpha,
             lockscreenToGlanceableHubTransitionViewModel.keyguardAlpha,
         )
     }
