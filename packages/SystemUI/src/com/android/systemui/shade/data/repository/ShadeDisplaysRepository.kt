@@ -20,6 +20,7 @@ import android.provider.Settings.Global.DEVELOPMENT_SHADE_DISPLAY_AWARENESS
 import android.view.Display
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import com.android.systemui.shade.ShadeOnDefaultDisplayWhenLocked
 import com.android.systemui.shade.display.ShadeDisplayPolicy
@@ -45,7 +46,12 @@ interface ShadeDisplaysRepository {
     val currentPolicy: ShadeDisplayPolicy
 }
 
-/** Keeps the policy and propagates the display id for the shade from it. */
+/**
+ * Keeps the policy and propagates the display id for the shade from it.
+ *
+ * If the display set by the policy is not available (e.g. after the cable is disconnected), this
+ * falls back to the [Display.DEFAULT_DISPLAY].
+ */
 @SysUISingleton
 class ShadeDisplaysRepositoryImpl
 @Inject
@@ -56,6 +62,7 @@ constructor(
     policies: Set<@JvmSuppressWildcards ShadeDisplayPolicy>,
     @ShadeOnDefaultDisplayWhenLocked private val shadeOnDefaultDisplayWhenLocked: Boolean,
     keyguardRepository: KeyguardRepository,
+    displayRepository: DisplayRepository,
 ) : ShadeDisplaysRepository {
 
     private val policy: StateFlow<ShadeDisplayPolicy> =
@@ -73,7 +80,12 @@ constructor(
             .distinctUntilChanged()
             .stateIn(bgScope, SharingStarted.Eagerly, defaultPolicy)
 
-    private val displayIdFromPolicy: Flow<Int> = policy.flatMapLatest { it.displayId }
+    private val displayIdFromPolicy: Flow<Int> =
+        policy
+            .flatMapLatest { it.displayId }
+            .combine(displayRepository.displayIds) { policyDisplayId, availableIds ->
+                if (policyDisplayId !in availableIds) Display.DEFAULT_DISPLAY else policyDisplayId
+            }
 
     private val keyguardAwareDisplayPolicy: Flow<Int> =
         if (!shadeOnDefaultDisplayWhenLocked) {

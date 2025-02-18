@@ -204,6 +204,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 
@@ -1023,6 +1024,7 @@ final class InstallPackageHelper {
      */
     void installPackagesTraced(List<InstallRequest> requests, MoveInfo moveInfo) {
         Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "installPackages");
+        boolean pendingForDexopt = false;
         boolean success = false;
         final Map<String, Boolean> createdAppId = new ArrayMap<>(requests.size());
         final Map<String, Settings.VersionInfo> versionInfos = new ArrayMap<>(requests.size());
@@ -1036,15 +1038,39 @@ final class InstallPackageHelper {
                 if (reconciledPackages == null) {
                     return;
                 }
+
                 if (renameAndUpdatePaths(requests)) {
                     // rename before dexopt because art will encoded the path in the odex/vdex file
                     if (Flags.improveInstallFreeze()) {
-                        prepPerformDexoptIfNeeded(reconciledPackages);
-                    }
-                    if (commitInstallPackages(reconciledPackages)) {
-                        success = true;
+                        pendingForDexopt = true;
+                        final Runnable actionsAfterDexopt = () ->
+                                doPostDexopt(reconciledPackages, requests,
+                                        createdAppId, moveInfo, acquireTime);
+                        prepPerformDexoptIfNeeded(reconciledPackages, actionsAfterDexopt);
+                    } else {
+                        if (commitInstallPackages(reconciledPackages)) {
+                            success = true;
+                        }
                     }
                 }
+            }
+        } finally {
+            if (!pendingForDexopt) {
+                completeInstallProcess(requests, createdAppId, success);
+                Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
+                doPostInstall(requests, moveInfo);
+                releaseWakeLock(acquireTime, requests.size());
+            }
+        }
+    }
+
+    void doPostDexopt(List<ReconciledPackage> reconciledPackages,
+            List<InstallRequest> requests, Map<String, Boolean> createdAppId,
+            MoveInfo moveInfo, long acquireTime) {
+        boolean success = false;
+        try {
+            if (commitInstallPackages(reconciledPackages)) {
+                success = true;
             }
         } finally {
             completeInstallProcess(requests, createdAppId, success);
@@ -1123,7 +1149,7 @@ final class InstallPackageHelper {
             throws PackageManagerException {
         final int userId = installRequest.getUserId();
         if (userId != UserHandle.USER_ALL && userId != UserHandle.USER_CURRENT
-                && !mPm.mUserManager.exists(userId)) {
+                && !ArrayUtils.contains(allUsers, userId)) {
             throw new PackageManagerException(PackageManagerException.INTERNAL_ERROR_MISSING_USER,
                     "User " + userId + " doesn't exist or has been removed");
         }
@@ -1155,7 +1181,9 @@ final class InstallPackageHelper {
         }
     }
 
-    private void prepPerformDexoptIfNeeded(List<ReconciledPackage> reconciledPackages) {
+    private void prepPerformDexoptIfNeeded(List<ReconciledPackage> reconciledPackages,
+            Runnable actionsAfterDexopt) {
+        List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
         for (ReconciledPackage reconciledPkg : reconciledPackages) {
             final InstallRequest request = reconciledPkg.mInstallRequest;
             // prepare profiles
@@ -1171,6 +1199,7 @@ final class InstallPackageHelper {
                 mSharedLibraries.executeSharedLibrariesUpdate(request.getParsedPackage(), ps,
                         null, null, reconciledPkg.mCollectedSharedLibraryInfos, allUsers);
             }
+
             try (PackageManagerTracedLock installLock = mPm.mInstallLock.acquireLock()) {
                 final int[] newUsers = getNewUsers(request, allUsers);
                 // Hardcode previousAppId to 0 to disable any data migration (http://b/221088088)
@@ -1182,11 +1211,22 @@ final class InstallPackageHelper {
                 }
             } catch (PackageManagerException e) {
                 request.setError(e.error, e.getMessage());
-                return;
+                break;
             }
             request.setKeepArtProfile(true);
-            // TODO(b/388159696): Use performDexoptIfNeededAsync.
-            DexOptHelper.performDexoptIfNeeded(request, mDexManager, null /* installLock */);
+
+            CompletableFuture<Void> future =
+                    DexOptHelper.performDexoptIfNeededAsync(request, mDexManager);
+            completableFutures.add(future);
+        }
+
+        if (!completableFutures.isEmpty()) {
+            CompletableFuture<Void> allFutures =
+                    CompletableFuture.allOf(
+                            completableFutures.toArray(CompletableFuture[]::new));
+            var unused = allFutures.thenRun(() -> mPm.mHandler.post(actionsAfterDexopt));
+        } else {
+            actionsAfterDexopt.run();
         }
     }
 
@@ -2759,6 +2799,7 @@ final class InstallPackageHelper {
                                     | Installer.FLAG_CLEAR_CODE_CACHE_ONLY);
                 }
 
+                // run synchronous dexopt if the freeze improvement is not supported
                 DexOptHelper.performDexoptIfNeeded(
                         installRequest, mDexManager, mPm.mInstallLock.getRawLock());
             }

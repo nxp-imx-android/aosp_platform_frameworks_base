@@ -409,17 +409,6 @@ public class WindowContainerTests extends WindowTestsBase {
     }
 
     @Test
-    public void testIsAnimating_TransitionFlag() {
-        final TestWindowContainerBuilder builder = new TestWindowContainerBuilder(mWm);
-        final TestWindowContainer root = builder.setLayer(0).build();
-        final TestWindowContainer child1 = root.addChildWindow(
-                builder.setWaitForTransitionStart(true));
-
-        assertFalse(root.isAnimating(TRANSITION));
-        assertTrue(child1.isAnimating(TRANSITION));
-    }
-
-    @Test
     public void testIsAnimating_ParentsFlag() {
         final TestWindowContainerBuilder builder = new TestWindowContainerBuilder(mWm);
         final TestWindowContainer root = builder.setLayer(0).build();
@@ -1655,7 +1644,7 @@ public class WindowContainerTests extends WindowTestsBase {
         };
 
         TestWindowContainer(WindowManagerService wm, int layer, boolean isAnimating,
-                boolean isVisible, boolean waitTransitStart, Integer orientation, WindowState ws) {
+                boolean isVisible, Integer orientation, WindowState ws) {
             super(wm);
 
             mLayer = layer;
@@ -1663,7 +1652,6 @@ public class WindowContainerTests extends WindowTestsBase {
             mIsVisible = isVisible;
             mFillsParent = true;
             mOrientation = orientation;
-            mWaitForTransitStart = waitTransitStart;
             mWindowState = ws;
             spyOn(mSurfaceAnimator);
             doReturn(mIsAnimating).when(mSurfaceAnimator).isAnimating();
@@ -1729,11 +1717,6 @@ public class WindowContainerTests extends WindowTestsBase {
         }
 
         @Override
-        boolean isWaitingForTransitionStart() {
-            return mWaitForTransitStart;
-        }
-
-        @Override
         WindowState asWindowState() {
             return mWindowState;
         }
@@ -1744,7 +1727,6 @@ public class WindowContainerTests extends WindowTestsBase {
         private int mLayer;
         private boolean mIsAnimating;
         private boolean mIsVisible;
-        private boolean mIsWaitTransitStart;
         private Integer mOrientation;
         private WindowState mWindowState;
 
@@ -1782,14 +1764,9 @@ public class WindowContainerTests extends WindowTestsBase {
             return this;
         }
 
-        TestWindowContainerBuilder setWaitForTransitionStart(boolean waitTransitStart) {
-            mIsWaitTransitStart = waitTransitStart;
-            return this;
-        }
-
         TestWindowContainer build() {
             return new TestWindowContainer(mWm, mLayer, mIsAnimating, mIsVisible,
-                    mIsWaitTransitStart, mOrientation, mWindowState);
+                    mOrientation, mWindowState);
         }
     }
 

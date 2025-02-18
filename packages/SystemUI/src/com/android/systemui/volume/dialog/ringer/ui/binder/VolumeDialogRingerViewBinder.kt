@@ -107,13 +107,6 @@ constructor(
                     fullRadius = volumeDialogBgFullRadius,
                     diff = volumeDialogBgFullRadius - volumeDialogBgSmallRadius,
                     progress,
-                    isBottom = false,
-                )
-                volumeDialogBackgroundView.applyCorners(
-                    fullRadius = volumeDialogBgFullRadius,
-                    diff = volumeDialogBgFullRadius - volumeDialogBgSmallRadius,
-                    progress,
-                    isBottom = true,
                 )
             }
         val ringerDrawerTransitionListener = VolumeDialogRingerDrawerTransitionListener {
@@ -132,10 +125,10 @@ constructor(
 
                         // Set up view background and visibility
                         drawerContainer.visibility = View.VISIBLE
+                        (volumeDialogBackgroundView.background as GradientDrawable).cornerRadii =
+                            bottomCornerRadii
                         when (uiModel.drawerState) {
                             is RingerDrawerState.Initial -> {
-                                (volumeDialogBackgroundView.background as GradientDrawable)
-                                    .cornerRadii = bottomCornerRadii
                                 drawerContainer.animateAndBindDrawerButtons(
                                     viewModel,
                                     uiModel,
@@ -216,8 +209,6 @@ constructor(
                                 drawerContainer.transitionToState(
                                     R.id.volume_dialog_ringer_drawer_open
                                 )
-                                volumeDialogBackgroundView.background =
-                                    volumeDialogBackgroundView.background.mutate()
                                 ringerBackgroundView.background =
                                     ringerBackgroundView.background.mutate()
                             }
@@ -423,14 +414,9 @@ constructor(
         }
     }
 
-    private fun View.applyCorners(fullRadius: Int, diff: Int, progress: Float, isBottom: Boolean) {
+    private fun View.applyCorners(fullRadius: Int, diff: Int, progress: Float) {
         val radius = fullRadius - progress * diff
-        (background as GradientDrawable).cornerRadii =
-            if (isBottom) {
-                floatArrayOf(0F, 0F, 0F, 0F, radius, radius, radius, radius)
-            } else {
-                FloatArray(8) { radius }
-            }
+        (background as GradientDrawable).cornerRadius = radius
         background.invalidateSelf()
     }
 }

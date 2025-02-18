@@ -281,6 +281,10 @@ class BackNavigationController {
             } else if (hasTranslucentActivity(currentActivity, prevActivities)) {
                 // skip if one of participant activity is translucent
                 backType = BackNavigationInfo.TYPE_CALLBACK;
+            } else if (!allActivitiesHaveProcesses(prevActivities)) {
+                // Skip if one of previous activity has no process. Restart process can be slow, and
+                // the final hierarchy could be different.
+                backType = BackNavigationInfo.TYPE_CALLBACK;
             } else if (prevActivities.size() > 0
                     && requestOverride == SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFINED) {
                 if ((!isOccluded || isAllActivitiesCanShowWhenLocked(prevActivities))
@@ -601,6 +605,17 @@ class BackNavigationController {
             }
         }
         return false;
+    }
+
+    private static boolean allActivitiesHaveProcesses(
+            @NonNull ArrayList<ActivityRecord> prevActivities) {
+        for (int i = prevActivities.size() - 1; i >= 0; --i) {
+            final ActivityRecord test = prevActivities.get(i);
+            if (!test.hasProcess()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean isAllActivitiesCanShowWhenLocked(

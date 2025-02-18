@@ -1726,10 +1726,12 @@
   <java-symbol type="style" name="PointerIconVectorStyleFillBlue" />
   <java-symbol type="style" name="PointerIconVectorStyleFillPurple" />
   <java-symbol type="attr" name="pointerIconVectorFill" />
+  <java-symbol type="attr" name="pointerIconVectorFillInverse" />
   <java-symbol type="style" name="PointerIconVectorStyleStrokeWhite" />
   <java-symbol type="style" name="PointerIconVectorStyleStrokeBlack" />
   <java-symbol type="style" name="PointerIconVectorStyleStrokeNone" />
   <java-symbol type="attr" name="pointerIconVectorStroke" />
+  <java-symbol type="attr" name="pointerIconVectorStrokeInverse" />
   <java-symbol type="style" name="TextAppearance.DeviceDefault.Notification.Title" />
   <java-symbol type="style" name="TextAppearance.DeviceDefault.Notification.Info" />
 
@@ -1741,7 +1743,6 @@
   <java-symbol type="id" name="media_route_list" />
   <java-symbol type="id" name="media_route_volume_layout" />
   <java-symbol type="id" name="media_route_volume_slider" />
-  <java-symbol type="id" name="media_route_control_frame" />
   <java-symbol type="id" name="media_route_extended_settings_button" />
   <java-symbol type="id" name="media_route_progress_bar" />
   <java-symbol type="string" name="media_route_chooser_title" />

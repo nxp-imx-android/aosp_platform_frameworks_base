@@ -60,6 +60,7 @@ class ShadeDisplaysRepositoryTest : SysuiTestCase() {
             policies,
             shadeOnDefaultDisplayWhenLocked = shadeOnDefaultDisplayWhenLocked,
             keyguardRepository,
+            displayRepository,
         )
 
     @Test
@@ -87,6 +88,30 @@ class ShadeDisplaysRepositoryTest : SysuiTestCase() {
             globalSettings.putString(DEVELOPMENT_SHADE_DISPLAY_AWARENESS, "default_display")
 
             assertThat(displayIds).containsExactly(0, 1, 2, 0)
+        }
+
+    @Test
+    fun displayId_afterDisplayDisconnected_fallsBackToDefaultDisplay() =
+        testScope.runTest {
+            val underTest = createUnderTest()
+            globalSettings.putString(
+                DEVELOPMENT_SHADE_DISPLAY_AWARENESS,
+                FakeShadeDisplayPolicy.name,
+            )
+            val displayId by collectLastValue(underTest.displayId)
+
+            displayRepository.addDisplay(displayId = 1)
+
+            FakeShadeDisplayPolicy.setDisplayId(1)
+            assertThat(displayId).isEqualTo(1)
+
+            // Let's disconnect and make sure it goes back to the default one
+            displayRepository.removeDisplay(displayId = 1)
+            assertThat(displayId).isEqualTo(Display.DEFAULT_DISPLAY)
+
+            // Let's re-connect it and make sure it goes back to the non-default one
+            displayRepository.addDisplay(displayId = 1)
+            assertThat(displayId).isEqualTo(1)
         }
 
     @Test

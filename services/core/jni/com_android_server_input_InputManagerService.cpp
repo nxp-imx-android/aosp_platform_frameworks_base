@@ -47,6 +47,7 @@
 #include <dispatcher/Entry.h>
 #include <include/gestures.h>
 #include <input/Input.h>
+#include <input/InputFlags.h>
 #include <input/PointerController.h>
 #include <input/PrintTools.h>
 #include <input/SpriteController.h>
@@ -666,7 +667,7 @@ void NativeInputManager::setDisplayViewports(JNIEnv* env, jobjectArray viewportO
 }
 
 void NativeInputManager::setDisplayTopology(JNIEnv* env, jobject topologyGraph) {
-    if (!com::android::input::flags::connected_displays_cursor()) {
+    if (!InputFlags::connectedDisplaysCursorEnabled()) {
         return;
     }
 

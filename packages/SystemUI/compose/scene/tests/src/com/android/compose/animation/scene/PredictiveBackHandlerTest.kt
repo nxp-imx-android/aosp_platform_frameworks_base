@@ -250,7 +250,7 @@ class PredictiveBackHandlerTest {
             }
 
         rule.setContent {
-            SceneTransitionLayoutForTesting(state, Modifier.size(200.dp)) {
+            SceneTransitionLayout(state, Modifier.size(200.dp)) {
                 scene(SceneA) { Box(Modifier.fillMaxSize()) }
                 overlay(OverlayA) { Box(Modifier.fillMaxSize()) }
                 overlay(OverlayB) { Box(Modifier.fillMaxSize()) }

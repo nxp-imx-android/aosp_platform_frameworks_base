@@ -292,12 +292,6 @@ class WallpaperController {
         return false;
     }
 
-    boolean isWallpaperTargetAnimating() {
-        return mWallpaperTarget != null && mWallpaperTarget.isAnimating(TRANSITION | PARENTS)
-                && (mWallpaperTarget.mActivityRecord == null
-                        || !mWallpaperTarget.mActivityRecord.isWaitingForTransitionStart());
-    }
-
     void hideDeferredWallpapersIfNeededLegacy() {
         for (int i = mWallpaperTokens.size() - 1; i >= 0; i--) {
             final WallpaperWindowToken token = mWallpaperTokens.get(i);
@@ -836,14 +830,6 @@ class WallpaperController {
             ProtoLog.v(WM_DEBUG_WALLPAPER, "Old wallpaper still the target.");
             // Use the old target if new target is hidden but old target
             // is not. If they're both hidden, still use the new target.
-            mWallpaperTarget = prevWallpaperTarget;
-        } else if (newTargetHidden == oldTargetHidden
-                && !mDisplayContent.mOpeningApps.contains(wallpaperTarget.mActivityRecord)
-                && (mDisplayContent.mOpeningApps.contains(prevWallpaperTarget.mActivityRecord)
-                || mDisplayContent.mClosingApps.contains(prevWallpaperTarget.mActivityRecord))) {
-            // If they're both hidden (or both not hidden), prefer the one that's currently in
-            // opening or closing app list, this allows transition selection logic to better
-            // determine the wallpaper status of opening/closing apps.
             mWallpaperTarget = prevWallpaperTarget;
         }
 

@@ -116,14 +116,14 @@
     <public name="alternateLauncherIcons"/>
     <!-- @FlaggedApi(android.content.pm.Flags.FLAG_CHANGE_LAUNCHER_BADGING) -->
     <public name="alternateLauncherLabels"/>
-    <!-- @hide Only for device overlay to use this. -->
-    <public name="pointerIconVectorFill"/>
-    <!-- @hide Only for device overlay to use this. -->
-    <public name="pointerIconVectorFillInverse"/>
-    <!-- @hide Only for device overlay to use this. -->
-    <public name="pointerIconVectorStroke"/>
-    <!-- @hide Only for device overlay to use this. -->
-    <public name="pointerIconVectorStrokeInverse"/>
+    <!-- @hide Wrongly added here. -->
+    <public name="removed_pointerIconVectorFill"/>
+    <!-- @hide Wrongly added here. -->
+    <public name="removed_pointerIconVectorFillInverse"/>
+    <!-- @hide Wrongly added here. -->
+    <public name="removed_pointerIconVectorStroke"/>
+    <!-- @hide Wrongly added here. -->
+    <public name="removed_pointerIconVectorStrokeInverse"/>
   </staging-public-group>
 
   <staging-public-group type="id" first-id="0x01b20000">

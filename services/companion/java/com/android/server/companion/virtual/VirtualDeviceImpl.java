@@ -163,6 +163,16 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
      */
     private static final long PENDING_TRAMPOLINE_TIMEOUT_MS = 5000;
 
+    /**
+     * Global lock for this Virtual Device.
+     *
+     * Never call outside this class while holding this lock. A number of other system services like
+     * WindowManager, DisplayManager, etc. call into this device to get device-specific information,
+     * while holding their own global locks.
+     *
+     * Making a call to another service while holding this lock creates lock order inversion and
+     * will potentially cause a deadlock.
+     */
     private final Object mVirtualDeviceLock = new Object();
 
     private final int mBaseVirtualDisplayFlags;
@@ -179,14 +189,6 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     private final int mDeviceId;
     @Nullable
     private final String mPersistentDeviceId;
-    // Thou shall not hold the mVirtualDeviceLock over the mInputController calls.
-    // Holding the lock can lead to lock inversion with GlobalWindowManagerLock.
-    // 1. After display is created the window manager calls into VDM during construction
-    //   of display specific context to fetch device id corresponding to the display.
-    //   mVirtualDeviceLock will be held while this is done.
-    // 2. InputController interactions result in calls to DisplayManager (to set IME,
-    //    possibly more indirect calls), and those attempt to lock GlobalWindowManagerLock which
-    //    creates lock inversion.
     private final InputController mInputController;
     private final SensorController mSensorController;
     private final CameraAccessController mCameraAccessController;
@@ -205,19 +207,23 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     private final DisplayManagerGlobal mDisplayManager;
     private final DisplayManagerInternal mDisplayManagerInternal;
     private final PowerManager mPowerManager;
-    @GuardedBy("mVirtualDeviceLock")
+    @GuardedBy("mIntentInterceptors")
     private final Map<IBinder, IntentFilter> mIntentInterceptors = new ArrayMap<>();
     @NonNull
     private final Consumer<ArraySet<Integer>> mRunningAppsChangedCallback;
+
     // The default setting for showing the pointer on new displays.
     @GuardedBy("mVirtualDeviceLock")
     private boolean mDefaultShowPointerIcon = true;
     @GuardedBy("mVirtualDeviceLock")
     @Nullable
     private LocaleList mLocaleList = null;
-    @GuardedBy("mVirtualDeviceLock")
+
+    // Lock for power operations for this virtual device that allow calling PowerManager.
+    private final Object mPowerLock = new Object();
+    @GuardedBy("mPowerLock")
     private boolean mLockdownActive = false;
-    @GuardedBy("mVirtualDeviceLock")
+    @GuardedBy("mPowerLock")
     private boolean mRequestedToBeAwake = true;
 
     @NonNull
@@ -334,7 +340,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
          */
         @Override
         public boolean shouldInterceptIntent(@NonNull Intent intent) {
-            synchronized (mVirtualDeviceLock) {
+            synchronized (mIntentInterceptors) {
                 boolean hasInterceptedIntent = false;
                 for (Map.Entry<IBinder, IntentFilter> interceptor
                         : mIntentInterceptors.entrySet()) {
@@ -500,7 +506,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     void onLockdownChanged(boolean lockdownActive) {
-        synchronized (mVirtualDeviceLock) {
+        synchronized (mPowerLock) {
             if (lockdownActive != mLockdownActive) {
                 mLockdownActive = lockdownActive;
                 if (mLockdownActive) {
@@ -610,7 +616,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     @Override // Binder call
     public void goToSleep() {
         checkCallerIsDeviceOwner();
-        synchronized (mVirtualDeviceLock) {
+        synchronized (mPowerLock) {
             mRequestedToBeAwake = false;
         }
         final long ident = Binder.clearCallingIdentity();
@@ -624,7 +630,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     @Override // Binder call
     public void wakeUp() {
         checkCallerIsDeviceOwner();
-        synchronized (mVirtualDeviceLock) {
+        synchronized (mPowerLock) {
             mRequestedToBeAwake = true;
             if (mLockdownActive) {
                 Slog.w(TAG, "Cannot wake up device during lockdown.");
@@ -850,8 +856,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             checkDisplayOwnedByVirtualDeviceLocked(displayId);
             if (mVirtualAudioController == null) {
                 mVirtualAudioController = new VirtualAudioController(mContext, mAttributionSource);
-                GenericWindowPolicyController gwpc = mVirtualDisplays.get(
-                        displayId).getWindowPolicyController();
+                GenericWindowPolicyController gwpc =
+                        mVirtualDisplays.get(displayId).getWindowPolicyController();
                 mVirtualAudioController.startListening(gwpc, routingCallback,
                         configChangedCallback);
             }
@@ -1293,7 +1299,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(intentInterceptor);
         Objects.requireNonNull(filter);
-        synchronized (mVirtualDeviceLock) {
+        synchronized (mIntentInterceptors) {
             mIntentInterceptors.put(intentInterceptor.asBinder(), filter);
         }
     }
@@ -1303,7 +1309,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             @NonNull IVirtualDeviceIntentInterceptor intentInterceptor) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(intentInterceptor);
-        synchronized (mVirtualDeviceLock) {
+        synchronized (mIntentInterceptors) {
             mIntentInterceptors.remove(intentInterceptor.asBinder());
         }
     }
@@ -1653,6 +1659,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
 
     void goToSleepInternal(@PowerManager.GoToSleepReason int reason) {
         final long now = SystemClock.uptimeMillis();
+        IntArray displayIds = new IntArray();
         synchronized (mVirtualDeviceLock) {
             for (int i = 0; i < mVirtualDisplays.size(); i++) {
                 VirtualDisplayWrapper wrapper = mVirtualDisplays.valueAt(i);
@@ -1660,13 +1667,17 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
                     continue;
                 }
                 int displayId = mVirtualDisplays.keyAt(i);
-                mPowerManager.goToSleep(displayId, now, reason, /* flags= */ 0);
+                displayIds.add(displayId);
             }
+        }
+        for (int i = 0; i < displayIds.size(); ++i) {
+            mPowerManager.goToSleep(displayIds.get(i), now, reason, /* flags= */ 0);
         }
     }
 
     void wakeUpInternal(@PowerManager.WakeReason int reason, String details) {
         final long now = SystemClock.uptimeMillis();
+        IntArray displayIds = new IntArray();
         synchronized (mVirtualDeviceLock) {
             for (int i = 0; i < mVirtualDisplays.size(); i++) {
                 VirtualDisplayWrapper wrapper = mVirtualDisplays.valueAt(i);
@@ -1674,8 +1685,11 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
                     continue;
                 }
                 int displayId = mVirtualDisplays.keyAt(i);
-                mPowerManager.wakeUp(now, reason, details, displayId);
+                displayIds.add(displayId);
             }
+        }
+        for (int i = 0; i < displayIds.size(); ++i) {
+            mPowerManager.wakeUp(now, reason, details, displayIds.get(i));
         }
     }
 

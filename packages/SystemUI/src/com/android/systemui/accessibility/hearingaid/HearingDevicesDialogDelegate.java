@@ -30,7 +30,6 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -49,6 +48,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.annotation.WorkerThread;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -57,7 +57,6 @@ import com.android.settingslib.bluetooth.BluetoothCallback;
 import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
-import com.android.settingslib.utils.ThreadUtils;
 import com.android.systemui.accessibility.hearingaid.HearingDevicesListAdapter.HearingDeviceItemCallback;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.bluetooth.qsdialog.ActiveHearingDeviceItemFactory;
@@ -67,6 +66,7 @@ import com.android.systemui.bluetooth.qsdialog.DeviceItem;
 import com.android.systemui.bluetooth.qsdialog.DeviceItemFactory;
 import com.android.systemui.bluetooth.qsdialog.DeviceItemType;
 import com.android.systemui.bluetooth.qsdialog.SavedHearingDeviceItemFactory;
+import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.res.R;
@@ -79,6 +79,7 @@ import dagger.assisted.AssistedInject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 /**
@@ -101,7 +102,8 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
     private final DialogTransitionAnimator mDialogTransitionAnimator;
     private final ActivityStarter mActivityStarter;
     private final LocalBluetoothManager mLocalBluetoothManager;
-    private final Handler mMainHandler;
+    private final Executor mMainExecutor;
+    private final Executor mBgExecutor;
     private final AudioManager mAudioManager;
     private final LocalBluetoothProfileManager mProfileManager;
     private final HearingDevicesUiEventLogger mUiEventLogger;
@@ -109,8 +111,6 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
     private final int mLaunchSourceId;
 
     private SystemUIDialog mDialog;
-
-    private List<DeviceItem> mHearingDeviceItemList;
     private HearingDevicesListAdapter mDeviceListAdapter;
 
     private View mPresetLayout;
@@ -122,14 +122,14 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
                 @Override
                 public void onPresetInfoUpdated(List<BluetoothHapPresetInfo> presetInfos,
                         int activePresetIndex) {
-                    mMainHandler.post(
+                    mMainExecutor.execute(
                             () -> refreshPresetUi(presetInfos, activePresetIndex));
                 }
 
                 @Override
                 public void onPresetCommandFailed(int reason) {
                     mPresetController.refreshPresetInfo();
-                    mMainHandler.post(() -> {
+                    mMainExecutor.execute(() -> {
                         showErrorToast(R.string.hearing_devices_presets_error);
                     });
                 }
@@ -166,7 +166,8 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
             ActivityStarter activityStarter,
             DialogTransitionAnimator dialogTransitionAnimator,
             @Nullable LocalBluetoothManager localBluetoothManager,
-            @Main Handler handler,
+            @Main Executor mainExecutor,
+            @Background Executor bgExecutor,
             AudioManager audioManager,
             HearingDevicesUiEventLogger uiEventLogger) {
         mShowPairNewDevice = showPairNewDevice;
@@ -174,7 +175,8 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
         mActivityStarter = activityStarter;
         mDialogTransitionAnimator = dialogTransitionAnimator;
         mLocalBluetoothManager = localBluetoothManager;
-        mMainHandler = handler;
+        mMainExecutor = mainExecutor;
+        mBgExecutor = bgExecutor;
         mAudioManager = audioManager;
         mProfileManager = localBluetoothManager.getProfileManager();
         mUiEventLogger = uiEventLogger;
@@ -227,9 +229,10 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
     @Override
     public void onActiveDeviceChanged(@Nullable CachedBluetoothDevice activeDevice,
             int bluetoothProfile) {
-        refreshDeviceUi();
-        mMainHandler.post(() -> {
-            CachedBluetoothDevice device = getActiveHearingDevice();
+        List<DeviceItem> hearingDeviceItemList = getHearingDeviceItemList();
+        refreshDeviceUi(hearingDeviceItemList);
+        mMainExecutor.execute(() -> {
+            CachedBluetoothDevice device = getActiveHearingDevice(hearingDeviceItemList);
             if (mPresetController != null) {
                 mPresetController.setDevice(device);
                 mPresetLayout.setVisibility(
@@ -244,13 +247,15 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
     @Override
     public void onProfileConnectionStateChanged(@NonNull CachedBluetoothDevice cachedDevice,
             int state, int bluetoothProfile) {
-        refreshDeviceUi();
+        List<DeviceItem> hearingDeviceItemList = getHearingDeviceItemList();
+        refreshDeviceUi(hearingDeviceItemList);
     }
 
     @Override
     public void onAclConnectionStateChanged(@NonNull CachedBluetoothDevice cachedDevice,
             int state) {
-        refreshDeviceUi();
+        List<DeviceItem> hearingDeviceItemList = getHearingDeviceItemList();
+        refreshDeviceUi(hearingDeviceItemList);
     }
 
     @Override
@@ -280,18 +285,25 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
 
         mUiEventLogger.log(HearingDevicesUiEvent.HEARING_DEVICES_DIALOG_SHOW, mLaunchSourceId);
 
-        setupDeviceListView(dialog);
-        setupPairNewDeviceButton(dialog);
-        setupPresetSpinner(dialog);
-        if (com.android.settingslib.flags.Flags.hearingDevicesAmbientVolumeControl()) {
-            setupAmbientControls();
-        }
-        setupRelatedToolsView(dialog);
+        mBgExecutor.execute(() -> {
+            List<DeviceItem> hearingDeviceItemList = getHearingDeviceItemList();
+            CachedBluetoothDevice activeHearingDevice = getActiveHearingDevice(
+                    hearingDeviceItemList);
+            mMainExecutor.execute(() -> {
+                setupDeviceListView(dialog, hearingDeviceItemList);
+                setupPairNewDeviceButton(dialog);
+                setupPresetSpinner(dialog, activeHearingDevice);
+                if (com.android.settingslib.flags.Flags.hearingDevicesAmbientVolumeControl()) {
+                    setupAmbientControls(activeHearingDevice);
+                }
+                setupRelatedToolsView(dialog);
+            });
+        });
     }
 
     @Override
     public void onStart(@NonNull SystemUIDialog dialog) {
-        ThreadUtils.postOnBackgroundThread(() -> {
+        mBgExecutor.execute(() -> {
             if (mLocalBluetoothManager != null) {
                 mLocalBluetoothManager.getEventManager().registerCallback(this);
             }
@@ -306,7 +318,7 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
 
     @Override
     public void onStop(@NonNull SystemUIDialog dialog) {
-        ThreadUtils.postOnBackgroundThread(() -> {
+        mBgExecutor.execute(() -> {
             if (mLocalBluetoothManager != null) {
                 mLocalBluetoothManager.getEventManager().unregisterCallback(this);
             }
@@ -319,17 +331,18 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
         });
     }
 
-    private void setupDeviceListView(SystemUIDialog dialog) {
+    private void setupDeviceListView(SystemUIDialog dialog,
+            List<DeviceItem> hearingDeviceItemList) {
         final RecyclerView deviceList = dialog.requireViewById(R.id.device_list);
         deviceList.setLayoutManager(new LinearLayoutManager(dialog.getContext()));
-        mHearingDeviceItemList = getHearingDeviceItemList();
-        mDeviceListAdapter = new HearingDevicesListAdapter(mHearingDeviceItemList, this);
+        mDeviceListAdapter = new HearingDevicesListAdapter(hearingDeviceItemList, this);
         deviceList.setAdapter(mDeviceListAdapter);
     }
 
-    private void setupPresetSpinner(SystemUIDialog dialog) {
+    private void setupPresetSpinner(SystemUIDialog dialog,
+            CachedBluetoothDevice activeHearingDevice) {
         mPresetController = new HearingDevicesPresetsController(mProfileManager, mPresetCallback);
-        mPresetController.setDevice(getActiveHearingDevice());
+        mPresetController.setDevice(activeHearingDevice);
 
         mPresetSpinner = dialog.requireViewById(R.id.preset_spinner);
         mPresetInfoAdapter = new HearingDevicesSpinnerAdapter(dialog.getContext());
@@ -367,12 +380,12 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
         mPresetLayout.setVisibility(mPresetController.isPresetControlAvailable() ? VISIBLE : GONE);
     }
 
-    private void setupAmbientControls() {
+    private void setupAmbientControls(CachedBluetoothDevice activeHearingDevice) {
         final AmbientVolumeLayout ambientLayout = mDialog.requireViewById(R.id.ambient_layout);
         mAmbientController = new AmbientVolumeUiController(
                 mDialog.getContext(), mLocalBluetoothManager, ambientLayout);
         mAmbientController.setShowUiWhenLocalDataExist(false);
-        mAmbientController.loadDevice(getActiveHearingDevice());
+        mAmbientController.loadDevice(activeHearingDevice);
     }
 
     private void setupPairNewDeviceButton(SystemUIDialog dialog) {
@@ -429,10 +442,11 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
         }
     }
 
-    private void refreshDeviceUi() {
-        mHearingDeviceItemList = getHearingDeviceItemList();
-        mMainHandler.post(() -> {
-            mDeviceListAdapter.refreshDeviceItemList(mHearingDeviceItemList);
+    private void refreshDeviceUi(List<DeviceItem> hearingDeviceItemList) {
+        mMainExecutor.execute(() -> {
+            if (mDeviceListAdapter != null) {
+                mDeviceListAdapter.refreshDeviceItemList(hearingDeviceItemList);
+            }
         });
     }
 
@@ -463,21 +477,27 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
     }
 
     @Nullable
-    private CachedBluetoothDevice getActiveHearingDevice() {
-        return mHearingDeviceItemList.stream()
+    private static CachedBluetoothDevice getActiveHearingDevice(
+            List<DeviceItem> hearingDeviceItemList) {
+        return hearingDeviceItemList.stream()
                 .filter(item -> item.getType() == DeviceItemType.ACTIVE_MEDIA_BLUETOOTH_DEVICE)
                 .map(DeviceItem::getCachedBluetoothDevice)
                 .findFirst()
                 .orElse(null);
     }
 
+    @WorkerThread
     private DeviceItem createHearingDeviceItem(CachedBluetoothDevice cachedDevice) {
         final Context context = mDialog.getContext();
         if (cachedDevice == null) {
             return null;
         }
+        int mode = mAudioManager.getMode();
+        boolean isOngoingCall = mode == AudioManager.MODE_RINGTONE
+                || mode == AudioManager.MODE_IN_CALL
+                || mode == AudioManager.MODE_IN_COMMUNICATION;
         for (DeviceItemFactory itemFactory : mHearingDeviceItemFactoryList) {
-            if (itemFactory.isFilterMatched(context, cachedDevice, mAudioManager)) {
+            if (itemFactory.isFilterMatched(context, cachedDevice, isOngoingCall)) {
                 return itemFactory.create(context, cachedDevice);
             }
         }

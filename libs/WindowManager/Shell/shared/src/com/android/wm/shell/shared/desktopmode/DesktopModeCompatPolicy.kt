@@ -24,7 +24,6 @@ import android.content.pm.ActivityInfo.OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGUR
 import android.content.pm.ActivityInfo.OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS
 import android.window.DesktopModeFlags
 import com.android.internal.R
-import com.android.window.flags.Flags
 
 /**
  * Class to decide whether to apply app compat policies in desktop mode.
@@ -64,7 +63,7 @@ class DesktopModeCompatPolicy(private val context: Context) {
      * is enabled.
      */
     fun shouldExcludeCaptionFromAppBounds(taskInfo: TaskInfo): Boolean =
-        Flags.excludeCaptionFromAppBounds()
+        DesktopModeFlags.EXCLUDE_CAPTION_FROM_APP_BOUNDS.isTrue
                 && isAnyForceConsumptionFlagsEnabled()
                 && taskInfo.topActivityInfo?.let {
             isInsetsCoupledWithConfiguration(it) && (!taskInfo.isResizeable || it.isChangeEnabled(

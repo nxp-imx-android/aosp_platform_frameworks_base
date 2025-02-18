@@ -97,7 +97,7 @@ class SceneTransitionLayoutTest {
             MutableSceneTransitionLayoutStateForTests(SceneA, EmptyTestTransitions)
         }
 
-        SceneTransitionLayoutForTesting(state = layoutState, modifier = Modifier.size(LayoutSize)) {
+        SceneTransitionLayout(state = layoutState, modifier = Modifier.size(LayoutSize)) {
             scene(SceneA, userActions = mapOf(Back to SceneB)) {
                 Box(Modifier.fillMaxSize()) {
                     SharedFoo(size = 50.dp, childOffset = 0.dp, Modifier.align(Alignment.TopEnd))

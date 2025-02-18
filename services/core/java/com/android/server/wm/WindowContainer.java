@@ -34,7 +34,6 @@ import static android.os.UserHandle.USER_NULL;
 import static android.view.SurfaceControl.Transaction;
 import static android.view.WindowInsets.Type.InsetsType;
 import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
-import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.window.TaskFragmentAnimationParams.DEFAULT_ANIMATION_BACKGROUND_COLOR;
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 
@@ -901,10 +900,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      */
     @CallSuper
     void removeImmediately() {
-        final DisplayContent dc = getDisplayContent();
-        if (dc != null) {
-            dc.mClosingChangingContainers.remove(this);
-        }
         while (!mChildren.isEmpty()) {
             final E child = mChildren.getLast();
             child.removeImmediately();
@@ -1116,10 +1111,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             if (asWindowState() == null) {
                 mTransitionController.collect(this);
             }
-            // Cancel any change transition queued-up for this container on the old display when
-            // this container is moved from the old display.
-            mDisplayContent.mClosingChangingContainers.remove(this);
-            mDisplayContent.mChangingContainers.remove(this);
         }
         mDisplayContent = dc;
         if (dc != null && dc != this && mPendingTransaction != null) {
@@ -1268,14 +1259,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     }
 
     /**
-     * @return {@code true} when the container is waiting the app transition start, {@code false}
-     *         otherwise.
-     */
-    boolean isWaitingForTransitionStart() {
-        return false;
-    }
-
-    /**
      * @return {@code true} if in this subtree of the hierarchy we have an
      *         {@code ActivityRecord#isAnimating(TRANSITION)}, {@code false} otherwise.
      */
@@ -1300,13 +1283,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      */
     final boolean isAnimating() {
         return isAnimating(0 /* self only */);
-    }
-
-    /**
-     * @return {@code true} if the container is in changing app transition.
-     */
-    boolean isChangingAppTransition() {
-        return mDisplayContent != null && mDisplayContent.mChangingContainers.contains(this);
     }
 
     boolean inTransition() {
@@ -1425,12 +1401,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             }
         }
         return setVisibleRequested(newVisReq);
-    }
-
-    /** Whether this window is closing while resizing. */
-    boolean isClosingWhenResizing() {
-        return mDisplayContent != null
-                && mDisplayContent.mClosingChangingContainers.containsKey(this);
     }
 
     void writeIdentifierToProto(ProtoOutputStream proto, long fieldId) {
@@ -3044,36 +3014,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
                 || (getParent() != null && getParent().inPinnedWindowingMode());
     }
 
-    /**
-     * Initializes a change transition.
-     *
-     * For now, this will only be called for the following cases:
-     * 1. {@link Task} is changing windowing mode between fullscreen and freeform.
-     * 2. {@link TaskFragment} is organized and is changing window bounds.
-     * 3. {@link ActivityRecord} is reparented into an organized {@link TaskFragment}. (The
-     *    transition will happen on the {@link TaskFragment} for this case).
-     *
-     * This shouldn't be called on other {@link WindowContainer} unless there is a valid
-     * use case.
-     *
-     * @param startBounds The original bounds (on screen) of the surface we are snapshotting.
-     */
-    void initializeChangeTransition(Rect startBounds, @Nullable SurfaceControl freezeTarget) {
-        if (mDisplayContent.mTransitionController.isShellTransitionsEnabled()) {
-            mDisplayContent.mTransitionController.collectVisibleChange(this);
-            return;
-        }
-        mDisplayContent.prepareAppTransition(TRANSIT_CHANGE);
-        mDisplayContent.mChangingContainers.add(this);
-        // Calculate the relative position in parent container.
-        final Rect parentBounds = getParent().getBounds();
-        mTmpPoint.set(startBounds.left - parentBounds.left, startBounds.top - parentBounds.top);
-    }
-
-    void initializeChangeTransition(Rect startBounds) {
-        initializeChangeTransition(startBounds, null /* freezeTarget */);
-    }
-
     ArraySet<WindowContainer> getAnimationSources() {
         return mSurfaceAnimationSources;
     }
@@ -3166,8 +3106,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         getAnimationPosition(mTmpPoint);
         mTmpRect.offsetTo(0, 0);
 
-        final boolean isChanging = AppTransition.isChangeTransitOld(transit) && enter
-                && isChangingAppTransition();
+        final boolean isChanging = AppTransition.isChangeTransitOld(transit);
 
         if (isChanging) {
             final float durationScale = mWmService.getTransitionAnimationScaleLocked();
@@ -3519,9 +3458,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
                 && (mSurfaceAnimator.getAnimationType() & typesToCheck) > 0) {
             return true;
         }
-        if ((flags & TRANSITION) != 0 && isWaitingForTransitionStart()) {
-            return true;
-        }
         return false;
     }
 
@@ -3603,13 +3539,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             return;
         }
 
-        if (isClosingWhenResizing()) {
-            // This container is closing while resizing, keep its surface at the starting position
-            // to prevent animation flicker.
-            getRelativePosition(mDisplayContent.mClosingChangingContainers.get(this), mTmpPos);
-        } else {
-            getRelativePosition(mTmpPos);
-        }
+        getRelativePosition(mTmpPos);
         final int deltaRotation = getRelativeDisplayRotation();
         if (mTmpPos.equals(mLastSurfacePosition) && deltaRotation == mLastDeltaRotation) {
             return;

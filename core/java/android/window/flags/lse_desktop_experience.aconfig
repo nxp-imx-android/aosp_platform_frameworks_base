@@ -16,6 +16,17 @@ flag {
 }
 
 flag {
+    name: "enable_modals_fullscreen_with_permission"
+    namespace: "lse_desktop_experience"
+    description: "Uses permissions to understand if modal fullscreen is allowed for /n"
+                 "transparent activities."
+    bug: "394714626"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "include_top_transparent_fullscreen_task_in_desktop_heuristic"
     namespace: "lse_desktop_experience"
     description: "Whether to include any top transparent fullscreen task launched in desktop /n"

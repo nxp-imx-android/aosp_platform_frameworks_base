@@ -18,7 +18,6 @@ package com.android.systemui.bluetooth.qsdialog
 
 import android.bluetooth.BluetoothDevice
 import android.graphics.drawable.Drawable
-import android.media.AudioManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
@@ -60,8 +59,6 @@ class DeviceItemFactoryTest : SysuiTestCase() {
     private val availableMediaDeviceItemFactory = AvailableMediaDeviceItemFactory()
     private val connectedDeviceItemFactory = ConnectedDeviceItemFactory()
     private val savedDeviceItemFactory = SavedDeviceItemFactory()
-
-    private val audioManager = context.getSystemService(AudioManager::class.java)!!
 
     @Before
     fun setup() {
@@ -132,7 +129,12 @@ class DeviceItemFactoryTest : SysuiTestCase() {
     fun testAvailableAudioSharingMediaDeviceItemFactory_isFilterMatched_flagOff_returnsFalse() {
         assertThat(
                 AvailableAudioSharingMediaDeviceItemFactory(localBluetoothManager)
-                    .isFilterMatched(context, cachedDevice, audioManager, false)
+                    .isFilterMatched(
+                        context,
+                        cachedDevice,
+                        isOngoingCall = false,
+                        audioSharingAvailable = false,
+                    )
             )
             .isFalse()
     }
@@ -143,7 +145,12 @@ class DeviceItemFactoryTest : SysuiTestCase() {
 
         assertThat(
                 AvailableAudioSharingMediaDeviceItemFactory(localBluetoothManager)
-                    .isFilterMatched(context, cachedDevice, audioManager, true)
+                    .isFilterMatched(
+                        context,
+                        cachedDevice,
+                        isOngoingCall = false,
+                        audioSharingAvailable = true,
+                    )
             )
             .isFalse()
     }
@@ -157,7 +164,26 @@ class DeviceItemFactoryTest : SysuiTestCase() {
 
         assertThat(
                 AvailableAudioSharingMediaDeviceItemFactory(localBluetoothManager)
-                    .isFilterMatched(context, cachedDevice, audioManager, true)
+                    .isFilterMatched(
+                        context,
+                        cachedDevice,
+                        isOngoingCall = false,
+                        audioSharingAvailable = true,
+                    )
+            )
+            .isFalse()
+    }
+
+    @Test
+    fun testAvailableAudioSharingMediaDeviceItemFactory_isFilterMatched_inCall_false() {
+        assertThat(
+                AvailableAudioSharingMediaDeviceItemFactory(localBluetoothManager)
+                    .isFilterMatched(
+                        context,
+                        cachedDevice,
+                        isOngoingCall = true,
+                        audioSharingAvailable = true,
+                    )
             )
             .isFalse()
     }
@@ -171,7 +197,12 @@ class DeviceItemFactoryTest : SysuiTestCase() {
 
         assertThat(
                 AvailableAudioSharingMediaDeviceItemFactory(localBluetoothManager)
-                    .isFilterMatched(context, cachedDevice, audioManager, true)
+                    .isFilterMatched(
+                        context,
+                        cachedDevice,
+                        isOngoingCall = false,
+                        audioSharingAvailable = true,
+                    )
             )
             .isTrue()
     }
@@ -182,7 +213,9 @@ class DeviceItemFactoryTest : SysuiTestCase() {
         `when`(cachedDevice.bondState).thenReturn(BluetoothDevice.BOND_BONDED)
         `when`(cachedDevice.isConnected).thenReturn(false)
 
-        assertThat(savedDeviceItemFactory.isFilterMatched(context, cachedDevice, audioManager))
+        assertThat(
+                savedDeviceItemFactory.isFilterMatched(context, cachedDevice, isOngoingCall = false)
+            )
             .isTrue()
     }
 
@@ -192,7 +225,9 @@ class DeviceItemFactoryTest : SysuiTestCase() {
         `when`(cachedDevice.bondState).thenReturn(BluetoothDevice.BOND_BONDED)
         `when`(cachedDevice.isConnected).thenReturn(true)
 
-        assertThat(savedDeviceItemFactory.isFilterMatched(context, cachedDevice, audioManager))
+        assertThat(
+                savedDeviceItemFactory.isFilterMatched(context, cachedDevice, isOngoingCall = false)
+            )
             .isFalse()
     }
 
@@ -201,7 +236,9 @@ class DeviceItemFactoryTest : SysuiTestCase() {
     fun testSavedFactory_isFilterMatched_notBonded_returnsFalse() {
         `when`(cachedDevice.bondState).thenReturn(BluetoothDevice.BOND_NONE)
 
-        assertThat(savedDeviceItemFactory.isFilterMatched(context, cachedDevice, audioManager))
+        assertThat(
+                savedDeviceItemFactory.isFilterMatched(context, cachedDevice, isOngoingCall = false)
+            )
             .isFalse()
     }
 
@@ -211,7 +248,9 @@ class DeviceItemFactoryTest : SysuiTestCase() {
         `when`(cachedDevice.device).thenReturn(bluetoothDevice)
         `when`(BluetoothUtils.isExclusivelyManagedBluetoothDevice(any(), any())).thenReturn(true)
 
-        assertThat(savedDeviceItemFactory.isFilterMatched(context, cachedDevice, audioManager))
+        assertThat(
+                savedDeviceItemFactory.isFilterMatched(context, cachedDevice, isOngoingCall = false)
+            )
             .isFalse()
     }
 
@@ -223,7 +262,9 @@ class DeviceItemFactoryTest : SysuiTestCase() {
         `when`(cachedDevice.bondState).thenReturn(BluetoothDevice.BOND_BONDED)
         `when`(cachedDevice.isConnected).thenReturn(false)
 
-        assertThat(savedDeviceItemFactory.isFilterMatched(context, cachedDevice, audioManager))
+        assertThat(
+                savedDeviceItemFactory.isFilterMatched(context, cachedDevice, isOngoingCall = false)
+            )
             .isTrue()
     }
 
@@ -235,7 +276,9 @@ class DeviceItemFactoryTest : SysuiTestCase() {
         `when`(cachedDevice.bondState).thenReturn(BluetoothDevice.BOND_BONDED)
         `when`(cachedDevice.isConnected).thenReturn(true)
 
-        assertThat(savedDeviceItemFactory.isFilterMatched(context, cachedDevice, audioManager))
+        assertThat(
+                savedDeviceItemFactory.isFilterMatched(context, cachedDevice, isOngoingCall = false)
+            )
             .isFalse()
     }
 
@@ -244,14 +287,26 @@ class DeviceItemFactoryTest : SysuiTestCase() {
     fun testConnectedFactory_isFilterMatched_bondedAndConnected_returnsTrue() {
         `when`(BluetoothUtils.isConnectedBluetoothDevice(any(), any())).thenReturn(true)
 
-        assertThat(connectedDeviceItemFactory.isFilterMatched(context, cachedDevice, audioManager))
+        assertThat(
+                connectedDeviceItemFactory.isFilterMatched(
+                    context,
+                    cachedDevice,
+                    isOngoingCall = false,
+                )
+            )
             .isTrue()
     }
 
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_HIDE_EXCLUSIVELY_MANAGED_BLUETOOTH_DEVICE)
     fun testConnectedFactory_isFilterMatched_notConnected_returnsFalse() {
-        assertThat(connectedDeviceItemFactory.isFilterMatched(context, cachedDevice, audioManager))
+        assertThat(
+                connectedDeviceItemFactory.isFilterMatched(
+                    context,
+                    cachedDevice,
+                    isOngoingCall = false,
+                )
+            )
             .isFalse()
     }
 
@@ -261,7 +316,13 @@ class DeviceItemFactoryTest : SysuiTestCase() {
         `when`(cachedDevice.device).thenReturn(bluetoothDevice)
         `when`(BluetoothUtils.isExclusivelyManagedBluetoothDevice(any(), any())).thenReturn(true)
 
-        assertThat(connectedDeviceItemFactory.isFilterMatched(context, cachedDevice, audioManager))
+        assertThat(
+                connectedDeviceItemFactory.isFilterMatched(
+                    context,
+                    cachedDevice,
+                    isOngoingCall = false,
+                )
+            )
             .isFalse()
     }
 
@@ -272,7 +333,13 @@ class DeviceItemFactoryTest : SysuiTestCase() {
         `when`(BluetoothUtils.isExclusivelyManagedBluetoothDevice(any(), any())).thenReturn(false)
         `when`(BluetoothUtils.isConnectedBluetoothDevice(any(), any())).thenReturn(true)
 
-        assertThat(connectedDeviceItemFactory.isFilterMatched(context, cachedDevice, audioManager))
+        assertThat(
+                connectedDeviceItemFactory.isFilterMatched(
+                    context,
+                    cachedDevice,
+                    isOngoingCall = false,
+                )
+            )
             .isTrue()
     }
 
@@ -283,7 +350,13 @@ class DeviceItemFactoryTest : SysuiTestCase() {
         `when`(BluetoothUtils.isExclusivelyManagedBluetoothDevice(any(), any())).thenReturn(false)
         `when`(BluetoothUtils.isConnectedBluetoothDevice(any(), any())).thenReturn(false)
 
-        assertThat(connectedDeviceItemFactory.isFilterMatched(context, cachedDevice, audioManager))
+        assertThat(
+                connectedDeviceItemFactory.isFilterMatched(
+                    context,
+                    cachedDevice,
+                    isOngoingCall = false,
+                )
+            )
             .isFalse()
     }
 

@@ -2028,7 +2028,7 @@ class Task extends TaskFragment {
         }
 
         if (shouldStartChangeTransition(prevWinMode, mTmpPrevBounds)) {
-            initializeChangeTransition(mTmpPrevBounds);
+            mTransitionController.collectVisibleChange(this);
         }
 
         // If the configuration supports persistent bounds (eg. Freeform), keep track of the

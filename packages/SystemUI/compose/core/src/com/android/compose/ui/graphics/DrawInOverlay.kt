@@ -42,13 +42,19 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 @Composable
 fun Modifier.drawInOverlay(): Modifier {
     val containerState = remember { ContainerState() }
+    FullScreenComposeViewInOverlay { Modifier.container(containerState) }
+    return this.drawInContainer(containerState, enabled = { true })
+}
+
+@Composable
+internal fun FullScreenComposeViewInOverlay(modifier: (ComposeView) -> Modifier = { Modifier }) {
     val context = LocalContext.current
     val localView = LocalView.current
     val compositionContext = rememberCompositionContext()
     val displayMetrics = context.resources.displayMetrics
     val displaySize = IntSize(displayMetrics.widthPixels, displayMetrics.heightPixels)
 
-    DisposableEffect(containerState, context, localView, compositionContext, displaySize) {
+    DisposableEffect(context, localView, compositionContext, displaySize) {
         val overlay = localView.rootView.overlay as ViewGroupOverlay
         val view =
             ComposeView(context).apply {
@@ -59,7 +65,8 @@ fun Modifier.drawInOverlay(): Modifier {
                 setViewTreeViewModelStoreOwner(localView.findViewTreeViewModelStoreOwner())
                 setViewTreeSavedStateRegistryOwner(localView.findViewTreeSavedStateRegistryOwner())
 
-                setContent { Box(Modifier.fillMaxSize().container(containerState)) }
+                val view = this
+                setContent { Box(modifier(view).fillMaxSize()) }
             }
 
         overlay.add(view)
@@ -74,6 +81,4 @@ fun Modifier.drawInOverlay(): Modifier {
 
         onDispose { overlay.remove(view) }
     }
-
-    return this.drawInContainer(containerState, enabled = { true })
 }

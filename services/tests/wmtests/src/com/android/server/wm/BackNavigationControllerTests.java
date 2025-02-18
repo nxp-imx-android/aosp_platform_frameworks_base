@@ -294,6 +294,14 @@ public class BackNavigationControllerTests extends WindowTestsBase {
         backNavigationInfo = startBackNavigation();
         assertThat(typeToString(backNavigationInfo.getType()))
                 .isEqualTo(typeToString(BackNavigationInfo.TYPE_CROSS_ACTIVITY));
+
+        // reset drawing status, test previous activity has no process.
+        backNavigationInfo.onBackNavigationFinished(false);
+        mBackNavigationController.clearBackAnimations(true);
+        doReturn(false).when(testCase.recordBack).hasProcess();
+        backNavigationInfo = startBackNavigation();
+        assertThat(typeToString(backNavigationInfo.getType()))
+                .isEqualTo(typeToString(BackNavigationInfo.TYPE_CALLBACK));
     }
 
     @Test
