@@ -5,7 +5,6 @@ import androidx.core.view.isVisible
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.NotificationShelf
 import com.android.systemui.statusbar.notification.Roundable
-import com.android.systemui.statusbar.notification.footer.ui.view.FooterView
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import javax.inject.Inject
@@ -88,6 +87,7 @@ class NotificationTargetsHelper @Inject constructor() {
      *
      * @param[viewSwiped] The [ExpandableNotificationRow] that is swiped.
      * @param[stackScrollLayout] [NotificationStackScrollLayout] container.
+     * @param[sectionsManager] The [NotificationSectionsManager]
      * @param[totalMagneticTargets] The total number of magnetic listeners in the resulting list.
      *   This includes the listener of the view swiped.
      * @return The list of [MagneticRowListener]s above and below the swiped
@@ -96,6 +96,7 @@ class NotificationTargetsHelper @Inject constructor() {
     fun findMagneticTargets(
         viewSwiped: ExpandableNotificationRow,
         stackScrollLayout: NotificationStackScrollLayout,
+        sectionsManager: NotificationSectionsManager,
         totalMagneticTargets: Int,
     ): List<MagneticRowListener?> {
         val notificationParent = viewSwiped.notificationParent
@@ -126,26 +127,34 @@ class NotificationTargetsHelper @Inject constructor() {
         var canMoveRight = true
         for (distance in 1..totalMagneticTargets / 2) {
             if (canMoveLeft) {
-                val leftElement = container.getOrNull(index = centerIndex - distance)
+                val leftElement =
+                    container.getOrNull(index = centerIndex - distance)?.takeIf {
+                        it.isValidMagneticBoundary() ||
+                            !sectionsManager.beginsSection(view = viewSwiped, previous = it)
+                    }
                 if (leftElement is ExpandableNotificationRow) {
                     magneticTargets[leftIndex] = leftElement.magneticRowListener
                     leftIndex--
                 } else {
                     if (leftElement.isValidMagneticBoundary()) {
-                        // Add the boundary and then stop the iterating
+                        // Add the boundary and then stop iterating
                         magneticTargets[leftIndex] = leftElement?.magneticRowListener
                     }
                     canMoveLeft = false
                 }
             }
             if (canMoveRight) {
-                val rightElement = container.getOrNull(index = centerIndex + distance)
+                val rightElement =
+                    container.getOrNull(index = centerIndex + distance)?.takeIf {
+                        it.isValidMagneticBoundary() ||
+                            !sectionsManager.beginsSection(view = it, previous = viewSwiped)
+                    }
                 if (rightElement is ExpandableNotificationRow) {
                     magneticTargets[rightIndex] = rightElement.magneticRowListener
                     rightIndex++
                 } else {
                     if (rightElement.isValidMagneticBoundary()) {
-                        // Add the boundary and then stop the iterating
+                        // Add the boundary and then stop iterating
                         magneticTargets[rightIndex] = rightElement?.magneticRowListener
                     }
                     canMoveRight = false
@@ -157,7 +166,6 @@ class NotificationTargetsHelper @Inject constructor() {
 
     private fun ExpandableView?.isValidMagneticBoundary(): Boolean =
         when (this) {
-            is FooterView,
             is NotificationShelf,
             is SectionHeaderView -> true
             else -> false
