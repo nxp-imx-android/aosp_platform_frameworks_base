@@ -393,6 +393,13 @@ class InsetsStateController {
         }
     }
 
+    void onAnimatingTypesChanged(InsetsControlTarget target) {
+        for (int i = mProviders.size() - 1; i >= 0; i--) {
+            final InsetsSourceProvider provider = mProviders.valueAt(i);
+            provider.onAnimatingTypesChanged(target);
+        }
+    }
+
     private void notifyPendingInsetsControlChanged() {
         if (mPendingTargetProvidersMap.isEmpty()) {
             return;

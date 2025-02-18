@@ -440,11 +440,18 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                             statsToken);
                 }
 
-                // In case of a hide, the statsToken should not been send yet (as the animation
-                // is still ongoing). It will be sent at the end of the animation
-                boolean hideAnimOngoing = !mImeRequestedVisible && mAnimation != null;
-                setVisibleDirectly(mImeRequestedVisible || mAnimation != null,
-                        hideAnimOngoing ? null : statsToken);
+                boolean hideAnimOngoing;
+                boolean reportVisible;
+                if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
+                    hideAnimOngoing = false;
+                    reportVisible = mImeRequestedVisible;
+                } else {
+                    // In case of a hide, the statsToken should not been send yet (as the animation
+                    // is still ongoing). It will be sent at the end of the animation.
+                    hideAnimOngoing = !mImeRequestedVisible && mAnimation != null;
+                    reportVisible = mImeRequestedVisible || mAnimation != null;
+                }
+                setVisibleDirectly(reportVisible, hideAnimOngoing ? null : statsToken);
             }
         }
 
@@ -628,7 +635,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                                 + " showing:" + (mAnimationDirection == DIRECTION_SHOW));
                     }
                     if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
-                        setAnimating(true);
+                        setAnimating(true /* imeAnimationOngoing */);
                     }
                     int flags = dispatchStartPositioning(mDisplayId, imeTop(hiddenY, defaultY),
                             imeTop(shownY, defaultY), mAnimationDirection == DIRECTION_SHOW,
@@ -678,7 +685,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                     if (!android.view.inputmethod.Flags.refactorInsetsController()) {
                         dispatchEndPositioning(mDisplayId, mCancelled, t);
                     } else if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
-                        setAnimating(false);
+                        setAnimating(false /* imeAnimationOngoing */);
                     }
                     if (mAnimationDirection == DIRECTION_HIDE && !mCancelled) {
                         ImeTracker.forLogging().onProgress(mStatsToken,

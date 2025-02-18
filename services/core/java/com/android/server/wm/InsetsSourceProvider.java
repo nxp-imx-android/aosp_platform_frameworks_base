@@ -673,6 +673,9 @@ class InsetsSourceProvider {
                 mServerVisible, mClientVisible);
     }
 
+    void onAnimatingTypesChanged(InsetsControlTarget caller) {
+    }
+
     protected boolean isLeashReadyForDispatching() {
         return isLeashInitialized();
     }
