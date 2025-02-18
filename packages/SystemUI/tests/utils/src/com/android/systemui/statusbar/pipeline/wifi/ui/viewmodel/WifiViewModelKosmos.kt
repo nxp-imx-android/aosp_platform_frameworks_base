@@ -24,14 +24,14 @@ import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.airplaneMod
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
 import com.android.systemui.statusbar.pipeline.wifi.domain.interactor.wifiInteractor
 import com.android.systemui.statusbar.pipeline.wifi.shared.WifiConstants
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import org.mockito.kotlin.mock
 
 val Kosmos.wifiViewModel by
-    Kosmos.Fixture {
+  Kosmos.Fixture {
       WifiViewModel(
           airplaneModeViewModel,
-          { MutableStateFlow(false) },
+          { flowOf(false) },
           mock<ConnectivityConstants>(),
           applicationContext,
           logcatTableLogBuffer(this, "WifiViewModelTest"),
@@ -39,4 +39,4 @@ val Kosmos.wifiViewModel by
           applicationCoroutineScope,
           mock<WifiConstants>(),
       )
-    }
+  }
