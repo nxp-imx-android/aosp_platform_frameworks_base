@@ -43,7 +43,6 @@ import com.android.wm.shell.bubbles.BubbleTransitions
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
-import com.android.wm.shell.protolog.ShellProtoLogGroup
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.animation.PhysicsAnimator
@@ -1064,10 +1063,7 @@ constructor(
         val state = requireTransitionState()
         val homeLeash = state.homeChange?.leash
         if (homeLeash == null) {
-            ProtoLog.e(
-                ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE,
-                "DragToDesktop: home leash is null",
-            )
+            logE("home leash is null")
         } else {
             // Hide home on finish to prevent flickering when wallpaper activity flag is enabled
             finishTransaction.hide(homeLeash)
@@ -1107,6 +1103,12 @@ constructor(
         val startPosition = state.dragAnimator.position
         val startBoundsWithOffset =
             Rect(startBounds).apply { offset(startPosition.x.toInt(), startPosition.y.toInt()) }
+
+        logV(
+            "animateEndDragToDesktop: startBounds=$startBounds, endBounds=$endBounds, " +
+                "startScale=$startScale, startPosition=$startPosition, " +
+                "startBoundsWithOffset=$startBoundsWithOffset"
+        )
 
         dragToDesktopStateListener?.onCommitToDesktopAnimationStart()
         // Accept the merge by applying the merging transaction (applied by #showResizeVeil)
@@ -1189,7 +1191,16 @@ constructor(
             .start()
     }
 
+    private fun logV(msg: String, vararg arguments: Any?) {
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logE(msg: String, vararg arguments: Any?) {
+        ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
     companion object {
+        private const val TAG = "SpringDragToDesktopTransitionHandler"
         /** The freeform tasks initial scale when committing the drag-to-desktop gesture. */
         private val FREEFORM_TASKS_INITIAL_SCALE =
             propertyValue("freeform_tasks_initial_scale", scale = 100f, default = 0.9f)
