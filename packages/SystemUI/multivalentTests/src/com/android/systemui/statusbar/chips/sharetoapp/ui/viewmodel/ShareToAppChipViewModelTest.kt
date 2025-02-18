@@ -49,10 +49,10 @@ import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModelTest.Companion.getStopActionFromDialog
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.mockSystemUIDialogFactory
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.DisableChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
@@ -506,7 +506,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_STATUS_BAR_SHOW_AUDIO_ONLY_PROJECTION_CHIP)
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     fun chip_noScreen_clickListenerShowsGenericShareDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -527,7 +527,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     fun chip_entireScreen_clickListenerShowsScreenShareDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -548,7 +548,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     fun chip_singleTask_clickListenerShowsScreenShareDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -573,7 +573,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     fun chip_clickListenerHasCuj() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -597,7 +597,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun chip_noScreen_hasClickBehavior() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -609,7 +609,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun chip_entireScreen_hasClickBehavior() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -621,7 +621,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun chip_singleTask_hasClickBehavior() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -637,11 +637,8 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(
-        FLAG_STATUS_BAR_SHOW_AUDIO_ONLY_PROJECTION_CHIP,
-        StatusBarRootModernization.FLAG_NAME,
-        StatusBarChipsModernization.FLAG_NAME,
-    )
+    @EnableFlags(FLAG_STATUS_BAR_SHOW_AUDIO_ONLY_PROJECTION_CHIP)
+    @EnableChipsModernization
     fun chip_noScreen_clickBehaviorShowsGenericShareDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -657,7 +654,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun chip_entireScreen_clickBehaviorShowsScreenShareDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -673,7 +670,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun chip_singleTask_clickBehaviorShowsScreenShareDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
