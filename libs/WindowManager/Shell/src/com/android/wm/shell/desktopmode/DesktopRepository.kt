@@ -238,7 +238,6 @@ class DesktopRepository(
     }
 
     /** Returns the id of the active desk in the given display, if any. */
-    @VisibleForTesting
     fun getActiveDeskId(displayId: Int): Int? = desktopData.getActiveDesk(displayId)?.deskId
 
     /** Returns the id of the desk to which this task belongs. */
