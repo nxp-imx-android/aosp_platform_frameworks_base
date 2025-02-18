@@ -76,6 +76,7 @@ object OngoingCallTestHelper {
         promotedContent: PromotedNotificationContentModel? = null,
         contentIntent: PendingIntent? = null,
         uid: Int = DEFAULT_UID,
+        appName: String = "Fake name",
     ) {
         if (StatusBarChipsModernization.isEnabled) {
             activeNotificationListRepository.addNotif(
@@ -87,6 +88,7 @@ object OngoingCallTestHelper {
                     contentIntent = contentIntent,
                     promotedContent = promotedContent,
                     uid = uid,
+                    appName = appName,
                 )
             )
         } else {
@@ -96,6 +98,7 @@ object OngoingCallTestHelper {
                     notificationIcon = statusBarChipIconView,
                     intent = contentIntent,
                     notificationKey = key,
+                    appName = appName,
                     promotedContent = promotedContent,
                 )
             )
