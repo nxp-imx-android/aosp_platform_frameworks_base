@@ -62,6 +62,7 @@ android_test {
         "androidx.test.runner",
         "androidx.test.rules",
         "androidx.test.ext.junit",
+        "CtsAccessibilityCommon",
         "cts-wm-util",
         "platform-compat-test-rules",
         "platform-parametric-runner-lib",
