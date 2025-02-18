@@ -17,7 +17,7 @@
 package com.android.systemui.shade.ui.viewmodel
 
 import android.content.applicationContext
-import com.android.systemui.battery.BatteryMeterViewController
+import com.android.systemui.battery.batteryMeterViewControllerFactory
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.plugins.activityStarter
@@ -28,7 +28,7 @@ import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerStatusBarViewBinder
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
-import com.android.systemui.statusbar.phone.ui.TintedIconManager
+import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.mobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.mobileIconsViewModel
 import org.mockito.kotlin.mock
@@ -45,8 +45,8 @@ val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
             mobileIconsViewModel = mobileIconsViewModel,
             privacyChipInteractor = privacyChipInteractor,
             clockInteractor = shadeHeaderClockInteractor,
-            tintedIconManagerFactory = mock<TintedIconManager.Factory>(),
-            batteryMeterViewControllerFactory = mock<BatteryMeterViewController.Factory>(),
+            tintedIconManagerFactory = tintedIconManagerFactory,
+            batteryMeterViewControllerFactory = batteryMeterViewControllerFactory,
             statusBarIconController = mock<StatusBarIconController>(),
             notificationIconContainerStatusBarViewBinder =
                 mock<NotificationIconContainerStatusBarViewBinder>(),
