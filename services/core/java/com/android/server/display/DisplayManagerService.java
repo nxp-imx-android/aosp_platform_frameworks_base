@@ -2442,7 +2442,10 @@ public final class DisplayManagerService extends SystemService {
             applyDisplayChangedLocked(display);
         }
 
-        if (mDisplayTopologyCoordinator != null) {
+        // The default display should always be added to the topology. Other displays will be added
+        // upon calling onDisplayBelongToTopologyChanged().
+        if (mDisplayTopologyCoordinator != null
+                && display.getDisplayIdLocked() == Display.DEFAULT_DISPLAY) {
             mDisplayTopologyCoordinator.onDisplayAdded(display.getDisplayInfoLocked());
         }
     }
@@ -6034,6 +6037,18 @@ public final class DisplayManagerService extends SystemService {
         @Override
         public boolean isDisplayReadyForMirroring(int displayId) {
             return mExternalDisplayPolicy.isDisplayReadyForMirroring(displayId);
+        }
+
+        @Override
+        public void onDisplayBelongToTopologyChanged(int displayId, boolean inTopology) {
+            if (mDisplayTopologyCoordinator == null) {
+                return;
+            }
+            if (inTopology) {
+                mDisplayTopologyCoordinator.onDisplayAdded(getDisplayInfo(displayId));
+            } else {
+                mDisplayTopologyCoordinator.onDisplayRemoved(displayId);
+            }
         }
 
         @Override
