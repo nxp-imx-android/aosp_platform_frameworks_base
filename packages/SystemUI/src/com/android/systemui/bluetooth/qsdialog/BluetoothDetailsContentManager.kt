@@ -383,6 +383,11 @@ constructor(
 
                     actionIcon.setImageResource(item.actionIconRes)
                     actionIcon.drawable?.setTint(tintColor)
+                    actionIconView.contentDescription =
+                        resources.getString(
+                            R.string.accessibility_bluetooth_device_settings_gear_with_name,
+                            item.deviceName,
+                        )
 
                     divider.setBackgroundColor(tintColor)
 
