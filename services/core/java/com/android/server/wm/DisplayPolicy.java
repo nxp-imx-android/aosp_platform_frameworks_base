@@ -1865,7 +1865,6 @@ public class DisplayPolicy {
         return mContext;
     }
 
-    @NonNull
     Context getSystemUiContext() {
         return mUiContext;
     }
