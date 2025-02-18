@@ -1167,6 +1167,12 @@
     <!-- Default name for the media device shown in the output switcher when the name is not available [CHAR LIMIT=30] -->
     <string name="media_seamless_other_device">Other device</string>
 
+    <!-- Text on media control when there is a suggested device for playback. [CHAR LIMIT=30] -->
+    <string name="media_suggestion_disconnected_text">Play on <xliff:g id = "device_name" example="Living room speaker">%s</xliff:g></string>
+
+    <!-- Text on media control when connecting to a suggested device. [CHAR LIMIT=30] -->
+    <string name="media_suggestion_failure_text">Can\'t connect. Try again.</string>
+
     <!-- QuickStep: Accessibility to toggle overview [CHAR LIMIT=40] -->
     <string name="quick_step_accessibility_toggle_overview">Toggle Overview</string>
 
