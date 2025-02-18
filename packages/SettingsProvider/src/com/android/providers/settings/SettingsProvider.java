@@ -988,6 +988,11 @@ public class SettingsProvider extends ContentProvider {
             if (setting.getTag() != null) {
                 pw.print(" tag:"); pw.print(setting.getTag());
             }
+            // The majority of settings are preserved in restore, so we're just dumping those that
+            // are not (to save space).
+            if (!setting.isValuePreservedInRestore()) {
+                pw.println(" notPreservedInRestore");
+            }
             pw.println();
         }
     }
