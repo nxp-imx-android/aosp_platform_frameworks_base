@@ -6909,6 +6909,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         /** The actual requested visible inset types for this display */
         private @InsetsType int mRequestedVisibleTypes = WindowInsets.Type.defaultVisible();
 
+        private @InsetsType int mAnimatingTypes = 0;
+
         /** The component name of the top focused window on this display */
         private ComponentName mTopFocusedComponentName = null;
 
@@ -7045,6 +7047,18 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 return changedTypes;
             }
             return 0;
+        }
+
+        @Override
+        public @InsetsType int getAnimatingTypes() {
+            return mAnimatingTypes;
+        }
+
+        @Override
+        public void setAnimatingTypes(@InsetsType int animatingTypes) {
+            if (mAnimatingTypes != animatingTypes) {
+                mAnimatingTypes = animatingTypes;
+            }
         }
     }
 

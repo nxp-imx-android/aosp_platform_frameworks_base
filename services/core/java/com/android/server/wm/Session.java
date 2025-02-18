@@ -737,6 +737,17 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
         }
     }
 
+    @Override
+    public void updateAnimatingTypes(IWindow window, @InsetsType int animatingTypes) {
+        synchronized (mService.mGlobalLock) {
+            final WindowState win = mService.windowForClientLocked(this, window,
+                    false /* throwOnError */);
+            if (win != null) {
+                win.setAnimatingTypes(animatingTypes);
+            }
+        }
+    }
+
     void onWindowAdded(WindowState w) {
         if (mPackageName == null) {
             mPackageName = mProcess.mInfo.packageName;
@@ -1012,17 +1023,6 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
             } else {
                 ImeTracker.forLogging().onFailed(statsToken,
                         ImeTracker.PHASE_WM_NOTIFY_IME_VISIBILITY_CHANGED_FROM_CLIENT);
-            }
-        }
-    }
-
-    @Override
-    public void notifyInsetsAnimationRunningStateChanged(IWindow window, boolean running) {
-        synchronized (mService.mGlobalLock) {
-            final WindowState win = mService.windowForClientLocked(this, window,
-                    false /* throwOnError */);
-            if (win != null) {
-                win.notifyInsetsAnimationRunningStateChanged(running);
             }
         }
     }

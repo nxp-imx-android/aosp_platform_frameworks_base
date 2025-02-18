@@ -789,6 +789,12 @@ interface IWindowManager
             in @nullable ImeTracker.Token statsToken);
 
     /**
+     * Updates the currently animating insets types of a remote process.
+     */
+    @EnforcePermission("MANAGE_APP_TOKENS")
+    void updateDisplayWindowAnimatingTypes(int displayId, int animatingTypes);
+
+    /**
      * Called to get the expected window insets.
      *
      * @return {@code true} if system bars are always consumed.

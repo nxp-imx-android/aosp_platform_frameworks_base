@@ -2540,11 +2540,12 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     /**
-     * Notify the when the running state of a insets animation changed.
+     * Notify the when the animating insets types have changed.
      */
     @VisibleForTesting
-    public void notifyInsetsAnimationRunningStateChanged(boolean running) {
+    public void updateAnimatingTypes(@InsetsType int animatingTypes) {
         if (sToolkitSetFrameRateReadOnlyFlagValue) {
+            boolean running = animatingTypes != 0;
             if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
                 Trace.instant(Trace.TRACE_TAG_VIEW,
                         TextUtils.formatSimple("notifyInsetsAnimationRunningStateChanged(%s)",
@@ -2552,7 +2553,7 @@ public final class ViewRootImpl implements ViewParent,
             }
             mInsetsAnimationRunning = running;
             try {
-                mWindowSession.notifyInsetsAnimationRunningStateChanged(mWindow, running);
+                mWindowSession.updateAnimatingTypes(mWindow, animatingTypes);
             } catch (RemoteException e) {
             }
         }
