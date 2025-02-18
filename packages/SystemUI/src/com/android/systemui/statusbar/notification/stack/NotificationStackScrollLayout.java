@@ -117,8 +117,10 @@ import com.android.systemui.statusbar.notification.collection.render.GroupMember
 import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix;
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView;
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView;
+import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpTouchHelper;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpUtil;
+import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues;
 import com.android.systemui.statusbar.notification.logging.NotificationLogger;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
@@ -233,6 +235,8 @@ public class NotificationStackScrollLayout
     private String mLastInitViewDumpString;
     private long mLastInitViewElapsedRealtime;
 
+    @Nullable
+    private final HeadsUpAnimator mHeadsUpAnimator;
     /**
      * The algorithm which calculates the properties for our children
      */
@@ -668,8 +672,13 @@ public class NotificationStackScrollLayout
         mExpandHelper.setEventSource(this);
         mExpandHelper.setScrollAdapter(mScrollAdapter);
 
-        mStackScrollAlgorithm = createStackScrollAlgorithm(context);
-        mStateAnimator = new StackStateAnimator(context, this);
+        if (NotificationsHunSharedAnimationValues.isEnabled()) {
+            mHeadsUpAnimator = new HeadsUpAnimator(context);
+        } else {
+            mHeadsUpAnimator = null;
+        }
+        mStackScrollAlgorithm =  new StackScrollAlgorithm(context, this, mHeadsUpAnimator);
+        mStateAnimator = new StackStateAnimator(context, this, mHeadsUpAnimator);
         setOutlineProvider(mOutlineProvider);
 
         // We could set this whenever we 'requestChildUpdate' much like the viewTreeObserver, but
@@ -3582,10 +3591,6 @@ public class NotificationStackScrollLayout
         mGoToFullShadeNeedsAnimation = false;
     }
 
-    protected StackScrollAlgorithm createStackScrollAlgorithm(Context context) {
-        return new StackScrollAlgorithm(context, this);
-    }
-
     /**
      * @return Whether a y coordinate is inside the content.
      */
@@ -5111,9 +5116,16 @@ public class NotificationStackScrollLayout
     public void setHeadsUpBoundaries(int height, int bottomBarHeight) {
         SceneContainerFlag.assertInLegacyMode();
         mAmbientState.setMaxHeadsUpTranslation(height - bottomBarHeight);
-        mStackScrollAlgorithm.setHeadsUpAppearHeightBottom(height);
-        mStateAnimator.setHeadsUpAppearHeightBottom(height);
-        mStateAnimator.setStackTopMargin(mAmbientState.getStackTopMargin());
+
+        if (NotificationsHunSharedAnimationValues.isEnabled()) {
+            mHeadsUpAnimator.setHeadsUpAppearHeightBottom(height);
+            mHeadsUpAnimator.setStackTopMargin(mAmbientState.getStackTopMargin());
+        } else {
+            mStackScrollAlgorithm.setHeadsUpAppearHeightBottom(height);
+            mStateAnimator.setHeadsUpAppearHeightBottom(height);
+            mStateAnimator.setStackTopMargin(mAmbientState.getStackTopMargin());
+        }
+
         requestChildrenUpdate();
     }
 

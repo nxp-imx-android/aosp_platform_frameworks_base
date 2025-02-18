@@ -27,6 +27,7 @@ import static com.android.systemui.statusbar.notification.stack.NotificationStac
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.annotation.Nullable;
 import android.content.Context;
 import android.util.Property;
 import android.view.View;
@@ -39,6 +40,8 @@ import com.android.systemui.res.R;
 import com.android.systemui.shared.clocks.AnimatableClockView;
 import com.android.systemui.statusbar.NotificationShelf;
 import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator;
+import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
+import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.row.StackScrollerDecorView;
@@ -83,6 +86,9 @@ public class StackStateAnimator {
     private final ExpandableViewState mTmpState = new ExpandableViewState();
     private final AnimationProperties mAnimationProperties;
     public NotificationStackScrollLayout mHostLayout;
+    @Nullable
+    private final HeadsUpAnimator mHeadsUpAnimator;
+
     private ArrayList<NotificationStackScrollLayout.AnimationEvent> mNewEvents =
             new ArrayList<>();
     private ArrayList<View> mNewAddChildren = new ArrayList<>();
@@ -104,8 +110,12 @@ public class StackStateAnimator {
     private NotificationShelf mShelf;
     private StackStateLogger mLogger;
 
-    public StackStateAnimator(Context context, NotificationStackScrollLayout hostLayout) {
+    public StackStateAnimator(
+            Context context,
+            NotificationStackScrollLayout hostLayout,
+            @Nullable HeadsUpAnimator headsUpAnimator) {
         mHostLayout = hostLayout;
+        mHeadsUpAnimator = headsUpAnimator;
         initView(context);
         mAnimationProperties = new AnimationProperties() {
 
@@ -543,7 +553,6 @@ public class StackStateAnimator {
                 mHeadsUpAppearChildren.add(changingView);
 
                 mTmpState.copyFrom(changingView.getViewState());
-                // translate the HUN in from the top, or the bottom of the screen
                 mTmpState.setYTranslation(getHeadsUpYTranslationStart(event.headsUpFromBottom));
                 // set the height and the initial position
                 mTmpState.applyToView(changingView);
@@ -728,6 +737,10 @@ public class StackStateAnimator {
     }
 
     private float getHeadsUpYTranslationStart(boolean headsUpFromBottom) {
+        if (NotificationsHunSharedAnimationValues.isEnabled()) {
+            return mHeadsUpAnimator.getHeadsUpYTranslation(headsUpFromBottom);
+        }
+
         if (headsUpFromBottom) {
             // start from the bottom of the screen
             return mHeadsUpAppearHeightBottom + mHeadsUpAppearStartAboveScreen;
@@ -814,10 +827,12 @@ public class StackStateAnimator {
     }
 
     public void setHeadsUpAppearHeightBottom(int headsUpAppearHeightBottom) {
+        NotificationsHunSharedAnimationValues.assertInLegacyMode();
         mHeadsUpAppearHeightBottom = headsUpAppearHeightBottom;
     }
 
     public void setStackTopMargin(int stackTopMargin) {
+        NotificationsHunSharedAnimationValues.assertInLegacyMode();
         mStackTopMargin = stackTopMargin;
     }
 
