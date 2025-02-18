@@ -113,7 +113,7 @@ constructor(
     private val dreamOverlayStateController: DreamOverlayStateController,
     private val keyguardInteractor: KeyguardInteractor,
     communalTransitionViewModel: CommunalTransitionViewModel,
-    configurationController: ConfigurationController,
+    @ShadeDisplayAware configurationController: ConfigurationController,
     wakefulnessLifecycle: WakefulnessLifecycle,
     shadeInteractor: ShadeInteractor,
     private val secureSettings: SecureSettings,

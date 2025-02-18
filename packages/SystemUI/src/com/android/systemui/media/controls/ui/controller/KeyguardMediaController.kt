@@ -55,7 +55,7 @@ constructor(
     private val bypassController: KeyguardBypassController,
     private val statusBarStateController: SysuiStatusBarStateController,
     @ShadeDisplayAware private val context: Context,
-    configurationController: ConfigurationController,
+    @ShadeDisplayAware configurationController: ConfigurationController,
     private val splitShadeStateController: SplitShadeStateController,
     private val logger: KeyguardMediaControllerLogger,
     dumpManager: DumpManager,

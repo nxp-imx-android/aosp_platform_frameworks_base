@@ -306,7 +306,7 @@ public class MediaControlPanel {
      */
     @Inject
     public MediaControlPanel(
-            Context context,
+            @Main Context context,
             @Background Executor backgroundExecutor,
             @Main DelayableExecutor mainExecutor,
             ActivityStarter activityStarter,

@@ -65,8 +65,7 @@ constructor(
      * [userDetailViewAdapterProvider] and show it as launched from [expandable].
      */
     fun showDialog(expandable: Expandable) {
-        val context = shadeDialogContextInteractor.context
-        with(dialogFactory.create(context)) {
+        with(dialogFactory.create(shadeDialogContextInteractor.context)) {
             setShowForAllUsers(true)
             setCanceledOnTouchOutside(true)
 
