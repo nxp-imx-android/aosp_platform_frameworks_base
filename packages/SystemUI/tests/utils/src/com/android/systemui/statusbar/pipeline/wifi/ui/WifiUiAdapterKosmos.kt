@@ -21,9 +21,9 @@ import com.android.systemui.statusbar.phone.ui.statusBarIconController
 import com.android.systemui.statusbar.pipeline.wifi.ui.viewmodel.wifiViewModel
 
 val Kosmos.wifiUiAdapter by
-Kosmos.Fixture {
-    WifiUiAdapter(
+  Kosmos.Fixture {
+      WifiUiAdapter(
         statusBarIconController,
         wifiViewModel,
-    )
-}
+      )
+  }
