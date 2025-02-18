@@ -1696,6 +1696,7 @@ class SettingsProtoDumpUtil {
             proto.write(SettingProto.DEFAULT_VALUE, setting.getDefaultValue());
             proto.write(SettingProto.DEFAULT_FROM_SYSTEM, setting.isDefaultFromSystem());
         }
+        proto.write(SettingProto.PRESERVED_IN_RESTORE, setting.isValuePreservedInRestore());
         proto.end(settingsToken);
     }
 
