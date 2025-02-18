@@ -292,14 +292,14 @@ public abstract class ActivityManagerInternal {
     public abstract boolean canStartMoreUsers();
 
     /**
-     * Sets the user switcher message for switching from {@link android.os.UserHandle#SYSTEM}.
+     * Sets the user switcher message for switching from a user.
      */
-    public abstract void setSwitchingFromSystemUserMessage(String switchingFromSystemUserMessage);
+    public abstract void setSwitchingFromUserMessage(@UserIdInt int user, @Nullable String message);
 
     /**
-     * Sets the user switcher message for switching to {@link android.os.UserHandle#SYSTEM}.
+     * Sets the user switcher message for switching to a user.
      */
-    public abstract void setSwitchingToSystemUserMessage(String switchingToSystemUserMessage);
+    public abstract void setSwitchingToUserMessage(@UserIdInt int user, @Nullable String message);
 
     /**
      * Returns maximum number of users that can run simultaneously.

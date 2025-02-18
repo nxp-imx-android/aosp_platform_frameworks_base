@@ -3789,9 +3789,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 // Update user switcher message to activity manager.
                 ActivityManagerInternal activityManagerInternal =
                         mInjector.getActivityManagerInternal();
-                activityManagerInternal.setSwitchingFromSystemUserMessage(
+                int deviceOwnerUserId = UserHandle.getUserId(deviceOwner.getUid());
+                activityManagerInternal.setSwitchingFromUserMessage(deviceOwnerUserId,
                         deviceOwner.startUserSessionMessage);
-                activityManagerInternal.setSwitchingToSystemUserMessage(
+                activityManagerInternal.setSwitchingToUserMessage(deviceOwnerUserId,
                         deviceOwner.endUserSessionMessage);
             }
 
@@ -19659,7 +19660,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
 
         mInjector.getActivityManagerInternal()
-                .setSwitchingFromSystemUserMessage(startUserSessionMessageString);
+                .setSwitchingFromUserMessage(caller.getUserId(), startUserSessionMessageString);
     }
 
     @Override
@@ -19684,7 +19685,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
 
         mInjector.getActivityManagerInternal()
-                .setSwitchingToSystemUserMessage(endUserSessionMessageString);
+                .setSwitchingToUserMessage(caller.getUserId(), endUserSessionMessageString);
     }
 
     @Override
