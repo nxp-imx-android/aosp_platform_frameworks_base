@@ -71,6 +71,7 @@ public class BackupManagerMonitorEventSender {
         mMonitor = monitor;
     }
 
+    @Nullable
     public IBackupManagerMonitor getMonitor() {
         return mMonitor;
     }
@@ -87,9 +88,9 @@ public class BackupManagerMonitorEventSender {
      */
     public void monitorEvent(
             int id,
-            PackageInfo pkg,
+            @Nullable PackageInfo pkg,
             int category,
-            Bundle extras) {
+            @Nullable Bundle extras) {
         try {
             Bundle bundle = new Bundle();
             bundle.putInt(BackupManagerMonitor.EXTRA_LOG_EVENT_ID, id);
