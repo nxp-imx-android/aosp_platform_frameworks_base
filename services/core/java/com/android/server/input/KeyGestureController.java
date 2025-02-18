@@ -121,6 +121,7 @@ final class KeyGestureController {
 
     private final Context mContext;
     private final Handler mHandler;
+    private final Handler mIoHandler;
     private final int mSystemPid;
     private final KeyCombinationManager mKeyCombinationManager;
     private final SettingsObserver mSettingsObserver;
@@ -171,9 +172,11 @@ final class KeyGestureController {
 
     private final boolean mVisibleBackgroundUsersEnabled = isVisibleBackgroundUsersEnabled();
 
-    KeyGestureController(Context context, Looper looper, InputDataStore inputDataStore) {
+    KeyGestureController(Context context, Looper looper, Looper ioLooper,
+            InputDataStore inputDataStore) {
         mContext = context;
         mHandler = new Handler(looper, this::handleMessage);
+        mIoHandler = new Handler(ioLooper, this::handleIoMessage);
         mSystemPid = Process.myPid();
         mKeyGestureHandlerRecords = new TreeMap<>((p1, p2) -> {
             if (Objects.equals(p1, p2)) {
@@ -458,7 +461,7 @@ final class KeyGestureController {
             userId = mCurrentUserId;
         }
         // Load the system user's input gestures.
-        mHandler.obtainMessage(MSG_LOAD_CUSTOM_GESTURES, userId).sendToTarget();
+        mIoHandler.obtainMessage(MSG_LOAD_CUSTOM_GESTURES, userId).sendToTarget();
     }
 
     public boolean interceptKeyBeforeQueueing(KeyEvent event, int policyFlags) {
@@ -1032,7 +1035,7 @@ final class KeyGestureController {
         synchronized (mUserLock) {
             mCurrentUserId = userId;
         }
-        mHandler.obtainMessage(MSG_LOAD_CUSTOM_GESTURES, userId).sendToTarget();
+        mIoHandler.obtainMessage(MSG_LOAD_CUSTOM_GESTURES, userId).sendToTarget();
     }
 
     @MainThread
@@ -1073,6 +1076,12 @@ final class KeyGestureController {
                 AidlKeyGestureEvent event = (AidlKeyGestureEvent) msg.obj;
                 notifyKeyGestureEvent(event);
                 break;
+        }
+        return true;
+    }
+
+    private boolean handleIoMessage(Message msg) {
+        switch (msg.what) {
             case MSG_PERSIST_CUSTOM_GESTURES: {
                 final int userId = (Integer) msg.obj;
                 persistInputGestures(userId);
@@ -1083,7 +1092,6 @@ final class KeyGestureController {
                 loadInputGestures(userId);
                 break;
             }
-
         }
         return true;
     }
@@ -1144,7 +1152,7 @@ final class KeyGestureController {
         final int result = mInputGestureManager.addCustomInputGesture(userId,
                 new InputGestureData(inputGestureData));
         if (result == InputManager.CUSTOM_INPUT_GESTURE_RESULT_SUCCESS) {
-            mHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
+            mIoHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
         }
         return result;
     }
@@ -1156,7 +1164,7 @@ final class KeyGestureController {
         final int result = mInputGestureManager.removeCustomInputGesture(userId,
                 new InputGestureData(inputGestureData));
         if (result == InputManager.CUSTOM_INPUT_GESTURE_RESULT_SUCCESS) {
-            mHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
+            mIoHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
         }
         return result;
     }
@@ -1165,7 +1173,7 @@ final class KeyGestureController {
     public void removeAllCustomInputGestures(@UserIdInt int userId,
             @Nullable InputGestureData.Filter filter) {
         mInputGestureManager.removeAllCustomInputGestures(userId, filter);
-        mHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
+        mIoHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
     }
 
     @BinderThread
