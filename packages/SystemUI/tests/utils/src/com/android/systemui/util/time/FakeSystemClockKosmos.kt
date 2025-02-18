@@ -22,7 +22,7 @@ import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import kotlinx.coroutines.test.currentTime
 
-val Kosmos.systemClock by
+var Kosmos.systemClock by
     Kosmos.Fixture<SystemClock> {
         mock {
             whenever(elapsedRealtime()).thenAnswer { testScope.currentTime }

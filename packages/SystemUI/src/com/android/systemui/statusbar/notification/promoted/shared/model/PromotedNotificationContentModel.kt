@@ -16,7 +16,9 @@
 
 package com.android.systemui.statusbar.notification.promoted.shared.model
 
+import android.annotation.CurrentTimeMillisLong
 import android.annotation.DrawableRes
+import android.annotation.ElapsedRealtimeLong
 import android.app.Notification
 import android.app.Notification.FLAG_PROMOTED_ONGOING
 import androidx.annotation.ColorInt
@@ -120,16 +122,18 @@ data class PromotedNotificationContentModel(
     data class Identity(val key: String, val style: Style)
 
     /** The timestamp associated with a notification, along with the mode used to display it. */
-    data class When(val time: Long, val mode: Mode) {
-        /** The mode used to display a notification's `when` value. */
-        enum class Mode {
-            /** No custom mode requested by the notification. */
-            BasicTime,
-            /** Show the notification's time as a chronometer that counts down to [time]. */
-            CountDown,
-            /** Show the notification's time as a chronometer that counts up from [time]. */
-            CountUp,
-        }
+    sealed class When {
+        /** Show the notification's time as a timestamp. */
+        data class Time(@CurrentTimeMillisLong val currentTimeMillis: Long) : When()
+
+        /**
+         * Show the notification's time as a chronometer that counts up or down (based on
+         * [isCountDown]) to [elapsedRealtimeMillis].
+         */
+        data class Chronometer(
+            @ElapsedRealtimeLong val elapsedRealtimeMillis: Long,
+            val isCountDown: Boolean,
+        ) : When()
     }
 
     /** The colors used to display the notification. */

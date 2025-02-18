@@ -161,17 +161,17 @@ constructor(
             )
         }
 
-        when (this.promotedContent.time.mode) {
-            PromotedNotificationContentModel.When.Mode.BasicTime -> {
+        when (this.promotedContent.time) {
+            is PromotedNotificationContentModel.When.Time -> {
                 return if (
-                    this.promotedContent.time.time >=
+                    this.promotedContent.time.currentTimeMillis >=
                         systemClock.currentTimeMillis() + FUTURE_TIME_THRESHOLD_MILLIS
                 ) {
                     OngoingActivityChipModel.Active.ShortTimeDelta(
                         this.key,
                         icon,
                         colors,
-                        time = this.promotedContent.time.time,
+                        time = this.promotedContent.time.currentTimeMillis,
                         onClickListenerLegacy,
                         clickBehavior,
                     )
@@ -193,23 +193,13 @@ constructor(
                     )
                 }
             }
-            PromotedNotificationContentModel.When.Mode.CountUp -> {
+            is PromotedNotificationContentModel.When.Chronometer -> {
+                // TODO(b/364653005): Check isCountDown and support CountDown.
                 return OngoingActivityChipModel.Active.Timer(
                     this.key,
                     icon,
                     colors,
-                    startTimeMs = this.promotedContent.time.time,
-                    onClickListenerLegacy,
-                    clickBehavior,
-                )
-            }
-            PromotedNotificationContentModel.When.Mode.CountDown -> {
-                // TODO(b/364653005): Support CountDown.
-                return OngoingActivityChipModel.Active.Timer(
-                    this.key,
-                    icon,
-                    colors,
-                    startTimeMs = this.promotedContent.time.time,
+                    startTimeMs = this.promotedContent.time.elapsedRealtimeMillis,
                     onClickListenerLegacy,
                     clickBehavior,
                 )
