@@ -64,12 +64,12 @@
   <string-array name="tile_states_rotation">
     <item msgid="4578491772376121579">"Hakipatikani"</item>
     <item msgid="5776427577477729185">"Kimezimwa"</item>
-    <item msgid="7105052717007227415">"Kimewashwa"</item>
+    <item msgid="7105052717007227415">"Imewashwa"</item>
   </string-array>
   <string-array name="tile_states_bt">
     <item msgid="5330252067413512277">"Hakipatikani"</item>
     <item msgid="5315121904534729843">"Kimezimwa"</item>
-    <item msgid="503679232285959074">"Kimewashwa"</item>
+    <item msgid="503679232285959074">"Imewashwa"</item>
   </string-array>
   <string-array name="tile_states_airplane">
     <item msgid="1985366811411407764">"Hakipatikani"</item>
@@ -93,7 +93,7 @@
   </string-array>
   <string-array name="tile_states_inversion">
     <item msgid="3638187931191394628">"Hakipatikani"</item>
-    <item msgid="9103697205127645916">"Kimezimwa"</item>
+    <item msgid="9103697205127645916">"Umezimwa"</item>
     <item msgid="8067744885820618230">"Kimewashwa"</item>
   </string-array>
   <string-array name="tile_states_saver">
@@ -196,4 +196,7 @@
     <item msgid="6419996398343291862">"Limezimwa"</item>
     <item msgid="5908720590832378783">"Limewashwa"</item>
   </string-array>
+    <!-- no translation found for tile_states_desktopeffects:0 (6253480000354287321) -->
+    <!-- no translation found for tile_states_desktopeffects:1 (6641673879029894995) -->
+    <!-- no translation found for tile_states_desktopeffects:2 (5806682401126108403) -->
 </resources>
