@@ -534,6 +534,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"विजेटची निवड रद्द करा"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"उंची कमी करा"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"उंची वाढवा"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"पुढील दाखवा"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"मागील दाखवा"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"लॉक स्‍क्रीन विजेट"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"विजेट वापरून अ‍ॅप उघडण्यासाठी, तुम्हाला हे तुम्हीच असल्याची पडताळणी करावी लागेल. तसेच, लक्षात ठेवा, तुमचा टॅबलेट लॉक असतानादेखील कोणीही ती पाहू शकते. काही विजेट कदाचित तुमच्या लॉक स्‍क्रीनसाठी नाहीत आणि ती इथे जोडणे असुरक्षित असू शकते."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"समजले"</string>
@@ -806,7 +808,12 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> हे संभाषण वैशिष्ट्यांना सपोर्ट करत नाही"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"फीडबॅक"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"डिसमिस करा"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"पुन्हा दाखवू नका"</string>
+    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
+    <skip />
+    <!-- no translation found for live_notifications_title (1586553354601345379) -->
+    <skip />
+    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
+    <skip />
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"या सूचनांमध्ये सुधारणा केली जाऊ शकत नाही."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"कॉलशी संबंधित सूचनांमध्ये फेरबदल केला जाऊ शकत नाही."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"या सूचनांचा संच येथे कॉन्फिगर केला जाऊ शकत नाही"</string>
@@ -1523,8 +1530,8 @@
     <string name="tutorial_animation_content_description" msgid="2698816574982370184">"ट्यूटोरियल अ‍ॅनिमेशन थांबवण्यासाठी किंवा पुन्हा सुरू करण्यासाठी प्ले करा वर क्लिक करा."</string>
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"कीबोर्ड बॅकलाइट"</string>
     <string name="keyboard_backlight_value" msgid="7336398765584393538">"%2$d पैकी %1$d पातळी"</string>
-    <string name="home_controls_dream_label" msgid="6567105701292324257">"होम कंट्रोल"</string>
-    <string name="home_controls_dream_description" msgid="4644150952104035789">"स्क्रीनसेव्हर म्हणून होम कंट्रोल झटपट ॲक्सेस करा"</string>
+    <string name="home_controls_dream_label" msgid="6567105701292324257">"होम कंट्रोल्स"</string>
+    <string name="home_controls_dream_description" msgid="4644150952104035789">"स्क्रीनसेव्हर म्हणून होम कंट्रोल्स झटपट ॲक्सेस करा"</string>
     <string name="volume_undo_action" msgid="5815519725211877114">"पहिल्यासारखे करा"</string>
     <string name="back_edu_toast_content" msgid="4530314597378982956">"मागे जाण्यासाठी, टचपॅडवर तीन बोटांनी डावीकडे किंवा उजवीकडे स्वाइप करा"</string>
     <string name="home_edu_toast_content" msgid="3381071147871955415">"होमवर जाण्यासाठी, टचपॅडवर तीन बोटांनी वरती स्वाइप करा"</string>

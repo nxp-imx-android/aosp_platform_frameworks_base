@@ -125,7 +125,7 @@
     <string name="screenrecord_continue" msgid="4055347133700593164">"Sākt"</string>
     <string name="screenrecord_ongoing_screen_only" msgid="4459670242451527727">"Notiek ekrāna satura ierakstīšana."</string>
     <string name="screenrecord_ongoing_screen_and_audio" msgid="5351133763125180920">"Notiek ekrāna satura un audio ierakstīšana."</string>
-    <string name="screenrecord_taps_label" msgid="1595690528298857649">"Rādīt pieskārienus pie ekrāna"</string>
+    <string name="screenrecord_taps_label" msgid="1595690528298857649">"Rādīt pieskārienus ekrānam"</string>
     <string name="screenrecord_stop_label" msgid="72699670052087989">"Pārtraukt"</string>
     <string name="screenrecord_share_label" msgid="5025590804030086930">"Kopīgot"</string>
     <string name="screenrecord_save_title" msgid="1886652605520893850">"Ekrāna ieraksts ir saglabāts"</string>
@@ -534,6 +534,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"noņemt logrīka atlasi"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Samazināt augstumu"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Palielināt augstumu"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Rādīt nākamo"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Rādīt iepriekšējo"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Bloķēšanas ekrāna logrīki"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"Lai atvērtu lietotni, izmantojot logrīku, jums būs jāapstiprina sava identitāte. Turklāt ņemiet vērā, ka ikviens var skatīt logrīkus, pat ja planšetdators ir bloķēts. Iespējams, daži logrīki nav paredzēti izmantošanai bloķēšanas ekrānā, un var nebūt droši tos šeit pievienot."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"Labi"</string>
@@ -806,7 +808,12 @@
     <string name="no_shortcut" msgid="8257177117568230126">"Lietotnē <xliff:g id="APP_NAME">%1$s</xliff:g> netiek atbalstītas sarunu funkcijas."</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Atsauksmes"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Nerādīt"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Vairs nerādīt"</string>
+    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
+    <skip />
+    <!-- no translation found for live_notifications_title (1586553354601345379) -->
+    <skip />
+    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
+    <skip />
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Šos paziņojumus nevar modificēt."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Paziņojumus par zvaniem nevar modificēt."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Šeit nevar konfigurēt šo paziņojumu grupu."</string>
@@ -1394,8 +1401,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Salokāma ierīce tiek atlocīta"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Salokāma ierīce tiek apgriezta"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Priekšējais ekrāns ir ieslēgts"</string>
-    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
-    <skip />
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Velciet, lai izmantotu iekšējo ekrānu."</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"aizvērta"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"atvērta"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s/%2$s"</string>
