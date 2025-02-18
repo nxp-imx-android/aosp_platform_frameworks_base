@@ -20,6 +20,8 @@ import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_R
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_NAMESPACE;
 
 import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_EXECUTOR;
+import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION;
+import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_DENIED;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -236,30 +238,42 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         requestInternal.getCallingPackage(),
                         targetPackageName,
                         requestInternal.getClientRequest().getFunctionIdentifier())
-                .thenAccept(
-                        canExecute -> {
-                            if (!canExecute) {
-                                throw new SecurityException(
-                                        "Caller does not have permission to execute the"
-                                                + " appfunction");
-                            }
-                        })
                 .thenCompose(
-                        isEnabled ->
-                                isAppFunctionEnabled(
-                                        requestInternal.getClientRequest().getFunctionIdentifier(),
-                                        requestInternal.getClientRequest().getTargetPackageName(),
-                                        getAppSearchManagerAsUser(requestInternal.getUserHandle()),
-                                        THREAD_POOL_EXECUTOR))
-                .thenAccept(
-                        isEnabled -> {
-                            if (!isEnabled) {
-                                throw new DisabledAppFunctionException(
-                                        "The app function is disabled");
+                        canExecuteResult -> {
+                            if (canExecuteResult == CAN_EXECUTE_APP_FUNCTIONS_DENIED) {
+                                return AndroidFuture.failedFuture(new SecurityException(
+                                        "Caller does not have permission to execute the"
+                                                + " appfunction"));
                             }
+                            return isAppFunctionEnabled(
+                                    requestInternal
+                                            .getClientRequest()
+                                            .getFunctionIdentifier(),
+                                    requestInternal
+                                            .getClientRequest()
+                                            .getTargetPackageName(),
+                                    getAppSearchManagerAsUser(
+                                            requestInternal.getUserHandle()),
+                                    THREAD_POOL_EXECUTOR)
+                                    .thenApply(
+                                            isEnabled -> {
+                                                if (!isEnabled) {
+                                                    throw new DisabledAppFunctionException(
+                                                            "The app function is disabled");
+                                                }
+                                                return canExecuteResult;
+                                            });
                         })
                 .thenAccept(
-                        unused -> {
+                        canExecuteResult -> {
+                            int bindFlags = Context.BIND_AUTO_CREATE;
+                            if (canExecuteResult
+                                    == CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION) {
+                                // If the caller doesn't have the permission, do not use
+                                // BIND_FOREGROUND_SERVICE to avoid it raising its process state by
+                                // calling its own AppFunctions.
+                                bindFlags |= Context.BIND_FOREGROUND_SERVICE;
+                            }
                             Intent serviceIntent =
                                     mInternalServiceHelper.resolveAppFunctionService(
                                             targetPackageName, targetUser);
@@ -294,8 +308,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                     targetUser,
                                     localCancelTransport,
                                     safeExecuteAppFunctionCallback,
-                                    /* bindFlags= */ Context.BIND_AUTO_CREATE
-                                            | Context.BIND_FOREGROUND_SERVICE,
+                                    bindFlags,
                                     callerBinder,
                                     callingUid);
                         })
