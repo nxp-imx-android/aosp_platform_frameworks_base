@@ -658,12 +658,26 @@ public class HardwareRenderer {
     }
 
     /**
+     * @hide
+     */
+    public void addObserver(long nativeObserver) {
+        nAddObserver(mNativeProxy, nativeObserver);
+    }
+
+    /**
      * TODO: Public API this?
      *
      * @hide
      */
     public void removeObserver(HardwareRendererObserver observer) {
         nRemoveObserver(mNativeProxy, observer.getNativeInstance());
+    }
+
+    /**
+     * @hide
+     */
+    public void removeObserver(long nativeObserver) {
+        nRemoveObserver(mNativeProxy, nativeObserver);
     }
 
     /**

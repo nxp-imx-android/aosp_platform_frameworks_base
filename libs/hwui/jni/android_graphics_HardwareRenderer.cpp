@@ -915,20 +915,22 @@ static jboolean android_view_ThreadedRenderer_isDrawingEnabled(JNIEnv*, jclass) 
 
 static void android_view_ThreadedRenderer_addObserver(JNIEnv* env, jclass clazz,
         jlong proxyPtr, jlong observerPtr) {
-    HardwareRendererObserver* observer = reinterpret_cast<HardwareRendererObserver*>(observerPtr);
+    FrameMetricsObserver* rawObserver = reinterpret_cast<FrameMetricsObserver*>(observerPtr);
+    sp<FrameMetricsObserver> observer = sp<FrameMetricsObserver>::fromExisting(rawObserver);
     renderthread::RenderProxy* renderProxy =
             reinterpret_cast<renderthread::RenderProxy*>(proxyPtr);
 
-    renderProxy->addFrameMetricsObserver(observer);
+    renderProxy->addFrameMetricsObserver(std::move(observer));
 }
 
 static void android_view_ThreadedRenderer_removeObserver(JNIEnv* env, jclass clazz,
         jlong proxyPtr, jlong observerPtr) {
-    HardwareRendererObserver* observer = reinterpret_cast<HardwareRendererObserver*>(observerPtr);
+    FrameMetricsObserver* rawObserver = reinterpret_cast<FrameMetricsObserver*>(observerPtr);
+    sp<FrameMetricsObserver> observer = sp<FrameMetricsObserver>::fromExisting(rawObserver);
     renderthread::RenderProxy* renderProxy =
             reinterpret_cast<renderthread::RenderProxy*>(proxyPtr);
 
-    renderProxy->removeFrameMetricsObserver(observer);
+    renderProxy->removeFrameMetricsObserver(std::move(observer));
 }
 
 // ----------------------------------------------------------------------------

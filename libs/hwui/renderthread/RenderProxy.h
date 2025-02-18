@@ -141,8 +141,8 @@ public:
     void setFrameCommitCallback(std::function<void(bool)>&& callback);
     void setFrameCompleteCallback(std::function<void()>&& callback);
 
-    void addFrameMetricsObserver(FrameMetricsObserver* observer);
-    void removeFrameMetricsObserver(FrameMetricsObserver* observer);
+    void addFrameMetricsObserver(sp<FrameMetricsObserver>&& observer);
+    void removeFrameMetricsObserver(sp<FrameMetricsObserver>&& observer);
     void setForceDark(ForceDarkType type);
 
     static void copySurfaceInto(ANativeWindow* window, std::shared_ptr<CopyRequest>&& request);
