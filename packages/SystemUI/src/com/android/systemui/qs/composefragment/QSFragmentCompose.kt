@@ -53,6 +53,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -287,7 +288,7 @@ constructor(
     private fun CollapsableQuickSettingsSTL() {
         val sceneState =
             rememberMutableSceneTransitionLayoutState(
-                viewModel.expansionState.toIdleSceneKey(),
+                initialScene = remember { viewModel.expansionState.toIdleSceneKey() },
                 transitions =
                     transitions {
                         from(QuickQuickSettings, QuickSettings) {
