@@ -4771,6 +4771,7 @@ public final class ActivityThread extends ClientTransactionHandler
         // frame.
         final SurfaceControl.Transaction transaction = new SurfaceControl.Transaction();
         transaction.hide(startingWindowLeash);
+        startingWindowLeash.release();
 
         view.syncTransferSurfaceOnDraw();
 
