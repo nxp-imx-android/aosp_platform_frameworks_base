@@ -134,7 +134,7 @@ class AccessibilityInputFilter extends InputFilter implements EventStreamTransfo
      */
     static final int FLAG_SERVICE_HANDLES_DOUBLE_TAP = 0x00000080;
 
-/**
+    /**
      * Flag for enabling multi-finger gestures.
      *
      * @see #setUserAndEnabledFeatures(int, int)
@@ -189,8 +189,6 @@ class AccessibilityInputFilter extends InputFilter implements EventStreamTransfo
     private final PowerManager mPm;
 
     private final AccessibilityManagerService mAms;
-
-    private final InputManager mInputManager;
 
     private final SparseArray<EventStreamTransformation> mEventHandler;
 
@@ -294,7 +292,6 @@ class AccessibilityInputFilter extends InputFilter implements EventStreamTransfo
         mContext = context;
         mAms = service;
         mPm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        mInputManager = context.getSystemService(InputManager.class);
         mEventHandler = eventHandler;
     }
 
