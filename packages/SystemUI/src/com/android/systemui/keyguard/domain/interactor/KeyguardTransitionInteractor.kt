@@ -266,7 +266,7 @@ constructor(
             // this condition to not filter out the STARTED and FINISHED step of the "artificially"
             // reversed B -> A transition.
             val belongsToInstantReversedTransition =
-                sceneInteractor.transitionState.value.isIdle(toScene) &&
+                sceneInteractor.topmostContent.value == toScene &&
                     sceneTransitionPair.value.previousValue.isTransitioning(toScene, fromScene)
 
             // We can't compare the terminal step with the current sceneTransition because
@@ -361,41 +361,43 @@ constructor(
      */
     private fun <T> Flow<T>.flatMapLatestWithFinished(
         transform: suspend (T) -> Flow<TransitionStep>
-    ): Flow<TransitionStep> = channelFlow {
-        var job: Job? = null
-        var startedEmitted = false
+    ): Flow<TransitionStep> =
+        channelFlow {
+                var job: Job? = null
+                var startedEmitted = false
 
-        coroutineScope {
-            collect { value ->
-                traceCoroutine("cancelAndJoin") { job?.cancelAndJoin() }
+                coroutineScope {
+                    collect { value ->
+                        traceCoroutine("cancelAndJoin") { job?.cancelAndJoin() }
 
-                job = launch("inner") {
-                    val innerFlow = transform(value)
-                    try {
-                        innerFlow.collect { step ->
-                            if (step.transitionState == TransitionState.STARTED) {
-                                startedEmitted = true
+                        job =
+                            launch("inner") {
+                                val innerFlow = transform(value)
+                                try {
+                                    innerFlow.collect { step ->
+                                        if (step.transitionState == TransitionState.STARTED) {
+                                            startedEmitted = true
+                                        }
+                                        traceCoroutine("send($step)") { send(step) }
+                                    }
+                                } finally {
+                                    if (startedEmitted) {
+                                        val step =
+                                            TransitionStep(
+                                                from = UNDEFINED,
+                                                to = UNDEFINED,
+                                                value = 1f,
+                                                transitionState = TransitionState.FINISHED,
+                                            )
+                                        traceCoroutine("send($step)") { send(step) }
+                                        startedEmitted = false
+                                    }
+                                }
                             }
-                            traceCoroutine("send($step)") { send(step) }
-                        }
-                    } finally {
-                        if (startedEmitted) {
-                            val step =
-                                TransitionStep(
-                                    from = UNDEFINED,
-                                    to = UNDEFINED,
-                                    value = 1f,
-                                    transitionState = TransitionState.FINISHED,
-                                )
-                            traceCoroutine("send($step)") { send(step) }
-                            startedEmitted = false
-                        }
                     }
                 }
             }
-        }
-    }
-    .traceAs("flatMapLatestWithFinished")
+            .traceAs("flatMapLatestWithFinished")
 
     /**
      * Converts old KTF states to UNDEFINED when [SceneContainerFlag] is enabled.
@@ -583,8 +585,10 @@ constructor(
 
     fun isFinishedIn(scene: SceneKey, stateWithoutSceneContainer: KeyguardState): Flow<Boolean> {
         return if (SceneContainerFlag.isEnabled) {
-                sceneInteractor.transitionState.map {
-                    it.isIdle(scene) || it.isTransitioning(from = scene)
+                combine(sceneInteractor.topmostContent, sceneInteractor.transitionState) {
+                    topmostContent,
+                    state ->
+                    topmostContent == scene || state.isTransitioning(from = scene)
                 }
             } else {
                 isFinishedIn(stateWithoutSceneContainer)
