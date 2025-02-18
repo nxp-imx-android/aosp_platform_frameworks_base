@@ -992,6 +992,25 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertEquals(persistentSavedState, activity.getPersistentSavedState());
     }
 
+    @Test
+    public void testReadWindowStyle() {
+        final ActivityRecord activity = new ActivityBuilder(mAtm).setActivityTheme(
+                com.android.frameworks.wmtests.R.style.ActivityWindowStyleTest).build();
+        assertTrue(activity.isNoDisplay());
+        assertTrue("Fill parent because showWallpaper", activity.mStyleFillsParent);
+
+        final ActivityRecord.WindowStyle style = mAtm.getWindowStyle(
+                activity.packageName, activity.info.theme, activity.mUserId);
+        assertNotNull(style);
+        assertTrue(style.isTranslucent());
+        assertTrue(style.isFloating());
+        assertTrue(style.showWallpaper());
+        assertTrue(style.noDisplay());
+        assertTrue(style.disablePreview());
+        assertTrue(style.optOutEdgeToEdge());
+        assertEquals(1 /* icon_preferred */, style.mSplashScreenBehavior);
+    }
+
     /**
      * Verify that activity finish request is not performed if activity is finishing or is in
      * incorrect state.

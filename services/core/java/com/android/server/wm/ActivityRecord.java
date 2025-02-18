@@ -289,6 +289,7 @@ import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserProperties;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Insets;
 import android.graphics.PixelFormat;
@@ -352,7 +353,6 @@ import com.android.internal.app.ResolverActivity;
 import com.android.internal.content.ReferrerIntent;
 import com.android.internal.os.TimeoutRecord;
 import com.android.internal.os.TransferPipe;
-import com.android.internal.policy.AttributeCache;
 import com.android.internal.policy.PhoneWindow;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.XmlUtils;
@@ -479,6 +479,8 @@ final class ActivityRecord extends WindowToken {
     final String processName; // process where this component wants to run
     final String taskAffinity; // as per ActivityInfo.taskAffinity
     final boolean stateNotNeeded; // As per ActivityInfo.flags
+    @Nullable
+    final WindowStyle mWindowStyle;
     @VisibleForTesting
     int mHandoverLaunchDisplayId = INVALID_DISPLAY; // Handover launch display id to next activity.
     @VisibleForTesting
@@ -1926,22 +1928,17 @@ final class ActivityRecord extends WindowToken {
                     ? android.R.style.Theme : android.R.style.Theme_Holo;
         }
 
-        final AttributeCache.Entry ent = AttributeCache.instance().get(packageName,
-                realTheme, com.android.internal.R.styleable.Window, mUserId);
-
-        if (ent != null) {
-            final boolean styleTranslucent = ent.array.getBoolean(
-                    com.android.internal.R.styleable.Window_windowIsTranslucent, false);
-            final boolean styleFloating = ent.array.getBoolean(
-                    com.android.internal.R.styleable.Window_windowIsFloating, false);
-            mOccludesParent = !(styleTranslucent || styleFloating)
+        final WindowStyle style = mAtmService.getWindowStyle(packageName, realTheme, mUserId);
+        mWindowStyle = style;
+        if (style != null) {
+            mOccludesParent = !(style.isTranslucent() || style.isFloating())
                     // This style is propagated to the main window attributes with
                     // FLAG_SHOW_WALLPAPER from PhoneWindow#generateLayout.
-                    || ent.array.getBoolean(R.styleable.Window_windowShowWallpaper, false);
+                    || style.showWallpaper();
             mStyleFillsParent = mOccludesParent;
-            mNoDisplay = ent.array.getBoolean(R.styleable.Window_windowNoDisplay, false);
-            mOptOutEdgeToEdge = PhoneWindow.isOptingOutEdgeToEdgeEnforcement(
-                    aInfo.applicationInfo, false /* local */, ent.array);
+            mNoDisplay = style.noDisplay();
+            mOptOutEdgeToEdge = style.optOutEdgeToEdge() && PhoneWindow.isOptOutEdgeToEdgeEnabled(
+                    aInfo.applicationInfo, false /* local */);
         } else {
             mStyleFillsParent = mOccludesParent = true;
             mNoDisplay = false;
@@ -2272,21 +2269,17 @@ final class ActivityRecord extends WindowToken {
             return false;
         }
 
-        final AttributeCache.Entry ent = AttributeCache.instance().get(pkg, theme,
-                com.android.internal.R.styleable.Window, mWmService.mCurrentUserId);
-        if (ent == null) {
+        final WindowStyle style = theme == this.theme
+                ? mWindowStyle : mAtmService.getWindowStyle(pkg, theme, mUserId);
+        if (style == null) {
             // Whoops!  App doesn't exist. Um. Okay. We'll just pretend like we didn't
             // see that.
             return false;
         }
-        final boolean windowIsTranslucent = ent.array.getBoolean(
-                com.android.internal.R.styleable.Window_windowIsTranslucent, false);
-        final boolean windowIsFloating = ent.array.getBoolean(
-                com.android.internal.R.styleable.Window_windowIsFloating, false);
-        final boolean windowShowWallpaper = ent.array.getBoolean(
-                com.android.internal.R.styleable.Window_windowShowWallpaper, false);
-        final boolean windowDisableStarting = ent.array.getBoolean(
-                com.android.internal.R.styleable.Window_windowDisablePreview, false);
+        final boolean windowIsTranslucent = style.isTranslucent();
+        final boolean windowIsFloating = style.isFloating();
+        final boolean windowShowWallpaper = style.showWallpaper();
+        final boolean windowDisableStarting = style.disablePreview();
         ProtoLog.v(WM_DEBUG_STARTING_WINDOW,
                 "Translucent=%s Floating=%s ShowWallpaper=%s Disable=%s",
                 windowIsTranslucent, windowIsFloating, windowShowWallpaper,
@@ -7135,14 +7128,10 @@ final class ActivityRecord extends WindowToken {
         if (theme == 0) {
             return false;
         }
-        final AttributeCache.Entry ent = AttributeCache.instance().get(packageName, theme,
-                R.styleable.Window, mWmService.mCurrentUserId);
-        if (ent != null) {
-            if (ent.array.hasValue(R.styleable.Window_windowSplashScreenBehavior)) {
-                return ent.array.getInt(R.styleable.Window_windowSplashScreenBehavior,
-                        SPLASH_SCREEN_BEHAVIOR_DEFAULT)
-                        == SPLASH_SCREEN_BEHAVIOR_ICON_PREFERRED;
-            }
+        final WindowStyle style = theme == this.theme
+                ? mWindowStyle : mAtmService.getWindowStyle(packageName, theme, mUserId);
+        if (style != null) {
+            return style.mSplashScreenBehavior == SPLASH_SCREEN_BEHAVIOR_ICON_PREFERRED;
         }
         return false;
     }
@@ -9812,6 +9801,68 @@ final class ActivityRecord extends WindowToken {
         int mEnterAnim;
         int mExitAnim;
         int mBackgroundColor;
+    }
+
+    static class WindowStyle {
+        private static final int FLAG_IS_TRANSLUCENT = 1;
+        private static final int FLAG_IS_FLOATING = 1 << 1;
+        private static final int FLAG_SHOW_WALLPAPER = 1 << 2;
+        private static final int FLAG_NO_DISPLAY = 1 << 3;
+        private static final int FLAG_DISABLE_PREVIEW = 1 << 4;
+        private static final int FLAG_OPT_OUT_EDGE_TO_EDGE = 1 << 5;
+
+        final int mFlags;
+
+        @SplashScreenBehavior
+        final int mSplashScreenBehavior;
+
+        WindowStyle(TypedArray array) {
+            int flags = 0;
+            if (array.getBoolean(R.styleable.Window_windowIsTranslucent, false)) {
+                flags |= FLAG_IS_TRANSLUCENT;
+            }
+            if (array.getBoolean(R.styleable.Window_windowIsFloating, false)) {
+                flags |= FLAG_IS_FLOATING;
+            }
+            if (array.getBoolean(R.styleable.Window_windowShowWallpaper, false)) {
+                flags |= FLAG_SHOW_WALLPAPER;
+            }
+            if (array.getBoolean(R.styleable.Window_windowNoDisplay, false)) {
+                flags |= FLAG_NO_DISPLAY;
+            }
+            if (array.getBoolean(R.styleable.Window_windowDisablePreview, false)) {
+                flags |= FLAG_DISABLE_PREVIEW;
+            }
+            if (array.getBoolean(R.styleable.Window_windowOptOutEdgeToEdgeEnforcement, false)) {
+                flags |= FLAG_OPT_OUT_EDGE_TO_EDGE;
+            }
+            mFlags = flags;
+            mSplashScreenBehavior = array.getInt(R.styleable.Window_windowSplashScreenBehavior, 0);
+        }
+
+        boolean isTranslucent() {
+            return (mFlags & FLAG_IS_TRANSLUCENT) != 0;
+        }
+
+        boolean isFloating() {
+            return (mFlags & FLAG_IS_FLOATING) != 0;
+        }
+
+        boolean showWallpaper() {
+            return (mFlags & FLAG_SHOW_WALLPAPER) != 0;
+        }
+
+        boolean noDisplay() {
+            return (mFlags & FLAG_NO_DISPLAY) != 0;
+        }
+
+        boolean disablePreview() {
+            return (mFlags & FLAG_DISABLE_PREVIEW) != 0;
+        }
+
+        boolean optOutEdgeToEdge() {
+            return (mFlags & FLAG_OPT_OUT_EDGE_TO_EDGE) != 0;
+        }
     }
 
     static class Builder {

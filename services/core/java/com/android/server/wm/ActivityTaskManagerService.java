@@ -286,6 +286,7 @@ import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
+import com.android.server.wm.utils.WindowStyleCache;
 import com.android.wm.shell.Flags;
 
 import java.io.BufferedReader;
@@ -500,6 +501,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
     boolean mSuppressResizeConfigChanges;
 
+    private final WindowStyleCache<ActivityRecord.WindowStyle> mWindowStyleCache =
+            new WindowStyleCache<>(ActivityRecord.WindowStyle::new);
     final UpdateConfigurationResult mTmpUpdateConfigurationResult =
             new UpdateConfigurationResult();
 
@@ -5570,6 +5573,16 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         return mUserManagerInternal;
     }
 
+    @Nullable
+    ActivityRecord.WindowStyle getWindowStyle(String packageName, int theme, int userId) {
+        if (!com.android.window.flags.Flags.cacheWindowStyle()) {
+            final AttributeCache.Entry ent = AttributeCache.instance().get(packageName,
+                    theme, com.android.internal.R.styleable.Window, userId);
+            return ent != null ? new ActivityRecord.WindowStyle(ent.array) : null;
+        }
+        return mWindowStyleCache.get(packageName, theme, userId);
+    }
+
     AppWarnings getAppWarningsLocked() {
         return mAppWarnings;
     }
@@ -6518,6 +6531,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 mCompatModePackages.handlePackageUninstalledLocked(name);
                 mPackageConfigPersister.onPackageUninstall(name, userId);
             }
+            mWindowStyleCache.invalidatePackage(name);
         }
 
         @Override
@@ -6534,6 +6548,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 if (mRootWindowContainer == null) return;
                 mRootWindowContainer.updateActivityApplicationInfo(aInfo);
             }
+            mWindowStyleCache.invalidatePackage(aInfo.packageName);
         }
 
         @Override
