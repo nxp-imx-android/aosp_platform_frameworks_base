@@ -56,18 +56,14 @@ constructor(
     configurationController: ConfigurationController,
 ) {
 
-    val motionState: Flow<Int> =
+    val isHalfOpened: Flow<Boolean> =
         combine(
             devicePostureController.devicePosture(),
             configurationController.onConfigChanged.onStart {
                 emit(context.resources.configuration)
             },
         ) { devicePosture, configuration ->
-            if (shouldOffsetVolumeDialog(devicePosture, configuration)) {
-                R.id.volume_dialog_half_folded_constraint_set
-            } else {
-                R.id.volume_dialog_constraint_set
-            }
+            shouldOffsetVolumeDialog(devicePosture, configuration)
         }
     val dialogVisibilityModel: Flow<VolumeDialogVisibilityModel> =
         dialogVisibilityInteractor.dialogVisibility
