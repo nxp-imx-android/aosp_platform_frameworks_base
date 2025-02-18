@@ -22,9 +22,10 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static junit.framework.Assert.assertFalse;
 
+import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
 
-import static org.junit.Assume.assumeFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -35,8 +36,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
 
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
@@ -74,12 +73,15 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntryB
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifStabilityManager;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Pluggable;
 import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider;
+import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository;
 import com.android.systemui.statusbar.notification.domain.interactor.SeenNotificationsInteractor;
-import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.time.FakeSystemClock;
+
+import kotlinx.coroutines.flow.MutableStateFlow;
+import kotlinx.coroutines.test.TestScope;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -90,14 +92,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.verification.VerificationMode;
 
-import java.util.List;
-import java.util.Set;
-
-import kotlinx.coroutines.flow.MutableStateFlow;
-import kotlinx.coroutines.test.TestScope;
-
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
+
+import java.util.List;
+import java.util.Set;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -118,7 +117,7 @@ public class VisualStabilityCoordinatorTest extends SysuiTestCase {
     @Mock private StatusBarStateController mStatusBarStateController;
     @Mock private Pluggable.PluggableListener<NotifStabilityManager> mInvalidateListener;
     @Mock private SeenNotificationsInteractor mSeenNotificationsInteractor;
-    @Mock private HeadsUpManager mHeadsUpManager;
+    @Mock private HeadsUpRepository mHeadsUpRepository;
     @Mock private VisibilityLocationProvider mVisibilityLocationProvider;
     @Mock private VisualStabilityProvider mVisualStabilityProvider;
     @Mock private VisualStabilityCoordinatorLogger mLogger;
@@ -159,7 +158,7 @@ public class VisualStabilityCoordinatorTest extends SysuiTestCase {
                 mFakeBackgroundExecutor,
                 mFakeMainExecutor,
                 mDumpManager,
-                mHeadsUpManager,
+                mHeadsUpRepository,
                 mShadeAnimationInteractor,
                 mJavaAdapter,
                 mSeenNotificationsInteractor,
@@ -172,6 +171,8 @@ public class VisualStabilityCoordinatorTest extends SysuiTestCase {
                 mKosmos.getKeyguardTransitionInteractor(),
                 mKeyguardStateController,
                 mLogger);
+
+        when(mHeadsUpRepository.isTrackingHeadsUp()).thenReturn(MutableStateFlow(false));
         mCoordinator.attach(mNotifPipeline);
         mTestScope.getTestScheduler().runCurrent();
 
@@ -194,7 +195,7 @@ public class VisualStabilityCoordinatorTest extends SysuiTestCase {
                 .setSummary(mEntry)
                 .build();
 
-        when(mHeadsUpManager.isHeadsUpEntry(mEntry.getKey())).thenReturn(false);
+        when(mHeadsUpRepository.isHeadsUpEntry(mEntry.getKey())).thenReturn(false);
 
         // Whenever we invalidate, the pipeline runs again, so we invalidate the state
         doAnswer(i -> {
@@ -461,7 +462,7 @@ public class VisualStabilityCoordinatorTest extends SysuiTestCase {
         setSleepy(false);
 
         // WHEN a notification is alerting and visible
-        when(mHeadsUpManager.isHeadsUpEntry(mEntry.getKey())).thenReturn(true);
+        when(mHeadsUpRepository.isHeadsUpEntry(mEntry.getKey())).thenReturn(true);
         when(mVisibilityLocationProvider.isInVisibleLocation(any(NotificationEntry.class)))
                 .thenReturn(true);
 
@@ -477,7 +478,7 @@ public class VisualStabilityCoordinatorTest extends SysuiTestCase {
         setSleepy(false);
 
         // WHEN a notification is alerting but not visible
-        when(mHeadsUpManager.isHeadsUpEntry(mEntry.getKey())).thenReturn(true);
+        when(mHeadsUpRepository.isHeadsUpEntry(mEntry.getKey())).thenReturn(true);
         when(mVisibilityLocationProvider.isInVisibleLocation(any(NotificationEntry.class)))
                 .thenReturn(false);
 
@@ -701,7 +702,7 @@ public class VisualStabilityCoordinatorTest extends SysuiTestCase {
         assertFalse(mNotifStabilityManager.isSectionChangeAllowed(mEntry));
 
         // GIVEN mEntry is a HUN
-        when(mHeadsUpManager.isHeadsUpEntry(mEntry.getKey())).thenReturn(true);
+        when(mHeadsUpRepository.isHeadsUpEntry(mEntry.getKey())).thenReturn(true);
 
         // THEN group + section changes are allowed
         assertTrue(mNotifStabilityManager.isGroupChangeAllowed(mEntry));
@@ -768,7 +769,7 @@ public class VisualStabilityCoordinatorTest extends SysuiTestCase {
         //  GIVEN - there is a group heads-up.
         String headsUpGroupKey = "heads_up_group_key";
         mCoordinator.setHeadsUpGroupKeys(Set.of(headsUpGroupKey));
-        when(mHeadsUpManager.isHeadsUpEntry(headsUpGroupKey)).thenReturn(true);
+        when(mHeadsUpRepository.isHeadsUpEntry(headsUpGroupKey)).thenReturn(true);
 
         // GIVEN - HUN Group Summary
         final NotificationEntry nonHeadsUpGroupSummary = mock(NotificationEntry.class);
@@ -793,7 +794,7 @@ public class VisualStabilityCoordinatorTest extends SysuiTestCase {
         //  GIVEN - there is a group heads-up.
         final String headsUpGroupKey = "heads_up_group_key";
         mCoordinator.setHeadsUpGroupKeys(Set.of(headsUpGroupKey));
-        when(mHeadsUpManager.isHeadsUpEntry(headsUpGroupKey)).thenReturn(true);
+        when(mHeadsUpRepository.isHeadsUpEntry(headsUpGroupKey)).thenReturn(true);
 
         // GIVEN - HUN Group
         final NotificationEntry headsUpGroupSummary = mock(NotificationEntry.class);
@@ -825,7 +826,7 @@ public class VisualStabilityCoordinatorTest extends SysuiTestCase {
         //  GIVEN - there is a group heads-up.
         final String headsUpGroupKey = "heads_up_group_key";
         mCoordinator.setHeadsUpGroupKeys(Set.of(headsUpGroupKey));
-        when(mHeadsUpManager.isHeadsUpEntry(headsUpGroupKey)).thenReturn(true);
+        when(mHeadsUpRepository.isHeadsUpEntry(headsUpGroupKey)).thenReturn(true);
 
         // GIVEN - HUN Group
         final NotificationEntry headsUpGroupSummary = mock(NotificationEntry.class);
@@ -858,7 +859,7 @@ public class VisualStabilityCoordinatorTest extends SysuiTestCase {
         //  GIVEN - there is a group heads-up.
         String headsUpGroupKey = "heads_up_group_key";
         mCoordinator.setHeadsUpGroupKeys(Set.of(headsUpGroupKey));
-        when(mHeadsUpManager.isHeadsUpEntry(headsUpGroupKey)).thenReturn(true);
+        when(mHeadsUpRepository.isHeadsUpEntry(headsUpGroupKey)).thenReturn(true);
 
         // GIVEN - non HUN parent Group Summary
         final NotificationEntry groupSummary = mock(NotificationEntry.class);
@@ -891,7 +892,7 @@ public class VisualStabilityCoordinatorTest extends SysuiTestCase {
         // GIVEN - there is a group heads-up.
         final String headsUpGroupKey = "heads_up_group_key";
         mCoordinator.setHeadsUpGroupKeys(Set.of(headsUpGroupKey));
-        when(mHeadsUpManager.isHeadsUpEntry(headsUpGroupKey)).thenReturn(true);
+        when(mHeadsUpRepository.isHeadsUpEntry(headsUpGroupKey)).thenReturn(true);
 
         // GIVEN - HUN Group Summary
         final NotificationEntry headsUpGroupSummary = mock(NotificationEntry.class);

@@ -101,6 +101,7 @@ import com.android.systemui.wmshell.BubblesTestActivity;
 
 import kotlin.coroutines.CoroutineContext;
 
+import kotlinx.coroutines.flow.StateFlowKt;
 import kotlinx.coroutines.test.TestScope;
 
 import org.mockito.ArgumentCaptor;
@@ -166,11 +167,21 @@ public class NotificationTestHelper {
         this(context, dependency, testLooper, new FakeFeatureFlagsClassic());
     }
 
+
     public NotificationTestHelper(
             Context context,
             TestableDependency dependency,
             @Nullable TestableLooper testLooper,
             @NonNull FakeFeatureFlagsClassic featureFlags) {
+        this(context, dependency, testLooper, featureFlags, mockHeadsUpManager());
+    }
+
+    public NotificationTestHelper(
+            Context context,
+            TestableDependency dependency,
+            @Nullable TestableLooper testLooper,
+            @NonNull FakeFeatureFlagsClassic featureFlags,
+            @NonNull HeadsUpManager headsUpManager) {
         mContext = context;
         mFeatureFlags = Objects.requireNonNull(featureFlags);
         dependency.injectTestDependency(FeatureFlagsClassic.class, mFeatureFlags);
@@ -182,7 +193,7 @@ public class NotificationTestHelper {
         mKeyguardBypassController = mock(KeyguardBypassController.class);
         mGroupMembershipManager = mock(GroupMembershipManager.class);
         mGroupExpansionManager = mock(GroupExpansionManager.class);
-        mHeadsUpManager = mock(HeadsUpManager.class);
+        mHeadsUpManager = headsUpManager;
         mIconManager = new IconManager(
                 mock(CommonNotifCollection.class),
                 mock(LauncherApps.class),
@@ -687,6 +698,12 @@ public class NotificationTestHelper {
         return new BubbleMetadata.Builder(shortcutId)
                 .setDesiredHeight(314)
                 .build();
+    }
+
+    private static HeadsUpManager mockHeadsUpManager() {
+        HeadsUpManager mock = mock(HeadsUpManager.class);
+        when(mock.isTrackingHeadsUp()).thenReturn(StateFlowKt.MutableStateFlow(false));
+        return mock;
     }
 
     private static class MockSmartReplyInflater implements SmartReplyStateInflater {

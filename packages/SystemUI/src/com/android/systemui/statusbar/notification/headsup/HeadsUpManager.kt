@@ -25,6 +25,8 @@ import dagger.Module
 import java.io.PrintWriter
 import java.util.stream.Stream
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * A manager which handles heads up notifications which is a special mode where they simply peek
@@ -110,7 +112,7 @@ interface HeadsUpManager : Dumpable {
      * Returns the value of the tracking-heads-up flag. See the doc of {@code setTrackingHeadsUp} as
      * well.
      */
-    fun isTrackingHeadsUp(): Boolean
+    fun isTrackingHeadsUp(): StateFlow<Boolean>
 
     fun onExpandingFinished()
 
@@ -284,11 +286,11 @@ class HeadsUpManagerEmptyImpl @Inject constructor() : HeadsUpManager {
 
     override fun isHeadsUpAnimatingAwayValue() = false
 
+    override fun isTrackingHeadsUp(): StateFlow<Boolean> = MutableStateFlow(false)
+
     override fun isSnoozed(packageName: String) = false
 
     override fun isSticky(key: String?) = false
-
-    override fun isTrackingHeadsUp() = false
 
     override fun onExpandingFinished() {}
 

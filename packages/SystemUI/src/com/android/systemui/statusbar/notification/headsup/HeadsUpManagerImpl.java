@@ -135,6 +135,8 @@ public class HeadsUpManagerImpl
             StateFlowKt.MutableStateFlow(new HashSet<>());
     private final MutableStateFlow<Boolean> mHeadsUpAnimatingAway =
             StateFlowKt.MutableStateFlow(false);
+    private final MutableStateFlow<Boolean> mTrackingHeadsUp =
+            StateFlowKt.MutableStateFlow(false);
     private final HashSet<String> mSwipedOutKeys = new HashSet<>();
     private final HashSet<NotificationEntry> mEntriesToRemoveAfterExpand = new HashSet<>();
     @VisibleForTesting
@@ -142,7 +144,6 @@ public class HeadsUpManagerImpl
             = new ArraySet<>();
 
     private boolean mReleaseOnExpandFinish;
-    private boolean mTrackingHeadsUp;
     private boolean mIsShadeOrQsExpanded;
     private boolean mIsQsExpanded;
     private int mStatusBarState;
@@ -417,8 +418,8 @@ public class HeadsUpManagerImpl
     }
 
     @Override
-    public void setTrackingHeadsUp(boolean trackingHeadsUp) {
-        mTrackingHeadsUp = trackingHeadsUp;
+    public void setTrackingHeadsUp(boolean isTrackingHeadsUp) {
+        mTrackingHeadsUp.setValue(isTrackingHeadsUp);
     }
 
     @Override
@@ -510,9 +511,7 @@ public class HeadsUpManagerImpl
                 || !mAvalancheController.getWaitingEntryList().isEmpty();
     }
 
-    /**
-     * @return true if the notification is managed by this manager
-     */
+    @Override
     public boolean isHeadsUpEntry(@NonNull String key) {
         return mHeadsUpEntryMap.containsKey(key) || mAvalancheController.isWaiting(key);
     }
@@ -1066,8 +1065,9 @@ public class HeadsUpManagerImpl
         }
     }
 
+    @NonNull
     @Override
-    public boolean isTrackingHeadsUp() {
+    public StateFlow<Boolean> isTrackingHeadsUp() {
         return mTrackingHeadsUp;
     }
 
@@ -1659,7 +1659,7 @@ public class HeadsUpManagerImpl
                     mEntriesToRemoveWhenReorderingAllowed.add(entry);
                     mVisualStabilityProvider.addTemporaryReorderingAllowedListener(
                             mOnReorderingAllowedListener);
-                } else if (mTrackingHeadsUp) {
+                } else if (mTrackingHeadsUp.getValue()) {
                     mEntriesToRemoveAfterExpand.add(entry);
                     mLogger.logRemoveEntryAfterExpand(entry);
                 } else if (mVisualStabilityProvider.isReorderingAllowed()
