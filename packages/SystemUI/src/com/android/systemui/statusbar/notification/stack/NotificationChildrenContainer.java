@@ -1352,10 +1352,11 @@ public class NotificationChildrenContainer extends ViewGroup
             if (i < maxAllowedVisibleChildren) {
                 float singleLineHeight = child.getShowingLayout().getMinHeight(
                         false /* likeGroupExpanded */);
-                child.setActualHeight((int) NotificationUtils.interpolate(singleLineHeight,
-                        childHeight, fraction), false);
+                childHeight = NotificationUtils.interpolate(singleLineHeight,
+                        childHeight, fraction);
+                child.setFinalActualHeight((int) childHeight);
             } else {
-                child.setActualHeight((int) childHeight, false);
+                child.setFinalActualHeight((int) childHeight);
             }
         }
     }
