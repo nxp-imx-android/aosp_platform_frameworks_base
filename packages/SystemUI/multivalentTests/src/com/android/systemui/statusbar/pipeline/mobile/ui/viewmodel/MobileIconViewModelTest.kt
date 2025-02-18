@@ -856,7 +856,6 @@ class MobileIconViewModelTest : SysuiTestCase() {
                 .isEqualTo(Icon.Resource(R.drawable.mobile_network_type_background, null))
         }
 
-    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     @Test
     fun nonTerrestrial_defaultProperties() =
         testScope.runTest {
@@ -877,7 +876,6 @@ class MobileIconViewModelTest : SysuiTestCase() {
             assertThat(activityContainerVisible).isFalse()
         }
 
-    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     @Test
     fun nonTerrestrial_ignoresDefaultProperties() =
         testScope.runTest {
@@ -905,7 +903,6 @@ class MobileIconViewModelTest : SysuiTestCase() {
             assertThat(activityContainerVisible).isFalse()
         }
 
-    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     fun nonTerrestrial_usesSatelliteIcon_flagOff() =
@@ -940,10 +937,7 @@ class MobileIconViewModelTest : SysuiTestCase() {
             assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_2)
         }
 
-    @EnableFlags(
-        com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG,
-        com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN,
-    )
+    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     fun nonTerrestrial_usesSatelliteIcon_flagOn() =
         testScope.runTest {
@@ -972,7 +966,6 @@ class MobileIconViewModelTest : SysuiTestCase() {
             assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_2)
         }
 
-    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     fun satelliteIcon_ignoresInflateSignalStrength_flagOff() =
@@ -1010,10 +1003,7 @@ class MobileIconViewModelTest : SysuiTestCase() {
             assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_2)
         }
 
-    @EnableFlags(
-        com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG,
-        com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN,
-    )
+    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     fun satelliteIcon_ignoresInflateSignalStrength_flagOn() =
         testScope.runTest {

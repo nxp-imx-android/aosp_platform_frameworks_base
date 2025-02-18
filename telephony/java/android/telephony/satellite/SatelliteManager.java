@@ -755,7 +755,6 @@ public final class SatelliteManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final int EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_T911 = 2;
 
     /**
@@ -1574,7 +1573,6 @@ public final class SatelliteManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final int SATELLITE_COMMUNICATION_RESTRICTION_REASON_GEOLOCATION = 1;
 
     /**
@@ -1584,7 +1582,6 @@ public final class SatelliteManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final int SATELLITE_COMMUNICATION_RESTRICTION_REASON_ENTITLEMENT = 2;
 
     /** @hide */
@@ -2757,7 +2754,6 @@ public final class SatelliteManager {
      */
     @SystemApi
     @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public void requestAttachEnabledForCarrier(int subId, boolean enableSatellite,
             @NonNull @CallbackExecutor Executor executor,
             @SatelliteResult @NonNull Consumer<Integer> resultListener) {
@@ -2794,7 +2790,6 @@ public final class SatelliteManager {
      */
     @SystemApi
     @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public void requestIsAttachEnabledForCarrier(int subId,
             @NonNull @CallbackExecutor Executor executor,
             @NonNull OutcomeReceiver<Boolean, SatelliteException> callback) {
@@ -2822,7 +2817,6 @@ public final class SatelliteManager {
      */
     @SystemApi
     @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public void addAttachRestrictionForCarrier(int subId,
             @SatelliteCommunicationRestrictionReason int reason,
             @NonNull @CallbackExecutor Executor executor,
@@ -2870,7 +2864,6 @@ public final class SatelliteManager {
      */
     @SystemApi
     @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public void removeAttachRestrictionForCarrier(int subId,
             @SatelliteCommunicationRestrictionReason int reason,
             @NonNull @CallbackExecutor Executor executor,
@@ -2918,7 +2911,6 @@ public final class SatelliteManager {
     @SystemApi
     @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
     @SatelliteCommunicationRestrictionReason
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     @NonNull public Set<Integer> getAttachRestrictionReasonsForCarrier(int subId) {
         if (!SubscriptionManager.isValidSubscriptionId(subId)) {
             throw new IllegalArgumentException("Invalid subscription ID");
@@ -3317,7 +3309,6 @@ public final class SatelliteManager {
      */
     @SystemApi
     @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     @NonNull public List<String> getSatellitePlmnsForCarrier(int subId) {
         if (!SubscriptionManager.isValidSubscriptionId(subId)) {
             throw new IllegalArgumentException("Invalid subscription ID");
