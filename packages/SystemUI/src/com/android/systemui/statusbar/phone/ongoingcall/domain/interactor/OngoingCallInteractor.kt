@@ -150,7 +150,14 @@ constructor(
         return when {
             isVisible -> {
                 logger.d({ "Call app is visible: uid=$int1" }) { int1 = model.uid }
-                OngoingCallModel.InCallWithVisibleApp
+                OngoingCallModel.InCallWithVisibleApp(
+                    startTimeMs = model.whenTime,
+                    notificationIconView = model.statusBarChipIconView,
+                    intent = model.contentIntent,
+                    notificationKey = model.key,
+                    appName = model.appName,
+                    promotedContent = model.promotedContent,
+                )
             }
 
             else -> {
