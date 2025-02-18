@@ -1317,6 +1317,10 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         WindowContainerTransaction noFocus = new WindowContainerTransaction();
         noFocus.setFocusable(mRootTaskInfo.token, false);
         mSyncQueue.queue(noFocus);
+        // Remove touch layers, since offscreen apps coming onscreen will not need their touch
+        // layers anymore. populateTouchZones() is called in the end callback to inflate new touch
+        // layers in the appropriate places.
+        mSplitLayout.removeTouchZones();
 
         mSplitLayout.playSwapAnimation(t, topLeftStage, bottomRightStage,
                 insets -> {
@@ -1337,6 +1341,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     mSyncQueue.runInSync(st -> {
                         mSplitLayout.updateStateWithCurrentPosition();
                         updateSurfaceBounds(mSplitLayout, st, false /* applyResizingOffset */);
+                        mSplitLayout.populateTouchZones();
 
                         // updateSurfaceBounds(), above, officially puts the two apps in their new
                         // stages. Starting on the next frame, all calculations are made using the
