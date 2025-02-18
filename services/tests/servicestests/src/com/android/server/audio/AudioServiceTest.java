@@ -259,4 +259,16 @@ public class AudioServiceTest {
                 inputGainIndex,
                 mAudioService.getInputGainIndex(ada));
     }
+
+    @Test
+    public void testRttEnabled() throws Exception {
+        Log.i(TAG, "running testRttEnabled");
+        Assert.assertNotNull(mAudioService);
+
+        mAudioService.setRttEnabled(true);
+        Assert.assertTrue(mAudioService.isRttEnabled());
+
+        mAudioService.setRttEnabled(false);
+        Assert.assertFalse(mAudioService.isRttEnabled());
+    }
 }
