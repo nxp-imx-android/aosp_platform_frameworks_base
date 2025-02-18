@@ -4097,8 +4097,10 @@
 
     <!-- Title of the one line view of a redacted notification -->
     <string name="redacted_notification_single_line_title">Redacted</string>
-    <!-- Main text of the one line view of a redacted notification -->
-    <string name="redacted_notification_single_line_text">Unlock to view</string>
+    <!-- Main text of the one line view of a public notification -->
+    <string name="public_notification_single_line_text">Unlock to view</string>
+    <!-- Main text of the one line view of a redacted OTP notification -->
+    <string name="redacted_otp_notification_single_line_text">Unlock to view code</string>
 
     <!-- Content description for contextual education dialog [CHAR LIMIT=NONE] -->
     <string name="contextual_education_dialog_title">Contextual education</string>
