@@ -189,6 +189,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.RenderNode;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.hardware.SyncFence;
@@ -292,6 +293,7 @@ import com.android.internal.os.SomeArgs;
 import com.android.internal.policy.DecorView;
 import com.android.internal.policy.PhoneFallbackEventHandler;
 import com.android.internal.protolog.ProtoLog;
+import com.android.internal.util.ContrastColorUtil;
 import com.android.internal.util.FastPrintWriter;
 import com.android.internal.view.BaseSurfaceHolder;
 import com.android.internal.view.RootViewSurfaceTaker;
@@ -2078,12 +2080,21 @@ public final class ViewRootImpl implements ViewParent,
                 // preference for dark mode in configuration.uiMode. Instead, we assume that both
                 // force invert and the system's dark theme are enabled.
                 if (shouldApplyForceInvertDark()) {
-                    final boolean isLightTheme =
-                        a.getBoolean(R.styleable.Theme_isLightTheme, false);
-                    // TODO: b/372558459 - Also check the background ColorDrawable color lightness
                     // TODO: b/368725782 - Use hwui color area detection instead of / in
                     //  addition to these heuristics.
-                    if (isLightTheme) {
+                    final boolean isLightTheme =
+                            a.getBoolean(R.styleable.Theme_isLightTheme, false);
+                    final boolean isBackgroundColorLight;
+                    if (mView != null && mView.getBackground()
+                            instanceof ColorDrawable colorDrawable) {
+                        isBackgroundColorLight =
+                                !ContrastColorUtil.isColorDarkLab(colorDrawable.getColor());
+                    } else {
+                        // Treat unknown as light, so that only isLightTheme is used to determine
+                        // force dark treatment.
+                        isBackgroundColorLight = true;
+                    }
+                    if (isLightTheme && isBackgroundColorLight) {
                         return ForceDarkType.FORCE_INVERT_COLOR_DARK;
                     } else {
                         return ForceDarkType.NONE;
