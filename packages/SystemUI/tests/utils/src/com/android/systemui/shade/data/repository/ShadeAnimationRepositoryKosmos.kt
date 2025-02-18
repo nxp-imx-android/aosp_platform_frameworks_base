@@ -18,12 +18,8 @@ package com.android.systemui.shade.data.repository
 
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
+import com.android.systemui.shade.domain.interactor.FakeShadeDialogContextInteractor
 
 val Kosmos.shadeAnimationRepository by Kosmos.Fixture { ShadeAnimationRepository() }
 val Kosmos.shadeDialogContextInteractor by
-    Kosmos.Fixture {
-        mock<ShadeDialogContextInteractor> { on { context } doReturn applicationContext }
-    }
+    Kosmos.Fixture { FakeShadeDialogContextInteractor(applicationContext) }
