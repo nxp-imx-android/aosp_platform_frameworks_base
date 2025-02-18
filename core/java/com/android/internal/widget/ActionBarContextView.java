@@ -34,6 +34,7 @@ import android.widget.TextView;
 
 import com.android.internal.R;
 import com.android.internal.view.menu.MenuBuilder;
+import com.android.window.flags.Flags;
 
 /**
  * @hide
@@ -315,12 +316,14 @@ public class ActionBarContextView extends AbsActionBarView {
 
         final int contentWidth = MeasureSpec.getSize(widthMeasureSpec);
 
-        int maxHeight = mContentHeight > 0 ?
-                mContentHeight : MeasureSpec.getSize(heightMeasureSpec);
+        final int maxHeight = !Flags.actionModeEdgeToEdge() && mContentHeight > 0
+                ? mContentHeight : MeasureSpec.getSize(heightMeasureSpec);
 
         final int verticalPadding = getPaddingTop() + getPaddingBottom();
         int availableWidth = contentWidth - getPaddingLeft() - getPaddingRight();
-        final int height = maxHeight - verticalPadding;
+        final int height = Flags.actionModeEdgeToEdge()
+                ? mContentHeight > 0 ? mContentHeight : maxHeight
+                : maxHeight - verticalPadding;
         final int childSpecHeight = MeasureSpec.makeMeasureSpec(height, MeasureSpec.AT_MOST);
 
         if (mClose != null) {
@@ -376,7 +379,8 @@ public class ActionBarContextView extends AbsActionBarView {
             }
             setMeasuredDimension(contentWidth, measuredHeight);
         } else {
-            setMeasuredDimension(contentWidth, maxHeight);
+            setMeasuredDimension(contentWidth, Flags.actionModeEdgeToEdge()
+                    ? mContentHeight + verticalPadding : maxHeight);
         }
     }
 
