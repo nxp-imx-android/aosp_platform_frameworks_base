@@ -167,7 +167,35 @@ class DesktopModeUiEventLogger(
         @UiEvent(doc = "Exit desktop mode education tooltip on the app header menu is clicked")
         EXIT_DESKTOP_MODE_EDUCATION_TOOLTIP_CLICKED(2104),
         @UiEvent(doc = "Exit desktop mode education tooltip is dismissed by the user")
-        EXIT_DESKTOP_MODE_EDUCATION_TOOLTIP_DISMISSED(2105);
+        EXIT_DESKTOP_MODE_EDUCATION_TOOLTIP_DISMISSED(2105),
+        @UiEvent(doc = "A11y service opened app handle menu by selecting handle from fullscreen")
+        A11Y_APP_HANDLE_MENU_OPENED(2156),
+        @UiEvent(doc = "A11y service opened app handle menu through Switch Access actions menu ")
+        A11Y_SYSTEM_ACTION_APP_HANDLE_MENU(2157),
+        @UiEvent(doc = "A11y service selected desktop mode from app handle menu")
+        A11Y_APP_HANDLE_MENU_DESKTOP_VIEW(2158),
+        @UiEvent(doc = "A11y service selected fullscreen mode from app handle menu")
+        A11Y_APP_HANDLE_MENU_FULLSCREEN(2159),
+        @UiEvent(doc = "A11y service selected split screen mode from app handle menu")
+        A11Y_APP_HANDLE_MENU_SPLIT_SCREEN(2160),
+        @UiEvent(doc = "A11y service selected maximize/restore button from app header")
+        A11Y_APP_WINDOW_MAXIMIZE_RESTORE_BUTTON(2161),
+        @UiEvent(doc = "A11y service selected minimize button from app header")
+        A11Y_APP_WINDOW_MINIMIZE_BUTTON(2162),
+        @UiEvent(doc = "A11y service selected close button from app header")
+        A11Y_APP_WINDOW_CLOSE_BUTTON(2163),
+        @UiEvent(doc = "A11y service selected maximize button from app header maximize menu")
+        A11Y_MAXIMIZE_MENU_MAXIMIZE(2164),
+        @UiEvent(doc = "A11y service selected resize left button from app header maximize menu")
+        A11Y_MAXIMIZE_MENU_RESIZE_LEFT(2165),
+        @UiEvent(doc = "A11y service selected resize right button from app header maximize menu")
+        A11Y_MAXIMIZE_MENU_RESIZE_RIGHT(2166),
+        @UiEvent(doc = "A11y service triggered a11y action to maximize/restore app window")
+        A11Y_ACTION_MAXIMIZE_RESTORE(2167),
+        @UiEvent(doc = "A11y service triggered a11y action to resize app window left")
+        A11Y_ACTION_RESIZE_LEFT(2168),
+        @UiEvent(doc = "A11y service triggered a11y action to resize app window right")
+        A11Y_ACTION_RESIZE_RIGHT(2169);
 
         override fun getId(): Int = mId
     }

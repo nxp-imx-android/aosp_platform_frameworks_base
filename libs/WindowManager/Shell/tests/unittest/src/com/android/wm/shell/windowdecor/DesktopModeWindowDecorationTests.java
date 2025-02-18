@@ -106,6 +106,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.desktopmode.CaptionState;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
 import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository;
@@ -246,6 +247,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @Mock
     private DesktopModeEventLogger mDesktopModeEventLogger;
     @Mock
+    private DesktopModeUiEventLogger mDesktopModeUiEventLogger;
+    @Mock
     private DesktopRepository mDesktopRepository;
     @Mock
     private WindowDecorTaskResourceLoader mMockTaskResourceLoader;
@@ -303,15 +306,15 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         doReturn(mInsetsState).when(mMockDisplayController).getInsetsState(anyInt());
         when(mMockHandleMenuFactory.create(any(), any(), any(), any(), any(), anyInt(), any(),
                 anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
-                anyBoolean(), any(), anyInt(), anyInt(), anyInt(), anyInt()))
+                anyBoolean(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt()))
                 .thenReturn(mMockHandleMenu);
         when(mMockMultiInstanceHelper.supportsMultiInstanceSplit(any(), anyInt()))
                 .thenReturn(false);
         when(mMockAppHeaderViewHolderFactory
-                .create(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(mMockAppHeaderViewHolder);
         when(mMockAppHandleViewHolderFactory
-                .create(any(), any(), any(), any(), any()))
+                .create(any(), any(), any(), any(), any(), any()))
                 .thenReturn(mMockAppHandleViewHolder);
         when(mMockDesktopUserRepositories.getCurrent()).thenReturn(mDesktopRepository);
         when(mMockDesktopUserRepositories.getProfile(anyInt())).thenReturn(mDesktopRepository);
@@ -1797,7 +1800,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 any(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
                 anyBoolean(), anyBoolean(), argThat(intent ->
                         (uri == null && intent == null) || intent.getData().equals(uri)),
-                anyInt(), anyInt(), anyInt(), anyInt());
+                any(), anyInt(), anyInt(), anyInt(), anyInt());
     }
 
     private void createMaximizeMenu(DesktopModeWindowDecoration decoration) {
@@ -1894,7 +1897,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 new WindowManagerWrapper(mMockWindowManager), mMockSurfaceControlViewHostFactory,
                 mMockWindowDecorViewHostSupplier, maximizeMenuFactory, mMockHandleMenuFactory,
                 mMockMultiInstanceHelper, mMockCaptionHandleRepository, mDesktopModeEventLogger,
-                mDesktopModeCompatPolicy);
+                mDesktopModeUiEventLogger, mDesktopModeCompatPolicy);
         windowDecor.setCaptionListeners(mMockTouchEventListener, mMockTouchEventListener,
                 mMockTouchEventListener, mMockTouchEventListener);
         windowDecor.setExclusionRegionListener(mMockExclusionRegionListener);
@@ -2020,7 +2023,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 @NonNull Context decorWindowContext,
                 @NonNull Function2<? super Integer,? super Integer,? extends Point>
                     positionSupplier,
-                @NonNull Supplier<SurfaceControl.Transaction> transactionSupplier) {
+                @NonNull Supplier<SurfaceControl.Transaction> transactionSupplier,
+                @NonNull DesktopModeUiEventLogger desktopModeUiEventLogger) {
             return mMaximizeMenu;
         }
     }

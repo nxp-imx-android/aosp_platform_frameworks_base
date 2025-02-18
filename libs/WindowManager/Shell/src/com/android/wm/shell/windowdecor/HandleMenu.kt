@@ -28,6 +28,7 @@ import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_OUTSIDE
@@ -35,6 +36,7 @@ import android.view.SurfaceControl
 import android.view.View
 import android.view.WindowInsets.Type.systemBars
 import android.view.WindowManager
+import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Space
@@ -49,6 +51,10 @@ import androidx.core.view.isGone
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.bubbles.ContextUtils.isRtl
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_DESKTOP_VIEW
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_FULLSCREEN
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_SPLIT_SCREEN
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
@@ -97,6 +103,7 @@ class HandleMenu(
     private val shouldShowRestartButton: Boolean,
     private val isBrowserApp: Boolean,
     private val openInAppOrBrowserIntent: Intent?,
+    private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
     private val captionWidth: Int,
     private val captionHeight: Int,
     captionX: Int,
@@ -208,6 +215,7 @@ class HandleMenu(
     ) {
         val handleMenuView = HandleMenuView(
             context = context,
+            desktopModeUiEventLogger = desktopModeUiEventLogger,
             menuWidth = menuWidth,
             captionHeight = captionHeight,
             shouldShowWindowingPill = shouldShowWindowingPill,
@@ -475,6 +483,7 @@ class HandleMenu(
     @SuppressLint("ClickableViewAccessibility")
     class HandleMenuView(
         private val context: Context,
+        private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
         menuWidth: Int,
         captionHeight: Int,
         private val shouldShowWindowingPill: Boolean,
@@ -613,6 +622,45 @@ class HandleMenu(
                     return@setOnTouchListener false
                 }
                 return@setOnTouchListener true
+            }
+
+            desktopBtn.accessibilityDelegate = object : View.AccessibilityDelegate() {
+                override fun performAccessibilityAction(
+                    host: View,
+                    action: Int,
+                    args: Bundle?
+                ): Boolean {
+                    if (action == AccessibilityAction.ACTION_CLICK.id) {
+                        desktopModeUiEventLogger.log(taskInfo, A11Y_APP_HANDLE_MENU_DESKTOP_VIEW)
+                    }
+                    return super.performAccessibilityAction(host, action, args)
+                }
+            }
+
+            fullscreenBtn.accessibilityDelegate = object : View.AccessibilityDelegate() {
+                override fun performAccessibilityAction(
+                    host: View,
+                    action: Int,
+                    args: Bundle?
+                ): Boolean {
+                    if (action == AccessibilityAction.ACTION_CLICK.id) {
+                        desktopModeUiEventLogger.log(taskInfo, A11Y_APP_HANDLE_MENU_FULLSCREEN)
+                    }
+                    return super.performAccessibilityAction(host, action, args)
+                }
+            }
+
+            splitscreenBtn.accessibilityDelegate = object : View.AccessibilityDelegate() {
+                override fun performAccessibilityAction(
+                    host: View,
+                    action: Int,
+                    args: Bundle?
+                ): Boolean {
+                    if (action == AccessibilityAction.ACTION_CLICK.id) {
+                        desktopModeUiEventLogger.log(taskInfo, A11Y_APP_HANDLE_MENU_SPLIT_SCREEN)
+                    }
+                    return super.performAccessibilityAction(host, action, args)
+                }
             }
 
             with(context) {
@@ -917,6 +965,7 @@ interface HandleMenuFactory {
         shouldShowRestartButton: Boolean,
         isBrowserApp: Boolean,
         openInAppOrBrowserIntent: Intent?,
+        desktopModeUiEventLogger: DesktopModeUiEventLogger,
         captionWidth: Int,
         captionHeight: Int,
         captionX: Int,
@@ -942,6 +991,7 @@ object DefaultHandleMenuFactory : HandleMenuFactory {
         shouldShowRestartButton: Boolean,
         isBrowserApp: Boolean,
         openInAppOrBrowserIntent: Intent?,
+        desktopModeUiEventLogger: DesktopModeUiEventLogger,
         captionWidth: Int,
         captionHeight: Int,
         captionX: Int,
@@ -963,6 +1013,7 @@ object DefaultHandleMenuFactory : HandleMenuFactory {
             shouldShowRestartButton,
             isBrowserApp,
             openInAppOrBrowserIntent,
+            desktopModeUiEventLogger,
             captionWidth,
             captionHeight,
             captionX,
