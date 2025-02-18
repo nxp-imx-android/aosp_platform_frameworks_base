@@ -53,7 +53,7 @@ static_assert(static_cast<int>(FrameInfoIndex::NumIndexes) == 24,
               "Must update value in FrameMetrics.java#FRAME_STATS_COUNT (and here)");
 
 void FrameInfo::importUiThreadInfo(int64_t* info) {
-    memcpy(mFrameInfo, info, UI_THREAD_FRAME_INFO_SIZE * sizeof(int64_t));
+    memcpy(mFrameInfo.data(), info, UI_THREAD_FRAME_INFO_SIZE * sizeof(int64_t));
     mSkippedFrameReason.reset();
 }
 
