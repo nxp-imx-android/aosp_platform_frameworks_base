@@ -75,8 +75,8 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             return RESULT_SKIP;
         }
         if (com.android.window.flags.Flags.fixLayoutExistingTask()
-                && task.getOrganizedTask() != null) {
-            appendLog("task is organized, skipping");
+                && task.getCreatedByOrganizerTask() != null) {
+            appendLog("has created-by-organizer-task, skipping");
             return RESULT_SKIP;
         }
 
@@ -108,6 +108,11 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
 
         if (!currentParams.mBounds.isEmpty()) {
             appendLog("currentParams has bounds set, not overriding");
+            return RESULT_SKIP;
+        }
+
+        if ((options == null || options.getLaunchBounds() == null) && task.hasOverrideBounds()) {
+            appendLog("current task has bounds set, not overriding");
             return RESULT_SKIP;
         }
 
