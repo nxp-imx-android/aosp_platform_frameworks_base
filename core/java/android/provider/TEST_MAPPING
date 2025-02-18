@@ -1,12 +1,7 @@
 {
     "presubmit": [
         {
-            "name": "CtsProviderTestCases",
-            "options": [
-                {
-                    "exclude-filter": "android.provider.cts.SettingsPanelTest"
-                }
-            ]
+            "name": "CtsProviderTestCases"
         },
 	{
 	    "name": "CtsMediaProviderTestCases"
