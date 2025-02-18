@@ -404,6 +404,10 @@ public class PipController implements ConfigurationChangeListener,
 
         mPipBoundsState.setBoundsStateForEntry(componentName, activityInfo, pictureInPictureParams,
                 mPipBoundsAlgorithm);
+
+        // Update the size spec in case aspect ratio is invariant, but display has changed
+        // since the last PiP session, or this is the first PiP session altogether.
+        mPipBoundsState.updateMinMaxSize(mPipBoundsState.getAspectRatio());
         return mPipBoundsAlgorithm.getEntryDestinationBounds();
     }
 

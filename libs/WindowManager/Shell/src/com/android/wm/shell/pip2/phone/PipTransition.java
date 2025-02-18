@@ -738,6 +738,13 @@ public class PipTransition extends PipTransitionController implements
             }
         }
 
+        if (!mPipTransitionState.isInSwipePipToHomeTransition()) {
+            // Update the size spec in case aspect ratio is invariant, but display has changed
+            // since the last PiP session, or this is the first PiP session altogether.
+            // Skip the update if in swipe PiP to home, as this has already been done.
+            mPipBoundsState.updateMinMaxSize(mPipBoundsState.getAspectRatio());
+        }
+
         // calculate the entry bounds and notify core to move task to pinned with final bounds
         final Rect entryBounds = mPipBoundsAlgorithm.getEntryDestinationBounds();
         mPipBoundsState.setBounds(entryBounds);
