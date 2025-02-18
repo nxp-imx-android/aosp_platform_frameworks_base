@@ -5612,8 +5612,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @see AppTransition#prepareAppTransition
      */
     void requestTransitionAndLegacyPrepare(@WindowManager.TransitionType int transit,
-            @WindowManager.TransitionFlags int flags) {
-        mTransitionController.requestTransitionIfNeeded(transit, flags, null /* trigger */, this);
+            @WindowManager.TransitionFlags int flags, @Nullable WindowContainer trigger) {
+        mTransitionController.requestTransitionIfNeeded(transit, flags, trigger, this);
     }
 
     void executeAppTransition() {
