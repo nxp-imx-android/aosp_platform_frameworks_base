@@ -46,6 +46,8 @@ import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /**
@@ -108,6 +110,32 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
                     numActivities = 1
                     baseActivity = baseActivityTest
                 }))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
+    fun testIsTopActivityExemptCachedPermissionCheckIsUsed() {
+        allowOverlayPermission(arrayOf())
+        assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+            createFreeformTask(/* displayId */ 0)
+                .apply {
+                    isActivityStackTransparent = true
+                    isTopActivityNoDisplay = false
+                    numActivities = 1
+                    baseActivity = baseActivityTest
+                }))
+        assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+            createFreeformTask(/* displayId */ 0)
+                .apply {
+                    isActivityStackTransparent = true
+                    isTopActivityNoDisplay = false
+                    numActivities = 1
+                    baseActivity = baseActivityTest
+                }))
+        verify(packageManager, times(1)).getPackageInfo(
+            eq("com.test.dummypackage"),
+            eq(PackageManager.GET_PERMISSIONS)
+        )
     }
 
     @Test
