@@ -101,6 +101,7 @@ import android.content.pm.PermissionInfo;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ProviderInfoList;
 import android.content.pm.ServiceInfo;
+import android.content.pm.SystemFeaturesCache;
 import android.content.res.AssetManager;
 import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
@@ -1342,6 +1343,10 @@ public final class ActivityThread extends ClientTransactionHandler
                 ApplicationSharedMemory instance =
                         ApplicationSharedMemory.fromFileDescriptor(
                                 applicationSharedMemoryFd, /* mutable= */ false);
+                if (android.content.pm.Flags.cacheSdkSystemFeatures()) {
+                    SystemFeaturesCache.setInstance(
+                            new SystemFeaturesCache(instance.readSystemFeaturesCache()));
+                }
                 instance.closeFileDescriptor();
                 ApplicationSharedMemory.setInstance(instance);
             }

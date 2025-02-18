@@ -78,6 +78,7 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.SharedLibraryInfo;
 import android.content.pm.SuspendDialogInfo;
+import android.content.pm.SystemFeaturesCache;
 import android.content.pm.VerifierDeviceIdentity;
 import android.content.pm.VersionedPackage;
 import android.content.pm.dex.ArtManager;
@@ -803,16 +804,6 @@ public class ApplicationPackageManager extends PackageManager {
                 @Override
                 public Boolean recompute(HasSystemFeatureQuery query) {
                     try {
-                        // As an optimization, check first to see if the feature was defined at
-                        // compile-time as either available or unavailable.
-                        // TODO(b/203143243): Consider hoisting this optimization out of the cache
-                        // after the trunk stable (build) flag has soaked and more features are
-                        // defined at compile-time.
-                        Boolean maybeHasSystemFeature =
-                                RoSystemFeatures.maybeHasFeature(query.name, query.version);
-                        if (maybeHasSystemFeature != null) {
-                            return maybeHasSystemFeature.booleanValue();
-                        }
                         return ActivityThread.currentActivityThread().getPackageManager().
                             hasSystemFeature(query.name, query.version);
                     } catch (RemoteException e) {
@@ -823,12 +814,25 @@ public class ApplicationPackageManager extends PackageManager {
 
     @Override
     public boolean hasSystemFeature(String name, int version) {
+        // We check for system features in the following order:
+        //    * Build time-defined system features (constant, very efficient)
+        //    * SDK-defined system features (cached at process start, very efficient)
+        //    * IPC-retrieved system features (lazily cached, requires per-feature IPC)
+        // TODO(b/375000483): Refactor all of this logic, including flag queries, into
+        // the SystemFeaturesCache class after initial rollout and validation.
+        Boolean maybeHasSystemFeature = RoSystemFeatures.maybeHasFeature(name, version);
+        if (maybeHasSystemFeature != null) {
+            return maybeHasSystemFeature;
+        }
+        if (com.android.internal.os.Flags.applicationSharedMemoryEnabled()
+                && android.content.pm.Flags.cacheSdkSystemFeatures()) {
+            maybeHasSystemFeature =
+                    SystemFeaturesCache.getInstance().maybeHasFeature(name, version);
+            if (maybeHasSystemFeature != null) {
+                return maybeHasSystemFeature;
+            }
+        }
         return mHasSystemFeatureCache.query(new HasSystemFeatureQuery(name, version));
-    }
-
-    /** @hide */
-    public void disableHasSystemFeatureCache() {
-        mHasSystemFeatureCache.disableLocal();
     }
 
     /** @hide */
