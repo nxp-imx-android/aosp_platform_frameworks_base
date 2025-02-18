@@ -23,9 +23,9 @@
     <string name="discovery_bluetooth" msgid="5693557668470016164">"بلوٹوتھ"</string>
     <string name="discovery_wifi" msgid="1551782459721758773">"Wi-Fi"</string>
     <string name="discovery_mixed" msgid="7071466134150760127">"‏بلوٹوتھ اور Wi-Fi"</string>
-    <string name="profile_name_watch" msgid="576290739483672360">"دیکھیں"</string>
+    <string name="profile_name_watch" msgid="576290739483672360">"گھڑی"</string>
     <string name="chooser_title_non_profile" msgid="6035023914517087400">"‏کوئی آلہ منتخب کریں جس کا نظم و نسق &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; کرے"</string>
-    <string name="chooser_title" msgid="2235819929238267637">"سیٹ اپ کرنے کے لیے <xliff:g id="PROFILE_NAME">%1$s</xliff:g> کا انتخاب کریں"</string>
+    <string name="chooser_title" msgid="2235819929238267637">"سیٹ اپ کرنے کے لیے ایک <xliff:g id="PROFILE_NAME">%1$s</xliff:g> کا انتخاب کریں"</string>
     <string name="single_device_title" msgid="4199861437545438606">"‫<xliff:g id="PROFILE_NAME">%1$s</xliff:g> کو تلاش کیا جا رہا ہے"</string>
     <string name="summary_watch" msgid="8134580124808507407">"اس ایپ کو آپ کے <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> پر کسی کال کرنے والے کے نام جیسی معلومات کی مطابقت پذیری کرنے اور ان اجازتوں تک رسائی کی اجازت ہوگی"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"‏&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; کو &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; کا نظم کرنے کی اجازت دیں؟"</string>
