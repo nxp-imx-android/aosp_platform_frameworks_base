@@ -186,7 +186,7 @@
     </style>
 
     <style name="TextAppearance.QS.Status.Build">
-        <item name="android:textColor">?attr/onSurfaceVariant</item>
+        <item name="android:textColor">?attr/onShadeInactiveVariant</item>
     </style>
 
     <style name="TextAppearance.DeviceManagementDialog.Title" parent="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle"/>
