@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.chips.casttootherdevice.ui.viewmodel
 
 import android.content.DialogInterface
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -48,10 +47,10 @@ import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModelTest.Companion.getStopActionFromDialog
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.mockSystemUIDialogFactory
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.DisableChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.policy.CastDevice
 import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
@@ -438,7 +437,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     fun chip_projectionStateEntireScreen_clickListenerShowsScreenCastDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -454,7 +453,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     fun chip_projectionStateSingleTask_clickListenerShowsScreenCastDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -475,7 +474,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     fun chip_routerStateCasting_clickListenerShowsGenericCastDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -505,7 +504,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     fun chip_projectionStateCasting_clickListenerHasCuj() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -525,7 +524,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     fun chip_routerStateCasting_clickListenerHasCuj() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -554,7 +553,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun chip_routerStateCasting_hasClickBehavior() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -575,7 +574,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun chip_projectionStateCasting_hasClickBehavior() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -588,7 +587,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun chip_projectionStateEntireScreen_clickBehaviorShowsScreenCastDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -605,7 +604,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun chip_projectionStateSingleTask_clickBehaviorShowsScreenCastDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -627,7 +626,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun chip_routerStateCasting_clickBehaviorShowsGenericCastDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
