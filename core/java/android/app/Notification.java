@@ -5966,7 +5966,9 @@ public class Notification implements Parcelable
                     || resId == getMessagingCompactHeadsUpLayoutResource()
                     || resId == getCollapsedMessagingLayoutResource()
                     || resId == getCollapsedMediaLayoutResource()
-                    || resId == getCollapsedConversationLayoutResource());
+                    || resId == getCollapsedConversationLayoutResource()
+                    || (notificationsRedesignTemplates()
+                    && resId == getCollapsedCallLayoutResource()));
             RemoteViews contentView = new BuilderRemoteViews(mContext.getApplicationInfo(), resId);
 
             resetStandardTemplate(contentView);
@@ -11035,6 +11037,7 @@ public class Notification implements Parcelable
 
         private RemoteViews makeCallLayout(int viewType) {
             final boolean isCollapsed = viewType == StandardTemplateParams.VIEW_TYPE_NORMAL;
+            final boolean isHeadsUp = viewType == StandardTemplateParams.VIEW_TYPE_HEADS_UP;
             Bundle extras = mBuilder.mN.extras;
             CharSequence title = mPerson != null ? mPerson.getName() : null;
             CharSequence text = mBuilder.processLegacyText(extras.getCharSequence(EXTRA_TEXT));
@@ -11050,14 +11053,22 @@ public class Notification implements Parcelable
                     .hideLeftIcon(true)
                     .hideRightIcon(true)
                     .hideAppName(isCollapsed)
-                    .titleViewId(R.id.conversation_text)
                     .title(title)
-                    .text(text)
-                    .summaryText(mBuilder.processLegacyText(mVerificationText));
+                    .text(text);
+            if (!notificationsRedesignTemplates()) {
+                // We're using the normal title in the redesign, not a special text.
+                p.titleViewId(R.id.conversation_text)
+                        // The verification text is now part of the top line views, so this is no
+                        // longer necessary.
+                        .summaryText(mBuilder.processLegacyText(mVerificationText));
+            }
             mBuilder.mActions = getActionsListWithSystemActions();
             final RemoteViews contentView;
             if (isCollapsed) {
                 contentView = mBuilder.applyStandardTemplate(
+                        mBuilder.getCollapsedCallLayoutResource(), p, null /* result */);
+            } else if (notificationsRedesignTemplates() && isHeadsUp) {
+                contentView = mBuilder.applyStandardTemplateWithActions(
                         mBuilder.getCollapsedCallLayoutResource(), p, null /* result */);
             } else {
                 contentView = mBuilder.applyStandardTemplateWithActions(
@@ -11065,7 +11076,8 @@ public class Notification implements Parcelable
             }
 
             // Bind some extra conversation-specific header fields.
-            if (!p.mHideAppName) {
+            if (!notificationsRedesignTemplates() && !p.mHideAppName) {
+                // Redesign note: This special divider is no longer needed.
                 mBuilder.setTextViewColorSecondary(contentView, R.id.app_name_divider, p);
                 contentView.setViewVisibility(R.id.app_name_divider, View.VISIBLE);
             }
