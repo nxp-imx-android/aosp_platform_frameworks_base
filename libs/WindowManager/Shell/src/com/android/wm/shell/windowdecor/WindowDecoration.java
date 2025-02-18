@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.windowdecor;
 
-import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.content.res.Configuration.DENSITY_DPI_UNDEFINED;
 import static android.view.WindowInsets.Type.captionBar;
 import static android.view.WindowInsets.Type.mandatorySystemGestures;
@@ -57,7 +56,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.windowdecor.WindowDecoration.RelayoutParams.OccludingCaptionElement;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewHostViewContainer;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
@@ -504,15 +502,14 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             startT.show(mTaskSurface);
         }
 
-        if (mTaskInfo.getWindowingMode() == WINDOWING_MODE_FREEFORM
-                && !DesktopModeStatus.isVeiledResizeEnabled()) {
-            // When fluid resize is enabled, add a background to freeform tasks
-            int backgroundColorInt = mTaskInfo.taskDescription.getBackgroundColor();
+        if (params.mShouldSetBackground) {
+            final int backgroundColorInt = mTaskInfo.taskDescription != null
+                    ? mTaskInfo.taskDescription.getBackgroundColor() : Color.BLACK;
             mTmpColor[0] = (float) Color.red(backgroundColorInt) / 255.f;
             mTmpColor[1] = (float) Color.green(backgroundColorInt) / 255.f;
             mTmpColor[2] = (float) Color.blue(backgroundColorInt) / 255.f;
             startT.setColor(mTaskSurface, mTmpColor);
-        } else if (!DesktopModeStatus.isVeiledResizeEnabled()) {
+        } else {
             startT.unsetColor(mTaskSurface);
         }
 
@@ -833,6 +830,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         boolean mSetTaskVisibilityPositionAndCrop;
         boolean mHasGlobalFocus;
         boolean mShouldSetAppBounds;
+        boolean mShouldSetBackground;
 
         void reset() {
             mLayoutResId = Resources.ID_NULL;
@@ -857,6 +855,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             mAsyncViewHost = false;
             mHasGlobalFocus = false;
             mShouldSetAppBounds = false;
+            mShouldSetBackground = false;
         }
 
         boolean hasInputFeatureSpy() {

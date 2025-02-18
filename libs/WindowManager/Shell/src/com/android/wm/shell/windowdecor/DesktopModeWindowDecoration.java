@@ -1064,6 +1064,10 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             relayoutParams.mCornerRadius = shouldIgnoreCornerRadius ? INVALID_CORNER_RADIUS :
                     getCornerRadius(context, relayoutParams.mLayoutResId);
         }
+        // Set opaque background for all freeform tasks to prevent freeform tasks below
+        // from being visible if freeform task window above is translucent.
+        // Otherwise if fluid resize is enabled, add a background to freeform tasks.
+        relayoutParams.mShouldSetBackground = DesktopModeStatus.shouldSetBackground(taskInfo);
     }
 
     private static int getCornerRadius(@NonNull Context context, int layoutResId) {
