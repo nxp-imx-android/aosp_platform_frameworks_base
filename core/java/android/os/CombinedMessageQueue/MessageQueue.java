@@ -233,9 +233,13 @@ public final class MessageQueue {
         traceMessageCount();
         PerfettoTrace.instant(PerfettoTrace.MQ_CATEGORY, "message_queue_send")
                 .addFlow(msg.mEventId.get())
-                .addArg("receiving_thread", mThread.getName())
-                .addArg("delay", when - SystemClock.uptimeMillis())
-                .addArg("what", msg.what)
+                .beginProto()
+                .beginNested(2004 /* message_queue */)
+                .addField(2 /* receiving_thread_name */, mThread.getName())
+                .addField(3 /* message_code */, msg.what)
+                .addField(4 /* message_delay_ms */, when - SystemClock.uptimeMillis())
+                .endNested()
+                .endProto()
                 .emit();
     }
 
