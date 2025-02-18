@@ -101,7 +101,7 @@ class UninstallLaunch : FragmentActivity(), UninstallActionListener {
                 if (aborted.abortReason == UninstallAborted.ABORT_REASON_APP_UNAVAILABLE ||
                     aborted.abortReason == UninstallAborted.ABORT_REASON_USER_NOT_ALLOWED
                 ) {
-                    val errorDialog = UninstallErrorFragment(aborted)
+                    val errorDialog = UninstallErrorFragment.newInstance(aborted)
                     showDialogInner(errorDialog)
                 } else {
                     setResult(aborted.activityResultCode, null, true)
@@ -110,7 +110,7 @@ class UninstallLaunch : FragmentActivity(), UninstallActionListener {
 
             UninstallStage.STAGE_USER_ACTION_REQUIRED -> {
                 val uar = uninstallStage as UninstallUserActionRequired
-                val confirmationDialog = UninstallConfirmationFragment(uar)
+                val confirmationDialog = UninstallConfirmationFragment.newInstance(uar)
                 showDialogInner(confirmationDialog)
             }
 
@@ -120,7 +120,7 @@ class UninstallLaunch : FragmentActivity(), UninstallActionListener {
                 //  And a fragment if the user requests a result back. Should we consolidate and
                 //  show a fragment always?
                 val uninstalling = uninstallStage as UninstallUninstalling
-                val uninstallingDialog = UninstallUninstallingFragment(uninstalling)
+                val uninstallingDialog = UninstallUninstallingFragment.newInstance(uninstalling)
                 showDialogInner(uninstallingDialog)
             }
 
