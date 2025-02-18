@@ -38,6 +38,7 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.view.ContentRecordingSession;
 import android.view.ContentRecordingSession.RecordContent;
+import android.window.DesktopExperienceFlags;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
@@ -350,6 +351,13 @@ final class ContentRecorder implements WindowContainerListener {
         if (mDisplayContent.getLastHasContent() || isCurrentlyRecording()
                 || mDisplayContent.getDisplayInfo().state == Display.STATE_OFF
                 || mContentRecordingSession == null) {
+            return;
+        }
+
+        // Recording should not be started on displays that are eligible for hosting tasks.
+        // See android.view.Display#canHostTasks().
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()
+                && mDisplayContent.mDisplay.canHostTasks()) {
             return;
         }
 
