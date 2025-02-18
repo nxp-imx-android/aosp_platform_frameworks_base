@@ -73,6 +73,7 @@ import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELE
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_SNAP_RESIZE
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
+import com.android.internal.util.LatencyTracker
 import com.android.window.flags.Flags
 import com.android.wm.shell.Flags.enableFlexibleSplit
 import com.android.wm.shell.R
@@ -748,9 +749,9 @@ class DesktopTasksController(
         desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
             DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS.toInt()
         )
-        transition?.let {
-            taskIdToMinimize?.let { taskId ->
-                addPendingMinimizeTransition(it, taskId, MinimizeReason.TASK_LIMIT)
+        if (transition != null) {
+            taskIdToMinimize?.let {
+                addPendingMinimizeTransition(transition, it, MinimizeReason.TASK_LIMIT)
             }
             exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
             if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
@@ -765,6 +766,9 @@ class DesktopTasksController(
             } else {
                 taskRepository.setActiveDesk(displayId = taskInfo.displayId, deskId = deskId)
             }
+        } else {
+            LatencyTracker.getInstance(context)
+                .onActionCancel(LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG)
         }
     }
 
@@ -3084,6 +3088,8 @@ class DesktopTasksController(
         val indicatorType = indicator.updateIndicatorType(inputCoordinates)
         when (indicatorType) {
             IndicatorType.TO_DESKTOP_INDICATOR -> {
+                LatencyTracker.getInstance(context)
+                    .onActionStart(LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG)
                 // Start a new jank interaction for the drag release to desktop window animation.
                 interactionJankMonitor.begin(
                     taskSurface,
