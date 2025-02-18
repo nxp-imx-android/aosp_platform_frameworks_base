@@ -51,6 +51,7 @@ android {
 
 dependencies {
     api(project(":SettingsLibColor"))
+    api(project(":SettingsLib:SettingsTheme"))
     api("androidx.appcompat:appcompat:1.7.0")
     api("androidx.compose.material3:material3:1.4.0-alpha05")
     api("androidx.compose.material:material-icons-extended")
