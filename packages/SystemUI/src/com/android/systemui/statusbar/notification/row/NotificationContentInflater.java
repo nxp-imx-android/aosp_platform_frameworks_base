@@ -246,7 +246,7 @@ public class NotificationContentInflater implements NotificationRowContentBinder
                                 entry.getRanking().getSummarization());
             } else {
                 result.mPublicInflatedSingleLineViewModel =
-                        SingleLineViewInflater.inflateRedactedSingleLineViewModel(
+                        SingleLineViewInflater.inflatePublicSingleLineViewModel(
                                 row.getContext(),
                                 isConversation
                         );
@@ -508,7 +508,7 @@ public class NotificationContentInflater implements NotificationRowContentBinder
                 new Notification.Builder(packageContext, original.getChannelId());
         redacted.setContentTitle(original.extras.getCharSequence(Notification.EXTRA_TITLE));
         CharSequence redactedMessage = systemUiContext.getString(
-                R.string.redacted_notification_single_line_text
+                R.string.redacted_otp_notification_single_line_text
         );
         redacted.setWhen(original.getWhen());
 
@@ -1361,7 +1361,7 @@ public class NotificationContentInflater implements NotificationRowContentBinder
                             );
                 } else {
                     result.mPublicInflatedSingleLineViewModel =
-                            SingleLineViewInflater.inflateRedactedSingleLineViewModel(
+                            SingleLineViewInflater.inflatePublicSingleLineViewModel(
                                     mContext,
                                     isConversation
                             );

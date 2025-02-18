@@ -752,7 +752,7 @@ constructor(
                             summarization = null,
                         )
                     } else {
-                        SingleLineViewInflater.inflateRedactedSingleLineViewModel(
+                        SingleLineViewInflater.inflatePublicSingleLineViewModel(
                             systemUiContext,
                             entry.ranking.isConversation,
                         )
@@ -790,7 +790,7 @@ constructor(
             val redacted = Notification.Builder(packageContext, original.channelId)
             redacted.setContentTitle(original.extras.getCharSequence(Notification.EXTRA_TITLE))
             val redactedMessage =
-                sysUiContext.getString(R.string.redacted_notification_single_line_text)
+                sysUiContext.getString(R.string.redacted_otp_notification_single_line_text)
 
             if (originalStyle is MessagingStyle) {
                 val newStyle = MessagingStyle(originalStyle.user)

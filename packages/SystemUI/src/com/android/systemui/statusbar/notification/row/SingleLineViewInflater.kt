@@ -71,7 +71,7 @@ internal object SingleLineViewInflater {
         var contentText =
             if (redactText) {
                 systemUiContext.getString(
-                    com.android.systemui.res.R.string.redacted_notification_single_line_text
+                    com.android.systemui.res.R.string.redacted_otp_notification_single_line_text
                 )
             } else {
                 HybridGroupManager.resolveText(notification)
@@ -120,7 +120,7 @@ internal object SingleLineViewInflater {
     }
 
     @JvmStatic
-    fun inflateRedactedSingleLineViewModel(
+    fun inflatePublicSingleLineViewModel(
         context: Context,
         isConversation: Boolean = false,
     ): SingleLineViewModel {
@@ -144,7 +144,7 @@ internal object SingleLineViewInflater {
                 com.android.systemui.res.R.string.redacted_notification_single_line_title
             ),
             context.getString(
-                com.android.systemui.res.R.string.redacted_notification_single_line_text
+                com.android.systemui.res.R.string.public_notification_single_line_text
             ),
             conversationData,
         )
