@@ -391,3 +391,12 @@ flag {
     bug: "319137634"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "always_load_past_certs_v4"
+    is_exported: true
+    namespace: "package_manager_service"
+    description: "Always read the corresponding v3/3.1 signature block for the current v4 to get the past rotated certificates, even when not verifying integrity."
+    bug: "378539511"
+    is_fixed_read_only: true
+}
