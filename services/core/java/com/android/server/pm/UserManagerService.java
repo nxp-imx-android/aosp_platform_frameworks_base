@@ -2937,28 +2937,20 @@ public class UserManagerService extends IUserManager.Stub {
 
         int flags = UserManager.SWITCHABILITY_STATUS_OK;
 
-        t.traceBegin("TM.isInCall");
-        final long identity = Binder.clearCallingIdentity();
-        try {
-            final TelecomManager telecomManager = mContext.getSystemService(TelecomManager.class);
-            if (com.android.internal.telephony.flags
-                    .Flags.enforceTelephonyFeatureMappingForPublicApis()) {
-                if (mContext.getPackageManager().hasSystemFeature(
-                        PackageManager.FEATURE_TELECOM)) {
-                    if (telecomManager != null && telecomManager.isInCall()) {
-                        flags |= UserManager.SWITCHABILITY_STATUS_USER_IN_CALL;
-                    }
-                }
-            } else {
+        if (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELECOM)) {
+            t.traceBegin("TM.isInCall");
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                final TelecomManager telecomManager = mContext.getSystemService(
+                        TelecomManager.class);
                 if (telecomManager != null && telecomManager.isInCall()) {
                     flags |= UserManager.SWITCHABILITY_STATUS_USER_IN_CALL;
                 }
+            } finally {
+                Binder.restoreCallingIdentity(identity);
             }
-        } finally {
-            Binder.restoreCallingIdentity(identity);
+            t.traceEnd();
         }
-        t.traceEnd();
-
         t.traceBegin("hasUserRestriction-DISALLOW_USER_SWITCH");
         if (mLocalService.hasUserRestriction(DISALLOW_USER_SWITCH, userId)) {
             flags |= UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED;
