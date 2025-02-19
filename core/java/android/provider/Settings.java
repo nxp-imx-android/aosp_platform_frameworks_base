@@ -45,6 +45,7 @@ import android.app.NotificationManager;
 import android.app.SearchManager;
 import android.app.WallpaperManager;
 import android.compat.annotation.UnsupportedAppUsage;
+import android.content.AttributionSource;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -3369,15 +3370,15 @@ public final class Settings {
     }
 
     private static final class GenerationTracker {
-        @NonNull private final String mName;
+        @NonNull private final Key mKey;
         @NonNull private final MemoryIntArray mArray;
-        @NonNull private final Consumer<String> mErrorHandler;
+        @NonNull private final Consumer<Key> mErrorHandler;
         private final int mIndex;
         private int mCurrentGeneration;
 
-        GenerationTracker(@NonNull String name, @NonNull MemoryIntArray array, int index,
-                int generation, Consumer<String> errorHandler) {
-            mName = name;
+        GenerationTracker(@NonNull Key key, @NonNull MemoryIntArray array, int index,
+                int generation, @NonNull Consumer<Key> errorHandler) {
+            mKey = key;
             mArray = array;
             mIndex = index;
             mErrorHandler = errorHandler;
@@ -3405,7 +3406,7 @@ public final class Settings {
                 return mArray.get(mIndex);
             } catch (IOException e) {
                 Log.e(TAG, "Error getting current generation", e);
-                mErrorHandler.accept(mName);
+                mErrorHandler.accept(mKey);
             }
             return -1;
         }
@@ -3420,6 +3421,28 @@ public final class Settings {
                 destroy();
             } finally {
                 super.finalize();
+            }
+        }
+
+        private static final class Key {
+            private final String mName;
+            private final int mDeviceId;
+
+            Key(String name, int deviceId) {
+                mName = name;
+                mDeviceId = deviceId;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (!(o instanceof Key key)) return false;
+                return mDeviceId == key.mDeviceId && Objects.equals(mName, key.mName);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(mName, mDeviceId);
             }
         }
     }
@@ -3479,9 +3502,9 @@ public final class Settings {
         private static final String NAME_EQ_PLACEHOLDER = "name=?";
 
         // Cached values of queried settings.
-        // Key is the setting's name, value is the setting's value.
+        // Key is composed by the setting's name and deviceId, value is the setting's value.
         // Must synchronize on 'this' to access mValues and mValuesVersion.
-        private final ArrayMap<String, String> mValues = new ArrayMap<>();
+        private final ArrayMap<GenerationTracker.Key, String> mValues = new ArrayMap<>();
 
         // Cached values for queried prefixes.
         // Key is the prefix, value is all of the settings under the prefix, mapped from a setting's
@@ -3505,19 +3528,22 @@ public final class Settings {
         private final ArraySet<String> mAllFields;
         private final ArrayMap<String, Integer> mReadableFieldsWithMaxTargetSdk;
 
-        // Mapping from the name of a setting (or the prefix of a namespace) to a generation tracker
+        // Mapping of key to generation trackers for queried settings.
+        // Key is composed by the setting's name and deviceId, value is the generation tracker.
+        // Must synchronize on 'this' to access mGenerationTrackers.
         @GuardedBy("this")
-        private ArrayMap<String, GenerationTracker> mGenerationTrackers = new ArrayMap<>();
+        private final ArrayMap<GenerationTracker.Key, GenerationTracker> mGenerationTrackers =
+                new ArrayMap<>();
 
-        private Consumer<String> mGenerationTrackerErrorHandler = (String name) -> {
+        private final Consumer<GenerationTracker.Key> mGenerationTrackerErrorHandler = (key) -> {
             synchronized (NameValueCache.this) {
                 Log.e(TAG, "Error accessing generation tracker - removing");
-                final GenerationTracker tracker = mGenerationTrackers.get(name);
+                final GenerationTracker tracker = mGenerationTrackers.get(key);
                 if (tracker != null) {
                     tracker.destroy();
-                    mGenerationTrackers.remove(name);
+                    mGenerationTrackers.remove(key);
                 }
-                mValues.remove(name);
+                mValues.remove(key);
             }
         };
 
@@ -3621,11 +3647,18 @@ public final class Settings {
         @UnsupportedAppUsage
         public String getStringForUser(ContentResolver cr, String name, final int userHandle) {
             final boolean isSelf = (userHandle == UserHandle.myUserId());
+            final AttributionSource attributionSource = cr.getAttributionSource();
+            final int deviceId =
+                    android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()
+                            && android.permission.flags.Flags.deviceAwarePermissionApisEnabled()
+                            && attributionSource != null
+                            ? attributionSource.getDeviceId() : Context.DEVICE_ID_DEFAULT;
+            final GenerationTracker.Key key = new GenerationTracker.Key(name, deviceId);
             final boolean useCache = isSelf && !isInSystemServer();
             boolean needsGenerationTracker = false;
             if (useCache) {
                 synchronized (NameValueCache.this) {
-                    final GenerationTracker generationTracker = mGenerationTrackers.get(name);
+                    final GenerationTracker generationTracker = mGenerationTrackers.get(key);
                     if (generationTracker != null) {
                         if (generationTracker.isGenerationChanged()) {
                             if (DEBUG) {
@@ -3636,14 +3669,14 @@ public final class Settings {
                             }
                             // When a generation number changes, remove cached value, remove the old
                             // generation tracker and request a new one
-                            mValues.remove(name);
+                            mValues.remove(key);
                             generationTracker.destroy();
-                            mGenerationTrackers.remove(name);
-                        } else if (mValues.containsKey(name)) {
+                            mGenerationTrackers.remove(key);
+                        } else if (mValues.containsKey(key)) {
                             if (DEBUG) {
                                 Log.i(TAG, "Cache hit for setting:" + name);
                             }
-                            return mValues.get(name);
+                            return mValues.get(key);
                         }
                     }
                 }
@@ -3761,23 +3794,23 @@ public final class Settings {
                                         }
                                         // Always make sure to close any pre-existing tracker before
                                         // replacing it, to prevent memory leaks
-                                        var oldTracker = mGenerationTrackers.get(name);
+                                        var oldTracker = mGenerationTrackers.get(key);
                                         if (oldTracker != null) {
                                             oldTracker.destroy();
                                         }
-                                        mGenerationTrackers.put(name, new GenerationTracker(name,
+                                        mGenerationTrackers.put(key, new GenerationTracker(key,
                                                 array, index, generation,
                                                 mGenerationTrackerErrorHandler));
                                     } else {
                                         maybeCloseGenerationArray(array);
                                     }
                                 }
-                                if (mGenerationTrackers.get(name) != null
-                                        && !mGenerationTrackers.get(name).isGenerationChanged()) {
+                                GenerationTracker tracker = mGenerationTrackers.get(key);
+                                if (tracker != null && !tracker.isGenerationChanged()) {
                                     if (DEBUG) {
                                         Log.i(TAG, "Updating cache for setting:" + name);
                                     }
-                                    mValues.put(name, value);
+                                    mValues.put(key, value);
                                 }
                             }
                         } else {
@@ -3822,12 +3855,12 @@ public final class Settings {
 
                 String value = c.moveToNext() ? c.getString(0) : null;
                 synchronized (NameValueCache.this) {
-                    if (mGenerationTrackers.get(name) != null
-                            && !mGenerationTrackers.get(name).isGenerationChanged()) {
+                    GenerationTracker tracker = mGenerationTrackers.get(key);
+                    if (tracker != null && !tracker.isGenerationChanged()) {
                         if (DEBUG) {
                             Log.i(TAG, "Updating cache for setting:" + name + " using query");
                         }
-                        mValues.put(name, value);
+                        mValues.put(key, value);
                     }
                 }
                 return value;
@@ -3859,13 +3892,15 @@ public final class Settings {
 
         private Map<String, String> getStringsForPrefixStripPrefix(
                 ContentResolver cr, String prefix, List<String> names) {
+            final GenerationTracker.Key trackerKey = new GenerationTracker.Key(prefix,
+                    Context.DEVICE_ID_DEFAULT);
             String namespace = prefix.substring(0, prefix.length() - 1);
             ArrayMap<String, String> keyValues = new ArrayMap<>();
             int substringLength = prefix.length();
             int currentGeneration = -1;
             boolean needsGenerationTracker = false;
             synchronized (NameValueCache.this) {
-                final GenerationTracker generationTracker = mGenerationTrackers.get(prefix);
+                final GenerationTracker generationTracker = mGenerationTrackers.get(trackerKey);
                 if (generationTracker != null) {
                     if (generationTracker.isGenerationChanged()) {
                         if (DEBUG) {
@@ -3876,7 +3911,7 @@ public final class Settings {
                         // When a generation number changes, remove cached values, remove the old
                         // generation tracker and request a new one
                         generationTracker.destroy();
-                        mGenerationTrackers.remove(prefix);
+                        mGenerationTrackers.remove(trackerKey);
                         mPrefixToValues.remove(prefix);
                         needsGenerationTracker = true;
                     } else {
@@ -3993,20 +4028,20 @@ public final class Settings {
                             }
                             // Always make sure to close any pre-existing tracker before
                             // replacing it, to prevent memory leaks
-                            var oldTracker = mGenerationTrackers.get(prefix);
+                            var oldTracker = mGenerationTrackers.get(trackerKey);
                             if (oldTracker != null) {
                                 oldTracker.destroy();
                             }
-                            mGenerationTrackers.put(prefix,
-                                    new GenerationTracker(prefix, array, index, generation,
+                            mGenerationTrackers.put(trackerKey,
+                                    new GenerationTracker(trackerKey, array, index, generation,
                                             mGenerationTrackerErrorHandler));
                             currentGeneration = generation;
                         } else {
                             maybeCloseGenerationArray(array);
                         }
                     }
-                    if (mGenerationTrackers.get(prefix) != null && currentGeneration
-                            == mGenerationTrackers.get(prefix).getCurrentGeneration()) {
+                    GenerationTracker tracker = mGenerationTrackers.get(trackerKey);
+                    if (tracker != null && currentGeneration == tracker.getCurrentGeneration()) {
                         if (DEBUG) {
                             Log.i(TAG, "Updating cache for prefix:" + prefix);
                         }

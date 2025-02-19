@@ -1208,6 +1208,22 @@ public abstract class ContentProvider implements ContentInterface, ComponentCall
     }
 
     /**
+     * Returns the device id associated with the {@link Context} of the caller.
+     *
+     * @see Context#getDeviceId()
+     * @hide
+     */
+    public final int getCallingDeviceId() {
+        if (android.permission.flags.Flags.deviceAwarePermissionApisEnabled()) {
+            final AttributionSource attributionSource = mCallingAttributionSource.get();
+            if (attributionSource != null) {
+                return attributionSource.getDeviceId();
+            }
+        }
+        return Context.DEVICE_ID_DEFAULT;
+    }
+
+    /**
      * @removed
      */
     @Deprecated

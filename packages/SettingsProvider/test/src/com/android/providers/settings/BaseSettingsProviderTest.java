@@ -77,7 +77,13 @@ abstract class BaseSettingsProviderTest {
     }
 
     protected void setStringViaFrontEndApiSetting(int type, String name, String value, int userId) {
-        ContentResolver contentResolver = getContext().getContentResolver();
+        setStringViaFrontEndApiSetting(type, name, value, userId, Context.DEVICE_ID_DEFAULT);
+    }
+
+    protected void setStringViaFrontEndApiSetting(int type, String name, String value, int userId,
+            int deviceId) {
+        ContentResolver contentResolver =
+                getContext().createDeviceContext(deviceId).getContentResolver();
 
         switch (type) {
             case SETTING_TYPE_GLOBAL: {
@@ -99,7 +105,13 @@ abstract class BaseSettingsProviderTest {
     }
 
     protected String getStringViaFrontEndApiSetting(int type, String name, int userId) {
-        ContentResolver contentResolver = getContext().getContentResolver();
+        return getStringViaFrontEndApiSetting(type, name, userId, Context.DEVICE_ID_DEFAULT);
+    }
+
+    protected String getStringViaFrontEndApiSetting(int type, String name, int userId,
+            int deviceId) {
+        ContentResolver contentResolver = getContext().createDeviceContext(deviceId)
+                .getContentResolver();
 
         switch (type) {
             case SETTING_TYPE_GLOBAL: {
@@ -122,6 +134,12 @@ abstract class BaseSettingsProviderTest {
 
     protected Uri insertStringViaProviderApi(int type, String name, String value,
             boolean withTableRowUri) {
+        return insertStringViaProviderApi(type, name, value, withTableRowUri,
+                Context.DEVICE_ID_DEFAULT);
+    }
+
+    protected Uri insertStringViaProviderApi(int type, String name, String value,
+            boolean withTableRowUri, int deviceId) {
         Uri uri = getBaseUriForType(type);
         if (withTableRowUri) {
             uri = Uri.withAppendedPath(uri, name);
@@ -130,7 +148,7 @@ abstract class BaseSettingsProviderTest {
         values.put(Settings.NameValueTable.NAME, name);
         values.put(Settings.NameValueTable.VALUE, value);
 
-        return getContext().getContentResolver().insert(uri, values);
+        return getContext().createDeviceContext(deviceId).getContentResolver().insert(uri, values);
     }
 
     protected int deleteStringViaProviderApi(int type, String name) {
