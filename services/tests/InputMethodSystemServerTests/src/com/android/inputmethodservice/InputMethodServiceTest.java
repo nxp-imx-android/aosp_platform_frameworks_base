@@ -866,6 +866,9 @@ public class InputMethodServiceTest {
                     () -> mActivity.showImeWithWindowInsetsController(),
                     EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
 
+            eventually(() -> assertWithMessage("IME navigation bar is shown")
+                    .that(mInputMethodService.isImeNavigationBarShownForTesting()).isTrue());
+
             final var backButton = getUiObject(By.res(INPUT_METHOD_NAV_BACK_ID));
             verifyInputViewStatus(
                     () -> {
@@ -891,6 +894,9 @@ public class InputMethodServiceTest {
             verifyInputViewStatusOnMainSync(
                     () -> mActivity.showImeWithWindowInsetsController(),
                     EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
+
+            eventually(() -> assertWithMessage("IME navigation bar is shown")
+                    .that(mInputMethodService.isImeNavigationBarShownForTesting()).isTrue());
 
             final var backButton = getUiObject(By.res(INPUT_METHOD_NAV_BACK_ID));
             verifyInputViewStatus(
@@ -926,6 +932,9 @@ public class InputMethodServiceTest {
                         mActivity.showImeWithWindowInsetsController();
                     },
                     EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
+
+            eventually(() -> assertWithMessage("IME navigation bar is shown")
+                    .that(mInputMethodService.isImeNavigationBarShownForTesting()).isTrue());
 
             final var imeSwitcherButton = getUiObject(By.res(INPUT_METHOD_NAV_IME_SWITCHER_ID));
             imeSwitcherButton.click();
@@ -964,6 +973,9 @@ public class InputMethodServiceTest {
                         mActivity.showImeWithWindowInsetsController();
                     },
                     EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
+
+            eventually(() -> assertWithMessage("IME navigation bar is shown")
+                    .that(mInputMethodService.isImeNavigationBarShownForTesting()).isTrue());
 
             final var imeSwitcherButton = getUiObject(By.res(INPUT_METHOD_NAV_IME_SWITCHER_ID));
             imeSwitcherButton.longClick();
