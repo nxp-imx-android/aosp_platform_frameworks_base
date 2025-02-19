@@ -23,6 +23,8 @@ import static android.app.StatusBarManager.DISABLE_HOME;
 import static android.app.StatusBarManager.DISABLE_RECENT;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+import static android.view.WindowManager.LayoutParams.TYPE_PRESENTATION;
+import static android.view.WindowManager.LayoutParams.TYPE_PRIVATE_PRESENTATION;
 import static android.window.DisplayAreaOrganizer.FEATURE_UNDEFINED;
 import static android.window.DisplayAreaOrganizer.KEY_ROOT_DISPLAY_AREA_ID;
 
@@ -208,7 +210,8 @@ public class ImmersiveModeConfirmation implements CoreStartable, CommandQueue.Ca
     }
 
     @Override
-    public void immersiveModeChanged(int rootDisplayAreaId, boolean isImmersiveMode) {
+    public void immersiveModeChanged(int rootDisplayAreaId, boolean isImmersiveMode,
+            int windowType) {
         mHandler.removeMessages(H.SHOW);
         if (isImmersiveMode) {
             if (DEBUG) Log.d(TAG, "immersiveModeChanged() sConfirmed=" + sConfirmed);
@@ -221,7 +224,9 @@ public class ImmersiveModeConfirmation implements CoreStartable, CommandQueue.Ca
                     && mCanSystemBarsBeShownByUser
                     && !mNavBarEmpty
                     && !UserManager.isDeviceInDemoMode(mDisplayContext)
-                    && (mLockTaskState != LOCK_TASK_MODE_LOCKED)) {
+                    && (mLockTaskState != LOCK_TASK_MODE_LOCKED)
+                    && windowType != TYPE_PRESENTATION
+                    && windowType != TYPE_PRIVATE_PRESENTATION) {
                 final Message msg = mHandler.obtainMessage(
                         H.SHOW);
                 msg.arg1 = rootDisplayAreaId;

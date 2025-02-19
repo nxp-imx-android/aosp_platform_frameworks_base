@@ -22,6 +22,7 @@ import static android.service.quickaccesswallet.Flags.FLAG_LAUNCH_WALLET_OPTION_
 import static android.service.quickaccesswallet.Flags.FLAG_LAUNCH_WALLET_VIA_SYSUI_CALLBACKS;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowInsetsController.BEHAVIOR_DEFAULT;
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -556,9 +557,9 @@ public class CommandQueueTest extends SysuiTestCase {
     @Test
     public void testImmersiveModeChanged() {
         final int displayAreaId = 10;
-        mCommandQueue.immersiveModeChanged(displayAreaId, true);
+        mCommandQueue.immersiveModeChanged(displayAreaId, true, TYPE_APPLICATION);
         waitForIdleSync();
-        verify(mCallbacks).immersiveModeChanged(displayAreaId, true);
+        verify(mCallbacks).immersiveModeChanged(displayAreaId, true, TYPE_APPLICATION);
     }
 
     @Test

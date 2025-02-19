@@ -160,8 +160,10 @@ public interface StatusBarManagerInternal {
      * @param displayId The changed display Id.
      * @param rootDisplayAreaId The changed display area Id.
      * @param isImmersiveMode {@code true} if the display area get into immersive mode.
+     * @param windowType The window type of the controlling window.
      */
-    void immersiveModeChanged(int displayId, int rootDisplayAreaId, boolean isImmersiveMode);
+    void immersiveModeChanged(int displayId, int rootDisplayAreaId, boolean isImmersiveMode,
+            int windowType);
 
     /**
      * Show a rotation suggestion that a user may approve to rotate the screen.
