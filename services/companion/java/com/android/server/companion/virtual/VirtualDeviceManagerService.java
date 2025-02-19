@@ -891,6 +891,11 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         @Override
+        public VirtualDevice getVirtualDevice(int deviceId) {
+            return mImpl.getVirtualDevice(deviceId);
+        }
+
+        @Override
         public long getDimDurationMillisForDeviceId(int deviceId) {
             VirtualDeviceImpl virtualDevice = getVirtualDeviceForId(deviceId);
             return virtualDevice == null ? -1 : virtualDevice.getDimDurationMillis();
