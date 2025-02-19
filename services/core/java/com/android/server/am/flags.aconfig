@@ -293,6 +293,13 @@ flag {
 }
 
 flag {
+    name: "perceptible_tasks"
+    namespace: "system_performance"
+    description: "Boost the oom_score_adj of activities in perceptible tasks"
+    bug: "370890207"
+}
+
+flag {
     name: "expedite_activity_launch_on_cold_start"
     namespace: "system_performance"
     description: "Notify ActivityTaskManager of cold starts early to fix app launch behavior."

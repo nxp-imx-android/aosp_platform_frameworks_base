@@ -71,6 +71,7 @@ android_library {
         "//frameworks/libs/systemui:com_android_systemui_shared_flags_lib",
         "//frameworks/libs/systemui:msdl",
         "//frameworks/libs/systemui:view_capture",
+        "am_flags_lib",
     ],
     resource_dirs: [
         "res",

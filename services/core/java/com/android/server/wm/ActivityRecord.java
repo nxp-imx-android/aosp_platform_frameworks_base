@@ -493,6 +493,7 @@ final class ActivityRecord extends WindowToken {
     private long createTime = System.currentTimeMillis();
     long lastVisibleTime;         // last time this activity became visible
     long pauseTime;               // last time we started pausing the activity
+    long mStoppedTime;            // last time we completely stopped the activity
     long launchTickTime;          // base time for launch tick messages
     long topResumedStateLossTime; // last time we reported top resumed state loss to an activity
     // Last configuration reported to the activity in the client process.
@@ -6447,6 +6448,7 @@ final class ActivityRecord extends WindowToken {
             Slog.w(TAG, "Exception thrown during pause", e);
             // Just in case, assume it to be stopped.
             mAppStopped = true;
+            mStoppedTime = SystemClock.uptimeMillis();
             ProtoLog.v(WM_DEBUG_STATES, "Stop failed; moving to STOPPED: %s", this);
             setState(STOPPED, "stopIfPossible");
         }
@@ -6480,6 +6482,7 @@ final class ActivityRecord extends WindowToken {
 
         if (isStopping) {
             ProtoLog.v(WM_DEBUG_STATES, "Moving to STOPPED: %s (stop complete)", this);
+            mStoppedTime = SystemClock.uptimeMillis();
             setState(STOPPED, "activityStopped");
         }
 
