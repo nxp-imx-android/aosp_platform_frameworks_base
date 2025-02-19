@@ -59,6 +59,7 @@ constructor(
     @ScreenDecorationsThread private val uiExecutor: Executor,
     private val dotFactory: PrivacyDotDecorProviderFactory,
 ) {
+    private val dotViews: MutableSet<View> = mutableSetOf()
 
     fun start() {
         uiExecutor.execute { startOnUiThread() }
@@ -72,10 +73,13 @@ constructor(
         val bottomLeft = providers.inflate(BOUNDS_POSITION_BOTTOM, BOUNDS_POSITION_LEFT)
         val bottomRight = providers.inflate(BOUNDS_POSITION_BOTTOM, BOUNDS_POSITION_RIGHT)
 
-        topLeft.addToWindow(TopLeft)
-        topRight.addToWindow(TopRight)
-        bottomLeft.addToWindow(BottomLeft)
-        bottomRight.addToWindow(BottomRight)
+        listOfNotNull(
+                topLeft.addToWindow(TopLeft),
+                topRight.addToWindow(TopRight),
+                bottomLeft.addToWindow(BottomLeft),
+                bottomRight.addToWindow(BottomRight),
+            )
+            .forEach { dotViews.add(it) }
 
         privacyDotViewController.initialize(topLeft, topRight, bottomLeft, bottomRight)
     }
@@ -87,7 +91,7 @@ constructor(
         return inflater.inflate(/* resource= */ provider.layoutId, /* root= */ null)
     }
 
-    private fun View.addToWindow(corner: PrivacyDotCorner) {
+    private fun View.addToWindow(corner: PrivacyDotCorner): View? {
         val excludeFromScreenshots = displayId == Display.DEFAULT_DISPLAY
         val params =
             ScreenDecorations.getWindowLayoutBaseParams(excludeFromScreenshots).apply {
@@ -110,6 +114,11 @@ constructor(
                 e,
             )
         }
+        return rootView
+    }
+
+    fun stop() {
+        dotViews.forEach { viewCaptureAwareWindowManager.removeView(it) }
     }
 
     @AssistedFactory
