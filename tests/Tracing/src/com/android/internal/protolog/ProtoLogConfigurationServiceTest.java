@@ -62,6 +62,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 
 /**
@@ -234,7 +235,7 @@ public class ProtoLogConfigurationServiceTest {
         service.registerClient(mMockClient, args);
 
         Truth.assertThat(service.isLoggingToLogcat(TEST_GROUP)).isFalse();
-        service.enableProtoLogToLogcat(TEST_GROUP);
+        service.enableProtoLogToLogcat(Mockito.mock(PrintWriter.class), TEST_GROUP);
         Truth.assertThat(service.isLoggingToLogcat(TEST_GROUP)).isTrue();
 
         Mockito.verify(mMockClient).toggleLogcat(eq(true),
@@ -251,7 +252,7 @@ public class ProtoLogConfigurationServiceTest {
         service.registerClient(mMockClient, args);
 
         Truth.assertThat(service.isLoggingToLogcat(TEST_GROUP)).isTrue();
-        service.disableProtoLogToLogcat(TEST_GROUP);
+        service.disableProtoLogToLogcat(Mockito.mock(PrintWriter.class), TEST_GROUP);
         Truth.assertThat(service.isLoggingToLogcat(TEST_GROUP)).isFalse();
 
         Mockito.verify(mMockClient).toggleLogcat(eq(false),
@@ -269,7 +270,7 @@ public class ProtoLogConfigurationServiceTest {
         service.registerClient(mMockClient, args);
 
         Truth.assertThat(service.isLoggingToLogcat(TEST_GROUP)).isFalse();
-        service.enableProtoLogToLogcat(OTHER_TEST_GROUP);
+        service.enableProtoLogToLogcat(Mockito.mock(PrintWriter.class), OTHER_TEST_GROUP);
         Truth.assertThat(service.isLoggingToLogcat(TEST_GROUP)).isFalse();
 
         Mockito.verify(mMockClient, never()).toggleLogcat(anyBoolean(), any());
@@ -280,7 +281,7 @@ public class ProtoLogConfigurationServiceTest {
         final ProtoLogConfigurationService service = new ProtoLogConfigurationServiceImpl();
 
         Truth.assertThat(service.getGroups()).asList().doesNotContain(TEST_GROUP);
-        service.enableProtoLogToLogcat(TEST_GROUP);
+        service.enableProtoLogToLogcat(Mockito.mock(PrintWriter.class), TEST_GROUP);
         Truth.assertThat(service.isLoggingToLogcat(TEST_GROUP)).isTrue();
 
         final RegisterClientArgs args = new RegisterClientArgs();
