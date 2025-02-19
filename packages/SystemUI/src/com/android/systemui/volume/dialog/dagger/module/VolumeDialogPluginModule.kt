@@ -17,6 +17,7 @@
 package com.android.systemui.volume.dialog.dagger.module
 
 import com.android.systemui.volume.dialog.dagger.VolumeDialogComponent
+import com.android.systemui.volume.dialog.dagger.factory.VolumeDialogComponentFactory
 import com.android.systemui.volume.dialog.shared.model.CsdWarningConfigModel
 import com.android.systemui.volume.dialog.utils.VolumeTracer
 import com.android.systemui.volume.dialog.utils.VolumeTracerImpl
@@ -26,6 +27,11 @@ import dagger.Provides
 
 @Module(subcomponents = [VolumeDialogComponent::class])
 interface VolumeDialogPluginModule {
+
+    @Binds
+    fun bindVolumeDialogComponentFactory(
+        factory: VolumeDialogComponent.Factory
+    ): VolumeDialogComponentFactory
 
     @Binds fun bindVolumeTracer(volumeTracer: VolumeTracerImpl): VolumeTracer
 
