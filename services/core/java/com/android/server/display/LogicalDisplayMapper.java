@@ -890,10 +890,12 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
                 // still need to let WindowManager know so it can update its own internal state for
                 // things like display cutouts.
                 display.getNonOverrideDisplayInfoLocked(mTempDisplayInfo);
-                if (!mTempNonOverrideDisplayInfo.equals(mTempDisplayInfo)) {
-                    logicalDisplayEventMask |= LOGICAL_DISPLAY_EVENT_BASIC_CHANGED
-                            | LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED;
+                if (!mTempNonOverrideDisplayInfo.equals(mTempDisplayInfo,
+                        /* compareOnlyBasicChanges */ true)) {
+                    logicalDisplayEventMask |= LOGICAL_DISPLAY_EVENT_BASIC_CHANGED;
                 }
+                logicalDisplayEventMask
+                        |= updateAndGetMaskForDisplayPropertyChanges(mTempNonOverrideDisplayInfo);
             }
             mLogicalDisplaysToUpdate.put(displayId, logicalDisplayEventMask);
             mUpdatedLogicalDisplays.put(displayId, UPDATE_STATE_UPDATED);
