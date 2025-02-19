@@ -215,12 +215,7 @@ open class SimpleDigitalClockTextView(
             )
         }
 
-        setInterpolatedViewBounds(
-            getInterpolatedTextBounds(),
-            widthMeasureSpec,
-            heightMeasureSpec,
-            force = true,
-        )
+        setInterpolatedViewBounds(getInterpolatedTextBounds(), widthMeasureSpec, heightMeasureSpec)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -388,7 +383,6 @@ open class SimpleDigitalClockTextView(
         interpBounds: Rect,
         widthMeasureSpec: Int = measuredWidthAndState,
         heightMeasureSpec: Int = measuredHeightAndState,
-        force: Boolean = false,
     ) {
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
@@ -415,10 +409,7 @@ open class SimpleDigitalClockTextView(
                 )
             }
 
-        if (force || widthSpec != measuredWidthAndState || heightSpec != measuredHeightAndState) {
-            setMeasuredDimension(widthSpec, heightSpec)
-            parent?.requestLayout()
-        }
+        setMeasuredDimension(widthSpec, heightSpec)
     }
 
     private fun updateXTranslation(inPoint: Point, interpolatedTextBounds: Rect): Point {
