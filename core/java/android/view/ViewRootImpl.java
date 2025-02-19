@@ -152,6 +152,7 @@ import android.annotation.UiContext;
 import android.app.ActivityManager;
 import android.app.ActivityThread;
 import android.app.ResourcesManager;
+import android.app.UiModeManager;
 import android.app.WindowConfiguration;
 import android.app.compat.CompatChanges;
 import android.app.servertransaction.WindowStateTransactionItem;
@@ -195,6 +196,7 @@ import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.input.InputManagerGlobal;
 import android.hardware.input.InputSettings;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
@@ -471,8 +473,6 @@ public final class ViewRootImpl implements ViewParent,
     @Nullable
     private ContentObserver mForceInvertObserver;
 
-    private static final int INVALID_VALUE = Integer.MIN_VALUE;
-    private int mForceInvertEnabled = INVALID_VALUE;
     /**
      * Callback for notifying about global configuration changes.
      */
@@ -553,6 +553,8 @@ public final class ViewRootImpl implements ViewParent,
     @UnsupportedAppUsage
     @UiContext
     public final Context mContext;
+
+    private UiModeManager mUiModeManager;
 
     @UnsupportedAppUsage
     final IWindowSession mWindowSession;
@@ -1803,23 +1805,6 @@ public final class ViewRootImpl implements ViewParent,
         }
     }
 
-    private boolean isForceInvertEnabled() {
-        if (mForceInvertEnabled == INVALID_VALUE) {
-            reloadForceInvertEnabled();
-        }
-        return mForceInvertEnabled == 1;
-    }
-
-    private void reloadForceInvertEnabled() {
-        if (forceInvertColor()) {
-            mForceInvertEnabled = Settings.Secure.getIntForUser(
-                    mContext.getContentResolver(),
-                    Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED,
-                    /* def= */ 0,
-                    UserHandle.myUserId());
-        }
-    }
-
     /**
      * Register any kind of listeners if setView was success.
      */
@@ -1855,17 +1840,22 @@ public final class ViewRootImpl implements ViewParent,
                 mForceInvertObserver = new ContentObserver(mHandler) {
                     @Override
                     public void onChange(boolean selfChange) {
-                        reloadForceInvertEnabled();
                         updateForceDarkMode();
                     }
                 };
-                mContext.getContentResolver().registerContentObserver(
-                        Settings.Secure.getUriFor(
-                                Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED
-                        ),
-                        false,
-                        mForceInvertObserver,
-                        UserHandle.myUserId());
+
+                final Uri[] urisToObserve = {
+                    Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED),
+                    Settings.Secure.getUriFor(Settings.Secure.UI_NIGHT_MODE)
+                };
+                for (Uri uri : urisToObserve) {
+                    mContext.getContentResolver().registerContentObserver(
+                            uri,
+                            false,
+                            mForceInvertObserver,
+                            UserHandle.myUserId());
+                }
             }
         }
     }
@@ -2072,21 +2062,25 @@ public final class ViewRootImpl implements ViewParent,
         return getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
     }
 
-    /** Returns true if force dark should be enabled according to various settings */
+    /**
+     * Determines the type of force dark to apply, considering force inversion, system night mode,
+     * and app-specific settings (including developer opt-outs).
+     *
+     * @return A {@link ForceDarkType.ForceDarkTypeDef} constant indicating the force dark type.
+     */
     @VisibleForTesting
     public @ForceDarkType.ForceDarkTypeDef int determineForceDarkType() {
         if (forceInvertColor()) {
             // Force invert ignores all developer opt-outs.
             // We also ignore dark theme, since the app developer can override the user's preference
-            // for dark mode in configuration.uiMode. Instead, we assume that the force invert
-            // setting will be enabled at the same time dark theme is in the Settings app.
-            if (isForceInvertEnabled()) {
+            // for dark mode in configuration.uiMode. Instead, we assume that both force invert and
+            // the system's dark theme are enabled.
+            if (getUiModeManager().getForceInvertState() == UiModeManager.FORCE_INVERT_TYPE_DARK) {
                 return ForceDarkType.FORCE_INVERT_COLOR_DARK;
             }
         }
 
         boolean useAutoDark = getNightMode() == Configuration.UI_MODE_NIGHT_YES;
-
         if (useAutoDark) {
             boolean forceDarkAllowedDefault =
                     SystemProperties.getBoolean(ThreadedRenderer.DEBUG_FORCE_DARK, false);
@@ -9389,6 +9383,13 @@ public final class ViewRootImpl implements ViewParent,
             mFastScrollSoundEffectsEnabled = mAudioManager.areNavigationRepeatSoundEffectsEnabled();
         }
         return mAudioManager;
+    }
+
+    private UiModeManager getUiModeManager() {
+        if (mUiModeManager == null) {
+            mUiModeManager = mContext.getSystemService(UiModeManager.class);
+        }
+        return mUiModeManager;
     }
 
     private Vibrator getSystemVibrator() {
