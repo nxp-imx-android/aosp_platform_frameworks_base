@@ -1503,7 +1503,7 @@ public class SettingsProvider extends ContentProvider {
         if (DEBUG) {
             Slog.v(LOG_TAG, "insertGlobalSetting(" + name + ", " + value  + ", "
                     + ", " + tag + ", " + makeDefault + ", " + requestingUserId
-                    + ", " + forceNotify + ")");
+                    + ", " + forceNotify + ", " + overrideableByRestore + ")");
         }
         return mutateGlobalSetting(name, value, tag, makeDefault, requestingUserId,
                 MUTATION_OPERATION_INSERT, forceNotify, 0, overrideableByRestore);
@@ -1785,7 +1785,7 @@ public class SettingsProvider extends ContentProvider {
         if (DEBUG) {
             Slog.v(LOG_TAG, "insertSecureSetting(" + name + ", " + value + ", "
                     + ", " + tag  + ", " + makeDefault + ", "  + requestingUserId
-                    + ", " + forceNotify + ")");
+                    + ", " + forceNotify + ", " + overrideableByRestore + ")");
         }
         return mutateSecureSetting(name, value, tag, makeDefault, requestingUserId,
                 MUTATION_OPERATION_INSERT, forceNotify, 0, overrideableByRestore);
@@ -1946,7 +1946,7 @@ public class SettingsProvider extends ContentProvider {
             boolean overrideableByRestore) {
         if (DEBUG) {
             Slog.v(LOG_TAG, "insertSystemSetting(" + name + ", " + value + ", "
-                    + requestingUserId + ")");
+                    + requestingUserId + ", " + overrideableByRestore + ")");
         }
 
         return mutateSystemSetting(name, value, /* tag= */ null, requestingUserId,
