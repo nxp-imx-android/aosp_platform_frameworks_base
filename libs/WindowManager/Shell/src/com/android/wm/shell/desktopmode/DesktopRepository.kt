@@ -668,6 +668,11 @@ class DesktopRepository(
      * TODO: b/389960283 - add explicit [deskId] argument.
      */
     fun setTopTransparentFullscreenTaskId(displayId: Int, taskId: Int) {
+        logD(
+            "Top transparent fullscreen task set for display: taskId=%d, displayId=%d",
+            taskId,
+            displayId,
+        )
         desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId = taskId
     }
 
@@ -685,6 +690,11 @@ class DesktopRepository(
      * TODO: b/389960283 - add explicit [deskId] argument.
      */
     fun clearTopTransparentFullscreenTaskId(displayId: Int) {
+        logD(
+            "Top transparent fullscreen task cleared for display: taskId=%d, displayId=%d",
+            desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId,
+            displayId,
+        )
         desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId = null
     }
 
