@@ -2038,7 +2038,7 @@ public abstract class PackageManager {
     public static final int INSTALL_SCENARIO_DEFAULT = 0;
 
     /**
-     * Installation scenario providing the fastest “install button to launch" experience possible.
+     * Installation scenario providing the fastest "install button to launch" experience possible.
      */
     public static final int INSTALL_SCENARIO_FAST = 1;
 
@@ -3585,7 +3585,7 @@ public abstract class PackageManager {
 
     /**
      * Feature for {@link #getSystemAvailableFeatures} and {@link #hasSystemFeature}: The device is
-     * compatible with Android’s security model.
+     * compatible with Android's security model.
      *
      * <p>See sections 2 and 9 in the
      * <a href="https://source.android.com/compatibility/android-cdd">Android CDD</a> for more
