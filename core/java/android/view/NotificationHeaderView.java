@@ -223,8 +223,14 @@ public class NotificationHeaderView extends RelativeLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (notificationsRedesignTemplates()) {
-            mTopLineTranslation = measureCenterTranslation(mTopLineView);
-            mExpandButtonTranslation = measureCenterTranslation(mExpandButton);
+            // TODO: b/378660052 - These should never be null in practice, consider using
+            //  requireViewById() in the onFinishInflate.
+            if (mTopLineView != null) {
+                mTopLineTranslation = measureCenterTranslation(mTopLineView);
+            }
+            if (mExpandButton != null) {
+                mExpandButtonTranslation = measureCenterTranslation(mExpandButton);
+            }
         }
     }
 
