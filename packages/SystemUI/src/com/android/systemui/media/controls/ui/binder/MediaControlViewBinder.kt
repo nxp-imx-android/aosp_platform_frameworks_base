@@ -49,9 +49,10 @@ import com.android.systemui.media.controls.ui.util.MediaArtworkHelper
 import com.android.systemui.media.controls.ui.view.MediaViewHolder
 import com.android.systemui.media.controls.ui.viewmodel.MediaActionViewModel
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel
-import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.MEDIA_PLAYER_SCRIM_CENTER_ALPHA
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.MEDIA_PLAYER_SCRIM_END_ALPHA
+import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.MEDIA_PLAYER_SCRIM_START_ALPHA
+import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.SEMANTIC_ACTIONS_ALL
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.SEMANTIC_ACTIONS_COMPACT
 import com.android.systemui.media.controls.ui.viewmodel.MediaOutputSwitcherViewModel
@@ -537,18 +538,24 @@ object MediaControlViewBinder {
         height: Int,
     ): LayerDrawable {
         val albumArt = MediaArtworkHelper.getScaledBackground(context, artworkIcon, width, height)
-        val alpha =
+        val startAlpha =
             if (Flags.mediaControlsA11yColors()) {
-                MEDIA_PLAYER_SCRIM_CENTER_ALPHA
-            } else {
                 MEDIA_PLAYER_SCRIM_START_ALPHA
+            } else {
+                MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY
+            }
+        val endAlpha =
+            if (Flags.mediaControlsA11yColors()) {
+                MEDIA_PLAYER_SCRIM_END_ALPHA
+            } else {
+                MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY
             }
         return MediaArtworkHelper.setUpGradientColorOnDrawable(
             albumArt,
             context.getDrawable(R.drawable.qs_media_scrim)?.mutate() as GradientDrawable,
             mutableColorScheme,
-            alpha,
-            MEDIA_PLAYER_SCRIM_END_ALPHA,
+            startAlpha,
+            endAlpha,
         )
     }
 
