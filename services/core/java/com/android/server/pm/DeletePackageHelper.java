@@ -35,6 +35,8 @@ import static com.android.server.pm.PackageManagerService.TAG;
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.UserIdInt;
 import android.app.ApplicationExitInfo;
 import android.app.ApplicationPackageManager;
 import android.content.Intent;
@@ -562,7 +564,7 @@ final class DeletePackageHelper {
     }
 
     @GuardedBy("mPm.mInstallLock")
-    private void deleteInstalledPackageLIF(PackageSetting ps, int userId,
+    private void deleteInstalledPackageLIF(PackageSetting ps, @CanBeALL @UserIdInt int userId,
             boolean deleteCodeAndResources, int flags, @NonNull int[] allUserHandles,
             @NonNull PackageRemovedInfo outInfo, boolean writeSettings) {
         synchronized (mPm.mLock) {

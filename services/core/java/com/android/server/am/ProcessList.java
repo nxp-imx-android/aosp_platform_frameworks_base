@@ -67,6 +67,8 @@ import static com.android.server.wm.WindowProcessController.STOPPED_STATE_FORCE_
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityThread;
@@ -2961,8 +2963,8 @@ public final class ProcessList {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    boolean killPackageProcessesLSP(String packageName, int appId, int userId, int minOomAdj,
-            int reasonCode, int subReason, String reason) {
+    boolean killPackageProcessesLSP(String packageName, int appId, @CanBeALL @UserIdInt int userId,
+            int minOomAdj, int reasonCode, int subReason, String reason) {
         return killPackageProcessesLSP(packageName, appId, userId, minOomAdj,
                 false /* callerWillRestart */, true /* allowRestart */, true /* doit */,
                 false /* evenPersistent */, false /* setRemoved */, false /* uninstalling */,
@@ -2970,7 +2972,8 @@ public final class ProcessList {
     }
 
     @GuardedBy("mService")
-    void killAppZygotesLocked(String packageName, int appId, int userId, boolean force) {
+    void killAppZygotesLocked(String packageName, int appId, @CanBeALL @UserIdInt int userId,
+            boolean force) {
         // See if there are any app zygotes running for this packageName / UID combination,
         // and kill it if so.
         final ArrayList<AppZygote> zygotesToKill = new ArrayList<>();
@@ -3050,9 +3053,9 @@ public final class ProcessList {
 
     @GuardedBy({"mService", "mProcLock"})
     boolean killPackageProcessesLSP(String packageName, int appId,
-            int userId, int minOomAdj, boolean callerWillRestart, boolean allowRestart,
-            boolean doit, boolean evenPersistent, boolean setRemoved, boolean uninstalling,
-            int reasonCode, int subReason, String reason) {
+            @CanBeALL @UserIdInt int userId, int minOomAdj, boolean callerWillRestart,
+            boolean allowRestart, boolean doit, boolean evenPersistent, boolean setRemoved,
+            boolean uninstalling, int reasonCode, int subReason, String reason) {
         final PackageManagerInternal pm = mService.getPackageManagerInternal();
         final ArrayList<Pair<ProcessRecord, Boolean>> procs = new ArrayList<>();
 
@@ -5220,7 +5223,7 @@ public final class ProcessList {
     }
 
     @GuardedBy("mService")
-    void sendPackageBroadcastLocked(int cmd, String[] packages, int userId) {
+    void sendPackageBroadcastLocked(int cmd, String[] packages, @CanBeALL @UserIdInt int userId) {
         boolean foundProcess = false;
         for (int i = mLruProcesses.size() - 1; i >= 0; i--) {
             ProcessRecord r = mLruProcesses.get(i);
