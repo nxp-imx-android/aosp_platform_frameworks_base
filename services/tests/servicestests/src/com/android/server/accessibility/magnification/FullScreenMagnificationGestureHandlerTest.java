@@ -311,8 +311,7 @@ public class FullScreenMagnificationGestureHandlerTest {
                         mMockFullScreenMagnificationVibrationHelper,
                         mMockMagnificationLogger,
                         ViewConfiguration.get(mContext),
-                        mMockOneFingerPanningSettingsProvider,
-                        new MouseEventHandler(mFullScreenMagnificationController));
+                        mMockOneFingerPanningSettingsProvider);
         // OverscrollHandler is only supported on watches.
         // @See config_enable_a11y_fullscreen_magnification_overscroll_handler
         if (isWatch()) {
@@ -482,8 +481,8 @@ public class FullScreenMagnificationGestureHandlerTest {
     @Test
     @RequiresFlagsDisabled(Flags.FLAG_ENABLE_MAGNIFICATION_MULTIPLE_FINGER_MULTIPLE_TAP_GESTURE)
     public void testDisablingTripleTap_removesInputLag() {
-        mMgh = newInstance(/* detectSingleFingerTripleTap */ false,
-                /* detectTwoFingerTripleTap */ true, /* detectShortcut */ true);
+        mMgh = newInstance(/* detectSingleFingerTripleTap= */ false,
+                /* detectTwoFingerTripleTap= */ true, /* detectShortcutTrigger= */ true);
         goFromStateIdleTo(STATE_IDLE);
         allowEventDelegation();
         tap();
@@ -494,8 +493,8 @@ public class FullScreenMagnificationGestureHandlerTest {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_MULTIPLE_FINGER_MULTIPLE_TAP_GESTURE)
     public void testDisablingSingleFingerTripleTapAndTwoFingerTripleTap_removesInputLag() {
-        mMgh = newInstance(/* detectSingleFingerTripleTap */ false,
-                /* detectTwoFingerTripleTap */ false, /* detectShortcut */ true);
+        mMgh = newInstance(/* detectSingleFingerTripleTap= */ false,
+                /* detectTwoFingerTripleTap= */ false, /* detectShortcutTrigger= */ true);
         goFromStateIdleTo(STATE_IDLE);
         allowEventDelegation();
         tap();
