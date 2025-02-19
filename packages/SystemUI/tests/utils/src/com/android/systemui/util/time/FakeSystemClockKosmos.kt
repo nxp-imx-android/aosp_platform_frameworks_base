@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.android.systemui.util.time
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.currentTime
 
 var Kosmos.systemClock by
@@ -27,6 +30,7 @@ var Kosmos.systemClock by
         mock {
             whenever(elapsedRealtime()).thenAnswer { testScope.currentTime }
             whenever(uptimeMillis()).thenAnswer { testScope.currentTime }
+            whenever(currentTimeMillis()).thenAnswer { testScope.currentTime }
         }
     }
 

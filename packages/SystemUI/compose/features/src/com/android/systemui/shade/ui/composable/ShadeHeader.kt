@@ -149,9 +149,6 @@ fun ContentScope.CollapsedShadeHeader(
             }
         }
 
-    val longerDateText by viewModel.longerDateText.collectAsStateWithLifecycle()
-    val shorterDateText by viewModel.shorterDateText.collectAsStateWithLifecycle()
-
     val isShadeLayoutWide = viewModel.isShadeLayoutWide
 
     val isPrivacyChipVisible by viewModel.isPrivacyChipVisible.collectAsStateWithLifecycle()
@@ -167,8 +164,8 @@ fun ContentScope.CollapsedShadeHeader(
             ) {
                 Clock(scale = 1f, onClick = viewModel::onClockClicked)
                 VariableDayDate(
-                    longerDateText = longerDateText,
-                    shorterDateText = shorterDateText,
+                    longerDateText = viewModel.longerDateText,
+                    shorterDateText = viewModel.shorterDateText,
                     chipHighlight = viewModel.notificationsChipHighlight,
                     modifier = Modifier.element(ShadeHeader.Elements.CollapsedContentStart),
                 )
@@ -229,8 +226,6 @@ fun ContentScope.ExpandedShadeHeader(
         derivedStateOf { shouldUseExpandedFormat(layoutState.transitionState) }
     }
 
-    val longerDateText by viewModel.longerDateText.collectAsStateWithLifecycle()
-    val shorterDateText by viewModel.shorterDateText.collectAsStateWithLifecycle()
     val isPrivacyChipVisible by viewModel.isPrivacyChipVisible.collectAsStateWithLifecycle()
 
     Box(modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root)) {
@@ -269,8 +264,8 @@ fun ContentScope.ExpandedShadeHeader(
                 modifier = Modifier.element(ShadeHeader.Elements.ExpandedContent),
             ) {
                 VariableDayDate(
-                    longerDateText = longerDateText,
-                    shorterDateText = shorterDateText,
+                    longerDateText = viewModel.longerDateText,
+                    shorterDateText = viewModel.shorterDateText,
                     chipHighlight = viewModel.notificationsChipHighlight,
                     modifier = Modifier.widthIn(max = 90.dp),
                 )
@@ -337,12 +332,9 @@ fun ContentScope.OverlayShadeHeader(
                             modifier = Modifier.width(IntrinsicSize.Min).height(20.dp),
                         )
                     } else {
-                        val longerDateText by viewModel.longerDateText.collectAsStateWithLifecycle()
-                        val shorterDateText by
-                            viewModel.shorterDateText.collectAsStateWithLifecycle()
                         VariableDayDate(
-                            longerDateText = longerDateText,
-                            shorterDateText = shorterDateText,
+                            longerDateText = viewModel.longerDateText,
+                            shorterDateText = viewModel.shorterDateText,
                             chipHighlight = viewModel.notificationsChipHighlight,
                         )
                     }
@@ -546,11 +538,8 @@ private fun BatteryIcon(
 
 @Composable
 private fun ShadeCarrierGroup(viewModel: ShadeHeaderViewModel, modifier: Modifier = Modifier) {
-    Row(modifier = modifier) {
-        val subIds by viewModel.mobileSubIds.collectAsStateWithLifecycle()
-
-        for (subId in subIds) {
-            Spacer(modifier = Modifier.width(5.dp))
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+        for (subId in viewModel.mobileSubIds) {
             AndroidView(
                 factory = { context ->
                     ModernShadeCarrierGroupMobileView.constructAndBind(

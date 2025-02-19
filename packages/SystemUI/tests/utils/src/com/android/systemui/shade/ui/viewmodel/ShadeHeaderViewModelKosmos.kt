@@ -18,7 +18,6 @@ package com.android.systemui.shade.ui.viewmodel
 
 import android.content.applicationContext
 import com.android.systemui.battery.batteryMeterViewControllerFactory
-import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -50,7 +49,6 @@ val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
             statusBarIconController = mock<StatusBarIconController>(),
             notificationIconContainerStatusBarViewBinder =
                 mock<NotificationIconContainerStatusBarViewBinder>(),
-            broadcastDispatcher = broadcastDispatcher,
         )
     }
 
