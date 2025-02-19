@@ -178,11 +178,6 @@ constructor(@Main private val resources: Resources, private val inputManager: In
 
     private fun systemAppsShortcuts() =
         listOf(
-            // Pull up Notes app for quick memo:
-            //  - Meta + Ctrl + N
-            shortcutInfo(resources.getString(R.string.group_system_quick_memo)) {
-                command(META_META_ON or META_CTRL_ON, KEYCODE_N)
-            },
             // Access system settings:
             //  - Meta + I
             shortcutInfo(resources.getString(R.string.group_system_access_system_settings)) {
