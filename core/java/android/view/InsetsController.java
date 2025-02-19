@@ -1574,11 +1574,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             Trace.asyncTraceBegin(TRACE_TAG_VIEW, "IC.pendingAnim", 0);
         }
 
-        if (Flags.refactorInsetsController()) {
-            onAnimationStateChanged(typesReady, true /* running */);
-        } else {
-            onAnimationStateChanged(types, true /* running */);
-        }
+        onAnimationStateChanged(types, true /* running */);
 
         if (fromIme) {
             switch (animationType) {
