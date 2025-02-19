@@ -71,10 +71,10 @@ constructor(
                         mode.id in prevIds -> true
                         // Mode is enabled -> show if active (so user can toggle off), or if it
                         // can be manually toggled on
-                        mode.rule.isEnabled -> mode.isActive || mode.rule.isManualInvocationAllowed
+                        mode.isEnabled -> mode.isActive || mode.isManualInvocationAllowed
                         // Mode was created as disabled, or disabled by the app that owns it ->
                         // will be shown with a "Not set" text
-                        !mode.rule.isEnabled -> mode.status == ZenMode.Status.DISABLED_BY_OTHER
+                        !mode.isEnabled -> mode.status == ZenMode.Status.DISABLED_BY_OTHER
                         else -> false
                     }
                 }
@@ -97,13 +97,13 @@ constructor(
                                 if (mode.isActive) R.string.zen_mode_on else R.string.zen_mode_off
                             ),
                         onClick = {
-                            if (!mode.rule.isEnabled) {
+                            if (!mode.isEnabled) {
                                 openSettings(mode)
                             } else if (mode.isActive) {
                                 dialogEventLogger.logModeOff(mode)
                                 zenModeInteractor.deactivateMode(mode)
                             } else {
-                                if (mode.rule.isManualInvocationAllowed) {
+                                if (mode.isManualInvocationAllowed) {
                                     if (zenModeInteractor.shouldAskForZenDuration(mode)) {
                                         dialogEventLogger.logOpenDurationDialog(mode)
                                         // NOTE: The dialog handles turning on the mode itself.
@@ -144,10 +144,10 @@ constructor(
      * readers, and for the tile subtext will be augmented with the current status of the mode.
      */
     private fun getModeDescription(mode: ZenMode, forAccessibility: Boolean): String? {
-        if (!mode.rule.isEnabled) {
+        if (!mode.isEnabled) {
             return context.resources.getString(R.string.zen_mode_set_up)
         }
-        if (!mode.rule.isManualInvocationAllowed && !mode.isActive) {
+        if (!mode.isManualInvocationAllowed && !mode.isActive) {
             return context.resources.getString(R.string.zen_mode_no_manual_invocation)
         }
         return if (forAccessibility)

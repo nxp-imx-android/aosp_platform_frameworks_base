@@ -21,6 +21,7 @@ import static android.app.AutomaticZenRule.TYPE_DRIVING;
 import static android.app.AutomaticZenRule.TYPE_IMMERSIVE;
 import static android.app.AutomaticZenRule.TYPE_OTHER;
 import static android.app.AutomaticZenRule.TYPE_SCHEDULE_CALENDAR;
+import static android.app.AutomaticZenRule.TYPE_SCHEDULE_TIME;
 import static android.app.AutomaticZenRule.TYPE_THEATER;
 import static android.app.AutomaticZenRule.TYPE_UNKNOWN;
 import static android.app.NotificationManager.INTERRUPTION_FILTER_ALARMS;
@@ -35,6 +36,8 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertThrows;
 
 import android.app.AutomaticZenRule;
+import android.content.ComponentName;
+import android.content.Context;
 import android.net.Uri;
 import android.os.Parcel;
 import android.service.notification.Condition;
@@ -43,13 +46,17 @@ import android.service.notification.ZenDeviceEffects;
 import android.service.notification.ZenModeConfig;
 import android.service.notification.ZenPolicy;
 
+import androidx.test.core.app.ApplicationProvider;
+
 import com.android.internal.R;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 @RunWith(RobolectricTestRunner.class)
@@ -71,6 +78,13 @@ public class ZenModeTest {
                     .setPackage("some.package")
                     .setType(TYPE_OTHER)
                     .build();
+
+    private Context mContext;
+
+    @Before
+    public void setUp() {
+        mContext = ApplicationProvider.getApplicationContext();
+    }
 
     @Test
     public void testBasicMethods_mode() {
@@ -95,7 +109,7 @@ public class ZenModeTest {
         assertThat(manualMode.canEditPolicy()).isTrue();
         assertThat(manualMode.canBeDeleted()).isFalse();
         assertThat(manualMode.isActive()).isFalse();
-        assertThat(manualMode.getRule().getPackageName()).isEqualTo(PACKAGE_ANDROID);
+        assertThat(manualMode.getOwnerPackage()).isEqualTo(PACKAGE_ANDROID);
     }
 
     @Test
@@ -153,7 +167,7 @@ public class ZenModeTest {
     public void isCustomManual_scheduleTime_false() {
         AutomaticZenRule rule = new AutomaticZenRule.Builder("Mode", Uri.parse("x"))
                 .setPackage(SystemZenRules.PACKAGE_ANDROID)
-                .setType(AutomaticZenRule.TYPE_SCHEDULE_TIME)
+                .setType(TYPE_SCHEDULE_TIME)
                 .build();
         ZenMode mode = new ZenMode("id", rule, zenConfigRuleFor(rule, false));
 
@@ -191,6 +205,23 @@ public class ZenModeTest {
         ZenMode mode = ZenMode.manualDndMode(dndRule, false);
 
         assertThat(mode.isCustomManual()).isFalse();
+    }
+
+    @Test
+    public void getOwner_returnsOwnerDetails() {
+        AutomaticZenRule azr = new AutomaticZenRule.Builder("Rule", Uri.EMPTY)
+                .setPackage("package")
+                .setConfigurationActivity(new ComponentName("package", "configActivity"))
+                .setOwner(new ComponentName("package", "conditionService"))
+                .build();
+        ZenMode zenMode = new ZenMode("id", azr, zenConfigRuleFor(azr, false));
+
+        ZenMode.Owner owner = zenMode.getOwner();
+        assertThat(owner.packageName()).isEqualTo("package");
+        assertThat(owner.configurationActivity()).isEqualTo(
+                new ComponentName("package", "configActivity"));
+        assertThat(owner.conditionProvider()).isEqualTo(
+                new ComponentName("package", "conditionService"));
     }
 
     @Test
@@ -245,7 +276,7 @@ public class ZenModeTest {
 
         zenMode.setPolicy(ZEN_POLICY);
 
-        assertThat(zenMode.getRule().getInterruptionFilter()).isEqualTo(
+        assertThat(zenMode.getInterruptionFilter()).isEqualTo(
                 INTERRUPTION_FILTER_PRIORITY);
         assertThat(zenMode.getPolicy()).isEqualTo(ZEN_POLICY);
         assertThat(zenMode.getRule().getZenPolicy()).isEqualTo(ZEN_POLICY);
@@ -397,6 +428,7 @@ public class ZenModeTest {
 
         assertThat(iconKey.resPackage()).isEqualTo("some.package");
         assertThat(iconKey.resId()).isEqualTo(123);
+        assertThat(mode.getIconResId()).isEqualTo(123);
     }
 
     @Test
@@ -411,6 +443,7 @@ public class ZenModeTest {
 
         assertThat(iconKey.resPackage()).isNull();
         assertThat(iconKey.resId()).isEqualTo(123);
+        assertThat(mode.getIconResId()).isEqualTo(123);
     }
 
     @Test
@@ -425,15 +458,18 @@ public class ZenModeTest {
 
         assertThat(iconKey.resPackage()).isEqualTo("some.package");
         assertThat(iconKey.resId()).isEqualTo(123);
+        assertThat(mode.getIconResId()).isEqualTo(123);
     }
 
     @Test
     public void getIconKey_manualDnd_isDndIcon() {
-        ZenIcon.Key iconKey = TestModeBuilder.MANUAL_DND.getIconKey();
+        ZenMode mode = TestModeBuilder.MANUAL_DND;
+        ZenIcon.Key iconKey = mode.getIconKey();
 
         assertThat(iconKey.resPackage()).isNull();
         assertThat(iconKey.resId()).isEqualTo(
                 com.android.internal.R.drawable.ic_zen_mode_type_special_dnd);
+        assertThat(mode.getIconResId()).isEqualTo(0);
     }
 
     @Test
@@ -448,6 +484,7 @@ public class ZenModeTest {
         assertThat(iconKey.resPackage()).isNull();
         assertThat(iconKey.resId()).isEqualTo(
                 com.android.internal.R.drawable.ic_zen_mode_type_bedtime);
+        assertThat(mode.getIconResId()).isEqualTo(0);
     }
 
     @Test
@@ -462,6 +499,7 @@ public class ZenModeTest {
         assertThat(iconKey.resPackage()).isNull();
         assertThat(iconKey.resId()).isEqualTo(
                 com.android.internal.R.drawable.ic_zen_mode_type_schedule_calendar);
+        assertThat(mode.getIconResId()).isEqualTo(0);
     }
 
     @Test
@@ -477,6 +515,77 @@ public class ZenModeTest {
         assertThat(iconKey.resPackage()).isNull();
         assertThat(iconKey.resId()).isEqualTo(
                 com.android.internal.R.drawable.ic_zen_mode_type_special_dnd);
+        assertThat(mode.getIconResId()).isEqualTo(0);
+    }
+
+    @Test
+    public void setCustomModeConditionId_timeSchedule() {
+        ZenMode mode = new TestModeBuilder()
+                .setPackage(PACKAGE_ANDROID)
+                .build();
+        ZenModeConfig.ScheduleInfo timeSchedule = new ZenModeConfig.ScheduleInfo();
+        timeSchedule.startHour = 9;
+        timeSchedule.endHour = 12;
+        timeSchedule.days = new int[] {Calendar.SATURDAY, Calendar.SUNDAY};
+        Uri scheduleUri = ZenModeConfig.toScheduleConditionId(timeSchedule);
+
+        mode.setCustomModeConditionId(mContext, scheduleUri);
+
+        assertThat(mode.getType()).isEqualTo(TYPE_SCHEDULE_TIME);
+        assertThat(ZenModeSchedules.getTimeSchedule(mode)).isEqualTo(timeSchedule);
+        assertThat(mode.getTriggerDescription()).isEqualTo("Sun, Sat, 9:00 AM - 12:00 PM");
+
+        assertThat(mode.getRule().getConditionId()).isEqualTo(scheduleUri);
+        assertThat(mode.getRule().getOwner()).isEqualTo(
+                ZenModeConfig.getScheduleConditionProvider());
+    }
+
+    @Test
+    public void setCustomModeConditionId_calendarSchedule() {
+        ZenMode mode = new TestModeBuilder()
+                .setPackage(PACKAGE_ANDROID)
+                .build();
+        ZenModeConfig.EventInfo calendarSchedule = new ZenModeConfig.EventInfo();
+        calendarSchedule.calendarId = 1L;
+        calendarSchedule.calName = "My events";
+        Uri scheduleUri = ZenModeConfig.toEventConditionId(calendarSchedule);
+
+        mode.setCustomModeConditionId(mContext, scheduleUri);
+
+        assertThat(mode.getType()).isEqualTo(TYPE_SCHEDULE_CALENDAR);
+        assertThat(ZenModeSchedules.getCalendarSchedule(mode)).isEqualTo(calendarSchedule);
+        assertThat(mode.getTriggerDescription()).isEqualTo("My events");
+
+        assertThat(mode.getRule().getConditionId()).isEqualTo(scheduleUri);
+        assertThat(mode.getRule().getOwner()).isEqualTo(
+                ZenModeConfig.getEventConditionProvider());
+    }
+
+    @Test
+    public void setCustomModeConditionId_manualSchedule() {
+        ZenMode mode = new TestModeBuilder()
+                .setPackage(PACKAGE_ANDROID)
+                .build();
+
+        mode.setCustomModeConditionId(mContext, ZenModeConfig.toCustomManualConditionId());
+
+        assertThat(mode.getType()).isEqualTo(TYPE_OTHER);
+        assertThat(mode.getTriggerDescription()).isEqualTo("");
+
+        assertThat(mode.getRule().getConditionId()).isEqualTo(
+                ZenModeConfig.toCustomManualConditionId());
+        assertThat(mode.getRule().getOwner()).isEqualTo(
+                ZenModeConfig.getCustomManualConditionProvider());
+    }
+
+    @Test
+    public void setCustomModeConditionId_nonSystemRule_throws() {
+        ZenMode mode = new TestModeBuilder()
+                .setPackage("some.other.package")
+                .build();
+
+        assertThrows(IllegalStateException.class,
+                () -> mode.setCustomModeConditionId(mContext, Uri.parse("blah")));
     }
 
     private static void assertUnparceledIsEqualToOriginal(String type, ZenMode original) {
