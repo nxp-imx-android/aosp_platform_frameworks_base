@@ -2649,6 +2649,10 @@ int LinkCommand::Action(const std::vector<std::string>& args) {
       ".mpg", ".mpeg", ".mp4", ".m4a", ".m4v", ".3gp", ".3gpp", ".3g2", ".3gpp2", ".wma", ".wmv",
       ".webm", ".mkv"});
 
+  if (options_.no_compress_fonts) {
+    options_.extensions_to_not_compress.insert({".ttf", ".otf", ".ttc"});
+  }
+
   // Turn off auto versioning for static-libs.
   if (context.GetPackageType() == PackageType::kStaticLib) {
     options_.no_auto_version = true;

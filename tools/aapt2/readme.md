@@ -3,6 +3,8 @@
 ## Version 2.20
 - Too many features, bug fixes, and improvements to list since the last minor version update in
   2017. This README will be updated more frequently in the future.
+- Added a new flag `--no-compress-fonts`. This can significantly speed up loading fonts from APK
+  assets, at the cost of increasing the storage size of the APK.
 
 ## Version 2.19
 - Added navigation resource type.
