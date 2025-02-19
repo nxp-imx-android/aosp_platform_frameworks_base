@@ -365,7 +365,7 @@ public class ContextualSearchManagerService extends SystemService {
             }
         }
         final ScreenshotHardwareBuffer shb = mWmInternal.takeContextualSearchScreenshot(
-                (Flags.contextualSearchWindowLayer() ? csUid : -1));
+                (Flags.contextualSearchPreventSelfCapture() ? csUid : -1));
         final Bitmap bm = shb != null ? shb.asBitmap() : null;
         // Now that everything is fetched, putting it in the launchIntent.
         if (bm != null) {
@@ -549,7 +549,7 @@ public class ContextualSearchManagerService extends SystemService {
                 Binder.withCleanCallingIdentity(() -> {
                     final ScreenshotHardwareBuffer shb =
                             mWmInternal.takeContextualSearchScreenshot(
-                               (Flags.contextualSearchWindowLayer() ? callingUid : -1));
+                               (Flags.contextualSearchPreventSelfCapture() ? callingUid : -1));
                     final Bitmap bm = shb != null ? shb.asBitmap() : null;
                     if (bm != null) {
                         bundle.putParcelable(ContextualSearchManager.EXTRA_SCREENSHOT,
