@@ -16,10 +16,11 @@
 
 package com.android.server.power.stats.processor;
 
+import android.util.IntArray;
+
 import com.android.internal.os.PowerStats;
 import com.android.server.power.stats.format.EnergyConsumerPowerStatsLayout;
 
-import java.util.ArrayList;
 import java.util.List;
 
 class CustomEnergyConsumerPowerStatsProcessor extends PowerStatsProcessor {
@@ -40,10 +41,8 @@ class CustomEnergyConsumerPowerStatsProcessor extends PowerStatsProcessor {
 
         computeDevicePowerEstimates(stats);
 
-        List<Integer> uids = new ArrayList<>();
-        stats.collectUids(uids);
-
-        if (!uids.isEmpty()) {
+        IntArray uids = stats.getActiveUids();
+        if (uids.size() != 0) {
             computeUidPowerEstimates(stats, uids);
         }
     }
@@ -62,7 +61,7 @@ class CustomEnergyConsumerPowerStatsProcessor extends PowerStatsProcessor {
     }
 
     private void computeUidPowerEstimates(PowerComponentAggregatedPowerStats stats,
-            List<Integer> uids) {
+            IntArray uids) {
         for (int i = mPlan.uidStateEstimates.size() - 1; i >= 0; i--) {
             UidStateEstimate uidStateEstimate = mPlan.uidStateEstimates.get(i);
             List<UidStateProportionalEstimate> proportionalEstimates =

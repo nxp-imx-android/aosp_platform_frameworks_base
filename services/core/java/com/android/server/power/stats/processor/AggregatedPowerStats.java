@@ -25,6 +25,7 @@ import android.os.PersistableBundle;
 import android.os.UserHandle;
 import android.text.format.DateFormat;
 import android.util.IndentingPrintWriter;
+import android.util.IntArray;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
@@ -347,7 +348,10 @@ class AggregatedPowerStats {
 
         Set<Integer> uids = new HashSet<>();
         for (int i = 0; i < mPowerComponentStats.size(); i++) {
-            mPowerComponentStats.valueAt(i).collectUids(uids);
+            IntArray activeUids = mPowerComponentStats.valueAt(i).getActiveUids();
+            for (int j = activeUids.size() - 1; j >= 0; j--) {
+                uids.add(activeUids.get(j));
+            }
         }
 
         Integer[] allUids = uids.toArray(new Integer[uids.size()]);
