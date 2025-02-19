@@ -20,10 +20,12 @@
 
 //#define LOG_NDEBUG 0
 
+#include <android-base/logging.h>
 #include <android-base/stringprintf.h>
 #include <android_runtime/AndroidRuntime.h>
 #include <input/InputConsumer.h>
 #include <input/InputTransport.h>
+#include <input/PrintTools.h>
 #include <inttypes.h>
 #include <log/log.h>
 #include <nativehelper/JNIHelp.h>
@@ -41,11 +43,8 @@
 
 namespace android {
 
-static const bool kDebugDispatchCycle = false;
-
-static const char* toString(bool value) {
-    return value ? "true" : "false";
-}
+namespace {
+const bool kDebugDispatchCycle = false;
 
 /**
  * Trace a bool variable, writing "1" if the value is "true" and "0" otherwise.
@@ -53,11 +52,11 @@ static const char* toString(bool value) {
  * @param var the name of the variable
  * @param value the value of the variable
  */
-static void traceBoolVariable(const char* var, bool value) {
+void traceBoolVariable(const char* var, bool value) {
     ATRACE_INT(var, value ? 1 : 0);
 }
 
-static struct {
+struct {
     jclass clazz;
 
     jmethodID dispatchInputEvent;
@@ -69,7 +68,7 @@ static struct {
 } gInputEventReceiverClassInfo;
 
 // Add prefix to the beginning of each line in 'str'
-static std::string addPrefix(std::string str, std::string_view prefix) {
+std::string addPrefix(std::string str, std::string_view prefix) {
     str.insert(0, prefix); // insert at the beginning of the first line
     const size_t prefixLength = prefix.length();
     size_t pos = prefixLength; // just inserted prefix. start at the end of it
@@ -83,8 +82,9 @@ static std::string addPrefix(std::string str, std::string_view prefix) {
     }
     return str;
 }
+} // namespace
 
-class NativeInputEventReceiver : public LooperCallback {
+class NativeInputEventReceiver final : public LooperCallback {
 public:
     NativeInputEventReceiver(JNIEnv* env, jobject receiverWeak,
                              const std::shared_ptr<InputChannel>& inputChannel,
@@ -100,7 +100,7 @@ public:
     std::string dump(const char* prefix);
 
 protected:
-    virtual ~NativeInputEventReceiver();
+    ~NativeInputEventReceiver() override;
 
 private:
     struct Finish {
@@ -115,18 +115,15 @@ private:
     typedef std::variant<Finish, Timeline> OutboundEvent;
 
     jobject mReceiverWeakGlobal;
-    InputConsumer mInputConsumer;
+    std::unique_ptr<InputConsumer> mInputConsumer;
     sp<MessageQueue> mMessageQueue;
     PreallocatedInputEventFactory mInputEventFactory;
     bool mBatchedInputEventPending;
+    const std::string mName;
     int mFdEvents;
     std::vector<OutboundEvent> mOutboundQueue;
 
     void setFdEvents(int events);
-
-    const std::string getInputChannelName() {
-        return mInputConsumer.getChannel()->getName();
-    }
 
     status_t processOutboundEvents();
     // From 'LooperCallback'
@@ -137,13 +134,14 @@ NativeInputEventReceiver::NativeInputEventReceiver(
         JNIEnv* env, jobject receiverWeak, const std::shared_ptr<InputChannel>& inputChannel,
         const sp<MessageQueue>& messageQueue)
       : mReceiverWeakGlobal(env->NewGlobalRef(receiverWeak)),
-        mInputConsumer(inputChannel),
+        mInputConsumer(std::make_unique<InputConsumer>(inputChannel)),
         mMessageQueue(messageQueue),
         mBatchedInputEventPending(false),
+        mName(mInputConsumer->getChannel()->getName()),
         mFdEvents(0) {
     traceBoolVariable("mBatchedInputEventPending", mBatchedInputEventPending);
     if (kDebugDispatchCycle) {
-        ALOGD("channel '%s' ~ Initializing input event receiver.", getInputChannelName().c_str());
+        ALOGD("channel '%s' ~ Initializing input event receiver.", mName.c_str());
     }
 }
 
@@ -159,15 +157,21 @@ status_t NativeInputEventReceiver::initialize() {
 
 void NativeInputEventReceiver::dispose() {
     if (kDebugDispatchCycle) {
-        ALOGD("channel '%s' ~ Disposing input event receiver.", getInputChannelName().c_str());
+        ALOGD("channel '%s' ~ Disposing input event receiver.", mName.c_str());
     }
-
+    const status_t result = processOutboundEvents();
+    if (result != OK) {
+        LOG(WARNING) << "channel '" << mName << "' ~ Could not send " << mOutboundQueue.size()
+                     << " outbound event(s), status:" << statusToString(result);
+    }
     setFdEvents(0);
+    // Do not process any more events after the receiver has been disposed.
+    mInputConsumer.reset();
 }
 
 status_t NativeInputEventReceiver::finishInputEvent(uint32_t seq, bool handled) {
     if (kDebugDispatchCycle) {
-        ALOGD("channel '%s' ~ Finished input event.", getInputChannelName().c_str());
+        LOG(INFO) << "channel '" << mName << "' ~ Finished input event, seq=" << seq;
     }
 
     Finish finish{
@@ -179,13 +183,16 @@ status_t NativeInputEventReceiver::finishInputEvent(uint32_t seq, bool handled) 
 }
 
 bool NativeInputEventReceiver::probablyHasInput() {
-    return mInputConsumer.probablyHasInput();
+    if (mInputConsumer == nullptr) {
+        return false;
+    }
+    return mInputConsumer->probablyHasInput();
 }
 
 status_t NativeInputEventReceiver::reportTimeline(int32_t inputEventId, nsecs_t gpuCompletedTime,
                                                   nsecs_t presentTime) {
     if (kDebugDispatchCycle) {
-        ALOGD("channel '%s' ~ %s", getInputChannelName().c_str(), __func__);
+        ALOGD("channel '%s' ~ %s", mName.c_str(), __func__);
     }
     std::array<nsecs_t, GraphicsTimeline::SIZE> graphicsTimeline;
     graphicsTimeline[GraphicsTimeline::GPU_COMPLETED_TIME] = gpuCompletedTime;
@@ -199,14 +206,22 @@ status_t NativeInputEventReceiver::reportTimeline(int32_t inputEventId, nsecs_t 
 }
 
 void NativeInputEventReceiver::setFdEvents(int events) {
-    if (mFdEvents != events) {
-        mFdEvents = events;
-        const int fd = mInputConsumer.getChannel()->getFd();
-        if (events) {
-            mMessageQueue->getLooper()->addFd(fd, 0, events, this, nullptr);
-        } else {
-            mMessageQueue->getLooper()->removeFd(fd);
-        }
+    if (mInputConsumer == nullptr) {
+        // If disposed, we should stop processing input events, even if there are more input
+        // events available for reading in the fd.
+        // At the same time, we should stop processing outbound events. It's up to the caller to
+        // ensure that dispose happens after 'finishInputEvent' for all input events that have been
+        // read has been called (to avoid ANR).
+        return;
+    }
+    if (events == mFdEvents) {
+        return;
+    }
+    const int fd = mInputConsumer->getChannel()->getFd();
+    if (events) {
+        mMessageQueue->getLooper()->addFd(fd, 0, events, this, nullptr);
+    } else {
+        mMessageQueue->getLooper()->removeFd(fd);
     }
 }
 
@@ -228,16 +243,19 @@ void NativeInputEventReceiver::setFdEvents(int events) {
  * unnecessarily.
  */
 status_t NativeInputEventReceiver::processOutboundEvents() {
+    if (mInputConsumer == nullptr) {
+        return DEAD_OBJECT;
+    }
     while (!mOutboundQueue.empty()) {
         OutboundEvent& outbound = *mOutboundQueue.begin();
         status_t status;
 
         if (std::holds_alternative<Finish>(outbound)) {
             const Finish& finish = std::get<Finish>(outbound);
-            status = mInputConsumer.sendFinishedSignal(finish.seq, finish.handled);
+            status = mInputConsumer->sendFinishedSignal(finish.seq, finish.handled);
         } else if (std::holds_alternative<Timeline>(outbound)) {
             const Timeline& timeline = std::get<Timeline>(outbound);
-            status = mInputConsumer.sendTimeline(timeline.inputEventId, timeline.timeline);
+            status = mInputConsumer->sendTimeline(timeline.inputEventId, timeline.timeline);
         } else {
             LOG_ALWAYS_FATAL("Unexpected event type in std::variant");
             status = BAD_VALUE;
@@ -251,16 +269,16 @@ status_t NativeInputEventReceiver::processOutboundEvents() {
         // Publisher is busy, try again later. Keep this entry (do not erase)
         if (status == WOULD_BLOCK) {
             if (kDebugDispatchCycle) {
-                ALOGD("channel '%s' ~ Remaining outbound events: %zu.",
-                      getInputChannelName().c_str(), mOutboundQueue.size());
+                ALOGD("channel '%s' ~ Remaining outbound events: %zu.", mName.c_str(),
+                      mOutboundQueue.size());
             }
             setFdEvents(ALOOPER_EVENT_INPUT | ALOOPER_EVENT_OUTPUT);
             return WOULD_BLOCK; // try again later
         }
 
         // Some other error. Give up
-        ALOGW("Failed to send outbound event on channel '%s'.  status=%s(%d)",
-              getInputChannelName().c_str(), statusToString(status).c_str(), status);
+        ALOGW("Failed to send outbound event on channel '%s'.  status=%s(%d)", mName.c_str(),
+              statusToString(status).c_str(), status);
         if (status != DEAD_OBJECT) {
             JNIEnv* env = AndroidRuntime::getJNIEnv();
             std::string message =
@@ -288,7 +306,7 @@ int NativeInputEventReceiver::handleEvent(int receiveFd, int events, void* data)
         // the consumer will soon be disposed as well.
         if (kDebugDispatchCycle) {
             ALOGD("channel '%s' ~ Publisher closed input channel or an error occurred. events=0x%x",
-                  getInputChannelName().c_str(), events);
+                  mName.c_str(), events);
         }
         return REMOVE_CALLBACK;
     }
@@ -310,7 +328,7 @@ int NativeInputEventReceiver::handleEvent(int receiveFd, int events, void* data)
     }
 
     ALOGW("channel '%s' ~ Received spurious callback for unhandled poll event.  events=0x%x",
-          getInputChannelName().c_str(), events);
+          mName.c_str(), events);
     return KEEP_CALLBACK;
 }
 
@@ -318,7 +336,7 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
         bool consumeBatches, nsecs_t frameTime, bool* outConsumedBatch) {
     if (kDebugDispatchCycle) {
         ALOGD("channel '%s' ~ Consuming input events, consumeBatches=%s, frameTime=%" PRId64,
-              getInputChannelName().c_str(), toString(consumeBatches), frameTime);
+              mName.c_str(), toString(consumeBatches), frameTime);
     }
 
     if (consumeBatches) {
@@ -332,26 +350,31 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
     ScopedLocalRef<jobject> receiverObj(env, nullptr);
     bool skipCallbacks = false;
     for (;;) {
+        // Invoking callbacks may cause the consumer to become null (the user may call "dispose"
+        // while processing a callback), so we need to check for nullness on each iteration.
+        if (mInputConsumer == nullptr) {
+            return DEAD_OBJECT;
+        }
         uint32_t seq;
         InputEvent* inputEvent;
 
-        status_t status = mInputConsumer.consume(&mInputEventFactory,
-                consumeBatches, frameTime, &seq, &inputEvent);
+        status_t status = mInputConsumer->consume(&mInputEventFactory, consumeBatches, frameTime,
+                                                  &seq, &inputEvent);
         if (status != OK && status != WOULD_BLOCK) {
-            ALOGE("channel '%s' ~ Failed to consume input event.  status=%s(%d)",
-                  getInputChannelName().c_str(), statusToString(status).c_str(), status);
+            ALOGE("channel '%s' ~ Failed to consume input event.  status=%s(%d)", mName.c_str(),
+                  statusToString(status).c_str(), status);
             return status;
         }
 
         if (status == WOULD_BLOCK) {
-            if (!skipCallbacks && !mBatchedInputEventPending && mInputConsumer.hasPendingBatch()) {
+            if (!skipCallbacks && !mBatchedInputEventPending && mInputConsumer->hasPendingBatch()) {
                 // There is a pending batch.  Come back later.
                 if (!receiverObj.get()) {
                     receiverObj.reset(GetReferent(env, mReceiverWeakGlobal));
                     if (!receiverObj.get()) {
                         ALOGW("channel '%s' ~ Receiver object was finalized "
                               "without being disposed.",
-                              getInputChannelName().c_str());
+                              mName.c_str());
                         return DEAD_OBJECT;
                     }
                 }
@@ -360,14 +383,14 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
                 traceBoolVariable("mBatchedInputEventPending", mBatchedInputEventPending);
                 if (kDebugDispatchCycle) {
                     ALOGD("channel '%s' ~ Dispatching batched input event pending notification.",
-                          getInputChannelName().c_str());
+                          mName.c_str());
                 }
 
                 env->CallVoidMethod(receiverObj.get(),
                                     gInputEventReceiverClassInfo.onBatchedInputEventPending,
-                                    mInputConsumer.getPendingBatchSource());
+                                    mInputConsumer->getPendingBatchSource());
                 if (env->ExceptionCheck()) {
-                    ALOGE("Exception dispatching batched input events.");
+                    LOG(ERROR) << "Exception dispatching batched input events for " << mName;
                     mBatchedInputEventPending = false; // try again later
                     traceBoolVariable("mBatchedInputEventPending", mBatchedInputEventPending);
                 }
@@ -381,7 +404,8 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
                 receiverObj.reset(GetReferent(env, mReceiverWeakGlobal));
                 if (!receiverObj.get()) {
                     ALOGW("channel '%s' ~ Receiver object was finalized "
-                            "without being disposed.", getInputChannelName().c_str());
+                          "without being disposed.",
+                          mName.c_str());
                     return DEAD_OBJECT;
                 }
             }
@@ -390,7 +414,7 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
             switch (inputEvent->getType()) {
                 case InputEventType::KEY:
                     if (kDebugDispatchCycle) {
-                        ALOGD("channel '%s' ~ Received key event.", getInputChannelName().c_str());
+                        ALOGD("channel '%s' ~ Received key event.", mName.c_str());
                     }
                     inputEventObj =
                             android_view_KeyEvent_obtainAsCopy(env,
@@ -399,8 +423,7 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
 
                 case InputEventType::MOTION: {
                     if (kDebugDispatchCycle) {
-                        ALOGD("channel '%s' ~ Received motion event.",
-                              getInputChannelName().c_str());
+                        ALOGD("channel '%s' ~ Received motion event.", mName.c_str());
                     }
                     const MotionEvent& motionEvent = static_cast<const MotionEvent&>(*inputEvent);
                     if ((motionEvent.getAction() & AMOTION_EVENT_ACTION_MOVE) && outConsumedBatch) {
@@ -412,8 +435,8 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
                 case InputEventType::FOCUS: {
                     FocusEvent* focusEvent = static_cast<FocusEvent*>(inputEvent);
                     if (kDebugDispatchCycle) {
-                        ALOGD("channel '%s' ~ Received focus event: hasFocus=%s.",
-                              getInputChannelName().c_str(), toString(focusEvent->getHasFocus()));
+                        ALOGD("channel '%s' ~ Received focus event: hasFocus=%s.", mName.c_str(),
+                              toString(focusEvent->getHasFocus()));
                     }
                     env->CallVoidMethod(receiverObj.get(),
                                         gInputEventReceiverClassInfo.onFocusEvent,
@@ -425,8 +448,7 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
                     const CaptureEvent* captureEvent = static_cast<CaptureEvent*>(inputEvent);
                     if (kDebugDispatchCycle) {
                         ALOGD("channel '%s' ~ Received capture event: pointerCaptureEnabled=%s",
-                              getInputChannelName().c_str(),
-                              toString(captureEvent->getPointerCaptureEnabled()));
+                              mName.c_str(), toString(captureEvent->getPointerCaptureEnabled()));
                     }
                     env->CallVoidMethod(receiverObj.get(),
                                         gInputEventReceiverClassInfo.onPointerCaptureEvent,
@@ -437,8 +459,8 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
                 case InputEventType::DRAG: {
                     const DragEvent* dragEvent = static_cast<DragEvent*>(inputEvent);
                     if (kDebugDispatchCycle) {
-                        ALOGD("channel '%s' ~ Received drag event: isExiting=%s",
-                              getInputChannelName().c_str(), toString(dragEvent->isExiting()));
+                        ALOGD("channel '%s' ~ Received drag event: isExiting=%s", mName.c_str(),
+                              toString(dragEvent->isExiting()));
                     }
                     env->CallVoidMethod(receiverObj.get(), gInputEventReceiverClassInfo.onDragEvent,
                                         jboolean(dragEvent->isExiting()), dragEvent->getX(),
@@ -451,8 +473,7 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
                     const TouchModeEvent* touchModeEvent = static_cast<TouchModeEvent*>(inputEvent);
                     if (kDebugDispatchCycle) {
                         ALOGD("channel '%s' ~ Received touch mode event: isInTouchMode=%s",
-                              getInputChannelName().c_str(),
-                              toString(touchModeEvent->isInTouchMode()));
+                              mName.c_str(), toString(touchModeEvent->isInTouchMode()));
                     }
                     env->CallVoidMethod(receiverObj.get(),
                                         gInputEventReceiverClassInfo.onTouchModeChanged,
@@ -467,7 +488,7 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
 
             if (inputEventObj.get()) {
                 if (kDebugDispatchCycle) {
-                    ALOGD("channel '%s' ~ Dispatching input event.", getInputChannelName().c_str());
+                    ALOGD("channel '%s' ~ Dispatching input event.", mName.c_str());
                 }
                 env->CallVoidMethod(receiverObj.get(),
                                     gInputEventReceiverClassInfo.dispatchInputEvent, seq,
@@ -477,8 +498,7 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
                     skipCallbacks = true;
                 }
             } else {
-                ALOGW("channel '%s' ~ Failed to obtain event object.",
-                        getInputChannelName().c_str());
+                ALOGW("channel '%s' ~ Failed to obtain event object.", mName.c_str());
                 skipCallbacks = true;
             }
         }
@@ -487,8 +507,8 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
 
 std::string NativeInputEventReceiver::dump(const char* prefix) {
     std::string out;
-    std::string consumerDump = addPrefix(mInputConsumer.dump(), "  ");
-    out = out + "mInputConsumer:\n" + consumerDump + "\n";
+    std::string consumerDump =
+            addPrefix(mInputConsumer != nullptr ? mInputConsumer->dump() : "<null>", "  ");
 
     out += android::base::StringPrintf("mBatchedInputEventPending: %s\n",
                                        toString(mBatchedInputEventPending));
@@ -529,8 +549,8 @@ static jlong nativeInit(JNIEnv* env, jclass clazz, jobject receiverWeak,
         return 0;
     }
 
-    sp<NativeInputEventReceiver> receiver = new NativeInputEventReceiver(env,
-            receiverWeak, inputChannel, messageQueue);
+    sp<NativeInputEventReceiver> receiver =
+            sp<NativeInputEventReceiver>::make(env, receiverWeak, inputChannel, messageQueue);
     status_t status = receiver->initialize();
     if (status) {
         std::string message = android::base::
