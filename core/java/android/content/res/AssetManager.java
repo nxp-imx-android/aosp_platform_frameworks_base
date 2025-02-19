@@ -148,8 +148,8 @@ public final class AssetManager implements AutoCloseable {
      * @hide
      */
     public static class Builder {
-        private ArrayList<ApkAssets> mUserApkAssets = new ArrayList<>();
-        private ArrayList<ResourcesLoader> mLoaders = new ArrayList<>();
+        private final ArrayList<ApkAssets> mUserApkAssets = new ArrayList<>();
+        private final ArrayList<ResourcesLoader> mLoaders = new ArrayList<>();
 
         private boolean mNoInit = false;
 
@@ -1625,6 +1625,23 @@ public final class AssetManager implements AutoCloseable {
     }
 
     /**
+     * Passes the display id and device id to AssetManager, to filter out overlays based on
+     * any {@link android.content.om.OverlayConstraint}.
+     *
+     * @hide
+     */
+    public void setOverlayConstraints(int displayId, int deviceId) {
+        if (!Flags.rroConstraints()) {
+            return;
+        }
+
+        synchronized (this) {
+            ensureValidLocked();
+            nativeSetOverlayConstraints(mObject, displayId, deviceId);
+        }
+    }
+
+    /**
      * @hide
      */
     @UnsupportedAppUsage
@@ -1717,6 +1734,7 @@ public final class AssetManager implements AutoCloseable {
             int screenWidth, int screenHeight, int smallestScreenWidthDp, int screenWidthDp,
             int screenHeightDp, int screenLayout, int uiMode, int colorMode, int grammaticalGender,
             int majorVersion, boolean forceRefresh);
+    private static native void nativeSetOverlayConstraints(long ptr, int displayId, int deviceId);
     private static native @NonNull SparseArray<String> nativeGetAssignedPackageIdentifiers(
             long ptr, boolean includeOverlays, boolean includeLoaders);
 
