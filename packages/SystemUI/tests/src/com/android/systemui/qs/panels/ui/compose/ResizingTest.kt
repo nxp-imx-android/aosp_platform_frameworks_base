@@ -43,6 +43,7 @@ import com.android.systemui.qs.panels.ui.compose.infinitegrid.DefaultEditTileGri
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.TileCategory
+import com.android.systemui.res.R
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -85,7 +86,9 @@ class ResizingTest : SysuiTestCase() {
 
         composeRule
             .onNodeWithContentDescription("tileA")
-            .performCustomAccessibilityActionWithLabel("Toggle size")
+            .performCustomAccessibilityActionWithLabel(
+                context.getString(R.string.accessibility_qs_edit_toggle_tile_size_action)
+            )
 
         assertThat(tiles.find { it.tile.tileSpec.spec == "tileA" }?.width).isEqualTo(2)
     }
@@ -101,7 +104,9 @@ class ResizingTest : SysuiTestCase() {
 
         composeRule
             .onNodeWithContentDescription("tileD_large")
-            .performCustomAccessibilityActionWithLabel("Toggle size")
+            .performCustomAccessibilityActionWithLabel(
+                context.getString(R.string.accessibility_qs_edit_toggle_tile_size_action)
+            )
 
         assertThat(tiles.find { it.tile.tileSpec.spec == "tileD_large" }?.width).isEqualTo(1)
     }
