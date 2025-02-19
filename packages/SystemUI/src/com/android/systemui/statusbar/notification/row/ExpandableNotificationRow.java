@@ -270,6 +270,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private NotificationContentView[] mLayouts;
     private ExpandableNotificationRowLogger mLogger;
     private String mLoggingKey;
+    private String mKey;
     private NotificationGuts mGuts;
     private NotificationEntry mEntry;
     private EntryAdapter mEntryAdapter;
@@ -545,6 +546,14 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     public String getLoggingKey() {
         return mLoggingKey;
+    }
+
+    public String getKey() {
+        if (NotificationBundleUi.isEnabled()) {
+            return mKey;
+        } else {
+            return mEntry.getKey();
+        }
     }
 
     /**
@@ -1236,7 +1245,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      */
     public void collectVisibleLocations(Map<String, Integer> locationsMap) {
         if (getVisibility() == View.VISIBLE) {
-            locationsMap.put(getEntry().getKey(), getViewState().location);
+            locationsMap.put(getKey(), getViewState().location);
             if (mChildrenContainer != null) {
                 List<ExpandableNotificationRow> children = mChildrenContainer.getAttachedChildren();
                 for (int i = 0; i < children.size(); i++) {
@@ -2148,6 +2157,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             mMenuRow.setAppName(mAppName);
         }
         mLogger = logger;
+        mKey = notificationKey;
         mLoggingKey = logKey(notificationKey);
         mBypassController = bypassController;
         mGroupMembershipManager = groupMembershipManager;
@@ -3430,7 +3440,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     private boolean canEntryBeDismissed() {
-        return mDismissibilityProvider.isDismissable(mEntry);
+        return mDismissibilityProvider.isDismissable(getKey());
     }
 
     /**

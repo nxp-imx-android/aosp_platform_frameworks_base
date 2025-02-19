@@ -133,11 +133,14 @@ public class NotificationRemoteInputManager implements CoreStartable {
             Integer actionIndex = (Integer)
                     view.getTag(com.android.internal.R.id.notification_action_index_tag);
 
+            final ExpandableNotificationRow row = getNotificationRowForParent(view.getParent());
             final NotificationEntry entry = getNotificationForParent(view.getParent());
-            mLogger.logInitialClick(entry, actionIndex, pendingIntent);
+            mLogger.logInitialClick(
+                    row != null ? row.getLoggingKey() : null, actionIndex, pendingIntent);
 
             if (handleRemoteInput(view, pendingIntent)) {
-                mLogger.logRemoteInputWasHandled(entry, actionIndex);
+                mLogger.logRemoteInputWasHandled(
+                        row != null ? row.getLoggingKey() : null, actionIndex);
                 return true;
             }
 
@@ -157,7 +160,8 @@ public class NotificationRemoteInputManager implements CoreStartable {
             return mCallback.handleRemoteViewClick(view, pendingIntent,
                     action == null ? false : action.isAuthenticationRequired(), actionIndex, () -> {
                     Pair<Intent, ActivityOptions> options = response.getLaunchOptions(view);
-                    mLogger.logStartingIntentWithDefaultHandler(entry, pendingIntent, actionIndex);
+                    mLogger.logStartingIntentWithDefaultHandler(
+                            row != null ? row.getLoggingKey() : null, pendingIntent, actionIndex);
                     boolean started = RemoteViews.startPendingIntent(view, pendingIntent, options);
                     if (started) releaseNotificationIfKeptForRemoteInputHistory(entry);
                     return started;
@@ -218,6 +222,16 @@ public class NotificationRemoteInputManager implements CoreStartable {
             while (parent != null) {
                 if (parent instanceof ExpandableNotificationRow) {
                     return ((ExpandableNotificationRow) parent).getEntry();
+                }
+                parent = parent.getParent();
+            }
+            return null;
+        }
+
+        private @Nullable ExpandableNotificationRow getNotificationRowForParent(ViewParent parent) {
+            while (parent != null) {
+                if (parent instanceof ExpandableNotificationRow) {
+                    return ((ExpandableNotificationRow) parent);
                 }
                 parent = parent.getParent();
             }
@@ -722,7 +736,7 @@ public class NotificationRemoteInputManager implements CoreStartable {
      *
      * @return on-click handler
      */
-    public RemoteViews.InteractionHandler getRemoteViewsOnClickHandler() {
+    public InteractionHandler getRemoteViewsOnClickHandler() {
         return mInteractionHandler;
     }
 

@@ -215,13 +215,13 @@ public class HeadsUpAppearanceController extends ViewController<HeadsUpStatusBar
     @Override
     public void onHeadsUpPinned(NotificationEntry entry) {
         updatePinnedStatus();
-        updateHeader(entry);
-        updateHeadsUpAndPulsingRoundness(entry);
+        updateHeader(entry.getRow());
+        updateHeadsUpAndPulsingRoundness(entry.getRow());
     }
 
     @Override
     public void onHeadsUpStateChanged(@NonNull NotificationEntry entry, boolean isHeadsUp) {
-        updateHeadsUpAndPulsingRoundness(entry);
+        updateHeadsUpAndPulsingRoundness(entry.getRow());
         mPhoneStatusBarTransitions.onHeadsUpStateChanged(isHeadsUp);
     }
 
@@ -416,8 +416,8 @@ public class HeadsUpAppearanceController extends ViewController<HeadsUpStatusBar
     @Override
     public void onHeadsUpUnPinned(NotificationEntry entry) {
         updatePinnedStatus();
-        updateHeader(entry);
-        updateHeadsUpAndPulsingRoundness(entry);
+        updateHeader(entry.getRow());
+        updateHeadsUpAndPulsingRoundness(entry.getRow());
     }
 
     public void setAppearFraction(float expandedHeight, float appearFraction) {
@@ -448,9 +448,8 @@ public class HeadsUpAppearanceController extends ViewController<HeadsUpStatusBar
         ExpandableNotificationRow previousTracked = mTrackedChild;
         mTrackedChild = trackedChild;
         if (previousTracked != null) {
-            NotificationEntry entry = previousTracked.getEntry();
-            updateHeader(entry);
-            updateHeadsUpAndPulsingRoundness(entry);
+            updateHeader(previousTracked);
+            updateHeadsUpAndPulsingRoundness(previousTracked);
         }
     }
 
@@ -460,13 +459,12 @@ public class HeadsUpAppearanceController extends ViewController<HeadsUpStatusBar
 
     private void updateHeadsUpHeaders() {
         mHeadsUpManager.getAllEntries().forEach(entry -> {
-            updateHeader(entry);
-            updateHeadsUpAndPulsingRoundness(entry);
+            updateHeader(entry.getRow());
+            updateHeadsUpAndPulsingRoundness(entry.getRow());
         });
     }
 
-    public void updateHeader(NotificationEntry entry) {
-        ExpandableNotificationRow row = entry.getRow();
+    public void updateHeader(ExpandableNotificationRow row) {
         float headerVisibleAmount = 1.0f;
         // To fix the invisible HUN group header issue
         if (!AsyncGroupHeaderViewInflation.isEnabled()) {
@@ -480,10 +478,9 @@ public class HeadsUpAppearanceController extends ViewController<HeadsUpStatusBar
 
     /**
      * Update the HeadsUp and the Pulsing roundness based on current state
-     * @param entry target notification
+     * @param row target notification row
      */
-    public void updateHeadsUpAndPulsingRoundness(NotificationEntry entry) {
-        ExpandableNotificationRow row = entry.getRow();
+    public void updateHeadsUpAndPulsingRoundness(ExpandableNotificationRow row) {
         boolean isTrackedChild = row == mTrackedChild;
         if (row.isPinned() || row.isHeadsUpAnimatingAway() || isTrackedChild) {
             float roundness = MathUtils.saturate(1f - mAppearFraction);

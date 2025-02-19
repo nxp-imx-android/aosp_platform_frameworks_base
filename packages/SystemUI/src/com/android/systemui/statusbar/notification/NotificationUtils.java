@@ -94,7 +94,7 @@ public class NotificationUtils {
 
     /** Get the notification key, reformatted for logging, for the (optional) row */
     public static String logKey(ExpandableNotificationRow row) {
-        return row == null ? "null" : logKey(row.getEntry());
+        return row == null ? "null" : row.getLoggingKey();
     }
 
     /** Removes newlines from the notification key to prettify apps that have these in the tag */
