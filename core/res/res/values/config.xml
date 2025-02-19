@@ -3072,6 +3072,43 @@
          {@link MotionEvent#ACTION_SCROLL} event. -->
     <dimen name="config_scrollFactor">64dp</dimen>
 
+    <!-- Duration in milliseconds of the pressed state in child components. -->
+    <integer name="config_pressedStateDurationMillis">64</integer>
+
+    <!-- Duration in milliseconds we will wait to see if a touch event is a tap or a scroll.
+         If the user does not move within this interval, it is considered to be a tap. -->
+    <integer name="config_tapTimeoutMillis">100</integer>
+
+    <!-- Duration in milliseconds we will wait to see if a touch event is a jump tap.
+         If the user does not move within this interval, it is considered to be a tap. -->
+    <integer name="config_jumpTapTimeoutMillis">500</integer>
+
+    <!-- Duration in milliseconds between the first tap's up event and the second tap's down
+         event for an interaction to be considered a double-tap. -->
+    <integer name="config_doubleTapTimeoutMillis">300</integer>
+
+    <!-- Minimum duration in milliseconds between the first tap's up event and the second tap's
+         down event for an interaction to be considered a double-tap. -->
+    <integer name="config_doubleTapMinTimeMillis">40</integer>
+
+    <!-- Maximum duration in milliseconds between a touch pad touch and release for a given touch
+         to be considered a tap (click) as opposed to a hover movement gesture. -->
+    <integer name="config_hoverTapTimeoutMillis">150</integer>
+
+    <!-- The amount of time in milliseconds that the zoom controls should be displayed on the
+         screen. -->
+    <integer name="config_zoomControlsTimeoutMillis">3000</integer>
+
+    <!-- Default duration in milliseconds for {@link ActionMode#hide(long)}. -->
+    <integer name="config_defaultActionModeHideDurationMillis">2000</integer>
+
+    <!-- Maximum distance in pixels that a touch pad touch can move before being released
+         for it to be considered a tap (click) as opposed to a hover movement gesture. -->
+    <dimen name="config_hoverTapSlop">20px</dimen>
+
+    <!-- The amount of friction applied to scrolls and flings. -->
+    <item name="config_scrollFriction" format="float" type="dimen">0.015</item>
+
     <!-- Maximum number of grid columns permitted in the ResolverActivity
          used for picking activities to handle an intent. -->
     <integer name="config_maxResolverActivityColumns">3</integer>
