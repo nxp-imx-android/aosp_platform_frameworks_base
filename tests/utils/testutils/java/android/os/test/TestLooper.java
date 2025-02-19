@@ -65,13 +65,19 @@ public class TestLooper {
     private AutoDispatchThread mAutoDispatchThread;
 
     /**
-     * Modern introduces new {@link TestLooperManager} APIs that we can use instead of reflection.
+     * Baklava introduces new {@link TestLooperManager} APIs that we can use instead of reflection.
      */
-    private static boolean newTestabilityApisSupported() {
-        return android.os.Flags.messageQueueTestability();
+    private static boolean isAtLeastBaklava() {
+        Method[] methods = TestLooperManager.class.getMethods();
+        for (Method method : methods) {
+            if (method.getName().equals("peekWhen")) {
+                return true;
+            }
+        }
+        return false;
         // TODO(shayba): delete the above, uncomment the below.
-        // SDK_INT has not yet ramped to Modern in all 25Q2 builds.
-        // return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Modern;
+        // SDK_INT has not yet ramped to Baklava in all 25Q2 builds.
+        // return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA;
     }
 
     static {
@@ -81,7 +87,7 @@ public class TestLooper {
             THREAD_LOCAL_LOOPER_FIELD = Looper.class.getDeclaredField("sThreadLocal");
             THREAD_LOCAL_LOOPER_FIELD.setAccessible(true);
 
-            if (newTestabilityApisSupported()) {
+            if (isAtLeastBaklava()) {
                 MESSAGE_QUEUE_MESSAGES_FIELD = null;
                 MESSAGE_NEXT_FIELD = null;
                 MESSAGE_WHEN_FIELD = null;
@@ -130,7 +136,7 @@ public class TestLooper {
             throw new RuntimeException("Reflection error constructing or accessing looper", e);
         }
 
-        if (newTestabilityApisSupported()) {
+        if (isAtLeastBaklava()) {
             mTestLooperManager =
                 InstrumentationRegistry.getInstrumentation().acquireLooperManager(mLooper);
         } else {
@@ -159,14 +165,14 @@ public class TestLooper {
     }
 
     public void moveTimeForward(long milliSeconds) {
-        if (newTestabilityApisSupported()) {
-            moveTimeForwardModern(milliSeconds);
+        if (isAtLeastBaklava()) {
+            moveTimeForwardBaklava(milliSeconds);
         } else {
             moveTimeForwardLegacy(milliSeconds);
         }
     }
 
-    private void moveTimeForwardModern(long milliSeconds) {
+    private void moveTimeForwardBaklava(long milliSeconds) {
         // Drain all Messages from the queue.
         Queue<Message> messages = new ArrayDeque<>();
         while (true) {
@@ -259,14 +265,14 @@ public class TestLooper {
      * @return true if there are pending messages in the message queue
      */
     public boolean isIdle() {
-        if (newTestabilityApisSupported()) {
-            return isIdleModern();
+        if (isAtLeastBaklava()) {
+            return isIdleBaklava();
         } else {
             return isIdleLegacy();
         }
     }
 
-    private boolean isIdleModern() {
+    private boolean isIdleBaklava() {
         Long when = mTestLooperManager.peekWhen();
         return when != null && currentTime() >= when;
     }
@@ -280,14 +286,14 @@ public class TestLooper {
      * @return the next message in the Looper's message queue or null if there is none
      */
     public Message nextMessage() {
-        if (newTestabilityApisSupported()) {
-            return nextMessageModern();
+        if (isAtLeastBaklava()) {
+            return nextMessageBaklava();
         } else {
             return nextMessageLegacy();
         }
     }
 
-    private Message nextMessageModern() {
+    private Message nextMessageBaklava() {
         if (isIdle()) {
             return mTestLooperManager.poll();
         } else {
@@ -308,14 +314,14 @@ public class TestLooper {
      * Asserts that there is a message in the queue
      */
     public void dispatchNext() {
-        if (newTestabilityApisSupported()) {
-            dispatchNextModern();
+        if (isAtLeastBaklava()) {
+            dispatchNextBaklava();
         } else {
             dispatchNextLegacy();
         }
     }
 
-    private void dispatchNextModern() {
+    private void dispatchNextBaklava() {
         assertTrue(isIdle());
         Message msg = mTestLooperManager.poll();
         if (msg == null) {
