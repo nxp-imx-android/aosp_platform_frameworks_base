@@ -26,14 +26,14 @@ flag {
     name: "enable_le_audio_sharing"
     namespace: "pixel_cross_device_control"
     description: "Gates whether to enable LE audio sharing"
-    bug: "323125723"
+    bug: "388674074"
 }
 
 flag {
     name: "enable_le_audio_qr_code_private_broadcast_sharing"
     namespace: "pixel_cross_device_control"
     description: "Gates whether to enable LE audio private broadcast sharing via QR code"
-    bug: "323125723"
+    bug: "388674074"
 }
 
 flag {
@@ -225,6 +225,26 @@ flag {
     namespace: "cross_device_experiences"
     description: "Adopt Bluetooth LE broadcast primary group management APIs"
     bug: "381946931"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "adopt_primary_group_management_api_v2"
+    namespace: "cross_device_experiences"
+    description: "Adopt more Bluetooth LE broadcast primary group management APIs post launch"
+    bug: "381946931"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "promote_audio_sharing_for_second_auto_connected_lea_device"
+    namespace: "cross_device_experiences"
+    description: "Show audio sharing promote notification or dialog when the second lea device is auto connected"
+    bug: "395786392"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
