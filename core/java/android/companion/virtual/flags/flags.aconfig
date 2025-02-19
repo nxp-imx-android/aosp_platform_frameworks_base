@@ -135,3 +135,11 @@ flag {
     description: "Show virtual devices in Settings"
     bug: "338974320"
 }
+
+flag {
+    name: "migrate_viewconfiguration_constants_to_resources"
+    namespace: "virtual_devices"
+    description: "Use resources instead of constants in ViewConfiguration"
+    is_fixed_read_only: true
+    bug: "370928384"
+}
