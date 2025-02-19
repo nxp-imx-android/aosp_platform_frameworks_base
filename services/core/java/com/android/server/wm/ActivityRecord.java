@@ -9644,7 +9644,18 @@ final class ActivityRecord extends WindowToken {
                     && !mDisplayContent.isSleeping()) {
                 // Visibility of starting activities isn't calculated until pause-complete, so if
                 // this is not paused yet, don't consider it ready.
-                return false;
+                // However, due to pip1 having an intermediate state, add a special exception here
+                // that skips waiting if the next activity is already visible.
+                final ActivityRecord toResume = isPip2ExperimentEnabled() ? null
+                        : mDisplayContent.getActivity((r) -> !r.finishing
+                        && r.isVisibleRequested()
+                        && !r.isTaskOverlay()
+                        && !r.isAlwaysOnTop());
+                if (toResume == null || !toResume.isVisible()) {
+                    return false;
+                } else {
+                    Slog.i(TAG, "Assuming sync-finish while pausing due to visible target");
+                }
             }
             return true;
         }
