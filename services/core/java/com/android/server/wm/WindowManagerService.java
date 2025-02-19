@@ -157,6 +157,7 @@ import static com.android.server.wm.WindowManagerServiceDumpProto.POLICY;
 import static com.android.server.wm.WindowManagerServiceDumpProto.ROOT_WINDOW_CONTAINER;
 import static com.android.server.wm.WindowManagerServiceDumpProto.WINDOW_FRAMES_VALID;
 import static com.android.window.flags.Flags.enableDisplayFocusInShellTransitions;
+import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 import static com.android.window.flags.Flags.multiCrop;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
@@ -1820,8 +1821,28 @@ public class WindowManagerService extends IWindowManager.Stub
             final boolean hideSystemAlertWindows = shouldHideNonSystemOverlayWindow(win);
             win.setForceHideNonSystemOverlayWindowIfNeeded(hideSystemAlertWindows);
 
-            res |= addWindowInner(win, displayPolicy, activity, displayContent, outInsetsState,
-                    outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs);
+            // Only a presentation window needs a transition because its visibility affets the
+            // lifecycle of apps below (b/390481865).
+            if (enablePresentationForConnectedDisplays() && win.isPresentation()) {
+                Transition transition = null;
+                if (!win.mTransitionController.isCollecting()) {
+                    transition = win.mTransitionController.createAndStartCollecting(TRANSIT_OPEN);
+                }
+                win.mTransitionController.collect(win.mToken);
+                res |= addWindowInner(win, displayPolicy, activity, displayContent, outInsetsState,
+                        outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs);
+                // A presentation hides all activities behind on the same display.
+                win.mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
+                        /*notifyClients=*/ true);
+                win.mTransitionController.getCollectingTransition().setReady(win.mToken, true);
+                if (transition != null) {
+                    win.mTransitionController.requestStartTransition(transition, null,
+                            null /* remoteTransition */, null /* displayChange */);
+                }
+            } else {
+                res |= addWindowInner(win, displayPolicy, activity, displayContent, outInsetsState,
+                        outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs);
+            }
         }
 
         Binder.restoreCallingIdentity(origId);
