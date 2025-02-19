@@ -261,6 +261,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var desksTransitionsObserver: DesksTransitionObserver
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var mockDisplayContext: Context
+    @Mock private lateinit var dragToDisplayTransitionHandler: DragToDisplayTransitionHandler
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -431,6 +432,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             desksTransitionsObserver,
             userProfileContexts,
             desktopModeCompatPolicy,
+            dragToDisplayTransitionHandler,
         )
 
     @After
@@ -4863,7 +4865,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 Mockito.argThat { wct ->
                     return@argThat wct.hierarchyOps[0].isReparent
                 },
-                eq(null),
+                eq(dragToDisplayTransitionHandler),
             )
     }
 
