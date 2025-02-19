@@ -164,6 +164,7 @@ import static com.android.server.wm.ActivityRecordProto.PROVIDES_MAX_BOUNDS;
 import static com.android.server.wm.ActivityRecordProto.REPORTED_DRAWN;
 import static com.android.server.wm.ActivityRecordProto.REPORTED_VISIBLE;
 import static com.android.server.wm.ActivityRecordProto.REQUEST_OPEN_IN_BROWSER_EDUCATION_TIMESTAMP;
+import static com.android.server.wm.ActivityRecordProto.SHOULD_ALLOW_SIMULATE_REQUESTED_ORIENTATION_FOR_CAMERA_COMPAT;
 import static com.android.server.wm.ActivityRecordProto.SHOULD_ENABLE_USER_ASPECT_RATIO_SETTINGS;
 import static com.android.server.wm.ActivityRecordProto.SHOULD_FORCE_ROTATE_FOR_CAMERA_COMPAT;
 import static com.android.server.wm.ActivityRecordProto.SHOULD_IGNORE_ORIENTATION_REQUEST_LOOP;
@@ -9184,6 +9185,8 @@ final class ActivityRecord extends WindowToken {
                 aspectRatioOverrides.isUserFullscreenOverrideEnabled());
         proto.write(REQUEST_OPEN_IN_BROWSER_EDUCATION_TIMESTAMP,
                 mRequestOpenInBrowserEducationTimestamp);
+        proto.write(SHOULD_ALLOW_SIMULATE_REQUESTED_ORIENTATION_FOR_CAMERA_COMPAT,
+                cameraOverrides.shouldApplyFreeformTreatmentForCameraCompat());
     }
 
     @Override
