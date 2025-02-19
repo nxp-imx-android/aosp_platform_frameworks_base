@@ -196,6 +196,16 @@ flag {
 }
 
 flag {
+    name: "enable_camera_compat_for_desktop_windowing_opt_out"
+    namespace: "lse_desktop_experience"
+    description: "Whether to allow developers to opt-out of Camera Compat treatment to fixed-orientation apps in desktop windowing mode"
+    bug: "328616176"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_task_stack_observer_in_shell"
     namespace: "lse_desktop_experience"
     description: "Introduces a new observer in shell to track the task stack."
