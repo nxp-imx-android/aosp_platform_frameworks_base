@@ -147,7 +147,7 @@ fun KeyboardTouchpadTutorialContainer(
                 .BackGesture(
                     onDoneButtonClicked = vm::onDoneButtonClicked,
                     onBack = vm::onBack,
-                    isAutoProceed = isAutoProceed,
+                    onAutoProceed = if (isAutoProceed) vm::onAutoProceed else null,
                 )
         HOME_GESTURE ->
             touchpadScreens
@@ -155,7 +155,7 @@ fun KeyboardTouchpadTutorialContainer(
                 .HomeGesture(
                     onDoneButtonClicked = vm::onDoneButtonClicked,
                     onBack = vm::onBack,
-                    isAutoProceed = isScopeAll,
+                    onAutoProceed = if (isScopeAll) vm::onAutoProceed else null,
                 )
         ACTION_KEY ->
             ActionKeyTutorialScreen(
