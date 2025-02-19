@@ -494,6 +494,9 @@ public final class QuotaController extends StateController {
 
     private long mEjLimitAdditionSpecialMs = QcConstants.DEFAULT_EJ_LIMIT_ADDITION_SPECIAL_MS;
 
+    private long mAllowedTimePeriodAdditionaInstallerMs =
+            QcConstants.DEFAULT_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS;
+
     /**
      * The period of time used to calculate expedited job sessions. Apps can only have expedited job
      * sessions totalling {@link #mEJLimitsMs}[bucket within this period of time (without factoring
@@ -1095,6 +1098,18 @@ public final class QuotaController extends StateController {
         return baseLimitMs;
     }
 
+    private long getAllowedTimePerPeriodMsLocked(final int userId, @NonNull final String pkgName,
+            final int standbyBucket) {
+        final long baseLimitMs = mAllowedTimePerPeriodMs[standbyBucket];
+        if (Flags.adjustQuotaDefaultConstants()
+                && Flags.additionalQuotaForSystemInstaller()
+                && standbyBucket == EXEMPTED_INDEX
+                && mSystemInstallers.contains(userId, pkgName)) {
+            return baseLimitMs + mAllowedTimePeriodAdditionaInstallerMs;
+        }
+        return baseLimitMs;
+    }
+
     /**
      * Returns the amount of time, in milliseconds, until the package would have reached its
      * duration quota, assuming it has a job counting towards its quota the entire time. This takes
@@ -1112,25 +1127,26 @@ public final class QuotaController extends StateController {
 
         List<TimedEvent> events = mTimingEvents.get(userId, packageName);
         final ExecutionStats stats = getExecutionStatsLocked(userId, packageName, standbyBucket);
+        final long allowedTimePerPeriodMs =
+                getAllowedTimePerPeriodMsLocked(userId, packageName, standbyBucket);
         if (events == null || events.size() == 0) {
             // Regular ACTIVE case. Since the bucket size equals the allowed time, the app jobs can
             // essentially run until they reach the maximum limit.
-            if (stats.windowSizeMs == mAllowedTimePerPeriodMs[standbyBucket]) {
+            if (stats.windowSizeMs == allowedTimePerPeriodMs) {
                 return mMaxExecutionTimeMs;
             }
-            return mAllowedTimePerPeriodMs[standbyBucket];
+            return allowedTimePerPeriodMs;
         }
 
         final long startWindowElapsed = nowElapsed - stats.windowSizeMs;
         final long startMaxElapsed = nowElapsed - MAX_PERIOD_MS;
-        final long allowedTimePerPeriodMs = mAllowedTimePerPeriodMs[standbyBucket];
         final long allowedTimeRemainingMs = allowedTimePerPeriodMs - stats.executionTimeInWindowMs;
         final long maxExecutionTimeRemainingMs =
                 mMaxExecutionTimeMs - stats.executionTimeInMaxPeriodMs;
 
         // Regular ACTIVE case. Since the bucket size equals the allowed time, the app jobs can
         // essentially run until they reach the maximum limit.
-        if (stats.windowSizeMs == mAllowedTimePerPeriodMs[standbyBucket]) {
+        if (stats.windowSizeMs == allowedTimePerPeriodMs) {
             return calculateTimeUntilQuotaConsumedLocked(
                     events, startMaxElapsed, maxExecutionTimeRemainingMs);
         }
@@ -1270,7 +1286,8 @@ public final class QuotaController extends StateController {
             appStats[standbyBucket] = stats;
         }
         if (refreshStatsIfOld) {
-            final long bucketAllowedTimeMs = mAllowedTimePerPeriodMs[standbyBucket];
+            final long bucketAllowedTimeMs =
+                    getAllowedTimePerPeriodMsLocked(userId, packageName, standbyBucket);
             final long bucketWindowSizeMs = mBucketPeriodsMs[standbyBucket];
             final int jobCountLimit = mMaxBucketJobCounts[standbyBucket];
             final int sessionCountLimit = mMaxBucketSessionCounts[standbyBucket];
@@ -1845,9 +1862,10 @@ public final class QuotaController extends StateController {
         final boolean isUnderJobCountQuota = isUnderJobCountQuotaLocked(stats);
         final boolean isUnderTimingSessionCountQuota = isUnderSessionCountQuotaLocked(stats);
         final long remainingEJQuota = getRemainingEJExecutionTimeLocked(userId, packageName);
-
+        final long allowedTimePerPeriosMs =
+                getAllowedTimePerPeriodMsLocked(userId, packageName, standbyBucket);
         final boolean inRegularQuota =
-                stats.executionTimeInWindowMs < mAllowedTimePerPeriodMs[standbyBucket]
+                stats.executionTimeInWindowMs < allowedTimePerPeriosMs
                         && stats.executionTimeInMaxPeriodMs < mMaxExecutionTimeMs
                         && isUnderJobCountQuota
                         && isUnderTimingSessionCountQuota;
@@ -3037,6 +3055,9 @@ public final class QuotaController extends StateController {
         static final String KEY_ALLOWED_TIME_PER_PERIOD_RESTRICTED_MS =
                 QC_CONSTANT_PREFIX + "allowed_time_per_period_restricted_ms";
         @VisibleForTesting
+        static final String KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS =
+                QC_CONSTANT_PREFIX + "allowed_time_per_period_addition_installer_ms";
+        @VisibleForTesting
         static final String KEY_IN_QUOTA_BUFFER_MS =
                 QC_CONSTANT_PREFIX + "in_quota_buffer_ms";
         @VisibleForTesting
@@ -3168,6 +3189,8 @@ public final class QuotaController extends StateController {
         private static final long DEFAULT_ALLOWED_TIME_PER_PERIOD_RARE_MS =
                 10 * 60 * 1000L; // 10 minutes
         private static final long DEFAULT_ALLOWED_TIME_PER_PERIOD_RESTRICTED_MS =
+                10 * 60 * 1000L; // 10 minutes
+        private static final long DEFAULT_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS =
                 10 * 60 * 1000L; // 10 minutes
         private static final long DEFAULT_IN_QUOTA_BUFFER_MS =
                 30 * 1000L; // 30 seconds
@@ -3509,6 +3532,9 @@ public final class QuotaController extends StateController {
          */
         public long EJ_LIMIT_ADDITION_INSTALLER_MS = DEFAULT_EJ_LIMIT_ADDITION_INSTALLER_MS;
 
+        public long ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS =
+                DEFAULT_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS;
+
         /**
          * The period of time used to calculate expedited job sessions. Apps can only have expedited
          * job sessions totalling EJ_LIMIT_<bucket>_MS within this period of time (without factoring
@@ -3603,6 +3629,7 @@ public final class QuotaController extends StateController {
                 case KEY_ALLOWED_TIME_PER_PERIOD_FREQUENT_MS:
                 case KEY_ALLOWED_TIME_PER_PERIOD_RARE_MS:
                 case KEY_ALLOWED_TIME_PER_PERIOD_RESTRICTED_MS:
+                case KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS:
                 case KEY_IN_QUOTA_BUFFER_MS:
                 case KEY_MAX_EXECUTION_TIME_MS:
                 case KEY_WINDOW_SIZE_ACTIVE_MS:
@@ -3847,7 +3874,7 @@ public final class QuotaController extends StateController {
                     KEY_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS, KEY_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS,
                     KEY_ALLOWED_TIME_PER_PERIOD_WORKING_MS, KEY_ALLOWED_TIME_PER_PERIOD_FREQUENT_MS,
                     KEY_ALLOWED_TIME_PER_PERIOD_RARE_MS, KEY_ALLOWED_TIME_PER_PERIOD_RESTRICTED_MS,
-                    KEY_IN_QUOTA_BUFFER_MS,
+                    KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS, KEY_IN_QUOTA_BUFFER_MS,
                     KEY_MAX_EXECUTION_TIME_MS,
                     KEY_WINDOW_SIZE_EXEMPTED_MS, KEY_WINDOW_SIZE_ACTIVE_MS,
                     KEY_WINDOW_SIZE_WORKING_MS,
@@ -3871,6 +3898,9 @@ public final class QuotaController extends StateController {
             ALLOWED_TIME_PER_PERIOD_RESTRICTED_MS =
                     properties.getLong(KEY_ALLOWED_TIME_PER_PERIOD_RESTRICTED_MS,
                             DEFAULT_ALLOWED_TIME_PER_PERIOD_RESTRICTED_MS);
+            ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS =
+                    properties.getLong(KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS,
+                            DEFAULT_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS);
             IN_QUOTA_BUFFER_MS = properties.getLong(KEY_IN_QUOTA_BUFFER_MS,
                     DEFAULT_IN_QUOTA_BUFFER_MS);
             MAX_EXECUTION_TIME_MS = properties.getLong(KEY_MAX_EXECUTION_TIME_MS,
@@ -3994,6 +4024,18 @@ public final class QuotaController extends StateController {
             if (mBucketPeriodsMs[RESTRICTED_INDEX] != newRestrictedPeriodMs) {
                 mBucketPeriodsMs[RESTRICTED_INDEX] = newRestrictedPeriodMs;
                 mShouldReevaluateConstraints = true;
+            }
+
+            if (Flags.additionalQuotaForSystemInstaller()) {
+                // The additions must be in the range
+                // [0 minutes, exempted window size - active limit].
+                long newAdditionInstallerMs = Math.max(0,
+                        Math.min(mBucketPeriodsMs[EXEMPTED_INDEX] - newAllowedTimeExemptedMs,
+                                ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS));
+                if (mAllowedTimePeriodAdditionaInstallerMs != newAdditionInstallerMs) {
+                    mAllowedTimePeriodAdditionaInstallerMs = newAdditionInstallerMs;
+                    mShouldReevaluateConstraints = true;
+                }
             }
         }
 
@@ -4159,6 +4201,8 @@ public final class QuotaController extends StateController {
                     .println();
             pw.print(KEY_ALLOWED_TIME_PER_PERIOD_RESTRICTED_MS,
                     ALLOWED_TIME_PER_PERIOD_RESTRICTED_MS).println();
+            pw.print(KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS,
+                    ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS).println();
             pw.print(KEY_IN_QUOTA_BUFFER_MS, IN_QUOTA_BUFFER_MS).println();
             pw.print(KEY_WINDOW_SIZE_EXEMPTED_MS, WINDOW_SIZE_EXEMPTED_MS).println();
             pw.print(KEY_WINDOW_SIZE_ACTIVE_MS, WINDOW_SIZE_ACTIVE_MS).println();
@@ -4335,6 +4379,11 @@ public final class QuotaController extends StateController {
     }
 
     @VisibleForTesting
+    long getAllowedTimePeriodAdditionInstallerMs() {
+        return mAllowedTimePeriodAdditionaInstallerMs;
+    }
+
+    @VisibleForTesting
     long getEjLimitAdditionSpecialMs() {
         return mEjLimitAdditionSpecialMs;
     }
@@ -4435,6 +4484,8 @@ public final class QuotaController extends StateController {
                 + ": " + Flags.enforceQuotaPolicyToFgsJobs());
         pw.println("    " + Flags.FLAG_ENFORCE_QUOTA_POLICY_TO_TOP_STARTED_JOBS
                 + ": " + Flags.enforceQuotaPolicyToTopStartedJobs());
+        pw.println("    " + Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER
+                + ": " + Flags.additionalQuotaForSystemInstaller());
         pw.println();
 
         pw.println("Current elapsed time: " + sElapsedRealtimeClock.millis());
