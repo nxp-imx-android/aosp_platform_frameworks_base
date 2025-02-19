@@ -26,6 +26,7 @@
 #include <nativehelper/JNIHelp.h>
 #include <utils/Log.h>
 #include <utils/RefBase.h>
+#include <utils/StrongPointer.h>
 
 #include "core_jni_helpers.h"
 
@@ -124,7 +125,7 @@ private:
 static jlong nativeCreate(JNIEnv* env, jclass clazz, jstring jName,
                           jboolean updateDestinationFrame) {
     ScopedUtfChars name(env, jName);
-    sp<BLASTBufferQueue> queue = new BLASTBufferQueue(name.c_str(), updateDestinationFrame);
+    sp<BLASTBufferQueue> queue = sp<BLASTBufferQueue>::make(name.c_str(), updateDestinationFrame);
     queue->incStrong((void*)nativeCreate);
     return reinterpret_cast<jlong>(queue.get());
 }
