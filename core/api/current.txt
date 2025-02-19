@@ -18112,7 +18112,7 @@ package android.graphics.drawable {
     method public void setThickness(@Px int);
     method public void setThicknessRatio(@FloatRange(from=0.0f, fromInclusive=false) float);
     method public void setUseLevel(boolean);
-    field @FlaggedApi("com.android.graphics.flags.gradient_drawable_shape_rounded_cap") public static final int ARC = 4; // 0x4
+    field @FlaggedApi("com.android.graphics.flags.gradient_drawable_shape_arc_for_rounded_cap") public static final int ARC = 4; // 0x4
     field public static final int LINE = 2; // 0x2
     field public static final int LINEAR_GRADIENT = 0; // 0x0
     field public static final int OVAL = 1; // 0x1
