@@ -66,6 +66,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -84,6 +85,8 @@ import java.util.stream.Collectors;
 public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
     public static final String ACTION_LE_AUDIO_SHARING_STATE_CHANGE =
             "com.android.settings.action.BLUETOOTH_LE_AUDIO_SHARING_STATE_CHANGE";
+    public static final String ACTION_LE_AUDIO_SHARING_DEVICE_CONNECTED =
+            "com.android.settings.action.BLUETOOTH_LE_AUDIO_SHARING_DEVICE_CONNECTED";
     public static final String EXTRA_LE_AUDIO_SHARING_STATE = "BLUETOOTH_LE_AUDIO_SHARING_STATE";
     public static final String EXTRA_BLUETOOTH_DEVICE = "BLUETOOTH_DEVICE";
     public static final String EXTRA_BT_DEVICE_TO_AUTO_ADD_SOURCE = "BT_DEVICE_TO_AUTO_ADD_SOURCE";
@@ -1189,6 +1192,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
 
     @NonNull
     private Map<Integer, List<BluetoothDevice>> getDeviceGroupsInBroadcast() {
+        if (mServiceBroadcastAssistant == null) return new HashMap<>();
         boolean hysteresisModeFixEnabled =
                 BluetoothUtils.isAudioSharingHysteresisModeFixAvailable(mContext);
         List<BluetoothDevice> connectedDevices = mServiceBroadcastAssistant.getConnectedDevices();
