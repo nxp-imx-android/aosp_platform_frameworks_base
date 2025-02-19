@@ -211,4 +211,20 @@ public abstract class VirtualDeviceManagerInternal {
      */
     public abstract @NonNull VirtualDeviceManager.VirtualDevice createVirtualDevice(
             @NonNull VirtualDeviceParams params);
+
+    /**
+     * Returns the details of the virtual device with the given ID, if any.
+     *
+     * <p>The returned object is a read-only representation of the virtual device that expose its
+     * properties.</p>
+     *
+     * <p>Note that if the virtual device is closed and becomes invalid, the returned object will
+     * not be updated and may contain stale values. Use a {@link VirtualDeviceListener} for real
+     * time updates of the availability of virtual devices.</p>
+     *
+     * @return the virtual device with the requested ID, or {@code null} if no such device exists or
+     *   it has already been closed.
+     */
+    @Nullable
+    public abstract VirtualDevice getVirtualDevice(int deviceId);
 }
