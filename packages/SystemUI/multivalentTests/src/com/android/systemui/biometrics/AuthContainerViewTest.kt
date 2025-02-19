@@ -36,6 +36,7 @@ import android.testing.ViewUtils
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.view.accessibility.AccessibilityManager
 import android.widget.ScrollView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -114,6 +115,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
     @Mock lateinit var selectedUserInteractor: SelectedUserInteractor
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var activityTaskManager: ActivityTaskManager
+    @Mock private lateinit var accessibilityManager: AccessibilityManager
     @Mock private lateinit var lazyViewCapture: Lazy<ViewCapture>
 
     private lateinit var displayRepository: FakeDisplayRepository
@@ -678,6 +680,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
                 udfpsUtils,
                 iconProvider,
                 activityTaskManager,
+                accessibilityManager,
             ),
             { credentialViewModel },
             fakeExecutor,
