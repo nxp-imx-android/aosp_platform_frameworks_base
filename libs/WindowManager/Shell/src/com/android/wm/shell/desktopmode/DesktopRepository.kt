@@ -208,6 +208,7 @@ class DesktopRepository(
 
     /** Adds the given desk under the given display. */
     fun addDesk(displayId: Int, deskId: Int) {
+        logD("addDesk for displayId=%d and deskId=%d", displayId, deskId)
         desktopData.createDesk(displayId, deskId)
     }
 
@@ -224,6 +225,7 @@ class DesktopRepository(
 
     /** Sets the given desk as the active one in the given display. */
     fun setActiveDesk(displayId: Int, deskId: Int) {
+        logD("setActiveDesk for displayId=%d and deskId=%d", displayId, deskId)
         desktopData.setActiveDesk(displayId = displayId, deskId = deskId)
     }
 
@@ -246,6 +248,7 @@ class DesktopRepository(
      * TODO: b/389960283 - add explicit [deskId] argument.
      */
     fun addTask(displayId: Int, taskId: Int, isVisible: Boolean) {
+        logD("addTask for displayId=%d, taskId=%d, isVisible=%b", displayId, taskId, isVisible)
         val activeDesk =
             checkNotNull(desktopData.getDefaultDesk(displayId)) {
                 "Expected desk in display: $displayId"
@@ -254,6 +257,13 @@ class DesktopRepository(
     }
 
     fun addTaskToDesk(displayId: Int, deskId: Int, taskId: Int, isVisible: Boolean) {
+        logD(
+            "addTaskToDesk for displayId=%d, deskId=%d, taskId=%d, isVisible=%b",
+            displayId,
+            deskId,
+            taskId,
+            isVisible,
+        )
         addOrMoveTaskToTopOfDesk(displayId = displayId, deskId = deskId, taskId = taskId)
         addActiveTaskToDesk(displayId = displayId, deskId = deskId, taskId = taskId)
         updateTaskInDesk(
@@ -265,6 +275,12 @@ class DesktopRepository(
     }
 
     private fun addActiveTaskToDesk(displayId: Int, deskId: Int, taskId: Int) {
+        logD(
+            "addActiveTaskToDesk for displayId=%d, deskId=%d, taskId=%d",
+            displayId,
+            deskId,
+            taskId,
+        )
         val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
 
         // Removes task if it is active on another desk excluding this desk.
@@ -279,6 +295,7 @@ class DesktopRepository(
     /** Removes task from active task list of desks excluding the [excludedDeskId]. */
     @VisibleForTesting
     fun removeActiveTask(taskId: Int, excludedDeskId: Int? = null) {
+        logD("removeActiveTask for taskId=%d, excludedDeskId=%d", taskId, excludedDeskId)
         val affectedDisplays = mutableSetOf<Int>()
         desktopData
             .desksSequence()
@@ -303,6 +320,7 @@ class DesktopRepository(
         taskId: Int,
         notifyListeners: Boolean = true,
     ): Boolean {
+        logD("removeActiveTaskFromDesk for deskId=%d, taskId=%d", deskId, taskId)
         val desk = desktopData.getDesk(deskId) ?: return false
         if (desk.activeTasks.remove(taskId)) {
             logD("Removed active task=%d from deskId=%d", taskId, desk.deskId)
@@ -456,7 +474,7 @@ class DesktopRepository(
 
     /** Removes task from visible tasks of all desks except [excludedDeskId]. */
     private fun removeVisibleTask(taskId: Int, excludedDeskId: Int? = null) {
-        desktopData.forAllDesks { displayId, desk ->
+        desktopData.forAllDesks { _, desk ->
             if (desk.deskId != excludedDeskId) {
                 removeVisibleTaskFromDesk(deskId = desk.deskId, taskId = taskId)
             }
@@ -718,6 +736,12 @@ class DesktopRepository(
      * Unminimizes the task if it is minimized.
      */
     private fun addOrMoveTaskToTopOfDesk(displayId: Int, deskId: Int, taskId: Int) {
+        logD(
+            "addOrMoveTaskToTopOfDesk displayId=%d, deskId=%d, taskId=%d",
+            displayId,
+            deskId,
+            taskId,
+        )
         val desk = desktopData.getDesk(deskId) ?: error("Could not find desk: $deskId")
         logD("addOrMoveTaskToTopOfDesk: display=%d deskId=%d taskId=%d", displayId, deskId, taskId)
         desktopData.forAllDesks { _, desk1 -> desk1.freeformTasksInZOrder.remove(taskId) }
@@ -738,6 +762,7 @@ class DesktopRepository(
      *   desk id instead of using this function and defaulting to the active one.
      */
     fun minimizeTask(displayId: Int, taskId: Int) {
+        logD("minimizeTask displayId=%d, taskId=%d", displayId, taskId)
         if (displayId == INVALID_DISPLAY) {
             // When a task vanishes it doesn't have a displayId. Find the display of the task and
             // mark it as minimized.
@@ -756,7 +781,7 @@ class DesktopRepository(
     /** Minimizes the task in its desk. */
     @VisibleForTesting
     fun minimizeTaskInDesk(displayId: Int, deskId: Int, taskId: Int) {
-        logD("Minimize Task: displayId=%d deskId=%d, task=%d", displayId, deskId, taskId)
+        logD("MinimizeTaskInDesk: displayId=%d deskId=%d, task=%d", displayId, deskId, taskId)
         desktopData.getDesk(deskId)?.minimizedTasks?.add(taskId)
             ?: logD("Minimize task: No active desk found for task: taskId=%d", taskId)
         updateTaskInDesk(displayId, deskId, taskId, isVisible = false)
@@ -771,12 +796,12 @@ class DesktopRepository(
      * TODO: b/389960283 - consider using [unminimizeTaskFromDesk] instead.
      */
     fun unminimizeTask(displayId: Int, taskId: Int) {
-        logD("Unminimize Task: display=%d, task=%d", displayId, taskId)
+        logD("UnminimizeTask: display=%d, task=%d", displayId, taskId)
         desktopData.forAllDesks(displayId) { desk -> unminimizeTaskFromDesk(desk.deskId, taskId) }
     }
 
     private fun unminimizeTaskFromDesk(deskId: Int, taskId: Int) {
-        logD("Unminimize Task: deskId=%d, taskId=%d", deskId, taskId)
+        logD("Unminimize Task from desk: deskId=%d, taskId=%d", deskId, taskId)
         if (desktopData.getDesk(deskId)?.minimizedTasks?.remove(taskId) != true) {
             logW("Unminimize Task: deskId=%d, taskId=%d, no task data", deskId, taskId)
         }
@@ -847,6 +872,7 @@ class DesktopRepository(
 
     /** Removes the given desk and returns the active tasks in that desk. */
     fun removeDesk(deskId: Int): Set<Int> {
+        logD("removeDesk %d", deskId)
         val desk =
             desktopData.getDesk(deskId)
                 ?: return emptySet<Int>().also {
