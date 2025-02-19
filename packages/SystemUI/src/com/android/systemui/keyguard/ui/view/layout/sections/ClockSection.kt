@@ -121,19 +121,19 @@ constructor(
             setAlpha(getNonTargetClockFace(clock).views, 0F)
 
             if (!keyguardClockViewModel.isLargeClockVisible.value) {
-                if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                     connect(
                         sharedR.id.bc_smartspace_view,
                         TOP,
                         customR.id.lockscreen_clock_view,
-                        BOTTOM
+                        BOTTOM,
                     )
                 } else {
                     connect(
                         sharedR.id.bc_smartspace_view,
                         TOP,
                         sharedR.id.date_smartspace_view,
-                        BOTTOM
+                        BOTTOM,
                     )
                 }
             } else {
@@ -161,7 +161,7 @@ constructor(
             )
             if (
                 rootViewModel.isNotifIconContainerVisible.value.value &&
-                keyguardClockViewModel.hasAodIcons.value
+                    keyguardClockViewModel.hasAodIcons.value
             ) {
                 createBarrier(
                     R.id.weather_clock_date_and_icons_barrier_bottom,
@@ -197,13 +197,13 @@ constructor(
                 TOP,
             )
             val largeClockTopMargin =
-                if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                     keyguardClockViewModel.getLargeClockTopMargin() +
-                            getDimen(ENHANCED_SMARTSPACE_HEIGHT)
+                        getDimen(ENHANCED_SMARTSPACE_HEIGHT)
                 } else {
                     keyguardClockViewModel.getLargeClockTopMargin() +
-                            getDimen(DATE_WEATHER_VIEW_HEIGHT) +
-                            getDimen(ENHANCED_SMARTSPACE_HEIGHT)
+                        getDimen(DATE_WEATHER_VIEW_HEIGHT) +
+                        getDimen(ENHANCED_SMARTSPACE_HEIGHT)
                 }
             connect(
                 customR.id.lockscreen_clock_view_large,
@@ -229,9 +229,9 @@ constructor(
                 PARENT_ID,
                 START,
                 context.resources.getDimensionPixelSize(customR.dimen.clock_padding_start) +
-                        context.resources.getDimensionPixelSize(
-                            customR.dimen.status_view_margin_horizontal
-                        ),
+                    context.resources.getDimensionPixelSize(
+                        customR.dimen.status_view_margin_horizontal
+                    ),
             )
             val smallClockTopMargin = keyguardClockViewModel.getSmallClockTopMargin()
             create(R.id.small_clock_guideline_top, ConstraintSet.HORIZONTAL_GUIDELINE)
@@ -243,18 +243,18 @@ constructor(
 
             val smallClockBottom =
                 keyguardClockViewModel.getSmallClockTopMargin() +
-                        context.resources.getDimensionPixelSize(customR.dimen.small_clock_height)
+                    context.resources.getDimensionPixelSize(customR.dimen.small_clock_height)
             val marginBetweenSmartspaceAndNotification =
                 context.resources.getDimensionPixelSize(
                     R.dimen.keyguard_status_view_bottom_margin
                 ) +
-                        if (context.resources.getBoolean(R.bool.config_use_large_screen_shade_header)) {
-                            largeScreenHeaderHelperLazy.get().getLargeScreenHeaderHeight()
-                        } else {
-                            0
-                        }
+                    if (context.resources.getBoolean(R.bool.config_use_large_screen_shade_header)) {
+                        largeScreenHeaderHelperLazy.get().getLargeScreenHeaderHeight()
+                    } else {
+                        0
+                    }
 
-            if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                 clockInteractor.setNotificationStackDefaultTop(
                     (smallClockBottom + marginBetweenSmartspaceAndNotification).toFloat()
                 )
@@ -263,8 +263,8 @@ constructor(
                     getDimen(context, DATE_WEATHER_VIEW_HEIGHT).toFloat()
                 clockInteractor.setNotificationStackDefaultTop(
                     smallClockBottom +
-                            dateWeatherSmartspaceHeight +
-                            marginBetweenSmartspaceAndNotification
+                        dateWeatherSmartspaceHeight +
+                        marginBetweenSmartspaceAndNotification
                 )
             }
         }

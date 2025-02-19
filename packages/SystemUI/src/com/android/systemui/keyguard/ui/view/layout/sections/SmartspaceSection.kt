@@ -80,7 +80,7 @@ constructor(
         weatherView = smartspaceController.buildAndConnectWeatherView(constraintLayout, false)
         dateView =
             smartspaceController.buildAndConnectDateView(constraintLayout, false) as? ViewGroup
-        if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+        if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
             weatherViewLargeClock =
                 smartspaceController.buildAndConnectWeatherView(constraintLayout, true)
             dateViewLargeClock =
@@ -88,7 +88,7 @@ constructor(
         }
         pastVisibility = smartspaceView?.visibility ?: View.GONE
         constraintLayout.addView(smartspaceView)
-        if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+        if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
             dateView?.visibility = View.GONE
             weatherView?.visibility = View.GONE
             dateViewLargeClock?.visibility = View.GONE
@@ -139,7 +139,7 @@ constructor(
         constraintSet.apply {
             constrainHeight(sharedR.id.date_smartspace_view, ConstraintSet.WRAP_CONTENT)
             constrainWidth(sharedR.id.date_smartspace_view, ConstraintSet.WRAP_CONTENT)
-            if (!com.android.systemui.shared.Flags.clockReactiveVariants()) {
+            if (!com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                 connect(
                     sharedR.id.date_smartspace_view,
                     ConstraintSet.START,
@@ -167,7 +167,7 @@ constructor(
                 smartspaceHorizontalPadding,
             )
             if (keyguardClockViewModel.hasCustomWeatherDataDisplay.value) {
-                if (!com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                if (!com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                     clear(sharedR.id.date_smartspace_view, ConstraintSet.TOP)
                     connect(
                         sharedR.id.date_smartspace_view,
@@ -178,7 +178,7 @@ constructor(
                 }
             } else {
                 clear(sharedR.id.date_smartspace_view, ConstraintSet.BOTTOM)
-                if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                     connect(
                         sharedR.id.bc_smartspace_view,
                         ConstraintSet.TOP,
@@ -201,7 +201,7 @@ constructor(
                 }
             }
 
-            if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                 if (keyguardClockViewModel.isLargeClockVisible.value) {
                     setVisibility(sharedR.id.weather_smartspace_view, GONE)
                     setVisibility(sharedR.id.date_smartspace_view, GONE)
@@ -335,7 +335,7 @@ constructor(
                 }
             }
 
-            if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                 createBarrier(
                     R.id.smart_space_barrier_bottom,
                     Barrier.BOTTOM,
@@ -370,7 +370,7 @@ constructor(
         if (!keyguardSmartspaceViewModel.isSmartspaceEnabled) return
 
         val list =
-            if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                 listOf(
                     smartspaceView,
                     dateView,
@@ -401,7 +401,7 @@ constructor(
         val weatherId: Int
         val dateId: Int
         if (
-            com.android.systemui.shared.Flags.clockReactiveVariants() &&
+            com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout() &&
                 keyguardClockViewModel.isLargeClockVisible.value
         ) {
             weatherId = sharedR.id.weather_smartspace_view_large
@@ -420,7 +420,7 @@ constructor(
             setVisibility(dateId, if (showDateView) VISIBLE else GONE)
             setAlpha(dateId, if (showDateView) 1f else 0f)
 
-            if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                 if (keyguardClockViewModel.isLargeClockVisible.value) {
                     setVisibility(sharedR.id.weather_smartspace_view, GONE)
                     setVisibility(sharedR.id.date_smartspace_view, GONE)

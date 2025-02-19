@@ -50,7 +50,7 @@ import org.mockito.MockitoAnnotations
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+@DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
 class SmartspaceSectionTest : SysuiTestCase() {
     private lateinit var underTest: SmartspaceSection
     @Mock private lateinit var keyguardClockViewModel: KeyguardClockViewModel
@@ -102,7 +102,7 @@ class SmartspaceSectionTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testAddViews_notSmartspaceEnabled() {
         whenever(keyguardSmartspaceViewModel.isSmartspaceEnabled).thenReturn(false)
         val constraintLayout = ConstraintLayout(mContext)
@@ -113,7 +113,7 @@ class SmartspaceSectionTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testAddViews_smartspaceEnabled_dateWeatherDecoupled() {
         whenever(keyguardSmartspaceViewModel.isDateWeatherDecoupled).thenReturn(true)
         underTest.addViews(constraintLayout)
@@ -132,7 +132,7 @@ class SmartspaceSectionTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testConstraintsWhenShadeLayoutIsNotWide() {
         underTest.addViews(constraintLayout)
         underTest.applyConstraints(constraintSet)
@@ -142,7 +142,7 @@ class SmartspaceSectionTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testConstraintsWhenShadeLayoutIsWide() {
         isShadeLayoutWide.value = true
 
@@ -154,7 +154,7 @@ class SmartspaceSectionTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testConstraintsWhenNotHasCustomWeatherDataDisplay() {
         whenever(keyguardSmartspaceViewModel.isDateWeatherDecoupled).thenReturn(true)
         underTest.addViews(constraintLayout)
@@ -169,7 +169,7 @@ class SmartspaceSectionTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testConstraintsWhenHasCustomWeatherDataDisplay() {
         hasCustomWeatherDataDisplay.value = true
         underTest.addViews(constraintLayout)
@@ -180,7 +180,7 @@ class SmartspaceSectionTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testNormalDateWeatherVisibility() {
         isWeatherVisibleFlow.value = true
         underTest.addViews(constraintLayout)
@@ -194,7 +194,7 @@ class SmartspaceSectionTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testCustomDateWeatherVisibility() {
         hasCustomWeatherDataDisplay.value = true
         underTest.addViews(constraintLayout)

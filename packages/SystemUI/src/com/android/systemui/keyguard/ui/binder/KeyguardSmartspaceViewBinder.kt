@@ -80,7 +80,7 @@ object KeyguardSmartspaceViewBinder {
                     }
                 }
 
-                if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                     launch("$TAG#smartspaceViewModel.burnInLayerVisibility") {
                         keyguardRootViewModel.burnInLayerVisibility.collect { visibility ->
                             if (clockViewModel.isLargeClockVisible.value) {
@@ -147,7 +147,7 @@ object KeyguardSmartspaceViewBinder {
                 val dateView =
                     constraintLayout.requireViewById<View>(sharedR.id.date_smartspace_view)
                 addView(dateView)
-                if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                     val weatherView =
                         constraintLayout.requireViewById<View>(sharedR.id.weather_smartspace_view)
                     addView(weatherView)
@@ -169,7 +169,7 @@ object KeyguardSmartspaceViewBinder {
                 val dateView =
                     constraintLayout.requireViewById<View>(sharedR.id.date_smartspace_view)
                 removeView(dateView)
-                if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                     val weatherView =
                         constraintLayout.requireViewById<View>(sharedR.id.weather_smartspace_view)
                     removeView(weatherView)

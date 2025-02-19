@@ -189,7 +189,7 @@ object KeyguardRootViewBinder {
                         viewModel.translationY.collect { y ->
                             childViews[burnInLayerId]?.translationY = y
                             childViews[largeClockId]?.translationY = y
-                            if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                                 childViews[largeClockDateId]?.translationY = y
                                 childViews[largeClockWeatherId]?.translationY = y
                             }
