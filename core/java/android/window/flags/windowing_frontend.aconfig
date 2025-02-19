@@ -428,6 +428,17 @@ flag {
 }
 
 flag {
+    name: "reduce_changed_exclusion_rects_msgs"
+    namespace: "windowing_frontend"
+    description: "Don't send MSG_SYSTEM_GESTURE_EXCLUSION_CHANGED when there is no change"
+    bug: "388231176"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "keep_app_window_hide_while_locked"
     namespace: "windowing_frontend"
     description: "Do not let app window visible while device is locked"
