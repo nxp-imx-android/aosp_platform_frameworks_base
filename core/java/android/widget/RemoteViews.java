@@ -9212,6 +9212,7 @@ public class RemoteViews implements Parcelable, Filter {
         public static RemoteResponse fromFillInIntent(@NonNull Intent fillIntent) {
             RemoteResponse response = new RemoteResponse();
             response.mFillIntent = fillIntent;
+            fillIntent.collectExtraIntentKeys();
             return response;
         }
 
@@ -9220,6 +9221,7 @@ public class RemoteViews implements Parcelable, Filter {
             RemoteResponse response = new RemoteResponse();
             response.mPendingIntent = pendingIntent;
             response.mFillIntent = intent;
+            intent.collectExtraIntentKeys();
             return response;
         }
 
