@@ -30,6 +30,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.settings.userTracker
+import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
 import com.android.systemui.shade.domain.interactor.panelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.shadeAnimationInteractor
 import com.android.systemui.shade.shadeController
@@ -52,6 +53,7 @@ val Kosmos.statusBarNotificationActivityStarter by
     Kosmos.Fixture {
         StatusBarNotificationActivityStarter(
             applicationContext,
+            shadeDialogContextInteractor,
             fakeExecutorHandler,
             fakeExecutor,
             notificationVisibilityProvider,
