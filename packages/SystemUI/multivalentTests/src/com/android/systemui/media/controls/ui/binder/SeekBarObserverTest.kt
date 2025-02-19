@@ -18,6 +18,9 @@ package com.android.systemui.media.controls.ui.binder
 
 import android.animation.Animator
 import android.animation.ObjectAnimator
+import android.icu.text.MeasureFormat
+import android.icu.util.Measure
+import android.icu.util.MeasureUnit
 import android.testing.TestableLooper
 import android.view.View
 import android.widget.SeekBar
@@ -30,6 +33,7 @@ import com.android.systemui.media.controls.ui.view.MediaViewHolder
 import com.android.systemui.media.controls.ui.viewmodel.SeekBarViewModel
 import com.android.systemui.res.R
 import com.google.common.truth.Truth.assertThat
+import java.util.Locale
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -61,11 +65,11 @@ class SeekBarObserverTest : SysuiTestCase() {
     fun setUp() {
         context.orCreateTestableResources.addOverride(
             R.dimen.qs_media_enabled_seekbar_height,
-            enabledHeight
+            enabledHeight,
         )
         context.orCreateTestableResources.addOverride(
             R.dimen.qs_media_disabled_seekbar_height,
-            disabledHeight
+            disabledHeight,
         )
 
         seekBarView = SeekBar(context)
@@ -110,14 +114,31 @@ class SeekBarObserverTest : SysuiTestCase() {
 
     @Test
     fun seekBarProgress() {
+        val elapsedTime = 3000
+        val duration = (1.5 * 60 * 60 * 1000).toInt()
         // WHEN part of the track has been played
-        val data = SeekBarViewModel.Progress(true, true, true, false, 3000, 120000, true)
+        val data = SeekBarViewModel.Progress(true, true, true, false, elapsedTime, duration, true)
         observer.onChanged(data)
         // THEN seek bar shows the progress
-        assertThat(seekBarView.progress).isEqualTo(3000)
-        assertThat(seekBarView.max).isEqualTo(120000)
+        assertThat(seekBarView.progress).isEqualTo(elapsedTime)
+        assertThat(seekBarView.max).isEqualTo(duration)
 
-        val desc = context.getString(R.string.controls_media_seekbar_description, "00:03", "02:00")
+        val expectedProgress =
+            MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE)
+                .formatMeasures(Measure(3, MeasureUnit.SECOND))
+        val expectedDuration =
+            MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE)
+                .formatMeasures(
+                    Measure(1, MeasureUnit.HOUR),
+                    Measure(30, MeasureUnit.MINUTE),
+                    Measure(0, MeasureUnit.SECOND),
+                )
+        val desc =
+            context.getString(
+                R.string.controls_media_seekbar_description,
+                expectedProgress,
+                expectedDuration,
+            )
         assertThat(seekBarView.contentDescription).isEqualTo(desc)
     }
 
