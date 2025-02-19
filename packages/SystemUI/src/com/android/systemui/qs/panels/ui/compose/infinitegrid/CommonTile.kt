@@ -39,6 +39,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -194,9 +195,9 @@ fun LargeTileLabels(
 
 @Composable
 fun SmallTileContent(
-    modifier: Modifier = Modifier,
     iconProvider: Context.() -> Icon,
     color: Color,
+    modifier: Modifier = Modifier,
     size: () -> Dp = { CommonTileDefaults.IconSize },
     animateToEnd: Boolean = false,
 ) {
@@ -212,31 +213,39 @@ fun SmallTileContent(
             }
         }
     if (loadedDrawable is Animatable) {
+        // Skip initial animation, icons should animate only as the state change
+        // and not when first composed
+        var shouldSkipInitialAnimation by remember { mutableStateOf(true) }
+        LaunchedEffect(Unit) { shouldSkipInitialAnimation = animateToEnd }
+
         val painter =
             when (icon) {
                 is Icon.Resource -> {
                     val image = AnimatedImageVector.animatedVectorResource(id = icon.res)
                     key(icon) {
-                        if (animateToEnd) {
-                            rememberAnimatedVectorPainter(animatedImageVector = image, atEnd = true)
-                        } else {
-                            var atEnd by remember(icon.res) { mutableStateOf(false) }
-                            LaunchedEffect(key1 = icon.res) { atEnd = true }
-                            rememberAnimatedVectorPainter(
-                                animatedImageVector = image,
-                                atEnd = atEnd,
-                            )
-                        }
+                        var atEnd by remember(icon) { mutableStateOf(shouldSkipInitialAnimation) }
+                        LaunchedEffect(key1 = icon.res) { atEnd = true }
+
+                        rememberAnimatedVectorPainter(animatedImageVector = image, atEnd = atEnd)
                     }
                 }
 
                 is Icon.Loaded -> {
-                    LaunchedEffect(loadedDrawable) {
+                    val painter = rememberDrawablePainter(loadedDrawable)
+
+                    // rememberDrawablePainter automatically starts the animation. Using
+                    // SideEffect here to immediately stop it if needed
+                    DisposableEffect(painter) {
                         if (loadedDrawable is AnimatedVectorDrawable) {
                             loadedDrawable.forceAnimationOnUI()
                         }
+                        if (shouldSkipInitialAnimation) {
+                            loadedDrawable.stop()
+                        }
+                        onDispose {}
                     }
-                    rememberDrawablePainter(loadedDrawable)
+
+                    painter
                 }
             }
 
