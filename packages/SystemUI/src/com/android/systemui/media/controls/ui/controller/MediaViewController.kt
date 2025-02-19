@@ -1237,9 +1237,15 @@ constructor(
         val width = targetView.width
         val height = targetView.height
         val random = Random()
+        val luminosity =
+            if (Flags.mediaControlsA11yColors()) {
+                0.6f
+            } else {
+                TurbulenceNoiseAnimationConfig.DEFAULT_LUMINOSITY_MULTIPLIER
+            }
         return TurbulenceNoiseAnimationConfig(
             gridCount = 2.14f,
-            TurbulenceNoiseAnimationConfig.DEFAULT_LUMINOSITY_MULTIPLIER,
+            luminosity,
             random.nextFloat(),
             random.nextFloat(),
             random.nextFloat(),
@@ -1247,7 +1253,7 @@ constructor(
             noiseMoveSpeedY = 0f,
             TurbulenceNoiseAnimationConfig.DEFAULT_NOISE_SPEED_Z,
             // Color will be correctly updated in ColorSchemeTransition.
-            colorSchemeTransition.accentPrimary.currentColor,
+            colorSchemeTransition.getSurfaceEffectColor(),
             screenColor = Color.BLACK,
             width.toFloat(),
             height.toFloat(),

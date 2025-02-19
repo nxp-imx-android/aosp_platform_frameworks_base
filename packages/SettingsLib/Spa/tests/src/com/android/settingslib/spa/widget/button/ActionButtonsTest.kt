@@ -16,6 +16,8 @@
 
 package com.android.settingslib.spa.widget.button
 
+import android.platform.test.annotations.RequiresFlagsDisabled
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Launch
 import androidx.compose.material.icons.outlined.Close
@@ -28,6 +30,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.settingslib.widget.theme.flags.Flags.FLAG_IS_EXPRESSIVE_DESIGN_ENABLED
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -37,6 +40,8 @@ import org.junit.runner.RunWith
 class ActionButtonsTest {
     @get:Rule
     val composeTestRule = createComposeRule()
+    @get:Rule
+    val mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     @Test
     fun button_displayed() {
@@ -54,6 +59,7 @@ class ActionButtonsTest {
         composeTestRule.onNodeWithText("Open").assertIsDisplayed()
     }
 
+    @RequiresFlagsDisabled(FLAG_IS_EXPRESSIVE_DESIGN_ENABLED)
     @Test
     fun button_clickable() {
         var clicked by mutableStateOf(false)

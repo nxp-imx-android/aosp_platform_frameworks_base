@@ -1915,6 +1915,10 @@ package android.hardware.soundtrigger {
 
 package android.hardware.usb {
 
+  public class UsbManager {
+    method public boolean isUvcGadgetSupportEnabled();
+  }
+
   public final class UsbPort {
     method @FlaggedApi("android.hardware.usb.flags.enable_is_mode_change_supported_api") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public boolean isModeChangeSupported();
   }

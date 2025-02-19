@@ -735,6 +735,7 @@ public class NotificationIconContainer extends ViewGroup {
         private final Consumer<Property> mCannedAnimationEndListener;
 
         public IconState(View child) {
+            super(false /* usePhysicsForMovement */);
             mView = child;
             mCannedAnimationEndListener = (property) -> {
                 // If we finished animating out of the shelf

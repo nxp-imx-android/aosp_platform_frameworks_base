@@ -63,6 +63,7 @@ public class AutoclickTypePanelTest {
     private LinearLayout mDoubleClickButton;
     private LinearLayout mDragButton;
     private LinearLayout mScrollButton;
+    private LinearLayout mPauseButton;
 
     private @AutoclickType int mActiveClickType = AUTOCLICK_TYPE_LEFT_CLICK;
 
@@ -91,6 +92,7 @@ public class AutoclickTypePanelTest {
                 contentView.findViewById(R.id.accessibility_autoclick_double_click_layout);
         mScrollButton = contentView.findViewById(R.id.accessibility_autoclick_scroll_layout);
         mDragButton = contentView.findViewById(R.id.accessibility_autoclick_drag_layout);
+        mPauseButton = contentView.findViewById(R.id.accessibility_autoclick_pause_layout);
     }
 
     @Test
@@ -106,6 +108,7 @@ public class AutoclickTypePanelTest {
         assertThat(mDoubleClickButton.getVisibility()).isEqualTo(View.GONE);
         assertThat(mDragButton.getVisibility()).isEqualTo(View.GONE);
         assertThat(mScrollButton.getVisibility()).isEqualTo(View.GONE);
+        assertThat(mPauseButton.getVisibility()).isEqualTo(View.VISIBLE);
     }
 
     @Test
@@ -124,6 +127,9 @@ public class AutoclickTypePanelTest {
         assertThat(mDoubleClickButton.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mDragButton.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mScrollButton.getVisibility()).isEqualTo(View.VISIBLE);
+
+        // Pause button is always visible.
+        assertThat(mPauseButton.getVisibility()).isEqualTo(View.VISIBLE);
     }
 
     @Test
@@ -142,6 +148,9 @@ public class AutoclickTypePanelTest {
         assertThat(mLeftClickButton.getVisibility()).isEqualTo(View.GONE);
         assertThat(mDoubleClickButton.getVisibility()).isEqualTo(View.GONE);
         assertThat(mDragButton.getVisibility()).isEqualTo(View.GONE);
+
+        // Pause button is always visible.
+        assertThat(mPauseButton.getVisibility()).isEqualTo(View.VISIBLE);
     }
 
     @Test

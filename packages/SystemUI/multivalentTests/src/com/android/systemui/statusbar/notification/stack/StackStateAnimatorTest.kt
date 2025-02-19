@@ -81,7 +81,7 @@ class StackStateAnimatorTest : SysuiTestCase() {
 
         stackStateAnimator.startAnimationForEvents(arrayListOf(event), 0)
 
-        verify(view).setActualHeight(VIEW_HEIGHT, false)
+        verify(view).setFinalActualHeight(VIEW_HEIGHT)
         verify(view, description("should animate from the top")).translationY = expectedStartY
         verify(view)
             .performAddAnimation(
@@ -104,7 +104,7 @@ class StackStateAnimatorTest : SysuiTestCase() {
 
         stackStateAnimator.startAnimationForEvents(arrayListOf(event), 0)
 
-        verify(view).setActualHeight(VIEW_HEIGHT, false)
+        verify(view).setFinalActualHeight(VIEW_HEIGHT)
         verify(view, description("should animate from the bottom")).translationY = expectedStartY
         verify(view)
             .performAddAnimation(

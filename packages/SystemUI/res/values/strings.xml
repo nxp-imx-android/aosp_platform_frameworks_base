@@ -574,11 +574,12 @@
 
     <!-- Content description of the bluetooth device settings gear icon. [CHAR LIMIT=NONE] -->
     <string name="accessibility_bluetooth_device_settings_gear">Click to configure device detail</string>
+    <!-- Content description of the bluetooth device settings gear icon. [CHAR LIMIT=NONE] [BACKUP_MESSAGE_ID=3314916468105272540] -->
+    <string name="accessibility_bluetooth_device_settings_gear_with_name"><xliff:g id="device_name">%s</xliff:g>. Configure device detail</string>
     <!-- Content description of the bluetooth device settings see all. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_bluetooth_device_settings_see_all">Click to see all devices</string>
+    <string name="accessibility_bluetooth_device_settings_see_all">See all devices</string>
     <!-- Content description of the bluetooth device settings pair new device. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_bluetooth_device_settings_pair_new_device">Click to pair new device</string>
-
+    <string name="accessibility_bluetooth_device_settings_pair_new_device">Pair new device</string>
     <!-- Content description of the battery when battery state is unknown for accessibility (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_battery_unknown">Battery percentage unknown.</string>
 
@@ -4009,6 +4010,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button">Switch apps</string>
     <!-- Label for button finishing touchpad tutorial [CHAR LIMIT=NONE] -->
     <string name="touchpad_tutorial_done_button">Done</string>
+    <!-- Label for button proceeding touchpad tutorial [CHAR LIMIT=NONE] -->
+    <string name="touchpad_tutorial_next_button">Next</string>
     <!-- Screen title after gesture was not done correctly [CHAR LIMIT=NONE] -->
     <string name="gesture_error_title">Try again!</string>
     <!-- BACK GESTURE -->

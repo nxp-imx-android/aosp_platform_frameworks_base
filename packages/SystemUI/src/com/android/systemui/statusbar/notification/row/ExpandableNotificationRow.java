@@ -22,6 +22,7 @@ import static android.service.notification.NotificationListenerService.REASON_CA
 
 import static com.android.systemui.Flags.notificationsPinnedHunInShade;
 import static com.android.systemui.flags.Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE;
+import static com.android.systemui.statusbar.notification.NotificationUtils.logKey;
 import static com.android.systemui.statusbar.notification.collection.NotificationEntry.DismissState.PARENT_DISMISSED;
 import static com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_HEADSUP;
 import static com.android.systemui.statusbar.policy.RemoteInputView.FOCUS_ANIMATION_MIN_SCALE;
@@ -523,6 +524,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     public NotificationContentView getPublicLayout() {
         return mPublicLayout;
+    }
+
+    public String getLoggingKey() {
+        return mLoggingKey;
     }
 
     /**
@@ -1917,15 +1922,15 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
          * Called when a notification which was previously kept in its parent for the
          * dismiss animation is finally detached from its parent.
          */
-        void logKeepInParentChildDetached(NotificationEntry child, NotificationEntry oldParent);
+        void logKeepInParentChildDetached(String child, String oldParent);
 
         /**
          * Called when we want to attach a notification to a new parent,
          * but it still has the keepInParent flag set, so we skip it.
          */
         void logSkipAttachingKeepInParentChild(
-                NotificationEntry child,
-                NotificationEntry newParent
+                String child,
+                String newParent
         );
 
         /**
@@ -1933,8 +1938,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
          * NotificationChildrenContainer
          */
         void logRemoveTransientFromContainer(
-                NotificationEntry childEntry,
-                NotificationEntry containerEntry
+                String childEntry,
+                String containerEntry
         );
 
         /**
@@ -1942,7 +1947,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
          * NotificationStackScrollLayout
          */
         void logRemoveTransientFromNssl(
-                NotificationEntry childEntry
+                String childEntry
         );
 
         /**
@@ -1950,7 +1955,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
          * is not NotificationChildrenContainer or NotificationStackScrollLayout
          */
         void logRemoveTransientFromViewGroup(
-                NotificationEntry childEntry,
+                String childEntry,
                 ViewGroup containerView
         );
 
@@ -1959,8 +1964,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
          * ExpandableNotificationRow
          */
         void logAddTransientRow(
-                NotificationEntry childEntry,
-                NotificationEntry containerEntry,
+                String childEntry,
+                String containerEntry,
                 int index
         );
 
@@ -1969,39 +1974,39 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
          * ExpandableNotificationRow
          */
         void logRemoveTransientRow(
-                NotificationEntry childEntry,
-                NotificationEntry containerEntry
+                String childEntry,
+                String containerEntry
         );
 
         /**
          * Called when resetting the alpha value for content views
          */
         void logResetAllContentAlphas(
-                NotificationEntry entry
+                String entry
         );
 
         /**
          * Called when resetting the alpha value for content views is skipped
          */
         void logSkipResetAllContentAlphas(
-                NotificationEntry entry
+                String entry
         );
 
         /** Called when we start an appear animation. */
-        void logStartAppearAnimation(NotificationEntry entry, boolean isAppear);
+        void logStartAppearAnimation(String entry, boolean isAppear);
 
         /** Called when we cancel the running appear animation. */
-        void logCancelAppearDrawing(NotificationEntry entry, boolean wasDrawing);
+        void logCancelAppearDrawing(String entry, boolean wasDrawing);
 
         /** Called when the animator of the appear animation is started. */
-        void logAppearAnimationStarted(NotificationEntry entry, boolean isAppear);
+        void logAppearAnimationStarted(String entry, boolean isAppear);
 
         /** Called when we prepared an appear animation, but the animator was never started. */
-        void logAppearAnimationSkipped(NotificationEntry entry, boolean isAppear);
+        void logAppearAnimationSkipped(String entry, boolean isAppear);
 
         /** Called when the animator of the appear animation is finished. */
         void logAppearAnimationFinished(
-                NotificationEntry entry,
+                String entry,
                 boolean isAppear,
                 boolean cancelled
         );
@@ -2080,7 +2085,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             NotificationEntry entry,
             RemoteInputViewSubcomponent.Factory rivSubcomponentFactory,
             String appName,
-            String notificationKey,
+            @NonNull String notificationKey,
             ExpandableNotificationRowLogger logger,
             KeyguardBypassController bypassController,
             GroupMembershipManager groupMembershipManager,
@@ -2120,7 +2125,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             mMenuRow.setAppName(mAppName);
         }
         mLogger = logger;
-        mLoggingKey = notificationKey;
+        mLoggingKey = logKey(notificationKey);
         mBypassController = bypassController;
         mGroupMembershipManager = groupMembershipManager;
         mGroupExpansionManager = groupExpansionManager;
@@ -2745,7 +2750,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             top = params.getTop();
         }
         int actualHeight = params.getBottom() - top;
-        setActualHeight(actualHeight);
+        setFinalActualHeight(actualHeight);
 
         int notificationStackTop = params.getNotificationParentTop();
         top -= notificationStackTop;
@@ -3304,7 +3309,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 }
                 resetAllContentAlphas();
             } else {
-                mLogger.logSkipResetAllContentAlphas(getEntry());
+                mLogger.logSkipResetAllContentAlphas(mLoggingKey);
             }
             mPublicLayout.setVisibility(mShowingPublic ? View.VISIBLE : View.INVISIBLE);
             updateChildrenVisibility();
@@ -3458,7 +3463,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     @Override
     public void performAddAnimation(long delay, long duration, boolean isHeadsUpAppear,
             Runnable onFinishRunnable) {
-        mLogger.logStartAppearAnimation(getEntry(), /* isAppear = */ true);
+        mLogger.logStartAppearAnimation(mLoggingKey, /* isAppear = */ true);
         super.performAddAnimation(delay, duration, isHeadsUpAppear, onFinishRunnable);
     }
 
@@ -3471,7 +3476,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             Runnable onStartedRunnable,
             Runnable onFinishedRunnable,
             AnimatorListenerAdapter animationListener, ClipSide clipSide) {
-        mLogger.logStartAppearAnimation(getEntry(), /* isAppear = */ false);
+        mLogger.logStartAppearAnimation(mLoggingKey, /* isAppear = */ false);
         if (mMenuRow != null && mMenuRow.isMenuVisible()) {
             Animator anim = getTranslateViewAnimator(0f, null /* listener */);
             if (anim != null) {
@@ -3501,20 +3506,20 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     @Override
     protected void onAppearAnimationStarted(boolean isAppear) {
-        mLogger.logAppearAnimationStarted(getEntry(), /* isAppear = */ isAppear);
+        mLogger.logAppearAnimationStarted(mLoggingKey, /* isAppear = */ isAppear);
         super.onAppearAnimationStarted(isAppear);
     }
 
     @Override
     protected void onAppearAnimationSkipped(boolean isAppear) {
-        mLogger.logAppearAnimationSkipped(getEntry(),  /* isAppear = */ isAppear);
+        mLogger.logAppearAnimationSkipped(mLoggingKey,  /* isAppear = */ isAppear);
         super.onAppearAnimationSkipped(isAppear);
     }
 
     @Override
     protected void onAppearAnimationFinished(boolean wasAppearing, boolean cancelled) {
         mLogger.logAppearAnimationFinished(
-                /* entry = */ getEntry(),
+                /* entry = */ mLoggingKey,
                 /* isAppear = */ wasAppearing,
                 /* cancelled = */ cancelled
         );
@@ -3535,13 +3540,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     @Override
     public void cancelAppearDrawing() {
-        mLogger.logCancelAppearDrawing(getEntry(), isDrawingAppearAnimation());
+        mLogger.logCancelAppearDrawing(mLoggingKey, isDrawingAppearAnimation());
         super.cancelAppearDrawing();
     }
 
     @Override
     public void resetAllContentAlphas() {
-        mLogger.logResetAllContentAlphas(getEntry());
+        mLogger.logResetAllContentAlphas(mLoggingKey);
         mPrivateLayout.setAlpha(1f);
         mPrivateLayout.setLayerType(LAYER_TYPE_NONE, null);
         mPublicLayout.setAlpha(1f);
@@ -4313,13 +4318,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     private void logKeepInParentChildDetached(ExpandableNotificationRow child) {
         if (mLogger != null) {
-            mLogger.logKeepInParentChildDetached(child.getEntry(), getEntry());
+            mLogger.logKeepInParentChildDetached(child.getLoggingKey(), mLoggingKey);
         }
     }
 
     private void logSkipAttachingKeepInParentChild(ExpandableNotificationRow child) {
         if (mLogger != null) {
-            mLogger.logSkipAttachingKeepInParentChild(child.getEntry(), getEntry());
+            mLogger.logSkipAttachingKeepInParentChild(child.getLoggingKey(), mLoggingKey);
         }
     }
 
@@ -4375,17 +4380,17 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         if (transientContainer instanceof NotificationChildrenContainer) {
             mLogger.logRemoveTransientFromContainer(
-                    /* childEntry = */ getEntry(),
+                    /* childEntry = */ mLoggingKey,
                     /* containerEntry = */ ((NotificationChildrenContainer) transientContainer)
-                            .getContainingNotification().getEntry()
+                            .getContainingNotification().getLoggingKey()
             );
         } else if (transientContainer instanceof NotificationStackScrollLayout) {
             mLogger.logRemoveTransientFromNssl(
-                    /* childEntry = */ getEntry()
+                    /* childEntry = */ mLoggingKey
             );
         } else {
             mLogger.logRemoveTransientFromViewGroup(
-                    /* childEntry = */ getEntry(),
+                    /* childEntry = */ mLoggingKey,
                     /* containerView = */ transientContainer
             );
         }
@@ -4403,7 +4408,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (mLogger == null) {
             return;
         }
-        mLogger.logAddTransientRow(row.getEntry(), getEntry(), index);
+        mLogger.logAddTransientRow(row.getLoggingKey(), mLoggingKey, index);
     }
 
     @Override
@@ -4418,6 +4423,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (mLogger == null) {
             return;
         }
-        mLogger.logRemoveTransientRow(row.getEntry(), getEntry());
+        mLogger.logRemoveTransientRow(row.getLoggingKey(), mLoggingKey);
     }
 }

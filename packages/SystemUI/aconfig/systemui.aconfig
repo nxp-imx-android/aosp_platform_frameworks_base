@@ -1370,6 +1370,16 @@ flag {
 }
 
 flag {
+    name: "media_controls_a11y_colors"
+    namespace: "systemui"
+    description: "Color scheme updates for improved a11y"
+    bug: "378848399"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "output_switcher_redesign"
   namespace: "systemui"
   description: "Enables visual update for Media Output Switcher"
@@ -1912,6 +1922,13 @@ flag {
    namespace: "systemui"
    description: "Makes selected widget toggleable in edit mode and modifier buttons mutually exclusive."
    bug: "383160667"
+}
+
+flag {
+   name: "physical_notification_movement"
+   namespace: "systemui"
+   description: "Make notifications use physics based animations for movement"
+   bug: "393581344"
 }
 
 flag {

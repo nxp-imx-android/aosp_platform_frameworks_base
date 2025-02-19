@@ -20,12 +20,12 @@ import android.view.View
 import androidx.dynamicanimation.animation.FloatValueHolder
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
+import com.android.app.tracing.coroutines.launchInTraced
 import com.android.systemui.volume.dialog.sliders.dagger.VolumeDialogSliderScope
 import com.android.systemui.volume.dialog.sliders.ui.viewmodel.VolumeDialogOverscrollViewModel
 import com.android.systemui.volume.dialog.sliders.ui.viewmodel.VolumeDialogOverscrollViewModel.OverscrollEventModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 @VolumeDialogSliderScope
@@ -62,7 +62,7 @@ constructor(private val viewModel: VolumeDialogOverscrollViewModel) {
                     }
                 }
             }
-            .launchIn(this)
+            .launchInTraced("VDOVB#overscrollEvent", this)
     }
 }
 

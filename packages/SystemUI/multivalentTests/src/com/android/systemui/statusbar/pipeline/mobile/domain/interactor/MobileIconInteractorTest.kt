@@ -719,7 +719,6 @@ class MobileIconInteractorTest : SysuiTestCase() {
             job.cancel()
         }
 
-    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     @Test
     fun satBasedIcon_isUsedWhenNonTerrestrial() =
         testScope.runTest {
@@ -733,7 +732,6 @@ class MobileIconInteractorTest : SysuiTestCase() {
             assertThat(latest).isInstanceOf(SignalIconModel.Satellite::class.java)
         }
 
-    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     // See b/346904529 for more context
@@ -756,10 +754,7 @@ class MobileIconInteractorTest : SysuiTestCase() {
             assertThat(latest!!.level).isEqualTo(4)
         }
 
-    @EnableFlags(
-        com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG,
-        com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN,
-    )
+    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     // See b/346904529 for more context
     fun satBasedIcon_doesNotInflateSignalStrength_flagOn() =
@@ -781,7 +776,6 @@ class MobileIconInteractorTest : SysuiTestCase() {
             assertThat(latest!!.level).isEqualTo(4)
         }
 
-    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     fun satBasedIcon_usesPrimaryLevel_flagOff() =
@@ -799,10 +793,7 @@ class MobileIconInteractorTest : SysuiTestCase() {
             assertThat(latest!!.level).isEqualTo(4)
         }
 
-    @EnableFlags(
-        com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG,
-        com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN,
-    )
+    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     fun satBasedIcon_usesSatelliteLevel_flagOn() =
         testScope.runTest {
@@ -823,7 +814,6 @@ class MobileIconInteractorTest : SysuiTestCase() {
      * Context (b/377518113), this test will not be needed after FLAG_CARRIER_ROAMING_NB_IOT_NTN is
      * rolled out. The new API should report 0 automatically if not in service.
      */
-    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     fun satBasedIcon_reportsLevelZeroWhenOutOfService() =

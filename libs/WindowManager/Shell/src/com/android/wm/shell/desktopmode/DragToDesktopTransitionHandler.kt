@@ -35,6 +35,7 @@ import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
+import com.android.internal.util.LatencyTracker
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.animation.FloatProperties
 import com.android.wm.shell.bubbles.BubbleController
@@ -568,8 +569,12 @@ sealed class DragToDesktopTransitionHandler(
             )
             // Call finishCallback to merge animation before startTransitionFinishCb is called
             finishCallback.onTransitionFinished(/* wct= */ null)
+            LatencyTracker.getInstance(context)
+                .onActionEnd(LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG)
             animateEndDragToDesktop(startTransaction = startT, startTransitionFinishCb)
         } else if (isCancelTransition) {
+            LatencyTracker.getInstance(context)
+                .onActionCancel(LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG)
             info.changes.forEach { change ->
                 startT.show(change.leash)
                 startTransactionFinishT.show(change.leash)

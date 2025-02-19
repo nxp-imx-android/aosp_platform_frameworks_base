@@ -113,13 +113,33 @@
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"無法更新環境狀態"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"已啟用 (僅限媒體)。電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>。"</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"已啟用 (僅限媒體)。左側電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>，右側電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>。"</string>
+    <!-- no translation found for bluetooth_guest_battery_level (2820003593899467676) -->
+    <skip />
+    <!-- no translation found for bluetooth_guest_battery_level_untethered (5404013822067644960) -->
+    <skip />
+    <!-- no translation found for bluetooth_guest_media_only_battery_level (7928347900623812299) -->
+    <skip />
+    <!-- no translation found for bluetooth_guest_media_only_battery_level_untethered (4458143141394300892) -->
+    <skip />
     <string name="bluetooth_battery_level_lea_support" msgid="5968584103507988820">"已連線 (支援音訊分享)。電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>。"</string>
     <string name="bluetooth_battery_level_untethered_lea_support" msgid="803110681688633362">"已連線 (支援音訊分享)。左側電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>，右側電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>。"</string>
     <string name="bluetooth_battery_level_untethered_left_lea_support" msgid="7707464334346454950">"已連線 (支援音訊分享)。左側電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>。"</string>
     <string name="bluetooth_battery_level_untethered_right_lea_support" msgid="8941549024377771038">"已連線 (支援音訊分享)。右側電量：<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>。"</string>
     <string name="bluetooth_no_battery_level_lea_support" msgid="5721725041048434075">"已連線 (支援音訊分享)"</string>
+    <!-- no translation found for bluetooth_guest_battery_level_lea_support (8098327939585013928) -->
+    <skip />
+    <!-- no translation found for bluetooth_guest_battery_level_untethered_lea_support (3701035025565668360) -->
+    <skip />
+    <!-- no translation found for bluetooth_guest_no_battery_level_lea_support (2977038548753103470) -->
+    <skip />
     <string name="bluetooth_active_media_only_no_battery_level" msgid="71106861912593126">"啟用 (僅限媒體)"</string>
+    <!-- no translation found for bluetooth_guest_no_battery_level (9122974160381136920) -->
+    <skip />
+    <!-- no translation found for bluetooth_guest_media_only_no_battery_level (7666347601796705721) -->
+    <skip />
     <string name="bluetooth_saved_device_lea_support" msgid="7231323139968285768">"支援音訊分享"</string>
+    <!-- no translation found for bluetooth_guest_saved_device_lea_support (5621291599518569876) -->
+    <skip />
     <string name="bluetooth_hearing_aid_media_only_left_active" msgid="1632152540901488645">"左側啟用 (僅限媒體)"</string>
     <string name="bluetooth_hearing_aid_media_only_right_active" msgid="3854140683042617230">"右側啟用 (僅限媒體)"</string>
     <string name="bluetooth_hearing_aid_media_only_left_and_right_active" msgid="1299913413062528417">"左右側同時啟用 (僅限媒體)"</string>
@@ -376,6 +396,8 @@
     <string name="debug_hw_drawing_category" msgid="5830815169336975162">"硬體加速轉譯"</string>
     <string name="media_category" msgid="8122076702526144053">"媒體"</string>
     <string name="debug_monitoring_category" msgid="1597387133765424994">"監控"</string>
+    <!-- no translation found for window_management_category (2015535427098365170) -->
+    <skip />
     <string name="strict_mode" msgid="889864762140862437">"嚴格模式已啟用"</string>
     <string name="strict_mode_summary" msgid="1838248687233554654">"當應用程式在主執行緒中進行長時間作業時，讓螢幕閃爍"</string>
     <string name="pointer_location" msgid="7516929526199520173">"指標位置"</string>
@@ -470,6 +492,12 @@
     <string name="select_webview_provider_title" msgid="3917815648099445503">"WebView 實作"</string>
     <string name="select_webview_provider_dialog_title" msgid="2444261109877277714">"設定 WebView 實作"</string>
     <string name="select_webview_provider_toast_text" msgid="8512254949169359848">"這個選項已失效，請再試一次。"</string>
+    <!-- no translation found for webview_launch_devtools_title (8009687433555367112) -->
+    <skip />
+    <!-- no translation found for webview_launch_devtools_no_package (3182544553665113721) -->
+    <skip />
+    <!-- no translation found for webview_launch_devtools_no_activity (4066006313619617140) -->
+    <skip />
     <string name="picture_color_mode" msgid="1013807330552931903">"螢幕色彩模式"</string>
     <string name="picture_color_mode_desc" msgid="151780973768136200">"使用 sRGB"</string>
     <string name="daltonizer_mode_disabled" msgid="403424372812399228">"已停用"</string>

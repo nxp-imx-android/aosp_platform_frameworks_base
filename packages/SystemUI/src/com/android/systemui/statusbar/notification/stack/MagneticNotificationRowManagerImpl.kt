@@ -73,7 +73,7 @@ constructor(
             updateMagneticAndRoundableTargets(swipingRow, stackScrollLayout, sectionsManager)
             currentState = State.TARGETS_SET
         } else {
-            logger.logMagneticAndRoundableTargetsNotSet(currentState, swipingRow.entry)
+            logger.logMagneticAndRoundableTargetsNotSet(currentState, swipingRow.loggingKey)
         }
     }
 
@@ -95,12 +95,15 @@ constructor(
             notificationTargetsHelper.findMagneticTargets(
                 expandableNotificationRow,
                 stackScrollLayout,
+                sectionsManager,
                 MAGNETIC_TRANSLATION_MULTIPLIERS.size,
             )
-        currentMagneticListeners.swipedListener()?.cancelTranslationAnimations()
         newListeners.forEach {
             if (currentMagneticListeners.contains(it)) {
                 it?.cancelMagneticAnimations()
+                if (it == currentMagneticListeners.swipedListener()) {
+                    it?.cancelTranslationAnimations()
+                }
             }
         }
         currentMagneticListeners = newListeners
@@ -116,7 +119,7 @@ constructor(
             currentMagneticListeners.swipedListener()?.canRowBeDismissed() ?: false
         when (currentState) {
             State.IDLE -> {
-                logger.logMagneticRowTranslationNotSet(currentState, row.entry)
+                logger.logMagneticRowTranslationNotSet(currentState, row.getLoggingKey())
                 return false
             }
             State.TARGETS_SET -> {

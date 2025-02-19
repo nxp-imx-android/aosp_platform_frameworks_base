@@ -595,7 +595,10 @@ public class BubbleController implements ConfigurationChangeListener,
      * <p>If bubble bar is supported, bubble views will be updated to switch to bar mode.
      */
     public void registerBubbleStateListener(Bubbles.BubbleStateListener listener) {
-        if (Flags.enableBubbleBar() && mBubblePositioner.isLargeScreen() && listener != null) {
+        final boolean bubbleBarAllowed = Flags.enableBubbleBar()
+                && (mBubblePositioner.isLargeScreen() || Flags.enableBubbleBarOnPhones())
+                && listener != null;
+        if (bubbleBarAllowed) {
             // Only set the listener if we can show the bubble bar.
             mBubbleStateListener = listener;
             setUpBubbleViewsForMode();
@@ -772,7 +775,7 @@ public class BubbleController implements ConfigurationChangeListener,
     /** Whether bubbles would be shown with the bubble bar UI. */
     public boolean isShowingAsBubbleBar() {
         return Flags.enableBubbleBar()
-                && mBubblePositioner.isLargeScreen()
+                && (mBubblePositioner.isLargeScreen() || Flags.enableBubbleBarOnPhones())
                 && mBubbleStateListener != null;
     }
 

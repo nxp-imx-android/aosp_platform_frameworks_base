@@ -37,12 +37,16 @@ import com.android.systemui.power.shared.model.WakefulnessModel
 import com.android.systemui.power.shared.model.WakefulnessState
 import com.android.systemui.shared.system.SysUiStatsLog
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.DisplaySwitchLatencyEvent
+import com.android.systemui.unfold.DisplaySwitchLatencyTracker.TrackingResult.CORRUPTED
+import com.android.systemui.unfold.DisplaySwitchLatencyTracker.TrackingResult.SUCCESS
+import com.android.systemui.unfold.DisplaySwitchLatencyTracker.TrackingResult.TIMED_OUT
 import com.android.systemui.unfold.dagger.UnfoldSingleThreadBg
 import com.android.systemui.unfold.data.repository.UnfoldTransitionStatus.TransitionStarted
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
 import com.android.systemui.util.Compile
 import com.android.systemui.util.Utils.isDeviceFoldable
 import com.android.systemui.util.animation.data.repository.AnimationStatusRepository
+import com.android.systemui.util.kotlin.WithPrev
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.kotlin.race
 import com.android.systemui.util.time.SystemClock
@@ -56,7 +60,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
@@ -116,10 +119,9 @@ constructor(
                     latencyTracker.onActionStart(ACTION_SWITCH_DISPLAY_UNFOLD)
                     instantForTrack(TAG) { "unfold latency tracking started" }
                 }
+                val event = DisplaySwitchLatencyEvent().withBeforeFields(previousState.toStatsInt())
                 try {
                     withTimeout(SCREEN_EVENT_TIMEOUT) {
-                        val event =
-                            DisplaySwitchLatencyEvent().withBeforeFields(previousState.toStatsInt())
                         val displaySwitchTimeMs =
                             measureTimeMillis(systemClock) {
                                 traceAsync(TAG, "displaySwitch") {
@@ -134,27 +136,43 @@ constructor(
                 } catch (e: TimeoutCancellationException) {
                     instantForTrack(TAG) { "tracking timed out" }
                     latencyTracker.onActionCancel(ACTION_SWITCH_DISPLAY_UNFOLD)
+                    logDisplaySwitchEvent(
+                        event = event,
+                        toFoldableDeviceState = newState,
+                        displaySwitchTimeMs = SCREEN_EVENT_TIMEOUT.inWholeMilliseconds,
+                        trackingResult = TIMED_OUT,
+                    )
                 } catch (e: CancellationException) {
                     instantForTrack(TAG) { "new state interrupted, entering cool down" }
                     latencyTracker.onActionCancel(ACTION_SWITCH_DISPLAY_UNFOLD)
-                    startCoolDown()
+                    startCoolDown(event)
                 }
             }
         }
     }
 
     @OptIn(FlowPreview::class)
-    private fun startCoolDown() {
+    private fun startCoolDown(event: DisplaySwitchLatencyEvent) {
         if (isCoolingDown) return
         isCoolingDown = true
         applicationScope.launch(context = backgroundDispatcher) {
             val startTime = systemClock.elapsedRealtime()
+            var lastState: DeviceState? = null
             try {
-                startOrEndEvent.timeout(COOL_DOWN_DURATION).collect()
-            } catch (e: TimeoutCancellationException) {
-                instantForTrack(TAG) {
-                    "cool down finished, lasted ${systemClock.elapsedRealtime() - startTime} ms"
+                startOrEndEvent.timeout(COOL_DOWN_DURATION).collect {
+                    if (it is WithPrev<*, *>) {
+                        lastState = it.newValue as? DeviceState
+                    }
                 }
+            } catch (e: TimeoutCancellationException) {
+                val totalCooldownTime = systemClock.elapsedRealtime() - startTime
+                logDisplaySwitchEvent(
+                    event = event,
+                    toFoldableDeviceState = lastState ?: DeviceState.UNKNOWN,
+                    displaySwitchTimeMs = totalCooldownTime,
+                    trackingResult = CORRUPTED,
+                )
+                instantForTrack(TAG) { "cool down finished, lasted $totalCooldownTime ms" }
                 isCoolingDown = false
             }
         }
@@ -164,12 +182,14 @@ constructor(
         event: DisplaySwitchLatencyEvent,
         toFoldableDeviceState: DeviceState,
         displaySwitchTimeMs: Long,
+        trackingResult: TrackingResult = SUCCESS,
     ) {
         displaySwitchLatencyLogger.log(
             event.withAfterFields(
-                toFoldableDeviceState.toStatsInt(),
-                displaySwitchTimeMs.toInt(),
+                toFoldableDeviceState,
+                displaySwitchTimeMs,
                 getCurrentState(),
+                trackingResult,
             )
         )
     }
@@ -181,6 +201,13 @@ constructor(
             DeviceState.UNFOLDED -> FOLDABLE_DEVICE_STATE_OPEN
             DeviceState.CONCURRENT_DISPLAY -> FOLDABLE_DEVICE_STATE_FLIPPED
             else -> FOLDABLE_DEVICE_STATE_UNKNOWN
+        }
+
+    private fun TrackingResult.toStatsInt(): Int =
+        when (this) {
+            SUCCESS -> SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__TRACKING_RESULT__SUCCESS
+            CORRUPTED -> SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__TRACKING_RESULT__CORRUPTED
+            TIMED_OUT -> SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__TRACKING_RESULT__TIMED_OUT
         }
 
     private suspend fun waitForDisplaySwitch(toFoldableDeviceState: Int) {
@@ -264,21 +291,24 @@ constructor(
     }
 
     private fun DisplaySwitchLatencyEvent.withAfterFields(
-        toFoldableDeviceState: Int,
-        displaySwitchTimeMs: Int,
+        toFoldableDeviceState: DeviceState,
+        displaySwitchTimeMs: Long,
         toState: Int,
+        trackingResult: TrackingResult,
     ): DisplaySwitchLatencyEvent {
         log {
-            "toFoldableDeviceState=$toFoldableDeviceState, " +
+            "trackingResult=$trackingResult, " +
+                "toFoldableDeviceState=$toFoldableDeviceState, " +
                 "toState=$toState, " +
                 "latencyMs=$displaySwitchTimeMs"
         }
         instantForTrack(TAG) { "toFoldableDeviceState=$toFoldableDeviceState, toState=$toState" }
 
         return copy(
-            toFoldableDeviceState = toFoldableDeviceState,
-            latencyMs = displaySwitchTimeMs,
+            toFoldableDeviceState = toFoldableDeviceState.toStatsInt(),
+            latencyMs = displaySwitchTimeMs.toInt(),
             toState = toState,
+            trackingResult = trackingResult.toStatsInt(),
         )
     }
 
@@ -312,7 +342,15 @@ constructor(
         val hallSensorToDeviceStateChangeMs: Int = VALUE_UNKNOWN,
         val onScreenTurningOnToOnDrawnMs: Int = VALUE_UNKNOWN,
         val onDrawnToOnScreenTurnedOnMs: Int = VALUE_UNKNOWN,
+        val trackingResult: Int =
+            SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__TRACKING_RESULT__UNKNOWN_RESULT,
     )
+
+    enum class TrackingResult {
+        SUCCESS,
+        CORRUPTED,
+        TIMED_OUT,
+    }
 
     companion object {
         private const val VALUE_UNKNOWN = -1

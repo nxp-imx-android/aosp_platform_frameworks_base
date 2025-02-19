@@ -37,10 +37,8 @@ import com.android.systemui.statusbar.pipeline.satellite.ui.model.SatelliteIconM
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -255,12 +253,7 @@ class MobileIconInteractorImpl(
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
-    override val isNonTerrestrial: StateFlow<Boolean> =
-        if (Flags.carrierEnabledSatelliteFlag()) {
-            connectionRepository.isNonTerrestrial
-        } else {
-            MutableStateFlow(false).asStateFlow()
-        }
+    override val isNonTerrestrial: StateFlow<Boolean> = connectionRepository.isNonTerrestrial
 
     override val isRoaming: StateFlow<Boolean> =
         combine(

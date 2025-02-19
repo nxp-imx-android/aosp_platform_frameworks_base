@@ -534,6 +534,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"unselect widget"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Decrease height"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Increase height"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Show next"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Show previous"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Lock screen widgets"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"To open an app using a widget, you’ll need to verify it’s you. Also, keep in mind that anyone can view them, even when your tablet’s locked. Some widgets may not have been intended for your lock screen and may be unsafe to add here."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"Got it"</string>
@@ -806,7 +808,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> doesn’t support conversation features"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Feedback"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Dismiss"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Don\'t show again"</string>
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Don\'t show as pinned"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"Showing Live Updates"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"Pinned notifications display live info from apps, and always appear on the status bar and lock screen"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"These notifications can\'t be modified."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Call notifications can\'t be modified."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"This group of notifications cannot be configured here"</string>

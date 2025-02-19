@@ -391,7 +391,7 @@
     <string name="quick_settings_nfc_label" msgid="1054317416221168085">"Komunikacja NFC"</string>
     <string name="quick_settings_nfc_off" msgid="3465000058515424663">"Komunikacja NFC jest wyłączona"</string>
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"Komunikacja NFC jest włączona"</string>
-    <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"Nagraj ekran"</string>
+    <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"Nagrywanie ekranu"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"Rozpocznij"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"Zatrzymaj"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"Zarejestruj problem"</string>
@@ -534,6 +534,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"odznacz widżet"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Zmniejsz wysokość"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Zwiększ wysokość"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Pokaż następny"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Pokaż poprzedni"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Widżety na ekranie blokady"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"Aby otworzyć aplikację za pomocą widżetu, musisz potwierdzić swoją tożsamość. Pamiętaj też, że każdy będzie mógł wyświetlić widżety nawet wtedy, gdy tablet będzie zablokowany. Niektóre widżety mogą nie być przeznaczone do umieszczenia na ekranie blokady i ich dodanie w tym miejscu może być niebezpieczne."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"OK"</string>
@@ -806,7 +808,12 @@
     <string name="no_shortcut" msgid="8257177117568230126">"Aplikacja <xliff:g id="APP_NAME">%1$s</xliff:g> nie obsługuje funkcji rozmów"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Opinia"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Zamknij"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Nie pokazuj ponownie"</string>
+    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
+    <skip />
+    <!-- no translation found for live_notifications_title (1586553354601345379) -->
+    <skip />
+    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
+    <skip />
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Tych powiadomień nie można zmodyfikować."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Powiadomień o połączeniach nie można modyfikować."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Tej grupy powiadomień nie można tu skonfigurować"</string>
@@ -1394,8 +1401,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Składane urządzenie jest rozkładane"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Składane urządzenie jest obracane"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Ekran przedni jest włączony"</string>
-    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
-    <skip />
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Przesuń palcem, aby używać wewnętrznego ekranu"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"po zamknięciu"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"po otwarciu"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>

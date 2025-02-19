@@ -77,13 +77,20 @@ public class AutoclickTypePanel {
     // Whether the panel is expanded or not.
     private boolean mExpanded = false;
 
+    // Whether autoclick is paused.
+    private boolean mPaused = false;
+
     private final LinearLayout mLeftClickButton;
     private final LinearLayout mRightClickButton;
     private final LinearLayout mDoubleClickButton;
     private final LinearLayout mDragButton;
     private final LinearLayout mScrollButton;
+    private final LinearLayout mPauseButton;
 
     private LinearLayout mSelectedButton;
+
+    private final Drawable mPauseButtonDrawable;
+    private final Drawable mResumeButtonDrawable;
 
     public AutoclickTypePanel(
             Context context,
@@ -92,6 +99,11 @@ public class AutoclickTypePanel {
         mContext = context;
         mWindowManager = windowManager;
         mClickPanelController = clickPanelController;
+
+        mPauseButtonDrawable = mContext.getDrawable(
+                R.drawable.accessibility_autoclick_pause);
+        mResumeButtonDrawable = mContext.getDrawable(
+                R.drawable.accessibility_autoclick_resume);
 
         mContentView =
                 LayoutInflater.from(context)
@@ -104,6 +116,7 @@ public class AutoclickTypePanel {
                 mContentView.findViewById(R.id.accessibility_autoclick_double_click_layout);
         mScrollButton = mContentView.findViewById(R.id.accessibility_autoclick_scroll_layout);
         mDragButton = mContentView.findViewById(R.id.accessibility_autoclick_drag_layout);
+        mPauseButton = mContentView.findViewById(R.id.accessibility_autoclick_pause_layout);
 
         initializeButtonState();
     }
@@ -116,8 +129,7 @@ public class AutoclickTypePanel {
         mScrollButton.setOnClickListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_SCROLL));
         mDragButton.setOnClickListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_DRAG));
 
-        // TODO(b/388872274): registers listener for pause button and allows users to pause/resume
-        // the autoclick.
+        mPauseButton.setOnClickListener(v -> togglePause());
         // TODO(b/388847771): registers listener for position button and allows users to move the
         // panel to a different position.
 
@@ -194,6 +206,17 @@ public class AutoclickTypePanel {
 
         // Toggle the state.
         mExpanded = !mExpanded;
+    }
+
+    private void togglePause() {
+        mPaused = !mPaused;
+
+        ImageButton imageButton = (ImageButton) mPauseButton.getChildAt(/* index= */ 0);
+        if (mPaused) {
+            imageButton.setImageDrawable(mResumeButtonDrawable);
+        } else {
+            imageButton.setImageDrawable(mPauseButtonDrawable);
+        }
     }
 
     /** Hide all buttons on the panel except pause and position buttons. */

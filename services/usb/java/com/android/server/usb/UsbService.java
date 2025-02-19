@@ -52,6 +52,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.service.usb.UsbServiceDumpProto;
@@ -692,6 +693,11 @@ public class UsbService extends IUsbManager.Stub {
     @Override
     public boolean isFunctionEnabled(String function) {
         return (getCurrentFunctions() & UsbManager.usbFunctionsFromString(function)) != 0;
+    }
+
+    @Override
+    public boolean isUvcGadgetSupportEnabled() {
+        return SystemProperties.getBoolean("ro.usb.uvc.enabled", false);
     }
 
     @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_USB)

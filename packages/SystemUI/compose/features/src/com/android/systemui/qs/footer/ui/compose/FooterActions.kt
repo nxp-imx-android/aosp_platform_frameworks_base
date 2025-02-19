@@ -80,6 +80,7 @@ import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.compose.modifiers.sysuiResTag
+import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsButtonViewModel
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsForegroundServicesButtonViewModel
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsSecurityButtonViewModel
@@ -218,11 +219,24 @@ fun FooterActions(
                 Spacer(Modifier.weight(1f))
             }
 
-            security?.let { SecurityButton(it, Modifier.weight(1f)) }
-            foregroundServices?.let { ForegroundServicesButton(it) }
-            userSwitcher?.let { IconButton(it, Modifier.sysuiResTag("multi_user_switch")) }
-            IconButton(viewModel.settings, Modifier.sysuiResTag("settings_button_container"))
-            power?.let { IconButton(it, Modifier.sysuiResTag("pm_lite")) }
+            val useModifierBasedExpandable = remember { QSComposeFragment.isEnabled }
+            security?.let { SecurityButton(it, useModifierBasedExpandable, Modifier.weight(1f)) }
+            foregroundServices?.let { ForegroundServicesButton(it, useModifierBasedExpandable) }
+            userSwitcher?.let {
+                IconButton(
+                    it,
+                    useModifierBasedExpandable,
+                    Modifier.sysuiResTag("multi_user_switch"),
+                )
+            }
+            IconButton(
+                viewModel.settings,
+                useModifierBasedExpandable,
+                Modifier.sysuiResTag("settings_button_container"),
+            )
+            power?.let {
+                IconButton(it, useModifierBasedExpandable, Modifier.sysuiResTag("pm_lite"))
+            }
         }
     }
 }
@@ -231,6 +245,7 @@ fun FooterActions(
 @Composable
 private fun SecurityButton(
     model: FooterActionsSecurityButtonViewModel,
+    useModifierBasedExpandable: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val onClick: ((Expandable) -> Unit)? =
@@ -239,13 +254,21 @@ private fun SecurityButton(
             { expandable -> onClick(context, expandable) }
         }
 
-    TextButton(model.icon, model.text, showNewDot = false, onClick = onClick, modifier)
+    TextButton(
+        model.icon,
+        model.text,
+        showNewDot = false,
+        onClick = onClick,
+        useModifierBasedExpandable,
+        modifier,
+    )
 }
 
 /** The foreground services button. */
 @Composable
 private fun RowScope.ForegroundServicesButton(
-    model: FooterActionsForegroundServicesButtonViewModel
+    model: FooterActionsForegroundServicesButtonViewModel,
+    useModifierBasedExpandable: Boolean,
 ) {
     if (model.displayText) {
         TextButton(
@@ -253,6 +276,7 @@ private fun RowScope.ForegroundServicesButton(
             model.text,
             showNewDot = model.hasNewChanges,
             onClick = model.onClick,
+            useModifierBasedExpandable,
             Modifier.weight(1f),
         )
     } else {
@@ -261,13 +285,18 @@ private fun RowScope.ForegroundServicesButton(
             contentDescription = model.text,
             showNewDot = model.hasNewChanges,
             onClick = model.onClick,
+            useModifierBasedExpandable,
         )
     }
 }
 
 /** A button with an icon. */
 @Composable
-fun IconButton(model: FooterActionsButtonViewModel, modifier: Modifier = Modifier) {
+fun IconButton(
+    model: FooterActionsButtonViewModel,
+    useModifierBasedExpandable: Boolean,
+    modifier: Modifier = Modifier,
+) {
     Expandable(
         color = colorAttr(model.backgroundColor),
         shape = CircleShape,
@@ -277,6 +306,7 @@ fun IconButton(model: FooterActionsButtonViewModel, modifier: Modifier = Modifie
                 color = MaterialTheme.colorScheme.secondary,
                 CornerSize(percent = 50),
             ),
+        useModifierBasedImplementation = useModifierBasedExpandable,
     ) {
         val tint = model.iconTint?.let { Color(it) } ?: Color.Unspecified
         Icon(model.icon, tint = tint, modifier = Modifier.size(20.dp))
@@ -290,6 +320,7 @@ private fun NumberButton(
     contentDescription: String,
     showNewDot: Boolean,
     onClick: (Expandable) -> Unit,
+    useModifierBasedExpandable: Boolean,
     modifier: Modifier = Modifier,
 ) {
     // By default Expandable will show a ripple above its content when clicked, and clip the content
@@ -309,6 +340,7 @@ private fun NumberButton(
                 color = MaterialTheme.colorScheme.secondary,
                 CornerSize(percent = 50),
             ),
+        useModifierBasedImplementation = useModifierBasedExpandable,
     ) {
         Box(Modifier.size(40.dp)) {
             Box(
@@ -355,6 +387,7 @@ private fun TextButton(
     text: String,
     showNewDot: Boolean,
     onClick: ((Expandable) -> Unit)?,
+    useModifierBasedExpandable: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Expandable(
@@ -367,12 +400,17 @@ private fun TextButton(
                 .padding(horizontal = 4.dp)
                 .borderOnFocus(color = MaterialTheme.colorScheme.secondary, CornerSize(50)),
         onClick = onClick,
+        useModifierBasedImplementation = useModifierBasedExpandable,
     ) {
         Row(
             Modifier.padding(horizontal = dimensionResource(R.dimen.qs_footer_padding)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(icon, Modifier.padding(end = 12.dp).size(20.dp))
+            Icon(
+                icon,
+                Modifier.padding(end = 12.dp).size(20.dp),
+                colorAttr(R.attr.onShadeInactiveVariant),
+            )
 
             Text(
                 text,
@@ -381,6 +419,7 @@ private fun TextButton(
                 // TODO(b/242040009): Remove this letter spacing. We should only use the M3 text
                 // styles without modifying them.
                 letterSpacing = 0.01.em,
+                color = colorAttr(R.attr.onShadeInactiveVariant),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -394,6 +433,7 @@ private fun TextButton(
                     painterResource(com.android.internal.R.drawable.ic_chevron_end),
                     contentDescription = null,
                     Modifier.padding(start = 8.dp).size(20.dp),
+                    colorAttr(R.attr.onShadeInactiveVariant),
                 )
             }
         }

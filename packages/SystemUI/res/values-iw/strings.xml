@@ -534,6 +534,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"ביטול הבחירה בווידג\'ט"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"הקטנת הגובה"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"הגדלת הגובה"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"לפריט הבא"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"לפריט הקודם"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"ווידג\'טים במסך הנעילה"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"כדי לפתוח אפליקציה באמצעות ווידג\'ט, עליך לאמת את זהותך. בנוסף, כדאי לזכור שכל אחד יכול לראות את הווידג\'טים גם כשהטאבלט שלך נעול. יכול להיות שחלק מהווידג\'טים לא נועדו למסך הנעילה ושלא בטוח להוסיף אותם לכאן."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"הבנתי"</string>
@@ -804,10 +806,14 @@
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"מוצגת בחלק העליון של קטע התראות השיחה וכתמונת פרופיל במסך הנעילה, מופיעה בבועה צפה ומפריעה במצב \'נא לא להפריע\'"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"בעדיפות גבוהה"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"האפליקציה <xliff:g id="APP_NAME">%1$s</xliff:g> לא תומכת בתכונות השיחה"</string>
-    <!-- no translation found for notification_guts_bundle_feedback (7581587973879656500) -->
-    <skip />
+    <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"משוב"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"סגירה"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"לא להציג את זה שוב"</string>
+    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
+    <skip />
+    <!-- no translation found for live_notifications_title (1586553354601345379) -->
+    <skip />
+    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
+    <skip />
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"לא ניתן לשנות את ההתראות האלה."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"לא ניתן לשנות את התראות השיחה."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"לא ניתן להגדיר כאן את קבוצת ההתראות הזו"</string>
@@ -1395,8 +1401,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"מכשיר מתקפל עובר למצב לא מקופל"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"מכשיר מתקפל עובר למצב מהופך"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"המסך הקדמי מופעל"</string>
-    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
-    <skip />
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"כדי להשתמש במסך הפנימי, צריך להסיט"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"מצב מקופל"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"מצב לא מקופל"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"‏%1$s‏ / %2$s"</string>

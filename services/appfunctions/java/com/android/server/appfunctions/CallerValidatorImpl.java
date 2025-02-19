@@ -16,24 +16,12 @@
 
 package com.android.server.appfunctions;
 
-import static android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB;
-import static android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_NAMESPACE;
-import static android.app.appfunctions.AppFunctionStaticMetadataHelper.getDocumentIdForAppFunction;
-
-import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_EXECUTOR;
-
 import android.Manifest;
 import android.annotation.BinderThread;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManager.AppFunctionsPolicy;
-import android.app.appsearch.AppSearchBatchResult;
-import android.app.appsearch.AppSearchManager;
-import android.app.appsearch.AppSearchManager.SearchContext;
-import android.app.appsearch.AppSearchResult;
-import android.app.appsearch.GenericDocument;
-import android.app.appsearch.GetByDocumentIdRequest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Binder;
@@ -84,64 +72,25 @@ class CallerValidatorImpl implements CallerValidator {
 
     @Override
     @RequiresPermission(Manifest.permission.EXECUTE_APP_FUNCTIONS)
-    public AndroidFuture<Boolean> verifyCallerCanExecuteAppFunction(
+    @CanExecuteAppFunctionResult
+    public AndroidFuture<Integer> verifyCallerCanExecuteAppFunction(
             int callingUid,
             int callingPid,
             @NonNull UserHandle targetUser,
             @NonNull String callerPackageName,
             @NonNull String targetPackageName,
             @NonNull String functionId) {
-        if (callerPackageName.equals(targetPackageName)) {
-            return AndroidFuture.completedFuture(true);
-        }
-
         boolean hasExecutionPermission =
                 mContext.checkPermission(
-                                Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
+                        Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
                         == PackageManager.PERMISSION_GRANTED;
-
-        if (!hasExecutionPermission) {
-            return AndroidFuture.completedFuture(false);
+        if (hasExecutionPermission) {
+            return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION);
         }
-
-        FutureAppSearchSession futureAppSearchSession =
-                new FutureAppSearchSessionImpl(
-                        Objects.requireNonNull(
-                                mContext.createContextAsUser(targetUser, 0)
-                                        .getSystemService(AppSearchManager.class)),
-                        THREAD_POOL_EXECUTOR,
-                        new SearchContext.Builder(APP_FUNCTION_STATIC_METADATA_DB).build());
-
-        String documentId = getDocumentIdForAppFunction(targetPackageName, functionId);
-
-        return futureAppSearchSession
-                .getByDocumentId(
-                        new GetByDocumentIdRequest.Builder(APP_FUNCTION_STATIC_NAMESPACE)
-                                .addIds(documentId)
-                                .build())
-                .thenApply(
-                        batchResult -> getGenericDocumentFromBatchResult(batchResult, documentId))
-                // At this point, already checked the app has the permission.
-                .thenApply(document -> true)
-                .whenComplete(
-                        (result, throwable) -> {
-                            futureAppSearchSession.close();
-                        });
-    }
-
-    private static GenericDocument getGenericDocumentFromBatchResult(
-            AppSearchBatchResult<String, GenericDocument> result, String documentId) {
-        if (result.isSuccess()) {
-            return result.getSuccesses().get(documentId);
+        if (callerPackageName.equals(targetPackageName)) {
+            return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_SAME_PACKAGE);
         }
-
-        AppSearchResult<GenericDocument> failedResult = result.getFailures().get(documentId);
-        throw new AppSearchException(
-                failedResult.getResultCode(),
-                "Unable to retrieve document with id: "
-                        + documentId
-                        + " due to "
-                        + failedResult.getErrorMessage());
+        return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_DENIED);
     }
 
     @Override

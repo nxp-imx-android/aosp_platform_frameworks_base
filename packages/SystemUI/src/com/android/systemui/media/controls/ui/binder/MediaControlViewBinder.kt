@@ -36,6 +36,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.settingslib.widget.AdaptiveIcon
+import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.Background
@@ -48,6 +49,7 @@ import com.android.systemui.media.controls.ui.util.MediaArtworkHelper
 import com.android.systemui.media.controls.ui.view.MediaViewHolder
 import com.android.systemui.media.controls.ui.viewmodel.MediaActionViewModel
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel
+import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.MEDIA_PLAYER_SCRIM_CENTER_ALPHA
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.MEDIA_PLAYER_SCRIM_END_ALPHA
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.MEDIA_PLAYER_SCRIM_START_ALPHA
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.SEMANTIC_ACTIONS_ALL
@@ -198,7 +200,9 @@ object MediaControlViewBinder {
             is Icon.Loaded -> {
                 val icon = viewModel.deviceIcon.drawable
                 if (icon is AdaptiveIcon) {
-                    icon.setBackgroundColor(viewController.colorSchemeTransition.bgColor)
+                    icon.setBackgroundColor(
+                        viewController.colorSchemeTransition.getDeviceIconColor()
+                    )
                 }
                 viewHolder.seamlessIcon.setImageDrawable(icon)
             }
@@ -431,11 +435,16 @@ object MediaControlViewBinder {
                     TAG,
                 )
             val isArtworkBound = wallpaperColors != null
+            val darkTheme = !Flags.mediaControlsA11yColors()
             val scheme =
-                wallpaperColors?.let { ColorScheme(it, true, Style.CONTENT) }
+                wallpaperColors?.let { ColorScheme(it, darkTheme, Style.CONTENT) }
                     ?: let {
                         if (viewModel.launcherIcon is Icon.Loaded) {
-                            MediaArtworkHelper.getColorScheme(viewModel.launcherIcon.drawable, TAG)
+                            MediaArtworkHelper.getColorScheme(
+                                viewModel.launcherIcon.drawable,
+                                TAG,
+                                darkTheme,
+                            )
                         } else {
                             null
                         }
@@ -496,7 +505,7 @@ object MediaControlViewBinder {
                     }
                 } else {
                     viewHolder.appIcon.setColorFilter(
-                        viewController.colorSchemeTransition.accentPrimary.targetColor
+                        viewController.colorSchemeTransition.getAppIconColor()
                     )
                     viewHolder.appIcon.setImageIcon(viewModel.appIcon)
                 }
@@ -528,11 +537,17 @@ object MediaControlViewBinder {
         height: Int,
     ): LayerDrawable {
         val albumArt = MediaArtworkHelper.getScaledBackground(context, artworkIcon, width, height)
+        val alpha =
+            if (Flags.mediaControlsA11yColors()) {
+                MEDIA_PLAYER_SCRIM_CENTER_ALPHA
+            } else {
+                MEDIA_PLAYER_SCRIM_START_ALPHA
+            }
         return MediaArtworkHelper.setUpGradientColorOnDrawable(
             albumArt,
             context.getDrawable(R.drawable.qs_media_scrim)?.mutate() as GradientDrawable,
             mutableColorScheme,
-            MEDIA_PLAYER_SCRIM_START_ALPHA,
+            alpha,
             MEDIA_PLAYER_SCRIM_END_ALPHA,
         )
     }
@@ -572,7 +587,7 @@ object MediaControlViewBinder {
                 maxSize,
                 maxSize,
                 button.context.resources.displayMetrics.density,
-                colorSchemeTransition.accentPrimary.currentColor,
+                colorSchemeTransition.getSurfaceEffectColor(),
                 opacity = 100,
                 sparkleStrength = 0f,
                 baseRingFadeParams = null,

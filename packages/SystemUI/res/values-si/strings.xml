@@ -534,6 +534,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"විජට් නොතෝරන්න"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"උස අඩු කරන්න"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"උස වැඩි කරන්න"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"මීළග පෙන්වන්න"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"පෙර එක පෙන්වන්න"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"අගුළු තිර විජට්"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"විජට් එකක් භාවිතයෙන් යෙදුමක් විවෘත කිරීමට, ඔබට ඒ ඔබ බව සත්‍යාපනය කිරීමට අවශ්‍ය වනු ඇත. එසේම, ඔබේ ටැබ්ලටය අගුළු දමා ඇති විට පවා ඕනෑම කෙනෙකුට ඒවා බැලිය හැකි බව මතක තබා ගන්න. සමහර විජට් ඔබේ අගුළු තිරය සඳහා අදහස් කර නොතිබිය හැකි අතර මෙහි එක් කිරීමට අනාරක්ෂිත විය හැක."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"තේරුණා"</string>
@@ -806,7 +808,12 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> සංවාද විශේෂාංගවලට සහාය නොදක්වයි"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ප්‍රතිපෝෂණය"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"අස් කරන්න"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"නැවත නොපෙන්වන්න"</string>
+    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
+    <skip />
+    <!-- no translation found for live_notifications_title (1586553354601345379) -->
+    <skip />
+    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
+    <skip />
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"මෙම දැනුම්දීම් වෙනස් කළ නොහැක."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ඇමතුම් දැනුම්දීම් වෙනස් කළ නොහැකිය."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"මෙම දැනුම්දීම් සමූහය මෙහි වින්‍යාස කළ නොහැක"</string>
@@ -1394,8 +1401,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"දිග හැරෙමින් පවතින නැමිය හැකි උපාංගය"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"වටා පෙරළෙමින් තිබෙන නැමිය හැකි උපාංගය"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"ඉදිරිපස තිරය ක්‍රියාත්මකයි"</string>
-    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
-    <skip />
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"අභ්‍යන්තර තිරය භාවිතා කිරීමට ස්ලයිඩ් කරන්න"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"නැවූ"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"නොනැවූ"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>

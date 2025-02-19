@@ -585,7 +585,8 @@ public class ApplicationsState {
                                             legacy, true);
                                 } catch (RemoteException ignored) {
                                 }
-                            } catch (NameNotFoundException | IOException e) {
+                            } catch (
+                              IllegalArgumentException | NameNotFoundException | IOException e) {
                                 Log.w(TAG, "Failed to query stats: " + e);
                                 try {
                                     mBackgroundHandler.mStatsObserver.onGetStatsCompleted(

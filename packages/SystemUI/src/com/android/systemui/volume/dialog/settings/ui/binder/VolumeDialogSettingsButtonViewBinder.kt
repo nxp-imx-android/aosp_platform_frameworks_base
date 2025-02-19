@@ -18,6 +18,8 @@ package com.android.systemui.volume.dialog.settings.ui.binder
 
 import android.view.View
 import android.widget.ImageButton
+import com.android.app.tracing.coroutines.launchInTraced
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.res.R
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
 import com.android.systemui.volume.dialog.settings.ui.viewmodel.VolumeDialogSettingsButtonViewModel
@@ -25,9 +27,7 @@ import com.android.systemui.volume.dialog.ui.binder.ViewBinder
 import com.android.systemui.volume.dialog.ui.viewmodel.VolumeDialogViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 
 @VolumeDialogScope
 class VolumeDialogSettingsButtonViewBinder
@@ -39,12 +39,12 @@ constructor(
 
     override fun CoroutineScope.bind(view: View) {
         val button = view.requireViewById<ImageButton>(R.id.volume_dialog_settings)
-        launch { dialogViewModel.addTouchableBounds(button) }
+        launchTraced("VDSBVB#addTouchableBounds") { dialogViewModel.addTouchableBounds(button) }
         viewModel.isVisible
             .onEach { isVisible -> button.visibility = if (isVisible) View.VISIBLE else View.GONE }
-            .launchIn(this)
+            .launchInTraced("VDSBVB#isVisible", this)
 
-        viewModel.icon.onEach { button.setImageDrawable(it) }.launchIn(this)
+        viewModel.icon.onEach { button.setImageDrawable(it) }.launchInTraced("VDSBVB#icon", this)
 
         button.setOnClickListener { viewModel.onButtonClicked() }
     }

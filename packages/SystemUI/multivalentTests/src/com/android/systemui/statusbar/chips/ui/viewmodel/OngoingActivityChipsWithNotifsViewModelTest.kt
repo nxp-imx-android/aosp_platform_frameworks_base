@@ -22,7 +22,6 @@ import android.content.res.Configuration
 import android.content.res.mainResources
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -57,7 +56,6 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsVie
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModelTest.Companion.assertIsScreenRecordChip
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModelTest.Companion.assertIsShareToAppChip
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModelTest.Companion.getStopActionFromDialog
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
@@ -66,7 +64,8 @@ import com.android.systemui.statusbar.notification.data.repository.addNotifs
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.phone.SystemUIDialog
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.DisableChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.removeOngoingCallState
 import com.android.systemui.testKosmos
@@ -138,7 +137,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
         }
 
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_allHidden_bothPrimaryAndSecondaryHidden() =
         kosmos.runTest {
@@ -155,7 +154,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_allInactive() =
         kosmos.runTest {
@@ -184,7 +183,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertIsScreenRecordChip(latest)
         }
 
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_screenRecordShow_restHidden_primaryIsScreenRecordSecondaryIsHidden() =
         kosmos.runTest {
@@ -201,7 +200,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_screenRecordActive_restInactive() =
         kosmos.runTest {
@@ -230,7 +229,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertIsScreenRecordChip(latest)
         }
 
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_screenRecordShowAndCallShow_primaryIsScreenRecordSecondaryIsCall() =
         kosmos.runTest {
@@ -246,7 +245,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_screenRecordAndCallActive_inThatOrder() =
         kosmos.runTest {
@@ -265,7 +264,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
         }
 
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_oneChip_notSquished() =
         kosmos.runTest {
@@ -278,7 +277,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
         }
 
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_oneChip_notSquished() =
         kosmos.runTest {
@@ -291,7 +290,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
         }
 
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_twoTimerChips_isSmallPortrait_bothSquished() =
         kosmos.runTest {
@@ -307,7 +306,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
         }
 
-    @EnableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_twoTimerChips_isSmallPortrait_bothSquished() =
         kosmos.runTest {
@@ -323,7 +322,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
         }
 
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_countdownChipAndTimerChip_countdownNotSquished_butTimerSquished() =
         kosmos.runTest {
@@ -340,7 +339,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
         }
 
-    @EnableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_countdownChipAndTimerChip_countdownNotSquished_butTimerSquished() =
         kosmos.runTest {
@@ -357,7 +356,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
         }
 
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_numberOfChipsChanges_chipsGetSquishedAndUnsquished() =
         kosmos.runTest {
@@ -393,7 +392,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
         }
 
-    @EnableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_numberOfChipsChanges_chipsGetSquishedAndUnsquished() =
         kosmos.runTest {
@@ -425,7 +424,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
         }
 
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_twoChips_isLandscape_notSquished() =
         kosmos.runTest {
@@ -448,7 +447,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
         }
 
-    @EnableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_twoChips_isLandscape_notSquished() =
         kosmos.runTest {
@@ -471,7 +470,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
         }
 
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_twoChips_isLargeScreen_notSquished() =
         kosmos.runTest {
@@ -490,7 +489,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
         }
 
-    @EnableFlags(StatusBarChipsModernization.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_twoChips_isLargeScreen_notSquished() =
         kosmos.runTest {
@@ -522,7 +521,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertIsScreenRecordChip(latest)
         }
 
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_screenRecordShowAndShareToAppShow_primaryIsScreenRecordSecondaryIsHidden() =
         kosmos.runTest {
@@ -542,7 +541,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_screenRecordAndShareToApp_screenRecordIsActiveShareToAppIsInOverflow() =
         kosmos.runTest {
@@ -577,7 +576,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertIsShareToAppChip(latest)
         }
 
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_shareToAppShowAndCallShow_primaryIsShareToAppSecondaryIsCall() =
         kosmos.runTest {
@@ -595,7 +594,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_shareToAppAndCallActive() =
         kosmos.runTest {
@@ -631,7 +630,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertIsCallChip(latest, callNotificationKey)
         }
 
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_onlyCallShown_primaryIsCallSecondaryIsHidden() =
         kosmos.runTest {
@@ -651,7 +650,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_callActive_restInactive() =
         kosmos.runTest {
@@ -671,7 +670,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
         }
 
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_singlePromotedNotif_primaryIsNotifSecondaryIsHidden() =
         kosmos.runTest {
@@ -695,7 +694,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_singlePromotedNotif() =
         kosmos.runTest {
@@ -720,7 +719,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
         }
 
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_twoPromotedNotifs_primaryAndSecondaryAreNotifsInOrder() =
         kosmos.runTest {
@@ -751,7 +750,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_twoPromotedNotifs_bothActiveInOrder() =
         kosmos.runTest {
@@ -785,7 +784,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
         }
 
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_threePromotedNotifs_topTwoShown() =
         kosmos.runTest {
@@ -823,7 +822,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_threePromotedNotifs_topTwoActiveThirdInOverflow() =
         kosmos.runTest {
@@ -865,7 +864,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
         }
 
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_callAndPromotedNotifs_primaryIsCallSecondaryIsNotif() =
         kosmos.runTest {
@@ -898,7 +897,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_callAndPromotedNotifs_callAndFirstNotifActiveSecondNotifInOverflow() =
         kosmos.runTest {
@@ -935,7 +934,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
         }
 
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_screenRecordAndCallAndPromotedNotifs_notifsNotShown() =
         kosmos.runTest {
@@ -958,7 +957,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_screenRecordAndCallAndPromotedNotif_notifInOverflow() =
         kosmos.runTest {
@@ -1076,7 +1075,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertIsNotifChip(latest, context, notifIcon, "notif")
         }
 
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_movesChipsAroundAccordingToPriority() =
         kosmos.runTest {
@@ -1152,7 +1151,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_movesChipsAroundAccordingToPriority() =
         kosmos.runTest {
@@ -1291,7 +1290,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
         }
 
     /** Regression test for b/347726238. */
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     @Test
     fun chipsLegacy_timerDoesNotResetAfterSubscribersRestart() =
         kosmos.runTest {
@@ -1327,7 +1326,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
         }
 
     /** Regression test for b/347726238. */
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     @Test
     fun chips_timerDoesNotResetAfterSubscribersRestart() =
         kosmos.runTest {

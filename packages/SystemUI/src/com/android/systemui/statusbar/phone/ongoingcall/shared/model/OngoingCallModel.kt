@@ -28,8 +28,21 @@ sealed interface OngoingCallModel {
     /**
      * There is an ongoing call but the call app is currently visible, so we don't need to show the
      * chip.
+     *
+     * @property startTimeMs see [InCall.startTimeMs].
+     * @property notificationIconView see [InCall.notificationIconView].
+     * @property intent see [InCall.intent].
+     * @property appName see [InCall.appName].
+     * @property promotedContent see [InCall.promotedContent].
      */
-    data object InCallWithVisibleApp : OngoingCallModel
+    data class InCallWithVisibleApp(
+        val startTimeMs: Long,
+        val notificationIconView: StatusBarIconView?,
+        val intent: PendingIntent?,
+        val notificationKey: String,
+        val appName: String,
+        val promotedContent: PromotedNotificationContentModel?,
+    ) : OngoingCallModel
 
     /**
      * There *is* an ongoing call.

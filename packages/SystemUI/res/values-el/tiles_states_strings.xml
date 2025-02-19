@@ -64,7 +64,7 @@
   <string-array name="tile_states_rotation">
     <item msgid="4578491772376121579">"Μη διαθέσιμο"</item>
     <item msgid="5776427577477729185">"Ανενεργό"</item>
-    <item msgid="7105052717007227415">"Ενεργό"</item>
+    <item msgid="7105052717007227415">"Ενεργή"</item>
   </string-array>
   <string-array name="tile_states_bt">
     <item msgid="5330252067413512277">"Μη διαθέσιμο"</item>
@@ -196,4 +196,7 @@
     <item msgid="6419996398343291862">"Ανενεργό"</item>
     <item msgid="5908720590832378783">"Ενεργό"</item>
   </string-array>
+    <!-- no translation found for tile_states_desktopeffects:0 (6253480000354287321) -->
+    <!-- no translation found for tile_states_desktopeffects:1 (6641673879029894995) -->
+    <!-- no translation found for tile_states_desktopeffects:2 (5806682401126108403) -->
 </resources>

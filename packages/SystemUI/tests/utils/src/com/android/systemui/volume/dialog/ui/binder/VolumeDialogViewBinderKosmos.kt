@@ -16,6 +16,7 @@
 
 package com.android.systemui.volume.dialog.ui.binder
 
+import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.volume.dialog.ringer.volumeDialogRingerViewBinder
 import com.android.systemui.volume.dialog.settings.ui.binder.volumeDialogSettingsButtonViewBinder
@@ -27,6 +28,7 @@ import com.android.systemui.volume.dialog.utils.volumeTracer
 val Kosmos.volumeDialogViewBinder by
     Kosmos.Fixture {
         VolumeDialogViewBinder(
+            applicationContext,
             volumeDialogViewModel,
             jankListenerFactory,
             volumeTracer,

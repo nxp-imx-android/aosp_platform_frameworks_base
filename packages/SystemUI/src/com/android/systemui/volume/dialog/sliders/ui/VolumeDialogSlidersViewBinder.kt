@@ -21,6 +21,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.compose.ui.util.fastForEachIndexed
+import com.android.app.tracing.coroutines.launchInTraced
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.res.R
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
 import com.android.systemui.volume.dialog.sliders.dagger.VolumeDialogSliderComponent
@@ -29,9 +31,7 @@ import com.android.systemui.volume.dialog.ui.binder.ViewBinder
 import com.android.systemui.volume.dialog.ui.viewmodel.VolumeDialogViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 
 @VolumeDialogScope
 class VolumeDialogSlidersViewBinder
@@ -50,7 +50,9 @@ constructor(
         val bottomSection: View = view.requireViewById(R.id.volume_dialog_bottom_section_container)
         val topSection: View = view.requireViewById(R.id.volume_dialog_top_section_container)
 
-        launch { dialogViewModel.addTouchableBounds(mainSliderContainer, floatingSlidersContainer) }
+        launchTraced("VDSVB#addTouchableBounds") {
+            dialogViewModel.addTouchableBounds(mainSliderContainer, floatingSlidersContainer)
+        }
         viewModel.sliders
             .onEach { uiModel ->
                 bindSlider(
@@ -69,7 +71,7 @@ constructor(
                     bindSlider(sliderComponent, sliderContainer, arrayOf(sliderContainer))
                 }
             }
-            .launchIn(this)
+            .launchInTraced("VDSVB#sliders", this)
     }
 
     private fun CoroutineScope.bindSlider(

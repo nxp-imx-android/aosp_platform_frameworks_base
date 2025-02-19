@@ -463,7 +463,7 @@
     <string name="zen_mode_off" msgid="1736604456618147306">"Aus"</string>
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Nicht festgelegt"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"In den Einstellungen verwalten"</string>
-    <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Keine aktiven Modi}=1{{mode} aktiv}other{# aktiv}}"</string>
+    <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Kein Modus aktiv}=1{{mode} aktiv}other{# aktiv}}"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Klingeltöne und die Vibration werden deaktiviert, außer für Weckrufe, Erinnerungen, Termine sowie Anrufe von zuvor von dir festgelegten Personen. Du hörst jedoch weiterhin Sound, wenn du dir Musik anhörst, Videos ansiehst oder Spiele spielst."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Klingeltöne und die Vibration werden deaktiviert, außer für Weckrufe. Du hörst jedoch weiterhin Sound, wenn du dir Musik anhörst, Videos ansiehst oder Spiele spielst."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Anpassen"</string>
@@ -534,6 +534,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"Auswahl für Widget aufheben"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Höhe verringern"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Höhe vergrößern"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Nächstes Element anzeigen"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Vorheriges Element anzeigen"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Sperrbildschirm-Widgets"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"Wenn du eine App mit einem Widget öffnen möchtest, musst du deine Identität bestätigen. Beachte auch, dass jeder die Widgets sehen kann, auch wenn dein Tablet gesperrt ist. Einige Widgets sind möglicherweise nicht für den Sperrbildschirm vorgesehen, sodass es unsicher sein kann, sie hier hinzuzufügen."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"Ok"</string>
@@ -541,7 +543,7 @@
     <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"Hub-Modus entdecken"</string>
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Du kannst während des Ladevorgangs auf deine bevorzugten Widgets und Bildschirmschoner zugreifen."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Los gehts"</string>
-    <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Beim Laden deine bevorzugten Bildschirmschoner anzeigen"</string>
+    <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Beim Laden werden deine Lieblings-Bildschirmschoner angezeigt"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Nutzer wechseln"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"Pull-down-Menü"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"Alle Apps und Daten in dieser Sitzung werden gelöscht."</string>
@@ -806,7 +808,12 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> unterstützt keine Funktionen für Unterhaltungen"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Feedback"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Schließen"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Nicht mehr anzeigen"</string>
+    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
+    <skip />
+    <!-- no translation found for live_notifications_title (1586553354601345379) -->
+    <skip />
+    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
+    <skip />
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Diese Benachrichtigungen können nicht geändert werden."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Anrufbenachrichtigungen können nicht geändert werden."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Die Benachrichtigungsgruppe kann hier nicht konfiguriert werden"</string>
@@ -1394,8 +1401,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Faltbares Gerät wird geöffnet"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Faltbares Gerät wird umgeklappt"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Frontdisplay aktiviert"</string>
-    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
-    <skip />
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Ziehen, um das innere Display zu verwenden"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"zugeklappt"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"aufgeklappt"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s/%2$s"</string>

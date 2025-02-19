@@ -23,6 +23,7 @@ import static com.android.systemui.Flags.communalHub;
 import static com.android.systemui.Flags.mediaLockscreenLaunchAnimation;
 import static com.android.systemui.media.controls.domain.pipeline.MediaActionsKt.getNotificationActions;
 import static com.android.systemui.media.controls.shared.model.SmartspaceMediaDataKt.NUM_REQUIRED_RECOMMENDATIONS;
+import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_CENTER_ALPHA;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
@@ -730,7 +731,7 @@ public class MediaControlPanel {
             Drawable icon = device.getIcon();
             if (icon instanceof AdaptiveIcon) {
                 AdaptiveIcon aIcon = (AdaptiveIcon) icon;
-                aIcon.setBackgroundColor(mColorSchemeTransition.getBgColor());
+                aIcon.setBackgroundColor(mColorSchemeTransition.getDeviceIconColor());
                 iconView.setImageDrawable(aIcon);
             } else {
                 iconView.setImageDrawable(icon);
@@ -921,8 +922,9 @@ public class MediaControlPanel {
             boolean isArtworkBound;
             Icon artworkIcon = data.getArtwork();
             WallpaperColors wallpaperColors = getWallpaperColor(artworkIcon);
+            boolean darkTheme = !Flags.mediaControlsA11yColors();
             if (wallpaperColors != null) {
-                mutableColorScheme = new ColorScheme(wallpaperColors, true, Style.CONTENT);
+                mutableColorScheme = new ColorScheme(wallpaperColors, darkTheme, Style.CONTENT);
                 artwork = addGradientToPlayerAlbum(artworkIcon, mutableColorScheme, finalWidth,
                         finalHeight);
                 isArtworkBound = true;
@@ -933,8 +935,8 @@ public class MediaControlPanel {
                 try {
                     Drawable icon = mContext.getPackageManager()
                             .getApplicationIcon(data.getPackageName());
-                    mutableColorScheme = new ColorScheme(WallpaperColors.fromDrawable(icon), true,
-                            Style.CONTENT);
+                    mutableColorScheme = new ColorScheme(WallpaperColors.fromDrawable(icon),
+                            darkTheme, Style.CONTENT);
                 } catch (PackageManager.NameNotFoundException e) {
                     Log.w(TAG, "Cannot find icon for package " + data.getPackageName(), e);
                 }
@@ -950,7 +952,8 @@ public class MediaControlPanel {
                 mArtworkBoundId = reqId;
 
                 // Transition Colors to current color scheme
-                boolean colorSchemeChanged = mColorSchemeTransition.updateColorScheme(colorScheme);
+                boolean colorSchemeChanged;
+                colorSchemeChanged = mColorSchemeTransition.updateColorScheme(colorScheme);
 
                 // Bind the album view to the artwork or a transition drawable
                 ImageView albumView = mMediaViewHolder.getAlbumView();
@@ -973,7 +976,6 @@ public class MediaControlPanel {
                         transitionDrawable.setLayerGravity(0, Gravity.CENTER);
                         transitionDrawable.setLayerGravity(1, Gravity.CENTER);
                         transitionDrawable.setCrossFadeEnabled(true);
-
                         albumView.setImageDrawable(transitionDrawable);
                         transitionDrawable.startTransition(isArtworkBound ? 333 : 80);
                     }
@@ -986,8 +988,7 @@ public class MediaControlPanel {
                 appIconView.clearColorFilter();
                 if (data.getAppIcon() != null && !data.getResumption()) {
                     appIconView.setImageIcon(data.getAppIcon());
-                    appIconView.setColorFilter(
-                            mColorSchemeTransition.getAccentPrimary().getTargetColor());
+                    appIconView.setColorFilter(mColorSchemeTransition.getAppIconColor());
                 } else {
                     // Resume players use launcher icon
                     appIconView.setColorFilter(getGrayscaleFilter());
@@ -1092,8 +1093,11 @@ public class MediaControlPanel {
         Drawable albumArt = getScaledBackground(artworkIcon, width, height);
         GradientDrawable gradient = (GradientDrawable) mContext.getDrawable(
                 R.drawable.qs_media_scrim).mutate();
+        float startAlpha = (Flags.mediaControlsA11yColors())
+                ? MEDIA_PLAYER_SCRIM_CENTER_ALPHA
+                : MEDIA_SCRIM_START_ALPHA;
         return setupGradientColorOnDrawable(albumArt, gradient, mutableColorScheme,
-                MEDIA_SCRIM_START_ALPHA, MEDIA_PLAYER_SCRIM_END_ALPHA);
+                startAlpha, MEDIA_PLAYER_SCRIM_END_ALPHA);
     }
 
     @VisibleForTesting
@@ -1113,12 +1117,21 @@ public class MediaControlPanel {
 
     private LayerDrawable setupGradientColorOnDrawable(Drawable albumArt, GradientDrawable gradient,
             ColorScheme mutableColorScheme, float startAlpha, float endAlpha) {
+        int startColor;
+        int endColor;
+        if (Flags.mediaControlsA11yColors()) {
+            startColor = MediaColorSchemesKt.backgroundFromScheme(mutableColorScheme);
+            endColor = startColor;
+        } else {
+            startColor = MediaColorSchemesKt.backgroundStartFromScheme(mutableColorScheme);
+            endColor = MediaColorSchemesKt.backgroundEndFromScheme(mutableColorScheme);
+        }
         gradient.setColors(new int[]{
                 ColorUtilKt.getColorWithAlpha(
-                        MediaColorSchemesKt.backgroundStartFromScheme(mutableColorScheme),
+                        startColor,
                         startAlpha),
                 ColorUtilKt.getColorWithAlpha(
-                        MediaColorSchemesKt.backgroundEndFromScheme(mutableColorScheme),
+                        endColor,
                         endAlpha),
         });
         return new LayerDrawable(new Drawable[]{albumArt, gradient});
@@ -1308,7 +1321,7 @@ public class MediaControlPanel {
                         /* maxWidth= */ maxSize,
                         /* maxHeight= */ maxSize,
                         /* pixelDensity= */ getContext().getResources().getDisplayMetrics().density,
-                        mColorSchemeTransition.getAccentPrimary().getCurrentColor(),
+                        /* color= */ mColorSchemeTransition.getSurfaceEffectColor(),
                         /* opacity= */ 100,
                         /* sparkleStrength= */ 0f,
                         /* baseRingFadeParams= */ null,
@@ -1330,10 +1343,13 @@ public class MediaControlPanel {
         int width = targetView.getWidth();
         int height = targetView.getHeight();
         Random random = new Random();
+        float luminosity = (Flags.mediaControlsA11yColors())
+                ? 0.6f
+                : TurbulenceNoiseAnimationConfig.DEFAULT_LUMINOSITY_MULTIPLIER;
 
         return new TurbulenceNoiseAnimationConfig(
                 /* gridCount= */ 2.14f,
-                TurbulenceNoiseAnimationConfig.DEFAULT_LUMINOSITY_MULTIPLIER,
+                /* luminosityMultiplier= */ luminosity,
                 /* noiseOffsetX= */ random.nextFloat(),
                 /* noiseOffsetY= */ random.nextFloat(),
                 /* noiseOffsetZ= */ random.nextFloat(),
@@ -1341,7 +1357,7 @@ public class MediaControlPanel {
                 /* noiseMoveSpeedY= */ 0f,
                 TurbulenceNoiseAnimationConfig.DEFAULT_NOISE_SPEED_Z,
                 // Color will be correctly updated in ColorSchemeTransition.
-                /* color= */ mColorSchemeTransition.getAccentPrimary().getCurrentColor(),
+                /* color= */ mColorSchemeTransition.getSurfaceEffectColor(),
                 /* screenColor= */ Color.BLACK,
                 width,
                 height,

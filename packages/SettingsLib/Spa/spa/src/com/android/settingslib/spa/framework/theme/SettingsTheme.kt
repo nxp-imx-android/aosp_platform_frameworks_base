@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import com.android.settingslib.spa.framework.util.SystemProperties
+import com.android.settingslib.widget.theme.flags.Flags
 
 /**
  * The Material 3 Theme for Settings.
@@ -42,5 +43,7 @@ fun SettingsTheme(content: @Composable () -> Unit) {
     }
 }
 
-val isSpaExpressiveEnabled
-    by lazy { SystemProperties.getBoolean("is_expressive_design_enabled", false) }
+val isSpaExpressiveEnabled by lazy {
+    SystemProperties.getBoolean("is_expressive_design_enabled", false) ||
+        Flags.isExpressiveDesignEnabled()
+}

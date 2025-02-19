@@ -301,6 +301,7 @@ import android.content.pm.ProviderInfoList;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.SharedLibraryInfo;
+import android.content.pm.SystemFeaturesCache;
 import android.content.pm.TestUtilityService;
 import android.content.pm.UserInfo;
 import android.content.pm.UserProperties;
@@ -2559,9 +2560,20 @@ public class ActivityManagerService extends IActivityManager.Stub
         mTraceErrorLogger = new TraceErrorLogger();
         mComponentAliasResolver = new ComponentAliasResolver(this);
         sCreatorTokenCacheCleaner = new Handler(mHandlerThread.getLooper());
+
+        ApplicationSharedMemory applicationSharedMemory = ApplicationSharedMemory.getInstance();
+        if (android.content.pm.Flags.cacheSdkSystemFeatures()) {
+            // Install the cache into the process-wide singleton for in-proc queries, as well as
+            // shared memory. Apps will inflate the cache from shared memory in bindApplication.
+            SystemFeaturesCache systemFeaturesCache =
+                    new SystemFeaturesCache(SystemConfig.getInstance().getAvailableFeatures());
+            SystemFeaturesCache.setInstance(systemFeaturesCache);
+            applicationSharedMemory.writeSystemFeaturesCache(
+                    systemFeaturesCache.getSdkFeatureVersions());
+        }
         try {
             mApplicationSharedMemoryReadOnlyFd =
-                    ApplicationSharedMemory.getInstance().getReadOnlyFileDescriptor();
+                    applicationSharedMemory.getReadOnlyFileDescriptor();
         } catch (IOException e) {
             Slog.e(TAG, "Failed to get read only fd for shared memory", e);
             throw new RuntimeException(e);

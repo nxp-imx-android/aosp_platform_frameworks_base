@@ -23,6 +23,10 @@ import com.android.systemui.flags.RefactorFlagUtils
 @Suppress("NOTHING_TO_INLINE")
 object StatusBarChipsModernization {
     /** The aconfig flag name */
+    @Deprecated(
+        "For tests, use @EnableChipsModernization or @DisableChipsModernization " +
+            "annotations instead"
+    )
     const val FLAG_NAME = Flags.FLAG_STATUS_BAR_CHIPS_MODERNIZATION
 
     /** A token used for dependency declaration */

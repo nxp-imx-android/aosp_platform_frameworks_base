@@ -93,17 +93,29 @@ constructor(
                 }
             }
         }
+        val entryPointExtra = intent.getStringExtra(INTENT_TUTORIAL_ENTRY_POINT_KEY)
+        val isAutoProceed =
+            if (entryPointExtra == null) true
+            else entryPointExtra.equals(INTENT_TUTORIAL_ENTRY_POINT_SCHEDULER)
+        val scopeExtra = intent.getStringExtra(INTENT_TUTORIAL_SCOPE_KEY)
+        val isScopeAll = INTENT_TUTORIAL_SCOPE_ALL.equals(scopeExtra)
         setContent {
-            PlatformTheme { KeyboardTouchpadTutorialContainer(vm, touchpadTutorialScreensProvider) }
+            PlatformTheme {
+                KeyboardTouchpadTutorialContainer(
+                    vm,
+                    touchpadTutorialScreensProvider,
+                    isAutoProceed,
+                    isScopeAll,
+                )
+            }
         }
         if (savedInstanceState == null) {
             logger.logOpenTutorial(TutorialContext.KEYBOARD_TOUCHPAD_TUTORIAL)
 
-            val entryPointExtra = intent.getStringExtra(INTENT_TUTORIAL_ENTRY_POINT_KEY)
             val tutorialTypeExtra = intent.getStringExtra(INTENT_TUTORIAL_SCOPE_KEY)
             metricsLogger.logPeripheralTutorialLaunched(entryPointExtra, tutorialTypeExtra)
             // We only update launched info when the tutorial is triggered by the scheduler
-            if (entryPointExtra.equals(INTENT_TUTORIAL_ENTRY_POINT_SCHEDULER))
+            if (INTENT_TUTORIAL_ENTRY_POINT_SCHEDULER.equals(entryPointExtra))
                 updateLaunchInfo(tutorialTypeExtra)
         }
     }
@@ -124,17 +136,27 @@ constructor(
 fun KeyboardTouchpadTutorialContainer(
     vm: KeyboardTouchpadTutorialViewModel,
     touchpadScreens: Optional<TouchpadTutorialScreensProvider>,
+    isAutoProceed: Boolean = false,
+    isScopeAll: Boolean = false,
 ) {
     val activeScreen by vm.screen.collectAsStateWithLifecycle(STARTED)
     when (activeScreen) {
         BACK_GESTURE ->
             touchpadScreens
                 .get()
-                .BackGesture(onDoneButtonClicked = vm::onDoneButtonClicked, onBack = vm::onBack)
+                .BackGesture(
+                    onDoneButtonClicked = vm::onDoneButtonClicked,
+                    onBack = vm::onBack,
+                    isAutoProceed = isAutoProceed,
+                )
         HOME_GESTURE ->
             touchpadScreens
                 .get()
-                .HomeGesture(onDoneButtonClicked = vm::onDoneButtonClicked, onBack = vm::onBack)
+                .HomeGesture(
+                    onDoneButtonClicked = vm::onDoneButtonClicked,
+                    onBack = vm::onBack,
+                    isAutoProceed = isScopeAll,
+                )
         ACTION_KEY ->
             ActionKeyTutorialScreen(
                 onDoneButtonClicked = vm::onDoneButtonClicked,

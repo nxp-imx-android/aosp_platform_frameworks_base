@@ -534,6 +534,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"widget\'ın seçimini kaldırın"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Yüksekliği azalt"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Yüksekliği artır"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Sonrakini göster"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Öncekini göster"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Kilit ekranı widget\'ları"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"Widget kullanarak bir uygulamayı açmak için kimliğinizi doğrulamanız gerekir. Ayrıca, tabletiniz kilitliyken bile widget\'ların herkes tarafından görüntülenebileceğini unutmayın. Bazı widget\'lar kilit ekranınız için tasarlanmamış olabileceğinden buraya eklenmeleri güvenli olmayabilir."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"Anladım"</string>
@@ -542,7 +544,7 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Cihazınız şarj olurken en sevdiğiniz widget\'lara ve ekran koruyuculara erişin."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Başlayalım"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Cihazınız şarj olurken en sevdiğiniz ekran koruyucuları gösterin"</string>
-    <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Kullanıcı değiştirme"</string>
+    <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Kullanıcı değiştir"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"açılır menü"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"Bu oturumdaki tüm uygulamalar ve veriler silinecek."</string>
     <string name="guest_wipe_session_title" msgid="7147965814683990944">"Misafir kullanıcı, tekrar hoşgeldiniz"</string>
@@ -806,7 +808,12 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g>, sohbet özelliklerini desteklemiyor"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Geri bildirim"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Kapat"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Tekrar gösterme"</string>
+    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
+    <skip />
+    <!-- no translation found for live_notifications_title (1586553354601345379) -->
+    <skip />
+    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
+    <skip />
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Bu bildirimler değiştirilemez."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Arama bildirimleri değiştirilemez."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Bu bildirim grubu burada yapılandırılamaz"</string>
@@ -1394,8 +1401,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Katlanabilir cihaz açılıyor"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Katlanabilir cihaz döndürülüyor"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Ön ekran açıldı"</string>
-    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
-    <skip />
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"İç taraftaki ekranı kullanmak için kaydırın"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"katlanmış"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"katlanmamış"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s/%2$s"</string>
