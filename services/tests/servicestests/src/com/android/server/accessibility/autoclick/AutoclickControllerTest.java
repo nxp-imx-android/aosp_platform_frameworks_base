@@ -41,6 +41,7 @@ import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 
+import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.server.accessibility.AccessibilityTraceManager;
 
 import org.junit.After;
@@ -79,7 +80,9 @@ public class AutoclickControllerTest {
 
     @After
     public void tearDown() {
+        mController.onDestroy();
         mTestableLooper.processAllMessages();
+        TestableLooper.remove(this);
     }
 
     @Test
@@ -403,6 +406,133 @@ public class AutoclickControllerTest {
 
     @Test
     @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onCursorAreaSizeSettingsChange_moveWithinCustomRadius_clickNotTriggered() {
+        // Move mouse to initialize autoclick panel before enabling ignore minor cursor movement.
+        injectFakeMouseActionHoverMoveEvent();
+        enableIgnoreMinorCursorMovement();
+
+        // Set a custom cursor area size.
+        int customSize = 250;
+        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE,
+                customSize,
+                mTestableContext.getUserId());
+        mController.onChangeForTesting(/* selfChange= */ true,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE));
+        assertThat(mController.mAutoclickIndicatorView.getRadiusForTesting()).isEqualTo(customSize);
+
+        // Move the mouse down, less than customSize radius so a click is not triggered.
+        float moveDownY = customSize - 25;
+        MotionEvent hoverMove = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 150,
+                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
+                /* x= */ 0f,
+                /* y= */ moveDownY,
+                /* metaState= */ 0);
+        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
+        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        assertThat(mController.mClickScheduler.getIsActiveForTesting()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onCursorAreaSizeSettingsChange_moveOutsideCustomRadius_clickTriggered() {
+        // Move mouse to initialize autoclick panel before enabling ignore minor cursor movement.
+        injectFakeMouseActionHoverMoveEvent();
+        enableIgnoreMinorCursorMovement();
+
+        // Set a custom cursor area size.
+        int customSize = 250;
+        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE,
+                customSize,
+                mTestableContext.getUserId());
+        mController.onChangeForTesting(/* selfChange= */ true,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE));
+        assertThat(mController.mAutoclickIndicatorView.getRadiusForTesting()).isEqualTo(customSize);
+
+        // Move the mouse right, greater than customSize radius so a click is triggered.
+        float moveRightX = customSize + 100;
+        MotionEvent hoverMove = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 200,
+                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
+                /* x= */ moveRightX,
+                /* y= */ 0,
+                /* metaState= */ 0);
+        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
+        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        assertThat(mController.mClickScheduler.getIsActiveForTesting()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onIgnoreCursorMovementFromSettingsChange_clickTriggered() {
+        // Send initial mouse movement.
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Set a custom cursor area size.
+        int customSize = 250;
+        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE,
+                customSize,
+                mTestableContext.getUserId());
+        mController.onChangeForTesting(/* selfChange= */ true,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE));
+
+        // Move the mouse down less than customSize radius but ignore custom movement is not enabled
+        // so a click is triggered.
+        float moveDownY = customSize - 100;
+        MotionEvent hoverMove = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 150,
+                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
+                /* x= */ 0f,
+                /* y= */ moveDownY,
+                /* metaState= */ 0);
+        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
+        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        assertThat(mController.mClickScheduler.getIsActiveForTesting()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onIgnoreCursorMovementFromSettingsChange_clickNotTriggered() {
+        // Move mouse to initialize autoclick panel before enabling ignore minor cursor movement.
+        injectFakeMouseActionHoverMoveEvent();
+        enableIgnoreMinorCursorMovement();
+
+        // Set a custom cursor area size.
+        int customSize = 250;
+        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE,
+                customSize,
+                mTestableContext.getUserId());
+        mController.onChangeForTesting(/* selfChange= */ true,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE));
+
+        // After enabling ignore custom movement, move the mouse right, less than customSize radius
+        // so a click won't be triggered.
+        float moveRightX = customSize - 100;
+        MotionEvent hoverMove = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 200,
+                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
+                /* x= */ moveRightX,
+                /* y= */ 0,
+                /* metaState= */ 0);
+        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
+        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        assertThat(mController.mClickScheduler.getIsActiveForTesting()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
     public void pauseButton_flagOn_clickNotTriggeredWhenPaused() {
         injectFakeMouseActionHoverMoveEvent();
 
@@ -472,5 +602,15 @@ public class AutoclickControllerTest {
                 /* x= */ 0,
                 /* y= */ 0,
                 /* metaState= */ 0);
+    }
+
+    private void enableIgnoreMinorCursorMovement() {
+        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT,
+                AccessibilityUtils.State.ON,
+                mTestableContext.getUserId());
+        mController.onChangeForTesting(/* selfChange= */ true,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT));
     }
 }
