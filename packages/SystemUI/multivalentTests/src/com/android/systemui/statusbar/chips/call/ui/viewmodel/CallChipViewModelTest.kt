@@ -35,14 +35,14 @@ import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.shared.CallType
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.DisableChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.data.repository.ongoingCallRepository
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.inCallModel
@@ -314,7 +314,7 @@ class CallChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     fun chip_inCall_nullIntent_nullClickListener() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -325,7 +325,7 @@ class CallChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     fun chip_inCall_positiveStartTime_validIntent_clickListenerLaunchesIntent() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -343,7 +343,7 @@ class CallChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     fun chip_inCall_zeroStartTime_validIntent_clickListenerLaunchesIntent() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -362,7 +362,7 @@ class CallChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun chip_inCall_nullIntent_noneClickBehavior() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -378,7 +378,7 @@ class CallChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun chip_inCall_positiveStartTime_validIntent_clickBehaviorLaunchesIntent() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -403,7 +403,7 @@ class CallChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun chip_inCall_zeroStartTime_validIntent_clickBehaviorLaunchesIntent() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
