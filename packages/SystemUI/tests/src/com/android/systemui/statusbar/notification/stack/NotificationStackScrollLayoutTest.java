@@ -675,7 +675,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @Test
     public void testClearNotifications_clearAllInProgress() {
         ExpandableNotificationRow row = createClearableRow();
-        when(row.getEntry().hasFinishedInitialization()).thenReturn(true);
+        when(row.hasFinishedInitialization()).thenReturn(true);
         doReturn(true).when(mStackScroller).isVisible(row);
         mStackScroller.addContainerView(row);
 

@@ -45,6 +45,9 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
 import android.os.SystemClock;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.util.ArrayMap;
@@ -74,10 +77,14 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifStabilityManager;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Pluggable;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CollectionReadyForBuildListener;
+import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
+import com.android.systemui.statusbar.notification.row.NotificationTestHelper;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.util.time.FakeSystemClock;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -126,6 +133,9 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     private List<ListEntry> mBuiltList = new ArrayList<>();
     private TestableStabilityManager mStabilityManager;
     private TestableNotifFilter mFinalizeFilter;
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private Map<String, Integer> mNextIdMap = new ArrayMap<>();
     private int mNextRank = 0;
@@ -561,6 +571,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     public void testFilter_resetsInitalizationTime() {
         // GIVEN a NotifFilter that filters out a specific package
         NotifFilter filter1 = spy(new PackageFilter(PACKAGE_1));
@@ -581,6 +592,31 @@ public class ShadeListBuilderTest extends SysuiTestCase {
 
         // THEN the entry's initialization time is reset
         assertFalse(entry.hasFinishedInitialization());
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testFilter_resetsInitializationTime_onRow() throws Exception {
+        // GIVEN a NotifFilter that filters out a specific package
+        NotifFilter filter1 = spy(new PackageFilter(PACKAGE_1));
+        mListBuilder.addFinalizeFilter(filter1);
+
+        // GIVEN a notification that was initialized 1 second ago that will be filtered out
+        final NotificationEntry entry = new NotificationEntryBuilder()
+                .setPkg(PACKAGE_1)
+                .setId(nextId(PACKAGE_1))
+                .setRank(nextRank())
+                .build();
+        entry.setRow(new NotificationTestHelper(mContext, mDependency).createRow());
+        entry.getRow().setInitializationTime(SystemClock.elapsedRealtime() - 1000);
+        assertTrue(entry.getRow().hasFinishedInitialization());
+
+        // WHEN the pipeline is kicked off
+        mReadyForBuildListener.onBuildList(singletonList(entry), "test");
+        mPipelineChoreographer.runIfScheduled();
+
+        // THEN the entry's initialization time is reset
+        assertFalse(entry.getRow().hasFinishedInitialization());
     }
 
     @Test

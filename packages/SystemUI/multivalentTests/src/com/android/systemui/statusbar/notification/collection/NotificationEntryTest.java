@@ -163,9 +163,10 @@ public class NotificationEntryTest extends SysuiTestCase {
 
     @Test
     public void testIsExemptFromDndVisualSuppression_media() {
+        MediaSession session = new MediaSession(mContext, "test");
         Notification.Builder n = new Notification.Builder(mContext, "")
                 .setStyle(new Notification.MediaStyle()
-                        .setMediaSession(mock(MediaSession.Token.class)))
+                        .setMediaSession(session.getSessionToken()))
                 .setSmallIcon(R.drawable.ic_person)
                 .setContentTitle("Title")
                 .setContentText("Text");
@@ -591,6 +592,76 @@ public class NotificationEntryTest extends SysuiTestCase {
                 .build();
 
         assertThat(entry.getEntryAdapter().getGroupRoot()).isEqualTo(parent.getEntryAdapter());
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void isClearable_adapter() {
+        ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
+        Notification notification = new Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .build();
+
+        NotificationEntry entry = new NotificationEntryBuilder()
+                .setPkg(TEST_PACKAGE_NAME)
+                .setOpPkg(TEST_PACKAGE_NAME)
+                .setUid(TEST_UID)
+                .setChannel(mChannel)
+                .setId(mId++)
+                .setNotification(notification)
+                .setUser(new UserHandle(ActivityManager.getCurrentUser()))
+                .build();
+        entry.setRow(row);
+
+        assertThat(entry.getEntryAdapter().isClearable()).isEqualTo(entry.isClearable());
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void getSummarization_adapter() {
+        ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
+        Notification notification = new Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .build();
+
+        NotificationEntry entry = new NotificationEntryBuilder()
+                .setPkg(TEST_PACKAGE_NAME)
+                .setOpPkg(TEST_PACKAGE_NAME)
+                .setUid(TEST_UID)
+                .setChannel(mChannel)
+                .setId(mId++)
+                .setNotification(notification)
+                .setUser(new UserHandle(ActivityManager.getCurrentUser()))
+                .build();
+        Ranking ranking = new RankingBuilder(entry.getRanking())
+                .setSummarization("hello")
+                .build();
+        entry.setRanking(ranking);
+        entry.setRow(row);
+
+        assertThat(entry.getEntryAdapter().getSummarization()).isEqualTo("hello");
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void getIcons_adapter() {
+        ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
+        Notification notification = new Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .build();
+
+        NotificationEntry entry = new NotificationEntryBuilder()
+                .setPkg(TEST_PACKAGE_NAME)
+                .setOpPkg(TEST_PACKAGE_NAME)
+                .setUid(TEST_UID)
+                .setChannel(mChannel)
+                .setId(mId++)
+                .setNotification(notification)
+                .setUser(new UserHandle(ActivityManager.getCurrentUser()))
+                .build();
+        entry.setRow(row);
+
+        assertThat(entry.getEntryAdapter().getIcons()).isEqualTo(entry.getIcons());
     }
 
     private Notification.Action createContextualAction(String title) {
