@@ -56,7 +56,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskOpening_fullscreenTask_notActiveDesktopTask_noop() {
+    fun onTaskOpening_fullscreenTask_nonActiveDesktopTask_noop() {
         val task = createFullscreenTask().apply { isVisible = true }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(false)
 
@@ -68,7 +68,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskOpening_freeformTask_activeDesktopTask_removesTaskFromRepo() {
+    fun onTaskOpening_fullscreenTask_taskIsActiveInDesktopRepo_removesTaskFromDesktopRepo() {
         val task = createFullscreenTask().apply { isVisible = true }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
 
@@ -78,8 +78,19 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskOpening_freeformTask_visibleDesktopTask_addsTaskToRepository() {
+    fun onTaskOpening_freeformTask_activeInDesktopRepository_noop() {
         val task = createFreeformTask().apply { isVisible = true }
+        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
+
+        desktopTaskChangeListener.onTaskOpening(task)
+
+        verify(desktopUserRepositories.current, never())
+            .addTask(task.displayId, task.taskId, task.isVisible)
+    }
+
+    @Test
+    fun onTaskOpening_freeformTask_notActiveInDesktopRepo_addsTaskToRepository() {
+        val task = createFreeformTask().apply { isVisible = false }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(false)
 
         desktopTaskChangeListener.onTaskOpening(task)
@@ -88,17 +99,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskOpening_freeformTask_nonVisibleDesktopTask_addsTaskToRepository() {
-        val task = createFreeformTask().apply { isVisible = false }
-        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
-
-        desktopTaskChangeListener.onTaskOpening(task)
-
-        verify(desktopUserRepositories.current).addTask(task.displayId, task.taskId, task.isVisible)
-    }
-
-    @Test
-    fun onTaskChanging_freeformTaskOutsideDesktop_removesTaskFromRepo() {
+    fun onTaskChanging_fullscreenTask_activeInDesktopRepository_removesTaskFromRepo() {
         val task = createFullscreenTask().apply { isVisible = true }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
 
@@ -108,7 +109,27 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskChanging_visibleTaskInDesktop_updatesTaskVisibility() {
+    fun onTaskChanging_fullscreenTask_nonActiveInDesktopRepo_noop() {
+        val task = createFullscreenTask().apply { isVisible = true }
+        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(false)
+
+        desktopTaskChangeListener.onTaskChanging(task)
+
+        verify(desktopUserRepositories.current, never()).removeTask(task.displayId, task.taskId)
+    }
+
+    @Test
+    fun onTaskChanging_freeformTask_nonActiveTaskInDesktopRepo_addsTaskToDesktopRepo() {
+        val task = createFreeformTask().apply { isVisible = true }
+        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(false)
+
+        desktopTaskChangeListener.onTaskChanging(task)
+
+        verify(desktopUserRepositories.current).addTask(task.displayId, task.taskId, task.isVisible)
+    }
+
+    @Test
+    fun onTaskChanging_freeformTask_activeVisibleTaskInDesktopRepo_updatesTaskVisibility() {
         val task = createFreeformTask().apply { isVisible = true }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
 
@@ -119,7 +140,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskChanging_nonVisibleTask_updatesTaskVisibility() {
+    fun onTaskChanging_freeformTask_activeNonVisibleTask_updatesTaskVisibility() {
         val task = createFreeformTask().apply { isVisible = false }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
 
@@ -130,7 +151,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskMovingToFront_freeformTaskOutsideDesktop_removesTaskFromRepo() {
+    fun onTaskMovingToFront_fullscreenTask_activeTaskInDesktopRepo_removesTaskFromRepo() {
         val task = createFullscreenTask().apply { isVisible = true }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
 
@@ -140,9 +161,18 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskMovingToFront_freeformTaskOutsideDesktop_addsTaskToRepo() {
+    fun onTaskMovingToFront_fullscreenTask_nonActiveTaskInDesktopRepo_noop() {
         val task = createFullscreenTask().apply { isVisible = true }
-        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
+        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(false)
+
+        desktopTaskChangeListener.onTaskMovingToFront(task)
+
+        verify(desktopUserRepositories.current, never()).removeTask(task.displayId, task.taskId)
+    }
+
+    @Test
+    fun onTaskMovingToFront_freeformTask_addsTaskToRepo() {
+        val task = createFreeformTask().apply { isVisible = true }
 
         desktopTaskChangeListener.onTaskMovingToFront(task)
 
