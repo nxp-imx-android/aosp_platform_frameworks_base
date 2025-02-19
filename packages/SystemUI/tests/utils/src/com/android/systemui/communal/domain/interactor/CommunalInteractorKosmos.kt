@@ -16,6 +16,7 @@
 
 package com.android.systemui.communal.domain.interactor
 
+import android.content.pm.UserInfo
 import android.content.testableContext
 import android.os.userManager
 import com.android.systemui.broadcast.broadcastDispatcher
@@ -85,27 +86,28 @@ fun Kosmos.setCommunalV2ConfigEnabled(enabled: Boolean) {
     )
 }
 
-suspend fun Kosmos.setCommunalEnabled(enabled: Boolean) {
+suspend fun Kosmos.setCommunalEnabled(enabled: Boolean): UserInfo {
     fakeFeatureFlagsClassic.set(Flags.COMMUNAL_SERVICE_ENABLED, enabled)
-    if (enabled) {
+    return if (enabled) {
         fakeUserRepository.asMainUser()
     } else {
         fakeUserRepository.asDefaultUser()
     }
 }
 
-suspend fun Kosmos.setCommunalV2Enabled(enabled: Boolean) {
+suspend fun Kosmos.setCommunalV2Enabled(enabled: Boolean): UserInfo {
     setCommunalV2ConfigEnabled(enabled)
-    setCommunalEnabled(enabled)
+    return setCommunalEnabled(enabled)
 }
 
-suspend fun Kosmos.setCommunalAvailable(available: Boolean) {
-    setCommunalEnabled(available)
+suspend fun Kosmos.setCommunalAvailable(available: Boolean): UserInfo {
+    val user = setCommunalEnabled(available)
     fakeKeyguardRepository.setKeyguardShowing(available)
     fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, available)
+    return user
 }
 
-suspend fun Kosmos.setCommunalV2Available(available: Boolean) {
+suspend fun Kosmos.setCommunalV2Available(available: Boolean): UserInfo {
     setCommunalV2ConfigEnabled(available)
-    setCommunalAvailable(available)
+    return setCommunalAvailable(available)
 }
