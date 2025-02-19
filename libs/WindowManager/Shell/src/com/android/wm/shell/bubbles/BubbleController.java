@@ -912,7 +912,7 @@ public class BubbleController implements ConfigurationChangeListener,
             // TODO(b/393172431) : Utilise DragZoneFactory once it is ready
             final int bubbleBarDropZoneSideSize = getContext().getResources().getDimensionPixelSize(
                     R.dimen.bubble_bar_drop_zone_side_size);
-            int top = t - bubbleBarDropZoneSideSize;
+            int top = b - bubbleBarDropZoneSideSize;
             result.put(BubbleBarLocation.LEFT,
                     new Rect(l, top, l + bubbleBarDropZoneSideSize, b));
             result.put(BubbleBarLocation.RIGHT,
