@@ -155,7 +155,7 @@ constructor(
     /** [ViewTransitionToken] to be used for storing transitioning view in [transitionRegistry] */
     private val transitionToken =
         if (Flags.decoupleViewControllerInAnimlib()) {
-            ViewTransitionToken(transitioningView::class.java)
+            transitionRegistry?.register(transitioningView)
         } else {
             null
         }
@@ -164,7 +164,7 @@ constructor(
     private val ghostedView: View
         get() =
             if (Flags.decoupleViewControllerInAnimlib()) {
-                transitionRegistry?.getView(transitionToken!!)
+                transitionToken?.let { token -> transitionRegistry?.getView(token) }
             } else {
                 _ghostedView
             }!!
@@ -184,10 +184,6 @@ constructor(
                     "implement LaunchableView. This can lead to subtle bugs where the visibility " +
                     "of the View we are launching from is not what we expected."
             )
-        }
-
-        if (Flags.decoupleViewControllerInAnimlib()) {
-            transitionRegistry?.register(transitionToken!!, transitioningView)
         }
 
         /** Find the first view with a background in [view] and its children. */
