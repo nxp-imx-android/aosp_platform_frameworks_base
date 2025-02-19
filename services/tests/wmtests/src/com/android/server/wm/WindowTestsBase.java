@@ -2161,13 +2161,14 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             mOrganizer.startTransition(mLastTransit.getToken(), null);
         }
 
-        void onTransactionReady(SurfaceControl.Transaction t) {
-            mLastTransit.onTransactionReady(mLastTransit.getSyncId(), t);
+        void onTransactionReady() {
+            // SyncGroup#finishNow -> Transition#onTransactionReady.
+            mController.mSyncEngine.abort(mLastTransit.getSyncId());
         }
 
         void start() {
             startTransition();
-            onTransactionReady(mock(SurfaceControl.Transaction.class));
+            onTransactionReady();
         }
 
         public void finish() {

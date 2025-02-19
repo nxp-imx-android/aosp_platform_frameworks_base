@@ -683,7 +683,7 @@ public class TransitionTests extends WindowTestsBase {
         app.onStartingWindowDrawn();
         // The task appeared event should be deferred until transition ready.
         assertFalse(task.taskAppearedReady());
-        testPlayer.onTransactionReady(app.getSyncTransaction());
+        testPlayer.onTransactionReady();
         assertTrue(task.taskAppearedReady());
         assertTrue(playerProc.isRunningRemoteTransition());
         assertTrue(controller.mRemotePlayer.reportRunning(delegateProc.getThread()));
@@ -1162,7 +1162,8 @@ public class TransitionTests extends WindowTestsBase {
         screenDecor.updateSurfacePosition(mMockT);
         assertEquals(prevPos, screenDecor.mLastSurfacePosition);
 
-        final SurfaceControl.Transaction startTransaction = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction startTransaction = mTransaction;
+        clearInvocations(startTransaction);
         final SurfaceControl.TransactionCommittedListener transactionCommittedListener =
                 onRotationTransactionReady(player, startTransaction);
 
@@ -1213,7 +1214,8 @@ public class TransitionTests extends WindowTestsBase {
         assertFalse(statusBar.mToken.inTransition());
         assertTrue(app.getTask().inTransition());
 
-        final SurfaceControl.Transaction startTransaction = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction startTransaction = mTransaction;
+        clearInvocations(startTransaction);
         final SurfaceControl leash = statusBar.mToken.getAnimationLeash();
         doReturn(true).when(leash).isValid();
         final SurfaceControl.TransactionCommittedListener transactionCommittedListener =
@@ -1287,7 +1289,8 @@ public class TransitionTests extends WindowTestsBase {
         // Avoid DeviceStateController disturbing the test by triggering another rotation change.
         doReturn(false).when(mDisplayContent).updateRotationUnchecked();
 
-        onRotationTransactionReady(player, mWm.mTransactionFactory.get()).onTransactionCommitted();
+        clearInvocations(mTransaction);
+        onRotationTransactionReady(player, mTransaction).onTransactionCommitted();
         assertEquals(ROTATION_ANIMATION_SEAMLESS, player.mLastReady.getChange(
                 mDisplayContent.mRemoteToken.toWindowContainerToken()).getRotationAnimation());
         spyOn(navBarInsetsProvider);
@@ -1350,7 +1353,7 @@ public class TransitionTests extends WindowTestsBase {
         mDisplayContent.setFixedRotationLaunchingAppUnchecked(home);
         doReturn(true).when(home).hasFixedRotationTransform(any());
         player.startTransition();
-        player.onTransactionReady(mDisplayContent.getSyncTransaction());
+        player.onTransactionReady();
 
         final DisplayRotation displayRotation = mDisplayContent.getDisplayRotation();
         final RemoteDisplayChangeController displayChangeController = mDisplayContent
@@ -3071,8 +3074,11 @@ public class TransitionTests extends WindowTestsBase {
             TestTransitionPlayer player, SurfaceControl.Transaction startTransaction) {
         final ArgumentCaptor<SurfaceControl.TransactionCommittedListener> listenerCaptor =
                 ArgumentCaptor.forClass(SurfaceControl.TransactionCommittedListener.class);
-        player.onTransactionReady(startTransaction);
-        verify(startTransaction).addTransactionCommittedListener(any(), listenerCaptor.capture());
+        player.onTransactionReady();
+        // The startTransaction is from mWm.mTransactionFactory.get() in SyncGroup#finishNow.
+        // 2 times are from SyncGroup#finishNow and AsyncRotationController#setupStartTransaction.
+        verify(startTransaction, times(2)).addTransactionCommittedListener(
+                any(), listenerCaptor.capture());
         return listenerCaptor.getValue();
     }
 }
