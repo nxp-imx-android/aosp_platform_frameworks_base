@@ -1911,7 +1911,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         if (!hasDirectChildActivities()) {
             return false;
         }
-        if (mResumedActivity != null && mTransitionController.isTransientLaunch(mResumedActivity)) {
+        if (mResumedActivity != null && !mResumedActivity.finishing
+                && mTransitionController.isTransientLaunch(mResumedActivity)) {
             // Even if the transient activity is occluded, defer pausing (addToStopping will still
             // be called) it until the transient transition is done. So the current resuming
             // activity won't need to wait for additional pause complete.
