@@ -44,6 +44,7 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -183,8 +184,8 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
      * @param groups we want to enable logging them to logcat for.
      */
     @Override
-    public void enableProtoLogToLogcat(@NonNull String... groups) {
-        toggleProtoLogToLogcat(true, groups);
+    public void enableProtoLogToLogcat(@NonNull PrintWriter pw, @NonNull String... groups) {
+        toggleProtoLogToLogcat(pw, true, groups);
     }
 
     /**
@@ -192,8 +193,8 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
      * @param groups we want to disable from being logged to logcat.
      */
     @Override
-    public void disableProtoLogToLogcat(@NonNull String... groups) {
-        toggleProtoLogToLogcat(false, groups);
+    public void disableProtoLogToLogcat(@NonNull PrintWriter pw, @NonNull String... groups) {
+        toggleProtoLogToLogcat(pw, false, groups);
     }
 
     /**
@@ -249,7 +250,9 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
         }
     }
 
-    private void toggleProtoLogToLogcat(boolean enabled, @NonNull String[] groups) {
+    private void toggleProtoLogToLogcat(
+            @NonNull PrintWriter pw, boolean enabled, @NonNull String[] groups
+    ) {
         final var clientToGroups = new HashMap<IProtoLogClient, Set<String>>();
 
         for (String group : groups) {
@@ -257,8 +260,10 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
 
             if (clients == null) {
                 // No clients associated to this group
-                Log.w(LOG_TAG, "Attempting to toggle log to logcat for group " + group
-                        + " with no registered clients.");
+                var warning = "Attempting to toggle log to logcat for group " + group
+                        + " with no registered clients. This is a no-op.";
+                Log.w(LOG_TAG, warning);
+                pw.println("WARNING: " + warning);
                 continue;
             }
 
@@ -270,8 +275,14 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
 
         for (IProtoLogClient client : clientToGroups.keySet()) {
             try {
-                client.toggleLogcat(enabled, clientToGroups.get(client).toArray(new String[0]));
+                final var clientGroups = clientToGroups.get(client).toArray(new String[0]);
+                pw.println("Toggling logcat logging for client " + client.toString()
+                        + " to " + enabled + " for groups: ["
+                        + String.join(", ", clientGroups) + "]");
+                client.toggleLogcat(enabled, clientGroups);
+                pw.println("- Done");
             } catch (RemoteException e) {
+                pw.println("- Failed");
                 throw new RuntimeException(
                         "Failed to toggle logcat status for groups on client", e);
             }
