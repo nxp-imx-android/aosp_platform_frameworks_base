@@ -274,12 +274,13 @@ abstract class BinaryStatePowerStatsProcessor extends PowerStatsProcessor {
                     int uid = uids.get(k);
                     if (stats.getUidStats(mTmpUidStatsArray, uid,
                             proportionalEstimate.stateValues)) {
-                        double power = intermediates.power
-                                * mStatsLayout.getUidUsageDuration(mTmpUidStatsArray)
-                                / intermediates.duration;
-                        mStatsLayout.setUidPowerEstimate(mTmpUidStatsArray, power);
-                        stats.setUidStats(uid, proportionalEstimate.stateValues,
-                                mTmpUidStatsArray);
+                        long duration = mStatsLayout.getUidUsageDuration(mTmpUidStatsArray);
+                        if (duration != 0) {
+                            double power = intermediates.power * duration / intermediates.duration;
+                            mStatsLayout.setUidPowerEstimate(mTmpUidStatsArray, power);
+                            stats.setUidStats(uid, proportionalEstimate.stateValues,
+                                    mTmpUidStatsArray);
+                        }
                     }
                 }
             }

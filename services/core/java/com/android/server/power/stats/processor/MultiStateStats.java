@@ -16,6 +16,7 @@
 
 package com.android.server.power.stats.processor;
 
+import android.annotation.Nullable;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -333,9 +334,9 @@ class MultiStateStats {
 
     /**
      * Adds the delta to the metrics.  The number of values must correspond to the dimension count
-     * supplied to the Factory constructor
+     * supplied to the Factory constructor.  Null values is equivalent to an array of zeros.
      */
-    void increment(long[] values, long timestampMs) {
+    void increment(@Nullable long[] values, long timestampMs) {
         mCounter.incrementValues(values, timestampMs);
         mTracking = true;
     }
