@@ -809,7 +809,11 @@ public final class JobServiceContext implements ServiceConnection {
                 if (!verifyCallerLocked(cb)) {
                     return;
                 }
-
+                if (mVerb != VERB_EXECUTING) {
+                    // Any state other than executing means the
+                    // job is in transient or stopped state
+                    return;
+                }
                 executing = getRunningJobLocked();
             }
             if (executing != null && jobId == executing.getJobId()) {
