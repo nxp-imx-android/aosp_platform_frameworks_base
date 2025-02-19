@@ -1137,6 +1137,7 @@ constructor(
     ) {
         gutsViewHolder.gutsText.setTypeface(menuTF)
         gutsViewHolder.dismissText.setTypeface(menuTF)
+        gutsViewHolder.cancelText.setTypeface(menuTF)
         titleText.setTypeface(titleTF)
         artistText.setTypeface(artistTF)
         seamlessText.setTypeface(menuTF)
