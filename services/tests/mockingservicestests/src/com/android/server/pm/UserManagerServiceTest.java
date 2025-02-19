@@ -206,7 +206,7 @@ public final class UserManagerServiceTest {
         doNothing().when(mSpiedContext).sendBroadcastAsUser(any(), any(), any());
         mockIsLowRamDevice(false);
 
-        // Called when getting boot user. config_bootToHeadlessSystemUser is 0 by default.
+        // Called when getting boot user. config_hsumBootStrategy is 0 by default.
         mSpyResources = spy(mSpiedContext.getResources());
         when(mSpiedContext.getResources()).thenReturn(mSpyResources);
         doReturn(0)
