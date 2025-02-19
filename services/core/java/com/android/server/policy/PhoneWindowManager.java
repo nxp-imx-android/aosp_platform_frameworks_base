@@ -180,6 +180,7 @@ import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UEventObserver;
 import android.os.UserHandle;
+import android.os.VibrationAttributes;
 import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.provider.Settings;
@@ -6263,7 +6264,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private void performHapticFeedback(
             int effectId, String reason, @HapticFeedbackConstants.Flags int flags) {
-        mVibrator.performHapticFeedback(effectId, reason, flags, 0 /* privFlags */);
+        mVibrator.performHapticFeedback(effectId, VibrationAttributes.USAGE_UNKNOWN, reason, flags,
+                0 /* privFlags */);
     }
 
     @Override

@@ -133,8 +133,14 @@ public final class HapticFeedbackVibrationProvider {
      * @return the {@link VibrationAttributes} that should be used for the provided haptic feedback.
      */
     public VibrationAttributes getVibrationAttributes(int effectId,
+            @VibrationAttributes.Usage int usage,
             @HapticFeedbackConstants.Flags int flags,
             @HapticFeedbackConstants.PrivateFlags int privFlags) {
+        if (usage != VibrationAttributes.USAGE_UNKNOWN) {
+            // TODO(b/397602072): create static usage fields and reuse them for the common usages.
+            return getVibrationAttributesWithFlags(
+                    VibrationAttributes.createForUsage(usage), effectId, flags);
+        }
         VibrationAttributes attrs;
         switch (effectId) {
             case HapticFeedbackConstants.EDGE_SQUEEZE:
@@ -172,7 +178,7 @@ public final class HapticFeedbackVibrationProvider {
      * @param inputSource the {@link InputDevice.Source} that customizes the
      *                    {@link VibrationAttributes}.
      */
-    public VibrationAttributes getVibrationAttributes(int effectId,
+    public VibrationAttributes getVibrationAttributesForInputDevice(int effectId,
             int inputSource,
             @HapticFeedbackConstants.Flags int flags,
             @HapticFeedbackConstants.PrivateFlags int privFlags) {
@@ -188,7 +194,8 @@ public final class HapticFeedbackVibrationProvider {
                 }
             }
         }
-        return getVibrationAttributes(effectId, flags, privFlags);
+        return getVibrationAttributes(
+                effectId, VibrationAttributes.USAGE_UNKNOWN, flags, privFlags);
     }
 
     /**

@@ -19,6 +19,9 @@ package com.android.server.vibrator;
 import static android.os.VibrationAttributes.FLAG_BYPASS_INTERRUPTION_POLICY;
 import static android.os.VibrationAttributes.FLAG_BYPASS_USER_VIBRATION_INTENSITY_OFF;
 import static android.os.VibrationAttributes.USAGE_HARDWARE_FEEDBACK;
+import static android.os.VibrationAttributes.USAGE_PHYSICAL_EMULATION;
+import static android.os.VibrationAttributes.USAGE_ACCESSIBILITY;
+import static android.os.VibrationAttributes.USAGE_UNKNOWN;
 import static android.os.VibrationAttributes.USAGE_IME_FEEDBACK;
 import static android.os.VibrationAttributes.USAGE_TOUCH;
 import static android.os.VibrationEffect.Composition.PRIMITIVE_CLICK;
@@ -30,6 +33,8 @@ import static android.os.VibrationEffect.EFFECT_TEXTURE_TICK;
 import static android.os.VibrationEffect.EFFECT_TICK;
 import static android.os.vibrator.Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED;
 import static android.view.HapticFeedbackConstants.BIOMETRIC_CONFIRM;
+import static android.view.HapticFeedbackConstants.CONFIRM;
+import static android.view.HapticFeedbackConstants.TOGGLE_OFF;
 import static android.view.HapticFeedbackConstants.BIOMETRIC_REJECT;
 import static android.view.HapticFeedbackConstants.CLOCK_TICK;
 import static android.view.HapticFeedbackConstants.CONTEXT_CLICK;
@@ -395,12 +400,12 @@ public class HapticFeedbackVibrationProviderTest {
     }
 
     @Test
-    public void testVibrationAttribute_biometricConstants_returnsCommunicationRequestUsage() {
+    public void testVibrationAttribute_biometricConstants_defaultsToCommunicationRequestUsage() {
         HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
 
         for (int effectId : BIOMETRIC_FEEDBACK_CONSTANTS) {
             VibrationAttributes attrs = provider.getVibrationAttributes(
-                    effectId, /* flags */ 0, /* privFlags */ 0);
+                    effectId, USAGE_UNKNOWN, /* flags */ 0, /* privFlags */ 0);
             assertThat(attrs.getUsage()).isEqualTo(VibrationAttributes.USAGE_COMMUNICATION_REQUEST);
         }
     }
@@ -410,7 +415,7 @@ public class HapticFeedbackVibrationProviderTest {
         HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
 
         VibrationAttributes attrs = provider.getVibrationAttributes(
-                SAFE_MODE_ENABLED, /* flags */ 0, /* privFlags */ 0);
+                SAFE_MODE_ENABLED, USAGE_UNKNOWN, /* flags */ 0, /* privFlags */ 0);
 
         assertThat(attrs.isFlagSet(FLAG_BYPASS_USER_VIBRATION_INTENSITY_OFF)).isFalse();
     }
@@ -420,7 +425,7 @@ public class HapticFeedbackVibrationProviderTest {
         HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
 
         VibrationAttributes attrs = provider.getVibrationAttributes(
-                SAFE_MODE_ENABLED,
+                SAFE_MODE_ENABLED, USAGE_UNKNOWN,
                 /* flags */ HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING, /* privFlags */ 0);
 
         assertThat(attrs.isFlagSet(FLAG_BYPASS_USER_VIBRATION_INTENSITY_OFF)).isTrue();
@@ -433,7 +438,7 @@ public class HapticFeedbackVibrationProviderTest {
 
         for (int effectId : SCROLL_FEEDBACK_CONSTANTS) {
             VibrationAttributes attrs = provider.getVibrationAttributes(
-                    effectId, /* flags */ 0, /* privFlags */ 0);
+                    effectId, USAGE_UNKNOWN, /* flags */ 0, /* privFlags */ 0);
             assertWithMessage("Expected FLAG_BYPASS_INTERRUPTION_POLICY for effect " + effectId)
                    .that(attrs.isFlagSet(FLAG_BYPASS_INTERRUPTION_POLICY)).isTrue();
         }
@@ -446,19 +451,19 @@ public class HapticFeedbackVibrationProviderTest {
 
         for (int effectId : SCROLL_FEEDBACK_CONSTANTS) {
             VibrationAttributes attrs = provider.getVibrationAttributes(
-                    effectId, /* flags */ 0, /* privFlags */ 0);
+                    effectId, USAGE_UNKNOWN, /* flags */ 0, /* privFlags */ 0);
             assertWithMessage("Expected no FLAG_BYPASS_INTERRUPTION_POLICY for effect " + effectId)
                    .that(attrs.isFlagSet(FLAG_BYPASS_INTERRUPTION_POLICY)).isFalse();
         }
     }
 
     @Test
-    public void testVibrationAttribute_scrollFeedback_useHardwareFeedback() {
+    public void testVibrationAttribute_scrollFeedback_defaultsToHardwareFeedback() {
         HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
 
         for (int effectId : SCROLL_FEEDBACK_CONSTANTS) {
-            VibrationAttributes attrs = provider.getVibrationAttributes(effectId, /* flags */
-                    0, /* privFlags */ 0);
+            VibrationAttributes attrs = provider.getVibrationAttributes(effectId, USAGE_UNKNOWN,
+                    /* flags */ 0, /* privFlags */ 0);
             assertWithMessage("Expected USAGE_HARDWARE_FEEDBACK for scroll effect " + effectId
                     + ", if no input customization").that(attrs.getUsage()).isEqualTo(
                     USAGE_HARDWARE_FEEDBACK);
@@ -471,7 +476,7 @@ public class HapticFeedbackVibrationProviderTest {
         HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
 
         for (int effectId : SCROLL_FEEDBACK_CONSTANTS) {
-            VibrationAttributes attrs = provider.getVibrationAttributes(
+            VibrationAttributes attrs = provider.getVibrationAttributesForInputDevice(
                     effectId, InputDevice.SOURCE_ROTARY_ENCODER, /* flags */ 0, /* privFlags */ 0);
             assertWithMessage(
                     "Expected USAGE_HARDWARE_FEEDBACK for input source SOURCE_ROTARY_ENCODER").that(
@@ -485,7 +490,7 @@ public class HapticFeedbackVibrationProviderTest {
         HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
 
         for (int effectId : SCROLL_FEEDBACK_CONSTANTS) {
-            VibrationAttributes attrs = provider.getVibrationAttributes(
+            VibrationAttributes attrs = provider.getVibrationAttributesForInputDevice(
                     effectId, InputDevice.SOURCE_TOUCHSCREEN, /* flags */ 0, /* privFlags */ 0);
             assertWithMessage("Expected USAGE_TOUCH for input source SOURCE_TOUCHSCREEN").that(
                     attrs.getUsage()).isEqualTo(USAGE_TOUCH);
@@ -493,28 +498,46 @@ public class HapticFeedbackVibrationProviderTest {
     }
 
     @Test
-    public void testVibrationAttribute_notIme_useTouchUsage() {
+    public void testVibrationAttribute_notIme_defaultsToTouchUsage() {
         HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
 
         for (int effectId : KEYBOARD_FEEDBACK_CONSTANTS) {
             VibrationAttributes attrs = provider.getVibrationAttributes(
-                    effectId, /* flags */ 0, /* privFlags */ 0);
+                    effectId, USAGE_UNKNOWN, /* flags */ 0, /* privFlags */ 0);
             assertWithMessage("Expected USAGE_TOUCH for effect " + effectId)
                     .that(attrs.getUsage()).isEqualTo(USAGE_TOUCH);
         }
     }
 
     @Test
-    public void testVibrationAttribute_isIme_useImeFeedbackUsage() {
+    public void testVibrationAttribute_isIme_defaultsToImeFeedbackUsage() {
         HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
 
         for (int effectId : KEYBOARD_FEEDBACK_CONSTANTS) {
             VibrationAttributes attrs = provider.getVibrationAttributes(
-                    effectId, /* flags */ 0,
+                    effectId, USAGE_UNKNOWN, /* flags */ 0,
                     HapticFeedbackConstants.PRIVATE_FLAG_APPLY_INPUT_METHOD_SETTINGS);
             assertWithMessage("Expected USAGE_IME_FEEDBACK for effect " + effectId)
                     .that(attrs.getUsage()).isEqualTo(USAGE_IME_FEEDBACK);
         }
+    }
+
+    @Test
+    public void testVibrationAttribute_withCustomUsage() {
+        HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
+
+        assertCustomUsagesApplied(provider, SCROLL_TICK, USAGE_TOUCH);
+        assertCustomUsagesApplied(provider, CONFIRM, USAGE_HARDWARE_FEEDBACK);
+        assertCustomUsagesApplied(provider, BIOMETRIC_REJECT, USAGE_ACCESSIBILITY);
+        assertCustomUsagesApplied(provider, TOGGLE_OFF, USAGE_PHYSICAL_EMULATION);
+    }
+
+    private void assertCustomUsagesApplied(
+                HapticFeedbackVibrationProvider provider, int constant, int usage) {
+        VibrationAttributes attrs =
+                provider.getVibrationAttributes(constant, usage, /* flags */ 0, /* privFlags */ 0);
+
+        assertThat(attrs.getUsage()).isEqualTo(usage);
     }
 
     @Test

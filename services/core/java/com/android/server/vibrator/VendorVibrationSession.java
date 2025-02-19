@@ -510,7 +510,7 @@ final class VendorVibrationSession extends IVibrationSession.Stub
             return switch (status) {
                 case FINISHED
                         -> android.os.vibrator.VendorVibrationSession.STATUS_SUCCESS;
-                case IGNORED_UNSUPPORTED
+                case IGNORED_UNSUPPORTED, IGNORED_INVALID_REQUEST
                         -> STATUS_UNSUPPORTED;
                 case CANCELLED_BINDER_DIED, CANCELLED_BY_APP_OPS, CANCELLED_BY_USER,
                      CANCELLED_SUPERSEDED, CANCELLED_BY_FOREGROUND_USER, CANCELLED_BY_SCREEN_OFF,

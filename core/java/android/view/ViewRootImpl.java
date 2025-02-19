@@ -212,6 +212,7 @@ import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
+import android.os.VibrationAttributes;
 import android.os.Vibrator;
 import android.sysprop.DisplayProperties;
 import android.sysprop.ViewProperties;
@@ -950,7 +951,7 @@ public final class ViewRootImpl implements ViewParent,
     AudioManager mAudioManager;
 
     /**
-     * see {@link #performHapticFeedback(int, int, int)}
+     * see {@link #performHapticFeedback(int, int, int, int)}
      */
     Vibrator mVibrator;
 
@@ -9874,13 +9875,14 @@ public final class ViewRootImpl implements ViewParent,
      * {@inheritDoc}
      */
     @Override
-    public boolean performHapticFeedback(int effectId, int flags, int privFlags) {
+    public boolean performHapticFeedback(int effectId, @VibrationAttributes.Usage int usage,
+            int flags, int privFlags) {
         if ((mDisplay.getFlags() & Display.FLAG_TOUCH_FEEDBACK_DISABLED) != 0) {
             return false;
         }
 
         getSystemVibrator().performHapticFeedback(
-                effectId, "ViewRootImpl#performHapticFeedback", flags, privFlags);
+                effectId, usage, "ViewRootImpl#performHapticFeedback", flags, privFlags);
         return true;
     }
 

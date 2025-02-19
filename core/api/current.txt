@@ -54490,6 +54490,7 @@ package android.view {
     method public boolean performContextClick();
     method public boolean performHapticFeedback(int);
     method public boolean performHapticFeedback(int, int);
+    method @FlaggedApi("android.os.vibrator.haptic_feedback_with_custom_usage") public boolean performHapticFeedback(@NonNull android.os.vibrator.HapticFeedbackRequest);
     method public boolean performLongClick();
     method public boolean performLongClick(float, float);
     method @Nullable public android.view.ContentInfo performReceiveContent(@NonNull android.view.ContentInfo);
