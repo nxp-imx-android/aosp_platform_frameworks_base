@@ -21,6 +21,7 @@ import static android.view.Display.DEFAULT_DISPLAY;
 import static android.window.TransitionInfo.FLAG_BACK_GESTURE_ANIMATED;
 
 import static com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
 import static com.android.wm.shell.transition.Transitions.TransitionObserver;
 
 import android.annotation.NonNull;
@@ -35,6 +36,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SingleInstanceRemoteListener;
 import com.android.wm.shell.shared.IHomeTransitionListener;
 import com.android.wm.shell.shared.TransitionUtil;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 
 /**
  * The {@link TransitionObserver} that observes for transitions involving the home
@@ -48,6 +50,8 @@ public class HomeTransitionObserver implements TransitionObserver,
 
     private @NonNull final Context mContext;
     private @NonNull final ShellExecutor mMainExecutor;
+    private Boolean mPendingHomeVisibilityUpdate;
+
     public HomeTransitionObserver(@NonNull Context context,
             @NonNull ShellExecutor mainExecutor) {
         mContext = context;
@@ -59,28 +63,78 @@ public class HomeTransitionObserver implements TransitionObserver,
             @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction) {
+        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+            handleTransitionReadyWithBubbleAnything(info);
+        } else {
+            handleTransitionReady(info);
+        }
+    }
+
+    private void handleTransitionReady(@NonNull TransitionInfo info) {
         for (TransitionInfo.Change change : info.getChanges()) {
             final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
-            if (info.getType() == TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
-                    || taskInfo == null
+            if (taskInfo == null
+                    || info.getType() == TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
+                    || taskInfo.displayId != DEFAULT_DISPLAY
+                    || taskInfo.taskId == -1
+                    || !taskInfo.isRunning) {
+                continue;
+            }
+            Boolean homeVisibilityUpdate = getHomeVisibilityUpdate(info, change, taskInfo);
+            if (homeVisibilityUpdate != null) {
+                notifyHomeVisibilityChanged(homeVisibilityUpdate);
+            }
+        }
+    }
+
+    private void handleTransitionReadyWithBubbleAnything(@NonNull TransitionInfo info) {
+        Boolean homeVisibilityUpdate = null;
+        for (TransitionInfo.Change change : info.getChanges()) {
+            final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
+            if (taskInfo == null
                     || taskInfo.displayId != DEFAULT_DISPLAY
                     || taskInfo.taskId == -1
                     || !taskInfo.isRunning) {
                 continue;
             }
 
-            final int mode = change.getMode();
-            final boolean isBackGesture = change.hasFlags(FLAG_BACK_GESTURE_ANIMATED);
-            if (taskInfo.getActivityType() == ACTIVITY_TYPE_HOME) {
-                final boolean gestureToHomeTransition = isBackGesture
-                        && TransitionUtil.isClosingType(info.getType());
-                if (gestureToHomeTransition || TransitionUtil.isClosingMode(mode)
-                        || (!isBackGesture && TransitionUtil.isOpeningMode(mode))) {
-                    notifyHomeVisibilityChanged(gestureToHomeTransition
-                            || TransitionUtil.isOpeningType(mode));
-                }
+            Boolean update = getHomeVisibilityUpdate(info, change, taskInfo);
+            if (update != null) {
+                homeVisibilityUpdate = update;
             }
         }
+
+        if (info.getType() == TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP) {
+            // Do not apply at the start of desktop drag as that updates launcher UI visibility.
+            // Store the value and apply with a next transition if needed.
+            mPendingHomeVisibilityUpdate = homeVisibilityUpdate;
+            return;
+        }
+
+        if (info.getType() == TRANSIT_CONVERT_TO_BUBBLE && homeVisibilityUpdate == null) {
+            // We are converting to bubble and we did not get a change to home visibility in this
+            // transition. Apply the value from start of drag.
+            homeVisibilityUpdate = mPendingHomeVisibilityUpdate;
+        }
+        if (homeVisibilityUpdate != null) {
+            mPendingHomeVisibilityUpdate = null;
+            notifyHomeVisibilityChanged(homeVisibilityUpdate);
+        }
+    }
+
+    private Boolean getHomeVisibilityUpdate(TransitionInfo info,
+            TransitionInfo.Change change, ActivityManager.RunningTaskInfo taskInfo) {
+        final int mode = change.getMode();
+        final boolean isBackGesture = change.hasFlags(FLAG_BACK_GESTURE_ANIMATED);
+        if (taskInfo.getActivityType() == ACTIVITY_TYPE_HOME) {
+            final boolean gestureToHomeTransition = isBackGesture
+                    && TransitionUtil.isClosingType(info.getType());
+            if (gestureToHomeTransition || TransitionUtil.isClosingMode(mode)
+                    || (!isBackGesture && TransitionUtil.isOpeningMode(mode))) {
+                return gestureToHomeTransition || TransitionUtil.isOpeningType(mode);
+            }
+        }
+        return null;
     }
 
     @Override
