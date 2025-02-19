@@ -16,11 +16,15 @@
 
 package com.android.server.wm;
 
+import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING;
+
 import android.annotation.NonNull;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 
 import java.io.PrintWriter;
+import java.util.function.BooleanSupplier;
 
 /**
  * Encapsulate app compat policy logic related to a safe region.
@@ -28,25 +32,66 @@ import java.io.PrintWriter;
 class AppCompatSafeRegionPolicy {
     @NonNull
     private final ActivityRecord mActivityRecord;
+    @NonNull
+    final PackageManager mPackageManager;
     // Whether the Activity needs to be in the safe region bounds.
     private boolean mNeedsSafeRegionBounds = false;
     // Denotes the latest safe region bounds. Can be empty if the activity or the ancestors do
     // not have any safe region bounds.
     @NonNull
     private final Rect mLatestSafeRegionBounds = new Rect();
+    // Whether the activity has allowed safe region letterboxing. This can be set through the
+    // manifest and the default value is true.
+    @NonNull
+    private final BooleanSupplier mAllowSafeRegionLetterboxing;
 
-    AppCompatSafeRegionPolicy(@NonNull ActivityRecord activityRecord) {
+    AppCompatSafeRegionPolicy(@NonNull ActivityRecord activityRecord,
+            @NonNull PackageManager packageManager) {
         mActivityRecord = activityRecord;
+        mPackageManager = packageManager;
+        mAllowSafeRegionLetterboxing = AppCompatUtils.asLazy(() -> {
+            // Application level property.
+            if (allowSafeRegionLetterboxing(packageManager)) {
+                return true;
+            }
+            // Activity level property.
+            try {
+                return packageManager.getPropertyAsUser(
+                        PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING,
+                        mActivityRecord.mActivityComponent.getPackageName(),
+                        mActivityRecord.mActivityComponent.getClassName(),
+                        mActivityRecord.mUserId).getBoolean();
+            } catch (PackageManager.NameNotFoundException e) {
+                return true;
+            }
+        });
+    }
+
+    private boolean allowSafeRegionLetterboxing(PackageManager pm) {
+        try {
+            return pm.getPropertyAsUser(
+                    PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING,
+                    mActivityRecord.packageName,
+                    /* className */ null,
+                    mActivityRecord.mUserId).getBoolean();
+        } catch (PackageManager.NameNotFoundException e) {
+            return true;
+        }
     }
 
     /**
      * Computes the latest safe region bounds in
      * {@link ActivityRecord#resolveOverrideConfiguration(Configuration)} since the activity has not
-     * been attached to the parent container when the ActivityRecord is instantiated.
+     * been attached to the parent container when the ActivityRecord is instantiated. Note that the
+     * latest safe region bounds will be empty if activity has not allowed safe region letterboxing.
      *
      * @return latest safe region bounds as set on an ancestor window container.
      */
     public Rect getLatestSafeRegionBounds() {
+        if (!allowSafeRegionLetterboxing()) {
+            mLatestSafeRegionBounds.setEmpty();
+            return null;
+        }
         // Get the latest safe region bounds since the bounds could have changed
         final Rect latestSafeRegionBounds = mActivityRecord.getSafeRegionBounds();
         if (latestSafeRegionBounds != null) {
@@ -67,7 +112,7 @@ class AppCompatSafeRegionPolicy {
         }
         // If activity can not be letterboxed for a safe region only or it has not been attached
         // to a WindowContainer yet.
-        if (!isLetterboxedForSafeRegionOnly() || mActivityRecord.getParent() == null) {
+        if (!isLetterboxedForSafeRegionOnlyAllowed() || mActivityRecord.getParent() == null) {
             return;
         }
         resolvedConfig.windowConfiguration.setBounds(mLatestSafeRegionBounds);
@@ -80,10 +125,11 @@ class AppCompatSafeRegionPolicy {
      * independently when no other letterboxing condition is triggered. This method helps detecting
      * the latter case.
      *
-     * @return {@code true} if the activity is letterboxed only due to the safe region being set on
-     * the current or ancestor window container.
+     * @return {@code true} if this application or activity has allowed safe region letterboxing and
+     * can be letterboxed only due to the safe region being set on the current or ancestor window
+     * container.
      */
-    boolean isLetterboxedForSafeRegionOnly() {
+    boolean isLetterboxedForSafeRegionOnlyAllowed() {
         return !mActivityRecord.areBoundsLetterboxed() && getNeedsSafeRegionBounds()
                 && getLatestSafeRegionBounds() != null;
     }
@@ -102,10 +148,20 @@ class AppCompatSafeRegionPolicy {
         return mNeedsSafeRegionBounds;
     }
 
+    /** @see android.view.WindowManager#PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING */
+    boolean allowSafeRegionLetterboxing() {
+        return mAllowSafeRegionLetterboxing.getAsBoolean();
+    }
+
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
         if (mNeedsSafeRegionBounds) {
             pw.println(prefix + " mNeedsSafeRegionBounds=true");
         }
-        pw.println(prefix + " isLetterboxedForSafeRegionOnly=" + isLetterboxedForSafeRegionOnly());
+        if (isLetterboxedForSafeRegionOnlyAllowed()) {
+            pw.println(prefix + " isLetterboxForSafeRegionOnlyAllowed=true");
+        }
+        if (!allowSafeRegionLetterboxing()) {
+            pw.println(prefix + " allowSafeRegionLetterboxing=false");
+        }
     }
 }

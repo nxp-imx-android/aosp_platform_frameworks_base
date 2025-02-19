@@ -4739,7 +4739,7 @@ public class SizeCompatTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
-    public void testAreBoundsLetterboxed_letterboxedForSafeRegionOnly_returnsFalse() {
+    public void testIsLetterboxedForSafeRegionOnlyAllowed_noManifestProperty_returnsTrue() {
         setUpLandscapeLargeScreenDisplayWithApp();
 
         assertFalse(mActivity.areBoundsLetterboxed());
@@ -4751,8 +4751,138 @@ public class SizeCompatTests extends WindowTestsBase {
         // false
         assertFalse(mActivity.areBoundsLetterboxed());
         verifyLogAppCompatState(mActivity, APP_COMPAT_STATE_CHANGED__STATE__NOT_LETTERBOXED);
+        // Since no manifest property is defined, the activity is opted in by default
         assertTrue(mActivity.mAppCompatController.getSafeRegionPolicy()
-                .isLetterboxedForSafeRegionOnly());
+                .isLetterboxedForSafeRegionOnlyAllowed());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    public void testIsLetterboxedForSafeRegionOnlyAllowed_allowedForActivity_returnsTrue() {
+        setUpLandscapeLargeScreenDisplayWithApp();
+
+        assertFalse(mActivity.areBoundsLetterboxed());
+        verifyLogAppCompatState(mActivity, APP_COMPAT_STATE_CHANGED__STATE__NOT_LETTERBOXED);
+
+        setupSafeRegionBoundsParameters(/* dw */ 300, /* dh */ 200);
+
+        // Activity can opt-out the safe region letterboxing by component level property.
+        final ComponentName name = getUniqueComponentName(mContext.getPackageName());
+        final PackageManager pm = mContext.getPackageManager();
+        spyOn(pm);
+        updateActivityLevelAllowSafeRegionLetterboxingProperty(name, pm, true /* value */);
+        updateApplicationLevelAllowSafeRegionLetterboxingProperty(name, pm, false /* value */);
+        final ActivityRecord optOutActivity = new ActivityBuilder(mAtm)
+                .setComponent(name).setTask(mTask).build();
+        optOutActivity.mAppCompatController.getSafeRegionPolicy().setNeedsSafeRegionBounds(true);
+
+        // Since activity manifest property is defined as true, the activity can be letterboxed
+        // for safe region
+        assertTrue(optOutActivity.mAppCompatController
+                .getSafeRegionPolicy().isLetterboxedForSafeRegionOnlyAllowed());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    public void testIsLetterboxedForSafeRegionOnlyAllowed_notAllowedForActivity_returnsFalse() {
+        setUpLandscapeLargeScreenDisplayWithApp();
+
+        assertFalse(mActivity.areBoundsLetterboxed());
+        verifyLogAppCompatState(mActivity, APP_COMPAT_STATE_CHANGED__STATE__NOT_LETTERBOXED);
+
+        setupSafeRegionBoundsParameters(/* dw */ 300, /* dh */ 200);
+
+        final ComponentName name = getUniqueComponentName(mContext.getPackageName());
+        final PackageManager pm = mContext.getPackageManager();
+        spyOn(pm);
+        updateActivityLevelAllowSafeRegionLetterboxingProperty(name, pm, false /* value */);
+        updateApplicationLevelAllowSafeRegionLetterboxingProperty(name, pm, false /* value */);
+        final ActivityRecord optOutActivity = new ActivityBuilder(mAtm)
+                .setComponent(name).setTask(mTask).build();
+        optOutActivity.mAppCompatController.getSafeRegionPolicy().setNeedsSafeRegionBounds(true);
+
+        // Since activity manifest property is defined as false, the activity can not be letterboxed
+        // for safe region
+        assertFalse(optOutActivity.mAppCompatController
+                .getSafeRegionPolicy().isLetterboxedForSafeRegionOnlyAllowed());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    public void testIsLetterboxedForSafeRegionOnlyAllowed_notAllowedForApplication_returnsFalse() {
+        setUpLandscapeLargeScreenDisplayWithApp();
+
+        assertFalse(mActivity.areBoundsLetterboxed());
+        verifyLogAppCompatState(mActivity, APP_COMPAT_STATE_CHANGED__STATE__NOT_LETTERBOXED);
+
+        setupSafeRegionBoundsParameters(/* dw */ 300, /* dh */ 200);
+
+        final ComponentName name = getUniqueComponentName(mContext.getPackageName());
+        final PackageManager pm = mContext.getPackageManager();
+        spyOn(pm);
+        updateActivityLevelAllowSafeRegionLetterboxingProperty(name, pm, false /* value */);
+        updateApplicationLevelAllowSafeRegionLetterboxingProperty(name, pm, false /* value */);
+        final ActivityRecord optOutAppActivity = new ActivityBuilder(mAtm)
+                .setComponent(name).setTask(mTask).build();
+        optOutAppActivity.mAppCompatController.getSafeRegionPolicy().setNeedsSafeRegionBounds(true);
+
+        // Since application manifest property is defined as false, the activity can not be
+        // letterboxed for safe region
+        assertFalse(optOutAppActivity.mAppCompatController
+                .getSafeRegionPolicy().isLetterboxedForSafeRegionOnlyAllowed());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    public void testIsLetterboxedForSafeRegionOnlyAllowed_allowedForApplication_returnsTrue() {
+        setUpLandscapeLargeScreenDisplayWithApp();
+
+        assertFalse(mActivity.areBoundsLetterboxed());
+        verifyLogAppCompatState(mActivity, APP_COMPAT_STATE_CHANGED__STATE__NOT_LETTERBOXED);
+
+        setupSafeRegionBoundsParameters(/* dw */ 300, /* dh */ 200);
+
+        final ComponentName name = getUniqueComponentName(mContext.getPackageName());
+        final PackageManager pm = mContext.getPackageManager();
+        spyOn(pm);
+        updateActivityLevelAllowSafeRegionLetterboxingProperty(name, pm, false /* value */);
+        updateApplicationLevelAllowSafeRegionLetterboxingProperty(name, pm, true /* value */);
+        final ActivityRecord optOutAppActivity = new ActivityBuilder(mAtm)
+                .setComponent(name).setTask(mTask).build();
+        optOutAppActivity.mAppCompatController.getSafeRegionPolicy().setNeedsSafeRegionBounds(true);
+
+        // Since application manifest property is defined as true, the activity can be letterboxed
+        // for safe region
+        assertTrue(optOutAppActivity.mAppCompatController
+                .getSafeRegionPolicy().isLetterboxedForSafeRegionOnlyAllowed());
+    }
+
+    private void updateApplicationLevelAllowSafeRegionLetterboxingProperty(ComponentName name,
+            PackageManager pm, boolean propertyValueForApplication) {
+        final PackageManager.Property propertyForApplication = new PackageManager.Property(
+                "propertyName", /* value */ propertyValueForApplication, name.getPackageName(),
+                name.getClassName());
+        try {
+            doReturn(propertyForApplication).when(pm).getPropertyAsUser(
+                    WindowManager.PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING,
+                    name.getPackageName(), /* className */ null, /* userId */ 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void updateActivityLevelAllowSafeRegionLetterboxingProperty(ComponentName name,
+            PackageManager pm, boolean propertyValueForActivity) {
+        final PackageManager.Property propertyForActivity = new PackageManager.Property(
+                "propertyName", /* value */ propertyValueForActivity, name.getPackageName(),
+                name.getClassName());
+        try {
+            doReturn(propertyForActivity).when(pm).getPropertyAsUser(
+                    WindowManager.PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING,
+                    name.getPackageName(), name.getClassName(), /* userId */ 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -4775,7 +4905,7 @@ public class SizeCompatTests extends WindowTestsBase {
         verifyLogAppCompatState(mActivity,
                 APP_COMPAT_STATE_CHANGED__STATE__LETTERBOXED_FOR_FIXED_ORIENTATION);
         assertFalse(mActivity.mAppCompatController.getSafeRegionPolicy()
-                .isLetterboxedForSafeRegionOnly());
+                .isLetterboxedForSafeRegionOnlyAllowed());
         assertTrue(safeRegionBounds.contains(mActivity.getBounds()));
     }
 
