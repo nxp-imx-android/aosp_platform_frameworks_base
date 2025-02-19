@@ -333,7 +333,7 @@ public class AutomaticBrightnessController {
             int ambientLightHorizonLong, float userLux, float userNits,
             DisplayManagerFlags displayManagerFlags) {
         mInjector = injector;
-        mClock = injector.createClock(displayManagerFlags.offloadControlsDozeAutoBrightness());
+        mClock = injector.createClock();
         mContext = context;
         mCallbacks = callbacks;
         mSensorManager = sensorManager;
@@ -1402,8 +1402,7 @@ public class AutomaticBrightnessController {
         public void onSensorChanged(SensorEvent event) {
             if (mLightSensorEnabled) {
                 // The time received from the sensor is in nano seconds, hence changing it to ms
-                final long time = (mDisplayManagerFlags.offloadControlsDozeAutoBrightness())
-                        ? TimeUnit.NANOSECONDS.toMillis(event.timestamp) : mClock.uptimeMillis();
+                final long time = TimeUnit.NANOSECONDS.toMillis(event.timestamp);
                 final float lux = event.values[0];
                 handleLightSensorEvent(time, lux);
             }
@@ -1616,20 +1615,13 @@ public class AutomaticBrightnessController {
     }
 
     private static class RealClock implements Clock {
-        private final boolean mOffloadControlsDozeBrightness;
-
-        RealClock(boolean offloadControlsDozeBrightness) {
-            mOffloadControlsDozeBrightness = offloadControlsDozeBrightness;
-        }
-
         @Override
         public long uptimeMillis() {
             return SystemClock.uptimeMillis();
         }
 
         public long getSensorEventScaleTime() {
-            return (mOffloadControlsDozeBrightness)
-                    ? SystemClock.elapsedRealtime() : uptimeMillis();
+            return SystemClock.elapsedRealtime();
         }
     }
 
@@ -1638,8 +1630,8 @@ public class AutomaticBrightnessController {
             return BackgroundThread.getHandler();
         }
 
-        Clock createClock(boolean offloadControlsDozeBrightness) {
-            return new RealClock(offloadControlsDozeBrightness);
+        Clock createClock() {
+            return new RealClock();
         }
     }
 }
