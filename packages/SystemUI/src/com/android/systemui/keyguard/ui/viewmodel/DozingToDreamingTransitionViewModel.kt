@@ -39,4 +39,6 @@ constructor(animationFlow: KeyguardTransitionAnimationFlow) {
         )
 
     val lockscreenAlpha: Flow<Float> = transitionAnimation.immediatelyTransitionTo(0f)
+    // Notifications should not be shown while transitioning to dream.
+    val notificationAlpha = transitionAnimation.immediatelyTransitionTo(0f)
 }

@@ -49,6 +49,7 @@ import com.android.systemui.keyguard.ui.viewmodel.AodToGoneTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AodToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AodToOccludedTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AodToPrimaryBouncerTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.DozingToDreamingTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.DozingToGlanceableHubTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.DozingToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.DozingToOccludedTransitionViewModel
@@ -139,6 +140,7 @@ constructor(
     private val aodToOccludedTransitionViewModel: AodToOccludedTransitionViewModel,
     private val aodToGlanceableHubTransitionViewModel: AodToGlanceableHubTransitionViewModel,
     private val aodToPrimaryBouncerTransitionViewModel: AodToPrimaryBouncerTransitionViewModel,
+    private val dozingToDreamingTransitionViewModel: DozingToDreamingTransitionViewModel,
     dozingToGlanceableHubTransitionViewModel: DozingToGlanceableHubTransitionViewModel,
     private val dozingToLockscreenTransitionViewModel: DozingToLockscreenTransitionViewModel,
     private val dozingToOccludedTransitionViewModel: DozingToOccludedTransitionViewModel,
@@ -577,6 +579,7 @@ constructor(
             aodToOccludedTransitionViewModel.lockscreenAlpha(viewState),
             aodToGlanceableHubTransitionViewModel.lockscreenAlpha(viewState),
             aodToPrimaryBouncerTransitionViewModel.notificationAlpha,
+            dozingToDreamingTransitionViewModel.notificationAlpha,
             dozingToLockscreenTransitionViewModel.lockscreenAlpha,
             dozingToOccludedTransitionViewModel.lockscreenAlpha(viewState),
             dozingToPrimaryBouncerTransitionViewModel.notificationAlpha,
