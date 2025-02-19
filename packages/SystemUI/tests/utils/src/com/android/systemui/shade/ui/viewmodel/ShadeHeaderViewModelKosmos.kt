@@ -25,7 +25,6 @@ import com.android.systemui.shade.domain.interactor.privacyChipInteractor
 import com.android.systemui.shade.domain.interactor.shadeHeaderClockInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
-import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerStatusBarViewBinder
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.mobileIconsInteractor
@@ -47,8 +46,6 @@ val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
             tintedIconManagerFactory = tintedIconManagerFactory,
             batteryMeterViewControllerFactory = batteryMeterViewControllerFactory,
             statusBarIconController = mock<StatusBarIconController>(),
-            notificationIconContainerStatusBarViewBinder =
-                mock<NotificationIconContainerStatusBarViewBinder>(),
         )
     }
 
