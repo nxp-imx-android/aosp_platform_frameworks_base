@@ -54,6 +54,7 @@ import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.systemui.res.R
+import androidx.compose.ui.unit.Dp
 
 /** Renders a lightweight shade UI container, as an overlay. */
 @Composable
@@ -202,10 +203,15 @@ object OverlayShade {
     }
 
     object Dimensions {
-        val PanelCornerRadius = 46.dp
+        val PanelCornerRadius: Dp
+            @Composable
+            @ReadOnlyComposable get() =
+                dimensionResource(R.dimen.overlay_shade_panel_shape_radius)
     }
 
     object Shapes {
-        val RoundedCornerPanel = RoundedCornerShape(Dimensions.PanelCornerRadius)
+        val RoundedCornerPanel: RoundedCornerShape
+            @Composable
+            @ReadOnlyComposable get() = RoundedCornerShape(Dimensions.PanelCornerRadius)
     }
 }
