@@ -217,6 +217,9 @@ class DesktopRepository(
     fun getDeskIds(displayId: Int): Set<Int> =
         desktopData.desksSequence(displayId).map { desk -> desk.deskId }.toSet()
 
+    /** Returns all the ids of all desks in all displays. */
+    fun getAllDeskIds(): Set<Int> = desktopData.desksSequence().map { desk -> desk.deskId }.toSet()
+
     /** Returns the id of the default desk in the given display. */
     fun getDefaultDeskId(displayId: Int): Int? = getDefaultDesk(displayId)?.deskId
 

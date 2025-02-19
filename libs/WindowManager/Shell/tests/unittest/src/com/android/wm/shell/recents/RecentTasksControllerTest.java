@@ -24,7 +24,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE;
-import static com.android.wm.shell.shared.GroupedTaskInfo.TYPE_FREEFORM;
+import static com.android.wm.shell.shared.GroupedTaskInfo.TYPE_DESK;
 import static com.android.wm.shell.shared.GroupedTaskInfo.TYPE_FULLSCREEN;
 import static com.android.wm.shell.shared.GroupedTaskInfo.TYPE_SPLIT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
@@ -349,7 +349,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
         GroupedTaskInfo freeformGroup = recentTasks.get(2);
 
         // Check that groups have expected types
-        assertTrue(freeformGroup.isBaseType(TYPE_FREEFORM));
+        assertTrue(freeformGroup.isBaseType(TYPE_DESK));
         assertTrue(singleGroup1.isBaseType(TYPE_FULLSCREEN));
         assertTrue(singleGroup2.isBaseType(TYPE_FULLSCREEN));
 
@@ -389,7 +389,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
 
         // Check that groups have expected types
         assertTrue(splitGroup.isBaseType(TYPE_SPLIT));
-        assertTrue(freeformGroup.isBaseType(TYPE_FREEFORM));
+        assertTrue(freeformGroup.isBaseType(TYPE_DESK));
         assertTrue(singleGroup.isBaseType(TYPE_FULLSCREEN));
 
         // Check freeform group entries
@@ -460,7 +460,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
         GroupedTaskInfo freeformGroup = recentTasks.get(2);
 
         // Check that groups have expected types
-        assertTrue(freeformGroup.isBaseType(TYPE_FREEFORM));
+        assertTrue(freeformGroup.isBaseType(TYPE_DESK));
         assertTrue(singleGroup1.isBaseType(TYPE_FULLSCREEN));
         assertTrue(singleGroup2.isBaseType(TYPE_FULLSCREEN));
 
