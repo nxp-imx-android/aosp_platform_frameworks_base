@@ -85,6 +85,7 @@ open class SimpleDigitalHandLayerController(
     override val view = SimpleDigitalClockTextView(clockCtx, isLargeClock)
     private val logger = Logger(clockCtx.messageBuffer, TAG)
     val timespec = DigitalTimespecHandler(layerCfg.timespec, layerCfg.dateTimeFormat)
+    override var onViewBoundsChanged by view::onViewBoundsChanged
 
     @VisibleForTesting
     override var fakeTimeMills: Long?

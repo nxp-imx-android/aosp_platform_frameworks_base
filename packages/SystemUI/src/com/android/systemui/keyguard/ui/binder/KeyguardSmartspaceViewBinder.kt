@@ -81,22 +81,92 @@ object KeyguardSmartspaceViewBinder {
                 }
 
                 if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+                    val xBuffer =
+                        keyguardRootView.context.resources.getDimensionPixelSize(
+                            R.dimen.smartspace_padding_horizontal
+                        )
+                    val yBuffer =
+                        keyguardRootView.context.resources.getDimensionPixelSize(
+                            R.dimen.smartspace_padding_vertical
+                        )
+
+                    val smallViewIds =
+                        listOf(sharedR.id.date_smartspace_view, sharedR.id.weather_smartspace_view)
+
+                    val largeViewIds =
+                        listOf(
+                            sharedR.id.date_smartspace_view_large,
+                            sharedR.id.weather_smartspace_view_large,
+                        )
+
                     launch("$TAG#smartspaceViewModel.burnInLayerVisibility") {
-                        keyguardRootViewModel.burnInLayerVisibility.collect { visibility ->
-                            if (clockViewModel.isLargeClockVisible.value) {
-                                // hide small clock date/weather
-                                val dateView =
-                                    keyguardRootView.requireViewById<View>(
-                                        sharedR.id.date_smartspace_view
-                                    )
-                                dateView.visibility = View.GONE
-                                val weatherView =
-                                    keyguardRootView.requireViewById<View>(
-                                        sharedR.id.weather_smartspace_view
-                                    )
-                                weatherView.visibility = View.GONE
+                        combine(
+                                keyguardRootViewModel.burnInLayerVisibility,
+                                clockViewModel.isLargeClockVisible,
+                                ::Pair,
+                            )
+                            .collect { (visibility, isLargeClock) ->
+                                if (isLargeClock) {
+                                    // hide small clock date/weather
+                                    for (viewId in smallViewIds) {
+                                        keyguardRootView.findViewById<View>(viewId)?.let {
+                                            it.visibility = View.GONE
+                                        }
+                                    }
+                                }
                             }
-                        }
+                    }
+
+                    launch("$TAG#clockEventController.onClockBoundsChanged") {
+                        // Whenever the doze amount changes, the clock may update it's view bounds.
+                        // We need to update our layout position as a result. We could do this via
+                        // `requestLayout`, but that's quite expensive when enclosed in since this
+                        // recomputes the entire ConstraintLayout, so instead we do it manually. We
+                        // would use translationX/Y for this, but that's used by burnin.
+                        combine(
+                                clockViewModel.isLargeClockVisible,
+                                clockViewModel.clockEventController.onClockBoundsChanged,
+                                ::Pair,
+                            )
+                            .collect { (isLargeClock, clockBounds) ->
+                                for (id in (if (isLargeClock) smallViewIds else largeViewIds)) {
+                                    keyguardRootView.findViewById<View>(id)?.let {
+                                        it.visibility = View.GONE
+                                    }
+                                }
+
+                                if (clockBounds == null) return@collect
+                                if (isLargeClock) {
+                                    val largeDateHeight =
+                                        keyguardRootView
+                                            .findViewById<View>(
+                                                sharedR.id.date_smartspace_view_large
+                                            )
+                                            ?.height ?: 0
+                                    for (id in largeViewIds) {
+                                        keyguardRootView.findViewById<View>(id)?.let { view ->
+                                            val viewHeight = view.height
+                                            val offset = (largeDateHeight - viewHeight) / 2
+                                            view.top =
+                                                (clockBounds.bottom + yBuffer + offset).toInt()
+                                            view.bottom = view.top + viewHeight
+                                        }
+                                    }
+                                } else {
+                                    for (id in smallViewIds) {
+                                        keyguardRootView.findViewById<View>(id)?.let { view ->
+                                            val viewWidth = view.width
+                                            if (view.isLayoutRtl()) {
+                                                view.right = (clockBounds.left - xBuffer).toInt()
+                                                view.left = view.right - viewWidth
+                                            } else {
+                                                view.left = (clockBounds.right + xBuffer).toInt()
+                                                view.right = view.left + viewWidth
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                     }
                 }
             }

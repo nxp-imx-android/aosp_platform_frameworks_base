@@ -85,7 +85,7 @@ constructor(
 
     val previewClock: Flow<ClockController> = keyguardClockRepository.previewClock
 
-    val clockEventController: ClockEventController by keyguardClockRepository::clockEventController
+    val clockEventController: ClockEventController = keyguardClockRepository.clockEventController
 
     var clock: ClockController? by keyguardClockRepository.clockEventController::clock
 

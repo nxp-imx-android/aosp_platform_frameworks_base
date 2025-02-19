@@ -44,6 +44,7 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
     val dozeState = DefaultClockController.AnimationState(1F)
 
     override val view = FlexClockView(clockCtx)
+    override var onViewBoundsChanged by view::onViewBoundsChanged
 
     init {
         fun createController(cfg: LayerConfig) {

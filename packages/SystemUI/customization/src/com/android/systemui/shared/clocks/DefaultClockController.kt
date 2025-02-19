@@ -17,6 +17,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.RectF
 import android.icu.text.NumberFormat
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -97,7 +98,12 @@ class DefaultClockController(
         events.onLocaleChanged(Locale.getDefault())
     }
 
-    override fun initialize(isDarkTheme: Boolean, dozeFraction: Float, foldFraction: Float) {
+    override fun initialize(
+        isDarkTheme: Boolean,
+        dozeFraction: Float,
+        foldFraction: Float,
+        onBoundsChanged: (RectF) -> Unit,
+    ) {
         largeClock.recomputePadding(null)
 
         largeClock.animations = LargeClockAnimations(largeClock.view, dozeFraction, foldFraction)

@@ -226,7 +226,7 @@ constructor(
                         ConstraintSet.TOP,
                         customR.id.lockscreen_clock_view_large,
                         ConstraintSet.BOTTOM,
-                        dateWeatherPaddingStart,
+                        context.resources.getDimensionPixelSize(R.dimen.smartspace_padding_vertical),
                     )
 
                     connect(
@@ -291,7 +291,9 @@ constructor(
                         ConstraintSet.START,
                         customR.id.lockscreen_clock_view,
                         ConstraintSet.END,
-                        20,
+                        context.resources.getDimensionPixelSize(
+                            R.dimen.smartspace_padding_horizontal
+                        ),
                     )
                     connect(
                         sharedR.id.date_smartspace_view,
