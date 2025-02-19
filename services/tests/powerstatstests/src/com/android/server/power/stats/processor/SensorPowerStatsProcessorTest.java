@@ -33,6 +33,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import android.annotation.SuppressLint;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.hardware.input.InputSensorInfo;
@@ -91,6 +92,7 @@ public class SensorPowerStatsProcessorTest {
                 List.of(sensor1, sensor2, sensor3));
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void testPowerEstimation() {
         PowerComponentAggregatedPowerStats stats = createAggregatedPowerStats(

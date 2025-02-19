@@ -69,12 +69,15 @@ class PhoneCallPowerStatsProcessor extends PowerStatsProcessor {
         // processor. All that remains to be done is copy the estimates over.
         MultiStateStats.States.forEachTrackedStateCombination(deviceStateConfig,
                 states -> {
-                    mobileRadioStats.getDeviceStats(mTmpMobileRadioDeviceStats, states);
-                    double callPowerEstimate =
-                            mMobileRadioStatsLayout.getDeviceCallPowerEstimate(
-                                    mTmpMobileRadioDeviceStats);
-                    mStatsLayout.setDevicePowerEstimate(mTmpDeviceStats, callPowerEstimate);
-                    stats.setDeviceStats(states, mTmpDeviceStats);
+                    if (!mobileRadioStats.getDeviceStats(mTmpMobileRadioDeviceStats, states)) {
+                        return;
+                    }
+                    double callPowerEstimate = mMobileRadioStatsLayout.getDeviceCallPowerEstimate(
+                            mTmpMobileRadioDeviceStats);
+                    if (callPowerEstimate != 0) {
+                        mStatsLayout.setDevicePowerEstimate(mTmpDeviceStats, callPowerEstimate);
+                        stats.setDeviceStats(states, mTmpDeviceStats);
+                    }
                 });
     }
 }

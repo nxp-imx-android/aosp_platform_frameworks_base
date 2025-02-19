@@ -33,6 +33,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.Mockito.when;
 
+import android.annotation.SuppressLint;
 import android.hardware.power.stats.EnergyConsumerAttribution;
 import android.hardware.power.stats.EnergyConsumerResult;
 import android.hardware.power.stats.EnergyConsumerType;
@@ -154,6 +155,7 @@ public class CustomEnergyConsumerPowerStatsTest {
                 .isEqualTo(6000);
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void processStats() throws Exception {
         AggregatedPowerStats aggregatedPowerStats = createAggregatedPowerStats();

@@ -298,12 +298,16 @@ class SensorPowerStatsProcessor extends PowerStatsProcessor {
                 continue;
             }
 
-            if (!stats.getDeviceStats(mTmpDeviceStatsArray, estimation.stateValues)) {
+            double power = ((Intermediates) estimation.intermediates).power;
+            if (power == 0) {
                 continue;
             }
 
-            mStatsLayout.setDevicePowerEstimate(mTmpDeviceStatsArray,
-                    ((Intermediates) estimation.intermediates).power);
+            if (!stats.getDeviceStats(mTmpDeviceStatsArray, estimation.stateValues)) {
+                Arrays.fill(mTmpDeviceStatsArray, 0);
+            }
+
+            mStatsLayout.setDevicePowerEstimate(mTmpDeviceStatsArray, power);
             stats.setDeviceStats(estimation.stateValues, mTmpDeviceStatsArray);
         }
     }
