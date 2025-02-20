@@ -21,6 +21,7 @@
 
 #include <array>
 #include <limits>
+#include <optional>
 #include <set>
 #include <span>
 #include <unordered_map>
@@ -167,9 +168,7 @@ class AssetManager2 {
     return configurations_;
   }
 
-  inline void SetDefaultLocale(uint32_t default_locale) {
-    default_locale_ = default_locale;
-  }
+  void SetDefaultLocale(const std::optional<ResTable_config> default_locale);
 
   void SetOverlayConstraints(int32_t display_id, int32_t device_id);
 
@@ -481,7 +480,7 @@ class AssetManager2 {
   // without taking too much memory.
   std::array<uint8_t, std::numeric_limits<uint8_t>::max() + 1> package_ids_ = {};
 
-  uint32_t default_locale_ = 0;
+  std::optional<ResTable_config> default_locale_;
 
   // The current configurations set for this AssetManager. When this changes, cached resources
   // may need to be purged.
