@@ -247,14 +247,13 @@ public interface KeyguardModule {
     @Provides
     @SysUISingleton
     static BlurConfig provideBlurConfig(@Main Resources resources) {
-        int minBlurRadius = resources.getDimensionPixelSize(R.dimen.min_window_blur_radius);
         int maxBlurRadius =
                 Flags.notificationShadeBlur() || Flags.bouncerUiRevamp()
                         || Flags.glanceableHubBlurredBackground()
                         ? resources.getDimensionPixelSize(R.dimen.max_shade_window_blur_radius)
                         : resources.getDimensionPixelSize(R.dimen.max_window_blur_radius);
 
-        return new BlurConfig(minBlurRadius, maxBlurRadius);
+        return new BlurConfig(0.0f, maxBlurRadius);
     }
 
     /** */
