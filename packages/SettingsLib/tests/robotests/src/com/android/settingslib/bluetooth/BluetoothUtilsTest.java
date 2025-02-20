@@ -15,7 +15,9 @@
  */
 package com.android.settingslib.bluetooth;
 
+import static com.android.settingslib.bluetooth.BluetoothUtils.getInputDevice;
 import static com.android.settingslib.bluetooth.BluetoothUtils.isAvailableAudioSharingMediaBluetoothDevice;
+import static com.android.settingslib.bluetooth.BluetoothUtils.isDeviceStylus;
 import static com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast.UNKNOWN_VALUE_PLACEHOLDER;
 import static com.android.settingslib.flags.Flags.FLAG_ENABLE_DETERMINING_ADVANCED_DETAILS_HEADER_WITH_METADATA;
 
@@ -42,6 +44,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.hardware.input.InputManager;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -51,6 +54,7 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.util.Pair;
+import android.view.InputDevice;
 
 import com.android.internal.R;
 import com.android.settingslib.flags.Flags;
@@ -97,14 +101,18 @@ public class BluetoothUtilsTest {
     @Mock private LocalBluetoothLeBroadcastAssistant mAssistant;
     @Mock private CachedBluetoothDeviceManager mDeviceManager;
     @Mock private BluetoothLeBroadcastReceiveState mLeBroadcastReceiveState;
+    @Mock
+    private InputManager mInputManager;
 
     private Context mContext;
     private ShadowBluetoothAdapter mShadowBluetoothAdapter;
+    private final InputDevice mInputDevice = mock(InputDevice.class);
     private static final String STRING_METADATA = "string_metadata";
     private static final String LE_AUDIO_SHARING_METADATA = "le_audio_sharing";
     private static final String BOOL_METADATA = "true";
     private static final String INT_METADATA = "25";
     private static final int METADATA_FAST_PAIR_CUSTOMIZED_FIELDS = 25;
+    private static final int TEST_DEVICE_ID = 123;
     private static final String KEY_HEARABLE_CONTROL_SLICE = "HEARABLE_CONTROL_SLICE_WITH_WIDTH";
     private static final String CONTROL_METADATA =
             "<HEARABLE_CONTROL_SLICE_WITH_WIDTH>"
@@ -115,6 +123,7 @@ public class BluetoothUtilsTest {
     private static final String FAKE_TEMP_BOND_METADATA = "<TEMP_BOND_TYPE>fake</TEMP_BOND_TYPE>";
     private static final String TEST_EXCLUSIVE_MANAGER_PACKAGE = "com.test.manager";
     private static final String TEST_EXCLUSIVE_MANAGER_COMPONENT = "com.test.manager/.component";
+    private static final String TEST_ADDRESS = "11:22:33:44:55:66";
     private static final int TEST_BROADCAST_ID = 25;
 
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -134,6 +143,10 @@ public class BluetoothUtilsTest {
         when(mA2dpProfile.getProfileId()).thenReturn(BluetoothProfile.A2DP);
         when(mLeAudioProfile.getProfileId()).thenReturn(BluetoothProfile.LE_AUDIO);
         when(mHearingAid.getProfileId()).thenReturn(BluetoothProfile.HEARING_AID);
+        when(mContext.getSystemService(InputManager.class)).thenReturn(mInputManager);
+        when(mInputManager.getInputDeviceIds()).thenReturn(new int[]{TEST_DEVICE_ID});
+        when(mInputManager.getInputDeviceBluetoothAddress(TEST_DEVICE_ID)).thenReturn(TEST_ADDRESS);
+        when(mInputManager.getInputDevice(TEST_DEVICE_ID)).thenReturn(mInputDevice);
     }
 
     @Test
@@ -1097,9 +1110,8 @@ public class BluetoothUtilsTest {
 
     @Test
     public void getAudioDeviceAttributesForSpatialAudio_bleHeadset() {
-        String address = "11:22:33:44:55:66";
         when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
-        when(mCachedBluetoothDevice.getAddress()).thenReturn(address);
+        when(mCachedBluetoothDevice.getAddress()).thenReturn(TEST_ADDRESS);
         when(mCachedBluetoothDevice.getProfiles()).thenReturn(List.of(mLeAudioProfile));
         when(mLeAudioProfile.isEnabled(mBluetoothDevice)).thenReturn(true);
 
@@ -1112,14 +1124,13 @@ public class BluetoothUtilsTest {
                         new AudioDeviceAttributes(
                                 AudioDeviceAttributes.ROLE_OUTPUT,
                                 AudioDeviceInfo.TYPE_BLE_HEADSET,
-                                address));
+                                TEST_ADDRESS));
     }
 
     @Test
     public void getAudioDeviceAttributesForSpatialAudio_bleSpeaker() {
-        String address = "11:22:33:44:55:66";
         when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
-        when(mCachedBluetoothDevice.getAddress()).thenReturn(address);
+        when(mCachedBluetoothDevice.getAddress()).thenReturn(TEST_ADDRESS);
         when(mCachedBluetoothDevice.getProfiles()).thenReturn(List.of(mLeAudioProfile));
         when(mLeAudioProfile.isEnabled(mBluetoothDevice)).thenReturn(true);
 
@@ -1132,14 +1143,14 @@ public class BluetoothUtilsTest {
                         new AudioDeviceAttributes(
                                 AudioDeviceAttributes.ROLE_OUTPUT,
                                 AudioDeviceInfo.TYPE_BLE_SPEAKER,
-                                address));
+                                TEST_ADDRESS));
     }
 
     @Test
     public void getAudioDeviceAttributesForSpatialAudio_a2dp() {
-        String address = "11:22:33:44:55:66";
+
         when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
-        when(mCachedBluetoothDevice.getAddress()).thenReturn(address);
+        when(mCachedBluetoothDevice.getAddress()).thenReturn(TEST_ADDRESS);
         when(mCachedBluetoothDevice.getProfiles()).thenReturn(List.of(mA2dpProfile));
         when(mA2dpProfile.isEnabled(mBluetoothDevice)).thenReturn(true);
 
@@ -1152,14 +1163,13 @@ public class BluetoothUtilsTest {
                         new AudioDeviceAttributes(
                                 AudioDeviceAttributes.ROLE_OUTPUT,
                                 AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
-                                address));
+                                TEST_ADDRESS));
     }
 
     @Test
     public void getAudioDeviceAttributesForSpatialAudio_hearingAid() {
-        String address = "11:22:33:44:55:66";
         when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
-        when(mCachedBluetoothDevice.getAddress()).thenReturn(address);
+        when(mCachedBluetoothDevice.getAddress()).thenReturn(TEST_ADDRESS);
         when(mCachedBluetoothDevice.getProfiles()).thenReturn(List.of(mHearingAid));
         when(mHearingAid.isEnabled(mBluetoothDevice)).thenReturn(true);
 
@@ -1172,7 +1182,7 @@ public class BluetoothUtilsTest {
                         new AudioDeviceAttributes(
                                 AudioDeviceAttributes.ROLE_OUTPUT,
                                 AudioDeviceInfo.TYPE_HEARING_AID,
-                                address));
+                                TEST_ADDRESS));
     }
 
     @Test
@@ -1374,5 +1384,55 @@ public class BluetoothUtilsTest {
         BluetoothUtils.setTemporaryBondMetadata(mBluetoothDevice);
         verify(mBluetoothDevice).setMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS,
                 TEMP_BOND_METADATA.getBytes());
+    }
+
+    @Test
+    public void getInputDevice_addressNotMatched_returnsNull() {
+        assertThat(getInputDevice(mContext, "123")).isNull();
+    }
+
+    @Test
+    public void getInputDevice_isInputDevice_returnsInputDevice() {
+        assertThat(getInputDevice(mContext, TEST_ADDRESS)).isEqualTo(mInputDevice);
+    }
+
+    @Test
+    public void isDeviceStylus_noDevices_false() {
+        assertThat(isDeviceStylus(null, null)).isFalse();
+    }
+
+    @Test
+    public void isDeviceStylus_nonStylusInputDevice_false() {
+        InputDevice inputDevice = new InputDevice.Builder()
+                .setSources(InputDevice.SOURCE_DPAD)
+                .build();
+
+        assertThat(isDeviceStylus(inputDevice, null)).isFalse();
+    }
+
+    @Test
+    public void isDeviceStylus_stylusInputDevice_true() {
+        InputDevice inputDevice = new InputDevice.Builder()
+                .setSources(InputDevice.SOURCE_STYLUS)
+                .build();
+
+        assertThat(isDeviceStylus(inputDevice, null)).isTrue();
+    }
+
+    @Test
+    public void isDeviceStylus_nonStylusBluetoothDevice_false() {
+        when(mBluetoothDevice.getMetadata(BluetoothDevice.METADATA_DEVICE_TYPE)).thenReturn(
+                BluetoothDevice.DEVICE_TYPE_WATCH.getBytes());
+
+        assertThat(isDeviceStylus(null, mCachedBluetoothDevice)).isFalse();
+    }
+
+    @Test
+    public void isDeviceStylus_stylusBluetoothDevice_true() {
+        when(mBluetoothDevice.getMetadata(BluetoothDevice.METADATA_DEVICE_TYPE)).thenReturn(
+                BluetoothDevice.DEVICE_TYPE_STYLUS.getBytes());
+        when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
+
+        assertThat(isDeviceStylus(null, mCachedBluetoothDevice)).isTrue();
     }
 }
