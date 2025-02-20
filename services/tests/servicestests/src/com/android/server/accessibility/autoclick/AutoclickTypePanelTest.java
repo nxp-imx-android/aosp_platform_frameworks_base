@@ -21,6 +21,9 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AutoclickType;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.CORNER_BOTTOM_LEFT;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.CORNER_BOTTOM_RIGHT;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.CORNER_TOP_RIGHT;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.ClickPanelControllerInterface;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -31,6 +34,7 @@ import android.testing.AndroidTestingRunner;
 import android.testing.TestableContext;
 import android.testing.TestableLooper;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
@@ -213,6 +217,105 @@ public class AutoclickTypePanelTest {
         assertThat(mAutoclickTypePanel.isPaused()).isFalse();
     }
 
+    @Test
+    public void onTouch_dragMove_updatesPosition() {
+        View contentView = mAutoclickTypePanel.getContentViewForTesting();
+        WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParamsForTesting();
+        int[] panelLocation = new int[2];
+        contentView.getLocationOnScreen(panelLocation);
+
+        // Define movement delta for both x and y directions.
+        int delta = 15;
+
+        // Dispatch initial down event.
+        float touchX = panelLocation[0] + 10;
+        float touchY = panelLocation[1] + 10;
+        MotionEvent downEvent = MotionEvent.obtain(
+                0, 0,
+                MotionEvent.ACTION_DOWN, touchX, touchY, 0);
+        contentView.dispatchTouchEvent(downEvent);
+
+        // Create move event with delta, move from (x, y) to (x + delta, y + delta)
+        MotionEvent moveEvent = MotionEvent.obtain(
+                0, 0,
+                MotionEvent.ACTION_MOVE, touchX + delta, touchY + delta, 0);
+        contentView.dispatchTouchEvent(moveEvent);
+
+        // Verify position update.
+        assertThat(mAutoclickTypePanel.getIsDraggingForTesting()).isTrue();
+        assertThat(params.gravity).isEqualTo(Gravity.LEFT | Gravity.TOP);
+        assertThat(params.x).isEqualTo(panelLocation[0] + delta);
+        assertThat(params.y).isEqualTo(panelLocation[1] + delta);
+    }
+
+    @Test
+    public void dragAndEndAtRight_snapsToRightSide() {
+        View contentView = mAutoclickTypePanel.getContentViewForTesting();
+        WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParamsForTesting();
+        int[] panelLocation = new int[2];
+        contentView.getLocationOnScreen(panelLocation);
+
+        int screenWidth = mTestableContext.getResources().getDisplayMetrics().widthPixels;
+
+        // Verify initial corner is bottom-right.
+        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting())
+                .isEqualTo(CORNER_BOTTOM_RIGHT);
+
+        dispatchDragSequence(contentView,
+                /* startX =*/ panelLocation[0] + 10, /* startY =*/ panelLocation[1] + 10,
+                /* endX =*/ (float) (screenWidth * 3) / 4, /* endY =*/ panelLocation[1] + 10);
+
+        // Verify snapping to the right.
+        assertThat(params.gravity).isEqualTo(Gravity.END | Gravity.TOP);
+        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting())
+                .isEqualTo(CORNER_TOP_RIGHT);
+    }
+
+    @Test
+    public void dragAndEndAtLeft_snapsToLeftSide() {
+        View contentView = mAutoclickTypePanel.getContentViewForTesting();
+        WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParamsForTesting();
+        int[] panelLocation = new int[2];
+        contentView.getLocationOnScreen(panelLocation);
+
+        int screenWidth = mTestableContext.getResources().getDisplayMetrics().widthPixels;
+
+        // Verify initial corner is bottom-right.
+        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting())
+                .isEqualTo(CORNER_BOTTOM_RIGHT);
+
+        dispatchDragSequence(contentView,
+                /* startX =*/ panelLocation[0] + 10, /* startY =*/ panelLocation[1] + 10,
+                /* endX =*/ (float) screenWidth / 4, /* endY =*/ panelLocation[1] + 10);
+
+        // Verify snapping to the left.
+        assertThat(params.gravity).isEqualTo(Gravity.START | Gravity.TOP);
+        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting())
+                .isEqualTo(CORNER_BOTTOM_LEFT);
+    }
+
+    // Helper method to handle drag event sequences
+    private void dispatchDragSequence(View view, float startX, float startY, float endX,
+            float endY) {
+        // Down event
+        MotionEvent downEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, startX, startY,
+                0);
+        view.dispatchTouchEvent(downEvent);
+
+        // Move event
+        MotionEvent moveEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_MOVE, endX, endY, 0);
+        view.dispatchTouchEvent(moveEvent);
+
+        // Up event
+        MotionEvent upEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, endX, endY, 0);
+        view.dispatchTouchEvent(upEvent);
+
+        // Clean up
+        downEvent.recycle();
+        moveEvent.recycle();
+        upEvent.recycle();
+    }
+
     private void verifyButtonHasSelectedStyle(@NonNull LinearLayout button) {
         GradientDrawable gradientDrawable = (GradientDrawable) button.getBackground();
         assertThat(gradientDrawable.getColor().getDefaultColor())
@@ -220,7 +323,7 @@ public class AutoclickTypePanelTest {
     }
 
     private void verifyPanelPosition(int[] expectedPosition) {
-        WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParams();
+        WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParamsForTesting();
         assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting()).isEqualTo(
                 expectedPosition[0]);
         assertThat(params.gravity).isEqualTo(expectedPosition[1]);
