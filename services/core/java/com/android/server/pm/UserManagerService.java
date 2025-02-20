@@ -2621,20 +2621,22 @@ public class UserManagerService extends IUserManager.Stub {
      * Valid user is the current user or the system or in the same profile group as the current
      * user. Visible background users are not valid calling users.
      */
-    public static void enforceCurrentUserIfVisibleBackgroundEnabled(@UserIdInt int currentUserId) {
+    public static void enforceCurrentUserIfVisibleBackgroundEnabled() {
         if (!UserManager.isVisibleBackgroundUsersEnabled()) {
             return;
         }
         final int callingUserId = UserHandle.getCallingUserId();
-        if (DBG) {
-            Slog.d(LOG_TAG, "enforceValidCallingUser: callingUserId=" + callingUserId
-                    + " isSystemUser=" + (callingUserId == USER_SYSTEM)
-                    + " currentUserId=" + currentUserId
-                    + " callingPid=" + Binder.getCallingPid()
-                    + " callingUid=" + Binder.getCallingUid());
-        }
         final long ident = Binder.clearCallingIdentity();
         try {
+            final int currentUserId = ActivityManager.getCurrentUser();
+            if (DBG) {
+                Slog.d(LOG_TAG, "enforceCurrentUserIfVisibleBackgroundEnabled:"
+                        + " callingUserId=" + callingUserId
+                        + " isSystemUser=" + (callingUserId == USER_SYSTEM)
+                        + " currentUserId=" + currentUserId
+                        + " callingPid=" + Binder.getCallingPid()
+                        + " callingUid=" + Binder.getCallingUid());
+            }
             if (callingUserId != USER_SYSTEM && callingUserId != currentUserId
                     && !UserManagerService.getInstance()
                     .isSameProfileGroup(callingUserId, currentUserId)) {
