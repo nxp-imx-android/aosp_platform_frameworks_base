@@ -771,3 +771,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_taskbar_overflow"
+    namespace: "lse_desktop_experience"
+    description: "Show recent apps in the taskbar overflow."
+    bug: "368119679"
+}
