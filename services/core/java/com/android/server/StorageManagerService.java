@@ -49,7 +49,6 @@ import static com.android.internal.util.XmlUtils.writeStringAttribute;
 import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
 import static org.xmlpull.v1.XmlPullParser.START_TAG;
 
-import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
@@ -2443,6 +2442,7 @@ class StorageManagerService extends IStorageManager.Stub
             } catch (Installer.InstallerException e) {
                 Slog.e(TAG, "Failed unmount mirror data", e);
             }
+            extendWatchdogTimeout("#unmount might be slow");
             mVold.unmount(vol.getId());
             mStorageSessionController.onVolumeUnmount(vol.getImmutableVolumeInfo());
         } catch (Exception e) {
