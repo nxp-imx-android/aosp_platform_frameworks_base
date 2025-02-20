@@ -5232,7 +5232,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 }
             }
             return singleCategoryKeyedEntries;
-        } catch (IOException e) {
+        } catch (Exception e) {
             Slog.e(TAG, "Failed to load generated previews for " + provider, e);
             return new SparseArray<>();
         }
@@ -5261,7 +5261,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             try {
                 provider.info.generatedPreviewCategories = readGeneratedPreviewCategoriesFromProto(
                         input);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Slog.e(TAG, "Failed to read generated previews from file for " + provider, e);
                 previewsFile.delete();
                 provider.info.generatedPreviewCategories = 0;
@@ -5314,7 +5314,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                     scheduleNotifyGroupHostsForProvidersChangedLocked(provider.getUserId());
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             if (file != null && stream != null) {
                 file.failWrite(stream);
             }
