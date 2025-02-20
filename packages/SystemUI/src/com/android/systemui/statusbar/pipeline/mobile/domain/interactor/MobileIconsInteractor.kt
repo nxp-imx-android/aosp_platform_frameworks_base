@@ -34,6 +34,7 @@ import com.android.systemui.statusbar.pipeline.dagger.MobileSummaryLog
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepository
+import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
 import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlot
 import com.android.systemui.statusbar.pipeline.shared.data.repository.ConnectivityRepository
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
@@ -309,8 +310,14 @@ constructor(
     override val isStackable =
         if (NewStatusBarIcons.isEnabled && StatusBarRootModernization.isEnabled) {
                 icons.flatMapLatest { icons ->
-                    combine(icons.map { it.isNonTerrestrial }) {
-                        it.size == 2 && it.none { isNonTerrestrial -> isNonTerrestrial }
+                    combine(icons.map { it.signalLevelIcon }) { signalLevelIcons ->
+                        // These are only stackable if:
+                        // - They are cellular
+                        // - There's exactly two
+                        // - They have the same number of levels
+                        signalLevelIcons.filterIsInstance<SignalIconModel.Cellular>().let {
+                            it.size == 2 && it[0].numberOfLevels == it[1].numberOfLevels
+                        }
                     }
                 }
             } else {

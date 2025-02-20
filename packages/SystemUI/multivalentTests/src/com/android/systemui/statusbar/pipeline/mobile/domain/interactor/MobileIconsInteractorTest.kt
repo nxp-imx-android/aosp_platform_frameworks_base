@@ -39,6 +39,7 @@ import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepositoryLogbufferName
 import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlot
@@ -936,6 +937,34 @@ class MobileIconsInteractorTest : SysuiTestCase() {
             connectionsRepository.setSubscriptions(listOf(SUB_1, exclusivelyNonTerrestrialSub))
             assertThat(latest).isFalse()
         }
+
+    @Test
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    fun isStackable_checksForNumberOfBars() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isStackable)
+
+            // Number of levels is the same for both
+            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2))
+            setNumberOfLevelsForSubId(SUB_1_ID, 5)
+            setNumberOfLevelsForSubId(SUB_2_ID, 5)
+
+            assertThat(latest).isTrue()
+
+            // Change the number of levels to be different than SUB_2
+            setNumberOfLevelsForSubId(SUB_1_ID, 6)
+
+            assertThat(latest).isFalse()
+        }
+
+    private fun setNumberOfLevelsForSubId(subId: Int, numberOfLevels: Int) {
+        with(kosmos) {
+            (fakeMobileConnectionsRepository.getRepoForSubId(subId)
+                    as FakeMobileConnectionRepository)
+                .numberOfLevels
+                .value = numberOfLevels
+        }
+    }
 
     /**
      * Convenience method for creating a pair of subscriptions to test the filteredSubscriptions
