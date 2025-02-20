@@ -37,7 +37,6 @@ import com.android.app.animation.Interpolators
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_CLOSE_TASK
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.wm.shell.common.ShellExecutor
-import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.transition.Transitions
 import java.util.function.Supplier
 
@@ -49,7 +48,7 @@ constructor(
     private val mainExecutor: ShellExecutor,
     private val animExecutor: ShellExecutor,
     private val transactionSupplier: Supplier<Transaction> = Supplier { Transaction() },
-    @ShellMainThread private val handler: Handler,
+    private val animHandler: Handler,
 ) : Transitions.TransitionHandler {
 
     private val runningAnimations = mutableMapOf<IBinder, List<Animator>>()
@@ -95,7 +94,7 @@ constructor(
             interactionJankMonitor.begin(
                 lastChangeLeash,
                 context,
-                handler,
+                animHandler,
                 CUJ_DESKTOP_MODE_CLOSE_TASK,
             )
         }

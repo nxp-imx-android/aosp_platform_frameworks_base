@@ -18,14 +18,17 @@ package com.android.wm.shell.desktopmode
 
 import android.animation.Animator
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.os.Handler
 import android.os.IBinder
-import android.util.DisplayMetrics
 import android.view.SurfaceControl.Transaction
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
+import com.android.internal.jank.InteractionJankMonitor
+import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.ShellExecutor
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.animation.MinimizeAnimator.create
 import com.android.wm.shell.transition.Transitions
@@ -41,6 +44,7 @@ class DesktopMinimizationTransitionHandler(
     private val mainExecutor: ShellExecutor,
     private val animExecutor: ShellExecutor,
     private val displayController: DisplayController,
+    private val animHandler: Handler,
 ) : Transitions.TransitionHandler {
 
     /** Shouldn't handle anything */
@@ -90,10 +94,30 @@ class DesktopMinimizationTransitionHandler(
         val t = Transaction()
         val sc = change.leash
         finishTransaction.hide(sc)
-        val displayMetrics: DisplayMetrics? =
-            change.taskInfo?.let {
-                displayController.getDisplayContext(it.displayId)?.getResources()?.displayMetrics
-            }
-        return displayMetrics?.let { create(it, change, t, onAnimFinish) }
+        val displayContext =
+            change.taskInfo?.let { displayController.getDisplayContext(it.displayId) }
+        if (displayContext == null) {
+            logW(
+                "displayContext is null for taskId=${change.taskInfo?.taskId}, " +
+                    "displayId=${change.taskInfo?.displayId}"
+            )
+            return null
+        }
+        return create(
+            displayContext,
+            change,
+            t,
+            onAnimFinish,
+            InteractionJankMonitor.getInstance(),
+            animHandler,
+        )
+    }
+
+    private companion object {
+        private fun logW(msg: String, vararg arguments: Any?) {
+            ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+        }
+
+        const val TAG = "DesktopMinimizationTransitionHandler"
     }
 }

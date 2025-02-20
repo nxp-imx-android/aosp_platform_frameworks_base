@@ -21,6 +21,7 @@ import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WindowingMode
+import android.os.Handler
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
 import android.view.SurfaceControl
@@ -56,7 +57,12 @@ class DesktopMinimizationTransitionHandlerTest : ShellTestCase() {
     @Before
     fun setUp() {
         handler =
-            DesktopMinimizationTransitionHandler(testExecutor, testExecutor, displayController)
+            DesktopMinimizationTransitionHandler(
+                testExecutor,
+                testExecutor,
+                displayController,
+                mock<Handler>(),
+            )
         whenever(displayController.getDisplayContext(any())).thenReturn(mContext)
     }
 
