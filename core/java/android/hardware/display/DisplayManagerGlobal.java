@@ -1499,7 +1499,7 @@ public final class DisplayManagerGlobal {
     }
 
     @VisibleForTesting
-    static final class DisplayListenerDelegate {
+    public static final class DisplayListenerDelegate {
         public final DisplayListener mListener;
         public volatile long mInternalEventFlagsMask;
 
@@ -1536,7 +1536,7 @@ public final class DisplayManagerGlobal {
         }
 
         @VisibleForTesting
-        boolean isEventFilterExplicit() {
+        public boolean isEventFilterExplicit() {
             return mIsEventFilterExplicit;
         }
 
@@ -1892,7 +1892,7 @@ public final class DisplayManagerGlobal {
     }
 
     @VisibleForTesting
-    CopyOnWriteArrayList<DisplayListenerDelegate> getDisplayListeners() {
+    public CopyOnWriteArrayList<DisplayListenerDelegate> getDisplayListeners() {
         return mDisplayListeners;
     }
 }
