@@ -4059,7 +4059,7 @@ class UserController implements Handler.Callback {
             synchronized (mUserSwitchingDialogLock) {
                 dismissUserSwitchingDialog(null);
                 mUserSwitchingDialog = new UserSwitchingDialog(mService.mContext, fromUser, toUser,
-                        switchingFromSystemUserMessage, switchingToSystemUserMessage);
+                        mHandler, switchingFromSystemUserMessage, switchingToSystemUserMessage);
                 mUserSwitchingDialog.show(onShown);
             }
         }
