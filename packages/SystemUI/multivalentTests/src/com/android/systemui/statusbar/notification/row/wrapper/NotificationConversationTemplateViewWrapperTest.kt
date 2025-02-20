@@ -135,6 +135,7 @@ class NotificationConversationTemplateViewWrapperTest : SysuiTestCase() {
                     .thenReturn(mock())
                 whenever(requireViewById<View>(R.id.app_name_text)).thenReturn(mock())
                 whenever(requireViewById<View>(R.id.conversation_text)).thenReturn(mock())
+                whenever(requireViewById<View>(R.id.title)).thenReturn(mock())
             }
         return mockView
     }
