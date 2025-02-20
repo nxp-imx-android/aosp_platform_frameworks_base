@@ -101,8 +101,15 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 }
 
                 @Override
-                public void toggleAutoclickPause() {
-                    // TODO(b/388872274): allows users to pause the autoclick.
+                public void toggleAutoclickPause(boolean paused) {
+                    if (paused) {
+                        if (mClickScheduler != null) {
+                            mClickScheduler.cancel();
+                        }
+                        if (mAutoclickIndicatorScheduler != null) {
+                            mAutoclickIndicatorScheduler.cancel();
+                        }
+                    }
                 }
             };
 
@@ -133,7 +140,9 @@ public class AutoclickController extends BaseEventStreamTransformation {
                         mAutoclickIndicatorScheduler);
             }
 
-            handleMouseMotion(event, policyFlags);
+            if (!isPaused()) {
+                handleMouseMotion(event, policyFlags);
+            }
         } else if (mClickScheduler != null) {
             mClickScheduler.cancel();
         }
@@ -214,6 +223,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
             default:
                 mClickScheduler.cancel();
         }
+    }
+
+    private boolean isPaused() {
+        // TODO (b/397460424): Unpause when hovering over panel.
+        return Flags.enableAutoclickIndicator() && mAutoclickTypePanel.isPaused();
     }
 
     /**
