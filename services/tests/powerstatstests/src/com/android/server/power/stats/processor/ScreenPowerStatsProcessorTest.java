@@ -29,6 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
+import android.annotation.SuppressLint;
 import android.hardware.power.stats.EnergyConsumerResult;
 import android.hardware.power.stats.EnergyConsumerType;
 import android.os.BatteryConsumer;
@@ -278,6 +279,7 @@ public class ScreenPowerStatsProcessorTest {
                 .of(expectedDozePowerEstimate);
     }
 
+    @SuppressLint("CheckResult")
     private void assertUidPowerEstimate(
             PowerComponentAggregatedPowerStats aggregatedStats, int uid,
             int powerState, int screenState, double expectedScreenPowerEstimate) {

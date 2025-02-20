@@ -259,7 +259,9 @@ class MobileRadioPowerStatsProcessor extends PowerStatsProcessor {
 
         stats.forEachStateStatsKey(key -> {
             RxTxPowerEstimators estimators = mRxTxPowerEstimators.get(key);
-            stats.getStateStats(mTmpStateStatsArray, key, deviceStates);
+            if (!stats.getStateStats(mTmpStateStatsArray, key, deviceStates)) {
+                return;
+            }
             long rxTime = mStatsLayout.getStateRxTime(mTmpStateStatsArray);
             intermediates.rxPower += estimators.mRxPowerEstimator.calculatePower(rxTime);
             for (int txLevel = 0; txLevel < ModemActivityInfo.getNumTxPowerLevels(); txLevel++) {

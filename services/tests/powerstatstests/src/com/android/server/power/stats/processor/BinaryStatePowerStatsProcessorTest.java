@@ -30,6 +30,7 @@ import static com.android.server.power.stats.processor.AggregatedPowerStatsConfi
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.annotation.SuppressLint;
 import android.os.BatteryConsumer;
 import android.os.BatteryStats;
 import android.os.PersistableBundle;
@@ -74,6 +75,7 @@ public class BinaryStatePowerStatsProcessorTest {
         }
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void powerProfileModel() {
         BinaryStatePowerStatsLayout statsLayout = new BinaryStatePowerStatsLayout();
@@ -138,12 +140,14 @@ public class BinaryStatePowerStatsProcessorTest {
         assertThat(statsLayout.getUidPowerEstimate(uidStats))
                 .isWithin(PRECISION).of(expectedPower2);
 
-        stats.getUidStats(uidStats, APP_UID2,
-                states(POWER_STATE_OTHER, SCREEN_STATE_ON, PROCESS_STATE_CACHED));
-        assertThat(statsLayout.getUidPowerEstimate(uidStats))
-                .isWithin(PRECISION).of(0);
+        if (stats.getUidStats(uidStats, APP_UID2,
+                states(POWER_STATE_OTHER, SCREEN_STATE_ON, PROCESS_STATE_CACHED))) {
+            assertThat(statsLayout.getUidPowerEstimate(uidStats))
+                    .isWithin(PRECISION).of(0);
+        }
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void energyConsumerModel() {
         BinaryStatePowerStatsLayout
@@ -232,10 +236,11 @@ public class BinaryStatePowerStatsProcessorTest {
         assertThat(statsLayout.getUidPowerEstimate(uidStats))
                 .isWithin(PRECISION).of(expectedPower2);
 
-        stats.getUidStats(uidStats, APP_UID2,
-                states(POWER_STATE_OTHER, SCREEN_STATE_ON, PROCESS_STATE_CACHED));
-        assertThat(statsLayout.getUidPowerEstimate(uidStats))
-                .isWithin(PRECISION).of(0);
+        if (stats.getUidStats(uidStats, APP_UID2,
+                states(POWER_STATE_OTHER, SCREEN_STATE_ON, PROCESS_STATE_CACHED))) {
+            assertThat(statsLayout.getUidPowerEstimate(uidStats))
+                    .isWithin(PRECISION).of(0);
+        }
     }
 
 

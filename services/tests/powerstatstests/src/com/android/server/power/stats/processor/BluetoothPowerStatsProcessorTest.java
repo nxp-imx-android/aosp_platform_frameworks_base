@@ -33,6 +33,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothActivityEnergyInfo;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.UidTraffic;
@@ -161,6 +162,7 @@ public class BluetoothPowerStatsProcessorTest {
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)).thenReturn(true);
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void powerProfileModel_mostlyDataTransfer() {
         // No power monitoring hardware
@@ -262,6 +264,7 @@ public class BluetoothPowerStatsProcessorTest {
                 .isWithin(PRECISION).of(expectedPower2 * 0.75);
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void powerProfileModel_mostlyScan() {
         // No power monitoring hardware
@@ -361,6 +364,7 @@ public class BluetoothPowerStatsProcessorTest {
                 .isWithin(PRECISION).of(expectedPower2 * 0.75);
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void consumedEnergyModel() {
         when(mConsumedEnergyRetriever.getVoltageMv()).thenReturn(VOLTAGE_MV);

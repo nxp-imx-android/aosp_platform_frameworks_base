@@ -29,6 +29,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.power.stats.EnergyConsumerType;
@@ -159,6 +160,7 @@ public class PhoneCallPowerStatsProcessorTest {
         mStatsRule.setTestPowerProfile("power_profile_test_legacy_modem");
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void copyEstimatesFromMobileRadioPowerStats() {
         AggregatedPowerStatsConfig config = new AggregatedPowerStatsConfig();
