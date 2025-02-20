@@ -203,4 +203,9 @@ public class WatchedVolumeInfo extends WatchableImpl {
     public boolean isVisibleForWrite(int userId) {
         return mVolumeInfo.isVisibleForWrite(userId);
     }
+
+    @Override
+    public String toString() {
+        return mVolumeInfo.toString();
+    }
 }
