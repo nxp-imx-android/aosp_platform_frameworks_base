@@ -71,7 +71,6 @@ import com.android.internal.app.UnlaunchableAppActivity;
 import com.android.server.LocalServices;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.wm.ActivityInterceptorCallback.ActivityInterceptResult;
-import com.android.window.flags.Flags;
 
 /**
  * A class that contains activity intercepting logic for {@link ActivityStarter#execute()}
@@ -502,33 +501,27 @@ class ActivityStartInterceptor {
         }
 
         boolean intercepted = false;
-        if (Flags.normalizeHomeIntent()) {
-            if (!ACTION_MAIN.equals(mIntent.getAction()) || (!mIntent.hasCategory(CATEGORY_HOME)
-                    && !mIntent.hasCategory(CATEGORY_SECONDARY_HOME))) {
-                // not a home intent
+       if (!ACTION_MAIN.equals(mIntent.getAction()) || (!mIntent.hasCategory(CATEGORY_HOME)
+                && !mIntent.hasCategory(CATEGORY_SECONDARY_HOME))) {
+            // not a home intent
+            return false;
+        }
+
+        if (mComponentSpecified) {
+            final ComponentName homeComponent = mIntent.getComponent();
+            final Intent homeIntent = mService.getHomeIntent();
+            final ActivityInfo aInfo = mService.mRootWindowContainer.resolveHomeActivity(
+                    mUserId, homeIntent);
+            if (!aInfo.getComponentName().equals(homeComponent)) {
+                // Do nothing if the intent is not for the default home component.
                 return false;
             }
+        }
 
-            if (mComponentSpecified) {
-                final ComponentName homeComponent = mIntent.getComponent();
-                final Intent homeIntent = mService.getHomeIntent();
-                final ActivityInfo aInfo = mService.mRootWindowContainer.resolveHomeActivity(
-                        mUserId, homeIntent);
-                if (!aInfo.getComponentName().equals(homeComponent)) {
-                    // Do nothing if the intent is not for the default home component.
-                    return false;
-                }
-            }
-
-            if (!ActivityRecord.isHomeIntent(mIntent) || mComponentSpecified) {
-                // This is not a standard home intent, make it so if possible.
-                normalizeHomeIntent();
-                intercepted = true;
-            }
-        } else {
-            if (!ActivityRecord.isHomeIntent(mIntent)) {
-                return false;
-            }
+        if (!ActivityRecord.isHomeIntent(mIntent) || mComponentSpecified) {
+            // This is not a standard home intent, make it so if possible.
+            normalizeHomeIntent();
+            intercepted = true;
         }
 
         intercepted |= replaceToSecondaryHomeIntentIfNeeded();
