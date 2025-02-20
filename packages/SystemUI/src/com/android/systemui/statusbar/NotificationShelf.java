@@ -50,6 +50,7 @@ import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism;
 import com.android.systemui.statusbar.notification.shelf.NotificationShelfBackgroundView;
 import com.android.systemui.statusbar.notification.shelf.NotificationShelfIconContainer;
@@ -672,7 +673,9 @@ public class NotificationShelf extends ActivatableNotificationView {
             // if the shelf is clipped, lets make sure we also clip the icon
             maxTop = Math.max(maxTop, getTranslationY() + getClipTopAmount());
         }
-        StatusBarIconView icon = row.getEntry().getIcons().getShelfIcon();
+        StatusBarIconView icon = NotificationBundleUi.isEnabled()
+                ? row.getEntryAdapter().getIcons().getShelfIcon()
+                : row.getEntry().getIcons().getShelfIcon();
         float shelfIconPosition = getTranslationY() + icon.getTop() + icon.getTranslationY();
         if (shelfIconPosition < maxTop && !mAmbientState.isFullyHidden()) {
             int top = (int) (maxTop - shelfIconPosition);
@@ -684,7 +687,9 @@ public class NotificationShelf extends ActivatableNotificationView {
     }
 
     private void updateContinuousClipping(final ExpandableNotificationRow row) {
-        StatusBarIconView icon = row.getEntry().getIcons().getShelfIcon();
+        StatusBarIconView icon = NotificationBundleUi.isEnabled()
+                ? row.getEntryAdapter().getIcons().getShelfIcon()
+                : row.getEntry().getIcons().getShelfIcon();
         boolean needsContinuousClipping = ViewState.isAnimatingY(icon) && !mAmbientState.isDozing();
         boolean isContinuousClipping = icon.getTag(TAG_CONTINUOUS_CLIPPING) != null;
         if (needsContinuousClipping && !isContinuousClipping) {
