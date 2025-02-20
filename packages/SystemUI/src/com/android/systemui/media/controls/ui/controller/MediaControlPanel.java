@@ -23,7 +23,10 @@ import static com.android.systemui.Flags.communalHub;
 import static com.android.systemui.Flags.mediaLockscreenLaunchAnimation;
 import static com.android.systemui.media.controls.domain.pipeline.MediaActionsKt.getNotificationActions;
 import static com.android.systemui.media.controls.shared.model.SmartspaceMediaDataKt.NUM_REQUIRED_RECOMMENDATIONS;
-import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_CENTER_ALPHA;
+import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_END_ALPHA;
+import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY;
+import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_START_ALPHA;
+import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
@@ -176,9 +179,7 @@ public class MediaControlPanel {
     protected static final int SMARTSPACE_CARD_DISMISS_EVENT = 761;
 
     private static final float REC_MEDIA_COVER_SCALE_FACTOR = 1.25f;
-    private static final float MEDIA_SCRIM_START_ALPHA = 0.25f;
     private static final float MEDIA_REC_SCRIM_START_ALPHA = 0.15f;
-    private static final float MEDIA_PLAYER_SCRIM_END_ALPHA = 1.0f;
     private static final float MEDIA_REC_SCRIM_END_ALPHA = 1.0f;
 
     private static final Intent SETTINGS_INTENT = new Intent(ACTION_MEDIA_CONTROLS_SETTINGS);
@@ -1093,11 +1094,12 @@ public class MediaControlPanel {
         Drawable albumArt = getScaledBackground(artworkIcon, width, height);
         GradientDrawable gradient = (GradientDrawable) mContext.getDrawable(
                 R.drawable.qs_media_scrim).mutate();
-        float startAlpha = (Flags.mediaControlsA11yColors())
-                ? MEDIA_PLAYER_SCRIM_CENTER_ALPHA
-                : MEDIA_SCRIM_START_ALPHA;
+        if (Flags.mediaControlsA11yColors()) {
+            return setupGradientColorOnDrawable(albumArt, gradient, mutableColorScheme,
+                    MEDIA_PLAYER_SCRIM_START_ALPHA, MEDIA_PLAYER_SCRIM_END_ALPHA);
+        }
         return setupGradientColorOnDrawable(albumArt, gradient, mutableColorScheme,
-                startAlpha, MEDIA_PLAYER_SCRIM_END_ALPHA);
+                MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY, MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY);
     }
 
     @VisibleForTesting
