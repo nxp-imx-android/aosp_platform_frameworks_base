@@ -37,6 +37,7 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -64,6 +65,8 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
     private val rootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     private val mockWindowManager = mock<IWindowManager>()
     private val shellTaskOrganizer = mock<ShellTaskOrganizer>()
+    private val desktopWallpaperActivityTokenProvider =
+        mock<DesktopWallpaperActivityTokenProvider>()
 
     private lateinit var controller: DesktopDisplayModeController
 
@@ -73,6 +76,7 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
     private val fullscreenTask =
         TestRunningTaskInfoBuilder().setWindowingMode(WINDOWING_MODE_FULLSCREEN).build()
     private val defaultTDA = DisplayAreaInfo(MockToken().token(), DEFAULT_DISPLAY, 0)
+    private val wallpaperToken = MockToken().token()
 
     @Before
     fun setUp() {
@@ -86,10 +90,12 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
                 rootTaskDisplayAreaOrganizer,
                 mockWindowManager,
                 shellTaskOrganizer,
+                desktopWallpaperActivityTokenProvider,
             )
         runningTasks.add(freeformTask)
         runningTasks.add(fullscreenTask)
         whenever(shellTaskOrganizer.getRunningTasks(anyInt())).thenReturn(ArrayList(runningTasks))
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(wallpaperToken)
     }
 
     private fun testDisplayWindowingModeSwitch(
@@ -116,8 +122,12 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
                     .startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
                 assertThat(arg.firstValue.changes[defaultTDA.token.asBinder()]?.windowingMode)
                     .isEqualTo(WINDOWING_MODE_FREEFORM)
+                assertThat(arg.firstValue.changes[wallpaperToken.asBinder()]?.windowingMode)
+                    .isEqualTo(WINDOWING_MODE_FULLSCREEN)
                 assertThat(arg.secondValue.changes[defaultTDA.token.asBinder()]?.windowingMode)
                     .isEqualTo(defaultWindowingMode)
+                assertThat(arg.secondValue.changes[wallpaperToken.asBinder()]?.windowingMode)
+                    .isEqualTo(WINDOWING_MODE_FULLSCREEN)
             } else {
                 verify(transitions, never()).startTransition(eq(TRANSIT_CHANGE), any(), isNull())
             }
