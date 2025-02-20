@@ -306,6 +306,8 @@ constructor(
     val animateTilesExpansion: Boolean
         get() = inFirstPage && !mediaSuddenlyAppearingInLandscape
 
+    var isQSExpandingOrCollapsing by mutableStateOf(false)
+
     private val inFirstPage: Boolean
         get() = inFirstPageViewModel.inFirstPage
 
@@ -539,6 +541,7 @@ constructor(
                 println("proposedTranslation", proposedTranslation)
                 println("expansionState", expansionState)
                 println("forceQS", forceQs)
+                println("isShadeExpandingOrCollapsing", isQSExpandingOrCollapsing)
                 printSection("Derived values") {
                     println("headerTranslation", headerTranslation)
                     println("translationScaleY", translationScaleY)
