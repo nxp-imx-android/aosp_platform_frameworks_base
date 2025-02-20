@@ -354,14 +354,10 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"pristupa podacima senzora o vašim vitalnim funkcijama"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Obavještenja"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"prikaz obavještenja"</string>
-    <!-- no translation found for permgrouplab_xr_tracking (7418994009794287471) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (6777198859446500821) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (1194833982988144536) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (9178027369004805829) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"podaci o XR praćenju"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"pristup XR podacima o vama i vašoj okolini"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"osjetljivi podaci o XR praćenju"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"pristup osjetljivim podacima o praćenju, npr. praćenju pogleda"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"preuzimati sadržaj prozora"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Pregleda sadržaj prozora koji trenutno koristite."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"uključiti Istraživanje dodirom"</string>
@@ -657,38 +653,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"Omogućava aplikaciji da mijenja vašu kolekciju fotografija."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"čitanje lokacija iz kolekcije medija"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"Omogućava aplikaciji da čita lokacije iz vaše kolekcije medija."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (7989596289790269059) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (870510233930553355) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6914457357027049512) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (5788889152304524730) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (2272048395128283324) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (2622783922311211866) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (6478233866595566940) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8639715900104966456) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (1309731456372087270) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (231597390513699188) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (6518646430502858641) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (4508880777646198656) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (409126403264393251) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (6223368011593524179) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (7117098718465619023) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (939504041387836853) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"približno praćenje vašeg pogleda"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"Dozvoljava aplikaciji da približno prati vaš pogled."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"praćenje u šta gledate"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"Dozvoljava aplikaciji da pristupa preciznim podacima o pogledu."</string>
+    <string name="permlab_face_tracking" msgid="2272048395128283324">"praćenje vašeg lica"</string>
+    <string name="permdesc_face_tracking" msgid="2622783922311211866">"Dozvoljava aplikaciji da pristupa podacima o praćenju lica."</string>
+    <string name="permlab_hand_tracking" msgid="6478233866595566940">"praćenje vaših ruku"</string>
+    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"Dozvoljava aplikaciji da pristupa podacima o praćenju ruku."</string>
+    <string name="permlab_head_tracking" msgid="1309731456372087270">"praćenje položaja vaše glave"</string>
+    <string name="permdesc_head_tracking" msgid="231597390513699188">"Dozvoljava aplikaciji da pristupa podacima o praćenju položaja glave."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"utvrđivanje vaše neposredne okoline"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"Dozvoljava aplikaciji da pristupa podacima o praćenju vaše neposredne okoline."</string>
+    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"veoma detaljno utvrđivanje vaše neposredne okoline"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Dozvoljava aplikaciji da pristupa podacima o veoma detaljnom praćenju vaše neposredne okoline."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"pristup XR podacima dok aplikacija nije u prvom planu"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Dozvoljava aplikaciji da pristupa XR podacima dok nije u prvom planu."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Koristi biometriju"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Koristi biometriju ili zaključavanje ekrana"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Potvrdite identitet"</string>
@@ -2187,7 +2167,7 @@
     <string name="etws_primary_default_message_tsunami" msgid="5828171463387976279">"Odmah se evakuirajte iz priobalnih područja i područja oko rijeka na sigurnije mjesto kao što su viši predjeli."</string>
     <string name="etws_primary_default_message_earthquake_and_tsunami" msgid="4888224011071875068">"Ostanite smireni i potražite sklonište u blizini."</string>
     <string name="etws_primary_default_message_test" msgid="4583367373909549421">"Test poruka za hitne slučajeve"</string>
-    <string name="notification_reply_button_accessibility" msgid="5235776156579456126">"Odgovori"</string>
+    <string name="notification_reply_button_accessibility" msgid="5235776156579456126">"Odgovorite"</string>
     <string name="etws_primary_default_message_others" msgid="7958161706019130739"></string>
     <string name="mmcc_authentication_reject" msgid="4891965994643876369">"SIM kartica nije dozvoljena za govor"</string>
     <string name="mmcc_imsi_unknown_in_hlr" msgid="227760698553988751">"SIM kartica nije dodijeljena za govor"</string>

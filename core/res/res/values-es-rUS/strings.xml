@@ -282,7 +282,7 @@
     <string name="global_action_toggle_silent_mode" msgid="8464352592860372188">"Modo silencioso"</string>
     <string name="global_action_silent_mode_on_status" msgid="2371892537738632013">"El sonido está Desactivado"</string>
     <string name="global_action_silent_mode_off_status" msgid="6608006545950920042">"El sonido está Activado"</string>
-    <string name="global_actions_toggle_airplane_mode" msgid="6911684460146916206">"Modo de avión"</string>
+    <string name="global_actions_toggle_airplane_mode" msgid="6911684460146916206">"Modo avión"</string>
     <string name="global_actions_airplane_mode_on_status" msgid="5508025516695361936">"El modo avión está Activado"</string>
     <string name="global_actions_airplane_mode_off_status" msgid="8522219771500505475">"El modo avión está Desactivado"</string>
     <string name="global_action_settings" msgid="4671878836947494217">"Configuración"</string>
@@ -354,14 +354,10 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"acceder a los datos de sensores acerca de tus signos vitales"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Notificaciones"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"mostrar notificaciones"</string>
-    <!-- no translation found for permgrouplab_xr_tracking (7418994009794287471) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (6777198859446500821) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (1194833982988144536) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (9178027369004805829) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"datos de seguimiento de realidad extendida"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"acceder a datos de realidad extendida sobre ti y el entorno que te rodea"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"datos sensibles de seguimiento de realidad extendida"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"acceder a datos de seguimiento sensibles, como la mirada"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Recuperar el contenido de las ventanas"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Inspeccionará el contenido de la ventana con la que estés interactuando."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Activar la Exploración táctil"</string>
@@ -657,38 +653,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"Permite que la app modifique tu colección de fotos."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"leer ubicaciones de tu colección de contenido multimedia"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"Permite que la app lea las ubicaciones de tu colección de contenido multimedia."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (7989596289790269059) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (870510233930553355) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6914457357027049512) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (5788889152304524730) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (2272048395128283324) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (2622783922311211866) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (6478233866595566940) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8639715900104966456) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (1309731456372087270) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (231597390513699188) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (6518646430502858641) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (4508880777646198656) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (409126403264393251) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (6223368011593524179) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (7117098718465619023) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (939504041387836853) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"seguimiento aproximado de la mirada"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"Permite que la app haga un seguimiento aproximado de tu mirada."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"seguimiento de la dirección de la mirada"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"Permite que la app acceda a datos precisos de la mirada."</string>
+    <string name="permlab_face_tracking" msgid="2272048395128283324">"seguimiento de tu rostro"</string>
+    <string name="permdesc_face_tracking" msgid="2622783922311211866">"Permite que la app acceda a los datos de seguimiento de rostros."</string>
+    <string name="permlab_hand_tracking" msgid="6478233866595566940">"seguimiento de tus manos"</string>
+    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"Permite que la app acceda a los datos de seguimiento de manos."</string>
+    <string name="permlab_head_tracking" msgid="1309731456372087270">"seguimiento de tu cabeza"</string>
+    <string name="permdesc_head_tracking" msgid="231597390513699188">"Permite que la app acceda a los datos de seguimiento de la cabeza."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"comprensión de tu entorno inmediato"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"Permite que la app acceda a los datos de seguimiento del entorno que te rodea directamente."</string>
+    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"comprensión de tu entorno inmediato con gran detalle"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Permite que la app acceda a datos de seguimiento del entorno que te rodea directamente con mucho detalle."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"acceso a los datos de realidad extendida cuando no está en primer plano"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Permite que la app acceda a los datos de realidad extendida cuando no está en primer plano."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Usar datos biométricos"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Usar datos biométricos o bloqueo de pantalla"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Comprueba que eres tú"</string>
@@ -2260,7 +2240,7 @@
     <string name="mime_type_spreadsheet_ext" msgid="8720173181137254414">"Hoja de cálculo <xliff:g id="EXTENSION">%1$s</xliff:g>"</string>
     <string name="mime_type_presentation" msgid="1145384236788242075">"Presentación"</string>
     <string name="mime_type_presentation_ext" msgid="8761049335564371468">"Presentación <xliff:g id="EXTENSION">%1$s</xliff:g>"</string>
-    <string name="bluetooth_airplane_mode_toast" msgid="2066399056595768554">"La conexión Bluetooth permanecerá activa durante el modo de avión"</string>
+    <string name="bluetooth_airplane_mode_toast" msgid="2066399056595768554">"La conexión Bluetooth permanecerá activa durante el modo avión"</string>
     <string name="car_loading_profile" msgid="8219978381196748070">"Cargando"</string>
     <string name="file_count" msgid="3220018595056126969">"{count,plural, =1{{file_name} y # archivo más}many{{file_name} y # archivos más}other{{file_name} y # archivos más}}"</string>
     <string name="chooser_no_direct_share_targets" msgid="1511722103987329028">"No hay personas recomendadas con quienes compartir"</string>

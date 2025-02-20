@@ -353,14 +353,10 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"ನಿಮ್ಮ ಮುಖ್ಯ ಲಕ್ಷಣಗಳ ಕುರಿತು ಸೆನ್ಸಾರ್ ಡೇಟಾವನ್ನು ಪ್ರವೇಶಿಸಿ"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"ನೋಟಿಫಿಕೇಶನ್‌ಗಳು"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"ಅಧಿಸೂಚನೆಗಳನ್ನು ತೋರಿಸಿ"</string>
-    <!-- no translation found for permgrouplab_xr_tracking (7418994009794287471) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (6777198859446500821) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (1194833982988144536) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (9178027369004805829) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR ಟ್ರ್ಯಾಕಿಂಗ್ ಡೇಟಾ"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"ನಿಮ್ಮ ಮತ್ತು ನಿಮ್ಮ ಸುತ್ತಲಿನ ಪರಿಸರದ ಕುರಿತು XR ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಿ"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"ಸೂಕ್ಷ್ಮವಾದ XR ಟ್ರ್ಯಾಕಿಂಗ್ ಡೇಟಾ"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"ಕಣ್ಣಿನ ನೋಟದಂತಹ ಸೂಕ್ಷ್ಮವಾದ ಟ್ರ್ಯಾಕಿಂಗ್ ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಿ"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ವಿಂಡೋ ವಿಷಯವನ್ನು ಹಿಂಪಡೆಯುತ್ತದೆ"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"ನೀವು ಸಂವಹನ ನಡೆಸುತ್ತಿರುವ ವಿಂಡೋದ ಕಂಟೆಂಟ್ ಅನ್ನು ಪರೀಕ್ಷಿಸಿ."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"ಸ್ಪರ್ಶ-ಎಕ್ಸ್‌ಪ್ಲೋರ್ ಆನ್ ಮಾಡುತ್ತದೆ"</string>
@@ -656,38 +652,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"ನಿಮ್ಮ ಫೋಟೋ ಸಂಗ್ರಹಣೆಯನ್ನು ಮಾರ್ಪಡಿಸಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"ನಿಮ್ಮ ಮೀಡಿಯಾ ಸಂಗ್ರಹಣೆಯಿಂದ ಸ್ಥಳಗಳನ್ನು ಓದಿ"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"ನಿಮ್ಮ ಮೀಡಿಯಾ ಸಂಗ್ರಹಣೆಯಿಂದ ಸ್ಥಳಗಳನ್ನು ಓದಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (7989596289790269059) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (870510233930553355) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6914457357027049512) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (5788889152304524730) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (2272048395128283324) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (2622783922311211866) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (6478233866595566940) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8639715900104966456) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (1309731456372087270) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (231597390513699188) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (6518646430502858641) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (4508880777646198656) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (409126403264393251) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (6223368011593524179) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (7117098718465619023) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (939504041387836853) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"ನಿಮ್ಮ ಕಣ್ಣಿನ ಅಂದಾಜು ನೋಟವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"ನಿಮ್ಮ ಕಣ್ಣಿನ ಅಂದಾಜು ನೋಟವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"ನೀವು ಎಲ್ಲಿ ನೋಡುತ್ತಿದ್ದೀರಿ ಎಂಬುದನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"ಕಣ್ಣಿನ ನಿಖರವಾದ ನೋಟದ ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_face_tracking" msgid="2272048395128283324">"ನಿಮ್ಮ ಮುಖವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permdesc_face_tracking" msgid="2622783922311211866">"ಫೇಸ್ ಟ್ರ್ಯಾಕಿಂಗ್ ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_hand_tracking" msgid="6478233866595566940">"ನಿಮ್ಮ ಕೈಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"ಹ್ಯಾಂಡ್ ಟ್ರ್ಯಾಕಿಂಗ್ ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_head_tracking" msgid="1309731456372087270">"ನಿಮ್ಮ ತಲೆಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permdesc_head_tracking" msgid="231597390513699188">"ಹೆಡ್ ಟ್ರ್ಯಾಕಿಂಗ್ ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"ನಿಮ್ಮ ಸುತ್ತಲಿನ ಪರಿಸರವನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳಿ"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"ನಿಮ್ಮ ಸುತ್ತಲಿನ ಪರಿಸರದ ಕುರಿತು ಟ್ರ್ಯಾಕಿಂಗ್ ಡೇಟಾವನ್ನು ನೇರವಾಗಿ ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"ನಿಮ್ಮ ಸುತ್ತಲಿನ ಪರಿಸರವನ್ನು ಇನ್ನಷ್ಟು ವಿವರವಾಗಿ ಅರ್ಥಮಾಡಿಕೊಳ್ಳಿ"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"ನಿಮ್ಮ ಸುತ್ತಲಿನ ಪರಿಸರದ ಕುರಿತು ಟ್ರ್ಯಾಕಿಂಗ್ ಡೇಟಾವನ್ನು ಹೆಚ್ಚಿನ ವಿವರಗಳೊಂದಿಗೆ ನೇರವಾಗಿ ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"ಮುನ್ನೆಲೆಯಲ್ಲಿ ಇಲ್ಲದಿರುವಾಗ XR ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಿ"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"ಮುನ್ನೆಲೆಯಲ್ಲಿ ಇಲ್ಲದಿರುವಾಗ XR ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"ಬಯೋಮೆಟ್ರಿಕ್ಸ್ ಬಳಸಿ"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"ಬಯೋಮೆಟ್ರಿಕ್ಸ್ ಅಥವಾ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ಬಳಸಿ"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"ಇದು ನೀವೇ ಎಂದು ಪರಿಶೀಲಿಸಿ"</string>

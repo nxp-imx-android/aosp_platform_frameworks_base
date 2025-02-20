@@ -353,14 +353,10 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"သင်၏အရေးကြီးသော ကျန်းမာရေးလက္ခဏာဆိုင်ရာ အာရုံခံကိရိယာဒေတာကို ရယူရန်"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"အကြောင်းကြားချက်များ"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"အကြောင်းကြားချက်များ ပြနိုင်သည်"</string>
-    <!-- no translation found for permgrouplab_xr_tracking (7418994009794287471) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (6777198859446500821) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (1194833982988144536) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (9178027369004805829) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR ခြေရာခံခြင်းဒေတာ"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"သင်နှင့် သင့်ဘေးနားရှိ ပတ်ဝန်းကျင်အကြောင်း XR ဒေတာကို သုံးခွင့်"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"သတိထားရမည့် XR ခြေရာခံခြင်းဒေတာ"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"မျက်လုံးအကြည့်ကဲ့သို့သော သတိထားရမည့် ခြေရာခံခြင်းဒေတာကို သုံးခွင့်"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ဝင်းဒိုးတွင် ပါရှိသည်များကို ပြန်လည်ရယူရန်"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"သင်အသုံးပြုနေသော ဝင်းဒိုးတွင် ပါရှိသည်များကို ကြည့်ရှုစစ်ဆေးသည်။"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"တို့ထိခြင်းဖြင့် ရှာဖွေမှုကို ဖွင့်ရန်"</string>
@@ -656,38 +652,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"အက်ပ်အား သင့်ဓာတ်ပုံစုစည်းမှုကို ပြုပြင်ခွင့်ပေးသည်။"</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"သင့်မီဒီယာစုစည်းမှုမှ တည်နေရာများကို ဖတ်ခြင်း"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"အက်ပ်အား သင့်မီဒီယာစုစည်းမှုမှ တည်နေရာများကို ဖတ်ခွင့်ပေးသည်။"</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (7989596289790269059) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (870510233930553355) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6914457357027049512) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (5788889152304524730) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (2272048395128283324) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (2622783922311211866) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (6478233866595566940) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8639715900104966456) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (1309731456372087270) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (231597390513699188) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (6518646430502858641) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (4508880777646198656) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (409126403264393251) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (6223368011593524179) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (7117098718465619023) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (939504041387836853) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"ခန့်မှန်းခြေ မျက်လုံးအကြည့်ကို စောင့်ကြည့်ခြင်း"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"သင်၏ ခန့်မှန်းခြေမျက်လုံးအကြည့်ကို အက်ပ်အား စောင့်ကြည့်ခွင့်ပြုသည်။"</string>
+    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"သင်ကြည့်နေသည့်နေရာကို စောင့်ကြည့်ခြင်း"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"တိကျသော မျက်လုံးအကြည့်ဒေတာကို အက်ပ်အား သုံးခွင့်ပြုသည်။"</string>
+    <string name="permlab_face_tracking" msgid="2272048395128283324">"သင့်မျက်နှာကို စောင့်ကြည့်ခြင်း"</string>
+    <string name="permdesc_face_tracking" msgid="2622783922311211866">"မျက်နှာခြေရာခံခြင်းဒေတာကို အက်ပ်အား သုံးခွင့်ပြုသည်။"</string>
+    <string name="permlab_hand_tracking" msgid="6478233866595566940">"သင့်လက်များကို စောင့်ကြည့်ခြင်း"</string>
+    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"လက်ဟန်ခြေရာခံခြင်းဒေတာကို အက်ပ်အား သုံးခွင့်ပြုသည်။"</string>
+    <string name="permlab_head_tracking" msgid="1309731456372087270">"သင့်ခေါင်းကို စောင့်ကြည့်ခြင်း"</string>
+    <string name="permdesc_head_tracking" msgid="231597390513699188">"ဦးခေါင်းလှုပ်ရှားမှု မှတ်သားခြင်းဒေတာကို အက်ပ်အား သုံးခွင့်ပြုသည်။"</string>
+    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"သင့်အနီးဆုံးပတ်ဝန်းကျင်ကို နားလည်ခြင်း"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"သင့်ဘေးနားရှိ ပတ်ဝန်းကျင်အကြောင်း ခြေရာခံခြင်းဒေတာကို အက်ပ်အား သုံးခွင့်ပြုသည်။"</string>
+    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"သင့်အနီးဆုံးပတ်ဝန်းကျင်၏ အတွင်းကျကျအသေးစိတ်ကို နားလည်ခြင်း"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"သင့်ဘေးနားရှိ ပတ်ဝန်းကျင်အကြောင်း အတွင်းကျကျအသေးစိတ် ခြေရာခံခြင်းဒေတာကို အက်ပ်အား သုံးခွင့်ပြုသည်။"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"မျက်နှာစာတွင် ဖွင့်မထားချိန်၌ XR ဒေတာကို သုံးခွင့်"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"မျက်နှာစာတွင် ဖွင့်မထားချိန်၌ XR ဒေတာကို အက်ပ်အား သုံးခွင့်ပြုသည်။"</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"ဇီဝမက်ထရစ်အချက်အလက်များ သုံးခြင်း"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"ဇီဝမက်ထရစ်အချက်အလက်များ (သို့) ဖန်သားပြင်လော့ခ်ချခြင်းကို သုံးခြင်း"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"သင်ဖြစ်ကြောင်း အတည်ပြုပါ"</string>
