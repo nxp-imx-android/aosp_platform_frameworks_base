@@ -364,7 +364,7 @@ public class Bubble implements BubbleViewProvider {
             @ShellMainThread Executor mainExecutor, @ShellBackgroundThread Executor bgExecutor) {
         return new Bubble(intent,
                 user,
-                /* key= */ getAppBubbleKeyForApp(ComponentUtils.getPackageName(intent), user),
+                /* key= */ getAppBubbleKeyForApp(intent.getIntent().getPackage(), user),
                 mainExecutor, bgExecutor);
     }
 
