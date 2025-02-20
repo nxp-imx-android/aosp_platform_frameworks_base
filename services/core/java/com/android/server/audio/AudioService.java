@@ -1634,13 +1634,13 @@ public class AudioService extends IAudioService.Stub
      * Called by handling of MSG_INIT_STREAMS_VOLUMES
      */
     private void onInitStreamsAndVolumes() {
-        synchronized (mSettingsLock) {
-            mCameraSoundForced = readCameraSoundForced();
+        synchronized (this) {
+            mCameraSoundForced.set(readCameraSoundForced());
             sendMsg(mAudioHandler,
                     MSG_SET_FORCE_USE,
                     SENDMSG_QUEUE,
                     AudioSystem.FOR_SYSTEM,
-                    mCameraSoundForced
+                    mCameraSoundForced.get()
                             ? AudioSystem.FORCE_SYSTEM_ENFORCED : AudioSystem.FORCE_NONE,
                     new String("AudioService ctor"),
                     0);
@@ -2047,11 +2047,9 @@ public class AudioService extends IAudioService.Stub
             onUpdateAudioMode(AudioSystem.MODE_CURRENT, android.os.Process.myPid(),
                     mContext.getPackageName(), true /*force*/, false /*signal*/);
         }
-        final int forSys;
-        synchronized (mSettingsLock) {
-            forSys = mCameraSoundForced ?
-                    AudioSystem.FORCE_SYSTEM_ENFORCED : AudioSystem.FORCE_NONE;
-        }
+
+        final int forSys = mCameraSoundForced.get()
+                ? AudioSystem.FORCE_SYSTEM_ENFORCED : AudioSystem.FORCE_NONE;
 
         mDeviceBroker.setForceUse_Async(AudioSystem.FOR_SYSTEM, forSys, "onAudioServerDied");
 
@@ -4247,7 +4245,7 @@ public class AudioService extends IAudioService.Stub
                     final VolumeStreamState vss = mStreamStates.valueAt(streamIdx);
                     if (vss != null && streamAlias == sStreamVolumeAlias.get(vss.getStreamType())
                             && vss.isMutable()) {
-                        if (!(mCameraSoundForced && (vss.getStreamType()
+                        if (!(mCameraSoundForced.get() && (vss.getStreamType()
                                 == AudioSystem.STREAM_SYSTEM_ENFORCED))) {
                             boolean changed = vss.mute(state, /* apply= */ false,
                                     "muteAliasStreams");
@@ -7619,7 +7617,7 @@ public class AudioService extends IAudioService.Stub
             ringerModeAffectedStreams = mRingerModeDelegate
                     .getRingerModeAffectedStreams(ringerModeAffectedStreams);
         }
-        if (mCameraSoundForced) {
+        if (mCameraSoundForced.get()) {
             ringerModeAffectedStreams &= ~(1 << AudioSystem.STREAM_SYSTEM_ENFORCED);
         } else {
             ringerModeAffectedStreams |= (1 << AudioSystem.STREAM_SYSTEM_ENFORCED);
@@ -9141,7 +9139,7 @@ public class AudioService extends IAudioService.Stub
                         continue;
                     }
                     if (mPublicStreamType == AudioSystem.STREAM_SYSTEM_ENFORCED
-                            && mCameraSoundForced) {
+                            && mCameraSoundForced.get()) {
                         index = mIndexMax;
                     }
                     if (DEBUG_VOL) {
@@ -9504,28 +9502,25 @@ public class AudioService extends IAudioService.Stub
         }
 
         public void readSettings() {
-            synchronized (mSettingsLock) {
-                synchronized (mVolumeStateLock) {
-                    // force maximum volume on all streams if fixed volume property is set
-                    if (mUseFixedVolume) {
-                        mIndexMap.put(AudioSystem.DEVICE_OUT_DEFAULT, mIndexMax);
-                        return;
-                    }
-                    // do not read system stream volume from settings: this stream is always aliased
-                    // to another stream type and its volume is never persisted. Values in settings can
-                    // only be stale values
-                    if ((mStreamType == AudioSystem.STREAM_SYSTEM) ||
-                            (mStreamType == AudioSystem.STREAM_SYSTEM_ENFORCED)) {
-                        int index = 10 * AudioSystem.DEFAULT_STREAM_VOLUME[mStreamType];
-                        if (mCameraSoundForced) {
-                            index = mIndexMax;
-                        }
-                        mIndexMap.put(AudioSystem.DEVICE_OUT_DEFAULT, index);
-                        return;
-                    }
-                }
-            }
             synchronized (mVolumeStateLock) {
+                // force maximum volume on all streams if fixed volume property is set
+                if (mUseFixedVolume) {
+                    mIndexMap.put(AudioSystem.DEVICE_OUT_DEFAULT, mIndexMax);
+                    return;
+                }
+                // do not read system stream volume from settings: this stream is always aliased
+                // to another stream type and its volume is never persisted. Values in settings can
+                // only be stale values
+                if ((mStreamType == AudioSystem.STREAM_SYSTEM)
+                        || (mStreamType == AudioSystem.STREAM_SYSTEM_ENFORCED)) {
+                    int index = 10 * AudioSystem.DEFAULT_STREAM_VOLUME[mStreamType];
+                    if (mCameraSoundForced.get()) {
+                        index = mIndexMax;
+                    }
+                    mIndexMap.put(AudioSystem.DEVICE_OUT_DEFAULT, index);
+                    return;
+                }
+
                 for (int device : AudioSystem.DEVICE_OUT_ALL_SET) {
 
                     // retrieve current volume for device
@@ -9674,7 +9669,8 @@ public class AudioService extends IAudioService.Stub
                     index = getValidIndex(index, hasModifyAudioSettings);
                     // for STREAM_SYSTEM_ENFORCED, do not sync aliased streams on the enforced index
                     int aliasIndex = index;
-                    if ((mStreamType == AudioSystem.STREAM_SYSTEM_ENFORCED) && mCameraSoundForced) {
+                    if ((mStreamType == AudioSystem.STREAM_SYSTEM_ENFORCED)
+                            && mCameraSoundForced.get()) {
                         index = mIndexMax;
                     }
                     mIndexMap.put(device, index);
@@ -12200,10 +12196,10 @@ public class AudioService extends IAudioService.Stub
             Configuration config = mContext.getResources().getConfiguration();
             mSoundDoseHelper.configureSafeMedia(/*forced*/false, TAG);
 
-            boolean cameraSoundForced = readCameraSoundForced();
+            final boolean cameraSoundForced = readCameraSoundForced();
+            final boolean cameraSoundForcedChanged =
+                    (mCameraSoundForced.getAndSet(cameraSoundForced) != cameraSoundForced);
             synchronized (mSettingsLock) {
-                final boolean cameraSoundForcedChanged = (cameraSoundForced != mCameraSoundForced);
-                mCameraSoundForced = cameraSoundForced;
                 if (cameraSoundForcedChanged) {
                     if (!mIsSingleVolume) {
                         synchronized (mVolumeStateLock) {
@@ -12233,7 +12229,6 @@ public class AudioService extends IAudioService.Stub
                             0,
                             0,
                             getVssForStreamOrDefault(AudioSystem.STREAM_SYSTEM_ENFORCED), 0);
-
                 }
             }
             mVolumeController.setLayoutDirection(config.getLayoutDirection());
@@ -12598,14 +12593,11 @@ public class AudioService extends IAudioService.Stub
     //==========================================================================================
 
     // cached value of com.android.internal.R.bool.config_camera_sound_forced
-    @GuardedBy("mSettingsLock")
-    private boolean mCameraSoundForced;
+    private AtomicBoolean mCameraSoundForced = new AtomicBoolean(false);
 
     // called by android.hardware.Camera to populate CameraInfo.canDisableShutterSound
     public boolean isCameraSoundForced() {
-        synchronized (mSettingsLock) {
-            return mCameraSoundForced;
-        }
+        return mCameraSoundForced.get();
     }
 
     //==========================================================================================
