@@ -482,8 +482,9 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
             r.detachFromProcess();
             if (r.isVisibleRequested()) {
                 hasVisibleActivity = true;
+                Task finishingTask = r.getTask();
                 r.mDisplayContent.requestTransitionAndLegacyPrepare(TRANSIT_CLOSE,
-                        TRANSIT_FLAG_APP_CRASHED);
+                        TRANSIT_FLAG_APP_CRASHED, finishingTask);
             }
             r.destroyIfPossible("handleAppCrashed");
         }

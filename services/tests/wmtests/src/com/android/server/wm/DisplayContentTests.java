@@ -1821,7 +1821,7 @@ public class DisplayContentTests extends WindowTestsBase {
                 .setTask(nonTopVisible.getTask()).setVisible(false)
                 .setActivityTheme(android.R.style.Theme_Translucent).build();
         final TestTransitionPlayer player = registerTestTransitionPlayer();
-        mDisplayContent.requestTransitionAndLegacyPrepare(WindowManager.TRANSIT_OPEN, 0);
+        mDisplayContent.requestTransitionAndLegacyPrepare(WindowManager.TRANSIT_OPEN, 0, null);
         translucentTop.setVisibility(true);
         mDisplayContent.updateOrientation();
         assertEquals("Non-top visible activity must be portrait",
