@@ -17,7 +17,10 @@
 package com.android.systemui.user.domain.interactor
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.user.data.repository.userRepository
 
 val Kosmos.userLockedInteractor by
-    Kosmos.Fixture { UserLockedInteractor(userRepository = userRepository) }
+    Kosmos.Fixture {
+        UserLockedInteractor(backgroundDispatcher = testDispatcher, userRepository = userRepository)
+    }
