@@ -831,20 +831,27 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             return false;
         }
 
-        // When switching the app task, we keep the IME window visibility for better
-        // transitioning experiences.
-        // However, in case IME created a child window or the IME selection dialog without
-        // dismissing during the task switching to keep the window focus because IME window has
-        // higher window hierarchy, we don't give it focus if the next IME layering target
-        // doesn't request IME visible.
-        if (w.mIsImWindow && w.isChildWindow() && (mImeLayeringTarget == null
-                || !mImeLayeringTarget.isRequestedVisible(ime()))) {
-            return false;
-        }
-        if (w.mAttrs.type == TYPE_INPUT_METHOD_DIALOG && mImeLayeringTarget != null
-                && !(mImeLayeringTarget.isRequestedVisible(ime())
-                        && mImeLayeringTarget.isVisibleRequested())) {
-            return false;
+        // IME windows remain visibleRequested while switching apps to maintain a smooth animation.
+        // This persists until the new app is focused, so they can be visibleRequested despite not
+        // being visible to the user (i.e. occluded). These rank higher in the window hierarchy than
+        // app windows, so they will always be considered first. To avoid having the focus stuck,
+        // an IME window (child or not) cannot be focused if the IME parent is not visible. However,
+        // child windows also require the IME to be visible in the current app.
+        if (w.mIsImWindow) {
+            final boolean imeParentVisible = mInputMethodSurfaceParentWindow != null
+                    && mInputMethodSurfaceParentWindow.isVisibleRequested();
+            if (!imeParentVisible) {
+                ProtoLog.v(WM_DEBUG_FOCUS, "findFocusedWindow: IME window not focusable as"
+                        + " IME parent is not visible");
+                return false;
+            }
+
+            if (w.isChildWindow()
+                    && !getInsetsStateController().getImeSourceProvider().isImeShowing()) {
+                ProtoLog.v(WM_DEBUG_FOCUS, "findFocusedWindow: IME child window not focusable as"
+                        + " IME is not visible");
+                return false;
+            }
         }
 
         final ActivityRecord activity = w.mActivityRecord;
