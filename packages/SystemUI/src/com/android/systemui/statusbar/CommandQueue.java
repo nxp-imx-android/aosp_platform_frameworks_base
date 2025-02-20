@@ -58,7 +58,6 @@ import android.view.KeyEvent;
 import android.view.WindowInsets.Type.InsetsType;
 import android.view.WindowInsetsController.Appearance;
 import android.view.WindowInsetsController.Behavior;
-import android.view.accessibility.Flags;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -987,13 +986,7 @@ public class CommandQueue extends IStatusBar.Stub implements
 
     @Override
     public void addQsTile(ComponentName tile) {
-        if (Flags.a11yQsShortcut()) {
-            addQsTileToFrontOrEnd(tile, false);
-        } else {
-            synchronized (mLock) {
-                mHandler.obtainMessage(MSG_ADD_QS_TILE, tile).sendToTarget();
-            }
-        }
+        addQsTileToFrontOrEnd(tile, false);
     }
 
     /**
@@ -1003,13 +996,11 @@ public class CommandQueue extends IStatusBar.Stub implements
      */
     @Override
     public void addQsTileToFrontOrEnd(ComponentName tile, boolean end) {
-        if (Flags.a11yQsShortcut()) {
-            synchronized (mLock) {
-                SomeArgs args = SomeArgs.obtain();
-                args.arg1 = tile;
-                args.arg2 = end;
-                mHandler.obtainMessage(MSG_ADD_QS_TILE, args).sendToTarget();
-            }
+        synchronized (mLock) {
+            SomeArgs args = SomeArgs.obtain();
+            args.arg1 = tile;
+            args.arg2 = end;
+            mHandler.obtainMessage(MSG_ADD_QS_TILE, args).sendToTarget();
         }
     }
 
@@ -1692,18 +1683,12 @@ public class CommandQueue extends IStatusBar.Stub implements
                     }
                     break;
                 case MSG_ADD_QS_TILE: {
-                    if (Flags.a11yQsShortcut()) {
-                        SomeArgs someArgs = (SomeArgs) msg.obj;
-                        for (int i = 0; i < mCallbacks.size(); i++) {
-                            mCallbacks.get(i).addQsTileToFrontOrEnd(
-                                    (ComponentName) someArgs.arg1, (boolean) someArgs.arg2);
-                        }
-                        someArgs.recycle();
-                    } else {
-                        for (int i = 0; i < mCallbacks.size(); i++) {
-                            mCallbacks.get(i).addQsTile((ComponentName) msg.obj);
-                        }
+                    SomeArgs someArgs = (SomeArgs) msg.obj;
+                    for (int i = 0; i < mCallbacks.size(); i++) {
+                        mCallbacks.get(i).addQsTileToFrontOrEnd(
+                                (ComponentName) someArgs.arg1, (boolean) someArgs.arg2);
                     }
+                    someArgs.recycle();
                     break;
                 }
                 case MSG_REMOVE_QS_TILE:

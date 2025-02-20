@@ -1009,6 +1009,8 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertTrue(style.disablePreview());
         assertTrue(style.optOutEdgeToEdge());
         assertEquals(1 /* icon_preferred */, style.mSplashScreenBehavior);
+        assertEquals(style.noDisplay(), mAtm.mInternal.isNoDisplay(activity.packageName,
+                activity.info.theme, activity.mUserId));
     }
 
     /**

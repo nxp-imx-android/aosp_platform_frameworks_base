@@ -23,18 +23,11 @@ import static com.android.server.am.ActivityManagerService.Injector;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
-import android.app.ActivityManagerInternal;
 import android.app.ActivityManagerInternal.FrozenProcessListener;
 import android.content.ComponentName;
 import android.content.Context;
@@ -44,14 +37,12 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.MessageQueue;
 import android.os.Process;
-import android.os.SystemClock;
 import android.platform.test.annotations.Presubmit;
 import android.provider.DeviceConfig;
 import android.text.TextUtils;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.internal.annotations.GuardedBy;
 import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.modules.utils.testing.TestableDeviceConfig;
 import com.android.server.LocalServices;
@@ -68,11 +59,9 @@ import org.mockito.Mock;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -164,7 +153,7 @@ public final class CachedAppOptimizerTest {
         app.info.uid = packageUid;
         // Exact value does not mater, it can be any state for which compaction is allowed.
         app.mState.setSetProcState(PROCESS_STATE_BOUND_FOREGROUND_SERVICE);
-        app.mState.setSetAdj(899);
+        app.mState.setSetAdj(940);
         app.mState.setCurAdj(940);
         return app;
     }

@@ -135,6 +135,7 @@ public class BubbleBarLayerView extends FrameLayout
 
     /** Shows the expanded view drop target at the requested {@link BubbleBarLocation location} */
     public void showBubbleBarExtendedViewDropTarget(@NonNull BubbleBarLocation bubbleBarLocation) {
+        setVisibility(VISIBLE);
         mBubbleExpandedViewPinController.showDropTarget(bubbleBarLocation);
     }
 

@@ -617,6 +617,9 @@ public abstract class ActivityTaskManagerInternal {
      */
     public abstract boolean isBaseOfLockedTask(String packageName);
 
+    /** Returns the value of {@link android.R.attr#windowNoDisplay} from the given theme. */
+    public abstract boolean isNoDisplay(String packageName, int theme, int userId);
+
     /**
      * Creates an interface to update configuration for the calling application.
      */

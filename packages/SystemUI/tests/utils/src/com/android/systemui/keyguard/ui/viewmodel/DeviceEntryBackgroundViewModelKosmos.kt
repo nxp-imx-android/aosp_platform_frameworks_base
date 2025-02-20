@@ -47,5 +47,6 @@ val Kosmos.deviceEntryBackgroundViewModel by Fixture {
         primaryBouncerToLockscreenTransitionViewModel =
             primaryBouncerToLockscreenTransitionViewModel,
         lockscreenToDozingTransitionViewModel = lockscreenToDozingTransitionViewModel,
+        glanceableHubToAodTransitionViewModel = glanceableHubToAodTransitionViewModel,
     )
 }

@@ -374,6 +374,34 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         }
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(mEndpointInfo).append(", ");
+        sb.append("package: ").append(mPackageName).append(", ");
+        synchronized (mWakeLock) {
+            sb.append("wakelock: ").append(mWakeLock);
+        }
+        synchronized (mOpenSessionLock) {
+            if (mSessionInfoMap.size() != 0) {
+                sb.append(System.lineSeparator());
+                sb.append(" sessions: ");
+                sb.append(System.lineSeparator());
+            }
+            for (int i = 0; i < mSessionInfoMap.size(); i++) {
+                int id = mSessionInfoMap.keyAt(i);
+                int count = i + 1;
+                sb.append(
+                        "  " + count + ". id="
+                                + id
+                                + ", remote:"
+                                + mSessionInfoMap.get(id).getRemoteEndpointInfo());
+                sb.append(System.lineSeparator());
+            }
+        }
+        return sb.toString();
+    }
+
     /**
      * Registers this endpoints with the Context Hub HAL.
      *

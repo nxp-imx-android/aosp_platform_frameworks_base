@@ -178,8 +178,8 @@ class IdmapHeader {
 };
 
 struct IdmapConstraint {
-  // Constraint type can be TYPE_DISPLAY_ID or TYP_DEVICE_ID, please refer
-  // to ConstraintType in OverlayConstraint.java
+  // Constraint type can be android::kOverlayConstraintTypeDisplayId or
+  // android::kOverlayConstraintTypeDeviceId
   uint32_t constraint_type;
   uint32_t constraint_value;
 

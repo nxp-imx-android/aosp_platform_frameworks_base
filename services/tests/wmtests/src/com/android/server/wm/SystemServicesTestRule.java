@@ -98,6 +98,7 @@ import com.android.server.policy.PermissionPolicyInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.testutils.StubTransaction;
 import com.android.server.uri.UriGrantsManagerInternal;
+import com.android.window.flags.Flags;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -657,6 +658,13 @@ public class SystemServicesTestRule implements TestRule {
             AppWarnings appWarnings = getAppWarningsLocked();
             spyOn(appWarnings);
             doNothing().when(appWarnings).onStartActivity(any());
+
+            if (Flags.trackSystemUiContextBeforeWms()) {
+                final Context uiContext = getUiContext();
+                spyOn(uiContext);
+                doNothing().when(uiContext).registerComponentCallbacks(any());
+                doNothing().when(uiContext).unregisterComponentCallbacks(any());
+            }
         }
 
         @Override

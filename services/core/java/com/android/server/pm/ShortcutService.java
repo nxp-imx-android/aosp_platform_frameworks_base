@@ -16,7 +16,9 @@
 package com.android.server.pm;
 
 import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_DENIED;
-import static android.provider.DeviceConfig.NAMESPACE_SYSTEMUI;
+
+import static com.android.server.pm.ShortcutUser.DIRECTORY_LAUNCHERS;
+import static com.android.server.pm.ShortcutUser.DIRECTORY_PACKAGES;
 
 import android.Manifest.permission;
 import android.annotation.IntDef;
@@ -94,7 +96,6 @@ import android.os.ShellCommand;
 import android.os.SystemClock;
 import android.os.Trace;
 import android.os.UserHandle;
-import android.provider.DeviceConfig;
 import android.text.TextUtils;
 import android.text.format.TimeMigrationUtils;
 import android.util.ArraySet;
@@ -112,7 +113,6 @@ import android.view.IWindowManager;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.config.sysui.SystemUiDeviceConfigFlags;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.util.CollectionUtils;
 import com.android.internal.util.DumpUtils;
@@ -155,7 +155,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * TODO:
@@ -171,7 +170,7 @@ public class ShortcutService extends IShortcutService.Stub {
     static final boolean DEBUG = false; // STOPSHIP if true
     static final boolean DEBUG_LOAD = false; // STOPSHIP if true
     static final boolean DEBUG_PROCSTATE = false; // STOPSHIP if true
-    static final boolean DEBUG_REBOOT = Build.IS_DEBUGGABLE;
+    static final boolean DEBUG_REBOOT = false; // STOPSHIP if true
 
     @VisibleForTesting
     static final long DEFAULT_RESET_INTERVAL_SEC = 24 * 60 * 60; // 1 day
@@ -292,7 +291,8 @@ public class ShortcutService extends IShortcutService.Stub {
 
     final Context mContext;
 
-    private final Object mServiceLock = new Object();
+    @VisibleForTesting
+    final Object mServiceLock = new Object();
     private final Object mNonPersistentUsersLock = new Object();
     private final Object mWtfLock = new Object();
 
@@ -982,7 +982,7 @@ public class ShortcutService extends IShortcutService.Stub {
     }
 
     @VisibleForTesting
-    void saveBaseState() {
+    void injectSaveBaseState() {
         try (ResilientAtomicFile file = getBaseStateFile()) {
             if (DEBUG || DEBUG_REBOOT) {
                 Slog.d(TAG, "Saving to " + file.getBaseFile());
@@ -994,18 +994,7 @@ public class ShortcutService extends IShortcutService.Stub {
                     outs = file.startWrite();
                 }
 
-                // Write to XML
-                TypedXmlSerializer out = Xml.resolveSerializer(outs);
-                out.startDocument(null, true);
-                out.startTag(null, TAG_ROOT);
-
-                // Body.
-                // No locking required. Ok to add lock later if we save more data.
-                writeTagValue(out, TAG_LAST_RESET_TIME, mRawLastResetTime.get());
-
-                // Epilogue.
-                out.endTag(null, TAG_ROOT);
-                out.endDocument();
+                saveBaseStateAsXml(outs);
 
                 // Close.
                 injectFinishWrite(file, outs);
@@ -1016,10 +1005,32 @@ public class ShortcutService extends IShortcutService.Stub {
         }
     }
 
+    @VisibleForTesting
+    protected void saveBaseStateAsXml(OutputStream outs) throws IOException {
+        // Write to XML
+        TypedXmlSerializer out = Xml.resolveSerializer(outs);
+        out.startDocument(null, true);
+        out.startTag(null, TAG_ROOT);
+
+        // Body.
+        // No locking required. Ok to add lock later if we save more data.
+        writeTagValue(out, TAG_LAST_RESET_TIME, mRawLastResetTime.get());
+
+        // Epilogue.
+        out.endTag(null, TAG_ROOT);
+        out.endDocument();
+    }
+
     @GuardedBy("mServiceLock")
     private void loadBaseStateLocked() {
         mRawLastResetTime.set(0);
+        injectLoadBaseState();
+        // Adjust the last reset time.
+        getLastResetTimeLocked();
+    }
 
+    @VisibleForTesting
+    protected void injectLoadBaseState() {
         try (ResilientAtomicFile file = getBaseStateFile()) {
             if (DEBUG || DEBUG_REBOOT) {
                 Slog.d(TAG, "Loading from " + file.getBaseFile());
@@ -1030,34 +1041,7 @@ public class ShortcutService extends IShortcutService.Stub {
                 if (in == null) {
                     throw new FileNotFoundException(file.getBaseFile().getAbsolutePath());
                 }
-
-                TypedXmlPullParser parser = Xml.resolvePullParser(in);
-
-                int type;
-                while ((type = parser.next()) != XmlPullParser.END_DOCUMENT) {
-                    if (type != XmlPullParser.START_TAG) {
-                        continue;
-                    }
-                    final int depth = parser.getDepth();
-                    // Check the root tag
-                    final String tag = parser.getName();
-                    if (depth == 1) {
-                        if (!TAG_ROOT.equals(tag)) {
-                            Slog.v(TAG, "Invalid root tag: " + tag);
-                            return;
-                        }
-                        continue;
-                    }
-                    // Assume depth == 2
-                    switch (tag) {
-                        case TAG_LAST_RESET_TIME:
-                            mRawLastResetTime.set(parseLongAttribute(parser, ATTR_VALUE));
-                            break;
-                        default:
-                            Slog.v(TAG, "Invalid tag: " + tag);
-                            break;
-                    }
-                }
+                loadBaseStateAsXml(in);
             } catch (FileNotFoundException e) {
                 // Use the default
             } catch (IOException | XmlPullParserException e) {
@@ -1067,8 +1051,38 @@ public class ShortcutService extends IShortcutService.Stub {
                 return;
             }
         }
-        // Adjust the last reset time.
-        getLastResetTimeLocked();
+    }
+
+    @VisibleForTesting
+    protected void loadBaseStateAsXml(InputStream in)
+            throws IOException, XmlPullParserException {
+        TypedXmlPullParser parser = Xml.resolvePullParser(in);
+
+        int type;
+        while ((type = parser.next()) != XmlPullParser.END_DOCUMENT) {
+            if (type != XmlPullParser.START_TAG) {
+                continue;
+            }
+            final int depth = parser.getDepth();
+            // Check the root tag
+            final String tag = parser.getName();
+            if (depth == 1) {
+                if (!TAG_ROOT.equals(tag)) {
+                    Slog.v(TAG, "Invalid root tag: " + tag);
+                    return;
+                }
+                continue;
+            }
+            // Assume depth == 2
+            switch (tag) {
+                case TAG_LAST_RESET_TIME:
+                    mRawLastResetTime.set(parseLongAttribute(parser, ATTR_VALUE));
+                    break;
+                default:
+                    Slog.v(TAG, "Invalid tag: " + tag);
+                    break;
+            }
+        }
     }
 
     @VisibleForTesting
@@ -1083,7 +1097,8 @@ public class ShortcutService extends IShortcutService.Stub {
                 "user shortcut", null);
     }
 
-    private void saveUser(@UserIdInt int userId) {
+    @VisibleForTesting
+    protected void injectSaveUser(@UserIdInt int userId) {
         try (ResilientAtomicFile file = getUserFile(userId)) {
             FileOutputStream os = null;
             try {
@@ -1092,8 +1107,14 @@ public class ShortcutService extends IShortcutService.Stub {
                 }
 
                 synchronized (mServiceLock) {
+                    // Since we are not handling package deletion yet, or any single package
+                    // changes, just clean the directory and rewrite all the ShortcutPackageItems.
+                    final File root = injectUserDataPath(userId);
+                    FileUtils.deleteContents(new File(root, DIRECTORY_PACKAGES));
+                    FileUtils.deleteContents(new File(root, DIRECTORY_LAUNCHERS));
                     os = file.startWrite();
                     saveUserInternalLocked(userId, os, /* forBackup= */ false);
+                    getUserShortcutsLocked(userId).scheduleSaveAllLaunchersAndPackages();
                 }
 
                 injectFinishWrite(file, os);
@@ -1109,8 +1130,9 @@ public class ShortcutService extends IShortcutService.Stub {
         getUserShortcutsLocked(userId).logSharingShortcutStats(mMetricsLogger);
     }
 
+    @VisibleForTesting
     @GuardedBy("mServiceLock")
-    private void saveUserInternalLocked(@UserIdInt int userId, OutputStream os,
+    protected void saveUserInternalLocked(@UserIdInt int userId, OutputStream os,
             boolean forBackup) throws IOException, XmlPullParserException {
 
         // Write to XML
@@ -1138,8 +1160,9 @@ public class ShortcutService extends IShortcutService.Stub {
         Slog.w(TAG, String.format("Invalid tag '%s' found at depth %d", tag, depth));
     }
 
+    @VisibleForTesting
     @Nullable
-    private ShortcutUser loadUserLocked(@UserIdInt int userId) {
+    protected ShortcutUser injectLoadUserLocked(@UserIdInt int userId) {
         try (ResilientAtomicFile file = getUserFile(userId)) {
             FileInputStream in = null;
             try {
@@ -1157,12 +1180,13 @@ public class ShortcutService extends IShortcutService.Stub {
             } catch (Exception e) {
                 // Remove corrupted file and retry.
                 file.failRead(in, e);
-                return loadUserLocked(userId);
+                return injectLoadUserLocked(userId);
             }
         }
     }
 
-    private ShortcutUser loadUserInternal(@UserIdInt int userId, InputStream is,
+    @VisibleForTesting
+    protected ShortcutUser loadUserInternal(@UserIdInt int userId, InputStream is,
             boolean fromBackup) throws XmlPullParserException, IOException,
             InvalidFileFormatException {
 
@@ -1240,9 +1264,9 @@ public class ShortcutService extends IShortcutService.Stub {
             for (int i = dirtyUserIds.size() - 1; i >= 0; i--) {
                 final int userId = dirtyUserIds.get(i);
                 if (userId == UserHandle.USER_NULL) { // USER_NULL for base state.
-                    saveBaseState();
+                    injectSaveBaseState();
                 } else {
-                    saveUser(userId);
+                    injectSaveUser(userId);
                 }
             }
         } catch (Exception e) {
@@ -1349,7 +1373,7 @@ public class ShortcutService extends IShortcutService.Stub {
 
         ShortcutUser userPackages = mUsers.get(userId);
         if (userPackages == null) {
-            userPackages = loadUserLocked(userId);
+            userPackages = injectLoadUserLocked(userId);
             if (userPackages == null) {
                 userPackages = new ShortcutUser(this, userId);
             }
@@ -1430,8 +1454,9 @@ public class ShortcutService extends IShortcutService.Stub {
      * {@link ShortcutBitmapSaver#waitForAllSavesLocked()} to make sure there's no pending bitmap
      * saves are going on.
      */
+    @VisibleForTesting
     @GuardedBy("mServiceLock")
-    private void cleanupDanglingBitmapDirectoriesLocked(@UserIdInt int userId) {
+    void cleanupDanglingBitmapDirectoriesLocked(@UserIdInt int userId) {
         if (DEBUG) {
             Slog.d(TAG, "cleanupDanglingBitmaps: userId=" + userId);
         }
@@ -2755,7 +2780,7 @@ public class ShortcutService extends IShortcutService.Stub {
             getPackageShortcutsLocked(packageName, userId)
                     .resetRateLimitingForCommandLineNoSaving();
         }
-        saveUser(userId);
+        injectSaveUser(userId);
     }
 
     // We override this method in unit tests to do a simpler check.
@@ -4407,7 +4432,7 @@ public class ShortcutService extends IShortcutService.Stub {
                 pw.println();
             });
         }
-        saveUser(userId);
+        injectSaveUser(userId);
     }
 
     // === Dump ===

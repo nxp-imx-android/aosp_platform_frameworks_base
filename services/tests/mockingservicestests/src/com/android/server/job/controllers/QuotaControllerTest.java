@@ -295,15 +295,15 @@ public class QuotaControllerTest {
     }
 
     private void setCharging() {
-        doReturn(true).when(mJobSchedulerService).isBatteryCharging();
         synchronized (mQuotaController.mLock) {
+            doReturn(true).when(mJobSchedulerService).isBatteryCharging();
             mQuotaController.onBatteryStateChangedLocked();
         }
     }
 
     private void setDischarging() {
-        doReturn(false).when(mJobSchedulerService).isBatteryCharging();
         synchronized (mQuotaController.mLock) {
+            doReturn(false).when(mJobSchedulerService).isBatteryCharging();
             mQuotaController.onBatteryStateChangedLocked();
         }
     }

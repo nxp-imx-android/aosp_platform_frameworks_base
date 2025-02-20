@@ -16,27 +16,27 @@
   -->
 
 <rotate xmlns:android="http://schemas.android.com/apk/res/android"
-        android:fromDegrees = "270"
-        android:toDegrees="270"
-        android:pivotX="50%"
-        android:pivotY="50%" >
+        android:fromDegrees="270"
+        android:toDegrees="270">
     <layer-list>
         <item>
             <shape
-                android:shape="ring"
-                android:innerRadiusRatio="@dimen/progressbar_inner_radius_ratio"
+                android:shape="arc"
+                android:useLevel="false"
                 android:thickness="@dimen/progressbar_thickness"
-                android:useLevel="false">
-                <solid android:color="@color/materialColorSurfaceContainer"/>
+                android:innerRadiusRatio="@dimen/progressbar_inner_radius_ratio"
+                android:strokeCap="round">
+                <solid android:color="@*android:color/materialColorSurfaceContainer"/>
             </shape>
         </item>
         <item>
             <shape
-                android:shape="ring"
-                android:innerRadiusRatio="@dimen/progressbar_inner_radius_ratio"
+                android:shape="arc"
+                android:useLevel="true"
                 android:thickness="@dimen/progressbar_thickness"
-                android:useLevel="true">
-                <solid android:color="@color/materialColorPrimary"/>
+                android:innerRadiusRatio="@dimen/progressbar_inner_radius_ratio"
+                android:strokeCap="round">
+                <solid android:color="@*android:color/materialColorPrimary"/>
             </shape>
         </item>
     </layer-list>

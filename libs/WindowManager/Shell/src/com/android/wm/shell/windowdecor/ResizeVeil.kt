@@ -90,6 +90,7 @@ public class ResizeVeil @JvmOverloads constructor(
     private var viewHost: SurfaceControlViewHost? = null
     private var display: Display? = null
     private var veilAnimator: ValueAnimator? = null
+    private var iconAnimator: ValueAnimator? = null
     private var loadAppInfoJob: Job? = null
 
     /**
@@ -241,7 +242,7 @@ public class ResizeVeil @JvmOverloads constructor(
                     }
                 })
             }
-            val iconAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+            iconAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
                 duration = RESIZE_ALPHA_DURATION
                 addUpdateListener {
                     iconAnimT.setAlpha(icon, animatedValue as Float)
@@ -265,7 +266,7 @@ public class ResizeVeil @JvmOverloads constructor(
                     .hide(background)
                     .apply()
             veilAnimator?.start()
-            iconAnimator.start()
+            iconAnimator?.start()
         } else {
             // Show the veil immediately.
             t.apply()
@@ -414,6 +415,10 @@ public class ResizeVeil @JvmOverloads constructor(
     private fun cancelAnimation() {
         veilAnimator?.removeAllUpdateListeners()
         veilAnimator?.cancel()
+        veilAnimator = null
+        iconAnimator?.removeAllUpdateListeners()
+        iconAnimator?.cancel()
+        iconAnimator = null
     }
 
     /**
@@ -421,7 +426,6 @@ public class ResizeVeil @JvmOverloads constructor(
      */
     fun dispose() {
         cancelAnimation()
-        veilAnimator = null
         isVisible = false
         loadAppInfoJob?.cancel()
 

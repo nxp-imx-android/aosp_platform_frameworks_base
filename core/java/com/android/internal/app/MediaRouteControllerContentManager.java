@@ -28,19 +28,40 @@ import com.android.internal.R;
  * This class manages the content display within the media route controller UI.
  */
 public class MediaRouteControllerContentManager {
+    /**
+     * A delegate interface that a MediaRouteController UI should implement. It allows the content
+     * manager to inform the UI of any UI changes that need to be made in response to content
+     * updates.
+     */
+    public interface Delegate {
+        /**
+         * Updates the title of the cast device
+         */
+        void setCastDeviceTitle(CharSequence title);
+
+        /**
+         * Dismiss the UI to transition to a different workflow.
+         */
+        void dismissView();
+    }
+
+    private final Delegate mDelegate;
+
     // Time to wait before updating the volume when the user lets go of the seek bar
     // to allow the route provider time to propagate the change and publish a new
     // route descriptor.
     private static final int VOLUME_UPDATE_DELAY_MILLIS = 250;
 
+    private final MediaRouter mRouter;
     private final MediaRouter.RouteInfo mRoute;
 
     private LinearLayout mVolumeLayout;
     private SeekBar mVolumeSlider;
     private boolean mVolumeSliderTouched;
 
-    public MediaRouteControllerContentManager(Context context) {
-        MediaRouter mRouter = context.getSystemService(MediaRouter.class);
+    public MediaRouteControllerContentManager(Context context, Delegate delegate) {
+        mDelegate = delegate;
+        mRouter = context.getSystemService(MediaRouter.class);
         mRoute = mRouter.getSelectedRoute();
     }
 
@@ -49,6 +70,7 @@ public class MediaRouteControllerContentManager {
      * given container view.
      */
     public void bindViews(View containerView) {
+        mDelegate.setCastDeviceTitle(mRoute.getName());
         mVolumeLayout = containerView.findViewById(R.id.media_route_volume_layout);
         mVolumeSlider = containerView.findViewById(R.id.media_route_volume_slider);
         mVolumeSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -89,6 +111,14 @@ public class MediaRouteControllerContentManager {
     }
 
     /**
+     * Updates all the views to reflect new states.
+     */
+    public void update() {
+        mDelegate.setCastDeviceTitle(mRoute.getName());
+        updateVolume();
+    }
+
+    /**
      * Updates the volume layout and slider.
      */
     public void updateVolume() {
@@ -101,6 +131,20 @@ public class MediaRouteControllerContentManager {
                 mVolumeLayout.setVisibility(View.GONE);
             }
         }
+    }
+
+    /**
+     * Callback function to triggered after the disconnect button is clicked.
+     */
+    public void onDisconnectButtonClick() {
+        if (mRoute.isSelected()) {
+            if (mRoute.isBluetooth()) {
+                mRouter.getDefaultRoute().select();
+            } else {
+                mRouter.getFallbackRoute().select();
+            }
+        }
+        mDelegate.dismissView();
     }
 
     private boolean isVolumeControlAvailable() {

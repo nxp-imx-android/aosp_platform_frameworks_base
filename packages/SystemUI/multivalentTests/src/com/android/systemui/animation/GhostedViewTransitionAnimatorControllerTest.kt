@@ -153,10 +153,12 @@ class GhostedViewTransitionAnimatorControllerTest : SysuiTestCase() {
     private class FakeViewTransitionRegistry : IViewTransitionRegistry {
 
         val registry = mutableMapOf<ViewTransitionToken, View>()
+        val token = ViewTransitionToken()
 
-        override fun register(token: ViewTransitionToken, view: View) {
+        override fun register(view: View): ViewTransitionToken {
             registry[token] = view
             view.setTag(R.id.tag_view_transition_token, token)
+            return token
         }
 
         override fun unregister(token: ViewTransitionToken) {

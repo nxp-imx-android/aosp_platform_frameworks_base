@@ -143,6 +143,7 @@ import com.android.internal.policy.KeyInterceptionInfo;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.Preconditions;
 import com.android.server.DisplayThread;
+import com.android.server.IoThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.Watchdog;
@@ -469,11 +470,13 @@ public class InputManagerService extends IInputManager.Stub
     static class Injector {
         private final Context mContext;
         private final Looper mLooper;
+        private final Looper mIoLooper;
         private final UEventManager mUEventManager;
 
-        Injector(Context context, Looper looper, UEventManager uEventManager) {
+        Injector(Context context, Looper looper, Looper ioLooper, UEventManager uEventManager) {
             mContext = context;
             mLooper = looper;
+            mIoLooper = ioLooper;
             mUEventManager = uEventManager;
         }
 
@@ -483,6 +486,10 @@ public class InputManagerService extends IInputManager.Stub
 
         Looper getLooper() {
             return mLooper;
+        }
+
+        Looper getIoLooper() {
+            return mIoLooper;
         }
 
         UEventManager getUEventManager() {
@@ -505,8 +512,8 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     public InputManagerService(Context context) {
-        this(new Injector(context, DisplayThread.get().getLooper(), new UEventManager() {}),
-                context.getSystemService(PermissionEnforcer.class));
+        this(new Injector(context, DisplayThread.get().getLooper(), IoThread.get().getLooper(),
+                new UEventManager() {}), context.getSystemService(PermissionEnforcer.class));
     }
 
     @VisibleForTesting
@@ -532,7 +539,7 @@ public class InputManagerService extends IInputManager.Stub
         mStickyModifierStateController = new StickyModifierStateController();
         mInputDataStore = new InputDataStore();
         mKeyGestureController = new KeyGestureController(mContext, injector.getLooper(),
-                mInputDataStore);
+                injector.getIoLooper(), mInputDataStore);
         mKeyboardLedController = new KeyboardLedController(mContext, injector.getLooper(),
                 mNative);
         mKeyRemapper = new KeyRemapper(mContext, mNative, mDataStore, injector.getLooper());

@@ -46,7 +46,10 @@ import com.android.internal.R;
  *
  * TODO: Move this back into the API, as in the support library media router.
  */
-public class MediaRouteControllerDialog extends AlertDialog {
+public class MediaRouteControllerDialog extends AlertDialog implements
+        MediaRouteControllerContentManager.Delegate {
+    // TODO(b/360050020): Eventually these 3 variables should be in the content manager instead of
+    //  here. So these should be removed when the migration is completed.
     private final MediaRouter mRouter;
     private final MediaRouterCallback mCallback;
     private final MediaRouter.RouteInfo mRoute;
@@ -63,7 +66,7 @@ public class MediaRouteControllerDialog extends AlertDialog {
     public MediaRouteControllerDialog(Context context, int theme) {
         super(context, theme);
 
-        mContentManager = new MediaRouteControllerContentManager(context);
+        mContentManager = new MediaRouteControllerContentManager(context, this);
         mRouter = (MediaRouter) context.getSystemService(Context.MEDIA_ROUTER_SERVICE);
         mCallback = new MediaRouterCallback();
         mRoute = mRouter.getSelectedRoute();
@@ -71,24 +74,13 @@ public class MediaRouteControllerDialog extends AlertDialog {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTitle(mRoute.getName());
         Resources res = getContext().getResources();
         setButton(BUTTON_NEGATIVE, res.getString(R.string.media_route_controller_disconnect),
-                (dialogInterface, id) -> {
-                    if (mRoute.isSelected()) {
-                        if (mRoute.isBluetooth()) {
-                            mRouter.getDefaultRoute().select();
-                        } else {
-                            mRouter.getFallbackRoute().select();
-                        }
-                    }
-                    dismiss();
-                });
+                (dialogInterface, id) -> mContentManager.onDisconnectButtonClick());
         View customView = getLayoutInflater().inflate(R.layout.media_route_controller_dialog, null);
         setView(customView, 0, 0, 0, 0);
-        super.onCreate(savedInstanceState);
-
         mContentManager.bindViews(customView);
+        super.onCreate(savedInstanceState);
 
         View customPanelView = getWindow().findViewById(R.id.customPanel);
         if (customPanelView != null) {
@@ -135,13 +127,22 @@ public class MediaRouteControllerDialog extends AlertDialog {
         return super.onKeyUp(keyCode, event);
     }
 
+    @Override
+    public void setCastDeviceTitle(CharSequence title) {
+        setTitle(title);
+    }
+
+    @Override
+    public void dismissView() {
+        dismiss();
+    }
+
     private void update() {
         if (!mRoute.isSelected() || mRoute.isDefault()) {
-            dismiss();
+            dismissView();
         }
 
-        setTitle(mRoute.getName());
-        mContentManager.updateVolume();
+        mContentManager.update();
 
         Drawable icon = getIconDrawable();
         if (icon != mCurrentIconDrawable) {

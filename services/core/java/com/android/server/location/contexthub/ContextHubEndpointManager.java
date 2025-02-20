@@ -16,6 +16,7 @@
 
 package com.android.server.location.contexthub;
 
+import android.annotation.IntDef;
 import android.content.Context;
 import android.hardware.contexthub.ContextHubInfo;
 import android.hardware.contexthub.EndpointInfo;
@@ -34,8 +35,11 @@ import android.util.Log;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -104,6 +108,48 @@ import java.util.function.Consumer;
 
     /** The interface for endpoint communication (retrieved from HAL in init()) */
     private IEndpointCommunication mHubInterface = null;
+
+    /*
+     * The list of previous registration records.
+     */
+    private static final int NUM_CLIENT_RECORDS = 20;
+    private final ConcurrentLinkedEvictingDeque<RegistrationRecord> mRegistrationRecordDeque =
+            new ConcurrentLinkedEvictingDeque<>(NUM_CLIENT_RECORDS);
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(
+            prefix = {"ACTION_"},
+            value = {
+                ACTION_REGISTERED,
+                ACTION_UNREGISTERED,
+            })
+    public @interface Action {}
+
+    public static final int ACTION_REGISTERED = 0;
+    public static final int ACTION_UNREGISTERED = 1;
+
+    /** A container class to store a record of ContextHubEndpointBroker registrations. */
+    private class RegistrationRecord {
+        private final String mBroker;
+        private final int mAction;
+        private final long mTimestamp;
+
+        RegistrationRecord(String broker, @Action int action) {
+            mBroker = broker;
+            mAction = action;
+            mTimestamp = System.currentTimeMillis();
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(ContextHubServiceUtil.formatDateFromTimestamp(mTimestamp));
+            sb.append(" ");
+            sb.append(mAction == ACTION_REGISTERED ? "+ " : "- ");
+            sb.append(mBroker);
+            return sb.toString();
+        }
+    }
 
     /* package */ ContextHubEndpointManager(
             Context context,
@@ -228,6 +274,7 @@ import java.util.function.Consumer;
             return null;
         }
 
+        mRegistrationRecordDeque.add(new RegistrationRecord(broker.toString(), ACTION_REGISTERED));
         Log.d(TAG, "Registered endpoint with ID = " + endpointId);
         return IContextHubEndpoint.Stub.asInterface(broker);
     }
@@ -274,7 +321,11 @@ import java.util.function.Consumer;
      * @param endpointId The ID of the endpoint to unregister.
      */
     /* package */ void unregisterEndpoint(long endpointId) {
-        mEndpointMap.remove(endpointId);
+        ContextHubEndpointBroker broker = mEndpointMap.remove(endpointId);
+        if (broker != null) {
+            mRegistrationRecordDeque.add(
+                    new RegistrationRecord(broker.toString(), ACTION_UNREGISTERED));
+        }
     }
 
     /** Invoked by the service when the Context Hub HAL restarts. */
@@ -364,6 +415,27 @@ import java.util.function.Consumer;
         if (!callbackInvoked) {
             Log.w(TAG, "onMessageDeliveryStatusReceived: unknown session ID " + sessionId);
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        int count = 1;
+        for (ContextHubEndpointBroker broker : mEndpointMap.values()) {
+            sb.append(count + ". " + broker);
+            sb.append(System.lineSeparator());
+            count++;
+        }
+
+        sb.append(System.lineSeparator());
+        sb.append("Registration History:");
+        sb.append(System.lineSeparator());
+        Iterator<RegistrationRecord> it = mRegistrationRecordDeque.descendingIterator();
+        while (it.hasNext()) {
+            sb.append(it.next());
+            sb.append(System.lineSeparator());
+        }
+        return sb.toString();
     }
 
     /**

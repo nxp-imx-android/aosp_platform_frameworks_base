@@ -94,5 +94,7 @@ val Kosmos.keyguardRootViewModel by Fixture {
         shadeInteractor = shadeInteractor,
         wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor,
         dumpManager = dumpManager,
+        glanceableHubToAodTransitionViewModel = glanceableHubToAodTransitionViewModel,
+        aodToGlanceableHubTransitionViewModel = aodToGlanceableHubTransitionViewModel,
     )
 }

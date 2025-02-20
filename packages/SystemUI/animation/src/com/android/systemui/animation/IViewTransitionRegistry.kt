@@ -22,12 +22,12 @@ import android.view.View
 interface IViewTransitionRegistry {
 
     /**
-     * Registers the transitioning [view] mapped to a [token]
+     * Registers the transitioning [view] mapped to returned token
      *
-     * @param token The token corresponding to the transitioning view
      * @param view The view undergoing transition
+     * @return token mapped to the transitioning view
      */
-    fun register(token: ViewTransitionToken, view: View)
+    fun register(view: View): ViewTransitionToken
 
     /**
      * Unregisters the transitioned view from its corresponding [token]

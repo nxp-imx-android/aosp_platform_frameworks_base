@@ -607,13 +607,6 @@ public final class KeyboardShortcutListSearch {
                         context.getString(R.string.group_system_lock_screen),
                         Arrays.asList(
                                 Pair.create(KeyEvent.KEYCODE_L, KeyEvent.META_META_ON))),
-                /* Pull up Notes app for quick memo: Meta + Ctrl + N */
-                new ShortcutKeyGroupMultiMappingInfo(
-                        context.getString(R.string.group_system_quick_memo),
-                        Arrays.asList(
-                                Pair.create(
-                                        KeyEvent.KEYCODE_N,
-                                        KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON))),
                 /* Access system settings: Meta + I */
                 new ShortcutKeyGroupMultiMappingInfo(
                         context.getString(R.string.group_system_access_system_settings),

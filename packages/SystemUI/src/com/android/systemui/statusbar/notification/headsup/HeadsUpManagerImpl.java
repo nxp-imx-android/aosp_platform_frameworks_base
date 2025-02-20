@@ -856,11 +856,11 @@ public class HeadsUpManagerImpl
 
     private String getEntryMapStr() {
         if (mHeadsUpEntryMap.isEmpty()) {
-            return "EMPTY";
+            return "";
         }
         StringBuilder entryMapStr = new StringBuilder();
         for (HeadsUpEntry entry: mHeadsUpEntryMap.values()) {
-            entryMapStr.append("\n\t").append(
+            entryMapStr.append("\n ").append(
                     entry.mEntry == null ? "null" : entry.mEntry.getKey());
         }
         return entryMapStr.toString();

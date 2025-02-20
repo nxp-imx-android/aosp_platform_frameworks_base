@@ -24,17 +24,22 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.media.controls.data.repository.mediaFilterRepository
+import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
@@ -78,5 +83,23 @@ class QuickSettingsContainerViewModelTest : SysuiTestCase() {
             assertThat(isShadeLayoutWide).isTrue()
 
             assertThat(underTest.showHeader).isFalse()
+        }
+
+    @Test
+    fun showMedia_activeMedia_true() =
+        testScope.runTest {
+            kosmos.mediaFilterRepository.addSelectedUserMediaEntry(MediaData(active = true))
+            runCurrent()
+
+            assertThat(underTest.showMedia).isTrue()
+        }
+
+    @Test
+    fun showMedia_noActiveMedia_false() =
+        testScope.runTest {
+            kosmos.mediaFilterRepository.addSelectedUserMediaEntry(MediaData(active = false))
+            runCurrent()
+
+            assertThat(underTest.showMedia).isFalse()
         }
 }

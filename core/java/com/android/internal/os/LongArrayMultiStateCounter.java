@@ -16,6 +16,7 @@
 
 package com.android.internal.os;
 
+import android.annotation.Nullable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
@@ -155,8 +156,9 @@ public final class LongArrayMultiStateCounter implements Parcelable {
 
     /**
      * Adds the supplied values to the current accumulated values in the counter.
+     * Null `values` parameter is interpreted as an array of zeros.
      */
-    public void incrementValues(long[] values, long timestampMs) {
+    public void incrementValues(@Nullable long[] values, long timestampMs) {
         native_incrementValues(mNativeObject, values, timestampMs);
     }
 

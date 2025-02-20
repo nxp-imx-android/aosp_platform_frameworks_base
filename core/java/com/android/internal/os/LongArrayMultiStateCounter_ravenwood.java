@@ -16,6 +16,7 @@
 
 package com.android.internal.os;
 
+import android.annotation.Nullable;
 import android.os.BadParcelableException;
 import android.os.Parcel;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
@@ -147,10 +148,12 @@ class LongArrayMultiStateCounter_ravenwood {
             mLastUpdateTimestampMs = timestampMs;
         }
 
-        public void incrementValues(long[] delta, long timestampMs) {
+        public void incrementValues(@Nullable long[] delta, long timestampMs) {
             long[] values = Arrays.copyOf(mValues, mValues.length);
-            for (int i = 0; i < mArrayLength; i++) {
-                values[i] += delta[i];
+            if (delta != null) {
+                for (int i = 0; i < mArrayLength; i++) {
+                    values[i] += delta[i];
+                }
             }
             updateValue(values, timestampMs);
         }
@@ -304,7 +307,8 @@ class LongArrayMultiStateCounter_ravenwood {
         getInstance(targetInstanceId).copyStatesFrom(getInstance(sourceInstanceId));
     }
 
-    public static void native_incrementValues(long instanceId, long[] delta, long timestampMs) {
+    public static void native_incrementValues(long instanceId, @Nullable long[] delta,
+            long timestampMs) {
         getInstance(instanceId).incrementValues(delta, timestampMs);
     }
 

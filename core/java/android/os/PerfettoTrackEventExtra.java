@@ -23,6 +23,8 @@ import dalvik.annotation.optimization.FastNative;
 
 import libcore.util.NativeAllocationRegistry;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
@@ -50,6 +52,7 @@ public final class PerfettoTrackEventExtra {
     private static final Supplier<FieldString> sFieldStringSupplier = FieldString::new;
     private static final Supplier<FieldNested> sFieldNestedSupplier = FieldNested::new;
 
+    private final List<PerfettoPointer> mPendingPointers = new ArrayList<>();
     private CounterInt64 mCounterInt64;
     private CounterDouble mCounterDouble;
     private Proto mProto;
@@ -592,7 +595,7 @@ public final class PerfettoTrackEventExtra {
             checkContainer();
             FieldInt64 field = mFieldInt64Cache.get(sFieldInt64Supplier);
             field.setValue(id, val);
-            mCurrentContainer.addField(field);
+            mExtra.addPerfettoPointer(mCurrentContainer, field);
             return this;
         }
 
@@ -601,7 +604,7 @@ public final class PerfettoTrackEventExtra {
             checkContainer();
             FieldDouble field = mFieldDoubleCache.get(sFieldDoubleSupplier);
             field.setValue(id, val);
-            mCurrentContainer.addField(field);
+            mExtra.addPerfettoPointer(mCurrentContainer, field);
             return this;
         }
 
@@ -610,7 +613,7 @@ public final class PerfettoTrackEventExtra {
             checkContainer();
             FieldString field = mFieldStringCache.get(sFieldStringSupplier);
             field.setValue(id, val);
-            mCurrentContainer.addField(field);
+            mExtra.addPerfettoPointer(mCurrentContainer, field);
             return this;
         }
 
@@ -635,7 +638,7 @@ public final class PerfettoTrackEventExtra {
             checkContainer();
             FieldNested field = mFieldNestedCache.get(sFieldNestedSupplier);
             field.setId(id);
-            mCurrentContainer.addField(field);
+            mExtra.addPerfettoPointer(mCurrentContainer, field);
             return mBuilderCache.get(sBuilderSupplier).initInternal(this, field);
         }
 
@@ -735,6 +738,15 @@ public final class PerfettoTrackEventExtra {
      */
     public void addPerfettoPointer(PerfettoPointer extra) {
         native_add_arg(mPtr, extra.getPtr());
+        mPendingPointers.add(extra);
+    }
+
+    /**
+     * Adds a pointer representing a track event parameter to the {@code container}.
+     */
+    public void addPerfettoPointer(FieldContainer container, PerfettoPointer extra) {
+        container.addField(extra);
+        mPendingPointers.add(extra);
     }
 
     /**
@@ -742,6 +754,7 @@ public final class PerfettoTrackEventExtra {
      */
     public void reset() {
         native_clear_args(mPtr);
+        mPendingPointers.clear();
     }
 
     private CounterInt64 getCounterInt64() {

@@ -95,8 +95,8 @@ import android.test.mock.MockContext;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Pair;
+import android.util.SparseArray;
 
-import com.android.internal.infra.AndroidFuture;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.pm.LauncherAppsService.LauncherAppsImpl;
@@ -110,6 +110,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -148,6 +149,9 @@ public abstract class BaseShortcutManagerTest extends InstrumentationTestCase {
 
     protected static final String MAIN_ACTIVITY_CLASS = "MainActivity";
     protected static final String PIN_CONFIRM_ACTIVITY_CLASS = "PinConfirmActivity";
+
+    private byte[] mBaseState;
+    protected final SparseArray<byte[]> mUserStates = new SparseArray<>();
 
     // public for mockito
     public class BaseContext extends MockContext {
@@ -286,6 +290,7 @@ public abstract class BaseShortcutManagerTest extends InstrumentationTestCase {
     protected final class ShortcutServiceTestable extends ShortcutService {
         final ServiceContext mContext;
         IUidObserver mUidObserver;
+
 
         public ShortcutServiceTestable(ServiceContext context, Looper looper) {
             super(context, looper, /* onyForPackageManagerApis */ false);
@@ -566,6 +571,58 @@ public abstract class BaseShortcutManagerTest extends InstrumentationTestCase {
         void wtf(String message, Throwable th) {
             // During tests, WTF is fatal.
             fail(message + "  exception: " + th + "\n" + Log.getStackTraceString(th));
+        }
+
+        @Override
+        void injectSaveBaseState() {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                saveBaseStateAsXml(baos);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            mBaseState = baos.toByteArray();
+        }
+
+        @Override
+        protected void injectLoadBaseState() {
+            if (mBaseState == null) {
+                return;
+            }
+            ByteArrayInputStream bais = new ByteArrayInputStream(mBaseState);
+            try {
+                loadBaseStateAsXml(bais);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        protected void injectSaveUser(@UserIdInt int userId) {
+            synchronized (mServiceLock) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                try {
+                    saveUserInternalLocked(userId, baos, /* forBackup= */ false);
+                    cleanupDanglingBitmapDirectoriesLocked(userId);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                mUserStates.put(userId, baos.toByteArray());
+            }
+        }
+
+        @Override
+        protected ShortcutUser injectLoadUserLocked(@UserIdInt int userId) {
+            final byte[] userState = mUserStates.get(userId);
+            if (userState == null) {
+                return null;
+            }
+            ByteArrayInputStream bais = new ByteArrayInputStream(userState);
+            try {
+                return loadUserInternal(userId, bais, /* forBackup= */ false);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

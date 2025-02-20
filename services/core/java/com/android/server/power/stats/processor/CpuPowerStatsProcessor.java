@@ -19,6 +19,7 @@ package com.android.server.power.stats.processor;
 import android.annotation.Nullable;
 import android.os.BatteryConsumer;
 import android.util.ArraySet;
+import android.util.IntArray;
 import android.util.Log;
 
 import com.android.internal.os.CpuScalingPolicies;
@@ -27,7 +28,6 @@ import com.android.internal.os.PowerStats;
 import com.android.server.power.stats.format.CpuPowerStatsLayout;
 import com.android.server.power.stats.format.WakelockPowerStatsLayout;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -189,12 +189,12 @@ class CpuPowerStatsProcessor extends PowerStatsProcessor {
         estimatePowerByDeviceState(stats, intermediates, wakelockStats);
         combineDeviceStateEstimates();
 
-        ArrayList<Integer> uids = new ArrayList<>();
-        stats.collectUids(uids);
-        if (!uids.isEmpty()) {
-            for (int uid : uids) {
-                for (int i = 0; i < mPlan.uidStateEstimates.size(); i++) {
-                    estimateUidPowerConsumption(stats, uid, mPlan.uidStateEstimates.get(i),
+        IntArray uids = stats.getActiveUids();
+        if (uids.size() != 0) {
+            for (int i = uids.size() - 1; i >= 0; i--) {
+                int uid = uids.get(i);
+                for (int j = 0; j < mPlan.uidStateEstimates.size(); j++) {
+                    estimateUidPowerConsumption(stats, uid, mPlan.uidStateEstimates.get(j),
                             wakelockStats);
                 }
             }
@@ -545,8 +545,10 @@ class CpuPowerStatsProcessor extends PowerStatsProcessor {
                 power = Math.max(0, power - wakelockPowerEstimate);
             }
 
-            mStatsLayout.setUidPowerEstimate(mTmpUidStatsArray, power);
-            stats.setUidStats(uid, proportionalEstimate.stateValues, mTmpUidStatsArray);
+            if (power != 0) {
+                mStatsLayout.setUidPowerEstimate(mTmpUidStatsArray, power);
+                stats.setUidStats(uid, proportionalEstimate.stateValues, mTmpUidStatsArray);
+            }
         }
     }
 }

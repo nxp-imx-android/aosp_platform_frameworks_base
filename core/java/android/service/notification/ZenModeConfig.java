@@ -3131,6 +3131,7 @@ public class ZenModeConfig implements Parcelable {
      * @return null if DND is off or describeForeverCondition is false and
      * DND is on forever (until turned off)
      */
+    // TODO: b/368247671 - Delete when inlining MODES_UI
     public static String getDescription(Context context, boolean zenOn, ZenModeConfig config,
             boolean describeForeverCondition) {
         if (!zenOn || config == null) {

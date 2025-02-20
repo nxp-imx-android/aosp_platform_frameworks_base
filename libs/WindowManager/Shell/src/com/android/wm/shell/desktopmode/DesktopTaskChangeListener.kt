@@ -19,13 +19,16 @@ package com.android.wm.shell.desktopmode
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.window.DesktopModeFlags
+import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.freeform.TaskChangeListener
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 
 /** Manages tasks handling specific to Android Desktop Mode. */
 class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUserRepositories) :
     TaskChangeListener {
 
     override fun onTaskOpening(taskInfo: RunningTaskInfo) {
+        logD("onTaskOpening for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
         val desktopRepository: DesktopRepository =
             desktopUserRepositories.getProfile(taskInfo.userId)
         if (!isFreeformTask(taskInfo) && desktopRepository.isActiveTask(taskInfo.taskId)) {
@@ -38,6 +41,7 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
     }
 
     override fun onTaskChanging(taskInfo: RunningTaskInfo) {
+        logD("onTaskChanging for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
         val desktopRepository: DesktopRepository =
             desktopUserRepositories.getProfile(taskInfo.userId)
         if (!desktopRepository.isActiveTask(taskInfo.taskId)) return
@@ -67,9 +71,15 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
     // of race conditions and possible duplications with [onTaskChanging].
     override fun onNonTransitionTaskChanging(taskInfo: RunningTaskInfo) {
         // TODO: b/367268953 - Propagate usages from FreeformTaskListener to this method.
+        logD(
+            "onNonTransitionTaskChanging for taskId=%d, displayId=%d",
+            taskInfo.taskId,
+            taskInfo.displayId,
+        )
     }
 
     override fun onTaskMovingToFront(taskInfo: RunningTaskInfo) {
+        logD("onTaskMovingToFront for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
         val desktopRepository: DesktopRepository =
             desktopUserRepositories.getProfile(taskInfo.userId)
         if (!desktopRepository.isActiveTask(taskInfo.taskId)) return
@@ -80,10 +90,12 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
     }
 
     override fun onTaskMovingToBack(taskInfo: RunningTaskInfo) {
+        logD("onTaskMovingToBack for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
         // TODO: b/367268953 - Connect this with DesktopRepository.
     }
 
     override fun onTaskClosing(taskInfo: RunningTaskInfo) {
+        logD("onTaskClosing for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
         val desktopRepository: DesktopRepository =
             desktopUserRepositories.getProfile(taskInfo.userId)
         if (!desktopRepository.isActiveTask(taskInfo.taskId)) return
@@ -104,4 +116,12 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
 
     private fun isFreeformTask(taskInfo: RunningTaskInfo): Boolean =
         taskInfo.windowingMode == WINDOWING_MODE_FREEFORM
+
+    private fun logD(msg: String, vararg arguments: Any?) {
+        ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    companion object {
+        private const val TAG = "DesktopTaskChangeListener"
+    }
 }

@@ -99,5 +99,5 @@ interface IContextHubEndpoint {
      * Invoked when a callback from IContextHubEndpointCallback finishes.
      */
     @EnforcePermission("ACCESS_CONTEXT_HUB")
-    void onCallbackFinished();
+    oneway void onCallbackFinished();
 }

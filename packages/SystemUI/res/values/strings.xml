@@ -2560,6 +2560,9 @@
     <!-- SysUI Tuner: Other section -->
     <string name="other">Other</string>
 
+    <!-- Accessibility description of action to toggle QS tile size on click. It will read as "Double-tap to toggle the tile's size" in screen readers [CHAR LIMIT=NONE] -->
+    <string name="accessibility_qs_edit_toggle_tile_size_action">toggle the tile\'s size</string>
+
     <!-- Accessibility description of action to remove QS tile on click. It will read as "Double-tap to remove tile" in screen readers [CHAR LIMIT=NONE] -->
     <string name="accessibility_qs_edit_remove_tile_action">remove tile</string>
 
@@ -4097,8 +4100,10 @@
 
     <!-- Title of the one line view of a redacted notification -->
     <string name="redacted_notification_single_line_title">Redacted</string>
-    <!-- Main text of the one line view of a redacted notification -->
-    <string name="redacted_notification_single_line_text">Unlock to view</string>
+    <!-- Main text of the one line view of a public notification -->
+    <string name="public_notification_single_line_text">Unlock to view</string>
+    <!-- Main text of the one line view of a redacted OTP notification -->
+    <string name="redacted_otp_notification_single_line_text">Unlock to view code</string>
 
     <!-- Content description for contextual education dialog [CHAR LIMIT=NONE] -->
     <string name="contextual_education_dialog_title">Contextual education</string>

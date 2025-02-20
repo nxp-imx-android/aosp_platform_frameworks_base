@@ -146,11 +146,6 @@ final class InputGestureManager {
                         KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
                 ),
                 createKeyGesture(
-                        KeyEvent.KEYCODE_N,
-                        KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
-                        KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_NOTES
-                ),
-                createKeyGesture(
                         KeyEvent.KEYCODE_S,
                         KeyEvent.META_META_ON,
                         KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT

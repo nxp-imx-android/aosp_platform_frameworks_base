@@ -54,9 +54,7 @@ import androidx.test.filters.SmallTest;
 import com.android.frameworks.servicestests.R;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.Locale;
 
 /**
@@ -2358,12 +2356,10 @@ public class ShortcutManagerTest2 extends BaseShortcutManagerTest {
      * can still be read.
      */
     public void testLoadLegacySavedFile() throws Exception {
-        final File path = mService.getUserFile(USER_10).getBaseFile();
-        path.getParentFile().mkdirs();
-        try (Writer w = new FileWriter(path)) {
-            w.write(readTestAsset("shortcut/shortcut_legacy_file.xml"));
-        };
+        final String legacyFile = readTestAsset("shortcut/shortcut_legacy_file.xml");
+        mUserStates.put(USER_10, legacyFile.getBytes());
         initService();
+
         mService.handleUnlockUser(USER_10);
 
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {

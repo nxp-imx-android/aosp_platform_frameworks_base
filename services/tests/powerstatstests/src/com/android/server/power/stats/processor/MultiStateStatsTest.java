@@ -143,6 +143,8 @@ public class MultiStateStatsTest {
 
         multiStateStats.increment(new long[]{200, 200}, 5000);
 
+        multiStateStats.increment(null, 6000);  // No-op
+
         long[] stats = new long[DIMENSION_COUNT];
         multiStateStats.getStats(stats, new int[]{0, BatteryConsumer.PROCESS_STATE_FOREGROUND, 0});
         // (400 - 100) * 0.5 + (600 - 400) * 0.5

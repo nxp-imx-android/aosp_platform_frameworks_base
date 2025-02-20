@@ -618,7 +618,7 @@ public final class ActiveServices {
                 Slog.i(TAG, "  Stopping fg for service " + r);
             }
             setServiceForegroundInnerLocked(r, 0, null, 0, 0,
-                    0);
+                    0,  /* systemRequestedTransition= */ true);
         }
     }
 
@@ -1839,7 +1839,7 @@ public final class ActiveServices {
             ServiceRecord r = findServiceLocked(className, token, userId);
             if (r != null) {
                 setServiceForegroundInnerLocked(r, id, notification, flags, foregroundServiceType,
-                        callingUid);
+                        callingUid, /* systemRequestedTransition= */ false);
             }
         } finally {
             mAm.mInjector.restoreCallingIdentity(origId);
@@ -2155,7 +2155,7 @@ public final class ActiveServices {
     @GuardedBy("mAm")
     private void setServiceForegroundInnerLocked(final ServiceRecord r, int id,
             Notification notification, int flags, int foregroundServiceType,
-            int callingUidIfStart) {
+            int callingUidIfStart, boolean systemRequestedTransition) {
         if (id != 0) {
             if (notification == null) {
                 throw new IllegalArgumentException("null notification");
@@ -2800,6 +2800,7 @@ public final class ActiveServices {
                 // earlier.
                 r.foregroundServiceType = 0;
                 r.mFgsNotificationWasDeferred = false;
+                r.systemRequestedFgToBg = systemRequestedTransition;
                 signalForegroundServiceObserversLocked(r);
                 resetFgsRestrictionLocked(r);
                 mAm.updateForegroundServiceUsageStats(r.name, r.userId, false);
@@ -9339,14 +9340,22 @@ public final class ActiveServices {
                 if (sr.foregroundServiceType
                         == ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE
                         && sr.foregroundId == notificationId) {
-                    if (DEBUG_FOREGROUND_SERVICE) {
-                        Slog.d(TAG, "Moving media service to foreground for package "
-                                + packageName);
+                    // check if service is explicitly requested by app to not be in foreground.
+                    if (sr.systemRequestedFgToBg) {
+                        Slog.d(TAG,
+                                "System initiated service transition to foreground "
+                                        + "for package "
+                                        + packageName);
+                        setServiceForegroundInnerLocked(sr, sr.foregroundId,
+                                sr.foregroundNoti, /* flags */ 0,
+                                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK,
+                                /* callingUidStart */ 0, /* systemRequestedTransition */ true);
+                    } else {
+                        Slog.d(TAG,
+                                "Ignoring system initiated foreground service transition for "
+                                        + "package"
+                                        + packageName);
                     }
-                    setServiceForegroundInnerLocked(sr, sr.foregroundId,
-                             sr.foregroundNoti, /* flags */ 0,
-                             ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK,
-                             /* callingUidStart */ 0);
                 }
             }
         }
@@ -9379,13 +9388,14 @@ public final class ActiveServices {
                 if (sr.foregroundServiceType
                         == ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
                         && sr.foregroundId == notificationId) {
-                    if (DEBUG_FOREGROUND_SERVICE) {
-                        Slog.d(TAG, "Forcing media foreground service to background for package "
-                                + packageName);
-                    }
+                    Slog.d(TAG,
+                            "System initiated transition of foreground service(type:media) to bg "
+                                    + "for package"
+                                    + packageName);
                     setServiceForegroundInnerLocked(sr, /* id */ 0,
                             /* notification */ null, /* flags */ 0,
-                            /* foregroundServiceType */ 0, /* callingUidStart */ 0);
+                            /* foregroundServiceType */ 0, /* callingUidStart */ 0,
+                            /* systemRequestedTransition */ true);
                 }
             }
         }

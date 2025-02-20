@@ -322,7 +322,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         PrintWriter pw = shell.getOutPrintWriter();
 
         if (android.tracing.Flags.clientSideProtoLogging()) {
-            pw.println("Command deprecated. Please use 'cmd protolog' instead.");
+            pw.println("Command deprecated. Please use 'cmd protolog_configuration' instead.");
             return -1;
         }
 

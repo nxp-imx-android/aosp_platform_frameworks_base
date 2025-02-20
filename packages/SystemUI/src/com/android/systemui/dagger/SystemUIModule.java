@@ -105,6 +105,7 @@ import com.android.systemui.qs.footer.dagger.FooterActionsModule;
 import com.android.systemui.recents.Recents;
 import com.android.systemui.recordissue.RecordIssueModule;
 import com.android.systemui.retail.RetailModeModule;
+import com.android.systemui.rotationlock.DeviceStateAutoRotateModule.BoundsDeviceStateAutoRotateModule;
 import com.android.systemui.scene.shared.model.SceneContainerConfig;
 import com.android.systemui.scene.shared.model.SceneDataSource;
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator;
@@ -145,6 +146,7 @@ import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.phone.ConfigurationControllerModule;
 import com.android.systemui.statusbar.phone.LetterboxModule;
 import com.android.systemui.statusbar.pipeline.dagger.StatusBarPipelineModule;
+import com.android.systemui.statusbar.policy.DeviceStateRotationLockSettingController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.PolicyModule;
 import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionController;
@@ -391,6 +393,11 @@ public abstract class SystemUIModule {
     @BindsOptionalOf
     abstract LockscreenContent optionalLockscreenContent();
 
+    @BindsOptionalOf
+    @BoundsDeviceStateAutoRotateModule
+    abstract Optional<DeviceStateRotationLockSettingController>
+            optionalDeviceStateRotationLockSettingController();
+
     @SysUISingleton
     @Binds
     abstract SystemClock bindSystemClock(SystemClockImpl systemClock);
@@ -464,6 +471,16 @@ public abstract class SystemUIModule {
     static SceneDataSourceDelegator providesSceneDataSourceDelegator(
             @Application CoroutineScope applicationScope, SceneContainerConfig config) {
         return new SceneDataSourceDelegator(applicationScope, config);
+    }
+
+    @Provides
+    @SysUISingleton
+    static Optional<DeviceStateRotationLockSettingController>
+            provideDeviceStateRotationLockSettingController(
+            @BoundsDeviceStateAutoRotateModule
+            Optional<Optional<DeviceStateRotationLockSettingController>> optionalOfOptional
+    ) {
+        return optionalOfOptional.orElseGet(Optional::empty);
     }
 
     @Binds

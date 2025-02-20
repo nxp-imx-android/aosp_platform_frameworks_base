@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.row;
 
+import static com.android.systemui.Flags.notificationRowTransparency;
 import static com.android.systemui.util.ColorUtilKt.hexColorString;
 
 import android.content.Context;
@@ -23,6 +24,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Path;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -34,8 +36,10 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.internal.graphics.ColorUtils;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.systemui.Dumpable;
+import com.android.systemui.common.shared.colors.SurfaceEffectColors;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.shared.NotificationAddXOnHoverToDismiss;
 import com.android.systemui.util.DrawableDumpKt;
@@ -69,6 +73,7 @@ public class NotificationBackgroundView extends View implements Dumpable,
     private final ColorStateList mLightColoredStatefulColors;
     private final ColorStateList mDarkColoredStatefulColors;
     private final int mNormalColor;
+    private boolean mBgIsColorized = false;
     private final int convexR = 9;
     private final int concaveR = 22;
 
@@ -82,8 +87,12 @@ public class NotificationBackgroundView extends View implements Dumpable,
                 R.color.notification_state_color_light);
         mDarkColoredStatefulColors = getResources().getColorStateList(
                 R.color.notification_state_color_dark);
-        mNormalColor = mContext.getColor(
-                com.android.internal.R.color.materialColorSurfaceContainerHigh);
+        if (notificationRowTransparency()) {
+            mNormalColor = SurfaceEffectColors.surfaceEffect1(getResources());
+        } else  {
+            mNormalColor = mContext.getColor(
+                    com.android.internal.R.color.materialColorSurfaceContainerHigh);
+        }
         mFocusOverlayStroke = getResources().getDimension(R.dimen.notification_focus_stroke_width);
     }
 
@@ -130,6 +139,21 @@ public class NotificationBackgroundView extends View implements Dumpable,
 
             canvas.restore();
         }
+    }
+
+    /**
+     * A way to tell whether the background has been colorized.
+     */
+    public boolean isColorized() {
+        return mBgIsColorized;
+    }
+
+    /**
+     * A way to inform this class whether the background has been colorized.
+     * We need to know this, in order to *not* override that color.
+     */
+    public void setBgIsColorized(boolean b) {
+        mBgIsColorized = b;
     }
 
     private Path calculateDismissButtonCutoutPath(Rect backgroundBounds) {
@@ -280,7 +304,7 @@ public class NotificationBackgroundView extends View implements Dumpable,
         setCustomBackground(d);
     }
 
-    private Drawable getBaseBackgroundLayer() {
+    public Drawable getBaseBackgroundLayer() {
         return ((LayerDrawable) mBackground).getDrawable(0);
     }
 
@@ -288,11 +312,27 @@ public class NotificationBackgroundView extends View implements Dumpable,
         return ((LayerDrawable) mBackground).getDrawable(1);
     }
 
+    private void updateBaseLayerColor() {
+        // BG base layer being a drawable, there isn't a method like setColor() to color it.
+        // Instead, we set a color filter that essentially replaces every pixel of the drawable.
+        // For non-colorized notifications, this function specifies a new color token.
+        // For colorized notifications, this uses a color that matches the tint color at 90% alpha.
+        getBaseBackgroundLayer().setColorFilter(
+                new PorterDuffColorFilter(
+                        isColorized()
+                                ? ColorUtils.setAlphaComponent(mTintColor, (int) (255 * 0.9f))
+                                : SurfaceEffectColors.surfaceEffect1(getResources()),
+                        PorterDuff.Mode.SRC)); // SRC operator discards the drawable's color+alpha
+    }
+
     public void setTint(int tintColor) {
         Drawable baseLayer = getBaseBackgroundLayer();
         baseLayer.mutate().setTintMode(PorterDuff.Mode.SRC_ATOP);
         baseLayer.setTint(tintColor);
         mTintColor = tintColor;
+        if (notificationRowTransparency()) {
+            updateBaseLayerColor();
+        }
         setStatefulColors();
         invalidate();
     }

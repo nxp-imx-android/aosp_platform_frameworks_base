@@ -32,6 +32,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
@@ -73,6 +75,7 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
     private boolean mLottieDynamicColor;
     private CharSequence mContentDescription;
     private boolean mIsTablet;
+    private boolean mIsAnimatable;
     private boolean mIsAnimationPaused;
 
     /**
@@ -81,6 +84,7 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
     public interface OnBindListener {
         /**
          * Called when when {@link #onBindViewHolder(PreferenceViewHolder)} occurs.
+         *
          * @param animationView the animation view for this preference.
          */
         void onBind(LottieAnimationView animationView);
@@ -144,16 +148,6 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
                 (FrameLayout) holder.findViewById(R.id.middleground_layout);
         final LottieAnimationView illustrationView =
                 (LottieAnimationView) holder.findViewById(R.id.lottie_view);
-        // Pause and resume animation
-        illustrationFrame.setOnClickListener(v -> {
-            mIsAnimationPaused = !mIsAnimationPaused;
-            if (mIsAnimationPaused) {
-                illustrationView.pauseAnimation();
-            } else {
-                illustrationView.resumeAnimation();
-            }
-        });
-
         if (illustrationView != null && !TextUtils.isEmpty(mContentDescription)) {
             illustrationView.setContentDescription(mContentDescription);
             illustrationView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
@@ -171,12 +165,13 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
 
         illustrationView.setCacheComposition(mCacheComposition);
         handleImageWithAnimation(illustrationView, illustrationFrame);
+        handleAnimationControl(illustrationView, illustrationFrame);
         handleImageFrameMaxHeight(backgroundView, illustrationView);
 
         if (mIsAutoScale) {
             illustrationView.setScaleType(mIsAutoScale
-                            ? ImageView.ScaleType.CENTER_CROP
-                            : ImageView.ScaleType.CENTER_INSIDE);
+                    ? ImageView.ScaleType.CENTER_CROP
+                    : ImageView.ScaleType.CENTER_INSIDE);
         }
 
         handleMiddleGroundView(middleGroundLayout);
@@ -377,6 +372,7 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
             final Drawable drawable = illustrationView.getDrawable();
             if (drawable != null) {
                 startAnimation(drawable);
+                mIsAnimatable = false;
             }
         }
 
@@ -386,10 +382,12 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
             final Drawable drawable = illustrationView.getDrawable();
             if (drawable != null) {
                 startAnimation(drawable);
+                mIsAnimatable = false;
             } else {
                 // The lottie image from the raw folder also returns null because the ImageView
                 // couldn't handle it now.
                 startLottieAnimationWith(illustrationView, mImageUri);
+                mIsAnimatable = true;
             }
         }
 
@@ -418,10 +416,12 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
             final Drawable drawable = illustrationView.getDrawable();
             if (drawable != null) {
                 startAnimation(drawable);
+                mIsAnimatable = false;
             } else {
                 // The lottie image from the raw folder also returns null because the ImageView
                 // couldn't handle it now.
                 startLottieAnimationWith(illustrationView, mImageResId);
+                mIsAnimatable = true;
             }
         }
     }
@@ -457,6 +457,60 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
         }
 
         ((Animatable) drawable).start();
+    }
+
+    private void handleAnimationControl(LottieAnimationView illustrationView,
+            ViewGroup container) {
+        if (mIsAnimatable) {
+            // TODO(b/397340540): list out pages having illustration without a content description.
+            if (TextUtils.isEmpty(mContentDescription)) {
+                Log.w(TAG, "Illustration should have a content description. preference key = "
+                        + getKey());
+            }
+            // Enable pause and resume abilities to animation only
+            container.setOnClickListener(v -> {
+                mIsAnimationPaused = !mIsAnimationPaused;
+                if (mIsAnimationPaused) {
+                    illustrationView.pauseAnimation();
+                } else {
+                    illustrationView.resumeAnimation();
+                }
+                updateAccessibilityAction(container);
+            });
+
+            updateAccessibilityAction(container);
+        }
+    }
+
+    private void updateAccessibilityAction(ViewGroup container) {
+        // Setting the state of animation
+        container.setStateDescription(getStateDescriptionForAnimation());
+        container.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                final AccessibilityAction clickAction = new AccessibilityAction(
+                        AccessibilityNodeInfo.ACTION_CLICK,
+                        getActionLabelForAnimation());
+                info.addAction(clickAction);
+            }
+        });
+    }
+
+    private String getActionLabelForAnimation() {
+        if (mIsAnimationPaused) {
+            return getContext().getString(R.string.settingslib_action_label_resume);
+        } else {
+            return getContext().getString(R.string.settingslib_action_label_pause);
+        }
+    }
+
+    private String getStateDescriptionForAnimation() {
+        if (mIsAnimationPaused) {
+            return getContext().getString(R.string.settingslib_state_animation_paused);
+        } else {
+            return getContext().getString(R.string.settingslib_state_animation_playing);
+        }
     }
 
     private static void startLottieAnimationWith(LottieAnimationView illustrationView,
@@ -514,15 +568,20 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
         mIsAutoScale = false;
         if (attrs != null) {
             TypedArray a = context.obtainStyledAttributes(attrs,
-                    com.airbnb.lottie.R.styleable.LottieAnimationView, 0 /*defStyleAttr*/, 0 /*defStyleRes*/);
-            mImageResId = a.getResourceId(com.airbnb.lottie.R.styleable.LottieAnimationView_lottie_rawRes, 0);
+                    com.airbnb.lottie.R.styleable.LottieAnimationView, /* defStyleAttr= */ 0,
+                    /* defStyleRes= */ 0);
+            mImageResId = a.getResourceId(
+                    com.airbnb.lottie.R.styleable.LottieAnimationView_lottie_rawRes,
+                    /* defValue= */ 0);
             mCacheComposition = a.getBoolean(
-                    com.airbnb.lottie.R.styleable.LottieAnimationView_lottie_cacheComposition, true);
+                    com.airbnb.lottie.R.styleable.LottieAnimationView_lottie_cacheComposition,
+                    /* defValue= */ true);
 
             a = context.obtainStyledAttributes(attrs,
-                    R.styleable.IllustrationPreference, 0 /*defStyleAttr*/, 0 /*defStyleRes*/);
+                    R.styleable.IllustrationPreference, /* defStyleAttr= */ 0,
+                    /* defStyleRes= */ 0);
             mLottieDynamicColor = a.getBoolean(R.styleable.IllustrationPreference_dynamicColor,
-                    false);
+                    /* defValue= */ false);
 
             a.recycle();
         }

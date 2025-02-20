@@ -1579,6 +1579,12 @@ public class ContextHubService extends IContextHubService.Stub {
         pw.println("=================== CLIENTS ====================");
         pw.println(mClientManager);
 
+        if (mEndpointManager != null) {
+            pw.println("");
+            pw.println("=================== ENDPOINTS ====================");
+            pw.println(mEndpointManager);
+        }
+
         pw.println("");
         pw.println("=================== TRANSACTIONS ====================");
         pw.println(mTransactionManager);

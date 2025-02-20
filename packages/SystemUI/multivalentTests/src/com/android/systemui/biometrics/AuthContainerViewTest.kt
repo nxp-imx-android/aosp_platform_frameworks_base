@@ -21,6 +21,7 @@ import android.content.res.Configuration
 import android.hardware.biometrics.BiometricAuthenticator
 import android.hardware.biometrics.BiometricConstants
 import android.hardware.biometrics.BiometricManager
+import android.hardware.biometrics.BiometricPrompt
 import android.hardware.biometrics.PromptContentViewWithMoreOptionsButton
 import android.hardware.biometrics.PromptInfo
 import android.hardware.biometrics.PromptVerticalListContentView
@@ -290,7 +291,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
         verify(callback)
             .onDismissed(
-                eq(AuthDialogCallback.DISMISSED_BIOMETRIC_AUTHENTICATED),
+                eq(BiometricPrompt.DISMISSED_REASON_BIOMETRIC_CONFIRM_NOT_REQUIRED),
                 eq<ByteArray?>(null), /* credentialAttestation */
                 eq(authContainer?.requestId ?: 0L),
             )
@@ -310,7 +311,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
             )
         verify(callback)
             .onDismissed(
-                eq(AuthDialogCallback.DISMISSED_USER_CANCELED),
+                eq(BiometricPrompt.DISMISSED_REASON_USER_CANCEL),
                 eq<ByteArray?>(null), /* credentialAttestation */
                 eq(authContainer?.requestId ?: 0L),
             )
@@ -325,7 +326,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
         verify(callback)
             .onDismissed(
-                eq(AuthDialogCallback.DISMISSED_BUTTON_NEGATIVE),
+                eq(BiometricPrompt.DISMISSED_REASON_NEGATIVE),
                 eq<ByteArray?>(null), /* credentialAttestation */
                 eq(authContainer?.requestId ?: 0L),
             )
@@ -352,7 +353,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
         verify(callback)
             .onDismissed(
-                eq(AuthDialogCallback.DISMISSED_ERROR),
+                eq(BiometricPrompt.DISMISSED_REASON_ERROR),
                 eq<ByteArray?>(null), /* credentialAttestation */
                 eq(authContainer?.requestId ?: 0L),
             )

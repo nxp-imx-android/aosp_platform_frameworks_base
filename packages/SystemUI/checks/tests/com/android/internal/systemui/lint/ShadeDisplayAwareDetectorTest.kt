@@ -410,34 +410,6 @@ class ShadeDisplayAwareDetectorTest : SystemUILintDetectorTest() {
             .expectClean()
     }
 
-    @Test
-    fun injectedConstructor_inExemptPackage_withRelevantParameter_withoutAnnotation() {
-        lint()
-            .files(
-                TestFiles.java(
-                    """
-                        package com.android.systemui.qs.customize;
-
-                        import javax.inject.Inject;
-                        import com.android.systemui.qs.dagger.QSThemedContext;
-                        import android.content.Context;
-
-                        public class TileAdapter {
-                            @Inject
-                            public TileAdapter(@QSThemedContext Context context) {}
-                        }
-                    """
-                        .trimIndent()
-                ),
-                *androidStubs,
-                *otherStubs,
-            )
-            .issues(ShadeDisplayAwareDetector.ISSUE)
-            .testModes(TestMode.DEFAULT)
-            .run()
-            .expectClean()
-    }
-
     private fun errorMsgString(lineNumber: Int, className: String) =
         "src/com/android/systemui/shade/example/ExampleClass.kt:$lineNumber: Error: UI elements of " +
             "the shade window should use ShadeDisplayAware-annotated $className, as the shade " +

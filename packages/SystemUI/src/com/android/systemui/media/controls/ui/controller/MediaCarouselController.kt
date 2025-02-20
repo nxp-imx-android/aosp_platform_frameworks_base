@@ -132,7 +132,7 @@ class MediaCarouselController
 @Inject
 constructor(
     @Application applicationScope: CoroutineScope,
-    private val context: Context,
+    @Main private val context: Context,
     private val mediaControlPanelFactory: Provider<MediaControlPanel>,
     private val visualStabilityProvider: VisualStabilityProvider,
     private val mediaHostStatesManager: MediaHostStatesManager,
@@ -143,7 +143,7 @@ constructor(
     @Background private val bgExecutor: Executor,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     private val mediaManager: MediaDataManager,
-    configurationController: ConfigurationController,
+    @Main configurationController: ConfigurationController,
     private val falsingManager: FalsingManager,
     dumpManager: DumpManager,
     private val logger: MediaUiEventLogger,

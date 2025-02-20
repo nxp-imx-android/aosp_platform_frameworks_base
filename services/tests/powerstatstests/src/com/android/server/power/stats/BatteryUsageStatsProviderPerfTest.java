@@ -48,6 +48,7 @@ import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -121,7 +122,7 @@ public class BatteryUsageStatsProviderPerfTest {
     }
 
     @Test
-    public void getBatteryUsageStats_accumulated() {
+    public void getBatteryUsageStats_accumulated() throws IOException {
         BatteryUsageStatsQuery query = new BatteryUsageStatsQuery.Builder()
                 .setMaxStatsAgeMs(0)
                 .includePowerStateData()
@@ -155,6 +156,8 @@ public class BatteryUsageStatsProviderPerfTest {
                 // Verify that all iterations produce the same result
                 assertThat(cpuConsumedPower).isEqualTo(expectedCpuPower);
             }
+            stats.close();
+
             state.resumeTiming();
         }
     }

@@ -24,13 +24,12 @@ import static com.android.server.power.stats.processor.AggregatedPowerStatsConfi
 
 import android.os.BatteryConsumer;
 import android.os.PersistableBundle;
+import android.util.IntArray;
 
 import com.android.internal.os.PowerStats;
 import com.android.server.power.stats.format.BasePowerStatsLayout;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.DoubleSupplier;
 
 class BasePowerStatsProcessor extends PowerStatsProcessor {
@@ -125,11 +124,12 @@ class BasePowerStatsProcessor extends PowerStatsProcessor {
         mCumulativeDischargeUah = 0;
         mCumulativeDischargeDurationMs = 0;
 
-        List<Integer> uids = new ArrayList<>();
-        stats.collectUids(uids);
-
-        long durationMs = timestampMs - mStartTimestamp;
-        if (!uids.isEmpty()) {
+        // Note that we are calling `getUids` rather than `getActiveUids`, because this Processor
+        // deals with duration rather than power estimation, so it needs to process *all* known
+        // UIDs, not just the ones that contributed PowerStats
+        IntArray uids = stats.getUids();
+        if (uids.size() != 0) {
+            long durationMs = timestampMs - mStartTimestamp;
             for (int i = uids.size() - 1; i >= 0; i--) {
                 long[] uidStats = new long[sStatsLayout.getUidStatsArrayLength()];
                 sStatsLayout.setUidUsageDuration(uidStats, durationMs);

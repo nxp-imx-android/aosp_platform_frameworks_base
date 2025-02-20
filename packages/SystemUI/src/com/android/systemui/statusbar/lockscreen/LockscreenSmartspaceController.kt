@@ -97,7 +97,7 @@ constructor(
     private val secureSettings: SecureSettings,
     private val userTracker: UserTracker,
     private val contentResolver: ContentResolver,
-    private val configurationController: ConfigurationController,
+    @ShadeDisplayAware private val configurationController: ConfigurationController,
     private val statusBarStateController: StatusBarStateController,
     private val deviceProvisionedController: DeviceProvisionedController,
     private val bypassController: KeyguardBypassController,

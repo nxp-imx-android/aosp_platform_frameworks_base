@@ -9718,72 +9718,78 @@ public class AudioService extends IAudioService.Stub
                             }
                         }
                     }
+                    if (changed) {
+                        // If associated to volume group, update group cache
+                        updateVolumeGroupIndex(device, /* forceMuteState= */ false);
+
+                        oldIndex = (oldIndex + 5) / 10;
+                        index = (index + 5) / 10;
+                        // log base stream changes to the event log
+                        if (sStreamVolumeAlias.get(mStreamType, /*valueIfKeyNotFound=*/-1)
+                                == mStreamType) {
+                            if (caller == null) {
+                                Log.w(TAG, "No caller for volume_changed event", new Throwable());
+                            }
+                            EventLogTags.writeVolumeChanged(
+                                    mStreamType, oldIndex, index, mIndexMax / 10, caller);
+                        }
+                        // fire changed intents for all streams, but only when the device it changed
+                        // on
+                        //  is the current device
+                        if ((index != oldIndex) && isCurrentDevice) {
+                            // for single volume devices, only send the volume change broadcast
+                            // on the alias stream
+                            final int streamAlias =
+                                    sStreamVolumeAlias.get(mStreamType, /*valueIfKeyNotFound=*/-1);
+                            if (!mIsSingleVolume || streamAlias == mStreamType) {
+                                mVolumeChanged.putExtra(
+                                        AudioManager.EXTRA_VOLUME_STREAM_VALUE, index);
+                                mVolumeChanged.putExtra(
+                                        AudioManager.EXTRA_PREV_VOLUME_STREAM_VALUE, oldIndex);
+                                int extraStreamType = mStreamType;
+                                // TODO: remove this when deprecating STREAM_BLUETOOTH_SCO
+                                if (isStreamBluetoothSco(mStreamType)) {
+                                    mVolumeChanged.putExtra(AudioManager.EXTRA_VOLUME_STREAM_TYPE,
+                                            AudioSystem.STREAM_BLUETOOTH_SCO);
+                                    extraStreamType = AudioSystem.STREAM_BLUETOOTH_SCO;
+                                } else {
+                                    mVolumeChanged.putExtra(
+                                            AudioManager.EXTRA_VOLUME_STREAM_TYPE, mStreamType);
+                                }
+                                mVolumeChanged.putExtra(
+                                        AudioManager.EXTRA_VOLUME_STREAM_TYPE_ALIAS, streamAlias);
+
+                                if (mStreamType == streamAlias) {
+                                    String aliasStreamIndexesString = "";
+                                    if (!aliasStreamIndexes.isEmpty()) {
+                                        aliasStreamIndexesString =
+                                                " aliased streams: " + aliasStreamIndexes;
+                                    }
+                                    AudioService.sVolumeLogger.enqueue(
+                                            new VolChangedBroadcastEvent(extraStreamType,
+                                                    aliasStreamIndexesString, index, oldIndex));
+                                    if (extraStreamType != mStreamType) {
+                                        AudioService.sVolumeLogger.enqueue(
+                                                new VolChangedBroadcastEvent(mStreamType,
+                                                        aliasStreamIndexesString, index, oldIndex));
+                                    }
+                                }
+                                sendBroadcastToAll(mVolumeChanged, mVolumeChangedOptions);
+                                if (extraStreamType != mStreamType) {
+                                    // send multiple intents in case we merged voice call and bt sco
+                                    // streams
+                                    mVolumeChanged.putExtra(
+                                            AudioManager.EXTRA_VOLUME_STREAM_TYPE, mStreamType);
+                                    // do not use the options in thid case which could discard
+                                    // the previous intent
+                                    sendBroadcastToAll(mVolumeChanged, null);
+                                }
+                            }
+                        }
+                    }
+                    return changed;
                 }
             }
-            if (changed) {
-                // If associated to volume group, update group cache
-                updateVolumeGroupIndex(device, /* forceMuteState= */ false);
-
-                oldIndex = (oldIndex + 5) / 10;
-                index = (index + 5) / 10;
-                // log base stream changes to the event log
-                if (sStreamVolumeAlias.get(mStreamType, /*valueIfKeyNotFound=*/-1) == mStreamType) {
-                    if (caller == null) {
-                        Log.w(TAG, "No caller for volume_changed event", new Throwable());
-                    }
-                    EventLogTags.writeVolumeChanged(mStreamType, oldIndex, index, mIndexMax / 10,
-                            caller);
-                }
-                // fire changed intents for all streams, but only when the device it changed on
-                //  is the current device
-                if ((index != oldIndex) && isCurrentDevice) {
-                    // for single volume devices, only send the volume change broadcast
-                    // on the alias stream
-                    final int streamAlias = sStreamVolumeAlias.get(
-                            mStreamType, /*valueIfKeyNotFound=*/-1);
-                    if (!mIsSingleVolume || streamAlias == mStreamType) {
-                        mVolumeChanged.putExtra(AudioManager.EXTRA_VOLUME_STREAM_VALUE, index);
-                        mVolumeChanged.putExtra(AudioManager.EXTRA_PREV_VOLUME_STREAM_VALUE,
-                                oldIndex);
-                        int extraStreamType = mStreamType;
-                        // TODO: remove this when deprecating STREAM_BLUETOOTH_SCO
-                        if (isStreamBluetoothSco(mStreamType)) {
-                            mVolumeChanged.putExtra(AudioManager.EXTRA_VOLUME_STREAM_TYPE,
-                                    AudioSystem.STREAM_BLUETOOTH_SCO);
-                            extraStreamType = AudioSystem.STREAM_BLUETOOTH_SCO;
-                        } else {
-                            mVolumeChanged.putExtra(AudioManager.EXTRA_VOLUME_STREAM_TYPE,
-                                    mStreamType);
-                        }
-                        mVolumeChanged.putExtra(AudioManager.EXTRA_VOLUME_STREAM_TYPE_ALIAS,
-                                streamAlias);
-
-                        if (mStreamType == streamAlias) {
-                            String aliasStreamIndexesString = "";
-                            if (!aliasStreamIndexes.isEmpty()) {
-                                aliasStreamIndexesString =
-                                        " aliased streams: " + aliasStreamIndexes;
-                            }
-                            AudioService.sVolumeLogger.enqueue(new VolChangedBroadcastEvent(
-                                    extraStreamType, aliasStreamIndexesString, index, oldIndex));
-                            if (extraStreamType != mStreamType) {
-                                AudioService.sVolumeLogger.enqueue(new VolChangedBroadcastEvent(
-                                        mStreamType, aliasStreamIndexesString, index, oldIndex));
-                            }
-                        }
-                        sendBroadcastToAll(mVolumeChanged, mVolumeChangedOptions);
-                        if (extraStreamType != mStreamType) {
-                            // send multiple intents in case we merged voice call and bt sco streams
-                            mVolumeChanged.putExtra(AudioManager.EXTRA_VOLUME_STREAM_TYPE,
-                                    mStreamType);
-                            // do not use the options in thid case which could discard
-                            // the previous intent
-                            sendBroadcastToAll(mVolumeChanged, null);
-                        }
-                    }
-                }
-            }
-            return changed;
         }
 
         public int getIndex(int device) {

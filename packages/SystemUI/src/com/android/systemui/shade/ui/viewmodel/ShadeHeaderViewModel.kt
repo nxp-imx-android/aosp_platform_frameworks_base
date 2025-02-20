@@ -18,16 +18,13 @@ package com.android.systemui.shade.ui.viewmodel
 
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.icu.text.DateFormat
 import android.icu.text.DisplayContext
-import android.os.UserHandle
 import android.provider.Settings
 import android.view.ViewGroup
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.battery.BatteryMeterViewController
-import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.plugins.ActivityStarter
@@ -42,7 +39,6 @@ import com.android.systemui.shade.domain.interactor.PrivacyChipInteractor
 import com.android.systemui.shade.domain.interactor.ShadeHeaderClockInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
-import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerStatusBarViewBinder
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
@@ -50,18 +46,18 @@ import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIc
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.mapLatest
 
 /** Models UI state for the shade header. */
+@OptIn(ExperimentalCoroutinesApi::class)
 class ShadeHeaderViewModel
 @AssistedInject
 constructor(
@@ -70,16 +66,15 @@ constructor(
     private val sceneInteractor: SceneInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
-    private val mobileIconsInteractor: MobileIconsInteractor,
+    mobileIconsInteractor: MobileIconsInteractor,
     val mobileIconsViewModel: MobileIconsViewModel,
     private val privacyChipInteractor: PrivacyChipInteractor,
     private val clockInteractor: ShadeHeaderClockInteractor,
     private val tintedIconManagerFactory: TintedIconManager.Factory,
     private val batteryMeterViewControllerFactory: BatteryMeterViewController.Factory,
     val statusBarIconController: StatusBarIconController,
-    val notificationIconContainerStatusBarViewBinder: NotificationIconContainerStatusBarViewBinder,
-    private val broadcastDispatcher: BroadcastDispatcher,
 ) : ExclusiveActivatable() {
+
     private val hydrator = Hydrator("ShadeHeaderViewModel.hydrator")
 
     val createTintedIconManager: (ViewGroup, StatusBarLocation) -> TintedIconManager =
@@ -127,9 +122,16 @@ constructor(
     /** True if there is exactly one mobile connection. */
     val isSingleCarrier: StateFlow<Boolean> = mobileIconsInteractor.isSingleCarrier
 
-    private val _mobileSubIds = MutableStateFlow(emptyList<Int>())
     /** The list of subscription Ids for current mobile connections. */
-    val mobileSubIds: StateFlow<List<Int>> = _mobileSubIds.asStateFlow()
+    val mobileSubIds: List<Int> by
+        hydrator.hydratedStateOf(
+            traceName = "mobileSubIds",
+            initialValue = emptyList(),
+            source =
+                mobileIconsInteractor.filteredSubscriptions.map { list ->
+                    list.map { it.subscriptionId }
+                },
+        )
 
     /** The list of PrivacyItems to be displayed by the privacy chip. */
     val privacyItems: StateFlow<List<PrivacyItem>> = privacyChipInteractor.privacyItems
@@ -150,45 +152,34 @@ constructor(
 
     private val longerPattern = context.getString(R.string.abbrev_wday_month_day_no_year_alarm)
     private val shorterPattern = context.getString(R.string.abbrev_month_day_no_year)
-    private val longerDateFormat = MutableStateFlow(getFormatFromPattern(longerPattern))
-    private val shorterDateFormat = MutableStateFlow(getFormatFromPattern(shorterPattern))
 
-    private val _shorterDateText: MutableStateFlow<String> = MutableStateFlow("")
-    val shorterDateText: StateFlow<String> = _shorterDateText.asStateFlow()
+    private val longerDateFormat: Flow<DateFormat> =
+        clockInteractor.onTimezoneOrLocaleChanged.mapLatest { getFormatFromPattern(longerPattern) }
+    private val shorterDateFormat: Flow<DateFormat> =
+        clockInteractor.onTimezoneOrLocaleChanged.mapLatest { getFormatFromPattern(shorterPattern) }
 
-    private val _longerDateText: MutableStateFlow<String> = MutableStateFlow("")
-    val longerDateText: StateFlow<String> = _longerDateText.asStateFlow()
+    val longerDateText: String by
+        hydrator.hydratedStateOf(
+            traceName = "longerDateText",
+            initialValue = "",
+            source =
+                combine(longerDateFormat, clockInteractor.currentTime) { format, time ->
+                    format.format(time)
+                },
+        )
+
+    val shorterDateText: String by
+        hydrator.hydratedStateOf(
+            traceName = "shorterDateText",
+            initialValue = "",
+            source =
+                combine(shorterDateFormat, clockInteractor.currentTime) { format, time ->
+                    format.format(time)
+                },
+        )
 
     override suspend fun onActivated(): Nothing {
         coroutineScope {
-            launch {
-                broadcastDispatcher
-                    .broadcastFlow(
-                        filter =
-                            IntentFilter().apply {
-                                addAction(Intent.ACTION_TIME_TICK)
-                                addAction(Intent.ACTION_TIME_CHANGED)
-                                addAction(Intent.ACTION_TIMEZONE_CHANGED)
-                                addAction(Intent.ACTION_LOCALE_CHANGED)
-                            },
-                        user = UserHandle.SYSTEM,
-                        map = { intent, _ ->
-                            intent.action == Intent.ACTION_TIMEZONE_CHANGED ||
-                                intent.action == Intent.ACTION_LOCALE_CHANGED
-                        },
-                    )
-                    .onEach { invalidateFormats -> updateDateTexts(invalidateFormats) }
-                    .launchIn(this)
-            }
-
-            launch { updateDateTexts(false) }
-
-            launch {
-                mobileIconsInteractor.filteredSubscriptions
-                    .map { list -> list.map { it.subscriptionId } }
-                    .collect { _mobileSubIds.value = it }
-            }
-
             launch { hydrator.activate() }
 
             awaitCancellation()
@@ -260,26 +251,9 @@ constructor(
         data object Strong : HeaderChipHighlight
     }
 
-    private fun updateDateTexts(invalidateFormats: Boolean) {
-        if (invalidateFormats) {
-            longerDateFormat.value = getFormatFromPattern(longerPattern)
-            shorterDateFormat.value = getFormatFromPattern(shorterPattern)
-        }
-
-        val currentTime = Date()
-
-        _longerDateText.value = longerDateFormat.value.format(currentTime)
-        _shorterDateText.value = shorterDateFormat.value.format(currentTime)
-    }
-
     private fun getFormatFromPattern(pattern: String?): DateFormat {
-        val l = Locale.getDefault()
-        val format = DateFormat.getInstanceForSkeleton(pattern, l)
-        // The use of CAPITALIZATION_FOR_BEGINNING_OF_SENTENCE instead of
-        // CAPITALIZATION_FOR_STANDALONE is to address
-        // https://unicode-org.atlassian.net/browse/ICU-21631
-        // TODO(b/229287642): Switch back to CAPITALIZATION_FOR_STANDALONE
-        format.setContext(DisplayContext.CAPITALIZATION_FOR_BEGINNING_OF_SENTENCE)
+        val format = DateFormat.getInstanceForSkeleton(pattern, Locale.getDefault())
+        format.setContext(DisplayContext.CAPITALIZATION_FOR_STANDALONE)
         return format
     }
 

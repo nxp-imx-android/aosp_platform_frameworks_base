@@ -31,7 +31,6 @@ import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_MINIMIZE_FREEFORM_WINDOW
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION
-import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_NOTES
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER
@@ -67,7 +66,6 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER to System,
             KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL to System,
             KEY_GESTURE_TYPE_LOCK_SCREEN to System,
-            KEY_GESTURE_TYPE_OPEN_NOTES to System,
             KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS to System,
             KEY_GESTURE_TYPE_LAUNCH_ASSISTANT to System,
             KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT to System,
@@ -113,7 +111,6 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
                 R.string.shortcut_helper_category_system_controls,
             KEY_GESTURE_TYPE_LOCK_SCREEN to R.string.shortcut_helper_category_system_controls,
             KEY_GESTURE_TYPE_ALL_APPS to R.string.shortcut_helper_category_system_controls,
-            KEY_GESTURE_TYPE_OPEN_NOTES to R.string.shortcut_helper_category_system_apps,
             KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS to
                 R.string.shortcut_helper_category_system_apps,
             KEY_GESTURE_TYPE_LAUNCH_ASSISTANT to R.string.shortcut_helper_category_system_apps,
@@ -173,7 +170,6 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
                 R.string.group_system_access_notification_shade,
             KEY_GESTURE_TYPE_LOCK_SCREEN to R.string.group_system_lock_screen,
             KEY_GESTURE_TYPE_ALL_APPS to R.string.group_system_access_all_apps_search,
-            KEY_GESTURE_TYPE_OPEN_NOTES to R.string.group_system_quick_memo,
             KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS to R.string.group_system_access_system_settings,
             KEY_GESTURE_TYPE_LAUNCH_ASSISTANT to R.string.group_system_access_google_assistant,
             KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT to

@@ -21,6 +21,7 @@ import com.android.systemui.keyguard.ui.viewmodel.AlternateBouncerToGoneTransiti
 import com.android.systemui.keyguard.ui.viewmodel.AlternateBouncerToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AlternateBouncerToOccludedTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AlternateBouncerToPrimaryBouncerTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.AodToGlanceableHubTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AodToGoneTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AodToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AodToOccludedTransitionViewModel
@@ -33,6 +34,7 @@ import com.android.systemui.keyguard.ui.viewmodel.DozingToPrimaryBouncerTransiti
 import com.android.systemui.keyguard.ui.viewmodel.DreamingToAodTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.DreamingToGlanceableHubTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.DreamingToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToAodTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToDreamingTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToOccludedTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.GoneToAodTransitionViewModel
@@ -114,6 +116,12 @@ abstract class DeviceEntryIconTransitionModule {
     @IntoSet
     abstract fun aodToPrimaryBouncer(
         impl: AodToPrimaryBouncerTransitionViewModel
+    ): DeviceEntryIconTransition
+
+    @Binds
+    @IntoSet
+    abstract fun aodToGlanceableHub(
+        impl: AodToGlanceableHubTransitionViewModel
     ): DeviceEntryIconTransition
 
     @Binds
@@ -254,6 +262,12 @@ abstract class DeviceEntryIconTransitionModule {
     @IntoSet
     abstract fun glanceableHubToOccluded(
         impl: GlanceableHubToOccludedTransitionViewModel
+    ): DeviceEntryIconTransition
+
+    @Binds
+    @IntoSet
+    abstract fun glanceableHubToAod(
+        impl: GlanceableHubToAodTransitionViewModel
     ): DeviceEntryIconTransition
 
     @Binds

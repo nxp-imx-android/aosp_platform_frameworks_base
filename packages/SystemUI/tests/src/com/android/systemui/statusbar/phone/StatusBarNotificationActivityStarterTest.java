@@ -76,6 +76,7 @@ import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeControllerImpl;
 import com.android.systemui.shade.data.repository.FakeShadeRepository;
 import com.android.systemui.shade.data.repository.ShadeAnimationRepository;
+import com.android.systemui.shade.domain.interactor.FakeShadeDialogContextInteractor;
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractorLegacyImpl;
 import com.android.systemui.statusbar.CommandQueue;
@@ -171,6 +172,7 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
     private final FakeExecutor mUiBgExecutor = new FakeExecutor(new FakeSystemClock());
     private ExpandableNotificationRow mNotificationRow;
     private ExpandableNotificationRow mBubbleNotificationRow;
+    private FakeShadeDialogContextInteractor mContextInteractor;
 
     private final Answer<Void> mCallOnDismiss = answerVoid(
             (OnDismissAction dismissAction, Runnable cancel,
@@ -187,6 +189,8 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
                 mDependency,
                 TestableLooper.get(this));
 
+        mContextInteractor = new FakeShadeDialogContextInteractor(mContext);
+
         // Create standard notification with contentIntent
         mNotificationRow = notificationTestHelper.createRow();
         StatusBarNotification sbn = mNotificationRow.getEntry().getSbn();
@@ -199,10 +203,6 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         bubbleSbn.getNotification().contentIntent = mContentIntent;
         bubbleSbn.getNotification().flags |= Notification.FLAG_AUTO_CANCEL;
 
-//        ArrayList<NotificationEntry> activeNotifications = new ArrayList<>();
-//        activeNotifications.add(mNotificationRow.getEntry());
-//        activeNotifications.add(mBubbleNotificationRow.getEntry());
-//        when(mEntryManager.getVisibleNotifications()).thenReturn(activeNotifications);
         when(mStatusBarStateController.getState()).thenReturn(StatusBarState.SHADE);
         when(mOnUserInteractionCallback.registerFutureDismissal(eq(mNotificationRow.getEntry()),
                 anyInt())).thenReturn(mFutureDismissalRunnable);
@@ -232,6 +232,7 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         mNotificationActivityStarter =
                 new StatusBarNotificationActivityStarter(
                         getContext(),
+                        mContextInteractor,
                         mHandler,
                         mUiBgExecutor,
                         mVisibilityProvider,

@@ -861,11 +861,9 @@ public class WindowTestsBase extends SystemServiceTestsBase {
     /** Creates a {@link DisplayContent} and adds it to the system. */
     private DisplayContent createNewDisplay(DisplayInfo info, @DisplayImePolicy int imePolicy,
             @Nullable SettingsEntry overrideSettings) {
-        final DisplayContent display =
-                new TestDisplayContent.Builder(mAtm, info)
-                        .setOverrideSettings(overrideSettings)
-                        .build();
-        final DisplayContent dc = display.mDisplayContent;
+        final DisplayContent dc = new TestDisplayContent.Builder(mAtm, info)
+                .setOverrideSettings(overrideSettings)
+                .build();
         // this display can show IME.
         dc.mWmService.mDisplayWindowSettings.setDisplayImePolicy(dc, imePolicy);
         return dc;

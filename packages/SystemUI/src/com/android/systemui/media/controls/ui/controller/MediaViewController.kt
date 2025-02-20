@@ -81,8 +81,8 @@ import javax.inject.Inject
 open class MediaViewController
 @Inject
 constructor(
-    private val context: Context,
-    private val configurationController: ConfigurationController,
+    @Main private val context: Context,
+    @Main private val configurationController: ConfigurationController,
     private val mediaHostStatesManager: MediaHostStatesManager,
     private val logger: MediaViewLogger,
     private val seekBarViewModel: SeekBarViewModel,

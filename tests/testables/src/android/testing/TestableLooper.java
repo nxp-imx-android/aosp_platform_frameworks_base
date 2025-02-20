@@ -34,7 +34,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.Objects;
@@ -74,21 +73,15 @@ public class TestableLooper {
     /**
      * Baklava introduces new {@link TestLooperManager} APIs that we can use instead of reflection.
      */
-    private static boolean isAtLeastBaklava() {
-        Method[] methods = TestLooperManager.class.getMethods();
-        for (Method method : methods) {
-            if (method.getName().equals("peekWhen")) {
-                return true;
-            }
-        }
-        return false;
+    private static boolean newTestabilityApisSupported() {
+        return android.os.Flags.messageQueueTestability();
         // TODO(shayba): delete the above, uncomment the below.
         // SDK_INT has not yet ramped to Baklava in all 25Q2 builds.
         // return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA;
     }
 
     static {
-        if (isAtLeastBaklava()) {
+        if (newTestabilityApisSupported()) {
             MESSAGE_QUEUE_MESSAGES_FIELD = null;
             MESSAGE_NEXT_FIELD = null;
             MESSAGE_WHEN_FIELD = null;
@@ -248,14 +241,14 @@ public class TestableLooper {
     }
 
     public void moveTimeForward(long milliSeconds) {
-        if (isAtLeastBaklava()) {
-            moveTimeForwardBaklava(milliSeconds);
+        if (newTestabilityApisSupported()) {
+            moveTimeForwardModern(milliSeconds);
         } else {
             moveTimeForwardLegacy(milliSeconds);
         }
     }
 
-    private void moveTimeForwardBaklava(long milliSeconds) {
+    private void moveTimeForwardModern(long milliSeconds) {
         // Drain all Messages from the queue.
         Queue<Message> messages = new ArrayDeque<>();
         while (true) {
@@ -273,7 +266,7 @@ public class TestableLooper {
             messages.add(message);
         }
 
-        // Repost all Messages back to the queuewith a new time.
+        // Repost all Messages back to the queue with a new time.
         while (true) {
             Message message = messages.poll();
             if (message == null) {

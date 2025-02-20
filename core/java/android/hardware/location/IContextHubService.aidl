@@ -153,5 +153,5 @@ interface IContextHubService {
 
     // Called when a discovery callback is finished executing
     @EnforcePermission("ACCESS_CONTEXT_HUB")
-    void onDiscoveryCallbackFinished();
+    oneway void onDiscoveryCallbackFinished();
 }
