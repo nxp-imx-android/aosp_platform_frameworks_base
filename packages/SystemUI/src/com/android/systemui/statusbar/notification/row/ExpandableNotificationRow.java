@@ -4265,6 +4265,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             pw.print(", isPinned: " + isPinned());
             pw.print(", expandedWhenPinned: " + mExpandedWhenPinned);
             pw.print(", isMinimized: " + mIsMinimized);
+            pw.print(", isAboveShelf: " + isAboveShelf());
 
             pw.println();
             if (NotificationContentView.INCLUDE_HEIGHTS_TO_DUMP) {
