@@ -124,7 +124,6 @@ constructor(
                             SmallClock(
                                 burnInParams = burnIn.parameters,
                                 onTopChanged = burnIn.onSmallClockTopChanged,
-                                modifier = Modifier.fillMaxWidth(),
                             )
                         }
                     }
