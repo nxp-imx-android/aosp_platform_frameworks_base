@@ -9345,6 +9345,18 @@ public final class Settings {
                 "accessibility_autoclick_ignore_minor_cursor_movement";
 
         /**
+         * String setting that stores the position of the autoclick panel when
+         * {@link #ACCESSIBILITY_AUTOCLICK_ENABLED} is set. The position is stored as a
+         * comma-separated string containing gravity, x-coordinate, y-coordinate, and corner index.
+         * For example, "8388659,15,30,0", where 8388659 means gravity Gravity.START | Gravity.TOP.
+         *
+         * @see #ACCESSIBILITY_AUTOCLICK_ENABLED
+         * @hide
+         */
+        public static final String ACCESSIBILITY_AUTOCLICK_PANEL_POSITION =
+                "accessibility_autoclick_panel_position";
+
+        /**
          * Whether or not larger size icons are used for the pointer of mouse/trackpad for
          * accessibility.
          * (0 = false, 1 = true)

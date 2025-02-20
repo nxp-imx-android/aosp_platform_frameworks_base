@@ -1727,6 +1727,8 @@ class SettingsProtoDumpUtil {
         dumpSetting(s, p,
                 Settings.Secure.ACCESSIBILITY_AUTOCLICK_DELAY,
                 SecureSettingsProto.Accessibility.AUTOCLICK_DELAY);
+        dumpSetting(s, p, Settings.Secure.ACCESSIBILITY_AUTOCLICK_PANEL_POSITION,
+                SecureSettingsProto.Accessibility.AUTOCLICK_PANEL_POSITION);
         dumpSetting(s, p,
                 Settings.Secure.ACCESSIBILITY_BUTTON_TARGET_COMPONENT,
                 SecureSettingsProto.Accessibility.BUTTON_TARGET_COMPONENT);

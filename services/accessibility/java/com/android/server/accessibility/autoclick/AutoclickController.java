@@ -156,7 +156,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
         mWindowManager = mContext.getSystemService(WindowManager.class);
         mAutoclickTypePanel =
-                new AutoclickTypePanel(mContext, mWindowManager, clickPanelController);
+                new AutoclickTypePanel(mContext, mWindowManager, mUserId, clickPanelController);
 
         mAutoclickTypePanel.show();
         mWindowManager.addView(mAutoclickIndicatorView, mAutoclickIndicatorView.getLayoutParams());

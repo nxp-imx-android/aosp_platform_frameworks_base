@@ -95,6 +95,7 @@ public class SecureSettings {
         Settings.Secure.ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT,
         Settings.Secure.ACCESSIBILITY_AUTOCLICK_ENABLED,
         Settings.Secure.ACCESSIBILITY_AUTOCLICK_DELAY,
+        Settings.Secure.ACCESSIBILITY_AUTOCLICK_PANEL_POSITION,
         Settings.Secure.ACCESSIBILITY_LARGE_POINTER_ICON,
         Settings.Secure.PREFERRED_TTY_MODE,
         Settings.Secure.ENHANCED_VOICE_PRIVACY_ENABLED,
