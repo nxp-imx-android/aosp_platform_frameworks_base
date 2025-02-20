@@ -156,14 +156,15 @@ public final class StorageSessionController {
         StorageUserConnection connection = null;
         synchronized (mLock) {
             connection = mConnections.get(connectionUserId);
-            if (connection != null) {
-                Slog.i(TAG, "Notifying volume state changed for session with id: " + sessionId);
-                connection.notifyVolumeStateChanged(sessionId,
-                        vol.buildStorageVolume(mContext, vol.getMountUserId(), false));
-            } else {
-                Slog.w(TAG, "No available storage user connection for userId : "
-                        + connectionUserId);
-            }
+        }
+
+        if (connection != null) {
+            Slog.i(TAG, "Notifying volume state changed for session with id: " + sessionId);
+            connection.notifyVolumeStateChanged(sessionId,
+                    vol.buildStorageVolume(mContext, vol.getMountUserId(), false));
+        } else {
+            Slog.w(TAG, "No available storage user connection for userId : "
+                    + connectionUserId);
         }
     }
 
@@ -225,16 +226,18 @@ public final class StorageSessionController {
         String sessionId = vol.getId();
         int userId = getConnectionUserIdForVolume(vol);
 
+        StorageUserConnection connection = null;
         synchronized (mLock) {
-            StorageUserConnection connection = mConnections.get(userId);
-            if (connection != null) {
-                Slog.i(TAG, "Removed session for vol with id: " + sessionId);
-                connection.removeSession(sessionId);
-                return connection;
-            } else {
-                Slog.w(TAG, "Session already removed for vol with id: " + sessionId);
-                return null;
-            }
+            connection = mConnections.get(userId);
+        }
+
+        if (connection != null) {
+            Slog.i(TAG, "Removed session for vol with id: " + sessionId);
+            connection.removeSession(sessionId);
+            return connection;
+        } else {
+            Slog.w(TAG, "Session already removed for vol with id: " + sessionId);
+            return null;
         }
     }
 
