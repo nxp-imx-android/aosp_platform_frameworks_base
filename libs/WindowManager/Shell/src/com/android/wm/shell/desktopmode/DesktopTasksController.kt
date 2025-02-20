@@ -810,7 +810,7 @@ class DesktopTasksController(
             willExitDesktop(
                 triggerTaskId = taskInfo.taskId,
                 displayId = displayId,
-                forceToFullscreen = false,
+                forceExitDesktop = false,
             )
         taskRepository.setPipShouldKeepDesktopActive(displayId, keepActive = true)
         val desktopExitRunnable =
@@ -883,7 +883,7 @@ class DesktopTasksController(
 
         snapEventHandler.removeTaskIfTiled(displayId, taskId)
         taskRepository.setPipShouldKeepDesktopActive(displayId, keepActive = true)
-        val willExitDesktop = willExitDesktop(taskId, displayId, forceToFullscreen = false)
+        val willExitDesktop = willExitDesktop(taskId, displayId, forceExitDesktop = false)
         val desktopExitRunnable =
             performDesktopExitCleanUp(
                 wct = wct,
@@ -976,7 +976,7 @@ class DesktopTasksController(
     ) {
         logV("moveToFullscreenWithAnimation taskId=%d", task.taskId)
         val wct = WindowContainerTransaction()
-        val willExitDesktop = willExitDesktop(task.taskId, task.displayId, forceToFullscreen = true)
+        val willExitDesktop = willExitDesktop(task.taskId, task.displayId, forceExitDesktop = true)
         val deactivationRunnable = addMoveToFullscreenChanges(wct, task, willExitDesktop)
 
         // We are moving a freeform task to fullscreen, put the home task under the fullscreen task.
@@ -995,7 +995,14 @@ class DesktopTasksController(
         deactivationRunnable?.invoke(transition)
 
         // handles case where we are moving to full screen without closing all DW tasks.
-        if (!taskRepository.isOnlyVisibleNonClosingTask(task.taskId)) {
+        if (
+            !taskRepository.isOnlyVisibleNonClosingTask(task.taskId)
+            // This callback is already invoked by |addMoveToFullscreenChanges| when one of these
+            // flags is enabled.
+            &&
+                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
+                !Flags.enableDesktopWindowingPip()
+        ) {
             desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
                 FULLSCREEN_ANIMATION_DURATION
             )
@@ -1892,16 +1899,24 @@ class DesktopTasksController(
     private fun willExitDesktop(
         triggerTaskId: Int,
         displayId: Int,
-        forceToFullscreen: Boolean,
+        forceExitDesktop: Boolean,
     ): Boolean {
+        if (
+            forceExitDesktop &&
+                (Flags.enableDesktopWindowingPip() ||
+                    DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue)
+        ) {
+            // |forceExitDesktop| is true when the callers knows we'll exit desktop, such as when
+            // explicitly going fullscreen, so there's no point in checking the desktop state.
+            return true
+        }
         if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
             if (!taskRepository.isOnlyVisibleNonClosingTask(triggerTaskId, displayId)) {
                 return false
             }
         } else if (
             Flags.enableDesktopWindowingPip() &&
-                taskRepository.isMinimizedPipPresentInDisplay(displayId) &&
-                !forceToFullscreen
+                taskRepository.isMinimizedPipPresentInDisplay(displayId)
         ) {
             return false
         } else {
@@ -2294,7 +2309,7 @@ class DesktopTasksController(
                 willExitDesktop(
                     triggerTaskId = task.taskId,
                     displayId = task.displayId,
-                    forceToFullscreen = true,
+                    forceExitDesktop = true,
                 ),
         )
         wct.reorder(task.token, true)
@@ -2327,7 +2342,7 @@ class DesktopTasksController(
                         willExitDesktop(
                             triggerTaskId = task.taskId,
                             displayId = task.displayId,
-                            forceToFullscreen = true,
+                            forceExitDesktop = true,
                         ),
                 )
                 return wct
@@ -2432,7 +2447,7 @@ class DesktopTasksController(
                         willExitDesktop(
                             triggerTaskId = task.taskId,
                             displayId = task.displayId,
-                            forceToFullscreen = true,
+                            forceExitDesktop = true,
                         ),
                 )
             }
@@ -2470,7 +2485,7 @@ class DesktopTasksController(
                     willExitDesktop(
                         triggerTaskId = task.taskId,
                         displayId = task.displayId,
-                        forceToFullscreen = true,
+                        forceExitDesktop = true,
                     ),
             )
         }
