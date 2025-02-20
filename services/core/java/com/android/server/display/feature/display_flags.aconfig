@@ -474,9 +474,9 @@ flag {
     description: "Feature flag to trigger the RR callbacks when framerate overridding happens."
     bug: "390113266"
     is_fixed_read_only: true
-        metadata {
-          purpose: PURPOSE_BUGFIX
-        }
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -503,6 +503,17 @@ flag {
     namespace: "display_manager"
     description: "Move Display committed state into a separate event"
     bug: "342192387"
+    is_fixed_read_only: true
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "delay_implicit_rr_registration_until_rr_accessed"
+    namespace: "display_manager"
+    description: "Feature flag for clients to subscribe to RR changes by either explicitly subscribing for refresh rate changes or request for refresh rate data"
+    bug: "391828526"
     is_fixed_read_only: true
     metadata {
       purpose: PURPOSE_BUGFIX
