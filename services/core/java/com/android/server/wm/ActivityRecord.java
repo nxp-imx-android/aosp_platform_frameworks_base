@@ -433,9 +433,6 @@ final class ActivityRecord extends WindowToken {
     // next activity.
     private static final int PAUSE_TIMEOUT = 500;
 
-    // Ticks during which we check progress while waiting for an app to launch.
-    private static final int LAUNCH_TICK = 500;
-
     // How long we wait for the activity to tell us it has stopped before
     // giving up.  This is a good amount of time because we really need this
     // from the application in order to get its saved state. Once the stop
@@ -491,7 +488,6 @@ final class ActivityRecord extends WindowToken {
     long lastVisibleTime;         // last time this activity became visible
     long pauseTime;               // last time we started pausing the activity
     long mStoppedTime;            // last time we completely stopped the activity
-    long launchTickTime;          // base time for launch tick messages
     long topResumedStateLossTime; // last time we reported top resumed state loss to an activity
     // Last configuration reported to the activity in the client process.
     private final MergedConfiguration mLastReportedConfiguration;
@@ -940,20 +936,7 @@ final class ActivityRecord extends WindowToken {
                 if (!hasProcess()) {
                     return;
                 }
-                mAtmService.logAppTooSlow(app, pauseTime, "pausing " + ActivityRecord.this);
                 activityPaused(true);
-            }
-        }
-    };
-
-    private final Runnable mLaunchTickRunnable = new Runnable() {
-        @Override
-        public void run() {
-            synchronized (mAtmService.mGlobalLock) {
-                if (continueLaunchTicking()) {
-                    mAtmService.logAppTooSlow(
-                            app, launchTickTime, "launching " + ActivityRecord.this);
-                }
             }
         }
     };
@@ -6334,7 +6317,6 @@ final class ActivityRecord extends WindowToken {
         removePauseTimeout();
         removeStopTimeout();
         removeDestroyTimeout();
-        finishLaunchTickingLocked();
     }
 
     void stopIfPossible() {
@@ -6475,44 +6457,6 @@ final class ActivityRecord extends WindowToken {
         }
     }
 
-    void startLaunchTickingLocked() {
-        if (Build.IS_USER) {
-            return;
-        }
-        if (launchTickTime == 0) {
-            launchTickTime = SystemClock.uptimeMillis();
-            continueLaunchTicking();
-        }
-    }
-
-    private boolean continueLaunchTicking() {
-        if (launchTickTime == 0) {
-            return false;
-        }
-
-        final Task rootTask = getRootTask();
-        if (rootTask == null) {
-            return false;
-        }
-
-        rootTask.removeLaunchTickMessages();
-        mAtmService.mH.postDelayed(mLaunchTickRunnable, LAUNCH_TICK);
-        return true;
-    }
-
-    void removeLaunchTickRunnable() {
-        mAtmService.mH.removeCallbacks(mLaunchTickRunnable);
-    }
-
-    void finishLaunchTickingLocked() {
-        launchTickTime = 0;
-        final Task rootTask = getRootTask();
-        if (rootTask == null) {
-            return;
-        }
-        rootTask.removeLaunchTickMessages();
-    }
-
     void onFirstWindowDrawn(WindowState win) {
         firstWindowDrawn = true;
         // stop tracking
@@ -6600,7 +6544,6 @@ final class ActivityRecord extends WindowToken {
             mTaskSupervisor.reportActivityLaunched(false /* timeout */, this,
                     windowsDrawnDelayMs, launchState);
         }
-        finishLaunchTickingLocked();
         if (task != null) {
             setTaskHasBeenVisible();
         }
