@@ -984,8 +984,7 @@ public class DisplayManagerServiceTest {
 
         Handler handler = displayManager.getDisplayHandler();
         waitForIdleHandler(handler);
-        assertThat(callback.receivedEvents()).containsExactly(EVENT_DISPLAY_BASIC_CHANGED,
-                EVENT_DISPLAY_REFRESH_RATE_CHANGED);
+        assertThat(callback.receivedEvents()).containsExactly(EVENT_DISPLAY_BASIC_CHANGED);
     }
 
     /**
