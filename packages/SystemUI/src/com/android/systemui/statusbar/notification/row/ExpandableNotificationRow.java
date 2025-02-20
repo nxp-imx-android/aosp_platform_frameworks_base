@@ -974,6 +974,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         } else if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
         }
+        updateBackgroundOpacity();
     }
 
     /**
@@ -3067,6 +3068,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                     mChildrenContainer.setOnKeyguard(onKeyguard);
                 }
             }
+            updateBackgroundOpacity();
         }
     }
 
@@ -4504,6 +4506,14 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             return mLaunchAnimationRunning;
         } else {
             return getEntry().isExpandAnimationRunning();
+        }
+    }
+
+    private void updateBackgroundOpacity() {
+        if (mBackgroundNormal != null) {
+            // Row background should be opaque when it's displayed as a heads-up notification or
+            // displayed on keyguard.
+            mBackgroundNormal.setForceOpaque(mIsHeadsUp || mOnKeyguard);
         }
     }
 }
