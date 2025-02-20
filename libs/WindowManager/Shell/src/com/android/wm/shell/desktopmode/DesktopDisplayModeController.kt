@@ -18,6 +18,7 @@ package com.android.wm.shell.desktopmode
 
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.windowingModeToString
 import android.content.Context
@@ -31,6 +32,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.transition.Transitions
 
@@ -41,6 +43,7 @@ class DesktopDisplayModeController(
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val windowManager: IWindowManager,
     private val shellTaskOrganizer: ShellTaskOrganizer,
+    private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
 ) {
 
     fun refreshDisplayWindowingMode() {
@@ -99,6 +102,12 @@ class DesktopDisplayModeController(
                     }
                 }
             }
+        // The override windowing mode of DesktopWallpaper can be UNDEFINED on fullscreen-display
+        // right after the first launch while its resolved windowing mode is FULLSCREEN. We here
+        // it has the FULLSCREEN override windowing mode.
+        desktopWallpaperActivityTokenProvider.getToken(DEFAULT_DISPLAY)?.let { token ->
+            wct.setWindowingMode(token, WINDOWING_MODE_FULLSCREEN)
+        }
         transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
     }
 

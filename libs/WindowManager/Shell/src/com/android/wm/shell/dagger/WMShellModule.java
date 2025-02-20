@@ -1383,7 +1383,8 @@ public abstract class WMShellModule {
             Transitions transitions,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             IWindowManager windowManager,
-            ShellTaskOrganizer shellTaskOrganizer
+            ShellTaskOrganizer shellTaskOrganizer,
+            DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider
     ) {
         if (!DesktopModeStatus.canEnterDesktopMode(context)) {
             return Optional.empty();
@@ -1394,7 +1395,8 @@ public abstract class WMShellModule {
                         transitions,
                         rootTaskDisplayAreaOrganizer,
                         windowManager,
-                        shellTaskOrganizer));
+                        shellTaskOrganizer,
+                        desktopWallpaperActivityTokenProvider));
     }
 
     //
