@@ -1293,14 +1293,14 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         }
     }
 
-    private void onVibrationComplete(int vibratorId, long vibrationId) {
+    private void onVibrationComplete(int vibratorId, long vibrationId, long stepId) {
         synchronized (mLock) {
             if (mCurrentSession != null) {
                 if (DEBUG) {
-                    Slog.d(TAG, "Vibration " + vibrationId + " on vibrator " + vibratorId
-                            + " complete, notifying thread");
+                    Slog.d(TAG, "Vibration " + vibrationId + " step " + stepId
+                            + " on vibrator " + vibratorId + " complete, notifying thread");
                 }
-                mCurrentSession.notifyVibratorCallback(vibratorId, vibrationId);
+                mCurrentSession.notifyVibratorCallback(vibratorId, vibrationId, stepId);
             }
         }
     }
@@ -2100,10 +2100,10 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         }
 
         @Override
-        public void onComplete(int vibratorId, long vibrationId) {
+        public void onComplete(int vibratorId, long vibrationId, long stepId) {
             VibratorManagerService service = mServiceRef.get();
             if (service != null) {
-                service.onVibrationComplete(vibratorId, vibrationId);
+                service.onVibrationComplete(vibratorId, vibrationId, stepId);
             }
         }
     }

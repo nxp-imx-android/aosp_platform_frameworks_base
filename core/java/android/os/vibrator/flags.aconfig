@@ -145,3 +145,13 @@ flag {
         purpose: PURPOSE_FEATURE
     }
 }
+
+flag {
+    namespace: "haptics"
+    name: "fix_vibration_thread_callback_handling"
+    description: "Fix how the VibrationThread handles late callbacks from the vibrator HAL"
+    bug: "395005081"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
