@@ -16,6 +16,7 @@
 
 package com.android.server.location.contexthub;
 
+import android.annotation.NonNull;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.hardware.contexthub.EndpointInfo;
@@ -64,7 +65,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
      * Internal interface used to invoke client callbacks.
      */
     interface CallbackConsumer {
-        void accept(IContextHubEndpointCallback callback) throws RemoteException;
+        void accept(@NonNull IContextHubEndpointCallback callback) throws RemoteException;
     }
 
     /** The context of the service. */
@@ -86,7 +87,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     private final EndpointInfo mHalEndpointInfo;
 
     /** The remote callback interface for this endpoint. */
-    private final IContextHubEndpointCallback mContextHubEndpointCallback;
+    @NonNull private final IContextHubEndpointCallback mContextHubEndpointCallback;
 
     /** True if this endpoint is registered with the service/HAL. */
     @GuardedBy("mRegistrationLock")
@@ -158,7 +159,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             IEndpointCommunication hubInterface,
             ContextHubEndpointManager endpointManager,
             EndpointInfo halEndpointInfo,
-            IContextHubEndpointCallback callback,
+            @NonNull IContextHubEndpointCallback callback,
             String packageName,
             String attributionTag,
             ContextHubTransactionManager transactionManager) {
@@ -419,9 +420,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     }
 
     /* package */ void attachDeathRecipient() throws RemoteException {
-        if (mContextHubEndpointCallback != null) {
-            mContextHubEndpointCallback.asBinder().linkToDeath(this, 0 /* flags */);
-        }
+        mContextHubEndpointCallback.asBinder().linkToDeath(this, 0 /* flags */);
     }
 
     /* package */ void onEndpointSessionOpenRequest(
@@ -664,15 +663,13 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
      * @return false if the callback threw a RemoteException
      */
     private boolean invokeCallback(CallbackConsumer consumer) {
-        if (mContextHubEndpointCallback != null) {
-            acquireWakeLock();
-            try {
-                consumer.accept(mContextHubEndpointCallback);
-            } catch (RemoteException e) {
-                Log.e(TAG, "RemoteException while calling endpoint callback", e);
-                releaseWakeLock();
-                return false;
-            }
+        acquireWakeLock();
+        try {
+            consumer.accept(mContextHubEndpointCallback);
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException while calling endpoint callback", e);
+            releaseWakeLock();
+            return false;
         }
         return true;
     }
