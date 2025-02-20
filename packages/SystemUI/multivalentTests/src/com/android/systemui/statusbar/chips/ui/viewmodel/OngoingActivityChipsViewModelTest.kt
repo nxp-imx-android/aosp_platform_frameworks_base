@@ -72,7 +72,6 @@ import org.mockito.kotlin.whenever
 /** Tests for [OngoingActivityChipsViewModel] when the [StatusBarNotifChips] flag is disabled. */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(StatusBarChipsModernization.FLAG_NAME)
 @DisableFlags(StatusBarNotifChips.FLAG_NAME)
 class OngoingActivityChipsViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
