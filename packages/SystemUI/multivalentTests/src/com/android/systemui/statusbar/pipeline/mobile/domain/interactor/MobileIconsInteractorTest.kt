@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.pipeline.mobile.domain.interactor
 
 import android.os.ParcelUuid
+import android.platform.test.annotations.EnableFlags
 import android.telephony.SubscriptionManager.INVALID_SUBSCRIPTION_ID
 import android.telephony.SubscriptionManager.PROFILE_CLASS_PROVISIONING
 import android.telephony.SubscriptionManager.PROFILE_CLASS_UNSET
@@ -33,6 +34,8 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.statusbar.core.NewStatusBarIcons
+import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
@@ -895,6 +898,43 @@ class MobileIconsInteractorTest : SysuiTestCase() {
             connectionsRepository.defaultDataSubId.value = 2
 
             assertThat(latest).isEqualTo(2)
+        }
+
+    @Test
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    fun isStackable_tracksNumberOfSubscriptions() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isStackable)
+
+            connectionsRepository.setSubscriptions(listOf(SUB_1))
+            assertThat(latest).isFalse()
+
+            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2))
+            assertThat(latest).isTrue()
+
+            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2, SUB_3_OPP))
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    fun isStackable_checksForTerrestrialConnections() =
+        kosmos.runTest {
+            val exclusivelyNonTerrestrialSub =
+                SubscriptionModel(
+                    isExclusivelyNonTerrestrial = true,
+                    subscriptionId = 5,
+                    carrierName = "Carrier 5",
+                    profileClass = PROFILE_CLASS_UNSET,
+                )
+
+            val latest by collectLastValue(underTest.isStackable)
+
+            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2))
+            assertThat(latest).isTrue()
+
+            connectionsRepository.setSubscriptions(listOf(SUB_1, exclusivelyNonTerrestrialSub))
+            assertThat(latest).isFalse()
         }
 
     /**

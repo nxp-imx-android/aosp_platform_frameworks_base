@@ -21,7 +21,6 @@ import android.telephony.CarrierConfigManager
 import android.telephony.SubscriptionManager
 import android.telephony.SubscriptionManager.PROFILE_CLASS_PROVISIONING
 import com.android.settingslib.SignalIcon.MobileIconGroup
-import com.android.settingslib.flags.Flags
 import com.android.settingslib.mobile.TelephonyIcons
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -29,6 +28,7 @@ import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
+import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.pipeline.dagger.MobileSummaryLog
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
@@ -84,6 +84,12 @@ interface MobileIconsInteractor {
 
     /** Whether the mobile icons can be stacked vertically. */
     val isStackable: StateFlow<Boolean>
+
+    /**
+     * Observable for the subscriptionId of the current mobile data connection. Null if we don't
+     * have a valid subscription id
+     */
+    val activeMobileDataSubscriptionId: StateFlow<Int?>
 
     /** True if the active mobile data subscription has data enabled */
     val activeDataConnectionHasDataEnabled: StateFlow<Boolean>
@@ -167,6 +173,9 @@ constructor(
                 initialValue = false,
             )
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+
+    override val activeMobileDataSubscriptionId: StateFlow<Int?> =
+        mobileConnectionsRepo.activeMobileDataSubscriptionId
 
     override val activeDataConnectionHasDataEnabled: StateFlow<Boolean> =
         mobileConnectionsRepo.activeMobileDataRepository
@@ -298,7 +307,7 @@ constructor(
             .stateIn(scope, SharingStarted.WhileSubscribed(), emptyList())
 
     override val isStackable =
-        if (Flags.newStatusBarIcons() && StatusBarRootModernization.isEnabled) {
+        if (NewStatusBarIcons.isEnabled && StatusBarRootModernization.isEnabled) {
                 icons.flatMapLatest { icons ->
                     combine(icons.map { it.isNonTerrestrial }) {
                         it.size == 2 && it.none { isNonTerrestrial -> isNonTerrestrial }

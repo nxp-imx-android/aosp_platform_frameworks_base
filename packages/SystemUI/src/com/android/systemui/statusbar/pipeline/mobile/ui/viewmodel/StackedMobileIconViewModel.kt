@@ -25,7 +25,7 @@ import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconMod
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -43,8 +43,14 @@ constructor(mobileIconsViewModel: MobileIconsViewModel) : ExclusiveActivatable()
             initialValue = false,
         )
 
-    private val iconViewModelFlow: StateFlow<List<MobileIconViewModelCommon>> =
-        mobileIconsViewModel.mobileSubViewModels
+    private val iconViewModelFlow: Flow<List<MobileIconViewModelCommon>> =
+        combine(
+            mobileIconsViewModel.mobileSubViewModels,
+            mobileIconsViewModel.activeMobileDataSubscriptionId,
+        ) { viewModels, activeSubId ->
+            // Sort to get the active subscription first, if it's set
+            viewModels.sortedByDescending { it.subscriptionId == activeSubId }
+        }
 
     val dualSim: DualSim? by
         hydrator.hydratedStateOf(
