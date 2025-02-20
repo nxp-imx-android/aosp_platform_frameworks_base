@@ -491,6 +491,9 @@
     <!-- some constraints use a negative margin. must be aligned with overlay_border_width, above;
          overlay_border_width_neg = overlay_border_width * -1 -->
     <dimen name="overlay_border_width_neg">-4dp</dimen>
+    <dimen name="overlay_shade_panel_shape_radius">
+        @dimen/aux_spacing_overlay_panel_shape_radius
+    </dimen>
 
     <dimen name="clipboard_preview_size">@dimen/overlay_x_scale</dimen>
     <dimen name="clipboard_overlay_min_font">10sp</dimen>
@@ -2214,5 +2217,9 @@
     <!-- rear_display_animation_width_opened - 2 * rear_display_dialog_slider_corner_radius -->
     <dimen name="rear_display_progress_width">231dp</dimen>
     <!-- Rear display mode end -->
+
+    <!-- Spacing attributes to overwrite -->
+    <dimen name="aux_spacing_overlay_panel_shape_radius">46dp</dimen>
+    <!-- Spacing attributes to overwrite end -->
 
 </resources>
