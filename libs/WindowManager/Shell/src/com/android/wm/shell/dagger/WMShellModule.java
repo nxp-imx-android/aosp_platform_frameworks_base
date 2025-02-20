@@ -68,6 +68,8 @@ import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.common.LaunchAdjacentController;
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController;
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorSurface;
 import com.android.wm.shell.common.MultiInstanceHelper;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
@@ -989,7 +991,8 @@ public abstract class WMShellModule {
             WindowDecorTaskResourceLoader taskResourceLoader,
             RecentsTransitionHandler recentsTransitionHandler,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
-            DesktopTilingDecorViewModel desktopTilingDecorViewModel
+            DesktopTilingDecorViewModel desktopTilingDecorViewModel,
+            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController
     ) {
         if (!DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)) {
             return Optional.empty();
@@ -1006,7 +1009,30 @@ public abstract class WMShellModule {
                 windowDecorCaptionHandleRepository, activityOrientationChangeHandler,
                 focusTransitionObserver, desktopModeEventLogger, desktopModeUiEventLogger,
                 taskResourceLoader, recentsTransitionHandler, desktopModeCompatPolicy,
-                desktopTilingDecorViewModel));
+                desktopTilingDecorViewModel,
+                multiDisplayDragMoveIndicatorController));
+    }
+
+    @WMSingleton
+    @Provides
+    static MultiDisplayDragMoveIndicatorController
+            providesMultiDisplayDragMoveIndicatorController(
+            DisplayController displayController,
+            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
+            MultiDisplayDragMoveIndicatorSurface.Factory
+                multiDisplayDragMoveIndicatorSurfaceFactory,
+            @ShellDesktopThread ShellExecutor desktopExecutor
+    ) {
+        return new MultiDisplayDragMoveIndicatorController(
+                displayController, rootTaskDisplayAreaOrganizer,
+                multiDisplayDragMoveIndicatorSurfaceFactory, desktopExecutor);
+    }
+
+    @WMSingleton
+    @Provides
+    static MultiDisplayDragMoveIndicatorSurface.Factory
+            providesMultiDisplayDragMoveIndicatorSurfaceFactory(Context context) {
+        return new MultiDisplayDragMoveIndicatorSurface.Factory(context);
     }
 
     @WMSingleton
