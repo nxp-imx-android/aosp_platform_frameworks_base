@@ -340,15 +340,14 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
 
     @Override
     void handleMouseOrStylusEvent(MotionEvent event, MotionEvent rawEvent, int policyFlags) {
-        if (Flags.enableMagnificationFollowsMouseBugfix()) {
-            if (mFullScreenMagnificationController.isActivated(mDisplayId)) {
-                // TODO(b/354696546): Allow mouse/stylus to activate whichever display they are
-                // over, rather than only interacting with the current display.
-
-                // Send through the mouse/stylus event handler.
-                mMouseEventHandler.onEvent(event, mDisplayId);
-            }
+        if (!mFullScreenMagnificationController.isActivated(mDisplayId)) {
+            return;
         }
+        // TODO(b/354696546): Allow mouse/stylus to activate whichever display they are
+        // over, rather than only interacting with the current display.
+
+        // Send through the mouse/stylus event handler.
+        mMouseEventHandler.onEvent(event, mDisplayId);
     }
 
     private void handleTouchEventWith(
@@ -1170,8 +1169,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
 
         protected void cacheDelayedMotionEvent(MotionEvent event, MotionEvent rawEvent,
                 int policyFlags) {
-            if (Flags.enableMagnificationFollowsMouseBugfix()
-                    && !event.isFromSource(SOURCE_TOUCHSCREEN)) {
+            if (!event.isFromSource(SOURCE_TOUCHSCREEN)) {
                 // Only touch events need to be cached and sent later.
                 return;
             }
