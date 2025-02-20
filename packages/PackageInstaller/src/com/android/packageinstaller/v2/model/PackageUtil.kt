@@ -57,6 +57,7 @@ object PackageUtil {
     const val ARGS_APP_LABEL: String = "app_label"
     const val ARGS_APP_SNIPPET: String = "app_snippet"
     const val ARGS_ERROR_DIALOG_TYPE: String = "error_dialog_type"
+    const val ARGS_INSTALLER_LABEL: String = "installer_label"
     const val ARGS_IS_ARCHIVE: String = "is_archive"
     const val ARGS_IS_CLONE_USER: String = "clone_user"
     const val ARGS_IS_UPDATING: String = "is_updating"
@@ -204,7 +205,7 @@ object PackageUtil {
      * @param permission the permission name to check
      * @return `true` if the caller is requesting the said permission in its Manifest
      */
-    private fun isUidRequestingPermission(
+    fun isUidRequestingPermission(
         pm: PackageManager,
         uid: Int,
         permission: String,
