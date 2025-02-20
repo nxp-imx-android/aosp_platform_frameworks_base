@@ -8,6 +8,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.app.WindowConfiguration.WindowingMode
 import android.graphics.PointF
+import android.graphics.Rect
 import android.os.IBinder
 import android.os.SystemProperties
 import android.testing.AndroidTestingRunner
@@ -36,6 +37,7 @@ import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.MoveToDesktopAnimator
+import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import java.util.function.Supplier
 import junit.framework.Assert.assertEquals
@@ -694,6 +696,50 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
             .cancel(eq(CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD))
     }
 
+    @Test
+    fun getAnimationFraction_returnsFraction() {
+        val fraction =
+            SpringDragToDesktopTransitionHandler.getAnimationFraction(
+                startBounds = Rect(0, 0, 0, 0),
+                endBounds = Rect(0, 0, 10, 10),
+                animBounds = Rect(0, 0, 5, 5),
+            )
+        assertThat(fraction).isWithin(TOLERANCE).of(0.5f)
+    }
+
+    @Test
+    fun getAnimationFraction_animBoundsSameAsEnd_returnsOne() {
+        val fraction =
+            SpringDragToDesktopTransitionHandler.getAnimationFraction(
+                startBounds = Rect(0, 0, 0, 0),
+                endBounds = Rect(0, 0, 10, 10),
+                animBounds = Rect(0, 0, 10, 10),
+            )
+        assertThat(fraction).isWithin(TOLERANCE).of(1f)
+    }
+
+    @Test
+    fun getAnimationFraction_startAndEndBoundsSameWidth_usesHeight() {
+        val fraction =
+            SpringDragToDesktopTransitionHandler.getAnimationFraction(
+                startBounds = Rect(0, 0, 10, 10),
+                endBounds = Rect(0, 0, 10, 30),
+                animBounds = Rect(0, 0, 10, 25),
+            )
+        assertThat(fraction).isWithin(TOLERANCE).of(0.75f)
+    }
+
+    @Test
+    fun getAnimationFraction_startAndEndBoundsSame_returnsZero() {
+        val fraction =
+            SpringDragToDesktopTransitionHandler.getAnimationFraction(
+                startBounds = Rect(0, 0, 10, 10),
+                endBounds = Rect(0, 0, 10, 10),
+                animBounds = Rect(0, 0, 10, 25),
+            )
+        assertThat(fraction).isWithin(TOLERANCE).of(0f)
+    }
+
     private fun startDrag(
         handler: DragToDesktopTransitionHandler,
         task: RunningTaskInfo = createTask(),
@@ -826,4 +872,8 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
 
     private fun systemPropertiesKey(name: String) =
         "${SpringDragToDesktopTransitionHandler.SYSTEM_PROPERTIES_GROUP}.$name"
+
+    private companion object {
+        private const val TOLERANCE = 1e-5f
+    }
 }
