@@ -540,9 +540,23 @@ public class BiometricService extends SystemService {
                     DEFAULT_MANDATORY_BIOMETRICS_STATUS)
                     && mMandatoryBiometricsRequirementsSatisfied.getOrDefault(userId,
                     DEFAULT_MANDATORY_BIOMETRICS_REQUIREMENTS_SATISFIED_STATUS)
-                    && getEnabledForApps(userId, TYPE_ANY_BIOMETRIC)
-                    && (mFingerprintEnrolledForUser.getOrDefault(userId, false /* default */)
-                    || mFaceEnrolledForUser.getOrDefault(userId, false /* default */));
+                    && getBiometricStatusForIdentityCheck(userId);
+        }
+
+        private boolean getBiometricStatusForIdentityCheck(int userId) {
+            if (com.android.settings.flags.Flags.biometricsOnboardingEducation()) {
+                if (mFingerprintEnrolledForUser.getOrDefault(userId, false /* default */)
+                        && getEnabledForApps(userId, TYPE_FINGERPRINT)) {
+                    return true;
+                } else {
+                    return mFaceEnrolledForUser.getOrDefault(userId, false /* default */)
+                            && getEnabledForApps(userId, TYPE_FACE);
+                }
+            } else {
+                return (mFingerprintEnrolledForUser.getOrDefault(userId, false /* default */)
+                        || mFaceEnrolledForUser.getOrDefault(userId, false /* default */))
+                        && getEnabledForApps(userId, TYPE_ANY_BIOMETRIC);
+            }
         }
 
         void notifyEnabledOnKeyguardCallbacks(int userId, int modality) {
