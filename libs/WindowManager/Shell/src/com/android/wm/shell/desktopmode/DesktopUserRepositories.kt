@@ -106,6 +106,17 @@ class DesktopUserRepositories(
         else return profileId
     }
 
+    /** Find the repositories that contains the specified desk; returns empty set if none found. */
+    fun getRepositoriesWithDeskId(deskId: Int): Set<DesktopRepository> {
+        val repositories = mutableSetOf<DesktopRepository>()
+        desktopRepoByUserId.forEach { _, desktopRepository ->
+            if (desktopRepository.getAllDeskIds().contains(deskId)) {
+                repositories.add(desktopRepository)
+            }
+        }
+        return repositories
+    }
+
     /** Dumps [DesktopRepository] for each user. */
     fun dump(pw: PrintWriter, prefix: String) {
         val innerPrefix = "$prefix    "

@@ -131,6 +131,7 @@ import com.android.wm.shell.desktopmode.minimize.DesktopWindowLimitRemoteHandler
 import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
+import com.android.wm.shell.desktopmode.multidesks.OnDeskDisplayChangeListener
 import com.android.wm.shell.desktopmode.persistence.Desktop
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
@@ -7793,6 +7794,84 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+    )
+    fun testReparentDesks_onTopTrue_activeDeskDeactivated() {
+        doReturn(true).`when` { DesktopModeStatus.isDesktopModeSupportedOnDisplay(any(), any()) }
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+
+        taskRepository.onDeskDisplayChanged(DISCONNECTED_DESK_ID, DEFAULT_DISPLAY)
+        controller.onDeskDisconnectTransition(
+            mutableSetOf(
+                OnDeskDisplayChangeListener.DeskDisplayChange(
+                    DISCONNECTED_DESK_ID,
+                    DEFAULT_DISPLAY,
+                    toTop = true,
+                )
+            )
+        )
+
+        verify(desksOrganizer).deactivateDesk(any(), eq(DEFAULT_DESK_ID))
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+    )
+    fun testReparentDesks_onTopTrue_disconnectedDeskActivated() {
+        doReturn(true).`when` { DesktopModeStatus.isDesktopModeSupportedOnDisplay(any(), any()) }
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+
+        taskRepository.onDeskDisplayChanged(DISCONNECTED_DESK_ID, DEFAULT_DISPLAY)
+        controller.onDeskDisconnectTransition(
+            mutableSetOf(
+                OnDeskDisplayChangeListener.DeskDisplayChange(
+                    DISCONNECTED_DESK_ID,
+                    DEFAULT_DISPLAY,
+                    toTop = true,
+                )
+            )
+        )
+
+        verify(desksOrganizer).activateDesk(any(), eq(DISCONNECTED_DESK_ID))
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+    )
+    fun testReparentDesks_onTopFalse_movedDeskDeactivated() {
+        doReturn(true).`when` { DesktopModeStatus.isDesktopModeSupportedOnDisplay(any(), any()) }
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+
+        taskRepository.onDeskDisplayChanged(DISCONNECTED_DESK_ID, DEFAULT_DISPLAY)
+        controller.onDeskDisconnectTransition(
+            mutableSetOf(
+                OnDeskDisplayChangeListener.DeskDisplayChange(
+                    DISCONNECTED_DESK_ID,
+                    DEFAULT_DISPLAY,
+                    toTop = false,
+                )
+            )
+        )
+
+        verify(desksOrganizer).deactivateDesk(any(), eq(DISCONNECTED_DESK_ID))
+    }
+
+    @Test
+    @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
         Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
     )
@@ -8407,6 +8486,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         const val MAX_TASK_LIMIT = 6
         private const val TASKBAR_FRAME_HEIGHT = 200
         private const val FLOAT_TOLERANCE = 0.005f
+        private const val DEFAULT_DESK_ID = 100
+        // For testing disconnecting a display containing a desk.
+        private const val DISCONNECTED_DESK_ID = 200
 
         @JvmStatic
         @Parameters(name = "{0}")

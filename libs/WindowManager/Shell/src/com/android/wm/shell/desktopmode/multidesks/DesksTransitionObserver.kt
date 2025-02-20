@@ -16,6 +16,7 @@
 package com.android.wm.shell.desktopmode.multidesks
 
 import android.os.IBinder
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
@@ -33,6 +34,8 @@ class DesksTransitionObserver(
 ) {
     private val deskTransitions = mutableMapOf<IBinder, MutableSet<DeskTransition>>()
 
+    var deskDisplayChangeListener: OnDeskDisplayChangeListener? = null
+
     /** Adds a pending desk transition to be tracked. */
     fun addPendingTransition(transition: DeskTransition) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
@@ -48,7 +51,12 @@ class DesksTransitionObserver(
      */
     fun onTransitionReady(transition: IBinder, info: TransitionInfo) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
-        val deskTransitions = deskTransitions.remove(transition) ?: return
+        val deskTransitions = deskTransitions.remove(transition)
+        if (deskTransitions == null) {
+            // Transition didn't originate from a desktop class; check if it's a display change.
+            handleDeskDisplayChangeIfNeeded(info)
+            return
+        }
         deskTransitions.forEach { deskTransition -> handleDeskTransition(info, deskTransition) }
     }
 
@@ -87,6 +95,53 @@ class DesksTransitionObserver(
                 )
             }
         }
+    }
+
+    private fun handleDeskDisplayChangeIfNeeded(info: TransitionInfo) {
+        val deskDisplayChanges = mutableSetOf<OnDeskDisplayChangeListener.DeskDisplayChange>()
+        for (change in info.changes) {
+            if (!desksOrganizer.isDeskChange(change)) continue
+            val startDisplayId = change.startDisplayId
+            val endDisplayId = change.endDisplayId
+            // TODO(b/406320371): Verify this works with non-system users once the underlying bug is
+            //  resolved.
+            if (startDisplayId != endDisplayId) {
+                val reparentedDeskId =
+                    desksOrganizer.getDeskIdFromChange(change)
+                        ?: error("Expected to find desk for this change.")
+                // A desk has changed displays; update the repository and inform the
+                // transition listener.
+                change.taskInfo?.let {
+                    desktopUserRepositories.getRepositoriesWithDeskId(reparentedDeskId).forEach {
+                        repository ->
+                        repository.onDeskDisplayChanged(reparentedDeskId, endDisplayId)
+                        if (repository == desktopUserRepositories.current) {
+                            deskDisplayChanges.add(
+                                OnDeskDisplayChangeListener.DeskDisplayChange(
+                                    reparentedDeskId,
+                                    endDisplayId,
+                                    toTop = wasReparentedToTop(change),
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        if (deskDisplayChanges.isEmpty() || deskDisplayChangeListener == null) return
+        deskDisplayChangeListener?.onDeskDisplayChange(deskDisplayChanges)
+    }
+
+    private fun wasReparentedToTop(change: TransitionInfo.Change): Boolean {
+        // TODO(b/406085504): This heuristic for a desk moving to top is based on the disconnect
+        //  case: in core, if a desk is on the top of the focused display, it will be reparented
+        //  to the destination display's DisplayArea in POSITION_TOP on disconnect. However, since
+        //  it is already on top of the focused display, the transition will be flagged as
+        //  TRANSIT_CHANGE, not TRANSIT_TOP since nothing is actually moving to the top.
+        //  This heuristic will not work for future cases where desks change displays.
+        //  In the event of a desk being reparented to the back, the change mode will be
+        //  TRANSIT_TO_BACK
+        return change.mode == TRANSIT_CHANGE
     }
 
     private fun handleDeskTransition(info: TransitionInfo, deskTransition: DeskTransition) {

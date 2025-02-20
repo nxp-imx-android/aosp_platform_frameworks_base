@@ -428,6 +428,24 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
+    fun deactivateDesk_reordersRootToBack() = runTest {
+        val wct = WindowContainerTransaction()
+        val desk = createDeskSuspending()
+        organizer.activateDesk(wct, desk.deskRoot.deskId)
+
+        organizer.deactivateDesk(wct, desk.deskRoot.deskId)
+
+        assertThat(
+                wct.hierarchyOps.any { hop ->
+                    hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                        !hop.toTop &&
+                        hop.container == desk.deskRoot.taskInfo.token.asBinder()
+                }
+            )
+            .isTrue()
+    }
+
+    @Test
     fun isDeskChange_forDeskId() = runTest {
         val desk = createDeskSuspending()
 
