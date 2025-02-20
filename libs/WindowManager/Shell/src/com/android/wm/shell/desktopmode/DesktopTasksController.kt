@@ -117,6 +117,7 @@ import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.recents.RecentsTransitionStateListener.RecentsTransitionState
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING
+import com.android.wm.shell.shared.R as SharedR
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.annotations.ExternalThread
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
@@ -2015,7 +2016,9 @@ class DesktopTasksController(
         }
         val cornerRadius =
             context.resources
-                .getDimensionPixelSize(R.dimen.desktop_windowing_freeform_rounded_corner_radius)
+                .getDimensionPixelSize(
+                    SharedR.dimen.desktop_windowing_freeform_rounded_corner_radius
+                )
                 .toFloat()
         info.changes
             .filter { it.taskInfo?.windowingMode == WINDOWING_MODE_FREEFORM }

@@ -46,4 +46,7 @@
     <dimen name="drop_target_expanded_view_height">578</dimen>
     <dimen name="drop_target_expanded_view_padding_bottom">108</dimen>
     <dimen name="drop_target_expanded_view_padding_horizontal">24</dimen>
+
+    <!-- The corner radius of freeform tasks in desktop windowing. -->
+    <dimen name="desktop_windowing_freeform_rounded_corner_radius">16dp</dimen>
 </resources>
