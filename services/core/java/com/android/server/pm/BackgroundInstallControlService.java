@@ -332,7 +332,8 @@ public class BackgroundInstallControlService extends SystemService {
                 userId)
                 != PERMISSION_GRANTED) {
             if(Build.IS_DEBUGGABLE) {
-                Slog.d(TAG, "handlePackageAdd " + packageName + ": installer doesn't "
+                Slog.d(TAG, "handlePackageAdd " + packageName + ": installer ("
+                    + installerPackageName + ") doesn't "
                     + "have INSTALL_PACKAGES permission, skipping");
             }
             return;
