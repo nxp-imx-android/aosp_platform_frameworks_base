@@ -237,18 +237,24 @@ public class BubbleExpandedView extends LinearLayout {
                         Context context =
                                 mContext.createContextAsUser(
                                         mBubble.getUser(), Context.CONTEXT_RESTRICTED);
+                        Intent fillInIntent = new Intent();
+                        fillInIntent.addFlags(FLAG_ACTIVITY_MULTIPLE_TASK);
                         PendingIntent pi = PendingIntent.getActivity(
                                 context,
                                 /* requestCode= */ 0,
-                                mBubble.getIntent().addFlags(FLAG_ACTIVITY_MULTIPLE_TASK),
-                                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
+                                mBubble.getIntent(),
+                                // Needs to be mutable for the fillInIntent
+                                PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
                                 /* options= */ null);
-                        mTaskView.startActivity(pi, /* fillInIntent= */ null, options,
-                                launchBounds);
+                        mTaskView.startActivity(pi, fillInIntent, options, launchBounds);
                     } else if (!mIsOverflow && isShortcutBubble) {
                         ProtoLog.v(WM_SHELL_BUBBLES, "startingShortcutBubble=%s", getBubbleKey());
-                        options.setLaunchedFromBubble(true);
-                        options.setApplyActivityFlagsForBubbles(true);
+                        if (mBubble.isChat()) {
+                            options.setLaunchedFromBubble(true);
+                            options.setApplyActivityFlagsForBubbles(true);
+                        } else {
+                            options.setApplyMultipleTaskFlagForShortcut(true);
+                        }
                         mTaskView.startShortcutActivity(mBubble.getShortcutInfo(),
                                 options, launchBounds);
                     } else {
