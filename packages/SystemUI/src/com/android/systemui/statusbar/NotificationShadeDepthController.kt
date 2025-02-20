@@ -110,6 +110,10 @@ constructor(
     private var prevTimestamp: Long = -1
     private var prevShadeDirection = 0
     private var prevShadeVelocity = 0f
+    // tracks whether app launch transition is in progress. This involves two independent factors
+    // that control blur, shade expansion and app launch animation from outside sysui.
+    // They can complete out of order, this flag will be reset by the animation that finishes later.
+    private var appLaunchTransitionIsInProgress = false
 
     // Only for dumpsys
     private var lastAppliedBlur = 0
@@ -158,6 +162,18 @@ constructor(
             if (field == value) {
                 return
             }
+            // Set this to true now, this will be reset when the next shade expansion finishes or
+            // when the app launch finishes, whichever happens later.
+            if (value) {
+                appLaunchTransitionIsInProgress = true
+            } else {
+                // App was launching and now it has finished launching
+                if (shadeExpansion == 0.0f) {
+                    // this means shade expansion finished before app launch was done.
+                    // reset the flag here
+                    appLaunchTransitionIsInProgress = false
+                }
+            }
             field = value
             scheduleUpdate()
 
@@ -172,6 +188,12 @@ constructor(
             shadeAnimation.animateTo(0)
             shadeAnimation.finishIfRunning()
         }
+        @Deprecated(
+            message =
+                "This might get reset to false before shade expansion is fully done, " +
+                    "consider using areBlursDisabledForAppLaunch"
+        )
+        get() = field
 
     private var zoomOutCalculatedFromShadeRadius: Float = 0.0f
 
@@ -182,6 +204,11 @@ constructor(
             field = value
             scheduleUpdate()
         }
+
+    private val areBlursDisabledForAppLaunch: Boolean
+        get() =
+            blursDisabledForAppLaunch ||
+                (Flags.bouncerUiRevamp() && appLaunchTransitionIsInProgress)
 
     /** Force stop blur effect when necessary. */
     private var scrimsVisible: Boolean = false
@@ -221,7 +248,7 @@ constructor(
         combinedBlur = max(combinedBlur, blurUtils.blurRadiusOfRatio(transitionToFullShadeProgress))
         var shadeRadius = max(combinedBlur, wakeAndUnlockBlurRadius)
 
-        if (blursDisabledForAppLaunch || blursDisabledForUnlock) {
+        if (areBlursDisabledForAppLaunch || blursDisabledForUnlock) {
             shadeRadius = 0f
         }
 
@@ -259,7 +286,7 @@ constructor(
     private val shouldBlurBeOpaque: Boolean
         get() =
             if (Flags.notificationShadeBlur()) false
-            else scrimsVisible && !blursDisabledForAppLaunch
+            else scrimsVisible && !areBlursDisabledForAppLaunch
 
     /** Callback that updates the window blur value and is called only once per frame. */
     @VisibleForTesting
@@ -442,6 +469,13 @@ constructor(
         val shadeDirection = sign(diff).toInt()
         val shadeVelocity =
             MathUtils.constrain(VELOCITY_SCALE * diff / deltaTime, MIN_VELOCITY, MAX_VELOCITY)
+        if (expansion == 0.0f && appLaunchTransitionIsInProgress && !blursDisabledForAppLaunch) {
+            // Shade expansion finished but the app launch is already done, then this should mark
+            // the transition as done.
+            Log.d(TAG, "appLaunchTransitionIsInProgress is now false from shade expansion event")
+            appLaunchTransitionIsInProgress = false
+        }
+
         updateShadeAnimationBlur(expansion, tracking, shadeVelocity, shadeDirection)
 
         prevShadeDirection = shadeDirection
@@ -553,6 +587,7 @@ constructor(
             it.println("brightnessMirrorRadius: ${brightnessMirrorSpring.radius}")
             it.println("wakeAndUnlockBlur: $wakeAndUnlockBlurRadius")
             it.println("blursDisabledForAppLaunch: $blursDisabledForAppLaunch")
+            it.println("appLaunchTransitionIsInProgress: $appLaunchTransitionIsInProgress")
             it.println("qsPanelExpansion: $qsPanelExpansion")
             it.println("transitionToFullShadeProgress: $transitionToFullShadeProgress")
             it.println("lastAppliedBlur: $lastAppliedBlur")
