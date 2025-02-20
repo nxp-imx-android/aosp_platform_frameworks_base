@@ -65,13 +65,14 @@ public class PromotedNotificationInfo extends NotificationInfo {
             UiEventLogger uiEventLogger,
             boolean isDeviceProvisioned,
             boolean isNonblockable,
+            boolean isDismissable,
             boolean wasShownHighPriority,
             AssistantFeedbackController assistantFeedbackController,
             MetricsLogger metricsLogger, OnClickListener onCloseClick) throws RemoteException {
         super.bindNotification(pm, iNotificationManager, appIconProvider, iconStyleProvider,
                 onUserInteractionCallback, channelEditorDialogController, pkg, notificationChannel,
                 entry, onSettingsClick, onAppSettingsClick, feedbackClickListener, uiEventLogger,
-                isDeviceProvisioned, isNonblockable, wasShownHighPriority,
+                isDeviceProvisioned, isNonblockable, isDismissable, wasShownHighPriority,
                 assistantFeedbackController, metricsLogger, onCloseClick);
 
         mNotificationManager = iNotificationManager;

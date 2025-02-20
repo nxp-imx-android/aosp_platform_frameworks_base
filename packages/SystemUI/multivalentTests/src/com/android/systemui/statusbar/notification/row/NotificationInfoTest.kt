@@ -49,6 +49,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.MetricsLogger
@@ -863,6 +864,31 @@ class NotificationInfoTest : SysuiTestCase() {
         assertThat(underTest.findViewById<View>(R.id.feedback).visibility).isEqualTo(GONE)
     }
 
+    @Test
+    @Throws(RemoteException::class)
+    fun testDismissListenerBound() {
+        val latch = CountDownLatch(1)
+        bindNotification(onCloseClick = { _: View? -> latch.countDown() })
+
+        val dismissView = underTest.findViewById<View>(R.id.inline_dismiss)
+        assertThat(dismissView.isVisible).isTrue()
+        dismissView.performClick()
+
+        // Verify that listener was triggered.
+        assertThat(latch.count).isEqualTo(0)
+    }
+
+    @Test
+    @Throws(RemoteException::class)
+    fun testDismissHiddenWhenUndismissable() {
+
+        entry.sbn.notification.flags =
+            entry.sbn.notification.flags or android.app.Notification.FLAG_NO_DISMISS
+        bindNotification(isDismissable = false)
+        val dismissView = underTest.findViewById<View>(R.id.inline_dismiss)
+        assertThat(dismissView.isVisible).isFalse()
+    }
+
     private fun bindNotification(
         pm: PackageManager = this.mockPackageManager,
         iNotificationManager: INotificationManager = this.mockINotificationManager,
@@ -880,6 +906,7 @@ class NotificationInfoTest : SysuiTestCase() {
         uiEventLogger: UiEventLogger = this.uiEventLogger,
         isDeviceProvisioned: Boolean = true,
         isNonblockable: Boolean = false,
+        isDismissable: Boolean = true,
         wasShownHighPriority: Boolean = true,
         assistantFeedbackController: AssistantFeedbackController = this.assistantFeedbackController,
         metricsLogger: MetricsLogger = kosmos.metricsLogger,
@@ -901,6 +928,7 @@ class NotificationInfoTest : SysuiTestCase() {
             uiEventLogger,
             isDeviceProvisioned,
             isNonblockable,
+            isDismissable,
             wasShownHighPriority,
             assistantFeedbackController,
             metricsLogger,

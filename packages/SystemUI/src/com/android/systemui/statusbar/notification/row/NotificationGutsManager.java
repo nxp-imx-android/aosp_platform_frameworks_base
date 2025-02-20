@@ -440,6 +440,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 NotificationBundleUi.isEnabled()
                         ? !row.getEntry().isBlockable()
                         : row.getIsNonblockable(),
+                row.canViewBeDismissed(),
                 mHighPriorityProvider.isHighPriority(row.getEntry()),
                 mAssistantFeedbackController,
                 mMetricsLogger,

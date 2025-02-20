@@ -427,6 +427,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
             .setUserSentiment(Ranking.USER_SENTIMENT_NEGATIVE)
             .setImportance(NotificationManager.IMPORTANCE_HIGH)
             .build()
+        whenever(row.canViewBeDismissed()).thenReturn(true)
         whenever(highPriorityProvider.isHighPriority(entry)).thenReturn(true)
         val statusBarNotification = entry.sbn
         gutsManager.initializeNotificationInfo(row, notificationInfoView)
@@ -447,7 +448,8 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 any<UiEventLogger>(),
                 eq(true),
                 eq(false),
-                eq(true), /* wasShownHighPriority */
+                eq(true),
+                eq(true),
                 eq(assistantFeedbackController),
                 any<MetricsLogger>(),
                 any<View.OnClickListener>(),
@@ -462,6 +464,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
         NotificationEntryHelper.modifyRanking(row.entry)
             .setUserSentiment(Ranking.USER_SENTIMENT_NEGATIVE)
             .build()
+        whenever(row.canViewBeDismissed()).thenReturn(true)
         val statusBarNotification = row.entry.sbn
         val entry = row.entry
         gutsManager.initializeNotificationInfo(row, notificationInfoView)
@@ -482,7 +485,8 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 any<UiEventLogger>(),
                 eq(true),
                 eq(false),
-                eq(false), /* wasShownHighPriority */
+                eq(true), /* wasShownHighPriority */
+                eq(false),
                 eq(assistantFeedbackController),
                 any<MetricsLogger>(),
                 any<View.OnClickListener>(),
@@ -497,6 +501,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
         NotificationEntryHelper.modifyRanking(row.entry)
             .setUserSentiment(Ranking.USER_SENTIMENT_NEGATIVE)
             .build()
+        whenever(row.canViewBeDismissed()).thenReturn(true)
         val statusBarNotification = row.entry.sbn
         val entry = row.entry
         gutsManager.initializeNotificationInfo(row, notificationInfoView)
@@ -517,7 +522,8 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 any<UiEventLogger>(),
                 eq(true),
                 eq(false),
-                eq(false), /* wasShownHighPriority */
+                eq(true), /* wasShownHighPriority */
+                eq(false),
                 eq(assistantFeedbackController),
                 any<MetricsLogger>(),
                 any<View.OnClickListener>(),
