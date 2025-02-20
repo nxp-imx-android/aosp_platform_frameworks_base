@@ -64,6 +64,8 @@ class FakeHomeStatusBarViewModel(
 
     override val isHomeStatusBarAllowedByScene = MutableStateFlow(false)
 
+    override val canShowOngoingActivityChips: Flow<Boolean> = MutableStateFlow(false)
+
     override val batteryViewModelFactory: BatteryViewModel.Factory =
         object : BatteryViewModel.Factory {
             override fun create(): BatteryViewModel = mock(BatteryViewModel::class.java)
