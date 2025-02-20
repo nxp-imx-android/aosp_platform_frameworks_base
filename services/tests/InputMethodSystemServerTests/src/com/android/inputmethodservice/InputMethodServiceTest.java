@@ -267,8 +267,8 @@ public class InputMethodServiceTest {
 
         final var window = mInputMethodService.getWindow().getWindow();
         assertWithMessage("IME window exists").that(window).isNotNull();
-        assertWithMessage("IME window showing").that(
-                window.getDecorView().getVisibility()).isEqualTo(View.VISIBLE);
+        eventually(() -> assertWithMessage("IME window showing").that(
+                window.getDecorView().getVisibility()).isEqualTo(View.VISIBLE));
 
         mActivity.getWindow().getDecorView().setWindowInsetsAnimationCallback(
                 new WindowInsetsAnimation.Callback(
