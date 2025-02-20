@@ -5249,6 +5249,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun enterSplit_wasInDesk_deactivatesDesk() {
+        val deskId = 5
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
+        val transition = Binder()
+        whenever(splitScreenController.requestEnterSplitSelect(eq(task), any(), any(), any()))
+            .thenReturn(transition)
+
+        controller.requestSplit(task, leftOrTop = false)
+
+        verify(desksOrganizer).deactivateDesk(any(), eq(deskId))
+        verify(desksTransitionsObserver)
+            .addPendingTransition(DeskTransition.DeactivateDesk(transition, deskId))
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES)
     fun newWindow_fromFullscreenOpensInSplit() {
         setUpLandscapeDisplay()
@@ -6601,6 +6619,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         bounds: Rect? = null,
         active: Boolean = true,
         background: Boolean = false,
+        deskId: Int? = null,
     ): RunningTaskInfo {
         val task = createFreeformTask(displayId, bounds)
         val activityInfo = ActivityInfo()
@@ -6613,7 +6632,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         } else {
             whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
         }
-        taskRepository.addTask(displayId, task.taskId, isVisible = active)
+        if (deskId != null) {
+            taskRepository.addTaskToDesk(displayId, deskId, task.taskId, isVisible = active)
+        } else {
+            taskRepository.addTask(displayId, task.taskId, isVisible = active)
+        }
         if (!background) {
             runningTasks.add(task)
         }
