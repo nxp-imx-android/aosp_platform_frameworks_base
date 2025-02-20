@@ -17,9 +17,12 @@
 package com.android.systemui.statusbar.pipeline.shared.ui.composable
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,23 +30,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.android.compose.modifiers.height
-import com.android.compose.modifiers.width
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.BarBaseHeightFiveBarsSp
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.BarBaseHeightFourBarsSp
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.BarsLevelIncrementSp
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.BarsVerticalPaddingSp
+import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.ExclamationCutoutRadiusSp
+import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.ExclamationDiameterSp
+import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.ExclamationHeightSp
+import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.ExclamationHorizontalOffset
+import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.ExclamationVerticalSpacing
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.HorizontalPaddingFiveBarsSp
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.HorizontalPaddingFourBarsSp
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.IconHeightSp
+import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.IconPaddingSp
+import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.IconSpacingSp
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.IconWidthFiveBarsSp
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.IconWidthFourBarsSp
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIconDimensions.SecondaryBarHeightSp
@@ -58,15 +66,16 @@ fun StackedMobileIcon(viewModel: StackedMobileIconViewModel, modifier: Modifier 
     val dualSim = viewModel.dualSim ?: return
 
     val contentColor = LocalContentColor.current
+    val padding = with(LocalDensity.current) { IconPaddingSp.toDp() }
+    val horizontalArrangement = with(LocalDensity.current) { spacedBy(IconSpacingSp.toDp()) }
 
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
+    Row(
+        horizontalArrangement = horizontalArrangement,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.padding(horizontal = padding),
+    ) {
         viewModel.networkTypeIcon?.let {
-            Icon(
-                it,
-                tint = contentColor,
-                modifier =
-                    Modifier.height { IconHeightSp.roundToPx() }.padding(start = 1.dp, end = 2.dp),
-            )
+            Icon(it, tint = contentColor, modifier = Modifier.fillMaxHeight())
         }
 
         StackedMobileIcon(dualSim, contentColor)
@@ -79,23 +88,23 @@ private fun StackedMobileIcon(
     color: Color,
     modifier: Modifier = Modifier,
 ) {
-    val maxNumberOfLevels =
-        max(viewModel.primary.numberOfLevels, viewModel.secondary.numberOfLevels)
-    val dimensions = if (maxNumberOfLevels == 6) FiveBarsDimensions else FourBarsDimensions
+    // Removing 1 to get the real number of bars
+    val numberOfBars = max(viewModel.primary.numberOfLevels, viewModel.secondary.numberOfLevels) - 1
+    val dimensions = if (numberOfBars == 5) FiveBarsDimensions else FourBarsDimensions
     val iconSize =
         with(LocalDensity.current) { dimensions.totalWidth.toDp() to IconHeightSp.toDp() }
 
-    Canvas(modifier.size(width = iconSize.first, height = iconSize.second)) {
+    Canvas(modifier.width(iconSize.first).height(iconSize.second)) {
         val verticalPaddingPx = BarsVerticalPaddingSp.roundToPx()
         val horizontalPaddingPx = dimensions.barsHorizontalPadding.roundToPx()
-        val totalPaddingWidthPx = horizontalPaddingPx * (maxNumberOfLevels - 1)
+        val totalPaddingWidthPx = horizontalPaddingPx * (numberOfBars - 1)
 
-        val barWidthPx = (size.width - totalPaddingWidthPx) / maxNumberOfLevels
+        val barWidthPx = (size.width - totalPaddingWidthPx) / numberOfBars
         val dotHeightPx = SecondaryBarHeightSp.toPx()
         val baseBarHeightPx = dimensions.barBaseHeight.toPx()
 
         var xOffsetPx = 0f
-        for (bar in 1..maxNumberOfLevels) {
+        for (bar in 1..numberOfBars) {
             // Bottom dots representing secondary sim
             val dotYOffsetPx = size.height - dotHeightPx
             if (bar <= viewModel.secondary.numberOfLevels) {
@@ -123,6 +132,10 @@ private fun StackedMobileIcon(
 
             xOffsetPx += barWidthPx + horizontalPaddingPx
         }
+
+        if (viewModel.primary.showExclamationMark) {
+            drawExclamationCutout(color)
+        }
     }
 }
 
@@ -141,6 +154,39 @@ private fun DrawScope.drawMobileIconBar(
         size = size,
         cornerRadius = cornerRadius,
     )
+}
+
+private fun DrawScope.drawExclamationCutout(color: Color) {
+    // Exclamation mark is bottom aligned with the canvas
+    val exclamationDiameterPx = ExclamationDiameterSp.toPx()
+    val exclamationRadiusPx = ExclamationDiameterSp.toPx() / 2
+    val exclamationTotalHeight =
+        ExclamationHeightSp.toPx() + ExclamationVerticalSpacing.toPx() + exclamationDiameterPx
+    val exclamationDotCenter =
+        Offset(size.width - ExclamationHorizontalOffset.toPx(), size.height - exclamationRadiusPx)
+    val exclamationMarkTopLeft =
+        Offset(exclamationDotCenter.x - exclamationRadiusPx, size.height - exclamationTotalHeight)
+    val exclamationCornerRadius = CornerRadius(exclamationRadiusPx)
+    val cutoutCenter = Offset(exclamationDotCenter.x, size.height - (exclamationTotalHeight / 2))
+
+    // Transparent cutout
+    drawCircle(
+        color = Color.Transparent,
+        radius = ExclamationCutoutRadiusSp.toPx(),
+        center = cutoutCenter,
+        blendMode = BlendMode.SrcIn,
+    )
+
+    // Top bar for the exclamation mark
+    drawRoundRect(
+        color = color,
+        topLeft = exclamationMarkTopLeft,
+        size = Size(exclamationDiameterPx, ExclamationHeightSp.toPx()),
+        cornerRadius = exclamationCornerRadius,
+    )
+
+    // Bottom circle for the exclamation mark
+    drawCircle(color = color, center = exclamationDotCenter, radius = exclamationRadiusPx)
 }
 
 private abstract class BarsDependentDimensions(
@@ -166,9 +212,18 @@ private object FiveBarsDimensions :
 private object StackedMobileIconDimensions {
     // Common dimensions
     val IconHeightSp = 12.sp
+    val IconPaddingSp = 4.sp
+    val IconSpacingSp = 2.sp
     val BarsVerticalPaddingSp = 1.5.sp
     val BarsLevelIncrementSp = 1.sp
     val SecondaryBarHeightSp = 3.sp
+
+    // Exclamation cutout dimensions
+    val ExclamationCutoutRadiusSp = 5.sp
+    val ExclamationDiameterSp = 1.5.sp
+    val ExclamationHeightSp = 4.5.sp
+    val ExclamationVerticalSpacing = 1.sp
+    val ExclamationHorizontalOffset = 1.sp
 
     // Dimensions dependant on the number of total bars
     val IconWidthFiveBarsSp = 18.5.sp

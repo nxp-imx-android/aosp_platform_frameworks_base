@@ -27,7 +27,6 @@
         android:layout_height="@dimen/status_bar_bindable_icon_size"
         android:layout_width="wrap_content"
         android:layout_gravity="center_vertical"
-        android:padding="4sp"
         />
 
 </com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStatusBarComposeIconView>
