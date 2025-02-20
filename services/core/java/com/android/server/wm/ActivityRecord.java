@@ -2111,7 +2111,8 @@ final class ActivityRecord extends WindowToken {
         }
         try {
             return mAtmService.mContext.getPackageManager()
-                    .getProperty(PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENABLED, packageName)
+                    .getPropertyAsUser(PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENABLED, packageName,
+                            null /* className */, mUserId)
                     .getBoolean();
         } catch (PackageManager.NameNotFoundException e) {
             // No such property name.
@@ -2968,8 +2969,9 @@ final class ActivityRecord extends WindowToken {
         }
         try {
             return mAtmService.mContext.getPackageManager()
-                    .getProperty(PROPERTY_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING_STATE_SHARING,
-                            mActivityComponent)
+                    .getPropertyAsUser(PROPERTY_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING_STATE_SHARING,
+                            mActivityComponent.getPackageName(),
+                            mActivityComponent.getClassName(), mUserId)
                     .getBoolean();
         } catch (PackageManager.NameNotFoundException e) {
             // No such property name.
@@ -3169,7 +3171,8 @@ final class ActivityRecord extends WindowToken {
             return true;
         }
         return !AppCompatResizeOverrides.allowRestrictedResizability(
-                wms.mContext.getPackageManager(), appInfo.packageName);
+                wms.mContext.getPackageManager(), appInfo.packageName,
+                UserHandle.getUserId(appInfo.uid));
     }
 
     boolean isResizeable() {

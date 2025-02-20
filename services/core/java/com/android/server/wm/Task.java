@@ -1837,9 +1837,9 @@ class Task extends TaskFragment {
 
     private void updateAllowForceResizeOverride() {
         try {
-            mAllowForceResizeOverride = mAtmService.mContext.getPackageManager().getProperty(
+            mAllowForceResizeOverride = mAtmService.mContext.getPackageManager().getPropertyAsUser(
                     PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES,
-                    getBasePackageName()).getBoolean();
+                    getBasePackageName(), null /* className */, mUserId).getBoolean();
         } catch (PackageManager.NameNotFoundException e) {
             // Package not found or property not defined, reset to default value.
             mAllowForceResizeOverride = true;
