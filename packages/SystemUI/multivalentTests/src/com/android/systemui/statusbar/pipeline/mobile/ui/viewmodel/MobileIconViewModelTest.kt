@@ -252,6 +252,21 @@ class MobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun isVisible_satellite_respectsAirplaneMode() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.isVisible)
+
+            repository.isNonTerrestrial.value = true
+            airplaneModeInteractor.setIsAirplaneMode(false)
+
+            assertThat(latest).isTrue()
+
+            airplaneModeInteractor.setIsAirplaneMode(true)
+
+            assertThat(latest).isFalse()
+        }
+
+    @Test
     fun contentDescription_notInService_usesNoPhone() =
         testScope.runTest {
             val latest by collectLastValue(underTest.contentDescription)
