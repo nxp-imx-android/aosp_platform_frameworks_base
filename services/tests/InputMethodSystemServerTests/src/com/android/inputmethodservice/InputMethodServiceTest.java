@@ -144,10 +144,9 @@ public class InputMethodServiceTest {
         if (!mOriginalVerboseImeTrackerLoggingEnabled) {
             setVerboseImeTrackerLogging(true);
         }
+        mUiDevice.setOrientationNatural();
         prepareIme();
         prepareActivity();
-        mUiDevice.freezeRotation();
-        mUiDevice.setOrientationNatural();
         // Waits for input binding ready.
         eventually(() -> {
             mInputMethodService = InputMethodServiceWrapper.getInstance();
@@ -174,6 +173,9 @@ public class InputMethodServiceTest {
 
     @After
     public void tearDown() throws Exception {
+        if (!mUiDevice.isNaturalOrientation()) {
+            mUiDevice.setOrientationNatural();
+        }
         mUiDevice.unfreezeRotation();
         if (!mOriginalVerboseImeTrackerLoggingEnabled) {
             setVerboseImeTrackerLogging(false);
