@@ -382,6 +382,7 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
 
     private void setupAmbientControls(CachedBluetoothDevice activeHearingDevice) {
         final AmbientVolumeLayout ambientLayout = mDialog.requireViewById(R.id.ambient_layout);
+        ambientLayout.setUiEventLogger(mUiEventLogger, mLaunchSourceId);
         mAmbientController = new AmbientVolumeUiController(
                 mDialog.getContext(), mLocalBluetoothManager, ambientLayout);
         mAmbientController.setShowUiWhenLocalDataExist(false);
