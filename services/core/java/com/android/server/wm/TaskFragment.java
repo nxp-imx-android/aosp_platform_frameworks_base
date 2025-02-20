@@ -1889,10 +1889,12 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             // Even if the transient activity is occluded, defer pausing (addToStopping will still
             // be called) it until the transient transition is done. So the current resuming
             // activity won't need to wait for additional pause complete.
+            ProtoLog.d(WM_DEBUG_STATES, "startPausing: Skipping pause for transient "
+                            + "resumed activity=%s", mResumedActivity);
             return false;
         }
 
-        ProtoLog.d(WM_DEBUG_STATES, "startPausing: taskFrag =%s " + "mResumedActivity=%s", this,
+        ProtoLog.d(WM_DEBUG_STATES, "startPausing: taskFrag=%s mResumedActivity=%s", this,
                 mResumedActivity);
 
         if (mPausingActivity != null) {
