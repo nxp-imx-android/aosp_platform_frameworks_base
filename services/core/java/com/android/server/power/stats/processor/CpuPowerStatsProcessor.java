@@ -119,6 +119,8 @@ class CpuPowerStatsProcessor extends PowerStatsProcessor {
         mTmpUidStatsArray = new long[descriptor.uidStatsArrayLength];
 
         mWakelockDescriptor = null;
+
+        initEnergyConsumerToPowerBracketMaps();
     }
 
     /**
@@ -157,9 +159,6 @@ class CpuPowerStatsProcessor extends PowerStatsProcessor {
 
         if (mPlan == null) {
             mPlan = new PowerEstimationPlan(stats.getConfig());
-            if (mStatsLayout.getEnergyConsumerCount() != 0) {
-                initEnergyConsumerToPowerBracketMaps();
-            }
         }
 
         Intermediates intermediates = new Intermediates();
@@ -255,6 +254,10 @@ class CpuPowerStatsProcessor extends PowerStatsProcessor {
      */
     private void initEnergyConsumerToPowerBracketMaps() {
         int energyConsumerCount = mStatsLayout.getEnergyConsumerCount();
+        if (energyConsumerCount == 0) {
+            return;
+        }
+
         int powerBracketCount = mStatsLayout.getCpuPowerBracketCount();
 
         mEnergyConsumerToCombinedEnergyConsumerMap = new int[energyConsumerCount];
