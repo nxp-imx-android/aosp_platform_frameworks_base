@@ -390,6 +390,12 @@
     <!-- Extra space for guts bundle feedback button -->
     <dimen name="notification_guts_bundle_feedback_size">48dp</dimen>
 
+    <!-- Size of icon buttons in notification info. -->
+    <!-- 24dp for the icon itself + 16dp * 2 for top and bottom padding -->
+    <dimen name="notification_2025_guts_button_size">56dp</dimen>
+
+    <dimen name="notification_2025_min_tap_target_size">48dp</dimen>
+
     <dimen name="notification_importance_toggle_size">48dp</dimen>
     <dimen name="notification_importance_button_separation">8dp</dimen>
     <dimen name="notification_importance_drawable_padding">8dp</dimen>
@@ -401,6 +407,10 @@
     <dimen name="notification_importance_button_padding">16dp</dimen>
     <dimen name="notification_importance_button_description_top_margin">12dp</dimen>
     <dimen name="rect_button_radius">8dp</dimen>
+
+    <!-- Padding for importance selection buttons in notification info, 2025 redesign version -->
+    <dimen name="notification_2025_importance_button_padding_vertical">12dp</dimen>
+    <dimen name="notification_2025_importance_button_padding_horizontal">16dp</dimen>
 
     <!-- The minimum height for the snackbar shown after the snooze option has been chosen. -->
     <dimen name="snooze_snackbar_min_height">56dp</dimen>
