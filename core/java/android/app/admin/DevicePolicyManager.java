@@ -14200,6 +14200,9 @@ public class DevicePolicyManager {
      *    <li>Manifest.permission.ACTIVITY_RECOGNITION</li>
      *    <li>Manifest.permission.BODY_SENSORS</li>
      * </ul>
+     * On devices running {@link android.os.Build.VERSION_CODES#BAKLAVA}, the
+     * {@link android.health.connect.HealthPermissions} are also included in the
+     * restricted list.
      * <p>
      * A profile owner may not grant these permissions (i.e. call this method with any of the
      * permissions listed above and {@code grantState} of {@code #PERMISSION_GRANT_STATE_GRANTED}),
