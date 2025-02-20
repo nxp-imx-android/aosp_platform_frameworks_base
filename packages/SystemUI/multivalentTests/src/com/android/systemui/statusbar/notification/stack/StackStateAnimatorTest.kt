@@ -26,12 +26,15 @@ import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.AnimatorTestRule
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator
 import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.AnimationEvent
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator.ANIMATION_DURATION_HEADS_UP_APPEAR
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator.ANIMATION_DURATION_HEADS_UP_DISAPPEAR
+import com.android.systemui.statusbar.ui.fakeSystemBarUtilsProxy
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.argumentCaptor
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
@@ -46,7 +49,6 @@ import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.description
 import org.mockito.Mockito.eq
 import org.mockito.Mockito.verify
-import org.mockito.kotlin.doNothing
 
 private const val VIEW_HEIGHT = 100
 private const val FULL_SHADE_APPEAR_TRANSLATION = 300
@@ -59,6 +61,8 @@ class StackStateAnimatorTest : SysuiTestCase() {
 
     @get:Rule val setFlagsRule = SetFlagsRule()
     @get:Rule val animatorTestRule = AnimatorTestRule(this)
+
+    private val kosmos = testKosmos()
 
     private lateinit var stackStateAnimator: StackStateAnimator
     private lateinit var headsUpAnimator: HeadsUpAnimator
@@ -80,13 +84,14 @@ class StackStateAnimatorTest : SysuiTestCase() {
         whenever(view.viewState).thenReturn(viewState)
 
         if (NotificationsHunSharedAnimationValues.isEnabled) {
-            headsUpAnimator = HeadsUpAnimator(context)
+            headsUpAnimator = HeadsUpAnimator(context, kosmos.fakeSystemBarUtilsProxy)
         }
-        stackStateAnimator = StackStateAnimator(
-            mContext,
-            stackScroller,
-            if (::headsUpAnimator.isInitialized) headsUpAnimator else null,
-        )
+        stackStateAnimator =
+            StackStateAnimator(
+                mContext,
+                stackScroller,
+                if (::headsUpAnimator.isInitialized) headsUpAnimator else null,
+            )
     }
 
     @Test
@@ -123,6 +128,62 @@ class StackStateAnimatorTest : SysuiTestCase() {
 
         verify(view).setFinalActualHeight(VIEW_HEIGHT)
         verify(view, description("should animate from the top")).translationY = expectedStartY
+        verify(view)
+            .performAddAnimation(
+                /* delay= */ 0L,
+                /* duration= */ ANIMATION_DURATION_HEADS_UP_APPEAR.toLong(),
+                /* isHeadsUpAppear= */ true,
+                /* isHeadsUpCycling= */ false,
+                /* onEndRunnable= */ null,
+            )
+    }
+
+    @Test
+    @EnableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun startAnimationForEvents_headsUpFromTop_andHasStatusBarChipFalse() {
+        val statusBarHeight = 156
+        val topMargin = 50f
+        val expectedStartY = -topMargin - HEADS_UP_ABOVE_SCREEN
+
+        headsUpAnimator.stackTopMargin = topMargin.toInt()
+        kosmos.fakeSystemBarUtilsProxy.fakeStatusBarHeight = statusBarHeight
+        headsUpAnimator.updateResources(context)
+
+        val event = AnimationEvent(view, AnimationEvent.ANIMATION_TYPE_HEADS_UP_APPEAR)
+        event.headsUpHasStatusBarChip = false
+
+        stackStateAnimator.startAnimationForEvents(arrayListOf(event), 0)
+
+        verify(view).setFinalActualHeight(VIEW_HEIGHT)
+        verify(view, description("should animate from the top")).translationY = expectedStartY
+        verify(view)
+            .performAddAnimation(
+                /* delay= */ 0L,
+                /* duration= */ ANIMATION_DURATION_HEADS_UP_APPEAR.toLong(),
+                /* isHeadsUpAppear= */ true,
+                /* isHeadsUpCycling= */ false,
+                /* onEndRunnable= */ null,
+            )
+    }
+
+    @Test
+    @EnableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun startAnimationForEvents_headsUpFromTop_andHasStatusBarChipTrue() {
+        val statusBarHeight = 156
+        val topMargin = 50f
+        val expectedStartY = statusBarHeight - topMargin
+
+        headsUpAnimator!!.stackTopMargin = topMargin.toInt()
+        kosmos.fakeSystemBarUtilsProxy.fakeStatusBarHeight = statusBarHeight
+        headsUpAnimator!!.updateResources(context)
+
+        val event = AnimationEvent(view, AnimationEvent.ANIMATION_TYPE_HEADS_UP_APPEAR)
+        event.headsUpHasStatusBarChip = true
+
+        stackStateAnimator.startAnimationForEvents(arrayListOf(event), 0)
+
+        verify(view).setFinalActualHeight(VIEW_HEIGHT)
+        verify(view, description("should animate below status bar")).translationY = expectedStartY
         verify(view)
             .performAddAnimation(
                 /* delay= */ 0L,

@@ -21,6 +21,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.ui.fakeSystemBarUtilsProxy
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import org.junit.Before
@@ -30,6 +32,8 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @EnableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME)
 class HeadsUpAnimatorTest : SysuiTestCase() {
+    private val kosmos = testKosmos()
+
     @Before
     fun setUp() {
         context.getOrCreateTestableResources().apply {
@@ -38,34 +42,64 @@ class HeadsUpAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun getHeadsUpYTranslation_fromBottomTrue_usesBottomAndYAbove() {
-        val underTest = HeadsUpAnimator(context)
+    fun getHeadsUpYTranslation_fromBottomTrue_hasStatusBarChipFalse_usesBottomAndYAbove() {
+        val underTest = HeadsUpAnimator(context, kosmos.fakeSystemBarUtilsProxy)
         underTest.stackTopMargin = 30
         underTest.headsUpAppearHeightBottom = 300
 
-        val yTranslation = underTest.getHeadsUpYTranslation(isHeadsUpFromBottom = true)
+        val yTranslation =
+            underTest.getHeadsUpYTranslation(isHeadsUpFromBottom = true, hasStatusBarChip = false)
 
         assertThat(yTranslation).isEqualTo(TEST_Y_ABOVE_SCREEN + 300)
     }
 
     @Test
-    fun getHeadsUpYTranslation_fromBottomFalse_usesTopMarginAndYAbove() {
-        val underTest = HeadsUpAnimator(context)
+    fun getHeadsUpYTranslation_fromBottomTrue_hasStatusBarChipTrue_usesBottomAndYAbove() {
+        val underTest = HeadsUpAnimator(context, kosmos.fakeSystemBarUtilsProxy)
         underTest.stackTopMargin = 30
         underTest.headsUpAppearHeightBottom = 300
 
-        val yTranslation = underTest.getHeadsUpYTranslation(isHeadsUpFromBottom = false)
+        val yTranslation =
+            underTest.getHeadsUpYTranslation(isHeadsUpFromBottom = true, hasStatusBarChip = true)
+
+        // fromBottom takes priority
+        assertThat(yTranslation).isEqualTo(TEST_Y_ABOVE_SCREEN + 300)
+    }
+
+    @Test
+    fun getHeadsUpYTranslation_fromBottomFalse_hasStatusBarChipFalse_usesTopMarginAndYAbove() {
+        val underTest = HeadsUpAnimator(context, kosmos.fakeSystemBarUtilsProxy)
+        underTest.stackTopMargin = 30
+        underTest.headsUpAppearHeightBottom = 300
+
+        val yTranslation =
+            underTest.getHeadsUpYTranslation(isHeadsUpFromBottom = false, hasStatusBarChip = false)
 
         assertThat(yTranslation).isEqualTo(-30 - TEST_Y_ABOVE_SCREEN)
     }
 
     @Test
+    fun getHeadsUpYTranslation_fromBottomFalse_hasStatusBarChipTrue_usesTopMarginAndStatusBarHeight() {
+        val underTest = HeadsUpAnimator(context, kosmos.fakeSystemBarUtilsProxy)
+        underTest.stackTopMargin = 30
+        underTest.headsUpAppearHeightBottom = 300
+        kosmos.fakeSystemBarUtilsProxy.fakeStatusBarHeight = 75
+        underTest.updateResources(context)
+
+        val yTranslation =
+            underTest.getHeadsUpYTranslation(isHeadsUpFromBottom = false, hasStatusBarChip = true)
+
+        assertThat(yTranslation).isEqualTo(75 - 30)
+    }
+
+    @Test
     fun getHeadsUpYTranslation_resourcesUpdated() {
-        val underTest = HeadsUpAnimator(context)
+        val underTest = HeadsUpAnimator(context, kosmos.fakeSystemBarUtilsProxy)
         underTest.stackTopMargin = 30
         underTest.headsUpAppearHeightBottom = 300
 
-        val yTranslation = underTest.getHeadsUpYTranslation(isHeadsUpFromBottom = true)
+        val yTranslation =
+            underTest.getHeadsUpYTranslation(isHeadsUpFromBottom = true, hasStatusBarChip = false)
 
         assertThat(yTranslation).isEqualTo(TEST_Y_ABOVE_SCREEN + 300)
 
@@ -77,7 +111,12 @@ class HeadsUpAnimatorTest : SysuiTestCase() {
         underTest.updateResources(context)
 
         // THEN HeadsUpAnimator knows about it
-        assertThat(underTest.getHeadsUpYTranslation(isHeadsUpFromBottom = true))
+        assertThat(
+                underTest.getHeadsUpYTranslation(
+                    isHeadsUpFromBottom = true,
+                    hasStatusBarChip = false,
+                )
+            )
             .isEqualTo(newYAbove + 300)
     }
 

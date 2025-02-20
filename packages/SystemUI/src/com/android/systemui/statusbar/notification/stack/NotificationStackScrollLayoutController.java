@@ -92,6 +92,7 @@ import com.android.systemui.statusbar.NotificationShelf;
 import com.android.systemui.statusbar.RemoteInputController;
 import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
+import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.DynamicPrivacyController;
 import com.android.systemui.statusbar.notification.LaunchAnimationParameters;
@@ -324,6 +325,14 @@ public class NotificationStackScrollLayoutController implements Dumpable {
      * hub is not visible or transitioning.
      */
     private float mMaxAlphaForGlanceableHub = 1.0f;
+
+    /**
+     * A list of keys for the visible status bar chips.
+     *
+     * Note that this list can contain both notification keys, as well as keys for other types of
+     * chips like screen recording.
+     */
+    private List<String> mVisibleStatusBarChipKeys = new ArrayList<>();
 
     private final NotificationListViewBinder mViewBinder;
 
@@ -1580,8 +1589,16 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         return mView.getFirstChildNotGone();
     }
 
+    /** Sets the list of keys that have currently visible status bar chips. */
+    public void updateStatusBarChipKeys(List<String> visibleStatusBarChipKeys) {
+        mVisibleStatusBarChipKeys = visibleStatusBarChipKeys;
+    }
+
     public void generateHeadsUpAnimation(NotificationEntry entry, boolean isHeadsUp) {
-        mView.generateHeadsUpAnimation(entry, isHeadsUp);
+        boolean hasStatusBarChip =
+                StatusBarNotifChips.isEnabled()
+                        && mVisibleStatusBarChipKeys.contains(entry.getKey());
+        mView.generateHeadsUpAnimation(entry, isHeadsUp, hasStatusBarChip);
     }
 
     public void setMaxTopPadding(int padding) {

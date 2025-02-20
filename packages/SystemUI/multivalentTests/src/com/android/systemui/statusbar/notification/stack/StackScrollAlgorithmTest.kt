@@ -2,6 +2,7 @@ package com.android.systemui.statusbar.notification.stack
 
 import android.annotation.DimenRes
 import android.content.pm.PackageManager
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
@@ -19,6 +20,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.transition.LargeScreenShadeInterpolator
 import com.android.systemui.statusbar.NotificationShelf
 import com.android.systemui.statusbar.StatusBarState
+import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.RoundableState
 import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -32,6 +34,8 @@ import com.android.systemui.statusbar.notification.headsup.NotificationsHunShare
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
+import com.android.systemui.statusbar.ui.fakeSystemBarUtilsProxy
+import com.android.systemui.testKosmos
 import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assume
@@ -52,6 +56,8 @@ import platform.test.runner.parameterized.Parameters
 class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @JvmField @Rule var expect: Expect = Expect.create()
+
+    private val kosmos = testKosmos()
 
     private val largeScreenShadeInterpolator = mock<LargeScreenShadeInterpolator>()
     private val avalancheController = mock<AvalancheController>()
@@ -131,13 +137,14 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         hostView.addView(notificationRow)
 
         if (NotificationsHunSharedAnimationValues.isEnabled) {
-             headsUpAnimator = HeadsUpAnimator(context)
+            headsUpAnimator = HeadsUpAnimator(context, kosmos.fakeSystemBarUtilsProxy)
         }
-        stackScrollAlgorithm = StackScrollAlgorithm(
-            context,
-            hostView,
-            if (::headsUpAnimator.isInitialized) headsUpAnimator else null,
-        )
+        stackScrollAlgorithm =
+            StackScrollAlgorithm(
+                context,
+                hostView,
+                if (::headsUpAnimator.isInitialized) headsUpAnimator else null,
+            )
     }
 
     private fun isTv(): Boolean {
@@ -447,6 +454,46 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         resetViewStates_hunYTranslationIs(
             expected = -topMargin - stackScrollAlgorithm.mHeadsUpAppearStartAboveScreen
         )
+    }
+
+    @Test
+    @EnableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun resetViewStates_hunAnimatingAway_noStatusBarChip_hunTranslatedToTopOfScreen() {
+        val topMargin = 100f
+        ambientState.maxHeadsUpTranslation = 2000f
+        ambientState.stackTopMargin = topMargin.toInt()
+        headsUpAnimator?.stackTopMargin = topMargin.toInt()
+        whenever(notificationRow.intrinsicHeight).thenReturn(100)
+
+        val statusBarHeight = 432
+        kosmos.fakeSystemBarUtilsProxy.fakeStatusBarHeight = statusBarHeight
+        headsUpAnimator!!.updateResources(context)
+
+        whenever(notificationRow.isHeadsUpAnimatingAway).thenReturn(true)
+        whenever(notificationRow.hasStatusBarChipDuringHeadsUpAnimation()).thenReturn(false)
+
+        resetViewStates_hunYTranslationIs(
+            expected = -topMargin - stackScrollAlgorithm.mHeadsUpAppearStartAboveScreen
+        )
+    }
+
+    @Test
+    @EnableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun resetViewStates_hunAnimatingAway_withStatusBarChip_hunTranslatedToBottomOfStatusBar() {
+        val topMargin = 100f
+        ambientState.maxHeadsUpTranslation = 2000f
+        ambientState.stackTopMargin = topMargin.toInt()
+        headsUpAnimator?.stackTopMargin = topMargin.toInt()
+        whenever(notificationRow.intrinsicHeight).thenReturn(100)
+
+        val statusBarHeight = 432
+        kosmos.fakeSystemBarUtilsProxy.fakeStatusBarHeight = statusBarHeight
+        headsUpAnimator!!.updateResources(context)
+
+        whenever(notificationRow.isHeadsUpAnimatingAway).thenReturn(true)
+        whenever(notificationRow.hasStatusBarChipDuringHeadsUpAnimation()).thenReturn(true)
+
+        resetViewStates_hunYTranslationIs(expected = statusBarHeight - topMargin)
     }
 
     @Test
