@@ -337,19 +337,10 @@ public class MessagingLayout extends FrameLayout
     }
 
     private void updateImageMessages() {
-        View newMessage = null;
         if (mImageMessageContainer == null) {
             return;
         }
-        if (mIsCollapsed && !mGroups.isEmpty()) {
-            // When collapsed, we're displaying the image message in a dedicated container
-            // on the right of the layout instead of inline. Let's add the isolated image there
-            MessagingGroup messagingGroup = mGroups.getLast();
-            MessagingImageMessage isolatedMessage = messagingGroup.getIsolatedMessage();
-            if (isolatedMessage != null) {
-                newMessage = isolatedMessage.getView();
-            }
-        }
+        View newMessage = getNewImageMessage();
         // Remove all messages that don't belong into the image layout
         View previousMessage = mImageMessageContainer.getChildAt(0);
         if (previousMessage != newMessage) {
@@ -366,6 +357,20 @@ public class MessagingLayout extends FrameLayout
             mRightIconView.setImageDrawable(null);
             mRightIconView.setVisibility(GONE);
         }
+    }
+
+    @Nullable
+    private View getNewImageMessage() {
+        if (mIsCollapsed && !mGroups.isEmpty()) {
+            // When collapsed, we're displaying the image message in a dedicated container
+            // on the right of the layout instead of inline. Let's add the isolated image there
+            MessagingGroup messagingGroup = mGroups.getLast();
+            MessagingImageMessage isolatedMessage = messagingGroup.getIsolatedMessage();
+            if (isolatedMessage != null) {
+                return isolatedMessage.getView();
+            }
+        }
+        return null;
     }
 
     private void removeGroups(ArrayList<MessagingGroup> oldGroups) {

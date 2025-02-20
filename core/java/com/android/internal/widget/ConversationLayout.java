@@ -250,7 +250,8 @@ public class ConversationLayout extends FrameLayout
             mPeopleHelper.animateViewForceHidden(mImportanceRingView, forceHidden);
             mPeopleHelper.animateViewForceHidden(mIcon, forceHidden);
         });
-        mConversationText = findViewById(R.id.conversation_text);
+        mConversationText = findViewById(notificationsRedesignTemplates()
+                ? R.id.title : R.id.conversation_text);
         mExpandButtonContainer = findViewById(R.id.expand_button_container);
         mExpandButtonContainerA11yContainer =
                 findViewById(R.id.expand_button_a11y_container);
@@ -716,17 +717,10 @@ public class ConversationLayout extends FrameLayout
     }
 
     private void updateImageMessages() {
-        View newMessage = null;
-        if (mIsCollapsed && !mGroups.isEmpty()) {
-
-            // When collapsed, we're displaying the image message in a dedicated container
-            // on the right of the layout instead of inline. Let's add the isolated image there
-            MessagingGroup messagingGroup = mGroups.getLast();
-            MessagingImageMessage isolatedMessage = messagingGroup.getIsolatedMessage();
-            if (isolatedMessage != null) {
-                newMessage = isolatedMessage.getView();
-            }
+        if (mImageMessageContainer == null) {
+            return;
         }
+        View newMessage = getNewImageMessage();
         // Remove all messages that don't belong into the image layout
         View previousMessage = mImageMessageContainer.getChildAt(0);
         if (previousMessage != newMessage) {
@@ -736,6 +730,20 @@ public class ConversationLayout extends FrameLayout
             }
         }
         mImageMessageContainer.setVisibility(newMessage != null ? VISIBLE : GONE);
+    }
+
+    @Nullable
+    private View getNewImageMessage() {
+        if (mIsCollapsed && !mGroups.isEmpty()) {
+            // When collapsed, we're displaying the image message in a dedicated container
+            // on the right of the layout instead of inline. Let's add the isolated image there
+            MessagingGroup messagingGroup = mGroups.getLast();
+            MessagingImageMessage isolatedMessage = messagingGroup.getIsolatedMessage();
+            if (isolatedMessage != null) {
+                return isolatedMessage.getView();
+            }
+        }
+        return null;
     }
 
     public void bindFacePile(ImageView bottomBackground, ImageView bottomView, ImageView topView) {
@@ -841,6 +849,10 @@ public class ConversationLayout extends FrameLayout
     }
 
     private void updateAppName() {
+        if (notificationsRedesignTemplates()) {
+            return;
+        }
+
         mAppName.setVisibility(mIsCollapsed ? GONE : VISIBLE);
     }
 
@@ -1533,6 +1545,10 @@ public class ConversationLayout extends FrameLayout
     }
 
     private void updateExpandButton() {
+        if (notificationsRedesignTemplates()) {
+            return;
+        }
+
         int buttonGravity;
         ViewGroup newContainer;
         if (mIsCollapsed) {
@@ -1565,6 +1581,10 @@ public class ConversationLayout extends FrameLayout
     }
 
     private void updateContentEndPaddings() {
+        if (notificationsRedesignTemplates()) {
+            return;
+        }
+
         // Let's make sure the conversation header can't run into the expand button when we're
         // collapsed and update the paddings of the content
         int headerPaddingEnd;
@@ -1593,6 +1613,10 @@ public class ConversationLayout extends FrameLayout
     }
 
     private void onAppNameVisibilityChanged() {
+        if (notificationsRedesignTemplates()) {
+            return;
+        }
+
         boolean appNameGone = mAppName.getVisibility() == GONE;
         if (appNameGone != mAppNameGone) {
             mAppNameGone = appNameGone;
@@ -1601,10 +1625,18 @@ public class ConversationLayout extends FrameLayout
     }
 
     private void updateAppNameDividerVisibility() {
+        if (notificationsRedesignTemplates()) {
+            return;
+        }
+
         mAppNameDivider.setVisibility(mAppNameGone ? GONE : VISIBLE);
     }
 
     public void updateExpandability(boolean expandable, @Nullable OnClickListener onClickListener) {
+        if (notificationsRedesignTemplates()) {
+            return;
+        }
+
         mExpandable = expandable;
         if (expandable) {
             mExpandButtonContainer.setVisibility(VISIBLE);
