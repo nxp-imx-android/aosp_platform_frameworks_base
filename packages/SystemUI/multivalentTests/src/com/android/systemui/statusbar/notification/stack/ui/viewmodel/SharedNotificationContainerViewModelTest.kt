@@ -17,14 +17,15 @@
 
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
-import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.common.shared.model.NotificationContainerBounds
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
-import com.android.systemui.communal.data.repository.communalSceneRepository
+import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
@@ -54,11 +55,14 @@ import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
 import com.android.systemui.keyguard.ui.viewmodel.aodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.keyguardRootViewModel
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
 import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.setTransition
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
@@ -125,7 +129,6 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
         kosmos.sharedNotificationContainerInteractor
     }
     private val largeScreenHeaderHelper by lazy { kosmos.mockLargeScreenHeaderHelper }
-    private val communalSceneRepository by lazy { kosmos.communalSceneRepository }
 
     lateinit var underTest: SharedNotificationContainerViewModel
 
@@ -588,6 +591,25 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                 stateTransition = TransitionStep(from = LOCKSCREEN, to = PRIMARY_BOUNCER),
             )
             assertThat(isOnLockscreen).isTrue()
+        }
+
+    @Test
+    @DisableSceneContainer
+    @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
+    fun isOnLockscreenFalseWhenCommunalShowing() =
+        kosmos.runTest {
+            val isOnLockscreen by collectLastValue(underTest.isOnLockscreen)
+
+            setTransition(
+                sceneTransition = Idle(Scenes.Bouncer),
+                stateTransition = TransitionStep(from = LOCKSCREEN, to = PRIMARY_BOUNCER),
+            )
+            assertThat(isOnLockscreen).isTrue()
+
+            testScope.showCommunalScene()
+
+            // If bouncer is showing over the hub, it should not be considered on lockscreen
+            assertThat(isOnLockscreen).isFalse()
         }
 
     @Test
@@ -1472,20 +1494,24 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
     }
 
     private fun TestScope.showCommunalScene() {
-        val transitionState =
-            MutableStateFlow<ObservableTransitionState>(
-                ObservableTransitionState.Idle(CommunalScenes.Communal)
-            )
-        communalSceneRepository.setTransitionState(transitionState)
+        val targetScene =
+            if (SceneContainerFlag.isEnabled) {
+                Scenes.Communal
+            } else {
+                CommunalScenes.Communal
+            }
+        kosmos.communalSceneInteractor.changeScene(targetScene, "test")
         runCurrent()
     }
 
     private fun TestScope.hideCommunalScene() {
-        val transitionState =
-            MutableStateFlow<ObservableTransitionState>(
-                ObservableTransitionState.Idle(CommunalScenes.Blank)
-            )
-        communalSceneRepository.setTransitionState(transitionState)
+        val targetScene =
+            if (SceneContainerFlag.isEnabled) {
+                Scenes.Lockscreen
+            } else {
+                CommunalScenes.Blank
+            }
+        kosmos.communalSceneInteractor.changeScene(targetScene, "test")
         runCurrent()
     }
 
