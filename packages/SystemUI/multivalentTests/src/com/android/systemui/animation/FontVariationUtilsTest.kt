@@ -21,7 +21,7 @@ class FontVariationUtilsTest : SysuiTestCase() {
                 roundness = 100,
             )
         Assert.assertEquals(
-            "'${GSFAxes.WEIGHT}' 100, '${GSFAxes.WIDTH}' 100, '${GSFAxes.ROUND}' 100",
+            "'${GSFAxes.WEIGHT.tag}' 100, '${GSFAxes.WIDTH.tag}' 100, '${GSFAxes.ROUND.tag}' 100",
             initFvar,
         )
         val updatedFvar =
@@ -32,7 +32,8 @@ class FontVariationUtilsTest : SysuiTestCase() {
                 roundness = 100,
             )
         Assert.assertEquals(
-            "'${GSFAxes.WEIGHT}' 200, '${GSFAxes.WIDTH}' 100, '${GSFAxes.OPTICAL_SIZE}' 0, '${GSFAxes.ROUND}' 100",
+            "'${GSFAxes.WEIGHT.tag}' 200, '${GSFAxes.WIDTH.tag}' 100," +
+                " '${GSFAxes.OPTICAL_SIZE.tag}' 0, '${GSFAxes.ROUND.tag}' 100",
             updatedFvar,
         )
     }
