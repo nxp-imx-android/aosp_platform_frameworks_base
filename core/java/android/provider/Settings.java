@@ -13017,18 +13017,16 @@ public final class Settings {
          * false/0.
          * @hide
          */
-        @Readable
         public static final String REDACT_OTP_NOTIFICATION_WHILE_CONNECTED_TO_WIFI =
                 "redact_otp_on_wifi";
 
         /**
-         * Toggle for whether to immediately redact OTP notifications, or require the device to be
-         * locked for 10 minutes. Defaults to false/0
+         * Time (in milliseconds) that the device should need to be locked, in order for an OTP
+         * notification to be redacted. Default is 10 minutes (600,000 ms)
          * @hide
          */
-        @Readable
-        public static final String REDACT_OTP_NOTIFICATION_IMMEDIATELY =
-                "remove_otp_redaction_delay";
+        public static final String OTP_NOTIFICATION_REDACTION_LOCK_TIME =
+                "otp_redaction_lock_time";
 
         /**
          * These entries are considered common between the personal and the managed profile,
