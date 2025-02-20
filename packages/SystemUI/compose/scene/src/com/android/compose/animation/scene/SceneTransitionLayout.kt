@@ -22,6 +22,7 @@ import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.OverscrollFactory
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
@@ -191,7 +192,7 @@ interface BaseContentScope : ElementStateScope {
      * Additionally, this [key] will be used to detect elements that are shared between contents to
      * automatically interpolate their size and offset. If you need to animate shared element values
      * (i.e. values associated to this element that change depending on which content it is composed
-     * in), use [Element] instead.
+     * in), use [ElementWithValues] instead.
      *
      * Note that shared elements tagged using this function will be duplicated in each content they
      * are part of, so any **internal** state (e.g. state created using `remember {
@@ -199,9 +200,12 @@ interface BaseContentScope : ElementStateScope {
      * [MovableElement] instead.
      *
      * @see Element
+     * @see ElementWithValues
      * @see MovableElement
      */
-    fun Modifier.element(key: ElementKey): Modifier
+    // TODO(b/389985793): Does replacing this by Element have a noticeable impact on performance and
+    // should we deprecate it?
+    @Stable fun Modifier.element(key: ElementKey): Modifier
 
     /**
      * Create an element identified by [key].
@@ -210,17 +214,29 @@ interface BaseContentScope : ElementStateScope {
      * in multiple contents and that can be transformed during transitions, the same way that
      * [element] does.
      *
-     * The only difference with [element] is that the provided [ElementScope] allows you to
-     * [animate element values][ElementScope.animateElementValueAsState] or specify its
-     * [movable content][Element.movableContent] that will be "moved" and composed only once during
-     * transitions (as opposed to [element] that duplicates shared elements) so that any internal
-     * state is preserved during and after the transition.
+     * The only difference with [element] is that [Element] introduces its own recomposition scope
+     * and layout node, which can be helpful to avoid expensive recompositions when a transition is
+     * started or finished (see b/389985793#comment103 for details).
      *
      * @see element
+     * @see ElementWithValues
      * @see MovableElement
      */
     @Composable
-    fun Element(
+    fun Element(key: ElementKey, modifier: Modifier, content: @Composable BoxScope.() -> Unit)
+
+    /**
+     * Create an element identified by [key].
+     *
+     * The only difference with [Element] is that the provided [ElementScope] allows you to
+     * [animate element values][ElementScope.animateElementValueAsState].
+     *
+     * @see element
+     * @see Element
+     * @see MovableElement
+     */
+    @Composable
+    fun ElementWithValues(
         key: ElementKey,
         modifier: Modifier,
 
@@ -233,17 +249,19 @@ interface BaseContentScope : ElementStateScope {
     /**
      * Create a *movable* element identified by [key].
      *
-     * Similar to [Element], this creates an element that will be automatically shared when present
-     * in multiple contents and that can be transformed during transitions, and you can also use the
-     * provided [ElementScope] to [animate element values][ElementScope.animateElementValueAsState].
+     * Similar to [ElementWithValues], this creates an element that will be automatically shared
+     * when present in multiple contents and that can be transformed during transitions, and you can
+     * also use the provided [ElementScope] to
+     * [animate element values][ElementScope.animateElementValueAsState].
      *
-     * The important difference with [element] and [Element] is that this element
-     * [content][ElementScope.content] will be "moved" and composed only once during transitions, as
-     * opposed to [element] and [Element] that duplicates shared elements, so that any internal
-     * state is preserved during and after the transition.
+     * The important difference with [element], [Element] and [ElementWithValues] is that this
+     * element [content][ElementScope.content] will be "moved" and composed only once during
+     * transitions, as opposed to [element], [Element] and [ElementWithValues] that duplicates
+     * shared elements, so that any internal state is preserved during and after the transition.
      *
      * @see element
      * @see Element
+     * @see ElementWithValues
      */
     @Composable
     fun MovableElement(
@@ -418,7 +436,7 @@ interface ElementScope<ContentScope> {
  *
  * We can't reuse BoxScope directly because of the @LayoutScopeMarker annotation on it, which would
  * prevent us from calling Modifier.element() and other methods of [ContentScope] inside any Box {}
- * in the [content][ElementScope.content] of a [ContentScope.Element] or a
+ * in the [content][ElementScope.content] of a [ContentScope.ElementWithValues] or a
  * [ContentScope.MovableElement].
  */
 @Stable

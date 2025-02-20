@@ -70,33 +70,29 @@ constructor(
             key = if (isStart) StartButtonElementKey else EndButtonElementKey,
             modifier = modifier,
         ) {
-            content {
-                Shortcut(
-                    viewId = if (isStart) R.id.start_button else R.id.end_button,
-                    viewModel = if (isStart) viewModel.startButton else viewModel.endButton,
-                    transitionAlpha = viewModel.transitionAlpha,
-                    indicationController = indicationController,
-                    binder = keyguardQuickAffordanceViewBinder,
-                    modifier =
-                        if (applyPadding) {
-                            Modifier.shortcutPadding()
-                        } else {
-                            Modifier
-                        },
-                )
-            }
+            Shortcut(
+                viewId = if (isStart) R.id.start_button else R.id.end_button,
+                viewModel = if (isStart) viewModel.startButton else viewModel.endButton,
+                transitionAlpha = viewModel.transitionAlpha,
+                indicationController = indicationController,
+                binder = keyguardQuickAffordanceViewBinder,
+                modifier =
+                    if (applyPadding) {
+                        Modifier.shortcutPadding()
+                    } else {
+                        Modifier
+                    },
+            )
         }
     }
 
     @Composable
     fun ContentScope.IndicationArea(modifier: Modifier = Modifier) {
         Element(key = IndicationAreaElementKey, modifier = modifier.indicationAreaPadding()) {
-            content {
-                IndicationArea(
-                    indicationAreaViewModel = indicationAreaViewModel,
-                    indicationController = indicationController,
-                )
-            }
+            IndicationArea(
+                indicationAreaViewModel = indicationAreaViewModel,
+                indicationController = indicationController,
+            )
         }
     }
 
