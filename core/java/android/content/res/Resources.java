@@ -482,7 +482,6 @@ public class Resources {
      *
      * @return Typeface The Typeface data associated with the resource.
      */
-    @RavenwoodThrow(blockedBy = Typeface.class)
     @NonNull public Typeface getFont(@FontRes int id) throws NotFoundException {
         final TypedValue value = obtainTempTypedValue();
         try {
@@ -507,7 +506,6 @@ public class Resources {
     /**
      * @hide
      */
-    @RavenwoodThrow(blockedBy = Typeface.class)
     public void preloadFonts(@ArrayRes int id) {
         final TypedArray array = obtainTypedArray(id);
         try {

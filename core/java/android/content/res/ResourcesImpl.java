@@ -1068,7 +1068,6 @@ public class ResourcesImpl {
      * Loads a font from XML or resources stream.
      */
     @Nullable
-    @RavenwoodThrow(blockedBy = Typeface.class)
     public Typeface loadFont(Resources wrapper, TypedValue value, int id) {
         if (value.string == null) {
             throw new NotFoundException("Resource \"" + getResourceName(id) + "\" ("

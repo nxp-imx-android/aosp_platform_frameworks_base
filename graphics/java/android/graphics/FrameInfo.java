@@ -38,6 +38,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class FrameInfo {
 
     public long[] frameInfo = new long[FRAME_INFO_SIZE];

@@ -613,7 +613,7 @@ static void Bitmap_setHasMipMap(JNIEnv* env, jobject, jlong bitmapHandle,
 ///////////////////////////////////////////////////////////////////////////////
 
 // TODO: Move somewhere else
-#ifdef __ANDROID__  // Layoutlib does not support parcel
+#ifdef __linux__  // Only Linux support parcel
 #define ON_ERROR_RETURN(X) \
     if ((error = (X)) != STATUS_OK) return error
 
@@ -717,7 +717,7 @@ static binder_status_t writeBlob(AParcel* parcel, uint64_t bitmapId, const SkBit
 
 #undef ON_ERROR_RETURN
 
-#endif // __ANDROID__ // Layoutlib does not support parcel
+#endif // __linux__ // Only Linux support parcel
 
 // This is the maximum possible size because the SkColorSpace must be
 // representable (and therefore serializable) using a matrix and numerical
@@ -733,7 +733,7 @@ static bool validateImageInfo(const SkImageInfo& info, int32_t rowBytes) {
 }
 
 static jobject Bitmap_createFromParcel(JNIEnv* env, jobject, jobject parcel) {
-#ifdef __ANDROID__ // Layoutlib does not support parcel
+#ifdef __linux__ // Only Linux support parcel
     if (parcel == NULL) {
         jniThrowNullPointerException(env, "parcel cannot be null");
         return NULL;
@@ -836,14 +836,14 @@ static jobject Bitmap_createFromParcel(JNIEnv* env, jobject, jobject parcel) {
     return createBitmap(env, nativeBitmap.release(), getPremulBitmapCreateFlags(isMutable), nullptr,
                         nullptr, density, sourceId);
 #else
-    jniThrowRuntimeException(env, "Cannot use parcels outside of Android");
+    jniThrowRuntimeException(env, "Cannot use parcels outside of Linux");
     return NULL;
 #endif
 }
 
 static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, jint density,
                                      jobject parcel) {
-#ifdef __ANDROID__ // Layoutlib does not support parcel
+#ifdef __linux__ // Only Linux support parcel
     if (parcel == NULL) {
         ALOGD("------- writeToParcel null parcel\n");
         return JNI_FALSE;
@@ -901,7 +901,7 @@ static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, j
     }
     return JNI_TRUE;
 #else
-    doThrowRE(env, "Cannot use parcels outside of Android");
+    doThrowRE(env, "Cannot use parcels outside of Linux");
     return JNI_FALSE;
 #endif
 }

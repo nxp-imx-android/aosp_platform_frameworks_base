@@ -489,6 +489,7 @@ cc_library_shared_for_libandroid_runtime {
                 "libsqlite",
                 "libgui_window_info_static",
                 "libbinder",
+                "libbinder_ndk",
                 "libhidlbase", // libhwbinder is in here
             ],
             version_script: "platform/linux/libandroid_runtime_export.txt",

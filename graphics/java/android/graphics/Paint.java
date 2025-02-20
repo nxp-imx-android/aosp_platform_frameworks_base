@@ -66,6 +66,7 @@ import java.util.Objects;
  * The Paint class holds the style and color information about how to draw
  * geometries, text and bitmaps.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class Paint {
     private static final String TAG = "Paint";
 

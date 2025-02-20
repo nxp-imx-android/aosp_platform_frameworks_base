@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -97,6 +98,7 @@ public class PaintTest {
 
     @SmallTest
     @Test
+    @DisabledOnRavenwood(bug = 391381043)
     public void testHintingWidth() {
         final Typeface fontTypeface = Typeface.createFromAsset(
                 InstrumentationRegistry.getInstrumentation().getContext().getAssets(), FONT_PATH);
@@ -143,6 +145,7 @@ public class PaintTest {
     }
 
     @Test
+    @DisabledOnRavenwood(bug = 391381043)
     public void testHasGlyph_variationSelectors() {
         final Typeface fontTypeface = Typeface.createFromAsset(
                 InstrumentationRegistry.getInstrumentation().getContext().getAssets(),

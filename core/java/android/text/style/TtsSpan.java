@@ -42,6 +42,7 @@ import java.util.Locale;
  * The inner classes are there for convenience and provide builders for each
  * TtsSpan type.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class TtsSpan implements ParcelableSpan {
     private final String mType;
     private final PersistableBundle mArgs;
