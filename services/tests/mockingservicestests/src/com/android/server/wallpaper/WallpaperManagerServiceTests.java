@@ -258,6 +258,8 @@ public class WallpaperManagerServiceTests {
         spyOn(mIpm);
         spyOn(mResources);
         doReturn(true).when(mResources).getBoolean(eq(R.bool.config_isDesktopModeSupported));
+        doReturn(true).when(mResources).getBoolean(
+                eq(R.bool.config_canInternalDisplayHostDesktops));
         mService = new TestWallpaperManagerService(sContext);
         spyOn(mService);
         mService.systemReady();
