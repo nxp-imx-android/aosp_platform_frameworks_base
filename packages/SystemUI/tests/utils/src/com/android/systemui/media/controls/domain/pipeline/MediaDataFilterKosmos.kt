@@ -22,7 +22,6 @@ import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.mediaLogger
-import com.android.systemui.media.controls.util.mediaFlags
 import com.android.systemui.media.controls.util.mediaUiEventLogger
 import com.android.systemui.settings.userTracker
 import com.android.systemui.statusbar.notificationLockscreenUserManager
@@ -38,13 +37,12 @@ val Kosmos.mediaDataFilter by
                 BroadcastSender(
                     applicationContext,
                     WakeLockFake.Builder(applicationContext),
-                    fakeExecutor
+                    fakeExecutor,
                 ),
             lockscreenUserManager = notificationLockscreenUserManager,
             executor = fakeExecutor,
             systemClock = fakeSystemClock,
             logger = mediaUiEventLogger,
-            mediaFlags = mediaFlags,
             mediaFilterRepository = mediaFilterRepository,
             mediaLogger = mediaLogger,
         )
