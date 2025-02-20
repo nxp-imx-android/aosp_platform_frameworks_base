@@ -7496,6 +7496,7 @@ public class UserManagerService extends IUserManager.Stub {
         final long now = System.currentTimeMillis();
         final long nowRealtime = SystemClock.elapsedRealtime();
         final StringBuilder sb = new StringBuilder();
+        final Resources resources = Resources.getSystem();
 
         if (args != null && args.length > 0) {
             switch (args[0]) {
@@ -7576,10 +7577,15 @@ public class UserManagerService extends IUserManager.Stub {
 
         // Dump some capabilities
         pw.println();
-        pw.print("  Max users: " + UserManager.getMaxSupportedUsers());
+        int effectiveMaxSupportedUsers = UserManager.getMaxSupportedUsers();
+        pw.print("  Max users: " + effectiveMaxSupportedUsers);
+        int defaultMaxSupportedUsers = resources.getInteger(R.integer.config_multiuserMaximumUsers);
+        if (effectiveMaxSupportedUsers != defaultMaxSupportedUsers) {
+            pw.print(" (built-in value: " + defaultMaxSupportedUsers + ")");
+        }
         pw.println(" (limit reached: " + isUserLimitReached() + ")");
         pw.println("  Supports switchable users: " + UserManager.supportsMultipleUsers());
-        pw.println("  All guests ephemeral: " + Resources.getSystem().getBoolean(
+        pw.println("  All guests ephemeral: " + resources.getBoolean(
                 com.android.internal.R.bool.config_guestUserEphemeral));
         pw.println("  Force ephemeral users: " + mForceEphemeralUsers);
         final boolean isHeadlessSystemUserMode = isHeadlessSystemUserMode();
@@ -7594,7 +7600,7 @@ public class UserManagerService extends IUserManager.Stub {
             }
         }
         if (isHeadlessSystemUserMode) {
-            pw.println("  Can switch to headless system user: " + Resources.getSystem()
+            pw.println("  Can switch to headless system user: " + resources
                     .getBoolean(com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser));
         }
         pw.println("  User version: " + mUserVersion);
