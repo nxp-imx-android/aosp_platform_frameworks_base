@@ -89,8 +89,8 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
 
     @BinderThread
     interface Callback {
-        void addClient(IInputMethodClient client, IRemoteInputConnection inputConnection,
-                int selfReportedDisplayId);
+        void addClient(@NonNull IInputMethodClient client,
+                @NonNull IRemoteInputConnection inputConnection, int selfReportedDisplayId);
 
         InputMethodInfo getCurrentInputMethodInfoAsUser(@UserIdInt int userId);
 
@@ -242,9 +242,9 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
     }
 
     @Override
-    public void addClient(IInputMethodClient client, IRemoteInputConnection inputmethod,
-            int untrustedDisplayId) {
-        mCallback.addClient(client, inputmethod, untrustedDisplayId);
+    public void addClient(@NonNull IInputMethodClient client,
+            @NonNull IRemoteInputConnection fallbackInputConnection, int untrustedDisplayId) {
+        mCallback.addClient(client, fallbackInputConnection, untrustedDisplayId);
     }
 
     @Override
@@ -414,7 +414,7 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
     }
 
     @Override
-    public void reportPerceptibleAsync(IBinder windowToken, boolean perceptible) {
+    public void reportPerceptibleAsync(@NonNull IBinder windowToken, boolean perceptible) {
         mCallback.reportPerceptibleAsync(windowToken, perceptible);
     }
 
