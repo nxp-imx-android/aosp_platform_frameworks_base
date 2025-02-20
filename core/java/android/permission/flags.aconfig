@@ -71,6 +71,19 @@ flag {
 }
 
 flag {
+    name: "unknown_call_setting_blocked_logging_enabled"
+    is_exported: true
+    is_fixed_read_only: true
+    namespace: "permissions"
+    description: "enable the metrics when blocking certain app installs during an unknown call"
+    bug: "364535720"
+
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "op_enable_mobile_data_by_user"
     is_exported: true
     namespace: "permissions"
