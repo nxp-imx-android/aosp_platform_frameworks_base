@@ -73,9 +73,8 @@ class SceneInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
-    private val fakeSceneDataSource = kosmos.fakeSceneDataSource
-
-    private val underTest = kosmos.sceneInteractor
+    private val fakeSceneDataSource by lazy { kosmos.fakeSceneDataSource }
+    private val underTest by lazy { kosmos.sceneInteractor }
 
     @Before
     fun setUp() {
