@@ -16,8 +16,10 @@
 
 package com.android.wm.shell.desktopmode.compatui
 
+import android.Manifest.permission.SYSTEM_ALERT_WINDOW
 import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Binder
 import android.testing.AndroidTestingRunner
@@ -34,6 +36,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTaskBuilder
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createSystemModalTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createSystemModalTaskBuilder
+import com.android.wm.shell.desktopmode.DesktopTestHelpers.createSystemModalTaskWithBaseActivity
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.DesktopWallpaperActivity
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
@@ -46,7 +49,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
@@ -85,6 +90,7 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
         whenever(packageManager.getHomeActivities(ArrayList())).thenReturn(componentName)
         desktopModeCompatPolicy = DesktopModeCompatPolicy(spyContext)
         transitionHandler = createTransitionHandler()
+        allowOverlayPermission(arrayOf(SYSTEM_ALERT_WINDOW))
     }
 
     private fun createTransitionHandler() =
@@ -108,7 +114,7 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
         whenever(desktopUserRepositories.current.getVisibleTaskCount(anyInt())).thenReturn(1)
         val info =
             TransitionInfoBuilder(TRANSIT_OPEN)
-                .addChange(TRANSIT_OPEN, createSystemModalTask())
+                .addChange(TRANSIT_OPEN, createSystemModalTaskWithBaseActivity())
                 .build()
 
         assertThat(transitionHandler.startAnimation(Binder(), info, startT, finishT) {}).isTrue()
@@ -118,7 +124,7 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
     fun startAnimation_launchingSystemModal_animates() {
         val info =
             TransitionInfoBuilder(TRANSIT_OPEN)
-                .addChange(TRANSIT_OPEN, createSystemModalTask())
+                .addChange(TRANSIT_OPEN, createSystemModalTaskWithBaseActivity())
                 .build()
 
         assertThat(transitionHandler.startAnimation(Binder(), info, startT, finishT) {}).isTrue()
@@ -161,7 +167,7 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
     fun startAnimation_closingSystemModal_animates() {
         val info =
             TransitionInfoBuilder(TRANSIT_CLOSE)
-                .addChange(TRANSIT_CLOSE, createSystemModalTask())
+                .addChange(TRANSIT_CLOSE, createSystemModalTaskWithBaseActivity())
                 .build()
 
         assertThat(transitionHandler.startAnimation(Binder(), info, startT, finishT) {}).isTrue()
@@ -179,7 +185,7 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
 
     @Test
     fun startAnimation_closingPreviouslyLaunchedSystemModal_animates() {
-        val systemModalTask = createSystemModalTask()
+        val systemModalTask = createSystemModalTaskWithBaseActivity()
         val nonModalSystemModalTask =
             createFullscreenTaskBuilder().setTaskId(systemModalTask.taskId).build()
         val launchInfo =
@@ -192,5 +198,12 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
 
         assertThat(transitionHandler.startAnimation(Binder(), closeInfo, startT, finishT) {})
             .isTrue()
+    }
+
+    fun allowOverlayPermission(permissions: Array<String>) {
+        val packageInfo = mock<PackageInfo>()
+        packageInfo.requestedPermissions = permissions
+        whenever(packageManager.getPackageInfo(anyString(), eq(PackageManager.GET_PERMISSIONS)))
+            .thenReturn(packageInfo)
     }
 }
