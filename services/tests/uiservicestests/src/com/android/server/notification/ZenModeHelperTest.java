@@ -296,7 +296,7 @@ public class ZenModeHelperTest extends UiServiceTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(FLAG_MODES_UI, FLAG_BACKUP_RESTORE_LOGGING,
+        return FlagsParameterization.allCombinationsOf(FLAG_BACKUP_RESTORE_LOGGING,
                 com.android.server.notification.Flags.FLAG_FIX_CALLING_UID_FROM_CPS);
     }
 
