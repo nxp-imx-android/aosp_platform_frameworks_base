@@ -59,6 +59,7 @@
 
 # Referenced in wear-service
 -keep public class com.android.server.wm.WindowManagerInternal { *; }
+-keep public class com.android.server.wm.WindowManagerInternal$WindowFocusChangeListener { *; }
 
 # JNI keep rules
 # The global keep rule for native methods allows stripping of such methods if they're unreferenced
