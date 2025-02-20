@@ -88,7 +88,7 @@ public class PipDesktopState {
             return false;
         }
         final int displayId = mPipDisplayLayoutState.getDisplayId();
-        return getDesktopRepository().getVisibleTaskCount(displayId) > 0
+        return getDesktopRepository().isAnyDeskActive(displayId)
                 || getDesktopWallpaperActivityTokenProvider().isWallpaperActivityVisible(displayId)
                 || isDisplayInFreeform();
     }
@@ -100,7 +100,7 @@ public class PipDesktopState {
             return false;
         }
         final DesktopRepository desktopRepository = getDesktopRepository();
-        return desktopRepository.getVisibleTaskCount(pipTask.getDisplayId()) > 0
+        return desktopRepository.isAnyDeskActive(pipTask.getDisplayId())
                 || desktopRepository.isMinimizedPipPresentInDisplay(pipTask.getDisplayId());
     }
 
@@ -114,7 +114,7 @@ public class PipDesktopState {
             return false;
         }
         final int displayId = mPipDisplayLayoutState.getDisplayId();
-        return getDesktopRepository().getVisibleTaskCount(displayId) == 0
+        return !getDesktopRepository().isAnyDeskActive(displayId)
                 && getDesktopWallpaperActivityTokenProvider().isWallpaperActivityVisible(displayId);
     }
 

@@ -377,7 +377,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 return this::setRecentsTransitionDuringKeyguard;
             } else if (mDesktopTasksController != null
                     // Check on the default display. Recents/gesture nav is only available there
-                    && mDesktopTasksController.visibleTaskCount(DEFAULT_DISPLAY) > 0) {
+                    && mDesktopTasksController.isAnyDeskActive(DEFAULT_DISPLAY)) {
                 return this::setRecentsTransitionDuringDesktop;
             }
         }

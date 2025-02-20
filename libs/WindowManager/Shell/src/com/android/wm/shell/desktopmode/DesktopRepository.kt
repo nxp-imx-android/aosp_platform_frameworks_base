@@ -418,11 +418,15 @@ class DesktopRepository(
             .singleOrNull() == taskId
     }
 
-    /**
-     * Returns the active tasks in the given display's active desk.
-     *
-     * TODO: b/389960283 - migrate callers to [getActiveTaskIdsInDesk].
-     */
+    /** Whether the task is the only visible desktop task in the display. */
+    fun isOnlyVisibleTask(taskId: Int, displayId: Int): Boolean {
+        val desk = desktopData.getActiveDesk(displayId) ?: return false
+        return desk.visibleTasks.size == 1 && desk.visibleTasks.single() == taskId
+    }
+
+    /** Whether the display has only one visible desktop task. */
+    fun hasOnlyOneVisibleTask(displayId: Int): Boolean = getVisibleTaskCount(displayId) == 1
+
     @VisibleForTesting
     fun getActiveTasks(displayId: Int): ArraySet<Int> =
         ArraySet(desktopData.getActiveDesk(displayId)?.activeTasks)
@@ -551,7 +555,7 @@ class DesktopRepository(
         } else {
             desk.visibleTasks.remove(taskId)
         }
-        val newCount = getVisibleTaskCount(deskId)
+        val newCount = getVisibleTaskCountInDesk(deskId)
         if (prevCount != newCount) {
             logD(
                 "Update task visibility taskId=%d visible=%b deskId=%d displayId=%d",
@@ -735,18 +739,29 @@ class DesktopRepository(
         }
     }
 
-    /**
-     * Gets number of visible freeform tasks on given [displayId]'s active desk.
-     *
-     * TODO: b/389960283 - migrate callers to [getVisibleTaskCountInDesk].
-     */
+    /** Whether the display is currently showing any desk. */
+    fun isAnyDeskActive(displayId: Int): Boolean {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            val desk = desktopData.getDefaultDesk(displayId)
+            if (desk == null) {
+                logE("Could not find default desk for display: $displayId")
+                return false
+            }
+            return desk.visibleTasks.isNotEmpty()
+        }
+        return desktopData.getActiveDesk(displayId) != null
+    }
+
+    /** Gets number of visible freeform tasks on given [displayId]'s active desk. */
+    @Deprecated("Use isAnyDeskActive() instead.", ReplaceWith("isAnyDeskActive()"))
+    @VisibleForTesting
     fun getVisibleTaskCount(displayId: Int): Int =
         (desktopData.getActiveDesk(displayId)?.visibleTasks?.size ?: 0).also {
             logD("getVisibleTaskCount=$it")
         }
 
     /** Gets the number of visible tasks on the given desk. */
-    fun getVisibleTaskCountInDesk(deskId: Int): Int =
+    private fun getVisibleTaskCountInDesk(deskId: Int): Int =
         desktopData.getDesk(deskId)?.visibleTasks?.size ?: 0
 
     /**
