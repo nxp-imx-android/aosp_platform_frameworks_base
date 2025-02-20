@@ -44,10 +44,6 @@ import static android.view.Display.INVALID_DISPLAY;
 import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
 import static android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-import static android.view.WindowManager.TRANSIT_CLOSE;
-import static android.view.WindowManager.TRANSIT_FLAG_OPEN_BEHIND;
-import static android.view.WindowManager.TRANSIT_NONE;
-import static android.view.WindowManager.TRANSIT_OPEN;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_STATES;
 import static com.android.server.wm.ActivityRecord.State.PAUSED;
@@ -56,7 +52,6 @@ import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityRecord.State.STOPPING;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_RESULTS;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_SWITCH;
-import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_TRANSITION;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_RESULTS;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_SWITCH;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_TRANSITION;
@@ -1682,36 +1677,15 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         final DisplayContent dc = taskDisplayArea.mDisplayContent;
         if (prev != null) {
             if (prev.finishing) {
-                if (DEBUG_TRANSITION) {
-                    Slog.v(TAG_TRANSITION, "Prepare close transition: prev=" + prev);
-                }
                 if (mTaskSupervisor.mNoAnimActivities.contains(prev)) {
                     anim = false;
-                    dc.prepareAppTransition(TRANSIT_NONE);
-                } else {
-                    dc.prepareAppTransition(TRANSIT_CLOSE);
                 }
                 prev.setVisibility(false);
-            } else {
-                if (DEBUG_TRANSITION) {
-                    Slog.v(TAG_TRANSITION, "Prepare open transition: prev=" + prev);
-                }
-                if (mTaskSupervisor.mNoAnimActivities.contains(next)) {
-                    anim = false;
-                    dc.prepareAppTransition(TRANSIT_NONE);
-                } else {
-                    dc.prepareAppTransition(TRANSIT_OPEN,
-                            next.mLaunchTaskBehind ? TRANSIT_FLAG_OPEN_BEHIND : 0);
-                }
-            }
-        } else {
-            if (DEBUG_TRANSITION) Slog.v(TAG_TRANSITION, "Prepare open transition: no previous");
-            if (mTaskSupervisor.mNoAnimActivities.contains(next)) {
+            } else if (mTaskSupervisor.mNoAnimActivities.contains(next)) {
                 anim = false;
-                dc.prepareAppTransition(TRANSIT_NONE);
-            } else {
-                dc.prepareAppTransition(TRANSIT_OPEN);
             }
+        } else if (mTaskSupervisor.mNoAnimActivities.contains(next)) {
+            anim = false;
         }
 
         if (anim) {

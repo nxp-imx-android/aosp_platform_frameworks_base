@@ -63,9 +63,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_SCREENSHOT;
 import static android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR;
 import static android.view.WindowManager.LayoutParams.TYPE_VOICE_INTERACTION;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
-import static android.view.WindowManager.TRANSIT_CLOSE;
-import static android.view.WindowManager.TRANSIT_OLD_TASK_CLOSE;
-import static android.view.WindowManager.TRANSIT_OLD_TRANSLUCENT_ACTIVITY_CLOSE;
 import static android.window.DisplayAreaOrganizer.FEATURE_WINDOWED_MAGNIFICATION;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.any;
@@ -1742,8 +1739,6 @@ public class DisplayContentTests extends WindowTestsBase {
     public void testFixedRotationWithPip() {
         final DisplayContent displayContent = mDefaultDisplay;
         displayContent.setIgnoreOrientationRequest(false);
-        // Unblock the condition in PinnedTaskController#continueOrientationChangeIfNeeded.
-        doNothing().when(displayContent).prepareAppTransition(anyInt());
         // Make resume-top really update the activity state.
         setBooted(mAtm);
         clearInvocations(mWm);
@@ -2373,33 +2368,6 @@ public class DisplayContentTests extends WindowTestsBase {
 
     @SetupWindows(addWindows = W_INPUT_METHOD)
     @Test
-    public void testShowImeScreenshot() {
-        final Task rootTask = createTask(mDisplayContent);
-        final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
-        final ActivityRecord activity = createActivityRecord(mDisplayContent, task);
-        final WindowState win = newWindowBuilder("win", TYPE_BASE_APPLICATION).setWindowToken(
-                activity).build();
-        task.getDisplayContent().prepareAppTransition(TRANSIT_CLOSE);
-        doReturn(true).when(task).okToAnimate();
-        ArrayList<WindowContainer> sources = new ArrayList<>();
-        sources.add(activity);
-
-        mDisplayContent.setImeLayeringTarget(win);
-        spyOn(mDisplayContent);
-
-        // Expecting the IME screenshot only be attached when performing task closing transition.
-        task.applyAnimation(null, TRANSIT_OLD_TASK_CLOSE, false /* enter */,
-                false /* isVoiceInteraction */, sources);
-        verify(mDisplayContent).showImeScreenshot();
-
-        clearInvocations(mDisplayContent);
-        activity.applyAnimation(null, TRANSIT_OLD_TRANSLUCENT_ACTIVITY_CLOSE, false /* enter */,
-                false /* isVoiceInteraction */, sources);
-        verify(mDisplayContent, never()).showImeScreenshot();
-    }
-
-    @SetupWindows(addWindows = W_INPUT_METHOD)
-    @Test
     public void testShowImeScreenshot_removeCurSnapshotBeforeCreateNext() {
         final Task rootTask = createTask(mDisplayContent);
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
@@ -2423,32 +2391,6 @@ public class DisplayContentTests extends WindowTestsBase {
         verify(curSnapshot).detach(any());
         assertNotNull(mDisplayContent.mImeScreenshot);
         assertNotEquals(curSnapshot, mDisplayContent.mImeScreenshot);
-    }
-
-    @UseTestDisplay(addWindows = {W_INPUT_METHOD})
-    @Test
-    public void testRemoveImeScreenshot_whenTargetSurfaceWasInvisible() {
-        final Task rootTask = createTask(mDisplayContent);
-        final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
-        final ActivityRecord activity = createActivityRecord(mDisplayContent, task);
-        final WindowState win = newWindowBuilder("win", TYPE_BASE_APPLICATION).setWindowToken(
-                activity).build();
-        win.onSurfaceShownChanged(true);
-        makeWindowVisible(win, mDisplayContent.mInputMethodWindow);
-        task.getDisplayContent().prepareAppTransition(TRANSIT_CLOSE);
-        doReturn(true).when(task).okToAnimate();
-        ArrayList<WindowContainer> sources = new ArrayList<>();
-        sources.add(activity);
-
-        mDisplayContent.setImeLayeringTarget(win);
-        mDisplayContent.setImeInputTarget(win);
-        mDisplayContent.getInsetsStateController().getImeSourceProvider().setImeShowing(true);
-        task.applyAnimation(null, TRANSIT_OLD_TASK_CLOSE, false /* enter */,
-                false /* isVoiceInteraction */, sources);
-        assertNotNull(mDisplayContent.mImeScreenshot);
-
-        win.onSurfaceShownChanged(false);
-        assertNull(mDisplayContent.mImeScreenshot);
     }
 
     @UseTestDisplay(addWindows = {W_INPUT_METHOD})

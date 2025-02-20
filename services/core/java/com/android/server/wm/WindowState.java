@@ -1698,17 +1698,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 || mActivityRecord.isStartingWindowDisplayed());
     }
 
-    @Override
-    boolean hasContentToDisplay() {
-        if (!isDrawn() && (mViewVisibility == View.VISIBLE
-                || (isAnimating(TRANSITION | PARENTS)
-                && !getDisplayContent().mAppTransition.isTransitionSet()))) {
-            return true;
-        }
-
-        return super.hasContentToDisplay();
-    }
-
     private boolean isVisibleByPolicyOrInsets() {
         return isVisibleByPolicy()
                 // If we don't have a provider, this window isn't used as a window generating

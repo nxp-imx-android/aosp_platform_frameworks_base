@@ -54,7 +54,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_FLAG_APP_CRASHED;
-import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
@@ -1658,8 +1657,7 @@ class Task extends TaskFragment {
                 // Prevent the transition from being executed too early if the top activity is
                 // resumed but the mVisibleRequested of any other activity is true, the transition
                 // should wait until next activity resumed.
-                if (r.isState(RESUMED) || (r.isVisible()
-                        && !mDisplayContent.mAppTransition.containsTransitRequest(TRANSIT_CLOSE))) {
+                if (r.isState(RESUMED) || r.isVisible()) {
                     r.finishIfPossible(reason, false /* oomAdj */);
                 } else {
                     r.destroyIfPossible(reason);
@@ -2333,11 +2331,6 @@ class Task extends TaskFragment {
         }
         transaction.setWindowCrop(mSurfaceControl, width, height);
         mLastSurfaceSize.set(width, height);
-    }
-
-    @VisibleForTesting
-    boolean isInChangeTransition() {
-        return AppTransition.isChangeTransitOld(mTransit);
     }
 
     @Override
@@ -5305,11 +5298,9 @@ class Task extends TaskFragment {
 
         // Place a new activity at top of root task, so it is next to interact with the user.
         if ((r.intent.getFlags() & Intent.FLAG_ACTIVITY_NO_ANIMATION) != 0) {
-            mDisplayContent.prepareAppTransition(TRANSIT_NONE);
             mTaskSupervisor.mNoAnimActivities.add(r);
             mTransitionController.setNoAnimation(r);
         } else {
-            mDisplayContent.prepareAppTransition(TRANSIT_OPEN);
             mTaskSupervisor.mNoAnimActivities.remove(r);
         }
         if (newTask && !r.mLaunchTaskBehind) {
@@ -5707,7 +5698,6 @@ class Task extends TaskFragment {
                 ActivityOptions.abort(options);
             }
         }
-        mDisplayContent.prepareAppTransition(transit);
     }
 
     final void moveTaskToFront(Task tr, boolean noAnimation, ActivityOptions options,
@@ -5759,12 +5749,9 @@ class Task extends TaskFragment {
 
             if (DEBUG_TRANSITION) Slog.v(TAG_TRANSITION, "Prepare to front transition: task=" + tr);
             if (noAnimation) {
-                mDisplayContent.prepareAppTransition(TRANSIT_NONE);
                 mTaskSupervisor.mNoAnimActivities.add(top);
-                if (mTransitionController.isShellTransitionsEnabled()) {
-                    mTransitionController.collect(top);
-                    mTransitionController.setNoAnimation(top);
-                }
+                mTransitionController.collect(top);
+                mTransitionController.setNoAnimation(top);
                 ActivityOptions.abort(options);
             } else {
                 updateTransitLocked(TRANSIT_TO_FRONT, options);
@@ -5874,10 +5861,6 @@ class Task extends TaskFragment {
                         moveTaskToBackInner(tr, transition);
                     });
         } else {
-            // Skip the transition for pinned task.
-            if (!inPinnedWindowingMode()) {
-                mDisplayContent.prepareAppTransition(TRANSIT_TO_BACK);
-            }
             moveTaskToBackInner(tr, null /* transition */);
         }
         return true;

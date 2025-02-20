@@ -56,8 +56,6 @@ import static android.view.WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_STARTING;
 import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
-import static android.view.WindowManager.TRANSIT_CLOSE;
-import static android.view.WindowManager.TRANSIT_OLD_ACTIVITY_OPEN;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.window.StartingWindowInfo.TYPE_PARAMETER_LEGACY_SPLASH_SCREEN;
 
@@ -921,12 +919,6 @@ public class ActivityRecordTests extends WindowTestsBase {
         // animation and AR#takeSceneTransitionInfo also clear the AR#mPendingOptions
         assertNull(activity.takeSceneTransitionInfo());
         assertNull(activity.getOptions());
-
-        final AppTransition appTransition = activity.mDisplayContent.mAppTransition;
-        spyOn(appTransition);
-        activity.applyOptionsAnimation();
-
-        verify(appTransition).overridePendingAppTransitionRemote(any());
     }
 
     @Test
@@ -1190,7 +1182,6 @@ public class ActivityRecordTests extends WindowTestsBase {
                 FINISH_RESULT_REQUESTED, activity.finishIfPossible("test", false /* oomAdj */));
         assertEquals(PAUSING, activity.getState());
         verify(activity).setVisibility(eq(false));
-        verify(activity.mDisplayContent).prepareAppTransition(eq(TRANSIT_CLOSE));
     }
 
     /**
@@ -1237,7 +1228,6 @@ public class ActivityRecordTests extends WindowTestsBase {
         activity.finishIfPossible("test", false /* oomAdj */);
 
         verify(activity).setVisibility(eq(false));
-        verify(activity.mDisplayContent).prepareAppTransition(eq(TRANSIT_CLOSE));
         verify(activity.mDisplayContent, never()).executeAppTransition();
     }
 
@@ -1254,7 +1244,6 @@ public class ActivityRecordTests extends WindowTestsBase {
         activity.finishIfPossible("test", false /* oomAdj */);
 
         verify(activity, atLeast(1)).setVisibility(eq(false));
-        verify(activity.mDisplayContent).prepareAppTransition(eq(TRANSIT_CLOSE));
         verify(activity.mDisplayContent).executeAppTransition();
     }
 
@@ -1275,7 +1264,6 @@ public class ActivityRecordTests extends WindowTestsBase {
 
         activity.finishIfPossible("test", false /* oomAdj */);
 
-        verify(activity.mDisplayContent, never()).prepareAppTransition(eq(TRANSIT_CLOSE));
         assertFalse(activity.inTransition());
 
         // finishIfPossible -> completeFinishing -> addToFinishingAndWaitForIdle
@@ -2657,10 +2645,6 @@ public class ActivityRecordTests extends WindowTestsBase {
     @Presubmit
     public void testGetOrientation() {
         mDisplayContent.setIgnoreOrientationRequest(false);
-        // ActivityBuilder will resume top activities and cause the activity been added into
-        // opening apps list. Since this test is focus on the effect of visible on getting
-        // orientation, we skip app transition to avoid interference.
-        doNothing().when(mDisplayContent).prepareAppTransition(anyInt());
         final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
         activity.setVisible(true);
 
@@ -2925,7 +2909,6 @@ public class ActivityRecordTests extends WindowTestsBase {
         sources.add(activity2);
         doReturn(true).when(activity2).okToAnimate();
         doReturn(true).when(activity2).isAnimating();
-        assertTrue(activity2.applyAnimation(null, TRANSIT_OLD_ACTIVITY_OPEN, true, false, sources));
     }
     @Test
     public void testTrackingStartingWindowThroughTrampoline() {

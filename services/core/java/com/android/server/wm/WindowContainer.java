@@ -16,9 +16,6 @@
 
 package com.android.server.wm;
 
-import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
-import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
-import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSET;
@@ -29,24 +26,15 @@ import static android.content.pm.ActivityInfo.reverseOrientation;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
-import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.os.UserHandle.USER_NULL;
 import static android.view.SurfaceControl.Transaction;
 import static android.view.WindowInsets.Type.InsetsType;
 import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
-import static android.window.TaskFragmentAnimationParams.DEFAULT_ANIMATION_BACKGROUND_COLOR;
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_APP_TRANSITIONS;
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_APP_TRANSITIONS_ANIM;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SYNC_ENGINE;
-import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
-import static com.android.server.wm.AppTransition.MAX_APP_TRANSITION_DURATION;
-import static com.android.server.wm.AppTransition.isActivityTransitOld;
-import static com.android.server.wm.AppTransition.isTaskFragmentTransitOld;
-import static com.android.server.wm.DisplayContent.IME_TARGET_LAYERING;
 import static com.android.server.wm.IdentifierProto.HASH_CODE;
 import static com.android.server.wm.IdentifierProto.TITLE;
 import static com.android.server.wm.IdentifierProto.USER_ID;
@@ -65,7 +53,6 @@ import static com.android.server.wm.WindowContainerProto.VISIBLE;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
-import static com.android.server.wm.WindowStateAnimator.ROOT_TASK_CLIP_AFTER_ANIM;
 
 import android.annotation.CallSuper;
 import android.annotation.ColorInt;
@@ -81,10 +68,8 @@ import android.graphics.Rect;
 import android.os.Debug;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.os.Trace;
 import android.util.ArrayMap;
 import android.util.ArraySet;
-import android.util.Pair;
 import android.util.Pools;
 import android.util.RotationUtils;
 import android.util.Slog;
@@ -102,14 +87,11 @@ import android.view.SurfaceControl.Builder;
 import android.view.SurfaceControlViewHost;
 import android.view.WindowManager;
 import android.view.WindowManager.TransitionOldType;
-import android.view.animation.Animation;
 import android.window.IWindowContainerToken;
 import android.window.WindowContainerToken;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.graphics.ColorUtils;
 import com.android.internal.protolog.ProtoLog;
-import com.android.internal.protolog.common.LogLevel;
 import com.android.internal.util.ToBooleanFunction;
 import com.android.server.wm.SurfaceAnimator.Animatable;
 import com.android.server.wm.SurfaceAnimator.AnimationType;
@@ -1315,31 +1297,12 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     }
 
     /**
-     * Returns true if the container or one of its children as some content it can display or wants
-     * to display (e.g. app views or saved surface).
-     *
-     * NOTE: While this method will return true if the there is some content to display, it doesn't
-     * mean the container is visible. Use {@link #isVisible()} to determine if the container is
-     * visible.
-     */
-    boolean hasContentToDisplay() {
-        for (int i = mChildren.size() - 1; i >= 0; --i) {
-            final WindowContainer wc = mChildren.get(i);
-            if (wc.hasContentToDisplay()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Returns true if the container or one of its children is considered visible from the
      * WindowManager perspective which usually means valid surface and some other internal state
      * are true.
      *
      * NOTE: While this method will return true if the surface is visible, it doesn't mean the
-     * client has actually displayed any content. Use {@link #hasContentToDisplay()} to determine if
-     * the container has any content to display.
+     * client has actually displayed any content.
      */
     boolean isVisible() {
         // TODO: Will this be more correct if it checks the visibility of its parents?
@@ -1477,13 +1440,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         for (int i = mChildren.size() - 1; i >= 0; --i) {
             final WindowContainer wc = mChildren.get(i);
             wc.checkAppWindowsReadyToShow();
-        }
-    }
-
-    void onAppTransitionDone() {
-        for (int i = mChildren.size() - 1; i >= 0; --i) {
-            final WindowContainer wc = mChildren.get(i);
-            wc.onAppTransitionDone();
         }
     }
 
@@ -3039,262 +2995,8 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         getRelativePosition(outPosition);
     }
 
-    /**
-     * Applies the app transition animation according the given the layout properties in the
-     * window hierarchy.
-     *
-     * @param lp The layout parameters of the window.
-     * @param transit The app transition type indicates what kind of transition to be applied.
-     * @param enter Whether the app transition is entering transition or not.
-     * @param isVoiceInteraction Whether the container is participating in voice interaction or not.
-     * @param sources {@link ActivityRecord}s which causes this app transition animation.
-     *
-     * @return {@code true} when the container applied the app transition, {@code false} if the
-     *         app transition is disabled or skipped.
-     *
-     * @see #getAnimationAdapter
-     */
-    boolean applyAnimation(WindowManager.LayoutParams lp, @TransitionOldType int transit,
-            boolean enter, boolean isVoiceInteraction,
-            @Nullable ArrayList<WindowContainer> sources) {
-        if (mWmService.mDisableTransitionAnimation) {
-            ProtoLog.v(WM_DEBUG_APP_TRANSITIONS_ANIM,
-                    "applyAnimation: transition animation is disabled or skipped. "
-                            + "container=%s", this);
-            cancelAnimation();
-            return false;
-        }
-
-        // Only apply an animation if the display isn't frozen. If it is frozen, there is no reason
-        // to animate and it can cause strange artifacts when we unfreeze the display if some
-        // different animation is running.
-        try {
-            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "WC#applyAnimation");
-            if (okToAnimate()) {
-                ProtoLog.v(WM_DEBUG_APP_TRANSITIONS_ANIM,
-                        "applyAnimation: transit=%s, enter=%b, wc=%s",
-                        AppTransition.appTransitionOldToString(transit), enter, this);
-                applyAnimationUnchecked(lp, enter, transit, isVoiceInteraction, sources);
-            } else {
-                cancelAnimation();
-            }
-        } finally {
-            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
-        }
-
-        return isAnimating();
-    }
-
-    /**
-     * Gets the {@link AnimationAdapter} according the given window layout properties in the window
-     * hierarchy.
-     *
-     * @return The return value will always contain two elements, one for normal animations and the
-     *         other for thumbnail animation, both can be {@code null}.
-     *
-     * @See com.android.server.wm.RemoteAnimationController.RemoteAnimationRecord
-     * @See LocalAnimationAdapter
-     */
-    Pair<AnimationAdapter, AnimationAdapter> getAnimationAdapter(WindowManager.LayoutParams lp,
-            @TransitionOldType int transit, boolean enter, boolean isVoiceInteraction) {
-        final Pair<AnimationAdapter, AnimationAdapter> resultAdapters;
-        final int appRootTaskClipMode = getDisplayContent().mAppTransition.getAppRootTaskClipMode();
-
-        // Separate position and size for use in animators.
-        final Rect screenBounds = getAnimationBounds(appRootTaskClipMode);
-        mTmpRect.set(screenBounds);
-        getAnimationPosition(mTmpPoint);
-        mTmpRect.offsetTo(0, 0);
-
-        final boolean isChanging = AppTransition.isChangeTransitOld(transit);
-
-        if (isChanging) {
-            final float durationScale = mWmService.getTransitionAnimationScaleLocked();
-            final DisplayInfo displayInfo = getDisplayContent().getDisplayInfo();
-            mTmpRect.offsetTo(mTmpPoint.x, mTmpPoint.y);
-
-            final AnimationAdapter adapter = new LocalAnimationAdapter(
-                    new WindowChangeAnimationSpec(null /* startBounds */, mTmpRect,
-                            displayInfo, durationScale, true /* isAppAnimation */,
-                            false /* isThumbnail */),
-                    getSurfaceAnimationRunner());
-
-            final AnimationAdapter thumbnailAdapter = null;
-            resultAdapters = new Pair<>(adapter, thumbnailAdapter);
-            mTransit = transit;
-            mTransitFlags = getDisplayContent().mAppTransition.getTransitFlags();
-        } else {
-            mNeedsAnimationBoundsLayer = (appRootTaskClipMode == ROOT_TASK_CLIP_AFTER_ANIM);
-            final Animation a = loadAnimation(lp, transit, enter, isVoiceInteraction);
-
-            if (a != null) {
-                // Only apply corner radius to animation if we're not in multi window mode.
-                // We don't want rounded corners when in pip or split screen.
-                final float windowCornerRadius = !inMultiWindowMode()
-                        ? getDisplayContent().getWindowCornerRadius()
-                        : 0;
-                if (asActivityRecord() != null
-                        && asActivityRecord().isNeedsLetterboxedAnimation()) {
-                    asActivityRecord().getLetterboxInnerBounds(mTmpRect);
-                }
-                AnimationAdapter adapter = new LocalAnimationAdapter(
-                        new WindowAnimationSpec(a, mTmpPoint, mTmpRect,
-                                getDisplayContent().mAppTransition.canSkipFirstFrame(),
-                                appRootTaskClipMode, true /* isAppAnimation */, windowCornerRadius),
-                        getSurfaceAnimationRunner());
-
-                resultAdapters = new Pair<>(adapter, null);
-                mNeedsZBoost = a.getZAdjustment() == Animation.ZORDER_TOP
-                        || AppTransition.isClosingTransitOld(transit);
-                mTransit = transit;
-                mTransitFlags = getDisplayContent().mAppTransition.getTransitFlags();
-            } else {
-                resultAdapters = new Pair<>(null, null);
-            }
-        }
-        return resultAdapters;
-    }
-
-    protected void applyAnimationUnchecked(WindowManager.LayoutParams lp, boolean enter,
-            @TransitionOldType int transit, boolean isVoiceInteraction,
-            @Nullable ArrayList<WindowContainer> sources) {
-        final Task task = asTask();
-        if (task != null && !enter && !task.isActivityTypeHomeOrRecents()) {
-            final InsetsControlTarget imeTarget = mDisplayContent.getImeTarget(IME_TARGET_LAYERING);
-            final boolean isImeLayeringTarget = imeTarget != null && imeTarget.getWindow() != null
-                    && imeTarget.getWindow().getTask() == task;
-            // Attach and show the IME screenshot when the task is the IME target and performing
-            // task closing transition to the next task.
-            if (isImeLayeringTarget && AppTransition.isTaskCloseTransitOld(transit)) {
-                mDisplayContent.showImeScreenshot();
-            }
-        }
-        final Pair<AnimationAdapter, AnimationAdapter> adapters = getAnimationAdapter(lp,
-                transit, enter, isVoiceInteraction);
-        AnimationAdapter adapter = adapters.first;
-        AnimationAdapter thumbnailAdapter = adapters.second;
-        if (adapter != null) {
-            if (sources != null) {
-                mSurfaceAnimationSources.addAll(sources);
-            }
-
-            AnimationRunnerBuilder animationRunnerBuilder = new AnimationRunnerBuilder();
-
-            // Check if the animation requests to show background color for Activity and embedded
-            // TaskFragment.
-            final ActivityRecord activityRecord = asActivityRecord();
-            final TaskFragment taskFragment = asTaskFragment();
-            if (adapter.getShowBackground()
-                    // Check if it is Activity transition.
-                    && ((activityRecord != null && isActivityTransitOld(transit))
-                    // Check if it is embedded TaskFragment transition.
-                    || (taskFragment != null && taskFragment.isEmbedded()
-                    && isTaskFragmentTransitOld(transit)))) {
-                final @ColorInt int backgroundColorForTransition;
-                if (adapter.getBackgroundColor() != 0) {
-                    // If available use the background color provided through getBackgroundColor
-                    // which if set originates from a call to overridePendingAppTransition.
-                    backgroundColorForTransition = adapter.getBackgroundColor();
-                } else {
-                    final TaskFragment organizedTf = activityRecord != null
-                            ? activityRecord.getOrganizedTaskFragment()
-                            : taskFragment.getOrganizedTaskFragment();
-                    if (organizedTf != null && organizedTf.getAnimationParams()
-                            .getAnimationBackgroundColor() != DEFAULT_ANIMATION_BACKGROUND_COLOR) {
-                        // This window is embedded and has an animation background color set on the
-                        // TaskFragment. Pass this color with this window, so the handler can use it
-                        // as the animation background color if needed,
-                        backgroundColorForTransition = organizedTf.getAnimationParams()
-                                .getAnimationBackgroundColor();
-                    } else {
-                        // Otherwise default to the window's background color if provided through
-                        // the theme as the background color for the animation - the top most window
-                        // with a valid background color and showBackground set takes precedence.
-                        final Task parentTask = activityRecord != null
-                                ? activityRecord.getTask()
-                                : taskFragment.getTask();
-                        backgroundColorForTransition = parentTask.getTaskDescription()
-                                .getBackgroundColor();
-                    }
-                }
-                // Set to opaque for animation background to prevent it from exposing the blank
-                // background or content below.
-                animationRunnerBuilder.setTaskBackgroundColor(ColorUtils.setAlphaComponent(
-                        backgroundColorForTransition, 255));
-            }
-
-            animationRunnerBuilder.build()
-                    .startAnimation(getPendingTransaction(), adapter, !isVisible(),
-                            ANIMATION_TYPE_APP_TRANSITION, thumbnailAdapter);
-
-            if (adapter.getShowWallpaper()) {
-                getDisplayContent().pendingLayoutChanges |= FINISH_LAYOUT_REDO_WALLPAPER;
-            }
-        }
-    }
-
     final SurfaceAnimationRunner getSurfaceAnimationRunner() {
         return mWmService.mSurfaceAnimationRunner;
-    }
-
-    private Animation loadAnimation(WindowManager.LayoutParams lp, int transit, boolean enter,
-                                    boolean isVoiceInteraction) {
-        if ((isOrganized()
-                // TODO(b/161711458): Clean-up when moved to shell.
-                && getWindowingMode() != WINDOWING_MODE_FULLSCREEN
-                && getWindowingMode() != WINDOWING_MODE_FREEFORM
-                && getWindowingMode() != WINDOWING_MODE_MULTI_WINDOW)) {
-            return null;
-        }
-
-        final DisplayContent displayContent = getDisplayContent();
-        final DisplayInfo displayInfo = displayContent.getDisplayInfo();
-        final int width = displayInfo.appWidth;
-        final int height = displayInfo.appHeight;
-        ProtoLog.v(WM_DEBUG_APP_TRANSITIONS_ANIM, "applyAnimation: container=%s", this);
-
-        // Determine the visible rect to calculate the thumbnail clip with
-        // getAnimationFrames.
-        final Rect frame = new Rect(0, 0, width, height);
-        final Rect displayFrame = new Rect(0, 0,
-                displayInfo.logicalWidth, displayInfo.logicalHeight);
-        final Rect insets = new Rect();
-        final Rect stableInsets = new Rect();
-        final Rect surfaceInsets = new Rect();
-        getAnimationFrames(frame, insets, stableInsets, surfaceInsets);
-
-        if (mLaunchTaskBehind) {
-            // Differentiate the two animations. This one which is briefly on the screen
-            // gets the !enter animation, and the other one which remains on the
-            // screen gets the enter animation. Both appear in the mOpeningApps set.
-            enter = false;
-        }
-        ProtoLog.d(WM_DEBUG_APP_TRANSITIONS,
-                "Loading animation for app transition. transit=%s enter=%b frame=%s insets=%s "
-                        + "surfaceInsets=%s",
-                AppTransition.appTransitionOldToString(transit), enter, frame, insets,
-                surfaceInsets);
-        final Configuration displayConfig = displayContent.getConfiguration();
-        final Animation a = getDisplayContent().mAppTransition.loadAnimation(lp, transit, enter,
-                displayConfig.uiMode, displayConfig.orientation, frame, displayFrame, insets,
-                surfaceInsets, stableInsets, isVoiceInteraction, inFreeformWindowingMode(), this);
-        if (a != null) {
-            if (a != null) {
-                // Setup the maximum app transition duration to prevent malicious app may set a long
-                // animation duration or infinite repeat counts for the app transition through
-                // ActivityOption#makeCustomAnimation or WindowManager#overridePendingTransition.
-                a.restrictDuration(MAX_APP_TRANSITION_DURATION);
-            }
-            if (ProtoLog.isEnabled(WM_DEBUG_ANIM, LogLevel.DEBUG)) {
-                ProtoLog.i(WM_DEBUG_ANIM, "Loaded animation %s for %s, duration: %d, stack=%s",
-                        a, this, ((a != null) ? a.getDuration() : 0), Debug.getCallers(20));
-            }
-            final int containingWidth = frame.width();
-            final int containingHeight = frame.height();
-            a.initialize(containingWidth, containingHeight, width, height);
-            a.scaleCurrentDuration(mWmService.getTransitionAnimationScaleLocked());
-        }
-        return a;
     }
 
     boolean canCreateRemoteAnimationTarget() {
