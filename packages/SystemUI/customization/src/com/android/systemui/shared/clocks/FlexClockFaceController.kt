@@ -35,12 +35,14 @@ import com.android.systemui.plugins.clocks.DefaultClockFaceLayout
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
+import com.android.systemui.shared.clocks.ViewUtils.computeLayoutDiff
 import com.android.systemui.shared.clocks.view.FlexClockView
 import com.android.systemui.shared.clocks.view.HorizontalAlignment
 import com.android.systemui.shared.clocks.view.VerticalAlignment
 import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 // TODO(b/364680879): Merge w/ ComposedDigitalLayerController
 class FlexClockFaceController(clockCtx: ClockContext, private val isLargeClock: Boolean) :
@@ -168,17 +170,17 @@ class FlexClockFaceController(clockCtx: ClockContext, private val isLargeClock: 
                         else targetRegion.height() / maxHeight
 
                     FrameLayout.LayoutParams(
-                        (maxWidth * scale).toInt(),
-                        (maxHeight * scale).toInt(),
+                        (maxWidth * scale).roundToInt(),
+                        (maxHeight * scale).roundToInt(),
                     )
                 }
 
             lp.gravity = Gravity.CENTER
             view.layoutParams = lp
             targetRegion?.let {
-                val (xDiff, yDiff) = computeLayoutDiff(view, it, isLargeClock)
-                view.translationX = xDiff
-                view.translationY = yDiff
+                val diff = view.computeLayoutDiff(it, isLargeClock)
+                view.translationX = diff.x
+                view.translationY = diff.y
             }
         }
 

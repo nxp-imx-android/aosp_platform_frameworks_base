@@ -16,7 +16,9 @@
 
 package com.android.systemui.plugins.clocks
 
+import android.graphics.Rect
 import android.view.View
+import android.view.View.MeasureSpec
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.core.LogcatOnlyMessageBuffer
 import com.android.systemui.log.core.Logger
@@ -46,12 +48,21 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
         }
     }
 
-    fun onMeasure() {
-        d("onMeasure()")
+    fun onMeasure(widthSpec: Int, heightSpec: Int) {
+        d({ "onMeasure(${getSpecText(int1)}, ${getSpecText(int2)})" }) {
+            int1 = widthSpec
+            int2 = heightSpec
+        }
     }
 
-    fun onLayout() {
-        d("onLayout()")
+    fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        d({ "onLayout($bool1, ${Rect(int1, int2, long1.toInt(), long2.toInt())})" }) {
+            bool1 = changed
+            int1 = left
+            int2 = top
+            long1 = right.toLong()
+            long2 = bottom.toLong()
+        }
     }
 
     fun onDraw() {
@@ -90,8 +101,8 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
         }
     }
 
-    fun addView(child: View) {
-        d({ "addView($str1 @$int1)" }) {
+    fun onViewAdded(child: View) {
+        d({ "onViewAdded($str1 @$int1)" }) {
             str1 = child::class.simpleName!!
             int1 = child.id
         }
@@ -130,6 +141,20 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
                 View.VISIBLE -> "VISIBLE"
                 else -> "$visibility"
             }
+        }
+
+        @JvmStatic
+        fun getSpecText(spec: Int): String {
+            val size = MeasureSpec.getSize(spec)
+            val mode = MeasureSpec.getMode(spec)
+            val modeText =
+                when (mode) {
+                    MeasureSpec.EXACTLY -> "EXACTLY"
+                    MeasureSpec.AT_MOST -> "AT MOST"
+                    MeasureSpec.UNSPECIFIED -> "UNSPECIFIED"
+                    else -> "$mode"
+                }
+            return "($size, $modeText)"
         }
 
         @JvmStatic
