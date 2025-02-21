@@ -366,6 +366,7 @@ constructor(
             val batteryComposeView =
                 ComposeView(mView.context).apply {
                     setContent {
+                        id = R.id.battery_meter_composable_view
                         val showBatteryEstimate by showBatteryEstimate.collectAsStateWithLifecycle()
                         BatteryWithEstimate(
                             modifier = Modifier.height(17.dp).wrapContentWidth(),
