@@ -328,7 +328,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"इनपुट"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"हियरिङ डिभाइसहरू"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"सक्रिय गर्दै…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"टप एपले चमक नियन्त्रण गरिरहेकाले\n चमक मिलाउन मिल्दैन"</string>
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"टप एपले चमक नियन्त्रण गरिरहेकाले चमक मिलाउन मिल्दैन"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"अटो रोटेट"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"स्क्रिन स्वतःघुम्ने"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"लोकेसन"</string>
