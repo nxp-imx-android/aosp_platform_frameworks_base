@@ -44,6 +44,7 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Slog;
 import android.util.SparseIntArray;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.WindowContainerToken;
 
@@ -92,6 +93,11 @@ public class RecentTasksController implements TaskStackListenerCallback,
         TaskStackTransitionObserver.TaskStackTransitionObserverListener, UserChangeListener {
     private static final String TAG = RecentTasksController.class.getSimpleName();
 
+    // When the multiple desktops feature is disabled, all freeform tasks are lumped together into
+    // a single `GroupedTaskInfo` whose type is `TYPE_DESK`, and its `mDeskId` doesn't matter, so
+    // we pick the below arbitrary value.
+    private static final int INVALID_DESK_ID = -1;
+
     private final Context mContext;
     private final ShellController mShellController;
     private final ShellCommandHandler mShellCommandHandler;
@@ -128,6 +134,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
 
     // Temporary vars used in `generateList()`
     private final Map<Integer, TaskInfo> mTmpRemaining = new HashMap<>();
+    private final Map<Integer, Desk> mTmpDesks = new HashMap<>();
 
     /**
      * Creates {@link RecentTasksController}, returns {@code null} if the feature is not
@@ -529,6 +536,78 @@ public class RecentTasksController implements TaskStackListenerCallback,
     }
 
     /**
+     * Represents a desk whose ID is `mDeskId` and contains the tasks in `mDeskTasks`. Some of these
+     * tasks are minimized and their IDs are contained in the `mMinimizedDeskTasks` set.
+     */
+    private static class Desk {
+        final int mDeskId;
+        boolean mHasVisibleTasks = false;
+        final ArrayList<TaskInfo> mDeskTasks = new ArrayList<>();
+        final Set<Integer> mMinimizedDeskTasks = new HashSet<>();
+
+        Desk(int deskId) {
+            mDeskId = deskId;
+        }
+
+        void addTask(TaskInfo taskInfo, boolean isMinimized, boolean isVisible) {
+            mDeskTasks.add(taskInfo);
+            if (isMinimized) {
+                mMinimizedDeskTasks.add(taskInfo.taskId);
+            }
+            mHasVisibleTasks |= isVisible;
+        }
+
+        boolean hasTasks() {
+            return !mDeskTasks.isEmpty();
+        }
+
+        GroupedTaskInfo createDeskTaskInfo() {
+            return GroupedTaskInfo.forDeskTasks(mDeskId, mDeskTasks, mMinimizedDeskTasks);
+        }
+    }
+
+    /**
+     * Clears the `mTmpDesks` map, and re-initializes it with the current state of desks from all
+     * displays, without adding any desk tasks. This is a preparation step so that tasks can be
+     * added to these desks in `generateList()`.
+     *
+     * This is needed since with the `ENABLE_MULTIPLE_DESKTOPS_BACKEND` flag, we want to include
+     * desk even if they're empty (i.e. have no tasks).
+     *
+     * @param multipleDesktopsEnabled whether the multiple desktops backend feature is enabled.
+     */
+    private void initializeDesksMap(boolean multipleDesktopsEnabled) {
+        mTmpDesks.clear();
+
+        if (DesktopModeStatus.canEnterDesktopMode(mContext)
+                && mDesktopUserRepositories.isPresent()) {
+            if (multipleDesktopsEnabled) {
+                for (var deskId : mDesktopUserRepositories.get().getCurrent().getAllDeskIds()) {
+                    getOrCreateDesk(deskId);
+                }
+            } else {
+                // When the multiple desks feature is disabled, we lump all freeform windows in a
+                // single `GroupedTaskInfo` regardless of their display. The `deskId` in this case
+                // doesn't matter and can be any arbitrary value.
+                getOrCreateDesk(/* deskId = */ INVALID_DESK_ID);
+            }
+        }
+    }
+
+    /**
+     * Returns the `Desk` whose ID is `deskId` from the `mTmpDesks` map if it exists, or it creates
+     * one and adds it to the map and then returns it.
+     */
+    private Desk getOrCreateDesk(int deskId) {
+        var desk = mTmpDesks.get(deskId);
+        if (desk == null) {
+            desk = new Desk(deskId);
+            mTmpDesks.put(deskId, desk);
+        }
+        return desk;
+    }
+
+    /**
      * Generates a list of GroupedTaskInfos for the given raw list of tasks (either recents or
      * running tasks).
      *
@@ -555,6 +634,14 @@ public class RecentTasksController implements TaskStackListenerCallback,
             ProtoLog.v(WM_SHELL_TASK_OBSERVER, "RecentTasksController.generateList(%s)", reason);
         }
 
+        final boolean multipleDesktopsEnabled =
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue();
+        initializeDesksMap(multipleDesktopsEnabled);
+
+        // When the multiple desktops feature is enabled, we include all desks even if they're
+        // empty.
+        final boolean shouldIncludeEmptyDesktops = multipleDesktopsEnabled;
+
         // Make a mapping of task id -> task info for the remaining tasks to be processed, this
         // mapping is used to keep track of split tasks that may exist later in the task list that
         // should be ignored because they've already been grouped
@@ -566,11 +653,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
         ArrayList<GroupedTaskInfo> groupedTasks = new ArrayList<>(tasks.size());
         ArrayList<GroupedTaskInfo> visibleGroupedTasks = new ArrayList<>();
 
-        // Phase 1: Extract the desktop and visible fullscreen/split tasks. We make new collections
-        // here as the GroupedTaskInfo can store them without copying
-        ArrayList<TaskInfo> desktopTasks = new ArrayList<>();
-        Set<Integer> minimizedDesktopTasks = new HashSet<>();
-        boolean desktopTasksVisible = false;
+        // Phase 1: Extract the desktops and visible fullscreen/split tasks.
         for (int i = 0; i < tasks.size(); i++) {
             final TaskInfo taskInfo = tasks.get(i);
             final int taskId = taskInfo.taskId;
@@ -600,11 +683,15 @@ public class RecentTasksController implements TaskStackListenerCallback,
                     taskInfo.positionInParent = new Point(taskInfo.lastNonFullscreenBounds.left,
                             taskInfo.lastNonFullscreenBounds.top);
                 }
-                desktopTasks.add(taskInfo);
-                if (mDesktopUserRepositories.get().getCurrent().isMinimizedTask(taskId)) {
-                    minimizedDesktopTasks.add(taskId);
-                }
-                desktopTasksVisible |= mVisibleTasksMap.containsKey(taskId);
+                // Lump all freeform tasks together as if they were all in a single desk whose ID is
+                // `INVALID_DESK_ID` when the multiple desktops feature is disabled.
+                final int deskId = multipleDesktopsEnabled
+                        ? mDesktopUserRepositories.get().getCurrent().getDeskIdForTask(taskId)
+                        : INVALID_DESK_ID;
+                final Desk desk = getOrCreateDesk(deskId);
+                desk.addTask(taskInfo,
+                        mDesktopUserRepositories.get().getCurrent().isMinimizedTask(taskId),
+                        mVisibleTasksMap.containsKey(taskId));
                 mTmpRemaining.remove(taskId);
                 continue;
             }
@@ -636,9 +723,10 @@ public class RecentTasksController implements TaskStackListenerCallback,
         if (enableShellTopTaskTracking()) {
             // Phase 2: If there were desktop tasks and they are visible, add them to the visible
             //          list as well (the actual order doesn't matter for Overview)
-            if (!desktopTasks.isEmpty() && desktopTasksVisible) {
-                visibleGroupedTasks.add(
-                        GroupedTaskInfo.forFreeformTasks(desktopTasks, minimizedDesktopTasks));
+            for (var desk : mTmpDesks.values()) {
+                if (desk.mHasVisibleTasks) {
+                    visibleGroupedTasks.add(desk.createDeskTaskInfo());
+                }
             }
 
             if (!visibleGroupedTasks.isEmpty()) {
@@ -674,16 +762,18 @@ public class RecentTasksController implements TaskStackListenerCallback,
             // Phase 5: If there were desktop tasks and they are not visible (ie. weren't added
             //          above), add them to the end of the final list (the actual order doesn't
             //          matter for Overview)
-            if (!desktopTasks.isEmpty() && !desktopTasksVisible) {
-                groupedTasks.add(
-                        GroupedTaskInfo.forFreeformTasks(desktopTasks, minimizedDesktopTasks));
+            for (var desk : mTmpDesks.values()) {
+                if (!desk.mHasVisibleTasks && (desk.hasTasks() || shouldIncludeEmptyDesktops)) {
+                    groupedTasks.add(desk.createDeskTaskInfo());
+                }
             }
             dumpGroupedTasks(groupedTasks, "Phase 5");
         } else {
             // Add the desktop tasks at the end of the list
-            if (!desktopTasks.isEmpty()) {
-                groupedTasks.add(
-                        GroupedTaskInfo.forFreeformTasks(desktopTasks, minimizedDesktopTasks));
+            for (var desk : mTmpDesks.values()) {
+                if (desk.hasTasks() || shouldIncludeEmptyDesktops) {
+                    groupedTasks.add(desk.createDeskTaskInfo());
+                }
             }
         }
 
