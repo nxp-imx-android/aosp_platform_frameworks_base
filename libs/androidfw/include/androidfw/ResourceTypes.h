@@ -1265,6 +1265,9 @@ struct ResTable_config
     // Varies in length from 3 to 8 chars. Zero-filled value.
     char localeNumberingSystem[8];
 
+    // Mark all padding explicitly so it's clear how much we can expand it.
+    char endPadding[3];
+
     void copyFromDeviceNoSwap(const ResTable_config& o) {
       const auto o_size = dtohl(o.size);
       if (o_size >= sizeof(ResTable_config)) [[likely]] {
@@ -1421,6 +1424,13 @@ struct ResTable_config
     void copyFromDtoH_slow(const ResTable_config& o);
     void swapHtoD_slow();
 };
+
+// Fix the struct size for backward compatibility
+static_assert(sizeof(ResTable_config) == 64);
+
+// Make sure there's no unaccounted padding in the structure.
+static_assert(offsetof(ResTable_config, endPadding) +
+                  sizeof(ResTable_config::endPadding) == sizeof(ResTable_config));
 
 /**
  * A specification of the resources defined by a particular type.
