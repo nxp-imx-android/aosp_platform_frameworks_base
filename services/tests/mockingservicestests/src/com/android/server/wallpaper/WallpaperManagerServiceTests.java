@@ -64,7 +64,6 @@ import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.ServiceInfo;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManager.DisplayListener;
@@ -95,6 +94,7 @@ import com.android.internal.R;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalServices;
+import com.android.server.wm.DesktopModeHelper;
 import com.android.server.wm.WindowManagerInternal;
 
 import org.hamcrest.CoreMatchers;
@@ -154,8 +154,6 @@ public class WallpaperManagerServiceTests {
 
     private IPackageManager mIpm = AppGlobals.getPackageManager();
 
-    private Resources mResources = sContext.getResources();
-
     @Mock
     private DisplayManager mDisplayManager;
 
@@ -177,6 +175,7 @@ public class WallpaperManagerServiceTests {
                 .spyStatic(WallpaperUtils.class)
                 .spyStatic(LocalServices.class)
                 .spyStatic(WallpaperManager.class)
+                .spyStatic(DesktopModeHelper.class)
                 .startMocking();
 
         sWindowManagerInternal = mock(WindowManagerInternal.class);
@@ -245,6 +244,8 @@ public class WallpaperManagerServiceTests {
             int userId = (invocation.getArgument(0));
             return getWallpaperTestDir(userId);
         }).when(() -> WallpaperUtils.getWallpaperDir(anyInt()));
+        ExtendedMockito.doAnswer(invocation -> true).when(
+                () -> DesktopModeHelper.isDeviceEligibleForDesktopMode(any()));
 
         sContext.addMockSystemService(DisplayManager.class, mDisplayManager);
 
@@ -256,10 +257,6 @@ public class WallpaperManagerServiceTests {
         doReturn(displays).when(mDisplayManager).getDisplays();
 
         spyOn(mIpm);
-        spyOn(mResources);
-        doReturn(true).when(mResources).getBoolean(eq(R.bool.config_isDesktopModeSupported));
-        doReturn(true).when(mResources).getBoolean(
-                eq(R.bool.config_canInternalDisplayHostDesktops));
         mService = new TestWallpaperManagerService(sContext);
         spyOn(mService);
         mService.systemReady();
