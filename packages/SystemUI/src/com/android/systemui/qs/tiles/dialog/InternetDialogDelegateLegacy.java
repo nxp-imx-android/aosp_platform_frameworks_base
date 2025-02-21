@@ -401,6 +401,9 @@ public class InternetDialogDelegateLegacy implements
 
         mInternetDialogTitle.setText(internetContent.mInternetDialogTitleString);
         mInternetDialogSubTitle.setText(internetContent.mInternetDialogSubTitle);
+        if (!internetContent.mIsWifiEnabled) {
+            setProgressBarVisible(false);
+        }
         mAirplaneModeButton.setVisibility(
                 internetContent.mIsAirplaneModeEnabled ? View.VISIBLE : View.GONE);
 
