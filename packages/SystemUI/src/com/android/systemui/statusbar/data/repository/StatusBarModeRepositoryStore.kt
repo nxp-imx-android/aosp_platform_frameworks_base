@@ -22,7 +22,6 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.DisplayId
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
-import com.android.systemui.display.data.repository.PerDisplayStoreImpl
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.core.StatusBarInitializer
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
@@ -48,7 +47,7 @@ constructor(
     displayRepository: DisplayRepository,
 ) :
     StatusBarModeRepositoryStore,
-    PerDisplayStoreImpl<StatusBarModePerDisplayRepository>(
+    StatusBarPerDisplayStoreImpl<StatusBarModePerDisplayRepository>(
         backgroundApplicationScope,
         displayRepository,
     ) {

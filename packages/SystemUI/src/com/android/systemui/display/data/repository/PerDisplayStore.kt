@@ -48,7 +48,7 @@ abstract class PerDisplayStoreImpl<T>(
     private val displayRepository: DisplayRepository,
 ) : PerDisplayStore<T>, CoreStartable {
 
-    private val perDisplayInstances = ConcurrentHashMap<Int, T>()
+    protected val perDisplayInstances = ConcurrentHashMap<Int, T>()
 
     /**
      * The instance for the default/main display of the device. For example, on a phone or a tablet,

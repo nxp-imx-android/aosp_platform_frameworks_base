@@ -21,8 +21,8 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.DisplayScopeRepository
-import com.android.systemui.display.data.repository.PerDisplayStoreImpl
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
+import com.android.systemui.statusbar.data.repository.StatusBarPerDisplayStoreImpl
 import com.android.systemui.statusbar.phone.AutoHideControllerStore
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStateRepositoryStore
@@ -34,7 +34,7 @@ import dagger.multibindings.IntoMap
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 
-/** [PerDisplayStoreImpl] for providing display specific [StatusBarOrchestrator]. */
+/** [StatusBarPerDisplayStoreImpl] for providing display specific [StatusBarOrchestrator]. */
 @SysUISingleton
 class MultiDisplayStatusBarOrchestratorStore
 @Inject
@@ -48,7 +48,11 @@ constructor(
     private val autoHideControllerStore: AutoHideControllerStore,
     private val displayScopeRepository: DisplayScopeRepository,
     private val statusBarWindowStateRepositoryStore: StatusBarWindowStateRepositoryStore,
-) : PerDisplayStoreImpl<StatusBarOrchestrator>(backgroundApplicationScope, displayRepository) {
+) :
+    StatusBarPerDisplayStoreImpl<StatusBarOrchestrator>(
+        backgroundApplicationScope,
+        displayRepository,
+    ) {
 
     init {
         StatusBarConnectedDisplays.assertInNewMode()
