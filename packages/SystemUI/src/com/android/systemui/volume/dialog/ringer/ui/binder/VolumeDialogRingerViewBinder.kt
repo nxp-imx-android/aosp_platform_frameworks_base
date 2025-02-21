@@ -17,6 +17,7 @@
 package com.android.systemui.volume.dialog.ringer.ui.binder
 
 import android.animation.ArgbEvaluator
+import android.content.res.Configuration
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
@@ -127,6 +128,16 @@ constructor(
                 when (ringerState) {
                     is RingerViewModelState.Available -> {
                         val uiModel = ringerState.uiModel
+                        val orientation =
+                            if (
+                                view.context.resources.getBoolean(
+                                    R.bool.volume_dialog_ringer_drawer_should_open_to_the_side
+                                )
+                            ) {
+                                ringerState.orientation
+                            } else {
+                                Configuration.ORIENTATION_PORTRAIT
+                            }
 
                         // Set up view background and visibility
                         drawerContainer.visibility = View.VISIBLE
@@ -144,7 +155,7 @@ constructor(
                                 drawerContainer.closeDrawer(
                                     ringerBackgroundView,
                                     uiModel.currentButtonIndex,
-                                    ringerState.orientation,
+                                    orientation,
                                 )
                             }
                             is RingerDrawerState.Closed -> {
@@ -186,7 +197,7 @@ constructor(
                                         drawerContainer.closeDrawer(
                                             ringerBackgroundView,
                                             uiModel.currentButtonIndex,
-                                            ringerState.orientation,
+                                            orientation,
                                         )
                                     }
                                 }
@@ -206,11 +217,7 @@ constructor(
                                 } else {
                                     ringerDrawerTransitionListener.setProgressChangeEnabled(true)
                                 }
-                                updateOpenState(
-                                    drawerContainer,
-                                    ringerState.orientation,
-                                    ringerBackgroundView,
-                                )
+                                updateOpenState(drawerContainer, orientation, ringerBackgroundView)
                                 drawerContainer
                                     .getTransition(R.id.close_to_open_transition)
                                     .setInterpolatorInfo(
