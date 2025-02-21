@@ -18,6 +18,8 @@ package android.app;
 
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.view.Surface.ROTATION_0;
+import static android.view.Surface.ROTATION_180;
+import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
 
 import android.annotation.IntDef;
@@ -87,8 +89,18 @@ public class CameraCompatTaskInfo implements Parcelable {
      * <p>This field is used by the WM and the camera framework, to coordinate camera compat mode
      * setup.
      */
+    // TODO(b/414347702): Revisit data structure.
     @FreeformCameraCompatMode
     public int freeformCameraCompatMode;
+
+    /**
+     * Real display rotation, never affected by camera compat sandboxing.
+     *
+     * <p>This value is used by the Camera Framework to calculate rotate-and-crop rotation degrees.
+     */
+    // TODO(b/414347702): Revisit data structure.
+    @Surface.Rotation
+    public int displayRotation;
 
     private CameraCompatTaskInfo() {
         // Do nothing
@@ -126,6 +138,7 @@ public class CameraCompatTaskInfo implements Parcelable {
      */
     void readFromParcel(Parcel source) {
         freeformCameraCompatMode = source.readInt();
+        displayRotation = source.readInt();
     }
 
     /**
@@ -134,6 +147,7 @@ public class CameraCompatTaskInfo implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(freeformCameraCompatMode);
+        dest.writeInt(displayRotation);
     }
 
     /**
@@ -144,7 +158,8 @@ public class CameraCompatTaskInfo implements Parcelable {
         if (that == null) {
             return false;
         }
-        return freeformCameraCompatMode == that.freeformCameraCompatMode;
+        return freeformCameraCompatMode == that.freeformCameraCompatMode
+                && displayRotation == that.displayRotation;
     }
 
     /**
@@ -154,13 +169,15 @@ public class CameraCompatTaskInfo implements Parcelable {
         if (that == null) {
             return false;
         }
-        return freeformCameraCompatMode == that.freeformCameraCompatMode;
+        return freeformCameraCompatMode == that.freeformCameraCompatMode
+                && displayRotation == that.displayRotation;
     }
 
     @Override
     public String toString() {
         return "CameraCompatTaskInfo { freeformCameraCompatMode="
                 + freeformCameraCompatModeToString(freeformCameraCompatMode)
+                + displayRotationToString(displayRotation)
                 + "}";
     }
 
@@ -202,6 +219,20 @@ public class CameraCompatTaskInfo implements Parcelable {
                     "app-landscape-device-portrait";
             default -> throw new AssertionError(
                     "Unexpected camera compat mode: " + freeformCameraCompatMode);
+        };
+    }
+
+    /** Human readable version of the freeform camera compat mode. */
+    @NonNull
+    public static String displayRotationToString(@Surface.Rotation int displayRotation) {
+        return switch (displayRotation) {
+            case ROTATION_UNDEFINED -> "undefined";
+            case ROTATION_0 -> "0";
+            case ROTATION_90 -> "90";
+            case ROTATION_180 -> "180";
+            case ROTATION_270 -> "270";
+            default -> throw new AssertionError(
+                    "Unexpected display rotation: " + displayRotation);
         };
     }
 }
