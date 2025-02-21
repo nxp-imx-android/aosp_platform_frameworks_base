@@ -58,7 +58,6 @@ import android.window.TransitionInfo;
 import com.android.internal.R;
 import com.android.internal.policy.TransitionAnimation;
 import com.android.internal.protolog.ProtoLog;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.TransitionUtil;
 
@@ -78,12 +77,7 @@ public class TransitionAnimationHelper {
         final boolean isFreeform = isTask && change.getTaskInfo().isFreeform();
         final boolean isCoveredByOpaqueFullscreenChange =
                 isCoveredByOpaqueFullscreenChange(info, change);
-        final TransitionInfo.AnimationOptions options;
-        if (Flags.moveAnimationOptionsToChange()) {
-            options = change.getAnimationOptions();
-        } else {
-            options = info.getAnimationOptions();
-        }
+        final TransitionInfo.AnimationOptions options = change.getAnimationOptions();
         final int overrideType = options != null ? options.getType() : ANIM_NONE;
         int animAttr = 0;
         boolean translucent = false;
@@ -279,16 +273,10 @@ public class TransitionAnimationHelper {
      *                      the given transition animation.
      */
     @ColorInt
-    public static int getTransitionBackgroundColorIfSet(@NonNull TransitionInfo info,
-            @NonNull TransitionInfo.Change change, @NonNull Animation a,
-            @ColorInt int defaultColor) {
+    public static int getTransitionBackgroundColorIfSet(@NonNull TransitionInfo.Change change,
+            @NonNull Animation a, @ColorInt int defaultColor) {
         if (!a.getShowBackdrop()) {
             return defaultColor;
-        }
-        if (!Flags.moveAnimationOptionsToChange() && info.getAnimationOptions() != null
-                && info.getAnimationOptions().getBackgroundColor() != 0) {
-            // If available use the background color provided through AnimationOptions
-            return info.getAnimationOptions().getBackgroundColor();
         } else if (a.getBackdropColor() != 0) {
             // Otherwise fallback on the background color provided through the animation
             // definition.
