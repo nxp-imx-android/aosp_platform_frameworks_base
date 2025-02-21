@@ -1385,7 +1385,8 @@ public class HeadsUpManagerImpl
                     mPostTime = Math.max(mPostTime, now);
                 }
             };
-            mAvalancheController.update(this, runnable, "updateEntry (updatePostTime)");
+            mAvalancheController.update(this, runnable, "updateEntry reason:"
+                    + reason + " updatePostTime:" + updatePostTime);
 
             if (isSticky()) {
                 cancelAutoRemovalCallbacks("updateEntry (sticky)");
