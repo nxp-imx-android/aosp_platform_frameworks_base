@@ -507,6 +507,11 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
         testScope.runTest {
             underTest.start()
             underTest.setLeaveOpenOnKeyguardHide(true)
+            kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "")
+            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+            runCurrent()
 
             keyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.AOD,
@@ -515,6 +520,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             )
             assertThat(underTest.leaveOpenOnKeyguardHide()).isEqualTo(true)
 
+            kosmos.sceneInteractor.changeScene(Scenes.Gone, "")
             kosmos.setTransition(
                 sceneTransition = Idle(Scenes.Gone),
                 stateTransition =

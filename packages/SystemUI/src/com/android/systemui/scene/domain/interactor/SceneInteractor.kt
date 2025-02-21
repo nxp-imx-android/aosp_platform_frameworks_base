@@ -767,4 +767,41 @@ constructor(
             )
         }
     }
+
+    /**
+     * Based off of the ordering of [allContentKeys], returns the key of the highest z-order content
+     * out of [content].
+     */
+    private fun determineTopmostContent(content: Set<ContentKey>): ContentKey {
+        // Assuming allContentKeys is sorted by ascending z-order.
+        return checkNotNull(allContentKeys.findLast { it in content }) {
+            "Could not find unknown content $content in allContentKeys $allContentKeys"
+        }
+    }
+
+    /** Optimization for common case where overlays is empty. */
+    private fun determineTopmostContent(scene: SceneKey, overlays: Set<OverlayKey>): ContentKey {
+        return if (overlays.isEmpty()) {
+            scene
+        } else {
+            determineTopmostContent(overlays)
+        }
+    }
+
+    /**
+     * The current content that has the highest z-order out of all currently shown scenes and
+     * overlays.
+     *
+     * Note that during a transition between content, a different content may have the highest z-
+     * order. Only the one provided by this flow is considered the current logical topmost content.
+     */
+    @Deprecated("Only to be used for compatibility with KeyguardTransitionFramework")
+    val topmostContent: StateFlow<ContentKey> =
+        combine(currentScene, currentOverlays, ::determineTopmostContent)
+            .stateInTraced(
+                name = "topmostContent",
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = determineTopmostContent(currentScene.value, currentOverlays.value),
+            )
 }
