@@ -544,6 +544,7 @@ final class OverlayManagerSettings {
                     // and overwritten.
                     throw new XmlPullParserException("old version " + oldVersion + "; ignoring");
                 case 3:
+                case 4:
                     // Upgrading from version 3 to 5 is not a breaking change so do not ignore the
                     // overlay file.
                     return;
