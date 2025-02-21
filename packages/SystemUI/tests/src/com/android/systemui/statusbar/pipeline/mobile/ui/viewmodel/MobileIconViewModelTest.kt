@@ -31,7 +31,6 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.FakeFeatureFlagsClassic
 import com.android.systemui.flags.Flags
-import com.android.systemui.flags.Flags.NEW_NETWORK_SLICE_UI
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.connectivity.MobileIconCarrierIdOverridesFake
@@ -94,7 +93,6 @@ class MobileIconViewModelTest : SysuiTestCase() {
 
     private val flags =
         FakeFeatureFlagsClassic().also {
-            it.set(Flags.NEW_NETWORK_SLICE_UI, false)
             it.set(Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS, true)
         }
     private val testDispatcher = UnconfinedTestDispatcher()
@@ -430,6 +428,7 @@ class MobileIconViewModelTest : SysuiTestCase() {
                         assertWithMessage("Level $i is expected to be 'no signal'")
                             .that((latest as MobileContentDescription.Cellular).levelDescriptionRes)
                             .isEqualTo(NO_SIGNAL)
+
                     else ->
                         assertWithMessage("Level $i is expected not to be null")
                             .that(latest)
@@ -454,6 +453,7 @@ class MobileIconViewModelTest : SysuiTestCase() {
                         assertWithMessage("Level $i is expected to be 'no signal'")
                             .that((latest as MobileContentDescription.Cellular).levelDescriptionRes)
                             .isEqualTo(NO_SIGNAL)
+
                     else ->
                         assertWithMessage("Level $i is not expected to be null")
                             .that(latest)
@@ -834,22 +834,8 @@ class MobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun netTypeBackground_flagOff_isNull() =
+    fun netTypeBackground_nullWhenNoPrioritizedCapabilities() =
         testScope.runTest {
-            flags.set(NEW_NETWORK_SLICE_UI, false)
-            createAndSetViewModel()
-
-            val latest by collectLastValue(underTest.networkTypeBackground)
-
-            repository.hasPrioritizedNetworkCapabilities.value = true
-
-            assertThat(latest).isNull()
-        }
-
-    @Test
-    fun netTypeBackground_flagOn_nullWhenNoPrioritizedCapabilities() =
-        testScope.runTest {
-            flags.set(NEW_NETWORK_SLICE_UI, true)
             createAndSetViewModel()
 
             val latest by collectLastValue(underTest.networkTypeBackground)
@@ -861,9 +847,8 @@ class MobileIconViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
-    fun netTypeBackground_sliceUiEnabled_notNullWhenPrioritizedCapabilities_newIcons() =
+    fun netTypeBackground_notNullWhenPrioritizedCapabilities_newIcons() =
         testScope.runTest {
-            flags.set(NEW_NETWORK_SLICE_UI, true)
             createAndSetViewModel()
 
             val latest by collectLastValue(underTest.networkTypeBackground)
@@ -876,9 +861,8 @@ class MobileIconViewModelTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
-    fun netTypeBackground_sliceUiDisabled_notNullWhenPrioritizedCapabilities_oldIcons() =
+    fun netTypeBackground_notNullWhenPrioritizedCapabilities_oldIcons() =
         testScope.runTest {
-            flags.set(NEW_NETWORK_SLICE_UI, true)
             createAndSetViewModel()
 
             val latest by collectLastValue(underTest.networkTypeBackground)
@@ -1075,7 +1059,6 @@ class MobileIconViewModelTest : SysuiTestCase() {
                 interactor,
                 airplaneModeInteractor,
                 constants,
-                flags,
                 testScope.backgroundScope,
             )
     }

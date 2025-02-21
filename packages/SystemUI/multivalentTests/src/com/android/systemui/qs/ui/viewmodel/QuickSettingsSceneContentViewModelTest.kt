@@ -23,8 +23,6 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.flags.Flags
-import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.media.controls.data.repository.mediaFilterRepository
@@ -79,8 +77,6 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        kosmos.fakeFeatureFlagsClassic.set(Flags.NEW_NETWORK_SLICE_UI, false)
-
         sceneContainerStartable.start()
         underTest =
             QuickSettingsSceneContentViewModel(
