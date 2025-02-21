@@ -245,8 +245,9 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth ਕਨੈਕਟ ਕੀਤੀ।"</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ਬਲੂਟੁੱਥ ਡੀਵਾਈਸ ਦਾ ਪ੍ਰਤੀਕ"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ਡੀਵਾਈਸ ਦੇ ਵੇਰਵੇ ਦਾ ਸੰਰੂਪਣ ਕਰਨ ਲਈ ਕਲਿੱਕ ਕਰੋ"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"\'ਸਾਰੇ ਡੀਵਾਈਸ ਦੇਖੋ\' \'ਤੇ ਕਲਿੱਕ ਕਰੋ"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"\'ਨਵਾਂ ਡੀਵਾਈਸ ਜੋੜਾਬੱਧ ਕਰੋ\' \'ਤੇ ਕਲਿੱਕ ਕਰੋ"</string>
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. ਡੀਵਾਈਸ ਦੇ ਵੇਰਵੇ ਦਾ ਸੰਰੂਪਣ ਕਰੋ"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"ਸਾਰੇ ਡੀਵਾਈਸ ਦੇਖੋ"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"ਨਵਾਂ ਡੀਵਾਈਸ ਜੋੜਾਬੱਧ ਕਰੋ"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ਬੈਟਰੀ ਪ੍ਰਤੀਸ਼ਤ ਅਗਿਆਤ ਹੈ।"</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ।"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ।"</string>
@@ -808,12 +809,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਐਪ ਗੱਲਬਾਤ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦੀ"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ਵਿਚਾਰ"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ਖਾਰਜ ਕਰੋ"</string>
-    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
-    <skip />
-    <!-- no translation found for live_notifications_title (1586553354601345379) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"ਪਿੰਨ ਕੀਤੇ ਵਜੋਂ ਨਾ ਦਿਖਾਓ"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"ਲਾਈਵ ਅੱਪਡੇਟ ਦਿਖਾਏ ਜਾ ਰਹੇ ਹਨ"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"ਪਿੰਨ ਕੀਤੀਆਂ ਸੂਚਨਾਵਾਂ ਐਪਾਂ ਤੋਂ ਲਾਈਵ ਜਾਣਕਾਰੀ ਦਿਖਾਉਂਦੀਆਂ ਹਨ ਅਤੇ ਇਹ ਜਾਣਕਾਰੀ ਹਮੇਸ਼ਾਂ ਸਥਿਤੀ ਪੱਟੀ ਅਤੇ ਲਾਕ ਸਕ੍ਰੀਨ \'ਤੇ ਦਿਖਦੀ ਹੈ"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ਇਹਨਾਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਸੋਧਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ਕਾਲ ਸੰਬੰਧੀ ਸੂਚਨਾਵਾਂ ਨੂੰ ਸੋਧਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ਇਹ ਸੂਚਨਾਵਾਂ ਦਾ ਗਰੁੱਪ ਇੱਥੇ ਸੰਰੂਪਿਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"</string>
@@ -900,7 +898,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ਮਲਟੀਟਾਸਕਿੰਗ"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ਸੱਜੇ ਪਾਸੇ ਵਾਲੀ ਐਪ ਨਾਲ ਸਪਲਿਟ ਸਕ੍ਰੀਨ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ਖੱਬੇ ਪਾਸੇ ਵਾਲੀ ਐਪ ਨਾਲ ਸਪਲਿਟ ਸਕ੍ਰੀਨ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"ਪੂਰੀ-ਸਕ੍ਰੀਨ \'ਤੇ ਸਵਿੱਚ ਕਰੋ"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"ਪੂਰੀ ਸਕ੍ਰੀਨ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"ਡੈਸਕਟਾਪ ਦ੍ਰਿਸ਼ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"ਸਪਲਿਟ ਸਕ੍ਰੀਨ ਦੀ ਵਰਤੋਂ ਕਰਨ ਵੇਲੇ ਸੱਜੇ ਜਾਂ ਹੇਠਾਂ ਮੌਜੂਦ ਐਪ \'ਤੇ ਸਵਿੱਚ ਕਰੋ"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"ਸਪਲਿਟ ਸਕ੍ਰੀਨ ਦੀ ਵਰਤੋਂ ਕਰਨ ਵੇਲੇ ਖੱਬੇ ਜਾਂ ਉੱਪਰ ਮੌਜੂਦ ਐਪ \'ਤੇ ਸਵਿੱਚ ਕਰੋ"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"ਸਪਲਿਟ ਸਕ੍ਰੀਨ ਦੌਰਾਨ: ਇੱਕ ਐਪ ਨਾਲ ਦੂਜੀ ਐਪ ਨੂੰ ਬਦਲੋ"</string>
@@ -987,6 +986,8 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"ਘੱਟ ਤਰਜੀਹ ਵਾਲੇ ਸੂਚਨਾ ਪ੍ਰਤੀਕਾਂ ਨੂੰ ਦਿਖਾਓ"</string>
     <string name="other" msgid="429768510980739978">"ਹੋਰ"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
+    <skip />
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ਟਾਇਲ ਹਟਾਓ"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"ਪਿਛਲੀ ਸਥਿਤੀ \'ਤੇ ਟਾਇਲ ਸ਼ਾਮਲ ਕਰੋ"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ਟਾਇਲ ਨੂੰ ਲਿਜਾਓ"</string>
@@ -1501,6 +1502,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"ਹਾਲੀਆ ਐਪਾਂ ਦੇਖੋ"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ਐਪਾਂ ਵਿਚਕਾਰ ਸਵਿੱਚ ਕਰੋ"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"ਹੋ ਗਿਆ"</string>
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"ਅੱਗੇ"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"ਵਾਪਸ ਜਾਓ"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"ਆਪਣੇ ਟੱਚਪੈਡ \'ਤੇ ਤਿੰਨ ਉਂਗਲਾਂ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਖੱਬੇ ਜਾਂ ਸੱਜੇ ਪਾਸੇ ਵੱਲ ਸਵਾਈਪ ਕਰੋ"</string>
@@ -1538,7 +1540,10 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"ਹਾਲੀਆ ਐਪਾਂ ਨੂੰ ਦੇਖਣ ਲਈ, ਟੱਚਪੈਡ \'ਤੇ ਤਿੰਨ ਉਂਗਲਾਂ ਨਾਲ ਉੱਪਰ ਵੱਲ ਸਵਾਈਪ ਕਰ ਕੇ ਦਬਾਈ ਰੱਖੋ"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"ਆਪਣੀਆਂ ਸਾਰੀਆਂ ਐਪਾਂ ਨੂੰ ਦੇਖਣ ਲਈ, ਆਪਣੇ ਕੀ-ਬੋਰਡ \'ਤੇ ਕਾਰਵਾਈ ਕੁੰਜੀ ਨੂੰ ਦਬਾਓ"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"ਅਸਪਸ਼ਟ ਬਣਾਇਆ ਗਿਆ"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"ਦੇਖਣ ਲਈ ਅਣਲਾਕ ਕਰੋ"</string>
+    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
+    <skip />
+    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
+    <skip />
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"ਸੰਦਰਭੀ ਸਿੱਖਿਆ"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"ਪਿੱਛੇ ਜਾਣ ਲਈ ਆਪਣੇ ਟੱਚਪੈਡ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"ਤਿੰਨ ਉਂਗਲਾਂ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਖੱਬੇ ਜਾਂ ਸੱਜੇ ਪਾਸੇ ਵੱਲ ਸਵਾਈਪ ਕਰੋ। ਹੋਰ ਇਸ਼ਾਰਿਆਂ ਨੂੰ ਜਾਣਨ ਲਈ ਟੈਪ ਕਰੋ।"</string>

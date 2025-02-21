@@ -245,8 +245,12 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth е поврзан."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Икона за уред со Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Кликнете за да ги конфигурирате деталите за уредот"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"Кликнете за да се прикажат сите уреди"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"Кликнете за да спарите нов уред"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
+    <skip />
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Процентот на батеријата е непознат."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Поврзано со <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Поврзано со <xliff:g id="CAST">%s</xliff:g>."</string>
@@ -808,12 +812,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> не поддржува функции за разговор"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Повратни информации"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Отфрли"</string>
-    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
-    <skip />
-    <!-- no translation found for live_notifications_title (1586553354601345379) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Не прикажувај како закачено"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"Прикажува новости во живо"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"Закачените известувања прикажуваат информации во живо од апликациите и секогаш се појавуваат на статусната лента и на заклучениот екран"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Овие известувања не може да се изменат"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Известувањата за повици не може да се изменат."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Оваа група известувања не може да се конфигурира тука"</string>
@@ -900,7 +901,10 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Мултитаскинг"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Користете поделен екран со апликацијата оддесно"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Користете поделен екран со апликацијата одлево"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"Префрлете се на цел екран"</string>
+    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
+    <skip />
+    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Префрлете се на апликацијата десно или долу при користењето поделен екран"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Префрлете се на апликацијата лево или горе при користењето поделен екран"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"При поделен екран: префрлете ги аплик. од едната на другата страна"</string>
@@ -987,6 +991,8 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Прикажувај икони за известувања со низок приоритет"</string>
     <string name="other" msgid="429768510980739978">"Друго"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
+    <skip />
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"отстранување на плочката"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"додајте плочка на последната позиција"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Преместување на плочката"</string>
@@ -1501,6 +1507,8 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Прикажи ги неодамнешните апликации"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Сменете ги апликациите"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Готово"</string>
+    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
+    <skip />
     <string name="gesture_error_title" msgid="469064941635578511">"Обидете се повторно!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Назад"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Повлечете налево или надесно со три прста на допирната подлога"</string>
@@ -1538,7 +1546,10 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"За да ги видите скорешните апликации, повлечете нагоре и задржете со три прста на допирната подлога"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Притиснете го копчето за дејство на тастатурата за да ги видите сите апликации"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Редактирано"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"Отклучете за приказ"</string>
+    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
+    <skip />
+    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
+    <skip />
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Контекстуално образование"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Користете ја допирната подлога за да се вратите назад"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Повлечете налево или надесно со три прста. Допрете за да научите повеќе движења."</string>

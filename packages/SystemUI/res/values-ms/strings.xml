@@ -245,8 +245,12 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth disambungkan."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ikon peranti Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Klik untuk mengkonfigurasi butiran peranti"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"Klik untuk melihat semua peranti"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"Klik untuk menggandingkan peranti baharu"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
+    <skip />
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Peratusan kuasa bateri tidak diketahui."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Disambungkan kepada <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Disambungkan ke <xliff:g id="CAST">%s</xliff:g>."</string>
@@ -808,12 +812,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> tidak menyokong ciri perbualan"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Maklum balas"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Ketepikan"</string>
-    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
-    <skip />
-    <!-- no translation found for live_notifications_title (1586553354601345379) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Jangan papar sebagai disemat"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"Menunjukkan Kemaskinian Langsung"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"Pemberitahuan yang disematkan memaparkan maklumat langsung daripada apl dan sentiasa dipaparkan pada bar status dan skrin kunci"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Pemberitahuan ini tidak boleh diubah suai."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Pemberitahuan panggilan tidak boleh diubah suai."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Kumpulan pemberitahuan ini tidak boleh dikonfigurasikan di sini"</string>
@@ -900,7 +901,10 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Berbilang tugas"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Gunakan skrin pisah dengan apl pada sebelah kanan"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Gunakan skrin pisah dengan apl pada sebelah kiri"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"Beralih kepada skrin penuh"</string>
+    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
+    <skip />
+    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Tukar kepada apl di sebelah kanan/bawah semasa menggunakan skrin pisah"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Tukar kepada apl di sebelah kiri/atas semasa menggunakan skrin pisah"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Semasa skrin pisah: gantikan apl daripada satu apl kepada apl lain"</string>
@@ -987,6 +991,8 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Tunjukkan ikon pemberitahuan keutamaan rendah"</string>
     <string name="other" msgid="429768510980739978">"Lain-lain"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
+    <skip />
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"alih keluar jubin"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"tambahkan jubin pada kedudukan terakhir"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Alihkan jubin"</string>
@@ -1501,6 +1507,8 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Lihat apl terbaharu"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Tukar apl"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Selesai"</string>
+    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
+    <skip />
     <string name="gesture_error_title" msgid="469064941635578511">"Cuba lagi!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Kembali"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Leret ke kiri atau ke kanan menggunakan tiga jari pada pad sentuh"</string>
@@ -1538,7 +1546,10 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Untuk melihat apl terbaharu, leret ke atas dan tahan dengan tiga jari pada pad sentuh"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Untuk melihat semua apl, tekan kekunci tindakan pada papan kekunci"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Disunting"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"Buka kunci untuk melihat"</string>
+    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
+    <skip />
+    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
+    <skip />
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Pendidikan kontekstual"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Gunakan pad sentuh anda untuk kembali"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Leret ke kiri atau ke kanan dengan tiga jari. Ketik dan ketahui lebih lanjut tentang gerak isyarat."</string>

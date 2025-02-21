@@ -245,8 +245,12 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"ಬ್ಲೂಟೂತ್‌‌ ಸಂಪರ್ಕಗೊಂಡಿದೆ."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ಬ್ಲೂಟೂತ್ ಸಾಧನ ಐಕಾನ್"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ಸಾಧನದ ವಿವರಗಳನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"ಎಲ್ಲಾ ಸಾಧನಗಳನ್ನು ನೋಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"ಹೊಸ ಸಾಧನವನ್ನು ಪೇರ್ ಮಾಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
+    <skip />
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ಬ್ಯಾಟರಿ ಶೇಕಡಾವಾರು ತಿಳಿದಿಲ್ಲ."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> ಗೆ ಸಂಪರ್ಕಪಡಿಸಲಾಗಿದೆ."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗಿದೆ."</string>
@@ -808,12 +812,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"ಸಂವಾದ ಫೀಚರ್‌ಗಳನ್ನು <xliff:g id="APP_NAME">%1$s</xliff:g> ಬೆಂಬಲಿಸುವುದಿಲ್ಲ"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ಫೀಡ್‌ಬ್ಯಾಕ್"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ವಜಾಗೊಳಿಸಿ"</string>
-    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
-    <skip />
-    <!-- no translation found for live_notifications_title (1586553354601345379) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"ಪಿನ್ ಮಾಡಿದ ಹಾಗೆ ತೋರಿಸಬೇಡಿ"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"ಲೈವ್ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"ಪಿನ್ ಮಾಡಲಾದ ನೋಟಿಫಿಕೇಶನ್‌ಗಳು ಆ್ಯಪ್‌ಗಳಿಂದ ಲೈವ್ ಮಾಹಿತಿಯನ್ನು ಪ್ರದರ್ಶಿಸುತ್ತವೆ ಹಾಗೂ ಅವುಗಳು ಯಾವಾಗಲೂ ಸ್ಥಿತಿ ಪಟ್ಟಿ ಮತ್ತು ಲಾಕ್ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ಈ ಅಧಿಸೂಚನೆಗಳನ್ನು ಮಾರ್ಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ಕರೆ ಅಧಿಸೂಚನೆಗಳನ್ನು ಮಾರ್ಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ಈ ಗುಂಪಿನ ಅಧಿಸೂಚನೆಗಳನ್ನು ಇಲ್ಲಿ ಕಾನ್ಫಿಗರ್‌ ಮಾಡಲಾಗಿರುವುದಿಲ್ಲ"</string>
@@ -900,7 +901,10 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ಮಲ್ಟಿಟಾಸ್ಕಿಂಗ್"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ಬಲಭಾಗದಲ್ಲಿ ಆ್ಯಪ್ ಮೂಲಕ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಬಳಸಿ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ಎಡಭಾಗದಲ್ಲಿ ಆ್ಯಪ್ ಮೂಲಕ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಬಳಸಿ"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"ಫುಲ್‌ಸ್ಕ್ರೀನ್ ಮೋಡ್‌ಗೆ ಬದಲಿಸಿ"</string>
+    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
+    <skip />
+    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"ಸ್ಕ್ರೀನ್ ಬೇರ್ಪಡಿಸಿ ಮೋಡ್ ಬಳಸುವಾಗ ಬಲಭಾಗ ಅಥವಾ ಕೆಳಭಾಗದಲ್ಲಿರುವ ಆ್ಯಪ್‌ಗೆ ಬದಲಿಸಿ"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"ಸ್ಕ್ರೀನ್ ಬೇರ್ಪಡಿಸಿ ಮೋಡ್ ಬಳಸುವಾಗ ಎಡಭಾಗ ಅಥವಾ ಮೇಲ್ಭಾಗದಲ್ಲಿರುವ ಆ್ಯಪ್‌ಗೆ ಬದಲಿಸಿ"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"ಸ್ಕ್ರೀನ್ ಬೇರ್ಪಡಿಸುವ ಸಮಯದಲ್ಲಿ: ಒಂದು ಆ್ಯಪ್‌ನಿಂದ ಮತ್ತೊಂದು ಆ್ಯಪ್‌ಗೆ ಬದಲಿಸಿ"</string>
@@ -987,6 +991,8 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"ಕಡಿಮೆ-ಆದ್ಯತೆ ಸೂಚನೆಯ ಐಕಾನ್‌ಗಳನ್ನು ತೋರಿಸಿ"</string>
     <string name="other" msgid="429768510980739978">"ಇತರ"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
+    <skip />
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ಟೈಲ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"ಕೊನೆಯ ಸ್ಥಾನಕ್ಕೆ ಟೈಲ್ ಅನ್ನು ಸೇರಿಸಿ"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ಟೈಲ್ ಸರಿಸಿ"</string>
@@ -1501,6 +1507,8 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"ಇತ್ತೀಚಿನ ಆ್ಯಪ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ಆ್ಯಪ್‌ಗಳನ್ನು ಬದಲಿಸಿ"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"ಮುಗಿದಿದೆ"</string>
+    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
+    <skip />
     <string name="gesture_error_title" msgid="469064941635578511">"ಪುನಃ ಪ್ರಯತ್ನಿಸಿ!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"ಹಿಂತಿರುಗಿ"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"ನಿಮ್ಮ ಟಚ್‌ಪ್ಯಾಡ್‌ನಲ್ಲಿ ಮೂರು ಬೆರಳುಗಳನ್ನು ಬಳಸಿ ಎಡ ಅಥವಾ ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
@@ -1538,7 +1546,10 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"ಇತ್ತೀಚಿನ ಆ್ಯಪ್‌ಗಳನ್ನು ನೋಡಲು, ಟಚ್‌ಪ್ಯಾಡ್‌ನಲ್ಲಿ ಮೂರು ಬೆರಳುಗಳಿಂದ ಮೇಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ ಹಾಗೂ ಹೋಲ್ಡ್ ಮಾಡಿ"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"ನಿಮ್ಮ ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಲು, ನಿಮ್ಮ ಕೀಬೋರ್ಡ್‌ನಲ್ಲಿರುವ ಆ್ಯಕ್ಷನ್‌ ಕೀಯನ್ನು ಒತ್ತಿರಿ"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"ಅರ್ಥಬದ್ಧವಾಗಿಸಲಾಗಿದೆ"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"ನೋಡಲು ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
+    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
+    <skip />
+    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
+    <skip />
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"ಸಂದರ್ಭೋಚಿತ ಶಿಕ್ಷಣ"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"ಹಿಂತಿರುಗಲು ನಿಮ್ಮ ಟಚ್‌ಪ್ಯಾಡ್ ಅನ್ನು ಬಳಸಿ"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"ಮೂರು ಬೆರಳುಗಳಿಂದ ಎಡಕ್ಕೆ ಅಥವಾ ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ. ಇನ್ನಷ್ಟು ಗೆಸ್ಚರ್‌ಗಳನ್ನು ತಿಳಿಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ."</string>
