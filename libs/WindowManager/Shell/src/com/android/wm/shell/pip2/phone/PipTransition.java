@@ -50,6 +50,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.SystemProperties;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.TransitionInfo;
@@ -105,7 +106,10 @@ public class PipTransition extends PipTransitionController implements
      * The fixed start delay in ms when fading out the content overlay from bounds animation.
      * The fadeout animation is guaranteed to start after the client has drawn under the new config.
      */
-    private static final int CONTENT_OVERLAY_FADE_OUT_DELAY_MS = 500;
+    private static final int EXTRA_CONTENT_OVERLAY_FADE_OUT_DELAY_MS =
+            SystemProperties.getInt(
+                    "persist.wm.debug.extra_content_overlay_fade_out_delay_ms", 400);
+    private static final int CONTENT_OVERLAY_FADE_OUT_DURATION_MS = 500;
 
     //
     // Dependencies
@@ -551,7 +555,8 @@ public class PipTransition extends PipTransitionController implements
             @NonNull Runnable onAnimationEnd) {
         PipAlphaAnimator animator = new PipAlphaAnimator(mContext, overlayLeash,
                 null /* startTx */, null /* finishTx */, PipAlphaAnimator.FADE_OUT);
-        animator.setDuration(CONTENT_OVERLAY_FADE_OUT_DELAY_MS);
+        animator.setDuration(CONTENT_OVERLAY_FADE_OUT_DURATION_MS);
+        animator.setStartDelay(EXTRA_CONTENT_OVERLAY_FADE_OUT_DELAY_MS);
         animator.setAnimationEndCallback(onAnimationEnd);
         animator.start();
     }

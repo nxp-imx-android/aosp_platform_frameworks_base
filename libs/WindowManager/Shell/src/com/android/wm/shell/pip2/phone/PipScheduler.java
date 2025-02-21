@@ -55,6 +55,7 @@ public class PipScheduler {
     private PipTransitionController mPipTransitionController;
     private PipSurfaceTransactionHelper.SurfaceControlTransactionFactory
             mSurfaceControlTransactionFactory;
+    private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
 
     @Nullable private Runnable mUpdateMovementBoundsRunnable;
 
@@ -75,6 +76,7 @@ public class PipScheduler {
 
         mSurfaceControlTransactionFactory =
                 new PipSurfaceTransactionHelper.VsyncSurfaceControlTransactionFactory();
+        mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(mContext);
         mPipAlphaAnimatorSupplier = PipAlphaAnimator::new;
     }
 
@@ -213,6 +215,8 @@ public class PipScheduler {
         transformTensor.setScale(scale, scale);
         transformTensor.postTranslate(toBounds.left, toBounds.top);
         transformTensor.postRotate(degrees, toBounds.centerX(), toBounds.centerY());
+
+        mPipSurfaceTransactionHelper.round(tx, leash, mPipBoundsState.getBounds(), toBounds);
 
         tx.setMatrix(leash, transformTensor, mMatrixTmp);
         tx.apply();
