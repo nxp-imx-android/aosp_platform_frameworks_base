@@ -33,6 +33,7 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.featurepods.media.ui.compose.MediaControlPopup
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
+import com.android.systemui.statusbar.featurepods.vc.ui.compose.AvControlsChipPopup
 
 /**
  * Displays a popup in the status bar area. The offset is calculated to draw the popup below the
@@ -59,6 +60,9 @@ fun StatusBarPopup(viewModel: PopupChipModel.Shown, mediaHost: MediaHost) {
             when (viewModel.chipId) {
                 is PopupChipId.MediaControl -> {
                     MediaControlPopup(mediaHost = mediaHost)
+                }
+                is PopupChipId.AvControlsIndicator -> {
+                    AvControlsChipPopup()
                 }
             }
             // Future popup types will be handled here.
