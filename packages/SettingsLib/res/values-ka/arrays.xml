@@ -297,13 +297,13 @@
   <string-array name="shade_display_awareness_summaries">
     <item msgid="2964753205732912921">"ჩრდილის ჩვენება მხოლოდ მოწყობილობის ეკრანზე"</item>
     <item msgid="1955398604822147783">"ჩრდილის ჩვენება ერთ გარე ეკრანზე"</item>
-    <item msgid="391477482416751568">"ეკრანზე ჩრდილის ჩვენება, რომლის სტატუსის ზოლთანაც მოხდა ბოლო ინტერაქცია"</item>
+    <item msgid="391477482416751568">"ეკრანის ბოლო ინტერაქციის მქონე სტატუსის ზოლით დაჩრდილვა"</item>
     <item msgid="1746820128097981528">"ჩრდილის ჩვენება ბოლო ფოკუსირებულ ეკრანზე"</item>
   </string-array>
   <string-array name="shade_display_awareness_values">
     <item msgid="3055776101992426514">"default_display"</item>
     <item msgid="774789415968826925">"any_external_display"</item>
     <item msgid="7880769915418638436">"status_bar_latest_touch"</item>
-    <item msgid="4313165186636015195">"ფოკუსირებული_ეკრანი"</item>
+    <item msgid="4313165186636015195">"focused_display"</item>
   </string-array>
 </resources>
