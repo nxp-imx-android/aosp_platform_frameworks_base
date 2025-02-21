@@ -20,17 +20,15 @@ import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.util.Slog;
 
-import org.json.JSONObject;
-
-import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** A {@link JobService} that fetches the certificate revocation list from a remote location. */
+/**
+ * A {@link JobService} that fetches the certificate revocation list from a remote location and
+ * stores it locally.
+ */
 public class UpdateCertificateRevocationStatusJobService extends JobService {
 
-    static final String EXTRA_KEY_CERTIFICATES_TO_CHECK =
-            "com.android.server.security.extra.CERTIFICATES_TO_CHECK";
     private static final String TAG = "AVF_CRL";
     private ExecutorService mExecutorService;
 
@@ -48,20 +46,12 @@ public class UpdateCertificateRevocationStatusJobService extends JobService {
                         CertificateRevocationStatusManager certificateRevocationStatusManager =
                                 new CertificateRevocationStatusManager(this);
                         Slog.d(TAG, "Starting to fetch remote CRL from job service.");
-                        JSONObject revocationList =
-                                certificateRevocationStatusManager.fetchRemoteRevocationList();
-                        String[] certificatesToCheckFromJobParams =
-                                params.getExtras().getStringArray(EXTRA_KEY_CERTIFICATES_TO_CHECK);
-                        if (certificatesToCheckFromJobParams == null) {
-                            Slog.e(TAG, "Extras not found: " + EXTRA_KEY_CERTIFICATES_TO_CHECK);
-                            return;
-                        }
-                        certificateRevocationStatusManager
-                                .updateLastRevocationCheckDataForAllPreviouslySeenCertificates(
-                                        revocationList,
-                                        Arrays.asList(certificatesToCheckFromJobParams));
+                        byte[] revocationList =
+                                certificateRevocationStatusManager.fetchRemoteRevocationListBytes();
+                        certificateRevocationStatusManager.silentlyStoreRevocationList(
+                                revocationList);
                     } catch (Throwable t) {
-                        Slog.e(TAG, "Unable to update the stored revocation status.", t);
+                        Slog.e(TAG, "Unable to update the stored revocation list.", t);
                     }
                     jobFinished(params, false);
                 });
