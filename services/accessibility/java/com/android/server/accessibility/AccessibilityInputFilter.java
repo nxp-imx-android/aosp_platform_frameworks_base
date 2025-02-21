@@ -53,7 +53,6 @@ import com.android.server.accessibility.magnification.FullScreenMagnificationGes
 import com.android.server.accessibility.magnification.FullScreenMagnificationVibrationHelper;
 import com.android.server.accessibility.magnification.MagnificationGestureHandler;
 import com.android.server.accessibility.magnification.MagnificationKeyHandler;
-import com.android.server.accessibility.magnification.MouseEventHandler;
 import com.android.server.accessibility.magnification.WindowMagnificationGestureHandler;
 import com.android.server.accessibility.magnification.WindowMagnificationPromptController;
 import com.android.server.policy.WindowManagerPolicy;
@@ -899,8 +898,7 @@ class AccessibilityInputFilter extends InputFilter implements EventStreamTransfo
                             triggerable,
                             new WindowMagnificationPromptController(displayContext, mUserId),
                             displayId,
-                            fullScreenMagnificationVibrationHelper,
-                            new MouseEventHandler(controller));
+                            fullScreenMagnificationVibrationHelper);
         }
         return magnificationGestureHandler;
     }
