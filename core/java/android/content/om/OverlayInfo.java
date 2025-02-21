@@ -30,9 +30,6 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -233,15 +230,10 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
     private OverlayIdentifier mIdentifierCached;
 
     /**
+     *
      * @hide
      */
     public final boolean isFabricated;
-
-    /**
-     * @hide
-     */
-    @NonNull
-    public final List<OverlayConstraint> constraints;
 
     /**
      * Create a new OverlayInfo based on source with an updated state.
@@ -254,8 +246,7 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
     public OverlayInfo(@NonNull OverlayInfo source, @State int state) {
         this(source.packageName, source.overlayName, source.targetPackageName,
                 source.targetOverlayableName, source.category, source.baseCodePath, state,
-                source.userId, source.priority, source.isMutable, source.isFabricated,
-                source.constraints);
+                source.userId, source.priority, source.isMutable, source.isFabricated);
     }
 
     /** @hide */
@@ -273,17 +264,6 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
             @NonNull String targetPackageName, @Nullable String targetOverlayableName,
             @Nullable String category, @NonNull String baseCodePath, int state, int userId,
             int priority, boolean isMutable, boolean isFabricated) {
-        this(packageName, overlayName, targetPackageName, targetOverlayableName, category,
-                baseCodePath, state, userId, priority, isMutable, isFabricated,
-                Collections.emptyList() /* constraints */);
-    }
-
-    /** @hide */
-    public OverlayInfo(@NonNull String packageName, @Nullable String overlayName,
-            @NonNull String targetPackageName, @Nullable String targetOverlayableName,
-            @Nullable String category, @NonNull String baseCodePath, int state, int userId,
-            int priority, boolean isMutable, boolean isFabricated,
-            @NonNull List<OverlayConstraint> constraints) {
         this.packageName = packageName;
         this.overlayName = overlayName;
         this.targetPackageName = targetPackageName;
@@ -295,7 +275,6 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
         this.priority = priority;
         this.isMutable = isMutable;
         this.isFabricated = isFabricated;
-        this.constraints = constraints;
         ensureValidState();
     }
 
@@ -312,7 +291,6 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
         priority = source.readInt();
         isMutable = source.readBoolean();
         isFabricated = source.readBoolean();
-        constraints = Arrays.asList(source.createTypedArray(OverlayConstraint.CREATOR));
         ensureValidState();
     }
 
@@ -417,17 +395,6 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
         return mIdentifierCached;
     }
 
-    /**
-     * Returns the currently applied constraints (if any) for the overlay. An overlay
-     * may have constraints only when it is enabled.
-     *
-     * @hide
-     */
-    @NonNull
-    public List<OverlayConstraint> getConstraints() {
-        return constraints;
-    }
-
     @SuppressWarnings("ConstantConditions")
     private void ensureValidState() {
         if (packageName == null) {
@@ -438,9 +405,6 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
         }
         if (baseCodePath == null) {
             throw new IllegalArgumentException("baseCodePath must not be null");
-        }
-        if (constraints == null) {
-            throw new IllegalArgumentException("constraints must not be null");
         }
         switch (state) {
             case STATE_UNKNOWN:
@@ -475,21 +439,20 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
         dest.writeInt(priority);
         dest.writeBoolean(isMutable);
         dest.writeBoolean(isFabricated);
-        dest.writeTypedArray(constraints.toArray(new OverlayConstraint[0]), flags);
     }
 
     public static final @NonNull Parcelable.Creator<OverlayInfo> CREATOR =
-            new Parcelable.Creator<>() {
-                @Override
-                public OverlayInfo createFromParcel(Parcel source) {
-                    return new OverlayInfo(source);
-                }
+            new Parcelable.Creator<OverlayInfo>() {
+        @Override
+        public OverlayInfo createFromParcel(Parcel source) {
+            return new OverlayInfo(source);
+        }
 
-                @Override
-                public OverlayInfo[] newArray(int size) {
-                    return new OverlayInfo[size];
-                }
-            };
+        @Override
+        public OverlayInfo[] newArray(int size) {
+            return new OverlayInfo[size];
+        }
+    };
 
     /**
      * Return true if this overlay is enabled, i.e. should be used to overlay
@@ -498,7 +461,6 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
      * Disabled overlay packages are installed but are currently not in use.
      *
      * @return true if the overlay is enabled, else false.
-     *
      * @hide
      */
     @SystemApi
@@ -517,7 +479,6 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
      * debugging purposes.
      *
      * @return a human readable String representing the state.
-     *
      * @hide
      */
     public static String stateToString(@State int state) {
@@ -561,7 +522,6 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
                 : targetOverlayableName.hashCode());
         result = prime * result + ((category == null) ? 0 : category.hashCode());
         result = prime * result + ((baseCodePath == null) ? 0 : baseCodePath.hashCode());
-        result = prime * result + (constraints.isEmpty() ? 0 : constraints.hashCode());
         return result;
     }
 
@@ -606,7 +566,7 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
         if (!baseCodePath.equals(other.baseCodePath)) {
             return false;
         }
-        return Objects.equals(constraints, other.constraints);
+        return true;
     }
 
     /**
@@ -624,7 +584,6 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
                 + ", targetOverlayable=" + targetOverlayableName
                 + ", state=" + state + " (" + stateToString(state) + "),"
                 + ", userId=" + userId
-                + ", constraints=" + OverlayConstraint.constraintsToString(constraints)
                 + " }";
     }
 }

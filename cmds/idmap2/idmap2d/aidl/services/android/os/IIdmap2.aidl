@@ -18,7 +18,6 @@ package android.os;
 
 import android.os.FabricatedOverlayInfo;
 import android.os.FabricatedOverlayInternal;
-import android.os.OverlayConstraint;
 
 /**
  * @hide
@@ -31,15 +30,13 @@ interface IIdmap2 {
                       @utf8InCpp String overlayName,
                       int fulfilledPolicies,
                       boolean enforceOverlayable,
-                      int userId,
-                      in OverlayConstraint[] constraints);
+                      int userId);
   @nullable @utf8InCpp String createIdmap(@utf8InCpp String targetApkPath,
                                           @utf8InCpp String overlayApkPath,
                                           @utf8InCpp String overlayName,
                                           int fulfilledPolicies,
                                           boolean enforceOverlayable,
-                                          int userId,
-                                          in OverlayConstraint[] constraints);
+                                          int userId);
 
   @nullable FabricatedOverlayInfo createFabricatedOverlay(in FabricatedOverlayInternal overlay);
   boolean deleteFabricatedOverlay(@utf8InCpp String path);
