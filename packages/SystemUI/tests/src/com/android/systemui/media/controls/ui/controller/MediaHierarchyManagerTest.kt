@@ -17,6 +17,7 @@
 package com.android.systemui.media.controls.ui.controller
 
 import android.graphics.Rect
+import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.testing.TestableLooper
 import android.view.ViewGroup
@@ -36,7 +37,6 @@ import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
-import com.android.systemui.keyguard.data.repository.keyguardRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.testScope
@@ -50,6 +50,7 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
+import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.phone.KeyguardBypassController
 import com.android.systemui.statusbar.policy.FakeConfigurationController
 import com.android.systemui.statusbar.policy.KeyguardStateController
@@ -570,6 +571,36 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
             )
             kosmos.fakeCommunalSceneRepository.changeScene(CommunalScenes.Blank)
             runCurrent()
+            verify(mediaCarouselController)
+                .onDesiredLocationChanged(
+                    eq(MediaHierarchyManager.LOCATION_QQS),
+                    any<MediaHostState>(),
+                    eq(false),
+                    anyLong(),
+                    anyLong(),
+                )
+        }
+
+    @Test
+    @EnableFlags(StatusBarPopupChips.FLAG_NAME)
+    fun testStatusBarPopupLocation() =
+        testScope.runTest {
+            mediaHierarchyManager.isMediaControlPopupShowing = true
+            runCurrent()
+
+            verify(mediaCarouselController)
+                .onDesiredLocationChanged(
+                    eq(MediaHierarchyManager.LOCATION_STATUS_BAR_POPUP),
+                    nullable(),
+                    eq(false),
+                    anyLong(),
+                    anyLong(),
+                )
+            clearInvocations(mediaCarouselController)
+
+            mediaHierarchyManager.isMediaControlPopupShowing = false
+            runCurrent()
+
             verify(mediaCarouselController)
                 .onDesiredLocationChanged(
                     eq(MediaHierarchyManager.LOCATION_QQS),
