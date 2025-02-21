@@ -48,6 +48,7 @@ import static android.media.audio.Flags.featureSpatialAudioHeadtrackingLowLatenc
 import static android.media.audio.Flags.focusFreezeTestApi;
 import static android.media.audio.Flags.roForegroundAudioControl;
 import static android.media.audio.Flags.scoManagedByAudio;
+import static android.media.audio.Flags.unifyAbsoluteVolumeManagement;
 import static android.media.audiopolicy.Flags.enableFadeManagerConfiguration;
 import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.os.Process.INVALID_UID;
@@ -729,7 +730,8 @@ public class AudioService extends IAudioService.Stub
             Map.of(AudioSystem.DEVICE_OUT_BLE_HEADSET, AudioSystem.STREAM_MUSIC,
                     AudioSystem.DEVICE_OUT_BLE_SPEAKER, AudioSystem.STREAM_MUSIC,
                     AudioSystem.DEVICE_OUT_BLE_BROADCAST, AudioSystem.STREAM_MUSIC,
-                    AudioSystem.DEVICE_OUT_HEARING_AID, AudioSystem.STREAM_MUSIC
+                    AudioSystem.DEVICE_OUT_HEARING_AID, AudioSystem.STREAM_MUSIC,
+                    AudioSystem.DEVICE_OUT_BLUETOOTH_SCO, AudioSystem.STREAM_VOICE_CALL
             ));
 
     /**
@@ -4102,7 +4104,7 @@ public class AudioService extends IAudioService.Stub
         // Check if the volume adjustment should be handled by an absolute volume controller instead
         if (isAbsoluteVolumeDevice(device) && (flags & AudioManager.FLAG_ABSOLUTE_VOLUME) == 0) {
             final AbsoluteVolumeDeviceInfo info = getAbsoluteVolumeDeviceInfo(device);
-            if (info.mHandlesVolumeAdjustment) {
+            if (info != null && info.mHandlesVolumeAdjustment) {
                 dispatchAbsoluteVolumeAdjusted(streamType, info, oldIndex, direction,
                         keyEventMode);
                 return;
@@ -4153,51 +4155,8 @@ public class AudioService extends IAudioService.Stub
                         0);
             }
 
-            int newIndex = getVssForStreamOrDefault(streamType).getIndex(device);
-
-            // Check if volume update should be send to AVRCP
-            if (streamTypeAlias == getBluetoothContextualVolumeStream()
-                    && AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(device)
-                    && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
-                if (DEBUG_VOL) {
-                    Log.d(TAG, "adjustStreamVolume: postSetAvrcpAbsoluteVolumeIndex index="
-                            + newIndex + "stream=" + streamType);
-                }
-                mDeviceBroker.postSetAvrcpAbsoluteVolumeIndex(newIndex / 10);
-            } else if (isAbsoluteVolumeDevice(device)
-                    && (flags & AudioManager.FLAG_ABSOLUTE_VOLUME) == 0) {
-                final AbsoluteVolumeDeviceInfo info = getAbsoluteVolumeDeviceInfo(device);
-                dispatchAbsoluteVolumeChanged(streamType, info, newIndex);
-            }
-
-            if (AudioSystem.isLeAudioDeviceType(device)
-                    && streamType == getBluetoothContextualVolumeStream()
-                    && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
-                if (DEBUG_VOL) {
-                    Log.d(TAG, "adjustStreamVolume postSetLeAudioVolumeIndex index="
-                            + newIndex + " stream=" + streamType);
-                }
-                mDeviceBroker.postSetLeAudioVolumeIndex(newIndex,
-                        getVssForStreamOrDefault(streamType).getMaxIndex(), streamType);
-            }
-
-            // Check if volume update should be send to Hearing Aid.
-            // Only modify the hearing aid attenuation when the stream to modify matches
-            // the one expected by the hearing aid.
-            if (device == AudioSystem.DEVICE_OUT_HEARING_AID
-                    && streamType == getBluetoothContextualVolumeStream()) {
-                if (DEBUG_VOL) {
-                    Log.d(TAG, "adjustStreamVolume postSetHearingAidVolumeIndex index="
-                            + newIndex + " stream=" + streamType);
-                }
-                int haIndex;
-                final VolumeStreamState vss = getVssForStreamOrDefault(streamType);
-                synchronized (mVolumeStateLock) {
-                    haIndex = (int) (vss.getMinIndex() + (newIndex - vss.getMinIndex())
-                            / vss.getIndexStepFactor());
-                }
-                mDeviceBroker.postSetHearingAidVolumeIndex(haIndex, streamType);
-            }
+            handleAbsoluteVolume(streamType, streamTypeAlias, device,
+                    getVssForStreamOrDefault(streamType).getIndex(device), flags);
         }
 
         final int newIndex = getVssForStreamOrDefault(streamType).getIndex(device);
@@ -4214,8 +4173,7 @@ public class AudioService extends IAudioService.Stub
                             && isFullVolumeDevice(device);
                     boolean tvConditions = mHdmiTvClient != null
                             && mHdmiSystemAudioSupported
-                            && !isAbsoluteVolumeDevice(device)
-                            && !isA2dpAbsoluteVolumeDevice(device);
+                            && !isAbsoluteVolumeDevice(device);
 
                     if ((playbackDeviceConditions || tvConditions)
                             && mHdmiCecVolumeControlEnabled
@@ -4269,6 +4227,68 @@ public class AudioService extends IAudioService.Stub
             }
         }
         sendVolumeUpdate(streamType, oldIndex, newIndex, flags, device);
+    }
+
+    private boolean handleAbsoluteVolume(int streamType, int streamTypeAlias, int device,
+            int newIndex, int flags) {
+        // Check if volume update should be handled by an external volume controller
+        boolean registeredAsAbsoluteVolume = false;
+        boolean volumeHandled = false;
+        if (isAbsoluteVolumeDevice(device)
+                && (flags & AudioManager.FLAG_ABSOLUTE_VOLUME) == 0) {
+            final AbsoluteVolumeDeviceInfo info = getAbsoluteVolumeDeviceInfo(device);
+            if (info != null) {
+                dispatchAbsoluteVolumeChanged(streamType, info, newIndex);
+                registeredAsAbsoluteVolume = true;
+                volumeHandled = true;
+            }
+        }
+
+        if (!registeredAsAbsoluteVolume) {
+            if (streamTypeAlias == getBluetoothContextualVolumeStream()
+                    && AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(device)
+                    && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
+                if (DEBUG_VOL) {
+                    Log.d(TAG, "adjustStreamVolume: postSetAvrcpAbsoluteVolumeIndex index="
+                            + newIndex + "stream=" + streamType);
+                }
+                mDeviceBroker.postSetAvrcpAbsoluteVolumeIndex(newIndex / 10);
+                volumeHandled = true;
+            }
+
+            if (streamType == getBluetoothContextualVolumeStream()
+                    && AudioSystem.isLeAudioDeviceType(device)
+                    && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
+                if (DEBUG_VOL) {
+                    Log.d(TAG, "adjustStreamVolume postSetLeAudioVolumeIndex index="
+                            + newIndex + " stream=" + streamType);
+                }
+                mDeviceBroker.postSetLeAudioVolumeIndex(newIndex,
+                        getVssForStreamOrDefault(streamType).getMaxIndex(), streamType);
+                volumeHandled = true;
+            }
+
+            // Check if volume update should be send to Hearing Aid.
+            // Only modify the hearing aid attenuation when the stream to modify matches
+            // the one expected by the hearing aid.
+            if (streamType == getBluetoothContextualVolumeStream()
+                    && device == AudioSystem.DEVICE_OUT_HEARING_AID) {
+                if (DEBUG_VOL) {
+                    Log.d(TAG, "adjustStreamVolume postSetHearingAidVolumeIndex index="
+                            + newIndex + " stream=" + streamType);
+                }
+                int haIndex;
+                final VolumeStreamState vss = getVssForStreamOrDefault(streamType);
+                synchronized (mVolumeStateLock) {
+                    haIndex = (int) (vss.getMinIndex() + (newIndex - vss.getMinIndex())
+                            / vss.getIndexStepFactor());
+                }
+                mDeviceBroker.postSetHearingAidVolumeIndex(haIndex, streamType);
+                volumeHandled = true;
+            }
+        }
+
+        return volumeHandled;
     }
 
     /**
@@ -5056,6 +5076,8 @@ public class AudioService extends IAudioService.Stub
                 + cacheGetStreamVolume());
         pw.println("\tcom.android.media.audio.optimizeBtDeviceSwitch:"
                 + optimizeBtDeviceSwitch());
+        pw.println("\tandroid.media.audio.unifyAbsoluteVolumeManagement:"
+                + unifyAbsoluteVolumeManagement());
     }
 
     private void dumpAudioMode(PrintWriter pw) {
@@ -5104,6 +5126,9 @@ public class AudioService extends IAudioService.Stub
                         Slog.w(TAG, "Updating avrcp not supported in onUpdateContextualVolumes");
                     }
                 }
+                if (absDev == AudioSystem.DEVICE_OUT_BLUETOOTH_SCO) {
+                    return AudioManager.STREAM_VOICE_CALL;
+                }
                 if (stream != streamType) {
                     final int result = mAudioSystem.setDeviceAbsoluteVolumeEnabled(absDev,
                             /*address=*/"", enabled, streamType);
@@ -5145,20 +5170,9 @@ public class AudioService extends IAudioService.Stub
                     + ", index: " + index);
         }
 
-        if (AudioSystem.isLeAudioDeviceType(device)) {
-            mDeviceBroker.postSetLeAudioVolumeIndex(index * 10,
-                    getVssForStreamOrDefault(streamType).getMaxIndex(), streamType);
-        } else if (device == AudioSystem.DEVICE_OUT_HEARING_AID) {
-            int haIndex = index * 10;
-            final VolumeStreamState vss = getVssForStreamOrDefault(streamType);
-            synchronized (mVolumeStateLock) {
-                haIndex = (int) (vss.getMinIndex()
-                        + (haIndex - vss.getMinIndex()) / vss.getIndexStepFactor());
-            }
-            mDeviceBroker.postSetHearingAidVolumeIndex(haIndex, streamType);
-        } else if (AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(device)) {
-            mDeviceBroker.postSetAvrcpAbsoluteVolumeIndex(index);
-        } else {
+        final int streamTypeAlias = sStreamVolumeAlias.get(streamType, /*valueIfKeyNotFound*/
+                streamType);
+        if (!handleAbsoluteVolume(streamType, streamTypeAlias, device, index * 10, /*flags=*/0)) {
             return;
         }
 
@@ -5256,44 +5270,7 @@ public class AudioService extends IAudioService.Stub
             index = getVssForStreamOrDefault(streamType).getIndex(device);
         }
 
-        if (streamTypeAlias == getBluetoothContextualVolumeStream()
-                && AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(device)
-                && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
-            if (DEBUG_VOL) {
-                Log.d(TAG, "setStreamVolume postSetAvrcpAbsoluteVolumeIndex index=" + index
-                        + "stream=" + streamType);
-            }
-            mDeviceBroker.postSetAvrcpAbsoluteVolumeIndex(index / 10);
-        } else if (isAbsoluteVolumeDevice(device)
-                && ((flags & AudioManager.FLAG_ABSOLUTE_VOLUME) == 0)) {
-            final AbsoluteVolumeDeviceInfo info = getAbsoluteVolumeDeviceInfo(device);
-
-            dispatchAbsoluteVolumeChanged(streamType, info, index);
-        }
-
-        if (AudioSystem.isLeAudioDeviceType(device)
-                && streamType == getBluetoothContextualVolumeStream()
-                && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
-            if (DEBUG_VOL) {
-                Log.d(TAG, "setStreamVolume postSetLeAudioVolumeIndex index="
-                        + index + " stream=" + streamType);
-            }
-            mDeviceBroker.postSetLeAudioVolumeIndex(index,
-                    getVssForStreamOrDefault(streamType).getMaxIndex(), streamType);
-        }
-
-        if (device == AudioSystem.DEVICE_OUT_HEARING_AID
-                && streamType == getBluetoothContextualVolumeStream()) {
-            Log.i(TAG, "setStreamVolume postSetHearingAidVolumeIndex index=" + index
-                    + " stream=" + streamType);
-            int haIndex;
-            final VolumeStreamState vss = getVssForStreamOrDefault(streamType);
-            synchronized (mVolumeStateLock) {
-                haIndex = (int) (vss.getMinIndex()
-                        + (index - vss.getMinIndex()) / vss.getIndexStepFactor());
-            }
-            mDeviceBroker.postSetHearingAidVolumeIndex(haIndex, streamType);
-        }
+        handleAbsoluteVolume(streamType, streamTypeAlias, device, index, flags);
 
         synchronized (mHdmiClientLock) {
             if (streamTypeAlias == AudioSystem.STREAM_MUSIC
@@ -9669,19 +9646,11 @@ public class AudioService extends IAudioService.Stub
             int index;
             if (isFullyMuted() && !ringMyCar()) {
                 index = 0;
-            } else if (isAbsoluteVolumeDevice(device)
-                    || isA2dpAbsoluteVolumeDevice(device)
-                    || AudioSystem.isLeAudioDeviceType(device)) {
+            } else if (isHdmiAbsoluteVolumeDevice(device) ||  isFullVolumeDevice(device)) {
                 // do not change the volume logic for dynamic abs behavior devices like HDMI
-                if (isAbsoluteVolumeDevice(device)) {
-                    index = (mIndexMax + 5) / 10;
-                } else {
+                index = (mIndexMax + 5) / 10;
+            } else if (isAbsoluteVolumeDevice(device)) {
                     index = (getIndex(device) + 5) / 10;
-                }
-            } else if (isFullVolumeDevice(device)) {
-                index = (mIndexMax + 5)/10;
-            } else if (device == AudioSystem.DEVICE_OUT_HEARING_AID) {
-                index = (getIndex(device) + 5) / 10;
             } else {
                 index = (getIndex(device) + 5)/10;
             }
@@ -9699,20 +9668,14 @@ public class AudioService extends IAudioService.Stub
                     if (device != AudioSystem.DEVICE_OUT_DEFAULT) {
                         if (isFullyMuted() && !ringMyCar()) {
                             index = 0;
-                        } else if (isAbsoluteVolumeDevice(device)
-                                || isA2dpAbsoluteVolumeDevice(device)
-                                || AudioSystem.isLeAudioDeviceType(device)) {
+                        } else if (isHdmiAbsoluteVolumeDevice(device)) {
                             isAbsoluteVolume = true;
                             // do not change the volume logic for dynamic abs behavior devices
                             // like HDMI
-                            if (isAbsoluteVolumeDevice(device)) {
-                                index = (mIndexMax + 5) / 10;
-                            } else {
-                                index = (getIndex(device) + 5) / 10;
-                            }
+                            index = (mIndexMax + 5) / 10;
                         } else if (isFullVolumeDevice(device)) {
                             index = (mIndexMax + 5)/10;
-                        } else if (device == AudioSystem.DEVICE_OUT_HEARING_AID) {
+                        } else if (isAbsoluteVolumeDevice(device)) {
                             isAbsoluteVolume = true;
                             index = (getIndex(device) + 5) / 10;
                         } else {
@@ -10288,8 +10251,7 @@ public class AudioService extends IAudioService.Stub
     /*package*/ void setDeviceVolume(VolumeStreamState streamState, int device) {
         synchronized (mVolumeStateLock) {
             sendMsg(mAudioHandler, SoundDoseHelper.MSG_CSD_UPDATE_ATTENUATION, SENDMSG_QUEUE,
-                    device, (isAbsoluteVolumeDevice(device) || isA2dpAbsoluteVolumeDevice(device)
-                            || AudioSystem.isLeAudioDeviceType(device) ? 1 : 0),
+                    device, (isAbsoluteVolumeDevice(device) ? 1 : 0),
                     streamState, /*delay=*/0);
             // Apply volume
             streamState.applyDeviceVolume_syncVSS(device);
@@ -10301,13 +10263,10 @@ public class AudioService extends IAudioService.Stub
                 if (vss != null && streamType != streamState.mStreamType
                         && sStreamVolumeAlias.get(streamType, /*valueIfKeyNotFound=*/-1)
                                 == streamState.mStreamType) {
-                    // Make sure volume is also maxed out on A2DP device for aliased stream
-                    // that may have a different device selected
+                    // Make sure volume is also maxed out on absolute volume device for aliased
+                    // stream that may have a different device selected
                     int streamDevice = getDeviceForStream(streamType);
-                    if ((device != streamDevice)
-                            && (isAbsoluteVolumeDevice(device)
-                                || isA2dpAbsoluteVolumeDevice(device)
-                                || AudioSystem.isLeAudioDeviceType(device))) {
+                    if ((device != streamDevice) && isAbsoluteVolumeDevice(device)) {
                         vss.applyDeviceVolume_syncVSS(device);
                     }
                     vss.applyDeviceVolume_syncVSS(streamDevice);
@@ -15398,8 +15357,18 @@ public class AudioService extends IAudioService.Stub
      * ({@link #isA2dpAbsoluteVolumeDevice}).
      */
     private boolean isAbsoluteVolumeDevice(int deviceType) {
+        boolean hasAbsoluteVolumeDeviceKey;
         synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
-            return mAbsoluteVolumeDeviceInfoMap.containsKey(deviceType);
+            hasAbsoluteVolumeDeviceKey = mAbsoluteVolumeDeviceInfoMap.containsKey(deviceType);
+        }
+        if (unifyAbsoluteVolumeManagement() && hasAbsoluteVolumeDeviceKey) {
+            return true;
+        } else {
+            return hasAbsoluteVolumeDeviceKey
+                    || isA2dpAbsoluteVolumeDevice(deviceType)
+                    || AudioSystem.isLeAudioDeviceType(deviceType)
+                    || deviceType == AudioSystem.DEVICE_OUT_HEARING_AID
+                    || deviceType == AudioSystem.DEVICE_OUT_BLUETOOTH_SCO;
         }
     }
 
@@ -15410,6 +15379,15 @@ public class AudioService extends IAudioService.Stub
      */
     private boolean isA2dpAbsoluteVolumeDevice(int deviceType) {
         return mAvrcpAbsVolSupported && AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(deviceType);
+    }
+
+    private boolean isHdmiAbsoluteVolumeDevice(int deviceType) {
+        synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
+            return mAbsoluteVolumeDeviceInfoMap.containsKey(deviceType)
+                    && (deviceType == AudioSystem.DEVICE_OUT_HDMI
+                    || deviceType == AudioSystem.DEVICE_OUT_HDMI_ARC
+                    || deviceType == AudioSystem.DEVICE_OUT_HDMI_EARC);
+        }
     }
 
     //====================
