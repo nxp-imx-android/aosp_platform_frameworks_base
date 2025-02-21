@@ -998,6 +998,10 @@ public class NotificationContentInflater implements NotificationRowContentBinder
             entry.setPromotedNotificationContentModel(result.mPromotedContent);
         }
 
+        if (PromotedNotificationUiForceExpanded.isEnabled()) {
+            row.setPromotedOngoing(entry.isOngoingPromoted());
+        }
+
         boolean setRepliesAndActions = true;
         if ((reInflateFlags & FLAG_CONTENT_VIEW_CONTRACTED) != 0) {
             if (result.inflatedContentView != null) {
@@ -1130,9 +1134,6 @@ public class NotificationContentInflater implements NotificationRowContentBinder
 
         entry.setHeadsUpStatusBarText(result.headsUpStatusBarText);
         entry.setHeadsUpStatusBarTextPublic(result.headsUpStatusBarTextPublic);
-        if (PromotedNotificationUiForceExpanded.isEnabled()) {
-            row.setPromotedOngoing(entry.isOngoingPromoted());
-        }
 
         Trace.endAsyncSection(APPLY_TRACE_METHOD, System.identityHashCode(row));
         if (endListener != null) {
