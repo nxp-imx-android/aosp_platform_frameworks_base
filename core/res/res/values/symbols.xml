@@ -5652,6 +5652,7 @@
   <java-symbol type="id" name="accessibility_autoclick_position_button" />
   <java-symbol type="drawable" name="accessibility_autoclick_pause" />
   <java-symbol type="drawable" name="accessibility_autoclick_resume" />
+  <java-symbol type="drawable" name="ic_accessibility_autoclick" />
 
   <!-- For HapticFeedbackConstants configurability defined at HapticFeedbackCustomization -->
   <java-symbol type="string" name="config_hapticFeedbackCustomizationFile" />
