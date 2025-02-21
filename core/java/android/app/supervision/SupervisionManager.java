@@ -97,7 +97,7 @@ public class SupervisionManager {
      *
      * @hide
      */
-    @RequiresPermission(value = android.Manifest.permission.QUERY_USERS)
+    @RequiresPermission(anyOf = {MANAGE_USERS, QUERY_USERS})
     @Nullable
     public Intent createConfirmSupervisionCredentialsIntent() {
         if (mService != null) {
