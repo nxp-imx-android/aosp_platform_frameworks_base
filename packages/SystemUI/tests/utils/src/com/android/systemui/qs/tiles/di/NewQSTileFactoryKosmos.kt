@@ -68,7 +68,7 @@ val Kosmos.customTileViewModelFactory: QSTileViewModelFactory.Component by
         }
     }
 
-val Kosmos.newQSTileFactory by
+var Kosmos.newQSTileFactory by
     Kosmos.Fixture {
         NewQSTileFactory(
             qSTileConfigProvider,
