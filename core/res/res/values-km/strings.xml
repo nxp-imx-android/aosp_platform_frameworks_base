@@ -353,14 +353,10 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"ចូលដំណើរការទិន្នន័យឧបករណ៍ចាប់សញ្ញាអំពីស្ថានភាពសុខភាពរបស់អ្នក"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"ការ​ជូនដំណឹង"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"បង្ហាញ​ការជូនដំណឹង"</string>
-    <!-- no translation found for permgrouplab_xr_tracking (7418994009794287471) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (6777198859446500821) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (1194833982988144536) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (9178027369004805829) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"ទិន្នន័យតាមដាន XR"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"ចូលប្រើទិន្នន័យ XR អំពីអ្នក និងមជ្ឈដ្ឋានជុំវិញអ្នក"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"ទិន្នន័យតាមដាន XR ដែលរសើប"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"ចូលប្រើទិន្នន័យតាមដានដែលរសើប ដូចជាការសម្លឹងមើល"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ទាញយក​ខ្លឹមសារ​វិនដូ"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"ពិនិត្យ​ខ្លឹមសារវិនដូ​ដែល​អ្នក​កំពុង​ធ្វើអន្តរកម្ម​ជា​មួយ។"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"បើក​ការ​រក​មើល​​ដោយ​ប៉ះ"</string>
@@ -656,38 +652,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"អនុញ្ញាតឱ្យ​កម្មវិធី​កែប្រែ​បណ្ដុំ​រូបថត​របស់​អ្នក។"</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"អាន​ទីតាំង​ពី​បណ្ដុំ​មេឌៀ​របស់​អ្នក"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"អនុញ្ញាតឱ្យ​កម្មវិធី​អាន​ទីតាំង​ពីបណ្ដុំ​មេឌៀ​របស់​អ្នក។"</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (7989596289790269059) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (870510233930553355) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6914457357027049512) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (5788889152304524730) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (2272048395128283324) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (2622783922311211866) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (6478233866595566940) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8639715900104966456) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (1309731456372087270) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (231597390513699188) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (6518646430502858641) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (4508880777646198656) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (409126403264393251) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (6223368011593524179) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (7117098718465619023) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (939504041387836853) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"តាមដានការសម្លឹងមើលប្រហាក់ប្រហែលរបស់អ្នក"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"អនុញ្ញាតឱ្យកម្មវិធីតាមដានការសម្លឹងមើលប្រហាក់ប្រហែលរបស់អ្នក។"</string>
+    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"តាមដានកន្លែងដែលអ្នកកំពុងមើល"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"អនុញ្ញាតឱ្យកម្មវិធីចូលប្រើទិន្នន័យនៃការសម្លឹងមើលជាក់លាក់។"</string>
+    <string name="permlab_face_tracking" msgid="2272048395128283324">"តាមដានមុខរបស់អ្នក"</string>
+    <string name="permdesc_face_tracking" msgid="2622783922311211866">"អនុញ្ញាតឱ្យកម្មវិធីចូលប្រើទិន្នន័យតាមដានមុខ។"</string>
+    <string name="permlab_hand_tracking" msgid="6478233866595566940">"តាមដានដៃរបស់អ្នក"</string>
+    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"អនុញ្ញាតឱ្យកម្មវិធីចូលប្រើទិន្នន័យតាមដានចលនាដៃ។"</string>
+    <string name="permlab_head_tracking" msgid="1309731456372087270">"តាមដានក្បាលរបស់អ្នក"</string>
+    <string name="permdesc_head_tracking" msgid="231597390513699188">"អនុញ្ញាតឱ្យកម្មវិធីចូលប្រើទិន្នន័យតាមដានចលនាក្បាល។"</string>
+    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"យល់ដឹងអំពីមជ្ឈដ្ឋានបច្ចុប្បន្នរបស់អ្នក"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"អនុញ្ញាតឱ្យកម្មវិធីចូលប្រើទិន្នន័យតាមដានអំពីមជ្ឈដ្ឋានជុំវិញអ្នកដោយផ្ទាល់។"</string>
+    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"យល់ដឹងអំពីមជ្ឈដ្ឋានបច្ចុប្បន្នរបស់អ្នកដោយមានភាពលម្អិតកម្រិតខ្ពស់"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"អនុញ្ញាតឱ្យកម្មវិធីចូលប្រើទិន្នន័យតាមដានអំពីមជ្ឈដ្ឋានជុំវិញអ្នកដោយផ្ទាល់ដោយមានភាពលម្អិតកម្រិតខ្ពស់ខ្លាំង។"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"ចូលប្រើទិន្នន័យ XR ពេលមិននៅផ្ទៃខាងមុខ"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"អនុញ្ញាតឱ្យកម្មវិធីចូលប្រើទិន្នន័យ XR ពេលមិននៅផ្ទៃខាងមុខ។"</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"ប្រើ​ជីវមាត្រ"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"ប្រើជីវមាត្រ ឬ​ការចាក់សោអេក្រង់"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"ផ្ទៀងផ្ទាត់ថាជាអ្នក"</string>

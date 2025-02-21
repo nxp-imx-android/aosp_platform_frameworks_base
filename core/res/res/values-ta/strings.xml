@@ -353,14 +353,10 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"உங்கள் உடல் இயக்கம் பற்றி உணர்விகள் கூறும் தகவலைப் பார்க்கலாம்"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"அறிவிப்புகள்"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"அறிவிப்புகளைக் காட்டும்"</string>
-    <!-- no translation found for permgrouplab_xr_tracking (7418994009794287471) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (6777198859446500821) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (1194833982988144536) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (9178027369004805829) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR கண்காணிப்புத் தரவு"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"உங்களையும் உங்கள் சுற்றுச்சூழலையும் பற்றிய XR தரவை அணுகும்"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"பாதுகாக்க வேண்டிய XR கண்காணிப்புத் தரவு"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"கண் பார்வை போன்ற பாதுகாக்க வேண்டிய கண்காணிப்புத் தரவை அணுகும்"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"சாளர உள்ளடக்கத்தைப் பெறும்"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"நீங்கள் பணியாற்றிக் கொண்டிருக்கும் சாளரத்தின் உள்ளடக்கத்தைப் பார்க்கலாம்."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"தொடுவதன் மூலம் அறிவதை இயக்கும்"</string>
@@ -656,38 +652,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"உங்களின் படத் தொகுப்பை மாற்ற ஆப்ஸை அனுமதிக்கும்."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"மீடியா தொகுப்பிலிருந்து இடங்களை அறிதல்"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"உங்களின் மீடியா தொகுப்பிலிருந்து இடங்களை அறிந்துகொள்ள ஆப்ஸை அனுமதிக்கும்."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (7989596289790269059) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (870510233930553355) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6914457357027049512) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (5788889152304524730) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (2272048395128283324) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (2622783922311211866) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (6478233866595566940) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8639715900104966456) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (1309731456372087270) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (231597390513699188) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (6518646430502858641) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (4508880777646198656) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (409126403264393251) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (6223368011593524179) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (7117098718465619023) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (939504041387836853) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"உங்கள் தோராயமான கண் பார்வைத் தரவைக் கண்காணிக்கும்"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"உங்கள் தோராயமான கண் பார்வையின் தரவைக் கண்காணிக்க ஆப்ஸை அனுமதிக்கும்."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"எங்கே பார்க்கிறீர்கள் என்பதைக் கண்காணித்தல்"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"துல்லியமான கண் பார்வையின் தரவை அணுக ஆப்ஸை அனுமதிக்கும்."</string>
+    <string name="permlab_face_tracking" msgid="2272048395128283324">"உங்கள் முகத்தைக் கண்காணித்தல்"</string>
+    <string name="permdesc_face_tracking" msgid="2622783922311211866">"முகக் கண்காணிப்புத் தரவை அணுக ஆப்ஸை அனுமதிக்கும்."</string>
+    <string name="permlab_hand_tracking" msgid="6478233866595566940">"உங்கள் கைகளைக் கண்காணித்தல்"</string>
+    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"கை அசைவு அறிதல் தரவை அணுக ஆப்ஸை அனுமதிக்கும்."</string>
+    <string name="permlab_head_tracking" msgid="1309731456372087270">"உங்கள் தலையைக் கண்காணித்தல்"</string>
+    <string name="permdesc_head_tracking" msgid="231597390513699188">"ஹெட் டிராக்கிங் தரவை அணுக ஆப்ஸை அனுமதிக்கும்."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"உங்களின் சுற்றுச்சூழலைப் புரிந்துகொள்ளுதல்"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"உங்களின் சுற்றுச்சூழல் தரவை அணுக ஆப்ஸை அனுமதிக்கும்."</string>
+    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"உங்களின் சுற்றுச்சூழலை மிக விரிவான விவரத்துடன் புரிந்துகொள்ளுதல்"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"உங்கள் சுற்றுச்சூழல் பற்றிய மிக விரிவான விவரங்களுடன் கூடிய தரவை நேரடியாக அணுக ஆப்ஸை அனுமதிக்கும்."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"முன்புலத்தில் இல்லாதபோது XR தரவை அணுகுதல்"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"முன்புலத்தில் இல்லாதபோது XR தரவை அணுக ஆப்ஸை அனுமதிக்கும்."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"பயோமெட்ரிக்ஸைப் பயன்படுத்து"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"பயோமெட்ரிக்ஸையோ திரைப் பூட்டையோ பயன்படுத்து"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"நீங்கள்தான் என உறுதிசெய்க"</string>

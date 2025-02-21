@@ -354,14 +354,10 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"aceder a dados do sensor acerca dos seus sinais vitais"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Notificações"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"mostrar notificações"</string>
-    <!-- no translation found for permgrouplab_xr_tracking (7418994009794287471) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (6777198859446500821) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (1194833982988144536) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (9178027369004805829) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"dados de monitorização de XR"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"aceder a dados de XR sobre si e o ambiente à sua volta"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"dados de monitoriz. de XR confidenciais"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"aceder a dados de monitorização confidenciais, como o olhar"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Obter conteúdo da janela"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Inspecionar o conteúdo de uma janela com a qual está a interagir."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Ativar Explorar Através do Toque"</string>
@@ -657,38 +653,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"Permite que a app modifique a sua coleção de fotos."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"ler as localizações a partir da sua coleção de multimédia"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"Permite que a app leia as localizações a partir da sua coleção de multimédia."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (7989596289790269059) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (870510233930553355) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6914457357027049512) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (5788889152304524730) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (2272048395128283324) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (2622783922311211866) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (6478233866595566940) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8639715900104966456) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (1309731456372087270) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (231597390513699188) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (6518646430502858641) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (4508880777646198656) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (409126403264393251) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (6223368011593524179) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (7117098718465619023) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (939504041387836853) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"monitorizar o seu olhar aproximado"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"Permite que a app monitorize o seu olhar aproximado."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"monitorizar para onde está a olhar"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"Permite que a app aceda a dados precisos do olhar."</string>
+    <string name="permlab_face_tracking" msgid="2272048395128283324">"monitorizar o seu rosto"</string>
+    <string name="permdesc_face_tracking" msgid="2622783922311211866">"Permite que a app aceda a dados de monitorização facial."</string>
+    <string name="permlab_hand_tracking" msgid="6478233866595566940">"monitorizar as suas mãos"</string>
+    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"Permite que a app aceda a dados de monitorização das mãos."</string>
+    <string name="permlab_head_tracking" msgid="1309731456372087270">"monitorizar a sua cabeça"</string>
+    <string name="permdesc_head_tracking" msgid="231597390513699188">"Permite que a app aceda a dados de posição da cabeça."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"compreender o seu ambiente imediato"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"Permite que a app aceda a dados de monitorização sobre o ambiente diretamente à sua volta."</string>
+    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"compreender o seu ambiente imediato com grande detalhe"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Permite que a app aceda a dados de monitorização sobre o ambiente diretamente à sua volta com detalhes muito precisos."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"aceder aos dados de XR quando não estiver em primeiro plano"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Permite que app aceda a dados de XR quando não está em primeiro plano."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Usar a biometria"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Usar a biometria ou o bloqueio de ecrã"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Confirme a sua identidade"</string>
