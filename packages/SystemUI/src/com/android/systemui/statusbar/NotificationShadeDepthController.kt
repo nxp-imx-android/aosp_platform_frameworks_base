@@ -38,13 +38,13 @@ import com.android.systemui.Flags
 import com.android.systemui.Flags.spatialModelAppPushback
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.ShadeExpansionChangeEvent
 import com.android.systemui.shade.ShadeExpansionListener
-import com.android.systemui.shared.Flags.ambientAod
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK
 import com.android.systemui.statusbar.phone.DozeParameters
@@ -53,8 +53,11 @@ import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.statusbar.policy.SplitShadeStateController
 import com.android.systemui.util.WallpaperController
+import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import com.android.wm.shell.appzoomout.AppZoomOut
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.io.PrintWriter
 import java.util.Optional
 import javax.inject.Inject
@@ -76,12 +79,14 @@ constructor(
     private val keyguardInteractor: KeyguardInteractor,
     private val choreographer: Choreographer,
     private val wallpaperController: WallpaperController,
+    private val wallpaperInteractor: WallpaperInteractor,
     private val notificationShadeWindowController: NotificationShadeWindowController,
     private val dozeParameters: DozeParameters,
     @ShadeDisplayAware private val context: Context,
     private val splitShadeStateController: SplitShadeStateController,
     private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
     private val appZoomOutOptional: Optional<AppZoomOut>,
+    @Application private val applicationScope: CoroutineScope,
     dumpManager: DumpManager,
     configurationController: ConfigurationController,
 ) : ShadeExpansionListener, Dumpable {
@@ -110,6 +115,8 @@ constructor(
     private var prevTimestamp: Long = -1
     private var prevShadeDirection = 0
     private var prevShadeVelocity = 0f
+    private var prevDozeAmount: Float = 0f
+    @VisibleForTesting var wallpaperSupportsAmbientMode: Boolean = false
     // tracks whether app launch transition is in progress. This involves two independent factors
     // that control blur, shade expansion and app launch animation from outside sysui.
     // They can complete out of order, this flag will be reset by the animation that finishes later.
@@ -219,7 +226,15 @@ constructor(
         }
 
     /** Blur radius of the wake-up animation on this frame. */
-    private var wakeAndUnlockBlurRadius = 0f
+    private var wakeBlurRadius = 0f
+        set(value) {
+            if (field == value) return
+            field = value
+            scheduleUpdate()
+        }
+
+    /** Blur radius of the unlock animation on this frame. */
+    private var unlockBlurRadius = 0f
         set(value) {
             if (field == value) return
             field = value
@@ -246,14 +261,16 @@ constructor(
             ShadeInterpolation.getNotificationScrimAlpha(qsPanelExpansion) * shadeExpansion
         combinedBlur = max(combinedBlur, blurUtils.blurRadiusOfRatio(qsExpandedRatio))
         combinedBlur = max(combinedBlur, blurUtils.blurRadiusOfRatio(transitionToFullShadeProgress))
-        var shadeRadius = max(combinedBlur, wakeAndUnlockBlurRadius)
+        var shadeRadius = max(combinedBlur, max(wakeBlurRadius, unlockBlurRadius))
 
         if (areBlursDisabledForAppLaunch || blursDisabledForUnlock) {
             shadeRadius = 0f
         }
 
         var blur = shadeRadius.toInt()
-        val zoomOut = blurRadiusToZoomOut(blurRadius = shadeRadius)
+        // If the blur comes from waking up, we don't want to zoom out the background
+        val zoomOut =
+            if (shadeRadius != wakeBlurRadius) blurRadiusToZoomOut(blurRadius = shadeRadius) else 0f
         // Make blur be 0 if it is necessary to stop blur effect.
         if (scrimsVisible) {
             if (!Flags.notificationShadeBlur()) {
@@ -338,14 +355,14 @@ constructor(
                         startDelay = keyguardStateController.keyguardFadingAwayDelay
                         interpolator = Interpolators.FAST_OUT_SLOW_IN
                         addUpdateListener { animation: ValueAnimator ->
-                            wakeAndUnlockBlurRadius =
+                            unlockBlurRadius =
                                 blurUtils.blurRadiusOfRatio(animation.animatedValue as Float)
                         }
                         addListener(
                             object : AnimatorListenerAdapter() {
                                 override fun onAnimationEnd(animation: Animator) {
                                     keyguardAnimator = null
-                                    wakeAndUnlockBlurRadius = 0f
+                                    unlockBlurRadius = 0f
                                 }
                             }
                         )
@@ -381,14 +398,19 @@ constructor(
             }
 
             override fun onDozeAmountChanged(linear: Float, eased: Float) {
-                wakeAndUnlockBlurRadius =
-                    if (ambientAod()) {
-                        0f
-                    } else {
-                        blurUtils.blurRadiusOfRatio(eased)
-                    }
+                prevDozeAmount = eased
+                updateWakeBlurRadius(prevDozeAmount)
             }
         }
+
+    private fun updateWakeBlurRadius(ratio: Float) {
+        wakeBlurRadius =
+            if (!wallpaperSupportsAmbientMode) {
+                0f
+            } else {
+                blurUtils.blurRadiusOfRatio(ratio)
+            }
+    }
 
     init {
         dumpManager.registerCriticalDumpable(javaClass.name, this)
@@ -411,6 +433,12 @@ constructor(
                 }
             }
         )
+        applicationScope.launch {
+            wallpaperInteractor.wallpaperSupportsAmbientMode.collect { supported ->
+                wallpaperSupportsAmbientMode = supported
+                updateWakeBlurRadius(prevDozeAmount)
+            }
+        }
         initBlurListeners()
     }
 
@@ -585,7 +613,8 @@ constructor(
             it.println("shouldApplyShadeBlur: ${shouldApplyShadeBlur()}")
             it.println("shadeAnimation: ${shadeAnimation.radius}")
             it.println("brightnessMirrorRadius: ${brightnessMirrorSpring.radius}")
-            it.println("wakeAndUnlockBlur: $wakeAndUnlockBlurRadius")
+            it.println("wakeBlur: $wakeBlurRadius")
+            it.println("unlockBlur: $wakeBlurRadius")
             it.println("blursDisabledForAppLaunch: $blursDisabledForAppLaunch")
             it.println("appLaunchTransitionIsInProgress: $appLaunchTransitionIsInProgress")
             it.println("qsPanelExpansion: $qsPanelExpansion")
