@@ -3080,6 +3080,21 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
+         * Changes the default ApplyToken.
+         *
+         * ApplyToken is used to determine the order in which Transactions are applied.
+         * Transactions applied with the same ApplyToken will be applied in the order
+         * they were queued in SurfaceFlinger. Transactions are sent via binder so the
+         * caller should be aware of the order in which binder calls are executed in
+         * SurfaceFlinger. This along with the ApplyToken will determine the order
+         * in which Transactions are applied. Transactions with different apply tokens
+         * will be applied in arbitrary order regardless of when they were queued in
+         * SurfaceFlinger.
+         *
+         * Caller must keep track of the previous ApplyToken if they want to restore it.
+         *
+         * Note each buffer producer should have its own ApplyToken in order to ensure
+         * that Transactions are not delayed by Transactions from other buffer producers.
          *
          * @hide
          */
@@ -3088,6 +3103,7 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
+         * Returns the default ApplyToken.
          *
          * @hide
          */
@@ -3096,8 +3112,10 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
-         * Apply the transaction, clearing it's state, and making it usable
+         * Apply the transaction, clearing its state, and making it usable
          * as a new transaction.
+         *
+         * This method will also increment the transaction ID for debugging purposes.
          */
         public void apply() {
             apply(/*sync*/ false);
@@ -3116,7 +3134,7 @@ public final class SurfaceControl implements Parcelable {
 
 
         /**
-         * Clear the transaction object, without applying it.
+         * Clear the transaction object, without applying it. The transction ID is preserved.
          *
          * @hide
          */
@@ -3375,6 +3393,9 @@ public final class SurfaceControl implements Parcelable {
          * If two siblings share the same Z order the ordering is undefined. Surfaces
          * with a negative Z will be placed below the parent surface.
          *
+         * Calling setLayer after setRelativeLayer will reset the relative layer
+         * in the same transaction.
+         *
          * @param sc The SurfaceControl to set the Z order on
          * @param z The Z-order
          * @return This Transaction.
@@ -3392,6 +3413,22 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
+         * Set the Z-order for a given SurfaceControl, relative to the specified SurfaceControl.
+         * The SurfaceControl with a negative z will be placed below the relativeTo
+         * SurfaceControl and the SurfaceControl with a positive z will be placed above the
+         * relativeTo SurfaceControl.
+         *
+         * Calling setLayer will reset the relative layer. Calling setRelativeLayer after setLayer
+         * will override the setLayer call.
+         *
+         * If a layer is set to be relative to a layer that is destroyed, the layer will be
+         * offscreen until setLayer is called or setRelativeLayer is called with a valid
+         * SurfaceControl.
+         *
+         * @param sc The SurfaceControl to set the Z order on
+         * @param relativeTo The SurfaceControl to set the Z order relative to
+         * @param z The Z-order
+         * @return This Transaction.
          * @hide
          */
         public Transaction setRelativeLayer(SurfaceControl sc, SurfaceControl relativeTo, int z) {
@@ -3405,6 +3442,9 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
+         * The hint from the buffer producer as to what portion of the layer is
+         * transparent.
+         *
          * @hide
          */
         public Transaction setTransparentRegionHint(SurfaceControl sc, Region transparentRegion) {
@@ -3438,6 +3478,10 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
+         * Sets the input channel for a given SurfaceControl. The position and order of the
+         * SurfaceControl in conjunction with the touchable region in the InputWindowHandle
+         * determines the hit region.
+         *
          * @hide
          */
         public Transaction setInputWindowInfo(SurfaceControl sc, InputWindowHandle handle) {
@@ -3549,6 +3593,8 @@ public final class SurfaceControl implements Parcelable {
          * surface. If no crop is specified and the surface has no buffer, the surface bounds is
          * only constrained by the size of its parent bounds.
          *
+         * To unset the crop, pass in an invalid Rect (0, 0, -1, -1)
+         *
          * @param sc   SurfaceControl to set crop of.
          * @param crop Bounds of the crop to apply.
          * @hide
@@ -3577,6 +3623,8 @@ public final class SurfaceControl implements Parcelable {
          * ignored and only the crop and buffer size will be used to determine the bounds of the
          * surface. If no crop is specified and the surface has no buffer, the surface bounds is
          * only constrained by the size of its parent bounds.
+         *
+         * To unset the crop, pass in an invalid Rect (0, 0, -1, -1)
          *
          * @param sc   SurfaceControl to set crop of.
          * @param crop Bounds of the crop to apply.
@@ -3625,6 +3673,8 @@ public final class SurfaceControl implements Parcelable {
          * surface. If no crop is specified and the surface has no buffer, the surface bounds is
          * only constrained by the size of its parent bounds.
          *
+         * To unset the crop, pass in an invalid Rect (0, 0, -1, -1)
+         *
          * @param sc   SurfaceControl to set crop of.
          * @param crop Bounds of the crop to apply.
          * @return this This transaction for chaining
@@ -3643,7 +3693,12 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
-         * Sets the corner radius of a {@link SurfaceControl}.
+         * Sets the corner radius of a {@link SurfaceControl}. This corner radius is applied to the
+         * SurfaceControl and its children. The API expects a crop to be set on the SurfaceControl
+         * to ensure that the corner radius is applied to the correct region. If the crop does not
+         * intersect with the SurfaceControl's visible content, the corner radius will not be
+         * applied.
+         *
          * @param sc SurfaceControl
          * @param cornerRadius Corner radius in pixels.
          * @return Itself.
@@ -3753,6 +3808,9 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
+         * Associates a layer with a display. The layer will be drawn on the display with the
+         * specified layer stack. If the layer is not a root layer, this call has no effect.
+         *
          * @hide
          */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.O)
@@ -3791,6 +3849,7 @@ public final class SurfaceControl implements Parcelable {
 
         /**
          * Fills the surface with the specified color.
+         *
          * @param color A float array with three values to represent r, g, b in range [0..1]. An
          * invalid color will remove the color fill.
          * @hide
@@ -3809,8 +3868,9 @@ public final class SurfaceControl implements Parcelable {
 
         /**
          * Removes color fill.
-        * @hide
-        */
+         *
+         * @hide
+         */
         public Transaction unsetColor(SurfaceControl sc) {
             checkPreconditions(sc);
             if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
@@ -3898,6 +3958,8 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
+         * Sets the surface to render contents of the display to.
+         *
          * @hide
          */
         public Transaction setDisplaySurface(IBinder displayToken, Surface surface) {
@@ -3916,6 +3978,9 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
+         * Sets the layer stack of the display.
+         *
+         * All layers with the same layer stack will be drawn on this display.
          * @hide
          */
         public Transaction setDisplayLayerStack(IBinder displayToken, int layerStack) {
