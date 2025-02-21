@@ -17,6 +17,7 @@
 package com.android.internal.accessibility.dialog;
 
 import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
+import static com.android.internal.accessibility.AccessibilityShortcutController.AUTOCLICK_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.COLOR_INVERSION_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.DALTONIZER_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME;
@@ -213,6 +214,19 @@ public final class AccessibilityTargetHelper {
                         context.getDrawable(R.drawable.ic_accessibility_color_inversion),
                         Settings.Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED);
         targets.add(colorInversion);
+
+        // TODO(b/394683600): Update Icon with the autoclick asset.
+        final ToggleAllowListingFeatureTarget autoclick =
+                new ToggleAllowListingFeatureTarget(context,
+                        shortcutType,
+                        isShortcutContained(context, shortcutType,
+                                AUTOCLICK_COMPONENT_NAME.flattenToString()),
+                        AUTOCLICK_COMPONENT_NAME.flattenToString(),
+                        uid,
+                        context.getString(R.string.autoclick_feature_name),
+                        context.getDrawable(R.drawable.ic_accessibility_generic),
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_ENABLED);
+        targets.add(autoclick);
 
         if (SUPPORT_ONE_HANDED_MODE) {
             final ToggleAllowListingFeatureTarget oneHandedMode =
