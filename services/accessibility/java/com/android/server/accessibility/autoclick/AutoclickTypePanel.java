@@ -110,11 +110,18 @@ public class AutoclickTypePanel {
          * @param paused {@code true} to pause autoclick, {@code false} to resume.
          */
         void toggleAutoclickPause(boolean paused);
+
+        /**
+         * Called when the hovered state of the panel changes.
+         *
+         * @param hovered {@code true} if the panel is now hovered, {@code false} otherwise.
+         */
+        void onHoverChange(boolean hovered);
     }
 
     private final Context mContext;
 
-    private final View mContentView;
+    private final AutoclickLinearLayout mContentView;
 
     private final WindowManager mWindowManager;
 
@@ -164,8 +171,9 @@ public class AutoclickTypePanel {
                 R.drawable.accessibility_autoclick_resume);
 
         mContentView =
-                LayoutInflater.from(context)
+                (AutoclickLinearLayout) LayoutInflater.from(context)
                         .inflate(R.layout.accessibility_autoclick_type_panel, null);
+        mContentView.setOnHoverChangedListener(mClickPanelController::onHoverChange);
         mLeftClickButton =
                 mContentView.findViewById(R.id.accessibility_autoclick_left_click_layout);
         mRightClickButton =
@@ -337,6 +345,10 @@ public class AutoclickTypePanel {
 
     public boolean isPaused() {
         return mPaused;
+    }
+
+    public boolean isHovered() {
+        return mContentView.isHovered();
     }
 
     /** Toggles the panel expanded or collapsed state. */
@@ -520,7 +532,7 @@ public class AutoclickTypePanel {
 
     @VisibleForTesting
     @NonNull
-    View getContentViewForTesting() {
+    AutoclickLinearLayout getContentViewForTesting() {
         return mContentView;
     }
 

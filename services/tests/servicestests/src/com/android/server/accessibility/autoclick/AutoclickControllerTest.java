@@ -571,6 +571,95 @@ public class AutoclickControllerTest {
         assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting()).isNotEqualTo(-1);
     }
 
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void pauseButton_panelNotHovered_clickNotTriggeredWhenPaused() {
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Pause autoclick and ensure the panel is not hovered.
+        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
+        when(mockAutoclickTypePanel.isPaused()).thenReturn(true);
+        when(mockAutoclickTypePanel.isHovered()).thenReturn(false);
+        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
+
+        // Send hover move event.
+        MotionEvent hoverMove = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 100,
+                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
+                /* x= */ 30f,
+                /* y= */ 0f,
+                /* metaState= */ 0);
+        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
+        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+
+        // Verify click is not triggered.
+        assertThat(mController.mClickScheduler.getIsActiveForTesting()).isFalse();
+        assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting()).isEqualTo(-1);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void pauseButton_panelHovered_clickTriggeredWhenPaused() {
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Pause autoclick and hover the panel.
+        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
+        when(mockAutoclickTypePanel.isPaused()).thenReturn(true);
+        when(mockAutoclickTypePanel.isHovered()).thenReturn(true);
+        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
+
+        // Send hover move event.
+        MotionEvent hoverMove = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 100,
+                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
+                /* x= */ 30f,
+                /* y= */ 0f,
+                /* metaState= */ 0);
+        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
+        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+
+        // Verify click is triggered.
+        assertThat(mController.mClickScheduler.getIsActiveForTesting()).isTrue();
+        assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting()).isNotEqualTo(-1);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void pauseButton_unhoveringCancelsClickWhenPaused() {
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Pause autoclick and hover the panel.
+        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
+        when(mockAutoclickTypePanel.isPaused()).thenReturn(true);
+        when(mockAutoclickTypePanel.isHovered()).thenReturn(true);
+        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
+
+        // Send hover move event.
+        MotionEvent hoverMove = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 100,
+                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
+                /* x= */ 30f,
+                /* y= */ 0f,
+                /* metaState= */ 0);
+        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
+        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+
+        // Verify click is triggered.
+        assertThat(mController.mClickScheduler.getIsActiveForTesting()).isTrue();
+        assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting()).isNotEqualTo(-1);
+
+        // Now simulate the pointer being moved outside the panel.
+        when(mockAutoclickTypePanel.isHovered()).thenReturn(false);
+        mController.clickPanelController.onHoverChange(/* hovered= */ false);
+
+        // Verify pending click is canceled.
+        assertThat(mController.mClickScheduler.getIsActiveForTesting()).isFalse();
+        assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting()).isEqualTo(-1);
+    }
+
     private void injectFakeMouseActionHoverMoveEvent() {
         MotionEvent event = getFakeMotionHoverMoveEvent();
         event.setSource(InputDevice.SOURCE_MOUSE);
