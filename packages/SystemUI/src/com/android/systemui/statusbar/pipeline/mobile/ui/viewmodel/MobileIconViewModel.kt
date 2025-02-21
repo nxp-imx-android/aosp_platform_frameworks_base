@@ -94,7 +94,12 @@ class MobileIconViewModel(
     }
 
     private val satelliteProvider by lazy {
-        CarrierBasedSatelliteViewModelImpl(subscriptionId, iconInteractor)
+        CarrierBasedSatelliteViewModelImpl(
+            subscriptionId,
+            airplaneModeInteractor,
+            iconInteractor,
+            scope,
+        )
     }
 
     /**
@@ -145,9 +150,15 @@ class MobileIconViewModel(
 /** Representation of this network when it is non-terrestrial (e.g., satellite) */
 private class CarrierBasedSatelliteViewModelImpl(
     override val subscriptionId: Int,
+    airplaneModeInteractor: AirplaneModeInteractor,
     interactor: MobileIconInteractor,
+    scope: CoroutineScope,
 ) : MobileIconViewModelCommon {
-    override val isVisible: StateFlow<Boolean> = MutableStateFlow(true)
+    override val isVisible: StateFlow<Boolean> =
+        airplaneModeInteractor.isAirplaneMode
+            .map { !it }
+            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+
     override val icon: Flow<SignalIconModel> = interactor.signalLevelIcon
 
     override val contentDescription: Flow<MobileContentDescription?> = MutableStateFlow(null)
