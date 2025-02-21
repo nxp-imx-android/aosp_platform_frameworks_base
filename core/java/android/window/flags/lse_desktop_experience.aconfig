@@ -795,3 +795,13 @@ flag {
     description: "Enable Desktop Mode on Projected Mode devices but constrained to the external display."
     bug: "384568161"
 }
+
+flag {
+    name: "enable_persisting_density_scale_for_connected_displays"
+    namespace: "lse_desktop_experience"
+    description: "Enables persisting density scale on resolution change for connected displays."
+    bug: "392855657"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
