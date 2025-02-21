@@ -476,6 +476,21 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             ipw.decreaseIndent();
             ipw.println();
         }
+
+        final int displayGroupCount = mDisplayGroups.size();
+        ipw.println();
+        ipw.println("Display Groups: size=" + displayGroupCount);
+        for (int i = 0; i < displayGroupCount; i++) {
+            int groupId = mDisplayGroups.keyAt(i);
+            DisplayGroup displayGroup = mDisplayGroups.valueAt(i);
+            ipw.println("Group " + groupId + ":");
+            ipw.increaseIndent();
+            displayGroup.dumpLocked(ipw);
+            ipw.decreaseIndent();
+            ipw.println();
+        }
+
+
         mDeviceStateToLayoutMap.dumpLocked(ipw);
     }
 
