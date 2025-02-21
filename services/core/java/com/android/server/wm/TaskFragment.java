@@ -2062,6 +2062,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
         if (prev != null) {
             prev.setWillCloseOrEnterPip(false);
+            prev.supportsEnterPipOnTaskSwitch = false;
             final boolean wasStopping = prev.isState(STOPPING);
             prev.setState(PAUSED, "completePausedLocked");
             mPausingActivity = null;
