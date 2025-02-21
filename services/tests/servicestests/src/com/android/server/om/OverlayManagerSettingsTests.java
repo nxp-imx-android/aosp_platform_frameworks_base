@@ -37,9 +37,11 @@ import android.text.TextUtils;
 import android.util.Xml;
 
 import androidx.annotation.NonNull;
-import androidx.test.runner.AndroidJUnit4;
 
 import com.android.modules.utils.TypedXmlPullParser;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +58,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-@RunWith(AndroidJUnit4.class)
+@RunWith(JUnitParamsRunner.class)
 public class OverlayManagerSettingsTests {
     private OverlayManagerSettings mSettings;
     private static final int USER_0 = 0;
@@ -439,6 +441,39 @@ public class OverlayManagerSettingsTests {
     }
 
     @Test
+    @Parameters(method = "getPreviousVersions")
+    public void testRestoreWithPreviousVersion(int version) throws Exception {
+        final String xml =
+                "<?xml version='1.0' encoding='utf-8' standalone='yes'?>\n"
+                        + "<overlays version='" + version + "'>\n"
+                        + "<item packageName='com.test.overlay'\n"
+                        + "      overlayName='test'\n"
+                        + "      userId='1234'\n"
+                        + "      targetPackageName='com.test.target'\n"
+                        + "      baseCodePath='/data/app/com.test.overlay-1/base.apk'\n"
+                        + "      state='" + STATE_DISABLED + "'\n"
+                        + "      isEnabled='false'\n"
+                        + "      category='test-category'\n"
+                        + "      isStatic='false'\n"
+                        + "      priority='0' />\n"
+                        + "</overlays>\n";
+        ByteArrayInputStream is = new ByteArrayInputStream(xml.getBytes(UTF_8));
+
+        mSettings.restore(is);
+        final OverlayIdentifier identifier = new OverlayIdentifier("com.test.overlay", "test");
+        OverlayInfo oi = mSettings.getOverlayInfo(identifier, 1234);
+        assertNotNull(oi);
+        assertEquals("com.test.overlay", oi.packageName);
+        assertEquals("test", oi.overlayName);
+        assertEquals("com.test.target", oi.targetPackageName);
+        assertEquals("/data/app/com.test.overlay-1/base.apk", oi.baseCodePath);
+        assertEquals(1234, oi.userId);
+        assertEquals(STATE_DISABLED, oi.state);
+        assertFalse(mSettings.getEnabled(identifier, 1234));
+        assertTrue(oi.constraints.isEmpty());
+    }
+
+    @Test
     public void testPersistAndRestore() throws Exception {
         insertSetting(OVERLAY_A_USER0);
         insertSetting(OVERLAY_B_USER1);
@@ -584,5 +619,12 @@ public class OverlayManagerSettingsTests {
             fail(String.format("lists [%s] and [%s] differ",
                         TextUtils.join(",", expected), TextUtils.join(",", actual)));
         }
+    }
+
+    private static Integer[] getPreviousVersions() {
+        return new Integer[]{
+                3,
+                4,
+        };
     }
 }
