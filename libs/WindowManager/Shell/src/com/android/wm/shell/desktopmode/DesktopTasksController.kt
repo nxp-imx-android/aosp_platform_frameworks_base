@@ -1079,7 +1079,8 @@ class DesktopTasksController(
         )
     }
 
-    private fun startLaunchTransition(
+    @VisibleForTesting
+    fun startLaunchTransition(
         transitionType: Int,
         wct: WindowContainerTransaction,
         launchingTaskId: Int?,
@@ -1087,34 +1088,52 @@ class DesktopTasksController(
         displayId: Int = DEFAULT_DISPLAY,
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
     ): IBinder {
+        // TODO: b/397619806 - Consolidate sharable logic with [handleFreeformTaskLaunch].
+        var launchTransaction = wct
         val taskIdToMinimize =
             addAndGetMinimizeChanges(
                 displayId,
-                wct,
+                launchTransaction,
                 newTaskId = launchingTaskId,
                 launchingNewIntent = launchingTaskId == null,
             )
         val exitImmersiveResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
-                wct = wct,
+                wct = launchTransaction,
                 displayId = displayId,
                 excludeTaskId = launchingTaskId,
                 reason = DesktopImmersiveController.ExitReason.TASK_LAUNCH,
             )
+        var deskIdToActivate: Int? = null
+        if (
+            DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue &&
+                !isDesktopModeShowing(displayId)
+        ) {
+            deskIdToActivate =
+                checkNotNull(
+                    launchingTaskId?.let { taskRepository.getDeskIdForTask(it) }
+                        ?: getDefaultDeskId(displayId)
+                )
+            val activateDeskWct = WindowContainerTransaction()
+            addDeskActivationChanges(deskIdToActivate, activateDeskWct)
+            // Desk activation must be handled before app launch-related transactions.
+            activateDeskWct.merge(launchTransaction, /* transfer= */ true)
+            launchTransaction = activateDeskWct
+        }
         val t =
             if (remoteTransition == null) {
                 desktopMixedTransitionHandler.startLaunchTransition(
                     transitionType = transitionType,
-                    wct = wct,
+                    wct = launchTransaction,
                     taskId = launchingTaskId,
                     minimizingTaskId = taskIdToMinimize,
                     exitingImmersiveTask = exitImmersiveResult.asExit()?.exitingTask,
                 )
             } else if (taskIdToMinimize == null) {
                 val remoteTransitionHandler = OneShotRemoteHandler(mainExecutor, remoteTransition)
-                transitions.startTransition(transitionType, wct, remoteTransitionHandler).also {
-                    remoteTransitionHandler.setTransition(it)
-                }
+                transitions
+                    .startTransition(transitionType, launchTransaction, remoteTransitionHandler)
+                    .also { remoteTransitionHandler.setTransition(it) }
             } else {
                 val remoteTransitionHandler =
                     DesktopWindowLimitRemoteHandler(
@@ -1123,15 +1142,33 @@ class DesktopTasksController(
                         remoteTransition,
                         taskIdToMinimize,
                     )
-                transitions.startTransition(transitionType, wct, remoteTransitionHandler).also {
-                    remoteTransitionHandler.setTransition(it)
-                }
+                transitions
+                    .startTransition(transitionType, launchTransaction, remoteTransitionHandler)
+                    .also { remoteTransitionHandler.setTransition(it) }
             }
         if (taskIdToMinimize != null) {
             addPendingMinimizeTransition(t, taskIdToMinimize, MinimizeReason.TASK_LIMIT)
         }
         if (launchingTaskId != null && taskRepository.isMinimizedTask(launchingTaskId)) {
             addPendingUnminimizeTransition(t, displayId, launchingTaskId, unminimizeReason)
+        }
+        if (
+            DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
+                deskIdToActivate != null
+        ) {
+            if (DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue) {
+                desksTransitionObserver.addPendingTransition(
+                    DeskTransition.ActivateDesk(
+                        token = t,
+                        displayId = displayId,
+                        deskId = deskIdToActivate,
+                    )
+                )
+            }
+
+            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+                FREEFORM_ANIMATION_DURATION
+            )
         }
         exitImmersiveResult.asExit()?.runOnTransitionStart?.invoke(t)
         return t
@@ -2704,10 +2741,9 @@ class DesktopTasksController(
         activateDesk(deskId, remoteTransition)
     }
 
-    /** Activates the given desk. */
-    fun activateDesk(deskId: Int, remoteTransition: RemoteTransition? = null) {
+    /** Activates the given desk but without starting a transition. */
+    fun addDeskActivationChanges(deskId: Int, wct: WindowContainerTransaction) {
         val displayId = taskRepository.getDisplayForDesk(deskId)
-        val wct = WindowContainerTransaction()
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             prepareForDeskActivation(displayId, wct)
             desksOrganizer.activateDesk(wct, deskId)
@@ -2720,6 +2756,13 @@ class DesktopTasksController(
         } else {
             bringDesktopAppsToFront(displayId, wct)
         }
+    }
+
+    /** Activates the given desk. */
+    fun activateDesk(deskId: Int, remoteTransition: RemoteTransition? = null) {
+        val displayId = taskRepository.getDisplayForDesk(deskId)
+        val wct = WindowContainerTransaction()
+        addDeskActivationChanges(deskId, wct)
 
         val transitionType = transitionType(remoteTransition)
         val handler =

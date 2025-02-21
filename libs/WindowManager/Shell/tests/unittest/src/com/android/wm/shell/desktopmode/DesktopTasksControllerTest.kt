@@ -2477,8 +2477,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.moveTaskToFront(task.taskId, unminimizeReason = UnminimizeReason.UNKNOWN)
 
         val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
-        assertThat(wct.hierarchyOps).hasSize(1)
-        wct.assertLaunchTaskAt(0, task.taskId, WINDOWING_MODE_FREEFORM)
+        wct.assertLaunchTask(task.taskId, WINDOWING_MODE_FREEFORM)
     }
 
     @Test
@@ -6306,6 +6305,61 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(taskRepository.getNumberOfDesks(DEFAULT_DISPLAY)).isEqualTo(currentDeskCount + 1)
     }
 
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+    )
+    fun startLaunchTransition_desktopNotShowing_movesWallpaperToFront() {
+        val launchingTask = createFreeformTask()
+        val wct = WindowContainerTransaction()
+        wct.reorder(launchingTask.token, /* onTop= */ true)
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_OPEN),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
+
+        controller.startLaunchTransition(TRANSIT_OPEN, wct, launchingTaskId = null)
+
+        val latestWct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
+        val launchingTaskReorderIndex = latestWct.indexOfReorder(launchingTask, toTop = true)
+        val wallpaperReorderIndex = latestWct.indexOfReorder(wallpaperToken, toTop = true)
+        assertThat(launchingTaskReorderIndex).isNotEqualTo(-1)
+        assertThat(wallpaperReorderIndex).isNotEqualTo(-1)
+        assertThat(launchingTaskReorderIndex).isGreaterThan(wallpaperReorderIndex)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+    )
+    fun startLaunchTransition_desktopShowing_doesNotReorderWallpaper() {
+        val wct = WindowContainerTransaction()
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_OPEN),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
+
+        setUpFreeformTask()
+        controller.startLaunchTransition(TRANSIT_OPEN, wct, launchingTaskId = null)
+
+        val latestWct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
+        assertNull(latestWct.hierarchyOps.find { op -> op.container == wallpaperToken.asBinder() })
+    }
+
     private class RunOnStartTransitionCallback : ((IBinder) -> Unit) {
         var invocations = 0
             private set
@@ -6692,11 +6746,18 @@ private fun WindowContainerTransaction.assertWithoutHop(
 }
 
 private fun WindowContainerTransaction.indexOfReorder(
+    token: WindowContainerToken,
+    toTop: Boolean? = null,
+): Int {
+    val hop = hierarchyOps.singleOrNull(ReorderPredicate(token, toTop)) ?: return -1
+    return hierarchyOps.indexOf(hop)
+}
+
+private fun WindowContainerTransaction.indexOfReorder(
     task: RunningTaskInfo,
     toTop: Boolean? = null,
 ): Int {
-    val hop = hierarchyOps.singleOrNull(ReorderPredicate(task.token, toTop)) ?: return -1
-    return hierarchyOps.indexOf(hop)
+    return indexOfReorder(task.token, toTop)
 }
 
 private class ReorderPredicate(val token: WindowContainerToken, val toTop: Boolean? = null) :
@@ -6814,6 +6875,17 @@ private fun WindowContainerTransaction.assertPendingIntentAt(index: Int, intent:
     assertThat(op.type).isEqualTo(HIERARCHY_OP_TYPE_PENDING_INTENT)
     assertThat(op.pendingIntent?.intent?.component).isEqualTo(intent.component)
     assertThat(op.pendingIntent?.intent?.categories).isEqualTo(intent.categories)
+}
+
+private fun WindowContainerTransaction.assertLaunchTask(taskId: Int, windowingMode: Int) {
+    val keyLaunchWindowingMode = "android.activity.windowingMode"
+
+    assertHop { hop ->
+        hop.type == HIERARCHY_OP_TYPE_LAUNCH_TASK &&
+            hop.launchOptions?.getInt(LAUNCH_KEY_TASK_ID) == taskId &&
+            hop.launchOptions?.getInt(keyLaunchWindowingMode, WINDOWING_MODE_UNDEFINED) ==
+                windowingMode
+    }
 }
 
 private fun WindowContainerTransaction.assertLaunchTaskAt(
