@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import android.bluetooth.AudioInputControl;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 
 import androidx.test.core.app.ApplicationProvider;
@@ -67,6 +68,9 @@ public class AmbientVolumeControllerTest {
     @Before
     public void setUp() {
         when(mProfileManager.getVolumeControlProfile()).thenReturn(mVolumeControlProfile);
+        when(mVolumeControlProfile.isProfileReady()).thenReturn(true);
+        when(mVolumeControlProfile.getConnectionStatus(mDevice)).thenReturn(
+                BluetoothProfile.STATE_CONNECTED);
         when(mDevice.getAddress()).thenReturn(TEST_ADDRESS);
         when(mDevice.isConnected()).thenReturn(true);
         mVolumeController = new AmbientVolumeController(mProfileManager, mCallback);
@@ -74,8 +78,6 @@ public class AmbientVolumeControllerTest {
 
     @Test
     public void onServiceConnected_notifyCallback() {
-        when(mVolumeControlProfile.isProfileReady()).thenReturn(true);
-
         mVolumeController.onServiceConnected();
 
         verify(mCallback).onVolumeControlServiceConnected();
