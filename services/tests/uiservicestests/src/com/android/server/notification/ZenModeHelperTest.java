@@ -90,6 +90,7 @@ import static com.android.os.dnd.DNDProtoEnums.PEOPLE_STARRED;
 import static com.android.os.dnd.DNDProtoEnums.ROOT_CONFIG;
 import static com.android.os.dnd.DNDProtoEnums.STATE_ALLOW;
 import static com.android.os.dnd.DNDProtoEnums.STATE_DISALLOW;
+import static com.android.server.notification.Flags.FLAG_LIMIT_ZEN_CONFIG_SIZE;
 import static com.android.server.notification.Flags.FLAG_PREVENT_ZEN_DEVICE_EFFECTS_WHILE_DRIVING;
 import static com.android.server.notification.ZenModeEventLogger.ACTIVE_RULE_TYPE_MANUAL;
 import static com.android.server.notification.ZenModeHelper.RULE_LIMIT_PER_PACKAGE;
@@ -236,6 +237,7 @@ import java.util.stream.Collectors;
 @SmallTest
 @SuppressLint("GuardedBy") // It's ok for this test to access guarded methods from the service.
 @RunWith(ParameterizedAndroidJunit4.class)
+@EnableFlags(FLAG_LIMIT_ZEN_CONFIG_SIZE) // Should be parameterization, but off path does nothing.
 @TestableLooper.RunWithLooper
 public class ZenModeHelperTest extends UiServiceTestCase {
 
@@ -7478,6 +7480,45 @@ public class ZenModeHelperTest extends UiServiceTestCase {
                 CUSTOM_PKG_UID);
 
         assertThat(getZenRule(ruleId).lastActivation).isNull();
+    }
+
+    @Test
+    @EnableFlags(FLAG_LIMIT_ZEN_CONFIG_SIZE)
+    public void addAutomaticZenRule_trimsConfiguration() {
+        mZenModeHelper.mConfig.automaticRules.clear();
+        AutomaticZenRule smallRule = new AutomaticZenRule.Builder("Reasonable", CONDITION_ID)
+                .setConfigurationActivity(new ComponentName(mPkg, "cls"))
+                .build();
+        AutomaticZenRule systemRule = new AutomaticZenRule.Builder("System", CONDITION_ID)
+                .setOwner(new ComponentName("android", "ScheduleConditionProvider"))
+                .build();
+
+        AutomaticZenRule bigRule = new AutomaticZenRule.Builder("Yuge", CONDITION_ID)
+                .setConfigurationActivity(new ComponentName("evil.package", "cls"))
+                .setTriggerDescription("0123456789".repeat(6000)) // ~60k bytes utf16.
+                .build();
+
+        String systemRuleId = mZenModeHelper.addAutomaticZenRule(UserHandle.CURRENT, "android",
+                systemRule, ORIGIN_SYSTEM, "add", SYSTEM_UID);
+        String smallRuleId = mZenModeHelper.addAutomaticZenRule(UserHandle.CURRENT, mPkg, smallRule,
+                ORIGIN_APP, "add", CUSTOM_PKG_UID);
+        String bigRuleId1 =  mZenModeHelper.addAutomaticZenRule(UserHandle.CURRENT, "evil.package",
+                bigRule, ORIGIN_APP, "add", CUSTOM_PKG_UID);
+        assertThat(mZenModeHelper.mConfig.automaticRules.keySet()).containsExactly(
+                systemRuleId, smallRuleId, bigRuleId1);
+
+        String bigRuleId2 =  mZenModeHelper.addAutomaticZenRule(UserHandle.CURRENT, "evil.package",
+                bigRule, ORIGIN_APP, "add", CUSTOM_PKG_UID);
+        assertThat(mZenModeHelper.mConfig.automaticRules.keySet()).containsExactly(
+                systemRuleId, smallRuleId, bigRuleId1, bigRuleId2);
+
+        // This should go over the threshold
+        String bigRuleId3 = mZenModeHelper.addAutomaticZenRule(UserHandle.CURRENT, "evil.package",
+                bigRule, ORIGIN_APP, "add", CUSTOM_PKG_UID);
+
+        // Rules from evil.package are gone.
+        assertThat(mZenModeHelper.mConfig.automaticRules.keySet()).containsExactly(
+                systemRuleId, smallRuleId);
     }
 
     private static void addZenRule(ZenModeConfig config, String id, String ownerPkg, int zenMode,
