@@ -1024,12 +1024,18 @@ public class NotificationStackScrollLayout
                         || !(view instanceof ExpandableNotificationRow row)) {
                     continue;
                 }
+                int bucket = NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().getSectionBucket()
+                        : row.getEntry().getBucket();
+                boolean isAmbient = NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().isAmbient()
+                        : row.getEntry().isAmbient();
                 currentIndex++;
                 boolean beforeSpeedBump;
                 if (mHighPriorityBeforeSpeedBump) {
-                    beforeSpeedBump = row.getEntry().getBucket() < BUCKET_SILENT;
+                    beforeSpeedBump = bucket < BUCKET_SILENT;
                 } else {
-                    beforeSpeedBump = !row.getEntry().isAmbient();
+                    beforeSpeedBump = !isAmbient;
                 }
                 if (beforeSpeedBump) {
                     speedBumpIndex = currentIndex;
@@ -6423,13 +6429,16 @@ public class NotificationStackScrollLayout
     static boolean matchesSelection(
             ExpandableNotificationRow row,
             @SelectedRows int selection) {
+        int bucket = NotificationBundleUi.isEnabled()
+                ? row.getEntryAdapter().getSectionBucket()
+                : row.getEntry().getBucket();
         switch (selection) {
             case ROWS_ALL:
                 return true;
             case ROWS_HIGH_PRIORITY:
-                return row.getEntry().getBucket() < BUCKET_SILENT;
+                return bucket < BUCKET_SILENT;
             case ROWS_GENTLE:
-                return row.getEntry().getBucket() == BUCKET_SILENT;
+                return bucket == BUCKET_SILENT;
             default:
                 throw new IllegalArgumentException("Unknown selection: " + selection);
         }

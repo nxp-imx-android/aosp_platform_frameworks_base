@@ -79,6 +79,7 @@ public class ExpandableNotificationRowDragControllerTest extends SysuiTestCase {
         mRow = spy(mNotificationTestHelper.createRow());
         Notification notification = mRow.getEntry().getSbn().getNotification();
         notification.contentIntent = mock(PendingIntent.class);
+        when(notification.contentIntent.isActivity()).thenReturn(true);
         doReturn(true).when(mRow).startDragAndDrop(any(), any(), any(), anyInt());
         mGroupRow = mNotificationTestHelper.createGroup(4);
         when(mMenuRow.getLongpressMenuItem(any(Context.class))).thenReturn(mMenuItem);

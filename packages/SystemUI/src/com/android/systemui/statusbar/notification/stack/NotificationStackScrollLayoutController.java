@@ -122,6 +122,7 @@ import com.android.systemui.statusbar.notification.row.NotificationGuts;
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
 import com.android.systemui.statusbar.notification.row.NotificationSnooze;
 import com.android.systemui.statusbar.notification.shared.GroupHunAnimationFix;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.ui.viewbinder.NotificationListViewBinder;
 import com.android.systemui.statusbar.phone.HeadsUpAppearanceController;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
@@ -639,8 +640,10 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     mView.onSwipeEnd();
                     if (animView instanceof ExpandableNotificationRow row) {
                         if (row.isPinned() && !canChildBeDismissed(row)
-                                && row.getEntry().getSbn().getNotification().fullScreenIntent
-                                == null) {
+                                && NotificationBundleUi.isEnabled()
+                                ? !row.getEntryAdapter().isFullScreenCapable()
+                                : (row.getEntry().getSbn().getNotification().fullScreenIntent
+                                        == null)) {
                             mHeadsUpManager.removeNotification(
                                     row.getKey(),
                                     /* removeImmediately= */ true,

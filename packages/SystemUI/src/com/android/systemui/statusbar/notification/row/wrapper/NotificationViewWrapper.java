@@ -80,7 +80,10 @@ public abstract class NotificationViewWrapper implements TransformableView {
                 return new NotificationProgressTemplateViewWrapper(ctx, v, row);
             }
 
-            if (row.getEntry().getSbn().getNotification().isStyle(
+            if (NotificationBundleUi.isEnabled()
+                    ? row.getEntryAdapter().getSbn().getNotification().isStyle(
+                    Notification.DecoratedCustomViewStyle.class)
+                    : row.getEntry().getSbn().getNotification().isStyle(
                     Notification.DecoratedCustomViewStyle.class)) {
                 return new NotificationDecoratedCustomViewWrapper(ctx, v, row);
             }

@@ -16,10 +16,13 @@
 
 package com.android.systemui.statusbar.notification.collection;
 
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_ALERTING;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection;
+import com.android.systemui.statusbar.notification.stack.PriorityBucket;
 
 /**
  * Class to represent a notification, group, or bundle in the pipeline.
@@ -29,6 +32,7 @@ public abstract class PipelineEntry {
     final String mKey;
     final ListAttachState mAttachState = ListAttachState.create();
     final ListAttachState mPreviousAttachState = ListAttachState.create();
+    protected int mBucket = BUCKET_ALERTING;
 
     public PipelineEntry(String key) {
         this.mKey = key;
@@ -85,5 +89,14 @@ public abstract class PipelineEntry {
      */
     final ListAttachState getPreviousAttachState() {
         return mPreviousAttachState;
+    }
+
+    @PriorityBucket
+    public int getBucket() {
+        return mBucket;
+    }
+
+    public void setBucket(@PriorityBucket int bucket) {
+        mBucket = bucket;
     }
 }

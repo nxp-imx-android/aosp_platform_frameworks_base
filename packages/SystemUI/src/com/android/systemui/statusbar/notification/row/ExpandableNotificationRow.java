@@ -1677,10 +1677,15 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             view.setBackgroundTintColor(color);
         }
         if (notificationRowTransparency()
-                && (mBackgroundNormal != null)
-                && (mEntry != null)) {
-            mBackgroundNormal.setBgIsColorized(
-                    mEntry.getSbn().getNotification().isColorized());
+                && (mBackgroundNormal != null)) {
+            if (NotificationBundleUi.isEnabled()) {
+                mBackgroundNormal.setBgIsColorized(mEntryAdapter.isColorized());
+            } else {
+                if (mEntry != null) {
+                    mBackgroundNormal.setBgIsColorized(
+                            mEntry.getSbn().getNotification().isColorized());
+                }
+            }
         }
     }
 
@@ -2372,7 +2377,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             return traceTag;
         }
 
-        return traceTag + "(" + getEntry().getNotificationStyle() + ")";
+        if (NotificationBundleUi.isEnabled()) {
+            return traceTag + "(" + getEntryAdapter().getStyle() + ")";
+        } else {
+            return traceTag + "(" + getEntry().getNotificationStyle() + ")";
+        }
     }
 
     @Override
@@ -3695,8 +3704,14 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             return true;
         }
         // The colorized background is another layer with which all other elements overlap
-        if (getEntry().getSbn().getNotification().isColorized()) {
-            return true;
+        if (NotificationBundleUi.isEnabled()) {
+            if (mEntryAdapter.isColorized()) {
+                return true;
+            }
+        } else {
+            if (getEntry().getSbn().getNotification().isColorized()) {
+                return true;
+            }
         }
         // Check if the showing layout has a need for overlapping rendering.
         // NOTE: We could check both public and private layouts here, but becuause these states

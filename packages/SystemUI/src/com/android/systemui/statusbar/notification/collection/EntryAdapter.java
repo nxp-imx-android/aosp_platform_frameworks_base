@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.collection;
 
 import android.content.Context;
+import android.service.notification.StatusBarNotification;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -109,4 +110,30 @@ public interface EntryAdapter {
      * Returns whether the content of this entry is sensitive
      */
     StateFlow<Boolean> isSensitive();
+
+    /**
+     * Returns whether this row has a background color set by an app
+     */
+    boolean isColorized();
+
+    /**
+     * Returns the SBN that backs this row, if present
+     */
+    @Nullable
+    StatusBarNotification getSbn();
+
+    boolean canDragAndDrop();
+
+    boolean isBubbleCapable();
+
+    @Nullable String getStyle();
+
+    int getSectionBucket();
+
+    boolean isAmbient();
+
+    default boolean isFullScreenCapable() {
+        return false;
+    }
 }
+

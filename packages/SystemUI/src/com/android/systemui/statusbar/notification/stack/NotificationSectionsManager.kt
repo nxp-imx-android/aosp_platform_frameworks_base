@@ -35,6 +35,7 @@ import com.android.systemui.statusbar.notification.dagger.SilentHeader
 import com.android.systemui.statusbar.notification.dagger.SocialHeader
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.PriorityBucket
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.SectionProvider
 import com.android.systemui.statusbar.policy.ConfigurationController
@@ -164,7 +165,9 @@ internal constructor(
             view === socialHeaderView -> BUCKET_SOCIAL
             view === recsHeaderView -> BUCKET_RECS
             view === promoHeaderView -> BUCKET_PROMO
-            view is ExpandableNotificationRow -> view.entry.bucket
+            view is ExpandableNotificationRow ->
+                if (NotificationBundleUi.isEnabled) view.entryAdapter?.sectionBucket
+                else view.entry.bucket
             else -> null
         }
 

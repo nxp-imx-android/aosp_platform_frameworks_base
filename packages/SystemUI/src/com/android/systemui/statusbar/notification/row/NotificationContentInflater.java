@@ -70,6 +70,7 @@ import com.android.systemui.statusbar.notification.row.shared.NotificationRowCon
 import com.android.systemui.statusbar.notification.row.ui.viewbinder.SingleLineViewBinder;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleLineViewModel;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainer;
 import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.policy.InflatedSmartReplyState;
@@ -468,7 +469,10 @@ public class NotificationContentInflater implements NotificationRowContentBinder
                 if (LockscreenOtpRedaction.isEnabled()
                         && bindParams.redactionType == REDACTION_TYPE_SENSITIVE_CONTENT) {
                     result.newPublicView = createSensitiveContentMessageNotification(
-                            row.getEntry().getSbn().getNotification(), builder.getStyle(),
+                            NotificationBundleUi.isEnabled()
+                                    ? row.getEntryAdapter().getSbn().getNotification()
+                                    : row.getEntry().getSbn().getNotification(),
+                            builder.getStyle(),
                             systemUiContext, packageContext).createContentView();
                 } else {
                     result.newPublicView = builder.makePublicContentView(bindParams.isMinimized);
