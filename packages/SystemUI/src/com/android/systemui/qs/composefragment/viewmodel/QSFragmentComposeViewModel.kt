@@ -35,6 +35,7 @@ import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
@@ -306,8 +307,6 @@ constructor(
     val animateTilesExpansion: Boolean
         get() = inFirstPage && !mediaSuddenlyAppearingInLandscape
 
-    var isQSExpandingOrCollapsing by mutableStateOf(false)
-
     private val inFirstPage: Boolean
         get() = inFirstPageViewModel.inFirstPage
 
@@ -541,7 +540,6 @@ constructor(
                 println("proposedTranslation", proposedTranslation)
                 println("expansionState", expansionState)
                 println("forceQS", forceQs)
-                println("isShadeExpandingOrCollapsing", isQSExpandingOrCollapsing)
                 printSection("Derived values") {
                     println("headerTranslation", headerTranslation)
                     println("translationScaleY", translationScaleY)
