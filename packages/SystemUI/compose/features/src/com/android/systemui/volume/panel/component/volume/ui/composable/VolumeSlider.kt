@@ -35,9 +35,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon as MaterialIcon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -73,11 +73,15 @@ import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.volume.haptics.ui.VolumeHapticsConfigsProvider
 import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.SliderState
+import com.android.systemui.volume.ui.slider.AccessibilityParams
+import com.android.systemui.volume.ui.slider.Haptics
+import com.android.systemui.volume.ui.slider.Slider
 import kotlin.math.round
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VolumeSlider(
     state: SliderState,
@@ -102,17 +106,6 @@ fun VolumeSlider(
         return
     }
 
-    val value by valueState(state)
-    val interactionSource = remember { MutableInteractionSource() }
-    val hapticsViewModel: SliderHapticsViewModel? =
-        setUpHapticsViewModel(
-            value,
-            state.valueRange,
-            state.hapticFilter,
-            interactionSource,
-            hapticsViewModelFactory,
-        )
-
     Column(modifier = modifier.animateContentSize(), verticalArrangement = Arrangement.Top) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -134,60 +127,30 @@ fun VolumeSlider(
             )
             button?.invoke()
         }
+
         Slider(
-            value = value,
+            value = state.value,
             valueRange = state.valueRange,
-            onValueChange = { newValue ->
-                hapticsViewModel?.addVelocityDataPoint(newValue)
-                onValueChange(newValue)
-            },
-            onValueChangeFinished = {
-                hapticsViewModel?.onValueChangeEnded()
-                onValueChangeFinished?.invoke()
-            },
-            enabled = state.isEnabled,
+            onValueChanged = onValueChange,
+            onValueChangeFinished = { onValueChangeFinished?.invoke() },
+            isEnabled = state.isEnabled,
+            stepDistance = state.a11yStep,
+            accessibilityParams =
+                AccessibilityParams(
+                    label = state.label,
+                    disabledMessage = state.disabledMessage,
+                    currentStateDescription = state.a11yStateDescription,
+                ),
+            haptics =
+                hapticsViewModelFactory?.let {
+                    Haptics.Enabled(
+                        hapticsViewModelFactory = it,
+                        hapticFilter = state.hapticFilter,
+                        orientation = Orientation.Horizontal,
+                    )
+                } ?: Haptics.Disabled,
             modifier =
-                Modifier.height(40.dp)
-                    .padding(top = 4.dp, bottom = 12.dp)
-                    .sysuiResTag(state.label)
-                    .clearAndSetSemantics {
-                        if (state.isEnabled) {
-                            contentDescription = state.label
-                            state.a11yClickDescription?.let {
-                                customActions =
-                                    listOf(
-                                        CustomAccessibilityAction(it) {
-                                            onIconTapped()
-                                            true
-                                        }
-                                    )
-                            }
-
-                            state.a11yStateDescription?.let { stateDescription = it }
-                            progressBarRangeInfo =
-                                ProgressBarRangeInfo(state.value, state.valueRange)
-                        } else {
-                            disabled()
-                            contentDescription =
-                                state.disabledMessage?.let { "${state.label}, $it" } ?: state.label
-                        }
-                        setProgress { targetValue ->
-                            val targetDirection =
-                                when {
-                                    targetValue > value -> 1
-                                    targetValue < value -> -1
-                                    else -> 0
-                                }
-
-                            val newValue =
-                                (value + targetDirection * state.a11yStep).coerceIn(
-                                    state.valueRange.start,
-                                    state.valueRange.endInclusive,
-                                )
-                            onValueChange(newValue)
-                            true
-                        }
-                    },
+                Modifier.height(40.dp).padding(top = 4.dp, bottom = 12.dp).sysuiResTag(state.label),
         )
         state.disabledMessage?.let { disabledMessage ->
             AnimatedVisibility(visible = !state.isEnabled) {
@@ -348,7 +311,7 @@ private fun SliderIcon(
 }
 
 @Composable
-fun setUpHapticsViewModel(
+private fun setUpHapticsViewModel(
     value: Float,
     valueRange: ClosedFloatingPointRange<Float>,
     hapticFilter: SliderHapticFeedbackFilter,

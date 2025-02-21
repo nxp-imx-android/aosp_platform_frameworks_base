@@ -116,8 +116,8 @@ constructor(
         override val isEnabled: Boolean
             get() = true
 
-        override val a11yStep: Int
-            get() = 1
+        override val a11yStep: Float
+            get() = 1f
 
         override val disabledMessage: String?
             get() = null
