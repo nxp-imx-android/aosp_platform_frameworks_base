@@ -58,6 +58,7 @@ import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.CrossFadeHelper
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
+import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator
 import com.android.systemui.statusbar.phone.KeyguardBypassController
 import com.android.systemui.statusbar.policy.ConfigurationController
@@ -229,7 +230,7 @@ constructor(
         else result.setIntersect(animationStartClipping, targetClipping)
     }
 
-    private val mediaHosts = arrayOfNulls<MediaHost>(LOCATION_COMMUNAL_HUB + 1)
+    private val mediaHosts = arrayOfNulls<MediaHost>(LOCATION_STATUS_BAR_POPUP + 1)
 
     /**
      * The last location where this view was at before going to the desired location. This is useful
@@ -369,6 +370,15 @@ constructor(
     var collapsingShadeFromQS: Boolean = false
         set(value) {
             if (field != value) {
+                field = value
+                updateDesiredLocation(forceNoAnimation = true)
+            }
+        }
+
+    /** Is the Media Control StatusBarPopup showing */
+    var isMediaControlPopupShowing: Boolean = false
+        set(value) {
+            if (field != value && StatusBarPopupChips.isEnabled) {
                 field = value
                 updateDesiredLocation(forceNoAnimation = true)
             }
@@ -1225,6 +1235,7 @@ constructor(
             // Keep the current location until we're allowed to again
             return desiredLocation
         }
+
         val onLockscreen =
             (!bypassController.bypassEnabled && (statusbarState == StatusBarState.KEYGUARD))
 
@@ -1234,6 +1245,8 @@ constructor(
             (onCommunalNotDreaming && qsExpansion == 0.0f) || onCommunalDreamingAndShadeExpanding
         val location =
             when {
+                isMediaControlPopupShowing && StatusBarPopupChips.isEnabled ->
+                    LOCATION_STATUS_BAR_POPUP
                 dreamOverlayActive && dreamMediaComplicationActive -> LOCATION_DREAM_OVERLAY
                 onCommunal -> LOCATION_COMMUNAL_HUB
                 (qsExpansion > 0.0f || inSplitShade) && !onLockscreen -> LOCATION_QS
@@ -1377,6 +1390,9 @@ constructor(
         /** Attached to a view in the communal UI grid */
         const val LOCATION_COMMUNAL_HUB = 4
 
+        /** Attached to a popup that is shown with a media control chip in the status bar */
+        const val LOCATION_STATUS_BAR_POPUP = 5
+
         /** Attached at the root of the hierarchy in an overlay */
         const val IN_OVERLAY = -1000
 
@@ -1422,6 +1438,7 @@ private annotation class TransformationType
             MediaHierarchyManager.LOCATION_LOCKSCREEN,
             MediaHierarchyManager.LOCATION_DREAM_OVERLAY,
             MediaHierarchyManager.LOCATION_COMMUNAL_HUB,
+            MediaHierarchyManager.LOCATION_STATUS_BAR_POPUP,
             MediaHierarchyManager.LOCATION_UNKNOWN,
         ],
 )

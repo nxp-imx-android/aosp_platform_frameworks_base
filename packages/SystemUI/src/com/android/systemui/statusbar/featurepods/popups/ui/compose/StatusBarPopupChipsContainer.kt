@@ -20,14 +20,37 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.android.systemui.media.controls.ui.view.MediaHost
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
 
 /** Container view that holds all right hand side chips in the status bar. */
 @Composable
-fun StatusBarPopupChipsContainer(chips: List<PopupChipModel.Shown>, modifier: Modifier = Modifier) {
+fun StatusBarPopupChipsContainer(
+    chips: List<PopupChipModel.Shown>,
+    mediaHost: MediaHost,
+    onMediaControlPopupVisibilityChanged: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (!SceneContainerFlag.isEnabled) {
+        val isMediaControlPopupShown =
+            remember(chips) {
+                chips.any { it.chipId == PopupChipId.MediaControl && it.isPopupShown }
+            }
+
+        LaunchedEffect(isMediaControlPopupShown) {
+            onMediaControlPopupVisibilityChanged(isMediaControlPopupShown)
+        }
+    }
+
     //    TODO(b/385353140): Add padding and spacing for this container according to UX specs.
     Box {
         Row(
@@ -37,7 +60,7 @@ fun StatusBarPopupChipsContainer(chips: List<PopupChipModel.Shown>, modifier: Mo
             chips.forEach { chip ->
                 StatusBarPopupChip(chip)
                 if (chip.isPopupShown) {
-                    StatusBarPopup(chip)
+                    StatusBarPopup(viewModel = chip, mediaHost = mediaHost)
                 }
             }
         }
