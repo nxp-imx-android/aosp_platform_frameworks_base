@@ -117,6 +117,7 @@ public class RankingCoordinator implements Coordinator {
         @Override
         public boolean isInSection(PipelineEntry entry) {
             return !mHighPriorityProvider.isHighPriority(entry)
+                    && entry.getRepresentativeEntry() != null
                     && !entry.getRepresentativeEntry().isAmbient();
         }
 
