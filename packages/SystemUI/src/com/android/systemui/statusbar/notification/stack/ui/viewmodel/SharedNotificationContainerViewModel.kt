@@ -76,6 +76,7 @@ import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToLockscreenTran
 import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.LargeScreenHeaderHelper
 import com.android.systemui.shade.ShadeDisplayAware
@@ -307,7 +308,7 @@ constructor(
             keyguardTransitionInteractor.transitionValue(ALTERNATE_BOUNCER).map { it > 0f },
             keyguardTransitionInteractor
                 .transitionValue(
-                    scene = Scenes.Bouncer,
+                    content = Overlays.Bouncer,
                     stateWithoutSceneContainer = PRIMARY_BOUNCER,
                 )
                 .map { it > 0f },
@@ -361,7 +362,7 @@ constructor(
     private val isOnGlanceableHub: Flow<Boolean> =
         combine(
                 keyguardTransitionInteractor.isFinishedIn(
-                    scene = Scenes.Communal,
+                    content = Scenes.Communal,
                     stateWithoutSceneContainer = GLANCEABLE_HUB,
                 ),
                 anyOf(
@@ -638,7 +639,7 @@ constructor(
                 anyOf(
                     isKeyguardOccluded,
                     keyguardTransitionInteractor
-                        .transitionValue(scene = Scenes.Gone, stateWithoutSceneContainer = GONE)
+                        .transitionValue(content = Scenes.Gone, stateWithoutSceneContainer = GONE)
                         .map { it == 1f },
                 )
             }

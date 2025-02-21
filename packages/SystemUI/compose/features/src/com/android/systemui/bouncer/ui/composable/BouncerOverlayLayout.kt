@@ -23,12 +23,12 @@ import androidx.compose.runtime.Composable
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 
 /**
- * Returns the [BouncerSceneLayout] that should be used by the bouncer scene. If
- * [isOneHandedModeSupported] is `false`, then [BouncerSceneLayout.BESIDE_USER_SWITCHER] is replaced
- * by [BouncerSceneLayout.STANDARD_BOUNCER].
+ * Returns the [BouncerOverlayLayout] that should be used by the bouncer scene. If
+ * [isOneHandedModeSupported] is `false`, then [BouncerOverlayLayout.BESIDE_USER_SWITCHER] is
+ * replaced by [BouncerOverlayLayout.STANDARD_BOUNCER].
  */
 @Composable
-fun calculateLayout(isOneHandedModeSupported: Boolean): BouncerSceneLayout {
+fun calculateLayout(isOneHandedModeSupported: Boolean): BouncerOverlayLayout {
     val windowSizeClass = LocalWindowSizeClass.current
 
     return calculateLayoutInternal(
@@ -57,7 +57,7 @@ private fun WindowHeightSizeClass.toEnum(): SizeClass {
 }
 
 /** Enumerates all known adaptive layout configurations. */
-enum class BouncerSceneLayout {
+enum class BouncerOverlayLayout {
     /** The default UI with the bouncer laid out normally. */
     STANDARD_BOUNCER,
     /** The bouncer is displayed vertically stacked with the user switcher. */
@@ -84,21 +84,21 @@ fun calculateLayoutInternal(
     width: SizeClass,
     height: SizeClass,
     isOneHandedModeSupported: Boolean,
-): BouncerSceneLayout {
+): BouncerOverlayLayout {
     return when (height) {
-        SizeClass.COMPACT -> BouncerSceneLayout.SPLIT_BOUNCER
+        SizeClass.COMPACT -> BouncerOverlayLayout.SPLIT_BOUNCER
         SizeClass.MEDIUM ->
             when (width) {
-                SizeClass.COMPACT -> BouncerSceneLayout.STANDARD_BOUNCER
-                SizeClass.MEDIUM -> BouncerSceneLayout.STANDARD_BOUNCER
-                SizeClass.EXPANDED -> BouncerSceneLayout.BESIDE_USER_SWITCHER
+                SizeClass.COMPACT -> BouncerOverlayLayout.STANDARD_BOUNCER
+                SizeClass.MEDIUM -> BouncerOverlayLayout.STANDARD_BOUNCER
+                SizeClass.EXPANDED -> BouncerOverlayLayout.BESIDE_USER_SWITCHER
             }
         SizeClass.EXPANDED ->
             when (width) {
-                SizeClass.COMPACT -> BouncerSceneLayout.STANDARD_BOUNCER
-                SizeClass.MEDIUM -> BouncerSceneLayout.BELOW_USER_SWITCHER
-                SizeClass.EXPANDED -> BouncerSceneLayout.BESIDE_USER_SWITCHER
+                SizeClass.COMPACT -> BouncerOverlayLayout.STANDARD_BOUNCER
+                SizeClass.MEDIUM -> BouncerOverlayLayout.BELOW_USER_SWITCHER
+                SizeClass.EXPANDED -> BouncerOverlayLayout.BESIDE_USER_SWITCHER
             }
-    }.takeIf { it != BouncerSceneLayout.BESIDE_USER_SWITCHER || isOneHandedModeSupported }
-        ?: BouncerSceneLayout.STANDARD_BOUNCER
+    }.takeIf { it != BouncerOverlayLayout.BESIDE_USER_SWITCHER || isOneHandedModeSupported }
+        ?: BouncerOverlayLayout.STANDARD_BOUNCER
 }

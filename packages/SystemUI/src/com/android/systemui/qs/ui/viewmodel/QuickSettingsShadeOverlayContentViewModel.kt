@@ -18,7 +18,6 @@ package com.android.systemui.qs.ui.viewmodel
 
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.scene.domain.interactor.SceneInteractor
-import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
@@ -46,18 +45,6 @@ constructor(
 
     override suspend fun onActivated(): Nothing {
         coroutineScope {
-            launch {
-                sceneInteractor.currentScene.collect { currentScene ->
-                    when (currentScene) {
-                        // TODO(b/369513770): The ShadeSession should be preserved in this scenario.
-                        Scenes.Bouncer ->
-                            shadeInteractor.collapseQuickSettingsShade(
-                                loggingReason = "bouncer shown while shade is open"
-                            )
-                    }
-                }
-            }
-
             launch {
                 shadeInteractor.isShadeTouchable
                     .distinctUntilChanged()

@@ -78,6 +78,7 @@ constructor(
                 currentScene == Scenes.Lockscreen &&
                     Overlays.NotificationsShade !in currentOverlays &&
                     Overlays.QuickSettingsShade !in currentOverlays &&
+                    Overlays.Bouncer !in currentOverlays &&
                     !isDozing &&
                     !showHeadsUpStatusBar
             }

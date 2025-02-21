@@ -23,6 +23,7 @@ import com.android.app.tracing.coroutines.flow.filterTraced
 import com.android.app.tracing.coroutines.flow.traceAs
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.coroutines.traceCoroutine
+import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.Flags.keyguardTransitionForceFinishOnScreenOff
@@ -236,28 +237,28 @@ constructor(
         if (!SceneContainerFlag.isEnabled) {
             return flow
         }
-        if (edge.isSceneWildcardEdge()) {
+        if (edge.isContentWildcardEdge()) {
             return simulateTransitionStepsForSceneTransitions(edge)
         }
         return flow.filterTraced("stl-filter") { step ->
-            val fromScene =
+            val fromContent =
                 when (edge) {
-                    is Edge.StateToState -> edge.from?.mapToSceneContainerScene()
-                    is Edge.StateToScene -> edge.from?.mapToSceneContainerScene()
-                    is Edge.SceneToState -> edge.from
+                    is Edge.StateToState -> edge.from?.mapToSceneContainerContent()
+                    is Edge.StateToContent -> edge.from?.mapToSceneContainerContent()
+                    is Edge.ContentToState -> edge.from
                 }
 
-            val toScene =
+            val toContent =
                 when (edge) {
-                    is Edge.StateToState -> edge.to?.mapToSceneContainerScene()
-                    is Edge.StateToScene -> edge.to
-                    is Edge.SceneToState -> edge.to?.mapToSceneContainerScene()
+                    is Edge.StateToState -> edge.to?.mapToSceneContainerContent()
+                    is Edge.StateToContent -> edge.to
+                    is Edge.ContentToState -> edge.to?.mapToSceneContainerContent()
                 }
 
             val isTransitioningBetweenLockscreenStates =
-                fromScene.isLockscreenOrNull() && toScene.isLockscreenOrNull()
+                fromContent.isLockscreenOrNull() && toContent.isLockscreenOrNull()
             val isTransitioningBetweenDesiredScenes =
-                sceneInteractor.transitionState.value.isTransitioning(fromScene, toScene)
+                sceneInteractor.transitionState.value.isTransitioning(fromContent, toContent)
 
             // When in STL A -> B settles in A we can't do the same in KTF as KTF requires us to
             // start B -> A to get back to A. [LockscreenSceneTransitionInteractor] will emit these
@@ -266,8 +267,8 @@ constructor(
             // this condition to not filter out the STARTED and FINISHED step of the "artificially"
             // reversed B -> A transition.
             val belongsToInstantReversedTransition =
-                sceneInteractor.topmostContent.value == toScene &&
-                    sceneTransitionPair.value.previousValue.isTransitioning(toScene, fromScene)
+                sceneInteractor.topmostContent.value == toContent &&
+                    sceneTransitionPair.value.previousValue.isTransitioning(toContent, fromContent)
 
             // We can't compare the terminal step with the current sceneTransition because
             // a) STL has no guarantee that it will settle in Idle() when finished/canceled
@@ -276,7 +277,7 @@ constructor(
             val terminalStepBelongsToPreviousTransition =
                 (step.transitionState == TransitionState.FINISHED ||
                     step.transitionState == TransitionState.CANCELED) &&
-                    sceneTransitionPair.value.previousValue.isTransitioning(fromScene, toScene)
+                    sceneTransitionPair.value.previousValue.isTransitioning(fromContent, toContent)
 
             return@filterTraced isTransitioningBetweenLockscreenStates ||
                 isTransitioningBetweenDesiredScenes ||
@@ -285,7 +286,7 @@ constructor(
         }
     }
 
-    private fun SceneKey?.isLockscreenOrNull() = this == Scenes.Lockscreen || this == null
+    private fun ContentKey?.isLockscreenOrNull() = this == Scenes.Lockscreen || this == null
 
     /**
      * This function will return a flow that simulates TransitionSteps based on STL movements
@@ -317,8 +318,8 @@ constructor(
                         when (edge) {
                             is Edge.StateToState ->
                                 throw IllegalStateException("Should not be reachable.")
-                            is Edge.SceneToState -> it.isTransitioning(from = edge.from)
-                            is Edge.StateToScene -> it.isTransitioning(to = edge.to)
+                            is Edge.ContentToState -> it.isTransitioning(from = edge.from)
+                            is Edge.StateToContent -> it.isTransitioning(to = edge.to)
                         }
                     if (!isMatchingTransition) {
                         return@flatMapLatestWithFinished flowOf()
@@ -416,17 +417,17 @@ constructor(
                     from = edge.from?.mapToSceneContainerState(),
                     to = edge.to?.mapToSceneContainerState(),
                 )
-            is Edge.SceneToState -> Edge.create(UNDEFINED, edge.to)
-            is Edge.StateToScene -> Edge.create(edge.from, UNDEFINED)
+            is Edge.ContentToState -> Edge.create(UNDEFINED, edge.to)
+            is Edge.StateToContent -> Edge.create(edge.from, UNDEFINED)
         }
     }
 
     fun transitionValue(
-        scene: SceneKey? = null,
+        content: ContentKey? = null,
         stateWithoutSceneContainer: KeyguardState,
     ): Flow<Float> {
-        return if (SceneContainerFlag.isEnabled && scene != null) {
-            sceneInteractor.transitionProgress(scene)
+        return if (SceneContainerFlag.isEnabled && content != null) {
+            sceneInteractor.transitionProgress(content)
         } else {
             transitionValue(stateWithoutSceneContainer)
         }
@@ -441,7 +442,7 @@ constructor(
     fun transitionValue(state: KeyguardState): Flow<Float> {
         if (SceneContainerFlag.isEnabled && state != state.mapToSceneContainerState()) {
             Log.e(TAG, "SceneContainer is enabled but a deprecated state $state is used.")
-            return transitionValue(state.mapToSceneContainerScene()!!, state)
+            return transitionValue(state.mapToSceneContainerContent()!!, state)
         }
         return getTransitionValueFlow(state)
     }
@@ -535,13 +536,13 @@ constructor(
      */
     fun isInTransition(edge: Edge, edgeWithoutSceneContainer: Edge? = null): Flow<Boolean> {
         return if (SceneContainerFlag.isEnabled) {
-                if (edge.isSceneWildcardEdge()) {
+                if (edge.isContentWildcardEdge()) {
                     sceneInteractor.transitionState.map {
                         when (edge) {
                             is Edge.StateToState ->
                                 throw IllegalStateException("Should not be reachable.")
-                            is Edge.SceneToState -> it.isTransitioning(from = edge.from)
-                            is Edge.StateToScene -> it.isTransitioning(to = edge.to)
+                            is Edge.ContentToState -> it.isTransitioning(from = edge.from)
+                            is Edge.StateToContent -> it.isTransitioning(to = edge.to)
                         }
                     }
                 } else {
@@ -583,12 +584,15 @@ constructor(
         return finishedKeyguardState.map { stateMatcher(it) }.distinctUntilChanged()
     }
 
-    fun isFinishedIn(scene: SceneKey, stateWithoutSceneContainer: KeyguardState): Flow<Boolean> {
+    fun isFinishedIn(
+        content: ContentKey,
+        stateWithoutSceneContainer: KeyguardState,
+    ): Flow<Boolean> {
         return if (SceneContainerFlag.isEnabled) {
                 combine(sceneInteractor.topmostContent, sceneInteractor.transitionState) {
                     topmostContent,
                     state ->
-                    topmostContent == scene || state.isTransitioning(from = scene)
+                    topmostContent == content || state.isTransitioning(from = content)
                 }
             } else {
                 isFinishedIn(stateWithoutSceneContainer)

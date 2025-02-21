@@ -248,7 +248,7 @@ constructor(
     val topClippingBounds: Flow<Int?> by lazy {
         combineTransform(
                 keyguardTransitionInteractor
-                    .transitionValue(scene = Scenes.Gone, stateWithoutSceneContainer = GONE)
+                    .transitionValue(content = Scenes.Gone, stateWithoutSceneContainer = GONE)
                     .map { it == 1f }
                     .onStart { emit(false) }
                     .distinctUntilChanged(),

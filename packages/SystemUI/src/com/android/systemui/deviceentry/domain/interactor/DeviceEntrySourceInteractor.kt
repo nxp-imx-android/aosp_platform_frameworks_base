@@ -33,6 +33,7 @@ import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticati
 import com.android.systemui.scene.domain.interactor.SceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_DISMISS_BOUNCER
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_NONE
@@ -84,14 +85,14 @@ constructor(
     sceneInteractor: SceneInteractor,
     dumpManager: DumpManager,
 ) : FlowDumperImpl(dumpManager) {
-    private val isShowingBouncerScene: Flow<Boolean> =
+    private val isShowingBouncerOverlay: Flow<Boolean> =
         sceneInteractor.transitionState
             .map { transitionState ->
-                transitionState.isIdle(Scenes.Bouncer) ||
-                    transitionState.isTransitioning(null, Scenes.Bouncer)
+                transitionState.isIdle(overlay = Overlays.Bouncer) ||
+                    transitionState.isTransitioning(null, Overlays.Bouncer)
             }
             .distinctUntilChanged()
-            .dumpWhileCollecting("isShowingBouncerScene")
+            .dumpWhileCollecting("isShowingBouncerOverlay")
 
     private val isUnlockedWithStrongFaceUnlock =
         deviceEntryFaceAuthInteractor.authenticationStatus
@@ -115,14 +116,14 @@ constructor(
                 isUnlockedWithStrongFaceUnlock,
                 sceneContainerOcclusionInteractor.isOccludingActivityShown,
                 sceneInteractor.currentScene,
-                isShowingBouncerScene,
+                isShowingBouncerOverlay,
             ) {
                 isAlternateBouncerVisible,
                 isBypassAvailable,
                 isFaceStrongBiometric,
                 isOccluded,
                 currentScene,
-                isShowingBouncerScene ->
+                isShowingBouncerOverlay ->
                 val isUnlockingAllowed =
                     keyguardUpdateMonitor.isUnlockingWithBiometricAllowed(isFaceStrongBiometric)
                 val bypass = isBypassAvailable || authController.isUdfpsFingerDown()
@@ -140,7 +141,7 @@ constructor(
 
                     isUnlockingAllowed && isOccluded -> MODE_UNLOCK_COLLAPSING
 
-                    (isShowingBouncerScene || isAlternateBouncerVisible) && isUnlockingAllowed ->
+                    (isShowingBouncerOverlay || isAlternateBouncerVisible) && isUnlockingAllowed ->
                         MODE_DISMISS_BOUNCER
 
                     isUnlockingAllowed && bypass -> MODE_UNLOCK_COLLAPSING
@@ -158,14 +159,16 @@ constructor(
                 alternateBouncerInteractor.isVisible,
                 authenticationInteractor.authenticationMethod,
                 sceneInteractor.currentScene,
+                sceneInteractor.currentOverlays,
                 isUnlockedWithStrongFingerprintUnlock,
-                isShowingBouncerScene,
+                isShowingBouncerOverlay,
             ) {
                 alternateBouncerVisible,
                 authenticationMethod,
                 currentScene,
+                currentOverlays,
                 isFingerprintStrongBiometric,
-                isShowingBouncerScene ->
+                isShowingBouncerOverlay ->
                 val unlockingAllowed =
                     keyguardUpdateMonitor.isUnlockingWithBiometricAllowed(
                         isFingerprintStrongBiometric
@@ -185,11 +188,12 @@ constructor(
                     unlockingAllowed && currentScene == Scenes.Dream ->
                         MODE_WAKE_AND_UNLOCK_FROM_DREAM
 
-                    isShowingBouncerScene && unlockingAllowed -> MODE_DISMISS_BOUNCER
+                    isShowingBouncerOverlay && unlockingAllowed -> MODE_DISMISS_BOUNCER
 
                     unlockingAllowed -> MODE_UNLOCK_COLLAPSING
 
-                    currentScene != Scenes.Bouncer && !alternateBouncerVisible -> MODE_SHOW_BOUNCER
+                    Overlays.Bouncer !in currentOverlays && !alternateBouncerVisible ->
+                        MODE_SHOW_BOUNCER
 
                     else -> MODE_NONE
                 }

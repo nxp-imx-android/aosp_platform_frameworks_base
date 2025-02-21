@@ -1220,13 +1220,13 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
 
             progress.value = 0.4f
             sceneTransitions.value =
-                ObservableTransitionState.Transition(
-                    Scenes.Lockscreen,
-                    Scenes.Bouncer,
-                    flowOf(Scenes.Lockscreen),
-                    progress,
-                    false,
-                    flowOf(false),
+                ObservableTransitionState.Transition.showOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromScene = Scenes.Lockscreen,
+                    currentOverlays = flowOf(setOf(Overlays.Bouncer)),
+                    progress = progress,
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
                 )
 
             assertTransition(
@@ -1342,7 +1342,7 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
             sceneTransitions.value =
                 ObservableTransitionState.Transition(
                     Scenes.Gone,
-                    Scenes.Bouncer,
+                    Scenes.Dream,
                     flowOf(Scenes.Lockscreen),
                     progress,
                     false,

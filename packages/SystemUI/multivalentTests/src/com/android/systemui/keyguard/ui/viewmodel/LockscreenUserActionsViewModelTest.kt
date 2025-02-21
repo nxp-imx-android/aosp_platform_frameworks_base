@@ -19,6 +19,7 @@ package com.android.systemui.keyguard.ui.viewmodel
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.Swipe
@@ -135,11 +136,11 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
         private fun expectedUpDestination(
             canSwipeToEnter: Boolean,
             isShadeTouchable: Boolean,
-        ): SceneKey? {
+        ): ContentKey? {
             return when {
                 !isShadeTouchable -> null
                 canSwipeToEnter -> Scenes.Gone
-                else -> Scenes.Bouncer
+                else -> Overlays.Bouncer
             }
         }
     }
@@ -215,15 +216,17 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                     )
                 )
 
-            val upScene by
-                collectLastValue(
-                    (userActions?.get(Swipe.Up) as? UserActionResult.ChangeScene)?.toScene?.let {
-                        scene ->
-                        kosmos.sceneInteractor.resolveSceneFamily(scene)
-                    } ?: flowOf(null)
-                )
+            val upContent =
+                userActions?.get(Swipe.Up)?.let { result ->
+                    when (result) {
+                        is UserActionResult.ChangeScene -> result.toScene
+                        is UserActionResult.ShowOverlay -> result.overlay
+                        is UserActionResult.HideOverlay -> result.overlay
+                        is UserActionResult.ReplaceByOverlay -> result.overlay
+                    }
+                }
 
-            assertThat(upScene)
+            assertThat(upContent)
                 .isEqualTo(
                     expectedUpDestination(
                         canSwipeToEnter = canSwipeToEnter,
@@ -292,15 +295,17 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                 }
             }
 
-            val upScene by
-                collectLastValue(
-                    (userActions?.get(Swipe.Up) as? UserActionResult.ChangeScene)?.toScene?.let {
-                        scene ->
-                        kosmos.sceneInteractor.resolveSceneFamily(scene)
-                    } ?: flowOf(null)
-                )
+            val upContent =
+                userActions?.get(Swipe.Up)?.let { result ->
+                    when (result) {
+                        is UserActionResult.ChangeScene -> result.toScene
+                        is UserActionResult.ShowOverlay -> result.overlay
+                        is UserActionResult.HideOverlay -> result.overlay
+                        is UserActionResult.ReplaceByOverlay -> result.overlay
+                    }
+                }
 
-            assertThat(upScene)
+            assertThat(upContent)
                 .isEqualTo(
                     expectedUpDestination(
                         canSwipeToEnter = canSwipeToEnter,

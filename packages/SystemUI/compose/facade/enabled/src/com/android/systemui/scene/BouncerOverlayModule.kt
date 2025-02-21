@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,13 @@
 
 package com.android.systemui.scene
 
-import com.android.systemui.bouncer.ui.composable.BouncerScene
-import com.android.systemui.scene.ui.composable.Scene
+import com.android.systemui.bouncer.ui.composable.BouncerOverlay
+import com.android.systemui.scene.ui.composable.Overlay
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoSet
 
 @Module
-interface BouncerSceneModule {
-
-    @Binds @IntoSet fun bouncerScene(scene: BouncerScene): Scene
+interface BouncerOverlayModule {
+    @Binds @IntoSet fun bouncer(overlay: BouncerOverlay): Overlay
 }

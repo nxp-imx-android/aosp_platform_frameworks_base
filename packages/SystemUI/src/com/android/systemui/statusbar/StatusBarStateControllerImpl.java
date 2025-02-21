@@ -627,7 +627,6 @@ public class StatusBarStateControllerImpl implements
             boolean alternateBouncerIsVisible) {
         SceneContainerFlag.isUnexpectedlyInLegacyMode();
 
-        final boolean onBouncer = currentScene.equals(Scenes.Bouncer);
         final boolean onCommunal = currentScene.equals(Scenes.Communal);
         final boolean onGone = currentScene.equals(Scenes.Gone);
         final boolean onDream = currentScene.equals(Scenes.Dream);
@@ -635,8 +634,8 @@ public class StatusBarStateControllerImpl implements
         final boolean onQuickSettings = currentScene.equals(Scenes.QuickSettings);
         final boolean onShade = currentScene.equals(Scenes.Shade);
 
+        final boolean overlaidBouncer = currentOverlays.contains(Overlays.Bouncer);
         final boolean overCommunal = SceneStackKt.contains(backStack, Scenes.Communal);
-        final boolean overLockscreen = SceneStackKt.contains(backStack, Scenes.Lockscreen);
         final boolean overShade = SceneStackKt.contains(backStack, Scenes.Shade);
 
         final boolean overlaidShade = currentOverlays.contains(Overlays.NotificationsShade);
@@ -669,14 +668,13 @@ public class StatusBarStateControllerImpl implements
         // 3. backStack contains a keyguardish scene (Lockscreen or Communal).
         // 4. the alternate bouncer is visible.
 
-        final boolean onKeyguardish = onLockscreen || onBouncer || onCommunal;
-        final boolean overKeyguardish = overLockscreen || overCommunal;
+        final boolean onKeyguardish = onLockscreen || overlaidBouncer || onCommunal;
 
         if (isOccluded) {
             // Occlusion is special; even though the device is still technically on the lockscreen,
             // the UI behaves as if it is unlocked.
             newState = StatusBarState.SHADE;
-        } else if (onKeyguardish || overKeyguardish || alternateBouncerIsVisible) {
+        } else if (onKeyguardish || overCommunal || alternateBouncerIsVisible) {
             // We get here if we are on or over a keyguardish scene, even if isUnlocked is true; we
             // want to return SHADE_LOCKED or KEYGUARD until we are also neither on nor over a
             // keyguardish scene.

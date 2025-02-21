@@ -43,6 +43,7 @@ import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
 import com.android.systemui.bouncer.shared.constants.KeyguardBouncerConstants
 import com.android.systemui.classifier.FalsingA11yDelegate
 import com.android.systemui.classifier.FalsingCollector
+import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
@@ -65,6 +66,7 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.FakeSceneDataSource
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.fakeSceneDataSource
 import com.android.systemui.statusbar.policy.ConfigurationController
@@ -797,6 +799,9 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
     @EnableSceneContainer
     fun dismissesKeyguard_whenSceneChangesToGone() =
         kosmos.testScope.runTest {
+            // Collect sceneInteractor.currentOverlays so that show/hideOverlay receive updated
+            // overlay state during validation
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             // Upon init, we have never dismisses the keyguard.
             underTest.onInit()
             runCurrent()
@@ -807,19 +812,24 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
             // is not enough to trigger a dismissal of the keyguard.
             underTest.onViewAttached()
             fakeSceneDataSource.pause()
-            sceneInteractor.changeScene(Scenes.Bouncer, "reason")
+            sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
+            sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
             sceneTransitionStateFlow.value =
-                ObservableTransitionState.Transition(
-                    Scenes.Lockscreen,
-                    Scenes.Bouncer,
-                    flowOf(Scenes.Bouncer),
-                    flowOf(.5f),
-                    false,
+                ObservableTransitionState.Transition.showOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromScene = Scenes.Lockscreen,
+                    currentOverlays = flowOf(setOf(Overlays.Bouncer)),
+                    progress = flowOf(.5f),
+                    isInitiatedByUserInput = false,
                     isUserInputOngoing = flowOf(false),
                 )
             runCurrent()
-            fakeSceneDataSource.unpause(expectedScene = Scenes.Bouncer)
-            sceneTransitionStateFlow.value = ObservableTransitionState.Idle(Scenes.Bouncer)
+            fakeSceneDataSource.unpause(expectedOverlays = setOf(Overlays.Bouncer))
+            sceneTransitionStateFlow.value =
+                ObservableTransitionState.Idle(
+                    currentScene = Scenes.Lockscreen,
+                    currentOverlays = setOf(Overlays.Bouncer),
+                )
             runCurrent()
             verify(primaryBouncerInteractor, never())
                 .notifyKeyguardAuthenticatedPrimaryAuth(anyInt())
@@ -832,17 +842,18 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
             runCurrent()
             fakeSceneDataSource.pause()
             sceneInteractor.changeScene(Scenes.Gone, "reason")
+            sceneInteractor.hideOverlay(Overlays.Bouncer, "reason")
             sceneTransitionStateFlow.value =
-                ObservableTransitionState.Transition(
-                    Scenes.Bouncer,
-                    Scenes.Gone,
-                    flowOf(Scenes.Gone),
-                    flowOf(.5f),
-                    false,
+                ObservableTransitionState.Transition.hideOverlay(
+                    overlay = Overlays.Bouncer,
+                    toScene = Scenes.Gone,
+                    currentOverlays = flowOf(emptySet()),
+                    progress = flowOf(.5f),
+                    isInitiatedByUserInput = false,
                     isUserInputOngoing = flowOf(false),
                 )
             runCurrent()
-            fakeSceneDataSource.unpause(expectedScene = Scenes.Gone)
+            fakeSceneDataSource.unpause(expectedScene = Scenes.Gone, expectedOverlays = emptySet())
             sceneTransitionStateFlow.value = ObservableTransitionState.Idle(Scenes.Gone)
             runCurrent()
             verify(primaryBouncerInteractor).notifyKeyguardAuthenticatedPrimaryAuth(anyInt())
@@ -850,20 +861,30 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
             // While listening, moving back to the bouncer scene does not dismiss the keyguard
             // again.
             clearInvocations(primaryBouncerInteractor)
+
+            // switch to a different non-keyguard scene since showing overlay over Gone is
+            // prohibited
+            sceneInteractor.snapToScene(Scenes.Shade, "reason")
+            runCurrent()
+
             fakeSceneDataSource.pause()
-            sceneInteractor.changeScene(Scenes.Bouncer, "reason")
+            sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
             sceneTransitionStateFlow.value =
-                ObservableTransitionState.Transition(
-                    Scenes.Gone,
-                    Scenes.Bouncer,
-                    flowOf(Scenes.Bouncer),
-                    flowOf(.5f),
-                    false,
+                ObservableTransitionState.Transition.showOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromScene = Scenes.Shade,
+                    currentOverlays = flowOf(setOf(Overlays.Bouncer)),
+                    progress = flowOf(.5f),
+                    isInitiatedByUserInput = false,
                     isUserInputOngoing = flowOf(false),
                 )
             runCurrent()
-            fakeSceneDataSource.unpause(expectedScene = Scenes.Bouncer)
-            sceneTransitionStateFlow.value = ObservableTransitionState.Idle(Scenes.Bouncer)
+            fakeSceneDataSource.unpause(expectedOverlays = setOf(Overlays.Bouncer))
+            sceneTransitionStateFlow.value =
+                ObservableTransitionState.Idle(
+                    currentScene = Scenes.Lockscreen,
+                    currentOverlays = setOf(Overlays.Bouncer),
+                )
             runCurrent()
             verify(primaryBouncerInteractor, never())
                 .notifyKeyguardAuthenticatedPrimaryAuth(anyInt())
@@ -874,17 +895,18 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
             underTest.onViewDetached()
             fakeSceneDataSource.pause()
             sceneInteractor.changeScene(Scenes.Gone, "reason")
+            sceneInteractor.hideOverlay(Overlays.Bouncer, "reason")
             sceneTransitionStateFlow.value =
-                ObservableTransitionState.Transition(
-                    Scenes.Bouncer,
-                    Scenes.Gone,
-                    flowOf(Scenes.Gone),
-                    flowOf(.5f),
-                    false,
+                ObservableTransitionState.Transition.hideOverlay(
+                    overlay = Overlays.Bouncer,
+                    toScene = Scenes.Gone,
+                    currentOverlays = flowOf(emptySet()),
+                    progress = flowOf(.5f),
+                    isInitiatedByUserInput = false,
                     isUserInputOngoing = flowOf(false),
                 )
             runCurrent()
-            fakeSceneDataSource.unpause(expectedScene = Scenes.Gone)
+            fakeSceneDataSource.unpause(expectedScene = Scenes.Gone, expectedOverlays = emptySet())
             sceneTransitionStateFlow.value = ObservableTransitionState.Idle(Scenes.Gone)
             runCurrent()
             verify(primaryBouncerInteractor, never())

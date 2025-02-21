@@ -42,10 +42,13 @@ import com.android.systemui.keyguard.shared.model.TransitionState.RUNNING
 import com.android.systemui.keyguard.shared.model.TransitionState.STARTED
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.scene.data.repository.HideOverlay
 import com.android.systemui.scene.data.repository.Idle
+import com.android.systemui.scene.data.repository.ShowOverlay
 import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -298,11 +301,13 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
                 inTransition,
             )
 
-            kosmos.setSceneTransition(Transition(Scenes.Gone, Scenes.Bouncer))
+            kosmos.setSceneTransition(
+                ShowOverlay(overlay = Overlays.Bouncer, fromScene = Scenes.Gone)
+            )
 
             assertEquals(listOf(false, true, false, true), inTransition)
 
-            kosmos.setSceneTransition(Idle(Scenes.Bouncer))
+            kosmos.setSceneTransition(Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer)))
 
             assertEquals(listOf(false, true, false, true, false), inTransition)
         }
@@ -1053,13 +1058,23 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             progress.emit(0.6f)
             runCurrent()
 
-            kosmos.setSceneTransition(Transition(Scenes.Gone, Scenes.Bouncer, progress = progress))
+            kosmos.setSceneTransition(
+                ShowOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromScene = Scenes.Gone,
+                    progress = progress,
+                )
+            )
 
             progress.emit(0.1f)
             runCurrent()
 
             kosmos.setSceneTransition(
-                Transition(Scenes.Bouncer, Scenes.Lockscreen, progress = progress)
+                HideOverlay(
+                    overlay = Overlays.Bouncer,
+                    toScene = Scenes.Lockscreen,
+                    progress = progress,
+                )
             )
 
             progress.emit(0.3f)
@@ -1098,12 +1113,20 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
 
             kosmos.setSceneTransition(Idle(Scenes.Gone))
 
-            kosmos.setSceneTransition(Transition(Scenes.Gone, Scenes.Bouncer, progress = progress))
+            kosmos.setSceneTransition(
+                ShowOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromScene = Scenes.Gone,
+                    progress = progress,
+                )
+            )
 
             progress.emit(0.1f)
             runCurrent()
 
-            kosmos.setSceneTransition(Transition(Scenes.Bouncer, Scenes.Gone, progress = progress))
+            kosmos.setSceneTransition(
+                HideOverlay(overlay = Overlays.Bouncer, toScene = Scenes.Gone, progress = progress)
+            )
 
             progress.emit(0.3f)
             runCurrent()
@@ -1136,7 +1159,13 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             progress1.emit(0.1f)
             runCurrent()
 
-            kosmos.setSceneTransition(Transition(Scenes.Gone, Scenes.Bouncer, progress = progress2))
+            kosmos.setSceneTransition(
+                ShowOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromScene = Scenes.Gone,
+                    progress = progress2,
+                )
+            )
 
             progress2.emit(0.3f)
             runCurrent()

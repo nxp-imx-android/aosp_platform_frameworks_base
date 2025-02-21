@@ -32,7 +32,6 @@ var Kosmos.sceneKeys by Fixture {
         Scenes.QuickSettings,
         Scenes.Shade,
         Scenes.Lockscreen,
-        Scenes.Bouncer,
         Scenes.Gone,
         Scenes.Communal,
         Scenes.Dream,
@@ -42,7 +41,7 @@ var Kosmos.sceneKeys by Fixture {
 val Kosmos.initialSceneKey by Fixture { Scenes.Lockscreen }
 
 var Kosmos.overlayKeys by Fixture {
-    listOf(Overlays.NotificationsShade, Overlays.QuickSettingsShade)
+    listOf(Overlays.NotificationsShade, Overlays.QuickSettingsShade, Overlays.Bouncer)
 }
 
 val Kosmos.fakeOverlaysByKeys by Fixture { overlayKeys.associateWith { FakeOverlay(it) } }
@@ -62,7 +61,6 @@ var Kosmos.sceneContainerConfig by Fixture {
             Scenes.Dream to 2,
             Scenes.Shade to 3,
             Scenes.QuickSettings to 4,
-            Scenes.Bouncer to 5,
         )
 
     SceneContainerConfig(

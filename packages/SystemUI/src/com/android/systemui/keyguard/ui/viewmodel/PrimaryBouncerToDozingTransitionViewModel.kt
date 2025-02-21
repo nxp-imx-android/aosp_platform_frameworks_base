@@ -26,7 +26,7 @@ import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
 import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import com.android.systemui.keyguard.ui.transitions.PrimaryBouncerTransition
-import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.Overlays
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -49,7 +49,7 @@ constructor(
         animationFlow
             .setup(
                 duration = TO_DOZING_DURATION,
-                edge = Edge.create(from = Scenes.Bouncer, to = DOZING),
+                edge = Edge.create(from = Overlays.Bouncer, to = DOZING),
             )
             .setupWithoutSceneContainer(edge = Edge.create(from = PRIMARY_BOUNCER, to = DOZING))
 

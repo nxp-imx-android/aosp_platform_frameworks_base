@@ -77,6 +77,7 @@ import com.android.systemui.navigationbar.gestural.domain.TaskInfo
 import com.android.systemui.navigationbar.gestural.domain.TaskMatcher
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
 import com.android.systemui.touch.TouchInsetManager
@@ -1073,7 +1074,8 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         assertThat(lifecycleRegistry.currentState).isEqualTo(Lifecycle.State.RESUMED)
 
         // Bouncer shows.
-        kosmos.sceneInteractor.changeScene(Scenes.Bouncer, "test")
+        kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "test")
+        kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "test")
         testScope.runCurrent()
         mMainExecutor.runAllReady()
 
@@ -1082,6 +1084,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
 
         // Bouncer closes.
         kosmos.sceneInteractor.changeScene(Scenes.Dream, "test")
+        kosmos.sceneInteractor.hideOverlay(Overlays.Bouncer, "test")
         testScope.runCurrent()
         mMainExecutor.runAllReady()
 

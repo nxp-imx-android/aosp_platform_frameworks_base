@@ -101,7 +101,7 @@ constructor(
                 .map {}
         } else {
             transitionInteractor
-                .isFinishedIn(scene = Scenes.Gone, stateWithoutSceneContainer = GONE)
+                .isFinishedIn(content = Scenes.Gone, stateWithoutSceneContainer = GONE)
                 .filter { it }
                 .map {}
         }

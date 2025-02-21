@@ -34,9 +34,7 @@ import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.android.systemui.user.ui.viewmodel.userSwitcherViewModel
 import kotlinx.coroutines.flow.StateFlow
 
-val Kosmos.bouncerUserActionsViewModel by Fixture {
-    BouncerUserActionsViewModel(bouncerInteractor = bouncerInteractor)
-}
+val Kosmos.bouncerUserActionsViewModel by Fixture { BouncerUserActionsViewModel() }
 
 val Kosmos.bouncerUserActionsViewModelFactory by Fixture {
     object : BouncerUserActionsViewModel.Factory {
@@ -46,8 +44,8 @@ val Kosmos.bouncerUserActionsViewModelFactory by Fixture {
     }
 }
 
-val Kosmos.bouncerSceneContentViewModel by Fixture {
-    BouncerSceneContentViewModel(
+val Kosmos.bouncerOverlayContentViewModel by Fixture {
+    BouncerOverlayContentViewModel(
         applicationContext = applicationContext,
         bouncerInteractor = bouncerInteractor,
         authenticationInteractor = authenticationInteractor,
@@ -65,10 +63,10 @@ val Kosmos.bouncerSceneContentViewModel by Fixture {
     )
 }
 
-val Kosmos.bouncerSceneContentViewModelFactory by Fixture {
-    object : BouncerSceneContentViewModel.Factory {
-        override fun create(): BouncerSceneContentViewModel {
-            return bouncerSceneContentViewModel
+val Kosmos.bouncerOverlayContentViewModelFactory by Fixture {
+    object : BouncerOverlayContentViewModel.Factory {
+        override fun create(): BouncerOverlayContentViewModel {
+            return bouncerOverlayContentViewModel
         }
     }
 }

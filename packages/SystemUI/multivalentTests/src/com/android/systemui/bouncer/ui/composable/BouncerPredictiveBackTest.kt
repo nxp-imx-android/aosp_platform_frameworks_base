@@ -43,11 +43,10 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.isElement
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
 import com.android.systemui.bouncer.ui.BouncerDialogFactory
-import com.android.systemui.bouncer.ui.viewmodel.BouncerSceneContentViewModel
+import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.bouncer.ui.viewmodel.BouncerUserActionsViewModel
-import com.android.systemui.bouncer.ui.viewmodel.bouncerSceneContentViewModel
+import com.android.systemui.bouncer.ui.viewmodel.bouncerOverlayContentViewModel
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
@@ -59,6 +58,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.sceneContainerViewModelFactory
 import com.android.systemui.scene.sceneTransitionsBuilder
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneContainerConfig
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.sceneDataSourceDelegator
@@ -103,10 +103,10 @@ class BouncerPredictiveBackTest : SysuiTestCase() {
         motionTestRule.toolkit.composeContentTestRule as AndroidComposeTestRule<*, *>
 
     private val sceneInteractor by lazy { kosmos.sceneInteractor }
-    private val Kosmos.sceneKeys by Fixture { listOf(Scenes.Lockscreen, Scenes.Bouncer) }
-    private val Kosmos.initialSceneKey by Fixture { Scenes.Bouncer }
+    private val Kosmos.sceneKeys by Fixture { listOf(Scenes.Lockscreen) }
+    private val Kosmos.initialSceneKey by Fixture { Scenes.Lockscreen }
     private val Kosmos.sceneContainerConfig by Fixture {
-        val navigationDistances = mapOf(Scenes.Lockscreen to 1, Scenes.Bouncer to 0)
+        val navigationDistances = mapOf(Scenes.Lockscreen to 1)
         SceneContainerConfig(
             sceneKeys,
             initialSceneKey,
@@ -137,17 +137,17 @@ class BouncerPredictiveBackTest : SysuiTestCase() {
         }
     private val bouncerSceneActionsViewModelFactory =
         object : BouncerUserActionsViewModel.Factory {
-            override fun create() = BouncerUserActionsViewModel(kosmos.bouncerInteractor)
+            override fun create() = BouncerUserActionsViewModel()
         }
-    private lateinit var bouncerSceneContentViewModel: BouncerSceneContentViewModel
-    private val bouncerSceneContentViewModelFactory =
-        object : BouncerSceneContentViewModel.Factory {
-            override fun create() = bouncerSceneContentViewModel
+    private lateinit var mBouncerOverlayContentViewModel: BouncerOverlayContentViewModel
+    private val mBouncerOverlayContentViewModelFactory =
+        object : BouncerOverlayContentViewModel.Factory {
+            override fun create() = mBouncerOverlayContentViewModel
         }
     private val bouncerScene =
-        BouncerScene(
+        BouncerOverlay(
             bouncerSceneActionsViewModelFactory,
-            bouncerSceneContentViewModelFactory,
+            mBouncerOverlayContentViewModelFactory,
             bouncerDialogFactory,
         )
 
@@ -155,7 +155,7 @@ class BouncerPredictiveBackTest : SysuiTestCase() {
     fun setUp() {
         MockitoAnnotations.initMocks(this)
 
-        bouncerSceneContentViewModel = kosmos.bouncerSceneContentViewModel
+        mBouncerOverlayContentViewModel = kosmos.bouncerOverlayContentViewModel
 
         val startable = kosmos.sceneContainerStartable
         startable.start()
@@ -175,14 +175,10 @@ class BouncerPredictiveBackTest : SysuiTestCase() {
                                     rememberViewModel("BouncerPredictiveBackTest") {
                                         sceneContainerViewModel
                                     },
-                                sceneByKey =
-                                    mapOf(
-                                        Scenes.Lockscreen to FakeLockscreen(),
-                                        Scenes.Bouncer to bouncerScene,
-                                    ),
-                                initialSceneKey = Scenes.Bouncer,
+                                sceneByKey = mapOf(Scenes.Lockscreen to FakeLockscreen()),
+                                initialSceneKey = Scenes.Lockscreen,
                                 transitionsBuilder = kosmos.sceneTransitionsBuilder,
-                                overlayByKey = emptyMap(),
+                                overlayByKey = mapOf(Overlays.Bouncer to bouncerScene),
                                 dataSourceDelegator = kosmos.sceneDataSourceDelegator,
                                 qsSceneAdapter = { kosmos.fakeQsSceneAdapter },
                                 sceneJankMonitorFactory = kosmos.sceneJankMonitorFactory,

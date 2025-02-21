@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationLockscreenScrimViewModel
@@ -100,7 +101,7 @@ fun ContentScope.NotificationLockscreenScrim(
 
     val isBouncerToLockscreen =
         layoutState.currentTransition?.isTransitioning(
-            from = Scenes.Bouncer,
+            from = Overlays.Bouncer,
             to = Scenes.Lockscreen,
         ) ?: false
 
@@ -120,5 +121,5 @@ private fun shouldShowScrimFadeOut(
     return shadeMode != ShadeMode.Dual &&
         currentTransition.isInitiatedByUserInput &&
         (currentTransition.isTransitioning(from = Scenes.Shade, to = Scenes.Lockscreen) ||
-            currentTransition.isTransitioning(from = Scenes.Bouncer, to = Scenes.Lockscreen))
+            currentTransition.isTransitioning(from = Overlays.Bouncer, to = Scenes.Lockscreen))
 }
