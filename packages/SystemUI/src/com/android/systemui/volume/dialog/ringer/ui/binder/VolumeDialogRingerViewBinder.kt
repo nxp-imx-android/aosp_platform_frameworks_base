@@ -24,6 +24,7 @@ import android.widget.ImageButton
 import androidx.annotation.LayoutRes
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.constraintlayout.motion.widget.MotionLayout
+import androidx.constraintlayout.motion.widget.MotionScene
 import androidx.dynamicanimation.animation.FloatValueHolder
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
@@ -47,6 +48,7 @@ import com.android.systemui.volume.dialog.ui.viewmodel.VolumeDialogViewModel
 import javax.inject.Inject
 import kotlin.properties.Delegates
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.mapLatest
@@ -55,6 +57,7 @@ private const val CLOSE_DRAWER_DELAY = 300L
 // Ensure roundness and color of button is updated when progress is changed by a minimum fraction.
 private const val BUTTON_MIN_VISIBLE_CHANGE = 0.05F
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @VolumeDialogScope
 class VolumeDialogRingerViewBinder
 @Inject
@@ -208,6 +211,13 @@ constructor(
                                     ringerState.orientation,
                                     ringerBackgroundView,
                                 )
+                                drawerContainer
+                                    .getTransition(R.id.close_to_open_transition)
+                                    .setInterpolatorInfo(
+                                        MotionScene.Transition.INTERPOLATE_REFERENCE_ID,
+                                        null,
+                                        R.anim.volume_dialog_ringer_open,
+                                    )
                                 drawerContainer.transitionToState(
                                     R.id.volume_dialog_ringer_drawer_open
                                 )
@@ -370,6 +380,12 @@ constructor(
         orientation: Int,
     ) {
         setTransition(R.id.close_to_open_transition)
+        getTransition(R.id.close_to_open_transition)
+            .setInterpolatorInfo(
+                MotionScene.Transition.INTERPOLATE_REFERENCE_ID,
+                null,
+                R.anim.volume_dialog_ringer_close,
+            )
         updateCloseState(this, selectedIndex, orientation, ringerBackground)
         transitionToState(R.id.volume_dialog_ringer_drawer_close)
     }
