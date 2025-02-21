@@ -848,23 +848,6 @@ public class AudioService extends IAudioService.Stub
                 "media_audio.value_audio_playback_hardening_partial_restriction";
         static final String METRIC_COUNTERS_PLAYBACK_STRICT =
                 "media_audio.value_audio_playback_hardening_strict_would_restrict";
-
-        String getPackNameForUid(int uid) {
-            final long token = Binder.clearCallingIdentity();
-            try {
-                final String[] names = AudioService.this.mContext.
-                                            getPackageManager().getPackagesForUid(uid);
-                if (names == null
-                        || names.length == 0
-                        || TextUtils.isEmpty(names[0])) {
-                    return "[" + uid + "]";
-                }
-                return names[0];
-            } finally {
-                Binder.restoreCallingIdentity(token);
-            }
-        }
-
         // oneway
         @Override
         public void playbackHardeningEvent(int uid, byte type, boolean bypassed) {
@@ -882,7 +865,7 @@ public class AudioService extends IAudioService.Stub
             String msg = "AudioHardening background playback "
                     + (bypassed ? "would be " : "")
                     + "muted for "
-                    + getPackNameForUid(uid) + " (" + uid + "), "
+                    + getPackageNameForUid(uid) + " (" + uid + "), "
                     + "level: " + (type == HardeningType.PARTIAL ? "partial" : "full");
 
             AudioService.this.mHardeningLogger.enqueueAndSlog(msg,
@@ -1638,7 +1621,9 @@ public class AudioService extends IAudioService.Stub
 
         mMusicFxHelper = new MusicFxHelper(mContext, mAudioHandler);
 
-        mHardeningEnforcer = new HardeningEnforcer(mContext, isPlatformAutomotive(), mAppOps,
+        mHardeningEnforcer = new HardeningEnforcer(mContext, isPlatformAutomotive(),
+                mShouldEnableAllHardening,
+                mAppOps,
                 context.getPackageManager(),
                 mHardeningLogger);
     }
@@ -3934,7 +3919,9 @@ public class AudioService extends IAudioService.Stub
     public void adjustStreamVolumeWithAttribution(int streamType, int direction, int flags,
             String callingPackage, String attributionTag) {
         if (mHardeningEnforcer.blockVolumeMethod(
-                HardeningEnforcer.METHOD_AUDIO_MANAGER_ADJUST_STREAM_VOLUME)) {
+                HardeningEnforcer.METHOD_AUDIO_MANAGER_ADJUST_STREAM_VOLUME,
+                callingPackage,
+                Binder.getCallingUid())) {
             return;
         }
         if ((streamType == AudioManager.STREAM_ACCESSIBILITY) && !canChangeAccessibilityVolume()) {
@@ -4695,7 +4682,9 @@ public class AudioService extends IAudioService.Stub
     public void setStreamVolumeWithAttribution(int streamType, int index, int flags,
             String callingPackage, String attributionTag) {
         if (mHardeningEnforcer.blockVolumeMethod(
-                HardeningEnforcer.METHOD_AUDIO_MANAGER_SET_STREAM_VOLUME)) {
+                HardeningEnforcer.METHOD_AUDIO_MANAGER_SET_STREAM_VOLUME,
+                callingPackage,
+                Binder.getCallingUid())) {
             return;
         }
         setStreamVolumeWithAttributionInt(streamType, index, flags, /*device*/ null,
@@ -6144,7 +6133,9 @@ public class AudioService extends IAudioService.Stub
 
     public void setRingerModeExternal(int ringerMode, String caller) {
         if (mHardeningEnforcer.blockVolumeMethod(
-                HardeningEnforcer.METHOD_AUDIO_MANAGER_SET_RINGER_MODE)) {
+                HardeningEnforcer.METHOD_AUDIO_MANAGER_SET_RINGER_MODE,
+                getPackageNameForUid(Binder.getCallingUid()),
+                Binder.getCallingUid())) {
             return;
         }
         if (isAndroidNPlus(caller) && wouldToggleZenMode(ringerMode)
@@ -6913,7 +6904,9 @@ public class AudioService extends IAudioService.Stub
     @Override
     public void adjustVolume(int direction, int flags) {
         if (mHardeningEnforcer.blockVolumeMethod(
-                HardeningEnforcer.METHOD_AUDIO_MANAGER_ADJUST_VOLUME)) {
+                HardeningEnforcer.METHOD_AUDIO_MANAGER_ADJUST_VOLUME,
+                getPackageNameForUid(Binder.getCallingUid()),
+                Binder.getCallingUid())) {
             return;
         }
         getMediaSessionManager().dispatchAdjustVolume(AudioManager.USE_DEFAULT_STREAM_TYPE,
@@ -6928,7 +6921,9 @@ public class AudioService extends IAudioService.Stub
     @Override
     public void adjustSuggestedStreamVolume(int direction, int suggestedStreamType, int flags) {
         if (mHardeningEnforcer.blockVolumeMethod(
-                HardeningEnforcer.METHOD_AUDIO_MANAGER_ADJUST_SUGGESTED_STREAM_VOLUME)) {
+                HardeningEnforcer.METHOD_AUDIO_MANAGER_ADJUST_SUGGESTED_STREAM_VOLUME,
+                getPackageNameForUid(Binder.getCallingUid()),
+                Binder.getCallingUid())) {
             return;
         }
         getMediaSessionManager().dispatchAdjustVolume(suggestedStreamType, direction, flags);
@@ -15489,4 +15484,22 @@ public class AudioService extends IAudioService.Stub
         }
         return true;
     }
+
+    private String getPackageNameForUid(int uid) {
+        final long token = Binder.clearCallingIdentity();
+        try {
+            final String[] names = AudioService.this.mContext.
+                                        getPackageManager().getPackagesForUid(uid);
+            if (names == null
+                    || names.length == 0
+                    || TextUtils.isEmpty(names[0])) {
+                return "[" + uid + "]";
+            }
+            return names[0];
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+
 }
