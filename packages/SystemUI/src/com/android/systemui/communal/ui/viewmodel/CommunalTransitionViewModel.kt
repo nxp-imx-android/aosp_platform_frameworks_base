@@ -19,6 +19,7 @@ package com.android.systemui.communal.ui.viewmodel
 import android.graphics.Color
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
+import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.util.CommunalColors
 import com.android.systemui.dagger.SysUISingleton
@@ -40,6 +41,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -60,6 +62,7 @@ constructor(
     glanceableHubToDreamTransitionViewModel: GlanceableHubToDreamingTransitionViewModel,
     communalInteractor: CommunalInteractor,
     private val communalSceneInteractor: CommunalSceneInteractor,
+    communalSettingsInteractor: CommunalSettingsInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
 ) {
     /**
@@ -146,13 +149,16 @@ constructor(
             }
 
     val recentsBackgroundColor: Flow<Color?> =
-        combine(showCommunalFromOccluded, communalColors.backgroundColor) {
-            showCommunalFromOccluded,
-            backgroundColor ->
-            if (showCommunalFromOccluded) {
-                backgroundColor
-            } else {
-                null
+        combine(
+                showCommunalFromOccluded,
+                communalColors.backgroundColor,
+                communalSettingsInteractor.communalBackground,
+            ) { showCommunalFromOccluded, backgroundColor, backgroundType ->
+                if (showCommunalFromOccluded && backgroundType.opaque) {
+                    backgroundColor
+                } else {
+                    null
+                }
             }
-        }
+            .distinctUntilChanged()
 }
