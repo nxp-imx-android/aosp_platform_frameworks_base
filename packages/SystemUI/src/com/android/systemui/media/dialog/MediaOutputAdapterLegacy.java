@@ -130,6 +130,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
         final ViewGroup mContainerLayout;
         final FrameLayout mItemLayout;
         final FrameLayout mIconAreaLayout;
+        final ViewGroup mTextContent;
         final TextView mTitleText;
         final TextView mSubTitleText;
         final TextView mVolumeValueText;
@@ -152,6 +153,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             super(view, context);
             mContainerLayout = view.requireViewById(R.id.device_container);
             mItemLayout = view.requireViewById(R.id.item_layout);
+            mTextContent = view.requireViewById(R.id.text_content);
             mTitleText = view.requireViewById(R.id.title);
             mSubTitleText = view.requireViewById(R.id.subtitle);
             mTitleIcon = view.requireViewById(R.id.title_icon);
@@ -180,7 +182,6 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             mEndClickIcon.setVisibility(View.GONE);
             mEndTouchArea.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
             mContainerLayout.setOnClickListener(null);
-            mContainerLayout.setContentDescription(null);
             mTitleText.setTextColor(mController.getColorItemContent());
             mSubTitleText.setTextColor(mController.getColorItemContent());
             mVolumeValueText.setTextColor(mController.getColorItemContent());
@@ -188,7 +189,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             updateIconAreaClickListener(null);
             mSeekBar.setProgressTintList(
                     ColorStateList.valueOf(mController.getColorSeekbarProgress()));
-            enableFocusPropertyForView(mContainerLayout);
+            updateContainerContentA11yImportance(true  /* isImportant */);
             renderItem(mediaItem, position);
         }
 
@@ -256,10 +257,10 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             mSeekBar.setVisibility(showSeekBar ? View.VISIBLE : View.GONE);
             if (showSeekBar) {
                 initSeekbar(device, isCurrentSeekbarInvisible);
-                disableFocusPropertyForView(mContainerLayout);
+                updateContainerContentA11yImportance(false /* isImportant */);
                 mSeekBar.setContentDescription(contentDescription);
             } else {
-                enableFocusPropertyForView(mContainerLayout);
+                updateContainerContentA11yImportance(true /* isImportant */);
             }
         }
 
@@ -268,18 +269,22 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             boolean isCurrentSeekbarInvisible = mSeekBar.getVisibility() == View.GONE;
             mSeekBar.setVisibility(View.VISIBLE);
             initGroupSeekbar(isCurrentSeekbarInvisible);
-            disableFocusPropertyForView(mContainerLayout);
+            updateContainerContentA11yImportance(false /* isImportant */);
             mSeekBar.setContentDescription(contentDescription);
         }
 
-        private void disableFocusPropertyForView(View view) {
-            view.setFocusable(false);
-            view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        }
-
-        private void enableFocusPropertyForView(View view) {
-            view.setFocusable(true);
-            view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
+        /**
+         * Sets the a11y importance for the device container and it's text content. Making the
+         * container not important for a11y is required when the seekbar is visible.
+         */
+        private void updateContainerContentA11yImportance(boolean isImportant) {
+            mContainerLayout.setFocusable(isImportant);
+            mContainerLayout.setImportantForAccessibility(
+                    isImportant ? View.IMPORTANT_FOR_ACCESSIBILITY_YES
+                            : View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+            mTextContent.setImportantForAccessibility(
+                    isImportant ? View.IMPORTANT_FOR_ACCESSIBILITY_YES
+                            : View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
         }
 
         void updateSubtitle(@Nullable String subtitle) {
