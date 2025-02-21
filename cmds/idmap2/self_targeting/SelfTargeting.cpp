@@ -31,7 +31,6 @@ using PolicyBitmask = android::ResTable_overlayable_policy_header::PolicyBitmask
 using PolicyFlags = android::ResTable_overlayable_policy_header::PolicyFlags;
 using android::idmap2::BinaryStreamVisitor;
 using android::idmap2::Idmap;
-using android::idmap2::IdmapConstraints;
 using android::idmap2::OverlayResourceContainer;
 
 namespace android::self_targeting {
@@ -156,10 +155,9 @@ CreateIdmapFile(std::string& out_err, const std::string& targetPath, const std::
     // Overlay self target process. Only allow self-targeting types.
     const auto fulfilled_policies = GetFulfilledPolicy(isSystem, isVendor, isProduct,
                                                        isTargetSignature, isOdm, isOem);
-    auto constraints = std::make_unique<const IdmapConstraints>();
+
     const auto idmap = Idmap::FromContainers(**target, **overlay, overlayName,
-                                             fulfilled_policies, true /* enforce_overlayable */,
-                                             std::move(constraints));
+                                             fulfilled_policies, true /* enforce_overlayable */);
     if (!idmap) {
         out_err = base::StringPrintf("Failed to create idmap because of %s",
                                      idmap.GetErrorMessage().c_str());

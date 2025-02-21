@@ -68,7 +68,7 @@ TEST(IdmapTests, CreateIdmapHeaderFromBinaryStream) {
   std::unique_ptr<const IdmapHeader> header = IdmapHeader::FromBinaryStream(stream);
   ASSERT_THAT(header, NotNull());
   ASSERT_EQ(header->GetMagic(), 0x504d4449U);
-  ASSERT_EQ(header->GetVersion(), 11);
+  ASSERT_EQ(header->GetVersion(), 10);
   ASSERT_EQ(header->GetTargetCrc(), 0x1234U);
   ASSERT_EQ(header->GetOverlayCrc(), 0x5678U);
   ASSERT_EQ(header->GetFulfilledPolicies(), 0x11);
@@ -94,19 +94,6 @@ TEST(IdmapTests, IdmapFailParsingDifferentMagic) {
   stream << android::kIdmapCurrentVersion;
   stream << std::string(kJunkSize, static_cast<char>(0xffU));
   ASSERT_FALSE(Idmap::FromBinaryStream(stream));
-}
-
-TEST(IdmapTests, CreateIdmapConstraintsFromBinaryStream) {
-  std::string raw(reinterpret_cast<const char*>(kIdmapRawData), kIdmapRawDataLen);
-  std::istringstream stream(raw);
-  std::unique_ptr<const IdmapHeader> header = IdmapHeader::FromBinaryStream(stream);
-  std::unique_ptr<const IdmapConstraints> constraints = IdmapConstraints::FromBinaryStream(stream);
-  ASSERT_THAT(constraints, NotNull());
-  ASSERT_EQ(constraints->constraints.size(), 2);
-  IdmapConstraint constraint1{.constraint_type = 0, .constraint_value = 1};
-  IdmapConstraint constraint2{.constraint_type = 1, .constraint_value = 2};
-  ASSERT_NE(constraints->constraints.find(constraint1), constraints->constraints.end());
-  ASSERT_NE(constraints->constraints.find(constraint2), constraints->constraints.end());
 }
 
 TEST(IdmapTests, CreateIdmapDataHeaderFromBinaryStream) {
@@ -156,7 +143,7 @@ TEST(IdmapTests, CreateIdmapFromBinaryStream) {
 
   ASSERT_THAT(idmap->GetHeader(), NotNull());
   ASSERT_EQ(idmap->GetHeader()->GetMagic(), 0x504d4449U);
-  ASSERT_EQ(idmap->GetHeader()->GetVersion(), 11);
+  ASSERT_EQ(idmap->GetHeader()->GetVersion(), 10);
   ASSERT_EQ(idmap->GetHeader()->GetTargetCrc(), 0x1234U);
   ASSERT_EQ(idmap->GetHeader()->GetOverlayCrc(), 0x5678U);
   ASSERT_EQ(idmap->GetHeader()->GetFulfilledPolicies(), kIdmapRawDataPolicies);
@@ -208,17 +195,16 @@ TEST(IdmapTests, CreateIdmapHeaderFromApkAssets) {
   auto overlay = OverlayResourceContainer::FromPath(overlay_apk_path);
   ASSERT_TRUE(overlay);
 
-  auto constraints = std::make_unique<const IdmapConstraints>();
   auto idmap_result = Idmap::FromContainers(
       **target, **overlay, TestConstants::OVERLAY_NAME_ALL_POLICIES, PolicyFlags::PUBLIC,
-      /* enforce_overlayable */ true, std::move(constraints));
+      /* enforce_overlayable */ true);
   ASSERT_TRUE(idmap_result) << idmap_result.GetErrorMessage();
   auto& idmap = *idmap_result;
   ASSERT_THAT(idmap, NotNull());
 
   ASSERT_THAT(idmap->GetHeader(), NotNull());
   ASSERT_EQ(idmap->GetHeader()->GetMagic(), 0x504d4449U);
-  ASSERT_EQ(idmap->GetHeader()->GetVersion(), 11);
+  ASSERT_EQ(idmap->GetHeader()->GetVersion(), 10);
   ASSERT_EQ(idmap->GetHeader()->GetTargetCrc(), android::idmap2::TestConstants::TARGET_CRC);
   ASSERT_EQ(idmap->GetHeader()->GetOverlayCrc(), android::idmap2::TestConstants::OVERLAY_CRC);
   ASSERT_EQ(idmap->GetHeader()->GetFulfilledPolicies(), PolicyFlags::PUBLIC);
@@ -252,10 +238,9 @@ TEST(IdmapTests, CreateIdmapDataFromApkAssets) {
   auto overlay = OverlayResourceContainer::FromPath(overlay_apk_path);
   ASSERT_TRUE(overlay);
 
-  auto constraints = std::make_unique<const IdmapConstraints>();
   auto idmap_result = Idmap::FromContainers(
       **target, **overlay, TestConstants::OVERLAY_NAME_DEFAULT, PolicyFlags::PUBLIC,
-      /* enforce_overlayable */ true, std::move(constraints));
+      /* enforce_overlayable */ true);
   ASSERT_TRUE(idmap_result) << idmap_result.GetErrorMessage();
   auto& idmap = *idmap_result;
   ASSERT_THAT(idmap, NotNull());
@@ -311,9 +296,8 @@ TEST(IdmapTests, FabricatedOverlay) {
   auto overlay = OverlayResourceContainer::FromPath(tf.path);
   ASSERT_TRUE(overlay);
 
-  auto constraints = std::make_unique<const IdmapConstraints>();
   auto idmap_result = Idmap::FromContainers(**target, **overlay, "SandTheme", PolicyFlags::PUBLIC,
-                                            /* enforce_overlayable */ true, std::move(constraints));
+                                            /* enforce_overlayable */ true);
   ASSERT_TRUE(idmap_result) << idmap_result.GetErrorMessage();
   auto& idmap = *idmap_result;
   ASSERT_THAT(idmap, NotNull());
@@ -357,17 +341,13 @@ TEST(IdmapTests, FailCreateIdmapInvalidName) {
   ASSERT_TRUE(overlay);
 
   {
-    auto constraints = std::make_unique<const IdmapConstraints>();
     auto idmap_result = Idmap::FromContainers(**target, **overlay, "", PolicyFlags::PUBLIC,
-                                              /* enforce_overlayable */ true,
-                                              std::move(constraints));
+                                              /* enforce_overlayable */ true);
     ASSERT_FALSE(idmap_result);
   }
   {
-    auto constraints = std::make_unique<const IdmapConstraints>();
     auto idmap_result = Idmap::FromContainers(**target, **overlay, "unknown", PolicyFlags::PUBLIC,
-                                              /* enforce_overlayable */ true,
-                                              std::move(constraints));
+                                              /* enforce_overlayable */ true);
     ASSERT_FALSE(idmap_result);
   }
 }
@@ -382,10 +362,9 @@ TEST(IdmapTests, CreateIdmapDataFromApkAssetsSharedLibOverlay) {
   auto overlay = OverlayResourceContainer::FromPath(overlay_apk_path);
   ASSERT_TRUE(overlay);
 
-  auto constraints = std::make_unique<const IdmapConstraints>();
   auto idmap_result = Idmap::FromContainers(
       **target, **overlay, TestConstants::OVERLAY_NAME_DEFAULT, PolicyFlags::PUBLIC,
-      /* enforce_overlayable */ true, std::move(constraints));
+      /* enforce_overlayable */ true);
   ASSERT_TRUE(idmap_result) << idmap_result.GetErrorMessage();
   auto& idmap = *idmap_result;
   ASSERT_THAT(idmap, NotNull());
@@ -655,10 +634,6 @@ class TestVisitor : public Visitor {
     stream_ << "TestVisitor::visit(IdmapHeader)" << '\n';
   }
 
-  void visit(const IdmapConstraints& idmap ATTRIBUTE_UNUSED) override {
-    stream_ << "TestVisitor::visit(IdmapConstraints)" << '\n';
-  }
-
   void visit(const IdmapData& idmap ATTRIBUTE_UNUSED) override {
     stream_ << "TestVisitor::visit(IdmapData)" << '\n';
   }
@@ -684,7 +659,6 @@ TEST(IdmapTests, TestVisitor) {
 
   ASSERT_EQ(test_stream.str(),
             "TestVisitor::visit(IdmapHeader)\n"
-            "TestVisitor::visit(IdmapConstraints)\n"
             "TestVisitor::visit(Idmap)\n"
             "TestVisitor::visit(IdmapData::Header)\n"
             "TestVisitor::visit(IdmapData)\n");

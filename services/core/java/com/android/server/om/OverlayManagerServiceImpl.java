@@ -34,13 +34,11 @@ import static com.android.server.om.OverlayManagerService.TAG;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.om.CriticalOverlayInfo;
-import android.content.om.OverlayConstraint;
 import android.content.om.OverlayIdentifier;
 import android.content.om.OverlayInfo;
 import android.content.pm.UserPackage;
 import android.content.pm.overlay.OverlayPaths;
 import android.content.pm.parsing.FrameworkParsingPackageUtils;
-import android.content.res.Flags;
 import android.os.FabricatedOverlayInfo;
 import android.os.FabricatedOverlayInternal;
 import android.text.TextUtils;
@@ -248,7 +246,7 @@ final class OverlayManagerServiceImpl {
                             + oi.targetPackageName + "' in category '" + oi.category + "' for user "
                             + newUserId);
                     mSettings.setEnabled(overlay, newUserId, true);
-                    if (updateState(oi, newUserId, 0, oi.constraints)) {
+                    if (updateState(oi, newUserId, 0)) {
                         CollectionUtils.add(updatedTargets,
                                 UserPackage.of(oi.userId, oi.targetPackageName));
                     }
@@ -340,7 +338,7 @@ final class OverlayManagerServiceImpl {
         for (int i = 0, n = overlays.size(); i < n; i++) {
             final OverlayInfo oi = overlays.get(i);
             try {
-                modified |= updateState(oi, userId, flags, oi.constraints);
+                modified |= updateState(oi, userId, flags);
             } catch (OverlayManagerSettings.BadKeyException e) {
                 Slog.e(TAG, "failed to update settings", e);
                 modified |= mSettings.remove(oi.getOverlayIdentifier(), userId);
@@ -388,7 +386,7 @@ final class OverlayManagerServiceImpl {
             }
 
             // Update the enabled state of the overlay.
-            if (updateState(currentInfo, userId, flags, currentInfo.constraints)) {
+            if (updateState(currentInfo, userId, flags)) {
                 updatedTargets = CollectionUtils.add(updatedTargets,
                         UserPackage.of(userId, currentInfo.targetPackageName));
             }
@@ -442,22 +440,10 @@ final class OverlayManagerServiceImpl {
 
     @NonNull
     Set<UserPackage> setEnabled(@NonNull final OverlayIdentifier overlay,
-            final boolean enable, final int userId,
-            @NonNull final List<OverlayConstraint> constraints)
-            throws OperationFailedException {
+            final boolean enable, final int userId) throws OperationFailedException {
         if (DEBUG) {
-            Slog.d(TAG, TextUtils.formatSimple(
-                    "setEnabled overlay=%s enable=%s userId=%d constraints=%s",
-                    overlay, enable, userId, OverlayConstraint.constraintsToString(constraints)));
-        }
-
-        boolean hasConstraints = constraints != null && !constraints.isEmpty();
-        if (!Flags.rroConstraints() && hasConstraints) {
-            throw new OperationFailedException("RRO constraints are not supported");
-        }
-        if (!enable && hasConstraints) {
-            throw new OperationFailedException(
-                    "Constraints can only be set when enabling an overlay");
+            Slog.d(TAG, String.format("setEnabled overlay=%s enable=%s userId=%d",
+                    overlay, enable, userId));
         }
 
         try {
@@ -469,7 +455,7 @@ final class OverlayManagerServiceImpl {
             }
 
             boolean modified = mSettings.setEnabled(overlay, userId, enable);
-            modified |= updateState(oi, userId, 0, constraints);
+            modified |= updateState(oi, userId, 0);
 
             if (modified) {
                 return Set.of(UserPackage.of(userId, oi.targetPackageName));
@@ -483,7 +469,7 @@ final class OverlayManagerServiceImpl {
     Optional<UserPackage> setEnabledExclusive(@NonNull final OverlayIdentifier overlay,
             boolean withinCategory, final int userId) throws OperationFailedException {
         if (DEBUG) {
-            Slog.d(TAG, TextUtils.formatSimple("setEnabledExclusive overlay=%s"
+            Slog.d(TAG, String.format("setEnabledExclusive overlay=%s"
                     + " withinCategory=%s userId=%d", overlay, withinCategory, userId));
         }
 
@@ -515,16 +501,12 @@ final class OverlayManagerServiceImpl {
 
                 // Disable the overlay.
                 modified |= mSettings.setEnabled(disabledOverlay, userId, false);
-                modified |= updateState(disabledInfo, userId, 0 /* flags */,
-                        Collections.emptyList() /* constraints */);
+                modified |= updateState(disabledInfo, userId, 0);
             }
 
             // Enable the selected overlay.
             modified |= mSettings.setEnabled(overlay, userId, true);
-            // No constraints should be applied when exclusively enabling an overlay within
-            // a category.
-            modified |= updateState(enabledInfo, userId, 0 /* flags */,
-                    Collections.emptyList() /* constraints */);
+            modified |= updateState(enabledInfo, userId, 0);
 
             if (modified) {
                 return Optional.of(UserPackage.of(userId, enabledInfo.targetPackageName));
@@ -587,8 +569,7 @@ final class OverlayManagerServiceImpl {
                 // overlay.
                 mSettings.setBaseCodePath(overlayIdentifier, userId, info.path);
             }
-            // No constraints should be applied when registering a fabricated overlay.
-            if (updateState(oi, userId, 0 /* flags */, Collections.emptyList() /* constraints */)) {
+            if (updateState(oi, userId, 0)) {
                 updatedTargets.add(UserPackage.of(userId, oi.targetPackageName));
             }
         } catch (OverlayManagerSettings.BadKeyException e) {
@@ -689,7 +670,7 @@ final class OverlayManagerServiceImpl {
 
     Set<UserPackage> setHighestPriority(@NonNull final OverlayIdentifier overlay,
             final int userId) throws OperationFailedException {
-        try {
+        try{
             if (DEBUG) {
                 Slog.d(TAG, "setHighestPriority overlay=" + overlay + " userId=" + userId);
             }
@@ -712,7 +693,7 @@ final class OverlayManagerServiceImpl {
 
     Optional<UserPackage> setLowestPriority(@NonNull final OverlayIdentifier overlay,
             final int userId) throws OperationFailedException {
-        try {
+        try{
             if (DEBUG) {
                 Slog.d(TAG, "setLowestPriority packageName=" + overlay + " userId=" + userId);
             }
@@ -803,8 +784,7 @@ final class OverlayManagerServiceImpl {
      * Returns true if the settings/state was modified, false otherwise.
      */
     private boolean updateState(@NonNull final CriticalOverlayInfo info,
-            final int userId, final int flags, @NonNull final List<OverlayConstraint> constraints)
-            throws OverlayManagerSettings.BadKeyException {
+            final int userId, final int flags) throws OverlayManagerSettings.BadKeyException {
         final OverlayIdentifier overlay = info.getOverlayIdentifier();
         var targetPackageState =
                 mPackageManager.getPackageStateForUser(info.getTargetPackageName(), userId);
@@ -823,7 +803,6 @@ final class OverlayManagerServiceImpl {
         }
 
         modified |= mSettings.setCategory(overlay, userId, overlayPackage.getOverlayCategory());
-        modified |= mSettings.setConstraints(overlay, userId, constraints);
         if (!info.isFabricated()) {
             modified |= mSettings.setBaseCodePath(overlay, userId,
                     overlayPackage.getSplits().get(0).getPath());
@@ -838,7 +817,7 @@ final class OverlayManagerServiceImpl {
                 && !isPackageConfiguredMutable(overlayPackage))) {
             idmapStatus = mIdmapManager.createIdmap(targetPackage, overlayPackageState,
                     overlayPackage, updatedOverlayInfo.baseCodePath, overlay.getOverlayName(),
-                    userId, updatedOverlayInfo.constraints);
+                    userId);
             modified |= (idmapStatus & IDMAP_IS_MODIFIED) != 0;
         }
 
@@ -847,7 +826,7 @@ final class OverlayManagerServiceImpl {
                 userId, flags, idmapStatus);
         if (currentState != newState) {
             if (DEBUG) {
-                Slog.d(TAG, TextUtils.formatSimple("%s:%d: %s -> %s",
+                Slog.d(TAG, String.format("%s:%d: %s -> %s",
                         overlay, userId,
                         OverlayInfo.stateToString(currentState),
                         OverlayInfo.stateToString(newState)));
