@@ -50,6 +50,8 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.qs.QSHost;
 import com.android.systemui.qs.QsEventLogger;
 import com.android.systemui.qs.logging.QSLogger;
+import com.android.systemui.shade.domain.interactor.FakeShadeDialogContextInteractor;
+import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor;
 import com.android.systemui.statusbar.connectivity.IconState;
 import com.android.systemui.statusbar.connectivity.NetworkController;
 import com.android.systemui.statusbar.connectivity.SignalCallback;
@@ -107,6 +109,8 @@ public class CastTileTest extends SysuiTestCase {
     private final FakeConnectivityRepository mConnectivityRepository =
             new FakeConnectivityRepository();
     private final FakeFeatureFlags mFeatureFlags = new FakeFeatureFlags();
+    private final ShadeDialogContextInteractor mShadeDialogContextInteractor =
+            new FakeShadeDialogContextInteractor(mContext);
 
     private TestableLooper mTestableLooper;
     private CastTile mCastTile;
@@ -535,7 +539,8 @@ public class CastTileTest extends SysuiTestCase {
                 mDialogTransitionAnimator,
                 mConnectivityRepository,
                 mJavaAdapter,
-                mFeatureFlags
+                mFeatureFlags,
+                mShadeDialogContextInteractor
         );
         mCastTile.initialize();
 
@@ -578,7 +583,8 @@ public class CastTileTest extends SysuiTestCase {
                 mDialogTransitionAnimator,
                 mConnectivityRepository,
                 mJavaAdapter,
-                mFeatureFlags
+                mFeatureFlags,
+                mShadeDialogContextInteractor
         );
         mCastTile.initialize();
 
