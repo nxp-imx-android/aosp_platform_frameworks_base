@@ -1745,6 +1745,9 @@ class DesktopTasksController(
                 launchWindowingMode = WINDOWING_MODE_FULLSCREEN
                 pendingIntentBackgroundActivityStartMode =
                     ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
+                if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
+                    launchDisplayId = displayId
+                }
             }
         val pendingIntent =
             PendingIntent.getActivityAsUser(

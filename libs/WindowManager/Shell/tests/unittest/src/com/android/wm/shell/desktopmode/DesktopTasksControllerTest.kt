@@ -2809,6 +2809,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         // Should launch home
         wct.assertPendingIntentAt(0, launchHomeIntent(DEFAULT_DISPLAY))
+        wct.assertPendingIntentActivityOptionsLaunchDisplayIdAt(0, DEFAULT_DISPLAY)
     }
 
     @Test
@@ -3931,6 +3932,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // Should launch home
         assertNotNull(result, "Should handle request")
             .assertPendingIntentAt(0, launchHomeIntent(DEFAULT_DISPLAY))
+        result!!.assertPendingIntentActivityOptionsLaunchDisplayIdAt(0, DEFAULT_DISPLAY)
     }
 
     @Test
@@ -3957,6 +3959,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // Should launch home
         assertNotNull(result, "Should handle request")
             .assertPendingIntentAt(0, launchHomeIntent(DEFAULT_DISPLAY))
+        result!!.assertPendingIntentActivityOptionsLaunchDisplayIdAt(0, DEFAULT_DISPLAY)
     }
 
     @Test
@@ -4089,6 +4092,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // Should launch home
         assertNotNull(result, "Should handle request")
             .assertPendingIntentAt(0, launchHomeIntent(DEFAULT_DISPLAY))
+        result!!.assertPendingIntentActivityOptionsLaunchDisplayIdAt(0, DEFAULT_DISPLAY)
     }
 
     @Test
@@ -4105,6 +4109,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // Should launch home
         assertNotNull(result, "Should handle request")
             .assertPendingIntentAt(0, launchHomeIntent(SECOND_DISPLAY))
+        result!!.assertPendingIntentActivityOptionsLaunchDisplayIdAt(0, SECOND_DISPLAY)
     }
 
     @Test
@@ -6896,6 +6901,18 @@ private fun WindowContainerTransaction.assertPendingIntentAt(index: Int, intent:
     assertThat(op.type).isEqualTo(HIERARCHY_OP_TYPE_PENDING_INTENT)
     assertThat(op.pendingIntent?.intent?.component).isEqualTo(intent.component)
     assertThat(op.pendingIntent?.intent?.categories).isEqualTo(intent.categories)
+}
+
+private fun WindowContainerTransaction.assertPendingIntentActivityOptionsLaunchDisplayIdAt(
+    index: Int,
+    displayId: Int,
+) {
+    assertIndexInBounds(index)
+    val op = hierarchyOps[index]
+    if (op.launchOptions != null) {
+        val options = ActivityOptions(op.launchOptions)
+        assertThat(options.launchDisplayId).isEqualTo(displayId)
+    }
 }
 
 private fun WindowContainerTransaction.assertLaunchTask(taskId: Int, windowingMode: Int) {
