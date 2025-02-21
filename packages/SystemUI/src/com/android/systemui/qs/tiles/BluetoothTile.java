@@ -61,6 +61,8 @@ import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.policy.BluetoothController;
 
+import dagger.Lazy;
+
 import kotlinx.coroutines.Job;
 
 import java.util.List;
@@ -84,7 +86,7 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
 
     private final Executor mExecutor;
 
-    private final BluetoothDetailsContentViewModel mDetailsContentViewModel;
+    private final Lazy<BluetoothDetailsContentViewModel> mDetailsContentViewModel;
 
     private final FeatureFlags mFeatureFlags;
     @Nullable
@@ -104,7 +106,7 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
             QSLogger qsLogger,
             BluetoothController bluetoothController,
             FeatureFlags featureFlags,
-            BluetoothDetailsContentViewModel detailsContentViewModel
+            Lazy<BluetoothDetailsContentViewModel> detailsContentViewModel
     ) {
         super(host, uiEventLogger, backgroundLooper, mainHandler, falsingManager, metricsLogger,
                 statusBarStateController, activityStarter, qsLogger);
@@ -133,7 +135,7 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
                 callback.accept(new BluetoothDetailsViewModel(() -> {
                     longClick(null);
                     return null;
-                }, mDetailsContentViewModel))
+                }, mDetailsContentViewModel.get()))
         );
         return true;
     }
@@ -158,7 +160,7 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
 
     private void handleClickEvent(@Nullable Expandable expandable) {
         if (mFeatureFlags.isEnabled(Flags.BLUETOOTH_QS_TILE_DIALOG)) {
-            mDetailsContentViewModel.showDetailsContent(expandable, /* view= */ null);
+            mDetailsContentViewModel.get().showDetailsContent(expandable, /* view= */ null);
         } else {
             // Secondary clicks are header clicks, just toggle.
             toggleBluetooth();

@@ -39,6 +39,7 @@ import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
+import dagger.Lazy
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Job
 import org.junit.After
@@ -96,8 +97,7 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
                 qsLogger,
                 bluetoothController,
                 featureFlags,
-                bluetoothDetailsContentViewModel,
-            )
+            ) { bluetoothDetailsContentViewModel }
 
         tile.initialize()
         testableLooper.processAllMessages()
@@ -308,7 +308,7 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
         qsLogger: QSLogger,
         bluetoothController: BluetoothController,
         featureFlags: FeatureFlagsClassic,
-        bluetoothDetailsContentViewModel: BluetoothDetailsContentViewModel,
+        lazyBluetoothDetailsContentViewModel: Lazy<BluetoothDetailsContentViewModel>,
     ) :
         BluetoothTile(
             qsHost,
@@ -322,7 +322,7 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
             qsLogger,
             bluetoothController,
             featureFlags,
-            bluetoothDetailsContentViewModel,
+            lazyBluetoothDetailsContentViewModel,
         ) {
         var restrictionChecked: String? = null
 
