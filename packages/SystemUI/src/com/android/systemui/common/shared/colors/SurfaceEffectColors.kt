@@ -20,12 +20,19 @@ import android.content.res.Resources
 
 object SurfaceEffectColors {
     @JvmStatic
-    fun Resources.surfaceEffect0(): Int {
-        return getColor(com.android.internal.R.color.surface_effect_0)
+    fun surfaceEffect0(r: Resources): Int {
+        return r.getColor(com.android.internal.R.color.surface_effect_0)
     }
-
     @JvmStatic
-    fun Resources.surfaceEffect1(): Int {
-        return getColor(com.android.internal.R.color.surface_effect_1)
+    fun surfaceEffect1(r: Resources): Int {
+        return r.getColor(com.android.internal.R.color.surface_effect_1)
+    }
+    @JvmStatic
+    fun surfaceEffect2(r: Resources): Int {
+        return r.getColor(com.android.internal.R.color.surface_effect_2)
+    }
+    @JvmStatic
+    fun surfaceEffect3(r: Resources): Int {
+        return r.getColor(com.android.internal.R.color.surface_effect_3)
     }
 }

@@ -50,6 +50,8 @@
     <!-- Color for various surfaces related to system-wide blur -->
     <color name="surface_effect_0">@color/surface_effect_0_color</color>
     <color name="surface_effect_1">@color/surface_effect_1_color</color>
+    <color name="surface_effect_2">@color/surface_effect_2_color</color>
+    <color name="surface_effect_3">@color/surface_effect_3_color</color>
 
     <!-- Color for side fps toast dark theme-->
     <color name="side_fps_toast_background">#2E3132</color>
