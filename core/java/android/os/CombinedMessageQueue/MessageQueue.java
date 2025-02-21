@@ -130,7 +130,7 @@ public final class MessageQueue {
 
     MessageQueue(boolean quitAllowed) {
         initIsProcessAllowedToUseConcurrent();
-        mUseConcurrent = sIsProcessAllowedToUseConcurrent && !isInstrumenting();
+        mUseConcurrent = sIsProcessAllowedToUseConcurrent;
         mQuitAllowed = quitAllowed;
         mPtr = nativeInit();
         mThread = Thread.currentThread();
@@ -200,15 +200,6 @@ public final class MessageQueue {
 
     private static void throwIfNotTest$ravenwood() {
         return;
-    }
-
-    private static boolean isInstrumenting() {
-        final ActivityThread activityThread = ActivityThread.currentActivityThread();
-        if (activityThread == null) {
-            return false;
-        }
-        final Instrumentation instrumentation = activityThread.getInstrumentation();
-        return instrumentation != null && instrumentation.isInstrumenting();
     }
 
     @Override
