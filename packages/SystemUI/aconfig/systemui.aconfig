@@ -1939,6 +1939,16 @@ flag {
 }
 
 flag {
+   name: "notification_appear_nonlinear"
+   namespace: "systemui"
+   description: "Fix linear usage of notification appear"
+   bug: "397658189"
+   metadata {
+     purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
   name: "disable_shade_trackpad_two_finger_swipe"
   namespace: "systemui"
   description: "Disables expansion of the shade via two finger swipe on a trackpad"

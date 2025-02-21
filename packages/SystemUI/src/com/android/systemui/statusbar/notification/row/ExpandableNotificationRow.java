@@ -3494,20 +3494,17 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     @Override
     public void performAddAnimation(long delay, long duration, boolean isHeadsUpAppear,
-            Runnable onFinishRunnable) {
+            boolean isHeadsUpCycling, Runnable onFinishRunnable) {
         mLogger.logStartAppearAnimation(mLoggingKey, /* isAppear = */ true);
-        super.performAddAnimation(delay, duration, isHeadsUpAppear, onFinishRunnable);
+        super.performAddAnimation(delay, duration, isHeadsUpAppear, isHeadsUpCycling,
+                onFinishRunnable);
     }
 
     @Override
-    public long performRemoveAnimation(
-            long duration,
-            long delay,
-            float translationDirection,
-            boolean isHeadsUpAnimation,
-            Runnable onStartedRunnable,
-            Runnable onFinishedRunnable,
-            AnimatorListenerAdapter animationListener, ClipSide clipSide) {
+    public long performRemoveAnimation(long duration, long delay, float translationDirection,
+            boolean isHeadsUpAnimation, boolean isHeadsUpCycling, Runnable onStartedRunnable,
+            Runnable onFinishedRunnable, AnimatorListenerAdapter animationListener,
+            ClipSide clipSide) {
         mLogger.logStartAppearAnimation(mLoggingKey, /* isAppear = */ false);
         if (mMenuRow != null && mMenuRow.isMenuVisible()) {
             Animator anim = getTranslateViewAnimator(0f, null /* listener */);
@@ -3522,9 +3519,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        ExpandableNotificationRow.super.performRemoveAnimation(
-                                duration, delay, translationDirection, isHeadsUpAnimation,
-                                null, onFinishedRunnable, animationListener, ClipSide.BOTTOM);
+                        ExpandableNotificationRow.super.performRemoveAnimation(duration, delay,
+                                translationDirection, isHeadsUpAnimation, isHeadsUpCycling, null,
+                                onFinishedRunnable, animationListener, ClipSide.BOTTOM);
                     }
                 });
                 anim.start();
@@ -3532,8 +3529,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             }
         }
         return super.performRemoveAnimation(duration, delay, translationDirection,
-                isHeadsUpAnimation, onStartedRunnable, onFinishedRunnable, animationListener,
-                clipSide);
+                isHeadsUpAnimation, isHeadsUpCycling, onStartedRunnable, onFinishedRunnable,
+                animationListener, clipSide);
     }
 
     @Override
