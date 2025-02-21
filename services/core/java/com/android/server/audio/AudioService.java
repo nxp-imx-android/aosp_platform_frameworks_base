@@ -8002,11 +8002,11 @@ public class AudioService extends IAudioService.Stub
             } else if (deviceSet.contains(AudioSystem.DEVICE_OUT_SPDIF)) {
                 return AudioSystem.DEVICE_OUT_SPDIF;
             } else {
-                // At this point, deviceSet should contain exactly one A2DP device;
-                // regardless, return the first A2DP device in numeric order.
-                // If there is no A2DP device, this falls through to log an error.
+                // At this point, deviceSet should contain exactly one removable device;
+                // regardless, return the first removable device in numeric order.
+                // If there is no removable device, this falls through to log an error.
                 for (int deviceType : deviceSet) {
-                    if (AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(deviceType)) {
+                    if (AudioSystem.DEVICE_OUT_PICK_FOR_VOLUME_SET.contains(deviceType)) {
                         return deviceType;
                     }
                 }
