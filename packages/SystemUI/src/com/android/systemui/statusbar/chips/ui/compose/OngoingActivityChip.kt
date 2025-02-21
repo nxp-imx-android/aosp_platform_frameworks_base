@@ -211,10 +211,6 @@ private fun ChipIcon(
                     modifier.size(dimensionResource(id = R.dimen.ongoing_activity_chip_icon_size)),
             )
         }
-
-        // TODO(b/372657935): Add recommended architecture implementation for
-        // StatusBarNotificationIcons
-        is OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon -> {}
     }
 }
 
