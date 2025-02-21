@@ -592,6 +592,12 @@
     <!-- Content description of the button to expand the group of devices. [CHAR LIMIT=NONE] -->
     <string name="accessibility_expand_group">Expand group.</string>
 
+    <!-- Content description of the button to add a device to a group. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_add_device_to_group">Add device to group.</string>
+
+    <!-- Content description of the button to remove a device from a group. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_remove_device_from_group">Remove device from group.</string>
+
     <!-- Content description of the button to open the application . [CHAR LIMIT=NONE] -->
     <string name="accessibility_open_application">Open application.</string>
 

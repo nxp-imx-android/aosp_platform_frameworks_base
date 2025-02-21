@@ -759,7 +759,7 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 1);
 
-        mViewHolder.mEndTouchArea.performClick();
+        mViewHolder.mCheckBox.performClick();
 
         verify(mMediaSwitchingController).addDeviceToPlayMedia(mMediaDevice2);
     }
@@ -903,7 +903,7 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
-        mViewHolder.mEndTouchArea.performClick();
+        mViewHolder.mCheckBox.performClick();
 
         verify(mMediaSwitchingController).removeDeviceFromPlayMedia(mMediaDevice1);
     }
@@ -1059,7 +1059,7 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
-        mViewHolder.mEndTouchArea.performClick();
+        mViewHolder.mEndClickIcon.performClick();
         mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
@@ -1082,7 +1082,7 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
-        mViewHolder.mEndTouchArea.performClick();
+        mViewHolder.mEndClickIcon.performClick();
         mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
