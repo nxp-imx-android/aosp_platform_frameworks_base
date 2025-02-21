@@ -1299,7 +1299,11 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             // Handle the pending show request for other insets types since the IME insets
             // has being requested hidden.
             handlePendingControlRequest(statsToken);
-            getImeSourceConsumer().removeSurface();
+            if (!Flags.refactorInsetsController()) {
+                // the surface can't be removed until the end of the animation. This is handled by
+                // IMMS after the window was requested to be hidden.
+                getImeSourceConsumer().removeSurface();
+            }
         }
         applyAnimation(typesReady, false /* show */, fromIme, false /* skipsCallbacks */,
                 statsToken);

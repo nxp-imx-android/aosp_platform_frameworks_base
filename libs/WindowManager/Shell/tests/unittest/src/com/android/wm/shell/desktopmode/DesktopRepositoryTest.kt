@@ -333,7 +333,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @Test
     fun isOnlyVisibleNonClosingTask_singleVisibleClosingTask() {
         repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
-        repo.addClosingTask(DEFAULT_DISPLAY, 1)
+        repo.addClosingTask(displayId = DEFAULT_DISPLAY, deskId = 0, taskId = 1)
 
         // A visible task that's closing
         assertThat(repo.isVisibleTask(1)).isTrue()

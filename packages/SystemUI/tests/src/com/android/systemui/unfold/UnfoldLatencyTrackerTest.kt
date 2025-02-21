@@ -18,10 +18,12 @@ package com.android.systemui.unfold
 
 import android.hardware.devicestate.DeviceStateManager
 import android.hardware.devicestate.DeviceStateManager.FoldStateListener
+import android.platform.test.annotations.DisableFlags
 import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.util.LatencyTracker
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.foldedDeviceStateList
 import com.android.systemui.halfFoldedDeviceState
@@ -46,6 +48,7 @@ import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@DisableFlags(Flags.FLAG_UNFOLD_LATENCY_TRACKING_FIX)
 class UnfoldLatencyTrackerTest : SysuiTestCase() {
 
     @Mock lateinit var latencyTracker: LatencyTracker

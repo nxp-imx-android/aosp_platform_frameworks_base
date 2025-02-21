@@ -68,6 +68,7 @@ public class AutoclickTypePanelTest {
     private LinearLayout mPositionButton;
 
     private @AutoclickType int mActiveClickType = AUTOCLICK_TYPE_LEFT_CLICK;
+    private boolean mPaused;
 
     private final ClickPanelControllerInterface clickPanelController =
             new ClickPanelControllerInterface() {
@@ -77,7 +78,9 @@ public class AutoclickTypePanelTest {
                 }
 
                 @Override
-                public void toggleAutoclickPause() {}
+                public void toggleAutoclickPause(boolean paused) {
+                    mPaused = paused;
+                }
             };
 
     @Before
@@ -197,6 +200,17 @@ public class AutoclickTypePanelTest {
             mPositionButton.callOnClick();
             verifyPanelPosition(expectedPositions[i]);
         }
+    }
+
+    @Test
+    public void pauseButton_onClick() {
+        mPauseButton.callOnClick();
+        assertThat(mPaused).isTrue();
+        assertThat(mAutoclickTypePanel.isPaused()).isTrue();
+
+        mPauseButton.callOnClick();
+        assertThat(mPaused).isFalse();
+        assertThat(mAutoclickTypePanel.isPaused()).isFalse();
     }
 
     private void verifyButtonHasSelectedStyle(@NonNull LinearLayout button) {

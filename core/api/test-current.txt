@@ -1737,6 +1737,7 @@ package android.hardware.display {
     method @NonNull public int[] getUserDisabledHdrTypes();
     method public boolean isMinimalPostProcessingRequested(int);
     method @RequiresPermission(android.Manifest.permission.ACCESS_SURFACE_FLINGER) public void overrideHdrTypes(int, @NonNull int[]);
+    method @FlaggedApi("com.android.server.display.feature.flags.delay_implicit_rr_registration_until_rr_accessed") public void resetImplicitRefreshRateCallbackStatus();
     method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public void setAreUserDisabledHdrTypesAllowed(boolean);
     method @RequiresPermission(android.Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE) public void setGlobalUserPreferredDisplayMode(@NonNull android.view.Display.Mode);
     method @RequiresPermission(android.Manifest.permission.MODIFY_HDR_CONVERSION_MODE) public void setHdrConversionMode(@NonNull android.hardware.display.HdrConversionMode);

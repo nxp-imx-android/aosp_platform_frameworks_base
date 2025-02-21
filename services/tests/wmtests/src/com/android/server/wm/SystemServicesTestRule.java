@@ -264,7 +264,7 @@ public class SystemServicesTestRule implements TestRule {
         final DisplayManagerGlobal dmg = DisplayManagerGlobal.getInstance();
         spyOn(dmg);
         doNothing().when(dmg).registerDisplayListener(
-                any(), any(Executor.class), anyLong(), anyString());
+                any(), any(Executor.class), anyLong(), anyString(), anyBoolean());
         doNothing().when(dmg).registerTopologyListener(any(Executor.class), any(), anyString());
     }
 

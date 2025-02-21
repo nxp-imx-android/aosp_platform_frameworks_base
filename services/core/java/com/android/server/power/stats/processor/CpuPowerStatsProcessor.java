@@ -119,6 +119,8 @@ class CpuPowerStatsProcessor extends PowerStatsProcessor {
         mTmpUidStatsArray = new long[descriptor.uidStatsArrayLength];
 
         mWakelockDescriptor = null;
+
+        initEnergyConsumerToPowerBracketMaps();
     }
 
     /**
@@ -157,9 +159,6 @@ class CpuPowerStatsProcessor extends PowerStatsProcessor {
 
         if (mPlan == null) {
             mPlan = new PowerEstimationPlan(stats.getConfig());
-            if (mStatsLayout.getEnergyConsumerCount() != 0) {
-                initEnergyConsumerToPowerBracketMaps();
-            }
         }
 
         Intermediates intermediates = new Intermediates();
@@ -255,6 +254,10 @@ class CpuPowerStatsProcessor extends PowerStatsProcessor {
      */
     private void initEnergyConsumerToPowerBracketMaps() {
         int energyConsumerCount = mStatsLayout.getEnergyConsumerCount();
+        if (energyConsumerCount == 0) {
+            return;
+        }
+
         int powerBracketCount = mStatsLayout.getCpuPowerBracketCount();
 
         mEnergyConsumerToCombinedEnergyConsumerMap = new int[energyConsumerCount];
@@ -404,7 +407,10 @@ class CpuPowerStatsProcessor extends PowerStatsProcessor {
             deviceStatsIntermediates.timeByBracket = new long[powerBracketCount];
             deviceStatsIntermediates.powerByBracket = new double[powerBracketCount];
 
-            stats.getDeviceStats(mTmpDeviceStatsArray, deviceStateEstimation.stateValues);
+            if (!stats.getDeviceStats(mTmpDeviceStatsArray, deviceStateEstimation.stateValues)) {
+                continue;
+            }
+
             for (int step = 0; step < cpuScalingStepCount; step++) {
                 if (intermediates.timeByScalingStep[step] == 0) {
                     continue;
@@ -429,16 +435,19 @@ class CpuPowerStatsProcessor extends PowerStatsProcessor {
             }
 
             if (wakelockStats != null) {
-                wakelockStats.getDeviceStats(mTmpWakelockDeviceStats,
-                        deviceStateEstimation.stateValues);
-                double wakelockPowerEstimate = mWakelockPowerStatsLayout.getDevicePowerEstimate(
-                        mTmpWakelockDeviceStats);
-                power = Math.max(0, power - wakelockPowerEstimate);
+                if (wakelockStats.getDeviceStats(mTmpWakelockDeviceStats,
+                        deviceStateEstimation.stateValues)) {
+                    double wakelockPowerEstimate = mWakelockPowerStatsLayout.getDevicePowerEstimate(
+                            mTmpWakelockDeviceStats);
+                    power = Math.max(0, power - wakelockPowerEstimate);
+                }
             }
 
-            deviceStatsIntermediates.power = power;
-            mStatsLayout.setDevicePowerEstimate(mTmpDeviceStatsArray, power);
-            stats.setDeviceStats(deviceStateEstimation.stateValues, mTmpDeviceStatsArray);
+            if (power != 0) {
+                deviceStatsIntermediates.power = power;
+                mStatsLayout.setDevicePowerEstimate(mTmpDeviceStatsArray, power);
+                stats.setDeviceStats(deviceStateEstimation.stateValues, mTmpDeviceStatsArray);
+            }
         }
     }
 
@@ -538,11 +547,12 @@ class CpuPowerStatsProcessor extends PowerStatsProcessor {
             }
 
             if (wakelockStats != null) {
-                wakelockStats.getUidStats(mTmpWakelockUidStats, uid,
-                        proportionalEstimate.stateValues);
-                double wakelockPowerEstimate = mWakelockPowerStatsLayout.getUidPowerEstimate(
-                        mTmpWakelockUidStats);
-                power = Math.max(0, power - wakelockPowerEstimate);
+                if (wakelockStats.getUidStats(mTmpWakelockUidStats, uid,
+                        proportionalEstimate.stateValues)) {
+                    double wakelockPowerEstimate = mWakelockPowerStatsLayout.getUidPowerEstimate(
+                            mTmpWakelockUidStats);
+                    power = Math.max(0, power - wakelockPowerEstimate);
+                }
             }
 
             if (power != 0) {

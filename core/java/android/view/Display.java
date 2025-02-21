@@ -108,6 +108,7 @@ public final class Display {
     private final String mOwnerPackageName;
     private final Resources mResources;
     private DisplayAdjustments mDisplayAdjustments;
+    private boolean mRefreshRateChangesRegistered;
 
     @UnsupportedAppUsage
     private DisplayInfo mDisplayInfo; // never null
@@ -1217,6 +1218,10 @@ public final class Display {
      */
     public float getRefreshRate() {
         synchronized (mLock) {
+            if (!mRefreshRateChangesRegistered) {
+                DisplayManagerGlobal.getInstance().registerForRefreshRateChanges();
+                mRefreshRateChangesRegistered = true;
+            }
             updateDisplayInfoLocked();
             return mDisplayInfo.getRefreshRate();
         }
@@ -1601,7 +1606,7 @@ public final class Display {
                                     .INTERNAL_EVENT_FLAG_DISPLAY_BASIC_CHANGED
                             | DisplayManagerGlobal
                                     .INTERNAL_EVENT_FLAG_DISPLAY_HDR_SDR_RATIO_CHANGED,
-                    ActivityThread.currentPackageName());
+                    ActivityThread.currentPackageName(), /* isEventFilterImplicit */ true);
         }
 
     }

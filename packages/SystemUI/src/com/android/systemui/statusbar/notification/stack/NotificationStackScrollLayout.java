@@ -6686,7 +6686,7 @@ public class NotificationStackScrollLayout
 
     static boolean canChildBeCleared(View v) {
         if (v instanceof ExpandableNotificationRow row) {
-            if (row.areGutsExposed() || !row.getEntry().hasFinishedInitialization()) {
+            if (row.areGutsExposed() || !row.hasFinishedInitialization()) {
                 return false;
             }
             return row.canViewBeCleared();

@@ -46,6 +46,8 @@ import android.view.Display;
 import android.window.TaskSnapshot;
 
 import com.android.internal.app.IVoiceInteractionManagerService;
+import com.android.server.am.Flags;
+import com.android.systemui.shared.R;
 import com.android.systemui.shared.recents.model.Task;
 import com.android.systemui.shared.recents.model.ThumbnailData;
 
@@ -227,6 +229,17 @@ public class ActivityManagerWrapper {
     }
 
     /**
+     * Sets whether or not the specified task is perceptible.
+     */
+    public boolean setTaskIsPerceptible(int taskId, boolean isPerceptible) {
+        try {
+            return getService().setTaskIsPerceptible(taskId, isPerceptible);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Removes a task by id.
      */
     public void removeTask(final int taskId) {
@@ -311,10 +324,23 @@ public class ActivityManagerWrapper {
     }
 
     /**
+     * Returns true if tasks with a presence in the UI should be marked as perceptible tasks.
+     */
+    public static boolean usePerceptibleTasks(Context context) {
+        return Flags.perceptibleTasks()
+                && context.getResources().getBoolean(R.bool.config_usePerceptibleTasks);
+    }
+
+    /**
      * Returns true if the running task represents the home task
      */
     public static boolean isHomeTask(RunningTaskInfo info) {
         return info.configuration.windowConfiguration.getActivityType()
                 == WindowConfiguration.ACTIVITY_TYPE_HOME;
+    }
+
+    public boolean isRunningInTestHarness() {
+        return ActivityManager.isRunningInTestHarness()
+                || ActivityManager.isRunningInUserTestHarness();
     }
 }

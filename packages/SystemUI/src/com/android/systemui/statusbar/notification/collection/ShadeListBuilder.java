@@ -67,6 +67,7 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifStabilityManager;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Pluggable;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CollectionReadyForBuildListener;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt;
 import com.android.systemui.util.Assert;
 import com.android.systemui.util.NamedListenerSet;
@@ -1282,7 +1283,13 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         entry.getAttachState().setExcludingFilter(filter);
         if (filter != null) {
             // notification is removed from the list, so we reset its initialization time
-            entry.resetInitializationTime();
+            if (NotificationBundleUi.isEnabled()) {
+                if (entry.getRow() != null) {
+                    entry.getRow().resetInitializationTime();
+                }
+            } else {
+                entry.resetInitializationTime();
+            }
         }
         return filter != null;
     }

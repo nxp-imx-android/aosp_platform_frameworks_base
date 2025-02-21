@@ -39,6 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.power.stats.EnergyConsumerResult;
@@ -198,6 +199,7 @@ public class WifiPowerStatsProcessorTest {
         mBatteryStats = mStatsRule.getBatteryStats();
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void powerProfileModel_powerController() {
         when(mWifiManager.isEnhancedPowerReportingSupported()).thenReturn(true);
@@ -310,6 +312,7 @@ public class WifiPowerStatsProcessorTest {
                 .isWithin(PRECISION).of(expectedPower2 * 0.75);
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void consumedEnergyModel_powerController() {
         when(mWifiManager.isEnhancedPowerReportingSupported()).thenReturn(true);
@@ -424,6 +427,7 @@ public class WifiPowerStatsProcessorTest {
                 .isWithin(PRECISION).of(expectedPower2 * 0.75);
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void powerProfileModel_noPowerController() {
         when(mWifiManager.isEnhancedPowerReportingSupported()).thenReturn(false);

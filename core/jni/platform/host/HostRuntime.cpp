@@ -48,6 +48,8 @@ using namespace std;
  * (see AndroidRuntime.cpp).
  */
 
+extern int register_android_media_ImageReader(JNIEnv* env);
+extern int register_android_media_PublicFormatUtils(JNIEnv* env);
 extern int register_android_os_Binder(JNIEnv* env);
 extern int register_libcore_util_NativeAllocationRegistry(JNIEnv* env);
 
@@ -126,6 +128,10 @@ static const std::unordered_map<std::string, RegJNIRec> gRegJNIMap = {
         {"android.database.sqlite.SQLiteDebug", REG_JNI(register_android_database_SQLiteDebug)},
         {"android.database.sqlite.SQLiteRawStatement",
          REG_JNI(register_android_database_SQLiteRawStatement)},
+#endif
+        {"android.media.ImageReader", REG_JNI(register_android_media_ImageReader)},
+        {"android.media.PublicFormatUtils", REG_JNI(register_android_media_PublicFormatUtils)},
+#ifdef __linux__
         {"android.os.Binder", REG_JNI(register_android_os_Binder)},
         {"android.os.FileObserver", REG_JNI(register_android_os_FileObserver)},
         {"android.os.MessageQueue", REG_JNI(register_android_os_MessageQueue)},

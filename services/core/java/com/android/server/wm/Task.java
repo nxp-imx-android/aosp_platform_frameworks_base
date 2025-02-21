@@ -54,7 +54,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_FLAG_APP_CRASHED;
-import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
@@ -502,6 +501,17 @@ class Task extends TaskFragment {
      */
     int mOffsetXForInsets;
     int mOffsetYForInsets;
+
+    /**
+     * When set to true, the task will be kept at a PERCEPTIBLE_APP_ADJ, and downgraded
+     * to PREVIOUS_APP_ADJ if not in foreground for a period of time.
+     * One example use case is for desktop form factors, where it is important keep tasks in the
+     * perceptible state (rather than cached where it may be frozen) when a user moves it to the
+     * foreground.
+     * On startup, restored Tasks will not be perceptible, until user actually interacts with it
+     * (i.e. brings it to the foreground)
+     */
+    boolean mIsPerceptible = false;
 
     /**
      * Whether the compatibility overrides that change the resizability of the app should be allowed
@@ -1647,8 +1657,7 @@ class Task extends TaskFragment {
                 // Prevent the transition from being executed too early if the top activity is
                 // resumed but the mVisibleRequested of any other activity is true, the transition
                 // should wait until next activity resumed.
-                if (r.isState(RESUMED) || (r.isVisible()
-                        && !mDisplayContent.mAppTransition.containsTransitRequest(TRANSIT_CLOSE))) {
+                if (r.isState(RESUMED) || r.isVisible()) {
                     r.finishIfPossible(reason, false /* oomAdj */);
                 } else {
                     r.destroyIfPossible(reason);
@@ -2322,11 +2331,6 @@ class Task extends TaskFragment {
         }
         transaction.setWindowCrop(mSurfaceControl, width, height);
         mLastSurfaceSize.set(width, height);
-    }
-
-    @VisibleForTesting
-    boolean isInChangeTransition() {
-        return AppTransition.isChangeTransitOld(mTransit);
     }
 
     @Override
@@ -3854,6 +3858,7 @@ class Task extends TaskFragment {
         pw.print(ActivityInfo.resizeModeToString(mResizeMode));
         pw.print(" mSupportsPictureInPicture="); pw.print(mSupportsPictureInPicture);
         pw.print(" isResizeable="); pw.println(isResizeable());
+        pw.print(" isPerceptible="); pw.println(mIsPerceptible);
         pw.print(prefix); pw.print("lastActiveTime="); pw.print(lastActiveTime);
         pw.println(" (inactive for " + (getInactiveDuration() / 1000) + "s)");
         pw.print(prefix); pw.println(" isTrimmable=" + mIsTrimmableFromRecents);
@@ -5293,11 +5298,9 @@ class Task extends TaskFragment {
 
         // Place a new activity at top of root task, so it is next to interact with the user.
         if ((r.intent.getFlags() & Intent.FLAG_ACTIVITY_NO_ANIMATION) != 0) {
-            mDisplayContent.prepareAppTransition(TRANSIT_NONE);
             mTaskSupervisor.mNoAnimActivities.add(r);
             mTransitionController.setNoAnimation(r);
         } else {
-            mDisplayContent.prepareAppTransition(TRANSIT_OPEN);
             mTaskSupervisor.mNoAnimActivities.remove(r);
         }
         if (newTask && !r.mLaunchTaskBehind) {
@@ -5477,7 +5480,8 @@ class Task extends TaskFragment {
         Slog.w(TAG, "  Force finishing activity "
                 + r.intent.getComponent().flattenToShortString());
         Task finishedTask = r.getTask();
-        mDisplayContent.requestTransitionAndLegacyPrepare(TRANSIT_CLOSE, TRANSIT_FLAG_APP_CRASHED);
+        mDisplayContent.requestTransitionAndLegacyPrepare(TRANSIT_CLOSE, TRANSIT_FLAG_APP_CRASHED,
+                finishedTask);
         r.finishIfPossible(reason, false /* oomAdj */);
 
         // Also terminate any activities below it that aren't yet stopped, to avoid a situation
@@ -5695,7 +5699,6 @@ class Task extends TaskFragment {
                 ActivityOptions.abort(options);
             }
         }
-        mDisplayContent.prepareAppTransition(transit);
     }
 
     final void moveTaskToFront(Task tr, boolean noAnimation, ActivityOptions options,
@@ -5747,12 +5750,9 @@ class Task extends TaskFragment {
 
             if (DEBUG_TRANSITION) Slog.v(TAG_TRANSITION, "Prepare to front transition: task=" + tr);
             if (noAnimation) {
-                mDisplayContent.prepareAppTransition(TRANSIT_NONE);
                 mTaskSupervisor.mNoAnimActivities.add(top);
-                if (mTransitionController.isShellTransitionsEnabled()) {
-                    mTransitionController.collect(top);
-                    mTransitionController.setNoAnimation(top);
-                }
+                mTransitionController.collect(top);
+                mTransitionController.setNoAnimation(top);
                 ActivityOptions.abort(options);
             } else {
                 updateTransitLocked(TRANSIT_TO_FRONT, options);
@@ -5862,10 +5862,6 @@ class Task extends TaskFragment {
                         moveTaskToBackInner(tr, transition);
                     });
         } else {
-            // Skip the transition for pinned task.
-            if (!inPinnedWindowingMode()) {
-                mDisplayContent.prepareAppTransition(TRANSIT_TO_BACK);
-            }
             moveTaskToBackInner(tr, null /* transition */);
         }
         return true;

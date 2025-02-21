@@ -36,6 +36,7 @@ import com.android.internal.widget.NotificationActionListLayout
 import com.android.internal.widget.NotificationExpandButton
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.notification.FeedbackIcon
+import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
@@ -82,6 +83,7 @@ class NotificationContentViewTest : SysuiTestCase() {
         fakeParent =
             spy(FrameLayout(mContext, /* attrs= */ null).also { it.visibility = View.GONE })
         val mockEntry = createMockNotificationEntry()
+        val mockEntryAdapter = createMockNotificationEntryAdapter()
         row =
             spy(
                 when (NotificationBundleUi.isEnabled) {
@@ -92,6 +94,7 @@ class NotificationContentViewTest : SysuiTestCase() {
                             UserHandle.CURRENT
                         ).apply {
                             entry = mockEntry
+                            entryAdapter = mockEntryAdapter
                         }
                     }
                     false -> {
@@ -611,6 +614,7 @@ class NotificationContentViewTest : SysuiTestCase() {
             whenever(this.entry).thenReturn(notificationEntry)
             whenever(this.context).thenReturn(mContext)
             whenever(this.bubbleClickListener).thenReturn(View.OnClickListener {})
+            whenever(this.entryAdapter).thenReturn(createMockNotificationEntryAdapter())
         }
 
     private fun createMockNotificationEntry() =
@@ -623,6 +627,9 @@ class NotificationContentViewTest : SysuiTestCase() {
             whenever(this.sbn).thenReturn(sbnMock)
             whenever(sbnMock.user).thenReturn(userMock)
         }
+
+    private fun createMockNotificationEntryAdapter() =
+        mock<EntryAdapter>()
 
     private fun createLinearLayoutWithBottomMargin(bottomMargin: Int): LinearLayout {
         val outerLayout = LinearLayout(mContext)

@@ -2827,7 +2827,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun onDesktopWindowClose_singleActiveTask_isClosing() {
         val task = setUpFreeformTask()
 
-        taskRepository.addClosingTask(DEFAULT_DISPLAY, task.taskId)
+        taskRepository.addClosingTask(displayId = DEFAULT_DISPLAY, deskId = 0, taskId = task.taskId)
 
         val wct = WindowContainerTransaction()
         controller.onDesktopWindowClose(wct, displayId = DEFAULT_DISPLAY, task)
@@ -2864,7 +2864,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task1 = setUpFreeformTask()
         val task2 = setUpFreeformTask()
 
-        taskRepository.addClosingTask(DEFAULT_DISPLAY, task2.taskId)
+        taskRepository.addClosingTask(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 0,
+            taskId = task2.taskId,
+        )
 
         val wct = WindowContainerTransaction()
         controller.onDesktopWindowClose(wct, displayId = DEFAULT_DISPLAY, task1)
@@ -3222,6 +3226,30 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         assertThat(runOnTransit.invocations).isEqualTo(1)
         assertThat(runOnTransit.lastInvoked).isEqualTo(transition)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onDesktopWindowMinimize_minimizesTask() {
+        val task = setUpFreeformTask()
+        val transition = Binder()
+        val runOnTransit = RunOnStartTransitionCallback()
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(transition)
+        whenever(mMockDesktopImmersiveController.exitImmersiveIfApplicable(any(), eq(task), any()))
+            .thenReturn(
+                ExitResult.Exit(exitingTask = task.taskId, runOnTransitionStart = runOnTransit)
+            )
+
+        controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
+
+        verify(desksOrganizer).minimizeTask(any(), /* deskId= */ eq(0), eq(task))
     }
 
     @Test
@@ -3972,7 +4000,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task1 = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
         val task2 = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
 
-        taskRepository.addClosingTask(displayId = DEFAULT_DISPLAY, taskId = task2.taskId)
+        taskRepository.addClosingTask(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 0,
+            taskId = task2.taskId,
+        )
         val result =
             controller.handleRequest(Binder(), createTransition(task1, type = TRANSIT_TO_BACK))
 
@@ -4083,6 +4115,36 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun handleRequest_closeTransition_onlyDesktopTask_deactivatesDesk() {
+        val task = setUpFreeformTask()
+
+        controller.handleRequest(Binder(), createTransition(task, type = TRANSIT_CLOSE))
+
+        verify(desksOrganizer).deactivateDesk(any(), /* deskId= */ eq(0))
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun handleRequest_closeTransition_onlyDesktopTask_addsDeactivatesDeskTransition() {
+        val transition = Binder()
+        val task = setUpFreeformTask()
+
+        controller.handleRequest(transition, createTransition(task, type = TRANSIT_CLOSE))
+
+        verify(desksTransitionsObserver)
+            .addPendingTransition(DeskTransition.DeactivateDesk(token = transition, deskId = 0))
+    }
+
+    @Test
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     fun handleRequest_closeTransition_multipleTasks_noWallpaper_doesNotHandle() {
         val task1 = setUpFreeformTask()
@@ -4115,7 +4177,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task1 = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
         val task2 = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
 
-        taskRepository.addClosingTask(displayId = DEFAULT_DISPLAY, taskId = task2.taskId)
+        taskRepository.addClosingTask(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 0,
+            taskId = task2.taskId,
+        )
         val result =
             controller.handleRequest(Binder(), createTransition(task1, type = TRANSIT_CLOSE))
 

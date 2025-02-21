@@ -18,13 +18,11 @@ package com.android.wm.shell.desktopmode;
 
 /**
  * Defines the state of desks on a display whose ID is `displayId`, which is:
- * - `canCreateDesks`: whether it's possible to create new desks on this display.
  * - `activeDeskId`: the currently active desk Id, or `-1` if none is active.
  * - `deskId`: the list of desk Ids of the available desks on this display.
  */
 parcelable DisplayDeskState {
     int displayId;
-    boolean canCreateDesk;
     int activeDeskId;
     int[] deskIds;
 }

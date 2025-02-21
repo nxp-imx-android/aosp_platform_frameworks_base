@@ -24,7 +24,7 @@ flag {
 }
 
 flag {
-    name: "contextual_search_window_layer"
+    name: "contextual_search_prevent_self_capture"
     namespace: "sysui_integrations"
     description: "Identify live contextual search UI to exclude from contextual search screenshot."
     bug: "390176823"

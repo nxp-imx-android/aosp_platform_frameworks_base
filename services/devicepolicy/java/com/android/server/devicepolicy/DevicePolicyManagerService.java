@@ -423,6 +423,7 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.hardware.usb.UsbManager;
+import android.health.connect.HealthConnectManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.media.AudioManager;
@@ -2148,6 +2149,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         mIsAutomotive = mInjector.getPackageManager()
                 .hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE);
         mBackgroundHandler = BackgroundThread.getHandler();
+
+        // Add the health permission to the list of restricted permissions.
+        if (android.permission.flags.Flags.replaceBodySensorPermissionEnabled()) {
+            Set<String> healthPermissions = HealthConnectManager.getHealthPermissions(mContext);
+            for (String permission : healthPermissions) {
+                SENSOR_PERMISSIONS.add(permission);
+            }
+        }
 
         // Needed when mHasFeature == false, because it controls the certificate warning text.
         mCertificateMonitor = new CertificateMonitor(this, mInjector, mBackgroundHandler);

@@ -127,14 +127,14 @@ public class TracePerfTest {
     public void testInstantPerfettoWithArgs() {
         PerfettoTrace.instant(FOO_CATEGORY, "testInstantP")
                 .addArg("foo", "bar")
-                .addFlow(1)
+                .setFlow(1)
                 .emit();
 
         BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
         while (state.keepRunning()) {
             PerfettoTrace.instant(FOO_CATEGORY, "testInstantP")
                     .addArg("foo", "bar")
-                    .addFlow(1)
+                    .setFlow(1)
                     .emit();
         }
     }

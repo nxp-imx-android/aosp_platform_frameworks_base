@@ -103,6 +103,7 @@ import com.android.wm.shell.common.DisplayChangeController;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.DisplayLayout;
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController;
 import com.android.wm.shell.common.MultiInstanceHelper;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
@@ -258,6 +259,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final RecentsTransitionHandler mRecentsTransitionHandler;
     private final DesktopModeCompatPolicy mDesktopModeCompatPolicy;
     private final DesktopTilingDecorViewModel mDesktopTilingDecorViewModel;
+    private final MultiDisplayDragMoveIndicatorController mMultiDisplayDragMoveIndicatorController;
 
     public DesktopModeWindowDecorViewModel(
             Context context,
@@ -296,7 +298,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             WindowDecorTaskResourceLoader taskResourceLoader,
             RecentsTransitionHandler recentsTransitionHandler,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
-            DesktopTilingDecorViewModel desktopTilingDecorViewModel) {
+            DesktopTilingDecorViewModel desktopTilingDecorViewModel,
+            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController) {
         this(
                 context,
                 shellExecutor,
@@ -340,7 +343,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 taskResourceLoader,
                 recentsTransitionHandler,
                 desktopModeCompatPolicy,
-                desktopTilingDecorViewModel);
+                desktopTilingDecorViewModel,
+                multiDisplayDragMoveIndicatorController);
     }
 
     @VisibleForTesting
@@ -387,7 +391,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             WindowDecorTaskResourceLoader taskResourceLoader,
             RecentsTransitionHandler recentsTransitionHandler,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
-            DesktopTilingDecorViewModel desktopTilingDecorViewModel) {
+            DesktopTilingDecorViewModel desktopTilingDecorViewModel,
+            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -460,6 +465,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mDesktopModeCompatPolicy = desktopModeCompatPolicy;
         mDesktopTilingDecorViewModel = desktopTilingDecorViewModel;
         mDesktopTasksController.setSnapEventHandler(this);
+        mMultiDisplayDragMoveIndicatorController = multiDisplayDragMoveIndicatorController;
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -1759,7 +1765,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 mTransitions,
                 mInteractionJankMonitor,
                 mTransactionFactory,
-                mMainHandler);
+                mMainHandler,
+                mMultiDisplayDragMoveIndicatorController);
         windowDecoration.setTaskDragResizer(taskPositioner);
 
         final DesktopModeTouchEventListener touchEventListener =
@@ -2056,7 +2063,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 Transitions transitions,
                 InteractionJankMonitor interactionJankMonitor,
                 Supplier<SurfaceControl.Transaction> transactionFactory,
-                Handler handler) {
+                Handler handler,
+                MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController) {
             final TaskPositioner taskPositioner = DesktopModeStatus.isVeiledResizeEnabled()
                     // TODO(b/383632995): Update when the flag is launched.
                     ? (Flags.enableConnectedDisplaysWindowDrag()
@@ -2067,7 +2075,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             dragEventListener,
                             transitions,
                             interactionJankMonitor,
-                            handler)
+                            handler,
+                            multiDisplayDragMoveIndicatorController)
                         : new VeiledResizeTaskPositioner(
                             taskOrganizer,
                             windowDecoration,

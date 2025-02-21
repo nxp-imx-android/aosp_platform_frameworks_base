@@ -25,13 +25,22 @@
 #include <android_runtime/android_view_Surface.h>
 #include <com_android_graphics_libgui_flags.h>
 #include <cutils/atomic.h>
+#ifdef __ANDROID__
 #include <grallocusage/GrallocUsageConversion.h>
+#else
+#define GRALLOC_USAGE_PROTECTED 0
+#define GRALLOC_USAGE_SW_READ_OFTEN 0
+#define GRALLOC_USAGE_SW_WRITE_OFTEN 0
+#endif
 #include <gui/BufferItemConsumer.h>
 #include <gui/Surface.h>
 #include <inttypes.h>
 #include <jni.h>
+#include <jni_wrappers.h>
 #include <nativehelper/JNIHelp.h>
+#ifdef __ANDROID__
 #include <private/android/AHardwareBufferHelpers.h>
+#endif
 #include <stdint.h>
 #include <ui/Rect.h>
 #include <utils/List.h>
@@ -393,8 +402,12 @@ static void ImageReader_init(JNIEnv* env, jobject thiz, jobject weakThiz, jint w
     String8 consumerName = String8::format("ImageReader-%dx%df%xm%d-%d-%d",
             width, height, nativeHalFormat, maxImages, getpid(),
             createProcessUniqueId());
+#ifdef __ANDROID__
     uint64_t consumerUsage =
             android_hardware_HardwareBuffer_convertToGrallocUsageBits(ndkUsage);
+#else
+    uint64_t consumerUsage = 0;
+#endif
 
 #if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
     sp<BufferItemConsumer> bufferConsumer = new BufferItemConsumer(consumerUsage, maxImages,
@@ -773,6 +786,7 @@ static bool Image_getLockedImageInfo(JNIEnv* env, LockedImage* buffer, int idx,
     return true;
 }
 
+#ifdef __ANDROID__
 static void ImageReader_unlockGraphicBuffer(JNIEnv* env, jobject /*thiz*/,
         jobject buffer) {
     sp<GraphicBuffer> graphicBuffer =
@@ -856,6 +870,7 @@ static jobjectArray ImageReader_createImagePlanes(JNIEnv* env, jobject /*thiz*/,
 
     return imagePlanes;
 }
+#endif
 
 static jobjectArray Image_createSurfacePlanes(JNIEnv* env, jobject thiz,
         int numPlanes, int halReaderFormat, uint64_t ndkReaderUsage)
@@ -964,6 +979,7 @@ static jint Image_getFormat(JNIEnv* env, jobject thiz, jint readerFormat)
     }
 }
 
+#ifdef __ANDROID__
 static jobject Image_getHardwareBuffer(JNIEnv* env, jobject thiz) {
     BufferItem* buffer = Image_getBufferItem(env, thiz);
     if (buffer == nullptr) {
@@ -976,45 +992,48 @@ static jobject Image_getHardwareBuffer(JNIEnv* env, jobject thiz) {
     // to link against libandroid.so
     return android_hardware_HardwareBuffer_createFromAHardwareBuffer(env, b);
 }
+#endif
 
 } // extern "C"
 
 // ----------------------------------------------------------------------------
 
-static const JNINativeMethod gImageReaderMethods[] = {
-    {"nativeClassInit",        "()V",                        (void*)ImageReader_classInit },
-    {"nativeInit",             "(Ljava/lang/Object;IIIJII)V",   (void*)ImageReader_init },
-    {"nativeClose",            "()V",                        (void*)ImageReader_close },
-    {"nativeReleaseImage",     "(Landroid/media/Image;)V",   (void*)ImageReader_imageRelease },
-    {"nativeImageSetup",       "(Landroid/media/Image;)I",   (void*)ImageReader_imageSetup },
-    {"nativeGetSurface",       "()Landroid/view/Surface;",   (void*)ImageReader_getSurface },
-    {"nativeDetachImage",      "(Landroid/media/Image;Z)I",   (void*)ImageReader_detachImage },
-    {"nativeCreateImagePlanes",
-        "(ILandroid/graphics/GraphicBuffer;IIIIII)[Landroid/media/ImageReader$ImagePlane;",
-                                                             (void*)ImageReader_createImagePlanes },
-    {"nativeUnlockGraphicBuffer",
-        "(Landroid/graphics/GraphicBuffer;)V",             (void*)ImageReader_unlockGraphicBuffer },
-    {"nativeDiscardFreeBuffers", "()V",                      (void*)ImageReader_discardFreeBuffers }
-};
+static const JNINativeMethod gImageReaderMethods[] =
+        {{"nativeClassInit", "()V", (void*)ImageReader_classInit},
+         {"nativeInit", "(Ljava/lang/Object;IIIJII)V", (void*)ImageReader_init},
+         {"nativeClose", "()V", (void*)ImageReader_close},
+         {"nativeReleaseImage", "(Landroid/media/Image;)V", (void*)ImageReader_imageRelease},
+         {"nativeImageSetup", "(Landroid/media/Image;)I", (void*)ImageReader_imageSetup},
+         {"nativeGetSurface", "()Landroid/view/Surface;", (void*)ImageReader_getSurface},
+         {"nativeDetachImage", "(Landroid/media/Image;Z)I", (void*)ImageReader_detachImage},
+#ifdef __ANDROID__
+         {"nativeCreateImagePlanes",
+          "(ILandroid/graphics/GraphicBuffer;IIIIII)[Landroid/media/ImageReader$ImagePlane;",
+          (void*)ImageReader_createImagePlanes},
+         {"nativeUnlockGraphicBuffer", "(Landroid/graphics/GraphicBuffer;)V",
+          (void*)ImageReader_unlockGraphicBuffer},
+#endif
+         {"nativeDiscardFreeBuffers", "()V", (void*)ImageReader_discardFreeBuffers}};
 
 static const JNINativeMethod gImageMethods[] = {
-    {"nativeCreatePlanes",      "(IIJ)[Landroid/media/ImageReader$SurfaceImage$SurfacePlane;",
-                                                             (void*)Image_createSurfacePlanes },
-    {"nativeGetWidth",          "()I",                       (void*)Image_getWidth },
-    {"nativeGetHeight",         "()I",                       (void*)Image_getHeight },
-    {"nativeGetFormat",         "(I)I",                      (void*)Image_getFormat },
-    {"nativeGetFenceFd",        "()I",                       (void*)Image_getFenceFd },
-    {"nativeGetHardwareBuffer", "()Landroid/hardware/HardwareBuffer;",
-                                                             (void*)Image_getHardwareBuffer },
+        {"nativeCreatePlanes", "(IIJ)[Landroid/media/ImageReader$SurfaceImage$SurfacePlane;",
+         (void*)Image_createSurfacePlanes},
+        {"nativeGetWidth", "()I", (void*)Image_getWidth},
+        {"nativeGetHeight", "()I", (void*)Image_getHeight},
+        {"nativeGetFormat", "(I)I", (void*)Image_getFormat},
+        {"nativeGetFenceFd", "()I", (void*)Image_getFenceFd},
+#ifdef __ANDROID__
+        {"nativeGetHardwareBuffer", "()Landroid/hardware/HardwareBuffer;",
+         (void*)Image_getHardwareBuffer},
+#endif
 };
 
 int register_android_media_ImageReader(JNIEnv *env) {
+    int ret1 = RegisterMethodsOrDie(env, "android/media/ImageReader", gImageReaderMethods,
+                                    NELEM(gImageReaderMethods));
 
-    int ret1 = AndroidRuntime::registerNativeMethods(env,
-                   "android/media/ImageReader", gImageReaderMethods, NELEM(gImageReaderMethods));
-
-    int ret2 = AndroidRuntime::registerNativeMethods(env,
-                   "android/media/ImageReader$SurfaceImage", gImageMethods, NELEM(gImageMethods));
+    int ret2 = RegisterMethodsOrDie(env, "android/media/ImageReader$SurfaceImage", gImageMethods,
+                                    NELEM(gImageMethods));
 
     return (ret1 || ret2);
 }

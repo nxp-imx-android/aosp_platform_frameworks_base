@@ -332,29 +332,22 @@ class DesktopRepository(
         return false
     }
 
-    /**
-     * Adds given task to the closing task list for [displayId]'s active desk.
-     *
-     * TODO: b/389960283 - add explicit [deskId] argument.
-     */
-    fun addClosingTask(displayId: Int, taskId: Int) {
-        val activeDesk =
-            desktopData.getActiveDesk(displayId)
-                ?: error("Expected active desk in display: $displayId")
-        if (activeDesk.closingTasks.add(taskId)) {
-            logD(
-                "Added closing task=%d displayId=%d deskId=%d",
-                taskId,
-                displayId,
-                activeDesk.deskId,
-            )
+    /** Adds given task to the closing task list of its desk. */
+    fun addClosingTask(displayId: Int, deskId: Int?, taskId: Int) {
+        val desk =
+            deskId?.let { desktopData.getDesk(it) }
+                ?: checkNotNull(desktopData.getActiveDesk(displayId)) {
+                    "Expected active desk in display: $displayId"
+                }
+        if (desk.closingTasks.add(taskId)) {
+            logD("Added closing task=%d displayId=%d deskId=%d", taskId, displayId, desk.deskId)
         } else {
             // If the task hasn't been removed from closing list after it disappeared.
             logW(
                 "Task with taskId=%d displayId=%d deskId=%d is already closing",
                 taskId,
                 displayId,
-                activeDesk.deskId,
+                desk.deskId,
             )
         }
     }
@@ -392,7 +385,8 @@ class DesktopRepository(
      * Checks if a task is the only visible, non-closing, non-minimized task on the active desk of
      * the given display, or any display's active desk if [displayId] is [INVALID_DISPLAY].
      *
-     * TODO: b/389960283 - add explicit [deskId] argument.
+     * TODO: b/389960283 - consider forcing callers to use [isOnlyVisibleNonClosingTaskInDesk] with
+     *   an explicit desk id instead of using this function and defaulting to the active one.
      */
     fun isOnlyVisibleNonClosingTask(taskId: Int, displayId: Int = INVALID_DISPLAY): Boolean {
         val activeDesks =
@@ -402,11 +396,24 @@ class DesktopRepository(
                 desktopData.getAllActiveDesks()
             }
         return activeDesks.any { desk ->
-            desk.visibleTasks
-                .subtract(desk.closingTasks)
-                .subtract(desk.minimizedTasks)
-                .singleOrNull() == taskId
+            isOnlyVisibleNonClosingTaskInDesk(
+                taskId = taskId,
+                deskId = desk.deskId,
+                displayId = desk.displayId,
+            )
         }
+    }
+
+    /**
+     * Checks if a task is the only visible, non-closing, non-minimized task on the given desk of
+     * the given display.
+     */
+    fun isOnlyVisibleNonClosingTaskInDesk(taskId: Int, deskId: Int, displayId: Int): Boolean {
+        val desk = desktopData.getDesk(deskId) ?: return false
+        return desk.visibleTasks
+            .subtract(desk.closingTasks)
+            .subtract(desk.minimizedTasks)
+            .singleOrNull() == taskId
     }
 
     /**
@@ -686,6 +693,11 @@ class DesktopRepository(
      * TODO: b/389960283 - add explicit [deskId] argument.
      */
     fun setTopTransparentFullscreenTaskId(displayId: Int, taskId: Int) {
+        logD(
+            "Top transparent fullscreen task set for display: taskId=%d, displayId=%d",
+            taskId,
+            displayId,
+        )
         desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId = taskId
     }
 
@@ -703,6 +715,11 @@ class DesktopRepository(
      * TODO: b/389960283 - add explicit [deskId] argument.
      */
     fun clearTopTransparentFullscreenTaskId(displayId: Int) {
+        logD(
+            "Top transparent fullscreen task cleared for display: taskId=%d, displayId=%d",
+            desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId,
+            displayId,
+        )
         desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId = null
     }
 

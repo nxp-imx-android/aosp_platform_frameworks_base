@@ -95,6 +95,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.WindowManager.LayoutParams.TYPE_VOLUME_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.WindowManager.LayoutParams.isSystemAlertWindowType;
+import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME;
 import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_MULTIPLIER;
 import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_OFFSET;
@@ -182,6 +183,7 @@ import static com.android.server.wm.WindowStateProto.UNRESTRICTED_KEEP_CLEAR_ARE
 import static com.android.server.wm.WindowStateProto.VIEW_VISIBILITY;
 import static com.android.server.wm.WindowStateProto.WINDOW_CONTAINER;
 import static com.android.server.wm.WindowStateProto.WINDOW_FRAMES;
+import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 import static com.android.window.flags.Flags.surfaceTrustedOverlay;
 
 import android.annotation.CallSuper;
@@ -1696,17 +1698,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 || mActivityRecord.isStartingWindowDisplayed());
     }
 
-    @Override
-    boolean hasContentToDisplay() {
-        if (!isDrawn() && (mViewVisibility == View.VISIBLE
-                || (isAnimating(TRANSITION | PARENTS)
-                && !getDisplayContent().mAppTransition.isTransitionSet()))) {
-            return true;
-        }
-
-        return super.hasContentToDisplay();
-    }
-
     private boolean isVisibleByPolicyOrInsets() {
         return isVisibleByPolicy()
                 // If we don't have a provider, this window isn't used as a window generating
@@ -2297,11 +2288,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             dc.updateImeInputAndControlTarget(null);
         }
 
-        final int type = mAttrs.type;
-
-        if (isPresentation()) {
-            mWmService.mPresentationController.onPresentationRemoved(this);
-        }
         // Check if window provides non decor insets before clearing its provided insets.
         final boolean windowProvidesDisplayDecorInsets = providesDisplayDecorInsets();
 
@@ -2442,11 +2428,33 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 }
             }
 
-            removeImmediately();
-            mWmService.updateFocusedWindowLocked(isFocused()
-                            ? UPDATE_FOCUS_REMOVING_FOCUS
-                            : UPDATE_FOCUS_NORMAL,
-                    true /*updateInputWindows*/);
+            // Only a presentation window needs a transition because its visibility affets the
+            // lifecycle of apps below (b/390481865).
+            if (enablePresentationForConnectedDisplays() && isPresentation()) {
+                Transition transition = null;
+                if (!mTransitionController.isCollecting()) {
+                    transition = mTransitionController.createAndStartCollecting(TRANSIT_CLOSE);
+                }
+                mTransitionController.collect(mToken);
+                mAnimatingExit = true;
+                mRemoveOnExit = true;
+                mToken.setVisibleRequested(false);
+                mWmService.mPresentationController.onPresentationRemoved(this);
+                // A presentation hides all activities behind on the same display.
+                mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
+                        /*notifyClients=*/ true);
+                mTransitionController.getCollectingTransition().setReady(mToken, true);
+                if (transition != null) {
+                    mTransitionController.requestStartTransition(transition, null,
+                            null /* remoteTransition */, null /* displayChange */);
+                }
+            } else {
+                removeImmediately();
+                mWmService.updateFocusedWindowLocked(isFocused()
+                                ? UPDATE_FOCUS_REMOVING_FOCUS
+                                : UPDATE_FOCUS_NORMAL,
+                        true /*updateInputWindows*/);
+            }
         } finally {
             Binder.restoreCallingIdentity(origId);
         }

@@ -23,6 +23,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.PermissionMethod;
 import android.annotation.PermissionName;
+import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityManager.RestrictionLevel;
@@ -1365,8 +1366,8 @@ public abstract class ActivityManagerInternal {
      * watchdog reset.
      * @hide
      */
-    public abstract void killApplicationSync(String pkgName, int appId, int userId,
-            String reason, int exitInfoReason);
+    public abstract void killApplicationSync(String pkgName, int appId,
+            @CanBeALL @UserIdInt int userId, String reason, int exitInfoReason);
 
     /**
      * Queries the offset data for a given method on a process.

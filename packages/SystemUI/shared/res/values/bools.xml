@@ -22,4 +22,7 @@
 <resources>
     <!-- Whether to add padding at the bottom of the complication clock -->
     <bool name="dream_overlay_complication_clock_bottom_padding">false</bool>
+
+    <!-- Whether to mark tasks that are present in the UI as perceptible tasks. -->
+    <bool name="config_usePerceptibleTasks">false</bool>
 </resources>

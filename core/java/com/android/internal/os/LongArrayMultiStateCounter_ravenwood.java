@@ -168,8 +168,20 @@ class LongArrayMultiStateCounter_ravenwood {
             }
         }
 
-        public void getValues(long[] values, int state) {
-            System.arraycopy(mStates[state].mCounter, 0, values, 0, mArrayLength);
+        public boolean getValues(long[] values, int state) {
+            long[] counts = mStates[state].mCounter;
+            boolean allZeros = true;
+            for (int i = 0; i < counts.length; i++) {
+                if (counts[i] != 0) {
+                    allZeros = false;
+                    break;
+                }
+            }
+            if (allZeros) {
+                return false;
+            }
+            System.arraycopy(counts, 0, values, 0, mArrayLength);
+            return true;
         }
 
         public void reset() {
@@ -316,8 +328,8 @@ class LongArrayMultiStateCounter_ravenwood {
         getInstance(instanceId).addCounts(counts);
     }
 
-    public static void native_getCounts(long instanceId, long[] counts, int state) {
-        getInstance(instanceId).getValues(counts, state);
+    public static boolean native_getCounts(long instanceId, long[] counts, int state) {
+        return getInstance(instanceId).getValues(counts, state);
     }
 
     public static void native_reset(long instanceId) {

@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.pipeline.mobile.domain.interactor
 
 import android.os.ParcelUuid
+import android.platform.test.annotations.EnableFlags
 import android.telephony.SubscriptionManager.INVALID_SUBSCRIPTION_ID
 import android.telephony.SubscriptionManager.PROFILE_CLASS_PROVISIONING
 import android.telephony.SubscriptionManager.PROFILE_CLASS_UNSET
@@ -33,9 +34,12 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.statusbar.core.NewStatusBarIcons
+import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepositoryLogbufferName
 import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlot
@@ -896,6 +900,71 @@ class MobileIconsInteractorTest : SysuiTestCase() {
 
             assertThat(latest).isEqualTo(2)
         }
+
+    @Test
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    fun isStackable_tracksNumberOfSubscriptions() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isStackable)
+
+            connectionsRepository.setSubscriptions(listOf(SUB_1))
+            assertThat(latest).isFalse()
+
+            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2))
+            assertThat(latest).isTrue()
+
+            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2, SUB_3_OPP))
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    fun isStackable_checksForTerrestrialConnections() =
+        kosmos.runTest {
+            val exclusivelyNonTerrestrialSub =
+                SubscriptionModel(
+                    isExclusivelyNonTerrestrial = true,
+                    subscriptionId = 5,
+                    carrierName = "Carrier 5",
+                    profileClass = PROFILE_CLASS_UNSET,
+                )
+
+            val latest by collectLastValue(underTest.isStackable)
+
+            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2))
+            assertThat(latest).isTrue()
+
+            connectionsRepository.setSubscriptions(listOf(SUB_1, exclusivelyNonTerrestrialSub))
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    fun isStackable_checksForNumberOfBars() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isStackable)
+
+            // Number of levels is the same for both
+            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2))
+            setNumberOfLevelsForSubId(SUB_1_ID, 5)
+            setNumberOfLevelsForSubId(SUB_2_ID, 5)
+
+            assertThat(latest).isTrue()
+
+            // Change the number of levels to be different than SUB_2
+            setNumberOfLevelsForSubId(SUB_1_ID, 6)
+
+            assertThat(latest).isFalse()
+        }
+
+    private fun setNumberOfLevelsForSubId(subId: Int, numberOfLevels: Int) {
+        with(kosmos) {
+            (fakeMobileConnectionsRepository.getRepoForSubId(subId)
+                    as FakeMobileConnectionRepository)
+                .numberOfLevels
+                .value = numberOfLevels
+        }
+    }
 
     /**
      * Convenience method for creating a pair of subscriptions to test the filteredSubscriptions

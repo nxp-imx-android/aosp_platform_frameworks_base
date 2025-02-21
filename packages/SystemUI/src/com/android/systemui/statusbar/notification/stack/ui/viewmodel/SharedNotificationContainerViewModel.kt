@@ -20,6 +20,7 @@ package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 import android.content.Context
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.flow.flowName
+import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.common.shared.model.NotificationContainerBounds
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
@@ -87,7 +88,9 @@ import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNoti
 import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.SharedNotificationContainerInteractor
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
+import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
+import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import com.android.systemui.util.kotlin.FlowDumperImpl
 import com.android.systemui.util.kotlin.Utils.Companion.sample as sampleCombine
 import com.android.systemui.util.kotlin.sample
@@ -299,20 +302,40 @@ constructor(
             .distinctUntilChanged()
             .dumpWhileCollecting("configurationBasedDimensions")
 
+    private val isOnAnyBouncer: Flow<Boolean> =
+        anyOf(
+            keyguardTransitionInteractor.transitionValue(ALTERNATE_BOUNCER).map { it > 0f },
+            keyguardTransitionInteractor
+                .transitionValue(
+                    scene = Scenes.Bouncer,
+                    stateWithoutSceneContainer = PRIMARY_BOUNCER,
+                )
+                .map { it > 0f },
+        )
+
     /** If the user is visually on one of the unoccluded lockscreen states. */
     val isOnLockscreen: Flow<Boolean> =
-        anyOf(
-                keyguardTransitionInteractor.transitionValue(AOD).map { it > 0f },
-                keyguardTransitionInteractor.transitionValue(DOZING).map { it > 0f },
-                keyguardTransitionInteractor.transitionValue(ALTERNATE_BOUNCER).map { it > 0f },
-                keyguardTransitionInteractor
-                    .transitionValue(
-                        scene = Scenes.Bouncer,
-                        stateWithoutSceneContainer = PRIMARY_BOUNCER,
-                    )
-                    .map { it > 0f },
-                keyguardTransitionInteractor.transitionValue(LOCKSCREEN).map { it > 0f },
-            )
+        if (glanceableHubV2()) {
+                anyOf(
+                    keyguardTransitionInteractor.transitionValue(AOD).map { it > 0f },
+                    keyguardTransitionInteractor.transitionValue(DOZING).map { it > 0f },
+                    keyguardTransitionInteractor.transitionValue(LOCKSCREEN).map { it > 0f },
+                    allOf(
+                        // Exclude bouncer showing over communal hub, as this should not be
+                        // considered
+                        // "lockscreen"
+                        not(communalSceneInteractor.isCommunalVisible),
+                        isOnAnyBouncer,
+                    ),
+                )
+            } else {
+                anyOf(
+                    keyguardTransitionInteractor.transitionValue(AOD).map { it > 0f },
+                    keyguardTransitionInteractor.transitionValue(DOZING).map { it > 0f },
+                    keyguardTransitionInteractor.transitionValue(LOCKSCREEN).map { it > 0f },
+                    isOnAnyBouncer,
+                )
+            }
             .flowName("isOnLockscreen")
             .stateIn(
                 scope = applicationScope,

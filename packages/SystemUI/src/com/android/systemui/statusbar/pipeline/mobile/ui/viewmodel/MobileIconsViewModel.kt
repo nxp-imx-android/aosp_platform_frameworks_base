@@ -63,6 +63,8 @@ constructor(
     @VisibleForTesting
     val reuseCache = ConcurrentHashMap<Int, Pair<MobileIconViewModel, CoroutineScope>>()
 
+    val activeMobileDataSubscriptionId: StateFlow<Int?> = interactor.activeMobileDataSubscriptionId
+
     val subscriptionIdsFlow: StateFlow<List<Int>> =
         interactor.filteredSubscriptions
             .mapLatest { subscriptions ->

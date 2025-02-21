@@ -261,7 +261,12 @@ public class AconfigFlags {
             // Default value is false for when the flag is not found.
             // Note: Unlike with the old storage, with AconfigPackage, we don't have a way to
             // know if the flag is not found or if it's found but the value is false.
-            value = aconfigPackage.getBooleanFlagValue(flagName, false);
+            try {
+                value = aconfigPackage.getBooleanFlagValue(flagName, false);
+            } catch (Exception e) {
+                Slog.e(LOG_TAG, "Failed to read Aconfig flag value for " + flagPackageAndName, e);
+                return null;
+            }
         }
         if (DEBUG) {
             Slog.v(LOG_TAG, "Aconfig flag value for " + flagPackageAndName + " = " + value);

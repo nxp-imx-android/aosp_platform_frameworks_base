@@ -232,10 +232,6 @@ public final class PerfettoTrace {
      * @param eventName The event name to appear in the trace.
      */
     public static PerfettoTrackEventExtra.Builder instant(Category category, String eventName) {
-        if (!category.isEnabled()) {
-            return PerfettoTrackEventExtra.noOpBuilder();
-        }
-
         return PerfettoTrackEventExtra.builder().init(PERFETTO_TE_TYPE_INSTANT, category)
             .setEventName(eventName);
     }
@@ -247,10 +243,6 @@ public final class PerfettoTrace {
      * @param eventName The event name to appear in the trace.
      */
     public static PerfettoTrackEventExtra.Builder begin(Category category, String eventName) {
-        if (!category.isEnabled()) {
-            return PerfettoTrackEventExtra.noOpBuilder();
-        }
-
         return PerfettoTrackEventExtra.builder().init(PERFETTO_TE_TYPE_SLICE_BEGIN, category)
             .setEventName(eventName);
     }
@@ -261,10 +253,6 @@ public final class PerfettoTrace {
      * @param category The perfetto category.
      */
     public static PerfettoTrackEventExtra.Builder end(Category category) {
-        if (!category.isEnabled()) {
-            return PerfettoTrackEventExtra.noOpBuilder();
-        }
-
         return PerfettoTrackEventExtra.builder().init(PERFETTO_TE_TYPE_SLICE_END, category);
     }
 
@@ -275,10 +263,6 @@ public final class PerfettoTrace {
      * @param value The value of the counter.
      */
     public static PerfettoTrackEventExtra.Builder counter(Category category, long value) {
-        if (!category.isEnabled()) {
-            return PerfettoTrackEventExtra.noOpBuilder();
-        }
-
         return PerfettoTrackEventExtra.builder().init(PERFETTO_TE_TYPE_COUNTER, category)
             .setCounter(value);
     }
@@ -302,10 +286,6 @@ public final class PerfettoTrace {
      * @param value The value of the counter.
      */
     public static PerfettoTrackEventExtra.Builder counter(Category category, double value) {
-        if (!category.isEnabled()) {
-            return PerfettoTrackEventExtra.noOpBuilder();
-        }
-
         return PerfettoTrackEventExtra.builder().init(PERFETTO_TE_TYPE_COUNTER, category)
             .setCounter(value);
     }

@@ -34,7 +34,6 @@ import android.graphics.drawable.Animatable2;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
@@ -72,7 +71,7 @@ class UserSwitchingDialog extends Dialog {
 
     // Time to wait for the onAnimationEnd() callbacks before moving on
     private static final int ANIMATION_TIMEOUT_MS = 1000;
-    private final Handler mHandler = new Handler(Looper.myLooper());
+    private final Handler mHandler;
 
     protected final UserInfo mOldUser;
     protected final UserInfo mNewUser;
@@ -81,13 +80,14 @@ class UserSwitchingDialog extends Dialog {
     protected final Context mContext;
     private final int mTraceCookie;
 
-    UserSwitchingDialog(Context context, UserInfo oldUser, UserInfo newUser,
+    UserSwitchingDialog(Context context, UserInfo oldUser, UserInfo newUser, Handler handler,
             String switchingFromSystemUserMessage, String switchingToSystemUserMessage) {
         super(context, R.style.Theme_Material_NoActionBar_Fullscreen);
 
         mContext = context;
         mOldUser = oldUser;
         mNewUser = newUser;
+        mHandler = handler;
         mSwitchingFromSystemUserMessage = switchingFromSystemUserMessage;
         mSwitchingToSystemUserMessage = switchingToSystemUserMessage;
         mDisableAnimations = SystemProperties.getBoolean(

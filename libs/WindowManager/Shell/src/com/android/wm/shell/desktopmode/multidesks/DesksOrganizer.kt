@@ -40,8 +40,18 @@ interface DesksOrganizer {
         task: ActivityManager.RunningTaskInfo,
     )
 
+    /** Minimizes the given task of the given deskId. */
+    fun minimizeTask(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        task: ActivityManager.RunningTaskInfo,
+    )
+
     /** Whether the change is for the given desk id. */
     fun isDeskChange(change: TransitionInfo.Change, deskId: Int): Boolean
+
+    /** Whether the change is for a known desk. */
+    fun isDeskChange(change: TransitionInfo.Change): Boolean
 
     /**
      * Returns the desk id in which the task in the given change is located at the end of a

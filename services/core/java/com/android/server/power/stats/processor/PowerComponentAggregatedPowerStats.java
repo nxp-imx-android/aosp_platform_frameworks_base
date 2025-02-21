@@ -16,6 +16,7 @@
 
 package com.android.server.power.stats.processor;
 
+import android.annotation.CheckResult;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.BatteryStats;
@@ -312,6 +313,11 @@ class PowerComponentAggregatedPowerStats {
         return uids;
     }
 
+    /**
+     * Populates outValues with the stats for the specified states. If the stats are all 0,
+     * returns false, leaving outValues unchanged.
+     */
+    @CheckResult
     boolean getDeviceStats(long[] outValues, int[] deviceStates) {
         if (deviceStates.length != mDeviceStateConfig.length) {
             throw new IllegalArgumentException(
@@ -319,12 +325,16 @@ class PowerComponentAggregatedPowerStats {
                     + " expected: " + mDeviceStateConfig.length);
         }
         if (mDeviceStats != null) {
-            mDeviceStats.getStats(outValues, deviceStates);
-            return true;
+            return mDeviceStats.getStats(outValues, deviceStates);
         }
         return false;
     }
 
+    /**
+     * Populates outValues with the stats for the specified key and device states. If the stats
+     * are all 0, returns false, leaving outValues unchanged.
+     */
+    @CheckResult
     boolean getStateStats(long[] outValues, int key, int[] deviceStates) {
         if (deviceStates.length != mDeviceStateConfig.length) {
             throw new IllegalArgumentException(
@@ -333,8 +343,7 @@ class PowerComponentAggregatedPowerStats {
         }
         MultiStateStats stateStats = mStateStats.get(key);
         if (stateStats != null) {
-            stateStats.getStats(outValues, deviceStates);
-            return true;
+            return stateStats.getStats(outValues, deviceStates);
         }
         return false;
     }
@@ -345,6 +354,11 @@ class PowerComponentAggregatedPowerStats {
         }
     }
 
+    /**
+     * Populates outValues with the stats for the specified UID and UID states. If the stats are
+     *  all 0, returns false, leaving outValues unchanged.
+     */
+    @CheckResult
     boolean getUidStats(long[] outValues, int uid, int[] uidStates) {
         if (uidStates.length != mUidStateConfig.length) {
             throw new IllegalArgumentException(
@@ -353,8 +367,7 @@ class PowerComponentAggregatedPowerStats {
         }
         UidStats uidStats = mUidStats.get(uid);
         if (uidStats != null && uidStats.stats != null) {
-            uidStats.stats.getStats(outValues, uidStates);
-            return true;
+            return uidStats.stats.getStats(outValues, uidStates);
         }
         return false;
     }
@@ -578,15 +591,7 @@ class PowerComponentAggregatedPowerStats {
         long[] values = new long[stats.getDimensionCount()];
         MultiStateStats.States[] stateInfo = stats.getStates();
         MultiStateStats.States.forEachTrackedStateCombination(stateInfo, states -> {
-            stats.getStats(values, states);
-            boolean nonZero = false;
-            for (long value : values) {
-                if (value != 0) {
-                    nonZero = true;
-                    break;
-                }
-            }
-            if (!nonZero) {
+            if (!stats.getStats(values, states)) {
                 return;
             }
 

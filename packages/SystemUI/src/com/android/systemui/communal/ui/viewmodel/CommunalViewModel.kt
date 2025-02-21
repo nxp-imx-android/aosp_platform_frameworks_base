@@ -237,7 +237,15 @@ constructor(
         with(mediaHost) {
             expansion = MediaHostState.EXPANDED
             expandedMatchesParentHeight = true
-            showsOnlyActiveMedia = false
+            if (v2FlagEnabled()) {
+                // Only show active media to match lock screen, not resumable media, which can
+                // persist
+                // for up to 2 days.
+                showsOnlyActiveMedia = true
+            } else {
+                // Maintain old behavior on tablet until V2 flag rolls out.
+                showsOnlyActiveMedia = false
+            }
             falsingProtectionNeeded = false
             disablePagination = true
             init(MediaHierarchyManager.LOCATION_COMMUNAL_HUB)

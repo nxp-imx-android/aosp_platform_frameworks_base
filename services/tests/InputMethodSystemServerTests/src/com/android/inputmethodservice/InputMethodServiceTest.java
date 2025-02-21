@@ -40,10 +40,14 @@ import android.content.res.Configuration;
 import android.graphics.Insets;
 import android.os.Build;
 import android.os.RemoteException;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
 import android.server.wm.WindowManagerStateHelper;
 import android.util.Log;
+import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowInsetsAnimation;
 import android.view.WindowManagerGlobal;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.Flags;
@@ -72,6 +76,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -139,10 +144,9 @@ public class InputMethodServiceTest {
         if (!mOriginalVerboseImeTrackerLoggingEnabled) {
             setVerboseImeTrackerLogging(true);
         }
+        mUiDevice.setOrientationNatural();
         prepareIme();
         prepareActivity();
-        mUiDevice.freezeRotation();
-        mUiDevice.setOrientationNatural();
         // Waits for input binding ready.
         eventually(() -> {
             mInputMethodService = InputMethodServiceWrapper.getInstance();
@@ -169,6 +173,9 @@ public class InputMethodServiceTest {
 
     @After
     public void tearDown() throws Exception {
+        if (!mUiDevice.isNaturalOrientation()) {
+            mUiDevice.setOrientationNatural();
+        }
         mUiDevice.unfreezeRotation();
         if (!mOriginalVerboseImeTrackerLoggingEnabled) {
             setVerboseImeTrackerLogging(false);
@@ -242,6 +249,61 @@ public class InputMethodServiceTest {
         verifyInputViewStatusOnMainSync(
                 () -> mActivity.hideImeWithWindowInsetsController(),
                 EVENT_HIDE, true /* eventExpected */, false /* shown */, "IME is not shown");
+    }
+
+    /**
+     * This checks that the surface is removed after the window was hidden in
+     * InputMethodService#hideSoftInput
+     */
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
+    public void testSurfaceRemovedAfterHideSoftInput() {
+        setShowImeWithHardKeyboard(true /* enabled */);
+
+        // Triggers to show IME via public API.
+        verifyInputViewStatusOnMainSync(() -> mActivity.showImeWithWindowInsetsController(),
+                EVENT_SHOW, true /* eventExpected */, true /* shown */, "IME is shown");
+        assertWithMessage("IME is shown").that(mInputMethodService.isInputViewShown()).isTrue();
+
+        final var window = mInputMethodService.getWindow().getWindow();
+        assertWithMessage("IME window exists").that(window).isNotNull();
+        assertWithMessage("IME window showing").that(
+                window.getDecorView().getVisibility()).isEqualTo(View.VISIBLE);
+
+        mActivity.getWindow().getDecorView().setWindowInsetsAnimationCallback(
+                new WindowInsetsAnimation.Callback(
+                        WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
+                    @NonNull
+                    @Override
+                    public WindowInsetsAnimation.Bounds onStart(
+                            @NonNull WindowInsetsAnimation animation,
+                            @NonNull WindowInsetsAnimation.Bounds bounds) {
+                        return super.onStart(animation, bounds);
+                    }
+
+                    @NonNull
+                    @Override
+                    public WindowInsets onProgress(@NonNull WindowInsets insets,
+                            @NonNull List<WindowInsetsAnimation> runningAnimations) {
+                        assertWithMessage("IME surface not removed during the animation").that(
+                                window.getDecorView().getVisibility()).isEqualTo(View.VISIBLE);
+                        return insets;
+                    }
+
+                    @Override
+                    public void onEnd(@NonNull WindowInsetsAnimation animation) {
+                        assertWithMessage(
+                                "IME surface not removed before the end of the animation").that(
+                                window.getDecorView().getVisibility()).isEqualTo(View.VISIBLE);
+                        super.onEnd(animation);
+                    }
+                });
+
+        // Triggers to hide IME via public API.
+        verifyInputViewStatusOnMainSync(() -> mActivity.hideImeWithWindowInsetsController(),
+                EVENT_HIDE, true /* eventExpected */, false /* shown */, "IME is not shown");
+        eventually(() -> assertWithMessage("IME window not showing").that(
+                window.getDecorView().getVisibility()).isEqualTo(View.GONE));
     }
 
     /**

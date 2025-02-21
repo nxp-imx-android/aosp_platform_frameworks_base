@@ -75,6 +75,7 @@ import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
 import com.android.systemui.statusbar.notification.row.ExpandableView.OnHeightChangedListener;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationContentAlphaOptimization;
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainer;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
@@ -589,6 +590,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetIsNonblockable() throws Exception {
         ExpandableNotificationRow row =
                 mNotificationTestHelper.createRow(mNotificationTestHelper.createNotification());

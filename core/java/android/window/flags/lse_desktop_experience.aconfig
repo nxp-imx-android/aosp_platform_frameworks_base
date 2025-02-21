@@ -681,6 +681,16 @@ flag {
 }
 
 flag {
+  name: "enable_opaque_background_for_transparent_windows"
+  namespace: "lse_desktop_experience"
+  description: "Whether an opaque background should be forcefully set for windows with only transparent background."
+  bug: "397219542"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "enable_desktop_mode_through_dev_option"
     namespace: "lse_desktop_experience"
     description: "Enables support for desktop mode through developer options for devices eligible for desktop mode."
@@ -702,6 +712,13 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables full support of presentation API for connected displays."
     bug: "378503083"
+}
+
+flag {
+    name: "enable_activity_embedding_support_for_connected_displays"
+    namespace: "lse_desktop_experience"
+    description: "Enables activity embedding support for connected displays, including enabling AE optimization for Settings."
+    bug: "369438353"
 }
 
 flag {
@@ -763,4 +780,11 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "enable_taskbar_overflow"
+    namespace: "lse_desktop_experience"
+    description: "Show recent apps in the taskbar overflow."
+    bug: "368119679"
 }

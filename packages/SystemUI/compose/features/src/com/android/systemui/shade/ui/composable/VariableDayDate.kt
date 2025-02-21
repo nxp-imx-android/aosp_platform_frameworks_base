@@ -4,22 +4,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
-import com.android.compose.theme.colorAttr
-import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel.HeaderChipHighlight
 
 @Composable
 fun VariableDayDate(
     longerDateText: String,
     shorterDateText: String,
-    chipHighlight: HeaderChipHighlight,
+    textColor: Color,
     modifier: Modifier = Modifier,
 ) {
-    val textColor =
-        if (chipHighlight is HeaderChipHighlight.Strong)
-            colorAttr(android.R.attr.textColorPrimaryInverse)
-        else colorAttr(android.R.attr.textColorPrimary)
-
     Layout(
         contents =
             listOf(

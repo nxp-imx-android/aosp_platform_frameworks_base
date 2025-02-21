@@ -263,6 +263,11 @@ public class DpmMockContext extends MockContext {
     }
 
     @Override
+    public Context getApplicationContext() {
+        return this;
+    }
+
+    @Override
     public PackageManager getPackageManager() {
         return mMockSystemServices.packageManager;
     }

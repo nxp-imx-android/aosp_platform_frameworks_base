@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import android.annotation.SuppressLint;
 import android.platform.test.annotations.IgnoreUnderRavenwood;
 import android.platform.test.ravenwood.RavenwoodRule;
 import android.util.SparseArray;
@@ -287,6 +288,7 @@ public class KernelSingleUidTimeReaderTest {
                 0, lastUidCpuTimes.size());
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void testAddDeltaFromBpf() {
         LongArrayMultiStateCounter counter = new LongArrayMultiStateCounter(2, 5);

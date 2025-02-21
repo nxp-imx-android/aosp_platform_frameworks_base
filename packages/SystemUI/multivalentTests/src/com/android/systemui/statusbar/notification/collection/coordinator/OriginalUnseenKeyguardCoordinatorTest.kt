@@ -16,8 +16,11 @@
 package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.app.Notification
+import android.app.Notification.MediaStyle
+import android.media.session.MediaSession
 import android.platform.test.flag.junit.FlagsParameterization
 import android.provider.Settings
+import android.service.notification.StatusBarNotification
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.dumpManager
@@ -36,6 +39,7 @@ import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.setTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.statusbar.SbnBuilder
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
@@ -217,6 +221,16 @@ class OriginalUnseenKeyguardCoordinatorTest(flags: FlagsParameterization) : Sysu
                         mock<ExpandableNotificationRow>().apply {
                             whenever(isMediaRow).thenReturn(true)
                         }
+                    sbn = SbnBuilder().setNotification(
+                        Notification.Builder(context, "channel").setStyle(
+                            MediaStyle().setMediaSession(
+                                MediaSession(
+                                    context,
+                                    "tag"
+                                ).sessionToken
+                            )
+                        ).build()
+                    ).build()
                 }
             collectionListener.onEntryAdded(fakeEntry)
 

@@ -33,6 +33,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import android.annotation.SuppressLint;
 import android.hardware.power.stats.EnergyConsumerResult;
 import android.hardware.power.stats.EnergyConsumerType;
 import android.os.BatteryConsumer;
@@ -117,6 +118,7 @@ public class CameraPowerStatsTest {
         mMonotonicClock = new MonotonicClock(0, mStatsRule.getMockClock());
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void energyConsumerModel() {
         when(mConsumedEnergyRetriever.getVoltageMv()).thenReturn(VOLTAGE_MV);
@@ -211,10 +213,11 @@ public class CameraPowerStatsTest {
         assertThat(statsLayout.getUidPowerEstimate(uidStats))
                 .isWithin(PRECISION).of(expectedPower2);
 
-        stats.getUidStats(uidStats, APP_UID2,
-                states(POWER_STATE_OTHER, SCREEN_STATE_ON, PROCESS_STATE_CACHED));
-        assertThat(statsLayout.getUidPowerEstimate(uidStats))
-                .isWithin(PRECISION).of(0);
+        if (stats.getUidStats(uidStats, APP_UID2,
+                states(POWER_STATE_OTHER, SCREEN_STATE_ON, PROCESS_STATE_CACHED))) {
+            assertThat(statsLayout.getUidPowerEstimate(uidStats))
+                    .isWithin(PRECISION).of(0);
+        }
     }
 
     private BatteryStats.HistoryItem buildHistoryItem(int timestamp, boolean stateOn,

@@ -39,6 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.power.stats.EnergyConsumerResult;
@@ -170,6 +171,7 @@ public class MobileRadioPowerStatsProcessorTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
+    @SuppressLint("CheckResult")
     @Test
     public void powerProfileModel() {
         // No power monitoring hardware

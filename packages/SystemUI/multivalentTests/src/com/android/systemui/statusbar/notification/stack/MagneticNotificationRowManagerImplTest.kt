@@ -32,6 +32,7 @@ import com.android.systemui.testKosmos
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -49,7 +50,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
     private val sectionsManager = mock<NotificationSectionsManager>()
     private val msdlPlayer = kosmos.fakeMSDLPlayer
     private var canRowBeDismissed = true
-    private var magneticAnimationsCancelled = false
+    private var magneticAnimationsCancelled = MutableList(childrenNumber) { false }
 
     private val underTest = kosmos.magneticNotificationRowManagerImpl
 
@@ -64,8 +65,10 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             NotificationTestHelper(mContext, mDependency, kosmos.testableLooper, featureFlags)
         children = notificationTestHelper.createGroup(childrenNumber).childrenContainer
         swipedRow = children.attachedChildren[childrenNumber / 2]
-        configureMagneticRowListener(swipedRow)
-        magneticAnimationsCancelled = false
+        children.attachedChildren.forEachIndexed { index, row ->
+            row.magneticRowListener = row.magneticRowListener.asTestableListener(index)
+        }
+        magneticAnimationsCancelled.replaceAll { false }
     }
 
     @Test
@@ -259,14 +262,14 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             underTest.onMagneticInteractionEnd(swipedRow, velocity = null)
 
             // THEN magnetic animations are cancelled
-            assertThat(magneticAnimationsCancelled).isTrue()
+            assertThat(magneticAnimationsCancelled[childrenNumber / 2]).isTrue()
         }
 
     @Test
     fun onMagneticInteractionEnd_forMagneticNeighbor_cancelsMagneticAnimations() =
         kosmos.testScope.runTest {
-            val neighborRow = children.attachedChildren[childrenNumber / 2 - 1]
-            configureMagneticRowListener(neighborRow)
+            val neighborIndex = childrenNumber / 2 - 1
+            val neighborRow = children.attachedChildren[neighborIndex]
 
             // GIVEN that targets are set
             setTargets()
@@ -275,8 +278,14 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             underTest.onMagneticInteractionEnd(neighborRow, null)
 
             // THEN magnetic animations are cancelled
-            assertThat(magneticAnimationsCancelled).isTrue()
+            assertThat(magneticAnimationsCancelled[neighborIndex]).isTrue()
         }
+
+    @After
+    fun tearDown() {
+        // We reset the manager so that all MagneticRowListener can cancel all animations
+        underTest.reset()
+    }
 
     private fun setDetachedState() {
         val threshold = 100f
@@ -302,27 +311,33 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             originalTranslation *
             MagneticNotificationRowManagerImpl.MAGNETIC_REDUCTION
 
-    private fun configureMagneticRowListener(row: ExpandableNotificationRow) {
-        val listener =
-            object : MagneticRowListener {
-                override fun setMagneticTranslation(translation: Float) {
-                    row.translation = translation
-                }
-
-                override fun triggerMagneticForce(
-                    endTranslation: Float,
-                    springForce: SpringForce,
-                    startVelocity: Float,
-                ) {}
-
-                override fun cancelMagneticAnimations() {
-                    magneticAnimationsCancelled = true
-                }
-
-                override fun cancelTranslationAnimations() {}
-
-                override fun canRowBeDismissed(): Boolean = canRowBeDismissed
+    private fun MagneticRowListener.asTestableListener(rowIndex: Int): MagneticRowListener {
+        val delegate = this
+        return object : MagneticRowListener {
+            override fun setMagneticTranslation(translation: Float) {
+                delegate.setMagneticTranslation(translation)
             }
-        row.magneticRowListener = listener
+
+            override fun triggerMagneticForce(
+                endTranslation: Float,
+                springForce: SpringForce,
+                startVelocity: Float,
+            ) {
+                delegate.triggerMagneticForce(endTranslation, springForce, startVelocity)
+            }
+
+            override fun cancelMagneticAnimations() {
+                magneticAnimationsCancelled[rowIndex] = true
+                delegate.cancelMagneticAnimations()
+            }
+
+            override fun cancelTranslationAnimations() {
+                delegate.cancelTranslationAnimations()
+            }
+
+            override fun canRowBeDismissed(): Boolean {
+                return canRowBeDismissed
+            }
+        }
     }
 }

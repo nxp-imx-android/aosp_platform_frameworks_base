@@ -22,7 +22,9 @@ import android.icu.text.DateFormat
 import android.icu.text.DisplayContext
 import android.provider.Settings
 import android.view.ViewGroup
+import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -244,11 +246,29 @@ constructor(
 
     /** Represents the background highlight of a header icons chip. */
     sealed interface HeaderChipHighlight {
-        data object None : HeaderChipHighlight
 
-        data object Weak : HeaderChipHighlight
+        fun backgroundColor(colorScheme: ColorScheme): Color
 
-        data object Strong : HeaderChipHighlight
+        fun foregroundColor(colorScheme: ColorScheme): Color
+
+        data object None : HeaderChipHighlight {
+            override fun backgroundColor(colorScheme: ColorScheme): Color = Color.Unspecified
+
+            override fun foregroundColor(colorScheme: ColorScheme): Color = colorScheme.primary
+        }
+
+        data object Weak : HeaderChipHighlight {
+            override fun backgroundColor(colorScheme: ColorScheme): Color =
+                colorScheme.primary.copy(alpha = 0.1f)
+
+            override fun foregroundColor(colorScheme: ColorScheme): Color = colorScheme.primary
+        }
+
+        data object Strong : HeaderChipHighlight {
+            override fun backgroundColor(colorScheme: ColorScheme): Color = colorScheme.secondary
+
+            override fun foregroundColor(colorScheme: ColorScheme): Color = colorScheme.onSecondary
+        }
     }
 
     private fun getFormatFromPattern(pattern: String?): DateFormat {

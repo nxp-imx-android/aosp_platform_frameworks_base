@@ -72,3 +72,11 @@ flag {
   description: "Flag that enables system APIs in Supervision Manager"
   bug: "382034839"
 }
+
+flag {
+  name: "enable_web_content_filters_screen"
+  is_exported: true
+  namespace: "supervision"
+  description: "Flag that enables the web content filters screen with Supervision settings entry point"
+  bug: "395134536"
+}

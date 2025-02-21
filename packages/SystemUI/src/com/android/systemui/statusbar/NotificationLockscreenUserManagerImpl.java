@@ -24,7 +24,7 @@ import static android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_UNREDACTED_
 import static android.os.Flags.allowPrivateProfile;
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_NULL;
-import static android.provider.Settings.Secure.REDACT_OTP_NOTIFICATION_IMMEDIATELY;
+import static android.provider.Settings.Secure.OTP_NOTIFICATION_REDACTION_LOCK_TIME;
 import static android.provider.Settings.Secure.LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS;
 import static android.provider.Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS;
 import static android.provider.Settings.Secure.REDACT_OTP_NOTIFICATION_WHILE_CONNECTED_TO_WIFI;
@@ -124,10 +124,10 @@ public class NotificationLockscreenUserManagerImpl implements
     private static final Uri REDACT_OTP_ON_WIFI =
             Settings.Secure.getUriFor(REDACT_OTP_NOTIFICATION_WHILE_CONNECTED_TO_WIFI);
 
-    private static final Uri REDACT_OTP_IMMEDIATELY =
-            Settings.Secure.getUriFor(REDACT_OTP_NOTIFICATION_IMMEDIATELY);
+    private static final Uri OTP_REDACTION_LOCK_TIME =
+            Settings.Secure.getUriFor(OTP_NOTIFICATION_REDACTION_LOCK_TIME);
 
-    private static final long LOCK_TIME_FOR_SENSITIVE_REDACTION_MS =
+    private static final long DEFAULT_LOCK_TIME_FOR_SENSITIVE_REDACTION_MS =
             TimeUnit.MINUTES.toMillis(10);
     private final Lazy<NotificationVisibilityProvider> mVisibilityProviderLazy;
     private final Lazy<CommonNotifCollection> mCommonNotifCollectionLazy;
@@ -316,7 +316,8 @@ public class NotificationLockscreenUserManagerImpl implements
     protected final AtomicBoolean mConnectedToWifi = new AtomicBoolean(false);
 
     protected final AtomicBoolean mRedactOtpOnWifi = new AtomicBoolean(true);
-    protected final AtomicBoolean mRedactOtpImmediately = new AtomicBoolean(false);
+    protected final AtomicLong mOtpRedactionRequiredLockTimeMs =
+            new AtomicLong(DEFAULT_LOCK_TIME_FOR_SENSITIVE_REDACTION_MS);
 
     protected int mCurrentUserId = 0;
 
@@ -375,7 +376,7 @@ public class NotificationLockscreenUserManagerImpl implements
         mLockScreenUris.add(SHOW_LOCKSCREEN);
         mLockScreenUris.add(SHOW_PRIVATE_LOCKSCREEN);
         mLockScreenUris.add(REDACT_OTP_ON_WIFI);
-        mLockScreenUris.add(REDACT_OTP_IMMEDIATELY);
+        mLockScreenUris.add(OTP_REDACTION_LOCK_TIME);
 
         dumpManager.registerDumpable(this);
 
@@ -447,8 +448,8 @@ public class NotificationLockscreenUserManagerImpl implements
                         changed |= updateUserShowPrivateSettings(user.getIdentifier());
                     } else if (REDACT_OTP_ON_WIFI.equals(uri)) {
                         changed |= updateRedactOtpOnWifiSetting();
-                    } else if (REDACT_OTP_IMMEDIATELY.equals(uri)) {
-                        changed |= updateRedactOtpImmediatelySetting();
+                    } else if (OTP_REDACTION_LOCK_TIME.equals(uri)) {
+                        changed |= updateOtpLockTimeSetting();
                     }
                 }
 
@@ -487,7 +488,7 @@ public class NotificationLockscreenUserManagerImpl implements
                 mLockscreenSettingsObserver
         );
         mSecureSettings.registerContentObserverAsync(
-                REDACT_OTP_IMMEDIATELY,
+                OTP_REDACTION_LOCK_TIME,
                 mLockscreenSettingsObserver
         );
 
@@ -638,13 +639,13 @@ public class NotificationLockscreenUserManagerImpl implements
     }
 
     @WorkerThread
-    private boolean updateRedactOtpImmediatelySetting() {
-        boolean originalValue = mRedactOtpImmediately.get();
-        boolean newValue = mSecureSettings.getIntForUser(
-                REDACT_OTP_NOTIFICATION_IMMEDIATELY,
-                0,
-                Process.myUserHandle().getIdentifier()) != 0;
-        mRedactOtpImmediately.set(newValue);
+    private boolean updateOtpLockTimeSetting() {
+        long originalValue = mOtpRedactionRequiredLockTimeMs.get();
+        long newValue = mSecureSettings.getLongForUser(
+                OTP_NOTIFICATION_REDACTION_LOCK_TIME,
+                DEFAULT_LOCK_TIME_FOR_SENSITIVE_REDACTION_MS,
+                Process.myUserHandle().getIdentifier());
+        mOtpRedactionRequiredLockTimeMs.set(newValue);
         return originalValue != newValue;
     }
 
@@ -832,14 +833,9 @@ public class NotificationLockscreenUserManagerImpl implements
             return false;
         }
 
-        long latestTimeForRedaction;
-        if (mRedactOtpImmediately.get()) {
-            latestTimeForRedaction = mLastLockTime.get();
-        } else {
-            // If the lock screen was not already locked for LOCK_TIME_FOR_SENSITIVE_REDACTION_MS
-            // when this notification arrived, do not redact
-            latestTimeForRedaction = mLastLockTime.get() + LOCK_TIME_FOR_SENSITIVE_REDACTION_MS;
-        }
+        // If the lock screen was not already locked for at least mOtpRedactionRequiredLockTimeMs
+        // when this notification arrived, do not redact
+        long latestTimeForRedaction = mLastLockTime.get() + mOtpRedactionRequiredLockTimeMs.get();
 
         if (ent.getSbn().getPostTime() < latestTimeForRedaction) {
             return false;

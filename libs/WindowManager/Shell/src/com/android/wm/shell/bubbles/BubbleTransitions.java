@@ -21,6 +21,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.View.INVISIBLE;
 import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
 
@@ -325,7 +326,7 @@ public class BubbleTransitions {
             for (int i = 0; i < info.getChanges().size(); ++i) {
                 final TransitionInfo.Change chg = info.getChanges().get(i);
                 if (chg.getTaskInfo() == null) continue;
-                if (chg.getMode() != TRANSIT_CHANGE) continue;
+                if (chg.getMode() != TRANSIT_CHANGE && chg.getMode() != TRANSIT_TO_FRONT) continue;
                 if (!mTaskInfo.token.equals(chg.getTaskInfo().token)) continue;
                 mStartBounds.set(chg.getStartAbsBounds());
                 // Converting a task into taskview, so treat as "new"

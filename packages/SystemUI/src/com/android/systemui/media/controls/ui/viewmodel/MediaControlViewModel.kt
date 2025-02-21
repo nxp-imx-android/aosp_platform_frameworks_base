@@ -419,8 +419,10 @@ class MediaControlViewModel(
 
         const val TURBULENCE_NOISE_PLAY_MS_DURATION = 7500L
         @Deprecated("Remove with media_controls_a11y_colors flag")
-        const val MEDIA_PLAYER_SCRIM_START_ALPHA = 0.25f
-        const val MEDIA_PLAYER_SCRIM_CENTER_ALPHA = 0.75f
-        const val MEDIA_PLAYER_SCRIM_END_ALPHA = 1.0f
+        const val MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY = 0.25f
+        @Deprecated("Remove with media_controls_a11y_colors flag")
+        const val MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY = 1.0f
+        const val MEDIA_PLAYER_SCRIM_START_ALPHA = 0.65f
+        const val MEDIA_PLAYER_SCRIM_END_ALPHA = 0.75f
     }
 }

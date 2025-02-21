@@ -1454,11 +1454,12 @@ final class DevicePolicyEngine {
             }
 
             for (int i = 0; i < mLocalPolicies.size(); i++) {
-                Set<PolicyKey> localPolicies = new HashSet<>(
-                        mLocalPolicies.get(mLocalPolicies.keyAt(i)).keySet());
+                // New users are potentially added to mLocalPolicies during the loop body
+                // (see b/374511959).
+                int userId = mLocalPolicies.keyAt(i);
+                Set<PolicyKey> localPolicies = new HashSet<>(mLocalPolicies.get(userId).keySet());
                 for (PolicyKey policy : localPolicies) {
-                    PolicyState<?> policyState = mLocalPolicies.get(
-                            mLocalPolicies.keyAt(i)).get(policy);
+                    PolicyState<?> policyState = mLocalPolicies.get(userId).get(policy);
                     if (policyState.getPoliciesSetByAdmins().containsKey(admin)) {
                         removeLocalPolicy(
                                 policyState.getPolicyDefinition(), admin, mLocalPolicies.keyAt(i));

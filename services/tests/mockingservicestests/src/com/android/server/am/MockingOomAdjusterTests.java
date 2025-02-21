@@ -3337,6 +3337,108 @@ public class MockingOomAdjusterTests {
                 followUpTimeCaptor.capture());
     }
 
+    /**
+     * For Perceptible Tasks adjustment, this solely unit-tests OomAdjuster -> onOtherActivity()
+     */
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_PERCEPTIBLE_TASKS)
+    public void testPerceptibleAdjustment() {
+        ProcessRecord app = spy(makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
+                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true));
+
+        long now = mInjector.getUptimeMillis();
+
+        // GIVEN: perceptible adjustment is NOT enabled (perceptible stop time is not set)
+        // EXPECT: zero adjustment
+        // TLDR: App is not set as a perceptible task and hence no oom_adj boosting.
+        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.initialize(app, CACHED_APP_MIN_ADJ,
+                false, false, PROCESS_STATE_CACHED_ACTIVITY,
+                SCHED_GROUP_DEFAULT, 0, 0, PROCESS_STATE_IMPORTANT_FOREGROUND);
+        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.onOtherActivity(-1);
+        assertEquals(CACHED_APP_MIN_ADJ, mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.adj);
+
+        // GIVEN: perceptible adjustment is enabled (perceptible stop time is set) and
+        //        elapsed time < PERCEPTIBLE_TASK_TIMEOUT
+        // EXPECT: adjustment to PERCEPTIBLE_MEDIUM_APP_ADJ
+        // TLDR: App is a perceptible task (e.g. opened from launcher) and has oom_adj boosting.
+        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.initialize(app, CACHED_APP_MIN_ADJ,
+                false, false, PROCESS_STATE_CACHED_ACTIVITY,
+                SCHED_GROUP_DEFAULT, 0, 0, PROCESS_STATE_IMPORTANT_FOREGROUND);
+        mInjector.reset();
+        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.onOtherActivity(now);
+        assertEquals(PERCEPTIBLE_MEDIUM_APP_ADJ,
+                mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.adj);
+
+        // GIVEN: perceptible adjustment is enabled (perceptible stop time is set) and
+        //        elapsed time >  PERCEPTIBLE_TASK_TIMEOUT
+        // EXPECT: adjustment to PREVIOUS_APP_ADJ
+        // TLDR: App is a perceptible task (e.g. opened from launcher) and has oom_adj boosting, but
+        //       time has elapsed and has dropped to a lower boosting of PREVIOUS_APP_ADJ
+        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.initialize(app, CACHED_APP_MIN_ADJ,
+                false, false, PROCESS_STATE_CACHED_ACTIVITY,
+                SCHED_GROUP_DEFAULT, 0, 0, PROCESS_STATE_IMPORTANT_FOREGROUND);
+        mInjector.jumpUptimeAheadTo(OomAdjuster.PERCEPTIBLE_TASK_TIMEOUT_MILLIS + 1000);
+        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.onOtherActivity(0);
+        assertEquals(PREVIOUS_APP_ADJ, mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.adj);
+    }
+
+    /**
+     * For Perceptible Tasks adjustment, this tests overall adjustment flow.
+     */
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_PERCEPTIBLE_TASKS)
+    public void testUpdateOomAdjPerceptible() {
+        ProcessRecord app = spy(makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
+                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true));
+        WindowProcessController wpc = app.getWindowProcessController();
+
+        // Set uptime to be at least the timeout time + buffer, so that we don't end up with
+        // negative stopTime in our test input
+        mInjector.jumpUptimeAheadTo(OomAdjuster.PERCEPTIBLE_TASK_TIMEOUT_MILLIS + 60L * 1000L);
+        long now = mInjector.getUptimeMillis();
+        doReturn(true).when(wpc).hasActivities();
+
+        // GIVEN: perceptible adjustment is is enabled
+        // EXPECT: perceptible-act adjustment
+        doReturn(WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING_FINISHING)
+                .when(wpc).getActivityStateFlags();
+        doReturn(now).when(wpc).getPerceptibleTaskStoppedTimeMillis();
+        updateOomAdj(app);
+        assertProcStates(app, PROCESS_STATE_IMPORTANT_BACKGROUND, PERCEPTIBLE_MEDIUM_APP_ADJ,
+                SCHED_GROUP_BACKGROUND, "perceptible-act");
+
+        // GIVEN: perceptible adjustment is is enabled and timeout has been reached
+        // EXPECT: stale-perceptible-act adjustment
+        doReturn(WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING_FINISHING)
+                .when(wpc).getActivityStateFlags();
+
+        doReturn(now - OomAdjuster.PERCEPTIBLE_TASK_TIMEOUT_MILLIS).when(
+                wpc).getPerceptibleTaskStoppedTimeMillis();
+        updateOomAdj(app);
+        assertProcStates(app, PROCESS_STATE_LAST_ACTIVITY, PREVIOUS_APP_ADJ,
+                SCHED_GROUP_BACKGROUND, "stale-perceptible-act");
+
+        // GIVEN: perceptible adjustment is is disabled
+        // EXPECT: no perceptible adjustment
+        doReturn(WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING_FINISHING)
+                .when(wpc).getActivityStateFlags();
+        doReturn(Long.MIN_VALUE).when(wpc).getPerceptibleTaskStoppedTimeMillis();
+        updateOomAdj(app);
+        assertProcStates(app, PROCESS_STATE_CACHED_ACTIVITY, CACHED_APP_MIN_ADJ,
+                SCHED_GROUP_BACKGROUND, "cch-act");
+
+        // GIVEN: perceptible app is in foreground
+        // EXPECT: no perceptible adjustment
+        doReturn(WindowProcessController.ACTIVITY_STATE_FLAG_IS_VISIBLE)
+                .when(wpc).getActivityStateFlags();
+        doReturn(now).when(wpc).getPerceptibleTaskStoppedTimeMillis();
+        updateOomAdj(app);
+        assertProcStates(app, PROCESS_STATE_TOP, VISIBLE_APP_ADJ,
+                SCHED_GROUP_DEFAULT, "vis-activity");
+    }
+
     @SuppressWarnings("GuardedBy")
     @Test
     public void testUpdateOomAdj_DoAll_Multiple_Provider_Retention() {

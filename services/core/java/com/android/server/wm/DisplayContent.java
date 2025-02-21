@@ -88,7 +88,6 @@ import static android.view.inputmethod.ImeTracker.DEBUG_IME_VISIBILITY;
 import static android.window.DisplayAreaOrganizer.FEATURE_IME;
 import static android.window.DisplayAreaOrganizer.FEATURE_ROOT;
 
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_APP_TRANSITIONS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BOOT;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CONTENT_RECORDING;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS;
@@ -368,12 +367,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     final UnknownAppVisibilityController mUnknownAppVisibilityController;
 
     private MetricsLogger mMetricsLogger;
-
-    /**
-     * List of clients without a transtiton animation that we notify once we are done
-     * transitioning since they won't be notified through the app window animator.
-     */
-    final List<IBinder> mNoAnimationNotifyOnTransitionFinished = new ArrayList<>();
 
     // Mapping from a token IBinder to a WindowToken object on this display.
     private final HashMap<IBinder, WindowToken> mTokenMap = new HashMap();
@@ -829,28 +822,36 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     private final ToBooleanFunction<WindowState> mFindFocusedWindow = w -> {
         final ActivityRecord focusedApp = mFocusedApp;
+        final boolean canReceiveKeys = w.canReceiveKeys();
         ProtoLog.v(WM_DEBUG_FOCUS, "Looking for focus: %s, flags=%d, canReceive=%b, reason=%s",
-                w, w.mAttrs.flags, w.canReceiveKeys(),
+                w, w.mAttrs.flags, canReceiveKeys,
                 w.canReceiveKeysReason(false /* fromUserTouch */));
 
-        if (!w.canReceiveKeys()) {
+        if (!canReceiveKeys) {
             return false;
         }
 
-        // When switching the app task, we keep the IME window visibility for better
-        // transitioning experiences.
-        // However, in case IME created a child window or the IME selection dialog without
-        // dismissing during the task switching to keep the window focus because IME window has
-        // higher window hierarchy, we don't give it focus if the next IME layering target
-        // doesn't request IME visible.
-        if (w.mIsImWindow && w.isChildWindow() && (mImeLayeringTarget == null
-                || !mImeLayeringTarget.isRequestedVisible(ime()))) {
-            return false;
-        }
-        if (w.mAttrs.type == TYPE_INPUT_METHOD_DIALOG && mImeLayeringTarget != null
-                && !(mImeLayeringTarget.isRequestedVisible(ime())
-                        && mImeLayeringTarget.isVisibleRequested())) {
-            return false;
+        // IME windows remain visibleRequested while switching apps to maintain a smooth animation.
+        // This persists until the new app is focused, so they can be visibleRequested despite not
+        // being visible to the user (i.e. occluded). These rank higher in the window hierarchy than
+        // app windows, so they will always be considered first. To avoid having the focus stuck,
+        // an IME window (child or not) cannot be focused if the IME parent is not visible. However,
+        // child windows also require the IME to be visible in the current app.
+        if (w.mIsImWindow) {
+            final boolean imeParentVisible = mInputMethodSurfaceParentWindow != null
+                    && mInputMethodSurfaceParentWindow.isVisibleRequested();
+            if (!imeParentVisible) {
+                ProtoLog.v(WM_DEBUG_FOCUS, "findFocusedWindow: IME window not focusable as"
+                        + " IME parent is not visible");
+                return false;
+            }
+
+            if (w.isChildWindow()
+                    && !getInsetsStateController().getImeSourceProvider().isImeShowing()) {
+                ProtoLog.v(WM_DEBUG_FOCUS, "findFocusedWindow: IME child window not focusable as"
+                        + " IME is not visible");
+                return false;
+            }
         }
 
         final ActivityRecord activity = w.mActivityRecord;
@@ -1171,8 +1172,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         mFixedRotationTransitionListener = new FixedRotationTransitionListener(mDisplayId);
         mAppTransition = new AppTransition(mWmService.mContext, mWmService, this);
-        mAppTransition.registerListenerLocked(mWmService.mActivityManagerAppTransitionNotifier);
-        mAppTransition.registerListenerLocked(mFixedRotationTransitionListener);
         mTransitionController.registerLegacyListener(mFixedRotationTransitionListener);
         mUnknownAppVisibilityController = new UnknownAppVisibilityController(mWmService, this);
         mRemoteDisplayChangeController = new RemoteDisplayChangeController(this);
@@ -2858,13 +2857,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return isVisible() && !mRemoved && !mRemoving;
     }
 
-    @Override
-    void onAppTransitionDone() {
-        super.onAppTransitionDone();
-        mWmService.mWindowsChanged = true;
-        onTransitionFinished();
-    }
-
     void onTransitionFinished() {
         // If the transition finished callback cannot match the token for some reason, make sure the
         // rotated state is cleared if it is already invisible.
@@ -3385,9 +3377,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mDeferredRemoval = false;
         try {
             mUnknownAppVisibilityController.clear();
-            mAppTransition.removeAppTransitionTimeoutCallbacks();
             mTransitionController.unregisterLegacyListener(mFixedRotationTransitionListener);
-            handleAnimatingStoppedAndTransition();
             mDeviceStateController.unregisterDeviceStateCallback(mDeviceStateConsumer);
             super.removeImmediately();
             if (DEBUG_DISPLAY) Slog.v(TAG_WM, "Removing display=" + this);
@@ -3570,11 +3560,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mDisplayRotation.dumpDebug(proto, DISPLAY_ROTATION);
         mDisplayFrames.dumpDebug(proto, DISPLAY_FRAMES);
         proto.write(MIN_SIZE_OF_RESIZEABLE_TASK_DP, mMinSizeOfResizeableTaskDp);
-        if (mTransitionController.isShellTransitionsEnabled()) {
-            mTransitionController.dumpDebugLegacy(proto, APP_TRANSITION);
-        } else {
-            mAppTransition.dumpDebug(proto, APP_TRANSITION);
-        }
+        mTransitionController.dumpDebugLegacy(proto, APP_TRANSITION);
         if (mFocusedApp != null) {
             mFocusedApp.writeNameToProto(proto, FOCUSED_APP);
         }
@@ -5634,61 +5620,20 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @see AppTransition#prepareAppTransition
      */
     void requestTransitionAndLegacyPrepare(@WindowManager.TransitionType int transit,
-            @WindowManager.TransitionFlags int flags) {
-        prepareAppTransition(transit, flags);
-        mTransitionController.requestTransitionIfNeeded(transit, flags, null /* trigger */, this);
+            @WindowManager.TransitionFlags int flags, @Nullable WindowContainer trigger) {
+        mTransitionController.requestTransitionIfNeeded(transit, flags, trigger, this);
     }
 
     void executeAppTransition() {
         mTransitionController.setReady(this);
-        if (mAppTransition.isTransitionSet()) {
-            ProtoLog.w(WM_DEBUG_APP_TRANSITIONS,
-                    "Execute app transition: %s, displayId: %d Callers=%s",
-                    mAppTransition, mDisplayId, Debug.getCallers(5));
-            mAppTransition.setReady();
-            mWmService.mWindowPlacerLocked.requestTraversal();
-        }
-    }
-
-    /**
-     * Update pendingLayoutChanges after app transition has finished.
-     */
-    void handleAnimatingStoppedAndTransition() {
-        int changes = 0;
-
-        mAppTransition.setIdle();
-
-        for (int i = mNoAnimationNotifyOnTransitionFinished.size() - 1; i >= 0; i--) {
-            final IBinder token = mNoAnimationNotifyOnTransitionFinished.get(i);
-            mAppTransition.notifyAppTransitionFinishedLocked(token);
-        }
-        mNoAnimationNotifyOnTransitionFinished.clear();
-
-        mWallpaperController.hideDeferredWallpapersIfNeededLegacy();
-
-        onAppTransitionDone();
-
-        changes |= FINISH_LAYOUT_REDO_LAYOUT;
-        ProtoLog.v(WM_DEBUG_WALLPAPER, "Wallpaper layer changed: assigning layers + relayout");
-        computeImeTarget(true /* updateImeTarget */);
-        mWallpaperMayChange = true;
-        // Since the window list has been rebuilt, focus might have to be recomputed since the
-        // actual order of windows might have changed again.
-        mWmService.mFocusMayChange = true;
-
-        pendingLayoutChanges |= changes;
     }
 
     /** Check if pending app transition is for activity / task launch. */
     boolean isNextTransitionForward() {
         // TODO(b/191375840): decouple "forwardness" from transition system.
-        if (mTransitionController.isShellTransitionsEnabled()) {
-            @WindowManager.TransitionType int type =
-                    mTransitionController.getCollectingTransitionType();
-            return type == TRANSIT_OPEN || type == TRANSIT_TO_FRONT;
-        }
-        return mAppTransition.containsTransitRequest(TRANSIT_OPEN)
-                || mAppTransition.containsTransitRequest(TRANSIT_TO_FRONT);
+        final @WindowManager.TransitionType int type =
+                mTransitionController.getCollectingTransitionType();
+        return type == TRANSIT_OPEN || type == TRANSIT_TO_FRONT;
     }
 
     /**

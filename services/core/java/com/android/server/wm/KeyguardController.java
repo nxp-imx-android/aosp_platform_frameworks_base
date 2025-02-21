@@ -250,7 +250,7 @@ class KeyguardController {
                 // to the locked state before holding the sleep token again
                 if (!ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS) {
                     dc.requestTransitionAndLegacyPrepare(
-                            TRANSIT_TO_FRONT, TRANSIT_FLAG_KEYGUARD_APPEARING);
+                            TRANSIT_TO_FRONT, TRANSIT_FLAG_KEYGUARD_APPEARING, /* trigger= */ null);
                 }
                 dc.mWallpaperController.adjustWallpaperWindows();
                 dc.executeAppTransition();

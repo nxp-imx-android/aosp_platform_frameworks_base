@@ -47,7 +47,7 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
 
     private val mHandler = Handler(Looper.getMainLooper())
 
-    private val syncRunnable = Runnable { updatePreferences() }
+    private val syncRunnable = Runnable { updatePreferencesList() }
 
     init {
         val context = preferenceGroup.context
@@ -64,7 +64,7 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
             true, /* resolveRefs */
         )
         mLegacyBackgroundRes = outValue.resourceId
-        updatePreferences()
+        updatePreferencesList()
     }
 
     @SuppressLint("RestrictedApi")
@@ -82,7 +82,7 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
         updateBackground(holder, position)
     }
 
-    private fun updatePreferences() {
+    private fun updatePreferencesList() {
         val oldList = ArrayList(mRoundCornerMappingList)
         mRoundCornerMappingList = ArrayList()
         mappingPreferenceGroup(mRoundCornerMappingList, mPreferenceGroup)

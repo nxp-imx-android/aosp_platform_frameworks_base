@@ -25,6 +25,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.platform.test.annotations.DisableFlags;
@@ -398,6 +399,46 @@ public class AutoclickControllerTest {
         // Verify that the scheduled click time has changed (click was rescheduled).
         assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting())
                 .isNotEqualTo(initialScheduledTime);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void pauseButton_flagOn_clickNotTriggeredWhenPaused() {
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Pause autoclick.
+        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
+        when(mockAutoclickTypePanel.isPaused()).thenReturn(true);
+        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
+
+        // Send hover move event.
+        MotionEvent hoverMove = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 100,
+                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
+                /* x= */ 30f,
+                /* y= */ 0f,
+                /* metaState= */ 0);
+        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
+        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+
+        // Verify there is not a pending click.
+        assertThat(mController.mClickScheduler.getIsActiveForTesting()).isFalse();
+        assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting()).isEqualTo(-1);
+
+        // Resume autoclick.
+        when(mockAutoclickTypePanel.isPaused()).thenReturn(false);
+
+        // Send initial move event again. Because this is the first recorded move, a click won't be
+        // scheduled.
+        injectFakeMouseActionHoverMoveEvent();
+        assertThat(mController.mClickScheduler.getIsActiveForTesting()).isFalse();
+        assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting()).isEqualTo(-1);
+
+        // Send move again to trigger click and verify there is now a pending click.
+        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        assertThat(mController.mClickScheduler.getIsActiveForTesting()).isTrue();
+        assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting()).isNotEqualTo(-1);
     }
 
     private void injectFakeMouseActionHoverMoveEvent() {

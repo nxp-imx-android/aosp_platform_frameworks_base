@@ -449,12 +449,8 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
     }
 
     private void updateIconVisibility() {
-        if (Flags.notificationsRedesignTemplates() && !mIsInConversation) {
-            // We don't show any icon (other than the app icon) in the collapsed form. For
-            // conversations, keeping this container helps with aligning the message to the icon
-            // when collapsed, but the old messaging style already has this alignment built into
-            // the template like all other layouts. Conversations are special because we use the
-            // same base layout for both the collapsed and expanded views.
+        if (Flags.notificationsRedesignTemplates()) {
+            // We don't show any icon (other than the app or person icon) in the collapsed form.
             mMessagingIconContainer.setVisibility(mSingleLine ? GONE : VISIBLE);
         }
     }

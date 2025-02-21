@@ -146,6 +146,20 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @EnableSceneContainer
+    fun resetViewStates_defaultHun_hasShadow() {
+        val headsUpTop = 200f
+        ambientState.headsUpTop = headsUpTop
+
+        whenever(notificationRow.isPinned).thenReturn(true)
+        whenever(notificationRow.isHeadsUp).thenReturn(true)
+
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        assertThat(notificationRow.viewState.zTranslation).isGreaterThan(baseZ)
+    }
+
+    @Test
     @DisableSceneContainer
     fun resetViewStates_defaultHunWhenShadeIsOpening_yTranslationIsInset() {
         whenever(notificationRow.isPinned).thenReturn(true)

@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.promoted
 
 import android.app.Flags
+import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
 import android.graphics.PorterDuff
 import android.view.LayoutInflater
@@ -166,7 +167,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private val closeButton: View? = root.findViewById(R.id.close_button)
     private val conversationIconBadge: View? = root.findViewById(R.id.conversation_icon_badge)
     private val conversationIcon: CachingIconView? = root.findViewById(R.id.conversation_icon)
-    private val conversationText: TextView? = root.findViewById(R.id.conversation_text)
+    private val conversationText: TextView? =
+        root.findViewById(
+            if (notificationsRedesignTemplates()) R.id.title else R.id.conversation_text
+        )
     private val expandButton: NotificationExpandButton? = root.findViewById(R.id.expand_button)
     private val headerText: TextView? = root.findViewById(R.id.header_text)
     private val headerTextDivider: View? = root.findViewById(R.id.header_text_divider)

@@ -14200,6 +14200,9 @@ public class DevicePolicyManager {
      *    <li>Manifest.permission.ACTIVITY_RECOGNITION</li>
      *    <li>Manifest.permission.BODY_SENSORS</li>
      * </ul>
+     * On devices running {@link android.os.Build.VERSION_CODES#BAKLAVA}, the
+     * {@link android.health.connect.HealthPermissions} are also included in the
+     * restricted list.
      * <p>
      * A profile owner may not grant these permissions (i.e. call this method with any of the
      * permissions listed above and {@code grantState} of {@code #PERMISSION_GRANT_STATE_GRANTED}),
@@ -17644,9 +17647,17 @@ public class DevicePolicyManager {
             android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS
     })
     public boolean isFinancedDevice() {
-        return isDeviceManaged()
-                && getDeviceOwnerType(getDeviceOwnerComponentOnAnyUser())
-                == DEVICE_OWNER_TYPE_FINANCED;
+        try {
+            return isDeviceManaged()
+                    && getDeviceOwnerType(getDeviceOwnerComponentOnAnyUser())
+                    == DEVICE_OWNER_TYPE_FINANCED;
+        } catch (IllegalStateException e) {
+            // getDeviceOwnerType() will throw IllegalStateException if the device does not have a
+            // DO. This can happen under a race condition when the DO is removed after
+            // isDeviceManaged() (so it still returns true) but before getDeviceOwnerType().
+            // In this case, the device should not be considered a financed device.
+            return false;
+        }
     }
 
     // TODO(b/315298076): revert ag/25574027 and update the doc

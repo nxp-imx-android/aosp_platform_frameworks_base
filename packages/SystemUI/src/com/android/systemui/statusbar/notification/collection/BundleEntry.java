@@ -21,9 +21,14 @@ import static android.app.NotificationChannel.PROMOTIONS_ID;
 import static android.app.NotificationChannel.RECS_ID;
 import static android.app.NotificationChannel.SOCIAL_MEDIA_ID;
 
+import android.app.Notification;
+import android.content.Context;
+import android.os.Build;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import com.android.systemui.statusbar.notification.icon.IconPack;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 
 import java.util.List;
@@ -78,6 +83,43 @@ public class BundleEntry extends PipelineEntry {
         @Override
         public EntryAdapter getGroupRoot() {
             return this;
+        }
+
+        @Override
+        public boolean isClearable() {
+            // TODO(b/394483200): check whether all of the children are clearable, when implemented
+            return true;
+        }
+
+        @Override
+        public int getTargetSdk() {
+            return Build.VERSION_CODES.CUR_DEVELOPMENT;
+        }
+
+        @Override
+        public String getSummarization() {
+            return null;
+        }
+
+        @Override
+        public int getContrastedColor(Context context, boolean isLowPriority, int backgroundColor) {
+            return Notification.COLOR_DEFAULT;
+        }
+
+        @Override
+        public boolean canPeek() {
+            return false;
+        }
+
+        @Override
+        public long getWhen() {
+            return 0;
+        }
+
+        @Override
+        public IconPack getIcons() {
+            // TODO(b/396446620): implement bundle icons
+            return null;
         }
     }
 

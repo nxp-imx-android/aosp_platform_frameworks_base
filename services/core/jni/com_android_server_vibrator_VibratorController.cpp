@@ -21,6 +21,7 @@
 #include <android/binder_parcel_jni.h>
 #include <android/hardware/vibrator/1.3/IVibrator.h>
 #include <android/persistable_bundle_aidl.h>
+#include <android_os_vibrator.h>
 #include <nativehelper/JNIHelp.h>
 #include <utils/Log.h>
 #include <utils/misc.h>
@@ -143,21 +144,23 @@ public:
         return mHal->doWithRetry(fn, functionName);
     }
 
-    std::function<void()> createCallback(jlong vibrationId) {
+    std::function<void()> createCallback(jlong vibrationId, jlong stepId) {
         auto callbackId = ++mCallbackId;
-        return [vibrationId, callbackId, this]() {
+        return [vibrationId, stepId, callbackId, this]() {
             auto currentCallbackId = mCallbackId.load();
-            if (currentCallbackId != callbackId) {
-                // This callback is from an older HAL call that is no longer relevant to the service
+            if (!android_os_vibrator_fix_vibration_thread_callback_handling() &&
+                currentCallbackId != callbackId) {
+                // This callback is from an older HAL call that is no longer relevant
                 return;
             }
             auto jniEnv = GetOrAttachJNIEnvironment(sJvm);
-            jniEnv->CallVoidMethod(mCallbackListener, sMethodIdOnComplete, mVibratorId,
-                                   vibrationId);
+            jniEnv->CallVoidMethod(mCallbackListener, sMethodIdOnComplete, mVibratorId, vibrationId,
+                                   stepId);
         };
     }
 
     void disableOldCallbacks() {
+        // TODO remove this once android_os_vibrator_fix_vibration_thread_callback_handling removed
         mCallbackId++;
     }
 
@@ -165,6 +168,7 @@ private:
     const std::shared_ptr<vibrator::HalController> mHal;
     const int32_t mVibratorId;
     const jobject mCallbackListener;
+    // TODO remove this once android_os_vibrator_fix_vibration_thread_callback_handling removed
     std::atomic<int64_t> mCallbackId;
 };
 
@@ -273,13 +277,13 @@ static jboolean vibratorIsAvailable(JNIEnv* env, jclass /* clazz */, jlong ptr) 
 }
 
 static jlong vibratorOn(JNIEnv* env, jclass /* clazz */, jlong ptr, jlong timeoutMs,
-                        jlong vibrationId) {
+                        jlong vibrationId, jlong stepId) {
     VibratorControllerWrapper* wrapper = reinterpret_cast<VibratorControllerWrapper*>(ptr);
     if (wrapper == nullptr) {
         ALOGE("vibratorOn failed because native wrapper was not initialized");
         return -1;
     }
-    auto callback = wrapper->createCallback(vibrationId);
+    auto callback = wrapper->createCallback(vibrationId, stepId);
     auto onFn = [timeoutMs, &callback](vibrator::HalWrapper* hal) {
         return hal->on(std::chrono::milliseconds(timeoutMs), callback);
     };
@@ -324,7 +328,7 @@ static void vibratorSetExternalControl(JNIEnv* env, jclass /* clazz */, jlong pt
 }
 
 static jlong vibratorPerformEffect(JNIEnv* env, jclass /* clazz */, jlong ptr, jlong effect,
-                                   jlong strength, jlong vibrationId) {
+                                   jlong strength, jlong vibrationId, jlong stepId) {
     VibratorControllerWrapper* wrapper = reinterpret_cast<VibratorControllerWrapper*>(ptr);
     if (wrapper == nullptr) {
         ALOGE("vibratorPerformEffect failed because native wrapper was not initialized");
@@ -332,7 +336,7 @@ static jlong vibratorPerformEffect(JNIEnv* env, jclass /* clazz */, jlong ptr, j
     }
     Aidl::Effect effectType = static_cast<Aidl::Effect>(effect);
     Aidl::EffectStrength effectStrength = static_cast<Aidl::EffectStrength>(strength);
-    auto callback = wrapper->createCallback(vibrationId);
+    auto callback = wrapper->createCallback(vibrationId, stepId);
     auto performEffectFn = [effectType, effectStrength, &callback](vibrator::HalWrapper* hal) {
         return hal->performEffect(effectType, effectStrength, callback);
     };
@@ -342,7 +346,7 @@ static jlong vibratorPerformEffect(JNIEnv* env, jclass /* clazz */, jlong ptr, j
 
 static jlong vibratorPerformVendorEffect(JNIEnv* env, jclass /* clazz */, jlong ptr,
                                          jobject vendorData, jlong strength, jfloat scale,
-                                         jfloat adaptiveScale, jlong vibrationId) {
+                                         jfloat adaptiveScale, jlong vibrationId, jlong stepId) {
     VibratorControllerWrapper* wrapper = reinterpret_cast<VibratorControllerWrapper*>(ptr);
     if (wrapper == nullptr) {
         ALOGE("vibratorPerformVendorEffect failed because native wrapper was not initialized");
@@ -350,7 +354,7 @@ static jlong vibratorPerformVendorEffect(JNIEnv* env, jclass /* clazz */, jlong 
     }
     Aidl::VendorEffect effect =
             vendorEffectFromJavaParcel(env, vendorData, strength, scale, adaptiveScale);
-    auto callback = wrapper->createCallback(vibrationId);
+    auto callback = wrapper->createCallback(vibrationId, stepId);
     auto performVendorEffectFn = [&effect, &callback](vibrator::HalWrapper* hal) {
         return hal->performVendorEffect(effect, callback);
     };
@@ -359,7 +363,8 @@ static jlong vibratorPerformVendorEffect(JNIEnv* env, jclass /* clazz */, jlong 
 }
 
 static jlong vibratorPerformComposedEffect(JNIEnv* env, jclass /* clazz */, jlong ptr,
-                                           jobjectArray composition, jlong vibrationId) {
+                                           jobjectArray composition, jlong vibrationId,
+                                           jlong stepId) {
     VibratorControllerWrapper* wrapper = reinterpret_cast<VibratorControllerWrapper*>(ptr);
     if (wrapper == nullptr) {
         ALOGE("vibratorPerformComposedEffect failed because native wrapper was not initialized");
@@ -371,7 +376,7 @@ static jlong vibratorPerformComposedEffect(JNIEnv* env, jclass /* clazz */, jlon
         jobject element = env->GetObjectArrayElement(composition, i);
         effects.push_back(effectFromJavaPrimitive(env, element));
     }
-    auto callback = wrapper->createCallback(vibrationId);
+    auto callback = wrapper->createCallback(vibrationId, stepId);
     auto performComposedEffectFn = [&effects, &callback](vibrator::HalWrapper* hal) {
         return hal->performComposedEffect(effects, callback);
     };
@@ -381,7 +386,8 @@ static jlong vibratorPerformComposedEffect(JNIEnv* env, jclass /* clazz */, jlon
 }
 
 static jlong vibratorPerformPwleEffect(JNIEnv* env, jclass /* clazz */, jlong ptr,
-                                       jobjectArray waveform, jint brakingId, jlong vibrationId) {
+                                       jobjectArray waveform, jint brakingId, jlong vibrationId,
+                                       jlong stepId) {
     VibratorControllerWrapper* wrapper = reinterpret_cast<VibratorControllerWrapper*>(ptr);
     if (wrapper == nullptr) {
         ALOGE("vibratorPerformPwleEffect failed because native wrapper was not initialized");
@@ -406,7 +412,7 @@ static jlong vibratorPerformPwleEffect(JNIEnv* env, jclass /* clazz */, jlong pt
         }
     }
 
-    auto callback = wrapper->createCallback(vibrationId);
+    auto callback = wrapper->createCallback(vibrationId, stepId);
     auto performPwleEffectFn = [&primitives, &callback](vibrator::HalWrapper* hal) {
         return hal->performPwleEffect(primitives, callback);
     };
@@ -415,7 +421,7 @@ static jlong vibratorPerformPwleEffect(JNIEnv* env, jclass /* clazz */, jlong pt
 }
 
 static jlong vibratorPerformPwleV2Effect(JNIEnv* env, jclass /* clazz */, jlong ptr,
-                                         jobjectArray waveform, jlong vibrationId) {
+                                         jobjectArray waveform, jlong vibrationId, jlong stepId) {
     VibratorControllerWrapper* wrapper = reinterpret_cast<VibratorControllerWrapper*>(ptr);
     if (wrapper == nullptr) {
         ALOGE("vibratorPerformPwleV2Effect failed because native wrapper was not initialized");
@@ -431,7 +437,7 @@ static jlong vibratorPerformPwleV2Effect(JNIEnv* env, jclass /* clazz */, jlong 
     }
     composite.pwlePrimitives = primitives;
 
-    auto callback = wrapper->createCallback(vibrationId);
+    auto callback = wrapper->createCallback(vibrationId, stepId);
     auto composePwleV2Fn = [&composite, &callback](vibrator::HalWrapper* hal) {
         return hal->composePwleV2(composite, callback);
     };
@@ -610,16 +616,16 @@ static const JNINativeMethod method_table[] = {
          (void*)vibratorNativeInit},
         {"getNativeFinalizer", "()J", (void*)vibratorGetNativeFinalizer},
         {"isAvailable", "(J)Z", (void*)vibratorIsAvailable},
-        {"on", "(JJJ)J", (void*)vibratorOn},
+        {"on", "(JJJJ)J", (void*)vibratorOn},
         {"off", "(J)V", (void*)vibratorOff},
         {"setAmplitude", "(JF)V", (void*)vibratorSetAmplitude},
-        {"performEffect", "(JJJJ)J", (void*)vibratorPerformEffect},
-        {"performVendorEffect", "(JLandroid/os/Parcel;JFFJ)J", (void*)vibratorPerformVendorEffect},
-        {"performComposedEffect", "(J[Landroid/os/vibrator/PrimitiveSegment;J)J",
+        {"performEffect", "(JJJJJ)J", (void*)vibratorPerformEffect},
+        {"performVendorEffect", "(JLandroid/os/Parcel;JFFJJ)J", (void*)vibratorPerformVendorEffect},
+        {"performComposedEffect", "(J[Landroid/os/vibrator/PrimitiveSegment;JJ)J",
          (void*)vibratorPerformComposedEffect},
-        {"performPwleEffect", "(J[Landroid/os/vibrator/RampSegment;IJ)J",
+        {"performPwleEffect", "(J[Landroid/os/vibrator/RampSegment;IJJ)J",
          (void*)vibratorPerformPwleEffect},
-        {"performPwleV2Effect", "(J[Landroid/os/vibrator/PwlePoint;J)J",
+        {"performPwleV2Effect", "(J[Landroid/os/vibrator/PwlePoint;JJ)J",
          (void*)vibratorPerformPwleV2Effect},
         {"setExternalControl", "(JZ)V", (void*)vibratorSetExternalControl},
         {"alwaysOnEnable", "(JJJJ)V", (void*)vibratorAlwaysOnEnable},
@@ -632,7 +638,7 @@ int register_android_server_vibrator_VibratorController(JavaVM* jvm, JNIEnv* env
     auto listenerClassName =
             "com/android/server/vibrator/VibratorController$OnVibrationCompleteListener";
     jclass listenerClass = FindClassOrDie(env, listenerClassName);
-    sMethodIdOnComplete = GetMethodIDOrDie(env, listenerClass, "onComplete", "(IJ)V");
+    sMethodIdOnComplete = GetMethodIDOrDie(env, listenerClass, "onComplete", "(IJJ)V");
 
     jclass primitiveClass = FindClassOrDie(env, "android/os/vibrator/PrimitiveSegment");
     sPrimitiveClassInfo.id = GetFieldIDOrDie(env, primitiveClass, "mPrimitiveId", "I");

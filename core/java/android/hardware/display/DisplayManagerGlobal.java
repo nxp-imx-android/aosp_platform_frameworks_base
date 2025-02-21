@@ -187,6 +187,9 @@ public final class DisplayManagerGlobal {
 
     private final Binder mToken = new Binder();
 
+    // Guarded by mLock
+    private boolean mShouldImplicitlyRegisterRrChanges = false;
+
     @VisibleForTesting
     public DisplayManagerGlobal(IDisplayManager dm) {
         mDm = dm;
@@ -390,15 +393,35 @@ public final class DisplayManagerGlobal {
      * the handler for the main thread.
      * If that is still null, a runtime exception will be thrown.
      * @param packageName of the calling package.
+     * @param isEventFilterExplicit Indicates if the client explicitly supplied the display events
+     *                              to be subscribed to.
+     */
+    public void registerDisplayListener(@NonNull DisplayListener listener,
+            @Nullable Handler handler, @InternalEventFlag long internalEventFlagsMask,
+            String packageName, boolean isEventFilterExplicit) {
+        Looper looper = getLooperForHandler(handler);
+        Handler springBoard = new Handler(looper);
+        registerDisplayListener(listener, new HandlerExecutor(springBoard), internalEventFlagsMask,
+                packageName, isEventFilterExplicit);
+    }
+
+    /**
+     * Register a listener for display-related changes.
+     *
+     * @param listener The listener that will be called when display changes occur.
+     * @param handler Handler for the thread that will be receiving the callbacks. May be null.
+     * If null, listener will use the handler for the current thread, and if still null,
+     * the handler for the main thread.
+     * If that is still null, a runtime exception will be thrown.
+     * @param internalEventFlagsMask Mask of events to be listened to.
+     * @param packageName of the calling package.
      */
     public void registerDisplayListener(@NonNull DisplayListener listener,
             @Nullable Handler handler, @InternalEventFlag long internalEventFlagsMask,
             String packageName) {
-        Looper looper = getLooperForHandler(handler);
-        Handler springBoard = new Handler(looper);
-        registerDisplayListener(listener, new HandlerExecutor(springBoard), internalEventFlagsMask,
-                packageName);
+        registerDisplayListener(listener, handler, internalEventFlagsMask, packageName, true);
     }
+
 
     /**
      * Register a listener for display-related changes.
@@ -407,10 +430,12 @@ public final class DisplayManagerGlobal {
      * @param executor Executor for the thread that will be receiving the callbacks. Cannot be null.
      * @param internalEventFlagsMask Mask of events to be listened to.
      * @param packageName of the calling package.
+     * @param isEventFilterExplicit Indicates if the explicit events to be subscribed to
+     *                                     were supplied or not
      */
     public void registerDisplayListener(@NonNull DisplayListener listener,
             @NonNull Executor executor, @InternalEventFlag long internalEventFlagsMask,
-            String packageName) {
+            String packageName, boolean isEventFilterExplicit) {
         if (listener == null) {
             throw new IllegalArgumentException("listener must not be null");
         }
@@ -429,13 +454,29 @@ public final class DisplayManagerGlobal {
             int index = findDisplayListenerLocked(listener);
             if (index < 0) {
                 mDisplayListeners.add(new DisplayListenerDelegate(listener, executor,
-                        internalEventFlagsMask, packageName));
+                        internalEventFlagsMask, packageName, isEventFilterExplicit));
                 registerCallbackIfNeededLocked();
             } else {
                 mDisplayListeners.get(index).setEventsMask(internalEventFlagsMask);
             }
             updateCallbackIfNeededLocked();
             maybeLogAllDisplayListeners();
+        }
+    }
+
+
+    /**
+     * Registers all the clients to INTERNAL_EVENT_FLAG_DISPLAY_REFRESH_RATE events if qualified
+     */
+    public void registerForRefreshRateChanges() {
+        if (!Flags.delayImplicitRrRegistrationUntilRrAccessed()) {
+            return;
+        }
+        synchronized (mLock) {
+            if (!mShouldImplicitlyRegisterRrChanges) {
+                mShouldImplicitlyRegisterRrChanges = true;
+                updateCallbackIfNeededLocked();
+            }
         }
     }
 
@@ -521,8 +562,14 @@ public final class DisplayManagerGlobal {
         long mask = 0;
         final int numListeners = mDisplayListeners.size();
         for (int i = 0; i < numListeners; i++) {
-            mask |= mDisplayListeners.get(i).mInternalEventFlagsMask;
+            DisplayListenerDelegate displayListenerDelegate = mDisplayListeners.get(i);
+            if (!Flags.delayImplicitRrRegistrationUntilRrAccessed()
+                    || mShouldImplicitlyRegisterRrChanges) {
+                displayListenerDelegate.implicitlyRegisterForRRChanges();
+            }
+            mask |= displayListenerDelegate.mInternalEventFlagsMask;
         }
+
         if (mDispatchNativeCallbacks) {
             mask |= INTERNAL_EVENT_FLAG_DISPLAY_ADDED
                     | INTERNAL_EVENT_FLAG_DISPLAY_BASIC_CHANGED
@@ -798,6 +845,18 @@ public final class DisplayManagerGlobal {
             return mDm.getUserDisabledHdrTypes();
         } catch (RemoteException ex) {
             throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Resets the implicit registration of refresh rate change callbacks
+     *
+     */
+    public void resetImplicitRefreshRateCallbackStatus() {
+        if (Flags.delayImplicitRrRegistrationUntilRrAccessed()) {
+            synchronized (mLock) {
+                mShouldImplicitlyRegisterRrChanges = false;
+            }
         }
     }
 
@@ -1439,9 +1498,13 @@ public final class DisplayManagerGlobal {
         }
     }
 
-    private static final class DisplayListenerDelegate {
+    @VisibleForTesting
+    static final class DisplayListenerDelegate {
         public final DisplayListener mListener;
         public volatile long mInternalEventFlagsMask;
+
+        // Indicates if the client explicitly supplied the display events to be subscribed to.
+        private final boolean mIsEventFilterExplicit;
 
         private final DisplayInfo mDisplayInfo = new DisplayInfo();
         private final Executor mExecutor;
@@ -1449,11 +1512,13 @@ public final class DisplayManagerGlobal {
         private final String mPackageName;
 
         DisplayListenerDelegate(DisplayListener listener, @NonNull Executor executor,
-                @InternalEventFlag long internalEventFlag, String packageName) {
+                @InternalEventFlag long internalEventFlag, String packageName,
+                boolean isEventFilterExplicit) {
             mExecutor = executor;
             mListener = listener;
             mInternalEventFlagsMask = internalEventFlag;
             mPackageName = packageName;
+            mIsEventFilterExplicit = isEventFilterExplicit;
         }
 
         void sendDisplayEvent(int displayId, @DisplayEvent int event, @Nullable DisplayInfo info,
@@ -1470,12 +1535,28 @@ public final class DisplayManagerGlobal {
             });
         }
 
+        @VisibleForTesting
+        boolean isEventFilterExplicit() {
+            return mIsEventFilterExplicit;
+        }
+
         void clearEvents() {
             mGenerationId.incrementAndGet();
         }
 
         void setEventsMask(@InternalEventFlag long newInternalEventFlagsMask) {
             mInternalEventFlagsMask = newInternalEventFlagsMask;
+        }
+
+        private void implicitlyRegisterForRRChanges() {
+            // For backward compatibility, if the user didn't supply the explicit events while
+            // subscribing, register them to refresh rate change events if they subscribed to
+            // display changed events
+            if ((mInternalEventFlagsMask & INTERNAL_EVENT_FLAG_DISPLAY_BASIC_CHANGED) != 0
+                    && !mIsEventFilterExplicit) {
+                setEventsMask(mInternalEventFlagsMask
+                        | INTERNAL_EVENT_FLAG_DISPLAY_REFRESH_RATE);
+            }
         }
 
         private void handleDisplayEventInner(int displayId, @DisplayEvent int event,
@@ -1677,6 +1758,9 @@ public final class DisplayManagerGlobal {
     public void registerNativeChoreographerForRefreshRateCallbacks() {
         synchronized (mLock) {
             mDispatchNativeCallbacks = true;
+            if (Flags.delayImplicitRrRegistrationUntilRrAccessed()) {
+                mShouldImplicitlyRegisterRrChanges = true;
+            }
             registerCallbackIfNeededLocked();
             updateCallbackIfNeededLocked();
             DisplayInfo display = getDisplayInfoLocked(Display.DEFAULT_DISPLAY);
@@ -1805,5 +1889,10 @@ public final class DisplayManagerGlobal {
         }
 
         return baseEventMask;
+    }
+
+    @VisibleForTesting
+    CopyOnWriteArrayList<DisplayListenerDelegate> getDisplayListeners() {
+        return mDisplayListeners;
     }
 }

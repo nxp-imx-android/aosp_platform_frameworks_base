@@ -16,6 +16,7 @@
 
 package com.android.server.power.stats.processor;
 
+import android.annotation.CheckResult;
 import android.annotation.Nullable;
 import android.util.Slog;
 
@@ -342,10 +343,12 @@ class MultiStateStats {
     }
 
     /**
-     * Returns accumulated stats for the specified composite state.
+     * Returns accumulated stats for the specified composite state or false if the results are
+     * all zeros.
      */
-    void getStats(long[] outValues, int[] states) {
-        mCounter.getCounts(outValues, mFactory.getSerialState(states));
+    @CheckResult
+    boolean getStats(long[] outValues, int[] states) {
+        return mCounter.getCounts(outValues, mFactory.getSerialState(states));
     }
 
     /**
@@ -389,15 +392,7 @@ class MultiStateStats {
 
     private void writeXmlForStates(TypedXmlSerializer serializer, int[] states, long[] values)
             throws IOException {
-        mCounter.getCounts(values, mFactory.getSerialState(states));
-        boolean nonZero = false;
-        for (long value : values) {
-            if (value != 0) {
-                nonZero = true;
-                break;
-            }
-        }
-        if (!nonZero) {
+        if (!mCounter.getCounts(values, mFactory.getSerialState(states))) {
             return;
         }
 
@@ -470,15 +465,7 @@ class MultiStateStats {
         StringBuilder sb = new StringBuilder();
         long[] values = new long[mCounter.getArrayLength()];
         States.forEachTrackedStateCombination(mFactory.mStates, states -> {
-            mCounter.getCounts(values, mFactory.getSerialState(states));
-            boolean nonZero = false;
-            for (long value : values) {
-                if (value != 0) {
-                    nonZero = true;
-                    break;
-                }
-            }
-            if (!nonZero) {
+            if (!mCounter.getCounts(values, mFactory.getSerialState(states))) {
                 return;
             }
 

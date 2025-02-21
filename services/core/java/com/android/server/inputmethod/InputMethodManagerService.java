@@ -3485,7 +3485,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                         || (windowPerceptible != null && windowPerceptible == perceptible)) {
                     return;
                 }
-                mFocusedWindowPerceptible.put(windowToken, windowPerceptible);
+                mFocusedWindowPerceptible.put(windowToken, perceptible);
                 updateSystemUiLocked(userId);
             }
         });

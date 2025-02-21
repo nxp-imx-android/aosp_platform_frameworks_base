@@ -30,8 +30,6 @@ import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowInsets.Type.systemOverlays;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
-import static android.view.WindowManager.TRANSIT_CLOSE;
-import static android.view.WindowManager.TRANSIT_OLD_TASK_CLOSE;
 import static android.window.DisplayAreaOrganizer.FEATURE_DEFAULT_TASK_CONTAINER;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.any;
@@ -1121,7 +1119,6 @@ public class WindowContainerTests extends WindowTestsBase {
         final ActivityRecord activity = createActivityRecord(mDisplayContent, task);
         final WindowState win = newWindowBuilder("win", TYPE_BASE_APPLICATION).setWindowToken(
                 activity).build();
-        task.getDisplayContent().prepareAppTransition(TRANSIT_CLOSE);
         spyOn(win);
         doReturn(true).when(task).okToAnimate();
         ArrayList<WindowContainer> sources = new ArrayList<>();
@@ -1130,8 +1127,6 @@ public class WindowContainerTests extends WindowTestsBase {
         // Simulate the task applying the exit transition, verify the main window of the task
         // will be set the frozen insets state before the animation starts
         activity.setVisibility(false);
-        task.applyAnimation(null, TRANSIT_OLD_TASK_CLOSE, false /* enter */,
-                false /* isVoiceInteraction */, sources);
         verify(win).freezeInsetsState();
 
         // Simulate the task transition finished.

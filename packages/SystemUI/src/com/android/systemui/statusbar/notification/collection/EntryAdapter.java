@@ -16,9 +16,12 @@
 
 package com.android.systemui.statusbar.notification.collection;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.systemui.statusbar.notification.icon.IconPack;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 
 /**
@@ -59,9 +62,49 @@ public interface EntryAdapter {
     EntryAdapter getGroupRoot();
 
     /**
+     * @return whether the row can be removed with the 'Clear All' action
+     */
+    boolean isClearable();
+
+    /**
      * Returns whether the entry is attached to the current shade list
      */
     default boolean isAttached() {
         return getParent() != null;
     }
+
+    /**
+     * Returns the target sdk of the package that owns this entry.
+     */
+    int getTargetSdk();
+
+    /**
+     * Returns the summarization for this entry, if there is one
+     */
+    @Nullable String getSummarization();
+
+    /**
+     * Performs any steps needed to set or reset data before an inflation or reinflation.
+     */
+    default void prepareForInflation() {}
+
+    /**
+     * Gets a color that would have sufficient contrast on the given background color.
+     */
+    int getContrastedColor(Context context, boolean isLowPriority, int backgroundColor);
+
+    /**
+     * Whether this entry can peek on screen as a heads up view
+     */
+    boolean canPeek();
+
+    /**
+     * Returns the visible 'time', in milliseconds, of the entry
+     */
+    long getWhen();
+
+    /**
+     * Retrieves the pack of icons associated with this entry
+     */
+    IconPack getIcons();
 }
