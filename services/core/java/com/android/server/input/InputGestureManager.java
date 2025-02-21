@@ -87,20 +87,7 @@ final class InputGestureManager {
             createKeyTrigger(KeyEvent.KEYCODE_V, KeyEvent.META_CTRL_ON),
             createKeyTrigger(KeyEvent.KEYCODE_X, KeyEvent.META_CTRL_ON),
             createKeyTrigger(KeyEvent.KEYCODE_Z, KeyEvent.META_CTRL_ON),
-            createKeyTrigger(KeyEvent.KEYCODE_Y, KeyEvent.META_CTRL_ON),
-            // Used for magnification viewport control.
-            createKeyTrigger(KeyEvent.KEYCODE_MINUS,
-                    KeyEvent.META_META_ON | KeyEvent.META_ALT_ON),
-            createKeyTrigger(KeyEvent.KEYCODE_EQUALS,
-                    KeyEvent.META_META_ON | KeyEvent.META_ALT_ON),
-            createKeyTrigger(KeyEvent.KEYCODE_DPAD_LEFT,
-                    KeyEvent.META_META_ON | KeyEvent.META_ALT_ON),
-            createKeyTrigger(KeyEvent.KEYCODE_DPAD_RIGHT,
-                    KeyEvent.META_META_ON | KeyEvent.META_ALT_ON),
-            createKeyTrigger(KeyEvent.KEYCODE_DPAD_UP,
-                    KeyEvent.META_META_ON | KeyEvent.META_ALT_ON),
-            createKeyTrigger(KeyEvent.KEYCODE_DPAD_DOWN,
-                    KeyEvent.META_META_ON | KeyEvent.META_ALT_ON)
+            createKeyTrigger(KeyEvent.KEYCODE_Y, KeyEvent.META_CTRL_ON)
     ));
 
     public InputGestureManager(Context context) {
