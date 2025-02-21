@@ -403,9 +403,11 @@ constructor(
                     debugRunnableLabelMap.remove(r)
                 }
             }
-            val dropList = listToDrop.joinToString("\n ") { getKey(it) }
-            headsUpManagerLogger.logDroppedHuns(dropList)
         }
+
+        val dropListStr = listToDrop.joinToString("\n ") { getKey(it) }
+        headsUpManagerLogger.logDroppedHuns(dropListStr)
+
         clearNext()
         showNow(headsUpEntryShowing!!, headsUpEntryShowingRunnableList)
     }
