@@ -36,6 +36,7 @@ import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
@@ -44,7 +45,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import androidx.core.widget.CompoundButtonCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.media.flags.Flags;
@@ -139,7 +139,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
         final ImageView mStatusIcon;
         final CheckBox mCheckBox;
         final ViewGroup mEndTouchArea;
-        final ImageView mEndClickIcon;
+        final ImageButton mEndClickIcon;
         @VisibleForTesting
         MediaOutputSeekbar mSeekBar;
         private final float mInactiveRadius;
@@ -162,7 +162,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             mStatusIcon = view.requireViewById(R.id.media_output_item_status);
             mCheckBox = view.requireViewById(R.id.check_box);
             mEndTouchArea = view.requireViewById(R.id.end_action_area);
-            mEndClickIcon = view.requireViewById(R.id.media_output_item_end_click_icon);
+            mEndClickIcon = view.requireViewById(R.id.end_area_image_button);
             mVolumeValueText = view.requireViewById(R.id.volume_value);
             mIconAreaLayout = view.requireViewById(R.id.icon_area);
             mInactiveRadius = mContext.getResources().getDimension(
@@ -180,7 +180,6 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             mStatusIcon.setVisibility(View.GONE);
             mEndTouchArea.setVisibility(View.GONE);
             mEndClickIcon.setVisibility(View.GONE);
-            mEndTouchArea.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
             mContainerLayout.setOnClickListener(null);
             mTitleText.setTextColor(mController.getColorItemContent());
             mSubTitleText.setTextColor(mController.getColorItemContent());
@@ -581,26 +580,22 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             mEndClickIcon.setImageTintList(
                     ColorStateList.valueOf(mController.getColorItemContent()));
             mEndClickIcon.setOnClickListener(clickListener);
-            mEndTouchArea.setOnClickListener(v -> mEndClickIcon.performClick());
             Drawable drawable = mContext.getDrawable(iconDrawableId);
             mEndClickIcon.setImageDrawable(drawable);
             if (drawable instanceof AnimatedVectorDrawable) {
                 ((AnimatedVectorDrawable) drawable).start();
             }
-            if (Flags.enableOutputSwitcherDeviceGrouping()) {
-                mEndClickIcon.setContentDescription(mContext.getString(accessibilityStringId));
-            }
+            mEndClickIcon.setContentDescription(mContext.getString(accessibilityStringId));
         }
 
         private void updateEndAreaForGroupCheckBox(@NonNull MediaDevice device,
                 @NonNull GroupStatus groupStatus) {
             boolean isEnabled = isGroupCheckboxEnabled(groupStatus);
-            mEndTouchArea.setOnClickListener(
-                    isEnabled ? (v) -> mCheckBox.performClick() : null);
-            mEndTouchArea.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
             updateEndAreaColor(groupStatus.selected() ? mController.getColorSeekbarProgress()
                     : mController.getColorItemBackground());
-            mEndTouchArea.setContentDescription(getDeviceItemContentDescription(device));
+            mCheckBox.setContentDescription(mContext.getString(
+                    groupStatus.selected() ? R.string.accessibility_remove_device_from_group
+                            : R.string.accessibility_add_device_to_group));
             mCheckBox.setOnCheckedChangeListener(null);
             mCheckBox.setChecked(groupStatus.selected());
             mCheckBox.setOnCheckedChangeListener(
@@ -611,10 +606,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
         }
 
         private void setCheckBoxColor(CheckBox checkBox, int color) {
-            int[][] states = {{android.R.attr.state_checked}, {}};
-            int[] colors = {color, color};
-            CompoundButtonCompat.setButtonTintList(checkBox, new
-                    ColorStateList(states, colors));
+            checkBox.setForegroundTintList(ColorStateList.valueOf(color));
         }
 
         private boolean shouldShowGroupCheckbox(@NonNull GroupStatus groupStatus) {
