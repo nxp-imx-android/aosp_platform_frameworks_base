@@ -387,7 +387,7 @@ public class DesktopModeStatus {
      * screen.
      */
     public static boolean shouldMaximizeWhenDragToTopEdge(@NonNull Context context) {
-        if (!Flags.enableDragToMaximize()) {
+        if (!DesktopExperienceFlags.ENABLE_DRAG_TO_MAXIMIZE.isTrue()) {
             return false;
         }
         return SystemProperties.getBoolean(ENABLE_DRAG_TO_MAXIMIZE_SYS_PROP,
