@@ -18,7 +18,7 @@ package com.android.systemui.statusbar.notification.collection.coordinator
 import android.util.ArraySet
 import com.android.systemui.Dumpable
 import com.android.systemui.dump.DumpManager
-import com.android.systemui.statusbar.notification.collection.ListEntry
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
@@ -113,7 +113,7 @@ class GutsCoordinator @Inject constructor(
         }
     }
 
-    private fun isCurrentlyShowingGuts(entry: ListEntry) =
+    private fun isCurrentlyShowingGuts(entry: PipelineEntry) =
             notifsWithOpenGuts.contains(entry.key)
 
     private fun closeGutsAndEndLifetimeExtension(entry: NotificationEntry) {

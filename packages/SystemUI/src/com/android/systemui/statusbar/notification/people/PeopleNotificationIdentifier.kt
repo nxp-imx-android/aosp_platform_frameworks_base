@@ -20,6 +20,7 @@ import android.annotation.IntDef
 import android.service.notification.NotificationListenerService.Ranking
 import android.service.notification.StatusBarNotification
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.PeopleNotificationType
@@ -117,8 +118,8 @@ class PeopleNotificationIdentifierImpl @Inject constructor(
             if (!entry.sbn.notification.isGroupSummary) {
                 return TYPE_NON_PERSON;
             }
-
-            return getPeopleTypeForChildList(entry.parent?.children)
+            val parent = entry.parent as? GroupEntry ?: return TYPE_NON_PERSON
+            return getPeopleTypeForChildList(parent.children)
         } else {
             if (!groupManager.isGroupSummary(entry)) {
                 return TYPE_NON_PERSON

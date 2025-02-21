@@ -22,6 +22,7 @@ import android.annotation.Nullable;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.ListEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 
 import java.util.List;
 
@@ -78,5 +79,5 @@ public interface GroupMembershipManager {
      * @return list of the children
      */
     @Nullable
-    List<NotificationEntry> getChildren(@NonNull ListEntry summary);
+    List<NotificationEntry> getChildren(@NonNull PipelineEntry summary);
 }

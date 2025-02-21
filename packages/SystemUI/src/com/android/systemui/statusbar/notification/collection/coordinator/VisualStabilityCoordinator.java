@@ -39,7 +39,7 @@ import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.statusbar.notification.VisibilityLocationProvider;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
-import com.android.systemui.statusbar.notification.collection.ListEntry;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener;
@@ -253,21 +253,20 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                         return false;
                     }
 
-                    final GroupEntry parent = entry.getParent();
+                    final PipelineEntry parent = entry.getParent();
 
                     if (parent == null) {
                         return false;
                     }
-
                     return isHeadsUpGroup(parent);
                 }
 
-                private boolean isHeadsUpGroup(GroupEntry groupEntry) {
-                    if (StabilizeHeadsUpGroup.isUnexpectedlyInLegacyMode()) {
+                private boolean isHeadsUpGroup(PipelineEntry pipelineEntry) {
+                    if (!(pipelineEntry instanceof GroupEntry groupEntry)) {
                         return false;
                     }
 
-                    if (groupEntry == null) {
+                    if (StabilizeHeadsUpGroup.isUnexpectedlyInLegacyMode()) {
                         return false;
                     }
 
@@ -370,7 +369,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                 }
 
                 @Override
-                public boolean isEntryReorderingAllowed(@NonNull ListEntry entry) {
+                public boolean isEntryReorderingAllowed(@NonNull PipelineEntry entry) {
                     if (StabilizeHeadsUpGroup.isEnabled()) {
                         if (isEveryChangeAllowed()) {
                             return true;
@@ -403,7 +402,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
     private final OnBeforeRenderListListener mOnBeforeRenderListListener =
             new OnBeforeRenderListListener() {
                 @Override
-                public void onBeforeRenderList(List<ListEntry> entries) {
+                public void onBeforeRenderList(List<PipelineEntry> entries) {
                     if (StabilizeHeadsUpGroup.isUnexpectedlyInLegacyMode()) {
                         return;
                     }

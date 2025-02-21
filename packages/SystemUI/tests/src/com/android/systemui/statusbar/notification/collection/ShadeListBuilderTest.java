@@ -130,7 +130,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     private CollectionReadyForBuildListener mReadyForBuildListener;
     private List<NotificationEntryBuilder> mPendingSet = new ArrayList<>();
     private List<NotificationEntry> mEntrySet = new ArrayList<>();
-    private List<ListEntry> mBuiltList = new ArrayList<>();
+    private List<PipelineEntry> mBuiltList = new ArrayList<>();
     private TestableStabilityManager mStabilityManager;
     private TestableNotifFilter mFinalizeFilter;
 
@@ -723,26 +723,26 @@ public class ShadeListBuilderTest extends SysuiTestCase {
 
     @Test
     public void testNotifSectionsChildrenUpdated() {
-        ArrayList<ListEntry> pkg1Entries = new ArrayList<>();
-        ArrayList<ListEntry> pkg2Entries = new ArrayList<>();
-        ArrayList<ListEntry> pkg3Entries = new ArrayList<>();
+        ArrayList<PipelineEntry> pkg1Entries = new ArrayList<>();
+        ArrayList<PipelineEntry> pkg2Entries = new ArrayList<>();
+        ArrayList<PipelineEntry> pkg3Entries = new ArrayList<>();
         final NotifSectioner pkg1Sectioner = spy(new PackageSectioner(PACKAGE_1) {
             @Override
-            public void onEntriesUpdated(List<ListEntry> entries) {
+            public void onEntriesUpdated(List<PipelineEntry> entries) {
                 super.onEntriesUpdated(entries);
                 pkg1Entries.addAll(entries);
             }
         });
         final NotifSectioner pkg2Sectioner = spy(new PackageSectioner(PACKAGE_2) {
             @Override
-            public void onEntriesUpdated(List<ListEntry> entries) {
+            public void onEntriesUpdated(List<PipelineEntry> entries) {
                 super.onEntriesUpdated(entries);
                 pkg2Entries.addAll(entries);
             }
         });
         final NotifSectioner pkg3Sectioner = spy(new PackageSectioner(PACKAGE_3) {
             @Override
-            public void onEntriesUpdated(List<ListEntry> entries) {
+            public void onEntriesUpdated(List<PipelineEntry> entries) {
                 super.onEntriesUpdated(entries);
                 pkg3Entries.addAll(entries);
             }
@@ -2478,7 +2478,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
                     mBuiltList.size());
 
             for (int i = 0; i < expectedEntries.length; i++) {
-                ListEntry outEntry = mBuiltList.get(i);
+                PipelineEntry outEntry = mBuiltList.get(i);
                 ExpectedEntry expectedEntry = expectedEntries[i];
 
                 if (expectedEntry instanceof ExpectedNotif) {
@@ -2653,7 +2653,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         }
 
         @Override
-        public int compare(@NonNull ListEntry o1, @NonNull ListEntry o2) {
+        public int compare(@NonNull PipelineEntry o1, @NonNull PipelineEntry o2) {
             boolean contains1 = mPreferredPackages.contains(
                     o1.getRepresentativeEntry().getSbn().getPackageName());
             boolean contains2 = mPreferredPackages.contains(
@@ -2691,37 +2691,37 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         }
 
         @Override
-        public boolean isInSection(ListEntry entry) {
+        public boolean isInSection(PipelineEntry entry) {
             return mPackages.contains(entry.getRepresentativeEntry().getSbn().getPackageName());
         }
     }
 
     private static class RecordingOnBeforeTransformGroupsListener
             implements OnBeforeTransformGroupsListener {
-        List<ListEntry> mEntriesReceived;
+        List<PipelineEntry> mEntriesReceived;
 
         @Override
-        public void onBeforeTransformGroups(List<ListEntry> list) {
+        public void onBeforeTransformGroups(List<PipelineEntry> list) {
             mEntriesReceived = new ArrayList<>(list);
         }
     }
 
     private static class RecordingOnBeforeSortListener
             implements OnBeforeSortListener {
-        List<ListEntry> mEntriesReceived;
+        List<PipelineEntry> mEntriesReceived;
 
         @Override
-        public void onBeforeSort(List<ListEntry> list) {
+        public void onBeforeSort(List<PipelineEntry> list) {
             mEntriesReceived = new ArrayList<>(list);
         }
     }
 
     private static class RecordingOnBeforeRenderListener
             implements OnBeforeRenderListListener {
-        List<ListEntry> mEntriesReceived;
+        List<PipelineEntry> mEntriesReceived;
 
         @Override
-        public void onBeforeRenderList(List<ListEntry> list) {
+        public void onBeforeRenderList(List<PipelineEntry> list) {
             mEntriesReceived = new ArrayList<>(list);
         }
     }
@@ -2800,7 +2800,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         }
 
         @Override
-        public boolean isEntryReorderingAllowed(@NonNull ListEntry entry) {
+        public boolean isEntryReorderingAllowed(@NonNull PipelineEntry entry) {
             return mAllowEntryReodering;
         }
 

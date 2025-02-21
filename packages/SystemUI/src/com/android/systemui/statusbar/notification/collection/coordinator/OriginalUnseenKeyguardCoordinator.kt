@@ -30,6 +30,7 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.expansionChanges
+import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
@@ -313,7 +314,7 @@ constructor(
                     unseenNotifications.contains(entry) -> false
                     // Don't apply the filter to (non-promoted) group summaries
                     //  - summary will be pruned if necessary, depending on if children are filtered
-                    entry.parent?.summary == entry -> false
+                    (entry.parent as? GroupEntry)?.summary == entry -> false
                     // Check that the entry satisfies certain characteristics that would bypass the
                     // filter
                     shouldIgnoreUnseenCheck(entry) -> false

@@ -2182,7 +2182,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                     R.dimen.notification_min_height);
         }
         mMaxSmallHeightWithSummarization = NotificationUtils.getFontScaledHeight(mContext,
-                com.android.internal.R.dimen.notification_collapsed_height_with_summarization);
+                com.android.internal.R.dimen.notification_min_height);
         mMaxExpandedHeight = NotificationUtils.getFontScaledHeight(mContext,
                 R.dimen.notification_max_height);
         mMaxExpandedHeightForPromotedOngoing = NotificationUtils.getFontScaledHeight(mContext,

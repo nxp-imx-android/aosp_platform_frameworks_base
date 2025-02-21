@@ -18,7 +18,7 @@ package com.android.systemui.statusbar.notification.collection.listbuilder;
 
 import androidx.annotation.NonNull;
 
-import com.android.systemui.statusbar.notification.collection.ListEntry;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 
 import java.util.List;
@@ -31,5 +31,5 @@ public interface OnAfterRenderListListener {
      * @param entries The current list of top-level entries. Note that this is a live view into the
      * current list and will change whenever the pipeline is rerun.
      */
-    void onAfterRenderList(@NonNull List<ListEntry> entries);
+    void onAfterRenderList(@NonNull List<PipelineEntry> entries);
 }

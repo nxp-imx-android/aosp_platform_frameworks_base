@@ -22,7 +22,7 @@ import com.android.app.tracing.traceSection
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.NotificationSectionsFeatureManager
 import com.android.systemui.statusbar.notification.collection.GroupEntry
-import com.android.systemui.statusbar.notification.collection.ListEntry
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineDumpable
 import com.android.systemui.statusbar.notification.collection.PipelineDumper
@@ -76,7 +76,7 @@ constructor(
     private val viewRenderer =
         object : NotifViewRenderer {
 
-            override fun onRenderList(notifList: List<ListEntry>) {
+            override fun onRenderList(notifList: List<PipelineEntry>) {
                 traceSection("ShadeViewManager.onRenderList") {
                     viewDiffer.applySpec(specBuilder.buildNodeSpec(rootController, notifList))
                 }

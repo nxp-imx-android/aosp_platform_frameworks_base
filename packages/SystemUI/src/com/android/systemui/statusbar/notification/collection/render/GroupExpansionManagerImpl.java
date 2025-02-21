@@ -25,7 +25,7 @@ import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
-import com.android.systemui.statusbar.notification.collection.ListEntry;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener;
@@ -81,7 +81,7 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
         }
 
         final Set<NotificationEntry> renderingSummaries = new HashSet<>();
-        for (ListEntry entry : entries) {
+        for (PipelineEntry entry : entries) {
             if (entry instanceof GroupEntry) {
                 renderingSummaries.add(entry.getRepresentativeEntry());
             }

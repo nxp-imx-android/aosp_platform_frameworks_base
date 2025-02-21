@@ -19,7 +19,7 @@ package com.android.systemui.statusbar.notification.collection.coordinator
 import com.android.app.tracing.traceSection
 import com.android.server.notification.Flags.screenshareNotificationHiding
 import com.android.systemui.Flags.screenshareNotificationHidingBugFix
-import com.android.systemui.statusbar.notification.collection.ListEntry
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManagerImpl
@@ -50,14 +50,14 @@ internal constructor(
         groupExpansionManagerImpl.attach(pipeline)
     }
 
-    private fun onAfterRenderList(entries: List<ListEntry>) =
+    private fun onAfterRenderList(entries: List<PipelineEntry>) =
         traceSection("StackCoordinator.onAfterRenderList") {
             val notifStats = calculateNotifStats(entries)
             activeNotificationsInteractor.setNotifStats(notifStats)
             renderListInteractor.setRenderedList(entries)
         }
 
-    private fun calculateNotifStats(entries: List<ListEntry>): NotifStats {
+    private fun calculateNotifStats(entries: List<PipelineEntry>): NotifStats {
         var hasNonClearableAlertingNotifs = false
         var hasClearableAlertingNotifs = false
         var hasNonClearableSilentNotifs = false

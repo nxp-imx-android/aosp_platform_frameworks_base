@@ -27,6 +27,7 @@ import com.android.systemui.log.core.LogLevel.ERROR
 import com.android.systemui.log.core.LogLevel.INFO
 import com.android.systemui.log.core.LogLevel.WARNING
 import com.android.systemui.log.core.LogLevel.WTF
+import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.NotifCollection
 import com.android.systemui.statusbar.notification.collection.NotifCollection.CancellationReason
 import com.android.systemui.statusbar.notification.collection.NotifCollection.FutureDismissal
@@ -421,6 +422,14 @@ class NotifCollectionLogger @Inject constructor(
         })
     }
 
+    private fun getParentLogKey(childEntry: NotificationEntry): String {
+        return if (childEntry.parent is GroupEntry) {
+            (childEntry.parent as? GroupEntry)?.summary?.logKey ?: "(null)"
+        } else {
+            "(null)"
+        }
+    }
+
     fun logDismissAlreadyParentDismissedNotif(
             childEntry: NotificationEntry,
             childIndex: Int,
@@ -430,7 +439,7 @@ class NotifCollectionLogger @Inject constructor(
             str1 = childEntry.logKey
             int1 = childIndex
             int2 = childCount
-            str2 = childEntry.parent?.summary?.logKey ?: "(null)"
+            str2 = getParentLogKey(childEntry)
         }, {
             "DISMISS Already Parent-Dismissed $str1 ($int1/$int2) with summary $str2"
         })
