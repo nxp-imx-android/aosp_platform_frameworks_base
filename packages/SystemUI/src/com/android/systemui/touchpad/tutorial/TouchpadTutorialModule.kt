@@ -133,14 +133,14 @@ private class ScreensProvider(
     override fun BackGesture(
         onDoneButtonClicked: () -> Unit,
         onBack: () -> Unit,
-        isAutoProceed: Boolean,
+        onAutoProceed: (suspend () -> Unit)?,
     ) {
         BackGestureTutorialScreen(
             backGestureScreenViewModel,
             easterEggGestureViewModel,
             onDoneButtonClicked,
             onBack,
-            isAutoProceed,
+            onAutoProceed,
         )
     }
 
@@ -148,14 +148,14 @@ private class ScreensProvider(
     override fun HomeGesture(
         onDoneButtonClicked: () -> Unit,
         onBack: () -> Unit,
-        isAutoProceed: Boolean,
+        onAutoProceed: (suspend () -> Unit)?,
     ) {
         HomeGestureTutorialScreen(
             homeGestureScreenViewModel,
             easterEggGestureViewModel,
             onDoneButtonClicked,
             onBack,
-            isAutoProceed,
+            onAutoProceed,
         )
     }
 }

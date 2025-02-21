@@ -108,6 +108,7 @@ fun ActionTutorialContent(
     actionState: TutorialActionState,
     onDoneButtonClicked: () -> Unit,
     config: TutorialScreenConfig,
+    onAutoProceed: (suspend () -> Unit)? = null,
 ) {
     Column(
         verticalArrangement = Arrangement.Center,
@@ -137,8 +138,11 @@ fun ActionTutorialContent(
             onDoneButtonClicked = onDoneButtonClicked,
             modifier = Modifier.padding(horizontal = 60.dp).graphicsLayer { alpha = buttonAlpha },
             enabled = actionState is Finished,
-            isNext = config.hasNextButton,
+            isNext = onAutoProceed != null,
         )
+    }
+    if (actionState is Finished) {
+        LaunchedEffect(Unit) { onAutoProceed?.invoke() }
     }
 }
 

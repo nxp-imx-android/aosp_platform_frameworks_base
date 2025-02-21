@@ -49,6 +49,7 @@ fun GestureTutorialScreen(
     onEasterEggFinished: () -> Unit,
     onDoneButtonClicked: () -> Unit,
     onBack: () -> Unit,
+    onAutoProceed: (suspend () -> Unit)? = null,
 ) {
     BackHandler(onBack = onBack)
     var cachedTutorialState: TutorialActionState by
@@ -64,7 +65,7 @@ fun GestureTutorialScreen(
         easterEggTriggered,
         onEasterEggFinished,
     ) {
-        ActionTutorialContent(tutorialState, onDoneButtonClicked, screenConfig)
+        ActionTutorialContent(tutorialState, onDoneButtonClicked, screenConfig, onAutoProceed)
     }
 }
 
