@@ -22,6 +22,7 @@ import static com.android.internal.R.id.pending_intent_tag;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -1063,6 +1064,22 @@ public class RemoteViewsTest {
         assertEquals(b1Memory, rv.estimateMemoryUsage());
         assertEquals(b2Memory, rv.estimateIconMemoryUsage());
         assertEquals(b1Memory + b2Memory, rv.estimateTotalBitmapMemoryUsage());
+    }
+
+    @Test
+    public void remoteResponse_FillInIntentNestedIntentKeysCollected() {
+        Intent fillInIntent = new Intent();
+        fillInIntent.putExtra("extraIntent", new Intent());
+        RemoteViews.RemoteResponse.fromFillInIntent(fillInIntent);
+        assertNotEquals(0, fillInIntent.getExtendedFlags()
+                & Intent.EXTENDED_FLAG_NESTED_INTENT_KEYS_COLLECTED);
+
+        fillInIntent = new Intent();
+        fillInIntent.putExtra("extraIntent", new Intent());
+        RemoteViews rv = new RemoteViews(mPackage, R.layout.remote_views_test);
+        rv.setOnClickFillInIntent(R.id.view, fillInIntent);
+        assertNotEquals(0, fillInIntent.getExtendedFlags()
+                & Intent.EXTENDED_FLAG_NESTED_INTENT_KEYS_COLLECTED);
     }
 
     private static LayoutInflater.Factory2 createLayoutInflaterFactory(String viewTypeToReplace,
