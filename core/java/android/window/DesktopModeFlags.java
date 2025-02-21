@@ -104,9 +104,12 @@ public enum DesktopModeFlags {
     ENABLE_MODALS_FULLSCREEN_WITH_PERMISSIONS(Flags::enableModalsFullscreenWithPermission, false),
     ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS(
             Flags::enableOpaqueBackgroundForTransparentWindows, false),
+    ENABLE_QUICKSWITCH_DESKTOP_SPLIT_BUGFIX(Flags::enableQuickswitchDesktopSplitBugfix, true),
     ENABLE_RESIZING_METRICS(Flags::enableResizingMetrics, true),
     ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE(
             Flags::enableRestoreToPreviousSizeFromDesktopImmersive, true),
+    ENABLE_START_LAUNCH_TRANSITION_FROM_TASKBAR_BUGFIX(
+            Flags::enableStartLaunchTransitionFromTaskbarBugfix, true),
     ENABLE_TASKBAR_OVERFLOW(Flags::enableTaskbarOverflow, false),
     ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS(Flags::enableTaskResizingKeyboardShortcuts, true),
     ENABLE_TASK_STACK_OBSERVER_IN_SHELL(Flags::enableTaskStackObserverInShell, true),
@@ -120,6 +123,8 @@ public enum DesktopModeFlags {
     ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS(
             Flags::enableWindowingTransitionHandlersObservers, false),
     EXCLUDE_CAPTION_FROM_APP_BOUNDS(Flags::excludeCaptionFromAppBounds, false),
+    IGNORE_ASPECT_RATIO_RESTRICTIONS_FOR_RESIZEABLE_FREEFORM_ACTIVITIES(
+            Flags::ignoreAspectRatioRestrictionsForResizeableFreeformActivities, true),
     INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC(
             Flags::includeTopTransparentFullscreenTaskInDesktopHeuristic, true)
     // go/keep-sorted end
