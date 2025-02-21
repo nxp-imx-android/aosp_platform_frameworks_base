@@ -45,7 +45,7 @@ open class BlurUtils @Inject constructor(
     private val crossWindowBlurListeners: CrossWindowBlurListeners,
     dumpManager: DumpManager
 ) : Dumpable {
-    val minBlurRadius = blurConfig.minBlurRadiusPx
+    val minBlurRadius = resources.getDimensionPixelSize(R.dimen.min_window_blur_radius).toFloat();
     val maxBlurRadius = if (Flags.notificationShadeBlur()) {
         blurConfig.maxBlurRadiusPx
     } else {
