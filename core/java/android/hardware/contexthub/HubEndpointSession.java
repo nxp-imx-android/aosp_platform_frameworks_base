@@ -88,7 +88,6 @@ public class HubEndpointSession implements AutoCloseable {
                                 : ContextHubTransaction.TYPE_HUB_MESSAGE_DEFAULT);
         if (!isResponseRequired) {
             // If the message doesn't require acknowledgement, respond with success immediately
-            // TODO(b/379162322): Improve handling of synchronous failures.
             mHubEndpoint.sendMessage(this, message, null);
             ret.setResponse(
                     new ContextHubTransaction.Response<>(
