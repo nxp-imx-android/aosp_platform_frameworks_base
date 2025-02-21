@@ -34,6 +34,7 @@ import com.android.systemui.qs.tiles.InternetTileNewImpl
 import com.android.systemui.qs.tiles.NfcTile
 import com.android.systemui.qs.tiles.base.interactor.QSTileAvailabilityInteractor
 import com.android.systemui.qs.tiles.base.viewmodel.QSTileViewModelFactory
+import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.impl.airplane.domain.AirplaneModeMapper
 import com.android.systemui.qs.tiles.impl.airplane.domain.interactor.AirplaneModeTileDataInteractor
 import com.android.systemui.qs.tiles.impl.airplane.domain.interactor.AirplaneModeTileUserActionInteractor
@@ -162,13 +163,15 @@ interface ConnectivityModule {
             factory: QSTileViewModelFactory.Static<AirplaneModeTileModel>,
             mapper: AirplaneModeMapper,
             stateInteractor: AirplaneModeTileDataInteractor,
-            userActionInteractor: AirplaneModeTileUserActionInteractor
+            userActionInteractor: AirplaneModeTileUserActionInteractor,
+            internetDetailsViewModelFactory: InternetDetailsViewModel.Factory
         ): QSTileViewModel =
             factory.create(
                 TileSpec.create(AIRPLANE_MODE_TILE_SPEC),
                 userActionInteractor,
                 stateInteractor,
                 mapper,
+                internetDetailsViewModelFactory.create(),
             )
 
         @Provides
@@ -226,13 +229,15 @@ interface ConnectivityModule {
             factory: QSTileViewModelFactory.Static<InternetTileModel>,
             mapper: InternetTileMapper,
             stateInteractor: InternetTileDataInteractor,
-            userActionInteractor: InternetTileUserActionInteractor
+            userActionInteractor: InternetTileUserActionInteractor,
+            internetDetailsViewModelFactory: InternetDetailsViewModel.Factory
         ): QSTileViewModel =
             factory.create(
                 TileSpec.create(INTERNET_TILE_SPEC),
                 userActionInteractor,
                 stateInteractor,
                 mapper,
+                internetDetailsViewModelFactory.create(),
             )
 
         @Provides

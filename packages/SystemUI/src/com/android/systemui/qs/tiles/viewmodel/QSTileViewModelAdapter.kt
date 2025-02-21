@@ -157,7 +157,7 @@ constructor(
     }
 
     override fun getDetailsViewModel(): TileDetailsViewModel? {
-        return qsTileViewModel.detailsViewModel
+        return qsTileViewModel.tileDetailsViewModel
     }
 
     @Deprecated(

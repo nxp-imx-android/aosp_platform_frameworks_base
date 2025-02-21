@@ -39,7 +39,7 @@ interface QSTileViewModel {
     val isAvailable: StateFlow<Boolean>
 
     /** Specifies the [TileDetailsViewModel] for constructing the corresponding details view. */
-    val detailsViewModel: TileDetailsViewModel?
+    val tileDetailsViewModel: TileDetailsViewModel?
         get() = null
 
     /**

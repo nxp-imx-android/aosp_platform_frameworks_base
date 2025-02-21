@@ -25,6 +25,7 @@ import com.android.systemui.classifier.FalsingManagerFake
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.coroutines.collectValues
+import com.android.systemui.qs.FakeTileDetailsViewModel
 import com.android.systemui.qs.tiles.base.analytics.QSTileAnalytics
 import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
 import com.android.systemui.qs.tiles.base.interactor.FakeDisabledByPolicyInteractor
@@ -171,21 +172,6 @@ class QSTileViewModelTest : SysuiTestCase() {
                 .isEqualTo(FakeQSTileDataInteractor.AvailabilityRequest(USER))
         }
 
-    @Test
-    fun tileDetails() =
-        testScope.runTest {
-            assertThat(tileUserActionInteractor.detailsViewModel).isNotNull()
-            assertThat(tileUserActionInteractor.detailsViewModel?.getTitle())
-                .isEqualTo("FakeQSTileUserActionInteractor")
-            assertThat(underTest.detailsViewModel).isNotNull()
-            assertThat(underTest.detailsViewModel?.getTitle())
-                .isEqualTo("FakeQSTileUserActionInteractor")
-
-            tileUserActionInteractor.detailsViewModel = null
-            assertThat(tileUserActionInteractor.detailsViewModel).isNull()
-            assertThat(underTest.detailsViewModel).isNull()
-        }
-
     private fun createViewModel(
         scope: TestScope,
         config: QSTileConfig = tileConfig,
@@ -209,6 +195,7 @@ class QSTileViewModelTest : SysuiTestCase() {
             testCoroutineDispatcher,
             testCoroutineDispatcher,
             scope.backgroundScope,
+            FakeTileDetailsViewModel("QSTileViewModelTest"),
         )
 
     private companion object {

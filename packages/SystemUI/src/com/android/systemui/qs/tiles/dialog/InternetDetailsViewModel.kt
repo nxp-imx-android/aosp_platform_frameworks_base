@@ -16,9 +16,11 @@
 
 package com.android.systemui.qs.tiles.dialog
 
+import android.content.Intent
+import android.provider.Settings
 import com.android.systemui.plugins.qs.TileDetailsViewModel
+import com.android.systemui.qs.tiles.base.actions.QSTileIntentUserInputHandler
 import com.android.systemui.statusbar.connectivity.AccessPointController
-import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
@@ -27,10 +29,13 @@ class InternetDetailsViewModel
 constructor(
     private val accessPointController: AccessPointController,
     val contentManagerFactory: InternetDetailsContentManager.Factory,
-    @Assisted private val onLongClick: () -> Unit,
+    private val qsTileIntentUserActionHandler: QSTileIntentUserInputHandler,
 ) : TileDetailsViewModel() {
     override fun clickOnSettingsButton() {
-        onLongClick()
+        qsTileIntentUserActionHandler.handle(
+            /* expandable= */ null,
+            Intent(Settings.ACTION_WIFI_SETTINGS),
+        )
     }
 
     override fun getTitle(): String {
@@ -58,7 +63,7 @@ constructor(
     }
 
     @AssistedFactory
-    interface Factory {
-        fun create(onLongClick: () -> Unit): InternetDetailsViewModel
+    fun interface Factory {
+        fun create(): InternetDetailsViewModel
     }
 }
