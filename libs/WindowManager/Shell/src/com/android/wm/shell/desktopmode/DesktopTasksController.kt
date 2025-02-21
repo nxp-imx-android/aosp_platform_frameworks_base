@@ -3551,27 +3551,11 @@ class DesktopTasksController(
                     controller,
                     { c ->
                         run {
-                            c.taskRepository.addDeskChangeListener(
-                                deskChangeListener,
-                                c.mainExecutor,
-                            )
-                            c.taskRepository.addVisibleTasksListener(
-                                visibleTasksListener,
-                                c.mainExecutor,
-                            )
-                            c.taskbarDesktopTaskListener = taskbarDesktopTaskListener
-                            c.desktopModeEnterExitTransitionListener =
-                                desktopModeEntryExitTransitionListener
+                            syncInitialState(c)
+                            registerListeners(c)
                         }
                     },
-                    { c ->
-                        run {
-                            c.taskRepository.removeDeskChangeListener(deskChangeListener)
-                            c.taskRepository.removeVisibleTasksListener(visibleTasksListener)
-                            c.taskbarDesktopTaskListener = null
-                            c.desktopModeEnterExitTransitionListener = null
-                        }
-                    },
+                    { c -> run { unregisterListeners(c) } },
                 )
         }
 
@@ -3666,6 +3650,31 @@ class DesktopTasksController(
             executeRemoteCallWithTaskPermission(controller, "startLaunchIntentTransition") { c ->
                 c.startLaunchIntentTransition(intent, options, displayId)
             }
+        }
+
+        private fun syncInitialState(c: DesktopTasksController) {
+            remoteListener.call { l ->
+                // TODO: b/393962589 - implement desks limit.
+                val canCreateDesks = true
+                l.onListenerConnected(
+                    c.taskRepository.getDeskDisplayStateForRemote(),
+                    canCreateDesks,
+                )
+            }
+        }
+
+        private fun registerListeners(c: DesktopTasksController) {
+            c.taskRepository.addDeskChangeListener(deskChangeListener, c.mainExecutor)
+            c.taskRepository.addVisibleTasksListener(visibleTasksListener, c.mainExecutor)
+            c.taskbarDesktopTaskListener = taskbarDesktopTaskListener
+            c.desktopModeEnterExitTransitionListener = desktopModeEntryExitTransitionListener
+        }
+
+        private fun unregisterListeners(c: DesktopTasksController) {
+            c.taskRepository.removeDeskChangeListener(deskChangeListener)
+            c.taskRepository.removeVisibleTasksListener(visibleTasksListener)
+            c.taskbarDesktopTaskListener = null
+            c.desktopModeEnterExitTransitionListener = null
         }
     }
 
