@@ -25,6 +25,7 @@ import android.media.AudioManager.STREAM_RING
 import android.os.VibrationEffect
 import android.widget.Toast
 import com.android.internal.R as internalR
+import com.android.internal.logging.UiEventLogger
 import com.android.settingslib.Utils
 import com.android.settingslib.notification.domain.interactor.NotificationsSoundPolicyInteractor
 import com.android.settingslib.volume.shared.model.AudioStream
@@ -43,6 +44,7 @@ import com.android.systemui.volume.dialog.domain.interactor.VolumeDialogVisibili
 import com.android.systemui.volume.dialog.ringer.domain.VolumeDialogRingerInteractor
 import com.android.systemui.volume.dialog.ringer.shared.model.VolumeDialogRingerModel
 import com.android.systemui.volume.dialog.shared.VolumeDialogLogger
+import com.android.systemui.volume.dialog.ui.VolumeDialogUiEvent
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -73,6 +75,7 @@ constructor(
     private val volumeDialogLogger: VolumeDialogLogger,
     private val visibilityInteractor: VolumeDialogVisibilityInteractor,
     configurationController: ConfigurationController,
+    private val uiEventLogger: UiEventLogger,
     private val systemClock: SystemClock,
 ) {
 
@@ -112,6 +115,7 @@ constructor(
             .build()
 
     private var lastClickTime = 0L
+
     init {
         ringerViewModel
             .onEach { viewModelState ->
@@ -137,6 +141,7 @@ constructor(
             provideTouchFeedback(ringerMode)
             maybeShowToast(ringerMode)
             ringerInteractor.setRingerMode(ringerMode)
+            ringerMode.toVolumeDialogUiEvent()?.let(uiEventLogger::log)
         }
         visibilityInteractor.resetDismissTimeout()
         drawerState.value =
@@ -310,5 +315,14 @@ constructor(
             toastText?.let { Toast.makeText(applicationContext, it, Toast.LENGTH_SHORT).show() }
             ringerInteractor.updateToastCount(seenToastCount)
         }
+    }
+}
+
+private fun RingerMode.toVolumeDialogUiEvent(): VolumeDialogUiEvent? {
+    return when (value) {
+        RINGER_MODE_NORMAL -> VolumeDialogUiEvent.RINGER_MODE_NORMAL
+        RINGER_MODE_VIBRATE -> VolumeDialogUiEvent.RINGER_MODE_VIBRATE
+        RINGER_MODE_SILENT -> VolumeDialogUiEvent.RINGER_MODE_SILENT
+        else -> null
     }
 }
