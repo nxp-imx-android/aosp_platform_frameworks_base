@@ -566,12 +566,11 @@ public final class KeyboardShortcutListSearch {
                         Arrays.asList(
                                 Pair.create(KeyEvent.KEYCODE_TAB, KeyEvent.META_META_ON))),
                 /* Back: go back to previous state (back button) */
-                /* Meta + Escape, Meta + backspace, Meta + left arrow */
+                /* Meta + Escape, Meta + left arrow */
                 new ShortcutKeyGroupMultiMappingInfo(
                         context.getString(R.string.group_system_go_back),
                         Arrays.asList(
                                 Pair.create(KeyEvent.KEYCODE_ESCAPE, KeyEvent.META_META_ON),
-                                Pair.create(KeyEvent.KEYCODE_DEL, KeyEvent.META_META_ON),
                                 Pair.create(KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.META_META_ON))),
                 /* Take a full screenshot: Meta + S */
                 new ShortcutKeyGroupMultiMappingInfo(

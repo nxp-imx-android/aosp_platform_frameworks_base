@@ -3818,7 +3818,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         return true;
                     }
                 }
-                // fall through
+                break;
             case KeyEvent.KEYCODE_ESCAPE:
                 if (firstDown && event.isMetaPressed()) {
                     notifyKeyGestureCompleted(event,

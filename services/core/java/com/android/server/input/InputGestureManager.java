@@ -151,11 +151,6 @@ final class InputGestureManager {
                         KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT
                 ),
                 createKeyGesture(
-                        KeyEvent.KEYCODE_DEL,
-                        KeyEvent.META_META_ON,
-                        KeyGestureEvent.KEY_GESTURE_TYPE_BACK
-                ),
-                createKeyGesture(
                         KeyEvent.KEYCODE_ESCAPE,
                         KeyEvent.META_META_ON,
                         KeyGestureEvent.KEY_GESTURE_TYPE_BACK

@@ -150,8 +150,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
                 {"Meta + Left arrow -> Go back", new int[]{META_KEY, KeyEvent.KEYCODE_DPAD_LEFT},
                         KeyGestureEvent.KEY_GESTURE_TYPE_BACK, KeyEvent.KEYCODE_DPAD_LEFT,
                         META_ON},
-                {"Meta + Del -> Go back", new int[]{META_KEY, KeyEvent.KEYCODE_DEL},
-                        KeyGestureEvent.KEY_GESTURE_TYPE_BACK, KeyEvent.KEYCODE_DEL, META_ON},
                 {"APP_SWITCH key -> Open App switcher", new int[]{KeyEvent.KEYCODE_APP_SWITCH},
                         KeyGestureEvent.KEY_GESTURE_TYPE_APP_SWITCH,
                         KeyEvent.KEYCODE_APP_SWITCH, 0},
