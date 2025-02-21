@@ -38,6 +38,7 @@ import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider
 import com.android.wm.shell.windowdecor.WindowDecoration.SurfaceControlViewHostFactory
+import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import org.junit.Before
@@ -71,6 +72,7 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
     @Mock private lateinit var mockSurfaceControlViewHostFactory: SurfaceControlViewHostFactory
     @Mock private lateinit var mockBackground: LayerDrawable
     @Mock private lateinit var bubbleDropTargetBoundsProvider: BubbleDropTargetBoundsProvider
+    @Mock private lateinit var snapEventHandler: SnapEventHandler
     private val taskInfo: RunningTaskInfo = createTaskInfo()
     private val mainExecutor = TestShellExecutor()
     private val desktopExecutor = TestShellExecutor()
@@ -81,6 +83,8 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
         whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(DISPLAY_BOUNDS)
         }
+        whenever(snapEventHandler.getRightSnapBoundsIfTiled(any())).thenReturn(Rect(1, 2, 3, 4))
+        whenever(snapEventHandler.getLeftSnapBoundsIfTiled(any())).thenReturn(Rect(5, 6, 7, 8))
         whenever(mockSurfaceControlViewHostFactory.create(any(), any(), any()))
             .thenReturn(mock(SurfaceControlViewHost::class.java))
     }
@@ -117,7 +121,7 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
             DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
         )
         desktopExecutor.flushAll()
-        verify(spyViewContainer).fadeInIndicator(any(), any())
+        verify(spyViewContainer).fadeInIndicator(any(), any(), any(), any())
     }
 
     @Test
@@ -135,6 +139,8 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
                 any(),
                 eq(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR),
                 anyOrNull(),
+                eq(taskInfo.displayId),
+                eq(snapEventHandler),
             )
     }
 
@@ -167,10 +173,52 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
                     DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
                     displayLayout,
                     bubbleDropTargetBoundsProvider,
+                    taskInfo.displayId,
+                    snapEventHandler,
                 )
             }
         assertThat(animator?.indicatorStartBounds).isEqualTo(Rect(15, 15, 985, 985))
         assertThat(animator?.indicatorEndBounds).isEqualTo(Rect(0, 0, 1000, 1000))
+    }
+
+    @Test
+    fun testFadeInBoundsCalculationForLeftSnap() {
+        val spyIndicator = setupSpyViewContainer()
+        val animator =
+            spyIndicator.indicatorView?.let {
+                VisualIndicatorViewContainer.VisualIndicatorAnimator.fadeBoundsIn(
+                    it,
+                    DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR,
+                    displayLayout,
+                    bubbleDropTargetBoundsProvider,
+                    taskInfo.displayId,
+                    snapEventHandler,
+                )
+            }
+
+        // Right bound is the same as whatever right bound snapEventHandler returned minus padding,
+        // in this case, the right bound for the left app is 7.
+        assertThat(animator?.indicatorEndBounds).isEqualTo(Rect(0, 0, 7, 1000))
+    }
+
+    @Test
+    fun testFadeInBoundsCalculationForRightSnap() {
+        val spyIndicator = setupSpyViewContainer()
+        val animator =
+            spyIndicator.indicatorView?.let {
+                VisualIndicatorViewContainer.VisualIndicatorAnimator.fadeBoundsIn(
+                    it,
+                    DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
+                    displayLayout,
+                    bubbleDropTargetBoundsProvider,
+                    taskInfo.displayId,
+                    snapEventHandler,
+                )
+            }
+
+        // Left bound is the same as whatever left bound snapEventHandler returned plus padding
+        // in this case, the left bound of the right app is 1.
+        assertThat(animator?.indicatorEndBounds).isEqualTo(Rect(1, 0, 1000, 1000))
     }
 
     @Test
@@ -183,6 +231,8 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
                     DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
                     displayLayout,
                     bubbleDropTargetBoundsProvider,
+                    taskInfo.displayId,
+                    snapEventHandler,
                 )
             }
         assertThat(animator?.indicatorStartBounds).isEqualTo(Rect(0, 0, 1000, 1000))
@@ -199,6 +249,8 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
                 DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
                 DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR,
                 bubbleDropTargetBoundsProvider,
+                taskInfo.displayId,
+                snapEventHandler,
             )
         // Test desktop to split-right bounds.
         animator =
@@ -208,6 +260,8 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
                 DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
                 DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
                 bubbleDropTargetBoundsProvider,
+                taskInfo.displayId,
+                snapEventHandler,
             )
     }
 
@@ -220,6 +274,7 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
                 syncQueue,
                 mockSurfaceControlViewHostFactory,
                 bubbleDropTargetBoundsProvider,
+                snapEventHandler,
             )
         viewContainer.createView(
             context,

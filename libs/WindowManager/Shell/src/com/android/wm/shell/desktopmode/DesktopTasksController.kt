@@ -2996,6 +2996,7 @@ class DesktopTasksController(
                     rootTaskDisplayAreaOrganizer,
                     dragStartState,
                     bubbleController.getOrNull()?.bubbleDropTargetBoundsProvider,
+                    snapEventHandler,
                 )
         if (visualIndicator == null) visualIndicator = indicator
         return indicator.updateIndicatorType(PointF(inputX, taskTop))

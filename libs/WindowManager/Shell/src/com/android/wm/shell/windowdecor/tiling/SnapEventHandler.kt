@@ -40,4 +40,16 @@ interface SnapEventHandler {
 
     /** If a task is tiled, delegate moving to front to tiling infrastructure. */
     fun moveTaskToFrontIfTiled(taskInfo: RunningTaskInfo): Boolean
+
+    /**
+     * Returns the bounds of a task tiled on the left on the specified display, defaults to default
+     * snapping bounds if no task is tiled.
+     */
+    fun getLeftSnapBoundsIfTiled(displayId: Int): Rect
+
+    /**
+     * Returns the bounds of a task tiled on the right on the specified display, defaults to default
+     * snapping bounds if no task is tiled.
+     */
+    fun getRightSnapBoundsIfTiled(displayId: Int): Rect
 }

@@ -36,7 +36,6 @@ import android.window.WindowContainerTransaction
 import com.android.internal.annotations.VisibleForTesting
 import com.android.launcher3.icons.BaseIconFactory
 import com.android.window.flags.Flags
-import com.android.wm.shell.shared.FocusTransitionListener
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
@@ -50,6 +49,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
+import com.android.wm.shell.shared.FocusTransitionListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.transition.FocusTransitionObserver
@@ -112,7 +112,7 @@ class DesktopTilingWindowDecoration(
         position: SnapPosition,
         currentBounds: Rect,
     ): Boolean {
-        val destinationBounds = getSnapBounds(taskInfo, position)
+        val destinationBounds = getSnapBounds(position)
         val resizeMetadata =
             AppResizingHelper(
                 taskInfo,
@@ -502,9 +502,11 @@ class DesktopTilingWindowDecoration(
     }
 
     // Overriding FocusTransitionListener
-    override fun onFocusedTaskChanged(taskId: Int,
-            isFocusedOnDisplay: Boolean,
-            isFocusedGlobally: Boolean) {
+    override fun onFocusedTaskChanged(
+        taskId: Int,
+        isFocusedOnDisplay: Boolean,
+        isFocusedGlobally: Boolean,
+    ) {
         if (!Flags.enableDisplayFocusInShellTransitions()) return
         moveTiledPairToFront(taskId, isFocusedOnDisplay)
     }
@@ -512,7 +514,7 @@ class DesktopTilingWindowDecoration(
     // Only called if [taskInfo] relates to a focused task
     private fun isTilingRefocused(taskId: Int): Boolean {
         return taskId == leftTaskResizingHelper?.taskInfo?.taskId ||
-                taskId == rightTaskResizingHelper?.taskInfo?.taskId
+            taskId == rightTaskResizingHelper?.taskInfo?.taskId
     }
 
     private fun buildTiledTasksMoveToFront(leftOnTop: Boolean): WindowContainerTransaction {
@@ -623,24 +625,22 @@ class DesktopTilingWindowDecoration(
         val t = transactionSupplier.get()
         if (!Flags.enableDisplayFocusInShellTransitions()) isTilingFocused = true
         if (taskId == leftTaskResizingHelper?.taskInfo?.taskId) {
-          desktopTilingDividerWindowManager?.onRelativeLeashChanged(
-              leftTiledTask.getLeash(),
-              t,
-          )
+            desktopTilingDividerWindowManager?.onRelativeLeashChanged(leftTiledTask.getLeash(), t)
         }
         if (taskId == rightTaskResizingHelper?.taskInfo?.taskId) {
-          desktopTilingDividerWindowManager?.onRelativeLeashChanged(
-              rightTiledTask.getLeash(),
-              t,
-          )
+            desktopTilingDividerWindowManager?.onRelativeLeashChanged(rightTiledTask.getLeash(), t)
         }
-        transitions.startTransition(
-            TRANSIT_TO_FRONT,
-            buildTiledTasksMoveToFront(isLeftOnTop),
-            null,
-        )
+        transitions.startTransition(TRANSIT_TO_FRONT, buildTiledTasksMoveToFront(isLeftOnTop), null)
         t.apply()
         return true
+    }
+
+    fun getRightSnapBoundsIfTiled(): Rect {
+        return getSnapBounds(SnapPosition.RIGHT)
+    }
+
+    fun getLeftSnapBoundsIfTiled(): Rect {
+        return getSnapBounds(SnapPosition.LEFT)
     }
 
     private fun allTiledTasksVisible(): Boolean {
@@ -674,8 +674,8 @@ class DesktopTilingWindowDecoration(
             )
     }
 
-    private fun getSnapBounds(taskInfo: RunningTaskInfo, position: SnapPosition): Rect {
-        val displayLayout = displayController.getDisplayLayout(taskInfo.displayId) ?: return Rect()
+    private fun getSnapBounds(position: SnapPosition): Rect {
+        val displayLayout = displayController.getDisplayLayout(displayId) ?: return Rect()
 
         val stableBounds = Rect()
         displayLayout.getStableBounds(stableBounds)

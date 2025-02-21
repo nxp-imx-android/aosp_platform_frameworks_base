@@ -25,6 +25,7 @@ import android.window.DisplayAreaInfo
 import android.window.WindowContainerTransaction
 import androidx.core.util.valueIterator
 import com.android.internal.annotations.VisibleForTesting
+import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayChangeController
@@ -147,5 +148,46 @@ class DesktopTilingDecorViewModel(
         // [toRotation] can be one of the [@Surface.Rotation] values.
         if ((fromRotation % 2 == toRotation % 2)) return
         tilingTransitionHandlerByDisplayId.get(displayId)?.resetTilingSession()
+    }
+
+    fun getRightSnapBoundsIfTiled(displayId: Int): Rect {
+        val tilingBounds =
+            tilingTransitionHandlerByDisplayId.get(displayId)?.getRightSnapBoundsIfTiled()
+        if (tilingBounds != null) {
+            return tilingBounds
+        }
+        val displayLayout = displayController.getDisplayLayout(displayId)
+        val stableBounds = Rect()
+        displayLayout?.getStableBounds(stableBounds)
+        val snapBounds =
+            Rect(
+                stableBounds.left +
+                    stableBounds.width() / 2 +
+                    context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width) / 2,
+                stableBounds.top,
+                stableBounds.right,
+                stableBounds.bottom,
+            )
+        return snapBounds
+    }
+
+    fun getLeftSnapBoundsIfTiled(displayId: Int): Rect {
+        val tilingBounds =
+            tilingTransitionHandlerByDisplayId.get(displayId)?.getLeftSnapBoundsIfTiled()
+        if (tilingBounds != null) {
+            return tilingBounds
+        }
+        val displayLayout = displayController.getDisplayLayout(displayId)
+        val stableBounds = Rect()
+        displayLayout?.getStableBounds(stableBounds)
+        val snapBounds =
+            Rect(
+                stableBounds.left,
+                stableBounds.top,
+                stableBounds.left + stableBounds.width() / 2 -
+                    context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width) / 2,
+                stableBounds.bottom,
+            )
+        return snapBounds
     }
 }
