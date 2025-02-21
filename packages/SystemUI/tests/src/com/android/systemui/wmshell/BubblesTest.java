@@ -25,6 +25,7 @@ import static android.service.notification.NotificationListenerService.NOTIFICAT
 import static android.service.notification.NotificationListenerService.REASON_APP_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_GROUP_SUMMARY_CANCELED;
 import static android.service.notification.NotificationListenerService.REASON_PACKAGE_BANNED;
+import static android.service.notification.NotificationListenerService.REASON_PACKAGE_CHANGED;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.notification.Flags.FLAG_SCREENSHARE_NOTIFICATION_HIDING;
@@ -1122,6 +1123,18 @@ public class BubblesTest extends SysuiTestCase {
 
         // Removes the notification
         mEntryListener.onEntryRemoved(mRow, REASON_PACKAGE_BANNED);
+        assertFalse(mBubbleController.hasBubbles());
+    }
+
+    @Test
+    public void testNotifsPackageChanged_entryListenerRemove() {
+        mEntryListener.onEntryAdded(mRow);
+        mBubbleController.updateBubble(mBubbleEntry);
+
+        assertTrue(mBubbleController.hasBubbles());
+
+        // Removes the notification
+        mEntryListener.onEntryRemoved(mRow, REASON_PACKAGE_CHANGED);
         assertFalse(mBubbleController.hasBubbles());
     }
 
