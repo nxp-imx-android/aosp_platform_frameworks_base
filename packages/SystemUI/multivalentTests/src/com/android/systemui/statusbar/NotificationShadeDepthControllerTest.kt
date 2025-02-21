@@ -19,6 +19,7 @@ package com.android.systemui.statusbar
 import android.os.IBinder
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.annotations.RequiresFlagsDisabled
 import android.testing.TestableLooper.RunWithLooper
 import android.view.Choreographer
 import android.view.View
@@ -359,6 +360,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_NOTIFICATION_SHADE_BLUR)
     fun updateBlurCallback_setsOpaque_whenScrim() {
         scrimVisibilityCaptor.value.accept(ScrimController.OPAQUE)
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
