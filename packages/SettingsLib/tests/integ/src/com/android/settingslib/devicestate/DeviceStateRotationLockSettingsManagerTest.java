@@ -151,8 +151,8 @@ public class DeviceStateRotationLockSettingsManagerTest {
                 new String[]{"2:1", "1:0:1", "0:2"});
 
         List<SettableDeviceState> settableDeviceStates =
-                DeviceStateRotationLockSettingsManager.getInstance(
-                        mMockContext).getSettableDeviceStates();
+                new DeviceStateRotationLockSettingsManager(mMockContext,
+                        mFakeSecureSettings).getSettableDeviceStates();
 
         assertThat(settableDeviceStates).containsExactly(
                 new SettableDeviceState(/* deviceState= */ 2, /* isSettable= */ true),

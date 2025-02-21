@@ -22,11 +22,13 @@ import android.os.UserHandle
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_IGNORED
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_LOCKED
+import android.util.IndentingPrintWriter
 import android.util.Log
 import android.util.SparseIntArray
 import com.android.internal.R
 import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager.DeviceStateAutoRotateSettingListener
 import com.android.window.flags.Flags
+import java.io.PrintWriter
 import java.util.concurrent.Executor
 
 /**
@@ -102,6 +104,15 @@ class DeviceStateAutoRotateSettingManagerImpl(
     override fun updateSetting(deviceState: Int, autoRotate: Boolean) {
         // TODO: b/350946537 - Create IPC to update the setting, and call it here.
         throw UnsupportedOperationException("API updateSetting is not implemented yet")
+    }
+
+    override fun dump(writer: PrintWriter, args: Array<out String>?) {
+        val indentingWriter = IndentingPrintWriter(writer)
+        indentingWriter.println("DeviceStateAutoRotateSettingManagerImpl")
+        indentingWriter.increaseIndent()
+        indentingWriter.println("fallbackPostureMap: $fallbackPostureMap")
+        indentingWriter.println("settableDeviceState: $settableDeviceState")
+        indentingWriter.decreaseIndent()
     }
 
     private fun notifyListeners() =

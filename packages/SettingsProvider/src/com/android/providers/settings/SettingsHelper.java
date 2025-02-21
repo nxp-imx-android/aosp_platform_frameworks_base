@@ -16,6 +16,8 @@
 
 package com.android.providers.settings;
 
+import static com.android.settingslib.devicestate.DeviceStateAutoRotateSettingUtils.isDeviceStateRotationLockEnabled;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
@@ -49,7 +51,6 @@ import android.util.Log;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.LocalePicker;
 import com.android.server.backup.Flags;
-import com.android.settingslib.devicestate.DeviceStateRotationLockSettingsManager;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -347,7 +348,7 @@ public class SettingsHelper {
     private boolean shouldSkipAutoRotateRestore() {
         // When device state based auto rotation settings are available, let's skip the restoring
         // of the standard auto rotation settings to avoid conflicting setting values.
-        return DeviceStateRotationLockSettingsManager.isDeviceStateRotationLockEnabled(mContext);
+        return isDeviceStateRotationLockEnabled(mContext);
     }
 
     public String onBackupValue(String name, String value) {
