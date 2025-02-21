@@ -1414,7 +1414,7 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay();
         final WindowState win = newWindowBuilder("win", TYPE_BASE_APPLICATION).setDisplay(
                 dc).build();
-        win.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
         win.setSystemGestureExclusion(Collections.singletonList(new Rect(10, 20, 30, 40)));
 
         performLayout(dc);
@@ -1447,11 +1447,11 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay();
         final WindowState win = newWindowBuilder("win", TYPE_BASE_APPLICATION).setDisplay(
                 dc).build();
-        win.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
         win.setSystemGestureExclusion(Collections.singletonList(new Rect(10, 20, 30, 40)));
 
         final WindowState win2 = newWindowBuilder("win2", TYPE_APPLICATION).setDisplay(dc).build();
-        win2.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win2.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
         win2.setSystemGestureExclusion(Collections.singletonList(new Rect(20, 30, 40, 50)));
 
         performLayout(dc);
@@ -1476,14 +1476,14 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay();
         final WindowState win = newWindowBuilder("base", TYPE_BASE_APPLICATION).setDisplay(
                 dc).build();
-        win.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
         win.setSystemGestureExclusion(Collections.singletonList(new Rect(0, 0, 1000, 1000)));
 
         final WindowState win2 = newWindowBuilder("modal", TYPE_APPLICATION).setDisplay(dc).build();
-        win2.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
-        win2.getAttrs().privateFlags |= PRIVATE_FLAG_NO_MOVE_ANIMATION;
-        win2.getAttrs().width = 10;
-        win2.getAttrs().height = 10;
+        win2.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win2.mAttrs.privateFlags |= PRIVATE_FLAG_NO_MOVE_ANIMATION;
+        win2.mAttrs.width = 10;
+        win2.mAttrs.height = 10;
         win2.setSystemGestureExclusion(Collections.emptyList());
 
         performLayout(dc);
@@ -1502,10 +1502,10 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay();
         final WindowState win = newWindowBuilder("win", TYPE_BASE_APPLICATION).setDisplay(
                 dc).build();
-        win.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
-        win.getAttrs().layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-        win.getAttrs().privateFlags |= PRIVATE_FLAG_NO_MOVE_ANIMATION;
-        win.getAttrs().insetsFlags.behavior = BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
+        win.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win.mAttrs.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        win.mAttrs.privateFlags |= PRIVATE_FLAG_NO_MOVE_ANIMATION;
+        win.mAttrs.insetsFlags.behavior = BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
         win.setRequestedVisibleTypes(0, navigationBars() | statusBars());
         win.mActivityRecord.mTargetSdk = P;
 
@@ -1527,9 +1527,9 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay();
         final WindowState win = newWindowBuilder("win", TYPE_BASE_APPLICATION).setDisplay(
                 dc).build();
-        win.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
-        win.getAttrs().layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-        win.getAttrs().privateFlags |= PRIVATE_FLAG_UNRESTRICTED_GESTURE_EXCLUSION;
+        win.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win.mAttrs.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+        win.mAttrs.privateFlags |= PRIVATE_FLAG_UNRESTRICTED_GESTURE_EXCLUSION;
         win.setSystemGestureExclusion(Collections.singletonList(dc.getBounds()));
 
         performLayout(dc);

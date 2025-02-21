@@ -222,7 +222,7 @@ class BackNavigationController {
                     }
                 }
             }
-            final boolean canInterruptInView = (window.getAttrs().privateFlags
+            final boolean canInterruptInView = (window.mAttrs.privateFlags
                     & PRIVATE_FLAG_APP_PROGRESS_GENERATION_ALLOWED) != 0;
             infoBuilder.setAppProgressAllowed(canInterruptInView && !transferGestureToEmbedded
                     && callbackInfo.isAnimationCallback());

@@ -2365,7 +2365,7 @@ public class DisplayPolicy {
 
         // Immersive mode confirmation should never affect the system bar visibility, otherwise
         // it will unhide the navigation bar and hide itself.
-        if ((winCandidate.getAttrs().privateFlags
+        if ((winCandidate.mAttrs.privateFlags
                 & PRIVATE_FLAG_IMMERSIVE_CONFIRMATION_WINDOW) != 0) {
             if (mNotificationShade != null && mNotificationShade.canReceiveKeys()) {
                 // Let notification shade control the system bar visibility.
@@ -2633,9 +2633,9 @@ public class DisplayPolicy {
         }
 
         final boolean drawsSystemBars =
-                (win.getAttrs().flags & FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS) != 0;
+                (win.mAttrs.flags & FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS) != 0;
         final boolean forceDrawsSystemBars =
-                (win.getAttrs().privateFlags & PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS) != 0;
+                (win.mAttrs.privateFlags & PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS) != 0;
 
         return forceDrawsSystemBars || drawsSystemBars;
     }

@@ -350,8 +350,8 @@ public class AppCompatLetterboxPolicyTest extends WindowTestsBase {
             mWindowState.mInvGlobalScale = 1f;
             final WindowManager.LayoutParams attrs = new WindowManager.LayoutParams();
             attrs.type = TYPE_BASE_APPLICATION;
+            setFieldValue(mWindowState, "mAttrs", attrs);
             doReturn(mInsetsState).when(mWindowState).getInsetsState();
-            doReturn(attrs).when(mWindowState).getAttrs();
             doReturn(true).when(mWindowState).isDrawn();
             doReturn(true).when(mWindowState).isOnScreen();
             doReturn(false).when(mWindowState).isLetterboxedForDisplayCutout();

@@ -730,7 +730,7 @@ public class DisplayRotation {
         // We only enable seamless rotation if the top window has requested it and is in the
         // fullscreen opaque state. Seamless rotation requires freezing various Surface states and
         // won't work well with animations, so we disable it in the animation case for now.
-        if (w.getAttrs().rotationAnimation != ROTATION_ANIMATION_SEAMLESS || w.inMultiWindowMode()
+        if (w.mAttrs.rotationAnimation != ROTATION_ANIMATION_SEAMLESS || w.inMultiWindowMode()
                 || w.isAnimatingLw()) {
             return false;
         }

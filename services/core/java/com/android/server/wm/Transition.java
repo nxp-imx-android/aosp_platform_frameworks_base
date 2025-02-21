@@ -3332,14 +3332,14 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (mainWin == null) return ROTATION_ANIMATION_UNSPECIFIED;
         int anim = mainWin.getRotationAnimationHint();
         if (anim >= 0) return anim;
-        anim = mainWin.getAttrs().rotationAnimation;
+        anim = mainWin.mAttrs.rotationAnimation;
         if (anim != ROTATION_ANIMATION_SEAMLESS) return anim;
         if (mainWin != task.mDisplayContent.getDisplayPolicy().getTopFullscreenOpaqueWindow()
                 || !top.matchParentBounds()) {
             // At the moment, we only support seamless rotation if there is only one window showing.
             return ROTATION_ANIMATION_UNSPECIFIED;
         }
-        return mainWin.getAttrs().rotationAnimation;
+        return mainWin.mAttrs.rotationAnimation;
     }
 
     private void validateKeyguardOcclusion() {

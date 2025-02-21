@@ -1412,10 +1412,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return mWindowFrames.mParentFrame;
     }
 
-    WindowManager.LayoutParams getAttrs() {
-        return mAttrs;
-    }
-
     /** Retrieves the flags used to disable system UI functions. */
     int getDisableFlags() {
         return mDisableFlags;
@@ -5636,13 +5632,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     KeyInterceptionInfo getKeyInterceptionInfo() {
         if (mKeyInterceptionInfo == null
-                || mKeyInterceptionInfo.layoutParamsPrivateFlags != getAttrs().privateFlags
-                || mKeyInterceptionInfo.layoutParamsType != getAttrs().type
+                || mKeyInterceptionInfo.layoutParamsPrivateFlags != mAttrs.privateFlags
+                || mKeyInterceptionInfo.layoutParamsType != mAttrs.type
                 || mKeyInterceptionInfo.windowTitle != getWindowTag()
                 || mKeyInterceptionInfo.windowOwnerUid != getOwningUid()
-                || mKeyInterceptionInfo.inputFeaturesFlags != getAttrs().inputFeatures) {
-            mKeyInterceptionInfo = new KeyInterceptionInfo(getAttrs().type, getAttrs().privateFlags,
-                    getWindowTag().toString(), getOwningUid(), getAttrs().inputFeatures);
+                || mKeyInterceptionInfo.inputFeaturesFlags != mAttrs.inputFeatures) {
+            mKeyInterceptionInfo = new KeyInterceptionInfo(mAttrs.type, mAttrs.privateFlags,
+                    getWindowTag().toString(), getOwningUid(), mAttrs.inputFeatures);
         }
         return mKeyInterceptionInfo;
     }
@@ -5666,7 +5662,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         } else {
             outFrame.set(getParentFrame());
         }
-        outSurfaceInsets.set(getAttrs().surfaceInsets);
+        outSurfaceInsets.set(mAttrs.surfaceInsets);
         final InsetsState state = getInsetsStateWithVisibilityOverride();
         outInsets.set(state.calculateInsets(outFrame, systemBars(),
                 false /* ignoreVisibility */).toRect());

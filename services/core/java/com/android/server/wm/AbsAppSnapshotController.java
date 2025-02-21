@@ -334,7 +334,7 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
         builder.setId(System.currentTimeMillis());
         builder.setContentInsets(contentInsets);
         builder.setLetterboxInsets(letterboxInsets);
-        final boolean isWindowTranslucent = mainWindow.getAttrs().format != PixelFormat.OPAQUE;
+        final boolean isWindowTranslucent = mainWindow.mAttrs.format != PixelFormat.OPAQUE;
         final boolean isShowWallpaper = mainWindow.hasWallpaper();
         int pixelFormat = builder.getPixelFormat();
         if (pixelFormat == PixelFormat.UNKNOWN) {
@@ -432,7 +432,7 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
         final ActivityManager.TaskDescription taskDescription = getTaskDescription(source);
         final int color = ColorUtils.setAlphaComponent(
                 taskDescription.getBackgroundColor(), 255);
-        final WindowManager.LayoutParams attrs = mainWindow.getAttrs();
+        final WindowManager.LayoutParams attrs = mainWindow.mAttrs;
         final Rect taskBounds = source.getBounds();
         final InsetsState insetsState = mainWindow.getInsetsStateWithVisibilityOverride();
         final Rect systemBarInsets = getSystemBarInsets(mainWindow.getFrame(), insetsState);

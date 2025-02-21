@@ -3580,7 +3580,7 @@ class Task extends TaskFragment {
                 & StartingWindowInfo.TYPE_PARAMETER_ACTIVITY_CREATED) != 0) {
             final WindowState topMainWin = getTopFullscreenMainWindow();
             if (topMainWin != null) {
-                info.mainWindowLayoutParams = topMainWin.getAttrs();
+                info.mainWindowLayoutParams = topMainWin.mAttrs;
                 info.requestedVisibleTypes = topMainWin.getRequestedVisibleTypes();
             }
         }

@@ -223,7 +223,7 @@ class AppCompatLetterboxPolicy {
                         // Check for FLAG_SHOW_WALLPAPER explicitly instead of using
                         // WindowContainer#showWallpaper because the later will return true when
                         // this activity is using blurred wallpaper for letterbox background.
-                        && (mainWindow.getAttrs().flags & FLAG_SHOW_WALLPAPER) == 0;
+                        && (mainWindow.mAttrs.flags & FLAG_SHOW_WALLPAPER) == 0;
 
         mLastShouldShowLetterboxUi = shouldShowLetterboxUi;
 
@@ -334,7 +334,7 @@ class AppCompatLetterboxPolicy {
         if (w == null) {
             return true;
         }
-        final int type = w.getAttrs().type;
+        final int type = w.mAttrs.type;
         // Allow letterbox to be displayed early for base application or application starting
         // windows even if it is not on the top z order to prevent flickering when the
         // letterboxed window is brought to the top
