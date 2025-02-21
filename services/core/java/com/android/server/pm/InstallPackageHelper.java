@@ -1398,6 +1398,8 @@ final class InstallPackageHelper {
             Map<String, Boolean> createdAppId, boolean success) {
         if (success) {
             for (InstallRequest request : requests) {
+                mInjector.getAppOpsManagerInternal().onPackageAdded(
+                        request.getName(), request.getAppId());
                 if (request.getDataLoaderType() != DataLoaderType.INCREMENTAL) {
                     continue;
                 }

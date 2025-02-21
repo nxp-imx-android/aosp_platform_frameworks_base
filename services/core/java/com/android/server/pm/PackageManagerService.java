@@ -58,6 +58,7 @@ import android.annotation.WorkerThread;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.AppOpsManager;
+import android.app.AppOpsManagerInternal;
 import android.app.ApplicationExitInfo;
 import android.app.ApplicationPackageManager;
 import android.app.BroadcastOptions;
@@ -1692,6 +1693,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 (i, pm) -> new ComponentResolver(i.getUserManagerService(), pm.mUserNeedsBadging),
                 (i, pm) -> PermissionManagerService.create(context,
                         i.getSystemConfig().getAvailableFeatures()),
+                (i, pm) -> LocalServices.getService(AppOpsManagerInternal.class),
                 (i, pm) -> new UserManagerService(context, pm,
                         new UserDataPreparer(installer, installLock, context), lock),
                 (i, pm) -> new Settings(Environment.getDataDirectory(),
