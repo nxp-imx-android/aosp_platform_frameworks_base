@@ -314,7 +314,7 @@ private fun Modifier.expandable(
         if (isAnimating) {
             val graphicsLayer = rememberGraphicsLayer()
 
-            FullScreenComposeViewInOverlay { view ->
+            FullScreenComposeViewInOverlay(controller.overlay) { view ->
                 Modifier.then(DrawExpandableInOverlayElement(view, controller, graphicsLayer))
             }
 
@@ -397,7 +397,7 @@ private class DrawExpandableInOverlayNode(
     }
 
     override fun ContentDrawScope.draw() {
-        val state = controller.animatorState ?: return
+        val state = controller.animatorState?.takeIf { it.visible } ?: return
         val topOffset = state.top.toFloat() - composeViewLocationOnScreen[1]
         val leftOffset = state.left.toFloat() - composeViewLocationOnScreen[0]
 
