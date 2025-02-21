@@ -328,7 +328,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"ഇൻപുട്ട്"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"ശ്രവണ സഹായികൾ"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ഓണാക്കുന്നു…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"തെളിച്ചം അഡ്‌ജസ്റ്റ് ചെയ്യാനാകില്ല, അത്\n നിയന്ത്രിക്കുന്നത് ഏറ്റവും മുകളിലുള്ള ആപ്പാണ്"</string>
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"തെളിച്ചം അഡ്‌ജസ്റ്റ് ചെയ്യാനാകില്ല, അത് നിയന്ത്രിക്കുന്നത് ഏറ്റവും മുകളിലുള്ള ആപ്പാണ്"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"സ്‌ക്രീൻ സ്വയമേവ തിരിയൽ"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"സ്‌ക്രീൻ സ്വയമേവ തിരിക്കുക"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"ലൊക്കേഷൻ"</string>

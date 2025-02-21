@@ -328,7 +328,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"इनपुट"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"कान की मशीनें"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ब्लूटूथ चालू हो रहा है…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"स्क्रीन की रोशनी को एडजस्ट नहीं किया जा सकता, क्योंकि\n इसे टॉप ऐप्लिकेशन कंट्रोल कर रहा है"</string>
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"स्क्रीन की रोशनी को एडजस्ट नहीं किया जा सकता, क्योंकि इसे टॉप ऐप्लिकेशन कंट्रोल कर रहा है"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ऑटो-रोटेट"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"स्क्रीन का अपने-आप दिशा बदलना (ऑटो-रोटेट)"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"जगह की जानकारी"</string>
