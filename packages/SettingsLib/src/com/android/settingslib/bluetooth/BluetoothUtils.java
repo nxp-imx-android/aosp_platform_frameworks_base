@@ -1056,7 +1056,7 @@ public class BluetoothUtils {
 
     /** Get develop option value for audio sharing preview. */
     @WorkerThread
-    private static boolean getAudioSharingPreviewValue(@Nullable ContentResolver contentResolver) {
+    public static boolean getAudioSharingPreviewValue(@Nullable ContentResolver contentResolver) {
         if (contentResolver == null) return false;
         return Settings.Global.getInt(
                 contentResolver,
