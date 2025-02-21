@@ -532,6 +532,7 @@ public final class InputMethodManager {
     final H mH;
 
     // Our generic input connection if the current target does not have its own.
+    @NonNull
     private final RemoteInputConnectionImpl mFallbackInputConnection;
 
     private final int mDisplayId;
