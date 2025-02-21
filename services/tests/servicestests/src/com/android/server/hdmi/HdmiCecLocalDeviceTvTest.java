@@ -2441,6 +2441,80 @@ public class HdmiCecLocalDeviceTvTest {
         assertFalse(mWasCecDisabledOnStandbyByLowEnergyMode);
     }
 
+    @Test
+    public void sendSystemAudioModeRequest_sendsRequest_retry() throws Exception {
+        // Enable System Audio Control
+        mHdmiControlService.getHdmiCecConfig().setIntValue(
+                HdmiControlManager.CEC_SETTING_NAME_SYSTEM_AUDIO_CONTROL,
+                HdmiControlManager.SYSTEM_AUDIO_CONTROL_ENABLED);
+        mNativeWrapper.setPortConnectionStatus(1, true);
+
+        HdmiCecMessage reportPhysicalAddress =
+                HdmiCecMessageBuilder.buildReportPhysicalAddressCommand(
+                        ADDR_AUDIO_SYSTEM, 0x1000, HdmiDeviceInfo.DEVICE_AUDIO_SYSTEM);
+        HdmiCecMessage reportPowerStatus =
+                HdmiCecMessageBuilder.buildReportPowerStatus(ADDR_AUDIO_SYSTEM, ADDR_TV,
+                        HdmiControlManager.POWER_STATUS_STANDBY);
+        mNativeWrapper.onCecMessage(reportPhysicalAddress);
+        mNativeWrapper.onCecMessage(reportPowerStatus);
+        mTestLooper.dispatchAll();
+
+        mNativeWrapper.setMessageSendResult(Constants.MESSAGE_SYSTEM_AUDIO_MODE_REQUEST,
+                SendMessageResult.NACK);
+        mTestLooper.dispatchAll();
+
+        // Use SystemAudioAutoInitiationAction to trigger SystemAudioActionFromTv
+        HdmiCecFeatureAction systemAudioAutoInitiationAction =
+                new SystemAudioAutoInitiationAction(mHdmiCecLocalDeviceTv, ADDR_AUDIO_SYSTEM);
+        mHdmiCecLocalDeviceTv.addAndStartAction(systemAudioAutoInitiationAction);
+        HdmiCecMessage reportSystemAudioMode =
+                HdmiCecMessageBuilder.buildReportSystemAudioMode(
+                        ADDR_AUDIO_SYSTEM,
+                        mHdmiCecLocalDeviceTv.getDeviceInfo().getLogicalAddress(),
+                        true);
+        mHdmiControlService.handleCecCommand(reportSystemAudioMode);
+        mTestLooper.dispatchAll();
+
+        assertThat(mHdmiCecLocalDeviceTv.getActions(SystemAudioActionFromTv.class)).hasSize(1);
+    }
+
+    @Test
+    public void sendSystemAudioModeRequest_sendsRequest_return() throws Exception {
+        // Enable System Audio Control
+        mHdmiControlService.getHdmiCecConfig().setIntValue(
+                HdmiControlManager.CEC_SETTING_NAME_SYSTEM_AUDIO_CONTROL,
+                HdmiControlManager.SYSTEM_AUDIO_CONTROL_ENABLED);
+        mNativeWrapper.setPortConnectionStatus(1, true);
+
+        HdmiCecMessage reportPhysicalAddress =
+                HdmiCecMessageBuilder.buildReportPhysicalAddressCommand(
+                        ADDR_AUDIO_SYSTEM, 0x1000, HdmiDeviceInfo.DEVICE_AUDIO_SYSTEM);
+        HdmiCecMessage reportPowerStatus =
+                HdmiCecMessageBuilder.buildReportPowerStatus(ADDR_AUDIO_SYSTEM, ADDR_TV,
+                        HdmiControlManager.POWER_STATUS_STANDBY);
+        mNativeWrapper.onCecMessage(reportPhysicalAddress);
+        mNativeWrapper.onCecMessage(reportPowerStatus);
+        mTestLooper.dispatchAll();
+
+        mNativeWrapper.setMessageSendResult(Constants.MESSAGE_SYSTEM_AUDIO_MODE_REQUEST,
+                SendMessageResult.FAIL);
+        mTestLooper.dispatchAll();
+
+        // Use SystemAudioAutoInitiationAction to trigger SystemAudioActionFromTv
+        HdmiCecFeatureAction systemAudioAutoInitiationAction =
+                new SystemAudioAutoInitiationAction(mHdmiCecLocalDeviceTv, ADDR_AUDIO_SYSTEM);
+        mHdmiCecLocalDeviceTv.addAndStartAction(systemAudioAutoInitiationAction);
+        HdmiCecMessage reportSystemAudioMode =
+                HdmiCecMessageBuilder.buildReportSystemAudioMode(
+                        ADDR_AUDIO_SYSTEM,
+                        mHdmiCecLocalDeviceTv.getDeviceInfo().getLogicalAddress(),
+                        true);
+        mHdmiControlService.handleCecCommand(reportSystemAudioMode);
+        mTestLooper.dispatchAll();
+
+        assertThat(mHdmiCecLocalDeviceTv.getActions(SystemAudioActionFromTv.class)).hasSize(0);
+    }
+
     protected static class MockTvDevice extends HdmiCecLocalDeviceTv {
         MockTvDevice(HdmiControlService service) {
             super(service);
