@@ -21,12 +21,33 @@
 #include <gui/BufferQueue.h>
 #include <gui/ConsumerBase.h>
 #include <gui/IGraphicBufferConsumer.h>
+#include <gui/Surface.h>
 #include <utils/RefBase.h>
 
 namespace android {
 
 class BufferItemConsumer : public ConsumerBase {
 public:
+    enum { DEFAULT_MAX_BUFFERS = -1 };
+
+    static std::tuple<sp<BufferItemConsumer>, sp<Surface>> create(
+            uint64_t consumerUsage, int bufferCount = DEFAULT_MAX_BUFFERS,
+            bool controlledByApp = false, bool isConsumerSurfaceFlinger = false) {
+#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
+        sp<BufferItemConsumer> bufferItemConsumer =
+                sp<BufferItemConsumer>::make(consumerUsage, bufferCount, controlledByApp,
+                                             isConsumerSurfaceFlinger);
+        return {bufferItemConsumer, bufferItemConsumer->getSurface()};
+#else
+        sp<IGraphicBufferProducer> igbp;
+        sp<IGraphicBufferConsumer> igbc;
+        BufferQueue::createBufferQueue(&igbp, &igbc, isConsumerSurfaceFlinger);
+        sp<BufferItemConsumer> bufferItemConsumer =
+                sp<BufferItemConsumer>::make(igbc, consumerUsage, bufferCount, controlledByApp);
+        return {bufferItemConsumer, sp<Surface>::make(igbp, controlledByApp)};
+#endif
+    }
+
     BufferItemConsumer(const sp<IGraphicBufferConsumer>& consumer, uint64_t consumerUsage,
                        int bufferCount = -1, bool controlledByApp = false)
           : mConsumer(consumer) {}

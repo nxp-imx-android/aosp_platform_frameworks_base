@@ -18,6 +18,7 @@
 //#define LOG_NDEBUG 0
 #define LOG_TAG "ImageReader_JNI"
 #define ATRACE_TAG ATRACE_TAG_CAMERA
+
 #include <android/hardware_buffer_jni.h>
 #include <android_runtime/AndroidRuntime.h>
 #include <android_runtime/android_graphics_GraphicBuffer.h>
@@ -49,6 +50,7 @@
 #include <utils/Trace.h>
 #include <utils/misc.h>
 
+#include <cstdint>
 #include <cstdio>
 
 #include "android_media_Utils.h"
@@ -409,19 +411,10 @@ static void ImageReader_init(JNIEnv* env, jobject thiz, jobject weakThiz, jint w
     uint64_t consumerUsage = 0;
 #endif
 
-#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
-    sp<BufferItemConsumer> bufferConsumer = new BufferItemConsumer(consumerUsage, maxImages,
-                                                                   /*controlledByApp*/ true);
-    sp<IGraphicBufferProducer> gbProducer =
-            bufferConsumer->getSurface()->getIGraphicBufferProducer();
-#else
-    sp<IGraphicBufferProducer> gbProducer;
-    sp<IGraphicBufferConsumer> gbConsumer;
-    BufferQueue::createBufferQueue(&gbProducer, &gbConsumer);
-    sp<BufferItemConsumer> bufferConsumer;
-    bufferConsumer = new BufferItemConsumer(gbConsumer, consumerUsage, maxImages,
-            /*controlledByApp*/true);
-#endif // COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
+    auto [bufferConsumer, surface] =
+            BufferItemConsumer::create((uint64_t)consumerUsage, (int)maxImages,
+                                       /*controlledByApp*/ true);
+    sp<IGraphicBufferProducer> gbProducer = surface->getIGraphicBufferProducer();
     if (bufferConsumer == nullptr) {
         jniThrowExceptionFmt(env, "java/lang/RuntimeException",
                 "Failed to allocate native buffer consumer for hal format 0x%x and usage 0x%x",
@@ -430,11 +423,7 @@ static void ImageReader_init(JNIEnv* env, jobject thiz, jobject weakThiz, jint w
     }
 
     if (consumerUsage & GRALLOC_USAGE_PROTECTED) {
-#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
         bufferConsumer->setConsumerIsProtected(true);
-#else
-        gbConsumer->setConsumerIsProtected(true);
-#endif // COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
     }
 
     ctx->setBufferConsumer(bufferConsumer);
