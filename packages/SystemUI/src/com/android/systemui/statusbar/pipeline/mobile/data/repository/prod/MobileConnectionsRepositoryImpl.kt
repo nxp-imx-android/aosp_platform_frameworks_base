@@ -20,6 +20,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.telephony.CarrierConfigManager
 import android.telephony.SubscriptionInfo
 import android.telephony.SubscriptionManager
@@ -192,6 +193,19 @@ constructor(
         serviceStateChangedEvent
             .mapLatest {
                 val modems = telephonyManager.activeModemCount
+
+                // Assume false for automotive devices which don't have the calling feature.
+                // TODO: b/398045526 to revisit the below.
+                val isAutomotive: Boolean =
+                    context.packageManager.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
+                val hasFeatureCalling: Boolean =
+                    context.packageManager.hasSystemFeature(
+                        PackageManager.FEATURE_TELEPHONY_CALLING
+                    )
+                if (isAutomotive && !hasFeatureCalling) {
+                    return@mapLatest false
+                }
+
                 // Check the service state for every modem. If any state reports emergency calling
                 // capable, then consider the device to have emergency call capabilities
                 (0..<modems)
