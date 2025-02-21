@@ -42,6 +42,9 @@ interface QSTileViewModel {
     val detailsViewModel: TileDetailsViewModel?
         get() = null
 
+    /** Returns the current user for this tile */
+    val currentTileUser: Int
+
     /**
      * Notifies about the user change. Implementations should avoid using 3rd party userId sources
      * and use this value instead. This is to maintain consistent and concurrency-free behaviour
@@ -65,8 +68,6 @@ interface QSTileViewModel {
     fun destroy()
 }
 
-/**
- * Returns the immediate state of the tile or null if the state haven't been collected yet.
- */
+/** Returns the immediate state of the tile or null if the state haven't been collected yet. */
 val QSTileViewModel.currentState: QSTileState?
     get() = state.value

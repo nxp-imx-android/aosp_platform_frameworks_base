@@ -254,7 +254,7 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
                 assertThat(tiles?.size).isEqualTo(1)
                 assertThat(tiles!![0].spec).isEqualTo(TileSpec.create("a"))
 
-                assertThat((originalTileC as FakeQSTile).destroyed).isTrue()
+                assertThat(originalTileC.isDestroyed).isTrue()
                 verify(qsLogger)
                     .logTileDestroyed(
                         TileSpec.create("c"),
@@ -282,7 +282,7 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
                 tileSpecRepository.addTile(USER_INFO_0.id, TileSpec.create("b"))
                 runCurrent()
 
-                assertThat(originalTileA.destroyed).isTrue()
+                assertThat(originalTileA.isDestroyed).isTrue()
                 verify(qsLogger)
                     .logTileDestroyed(
                         TileSpec.create("a"),
@@ -331,7 +331,7 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
                 switchUser(USER_INFO_1)
                 runCurrent()
 
-                assertThat((originalTileA as FakeQSTile).destroyed).isTrue()
+                assertThat(originalTileA.isDestroyed).isTrue()
                 verify(qsLogger)
                     .logTileDestroyed(
                         specs0[0],
@@ -700,6 +700,29 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
                 currentModel = null
                 tiles!![2].tile.getDetailsViewModel(setCurrentModel)
                 assertThat(currentModel).isNull()
+            }
+        }
+
+    @Test
+    fun destroyedTilesNotReused() =
+        with(kosmos) {
+            testScope.runTest(USER_INFO_0) {
+                val tiles by collectLastValue(underTest.currentTiles)
+                val specs = listOf(TileSpec.create("a"), TileSpec.create("b"))
+                val newTile = TileSpec.create("c")
+
+                underTest.setTiles(specs)
+
+                val tileABefore = tiles!!.first { it.spec == specs[0] }.tile
+
+                // We destroy it manually, in prod, this could happen if the tile processing action
+                // is interrupted in the middle.
+                tileABefore.destroy()
+
+                underTest.addTile(newTile)
+
+                val tileAAfter = tiles!!.first { it.spec == specs[0] }.tile
+                assertThat(tileAAfter).isNotSameInstanceAs(tileABefore)
             }
         }
 
