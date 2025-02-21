@@ -245,8 +245,12 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetootha konektatuta."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth bidezko gailuaren ikonoa"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Gailuaren xehetasuna konfiguratzeko, sakatu hau"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"Egin klik gailu guztiak ikusteko"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"Egin klik beste gailu bat parekatzeko"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
+    <skip />
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Bateriaren ehunekoa ezezaguna da."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> gailura konektatuta."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Hona konektatuta: <xliff:g id="CAST">%s</xliff:g>."</string>
@@ -808,12 +812,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> aplikazioak ez ditu onartzen elkarrizketetarako eginbideak"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Iritzia"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Baztertu"</string>
-    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
-    <skip />
-    <!-- no translation found for live_notifications_title (1586553354601345379) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Ez erakutsi ainguratutako gisa"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"Zuzeneko informazioa dago ikusgai"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"Ainguratutako jakinarazpenek istantean bistaratzen dute aplikazioetako informazioa, eta egoera-barran nahiz pantaila blokeatuan agertzen dira beti"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Jakinarazpen horiek ezin dira aldatu."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Deien jakinarazpenak ezin dira aldatu."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Jakinarazpen talde hau ezin da konfiguratu hemen"</string>
@@ -900,7 +901,10 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Zeregin bat baino gehiago aldi berean exekutatzea"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Erabili pantaila zatitua eta ezarri aplikazio hau eskuinean"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Erabili pantaila zatitua eta ezarri aplikazio hau ezkerrean"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"Aldatu pantaila osora"</string>
+    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
+    <skip />
+    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Aldatu eskuineko edo beheko aplikaziora pantaila zatitua erabiltzean"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Aldatu ezkerreko edo goiko aplikaziora pantaila zatitua erabiltzean"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Pantaila zatituan zaudela, ordeztu aplikazio bat beste batekin"</string>
@@ -987,6 +991,8 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Erakutsi lehentasun txikiko jakinarazpenen ikonoak"</string>
     <string name="other" msgid="429768510980739978">"Beste bat"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
+    <skip />
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"kendu lauza"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"gehitu lauza azken posizioan"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Mugitu lauza"</string>
@@ -1501,6 +1507,8 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Ikusi azkenaldiko aplikazioak"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Aldatu aplikazioa"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Eginda"</string>
+    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
+    <skip />
     <string name="gesture_error_title" msgid="469064941635578511">"Saiatu berriro!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Egin atzera"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Pasatu 3 hatz ezkerrera edo eskuinera ukipen-panelean"</string>
@@ -1538,7 +1546,10 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Azkenaldiko aplikazioak ikusteko, pasatu 3 hatz ukipen-panelean gora eta eduki sakatuta"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Aplikazio guztiak ikusteko, sakatu teklatuko ekintza-tekla"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Desitxuratuta"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"Desblokeatu ikusteko"</string>
+    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
+    <skip />
+    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
+    <skip />
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Testuinguruaren araberako hezkuntza"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Erabili ukipen-panela atzera egiteko"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Pasatu 3 hatz ezkerrera edo eskuinera. Sakatu keinu gehiago ikasteko."</string>

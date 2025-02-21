@@ -245,8 +245,12 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth connecté"</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Icône de l\'appareil Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Cliquez pour configurer les détails de l\'appareil"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"Cliquez ici pour voir tous les appareils"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"Cliquez ici pour associer un nouvel appareil"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
+    <skip />
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Pourcentage de la pile inconnu."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Connecté à : <xliff:g id="BLUETOOTH">%s</xliff:g>"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Connecté à <xliff:g id="CAST">%s</xliff:g>."</string>
@@ -506,7 +510,7 @@
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"Balayer l\'écran vers la gauche pour démarrer le tutoriel communautaire"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"Personnaliser"</string>
     <string name="cta_tile_button_to_dismiss" msgid="3377597875997861754">"Fermer"</string>
-    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"Ajouter, retirer et réorganiser vos widgets dans cet espace"</string>
+    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"Ajouter, retirer et réorganiser vos widgets dans cet espace"</string>
     <string name="cta_label_to_open_widget_picker" msgid="3874946756976360699">"Ajouter plus de widgets"</string>
     <string name="popup_on_dismiss_cta_tile_text" msgid="8292501780996070019">"Appuyez longuement pour personnaliser les widgets"</string>
     <string name="button_to_configure_widgets_text" msgid="4191862850185256901">"Personnaliser les widgets"</string>
@@ -808,12 +812,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ne prend pas en charge les fonctionnalités de conversation"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Commentaires"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Fermer"</string>
-    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
-    <skip />
-    <!-- no translation found for live_notifications_title (1586553354601345379) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Ne pas afficher comme épinglé"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"Affichage des mises à jour en direct"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"Les notifications épinglées affichent des informations en direct des applis et apparaissent toujours sur la barre d\'état et l\'écran de verrouillage"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Ces notifications ne peuvent pas être modifiées"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Les notifications d\'appel ne peuvent pas être modifiées."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Ce groupe de notifications ne peut pas être configuré ici"</string>
@@ -900,7 +901,10 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitâche"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Utiliser l\'Écran divisé avec l\'appli à droite"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Utiliser l\'Écran divisé avec l\'appli à gauche"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"Passer au mode plein écran"</string>
+    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
+    <skip />
+    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Passer à l\'appli à droite ou en dessous avec l\'Écran divisé"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Passer à l\'appli à gauche ou au-dessus avec l\'Écran divisé"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"En mode d\'écran divisé : remplacer une appli par une autre"</string>
@@ -987,6 +991,8 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Afficher les icônes de notification de faible priorité"</string>
     <string name="other" msgid="429768510980739978">"Autre"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
+    <skip />
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"retirer la tuile"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"Ajouter une tuile à la dernière position"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Déplacer la tuile"</string>
@@ -1501,6 +1507,8 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Afficher les applis récentes"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Changer d\'appli"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"OK"</string>
+    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
+    <skip />
     <string name="gesture_error_title" msgid="469064941635578511">"Réessayez!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Retour"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Balayez votre pavé tactile vers la gauche ou vers la droite avec trois doigts"</string>
@@ -1538,7 +1546,10 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Pour afficher les applis récentes, balayez l\'écran vers le haut avec trois doigts sur le pavé tactile et maintenez-les en place"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Pour afficher toutes vos applis, appuyez sur la touche d\'action de votre clavier"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Supprimé"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"Déverrouiller pour afficher"</string>
+    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
+    <skip />
+    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
+    <skip />
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Enseignement contextuel"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Utiliser votre pavé tactile pour revenir en arrière"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Balayez vers la gauche ou vers la droite avec trois doigts. Touchez pour apprendre d\'autres gestes."</string>

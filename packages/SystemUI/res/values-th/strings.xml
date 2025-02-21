@@ -245,8 +245,9 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"เชื่อมต่อบลูทูธแล้ว"</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ไอคอนอุปกรณ์บลูทูธ"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"คลิกเพื่อกำหนดค่ารายละเอียดอุปกรณ์"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"คลิกเพื่อดูอุปกรณ์ทั้งหมด"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"คลิกเพื่อจับคู่อุปกรณ์ใหม่"</string>
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g> กำหนดค่ารายละเอียดอุปกรณ์"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"ดูอุปกรณ์ทั้งหมด"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"จับคู่อุปกรณ์ใหม่"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ไม่ทราบเปอร์เซ็นต์แบตเตอรี่"</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"เชื่อมต่อกับ <xliff:g id="BLUETOOTH">%s</xliff:g> แล้ว"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"เชื่อมต่อกับ <xliff:g id="CAST">%s</xliff:g>"</string>
@@ -506,7 +507,7 @@
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"ปัดไปทางซ้ายเพื่อเริ่มบทแนะนำส่วนกลาง"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"ปรับแต่ง"</string>
     <string name="cta_tile_button_to_dismiss" msgid="3377597875997861754">"ปิด"</string>
-    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"เพิ่ม นำออก และจัดลำดับวิดเจ็ตในพื้นที่นี้ใหม่"</string>
+    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"เพิ่ม นำออก และจัดลำดับวิด⁠เจ็ตในพื้นที่นี้ใหม่"</string>
     <string name="cta_label_to_open_widget_picker" msgid="3874946756976360699">"เพิ่มวิดเจ็ตอีก"</string>
     <string name="popup_on_dismiss_cta_tile_text" msgid="8292501780996070019">"กดค้างเพื่อปรับแต่งวิดเจ็ต"</string>
     <string name="button_to_configure_widgets_text" msgid="4191862850185256901">"ปรับแต่งวิดเจ็ต"</string>
@@ -808,12 +809,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ไม่รองรับฟีเจอร์การสนทนา"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ความคิดเห็น"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ปิด"</string>
-    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
-    <skip />
-    <!-- no translation found for live_notifications_title (1586553354601345379) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"ไม่แสดงเป็นรายการที่ปักหมุด"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"กำลังแสดงข้อมูลอัปเดตแบบเรียลไทม์"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"การแจ้งเตือนที่ปักหมุดไว้จะแสดงข้อมูลแบบเรียลไทม์จากแอป และจะปรากฏในแถบสถานะและหน้าจอล็อกเสมอ"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"แก้ไขการแจ้งเตือนเหล่านี้ไม่ได้"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"แก้ไขการแจ้งเตือนสายเรียกเข้าไม่ได้"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"การแจ้งเตือนกลุ่มนี้กำหนดค่าที่นี่ไม่ได้"</string>
@@ -900,7 +898,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"การทํางานหลายอย่างพร้อมกัน"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ใช้โหมดแยกหน้าจอโดยให้แอปอยู่ด้านขวา"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ใช้โหมดแยกหน้าจอโดยให้แอปอยู่ด้านซ้าย"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"เปลี่ยนเป็นแบบเต็มหน้าจอ"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"ใช้โหมดเต็มหน้าจอ"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"ใช้มุมมองบนเดสก์ท็อป"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"เปลี่ยนไปใช้แอปทางด้านขวาหรือด้านล่างขณะใช้โหมดแยกหน้าจอ"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"เปลี่ยนไปใช้แอปทางด้านซ้ายหรือด้านบนขณะใช้โหมดแยกหน้าจอ"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"ระหว่างใช้โหมดแยกหน้าจอ: เปลี่ยนแอปหนึ่งเป็นอีกแอปหนึ่ง"</string>
@@ -987,6 +986,8 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"แสดงไอคอนการแจ้งเตือนลำดับความสำคัญต่ำ"</string>
     <string name="other" msgid="429768510980739978">"อื่นๆ"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
+    <skip />
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"นำชิ้นส่วนออก"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"เพิ่มการ์ดไปยังตำแหน่งสุดท้าย"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ย้ายชิ้นส่วน"</string>
@@ -1501,6 +1502,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"ดูแอปล่าสุด"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"เปลี่ยนแอป"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"เสร็จสิ้น"</string>
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"ถัดไป"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"ลองอีกครั้งนะ"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"ย้อนกลับ"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"ใช้ 3 นิ้วปัดไปทางซ้ายหรือขวาบนทัชแพด"</string>
@@ -1538,7 +1540,10 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"หากต้องการดูแอปล่าสุด ให้ใช้ 3 นิ้วปัดขึ้นแล้วค้างไว้บนทัชแพด"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"หากต้องการดูแอปทั้งหมด ให้กดปุ่มดำเนินการบนแป้นพิมพ์"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"ปกปิดไว้"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"ปลดล็อกเพื่อดู"</string>
+    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
+    <skip />
+    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
+    <skip />
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"การศึกษาตามบริบท"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"ใช้ทัชแพดเพื่อย้อนกลับ"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"ใช้ 3 นิ้วปัดไปทางซ้ายหรือขวา แตะเพื่อดูข้อมูลเพิ่มเติมเกี่ยวกับท่าทางสัมผัสต่างๆ"</string>
