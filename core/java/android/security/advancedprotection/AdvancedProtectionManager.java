@@ -16,7 +16,6 @@
 
 package android.security.advancedprotection;
 
-import static android.app.admin.DevicePolicyIdentifiers.MEMORY_TAGGING_POLICY;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.os.UserManager.DISALLOW_CELLULAR_2G;
 import static android.os.UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY;
@@ -58,6 +57,10 @@ import java.util.concurrent.Executor;
 @SystemService(Context.ADVANCED_PROTECTION_SERVICE)
 public final class AdvancedProtectionManager {
     private static final String TAG = "AdvancedProtectionMgr";
+
+    //TODO(b/378931989): Switch to android.app.admin.DevicePolicyIdentifiers.MEMORY_TAGGING_POLICY
+    //when the appropriate flag is launched.
+    private static final String MEMORY_TAGGING_POLICY = "memoryTagging";
 
     /**
      * Advanced Protection's identifier for setting policies or restrictions in
@@ -359,8 +362,7 @@ public final class AdvancedProtectionManager {
             featureId = FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES;
         } else if (DISALLOW_CELLULAR_2G.equals(identifier)) {
             featureId = FEATURE_ID_DISALLOW_CELLULAR_2G;
-        } else if (android.app.admin.flags.Flags.setMtePolicyCoexistence() && MEMORY_TAGGING_POLICY
-                .equals(identifier)) {
+        } else if (MEMORY_TAGGING_POLICY.equals(identifier)) {
             featureId = FEATURE_ID_ENABLE_MTE;
         } else {
             throw new UnsupportedOperationException("Unsupported identifier: " + identifier);
