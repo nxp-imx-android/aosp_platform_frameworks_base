@@ -568,6 +568,7 @@ public class InputManagerService extends IInputManager.Stub
         }
         mWindowManagerCallbacks = callbacks;
         registerLidSwitchCallbackInternal(mWindowManagerCallbacks);
+        mKeyGestureController.setWindowManagerCallbacks(callbacks);
     }
 
     public void setWiredAccessoryCallbacks(WiredAccessoryCallbacks callbacks) {
@@ -3371,6 +3372,11 @@ public class InputManagerService extends IInputManager.Stub
          */
         @Nullable
         SurfaceControl createSurfaceForGestureMonitor(String name, int displayId);
+
+        /**
+         * Provide information on whether the keyguard is currently locked or not.
+         */
+        boolean isKeyguardLocked(int displayId);
     }
 
     /**

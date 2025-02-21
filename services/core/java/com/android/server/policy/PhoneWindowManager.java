@@ -4290,12 +4290,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK:
                     case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS:
                         return true;
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD:
-                        return mAccessibilityShortcutController.isAccessibilityShortcutAvailable(
-                                isKeyguardLocked());
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD:
-                        return mAccessibilityShortcutController.isAccessibilityShortcutAvailable(
-                                false);
                     default:
                         return false;
                 }
@@ -4457,13 +4451,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     cancelPendingScreenshotChordAction();
                 }
                 return true;
-            case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD:
-                if (start) {
-                    interceptAccessibilityShortcutChord();
-                } else {
-                    cancelPendingAccessibilityShortcutAction();
-                }
-                return true;
             case KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD:
                 if (start) {
                     interceptRingerToggleChord();
@@ -4479,14 +4466,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     showGlobalActions();
                 } else {
                     cancelGlobalActionsAction();
-                }
-                return true;
-                // TODO (b/358569822): Consolidate TV and non-TV gestures into same KeyGestureEvent
-            case KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD:
-                if (start) {
-                    interceptAccessibilityGestureTv();
-                } else {
-                    cancelAccessibilityGestureTv();
                 }
                 return true;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT:

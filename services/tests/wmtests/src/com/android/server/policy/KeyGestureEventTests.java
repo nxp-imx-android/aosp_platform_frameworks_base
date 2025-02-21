@@ -605,29 +605,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     }
 
     @Test
-    public void testKeyGestureAccessibilityShortcutChord() {
-        Assert.assertTrue(
-                sendKeyGestureEventStart(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD));
-        mPhoneWindowManager.moveTimeForward(5000);
-        Assert.assertTrue(
-                sendKeyGestureEventCancel(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD));
-        mPhoneWindowManager.assertAccessibilityKeychordCalled();
-    }
-
-    @Test
-    public void testKeyGestureAccessibilityShortcutChordCancelled() {
-        Assert.assertTrue(
-                sendKeyGestureEventStart(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD));
-        Assert.assertTrue(
-                sendKeyGestureEventCancel(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD));
-        mPhoneWindowManager.assertAccessibilityKeychordNotCalled();
-    }
-
-    @Test
     public void testKeyGestureRingerToggleChord() {
         mPhoneWindowManager.overridePowerVolumeUp(POWER_VOLUME_UP_BEHAVIOR_MUTE);
         Assert.assertTrue(
@@ -667,29 +644,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
         Assert.assertTrue(
                 sendKeyGestureEventCancel(KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS));
         mPhoneWindowManager.assertShowGlobalActionsNotCalled();
-    }
-
-    @Test
-    public void testKeyGestureAccessibilityTvShortcutChord() {
-        Assert.assertTrue(
-                sendKeyGestureEventStart(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD));
-        mPhoneWindowManager.moveTimeForward(5000);
-        Assert.assertTrue(
-                sendKeyGestureEventCancel(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD));
-        mPhoneWindowManager.assertAccessibilityKeychordCalled();
-    }
-
-    @Test
-    public void testKeyGestureAccessibilityTvShortcutChordCancelled() {
-        Assert.assertTrue(
-                sendKeyGestureEventStart(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD));
-        Assert.assertTrue(
-                sendKeyGestureEventCancel(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD));
-        mPhoneWindowManager.assertAccessibilityKeychordNotCalled();
     }
 
     @Test
