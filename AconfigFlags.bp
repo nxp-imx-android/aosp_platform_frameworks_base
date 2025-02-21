@@ -610,6 +610,13 @@ cc_aconfig_library {
     vendor_available: true,
 }
 
+java_aconfig_library {
+    name: "android.os.vibrator.flags-aconfig-java-host",
+    aconfig_declarations: "android.os.vibrator.flags-aconfig",
+    host_supported: true,
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
 // View
 aconfig_declarations {
     name: "android.view.flags-aconfig",
