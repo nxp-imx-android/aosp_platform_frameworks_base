@@ -30,10 +30,9 @@ import android.util.Property;
 import android.view.View;
 import android.view.animation.Interpolator;
 
-import androidx.dynamicanimation.animation.DynamicAnimation;
-import androidx.dynamicanimation.animation.SpringAnimation;
-
 import com.android.app.animation.Interpolators;
+import com.android.internal.dynamicanimation.animation.DynamicAnimation;
+import com.android.internal.dynamicanimation.animation.SpringAnimation;
 import com.android.systemui.Dumpable;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.AnimatableProperty;

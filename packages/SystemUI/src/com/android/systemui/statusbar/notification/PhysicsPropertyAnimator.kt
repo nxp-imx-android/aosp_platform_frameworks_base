@@ -15,12 +15,12 @@
  */
 package com.android.systemui.statusbar.notification
 
+import android.util.FloatProperty
 import android.util.Property
 import android.view.View
-import androidx.dynamicanimation.animation.DynamicAnimation
-import androidx.dynamicanimation.animation.FloatPropertyCompat
-import androidx.dynamicanimation.animation.SpringAnimation
-import androidx.dynamicanimation.animation.SpringForce
+import com.android.internal.dynamicanimation.animation.DynamicAnimation
+import com.android.internal.dynamicanimation.animation.SpringAnimation
+import com.android.internal.dynamicanimation.animation.SpringForce
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator.Companion.createDefaultSpring
 import com.android.systemui.statusbar.notification.stack.AnimationProperties
@@ -33,8 +33,8 @@ import com.android.systemui.statusbar.notification.stack.AnimationProperties
  */
 data class PhysicsProperty(val tag: Int, val property: Property<View, Float>) {
     val offsetProperty =
-        object : FloatPropertyCompat<View>(property.name) {
-            override fun getValue(view: View): Float {
+        object : FloatProperty<View>(property.name) {
+            override fun get(view: View): Float {
                 return property.get(view)
             }
 

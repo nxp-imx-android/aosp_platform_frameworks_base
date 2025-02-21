@@ -23,7 +23,7 @@ import android.util.Property;
 import android.view.View;
 import android.view.animation.Interpolator;
 
-import androidx.dynamicanimation.animation.DynamicAnimation;
+import com.android.internal.dynamicanimation.animation.DynamicAnimation;
 
 import java.util.function.Consumer;
 
