@@ -174,7 +174,8 @@ class NotificationConversationTemplateViewWrapper(
         // and the top level image message container.
         val containers =
             messageContainers.asSequence().map { it.messageContainer } +
-                if (notificationsRedesignTemplates()) emptySequence()
+                if (notificationsRedesignTemplates() && imageMessageContainer == null)
+                    emptySequence()
                 else sequenceOf(imageMessageContainer!!)
         val drawables =
             containers
