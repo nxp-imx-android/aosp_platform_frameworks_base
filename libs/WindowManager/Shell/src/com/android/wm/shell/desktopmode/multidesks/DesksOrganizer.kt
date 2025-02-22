@@ -40,6 +40,13 @@ interface DesksOrganizer {
         task: ActivityManager.RunningTaskInfo,
     )
 
+    /** Reorders a desk's task to the front. */
+    fun reorderTaskToFront(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        task: ActivityManager.RunningTaskInfo,
+    )
+
     /** Minimizes the given task of the given deskId. */
     fun minimizeTask(
         wct: WindowContainerTransaction,

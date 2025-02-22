@@ -2364,6 +2364,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveTaskToFront_postsWctWithReorderOp() {
         val task1 = setUpFreeformTask()
         setUpFreeformTask()
@@ -2383,6 +2384,27 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_TO_FRONT)
         assertThat(wct.hierarchyOps).hasSize(1)
         wct.assertReorderAt(index = 0, task1)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveTaskToFront_reordersToFront() {
+        val task1 = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 0)
+        setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 0)
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_TO_FRONT),
+                    any(),
+                    eq(task1.taskId),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
+
+        controller.moveTaskToFront(task1, remoteTransition = null)
+
+        verify(desksOrganizer).reorderTaskToFront(any(), eq(0), eq(task1))
     }
 
     @Test
@@ -5820,7 +5842,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES)
-    fun openInstance_fromFreeformAddsNewWindow() {
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun openInstance_fromFreeformAddsNewWindow_multiDesksDisabled() {
         setUpLandscapeDisplay()
         val task = setUpFreeformTask()
         val taskToRequest = setUpFreeformTask()
@@ -5834,12 +5857,41 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 )
             )
             .thenReturn(Binder())
+
         runOpenInstance(task, taskToRequest.taskId)
+
         verify(desktopMixedTransitionHandler)
             .startLaunchTransition(anyInt(), any(), anyInt(), anyOrNull(), anyOrNull())
         val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_TO_FRONT)
         assertThat(wct.hierarchyOps).hasSize(1)
         wct.assertReorderAt(index = 0, taskToRequest)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun openInstance_fromFreeformAddsNewWindow_multiDesksEnabled() {
+        setUpLandscapeDisplay()
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 0)
+        val taskToRequest = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 0)
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_TO_FRONT),
+                    any(),
+                    eq(taskToRequest.taskId),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
+
+        runOpenInstance(task, taskToRequest.taskId)
+
+        verify(desktopMixedTransitionHandler)
+            .startLaunchTransition(anyInt(), any(), anyInt(), anyOrNull(), anyOrNull())
+        verify(desksOrganizer).reorderTaskToFront(any(), eq(0), eq(taskToRequest))
     }
 
     @Test
@@ -6868,7 +6920,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
     )
     fun startLaunchTransition_desktopNotShowing_movesWallpaperToFront() {
-        val launchingTask = createFreeformTask()
+        val launchingTask = createFreeformTask(displayId = DEFAULT_DISPLAY)
         val wct = WindowContainerTransaction()
         wct.reorder(launchingTask.token, /* onTop= */ true)
         whenever(
@@ -6882,7 +6934,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
             .thenReturn(Binder())
 
-        controller.startLaunchTransition(TRANSIT_OPEN, wct, launchingTaskId = null)
+        controller.startLaunchTransition(
+            transitionType = TRANSIT_OPEN,
+            wct = wct,
+            launchingTaskId = null,
+            deskId = 0,
+            displayId = DEFAULT_DISPLAY,
+        )
 
         val latestWct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
         val launchingTaskReorderIndex = latestWct.indexOfReorder(launchingTask, toTop = true)
@@ -6906,6 +6964,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             transitionType = TRANSIT_OPEN,
             wct = WindowContainerTransaction(),
             launchingTaskId = null,
+            deskId = 0,
+            displayId = DEFAULT_DISPLAY,
         )
 
         verify(desktopModeEnterExitTransitionListener).onEnterDesktopModeTransitionStarted(any())
@@ -6941,6 +7001,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             transitionType = TRANSIT_OPEN,
             wct = wct,
             launchingTaskId = launchingTask.taskId,
+            deskId = inactiveDesk,
+            displayId = DEFAULT_DISPLAY,
         )
 
         verify(desksOrganizer).activateDesk(any(), eq(inactiveDesk))
@@ -6972,8 +7034,14 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
             .thenReturn(Binder())
 
-        setUpFreeformTask()
-        controller.startLaunchTransition(TRANSIT_OPEN, wct, launchingTaskId = null)
+        setUpFreeformTask(deskId = 0, displayId = DEFAULT_DISPLAY)
+        controller.startLaunchTransition(
+            transitionType = TRANSIT_OPEN,
+            wct = wct,
+            launchingTaskId = null,
+            deskId = 0,
+            displayId = DEFAULT_DISPLAY,
+        )
 
         val latestWct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
         assertNull(latestWct.hierarchyOps.find { op -> op.container == wallpaperToken.asBinder() })

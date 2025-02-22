@@ -110,6 +110,29 @@ class RootTaskDesksOrganizer(
         wct.reparent(task.token, root.taskInfo.token, /* onTop= */ true)
     }
 
+    override fun reorderTaskToFront(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        task: RunningTaskInfo,
+    ) {
+        logV("reorderTaskToFront task=${task.taskId} desk=$deskId")
+        val root = deskRootsByDeskId[deskId] ?: error("Root not found for desk: $deskId")
+        if (task.taskId in root.children) {
+            wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
+            return
+        }
+        val minimizationRoot =
+            checkNotNull(deskMinimizationRootsByDeskId[deskId]) {
+                "Minimization root not found for desk: $deskId"
+            }
+        if (task.taskId in minimizationRoot.children) {
+            unminimizeTask(wct, deskId, task)
+            wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
+            return
+        }
+        logE("Attempted to reorder task=${task.taskId} in desk=$deskId but it was not a child")
+    }
+
     override fun minimizeTask(wct: WindowContainerTransaction, deskId: Int, task: RunningTaskInfo) {
         logV("minimizeTask task=${task.taskId} desk=$deskId")
         val deskRoot =

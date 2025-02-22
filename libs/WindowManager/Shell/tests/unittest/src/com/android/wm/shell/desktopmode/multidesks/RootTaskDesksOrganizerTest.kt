@@ -25,6 +25,7 @@ import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.Change
 import android.window.WindowContainerTransaction.HierarchyOp
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTaskOrganizer
@@ -542,6 +543,68 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         organizer.unminimizeTask(wct, deskId = desk.deskRoot.deskId, task)
 
         assertThat(wct.hasUnminimizationHops(desk, task.token)).isFalse()
+    }
+
+    @Test
+    fun reorderTaskToFront() {
+        val desk = createDesk()
+        val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
+        val wct = WindowContainerTransaction()
+        organizer.onTaskAppeared(task, SurfaceControl())
+
+        organizer.reorderTaskToFront(wct, desk.deskRoot.deskId, task)
+
+        assertThat(
+                wct.hierarchyOps.singleOrNull { hop ->
+                    hop.container == task.token.asBinder() &&
+                        hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                        hop.toTop &&
+                        hop.includingParents()
+                }
+            )
+            .isNotNull()
+    }
+
+    @Test
+    fun reorderTaskToFront_notInDesk_noOp() {
+        val desk = createDesk()
+        val task = createFreeformTask()
+        val wct = WindowContainerTransaction()
+
+        organizer.reorderTaskToFront(wct, desk.deskRoot.deskId, task)
+
+        assertThat(
+                wct.hierarchyOps.singleOrNull { hop ->
+                    hop.container == task.token.asBinder() &&
+                        hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                        hop.toTop &&
+                        hop.includingParents()
+                }
+            )
+            .isNull()
+    }
+
+    @Test
+    fun reorderTaskToFront_minimized_unminimizesAndReorders() {
+        val desk = createDesk()
+        val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
+        val wct = WindowContainerTransaction()
+        organizer.onTaskAppeared(task, SurfaceControl())
+        task.parentTaskId = desk.minimizationRoot.rootId
+        organizer.onTaskInfoChanged(task)
+
+        organizer.reorderTaskToFront(wct, desk.deskRoot.deskId, task)
+
+        assertThat(wct.hasUnminimizationHops(desk, task.token)).isTrue()
+        assertThat(
+                wct.hierarchyOps.singleOrNull { hop ->
+                    hop.container == task.token.asBinder() &&
+                        hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                        hop.toTop &&
+                        hop.includingParents()
+                }
+            )
+            .isNotNull()
     }
 
     private data class DeskRoots(

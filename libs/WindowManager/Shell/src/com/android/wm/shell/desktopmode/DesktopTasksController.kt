@@ -962,10 +962,13 @@ class DesktopTasksController(
                 .apply { launchWindowingMode = WINDOWING_MODE_FREEFORM }
                 .toBundle(),
         )
+        val deskId = taskRepository.getDeskIdForTask(taskId) ?: getDefaultDeskId(DEFAULT_DISPLAY)
         startLaunchTransition(
             TRANSIT_OPEN,
             wct,
             taskId,
+            deskId = deskId,
+            displayId = DEFAULT_DISPLAY,
             remoteTransition = remoteTransition,
             unminimizeReason = unminimizeReason,
         )
@@ -983,19 +986,26 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
     ) {
-        logV("moveTaskToFront taskId=%s", taskInfo.taskId)
+        val deskId =
+            taskRepository.getDeskIdForTask(taskInfo.taskId) ?: getDefaultDeskId(taskInfo.displayId)
+        logV("moveTaskToFront taskId=%s deskId=%s", taskInfo.taskId, deskId)
         // If a task is tiled, another task should be brought to foreground with it so let
         // tiling controller handle the request.
         if (snapEventHandler.moveTaskToFrontIfTiled(taskInfo)) {
             return
         }
         val wct = WindowContainerTransaction()
-        wct.reorder(taskInfo.token, /* onTop= */ true, /* includingParents= */ true)
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            desksOrganizer.reorderTaskToFront(wct, deskId, taskInfo)
+        } else {
+            wct.reorder(taskInfo.token, /* onTop= */ true, /* includingParents= */ true)
+        }
         startLaunchTransition(
             transitionType = TRANSIT_TO_FRONT,
             wct = wct,
             launchingTaskId = taskInfo.taskId,
             remoteTransition = remoteTransition,
+            deskId = deskId,
             displayId = taskInfo.displayId,
             unminimizeReason = unminimizeReason,
         )
@@ -1007,12 +1017,10 @@ class DesktopTasksController(
         wct: WindowContainerTransaction,
         launchingTaskId: Int?,
         remoteTransition: RemoteTransition? = null,
-        displayId: Int = DEFAULT_DISPLAY,
+        deskId: Int,
+        displayId: Int,
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
     ): IBinder {
-        val deskId =
-            launchingTaskId?.let { taskId -> taskRepository.getDeskIdForTask(taskId) }
-                ?: getDefaultDeskId(displayId)
         logV(
             "startLaunchTransition type=%s launchingTaskId=%d deskId=%d displayId=%d",
             WindowManager.transitTypeToString(transitionType),
@@ -1162,7 +1170,14 @@ class DesktopTasksController(
             }
 
         wct.sendPendingIntent(pendingIntent, intent, ops.toBundle())
-        startLaunchTransition(TRANSIT_OPEN, wct, launchingTaskId = null)
+        val deskId = getDefaultDeskId(displayId)
+        startLaunchTransition(
+            TRANSIT_OPEN,
+            wct,
+            launchingTaskId = null,
+            deskId = deskId,
+            displayId = displayId,
+        )
     }
 
     /**
@@ -2151,10 +2166,14 @@ class DesktopTasksController(
             WINDOWING_MODE_FREEFORM -> {
                 val wct = WindowContainerTransaction()
                 wct.sendPendingIntent(launchIntent, fillIn, options.toBundle())
+                val deskId =
+                    taskRepository.getDeskIdForTask(callingTaskInfo.taskId)
+                        ?: getDefaultDeskId(callingTaskInfo.displayId)
                 startLaunchTransition(
                     transitionType = TRANSIT_OPEN,
                     wct = wct,
                     launchingTaskId = null,
+                    deskId = deskId,
                     displayId = callingTaskInfo.displayId,
                 )
             }
@@ -3405,7 +3424,14 @@ class DesktopTasksController(
         if (windowingMode == WINDOWING_MODE_FREEFORM) {
             if (DesktopModeFlags.ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX.isTrue()) {
                 // TODO b/376389593: Use a custom tab tearing transition/animation
-                startLaunchTransition(TRANSIT_OPEN, wct, launchingTaskId = null)
+                val deskId = getDefaultDeskId(DEFAULT_DISPLAY)
+                startLaunchTransition(
+                    TRANSIT_OPEN,
+                    wct,
+                    launchingTaskId = null,
+                    deskId = deskId,
+                    displayId = DEFAULT_DISPLAY,
+                )
             } else {
                 desktopModeDragAndDropTransitionHandler.handleDropEvent(wct)
             }
