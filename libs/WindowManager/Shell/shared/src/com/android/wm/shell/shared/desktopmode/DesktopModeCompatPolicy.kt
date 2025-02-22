@@ -38,6 +38,8 @@ class DesktopModeCompatPolicy(private val context: Context) {
         get() = context.getPackageManager()
     private val defaultHomePackage: String?
         get() = pkgManager.getHomeActivities(ArrayList())?.packageName
+    private val packageInfoCache = mutableMapOf<String, Boolean>()
+
 
     /**
      * If the top activity should be exempt from desktop windowing and forced back to fullscreen.
@@ -94,14 +96,16 @@ class DesktopModeCompatPolicy(private val context: Context) {
             if (packageName == null) {
                 return false
             }
-            return try {
-                val packageInfo = pkgManager.getPackageInfo(
-                    packageName,
-                    PackageManager.GET_PERMISSIONS
-                )
-                packageInfo?.requestedPermissions?.contains(SYSTEM_ALERT_WINDOW) == true
-            } catch (e: PackageManager.NameNotFoundException) {
-                false // Package not found
+            return packageInfoCache.getOrPut(packageName) {
+                try {
+                    val packageInfo = pkgManager.getPackageInfo(
+                        packageName,
+                        PackageManager.GET_PERMISSIONS
+                    )
+                    packageInfo?.requestedPermissions?.contains(SYSTEM_ALERT_WINDOW) == true
+                } catch (e: PackageManager.NameNotFoundException) {
+                    false // Package not found
+                }
             }
         }
         // If the flag is disabled we make this condition neutral.
