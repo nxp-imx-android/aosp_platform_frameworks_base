@@ -286,10 +286,6 @@ constructor(
                 field = value
                 mediaCarouselController.mediaCarouselScrollHandler.qsExpanded = value
             }
-            // qs is expanded on LS shade and HS shade
-            if (value && (isLockScreenShadeVisibleToUser() || isHomeScreenShadeVisibleToUser())) {
-                mediaCarouselController.logSmartspaceImpression(value)
-            }
             updateUserVisibility()
         }
 
@@ -520,12 +516,6 @@ constructor(
 
                 override fun onStateChanged(newState: Int) {
                     updateTargetState()
-                    // Enters shade from lock screen
-                    if (
-                        newState == StatusBarState.SHADE_LOCKED && isLockScreenShadeVisibleToUser()
-                    ) {
-                        mediaCarouselController.logSmartspaceImpression(qsExpanded)
-                    }
                     updateUserVisibility()
                 }
 
@@ -536,10 +526,6 @@ constructor(
                 override fun onDozingChanged(isDozing: Boolean) {
                     if (!isDozing) {
                         dozeAnimationRunning = false
-                        // Enters lock screen from screen off
-                        if (isLockScreenVisibleToUser()) {
-                            mediaCarouselController.logSmartspaceImpression(qsExpanded)
-                        }
                     } else {
                         updateDesiredLocation()
                         qsExpanded = false
@@ -549,10 +535,6 @@ constructor(
                 }
 
                 override fun onExpandedChanged(isExpanded: Boolean) {
-                    // Enters shade from home screen
-                    if (isHomeScreenShadeVisibleToUser()) {
-                        mediaCarouselController.logSmartspaceImpression(qsExpanded)
-                    }
                     updateUserVisibility()
                 }
             }

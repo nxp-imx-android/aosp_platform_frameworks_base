@@ -117,7 +117,6 @@ import com.android.systemui.media.controls.ui.view.RecommendationViewHolder;
 import com.android.systemui.media.controls.ui.viewmodel.SeekBarViewModel;
 import com.android.systemui.media.controls.util.MediaDataUtils;
 import com.android.systemui.media.controls.util.MediaUiEventLogger;
-import com.android.systemui.media.controls.util.SmallHash;
 import com.android.systemui.media.dialog.MediaOutputDialogManager;
 import com.android.systemui.monet.ColorScheme;
 import com.android.systemui.monet.Style;
@@ -125,7 +124,6 @@ import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
-import com.android.systemui.shared.system.SysUiStatsLog;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.surfaceeffects.PaintDrawCallback;
@@ -173,10 +171,6 @@ public class MediaControlPanel {
             "com.google.android.apps.gsa.smartspace.extra.SMARTSPACE_INTENT";
     private static final String KEY_SMARTSPACE_ARTIST_NAME = "artist_name";
     private static final String KEY_SMARTSPACE_OPEN_IN_FOREGROUND = "KEY_OPEN_IN_FOREGROUND";
-
-    // Event types logged by smartspace
-    private static final int SMARTSPACE_CARD_CLICK_EVENT = 760;
-    protected static final int SMARTSPACE_CARD_DISMISS_EVENT = 761;
 
     private static final float REC_MEDIA_COVER_SCALE_FACTOR = 1.25f;
     private static final float MEDIA_REC_SCRIM_START_ALPHA = 0.15f;
@@ -247,11 +241,9 @@ public class MediaControlPanel {
     private final NotificationLockscreenUserManager mLockscreenUserManager;
 
     // Used for logging.
-    protected boolean mIsImpressed = false;
     private SystemClock mSystemClock;
     private MediaUiEventLogger mLogger;
     private InstanceId mInstanceId;
-    protected int mSmartspaceId = -1;
     private String mPackageName;
 
     private boolean mIsScrubbing = false;
@@ -350,7 +342,6 @@ public class MediaControlPanel {
             if (mPackageName != null && mInstanceId != null) {
                 mLogger.logSeek(mUid, mPackageName, mInstanceId);
             }
-            logSmartspaceCardReported(SMARTSPACE_CARD_CLICK_EVENT);
             return Unit.INSTANCE;
         });
 
@@ -565,10 +556,6 @@ public class MediaControlPanel {
         MediaSession.Token token = data.getToken();
         mPackageName = data.getPackageName();
         mUid = data.getAppUid();
-        // Only assigns instance id if it's unassigned.
-        if (mSmartspaceId == -1) {
-            mSmartspaceId = SmallHash.hash(mUid + (int) mSystemClock.currentTimeMillis());
-        }
         mInstanceId = data.getInstanceId();
 
         if (mToken == null || !mToken.equals(token)) {
@@ -588,7 +575,6 @@ public class MediaControlPanel {
                 if (mFalsingManager.isFalseTap(FalsingManager.LOW_PENALTY)) return;
                 if (mMediaViewController.isGutsVisible()) return;
                 mLogger.logTapContentView(mUid, mPackageName, mInstanceId);
-                logSmartspaceCardReported(SMARTSPACE_CARD_CLICK_EVENT);
 
                 boolean showOverLockscreen = mKeyguardStateController.isShowing()
                         && mActivityIntentHelper.wouldPendingShowOverLockscreen(clickIntent,
@@ -1289,7 +1275,6 @@ public class MediaControlPanel {
                 button.setOnClickListener(v -> {
                     if (!mFalsingManager.isFalseTap(FalsingManager.MODERATE_PENALTY)) {
                         mLogger.logTapAction(button.getId(), mUid, mPackageName, mInstanceId);
-                        logSmartspaceCardReported(SMARTSPACE_CARD_CLICK_EVENT);
                         // Used to determine whether to play turbulence noise.
                         mWasPlaying = isPlaying();
                         mButtonClicked = true;
@@ -1497,7 +1482,6 @@ public class MediaControlPanel {
         }
 
         mRecommendationData = data;
-        mSmartspaceId = SmallHash.hash(data.getTargetId());
         mPackageName = data.getPackageName();
         mInstanceId = data.getInstanceId();
 
@@ -1752,7 +1736,6 @@ public class MediaControlPanel {
         gutsViewHolder.getDismiss().setEnabled(isDismissible);
         gutsViewHolder.getDismiss().setOnClickListener(v -> {
             if (mFalsingManager.isFalseTap(FalsingManager.LOW_PENALTY)) return;
-            logSmartspaceCardReported(SMARTSPACE_CARD_DISMISS_EVENT);
             mLogger.logLongPressDismiss(mUid, mPackageName, mInstanceId);
 
             onDismissClickedRunnable.run();
@@ -1932,9 +1915,6 @@ public class MediaControlPanel {
             } else {
                 mLogger.logRecommendationItemTap(mPackageName, mInstanceId, interactedSubcardRank);
             }
-            logSmartspaceCardReported(SMARTSPACE_CARD_CLICK_EVENT,
-                    interactedSubcardRank,
-                    mSmartspaceMediaItemsCount);
 
             if (shouldSmartspaceRecItemOpenInForeground(action)) {
                 // Request to unlock the device if the activity needs to be opened in foreground.
@@ -1974,40 +1954,6 @@ public class MediaControlPanel {
         }
 
         return false;
-    }
-
-    /**
-     * Get the surface given the current end location for MediaViewController
-     *
-     * @return surface used for Smartspace logging
-     */
-    protected int getSurfaceForSmartspaceLogging() {
-        int currentEndLocation = mMediaViewController.getCurrentEndLocation();
-        if (currentEndLocation == MediaHierarchyManager.LOCATION_QQS
-                || currentEndLocation == MediaHierarchyManager.LOCATION_QS) {
-            return SysUiStatsLog.SMART_SPACE_CARD_REPORTED__DISPLAY_SURFACE__SHADE;
-        } else if (currentEndLocation == MediaHierarchyManager.LOCATION_LOCKSCREEN) {
-            return SysUiStatsLog.SMART_SPACE_CARD_REPORTED__DISPLAY_SURFACE__LOCKSCREEN;
-        } else if (currentEndLocation == MediaHierarchyManager.LOCATION_DREAM_OVERLAY) {
-            return SysUiStatsLog.SMART_SPACE_CARD_REPORTED__DISPLAY_SURFACE__DREAM_OVERLAY;
-        }
-        return SysUiStatsLog.SMART_SPACE_CARD_REPORTED__DISPLAY_SURFACE__DEFAULT_SURFACE;
-    }
-
-    private void logSmartspaceCardReported(int eventId) {
-        logSmartspaceCardReported(eventId,
-                /* interactedSubcardRank */ 0,
-                /* interactedSubcardCardinality */ 0);
-    }
-
-    private void logSmartspaceCardReported(int eventId,
-            int interactedSubcardRank, int interactedSubcardCardinality) {
-        mMediaCarouselController.logSmartspaceCardReported(eventId,
-                mSmartspaceId,
-                mUid,
-                new int[]{getSurfaceForSmartspaceLogging()},
-                interactedSubcardRank,
-                interactedSubcardCardinality);
     }
 }
 

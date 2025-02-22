@@ -61,7 +61,6 @@ class MediaCarouselScrollHandlerTest : SysuiTestCase() {
     @Mock lateinit var seekBarUpdateListener: (visibleToUser: Boolean) -> Unit
     @Mock lateinit var closeGuts: (immediate: Boolean) -> Unit
     @Mock lateinit var falsingManager: FalsingManager
-    @Mock lateinit var logSmartspaceImpression: (Boolean) -> Unit
     @Mock lateinit var logger: MediaUiEventLogger
     @Mock lateinit var contentContainer: ViewGroup
     @Mock lateinit var settingsButton: View
@@ -91,7 +90,6 @@ class MediaCarouselScrollHandlerTest : SysuiTestCase() {
                 seekBarUpdateListener,
                 closeGuts,
                 falsingManager,
-                logSmartspaceImpression,
                 logger,
             )
         mediaCarouselScrollHandler.playerWidthPlusPadding = carouselWidth

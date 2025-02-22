@@ -31,7 +31,6 @@ import com.android.systemui.media.controls.domain.pipeline.MediaDataProcessor
 import com.android.systemui.media.controls.shared.model.MediaRecModel
 import com.android.systemui.media.controls.shared.model.MediaRecommendationsModel
 import com.android.systemui.media.controls.shared.model.SmartspaceMediaData
-import com.android.systemui.media.controls.util.MediaSmartspaceLogger
 import com.android.systemui.plugins.ActivityStarter
 import java.net.URISyntaxException
 import javax.inject.Inject
@@ -66,14 +65,7 @@ constructor(
             .distinctUntilChanged()
             .stateIn(applicationScope, SharingStarted.WhileSubscribed(), false)
 
-    fun removeMediaRecommendations(
-        key: String,
-        dismissIntent: Intent?,
-        delayMs: Long,
-        eventId: Int,
-        location: Int,
-    ) {
-        logSmartspaceCardUserEvent(eventId, location)
+    fun removeMediaRecommendations(key: String, dismissIntent: Intent?, delayMs: Long) {
         mediaDataProcessor.dismissSmartspaceRecommendation(key, delayMs)
         if (dismissIntent == null) {
             Log.w(TAG, "Cannot create dismiss action click action: extras missing dismiss_intent.")
@@ -93,25 +85,7 @@ constructor(
         activityStarter.startActivity(SETTINGS_INTENT, /* dismissShade= */ true)
     }
 
-    fun startClickIntent(
-        expandable: Expandable,
-        intent: Intent,
-        eventId: Int,
-        location: Int,
-        interactedSubCardRank: Int,
-        interactedSubCardCardinality: Int,
-    ) {
-        if (interactedSubCardRank == -1) {
-            logSmartspaceCardUserEvent(eventId, MediaSmartspaceLogger.getSurface(location))
-        } else {
-            repository.logSmartspaceCardUserEvent(
-                eventId,
-                MediaSmartspaceLogger.getSurface(location),
-                interactedSubCardRank = interactedSubCardRank,
-                interactedSubCardCardinality = interactedSubCardCardinality,
-                isRec = true,
-            )
-        }
+    fun startClickIntent(expandable: Expandable, intent: Intent) {
         if (shouldActivityOpenInForeground(intent)) {
             // Request to unlock the device if the activity needs to be opened in foreground.
             activityStarter.postStartActivityDismissingKeyguard(
@@ -125,14 +99,6 @@ constructor(
             // Otherwise, open the activity in background directly.
             applicationContext.startActivity(intent)
         }
-    }
-
-    private fun logSmartspaceCardUserEvent(eventId: Int, location: Int) {
-        repository.logSmartspaceCardUserEvent(
-            eventId,
-            MediaSmartspaceLogger.getSurface(location),
-            isRec = true,
-        )
     }
 
     /** Returns if the action will open the activity in foreground. */

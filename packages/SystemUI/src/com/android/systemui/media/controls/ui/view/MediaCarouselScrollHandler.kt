@@ -64,7 +64,6 @@ class MediaCarouselScrollHandler(
     private var seekBarUpdateListener: (visibleToUser: Boolean) -> Unit,
     private val closeGuts: (immediate: Boolean) -> Unit,
     private val falsingManager: FalsingManager,
-    private val logSmartspaceImpression: (Boolean) -> Unit,
     private val logger: MediaUiEventLogger,
 ) {
     /** Trace state logger for media carousel visibility */
@@ -480,7 +479,6 @@ class MediaCarouselScrollHandler(
             val oldIndex = visibleMediaIndex
             visibleMediaIndex = newIndex
             if (oldIndex != visibleMediaIndex && visibleToUser) {
-                logSmartspaceImpression(qsExpanded)
                 logger.logMediaCarouselPage(newIndex)
             }
             closeGuts(false)
