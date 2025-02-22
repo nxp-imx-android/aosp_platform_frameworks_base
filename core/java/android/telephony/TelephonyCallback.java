@@ -2339,8 +2339,6 @@ public class TelephonyCallback {
         }
 
         public void onCarrierRoamingNtnEligibleStateChanged(boolean eligible) {
-            if (!Flags.carrierRoamingNbIotNtn()) return;
-
             CarrierRoamingNtnListener listener =
                     (CarrierRoamingNtnListener) mTelephonyCallbackWeakRef.get();
             if (listener == null) return;
@@ -2351,8 +2349,6 @@ public class TelephonyCallback {
 
         public void onCarrierRoamingNtnAvailableServicesChanged(
                 @NetworkRegistrationInfo.ServiceType int[] availableServices) {
-            if (!Flags.carrierRoamingNbIotNtn()) return;
-
             CarrierRoamingNtnListener listener =
                     (CarrierRoamingNtnListener) mTelephonyCallbackWeakRef.get();
             if (listener == null) return;
@@ -2363,8 +2359,6 @@ public class TelephonyCallback {
 
         public void onCarrierRoamingNtnSignalStrengthChanged(
                 @NonNull NtnSignalStrength ntnSignalStrength) {
-            if (!Flags.carrierRoamingNbIotNtn()) return;
-
             CarrierRoamingNtnListener listener =
                     (CarrierRoamingNtnListener) mTelephonyCallbackWeakRef.get();
             if (listener == null) return;

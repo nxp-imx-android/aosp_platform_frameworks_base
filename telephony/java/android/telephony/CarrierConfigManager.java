@@ -10132,7 +10132,6 @@ public class CarrierConfigManager {
      *
      * The default value is false.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     public static final String KEY_SATELLITE_ESOS_SUPPORTED_BOOL = "satellite_esos_supported_bool";
 
     /**
@@ -10142,7 +10141,6 @@ public class CarrierConfigManager {
      *
      * The default value is false.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     public static final String KEY_SATELLITE_ROAMING_P2P_SMS_SUPPORTED_BOOL =
             "satellite_roaming_p2p_sms_supported_bool";
 
@@ -10213,7 +10211,6 @@ public class CarrierConfigManager {
      *
      * The default value is {@link SatelliteManager#EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_T911}.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     public static final String
             KEY_CARRIER_ROAMING_NTN_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_INT =
             "carrier_roaming_ntn_emergency_call_to_satellite_handover_type_int";
@@ -10253,7 +10250,6 @@ public class CarrierConfigManager {
      *
      * The default value is 30 seconds.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     public static final String KEY_SATELLITE_ROAMING_SCREEN_OFF_INACTIVITY_TIMEOUT_SEC_INT =
             "satellite_roaming_screen_off_inactivity_timeout_sec_int";
 
@@ -10267,7 +10263,6 @@ public class CarrierConfigManager {
      *
      * The default value is 180 seconds.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     public static final String KEY_SATELLITE_ROAMING_P2P_SMS_INACTIVITY_TIMEOUT_SEC_INT =
             "satellite_roaming_p2p_sms_inactivity_timeout_sec_int";
 
@@ -10281,7 +10276,6 @@ public class CarrierConfigManager {
      *
      * The default value is 600 seconds.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     public static final String KEY_SATELLITE_ROAMING_ESOS_INACTIVITY_TIMEOUT_SEC_INT =
             "satellite_roaming_esos_inactivity_timeout_sec_int";
 
