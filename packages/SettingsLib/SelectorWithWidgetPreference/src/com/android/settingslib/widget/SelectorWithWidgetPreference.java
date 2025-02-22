@@ -234,9 +234,9 @@ public class SelectorWithWidgetPreference extends CheckBoxPreference {
     private void init(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr,
             int defStyleRes) {
         if (mIsCheckBox) {
-            setWidgetLayoutResource(R.layout.preference_widget_checkbox);
+            setWidgetLayoutResource(R.layout.settingslib_preference_widget_checkbox);
         } else {
-            setWidgetLayoutResource(R.layout.preference_widget_radiobutton);
+            setWidgetLayoutResource(R.layout.settingslib_preference_widget_radiobutton);
         }
         setLayoutResource(R.layout.preference_selector_with_widget);
         setIconSpaceReserved(false);
