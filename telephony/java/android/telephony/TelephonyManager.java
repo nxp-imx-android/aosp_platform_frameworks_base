@@ -1241,7 +1241,6 @@ public class TelephonyManager {
      * {@link #EXTRA_EMERGENCY_CALL_TO_SATELLITE_LAUNCH_INTENT} will not be included in the event
      * {@link #EVENT_DISPLAY_EMERGENCY_MESSAGE}.
      */
-    @FlaggedApi(Flags.FLAG_OEM_ENABLED_SATELLITE_FLAG)
     public static final String EVENT_DISPLAY_EMERGENCY_MESSAGE =
             "android.telephony.event.DISPLAY_EMERGENCY_MESSAGE";
 
@@ -1256,7 +1255,6 @@ public class TelephonyManager {
      * <p>
      * Set in the extras for the {@link #EVENT_DISPLAY_EMERGENCY_MESSAGE} connection event.
      */
-    @FlaggedApi(Flags.FLAG_OEM_ENABLED_SATELLITE_FLAG)
     public static final String EXTRA_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE =
             "android.telephony.extra.EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE";
 
@@ -1264,7 +1262,6 @@ public class TelephonyManager {
      * Extra key used with the {@link #EVENT_DISPLAY_EMERGENCY_MESSAGE} for a {@link PendingIntent}
      * which will be launched by the Dialer app.
      */
-    @FlaggedApi(Flags.FLAG_OEM_ENABLED_SATELLITE_FLAG)
     public static final String EXTRA_EMERGENCY_CALL_TO_SATELLITE_LAUNCH_INTENT =
             "android.telephony.extra.EMERGENCY_CALL_TO_SATELLITE_LAUNCH_INTENT";
 
