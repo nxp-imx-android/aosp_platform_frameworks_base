@@ -3122,6 +3122,36 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveToNextDisplay_toDesktopInOtherDisplay_appliesTaskLimit() {
+        val transition = Binder()
+        val sourceDeskId = 0
+        val targetDeskId = 2
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = targetDeskId)
+        taskRepository.setDeskInactive(deskId = targetDeskId)
+        val targetDeskTasks =
+            (1..MAX_TASK_LIMIT + 1).map { _ ->
+                setUpFreeformTask(displayId = SECOND_DISPLAY, deskId = targetDeskId)
+            }
+        // Set up two display ids
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+        // Create a mock for the target display area: second display
+        val secondDisplayArea = DisplayAreaInfo(MockToken().token(), SECOND_DISPLAY, 0)
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(SECOND_DISPLAY))
+            .thenReturn(secondDisplayArea)
+        whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+            .thenReturn(transition)
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = sourceDeskId)
+
+        controller.moveToNextDisplay(task.taskId)
+
+        val wct = getLatestTransition()
+        assertNotNull(wct)
+        verify(desksOrganizer).minimizeTask(wct, targetDeskId, targetDeskTasks[0])
+    }
+
+    @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
         Flags.FLAG_ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY,
@@ -3190,10 +3220,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(desksOrganizer).activateDesk(any(), eq(targetDeskId))
         verify(desksTransitionsObserver)
             .addPendingTransition(
-                DeskTransition.ActivateDesk(
+                DeskTransition.ActiveDeskWithTask(
                     token = transition,
                     displayId = SECOND_DISPLAY,
                     deskId = targetDeskId,
+                    enterTaskId = task.taskId,
                 )
             )
     }

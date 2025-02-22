@@ -1255,8 +1255,7 @@ class DesktopTasksController(
             wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
         }
 
-        // TODO: b/391485148 - pass in the moving-to-desk |task| here to apply task-limit policy.
-        val activationRunnable = addDeskActivationChanges(destinationDeskId, wct)
+        val activationRunnable = addDeskActivationChanges(destinationDeskId, wct, task)
 
         if (Flags.enableDisplayFocusInShellTransitions()) {
             // Bring the destination display to top with includingParents=true, so that the
