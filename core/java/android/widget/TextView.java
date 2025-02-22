@@ -5211,7 +5211,11 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
      */
     @Nullable
     public String getFontVariationSettings() {
-        return mTextPaint.getFontVariationSettings();
+        if (Flags.typefaceRedesignReadonly()) {
+            return mTextPaint.getFontVariationOverride();
+        } else {
+            return mTextPaint.getFontVariationSettings();
+        }
     }
 
     /**
@@ -5567,10 +5571,10 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
                             Math.clamp(400 + mFontWeightAdjustment,
                                     FontStyle.FONT_WEIGHT_MIN, FontStyle.FONT_WEIGHT_MAX)));
                 }
-                mTextPaint.setFontVariationSettings(
+                mTextPaint.setFontVariationOverride(
                         FontVariationAxis.toFontVariationSettings(axes));
             } else {
-                mTextPaint.setFontVariationSettings(fontVariationSettings);
+                mTextPaint.setFontVariationOverride(fontVariationSettings);
             }
             effective = true;
         } else {
