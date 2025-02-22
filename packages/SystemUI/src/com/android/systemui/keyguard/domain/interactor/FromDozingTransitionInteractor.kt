@@ -159,7 +159,6 @@ constructor(
                     val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
                     val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
                     val isKeyguardGoingAway = keyguardInteractor.isKeyguardGoingAway.value
-                    val canStartDreaming = dreamManager.canStartDreaming(false)
 
                     if (!deviceEntryInteractor.isLockscreenEnabled()) {
                         if (!SceneContainerFlag.isEnabled) {
@@ -192,13 +191,6 @@ constructor(
                         if (!SceneContainerFlag.isEnabled) {
                             transitionToGlanceableHub()
                         }
-                    } else if (canStartDreaming) {
-                        // If we're waking up to dream, transition directly to dreaming without
-                        // showing the lockscreen.
-                        startTransitionTo(
-                            KeyguardState.DREAMING,
-                            ownerReason = "moving from doze to dream",
-                        )
                     } else {
                         startTransitionTo(KeyguardState.LOCKSCREEN)
                     }

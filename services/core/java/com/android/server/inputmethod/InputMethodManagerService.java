@@ -4971,8 +4971,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 }
             }
 
-            mMenuControllerNew.show(imList, lastInputMethodId, selectedSubtypeIndex, displayId,
-                    userId);
+            mMenuControllerNew.show(imList, lastInputMethodId, selectedSubtypeIndex, isScreenLocked,
+                    displayId, userId);
         } else {
             mMenuController.showInputMethodMenuLocked(showAuxSubtypes, displayId,
                     lastInputMethodId, lastInputMethodSubtypeIndex, imList, userId);

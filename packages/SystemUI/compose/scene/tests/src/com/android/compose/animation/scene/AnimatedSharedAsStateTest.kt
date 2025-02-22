@@ -67,7 +67,7 @@ class AnimatedSharedAsStateTest {
     @Composable
     private fun ContentScope.Foo(targetValues: Values, onCurrentValueChanged: (Values) -> Unit) {
         val key = TestElements.Foo
-        Element(key, Modifier) {
+        ElementWithValues(key, Modifier) {
             val int by animateElementIntAsState(targetValues.int, key = TestValues.Value1)
             val float by animateElementFloatAsState(targetValues.float, key = TestValues.Value2)
             val dp by animateElementDpAsState(targetValues.dp, key = TestValues.Value3)

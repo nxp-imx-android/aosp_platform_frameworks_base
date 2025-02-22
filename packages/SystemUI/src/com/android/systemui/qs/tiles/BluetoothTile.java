@@ -141,21 +141,17 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
     }
 
     private void handleClickWithSatelliteCheck(Runnable clickCallback) {
-        if (com.android.internal.telephony.flags.Flags.oemEnabledSatelliteFlag()) {
-            if (mClickJob != null && !mClickJob.isCompleted()) {
-                return;
-            }
-            mClickJob = SatelliteDialogUtils.mayStartSatelliteWarningDialog(
-                    mContext, this, TYPE_IS_BLUETOOTH, isAllowClick -> {
-                        if (!isAllowClick) {
-                            return null;
-                        }
-                        clickCallback.run();
-                        return null;
-                    });
+        if (mClickJob != null && !mClickJob.isCompleted()) {
             return;
         }
-        clickCallback.run();
+        mClickJob = SatelliteDialogUtils.mayStartSatelliteWarningDialog(
+                mContext, this, TYPE_IS_BLUETOOTH, isAllowClick -> {
+                    if (!isAllowClick) {
+                        return null;
+                    }
+                    clickCallback.run();
+                    return null;
+                });
     }
 
     private void handleClickEvent(@Nullable Expandable expandable) {

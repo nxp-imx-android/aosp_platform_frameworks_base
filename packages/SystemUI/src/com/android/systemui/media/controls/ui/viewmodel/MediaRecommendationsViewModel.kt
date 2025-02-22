@@ -30,13 +30,10 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaRecommendationsInteractor
 import com.android.systemui.media.controls.shared.model.MediaRecModel
 import com.android.systemui.media.controls.shared.model.MediaRecommendationsModel
-import com.android.systemui.media.controls.shared.model.NUM_REQUIRED_RECOMMENDATIONS
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.controller.MediaLocation
 import com.android.systemui.media.controls.ui.controller.MediaViewController.Companion.GUTS_ANIMATION_DURATION
 import com.android.systemui.media.controls.util.MediaDataUtils
-import com.android.systemui.media.controls.util.MediaSmartspaceLogger.Companion.SMARTSPACE_CARD_CLICK_EVENT
-import com.android.systemui.media.controls.util.MediaSmartspaceLogger.Companion.SMARTSPACE_CARD_DISMISS_EVENT
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.res.R
 import javax.inject.Inject
@@ -77,13 +74,7 @@ constructor(
         instanceId: InstanceId?,
     ) {
         logger.logLongPressDismiss(uid, packageName, instanceId)
-        interactor.removeMediaRecommendations(
-            key,
-            dismissIntent,
-            GUTS_DISMISS_DELAY_MS_DURATION,
-            SMARTSPACE_CARD_DISMISS_EVENT,
-            location,
-        )
+        interactor.removeMediaRecommendations(key, dismissIntent, GUTS_DISMISS_DELAY_MS_DURATION)
     }
 
     private fun onClicked(
@@ -107,14 +98,7 @@ constructor(
         // set the package name of the player added by recommendation once the media is loaded.
         interactor.switchToMediaControl(packageName)
 
-        interactor.startClickIntent(
-            expandable,
-            intent,
-            SMARTSPACE_CARD_CLICK_EVENT,
-            location,
-            index,
-            NUM_REQUIRED_RECOMMENDATIONS,
-        )
+        interactor.startClickIntent(expandable, intent)
     }
 
     private suspend fun toRecsViewModel(model: MediaRecommendationsModel): MediaRecsCardViewModel? {

@@ -282,6 +282,7 @@ fun ContentScope.CommunalScene(
             CommunalBackgroundType.ANIMATED -> AnimatedLinearGradient()
             CommunalBackgroundType.NONE -> BackgroundTopScrim()
             CommunalBackgroundType.BLUR -> Background()
+            CommunalBackgroundType.SCRIM -> Scrimmed()
         }
 
         with(content) {
@@ -302,6 +303,11 @@ fun ContentScope.CommunalScene(
 private fun BoxScope.DefaultBackground(colors: CommunalColors) {
     val backgroundColor by colors.backgroundColor.collectAsStateWithLifecycle()
     Box(modifier = Modifier.matchParentSize().background(Color(backgroundColor.toArgb())))
+}
+
+@Composable
+private fun BoxScope.Scrimmed() {
+    Box(modifier = Modifier.matchParentSize().alpha(0.34f).background(Color.Black))
 }
 
 /** Experimental hub background, static linear gradient */

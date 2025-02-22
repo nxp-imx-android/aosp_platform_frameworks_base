@@ -44,6 +44,7 @@ import androidx.annotation.OptIn;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.statusbar.IStatusBarService;
+import com.android.internal.util.LatencyTracker;
 import com.android.launcher3.icons.IconProvider;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
@@ -1074,8 +1075,10 @@ public abstract class WMShellModule {
     static EnterDesktopTaskTransitionHandler provideEnterDesktopModeTaskTransitionHandler(
             Transitions transitions,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
-            InteractionJankMonitor interactionJankMonitor) {
-        return new EnterDesktopTaskTransitionHandler(transitions, interactionJankMonitor);
+            InteractionJankMonitor interactionJankMonitor,
+            LatencyTracker latencyTracker) {
+        return new EnterDesktopTaskTransitionHandler(
+                transitions, interactionJankMonitor, latencyTracker);
     }
 
     @WMSingleton

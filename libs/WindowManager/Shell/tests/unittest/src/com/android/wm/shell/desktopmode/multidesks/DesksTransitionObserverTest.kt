@@ -181,6 +181,23 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_activateDesk_noTransitChange_updatesRepository() {
+        val transition = Binder()
+        val activateTransition =
+            DeskTransition.ActivateDesk(transition, displayId = DEFAULT_DISPLAY, deskId = 5)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+
+        observer.addPendingTransition(activateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_TO_FRONT, /* flags= */ 0), // no changes.
+        )
+
+        assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isEqualTo(5)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_deactivateDesk_updatesRepository() {
         val transition = Binder()
         val deskChange = Change(mock(), mock())
@@ -243,5 +260,29 @@ class DesksTransitionObserverTest : ShellTestCase() {
         )
 
         assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_twoPendingTransitions_handlesBoth() {
+        val transition = Binder()
+        // Active one desk and deactivate another in different displays, such as in some
+        // move-to-next-display CUJs.
+        repository.addDesk(displayId = 0, deskId = 1)
+        repository.addDesk(displayId = 1, deskId = 2)
+        repository.setActiveDesk(displayId = 0, deskId = 1)
+        repository.setDeskInactive(2)
+        val activateTransition = DeskTransition.ActivateDesk(transition, displayId = 1, deskId = 2)
+        val deactivateTransition = DeskTransition.DeactivateDesk(transition, deskId = 1)
+
+        observer.addPendingTransition(activateTransition)
+        observer.addPendingTransition(deactivateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0),
+        )
+
+        assertThat(repository.getActiveDeskId(displayId = 0)).isNull()
+        assertThat(repository.getActiveDeskId(displayId = 1)).isEqualTo(2)
     }
 }

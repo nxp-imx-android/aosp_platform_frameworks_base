@@ -37,6 +37,7 @@ import com.android.modules.expresslog.Counter;
 import com.android.server.utils.EventLogger;
 
 import java.io.PrintWriter;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Class to encapsulate all audio API hardening operations
@@ -49,6 +50,7 @@ public class HardeningEnforcer {
 
     final Context mContext;
     final AppOpsManager mAppOps;
+    final AtomicBoolean mShouldEnableAllHardening;
     final boolean mIsAutomotive;
 
     final ActivityManager mActivityManager;
@@ -106,10 +108,16 @@ public class HardeningEnforcer {
      */
     public static final int METHOD_AUDIO_MANAGER_REQUEST_AUDIO_FOCUS = 300;
 
-    public HardeningEnforcer(Context ctxt, boolean isAutomotive, AppOpsManager appOps,
-            PackageManager pm, EventLogger logger) {
+    private static final int ALLOWED = 0;
+    private static final int DENIED_IF_PARTIAL = 1;
+    private static final int DENIED_IF_FULL = 2;
+
+    public HardeningEnforcer(Context ctxt, boolean isAutomotive,
+            AtomicBoolean shouldEnableHardening, AppOpsManager appOps, PackageManager pm,
+            EventLogger logger) {
         mContext = ctxt;
         mIsAutomotive = isAutomotive;
+        mShouldEnableAllHardening = shouldEnableHardening;
         mAppOps = appOps;
         mActivityManager = ctxt.getSystemService(ActivityManager.class);
         mPackageManager = pm;
@@ -121,29 +129,59 @@ public class HardeningEnforcer {
      * @param volumeMethod name of the method to check, for logging purposes
      * @return false if the method call is allowed, true if it should be a no-op
      */
-    protected boolean blockVolumeMethod(int volumeMethod) {
+    protected boolean blockVolumeMethod(int volumeMethod, String packageName, int uid) {
+        // Regardless of flag state, always permit callers with MODIFY_AUDIO_SETTINGS_PRIVILEGED
+        // Prevent them from showing up in metrics as well
+        if (mContext.checkCallingOrSelfPermission(
+                Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED)
+                == PackageManager.PERMISSION_GRANTED) {
+            return false;
+        }
         // for Auto, volume methods require MODIFY_AUDIO_SETTINGS_PRIVILEGED
         if (mIsAutomotive) {
             if (!autoPublicVolumeApiHardening()) {
                 // automotive hardening flag disabled, no blocking on auto
                 return false;
             }
-            if (mContext.checkCallingOrSelfPermission(
-                    Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED)
-                    == PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-            if (Binder.getCallingUid() < UserHandle.AID_APP_START) {
+            if (uid < UserHandle.AID_APP_START) {
                 return false;
             }
             // TODO metrics?
             // TODO log for audio dumpsys?
             Slog.e(TAG, "Preventing volume method " + volumeMethod + " for "
-                    + getPackNameForUid(Binder.getCallingUid()));
+                    + packageName);
             return true;
+        } else {
+            int allowed;
+            // No flags controlling restriction yet
+            boolean enforced = mShouldEnableAllHardening.get();
+            if (!noteOp(AppOpsManager.OP_CONTROL_AUDIO_PARTIAL, uid, packageName, null)) {
+                // blocked by partial
+                Counter.logIncrementWithUid(
+                        "media_audio.value_audio_volume_hardening_partial_restriction", uid);
+                allowed = DENIED_IF_PARTIAL;
+            } else if (!noteOp(AppOpsManager.OP_CONTROL_AUDIO, uid, packageName, null)) {
+                // blocked by full, permitted by partial
+                Counter.logIncrementWithUid(
+                        "media_audio.value_audio_volume_hardening_strict_restriction", uid);
+                allowed = DENIED_IF_FULL;
+            } else {
+                // permitted with strict hardening, log anyway for API metrics
+                Counter.logIncrementWithUid(
+                        "media_audio.value_audio_volume_hardening_allowed", uid);
+                allowed = ALLOWED;
+            }
+            if (allowed != ALLOWED) {
+                String msg = "AudioHardening volume control for api "
+                        + volumeMethod
+                        + (!enforced ? " would be " : " ")
+                        + "ignored for "
+                        + getPackNameForUid(uid) + " (" + uid + "), "
+                        + "level: " + (allowed == DENIED_IF_PARTIAL ? "partial" : "full");
+                mEventLogger.enqueueAndSlog(msg, EventLogger.Event.ALOGW, TAG);
+            }
+            return enforced && allowed != ALLOWED;
         }
-        // not blocking
-        return false;
     }
 
     /**

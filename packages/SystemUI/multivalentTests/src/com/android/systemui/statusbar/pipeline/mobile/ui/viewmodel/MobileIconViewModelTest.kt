@@ -35,6 +35,8 @@ import com.android.systemui.flags.Flags.NEW_NETWORK_SLICE_UI
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.connectivity.MobileIconCarrierIdOverridesFake
+import com.android.systemui.statusbar.core.NewStatusBarIcons
+import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
@@ -858,7 +860,23 @@ class MobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun netTypeBackground_flagOn_notNullWhenPrioritizedCapabilities() =
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    fun netTypeBackground_sliceUiEnabled_notNullWhenPrioritizedCapabilities_newIcons() =
+        testScope.runTest {
+            flags.set(NEW_NETWORK_SLICE_UI, true)
+            createAndSetViewModel()
+
+            val latest by collectLastValue(underTest.networkTypeBackground)
+
+            repository.hasPrioritizedNetworkCapabilities.value = true
+
+            assertThat(latest)
+                .isEqualTo(Icon.Resource(R.drawable.mobile_network_type_background_updated, null))
+        }
+
+    @Test
+    @DisableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    fun netTypeBackground_sliceUiDisabled_notNullWhenPrioritizedCapabilities_oldIcons() =
         testScope.runTest {
             flags.set(NEW_NETWORK_SLICE_UI, true)
             createAndSetViewModel()

@@ -92,6 +92,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.Cuj;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.protolog.ProtoLog;
+import com.android.internal.util.LatencyTracker;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
@@ -260,6 +261,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final DesktopModeCompatPolicy mDesktopModeCompatPolicy;
     private final DesktopTilingDecorViewModel mDesktopTilingDecorViewModel;
     private final MultiDisplayDragMoveIndicatorController mMultiDisplayDragMoveIndicatorController;
+    private final LatencyTracker mLatencyTracker;
 
     public DesktopModeWindowDecorViewModel(
             Context context,
@@ -466,6 +468,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mDesktopTilingDecorViewModel = desktopTilingDecorViewModel;
         mDesktopTasksController.setSnapEventHandler(this);
         mMultiDisplayDragMoveIndicatorController = multiDisplayDragMoveIndicatorController;
+        mLatencyTracker = LatencyTracker.getInstance(mContext);
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -764,11 +767,19 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         mInteractionJankMonitor.begin(decoration.mTaskSurface, mContext, mMainHandler,
                 CUJ_DESKTOP_MODE_ENTER_MODE_APP_HANDLE_MENU);
+        mLatencyTracker.onActionStart(LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU);
         // App sometimes draws before the insets from WindowDecoration#relayout have
         // been added, so they must be added here
         decoration.addCaptionInset(wct);
-        mDesktopTasksController.moveTaskToDefaultDeskAndActivate(taskId, wct, source,
-                /* remoteTransition= */ null, /* moveToDesktopCallback */ null);
+        if (!mDesktopTasksController.moveTaskToDefaultDeskAndActivate(
+                taskId,
+                wct,
+                source,
+                /* remoteTransition= */ null,
+                /* moveToDesktopCallback= */ null)) {
+            mLatencyTracker.onActionCancel(
+                    LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU);
+        }
         decoration.closeHandleMenu();
 
         if (source == DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON) {

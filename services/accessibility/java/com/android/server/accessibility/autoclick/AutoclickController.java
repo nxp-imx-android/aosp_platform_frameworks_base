@@ -230,6 +230,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
         return Flags.enableAutoclickIndicator() && mAutoclickTypePanel.isPaused();
     }
 
+    @VisibleForTesting
+    void onChangeForTesting(boolean selfChange, Uri uri) {
+        mAutoclickSettingsObserver.onChange(selfChange, uri);
+    }
+
     /**
      * Observes autoclick setting values, and updates ClickScheduler delay and indicator size
      * whenever the setting value changes.

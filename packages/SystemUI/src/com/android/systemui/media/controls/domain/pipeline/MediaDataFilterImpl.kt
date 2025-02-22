@@ -33,7 +33,6 @@ import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.shared.model.MediaDataLoadingModel
 import com.android.systemui.media.controls.shared.model.SmartspaceMediaData
 import com.android.systemui.media.controls.shared.model.SmartspaceMediaLoadingModel
-import com.android.systemui.media.controls.util.MediaFlags
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
@@ -69,7 +68,6 @@ constructor(
     @Main private val executor: Executor,
     private val systemClock: SystemClock,
     private val logger: MediaUiEventLogger,
-    private val mediaFlags: MediaFlags,
     private val mediaFilterRepository: MediaFilterRepository,
     private val mediaLogger: MediaLogger,
 ) : MediaDataManager.Listener {
@@ -328,9 +326,8 @@ constructor(
     }
 
     /** Invoked when the user has dismissed the media carousel */
-    fun onSwipeToDismiss(surface: Int) {
+    fun onSwipeToDismiss() {
         if (DEBUG) Log.d(TAG, "Media carousel swiped away")
-        mediaFilterRepository.logSmartspaceCardsOnSwipeToDismiss(surface)
         val mediaEntries = mediaFilterRepository.allUserEntries.value.entries
         mediaEntries.forEach { (key, data) ->
             if (mediaFilterRepository.selectedUserEntries.value.containsKey(data.instanceId)) {

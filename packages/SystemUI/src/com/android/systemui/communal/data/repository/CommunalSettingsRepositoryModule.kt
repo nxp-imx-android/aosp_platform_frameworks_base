@@ -17,6 +17,7 @@
 package com.android.systemui.communal.data.repository
 
 import com.android.systemui.Flags.glanceableHubBlurredBackground
+import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.communal.shared.model.CommunalBackgroundType
 import dagger.Binds
 import dagger.Module
@@ -33,6 +34,10 @@ interface CommunalSettingsRepositoryModule {
         fun providesDefaultBackgroundType(): CommunalBackgroundType {
             if (glanceableHubBlurredBackground()) {
                 return CommunalBackgroundType.BLUR
+            }
+
+            if (glanceableHubV2()) {
+                return CommunalBackgroundType.SCRIM
             }
 
             return CommunalBackgroundType.ANIMATED

@@ -1675,6 +1675,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
+    @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
     fun moveRunningTaskToDesktop_topActivityTranslucentWithDisplay_doesNothing() {
         val task =
             setUpFullscreenTask().apply {
@@ -2779,6 +2780,79 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveToNextDisplay_toDeskInOtherDisplay_movesToDeskAndActivates() {
+        val transition = Binder()
+        val targetDeskId = 4
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = targetDeskId)
+        taskRepository.setDeskInactive(deskId = targetDeskId)
+        // Set up two display ids
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+        // Create a mock for the target display area: second display
+        val secondDisplayArea = DisplayAreaInfo(MockToken().token(), SECOND_DISPLAY, 0)
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(SECOND_DISPLAY))
+            .thenReturn(secondDisplayArea)
+        whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+            .thenReturn(transition)
+
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
+        taskRepository.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 0,
+            taskId = task.taskId,
+            isVisible = true,
+        )
+        controller.moveToNextDisplay(task.taskId)
+
+        verify(desksOrganizer).moveTaskToDesk(any(), eq(targetDeskId), eq(task))
+        verify(desksOrganizer).activateDesk(any(), eq(targetDeskId))
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                DeskTransition.ActiveDeskWithTask(
+                    token = transition,
+                    displayId = SECOND_DISPLAY,
+                    deskId = targetDeskId,
+                    enterTaskId = task.taskId,
+                )
+            )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveToNextDisplay_wasLastTaskInSourceDesk_deactivates() {
+        val transition = Binder()
+        val sourceDeskId = 0
+        val targetDeskId = 4
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = targetDeskId)
+        taskRepository.setDeskInactive(deskId = targetDeskId)
+        // Set up two display ids
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+        // Create a mock for the target display area: second display
+        val secondDisplayArea = DisplayAreaInfo(MockToken().token(), SECOND_DISPLAY, 0)
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(SECOND_DISPLAY))
+            .thenReturn(secondDisplayArea)
+        whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+            .thenReturn(transition)
+
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
+        taskRepository.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = sourceDeskId,
+            taskId = task.taskId,
+            isVisible = true,
+        )
+        controller.moveToNextDisplay(task.taskId)
+
+        verify(desksOrganizer).deactivateDesk(any(), eq(sourceDeskId))
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                DeskTransition.DeactivateDesk(token = transition, deskId = sourceDeskId)
+            )
+    }
+
+    @Test
     fun getTaskWindowingMode() {
         val fullscreenTask = setUpFullscreenTask()
         val freeformTask = setUpFreeformTask()
@@ -3733,6 +3807,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
+    @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
     fun handleRequest_topActivityTransparentWithDisplay_returnSwitchToFullscreenWCT() {
         val freeformTask = setUpFreeformTask()
         markTaskVisible(freeformTask)
@@ -3754,6 +3829,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY,
         Flags.FLAG_INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC,
     )
+    @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
     fun handleRequest_topActivityTransparentWithDisplay_savedToDesktopRepository() {
         val freeformTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
         markTaskVisible(freeformTask)
@@ -3775,6 +3851,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY,
         Flags.FLAG_INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC,
     )
+    @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
     fun handleRequest_desktopNotShowing_topTransparentFullscreenTask_notSavedToDesktopRepository() {
         val task = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
 

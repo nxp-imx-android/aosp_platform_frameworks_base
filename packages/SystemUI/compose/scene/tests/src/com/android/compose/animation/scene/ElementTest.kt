@@ -1163,7 +1163,7 @@ class ElementTest {
         @Composable
         fun ContentScope.Foo(size: Dp, value: Float, modifier: Modifier = Modifier) {
             val contentKey = this.contentKey
-            Element(TestElements.Foo, modifier.size(size)) {
+            ElementWithValues(TestElements.Foo, modifier.size(size)) {
                 val animatedValue = animateElementFloatAsState(value, TestValues.Value1)
                 LaunchedEffect(animatedValue) {
                     snapshotFlow { animatedValue.value }.collect { lastValues[contentKey] = it }
@@ -2090,11 +2090,9 @@ class ElementTest {
             TestContentScope(currentScene = SceneA) {
                 Column {
                     Element(TestElements.Foo, Modifier.size(40.dp)) {
-                        content {
-                            // Modifier.size() sets a preferred size and this should be ignored
-                            // because of the previously set 40dp size.
-                            Box(Modifier.testTag(contentTestTag).size(20.dp))
-                        }
+                        // Modifier.size() sets a preferred size and this should be ignored because
+                        // of the previously set 40dp size.
+                        Box(Modifier.testTag(contentTestTag).size(20.dp))
                     }
 
                     MovableElement(movable, Modifier.size(40.dp)) {
@@ -2282,5 +2280,36 @@ class ElementTest {
             .onNode(isElement(TestElements.Foo))
             .assertSizeIsEqualTo(50.dp)
             .assertPositionInRootIsEqualTo(100.dp, 100.dp)
+    }
+
+    @Test
+    fun elementContentIsNotRecomposedWhenATransitionStarts() {
+        var compositions = 0
+        val state = rule.runOnUiThread { MutableSceneTransitionLayoutStateForTests(SceneA) }
+        val scope =
+            rule.setContentAndCreateMainScope {
+                SceneTransitionLayoutForTesting(state) {
+                    scene(SceneA) {
+                        Box(Modifier.fillMaxSize()) {
+                            Element(TestElements.Foo, Modifier) { SideEffect { compositions++ } }
+                        }
+                    }
+                    scene(SceneB) { Box(Modifier.fillMaxSize()) }
+                    scene(SceneC) { Box(Modifier.fillMaxSize()) }
+                }
+            }
+
+        assertThat(compositions).isEqualTo(1)
+
+        scope.launch { state.startTransition(transition(SceneA, SceneB)) }
+        rule.waitForIdle()
+
+        scope.launch { state.startTransition(transition(SceneA, SceneC)) }
+        rule.waitForIdle()
+
+        scope.launch { state.startTransition(transition(SceneA, SceneB)) }
+        rule.waitForIdle()
+
+        assertThat(compositions).isEqualTo(1)
     }
 }

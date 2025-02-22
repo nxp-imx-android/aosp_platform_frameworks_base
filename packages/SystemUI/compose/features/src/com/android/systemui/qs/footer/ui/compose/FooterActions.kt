@@ -116,11 +116,9 @@ fun ContentScope.FooterActionsWithAnimatedVisibility(
         QuickSettingsTheme {
             // This view has its own horizontal padding
             // TODO(b/321716470) This should use a lifecycle tied to the scene.
-            FooterActions(
-                viewModel = viewModel,
-                qsVisibilityLifecycleOwner = lifecycleOwner,
-                modifier = Modifier.element(QuickSettings.Elements.FooterActions),
-            )
+            Element(QuickSettings.Elements.FooterActions, Modifier) {
+                FooterActions(viewModel = viewModel, qsVisibilityLifecycleOwner = lifecycleOwner)
+            }
         }
     }
 }

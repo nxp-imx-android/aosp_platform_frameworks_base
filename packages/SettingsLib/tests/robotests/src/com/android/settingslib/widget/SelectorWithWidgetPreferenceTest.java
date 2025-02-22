@@ -78,14 +78,14 @@ public class SelectorWithWidgetPreferenceTest {
     @Test
     public void shouldHaveRadioButtonWidgetLayoutByDefault() {
         assertThat(mPreference.getWidgetLayoutResource())
-                .isEqualTo(R.layout.preference_widget_radiobutton);
+                .isEqualTo(R.layout.settingslib_preference_widget_radiobutton);
     }
 
     @Test
     public void shouldHaveCheckBoxWidgetLayoutIfSet() {
         mPreference = new SelectorWithWidgetPreference(mContext, true);
         assertThat(mPreference.getWidgetLayoutResource())
-                .isEqualTo(R.layout.preference_widget_checkbox);
+                .isEqualTo(R.layout.settingslib_preference_widget_checkbox);
     }
 
     @Test

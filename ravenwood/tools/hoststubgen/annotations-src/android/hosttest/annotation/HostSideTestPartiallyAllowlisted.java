@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package android.hosttest.annotation;
 
-package com.android.systemui.media.controls.util
+import static java.lang.annotation.ElementType.TYPE;
 
-import com.android.systemui.kosmos.Kosmos
-import org.mockito.Mockito.mock
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-var Kosmos.mediaSmartspaceLogger by Kosmos.Fixture { MediaSmartspaceLogger() }
-val Kosmos.mockMediaSmartspaceLogger by Kosmos.Fixture { mock(MediaSmartspaceLogger::class.java) }
+@Target({TYPE})
+@Retention(RetentionPolicy.CLASS)
+public @interface HostSideTestPartiallyAllowlisted {
+}

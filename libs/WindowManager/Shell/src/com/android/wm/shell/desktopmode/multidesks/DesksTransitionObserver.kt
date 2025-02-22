@@ -31,12 +31,14 @@ class DesksTransitionObserver(
     private val desktopUserRepositories: DesktopUserRepositories,
     private val desksOrganizer: DesksOrganizer,
 ) {
-    private val deskTransitions = mutableMapOf<IBinder, DeskTransition>()
+    private val deskTransitions = mutableMapOf<IBinder, MutableSet<DeskTransition>>()
 
     /** Adds a pending desk transition to be tracked. */
     fun addPendingTransition(transition: DeskTransition) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
-        deskTransitions[transition.token] = transition
+        val transitions = deskTransitions[transition.token] ?: mutableSetOf()
+        transitions += transition
+        deskTransitions[transition.token] = transitions
     }
 
     /**
@@ -45,7 +47,11 @@ class DesksTransitionObserver(
      */
     fun onTransitionReady(transition: IBinder, info: TransitionInfo) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
-        val deskTransition = deskTransitions.remove(transition) ?: return
+        val deskTransitions = deskTransitions.remove(transition) ?: return
+        deskTransitions.forEach { deskTransition -> handleDeskTransition(info, deskTransition) }
+    }
+
+    private fun handleDeskTransition(info: TransitionInfo, deskTransition: DeskTransition) {
         logD("Desk transition ready: %s", deskTransition)
         val desktopRepository = desktopUserRepositories.current
         when (deskTransition) {
@@ -60,16 +66,21 @@ class DesksTransitionObserver(
                 deskTransition.onDeskRemovedListener?.onDeskRemoved(displayId, deskId)
             }
             is DeskTransition.ActivateDesk -> {
-                val activeDeskChange =
+                val activateDeskChange =
                     info.changes.find { change ->
                         desksOrganizer.isDeskActiveAtEnd(change, deskTransition.deskId)
                     }
-                activeDeskChange?.let {
-                    desktopRepository.setActiveDesk(
-                        displayId = deskTransition.displayId,
-                        deskId = deskTransition.deskId,
-                    )
+                if (activateDeskChange == null) {
+                    // Always activate even if there is no change in the transition for the
+                    // activated desk. This is necessary because some activation requests, such as
+                    // those involving empty desks, may not contain visibility changes that are
+                    // reported in the transition change list.
+                    logD("Activating desk without transition change")
                 }
+                desktopRepository.setActiveDesk(
+                    displayId = deskTransition.displayId,
+                    deskId = deskTransition.deskId,
+                )
             }
             is DeskTransition.ActiveDeskWithTask -> {
                 val withTask =

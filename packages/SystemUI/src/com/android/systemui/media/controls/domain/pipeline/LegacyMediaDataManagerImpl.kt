@@ -82,7 +82,6 @@ import com.android.systemui.media.controls.util.MediaControllerFactory
 import com.android.systemui.media.controls.util.MediaDataUtils
 import com.android.systemui.media.controls.util.MediaFlags
 import com.android.systemui.media.controls.util.MediaUiEventLogger
-import com.android.systemui.media.controls.util.SmallHash
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.NotificationMediaManager.isPlayingState
 import com.android.systemui.statusbar.notification.row.HybridGroupManager
@@ -1085,7 +1084,6 @@ class LegacyMediaDataManagerImpl(
                 instanceId = instanceId,
                 appUid = appUid,
                 isExplicit = isExplicit,
-                smartspaceId = SmallHash.hash(appUid + systemClock.currentTimeMillis().toInt()),
             )
 
         if (isSameMediaData(context, mediaController, mediaData, currentEntry)) {

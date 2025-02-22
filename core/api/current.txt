@@ -46375,7 +46375,7 @@ package android.telephony {
     field public static final int OUT_OF_NETWORK = 11; // 0xb
     field public static final int OUT_OF_SERVICE = 18; // 0x12
     field public static final int POWER_OFF = 17; // 0x11
-    field @FlaggedApi("com.android.internal.telephony.flags.oem_enabled_satellite_flag") public static final int SATELLITE_ENABLED = 82; // 0x52
+    field public static final int SATELLITE_ENABLED = 82; // 0x52
     field public static final int SERVER_ERROR = 12; // 0xc
     field public static final int SERVER_UNREACHABLE = 9; // 0x9
     field public static final int TIMED_OUT = 13; // 0xd
@@ -47077,7 +47077,7 @@ package android.telephony {
     method public int getSubscriptionType();
     method public int getUsageSetting();
     method public boolean isEmbedded();
-    method @FlaggedApi("com.android.internal.telephony.flags.oem_enabled_satellite_flag") public boolean isOnlyNonTerrestrialNetwork();
+    method public boolean isOnlyNonTerrestrialNetwork();
     method public boolean isOpportunistic();
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.SubscriptionInfo> CREATOR;
@@ -47528,7 +47528,7 @@ package android.telephony {
     field @Deprecated @FlaggedApi("com.android.internal.telephony.flags.deprecate_cdma") public static final int ERI_FLASH = 2; // 0x2
     field @Deprecated @FlaggedApi("com.android.internal.telephony.flags.deprecate_cdma") public static final int ERI_OFF = 1; // 0x1
     field @Deprecated @FlaggedApi("com.android.internal.telephony.flags.deprecate_cdma") public static final int ERI_ON = 0; // 0x0
-    field @FlaggedApi("com.android.internal.telephony.flags.oem_enabled_satellite_flag") public static final String EVENT_DISPLAY_EMERGENCY_MESSAGE = "android.telephony.event.DISPLAY_EMERGENCY_MESSAGE";
+    field public static final String EVENT_DISPLAY_EMERGENCY_MESSAGE = "android.telephony.event.DISPLAY_EMERGENCY_MESSAGE";
     field public static final String EXTRA_ACTIVE_SIM_SUPPORTED_COUNT = "android.telephony.extra.ACTIVE_SIM_SUPPORTED_COUNT";
     field public static final String EXTRA_APN_PROTOCOL = "android.telephony.extra.APN_PROTOCOL";
     field public static final String EXTRA_APN_TYPE = "android.telephony.extra.APN_TYPE";
@@ -47537,8 +47537,8 @@ package android.telephony {
     field public static final String EXTRA_CARRIER_NAME = "android.telephony.extra.CARRIER_NAME";
     field public static final String EXTRA_DATA_FAIL_CAUSE = "android.telephony.extra.DATA_FAIL_CAUSE";
     field public static final String EXTRA_DEFAULT_NETWORK_AVAILABLE = "android.telephony.extra.DEFAULT_NETWORK_AVAILABLE";
-    field @FlaggedApi("com.android.internal.telephony.flags.oem_enabled_satellite_flag") public static final String EXTRA_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE = "android.telephony.extra.EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE";
-    field @FlaggedApi("com.android.internal.telephony.flags.oem_enabled_satellite_flag") public static final String EXTRA_EMERGENCY_CALL_TO_SATELLITE_LAUNCH_INTENT = "android.telephony.extra.EMERGENCY_CALL_TO_SATELLITE_LAUNCH_INTENT";
+    field public static final String EXTRA_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE = "android.telephony.extra.EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE";
+    field public static final String EXTRA_EMERGENCY_CALL_TO_SATELLITE_LAUNCH_INTENT = "android.telephony.extra.EMERGENCY_CALL_TO_SATELLITE_LAUNCH_INTENT";
     field public static final String EXTRA_HIDE_PUBLIC_SETTINGS = "android.telephony.extra.HIDE_PUBLIC_SETTINGS";
     field @Deprecated public static final String EXTRA_INCOMING_NUMBER = "incoming_number";
     field public static final String EXTRA_IS_REFRESH = "android.telephony.extra.IS_REFRESH";

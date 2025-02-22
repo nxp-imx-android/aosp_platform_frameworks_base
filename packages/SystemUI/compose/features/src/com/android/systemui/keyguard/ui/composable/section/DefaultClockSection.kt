@@ -26,11 +26,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.view.contains
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.padding
@@ -132,18 +130,16 @@ constructor(
         }
 
         Element(key = largeClockElementKey, modifier = modifier) {
-            content {
-                ClockView(
-                    checkNotNull(currentClock).largeClock.view,
-                    modifier =
-                        Modifier.fillMaxSize()
-                            .burnInAware(
-                                viewModel = aodBurnInViewModel,
-                                params = burnInParams,
-                                isClock = true,
-                            ),
-                )
-            }
+            ClockView(
+                checkNotNull(currentClock).largeClock.view,
+                modifier =
+                    Modifier.fillMaxSize()
+                        .burnInAware(
+                            viewModel = aodBurnInViewModel,
+                            params = burnInParams,
+                            isClock = true,
+                        ),
+            )
         }
     }
 

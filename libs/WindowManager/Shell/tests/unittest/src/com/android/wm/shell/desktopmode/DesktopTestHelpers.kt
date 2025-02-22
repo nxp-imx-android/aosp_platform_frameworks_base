@@ -22,6 +22,7 @@ import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
+import android.content.ComponentName
 import android.graphics.Rect
 import android.view.Display.DEFAULT_DISPLAY
 import com.android.wm.shell.MockToken
@@ -84,4 +85,10 @@ object DesktopTestHelpers {
     /** Create a new System Modal task, i.e. a task with only transparent activities. */
     fun createSystemModalTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo =
         createSystemModalTaskBuilder(displayId).build()
+
+    /** Create a new System Modal task with a base Activity. */
+    fun createSystemModalTaskWithBaseActivity() =
+        createSystemModalTask().apply {
+            baseActivity = ComponentName("com.test.dummypackage", "TestClass")
+        }
 }

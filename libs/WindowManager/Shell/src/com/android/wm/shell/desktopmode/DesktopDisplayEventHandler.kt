@@ -68,6 +68,8 @@ class DesktopDisplayEventHandler(
         //  desk has been recreated here, which may result in a crash-loop if the repository is
         //  checking that the desk exists before adding a task to it. See b/391984373.
         desktopTasksController.createDesk(displayId)
+        // TODO: b/393978539 - consider activating the desk on creation when applicable, such as
+        //  for connected displays.
     }
 
     override fun onDisplayRemoved(displayId: Int) {
