@@ -312,20 +312,18 @@ constructor(
         SceneTransitionLayout(state = sceneState, modifier = Modifier.fillMaxSize()) {
             scene(QuickSettings) {
                 LaunchedEffect(Unit) { viewModel.onQSOpen() }
-                QuickSettingsElement(Modifier.element(QuickSettings.rootElementKey))
+                Element(QuickSettings.rootElementKey, Modifier) { QuickSettingsElement() }
             }
 
             scene(QuickQuickSettings) {
                 LaunchedEffect(Unit) { viewModel.onQQSOpen() }
                 // Cannot pass the element modifier in because the top element has a `testTag`
                 // and this would overwrite it.
-                Box(Modifier.element(QuickQuickSettings.rootElementKey)) {
-                    QuickQuickSettingsElement()
-                }
+                Element(QuickQuickSettings.rootElementKey, Modifier) { QuickQuickSettingsElement() }
             }
 
             scene(SceneKeys.EditMode) {
-                EditModeElement(Modifier.element(SceneKeys.EditMode.rootElementKey))
+                Element(SceneKeys.EditMode.rootElementKey, Modifier) { EditModeElement() }
             }
         }
     }
@@ -656,10 +654,7 @@ constructor(
                 )
         ) {
             if (viewModel.isQsEnabled) {
-                Box(
-                    modifier =
-                        Modifier.element(ElementKeys.QuickSettingsContent).fillMaxSize().weight(1f)
-                ) {
+                Element(ElementKeys.QuickSettingsContent, modifier = Modifier.weight(1f)) {
                     DisposableEffect(Unit) {
                         lifecycleScope.launch { scrollState.scrollTo(0) }
                         onDispose { lifecycleScope.launch { scrollState.scrollTo(0) } }
@@ -667,7 +662,8 @@ constructor(
 
                     Column(
                         modifier =
-                            Modifier.onPlaced { coordinates ->
+                            Modifier.fillMaxSize()
+                                .onPlaced { coordinates ->
                                     val positionOnScreen = coordinates.positionOnScreen()
                                     val left = positionOnScreen.x
                                     val right = left + coordinates.size.width
@@ -744,13 +740,15 @@ constructor(
                     }
                 }
                 QuickSettingsTheme {
-                    FooterActions(
-                        viewModel = viewModel.footerActionsViewModel,
-                        qsVisibilityLifecycleOwner = this@QSFragmentCompose,
-                        modifier =
-                            Modifier.sysuiResTag(ResIdTags.qsFooterActions)
-                                .element(ElementKeys.FooterActions),
-                    )
+                    Element(
+                        ElementKeys.FooterActions,
+                        Modifier.sysuiResTag(ResIdTags.qsFooterActions),
+                    ) {
+                        FooterActions(
+                            viewModel = viewModel.footerActionsViewModel,
+                            qsVisibilityLifecycleOwner = this@QSFragmentCompose,
+                        )
+                    }
                 }
             }
         }

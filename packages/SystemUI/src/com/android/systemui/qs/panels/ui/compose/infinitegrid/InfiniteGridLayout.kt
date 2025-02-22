@@ -99,16 +99,17 @@ constructor(
             val it = sizedTiles[spanIndex]
             val column = cellIndex % columns
             cellIndex += it.width
-            Tile(
-                tile = it.tile,
-                iconOnly = iconTilesViewModel.isIconTile(it.tile.spec),
-                modifier = Modifier.element(it.tile.spec.toElementKey(spanIndex)),
-                squishiness = { squishiness },
-                tileHapticsViewModelFactoryProvider = tileHapticsViewModelFactoryProvider,
-                coroutineScope = scope,
-                bounceableInfo = bounceables.bounceableInfo(it, spanIndex, column, columns),
-                detailsViewModel = detailsViewModel,
-            )
+            Element(it.tile.spec.toElementKey(spanIndex), Modifier) {
+                Tile(
+                    tile = it.tile,
+                    iconOnly = iconTilesViewModel.isIconTile(it.tile.spec),
+                    squishiness = { squishiness },
+                    tileHapticsViewModelFactoryProvider = tileHapticsViewModelFactoryProvider,
+                    coroutineScope = scope,
+                    bounceableInfo = bounceables.bounceableInfo(it, spanIndex, column, columns),
+                    detailsViewModel = detailsViewModel,
+                )
+            }
         }
     }
 

@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -109,14 +108,10 @@ constructor(
         modifier: Modifier = Modifier,
     ) {
         Element(key = elementKey, modifier) {
-            content {
-                ClockView(
-                    clock.largeClock.layout.views.firstOrNull {
-                        it.id == weatherClockElementViewId
-                    },
-                    modifier,
-                )
-            }
+            ClockView(
+                clock.largeClock.layout.views.firstOrNull { it.id == weatherClockElementViewId },
+                modifier,
+            )
         }
     }
 

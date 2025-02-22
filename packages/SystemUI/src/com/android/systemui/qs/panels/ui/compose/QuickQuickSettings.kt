@@ -71,17 +71,19 @@ fun ContentScope.QuickQuickSettings(
             val it = sizedTiles[spanIndex]
             val column = cellIndex % columns
             cellIndex += it.width
-            Tile(
-                tile = it.tile,
-                iconOnly = it.isIcon,
-                modifier = Modifier.element(it.tile.spec.toElementKey(spanIndex)),
-                squishiness = { squishiness },
-                coroutineScope = scope,
-                bounceableInfo = bounceables.bounceableInfo(it, spanIndex, column, columns),
-                tileHapticsViewModelFactoryProvider = viewModel.tileHapticsViewModelFactoryProvider,
-                // There should be no QuickQuickSettings when the details view is enabled.
-                detailsViewModel = null,
-            )
+            Element(it.tile.spec.toElementKey(spanIndex), Modifier) {
+                Tile(
+                    tile = it.tile,
+                    iconOnly = it.isIcon,
+                    squishiness = { squishiness },
+                    coroutineScope = scope,
+                    bounceableInfo = bounceables.bounceableInfo(it, spanIndex, column, columns),
+                    tileHapticsViewModelFactoryProvider =
+                        viewModel.tileHapticsViewModelFactoryProvider,
+                    // There should be no QuickQuickSettings when the details view is enabled.
+                    detailsViewModel = null,
+                )
+            }
         }
     }
 }

@@ -313,7 +313,7 @@ class MovableElementTest {
     fun elementScopeExtendsBoxScope() {
         rule.setContent {
             TestContentScope {
-                Element(TestElements.Foo, Modifier.size(200.dp)) {
+                ElementWithValues(TestElements.Foo, Modifier.size(200.dp)) {
                     content {
                         Box {
                             Box(Modifier.testTag("bottomEnd").align(Alignment.BottomEnd))

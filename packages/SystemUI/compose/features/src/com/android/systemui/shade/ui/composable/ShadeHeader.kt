@@ -440,33 +440,36 @@ private fun CutoutAwareShadeHeader(
 private fun ContentScope.Clock(scale: Float, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val layoutDirection = LocalLayoutDirection.current
 
-    Element(key = ShadeHeader.Elements.Clock, modifier = modifier) {
+    ElementWithValues(key = ShadeHeader.Elements.Clock, modifier = modifier) {
         val animatedScale by animateElementFloatAsState(scale, ClockScale, canOverflow = false)
-        AndroidView(
-            factory = { context ->
-                Clock(
-                    ContextThemeWrapper(context, R.style.Theme_SystemUI_QuickSettings_Header),
-                    null,
-                )
-            },
-            modifier =
-                modifier
-                    // use graphicsLayer instead of Modifier.scale to anchor transform
-                    // to the (start, top) corner
-                    .graphicsLayer {
-                        scaleX = animatedScale
-                        scaleY = animatedScale
-                        transformOrigin =
-                            TransformOrigin(
-                                when (layoutDirection) {
-                                    LayoutDirection.Ltr -> 0f
-                                    LayoutDirection.Rtl -> 1f
-                                },
-                                0.5f,
-                            )
-                    }
-                    .clickable { onClick() },
-        )
+
+        content {
+            AndroidView(
+                factory = { context ->
+                    Clock(
+                        ContextThemeWrapper(context, R.style.Theme_SystemUI_QuickSettings_Header),
+                        null,
+                    )
+                },
+                modifier =
+                    modifier
+                        // use graphicsLayer instead of Modifier.scale to anchor transform to the
+                        // (start, top) corner
+                        .graphicsLayer {
+                            scaleX = animatedScale
+                            scaleY = animatedScale
+                            transformOrigin =
+                                TransformOrigin(
+                                    when (layoutDirection) {
+                                        LayoutDirection.Ltr -> 0f
+                                        LayoutDirection.Rtl -> 1f
+                                    },
+                                    0.5f,
+                                )
+                        }
+                        .clickable { onClick() },
+            )
+        }
     }
 }
 

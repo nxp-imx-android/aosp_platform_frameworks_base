@@ -16,7 +16,6 @@
 
 package com.android.systemui.qs.composefragment.ui
 
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.android.compose.animation.scene.ContentScope
@@ -29,5 +28,5 @@ import com.android.systemui.qs.shared.ui.ElementKeys
 @Composable
 fun ContentScope.GridAnchor(modifier: Modifier = Modifier) {
     // The size of this anchor does not matter, as the tiles don't change size on expansion.
-    Spacer(modifier.element(ElementKeys.GridAnchor))
+    Element(ElementKeys.GridAnchor, modifier) {}
 }

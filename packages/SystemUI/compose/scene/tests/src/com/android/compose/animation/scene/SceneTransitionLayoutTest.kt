@@ -129,7 +129,7 @@ class SceneTransitionLayoutTest {
 
     @Composable
     private fun ContentScope.SharedFoo(size: Dp, childOffset: Dp, modifier: Modifier = Modifier) {
-        Element(TestElements.Foo, modifier.size(size).background(Color.Red)) {
+        ElementWithValues(TestElements.Foo, modifier.size(size).background(Color.Red)) {
             // Offset the single child of Foo by some animated shared offset.
             val offset by animateElementDpAsState(childOffset, TestValues.Value1)
 
