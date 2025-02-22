@@ -166,7 +166,15 @@ public abstract class RegisteredServicesCache<V> {
     @UnsupportedAppUsage
     public RegisteredServicesCache(Context context, String interfaceName, String metaDataName,
             String attributeName, XmlSerializerAndParser<V> serializerAndParser) {
-        mContext = context;
+        this(new Injector<V>(context), interfaceName, metaDataName, attributeName,
+                serializerAndParser);
+    }
+
+    /** Provides the basic functionality for unit tests. */
+    @VisibleForTesting
+    public RegisteredServicesCache(Injector<V> injector, String interfaceName, String metaDataName,
+            String attributeName, XmlSerializerAndParser<V> serializerAndParser) {
+        mContext = injector.getContext();
         mInterfaceName = interfaceName;
         mMetaDataName = metaDataName;
         mAttributesName = attributeName;
@@ -184,7 +192,7 @@ public abstract class RegisteredServicesCache<V> {
         if (isCore) {
             intentFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
         }
-        mBackgroundHandler = BackgroundThread.getHandler();
+        mBackgroundHandler = injector.getBackgroundHandler();
         mContext.registerReceiverAsUser(
                 mPackageReceiver, UserHandle.ALL, intentFilter, null, mBackgroundHandler);
 
@@ -916,6 +924,27 @@ public abstract class RegisteredServicesCache<V> {
                 return serviceCache;
             }
             return null;
+        }
+    }
+
+    /**
+     * Point of injection for test dependencies.
+     * @param <V> The type of the value.
+     */
+    @VisibleForTesting
+    public static class Injector<V> {
+        private final Context mContext;
+
+        public Injector(Context context) {
+            mContext = context;
+        }
+
+        public Context getContext() {
+            return mContext;
+        }
+
+        public Handler getBackgroundHandler() {
+            return BackgroundThread.getHandler();
         }
     }
 }

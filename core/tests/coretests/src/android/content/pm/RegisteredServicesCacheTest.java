@@ -245,6 +245,12 @@ public class RegisteredServicesCacheTest extends AndroidTestCase {
                     SERVICE_INTERFACE, SERVICE_META_DATA, ATTRIBUTES_NAME, new TestSerializer());
         }
 
+        TestServicesCache(Injector<TestServiceType> injector,
+                XmlSerializerAndParser<TestServiceType> serializerAndParser) {
+            super(injector, SERVICE_INTERFACE, SERVICE_META_DATA, ATTRIBUTES_NAME,
+                    serializerAndParser);
+        }
+
         @Override
         public TestServiceType parseServiceAttributes(Resources res, String packageName,
                 AttributeSet attrs) {
