@@ -44,10 +44,12 @@ import androidx.test.filters.SmallTest;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
+import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.TransitionInfoBuilder;
 import com.android.wm.shell.transition.Transitions;
+import com.android.wm.shell.util.StubTransaction;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
 import org.junit.Before;
@@ -68,6 +70,7 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     @Mock private WindowDecorViewModel mWindowDecorViewModel;
     @Mock private TaskChangeListener mTaskChangeListener;
     @Mock private FocusTransitionObserver mFocusTransitionObserver;
+    @Mock private DesksTransitionObserver mDesksTransitionObserver;
 
     private FreeformTaskTransitionObserver mTransitionObserver;
 
@@ -88,7 +91,8 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
                         Optional.of(mDesktopImmersiveController),
                         mWindowDecorViewModel,
                         Optional.of(mTaskChangeListener),
-                        mFocusTransitionObserver);
+                        mFocusTransitionObserver,
+                        Optional.of(mDesksTransitionObserver));
 
         final ArgumentCaptor<Runnable> initRunnableCaptor = ArgumentCaptor.forClass(Runnable.class);
         verify(mShellInit).addInitCallback(initRunnableCaptor.capture(), same(mTransitionObserver));
@@ -355,6 +359,18 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
         mTransitionObserver.onTransitionFinished(transition, /* aborted= */ false);
 
         verify(mDesktopImmersiveController).onTransitionFinished(transition, /* aborted= */ false);
+    }
+
+    @Test
+    public void onTransitionReady_forwardsToDesksTransitionObserver() {
+        final IBinder transition = mock(IBinder.class);
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CLOSE, /* flags= */ 0)
+                .build();
+
+        mTransitionObserver.onTransitionReady(transition, info, new StubTransaction(),
+                new StubTransaction());
+
+        verify(mDesksTransitionObserver).onTransitionReady(transition, info);
     }
 
     private static TransitionInfo.Change createChange(int mode, int taskId, int windowingMode) {

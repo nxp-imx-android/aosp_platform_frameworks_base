@@ -48,6 +48,7 @@ import android.view.DragEvent
 import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
+import android.view.WindowManager
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_NONE
@@ -1012,6 +1013,13 @@ class DesktopTasksController(
         val deskId =
             launchingTaskId?.let { taskId -> taskRepository.getDeskIdForTask(taskId) }
                 ?: getDefaultDeskId(displayId)
+        logV(
+            "startLaunchTransition type=%s launchingTaskId=%d deskId=%d displayId=%d",
+            WindowManager.transitTypeToString(transitionType),
+            launchingTaskId,
+            deskId,
+            displayId,
+        )
         // TODO: b/397619806 - Consolidate sharable logic with [handleFreeformTaskLaunch].
         var launchTransaction = wct
         val taskIdToMinimize =
@@ -1030,21 +1038,20 @@ class DesktopTasksController(
             )
         var activationRunOnTransitStart: RunOnTransitStart? = null
         val shouldActivateDesk =
-            (DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue ||
-                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) &&
-                !isDesktopModeShowing(displayId)
+            when {
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ->
+                    !taskRepository.isDeskActive(deskId)
+                DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue -> {
+                    !isDesktopModeShowing(displayId)
+                }
+                else -> false
+            }
         if (shouldActivateDesk) {
-            val deskIdToActivate =
-                checkNotNull(
-                    launchingTaskId?.let { taskRepository.getDeskIdForTask(it) }
-                        ?: getDefaultDeskId(displayId)
-                )
             val activateDeskWct = WindowContainerTransaction()
             // TODO: b/391485148 - pass in the launching task here to apply task-limit policy,
             //  but make sure to not do it twice since it is also done at the start of this
             //  function.
-            activationRunOnTransitStart =
-                addDeskActivationChanges(deskIdToActivate, activateDeskWct)
+            activationRunOnTransitStart = addDeskActivationChanges(deskId, activateDeskWct)
             // Desk activation must be handled before app launch-related transactions.
             activateDeskWct.merge(launchTransaction, /* transfer= */ true)
             launchTransaction = activateDeskWct

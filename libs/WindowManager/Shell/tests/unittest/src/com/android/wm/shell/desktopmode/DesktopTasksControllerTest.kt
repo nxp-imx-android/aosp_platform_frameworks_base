@@ -6915,6 +6915,49 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
         Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun startLaunchTransition_launchingTaskFromInactiveDesk_otherDeskActive_activatesDesk() {
+        val activeDeskId = 4
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = activeDeskId)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = activeDeskId)
+        val inactiveDesk = 5
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = inactiveDesk)
+        val launchingTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = inactiveDesk)
+        val transition = Binder()
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_OPEN),
+                    any(),
+                    eq(launchingTask.taskId),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(transition)
+
+        val wct = WindowContainerTransaction()
+        controller.startLaunchTransition(
+            transitionType = TRANSIT_OPEN,
+            wct = wct,
+            launchingTaskId = launchingTask.taskId,
+        )
+
+        verify(desksOrganizer).activateDesk(any(), eq(inactiveDesk))
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                DeskTransition.ActivateDesk(
+                    token = transition,
+                    displayId = DEFAULT_DISPLAY,
+                    deskId = inactiveDesk,
+                )
+            )
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
     )
     fun startLaunchTransition_desktopShowing_doesNotReorderWallpaper() {
         val wct = WindowContainerTransaction()
