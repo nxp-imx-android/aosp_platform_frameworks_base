@@ -1251,13 +1251,12 @@ class DesktopTasksController(
             return
         }
 
+        val wct = WindowContainerTransaction()
         val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
         if (displayAreaInfo == null) {
             logW("moveToDisplay: display not found")
             return
         }
-
-        val wct = WindowContainerTransaction()
 
         // check if the task is part of splitscreen
         if (
@@ -1265,22 +1264,64 @@ class DesktopTasksController(
                 Flags.enableMoveToNextDisplayShortcut() &&
                 splitScreenController.isTaskInSplitScreen(task.taskId)
         ) {
+            val activeDeskId = taskRepository.getActiveDeskId(displayId)
+            logV("moveToDisplay: moving split root to displayId=%d", displayId)
             val stageCoordinatorRootTaskToken =
                 splitScreenController.multiDisplayProvider.getDisplayRootForDisplayId(
                     DEFAULT_DISPLAY
                 )
-
             wct.reparent(stageCoordinatorRootTaskToken, displayAreaInfo.token, true /* onTop */)
-            transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+            val deactivationRunnable =
+                if (activeDeskId != null) {
+                    // Split is being placed on top of an existing desk in the target display. Make
+                    // sure it is cleaned up.
+                    performDesktopExitCleanUp(
+                        wct = wct,
+                        deskId = activeDeskId,
+                        displayId = displayId,
+                        willExitDesktop = true,
+                        shouldEndUpAtHome = false,
+                    )
+                } else {
+                    null
+                }
+            val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+            deactivationRunnable?.invoke(transition)
             return
         }
 
+        val destinationDeskId = taskRepository.getDefaultDeskId(displayId)
+        if (destinationDeskId == null) {
+            logW("moveToDisplay: desk not found for display: $displayId")
+            return
+        }
+
+        // TODO: b/393977830 and b/397437641 - do not assume that freeform==desktop.
         if (!task.isFreeform) {
             addMoveToDesktopChanges(wct, task, displayId)
         } else if (Flags.enableMoveToNextDisplayShortcut()) {
             applyFreeformDisplayChange(wct, task, displayId)
         }
-        wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
+
+        val activationRunnable: RunOnTransitStart?
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            desksOrganizer.moveTaskToDesk(wct, destinationDeskId, task)
+            prepareForDeskActivation(displayId, wct)
+            desksOrganizer.activateDesk(wct, destinationDeskId)
+            activationRunnable = { transition ->
+                desksTransitionObserver.addPendingTransition(
+                    DeskTransition.ActiveDeskWithTask(
+                        token = transition,
+                        displayId = displayId,
+                        deskId = destinationDeskId,
+                        enterTaskId = task.taskId,
+                    )
+                )
+            }
+        } else {
+            wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
+            activationRunnable = null
+        }
         if (Flags.enableDisplayFocusInShellTransitions()) {
             // Bring the destination display to top with includingParents=true, so that the
             // destination display gains the display focus, which makes the top task in the display
@@ -1288,22 +1329,31 @@ class DesktopTasksController(
             wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
         }
 
-        // TODO: b/394268248 - desk needs to be deactivated when moving the last task and going
-        //  home.
-        if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
-            performDesktopExitCleanupIfNeeded(
-                taskId = task.taskId,
-                displayId = task.displayId,
-                wct = wct,
-                forceToFullscreen = false,
-                // TODO: b/371096166 - Temporary turing home relaunch off to prevent home stealing
-                // display focus. Remove shouldEndUpAtHome = false when home focus handling
-                // with connected display is implemented in wm core.
-                shouldEndUpAtHome = false,
-            )
-        }
-
-        transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+        val sourceDisplayId = task.displayId
+        val sourceDeskId = taskRepository.getDeskIdForTask(task.taskId)
+        val shouldExitDesktopIfNeeded =
+            Flags.enablePerDisplayDesktopWallpaperActivity() ||
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        val deactivationRunnable =
+            if (shouldExitDesktopIfNeeded) {
+                performDesktopExitCleanupIfNeeded(
+                    taskId = task.taskId,
+                    deskId = sourceDeskId,
+                    displayId = sourceDisplayId,
+                    wct = wct,
+                    forceToFullscreen = false,
+                    // TODO: b/371096166 - Temporary turing home relaunch off to prevent home
+                    // stealing
+                    // display focus. Remove shouldEndUpAtHome = false when home focus handling
+                    // with connected display is implemented in wm core.
+                    shouldEndUpAtHome = false,
+                )
+            } else {
+                null
+            }
+        val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+        deactivationRunnable?.invoke(transition)
+        activationRunnable?.invoke(transition)
     }
 
     /**
@@ -2484,6 +2534,7 @@ class DesktopTasksController(
         val displayLayout = displayController.getDisplayLayout(displayId) ?: return
         val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)!!
         val tdaWindowingMode = tdaInfo.configuration.windowConfiguration.windowingMode
+        // TODO: b/397437641 - reconsider the windowing mode choice when multiple desks is enabled.
         val targetWindowingMode =
             if (tdaWindowingMode == WINDOWING_MODE_FREEFORM) {
                 // Display windowing is freeform, set to undefined and inherit it
