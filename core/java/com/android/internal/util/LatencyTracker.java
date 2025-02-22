@@ -23,6 +23,7 @@ import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPOR
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_CHECK_CREDENTIAL;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_CHECK_CREDENTIAL_UNLOCKED;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG;
+import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_EXPAND_PANEL;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_FACE_WAKE_AND_UNLOCK;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_FINGERPRINT_WAKE_AND_UNLOCK;
@@ -268,13 +269,26 @@ public class LatencyTracker {
     public static final int ACTION_SHADE_WINDOW_DISPLAY_CHANGE = 29;
 
     /**
-     * Applicable when the user drags a full screen app's handle into the desktop drop zone to enter
-     * desktop mode. This measure the time from when the user releases their finger in the drop zone
-     * to when the animation for entering desktop mode visually begins. During this period, the
-     * home task and app headers for each window are initialized. Both have historically been
-     * expensive. See b/381396057 and b/360452034 respectively.
+     * Time it takes for the "enter desktop" mode animation to begin when initiated by dragging the
+     * app's handle into the desktop drop zone.
+     * <p>
+     * This measure the time from when the user releases their finger in the drop zone to when the
+     * animation for entering desktop mode visually begins. During this period, the home task and
+     * app headers for each window are initialized. Both have historically been expensive. See
+     * b/381396057 and b/360452034 respectively.
      */
     public static final int ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG = 30;
+
+    /**
+     * Time it takes for the "enter desktop" mode animation to begin when initiated via the app
+     * handle's menu.
+     * <p>
+     * This measures the time from when the menu option is clicked/tapped to when the animation for
+     * entering desktop mode visually begins. During this period, the home task and app headers for
+     * each window are initialized. Both have historically been expensive. See b/381396057 and
+     * b/360452034 respectively.
+     */
+    public static final int ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU = 31;
 
     private static final int[] ACTIONS_ALL = {
         ACTION_EXPAND_PANEL,
@@ -308,6 +322,7 @@ public class LatencyTracker {
         ACTION_KEYGUARD_FACE_UNLOCK_TO_HOME,
         ACTION_SHADE_WINDOW_DISPLAY_CHANGE,
         ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG,
+        ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU,
     };
 
     /** @hide */
@@ -343,6 +358,7 @@ public class LatencyTracker {
         ACTION_KEYGUARD_FACE_UNLOCK_TO_HOME,
         ACTION_SHADE_WINDOW_DISPLAY_CHANGE,
         ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG,
+        ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Action {}
@@ -380,6 +396,7 @@ public class LatencyTracker {
             UIACTION_LATENCY_REPORTED__ACTION__ACTION_KEYGUARD_FACE_UNLOCK_TO_HOME,
             UIACTION_LATENCY_REPORTED__ACTION__ACTION_SHADE_WINDOW_DISPLAY_CHANGE,
             UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG,
+            UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU,
     };
 
     private final Object mLock = new Object();
@@ -582,6 +599,8 @@ public class LatencyTracker {
                 return "ACTION_SHADE_WINDOW_DISPLAY_CHANGE";
             case UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG:
                 return "ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG";
+            case UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU:
+                return "ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU";
             default:
                 throw new IllegalArgumentException("Invalid action");
         }
