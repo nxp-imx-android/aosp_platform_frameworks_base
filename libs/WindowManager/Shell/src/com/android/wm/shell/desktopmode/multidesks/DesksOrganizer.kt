@@ -47,6 +47,13 @@ interface DesksOrganizer {
         task: ActivityManager.RunningTaskInfo,
     )
 
+    /** Unminimize the given task of the given desk. */
+    fun unminimizeTask(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        task: ActivityManager.RunningTaskInfo,
+    )
+
     /** Whether the change is for the given desk id. */
     fun isDeskChange(change: TransitionInfo.Change, deskId: Int): Boolean
 
