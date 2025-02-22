@@ -43,6 +43,7 @@ import android.os.RemoteException;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
+import android.server.wm.DumpOnFailure;
 import android.server.wm.WindowManagerStateHelper;
 import android.util.Log;
 import android.view.View;
@@ -122,6 +123,9 @@ public class InputMethodServiceTest {
 
     @Rule
     public final TestName mName = new TestName();
+
+    @Rule
+    public final DumpOnFailure mDumpOnFailure = new DumpOnFailure();
 
     private Instrumentation mInstrumentation;
     private UiDevice mUiDevice;
@@ -267,8 +271,8 @@ public class InputMethodServiceTest {
 
         final var window = mInputMethodService.getWindow().getWindow();
         assertWithMessage("IME window exists").that(window).isNotNull();
-        assertWithMessage("IME window showing").that(
-                window.getDecorView().getVisibility()).isEqualTo(View.VISIBLE);
+        eventually(() -> assertWithMessage("IME window showing").that(
+                window.getDecorView().getVisibility()).isEqualTo(View.VISIBLE));
 
         mActivity.getWindow().getDecorView().setWindowInsetsAnimationCallback(
                 new WindowInsetsAnimation.Callback(
@@ -1284,8 +1288,13 @@ public class InputMethodServiceTest {
 
     @NonNull
     private UiObject2 getUiObject(@NonNull BySelector bySelector) {
+        final var preScreenshot = mInstrumentation.getUiAutomation().takeScreenshot();
+        mDumpOnFailure.dumpOnFailure("pre-getUiObject", preScreenshot);
         final var uiObject = mUiDevice.wait(Until.findObject(bySelector), TIMEOUT_MS);
-        assertWithMessage("UiObject with " + bySelector + " was found").that(uiObject).isNotNull();
+        mInstrumentation.waitForIdleSync();
+        final var postScreenshot = mInstrumentation.getUiAutomation().takeScreenshot();
+        mDumpOnFailure.dumpOnFailure("post-getUiObject", postScreenshot);
+        assertWithMessage("UiObject with " + bySelector + " was found").that(uiObject).isNull();
         return uiObject;
     }
 

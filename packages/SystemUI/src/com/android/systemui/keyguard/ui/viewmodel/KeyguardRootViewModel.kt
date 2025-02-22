@@ -40,6 +40,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.PRIMARY_BOUNCER
 import com.android.systemui.keyguard.shared.model.TransitionState.RUNNING
 import com.android.systemui.keyguard.shared.model.TransitionState.STARTED
 import com.android.systemui.keyguard.ui.StateToValue
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.ui.viewmodel.NotificationShadeWindowModel
@@ -182,7 +183,7 @@ constructor(
                         edgeWithoutSceneContainer = Edge.create(from = LOCKSCREEN, to = GONE),
                     ),
                     keyguardTransitionInteractor.isInTransition(
-                        edge = Edge.create(from = Scenes.Bouncer, to = LOCKSCREEN),
+                        edge = Edge.create(from = Overlays.Bouncer, to = LOCKSCREEN),
                         edgeWithoutSceneContainer =
                             Edge.create(from = PRIMARY_BOUNCER, to = LOCKSCREEN),
                     ),
@@ -226,7 +227,7 @@ constructor(
                 .map { it > 1f - offToLockscreenTransitionViewModel.alphaStartAt }
                 .onStart { emit(false) },
             keyguardTransitionInteractor
-                .transitionValue(scene = Scenes.Gone, stateWithoutSceneContainer = GONE)
+                .transitionValue(content = Scenes.Gone, stateWithoutSceneContainer = GONE)
                 .map { it == 1f }
                 .onStart { emit(false) },
         )
@@ -361,7 +362,7 @@ constructor(
                     .map { it > 0f }
                     .onStart { emit(false) },
                 keyguardTransitionInteractor.isFinishedIn(
-                    scene = Scenes.Gone,
+                    content = Scenes.Gone,
                     stateWithoutSceneContainer = GONE,
                 ),
                 deviceEntryInteractor.isBypassEnabled,

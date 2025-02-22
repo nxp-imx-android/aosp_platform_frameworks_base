@@ -23,6 +23,7 @@ import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_ENABLE_REFR
 import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_ONLY_FOR_CAMERA;
 import static android.content.pm.ActivityInfo.OVERRIDE_ORIENTATION_ONLY_FOR_CAMERA;
 import static android.view.WindowManager.PROPERTY_CAMERA_COMPAT_ALLOW_FORCE_ROTATION;
+import static android.view.WindowManager.PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION;
 import static android.view.WindowManager.PROPERTY_CAMERA_COMPAT_ALLOW_REFRESH;
 import static android.view.WindowManager.PROPERTY_CAMERA_COMPAT_ENABLE_REFRESH_VIA_PAUSE;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE;
@@ -32,6 +33,7 @@ import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLAS
 import static com.android.server.wm.AppCompatUtils.isChangeEnabled;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import com.android.server.wm.utils.OptPropFactory;
 import com.android.window.flags.Flags;
@@ -60,6 +62,8 @@ class AppCompatCameraOverrides {
     private final OptPropFactory.OptProp mCameraCompatEnableRefreshViaPauseOptProp;
     @NonNull
     private final OptPropFactory.OptProp mCameraCompatAllowForceRotationOptProp;
+    @Nullable
+    private final OptPropFactory.OptProp mCameraCompatAllowOrientationTreatmentOptProp;
 
     AppCompatCameraOverrides(@NonNull ActivityRecord activityRecord,
             @NonNull AppCompatConfiguration appCompatConfiguration,
@@ -80,6 +84,10 @@ class AppCompatCameraOverrides {
         mCameraCompatAllowForceRotationOptProp = optPropBuilder.create(
                 PROPERTY_CAMERA_COMPAT_ALLOW_FORCE_ROTATION,
                 isCameraCompatTreatmentEnabled);
+        mCameraCompatAllowOrientationTreatmentOptProp =
+                Flags.enableCameraCompatForDesktopWindowingOptOut() ? optPropBuilder.create(
+                PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION,
+                isCameraCompatTreatmentEnabled) : null;
     }
 
     /**
@@ -168,10 +176,31 @@ class AppCompatCameraOverrides {
      * </ul>
      */
     boolean shouldApplyFreeformTreatmentForCameraCompat() {
-        return Flags.enableCameraCompatForDesktopWindowing() && (isChangeEnabled(mActivityRecord,
-                OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT)
-                || mActivityRecord.mWmService.mAppCompatConfiguration
-                    .isCameraCompatFreeformWindowingTreatmentEnabled());
+        return Flags.enableCameraCompatForDesktopWindowing()
+                && (shouldEnableCameraCompatFreeformTreatmentForApp()
+                || shouldEnableCameraCompatFreeformTreatmentForAllApps());
+    }
+
+    private boolean shouldEnableCameraCompatFreeformTreatmentForApp() {
+        if (mCameraCompatAllowOrientationTreatmentOptProp != null) {
+            return mCameraCompatAllowOrientationTreatmentOptProp
+                    .shouldEnableWithOptOutOverrideAndProperty(isChangeEnabled(mActivityRecord,
+                            OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT));
+        } else {
+            return isChangeEnabled(mActivityRecord,
+                    OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT);
+        }
+    }
+
+    /**
+     * Returns whether camera compat treatment should be enabled for all apps targeted for treatment
+     * (usually fixed-orientation apps).
+     *
+     * <p>This can be enabled via adb only.
+     */
+    private boolean shouldEnableCameraCompatFreeformTreatmentForAllApps() {
+        return mActivityRecord.mWmService.mAppCompatConfiguration
+                .isCameraCompatFreeformWindowingTreatmentEnabled();
     }
 
     boolean isOverrideOrientationOnlyForCameraEnabled() {

@@ -18,6 +18,7 @@ package com.android.systemui.scene.domain.startable
 
 import android.app.StatusBarManager
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.internal.logging.UiEventLogger
 import com.android.keyguard.AuthInteractionProperties
@@ -45,7 +46,7 @@ import com.android.systemui.keyguard.DismissCallbackRegistry
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
-import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor.Companion.keyguardScenes
+import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor.Companion.keyguardContent
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.model.SceneContainerPlugin
 import com.android.systemui.model.SysUiState
@@ -98,7 +99,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -345,12 +345,10 @@ constructor(
         applicationScope.launch {
             // TODO (b/308001302): Move this to a bouncer specific interactor.
             bouncerInteractor.onImeHiddenByUser.collectLatest {
-                if (sceneInteractor.currentScene.value == Scenes.Bouncer) {
-                    sceneInteractor.changeScene(
-                        toScene = Scenes.Lockscreen,
-                        loggingReason = "IME hidden",
-                    )
-                }
+                sceneInteractor.hideOverlay(
+                    overlay = Overlays.Bouncer,
+                    loggingReason = "IME hidden.",
+                )
             }
         }
     }
@@ -364,26 +362,28 @@ constructor(
                 .collect { (isAnySimLocked, unlockStatus) ->
                     when {
                         isAnySimLocked -> {
-                            switchToScene(
-                                targetSceneKey = Scenes.Bouncer,
+                            sceneInteractor.showOverlay(
+                                overlay = Overlays.Bouncer,
                                 loggingReason = "Need to authenticate locked SIM card.",
                             )
                         }
                         unlockStatus.isUnlocked &&
                             deviceEntryInteractor.canSwipeToEnter.value == false -> {
+                            val loggingReason =
+                                "All SIM cards unlocked and device already unlocked and " +
+                                    "lockscreen doesn't require a swipe to dismiss."
                             switchToScene(
                                 targetSceneKey = Scenes.Gone,
-                                loggingReason =
-                                    "All SIM cards unlocked and device already unlocked and " +
-                                        "lockscreen doesn't require a swipe to dismiss.",
+                                loggingReason = loggingReason,
                             )
                         }
                         else -> {
+                            val loggingReason =
+                                "All SIM cards unlocked and device still locked" +
+                                    " or lockscreen still requires a swipe to dismiss."
                             switchToScene(
                                 targetSceneKey = Scenes.Lockscreen,
-                                loggingReason =
-                                    "All SIM cards unlocked and device still locked" +
-                                        " or lockscreen still requires a swipe to dismiss.",
+                                loggingReason = loggingReason,
                             )
                         }
                     }
@@ -393,26 +393,40 @@ constructor(
 
     private fun handleDeviceUnlockStatus() {
         applicationScope.launch {
-            // Track the previous scene (sans Bouncer), so that we know where to go when the device
-            // is unlocked whilst on the bouncer.
+            // Track the previous scene, so that we know where to go when the device is unlocked
+            // whilst on the bouncer.
             val previousScene =
-                sceneBackInteractor.backScene
-                    .filterNot { it == Scenes.Bouncer }
-                    .stateIn(this, SharingStarted.Eagerly, initialValue = null)
+                sceneBackInteractor.backScene.stateIn(
+                    this,
+                    SharingStarted.Eagerly,
+                    initialValue = null,
+                )
             deviceUnlockedInteractor.deviceUnlockStatus
                 .mapNotNull { deviceUnlockStatus ->
-                    val renderedScenes =
+                    val (renderedScenes: List<SceneKey>, renderedOverlays) =
                         when (val transitionState = sceneInteractor.transitionState.value) {
-                            is ObservableTransitionState.Idle -> setOf(transitionState.currentScene)
-                            is ObservableTransitionState.Transition ->
-                                setOf(transitionState.fromContent, transitionState.toContent)
+                            is ObservableTransitionState.Idle ->
+                                listOf(transitionState.currentScene) to
+                                    transitionState.currentOverlays
+                            is ObservableTransitionState.Transition.ChangeScene ->
+                                listOf(transitionState.fromScene, transitionState.toScene) to
+                                    transitionState.currentOverlays
+                            is ObservableTransitionState.Transition.OverlayTransition ->
+                                listOf(transitionState.currentScene) to
+                                    setOfNotNull(
+                                        transitionState.toContent.takeIf { it is OverlayKey },
+                                        transitionState.fromContent.takeIf { it is OverlayKey },
+                                    )
                         }
                     val isOnLockscreen = renderedScenes.contains(Scenes.Lockscreen)
                     val isAlternateBouncerVisible = alternateBouncerInteractor.isVisibleState()
-                    val isOnPrimaryBouncer = renderedScenes.contains(Scenes.Bouncer)
+                    val isOnPrimaryBouncer = Overlays.Bouncer in renderedOverlays
                     if (!deviceUnlockStatus.isUnlocked) {
-                        return@mapNotNull if (renderedScenes.any { it in keyguardScenes }) {
-                            // Already on a keyguard scene, no need to change scenes.
+                        return@mapNotNull if (
+                            renderedScenes.any { it in keyguardContent } ||
+                                Overlays.Bouncer in renderedOverlays
+                        ) {
+                            // Already on a keyguard scene or bouncer, no need to change scenes.
                             null
                         } else {
                             // The device locked while on a scene that's not a keyguard scene, go
@@ -450,24 +464,25 @@ constructor(
                         }
                         isOnPrimaryBouncer -> {
                             // When the device becomes unlocked in primary Bouncer,
-                            // notify dismiss succeeded and go to previous scene or Gone.
+                            // notify dismiss succeeded and remain in current scene or switch to
+                            // Gone.
                             dismissCallbackRegistry.notifyDismissSucceeded()
+                            // if transition is a scene change, take the destination scene
+                            val targetScene = renderedScenes.last()
                             if (
-                                previousScene.value == Scenes.Lockscreen ||
+                                targetScene == Scenes.Lockscreen ||
                                     !statusBarStateController.leaveOpenOnKeyguardHide()
                             ) {
                                 Scenes.Gone to
                                     "device was unlocked with bouncer showing and shade" +
                                         " didn't need to be left open"
                             } else {
-                                val prevScene = previousScene.value
-                                val targetScene = prevScene ?: Scenes.Gone
-                                if (targetScene != Scenes.Gone) {
+                                if (previousScene.value != Scenes.Gone) {
                                     replaceLockscreenSceneOnBackStack()
                                 }
                                 targetScene to
                                     "device was unlocked with primary bouncer showing," +
-                                        " from sceneKey=$prevScene"
+                                        " from sceneKey=$targetScene"
                             }
                         }
                         isOnLockscreen ->
@@ -575,8 +590,8 @@ constructor(
                         authenticationInteractor.get().getAuthenticationMethod() ==
                             AuthenticationMethodModel.Sim
                     ) {
-                        switchToScene(
-                            targetSceneKey = Scenes.Bouncer,
+                        sceneInteractor.showOverlay(
+                            overlay = Overlays.Bouncer,
                             loggingReason = "device is starting to wake up with a locked sim",
                         )
                     }
@@ -791,11 +806,11 @@ constructor(
         }
 
         applicationScope.launch {
-            sceneInteractor.currentScene
-                .map { it == Scenes.Bouncer }
+            sceneInteractor.currentOverlays
+                .map { Overlays.Bouncer in it }
                 .distinctUntilChanged()
-                .collect { switchedToBouncerScene ->
-                    if (switchedToBouncerScene) {
+                .collect { switchedToBouncerOverlay ->
+                    if (switchedToBouncerOverlay) {
                         falsingCollector.onBouncerShown()
                     } else {
                         falsingCollector.onBouncerHidden()
@@ -812,7 +827,10 @@ constructor(
                     falsingManager.addFalsingBeliefListener(listener)
                     awaitClose { falsingManager.removeFalsingBeliefListener(listener) }
                 }
-                .collect { switchToScene(Scenes.Lockscreen, "Falsing detected.") }
+                .collect {
+                    val loggingReason = "Falsing detected."
+                    switchToScene(Scenes.Lockscreen, loggingReason)
+                }
         }
     }
 
@@ -827,7 +845,7 @@ constructor(
                             .mapNotNull { it as? ObservableTransitionState.Idle }
                             .map { it.currentScene to it.currentOverlays }
                             .distinctUntilChanged()
-                            .map { (sceneKey, currentOverlays) ->
+                            .map { (currentScene, currentOverlays) ->
                                 when {
                                     // When locked, showing the lockscreen scene should be reported
                                     // as "interacting" while showing other scenes should report as
@@ -837,9 +855,9 @@ constructor(
                                     // implementation. The real reason why is lost to lore and myth.
                                     Overlays.NotificationsShade in currentOverlays -> false
                                     Overlays.QuickSettingsShade in currentOverlays -> null
-                                    sceneKey == Scenes.Lockscreen -> true
-                                    sceneKey == Scenes.Bouncer -> false
-                                    sceneKey == Scenes.Shade -> false
+                                    Overlays.Bouncer in currentOverlays -> false
+                                    currentScene == Scenes.Lockscreen -> true
+                                    currentScene == Scenes.Shade -> false
                                     else -> null
                                 }
                             }
@@ -865,7 +883,7 @@ constructor(
                 .filterIsInstance<ObservableTransitionState.Transition>()
                 // Only consider user-initiated (e.g. drags) that go from bouncer to lockscreen.
                 .filter { transition ->
-                    transition.fromContent == Scenes.Bouncer &&
+                    transition.fromContent == Overlays.Bouncer &&
                         transition.toContent == Scenes.Lockscreen &&
                         transition.isInitiatedByUserInput
                 }
@@ -954,14 +972,13 @@ constructor(
 
     private fun notifyKeyguardDismissCancelledCallbacks() {
         applicationScope.launch {
-            combine(deviceEntryInteractor.isUnlocked, sceneInteractor.currentScene.pairwise()) {
+            combine(deviceEntryInteractor.isUnlocked, sceneInteractor.currentOverlays.pairwise()) {
                     isUnlocked,
-                    (from, to) ->
-                    when {
-                        from != Scenes.Bouncer -> false
-                        to != Scenes.Gone && !isUnlocked -> true
-                        else -> false
-                    }
+                    overlayChange ->
+                    val difference = overlayChange.previousValue - overlayChange.newValue
+                    !isUnlocked &&
+                        sceneInteractor.currentScene.value != Scenes.Gone &&
+                        Overlays.Bouncer in difference
                 }
                 .collect { notifyKeyguardDismissCancelled ->
                     if (notifyKeyguardDismissCancelled) {

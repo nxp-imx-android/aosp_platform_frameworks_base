@@ -23,6 +23,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
@@ -58,7 +59,6 @@ import com.android.systemui.volume.dialog.sliders.ui.viewmodel.VolumeDialogSlide
 import com.android.systemui.volume.haptics.ui.VolumeHapticsConfigsProvider
 import javax.inject.Inject
 import kotlin.math.round
-import kotlin.math.roundToInt
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
@@ -136,7 +136,7 @@ private fun VolumeDialogSlider(
                 )
                 .also { sliderState ->
                     sliderState.onValueChangeFinished = {
-                        viewModel.onStreamChangeFinished(sliderState.value.roundToInt())
+                        viewModel.onSliderChangeFinished(sliderState.value)
                         hapticsViewModel?.onValueChangeEnded()
                     }
                     sliderState.onValueChange = { newValue ->
@@ -159,6 +159,15 @@ private fun VolumeDialogSlider(
         if (value != lastDiscreteStep) {
             lastDiscreteStep = value
             hapticsViewModel?.onValueChange(value)
+        }
+    }
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect {
+            when (it) {
+                is DragInteraction.Start -> viewModel.onSliderDragStarted()
+                is DragInteraction.Cancel -> viewModel.onSliderDragFinished()
+                is DragInteraction.Stop -> viewModel.onSliderDragFinished()
+            }
         }
     }
 

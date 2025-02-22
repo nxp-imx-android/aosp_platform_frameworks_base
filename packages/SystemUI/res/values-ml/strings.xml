@@ -245,8 +245,12 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"ബ്ലൂടൂത്ത് കണക്‌റ്റുചെയ്തു."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth ഉപകരണ ഐക്കൺ"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ഉപകരണത്തിന്റെ വിശദാംശങ്ങൾ കോൺഫിഗർ ചെയ്യാൻ ക്ലിക്ക് ചെയ്യുക"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"എല്ലാ ഉപകരണങ്ങളും കാണാൻ ക്ലിക്ക് ചെയ്യുക"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"പുതിയ ഉപകരണം ജോടിയാക്കാൻ ക്ലിക്ക് ചെയ്യുക"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
+    <skip />
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ബാറ്ററി ശതമാനം അജ്ഞാതമാണ്."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> എന്നതിലേക്ക് കണക്‌റ്റുചെയ്‌തു."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> എന്നതിലേക്ക് കണക്റ്റുചെയ്തു."</string>
@@ -328,7 +332,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"ഇൻപുട്ട്"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"ശ്രവണ സഹായികൾ"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ഓണാക്കുന്നു…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"തെളിച്ചം അഡ്‌ജസ്റ്റ് ചെയ്യാനാകില്ല, അത്\n നിയന്ത്രിക്കുന്നത് ഏറ്റവും മുകളിലുള്ള ആപ്പാണ്"</string>
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"തെളിച്ചം അഡ്‌ജസ്റ്റ് ചെയ്യാനാകില്ല, അത് നിയന്ത്രിക്കുന്നത് ഏറ്റവും മുകളിലുള്ള ആപ്പാണ്"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"സ്‌ക്രീൻ സ്വയമേവ തിരിയൽ"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"സ്‌ക്രീൻ സ്വയമേവ തിരിക്കുക"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"ലൊക്കേഷൻ"</string>
@@ -808,12 +812,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"സംഭാഷണ ഫീച്ചറുകളെ <xliff:g id="APP_NAME">%1$s</xliff:g> പിന്തുണയ്‌ക്കുന്നില്ല"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ഫീഡ്ബാക്ക്"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ഡിസ്‌മിസ് ചെയ്യുക"</string>
-    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
-    <skip />
-    <!-- no translation found for live_notifications_title (1586553354601345379) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"പിൻ ചെയ്തതായി കാണിക്കരുത്"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"തത്സമയ അപ്‌ഡേറ്റുകൾ കാണിക്കുന്നു"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"പിൻ ചെയ്ത അറിയിപ്പുകൾ, ആപ്പുകളിൽ നിന്നുള്ള തത്സമയ വിവരങ്ങൾ പ്രദർശിപ്പിക്കും, അവ എപ്പോഴും സ്റ്റാറ്റസ് ബാറിലും ലോക്ക് സ്‌ക്രീനിലും ദൃശ്യമാകും"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ഈ അറിയിപ്പുകൾ പരിഷ്ക്കരിക്കാനാവില്ല."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"കോൾ അറിയിപ്പുകൾ പരിഷ്‌കരിക്കാനാകുന്നില്ല."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"അറിയിപ്പുകളുടെ ഈ ഗ്രൂപ്പ് ഇവിടെ കോണ്‍ഫിഗര്‍ ചെയ്യാൻ കഴിയില്ല"</string>
@@ -900,7 +901,10 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"മൾട്ടിടാസ്‌കിംഗ്"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"വലതുവശത്തുള്ള ആപ്പിനൊപ്പം സ്‌ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുക"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ഇടതുവശത്തുള്ള ആപ്പിനൊപ്പം സ്‌ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുക"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"പൂർണ്ണ സ്‌ക്രീനിലേക്ക് മാറുക"</string>
+    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
+    <skip />
+    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"സ്ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുമ്പോൾ വലതുവശത്തെ/താഴത്തെ ആപ്പിലേക്ക് മാറുക"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"സ്ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുമ്പോൾ ഇടതുവശത്തെ/മുകളിലെ ആപ്പിലേക്ക് മാറൂ"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"സ്‌ക്രീൻ വിഭജന മോഡിൽ: ഒരു ആപ്പിൽ നിന്ന് മറ്റൊന്നിലേക്ക് മാറുക"</string>
@@ -987,6 +991,8 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"പ്രാധാന്യം കുറഞ്ഞ അറിയിപ്പ് ചിഹ്‌നങ്ങൾ"</string>
     <string name="other" msgid="429768510980739978">"മറ്റുള്ളവ"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
+    <skip />
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ടൈൽ നീക്കം ചെയ്യുക"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"അവസാന ഭാഗത്ത് ടൈൽ ചേർക്കുക"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ടൈൽ നീക്കുക"</string>
@@ -1501,6 +1507,8 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"അടുത്തിടെയുള്ള ആപ്പുകൾ കാണുക"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ആപ്പുകൾ മാറുക"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"പൂർത്തിയായി"</string>
+    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
+    <skip />
     <string name="gesture_error_title" msgid="469064941635578511">"വീണ്ടും ശ്രമിക്കുക!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"മടങ്ങുക"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"ടച്ച്‌പാഡിൽ മൂന്ന് വിരലുകൾ കൊണ്ട് ഇടത്തേക്കോ വലത്തേക്കോ സ്വൈപ്പ് ചെയ്യുക"</string>
@@ -1538,7 +1546,10 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"അടുത്തിടെ ഉപയോഗിച്ച ആപ്പുകൾ കാണാൻ, മൂന്ന് വിരലുകൾ ഉപയോഗിച്ച് ടച്ച്‌പാഡിൽ സ്വൈപ്പ് ചെയ്ത് പിടിക്കുക"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"എല്ലാ ആപ്പുകളും കാണാൻ, നിങ്ങളുടെ കീബോർഡിലെ ആക്‌ഷൻ കീ അമർത്തുക"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"മറച്ചത്"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"കാണാൻ, അൺലോക്ക് ചെയ്യുക"</string>
+    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
+    <skip />
+    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
+    <skip />
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"സന്ദർഭോചിത വിദ്യാഭ്യാസം"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"തിരികെ പോകാൻ നിങ്ങളുടെ ടച്ച്‌പാഡ് ഉപയോഗിക്കുക"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"മൂന്ന് വിരലുകൾ കൊണ്ട് ഇടത്തേക്കോ വലത്തേക്കോ സ്വൈപ്പ് ചെയ്യൂ. കൂടുതൽ ജെസ്ച്ചറുകളറിയാൻ ടാപ്പ് ചെയ്യൂ."</string>

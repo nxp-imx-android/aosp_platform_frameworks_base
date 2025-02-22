@@ -61,17 +61,17 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
-class BouncerSceneContentViewModelTest : SysuiTestCase() {
+class BouncerOverlayContentViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
 
-    private lateinit var underTest: BouncerSceneContentViewModel
+    private lateinit var underTest: BouncerOverlayContentViewModel
 
     @Before
     fun setUp() {
         kosmos.sceneContainerStartable.start()
-        underTest = kosmos.bouncerSceneContentViewModel
+        underTest = kosmos.bouncerOverlayContentViewModel
         underTest.activateIn(testScope)
     }
 

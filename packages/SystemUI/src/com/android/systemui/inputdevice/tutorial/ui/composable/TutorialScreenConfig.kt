@@ -28,7 +28,6 @@ data class TutorialScreenConfig(
     val colors: Colors,
     val strings: Strings,
     val animations: Animations,
-    val hasNextButton: Boolean = false,
 ) {
 
     data class Colors(

@@ -28,6 +28,7 @@ android_test {
     static_libs: [
         "PlatformProperties",
         "androidx.test.rules",
+        "androidx.test.runner",
         "flag-junit",
         "frameworks-base-testutils",
         "junit",

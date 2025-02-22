@@ -881,8 +881,15 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
             var updatedVisibility = false
             mediaCarouselController.updateHostVisibility = { updatedVisibility = true }
             mediaCarouselController.mediaCarousel = mediaCarousel
+            kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "")
+            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+            runCurrent()
 
             val job = mediaCarouselController.listenForAnyStateToGoneKeyguardTransition(this)
+
+            kosmos.sceneInteractor.changeScene(Scenes.Gone, "")
             kosmos.setSceneTransition(Idle(Scenes.Gone))
 
             verify(mediaCarousel).visibility = View.VISIBLE

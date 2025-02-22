@@ -245,8 +245,9 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth ligado."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ícone de dispositivo Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Clique para configurar o detalhe do dispositivo"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"Clique para ver todos os dispositivos"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"Clique para sincronizar um novo dispositivo"</string>
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Configure o detalhe do dispositivo"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Veja todos os dispositivos"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Sincronize um novo dispositivo"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Percentagem da bateria desconhecida."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Ligado a <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Ligado a <xliff:g id="CAST">%s</xliff:g>."</string>
@@ -328,7 +329,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Entrada"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Aparelhos auditivos"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"A ativar..."</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Não é possível ajustar o brilho porque está a ser\n controlado pela app principal"</string>
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Não é possível ajustar o brilho porque está a ser controlado pela app principal"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Rotação auto."</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Rodar o ecrã automaticamente"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Localização"</string>
@@ -506,7 +507,7 @@
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"Deslize rapidamente para a esquerda para iniciar o tutorial coletivo"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"Personalizar"</string>
     <string name="cta_tile_button_to_dismiss" msgid="3377597875997861754">"Ignorar"</string>
-    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"Adicionar, remover e reordenar widgets neste espaço"</string>
+    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"Adicione, remova e reordene widgets aqui"</string>
     <string name="cta_label_to_open_widget_picker" msgid="3874946756976360699">"Adicionar mais widgets"</string>
     <string name="popup_on_dismiss_cta_tile_text" msgid="8292501780996070019">"Mantenha pressionado para personalizar os widgets"</string>
     <string name="button_to_configure_widgets_text" msgid="4191862850185256901">"Personalizar widgets"</string>
@@ -808,12 +809,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"A app <xliff:g id="APP_NAME">%1$s</xliff:g> não suporta funcionalidades de conversa."</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Feedback"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Ignorar"</string>
-    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
-    <skip />
-    <!-- no translation found for live_notifications_title (1586553354601345379) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Não mostrar como afixada"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"A mostrar atualizações em direto"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"As notificações afixadas apresentam informações em direto das apps e aparecem sempre na barra de estado e no ecrã de bloqueio"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Não é possível modificar estas notificações."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Não é possível modificar as notificações de chamadas."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Não é possível configurar este grupo de notificações aqui."</string>
@@ -900,7 +898,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Execução de várias tarefas em simultâneo"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Use o ecrã dividido com a app à direita"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Use o ecrã dividido com a app à esquerda"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"Mude para ecrã inteiro"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Use o ecrã inteiro"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Use a vista de computador"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Mudar para a app à direita ou abaixo enquanto usa o ecrã dividido"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Mude para a app à esquerda ou acima enquanto usa o ecrã dividido"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Durante o ecrã dividido: substituir uma app por outra"</string>
@@ -987,6 +986,8 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Mostrar ícones de notificações de prioridade baixa"</string>
     <string name="other" msgid="429768510980739978">"Outro"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
+    <skip />
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"remover o cartão"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"adicionar o mosaico à última posição"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Mover cartão"</string>
@@ -1501,6 +1502,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Ver apps recentes"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Mudar de app"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Concluir"</string>
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Seguinte"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Tente novamente!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Voltar"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Deslize rapidamente para a esquerda ou direita com 3 dedos no touchpad"</string>
@@ -1538,7 +1540,10 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Para ver as apps recentes, deslize rapidamente para cima e mantenha premido com 3 dedos no touchpad"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Para ver todas as suas apps, prima a tecla de ação no teclado"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Revisto"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"Desbloqueie para ver"</string>
+    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
+    <skip />
+    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
+    <skip />
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Educação contextual"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Use o touchpad para retroceder"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Deslize rapidamente para a esquerda ou direita com 3 dedos. Toque para aprender mais gestos."</string>

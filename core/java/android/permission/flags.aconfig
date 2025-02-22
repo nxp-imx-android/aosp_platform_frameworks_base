@@ -514,3 +514,12 @@ flag {
     description: "Force AttributionSource.myAttributionSource() to return a default device id"
     bug: "343121936"
 }
+
+flag {
+    name: "grant_read_blocked_numbers_to_system_ui_intelligence"
+    is_exported: true
+    is_fixed_read_only: true
+    namespace: "permissions"
+    description: "This flag is used to add role protection to READ_BLOCKED_NUMBERS for SYSTEM_UI_INTELLIGENCE"
+    bug: "354758615"
+}

@@ -22,7 +22,6 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
-import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
@@ -94,18 +93,6 @@ constructor(
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch { hydrator.activate() }
-
-            launch {
-                sceneInteractor.currentScene.collect { currentScene ->
-                    when (currentScene) {
-                        // TODO(b/369513770): The ShadeSession should be preserved in this scenario.
-                        Scenes.Bouncer ->
-                            shadeInteractor.collapseNotificationsShade(
-                                loggingReason = "bouncer shown while shade is open"
-                            )
-                    }
-                }
-            }
 
             launch {
                 shadeInteractor.isShadeTouchable

@@ -42,6 +42,7 @@ import android.os.SystemProperties;
 import android.os.Trace;
 import android.provider.FontRequest;
 import android.provider.FontsContract;
+import android.ravenwood.annotation.RavenwoodReplace;
 import android.system.ErrnoException;
 import android.system.OsConstants;
 import android.text.FontConfig;
@@ -86,6 +87,7 @@ import java.util.Objects;
  * textSize, textSkewX, textScaleX to specify
  * how text appears when drawn (and measured).
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class Typeface {
 
     private static String TAG = "Typeface";
@@ -93,9 +95,11 @@ public class Typeface {
     /** @hide */
     public static final boolean ENABLE_LAZY_TYPEFACE_INITIALIZATION = true;
 
-    private static final NativeAllocationRegistry sRegistry =
-            NativeAllocationRegistry.createMalloced(
-            Typeface.class.getClassLoader(), nativeGetReleaseFunc());
+    private static class NoImagePreloadHolder {
+        static final NativeAllocationRegistry sRegistry =
+                NativeAllocationRegistry.createMalloced(
+                        Typeface.class.getClassLoader(), nativeGetReleaseFunc());
+    }
 
     /** The default NORMAL typeface object */
     public static final Typeface DEFAULT = null;
@@ -1284,7 +1288,7 @@ public class Typeface {
         }
 
         native_instance = ni;
-        mCleaner = sRegistry.registerNativeAllocation(this, native_instance);
+        mCleaner = NoImagePreloadHolder.sRegistry.registerNativeAllocation(this, native_instance);
         mStyle = nativeGetStyle(ni);
         mWeight = nativeGetWeight(ni);
         mIsVariationInstance = nativeIsVariationInstance(ni);
@@ -1560,9 +1564,23 @@ public class Typeface {
     }
 
     static {
+        staticInitializer();
+    }
+
+    @RavenwoodReplace(reason = "Prevent circular reference on host side JVM", bug = 337329128)
+    private static void staticInitializer() {
+        init();
+    }
+
+    private static void staticInitializer$ravenwood() {
+        /* no-op */
+    }
+
+    /** @hide */
+    public static void init() {
         // Preload Roboto-Regular.ttf in Zygote for improving app launch performance.
-        preloadFontFile("/system/fonts/Roboto-Regular.ttf");
-        preloadFontFile("/system/fonts/RobotoStatic-Regular.ttf");
+        preloadFontFile(SystemFonts.SYSTEM_FONT_DIR + "Roboto-Regular.ttf");
+        preloadFontFile(SystemFonts.SYSTEM_FONT_DIR + "RobotoStatic-Regular.ttf");
 
         String locale = SystemProperties.get("persist.sys.locale", "en-US");
         String script = ULocale.addLikelySubtags(ULocale.forLanguageTag(locale)).getScript();
@@ -1640,6 +1658,21 @@ public class Typeface {
         final Map<String, Typeface> typefaceMap =
                 SystemFonts.buildSystemTypefaces(fontConfig, fallback);
         setSystemFontMap(typefaceMap);
+    }
+
+    /**
+     * {@link #loadPreinstalledSystemFontMap()} does not actually initialize the native
+     * system font APIs. Add a new method to actually load the font files without going
+     * through SharedMemory.
+     *
+     * @hide
+     */
+    public static void loadNativeSystemFonts() {
+        synchronized (SYSTEM_FONT_MAP_LOCK) {
+            for (var type : sSystemFontMap.values()) {
+                nativeAddFontCollections(type.native_instance);
+            }
+        }
     }
 
     static {

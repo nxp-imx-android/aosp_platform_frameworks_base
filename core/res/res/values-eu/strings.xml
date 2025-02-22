@@ -353,14 +353,10 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"atzitu bizi-konstanteei buruzko sentsorearen datuak"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Jakinarazpenak"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"jakinarazpenak erakutsi"</string>
-    <!-- no translation found for permgrouplab_xr_tracking (7418994009794287471) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (6777198859446500821) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (1194833982988144536) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (9178027369004805829) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"EHko jarraipen-datuak"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"zuri eta inguruko inguruneari buruzko EHko datuak erabili"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"kontuzko EHko jarraipen-datuak"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"kontuzko jarraipen-datuak erabili, hala nola begiradari buruzkoak"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Leihoko edukia eskuratu."</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Arakatu irekita daukazun leihoko edukia."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"\"Arakatu ukituta\" aktibatu."</string>
@@ -656,38 +652,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"Argazki bilduma aldatzeko baimena ematen dio aplikazioari."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"multimedia-edukien bildumako kokapena irakurri"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"Multimedia-edukien bildumako kokapena irakurtzeko baimena ematen dio aplikazioari."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (7989596289790269059) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (870510233930553355) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6914457357027049512) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (5788889152304524730) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (2272048395128283324) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (2622783922311211866) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (6478233866595566940) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8639715900104966456) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (1309731456372087270) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (231597390513699188) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (6518646430502858641) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (4508880777646198656) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (409126403264393251) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (6223368011593524179) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (7117098718465619023) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (939504041387836853) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"begiradaren gutxi gorabeherako datuen jarraipena egin"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"Zure begiradaren gutxi gorabeherako datuen jarraipena egiteko baimena ematen dio aplikazioari."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"begiradaren jarraipena egin"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"Zure begiradaren datu zehatzen jarraipena egiteko baimena ematen dio aplikazioari."</string>
+    <string name="permlab_face_tracking" msgid="2272048395128283324">"aurpegiaren jarraipena egin"</string>
+    <string name="permdesc_face_tracking" msgid="2622783922311211866">"Aurpegiaren jarraipen-datuak erabiltzeko baimena ematen dio aplikazioari."</string>
+    <string name="permlab_hand_tracking" msgid="6478233866595566940">"eskuen jarraipena egin"</string>
+    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"Eskuen jarraipen-datuak erabiltzeko baimena ematen dio aplikazioari."</string>
+    <string name="permlab_head_tracking" msgid="1309731456372087270">"buruaren jarraipena egin"</string>
+    <string name="permdesc_head_tracking" msgid="231597390513699188">"Buruaren jarraipen-datuak erabiltzeko baimena ematen dio aplikazioari."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"inguruan duzun ingurunea aztertu"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"Inguruan duzun ingurunearen jarraipen datuak erabiltzeko baimena ematen dio aplikazioari."</string>
+    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"inguruan duzun ingurunea xehetasunez aztertu"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Inguruan duzun ingurunearen jarraipen datu oso xeheak erabiltzeko baimena ematen dio aplikazioari."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"aurreko planoan egon gabe ere EHko datuak erabili"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Aurreko planoan ez badago ere EHko datuak erabiltzeko baimena ematen dio aplikazioari."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Erabili sistema biometrikoak"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Erabili sistema biometrikoak edo pantailaren blokeoa"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Egiaztatu zeu zarela"</string>

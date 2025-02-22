@@ -37,7 +37,6 @@ import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
-import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_MINIMIZE_WINDOW
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION
 import com.android.wm.shell.ShellTaskOrganizer
@@ -72,8 +71,6 @@ import org.mockito.Mockito.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.`when`
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.verify
 import org.mockito.quality.Strictness
 
 /**
@@ -518,85 +515,6 @@ class DesktopTasksLimiterTest : ShellTestCase() {
 
         // first == front, last == back
         assertThat(minimizedTask).isEqualTo(tasks.last().taskId)
-    }
-
-    @Test
-    fun minimizeTransitionReadyAndFinished_logsJankInstrumentationBeginAndEnd() {
-        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        (1..<MAX_TASK_LIMIT).forEach { _ -> setUpFreeformTask() }
-        val transition = Binder()
-        val task = setUpFreeformTask()
-        addPendingMinimizeChange(transition, taskId = task.taskId)
-
-        callOnTransitionReady(
-            transition,
-            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_TO_BACK, task).build(),
-        )
-
-        desktopTasksLimiter.getTransitionObserver().onTransitionStarting(transition)
-
-        verify(interactionJankMonitor)
-            .begin(any(), eq(mContext), eq(handler), eq(CUJ_DESKTOP_MODE_MINIMIZE_WINDOW))
-
-        desktopTasksLimiter
-            .getTransitionObserver()
-            .onTransitionFinished(transition, /* aborted= */ false)
-
-        verify(interactionJankMonitor).end(eq(CUJ_DESKTOP_MODE_MINIMIZE_WINDOW))
-    }
-
-    @Test
-    fun minimizeTransitionReadyAndAborted_logsJankInstrumentationBeginAndCancel() {
-        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        (1..<MAX_TASK_LIMIT).forEach { _ -> setUpFreeformTask() }
-        val transition = Binder()
-        val task = setUpFreeformTask()
-        addPendingMinimizeChange(transition, taskId = task.taskId)
-
-        callOnTransitionReady(
-            transition,
-            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_TO_BACK, task).build(),
-        )
-
-        desktopTasksLimiter.getTransitionObserver().onTransitionStarting(transition)
-
-        verify(interactionJankMonitor)
-            .begin(any(), eq(mContext), eq(handler), eq(CUJ_DESKTOP_MODE_MINIMIZE_WINDOW))
-
-        desktopTasksLimiter
-            .getTransitionObserver()
-            .onTransitionFinished(transition, /* aborted= */ true)
-
-        verify(interactionJankMonitor).cancel(eq(CUJ_DESKTOP_MODE_MINIMIZE_WINDOW))
-    }
-
-    @Test
-    fun minimizeTransitionReadyAndMerged_logsJankInstrumentationBeginAndEnd() {
-        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        (1..<MAX_TASK_LIMIT).forEach { _ -> setUpFreeformTask() }
-        val mergedTransition = Binder()
-        val newTransition = Binder()
-        val task = setUpFreeformTask()
-        addPendingMinimizeChange(mergedTransition, taskId = task.taskId)
-
-        callOnTransitionReady(
-            mergedTransition,
-            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_TO_BACK, task).build(),
-        )
-
-        desktopTasksLimiter.getTransitionObserver().onTransitionStarting(mergedTransition)
-
-        verify(interactionJankMonitor)
-            .begin(any(), eq(mContext), eq(handler), eq(CUJ_DESKTOP_MODE_MINIMIZE_WINDOW))
-
-        desktopTasksLimiter
-            .getTransitionObserver()
-            .onTransitionMerged(mergedTransition, newTransition)
-
-        verify(interactionJankMonitor).end(eq(CUJ_DESKTOP_MODE_MINIMIZE_WINDOW))
     }
 
     @Test

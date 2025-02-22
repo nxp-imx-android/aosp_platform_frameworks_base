@@ -39,7 +39,6 @@ import android.animation.Animator;
 import android.annotation.NonNull;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -77,7 +76,6 @@ public class ActivityEmbeddingAnimationRunnerTests extends ActivityEmbeddingAnim
         doNothing().when(mController).onAnimationFinished(any());
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testStartAnimation() {
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN, 0)
@@ -103,7 +101,6 @@ public class ActivityEmbeddingAnimationRunnerTests extends ActivityEmbeddingAnim
         verify(mController).onAnimationFinished(mTransition);
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testChangesBehindStartingWindow() {
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN, 0)
@@ -118,7 +115,6 @@ public class ActivityEmbeddingAnimationRunnerTests extends ActivityEmbeddingAnim
         assertEquals(0, animator.getDuration());
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testTransitionTypeDragResize() {
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TASK_FRAGMENT_DRAG_RESIZE, 0)
@@ -133,25 +129,6 @@ public class ActivityEmbeddingAnimationRunnerTests extends ActivityEmbeddingAnim
         assertEquals(0, animator.getDuration());
     }
 
-    @DisableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
-    @Test
-    public void testInvalidCustomAnimation_disableAnimationOptionsPerChange() {
-        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN, 0)
-                .addChange(createChange(FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY, TRANSIT_OPEN))
-                .build();
-        info.setAnimationOptions(TransitionInfo.AnimationOptions
-                .makeCustomAnimOptions("packageName", 0 /* enterResId */, 0 /* exitResId */,
-                        0 /* backgroundColor */, false /* overrideTaskTransition */));
-        final Animator animator = mAnimRunner.createAnimator(
-                info, mStartTransaction, mFinishTransaction,
-                () -> mFinishCallback.onTransitionFinished(null /* wct */),
-                new ArrayList<>());
-
-        // An invalid custom animation is equivalent to jump-cut.
-        assertEquals(0, animator.getDuration());
-    }
-
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testInvalidCustomAnimation_enableAnimationOptionsPerChange() {
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN, 0)
@@ -167,36 +144,6 @@ public class ActivityEmbeddingAnimationRunnerTests extends ActivityEmbeddingAnim
 
         // An invalid custom animation is equivalent to jump-cut.
         assertEquals(0, animator.getDuration());
-    }
-
-    @DisableFlags(Flags.FLAG_ACTIVITY_EMBEDDING_OVERLAY_PRESENTATION_FLAG)
-    @Test
-    public void testCalculateParentBounds_flagDisabled() {
-        final Rect parentBounds = new Rect(0, 0, 2000, 2000);
-        final Rect primaryBounds = new Rect();
-        final Rect secondaryBounds = new Rect();
-        parentBounds.splitVertically(primaryBounds, secondaryBounds);
-
-        final TransitionInfo.Change change = createChange(0 /* flags */);
-        change.setStartAbsBounds(secondaryBounds);
-
-        final TransitionInfo.Change boundsAnimationChange = createChange(0 /* flags */);
-        boundsAnimationChange.setStartAbsBounds(primaryBounds);
-        boundsAnimationChange.setEndAbsBounds(primaryBounds);
-        final Rect actualParentBounds = new Rect();
-
-        calculateParentBounds(change, boundsAnimationChange, actualParentBounds);
-
-        assertEquals(parentBounds, actualParentBounds);
-
-        actualParentBounds.setEmpty();
-
-        boundsAnimationChange.setStartAbsBounds(secondaryBounds);
-        boundsAnimationChange.setEndAbsBounds(primaryBounds);
-
-        calculateParentBounds(boundsAnimationChange, boundsAnimationChange, actualParentBounds);
-
-        assertEquals(parentBounds, actualParentBounds);
     }
 
     // TODO(b/243518738): Rewrite with TestParameter

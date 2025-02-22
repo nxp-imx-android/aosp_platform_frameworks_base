@@ -29,24 +29,52 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.systemui.statusbar.notification.icon.IconPack;
+import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 
 import java.util.List;
 
 /**
- * Abstract class to represent notification section bundled by AI.
+ * Class to represent notifications bundled by classification.
  */
 public class BundleEntry extends PipelineEntry {
 
-    private final String mKey;
     private final BundleEntryAdapter mEntryAdapter;
 
     // TODO (b/389839319): implement the row
     private ExpandableNotificationRow mRow;
 
     public BundleEntry(String key) {
-        mKey = key;
+        super(key);
         mEntryAdapter = new BundleEntryAdapter();
+    }
+
+    @Nullable
+    @Override
+    public NotificationEntry getRepresentativeEntry() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public NotifSection getSection() {
+        return null;
+    }
+
+    @Override
+    public int getSectionIndex() {
+        return 0;
+    }
+
+    @Nullable
+    @Override
+    public PipelineEntry getParent() {
+        return null;
+    }
+
+    @Override
+    public boolean wasAttachedInPreviousPass() {
+        return false;
     }
 
     @VisibleForTesting

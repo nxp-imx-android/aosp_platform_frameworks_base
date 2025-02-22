@@ -136,7 +136,7 @@
     <string name="desktop_mode_maximize_menu_maximize_text" msgid="3275717276171114411">"Maximera skärmen"</string>
     <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"Ändra storlek"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"Det går inte att flytta appen hit"</string>
-    <string name="desktop_mode_maximize_menu_immersive_button_text" msgid="559492223133829481">"Uppslukande"</string>
+    <string name="desktop_mode_maximize_menu_immersive_button_text" msgid="559492223133829481">"Immersiv"</string>
     <string name="desktop_mode_maximize_menu_immersive_restore_button_text" msgid="4900114367354709257">"Återställ"</string>
     <string name="desktop_mode_maximize_menu_maximize_button_text" msgid="3090199175564175845">"Utöka"</string>
     <string name="desktop_mode_maximize_menu_restore_button_text" msgid="4234449220944704387">"Återställ"</string>

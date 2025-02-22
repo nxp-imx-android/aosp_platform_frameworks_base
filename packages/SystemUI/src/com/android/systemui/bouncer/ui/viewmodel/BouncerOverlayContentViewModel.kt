@@ -51,8 +51,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
-/** Models UI state for the content of the bouncer scene. */
-class BouncerSceneContentViewModel
+/** Models UI state for the content of the bouncer overlay. */
+class BouncerOverlayContentViewModel
 @AssistedInject
 constructor(
     @Application private val applicationContext: Context,
@@ -445,6 +445,6 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(): BouncerSceneContentViewModel
+        fun create(): BouncerOverlayContentViewModel
     }
 }

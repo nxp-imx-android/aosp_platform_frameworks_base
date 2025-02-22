@@ -245,8 +245,12 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"ဘလူးတုသ်ချိတ်ဆက်ထားမှု"</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ဘလူးတုသ်သုံးစက် သင်္ကေတ"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"စက်အသေးစိတ်ကို စီစဉ်သတ်မှတ်ရန် နှိပ်ပါ"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"စက်အားလုံးကြည့်ရန် နှိပ်ပါ"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"စက်အသစ် တွဲချိတ်ရန် နှိပ်ပါ"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
+    <skip />
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ဘက်ထရီရာခိုင်နှုန်းကို မသိပါ။"</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g>သို့ ချိတ်ဆက်ထား"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> သို့ချိတ်ဆက်ထားပါသည်။"</string>
@@ -328,7 +332,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"အဝင်"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"နားကြားကိရိယာ"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ဖွင့်နေသည်…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"၎င်းကို ထိပ်ဆုံးရှိအက်ပ်က\n ထိန်းချုပ်နေသဖြင့် တောက်ပမှုကို ပြင်ဆင်၍မရပါ"</string>
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"၎င်းကို ထိပ်ဆုံးရှိအက်ပ်က ထိန်းချုပ်နေသဖြင့် တောက်ပမှုကို ပြင်ဆင်၍မရပါ"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"အော်တို-လည်"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"မျက်နှာပြင်အား အလိုအလျောက်လှည့်ခြင်း"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"တည်နေရာ"</string>
@@ -530,7 +534,7 @@
     <string name="accessibility_action_label_remove_widget" msgid="3373779447448758070">"ဝိဂျက် ဖယ်ရှားရန်"</string>
     <string name="accessibility_action_label_place_widget" msgid="1914197458644168978">"ရွေးချယ်ထားသော ဝိဂျက်ကို တင်ရန်"</string>
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"လော့ခ်မျက်နှာပြင် ဝိဂျက်များ"</string>
-    <string name="communal_widget_picker_description" msgid="490515450110487871">"တက်ဘလက်လော့ခ်ချထားသော်လည်း မည်သူမဆို လော့ခ်မျက်နှာပြင်ဝိဂျက်ကို ကြည့်နိုင်သည်။"</string>
+    <string name="communal_widget_picker_description" msgid="490515450110487871">"တက်ဘလက်လော့ခ်ချထားစဉ် မည်သူမဆို လော့ခ်မျက်နှာပြင်ရှိ ဝိဂျက်များကို မြင်နိုင်သည်။"</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"ဝိဂျက် ပြန်ဖြုတ်ရန်"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"အမြင့်ကို လျှော့ရန်"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"အမြင့်ကို တိုးရန်"</string>
@@ -808,12 +812,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> က စကားဝိုင်းဝန်ဆောင်မှုများကို မပံ့ပိုးပါ"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"အကြံပြုချက်"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ပယ်ရန်"</string>
-    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
-    <skip />
-    <!-- no translation found for live_notifications_title (1586553354601345379) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"ပင်ထိုးထားသည့်အတိုင်း မပြရ"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"တိုက်ရိုက် အပ်ဒိတ်များ ပြနေသည်"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"ပင်ထိုးထားသော အကြောင်းကြားချက်များသည် အက်ပ်များမှ တိုက်ရိုက်အချက်အလက်များကိုပြပြီး ၎င်းတို့ကို အခြေအနေပြဘားနှင့် လော့ခ်မျက်နှာပြင်တို့တွင် အမြဲမြင်ရသည်"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ဤအကြောင်းကြားချက်များကို ပြုပြင်၍ မရပါ။"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ခေါ်ဆိုမှုအကြောင်းကြားချက်များကို ပြင်၍မရပါ။"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ဤအကြောင်းကြားချက်အုပ်စုကို ဤနေရာတွင် စီစဉ်သတ်မှတ်၍ မရပါ"</string>
@@ -900,7 +901,10 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"တစ်ပြိုင်နက် များစွာလုပ်ခြင်း"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"အက်ပ်ကို ညာ၌ထားကာ မျက်နှာပြင် ခွဲ၍ပြသခြင်း သုံးရန်"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"အက်ပ်ကို ဘယ်၌ထားကာ မျက်နှာပြင် ခွဲ၍ပြသခြင်း သုံးရန်"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"ဖန်သားပြင်အပြည့် ပြောင်းရန်"</string>
+    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
+    <skip />
+    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"မျက်နှာပြင်ခွဲ၍ပြသခြင်း သုံးစဉ် ညာ (သို့) အောက်ရှိအက်ပ်သို့ ပြောင်းရန်"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"မျက်နှာပြင် ခွဲ၍ပြသခြင်းသုံးစဉ် ဘယ် (သို့) အထက်ရှိအက်ပ်သို့ ပြောင်းရန်"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"မျက်နှာပြင် ခွဲ၍ပြသစဉ်- အက်ပ်တစ်ခုကို နောက်တစ်ခုနှင့် အစားထိုးရန်"</string>
@@ -987,6 +991,8 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"အရေးမကြီးသော အကြောင်းကြားချက် သင်္ကေတများ ပြရန်"</string>
     <string name="other" msgid="429768510980739978">"အခြား"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
+    <skip />
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"အကွက်ငယ်ကို ဖယ်ရှားရန်"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"နောက်ဆုံးနေရာတွင် အကွက်ငယ် ထည့်ရန်"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"အကွက်ငယ်ကို ရွှေ့ရန်"</string>
@@ -1501,6 +1507,8 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"မကြာသေးမီကအက်ပ်များကို ကြည့်ရန်"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"အက်ပ်များကူးပြောင်းခြင်း"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"ပြီးပြီ"</string>
+    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
+    <skip />
     <string name="gesture_error_title" msgid="469064941635578511">"ထပ်စမ်းကြည့်ပါ။"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"ပြန်သွားရန်"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"သင့်တာ့ချ်ပက်တွင် လက်သုံးချောင်းဖြင့် ဘယ် (သို့) ညာသို့ ပွတ်ဆွဲပါ"</string>
@@ -1538,7 +1546,10 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"လတ်တလောအက်ပ်များကို ကြည့်ရန် တာ့ချ်ပက်ပေါ်တွင် လက်သုံးချောင်းဖြင့် အပေါ်သို့ပွတ်ဆွဲပြီး ဖိထားပါ"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"သင့်အက်ပ်အားလုံးကြည့်ရန် ကီးဘုတ်ပေါ်ရှိ လုပ်ဆောင်ချက်ကီးကို နှိပ်ပါ"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"အစားထိုးထားသည်"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"ကြည့်ရန် ဖွင့်ပါ"</string>
+    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
+    <skip />
+    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
+    <skip />
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"အကြောင်းအရာအလိုက် ပညာရေး"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"နောက်ပြန်သွားရန် သင့်တာ့ချ်ပက်ကို သုံးပါ"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"လက်သုံးချောင်းဖြင့် ဘယ် (သို့) ညာသို့ ပွတ်ဆွဲပါ။ လက်ဟန်များ ပိုမိုလေ့လာရန် တို့ပါ။"</string>

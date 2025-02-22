@@ -37,6 +37,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.AlphaOptimizedLinearLayout
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
+import com.android.systemui.media.controls.ui.view.MediaHost
+import com.android.systemui.media.controls.ui.view.MediaHostState
+import com.android.systemui.media.dagger.MediaModule.POPUP
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
@@ -67,6 +71,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
 import javax.inject.Inject
+import javax.inject.Named
 
 /** Factory to simplify the dependency management for [StatusBarRoot] */
 class StatusBarRootFactory
@@ -81,6 +86,8 @@ constructor(
     private val ongoingCallController: OngoingCallController,
     private val darkIconDispatcherStore: DarkIconDispatcherStore,
     private val eventAnimationInteractor: SystemStatusEventAnimationInteractor,
+    private val mediaHierarchyManager: MediaHierarchyManager,
+    @Named(POPUP) private val mediaHost: MediaHost,
 ) {
     fun create(root: ViewGroup, andThen: (ViewGroup) -> Unit): ComposeView {
         val composeView = ComposeView(root.context)
@@ -99,6 +106,8 @@ constructor(
                     ongoingCallController = ongoingCallController,
                     darkIconDispatcher = darkIconDispatcher,
                     eventAnimationInteractor = eventAnimationInteractor,
+                    mediaHierarchyManager = mediaHierarchyManager,
+                    mediaHost = mediaHost,
                     onViewCreated = andThen,
                 )
             }
@@ -130,6 +139,8 @@ fun StatusBarRoot(
     ongoingCallController: OngoingCallController,
     darkIconDispatcher: DarkIconDispatcher,
     eventAnimationInteractor: SystemStatusEventAnimationInteractor,
+    mediaHierarchyManager: MediaHierarchyManager,
+    mediaHost: MediaHost,
     onViewCreated: (ViewGroup) -> Unit,
 ) {
     val displayId = parent.context.displayId
@@ -237,6 +248,15 @@ fun StatusBarRoot(
 
                     // Add a composable container for `StatusBarPopupChip`s
                     if (StatusBarPopupChips.isEnabled) {
+                        with(mediaHost) {
+                            expansion = MediaHostState.EXPANDED
+                            expandedMatchesParentHeight = true
+                            showsOnlyActiveMedia = true
+                            falsingProtectionNeeded = false
+                            disablePagination = true
+                            init(MediaHierarchyManager.LOCATION_STATUS_BAR_POPUP)
+                        }
+
                         val endSideContent =
                             phoneStatusBarView.requireViewById<AlphaOptimizedLinearLayout>(
                                 R.id.status_bar_end_side_content
@@ -256,7 +276,12 @@ fun StatusBarRoot(
 
                                 setContent {
                                     StatusBarPopupChipsContainer(
-                                        chips = statusBarViewModel.popupChips
+                                        chips = statusBarViewModel.popupChips,
+                                        mediaHost = mediaHost,
+                                        onMediaControlPopupVisibilityChanged = { popupShowing ->
+                                            mediaHierarchyManager.isMediaControlPopupShowing =
+                                                popupShowing
+                                        },
                                     )
                                 }
                             }

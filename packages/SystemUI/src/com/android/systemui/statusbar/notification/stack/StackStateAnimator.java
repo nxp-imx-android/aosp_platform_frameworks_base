@@ -506,8 +506,8 @@ public class StackStateAnimator {
                 }
                 changingView.performRemoveAnimation(ANIMATION_DURATION_APPEAR_DISAPPEAR,
                         0 /* delay */, translationDirection, false /* isHeadsUpAppear */,
-                        startAnimation, postAnimation, getGlobalAnimationFinishedListener(),
-                        ExpandableView.ClipSide.BOTTOM);
+                        false /* isHeadsUpCycling */, startAnimation, postAnimation,
+                        getGlobalAnimationFinishedListener(), ExpandableView.ClipSide.BOTTOM);
                 needsCustomAnimation = true;
             } else if (event.animationType ==
                     NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_REMOVE_SWIPED_OUT) {
@@ -538,7 +538,7 @@ public class StackStateAnimator {
                     };
                 }
                 changingView.performAddAnimation(0, ANIMATION_DURATION_HEADS_UP_CYCLING,
-                        /* isHeadsUpAppear= */ true, onAnimationEnd);
+                        /* isHeadsUpAppear= */ true, /* isHeadsUpCycling= */ true, onAnimationEnd);
             } else if (event.animationType == ANIMATION_TYPE_HEADS_UP_APPEAR) {
                 mHeadsUpAppearChildren.add(changingView);
 
@@ -559,7 +559,7 @@ public class StackStateAnimator {
                     onAnimationEnd = () -> mLogger.appearAnimationEnded(finalKey);
                 }
                 changingView.performAddAnimation(0, ANIMATION_DURATION_HEADS_UP_APPEAR,
-                        /* isHeadsUpAppear= */ true, onAnimationEnd);
+                        /* isHeadsUpAppear= */ true, /* isHeadsUpCycling= */ false, onAnimationEnd);
             } else if (event.animationType == ANIMATION_TYPE_HEADS_UP_CYCLING_OUT) {
                 mHeadsUpDisappearChildren.add(changingView);
                 Runnable endRunnable = null;
@@ -629,6 +629,7 @@ public class StackStateAnimator {
                             // translation, the actual translation is in StackScrollAlgorithm.
                             /* translationDirection= */ 0.0f,
                             /* isHeadsUpAnimation= */ true,
+                            /* isHeadsUpCycling= */ true,
                             startAnimation, postAnimation,
                             getGlobalAnimationFinishedListener(), ExpandableView.ClipSide.TOP);
                     mAnimationProperties.delay += removeAnimationDelay;
@@ -706,6 +707,7 @@ public class StackStateAnimator {
                     long removeAnimationDelay = changingView.performRemoveAnimation(
                             ANIMATION_DURATION_HEADS_UP_DISAPPEAR,
                             0, 0.0f, true /* isHeadsUpAppear */,
+                            false /* isHeadsUpCycling */,
                             startAnimation, postAnimation,
                             getGlobalAnimationFinishedListener(), ExpandableView.ClipSide.BOTTOM);
                     mAnimationProperties.delay += removeAnimationDelay;

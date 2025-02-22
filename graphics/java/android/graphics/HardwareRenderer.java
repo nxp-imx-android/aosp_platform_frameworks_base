@@ -79,6 +79,7 @@ import sun.misc.Cleaner;
  * Failure to do so will cause the render thread to stall on that surface, blocking all
  * HardwareRenderer instances.</p>
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class HardwareRenderer {
     private static final String LOG_TAG = "HardwareRenderer";
 

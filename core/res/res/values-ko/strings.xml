@@ -353,14 +353,10 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"생체 신호에 관한 센서 데이터에 액세스"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"알림"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"알림 표시"</string>
-    <!-- no translation found for permgrouplab_xr_tracking (7418994009794287471) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (6777198859446500821) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (1194833982988144536) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (9178027369004805829) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR 추적 데이터"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"사용자 및 주변 환경에 대한 XR 데이터에 액세스"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"민감한 XR 추적 데이터"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"시선 추적과 같은 민감한 추적 데이터에 액세스"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"창 콘텐츠 가져오기"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"상호작용 중인 창의 콘텐츠를 검사합니다."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"터치하여 탐색 사용"</string>
@@ -656,38 +652,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"앱에서 사진 컬렉션을 수정하도록 허용합니다."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"미디어 컬렉션에서 위치 읽기"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"앱에서 미디어 컬렉션의 위치를 읽도록 허용합니다."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (7989596289790269059) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (870510233930553355) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6914457357027049512) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (5788889152304524730) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (2272048395128283324) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (2622783922311211866) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (6478233866595566940) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8639715900104966456) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (1309731456372087270) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (231597390513699188) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (6518646430502858641) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (4508880777646198656) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (409126403264393251) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (6223368011593524179) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (7117098718465619023) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (939504041387836853) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"대략적인 시선 추적"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"앱이 대략적인 시선을 추적하도록 허용합니다."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"시선 추적"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"앱이 정확한 시선 데이터에 액세스하도록 허용합니다."</string>
+    <string name="permlab_face_tracking" msgid="2272048395128283324">"얼굴 추적"</string>
+    <string name="permdesc_face_tracking" msgid="2622783922311211866">"앱이 얼굴 트래킹 데이터에 액세스하도록 허용합니다."</string>
+    <string name="permlab_hand_tracking" msgid="6478233866595566940">"손 추적"</string>
+    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"앱이 핸드 트래킹 데이터에 액세스하도록 허용합니다."</string>
+    <string name="permlab_head_tracking" msgid="1309731456372087270">"머리 추적"</string>
+    <string name="permdesc_head_tracking" msgid="231597390513699188">"앱이 헤드 트래킹 데이터에 액세스하도록 허용합니다."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"주변 환경 파악"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"앱이 주변 환경에 대한 추적 데이터에 직접 액세스하도록 허용합니다."</string>
+    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"주변 환경 상세 파악"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"앱이 주변 환경에 대한 매우 상세한 추적 데이터에 액세스하도록 허용합니다."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"포그라운드에 있지 않을 때 XR 데이터에 액세스"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"앱이 포그라운드에 있지 않을 때 XR 데이터에 액세스하도록 허용합니다."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"생체 인식 사용"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"생체 인식 또는 화면 잠금을 사용"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"본인 확인"</string>

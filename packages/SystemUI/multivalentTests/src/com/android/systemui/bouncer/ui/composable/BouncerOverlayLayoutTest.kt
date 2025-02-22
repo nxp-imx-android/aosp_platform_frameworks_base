@@ -18,10 +18,10 @@ package com.android.systemui.bouncer.ui.composable
 
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.bouncer.ui.composable.BouncerSceneLayout.BELOW_USER_SWITCHER
-import com.android.systemui.bouncer.ui.composable.BouncerSceneLayout.BESIDE_USER_SWITCHER
-import com.android.systemui.bouncer.ui.composable.BouncerSceneLayout.SPLIT_BOUNCER
-import com.android.systemui.bouncer.ui.composable.BouncerSceneLayout.STANDARD_BOUNCER
+import com.android.systemui.bouncer.ui.composable.BouncerOverlayLayout.BELOW_USER_SWITCHER
+import com.android.systemui.bouncer.ui.composable.BouncerOverlayLayout.BESIDE_USER_SWITCHER
+import com.android.systemui.bouncer.ui.composable.BouncerOverlayLayout.SPLIT_BOUNCER
+import com.android.systemui.bouncer.ui.composable.BouncerOverlayLayout.STANDARD_BOUNCER
 import com.google.common.truth.Truth.assertThat
 import java.util.Locale
 import org.junit.Test
@@ -32,7 +32,7 @@ import platform.test.runner.parameterized.Parameters
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
-class BouncerSceneLayoutTest : SysuiTestCase() {
+class BouncerOverlayLayoutTest : SysuiTestCase() {
 
     data object Phone :
         Device(
@@ -186,7 +186,7 @@ class BouncerSceneLayoutTest : SysuiTestCase() {
     data class TestCase(
         val device: Device,
         val held: Held,
-        val expected: BouncerSceneLayout,
+        val expected: BouncerOverlayLayout,
         val isOneHandedModeSupported: Boolean = true,
     ) {
         override fun toString(): String {
@@ -203,10 +203,10 @@ class BouncerSceneLayoutTest : SysuiTestCase() {
     }
 
     data class Expected(
-        val whenNaturallyHeld: BouncerSceneLayout,
-        val whenUnnaturallyHeld: BouncerSceneLayout,
+        val whenNaturallyHeld: BouncerOverlayLayout,
+        val whenUnnaturallyHeld: BouncerOverlayLayout,
     ) {
-        fun layout(heldNaturally: Boolean): BouncerSceneLayout {
+        fun layout(heldNaturally: Boolean): BouncerOverlayLayout {
             return if (heldNaturally) {
                 whenNaturallyHeld
             } else {

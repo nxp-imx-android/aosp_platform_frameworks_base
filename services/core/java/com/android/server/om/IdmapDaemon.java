@@ -26,6 +26,7 @@ import android.os.FabricatedOverlayInfo;
 import android.os.FabricatedOverlayInternal;
 import android.os.IBinder;
 import android.os.IIdmap2;
+import android.os.OverlayConstraint;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.StrictMode;
@@ -135,8 +136,8 @@ class IdmapDaemon {
     }
 
     String createIdmap(@NonNull String targetPath, @NonNull String overlayPath,
-            @Nullable String overlayName, int policies, boolean enforce, int userId)
-            throws TimeoutException, RemoteException {
+            @Nullable String overlayName, int policies, boolean enforce, int userId,
+            @NonNull OverlayConstraint[] constraints) throws TimeoutException, RemoteException {
         try (Connection c = connect()) {
             final IIdmap2 idmap2 = c.getIdmap2();
             if (idmap2 == null) {
@@ -147,7 +148,7 @@ class IdmapDaemon {
             }
 
             return idmap2.createIdmap(targetPath, overlayPath, TextUtils.emptyIfNull(overlayName),
-                    policies, enforce, userId);
+                    policies, enforce, userId, constraints);
         }
     }
 
@@ -165,8 +166,8 @@ class IdmapDaemon {
     }
 
     boolean verifyIdmap(@NonNull String targetPath, @NonNull String overlayPath,
-            @Nullable String overlayName, int policies, boolean enforce, int userId)
-            throws Exception {
+            @Nullable String overlayName, int policies, boolean enforce, int userId,
+            @NonNull OverlayConstraint[] constraints) throws Exception {
         try (Connection c = connect()) {
             final IIdmap2 idmap2 = c.getIdmap2();
             if (idmap2 == null) {
@@ -177,7 +178,7 @@ class IdmapDaemon {
             }
 
             return idmap2.verifyIdmap(targetPath, overlayPath, TextUtils.emptyIfNull(overlayName),
-                    policies, enforce, userId);
+                    policies, enforce, userId, constraints);
         }
     }
 

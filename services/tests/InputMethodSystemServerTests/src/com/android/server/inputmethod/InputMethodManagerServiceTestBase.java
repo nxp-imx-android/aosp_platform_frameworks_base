@@ -116,7 +116,7 @@ public class InputMethodManagerServiceTestBase {
     @Mock protected IInputMethodClient mMockInputMethodClient;
     @Mock protected IInputMethodSession mMockInputMethodSession;
     @Mock protected IBinder mWindowToken;
-    @Mock protected IRemoteInputConnection mMockRemoteInputConnection;
+    @Mock protected IRemoteInputConnection mMockFallbackInputConnection;
     @Mock protected IRemoteAccessibilityInputConnection mMockRemoteAccessibilityInputConnection;
     @Mock protected ImeOnBackInvokedDispatcher mMockImeOnBackInvokedDispatcher;
     @Mock protected IInputMethodManager.Stub mMockIInputMethodManager;
@@ -300,7 +300,8 @@ public class InputMethodManagerServiceTestBase {
         lifecycle.onBootPhase(SystemService.PHASE_ACTIVITY_MANAGER_READY);
 
         // Call InputMethodManagerService#addClient() as a preparation to start interacting with it.
-        mInputMethodManagerService.addClient(mMockInputMethodClient, mMockRemoteInputConnection, 0);
+        mInputMethodManagerService.addClient(mMockInputMethodClient, mMockFallbackInputConnection,
+                0 /* selfReportedDisplayId */);
         createSessionForClient(mMockInputMethodClient);
     }
 

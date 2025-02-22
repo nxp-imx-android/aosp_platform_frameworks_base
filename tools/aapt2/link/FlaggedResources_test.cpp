@@ -169,4 +169,18 @@ TEST_F(FlaggedResourcesTest, EnabledXmlELementAttributeRemoved) {
   ASSERT_TRUE(output.contains("test.package.readWriteFlag"));
 }
 
+TEST_F(FlaggedResourcesTest, ReadWriteFlagInPathFails) {
+  test::TestDiagnosticsImpl diag;
+  const std::string compiled_files_dir = GetTestPath("compiled");
+  ASSERT_FALSE(CompileFile(GetTestPath("res/values/flag(!test.package.rwFlag)/bools.xml"),
+                           R"(<resources>
+                                <bool name="bool1">false</bool>
+                              </resources>)",
+                           compiled_files_dir, &diag,
+                           {"--feature-flags", "test.package.rwFlag=false"}));
+
+  ASSERT_TRUE(diag.GetLog().contains(
+      "Only read only flags may be used with resources: test.package.rwFlag"));
+}
+
 }  // namespace aapt

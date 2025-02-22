@@ -124,7 +124,7 @@ constructor(
         val parent = entry.parent ?: error("Entry must have a parent to determine if minimized")
         val isMinimizedSection = sectionStyleProvider.isMinimizedSection(section)
         val isTopLevelEntry = parent == GroupEntry.ROOT_ENTRY
-        val isGroupSummary = parent.summary == entry
+        val isGroupSummary = (parent as? GroupEntry)?.summary == entry
         return isMinimizedSection && (isTopLevelEntry || isGroupSummary)
     }
 

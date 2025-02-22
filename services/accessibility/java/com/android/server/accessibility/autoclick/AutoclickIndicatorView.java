@@ -123,6 +123,7 @@ public class AutoclickIndicatorView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         // Get the screen dimensions.
+        // TODO(b/397944891): Handle device rotation case.
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         int screenWidth = displayMetrics.widthPixels;
         int screenHeight = displayMetrics.heightPixels;

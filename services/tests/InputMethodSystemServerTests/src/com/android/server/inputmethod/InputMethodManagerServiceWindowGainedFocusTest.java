@@ -316,7 +316,7 @@ public class InputMethodManagerServiceWindowGainedFocusTest
                 softInputMode /* softInputMode */,
                 0 /* windowFlags */,
                 mEditorInfo /* editorInfo */,
-                mMockRemoteInputConnection /* inputConnection */,
+                mMockFallbackInputConnection /* fallbackInputConnection */,
                 mMockRemoteAccessibilityInputConnection /* remoteAccessibilityInputConnection */,
                 mTargetSdkVersion /* unverifiedTargetSdkVersion */,
                 mUserId /* userId */,

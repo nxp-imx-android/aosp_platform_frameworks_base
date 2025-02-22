@@ -32,8 +32,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.graphics.Rect;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
 
@@ -41,7 +39,6 @@ import androidx.test.annotation.UiThreadTest;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.window.flags.Flags;
 import com.android.wm.shell.transition.TransitionInfoBuilder;
 
 import org.junit.Before;
@@ -69,13 +66,11 @@ public class ActivityEmbeddingControllerTests extends ActivityEmbeddingAnimation
                 any());
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testInstantiate() {
         verify(mShellInit).addInitCallback(any(), any());
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testOnInit() {
         mController.onInit();
@@ -83,7 +78,6 @@ public class ActivityEmbeddingControllerTests extends ActivityEmbeddingAnimation
         verify(mTransitions).addHandler(mController);
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testSetAnimScaleSetting() {
         mController.setAnimScaleSetting(1.0f);
@@ -92,7 +86,6 @@ public class ActivityEmbeddingControllerTests extends ActivityEmbeddingAnimation
         verify(mAnimSpec).setAnimScaleSetting(1.0f);
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testStartAnimation_containsNonActivityEmbeddingChange() {
         final TransitionInfo.Change nonEmbeddedOpen = createChange(0 /* flags */);
@@ -129,7 +122,6 @@ public class ActivityEmbeddingControllerTests extends ActivityEmbeddingAnimation
         assertFalse(info2.getChanges().contains(nonEmbeddedClose));
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testStartAnimation_containsOnlyFillTaskActivityEmbeddingChange() {
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN, 0)
@@ -146,7 +138,6 @@ public class ActivityEmbeddingControllerTests extends ActivityEmbeddingAnimation
         verifyNoMoreInteractions(mFinishCallback);
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testStartAnimation_containsActivityEmbeddingSplitChange() {
         // Change that occupies only part of the Task.
@@ -164,7 +155,6 @@ public class ActivityEmbeddingControllerTests extends ActivityEmbeddingAnimation
         verifyNoMoreInteractions(mFinishTransaction);
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testStartAnimation_containsChangeEnterActivityEmbeddingSplit() {
         // Change that is entering ActivityEmbedding split.
@@ -181,7 +171,6 @@ public class ActivityEmbeddingControllerTests extends ActivityEmbeddingAnimation
         verifyNoMoreInteractions(mFinishTransaction);
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testStartAnimation_containsChangeExitActivityEmbeddingSplit() {
         // Change that is exiting ActivityEmbedding split.
@@ -198,27 +187,6 @@ public class ActivityEmbeddingControllerTests extends ActivityEmbeddingAnimation
         verifyNoMoreInteractions(mFinishTransaction);
     }
 
-    @DisableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
-    @Test
-    public void testShouldAnimate_containsAnimationOptions_disableAnimOptionsPerChange() {
-        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CLOSE, 0)
-                .addChange(createEmbeddedChange(EMBEDDED_RIGHT_BOUNDS, TASK_BOUNDS, TASK_BOUNDS))
-                .build();
-
-        info.setAnimationOptions(TransitionInfo.AnimationOptions
-                .makeCustomAnimOptions("packageName", 0 /* enterResId */, 0 /* exitResId */,
-                        0 /* backgroundColor */, false /* overrideTaskTransition */));
-        assertTrue(mController.shouldAnimate(info));
-
-        info.setAnimationOptions(TransitionInfo.AnimationOptions
-                .makeSceneTransitionAnimOptions());
-        assertFalse(mController.shouldAnimate(info));
-
-        info.setAnimationOptions(TransitionInfo.AnimationOptions.makeCrossProfileAnimOptions());
-        assertFalse(mController.shouldAnimate(info));
-    }
-
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testShouldAnimate_containsAnimationOptions_enableAnimOptionsPerChange() {
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CLOSE, 0)
@@ -239,7 +207,6 @@ public class ActivityEmbeddingControllerTests extends ActivityEmbeddingAnimation
         assertFalse(mController.shouldAnimate(info));
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @UiThreadTest
     @Test
     public void testMergeAnimation() {
@@ -278,7 +245,6 @@ public class ActivityEmbeddingControllerTests extends ActivityEmbeddingAnimation
         verify(mFinishCallback).onTransitionFinished(any());
     }
 
-    @EnableFlags(Flags.FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE)
     @Test
     public void testOnAnimationFinished() {
         // Should not call finish when there is no transition.

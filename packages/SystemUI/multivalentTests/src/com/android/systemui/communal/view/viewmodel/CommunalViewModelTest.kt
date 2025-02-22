@@ -85,6 +85,7 @@ import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.setTransition
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.fakeUserTracker
@@ -602,6 +603,7 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 flowOf(ObservableTransitionState.Idle(CommunalScenes.Communal))
             )
             // Transitioned to Glanceable hub.
+            kosmos.sceneInteractor.changeScene(Scenes.Communal, "")
             kosmos.setTransition(
                 sceneTransition = Idle(Scenes.Communal),
                 stateTransition =
@@ -656,6 +658,7 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             keyguardRepository.setKeyguardOccluded(true)
 
             // And on hub
+            kosmos.sceneInteractor.changeScene(Scenes.Communal, "")
             kosmos.setTransition(
                 sceneTransition = Idle(Scenes.Communal),
                 stateTransition =
@@ -673,6 +676,7 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(isCommunalContentFlowFrozen).isEqualTo(true)
 
             // 3. When transitioned to OCCLUDED and activity shows
+            kosmos.sceneInteractor.changeScene(Scenes.Lockscreen, "")
             kosmos.setTransition(
                 sceneTransition = Idle(Scenes.Lockscreen),
                 stateTransition =
@@ -759,6 +763,7 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             keyguardRepository.setKeyguardOccluded(true)
 
             // And transitioned to hub
+            kosmos.sceneInteractor.changeScene(Scenes.Communal, "")
             kosmos.setTransition(
                 sceneTransition = Idle(Scenes.Communal),
                 stateTransition =

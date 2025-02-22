@@ -128,9 +128,9 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
     }
 
     @Override
-    public void addClient(IInputMethodClient client, IRemoteInputConnection inputConnection,
-            int selfReportedDisplayId) {
-        offload(() -> mInner.addClient(client, inputConnection, selfReportedDisplayId));
+    public void addClient(@NonNull IInputMethodClient client,
+            @NonNull IRemoteInputConnection fallbackInputConnection, int selfReportedDisplayId) {
+        offload(() -> mInner.addClient(client, fallbackInputConnection, selfReportedDisplayId));
     }
 
     @Override
@@ -331,7 +331,7 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
     }
 
     @Override
-    public void reportPerceptibleAsync(IBinder windowToken, boolean perceptible) {
+    public void reportPerceptibleAsync(@NonNull IBinder windowToken, boolean perceptible) {
         // Already async TODO(b/293640003): ordering issues?
         mInner.reportPerceptibleAsync(windowToken, perceptible);
     }
@@ -468,7 +468,7 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
             IInputMethodClient client, InputBindResult res, int startInputSeq) {
         synchronized (ImfLock.class) {
             final ClientState cs = mInner.getClientStateLocked(client);
-            if (cs != null && cs.mClient != null) {
+            if (cs != null) {
                 cs.mClient.onStartInputResult(res, startInputSeq);
             } else {
                 // client is unbound.

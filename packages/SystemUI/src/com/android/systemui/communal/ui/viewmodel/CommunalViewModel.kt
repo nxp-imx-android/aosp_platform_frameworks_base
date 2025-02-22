@@ -168,7 +168,7 @@ constructor(
     override val isCommunalContentFlowFrozen: Flow<Boolean> =
         allOf(
                 keyguardTransitionInteractor.isFinishedIn(
-                    scene = Scenes.Communal,
+                    content = Scenes.Communal,
                     stateWithoutSceneContainer = KeyguardState.GLANCEABLE_HUB,
                 ),
                 keyguardInteractor.isKeyguardOccluded,
@@ -204,7 +204,7 @@ constructor(
     override val isFocusable: Flow<Boolean> =
         combine(
                 keyguardTransitionInteractor.isFinishedIn(
-                    scene = Scenes.Communal,
+                    content = Scenes.Communal,
                     stateWithoutSceneContainer = KeyguardState.GLANCEABLE_HUB,
                 ),
                 communalInteractor.isIdleOnCommunal,

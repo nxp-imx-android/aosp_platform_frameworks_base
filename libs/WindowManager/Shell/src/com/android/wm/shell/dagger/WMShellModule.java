@@ -431,9 +431,10 @@ public abstract class WMShellModule {
             Transitions transitions,
             DisplayController displayController,
             @ShellMainThread ShellExecutor mainExecutor,
-            @ShellAnimationThread ShellExecutor animExecutor) {
+            @ShellAnimationThread ShellExecutor animExecutor,
+            @ShellAnimationThread Handler animHandler) {
         return new FreeformTaskTransitionHandler(
-                transitions, displayController, mainExecutor, animExecutor);
+                transitions, displayController, mainExecutor, animExecutor, animHandler);
     }
 
     @WMSingleton
@@ -1101,8 +1102,9 @@ public abstract class WMShellModule {
             Context context,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellAnimationThread ShellExecutor animExecutor,
-            @ShellMainThread Handler handler) {
-        return new CloseDesktopTaskTransitionHandler(context, mainExecutor, animExecutor, handler);
+            @ShellAnimationThread Handler animHandler) {
+        return new CloseDesktopTaskTransitionHandler(context, mainExecutor, animExecutor,
+                animHandler);
     }
 
     @WMSingleton
@@ -1110,9 +1112,10 @@ public abstract class WMShellModule {
     static DesktopMinimizationTransitionHandler provideDesktopMinimizationTransitionHandler(
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellAnimationThread ShellExecutor animExecutor,
-            DisplayController displayController) {
+            DisplayController displayController,
+            @ShellAnimationThread Handler mainHandler) {
         return new DesktopMinimizationTransitionHandler(mainExecutor, animExecutor,
-                displayController);
+                displayController, mainHandler);
     }
 
     @WMSingleton

@@ -21,26 +21,16 @@ import android.annotation.UptimeMillisLong;
 
 import androidx.annotation.Nullable;
 
-import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection;
-
 /**
  * Abstract superclass for top-level entries, i.e. things that can appear in the final notification
  * list shown to users. In practice, this means either GroupEntries or NotificationEntries.
  */
 public abstract class ListEntry extends PipelineEntry {
-    private final String mKey;
     private final long mCreationTime;
 
-    private final ListAttachState mPreviousAttachState = ListAttachState.create();
-    private final ListAttachState mAttachState = ListAttachState.create();
-
     protected ListEntry(String key, long creationTime) {
-        mKey = key;
+        super(key);
         mCreationTime = creationTime;
-    }
-
-    public String getKey() {
-        return mKey;
     }
 
     /**
@@ -64,32 +54,20 @@ public abstract class ListEntry extends PipelineEntry {
      */
     public abstract @Nullable NotificationEntry getRepresentativeEntry();
 
-    @Nullable public GroupEntry getParent() {
+    @Nullable public PipelineEntry getParent() {
         return mAttachState.getParent();
     }
 
-    void setParent(@Nullable GroupEntry parent) {
+    void setParent(@Nullable PipelineEntry parent) {
         mAttachState.setParent(parent);
     }
 
-    @Nullable public GroupEntry getPreviousParent() {
+    @Nullable public PipelineEntry getPreviousParent() {
         return mPreviousAttachState.getParent();
-    }
-
-    @Nullable public NotifSection getSection() {
-        return mAttachState.getSection();
     }
 
     public int getSectionIndex() {
         return mAttachState.getSection() != null ? mAttachState.getSection().getIndex() : -1;
-    }
-
-    ListAttachState getAttachState() {
-        return mAttachState;
-    }
-
-    ListAttachState getPreviousAttachState() {
-        return mPreviousAttachState;
     }
 
     /**
@@ -99,12 +77,5 @@ public abstract class ListEntry extends PipelineEntry {
     void beginNewAttachState() {
         mPreviousAttachState.clone(mAttachState);
         mAttachState.reset();
-    }
-
-    /**
-     * True if this entry was attached in the last pass, else false.
-     */
-    public boolean wasAttachedInPreviousPass() {
-        return getPreviousAttachState().getParent() != null;
     }
 }

@@ -74,6 +74,12 @@ public class Interpolators {
             0.05f, 0.7f, 0.1f, 1f);
 
     /**
+     * The standard accelerating interpolator that should be used on every regular movement of
+     * content that is disappearing e.g. when moving off screen.
+     */
+    public static final Interpolator STANDARD_ACCELERATE = new PathInterpolator(0.3f, 0f, 1f, 1f);
+
+    /**
      * The standard decelerating interpolator that should be used on every regular movement of
      * content that is appearing e.g. when coming from off screen.
      */

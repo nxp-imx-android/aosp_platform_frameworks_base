@@ -44,6 +44,9 @@ namespace android {
 
 namespace {
 
+constexpr int32_t kDefaultDisplayId = 0;
+constexpr int32_t kDefaultDeviceId = 0;
+
 using EntryValue = std::variant<Res_value, incfs::verified_map_ptr<ResTable_map_entry>>;
 
 /* NOTE: table_entry has been verified in LoadedPackage::GetEntryFromOffset(),
@@ -61,7 +64,7 @@ base::expected<EntryValue, IOError> GetEntryValue(
   return table_entry->value();
 }
 
-} // namespace
+}  // namespace
 
 struct FindEntryResult {
   // The cookie representing the ApkAssets in which the value resides.
@@ -99,14 +102,15 @@ struct Theme::Entry {
   Res_value value;
 };
 
-AssetManager2::AssetManager2(ApkAssetsList apk_assets, const ResTable_config& configuration) {
+AssetManager2::AssetManager2(ApkAssetsList apk_assets, const ResTable_config& configuration)
+  : display_id_(kDefaultDisplayId), device_id_(kDefaultDeviceId) {
   configurations_.push_back(configuration);
 
   // Don't invalidate caches here as there's nothing cached yet.
   SetApkAssets(apk_assets, false);
 }
 
-AssetManager2::AssetManager2() {
+AssetManager2::AssetManager2() : display_id_(kDefaultDisplayId), device_id_(kDefaultDeviceId) {
   configurations_.emplace_back();
 }
 
@@ -172,8 +176,7 @@ void AssetManager2::BuildDynamicRefTable(ApkAssetsList apk_assets) {
       // to take effect.
       auto iter = target_assets_package_ids.find(loaded_idmap->TargetApkPath());
       if (iter == target_assets_package_ids.end()) {
-         LOG(INFO) << "failed to find target package for overlay "
-                   << loaded_idmap->OverlayApkPath();
+        LOG(INFO) << "failed to find target package for overlay " << loaded_idmap->OverlayApkPath();
       } else {
         uint8_t target_package_id = iter->second;
 
@@ -189,10 +192,11 @@ void AssetManager2::BuildDynamicRefTable(ApkAssetsList apk_assets) {
                                   << " assigned package group";
 
         PackageGroup& target_package_group = package_groups_[target_idx];
-        target_package_group.overlays_.push_back(
-            ConfiguredOverlay{loaded_idmap->GetTargetResourcesMap(target_package_id,
-                                                                  overlay_ref_table.get()),
-                              apk_assets_cookies[apk_assets]});
+        target_package_group.overlays_.push_back(ConfiguredOverlay{
+                  loaded_idmap->GetTargetResourcesMap(target_package_id, overlay_ref_table.get()),
+                  apk_assets_cookies[apk_assets],
+                  IsAnyOverlayConstraintSatisfied(loaded_idmap->GetConstraints())
+        });
       }
     }
 
@@ -291,7 +295,7 @@ void AssetManager2::DumpToLog() const {
   }
   LOG(INFO) << "Package ID map: " << list;
 
-  for (const auto& package_group: package_groups_) {
+  for (const auto& package_group : package_groups_) {
     list = "";
     for (const auto& package : package_group.packages_) {
       const LoadedPackage* loaded_package = package.loaded_package_;
@@ -347,7 +351,6 @@ std::shared_ptr<const DynamicRefTable> AssetManager2::GetDynamicRefTableForCooki
 
 const std::unordered_map<std::string, std::string>*
   AssetManager2::GetOverlayableMapForPackage(uint32_t package_id) const {
-
   if (package_id >= package_ids_.size()) {
     return nullptr;
   }
@@ -462,6 +465,28 @@ void AssetManager2::SetConfigurations(std::span<const ResTable_config> configura
   }
 }
 
+void AssetManager2::SetOverlayConstraints(int32_t display_id, int32_t device_id) {
+  bool changed = false;
+  if (display_id_ != display_id) {
+    display_id_ = display_id;
+    changed = true;
+  }
+  if (device_id_ != device_id) {
+    device_id_ = device_id;
+    changed = true;
+  }
+  if (changed) {
+    // Enable/disable overlays based on current constraints
+    for (PackageGroup& group : package_groups_) {
+      for (auto &overlay: group.overlays_) {
+        overlay.enabled = IsAnyOverlayConstraintSatisfied(
+                overlay.overlay_res_maps_.GetConstraints());
+      }
+    }
+    InvalidateCaches(static_cast<uint32_t>(-1));
+  }
+}
+
 std::set<AssetManager2::ApkAssetsPtr> AssetManager2::GetNonSystemOverlays() const {
   std::set<ApkAssetsPtr> non_system_overlays;
   for (const PackageGroup& package_group : package_groups_) {
@@ -475,6 +500,8 @@ std::set<AssetManager2::ApkAssetsPtr> AssetManager2::GetNonSystemOverlays() cons
 
     if (!found_system_package) {
       auto op = StartOperation();
+      // Return all overlays, including the disabled ones as this is used for static info
+      // collection only.
       for (const ConfiguredOverlay& overlay : package_group.overlays_) {
         if (const auto& asset = GetApkAssets(overlay.cookie)) {
           non_system_overlays.insert(std::move(asset));
@@ -651,7 +678,6 @@ base::expected<FindEntryResult, NullOrIOError> AssetManager2::FindEntry(
 
   auto op = StartOperation();
 
-
   // Retrieve the package group from the package id of the resource id.
   if (UNLIKELY(!is_valid_resid(resid))) {
     LOG(ERROR) << base::StringPrintf("Invalid resource ID 0x%08x.", resid);
@@ -672,7 +698,7 @@ base::expected<FindEntryResult, NullOrIOError> AssetManager2::FindEntry(
   std::optional<FindEntryResult> final_result;
   bool final_has_locale = false;
   bool final_overlaid = false;
-  for (auto & config : configurations_) {
+  for (auto& config : configurations_) {
     // Might use this if density_override != 0.
     ResTable_config density_override_config;
 
@@ -698,7 +724,8 @@ base::expected<FindEntryResult, NullOrIOError> AssetManager2::FindEntry(
       }
       if (!assets->IsLoader()) {
         for (const auto& id_map : package_group.overlays_) {
-          auto overlay_entry = id_map.overlay_res_maps_.Lookup(resid);
+          auto overlay_entry = id_map.enabled ?
+                  id_map.overlay_res_maps_.Lookup(resid) : IdmapResMap::Result();
           if (!overlay_entry) {
             // No id map entry exists for this target resource.
             continue;
@@ -708,7 +735,7 @@ base::expected<FindEntryResult, NullOrIOError> AssetManager2::FindEntry(
             ConfigDescription best_frro_config;
             Res_value best_frro_value;
             bool frro_found = false;
-            for( const auto& [config, value] : overlay_entry.GetInlineValue()) {
+            for (const auto& [config, value] : overlay_entry.GetInlineValue()) {
               if ((!frro_found || config.isBetterThan(best_frro_config, desired_config))
                   && config.match(*desired_config)) {
                 frro_found = true;
@@ -1011,7 +1038,7 @@ std::string AssetManager2::GetLastResourceResolution() const {
                                      resid, resource_name_string.c_str(), conf.toString().c_str());
     char str[40];
     str[0] = '\0';
-    for(auto iter = configurations_.begin(); iter < configurations_.end(); iter++) {
+    for (auto iter = configurations_.begin(); iter < configurations_.end(); iter++) {
       iter->getBcp47Locale(str);
       log_stream << base::StringPrintf(" %s%s", str, iter < configurations_.end() ? "," : "");
     }
@@ -1478,7 +1505,7 @@ base::expected<uint32_t, NullOrIOError> AssetManager2::GetResourceId(
       base::expected<uint32_t, NullOrIOError> resid = package->FindEntryByName(type16, entry16);
       if (UNLIKELY(IsIOError(resid))) {
          return base::unexpected(resid.error());
-       }
+      }
 
       if (!resid.has_value() && kAttr16 == type16) {
         // Private attributes in libraries (such as the framework) are sometimes encoded
@@ -1504,7 +1531,7 @@ void AssetManager2::RebuildFilterList() {
       package.loaded_package_->ForEachTypeSpec([&](const TypeSpec& type_spec, uint8_t type_id) {
         FilteredConfigGroup* group = nullptr;
         for (const auto& type_entry : type_spec.type_entries) {
-          for (auto & config : configurations_) {
+          for (auto& config : configurations_) {
             if (type_entry.config.match(config)) {
               if (!group) {
                 group = &package.filtered_configs_.editItemAt(type_id - 1);
@@ -1519,6 +1546,27 @@ void AssetManager2::RebuildFilterList() {
           [](const auto& fcg) { return fcg.type_entries.empty(); });
     }
   }
+}
+
+bool AssetManager2::IsAnyOverlayConstraintSatisfied(const Idmap_constraints& constraints) const {
+  if (constraints.constraint_count == 0) {
+    // There are no constraints, return true.
+    return true;
+  }
+
+  for (uint32_t i = 0; i < constraints.constraint_count; i++) {
+    auto constraint = constraints.constraint_entries[i];
+    if (constraint.constraint_type == kOverlayConstraintTypeDisplayId &&
+        constraint.constraint_value == display_id_) {
+      return true;
+    }
+    if (constraint.constraint_type == kOverlayConstraintTypeDeviceId &&
+        constraint.constraint_value == device_id_) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void AssetManager2::InvalidateCaches(uint32_t diff) {

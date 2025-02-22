@@ -245,8 +245,9 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"藍牙連線已建立。"</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"藍牙裝置圖示"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"按一下即可設定裝置詳情"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"㩒一下就可以睇所有裝置"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"㩒一下就可以配對新裝置"</string>
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>。設定裝置詳細資料"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"查看所有裝置"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"配對新裝置"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"電量百分比不明。"</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"已連線至<xliff:g id="BLUETOOTH">%s</xliff:g>。"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"已連接至 <xliff:g id="CAST">%s</xliff:g>。"</string>
@@ -328,7 +329,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"輸入"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"助聽器"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"正在開啟…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"無法調整亮度，因為\n目前是由上層應用程式控制亮度"</string>
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"無法調整亮度，因為目前是由上層應用程式控制亮度"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"自動旋轉"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"自動旋轉螢幕"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"位置"</string>
@@ -808,12 +809,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」不支援對話功能"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"意見反映"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"關閉"</string>
-    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
-    <skip />
-    <!-- no translation found for live_notifications_title (1586553354601345379) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"不要置頂顯示"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"顯示即時消息"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"置頂通知顯示應用程式的即時資訊，並且一律在狀態列和上鎖畫面顯示"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"無法修改這些通知。"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"無法修改通話通知。"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"無法在此設定這組通知"</string>
@@ -900,7 +898,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"多工處理"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"使用分割螢幕，並在右側顯示應用程式"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"使用分割螢幕，並在左側顯示應用程式"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"切換至全螢幕"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"使用全螢幕模式"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"使用電腦檢視畫面"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"使用分割螢幕時，切換至右邊或下方的應用程式"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"使用分割螢幕時，切換至左邊或上方的應用程式"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"使用分割螢幕期間：更換應用程式"</string>
@@ -987,6 +986,8 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"顯示低優先順序通知圖示"</string>
     <string name="other" msgid="429768510980739978">"其他"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
+    <skip />
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"移除圖塊"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"加圖塊去上一個位置"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"移動圖塊"</string>
@@ -1501,6 +1502,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"查看最近使用的應用程式"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"切換應用程式"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"完成"</string>
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"繼續"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"請再試一次！"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"返回"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"在觸控板上用三隻手指向左或向右滑動"</string>
@@ -1538,7 +1540,10 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"如要查看最近使用的應用程式，請用三隻手指在觸控板上向上滑動並按住"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"如要查看所有應用程式，請在鍵盤上按下快捷操作鍵"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"已剔除"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"解鎖即可查看"</string>
+    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
+    <skip />
+    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
+    <skip />
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"內容教學"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"使用觸控板返回"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"用三隻手指向左或向右滑動。輕按即可瞭解更多手勢。"</string>

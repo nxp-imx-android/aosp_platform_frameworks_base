@@ -24,6 +24,7 @@ import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
 import com.android.systemui.statusbar.notification.collection.ListEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.ShadeListBuilder
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderEntryListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderGroupListener
@@ -40,6 +41,7 @@ import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
+import java.nio.channels.Pipe
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -198,7 +200,7 @@ class RenderStageManagerTest : SysuiTestCase() {
         )
 
     private class FakeNotifViewRenderer : NotifViewRenderer {
-        override fun onRenderList(notifList: List<ListEntry>) {}
+        override fun onRenderList(notifList: List<PipelineEntry>) {}
 
         override fun getGroupController(group: GroupEntry): NotifGroupController = mock()
 

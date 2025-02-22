@@ -30,6 +30,7 @@ import com.android.systemui.scene.data.model.asIterable
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.utils.coroutines.flow.mapLatestConflated
@@ -238,8 +239,8 @@ constructor(
                 if (alternateBouncerInteractor.canShowAlternateBouncer.value) {
                     alternateBouncerInteractor.forceShow()
                 } else {
-                    sceneInteractor.changeScene(
-                        toScene = Scenes.Bouncer,
+                    sceneInteractor.showOverlay(
+                        overlay = Overlays.Bouncer,
                         loggingReason = "request to unlock device while authentication required",
                     )
                 }

@@ -268,6 +268,10 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
 
         assertThat(mViewHolder.mSeekBar.getContentDescription()).isNotNull();
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isFalse();
+        assertThat(mViewHolder.mContainerLayout.getImportantForAccessibility()).isEqualTo(
+                View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        assertThat(mViewHolder.mTextContent.getImportantForAccessibility()).isEqualTo(
+                View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
     }
 
     @Test
@@ -511,6 +515,11 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
         assertThat(mViewHolder.mSeekBar.getVisibility()).isEqualTo(View.GONE);
+        assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
+        assertThat(mViewHolder.mContainerLayout.getImportantForAccessibility()).isEqualTo(
+                View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+        assertThat(mViewHolder.mTextContent.getImportantForAccessibility()).isEqualTo(
+                View.IMPORTANT_FOR_ACCESSIBILITY_YES);
         assertThat(mViewHolder.mProgressBar.getVisibility()).isEqualTo(View.GONE);
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.GONE);
         assertThat(mViewHolder.mSubTitleText.getVisibility()).isEqualTo(View.VISIBLE);
@@ -750,7 +759,7 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 1);
 
-        mViewHolder.mEndTouchArea.performClick();
+        mViewHolder.mCheckBox.performClick();
 
         verify(mMediaSwitchingController).addDeviceToPlayMedia(mMediaDevice2);
     }
@@ -894,7 +903,7 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
-        mViewHolder.mEndTouchArea.performClick();
+        mViewHolder.mCheckBox.performClick();
 
         verify(mMediaSwitchingController).removeDeviceFromPlayMedia(mMediaDevice1);
     }
@@ -1050,7 +1059,7 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
-        mViewHolder.mEndTouchArea.performClick();
+        mViewHolder.mEndClickIcon.performClick();
         mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
@@ -1073,7 +1082,7 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
 
-        mViewHolder.mEndTouchArea.performClick();
+        mViewHolder.mEndClickIcon.performClick();
         mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(
                         new LinearLayout(mContext), MediaItem.MediaItemType.TYPE_DEVICE);

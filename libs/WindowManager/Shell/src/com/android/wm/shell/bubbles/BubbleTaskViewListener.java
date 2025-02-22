@@ -129,27 +129,28 @@ public class BubbleTaskViewListener implements TaskView.Listener {
                     Context context =
                             mContext.createContextAsUser(
                                     mBubble.getUser(), Context.CONTEXT_RESTRICTED);
-                    Intent fillInIntent = null;
+                    Intent fillInIntent = new Intent();
+                    fillInIntent.addFlags(FLAG_ACTIVITY_MULTIPLE_TASK);
                     // First try get pending intent from the bubble
                     PendingIntent pi = mBubble.getPendingIntent();
                     if (pi == null) {
-                        // If null - create new one
+                        // If null - create new one based on the bubble intent
                         pi = PendingIntent.getActivity(
                                 context,
                                 /* requestCode= */ 0,
-                                mBubble.getIntent()
-                                        .addFlags(FLAG_ACTIVITY_MULTIPLE_TASK),
-                                PendingIntent.FLAG_IMMUTABLE
-                                        | PendingIntent.FLAG_UPDATE_CURRENT,
+                                mBubble.getIntent(),
+                                // Needs to be mutable for the fillInIntent
+                                PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
                                 /* options= */ null);
-                    } else {
-                        fillInIntent = new Intent(pi.getIntent());
-                        fillInIntent.addFlags(FLAG_ACTIVITY_MULTIPLE_TASK);
                     }
                     mTaskView.startActivity(pi, fillInIntent, options, launchBounds);
                 } else if (isShortcutBubble) {
-                    options.setLaunchedFromBubble(true);
-                    options.setApplyActivityFlagsForBubbles(true);
+                    if (mBubble.isChat()) {
+                        options.setLaunchedFromBubble(true);
+                        options.setApplyActivityFlagsForBubbles(true);
+                    } else {
+                        options.setApplyMultipleTaskFlagForShortcut(true);
+                    }
                     mTaskView.startShortcutActivity(mBubble.getShortcutInfo(),
                             options, launchBounds);
                 } else {

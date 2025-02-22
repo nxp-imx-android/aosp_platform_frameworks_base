@@ -245,8 +245,9 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"ब्लूटूथ कनेक्ट किया गया."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ब्लूटूथ डिवाइस का आइकॉन"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"डिवाइस की जानकारी कॉन्फ़िगर करने के लिए क्लिक करें"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"\'सभी डिवाइस देखें\' पर क्लिक करें"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"\'नया डिवाइस जोड़ें\' पर क्लिक करें"</string>
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. डिवाइस की जानकारी कॉन्फ़िगर करें"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"सभी डिवाइस देखें"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"नया डिवाइस जोड़ें"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"इस बारे में जानकारी नहीं है कि अभी बैटरी कितने प्रतिशत चार्ज है."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> से कनेक्ट किया गया."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> से कनेक्ट है."</string>
@@ -328,7 +329,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"इनपुट"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"कान की मशीनें"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ब्लूटूथ चालू हो रहा है…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"स्क्रीन की रोशनी को एडजस्ट नहीं किया जा सकता, क्योंकि\n इसे टॉप ऐप्लिकेशन कंट्रोल कर रहा है"</string>
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"स्क्रीन की रोशनी को एडजस्ट नहीं किया जा सकता, क्योंकि इसे टॉप ऐप्लिकेशन कंट्रोल कर रहा है"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ऑटो-रोटेट"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"स्क्रीन का अपने-आप दिशा बदलना (ऑटो-रोटेट)"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"जगह की जानकारी"</string>
@@ -536,7 +537,7 @@
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"ऊंचाई बढ़ाएं"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"अगला दिखाएं"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"पिछला दिखाएं"</string>
-    <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"लॉक स्क्रीन विजेट"</string>
+    <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"लॉक स्क्रीन के विजेट"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"किसी विजेट से कोई ऐप्लिकेशन खोलने के लिए, आपको अपनी पहचान की पुष्टि करनी होगी. ध्यान रखें कि आपके टैबलेट के लॉक होने पर भी, कोई व्यक्ति विजेट देख सकता है. ऐसा हो सकता है कि कुछ विजेट, लॉक स्क्रीन पर दिखाने के लिए न बने हों. इन्हें लॉक स्क्रीन पर जोड़ना असुरक्षित हो सकता है."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"ठीक है"</string>
     <string name="accessibility_glanceable_hub_to_dream_button" msgid="7552776300297055307">"स्क्रीन सेवर दिखाने का बटन"</string>
@@ -808,12 +809,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> पर बातचीत की सुविधाएं काम नहीं करतीं"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"सुझाव/राय दें या शिकायत करें"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"खारिज करें"</string>
-    <!-- no translation found for notification_inline_disable_promotion (3551682588314376921) -->
-    <skip />
-    <!-- no translation found for live_notifications_title (1586553354601345379) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (7470787001768372152) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"पिन किए गए लाइव अपडेट न दिखाएं"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"लाइव अपडेट दिखाए जा रहे हैं"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"पिन की गई सूचनाएं, ऐप्लिकेशन से मिलने वाली जानकारी रीयल-टाइम में दिखाती हैं. ये सूचनाएं, स्टेटस बार और लॉक स्क्रीन पर दिखती हैं"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ये सूचनाएं नहीं बदली जा सकती हैं."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"कॉल से जुड़ी सूचनाओं को ब्लॉक नहीं किया जा सकता."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"सूचनाओं के इस समूह को यहां कॉन्फ़िगर नहीं किया जा सकता"</string>
@@ -900,7 +898,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"मल्टीटास्किंग (एक साथ कई काम करना)"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"स्प्लिट स्क्रीन की सुविधा चालू करें और इस ऐप्लिकेशन को दाईं ओर दिखाएं"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"स्प्लिट स्क्रीन की सुविधा चालू करें और इस ऐप्लिकेशन को बाईं ओर दिखाएं"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"फ़ुल स्क्रीन पर स्विच करें"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"फ़ुल स्क्रीन मोड का इस्तेमाल करें"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"डेस्कटॉप व्यू मोड का इस्तेमाल करें"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"स्प्लिट स्क्रीन पर, दाईं ओर या नीचे के ऐप पर स्विच करने के लिए"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"स्प्लिट स्क्रीन पर, बाईं ओर या ऊपर के ऐप पर स्विच करने के लिए"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"स्प्लिट स्क्रीन के दौरान: एक ऐप्लिकेशन को दूसरे ऐप्लिकेशन से बदलें"</string>
@@ -987,6 +986,8 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"कम प्राथमिकता वाली सूचना के आइकॉन दिखाएं"</string>
     <string name="other" msgid="429768510980739978">"अन्य"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
+    <skip />
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"टाइल हटाएं"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"आखिरी जगह पर टाइल जोड़ें"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"टाइल को किसी और पोज़िशन पर ले जाएं"</string>
@@ -1501,6 +1502,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"हाल ही में इस्तेमाल किए गए ऐप्लिकेशन देखें"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ऐप्लिकेशन के बीच स्विच करें"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"हो गया"</string>
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"आगे बढ़ें"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"फिर से कोशिश करें!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"वापस जाएं"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"अपने टचपैड पर तीन उंगलियों से बाईं या दाईं ओर स्वाइप करें"</string>
@@ -1538,7 +1540,10 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"हाल ही में इस्तेमाल हुए ऐप देखने के लिए, टचपैड पर तीन उंगलियों से ऊपर की ओर स्वाइप करके दबाकर रखें"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"सभी ऐप्लिकेशन देखने के लिए, कीबोर्ड पर ऐक्शन बटन दबाएं"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"जानकारी छिपाने के लिए सूचना में बदलाव किया गया"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"देखने के लिए डिवाइस अनलॉक करें"</string>
+    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
+    <skip />
+    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
+    <skip />
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"कॉन्टेक्स्ट के हिसाब से जानकारी"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"वापस जाने के लिए, अपने डिवाइस के टचपैड का इस्तेमाल करें"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"तीन उंगलियों से बाईं या दाईं ओर स्वाइप करें. ज़्यादा जेस्चर के बारे में जानने के लिए टैप करें."</string>

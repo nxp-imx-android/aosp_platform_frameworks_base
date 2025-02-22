@@ -21,6 +21,7 @@ import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.scene.domain.interactor.SceneContainerOcclusionInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.viewmodel.UserActionsViewModel
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -60,7 +61,11 @@ constructor(
                     occlusionInteractor.isOccludingActivityShown,
                 ) { isDeviceUnlocked, shadeMode, isOccluded ->
                     buildList {
-                            add(Swipe.Up to if (isDeviceUnlocked) Scenes.Gone else Scenes.Bouncer)
+                            if (isDeviceUnlocked) {
+                                add(Swipe.Up to Scenes.Gone)
+                            } else {
+                                add(Swipe.Up to Overlays.Bouncer)
+                            }
 
                             addAll(
                                 when (shadeMode) {

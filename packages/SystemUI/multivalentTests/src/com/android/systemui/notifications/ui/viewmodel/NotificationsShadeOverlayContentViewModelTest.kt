@@ -103,20 +103,6 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun bouncerShown_hidesShade() =
-        testScope.runTest {
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            lockDevice()
-            sceneInteractor.showOverlay(Overlays.NotificationsShade, "test")
-            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
-
-            sceneInteractor.changeScene(Scenes.Bouncer, "test")
-            runCurrent()
-
-            assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
-        }
-
-    @Test
     fun shadeNotTouchable_hidesShade() =
         testScope.runTest {
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)

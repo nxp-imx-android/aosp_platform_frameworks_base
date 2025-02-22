@@ -248,6 +248,23 @@ class KeyboardTouchpadTutorialViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun screensOrderUntilFinish_whenAutoProceed() =
+        testScope.runTest {
+            val screens by collectValues(viewModel.screen)
+            val closeActivity by collectLastValue(viewModel.closeActivity)
+
+            peripheralsState(keyboardConnected = true, touchpadConnected = true)
+
+            autoProceed()
+            autoProceed()
+            // No autoproceeding at the last screen
+            goToNextScreen()
+
+            assertThat(screens).containsExactly(BACK_GESTURE, HOME_GESTURE, ACTION_KEY).inOrder()
+            assertThat(closeActivity).isTrue()
+        }
+
+    @Test
     fun activityFinishes_ifTouchpadModuleIsNotPresent() =
         testScope.runTest {
             val viewModel =
@@ -296,6 +313,11 @@ class KeyboardTouchpadTutorialViewModelTest : SysuiTestCase() {
 
     private fun TestScope.goToNextScreen() {
         viewModel.onDoneButtonClicked()
+        runCurrent()
+    }
+
+    private suspend fun TestScope.autoProceed() {
+        viewModel.onAutoProceed()
         runCurrent()
     }
 

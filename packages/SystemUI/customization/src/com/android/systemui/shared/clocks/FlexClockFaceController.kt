@@ -132,7 +132,7 @@ class FlexClockFaceController(clockCtx: ClockContext, private val isLargeClock: 
             if (!isLargeClock) {
                 axes =
                     axes.map { axis ->
-                        if (axis.key == GSFAxes.WIDTH && axis.value > SMALL_CLOCK_MAX_WDTH) {
+                        if (axis.key == GSFAxes.WIDTH.tag && axis.value > SMALL_CLOCK_MAX_WDTH) {
                             axis.copy(value = SMALL_CLOCK_MAX_WDTH)
                         } else {
                             axis

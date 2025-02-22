@@ -467,7 +467,8 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
      *                             remove animation should be performed upwards,
      *                             such that the  child appears to be going away to the top. 1
      *                             Should mean the opposite.
-     * @param isHeadsUpAnimation   Is this a headsUp animation.
+     * @param isHeadsUpAnimation   Is this a headsUp animation
+     * @param isHeadsUpCycling     Is this the cycling heads up animation
      * @param onFinishedRunnable   A runnable which should be run when the animation is finished.
      * @param animationListener    An animation listener to add to the animation.
      * @return The additional delay, in milliseconds, that this view needs to add before the
@@ -475,7 +476,7 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
      */
     public abstract long performRemoveAnimation(long duration,
             long delay, float translationDirection, boolean isHeadsUpAnimation,
-            Runnable onStartedRunnable,
+            boolean isHeadsUpCycling, Runnable onStartedRunnable,
             Runnable onFinishedRunnable,
             AnimatorListenerAdapter animationListener, ClipSide clipSide);
 
@@ -485,11 +486,12 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
     }
 
     public void performAddAnimation(long delay, long duration, boolean isHeadsUpAppear) {
-        performAddAnimation(delay, duration, isHeadsUpAppear, null);
+        performAddAnimation(delay, duration, isHeadsUpAppear, false /* isHeadsUpCycling */,
+                null);
     }
 
     public abstract void performAddAnimation(long delay, long duration, boolean isHeadsUpAppear,
-            Runnable onEndRunnable);
+            boolean isHeadsUpCycling, Runnable onEndRunnable);
 
     public int getPinnedHeadsUpHeight() {
         return getIntrinsicHeight();

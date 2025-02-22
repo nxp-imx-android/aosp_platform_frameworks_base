@@ -24,7 +24,7 @@ import android.content.Context;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Environment;
-import android.os.PersistableBundle;
+import android.util.AtomicFile;
 import android.util.Slog;
 
 import com.android.internal.R;
@@ -35,6 +35,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,52 +43,27 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.X509Certificate;
-import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeParseException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /** Manages the revocation status of certificates used in remote attestation. */
 class CertificateRevocationStatusManager {
     private static final String TAG = "AVF_CRL";
     // Must be unique within system server
     private static final int JOB_ID = 1737671340;
-    private static final String REVOCATION_STATUS_FILE_NAME = "certificate_revocation_status.txt";
-    private static final String REVOCATION_STATUS_FILE_FIELD_DELIMITER = ",";
+    private static final String REVOCATION_LIST_FILE_NAME = "certificate_revocation_list.json";
+    @VisibleForTesting static final int MAX_OFFLINE_REVOCATION_LIST_AGE_DAYS = 30;
 
-    /**
-     * The number of days since last update for which a stored revocation status can be accepted.
-     */
-    @VisibleForTesting static final int MAX_DAYS_SINCE_LAST_CHECK = 30;
-
-    @VisibleForTesting static final int NUM_HOURS_BEFORE_NEXT_CHECK = 24;
-
-    /**
-     * The number of days since issue date for an intermediary certificate to be considered fresh
-     * and not require a revocation list check.
-     */
-    private static final int FRESH_INTERMEDIARY_CERT_DAYS = 70;
-
-    /**
-     * The expected number of days between a certificate's issue date and notBefore date. Used to
-     * infer a certificate's issue date from its notBefore date.
-     */
-    private static final int DAYS_BETWEEN_ISSUE_AND_NOT_BEFORE_DATES = 2;
+    @VisibleForTesting static final int NUM_HOURS_BEFORE_NEXT_FETCH = 24;
 
     private static final String TOP_LEVEL_JSON_PROPERTY_KEY = "entries";
     private static final Object sFileLock = new Object();
 
     private final Context mContext;
     private final String mTestRemoteRevocationListUrl;
-    private final File mTestRevocationStatusFile;
+    private final File mTestStoredRevocationListFile;
     private final boolean mShouldScheduleJob;
 
     CertificateRevocationStatusManager(Context context) {
@@ -98,29 +74,22 @@ class CertificateRevocationStatusManager {
     CertificateRevocationStatusManager(
             Context context,
             String testRemoteRevocationListUrl,
-            File testRevocationStatusFile,
+            File testStoredRevocationListFile,
             boolean shouldScheduleJob) {
         mContext = context;
         mTestRemoteRevocationListUrl = testRemoteRevocationListUrl;
-        mTestRevocationStatusFile = testRevocationStatusFile;
+        mTestStoredRevocationListFile = testStoredRevocationListFile;
         mShouldScheduleJob = shouldScheduleJob;
     }
 
     /**
      * Check the revocation status of the provided {@link X509Certificate}s.
      *
-     * <p>The provided certificates should have been validated and ordered from leaf to a
-     * certificate issued by the trust anchor, per the convention specified in the javadoc of {@link
-     * java.security.cert.CertPath}.
-     *
      * @param certificates List of certificates to be checked
      * @throws CertPathValidatorException if the check failed
      */
     void checkRevocationStatus(List<X509Certificate> certificates)
             throws CertPathValidatorException {
-        if (!needToCheckRevocationStatus(certificates)) {
-            return;
-        }
         List<String> serialNumbers = new ArrayList<>();
         for (X509Certificate certificate : certificates) {
             String serialNumber = certificate.getSerialNumber().toString(16);
@@ -129,217 +98,124 @@ class CertificateRevocationStatusManager {
             }
             serialNumbers.add(serialNumber);
         }
+        LocalDateTime now = LocalDateTime.now();
+        JSONObject revocationList;
         try {
-            if (isLastCheckedWithin(Duration.ofHours(NUM_HOURS_BEFORE_NEXT_CHECK), serialNumbers)) {
-                Slog.d(
-                        TAG,
-                        "All certificates have been checked for revocation recently. No need to"
-                                + " check this time.");
+            if (getLastModifiedDateTime(getRevocationListFile())
+                    .isAfter(now.minusHours(NUM_HOURS_BEFORE_NEXT_FETCH))) {
+                Slog.d(TAG, "CRL is fetched recently, do not fetch again.");
+                revocationList = getStoredRevocationList();
+                checkRevocationStatus(revocationList, serialNumbers);
                 return;
             }
-        } catch (IOException ignored) {
-            // Proceed to check the revocation status
+        } catch (IOException | JSONException ignored) {
+            // Proceed to fetch the remote revocation list
         }
         try {
-            JSONObject revocationList = fetchRemoteRevocationList();
-            Map<String, Boolean> areCertificatesRevoked = new HashMap<>();
-            for (String serialNumber : serialNumbers) {
-                areCertificatesRevoked.put(serialNumber, revocationList.has(serialNumber));
-            }
-            updateLastRevocationCheckData(areCertificatesRevoked);
-            for (Map.Entry<String, Boolean> entry : areCertificatesRevoked.entrySet()) {
-                if (entry.getValue()) {
-                    throw new CertPathValidatorException(
-                            "Certificate " + entry.getKey() + " has been revoked.");
-                }
-            }
+            byte[] revocationListBytes = fetchRemoteRevocationListBytes();
+            silentlyStoreRevocationList(revocationListBytes);
+            revocationList = parseRevocationList(revocationListBytes);
+            checkRevocationStatus(revocationList, serialNumbers);
         } catch (IOException | JSONException ex) {
             Slog.d(TAG, "Fallback to check stored revocation status", ex);
             if (ex instanceof IOException && mShouldScheduleJob) {
-                scheduleJobToUpdateStoredDataWithRemoteRevocationList(serialNumbers);
-            }
-            for (X509Certificate certificate : certificates) {
-                // Assume recently issued certificates are not revoked.
-                if (isIssuedWithinDays(certificate, MAX_DAYS_SINCE_LAST_CHECK)) {
-                    String serialNumber = certificate.getSerialNumber().toString(16);
-                    serialNumbers.remove(serialNumber);
-                }
+                scheduleJobToFetchRemoteRevocationJob();
             }
             try {
-                if (!isLastCheckedWithin(
-                        Duration.ofDays(MAX_DAYS_SINCE_LAST_CHECK), serialNumbers)) {
-                    throw new CertPathValidatorException(
-                            "Unable to verify the revocation status of one of the certificates "
-                                    + serialNumbers);
-                }
-            } catch (IOException ex2) {
+                revocationList = getStoredRevocationList();
+                checkRevocationStatus(revocationList, serialNumbers);
+            } catch (IOException | JSONException ex2) {
                 throw new CertPathValidatorException(
-                        "Unable to load stored revocation status", ex2);
+                        "Unable to load or parse stored revocation status", ex2);
             }
         }
     }
 
-    private boolean isLastCheckedWithin(Duration lastCheckedWithin, List<String> serialNumbers)
-            throws IOException {
-        Map<String, LocalDateTime> lastRevocationCheckData = getLastRevocationCheckData();
+    private static void checkRevocationStatus(JSONObject revocationList, List<String> serialNumbers)
+            throws CertPathValidatorException {
         for (String serialNumber : serialNumbers) {
-            if (!lastRevocationCheckData.containsKey(serialNumber)
-                    || lastRevocationCheckData
-                            .get(serialNumber)
-                            .isBefore(LocalDateTime.now().minus(lastCheckedWithin))) {
-                return false;
+            if (revocationList.has(serialNumber)) {
+                throw new CertPathValidatorException(
+                        "Certificate has been revoked: " + serialNumber);
             }
         }
-        return true;
     }
 
-    private static boolean needToCheckRevocationStatus(
-            List<X509Certificate> certificatesOrderedLeafFirst) {
-        if (certificatesOrderedLeafFirst.isEmpty()) {
-            return false;
+    private JSONObject getStoredRevocationList() throws IOException, JSONException {
+        File offlineRevocationListFile = getRevocationListFile();
+        if (!offlineRevocationListFile.exists()
+                || isRevocationListExpired(offlineRevocationListFile)) {
+            throw new FileNotFoundException("Offline copy does not exist or has expired.");
         }
-        // A certificate isn't revoked when it is first issued, so we treat it as checked on its
-        // issue date.
-        if (!isIssuedWithinDays(certificatesOrderedLeafFirst.get(0), MAX_DAYS_SINCE_LAST_CHECK)) {
-            return true;
-        }
-        for (int i = 1; i < certificatesOrderedLeafFirst.size(); i++) {
-            if (!isIssuedWithinDays(
-                    certificatesOrderedLeafFirst.get(i), FRESH_INTERMEDIARY_CERT_DAYS)) {
-                return true;
+        synchronized (sFileLock) {
+            try (FileInputStream inputStream = new FileInputStream(offlineRevocationListFile)) {
+                return parseRevocationList(inputStream.readAllBytes());
             }
         }
-        return false;
     }
 
-    private static boolean isIssuedWithinDays(X509Certificate certificate, int days) {
-        LocalDate notBeforeDate =
-                LocalDate.ofInstant(certificate.getNotBefore().toInstant(), ZoneId.systemDefault());
-        LocalDate expectedIssueData =
-                notBeforeDate.plusDays(DAYS_BETWEEN_ISSUE_AND_NOT_BEFORE_DATES);
-        return LocalDate.now().minusDays(days + 1).isBefore(expectedIssueData);
+    private boolean isRevocationListExpired(File offlineRevocationListFile) {
+        LocalDateTime acceptableLastModifiedDate =
+                LocalDateTime.now().minusDays(MAX_OFFLINE_REVOCATION_LIST_AGE_DAYS);
+        LocalDateTime lastModifiedDate = getLastModifiedDateTime(offlineRevocationListFile);
+        return lastModifiedDate.isBefore(acceptableLastModifiedDate);
     }
 
-    void updateLastRevocationCheckDataForAllPreviouslySeenCertificates(
-            JSONObject revocationList, Collection<String> otherCertificatesToCheck) {
-        Set<String> allCertificatesToCheck = new HashSet<>(otherCertificatesToCheck);
-        try {
-            allCertificatesToCheck.addAll(getLastRevocationCheckData().keySet());
-        } catch (IOException ex) {
-            Slog.e(TAG, "Unable to update last check date of stored data.", ex);
-        }
-        Map<String, Boolean> areCertificatesRevoked = new HashMap<>();
-        for (String serialNumber : allCertificatesToCheck) {
-            areCertificatesRevoked.put(serialNumber, revocationList.has(serialNumber));
-        }
-        updateLastRevocationCheckData(areCertificatesRevoked);
+    private static LocalDateTime getLastModifiedDateTime(File file) {
+        // if the file does not exist, file.lastModified() returns 0, so this method returns the
+        // epoch time
+        return LocalDateTime.ofEpochSecond(
+                file.lastModified() / 1000, 0, OffsetDateTime.now().getOffset());
     }
 
     /**
-     * Update the last revocation check data stored on this device.
+     * Store the provided bytes to the local revocation list file.
      *
-     * @param areCertificatesRevoked A Map whose keys are certificate serial numbers and values are
-     *     whether that certificate has been revoked
+     * <p>This method does not throw an exception even if it fails to store the bytes.
+     *
+     * <p>This method internally synchronize file access with other methods in this class.
+     *
+     * @param revocationListBytes The bytes to store to the local revocation list file.
      */
-    void updateLastRevocationCheckData(Map<String, Boolean> areCertificatesRevoked) {
-        LocalDateTime now = LocalDateTime.now();
+    void silentlyStoreRevocationList(byte[] revocationListBytes) {
         synchronized (sFileLock) {
-            Map<String, LocalDateTime> lastRevocationCheckData;
+            AtomicFile atomicRevocationListFile = new AtomicFile(getRevocationListFile());
+            FileOutputStream fileOutputStream = null;
             try {
-                lastRevocationCheckData = getLastRevocationCheckData();
+                fileOutputStream = atomicRevocationListFile.startWrite();
+                fileOutputStream.write(revocationListBytes);
+                atomicRevocationListFile.finishWrite(fileOutputStream);
+                Slog.d(TAG, "Successfully stored revocation list.");
             } catch (IOException ex) {
-                Slog.e(TAG, "Unable to updateLastRevocationCheckData", ex);
-                return;
-            }
-            for (Map.Entry<String, Boolean> entry : areCertificatesRevoked.entrySet()) {
-                if (entry.getValue()) {
-                    lastRevocationCheckData.remove(entry.getKey());
-                } else {
-                    lastRevocationCheckData.put(entry.getKey(), now);
-                }
-            }
-            storeLastRevocationCheckData(lastRevocationCheckData);
-        }
-    }
-
-    Map<String, LocalDateTime> getLastRevocationCheckData() throws IOException {
-        Map<String, LocalDateTime> data = new HashMap<>();
-        File dataFile = getLastRevocationCheckDataFile();
-        synchronized (sFileLock) {
-            if (!dataFile.exists()) {
-                return data;
-            }
-            String dataString;
-            try (FileInputStream in = new FileInputStream(dataFile)) {
-                dataString = new String(in.readAllBytes(), UTF_8);
-            }
-            for (String line : dataString.split(System.lineSeparator())) {
-                String[] elements = line.split(REVOCATION_STATUS_FILE_FIELD_DELIMITER);
-                if (elements.length != 2) {
-                    continue;
-                }
-                try {
-                    data.put(elements[0], LocalDateTime.parse(elements[1]));
-                } catch (DateTimeParseException ex) {
-                    Slog.e(
-                            TAG,
-                            "Unable to parse last checked LocalDateTime from file. Deleting the"
-                                    + " potentially corrupted file.",
-                            ex);
-                    dataFile.delete();
-                    return data;
+                Slog.e(TAG, "Failed to store the certificate revocation list.", ex);
+                // this happens when fileOutputStream.write fails
+                if (fileOutputStream != null) {
+                    atomicRevocationListFile.failWrite(fileOutputStream);
                 }
             }
         }
-        return data;
     }
 
-    @VisibleForTesting
-    void storeLastRevocationCheckData(Map<String, LocalDateTime> lastRevocationCheckData) {
-        StringBuilder dataStringBuilder = new StringBuilder();
-        for (Map.Entry<String, LocalDateTime> entry : lastRevocationCheckData.entrySet()) {
-            dataStringBuilder
-                    .append(entry.getKey())
-                    .append(REVOCATION_STATUS_FILE_FIELD_DELIMITER)
-                    .append(entry.getValue())
-                    .append(System.lineSeparator());
+    private File getRevocationListFile() {
+        if (mTestStoredRevocationListFile != null) {
+            return mTestStoredRevocationListFile;
         }
-        synchronized (sFileLock) {
-            try (FileOutputStream fileOutputStream =
-                    new FileOutputStream(getLastRevocationCheckDataFile())) {
-                fileOutputStream.write(dataStringBuilder.toString().getBytes(UTF_8));
-                Slog.d(TAG, "Successfully stored revocation status data.");
-            } catch (IOException ex) {
-                Slog.e(TAG, "Failed to store revocation status data.", ex);
-            }
-        }
+        return new File(Environment.getDataSystemDirectory(), REVOCATION_LIST_FILE_NAME);
     }
 
-    private File getLastRevocationCheckDataFile() {
-        if (mTestRevocationStatusFile != null) {
-            return mTestRevocationStatusFile;
-        }
-        return new File(Environment.getDataSystemDirectory(), REVOCATION_STATUS_FILE_NAME);
-    }
-
-    private void scheduleJobToUpdateStoredDataWithRemoteRevocationList(List<String> serialNumbers) {
+    private void scheduleJobToFetchRemoteRevocationJob() {
         JobScheduler jobScheduler = mContext.getSystemService(JobScheduler.class);
         if (jobScheduler == null) {
             Slog.e(TAG, "Unable to get job scheduler.");
             return;
         }
         Slog.d(TAG, "Scheduling job to fetch remote CRL.");
-        PersistableBundle extras = new PersistableBundle();
-        extras.putStringArray(
-                UpdateCertificateRevocationStatusJobService.EXTRA_KEY_CERTIFICATES_TO_CHECK,
-                serialNumbers.toArray(new String[0]));
         jobScheduler.schedule(
                 new JobInfo.Builder(
                                 JOB_ID,
                                 new ComponentName(
                                         mContext,
                                         UpdateCertificateRevocationStatusJobService.class))
-                        .setExtras(extras)
                         .setRequiredNetwork(
                                 new NetworkRequest.Builder()
                                         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
@@ -351,13 +227,11 @@ class CertificateRevocationStatusManager {
      * Fetches the revocation list from the URL specified in
      * R.string.vendor_required_attestation_revocation_list_url
      *
-     * @return The remote revocation list entries in a JSONObject
+     * @return The remote revocation list entries in a byte[].
      * @throws CertPathValidatorException if the URL is not defined or is malformed.
      * @throws IOException if the URL is valid but the fetch failed.
-     * @throws JSONException if the revocation list content cannot be parsed
      */
-    JSONObject fetchRemoteRevocationList()
-            throws CertPathValidatorException, IOException, JSONException {
+    byte[] fetchRemoteRevocationListBytes() throws CertPathValidatorException, IOException {
         String urlString = getRemoteRevocationListUrl();
         if (urlString == null || urlString.isEmpty()) {
             throw new CertPathValidatorException(
@@ -369,10 +243,13 @@ class CertificateRevocationStatusManager {
         } catch (MalformedURLException ex) {
             throw new CertPathValidatorException("Unable to parse the URL " + urlString, ex);
         }
-        byte[] revocationListBytes;
         try (InputStream inputStream = url.openStream()) {
-            revocationListBytes = inputStream.readAllBytes();
+            return inputStream.readAllBytes();
         }
+    }
+
+    private JSONObject parseRevocationList(byte[] revocationListBytes)
+            throws IOException, JSONException {
         JSONObject revocationListJson = new JSONObject(new String(revocationListBytes, UTF_8));
         return revocationListJson.getJSONObject(TOP_LEVEL_JSON_PROPERTY_KEY);
     }

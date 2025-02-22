@@ -33,7 +33,7 @@ fun BackGestureTutorialScreen(
     easterEggGestureViewModel: EasterEggGestureViewModel,
     onDoneButtonClicked: () -> Unit,
     onBack: () -> Unit,
-    isAutoProceed: Boolean = false,
+    onAutoProceed: (suspend () -> Unit)? = null,
 ) {
     val screenConfig =
         TutorialScreenConfig(
@@ -48,7 +48,6 @@ fun BackGestureTutorialScreen(
                     bodyErrorResId = R.string.touchpad_back_gesture_error_body,
                 ),
             animations = TutorialScreenConfig.Animations(educationResId = R.raw.trackpad_back_edu),
-            hasNextButton = isAutoProceed,
         )
     GestureTutorialScreen(
         screenConfig = screenConfig,
@@ -61,6 +60,7 @@ fun BackGestureTutorialScreen(
         onEasterEggFinished = easterEggGestureViewModel::onEasterEggFinished,
         onDoneButtonClicked = onDoneButtonClicked,
         onBack = onBack,
+        onAutoProceed = onAutoProceed,
     )
 }
 

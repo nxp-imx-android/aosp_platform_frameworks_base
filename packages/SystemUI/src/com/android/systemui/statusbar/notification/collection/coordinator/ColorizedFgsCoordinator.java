@@ -25,6 +25,7 @@ import androidx.annotation.Nullable;
 
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.statusbar.notification.collection.ListEntry;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope;
@@ -96,7 +97,7 @@ public class ColorizedFgsCoordinator implements Coordinator {
     private final NotifSectioner mNotifSectioner = new NotifSectioner("ColorizedSectioner",
             NotificationPriorityBucketKt.BUCKET_FOREGROUND_SERVICE) {
         @Override
-        public boolean isInSection(ListEntry entry) {
+        public boolean isInSection(PipelineEntry entry) {
             NotificationEntry notificationEntry = entry.getRepresentativeEntry();
             if (notificationEntry != null) {
                 return isRichOngoing(notificationEntry);
@@ -117,7 +118,7 @@ public class ColorizedFgsCoordinator implements Coordinator {
         private final NotifComparator mOngoingComparator = new NotifComparator(
                 "OngoingComparator") {
             @Override
-            public int compare(@NonNull ListEntry o1, @NonNull ListEntry o2) {
+            public int compare(@NonNull PipelineEntry o1, @NonNull PipelineEntry o2) {
                 return Integer.compare(
                         getSortKey(o1.getRepresentativeEntry()),
                         getSortKey(o2.getRepresentativeEntry())

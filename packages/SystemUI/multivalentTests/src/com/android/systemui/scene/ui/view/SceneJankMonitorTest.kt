@@ -31,6 +31,7 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -158,22 +159,22 @@ class SceneJankMonitorTest : SysuiTestCase() {
         underTest.onTransitionStart(
             view = mock(),
             from = Scenes.Lockscreen,
-            to = Scenes.Bouncer,
+            to = Overlays.Bouncer,
             cuj = null,
         )
         verifyCujCounts(beginAppearCount = 1)
-        underTest.onTransitionEnd(from = Scenes.Lockscreen, to = Scenes.Bouncer, cuj = null)
+        underTest.onTransitionEnd(from = Scenes.Lockscreen, to = Overlays.Bouncer, cuj = null)
         verifyCujCounts(beginAppearCount = 1, endAppearCount = 1)
 
         // Bouncer disappear CUJ but it doesn't log because the device isn't unlocked.
         underTest.onTransitionStart(
             view = mock(),
-            from = Scenes.Bouncer,
+            from = Overlays.Bouncer,
             to = Scenes.Lockscreen,
             cuj = null,
         )
         verifyCujCounts(beginAppearCount = 1, endAppearCount = 1)
-        underTest.onTransitionEnd(from = Scenes.Bouncer, to = Scenes.Lockscreen, cuj = null)
+        underTest.onTransitionEnd(from = Overlays.Bouncer, to = Scenes.Lockscreen, cuj = null)
         verifyCujCounts(beginAppearCount = 1, endAppearCount = 1)
 
         if (!testUnlockedDisappearance) {
@@ -190,12 +191,12 @@ class SceneJankMonitorTest : SysuiTestCase() {
         // Bouncer disappear CUJ and it doeslog because the device is unlocked.
         underTest.onTransitionStart(
             view = mock(),
-            from = Scenes.Bouncer,
+            from = Overlays.Bouncer,
             to = Scenes.Gone,
             cuj = null,
         )
         verifyCujCounts(beginAppearCount = 1, endAppearCount = 1, beginDisappearCount = 1)
-        underTest.onTransitionEnd(from = Scenes.Bouncer, to = Scenes.Gone, cuj = null)
+        underTest.onTransitionEnd(from = Overlays.Bouncer, to = Scenes.Gone, cuj = null)
         verifyCujCounts(
             beginAppearCount = 1,
             endAppearCount = 1,

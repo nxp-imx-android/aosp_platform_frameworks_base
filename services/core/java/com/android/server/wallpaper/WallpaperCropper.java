@@ -16,6 +16,8 @@
 
 package com.android.server.wallpaper;
 
+import static android.app.WallpaperManager.ORIENTATION_LANDSCAPE;
+import static android.app.WallpaperManager.ORIENTATION_SQUARE_LANDSCAPE;
 import static android.app.WallpaperManager.ORIENTATION_UNKNOWN;
 import static android.app.WallpaperManager.getOrientation;
 import static android.app.WallpaperManager.getRotatedOrientation;
@@ -28,6 +30,7 @@ import static com.android.server.wallpaper.WallpaperUtils.WALLPAPER;
 import static com.android.server.wallpaper.WallpaperUtils.getWallpaperDir;
 import static com.android.window.flags.Flags.multiCrop;
 
+import android.app.WallpaperManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageDecoder;
@@ -820,5 +823,55 @@ public class WallpaperCropper {
                 Slog.v(TAG, "restorecon() of crop file returned " + didRestorecon);
             }
         }
+    }
+
+    /**
+     * Returns true if a wallpaper is compatible with a given display with ID, {@code displayId}.
+     *
+     * <p>A wallpaper is compatible with a display if any of the following are true
+     * <ol>the display is a default display</o>
+     * <ol>the wallpaper is a stock wallpaper</ol>
+     * <ol>the wallpaper size is at least 3/4 of the display resolution and, in landscape displays,
+     * the wallpaper has an aspect ratio of at least 11:13.</ol>
+     */
+    @VisibleForTesting
+    boolean isWallpaperCompatibleForDisplay(int displayId, WallpaperData wallpaperData) {
+        if (displayId == DEFAULT_DISPLAY) {
+            return true;
+        }
+
+        File wallpaperFile = wallpaperData.getWallpaperFile();
+        if (!wallpaperFile.exists()) {
+            // Assumption: Stock wallpaper is suitable for all display sizes.
+            return true;
+        }
+
+        DisplayInfo displayInfo = mWallpaperDisplayHelper.getDisplayInfo(displayId);
+        Point displaySize = new Point(displayInfo.logicalWidth, displayInfo.logicalHeight);
+        int displayOrientation = WallpaperManager.getOrientation(displaySize);
+
+        Point wallpaperImageSize = new Point(
+                (int) Math.ceil(wallpaperData.cropHint.width() / wallpaperData.mSampleSize),
+                (int) Math.ceil(wallpaperData.cropHint.height() / wallpaperData.mSampleSize));
+        if (wallpaperImageSize.equals(0, 0)) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(wallpaperFile.getAbsolutePath(), options);
+            wallpaperImageSize.set(options.outWidth, options.outHeight);
+        }
+
+        double maxDisplayToImageRatio = Math.max((double) displaySize.x / wallpaperImageSize.x,
+                (double) displaySize.y / wallpaperImageSize.y);
+        if (maxDisplayToImageRatio > 1.5) {
+            return false;
+        }
+
+        // For displays in landscape, we only support images with an aspect ratio >= 11:13
+        if (displayOrientation == ORIENTATION_LANDSCAPE) {
+            return ((double) wallpaperImageSize.x / wallpaperImageSize.y) >= 11.0 / 13;
+        }
+
+        // For other orientations, we don't enforce any aspect ratio.
+        return true;
     }
 }

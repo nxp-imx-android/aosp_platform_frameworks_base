@@ -88,6 +88,7 @@ class StackStateAnimatorTest : SysuiTestCase() {
                 /* delay= */ 0L,
                 /* duration= */ ANIMATION_DURATION_HEADS_UP_APPEAR.toLong(),
                 /* isHeadsUpAppear= */ true,
+                /* isHeadsUpCycling= */ false,
                 /* onEndRunnable= */ null,
             )
     }
@@ -111,6 +112,7 @@ class StackStateAnimatorTest : SysuiTestCase() {
                 /* delay= */ 0L,
                 /* duration= */ ANIMATION_DURATION_HEADS_UP_APPEAR.toLong(),
                 /* isHeadsUpAppear= */ true,
+                /* isHeadsUpCycling= */ false,
                 /* onEndRunnable= */ null,
             )
     }
@@ -128,6 +130,7 @@ class StackStateAnimatorTest : SysuiTestCase() {
                 /* delay= */ eq(0L),
                 /* translationDirection= */ eq(0f),
                 /* isHeadsUpAnimation= */ eq(true),
+                /* isHeadsUpCycling= */ eq(false),
                 /* onStartedRunnable= */ any(),
                 /* onFinishedRunnable= */ runnableCaptor.capture(),
                 /* animationListener= */ any(),

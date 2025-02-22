@@ -245,8 +245,9 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth connected."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth device icon"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Click to configure device detail"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"Click to see all devices"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"Click to pair new device"</string>
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Configure device detail"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"See all devices"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Pair new device"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Battery percentage unknown."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Connected to <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Connected to <xliff:g id="CAST">%s</xliff:g>."</string>
@@ -328,7 +329,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Input"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Hearing aids"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Turning on…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Can\'t adjust brightness because it\'s being\n controlled by the top app"</string>
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Can\'t adjust brightness because it\'s being controlled by the top app"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Auto-rotate"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Auto-rotate screen"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Location"</string>
@@ -897,7 +898,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasking"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Use split screen with app on the right"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Use split screen with app on the left"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"Switch to full screen"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Use full screen"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Use desktop view"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Switch to app on right or below while using split screen"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Switch to app on left or above while using split screen"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"During split screen: replace an app from one to another"</string>
@@ -984,6 +986,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Show low-priority notification icons"</string>
     <string name="other" msgid="429768510980739978">"Other"</string>
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"toggle the tile\'s size"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"remove tile"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"add tile to the last position"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Move tile"</string>
@@ -1498,6 +1501,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"View recent apps"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Switch apps"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Done"</string>
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Next"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Try again!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Go back"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Swipe left or right using three fingers on your touchpad"</string>
@@ -1535,7 +1539,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"To view recent apps, swipe up and hold with three fingers on the touchpad"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"To view all your apps, press the action key on your keyboard"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Redacted"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"Unlock to view"</string>
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Unlock to view"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Unlock to view code"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Contextual education"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Use your touchpad to go back"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Swipe left or right using three fingers. Tap to learn more gestures."</string>

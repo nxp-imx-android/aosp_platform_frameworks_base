@@ -156,7 +156,7 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
-import com.android.systemui.scene.shared.model.Scenes;
+import com.android.systemui.scene.shared.model.Overlays;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shared.system.TaskStackChangeListener;
@@ -2925,12 +2925,12 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, Dumpab
     ) {
         SceneContainerFlag.assertInNewMode();
         return isPrimaryBouncerFullyShown(transitionState)
-                || transitionState.isTransitioning(null, Scenes.Bouncer);
+                || transitionState.isTransitioning(null, Overlays.Bouncer);
     }
 
     private boolean isPrimaryBouncerFullyShown(ObservableTransitionState transitionState) {
         SceneContainerFlag.assertInNewMode();
-        return transitionState.isIdle(Scenes.Bouncer);
+        return transitionState.isIdle(Overlays.Bouncer);
     }
 
     /**

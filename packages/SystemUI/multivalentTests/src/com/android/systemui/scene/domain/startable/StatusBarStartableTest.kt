@@ -21,6 +21,7 @@ import android.provider.DeviceConfig
 import android.view.WindowManagerPolicyConstants
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.internal.config.sysui.SystemUiDeviceConfigFlags
 import com.android.internal.statusbar.statusBarService
@@ -40,6 +41,7 @@ import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.power.shared.model.WakefulnessState
 import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.domain.interactor.keyguardOcclusionInteractor
 import com.android.systemui.testKosmos
@@ -246,16 +248,14 @@ class StatusBarStartableTest : SysuiTestCase() {
         }
 
     /** Sets up the state to match what's specified in the given [preconditions]. */
-    private fun TestScope.setUpWith(
-        preconditions: Preconditions,
-    ) {
+    private fun TestScope.setUpWith(preconditions: Preconditions) {
         if (!preconditions.isKeyguardShowing) {
             kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
                 SuccessFingerprintAuthenticationStatus(0, true)
             )
         }
         if (preconditions.isForceHideHomeAndRecents) {
-            whenIdle(Scenes.Bouncer)
+            whenIdle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
         } else if (preconditions.isKeyguardShowing) {
             whenIdle(Scenes.Lockscreen)
         } else {
@@ -308,9 +308,12 @@ class StatusBarStartableTest : SysuiTestCase() {
     }
 
     /** Sets up an idle state on the given [on] scene. */
-    private fun whenIdle(on: SceneKey) {
-        kosmos.setSceneTransition(ObservableTransitionState.Idle(on))
+    private fun whenIdle(on: SceneKey, overlays: Set<OverlayKey> = emptySet()) {
+        kosmos.setSceneTransition(ObservableTransitionState.Idle(on, overlays))
         kosmos.sceneInteractor.changeScene(on, "")
+        for (overlay in overlays) {
+            kosmos.sceneInteractor.showOverlay(overlay, "")
+        }
     }
 
     data class Preconditions(
@@ -350,11 +353,7 @@ class StatusBarStartableTest : SysuiTestCase() {
         }
     }
 
-    data class TestSpec(
-        val id: Int,
-        val expectedFlags: Int,
-        val preconditions: Preconditions,
-    ) {
+    data class TestSpec(val id: Int, val expectedFlags: Int, val preconditions: Preconditions) {
         override fun toString(): String {
             return "id=$id, expected=$expectedFlags, preconditions=$preconditions"
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,19 +29,19 @@ import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.bouncer.ui.BouncerDialogFactory
-import com.android.systemui.bouncer.ui.viewmodel.BouncerSceneContentViewModel
+import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.bouncer.ui.viewmodel.BouncerUserActionsViewModel
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.scene.ui.composable.Scene
+import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.scene.ui.composable.Overlay
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
 object Bouncer {
     object Elements {
+        val Root = ElementKey("BouncerRoot")
         val Background = ElementKey("BouncerBackground")
         val Content = ElementKey("BouncerContent")
     }
@@ -51,16 +51,16 @@ object Bouncer {
     }
 }
 
-/** The bouncer scene displays authentication challenges like PIN, password, or pattern. */
+/** The bouncer overlay displays authentication challenges like PIN, password, or pattern. */
 @SysUISingleton
-class BouncerScene
+class BouncerOverlay
 @Inject
 constructor(
     private val actionsViewModelFactory: BouncerUserActionsViewModel.Factory,
-    private val contentViewModelFactory: BouncerSceneContentViewModel.Factory,
+    private val contentViewModelFactory: BouncerOverlayContentViewModel.Factory,
     private val dialogFactory: BouncerDialogFactory,
-) : ExclusiveActivatable(), Scene {
-    override val key = Scenes.Bouncer
+) : Overlay {
+    override val key = Overlays.Bouncer
 
     private val actionsViewModel: BouncerUserActionsViewModel by lazy {
         actionsViewModelFactory.create()
@@ -68,22 +68,22 @@ constructor(
 
     override val userActions: Flow<Map<UserAction, UserActionResult>> = actionsViewModel.actions
 
-    override suspend fun onActivated(): Nothing {
+    override suspend fun activate(): Nothing {
         actionsViewModel.activate()
     }
 
     @Composable
     override fun ContentScope.Content(modifier: Modifier) =
-        BouncerScene(
-            viewModel = rememberViewModel("BouncerScene") { contentViewModelFactory.create() },
+        BouncerOverlay(
+            viewModel = rememberViewModel("BouncerOverlay") { contentViewModelFactory.create() },
             dialogFactory = dialogFactory,
-            modifier = modifier,
+            modifier = modifier.element(Bouncer.Elements.Root),
         )
 }
 
 @Composable
-private fun ContentScope.BouncerScene(
-    viewModel: BouncerSceneContentViewModel,
+private fun ContentScope.BouncerOverlay(
+    viewModel: BouncerOverlayContentViewModel,
     dialogFactory: BouncerDialogFactory,
     modifier: Modifier = Modifier,
 ) {

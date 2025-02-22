@@ -17,6 +17,7 @@
 package com.android.systemui.volume.dialog.settings.ui.viewmodel
 
 import android.content.applicationContext
+import com.android.internal.logging.uiEventLogger
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testScope
@@ -33,5 +34,6 @@ val Kosmos.volumeDialogSettingsButtonViewModel by
             mediaOutputInteractor,
             mediaDeviceSessionInteractor,
             volumeDialogSettingsButtonInteractor,
+            uiEventLogger,
         )
     }

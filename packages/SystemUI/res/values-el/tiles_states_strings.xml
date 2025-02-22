@@ -47,7 +47,7 @@
     <item msgid="287997784730044767">"Ενεργό"</item>
   </string-array>
   <string-array name="tile_states_battery">
-    <item msgid="6311253873330062961">"Μη διαθέσιμο"</item>
+    <item msgid="6311253873330062961">"Μη διαθέσιμη"</item>
     <item msgid="7838121007534579872">"Ανενεργό"</item>
     <item msgid="1578872232501319194">"Ενεργό"</item>
   </string-array>
@@ -118,7 +118,7 @@
   </string-array>
   <string-array name="tile_states_night">
     <item msgid="7857498964264855466">"Μη διαθέσιμο"</item>
-    <item msgid="2744885441164350155">"Ανενεργό"</item>
+    <item msgid="2744885441164350155">"Ανενεργός"</item>
     <item msgid="151121227514952197">"Ενεργό"</item>
   </string-array>
   <string-array name="tile_states_screenrecord">
@@ -196,7 +196,9 @@
     <item msgid="6419996398343291862">"Ανενεργό"</item>
     <item msgid="5908720590832378783">"Ενεργό"</item>
   </string-array>
-    <!-- no translation found for tile_states_desktopeffects:0 (6253480000354287321) -->
-    <!-- no translation found for tile_states_desktopeffects:1 (6641673879029894995) -->
-    <!-- no translation found for tile_states_desktopeffects:2 (5806682401126108403) -->
+  <string-array name="tile_states_desktopeffects">
+    <item msgid="6253480000354287321">"Μη διαθέσιμο"</item>
+    <item msgid="6641673879029894995">"Ανενεργό"</item>
+    <item msgid="5806682401126108403">"Ενεργό"</item>
+  </string-array>
 </resources>

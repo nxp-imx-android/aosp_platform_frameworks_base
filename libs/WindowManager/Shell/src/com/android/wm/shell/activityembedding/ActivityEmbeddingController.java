@@ -40,7 +40,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
@@ -123,9 +122,6 @@ public class ActivityEmbeddingController implements Transitions.TransitionHandle
     }
 
     private boolean shouldAnimateAnimationOptions(@NonNull TransitionInfo info) {
-        if (!Flags.moveAnimationOptionsToChange()) {
-            return shouldAnimateAnimationOptions(info.getAnimationOptions());
-        }
         for (TransitionInfo.Change change : info.getChanges()) {
             if (!shouldAnimateAnimationOptions(change.getAnimationOptions())) {
                 // If any of override animation is not supported, don't animate the transition.

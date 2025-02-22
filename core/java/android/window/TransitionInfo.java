@@ -57,8 +57,6 @@ import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 
-import com.android.window.flags.Flags;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -220,10 +218,6 @@ public final class TransitionInfo implements Parcelable {
     private final ArrayList<Change> mChanges = new ArrayList<>();
     private final ArrayList<Root> mRoots = new ArrayList<>();
 
-    // TODO(b/327332488): Clean-up usages after the flag is fully enabled.
-    @Deprecated
-    private AnimationOptions mOptions;
-
     /** This is only a BEST-EFFORT id used for log correlation. DO NOT USE for any real work! */
     private int mDebugId = -1;
 
@@ -238,7 +232,6 @@ public final class TransitionInfo implements Parcelable {
         mFlags = in.readInt();
         in.readTypedList(mChanges, Change.CREATOR);
         in.readTypedList(mRoots, Root.CREATOR);
-        mOptions = in.readTypedObject(AnimationOptions.CREATOR);
         mDebugId = in.readInt();
         mTrack = in.readInt();
     }
@@ -250,7 +243,6 @@ public final class TransitionInfo implements Parcelable {
         dest.writeInt(mFlags);
         dest.writeTypedList(mChanges);
         dest.writeTypedList(mRoots, flags);
-        dest.writeTypedObject(mOptions, flags);
         dest.writeInt(mDebugId);
         dest.writeInt(mTrack);
     }
@@ -284,18 +276,6 @@ public final class TransitionInfo implements Parcelable {
     /** @see #getRoot */
     public void addRoot(@NonNull Root other) {
         mRoots.add(other);
-    }
-
-    /**
-     * @deprecated Set {@link AnimationOptions} to change. This method is only used if
-     * {@link Flags#FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE} is disabled.
-     */
-    @Deprecated
-    public void setAnimationOptions(@Nullable AnimationOptions options) {
-        if (Flags.moveAnimationOptionsToChange()) {
-            return;
-        }
-        mOptions = options;
     }
 
     public @TransitionType int getType() {
@@ -357,16 +337,6 @@ public final class TransitionInfo implements Parcelable {
                     new Throwable());
         }
         return mRoots.get(0).mLeash;
-    }
-
-    /**
-     * @deprecated Use {@link Change#getAnimationOptions()} instead. This method is called only
-     * if {@link Flags#FLAG_MOVE_ANIMATION_OPTIONS_TO_CHANGE} is disabled.
-     */
-    @Deprecated
-    @Nullable
-    public AnimationOptions getAnimationOptions() {
-        return mOptions;
     }
 
     /**
@@ -455,9 +425,6 @@ public final class TransitionInfo implements Parcelable {
         StringBuilder sb = new StringBuilder();
         sb.append("{id=").append(mDebugId).append(" t=").append(transitTypeToString(mType))
                 .append(" f=0x").append(Integer.toHexString(mFlags)).append(" trk=").append(mTrack);
-        if (mOptions != null) {
-            sb.append(" opt=").append(mOptions);
-        }
         sb.append(" r=[");
         for (int i = 0; i < mRoots.size(); ++i) {
             if (i > 0) {
@@ -656,8 +623,6 @@ public final class TransitionInfo implements Parcelable {
         for (int i = 0; i < mRoots.size(); ++i) {
             out.mRoots.add(mRoots.get(i).localRemoteCopy());
         }
-        // Doesn't have any native stuff, so no need for actual copy
-        out.mOptions = mOptions;
         return out;
     }
 
@@ -860,9 +825,6 @@ public final class TransitionInfo implements Parcelable {
          * Sets {@link AnimationOptions} to override animation.
          */
         public void setAnimationOptions(@Nullable AnimationOptions options) {
-            if (!Flags.moveAnimationOptionsToChange()) {
-                return;
-            }
             mAnimationOptions = options;
         }
 

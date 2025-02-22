@@ -86,6 +86,7 @@ import java.lang.annotation.RetentionPolicy;
  * for these functions cancels out and does not affect the result, so other bases may be used
  * if preferred.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class Gainmap implements Parcelable {
 
     /** @hide */

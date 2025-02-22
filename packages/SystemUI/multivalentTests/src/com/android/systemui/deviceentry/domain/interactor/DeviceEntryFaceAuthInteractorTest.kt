@@ -55,6 +55,7 @@ import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.se
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.SelectionStatus
@@ -298,9 +299,12 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
         testScope.runTest {
             underTest.start()
 
-            kosmos.sceneInteractor.changeScene(Scenes.Bouncer, "for-test")
+            kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "for-test")
+            kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "for-test")
             kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow(ObservableTransitionState.Idle(Scenes.Bouncer))
+                MutableStateFlow(
+                    ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
+                )
             )
 
             runCurrent()

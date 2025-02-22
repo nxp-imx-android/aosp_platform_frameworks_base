@@ -26,7 +26,6 @@ import android.view.KeyEvent.KEYCODE_NUMPAD_0
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
@@ -42,7 +41,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
-import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.testKosmos
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.common.truth.Truth.assertThat
@@ -181,7 +180,7 @@ class PinBouncerViewModelTest : SysuiTestCase() {
     @Test
     fun onBackspaceButtonLongPressed() =
         testScope.runTest {
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             val pin by collectLastValue(underTest.pinInput.map { it.getPin() })
             lockDeviceAndOpenPinBouncer()
 
@@ -194,7 +193,7 @@ class PinBouncerViewModelTest : SysuiTestCase() {
             underTest.onBackspaceButtonLongPressed()
 
             assertThat(pin).isEmpty()
-            assertThat(currentScene).isEqualTo(Scenes.Bouncer)
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
         }
 
     @Test
@@ -213,7 +212,7 @@ class PinBouncerViewModelTest : SysuiTestCase() {
     @Test
     fun onAuthenticateButtonClicked_whenWrong() =
         testScope.runTest {
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             val pin by collectLastValue(underTest.pinInput.map { it.getPin() })
             lockDeviceAndOpenPinBouncer()
 
@@ -226,7 +225,7 @@ class PinBouncerViewModelTest : SysuiTestCase() {
             underTest.onAuthenticateButtonClicked()
 
             assertThat(pin).isEmpty()
-            assertThat(currentScene).isEqualTo(Scenes.Bouncer)
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
         }
 
     @Test
@@ -281,7 +280,7 @@ class PinBouncerViewModelTest : SysuiTestCase() {
             val autoConfirmEnabled by
                 collectLastValue(authenticationInteractor.isAutoConfirmEnabled)
 
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             val pin by collectLastValue(underTest.pinInput.map { it.getPin() })
             kosmos.fakeAuthenticationRepository.setAutoConfirmFeatureEnabled(true)
 
@@ -296,7 +295,7 @@ class PinBouncerViewModelTest : SysuiTestCase() {
             ) // PIN is now wrong!
 
             assertThat(pin).isEmpty()
-            assertThat(currentScene).isEqualTo(Scenes.Bouncer)
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
         }
 
     @Test
@@ -310,10 +309,10 @@ class PinBouncerViewModelTest : SysuiTestCase() {
             assertThat(pin).isNotEmpty()
 
             // The user doesn't confirm the PIN, but navigates back to the lockscreen instead.
-            switchToScene(Scenes.Lockscreen)
+            hideBouncer()
 
             // The user navigates to the bouncer again.
-            switchToScene(Scenes.Bouncer)
+            showBouncer()
 
             // Ensure the previously-entered PIN is not shown.
             assertThat(pin).isEmpty()
@@ -527,19 +526,26 @@ class PinBouncerViewModelTest : SysuiTestCase() {
         assertThat(msdlPlayer.latestPropertiesPlayed).isNull()
     }
 
-    private fun TestScope.switchToScene(toScene: SceneKey) {
-        val currentScene by collectLastValue(sceneInteractor.currentScene)
-        val bouncerHidden = currentScene == Scenes.Bouncer && toScene != Scenes.Bouncer
-        sceneInteractor.changeScene(toScene, "reason")
-        if (bouncerHidden) underTest.onHidden()
+    private fun TestScope.showBouncer() {
+        val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+        sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
         runCurrent()
 
-        assertThat(currentScene).isEqualTo(toScene)
+        assertThat(currentOverlays).contains(Overlays.Bouncer)
+    }
+
+    private fun TestScope.hideBouncer() {
+        val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+        sceneInteractor.hideOverlay(Overlays.Bouncer, "reason")
+        underTest.onHidden()
+        runCurrent()
+
+        assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
     }
 
     private fun TestScope.lockDeviceAndOpenPinBouncer() {
         kosmos.fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
-        switchToScene(Scenes.Bouncer)
+        showBouncer()
     }
 
     companion object {

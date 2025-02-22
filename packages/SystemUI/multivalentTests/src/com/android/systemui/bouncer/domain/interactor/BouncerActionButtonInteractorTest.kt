@@ -33,6 +33,7 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
@@ -94,7 +95,8 @@ class BouncerActionButtonInteractorTest : SysuiTestCase() {
 
         kosmos.telecomManager = telecomManager
 
-        kosmos.sceneInteractor.changeScene(Scenes.Bouncer, "")
+        kosmos.sceneInteractor.changeScene(Scenes.Lockscreen, "")
+        kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "")
     }
 
     @Test

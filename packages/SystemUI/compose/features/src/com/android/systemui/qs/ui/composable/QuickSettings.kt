@@ -135,7 +135,8 @@ private fun ContentScope.stateForQuickSettingsContent(
                 }
             }
         is TransitionState.Transition.OverlayTransition ->
-            error("Bad transition for QuickSettings scene: overlays not supported")
+            // Currently, no overlays use this QS impl, so we should make sure it's closed.
+            QSSceneAdapter.State.CLOSED
     }
 }
 

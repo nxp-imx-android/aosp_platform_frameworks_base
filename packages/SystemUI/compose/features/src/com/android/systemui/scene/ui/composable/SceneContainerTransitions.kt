@@ -1,5 +1,6 @@
 package com.android.systemui.scene.ui.composable
 
+import com.android.compose.animation.scene.DefaultInterruptionHandler
 import com.android.compose.animation.scene.SceneTransitions
 import com.android.compose.animation.scene.TransitionKey
 import com.android.compose.animation.scene.reveal.ContainerRevealHaptics
@@ -29,6 +30,7 @@ import com.android.systemui.scene.ui.composable.transitions.lockscreenToQuickSet
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToSplitShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.shadeToQuickSettingsTransition
+import com.android.systemui.scene.ui.composable.transitions.toBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.toNotificationsShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.toQuickSettingsShadeTransition
 import com.android.systemui.shade.ui.composable.Shade
@@ -48,12 +50,10 @@ import com.android.systemui.shade.ui.composable.Shade
 class SceneContainerTransitions : SceneContainerTransitionsBuilder {
     override fun build(revealHaptics: ContainerRevealHaptics): SceneTransitions {
         return transitions {
-            interruptionHandler = SceneContainerInterruptionHandler
+            interruptionHandler = DefaultInterruptionHandler
 
             // Scene transitions
 
-            from(Scenes.Bouncer, to = Scenes.Gone) { bouncerToGoneTransition() }
-            from(Scenes.Dream, to = Scenes.Bouncer) { dreamToBouncerTransition() }
             from(Scenes.Dream, to = Scenes.Communal) { dreamToCommunalTransition() }
             from(Scenes.Dream, to = Scenes.Gone) { dreamToGoneTransition() }
             from(
@@ -102,15 +102,6 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 goneToQuickSettingsTransition(durationScale = 0.9)
             }
 
-            from(Scenes.Lockscreen, to = Scenes.Bouncer) { lockscreenToBouncerTransition() }
-            from(
-                Scenes.Lockscreen,
-                to = Scenes.Bouncer,
-                key = TransitionKey.PredictiveBack,
-                reversePreview = { bouncerToLockscreenPreview() },
-            ) {
-                lockscreenToBouncerTransition()
-            }
             from(Scenes.Lockscreen, to = Scenes.Communal) { lockscreenToCommunalTransition() }
             from(Scenes.Lockscreen, to = Scenes.Dream) { lockscreenToDreamTransition() }
             from(
@@ -190,10 +181,22 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             ) {
                 communalToShadeTransition()
             }
-            from(Scenes.Communal, to = Scenes.Bouncer) { communalToBouncerTransition() }
 
             // Overlay transitions
 
+            to(Overlays.Bouncer) { toBouncerTransition() }
+            from(Overlays.Bouncer, to = Scenes.Gone) { bouncerToGoneTransition() }
+            from(Scenes.Dream, to = Overlays.Bouncer) { dreamToBouncerTransition() }
+            from(Scenes.Lockscreen, to = Overlays.Bouncer) { lockscreenToBouncerTransition() }
+            from(
+                Scenes.Lockscreen,
+                to = Overlays.Bouncer,
+                key = TransitionKey.PredictiveBack,
+                reversePreview = { bouncerToLockscreenPreview() },
+            ) {
+                lockscreenToBouncerTransition()
+            }
+            from(Scenes.Communal, to = Overlays.Bouncer) { communalToBouncerTransition() }
             to(
                 Overlays.NotificationsShade,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE, // NOTYPO

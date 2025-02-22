@@ -705,8 +705,7 @@ class SplitPresenter extends JetpackTaskFragmentOrganizer {
     }
 
     private static boolean isOverlayTransitionSupported() {
-        return Flags.moveAnimationOptionsToChange()
-                && Flags.activityEmbeddingOverlayPresentationFlag();
+        return Flags.activityEmbeddingOverlayPresentationFlag();
     }
 
     @NonNull

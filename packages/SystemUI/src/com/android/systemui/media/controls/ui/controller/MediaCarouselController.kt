@@ -683,7 +683,7 @@ constructor(
     internal fun listenForAnyStateToGoneKeyguardTransition(scope: CoroutineScope): Job {
         return scope.launch {
             keyguardTransitionInteractor
-                .isFinishedIn(scene = Scenes.Gone, stateWithoutSceneContainer = GONE)
+                .isFinishedIn(content = Scenes.Gone, stateWithoutSceneContainer = GONE)
                 .filter { it }
                 .collect {
                     showMediaCarousel()

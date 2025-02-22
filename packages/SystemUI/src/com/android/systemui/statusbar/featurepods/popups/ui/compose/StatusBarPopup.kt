@@ -28,7 +28,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.featurepods.media.ui.compose.MediaControlPopup
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
 
@@ -37,7 +39,7 @@ import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipM
  * status bar.
  */
 @Composable
-fun StatusBarPopup(viewModel: PopupChipModel.Shown) {
+fun StatusBarPopup(viewModel: PopupChipModel.Shown, mediaHost: MediaHost) {
     val density = Density(LocalContext.current)
     Popup(
         properties =
@@ -56,7 +58,7 @@ fun StatusBarPopup(viewModel: PopupChipModel.Shown) {
         Box(modifier = Modifier.padding(8.dp).wrapContentSize()) {
             when (viewModel.chipId) {
                 is PopupChipId.MediaControl -> {
-                    // TODO(b/385202114): Populate MediaControlPopup contents.
+                    MediaControlPopup(mediaHost = mediaHost)
                 }
             }
             // Future popup types will be handled here.

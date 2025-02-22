@@ -53,15 +53,13 @@ class SceneBackInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
-    fun navigateToQs_thenBouncer_thenBack_whileLocked() =
+    fun navigateToQs_thenBack_whileLocked() =
         testScope.runTest {
             sceneContainerStartable.start()
 
             assertRoute(
                 RouteNode(Scenes.Lockscreen, null),
                 RouteNode(Scenes.Shade, Scenes.Lockscreen),
-                RouteNode(Scenes.QuickSettings, Scenes.Shade),
-                RouteNode(Scenes.Bouncer, Scenes.QuickSettings),
                 RouteNode(Scenes.QuickSettings, Scenes.Shade),
                 RouteNode(Scenes.Shade, Scenes.Lockscreen),
                 RouteNode(Scenes.Lockscreen, null),
@@ -70,29 +68,26 @@ class SceneBackInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
-    fun navigateToQs_thenBouncer_thenUnlock() =
+    fun navigateToQs_thenUnlock() =
         testScope.runTest {
             sceneContainerStartable.start()
 
             assertRoute(
                 RouteNode(Scenes.Lockscreen, null),
                 RouteNode(Scenes.Shade, Scenes.Lockscreen),
-                RouteNode(Scenes.QuickSettings, Scenes.Shade),
-                RouteNode(Scenes.Bouncer, Scenes.QuickSettings, unlockDevice = true),
+                RouteNode(Scenes.QuickSettings, Scenes.Shade, unlockDevice = true),
                 RouteNode(Scenes.Gone, null),
             )
         }
 
     @Test
     @EnableSceneContainer
-    fun navigateToQs_skippingShade_thenBouncer_thenBack_whileLocked() =
+    fun navigateToQs_skippingShade_thenBack_whileLocked() =
         testScope.runTest {
             sceneContainerStartable.start()
 
             assertRoute(
                 RouteNode(Scenes.Lockscreen, null),
-                RouteNode(Scenes.QuickSettings, Scenes.Lockscreen),
-                RouteNode(Scenes.Bouncer, Scenes.QuickSettings),
                 RouteNode(Scenes.QuickSettings, Scenes.Lockscreen),
                 RouteNode(Scenes.Lockscreen, null),
             )
@@ -100,27 +95,12 @@ class SceneBackInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
-    fun navigateToBouncer_thenBack_whileLocked() =
+    fun navigateToQs_skippingShade_thenBack_thenShade_whileLocked() =
         testScope.runTest {
             sceneContainerStartable.start()
 
             assertRoute(
                 RouteNode(Scenes.Lockscreen, null),
-                RouteNode(Scenes.Bouncer, Scenes.Lockscreen),
-                RouteNode(Scenes.Lockscreen, null),
-            )
-        }
-
-    @Test
-    @EnableSceneContainer
-    fun navigateToQs_skippingShade_thenBouncer_thenBack_thenShade_whileLocked() =
-        testScope.runTest {
-            sceneContainerStartable.start()
-
-            assertRoute(
-                RouteNode(Scenes.Lockscreen, null),
-                RouteNode(Scenes.QuickSettings, Scenes.Lockscreen),
-                RouteNode(Scenes.Bouncer, Scenes.QuickSettings),
                 RouteNode(Scenes.QuickSettings, Scenes.Lockscreen),
                 RouteNode(Scenes.Lockscreen, null),
                 RouteNode(Scenes.Shade, Scenes.Lockscreen),
@@ -178,9 +158,8 @@ class SceneBackInteractorTest : SysuiTestCase() {
         testScope.runTest {
             underTest.onSceneChange(from = Scenes.Lockscreen, to = Scenes.Shade)
             underTest.onSceneChange(from = Scenes.Shade, to = Scenes.QuickSettings)
-            underTest.onSceneChange(from = Scenes.QuickSettings, to = Scenes.Bouncer)
             assertThat(underTest.backStack.value.asIterable().toList())
-                .isEqualTo(listOf(Scenes.QuickSettings, Scenes.Shade, Scenes.Lockscreen))
+                .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
 
             underTest.updateBackStack { stack ->
                 // Reverse the stack, just to see if it can be done:
@@ -188,7 +167,7 @@ class SceneBackInteractorTest : SysuiTestCase() {
             }
 
             assertThat(underTest.backStack.value.asIterable().toList())
-                .isEqualTo(listOf(Scenes.Lockscreen, Scenes.Shade, Scenes.QuickSettings))
+                .isEqualTo(listOf(Scenes.Lockscreen, Scenes.Shade))
         }
 
     private suspend fun TestScope.assertRoute(vararg route: RouteNode) {

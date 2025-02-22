@@ -118,7 +118,6 @@ import android.service.wallpaper.WallpaperService;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.text.TextUtils;
-import android.util.ArraySet;
 import android.util.EventLog;
 import android.util.IntArray;
 import android.util.Slog;
@@ -161,7 +160,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -743,10 +741,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
     final WallpaperDisplayHelper mWallpaperDisplayHelper;
     final WallpaperCropper mWallpaperCropper;
 
-    // TODO(b/384519749): Remove this set after we introduce the aspect ratio check.
-    private final Set<Integer> mWallpaperCompatibleDisplaysForTest = new ArraySet<>();
-
-    private boolean isWallpaperCompatibleForDisplay(int displayId, WallpaperConnection connection) {
+    @VisibleForTesting
+    boolean isWallpaperCompatibleForDisplay(int displayId, WallpaperConnection connection) {
         if (connection == null) {
             return false;
         }
@@ -757,24 +753,12 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
 
         // Image wallpaper
         if (isDeviceEligibleForDesktopExperienceWallpaper(mContext)) {
-            // TODO(b/384519749): check display's resolution and image wallpaper cropped image
-            //  aspect ratio.
-            return displayId == DEFAULT_DISPLAY
-                    || mWallpaperCompatibleDisplaysForTest.contains(displayId);
+            return mWallpaperCropper.isWallpaperCompatibleForDisplay(displayId,
+                    connection.mWallpaper);
         }
         // When enableConnectedDisplaysWallpaper is off, we assume the image wallpaper supports all
         // usable displays.
         return true;
-    }
-
-    @VisibleForTesting
-    void addWallpaperCompatibleDisplayForTest(int displayId) {
-        mWallpaperCompatibleDisplaysForTest.add(displayId);
-    }
-
-    @VisibleForTesting
-    void removeWallpaperCompatibleDisplayForTest(int displayId) {
-        mWallpaperCompatibleDisplaysForTest.remove(displayId);
     }
 
     private void updateFallbackConnection(int clientUid) {
@@ -844,7 +828,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     // `which` flag.
                     DisplayConnector fallbackConnector =
                             mFallbackWallpaper.connection.getDisplayConnectorOrCreate(displayId);
-                    if (fallbackConnector != null && fallbackConnector.mEngine != null) {
+                    if (fallbackConnector != null) {
                         fallbackConnector.mWhich = which;
                         fallbackConnector.connectLocked(mFallbackWallpaper.connection,
                                 mFallbackWallpaper);

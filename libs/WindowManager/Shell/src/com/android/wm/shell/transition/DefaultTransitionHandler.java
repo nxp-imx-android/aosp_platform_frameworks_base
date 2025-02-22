@@ -539,7 +539,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                     cornerRadius = 0;
                 }
 
-                backgroundColorForTransition = getTransitionBackgroundColorIfSet(info, change, a,
+                backgroundColorForTransition = getTransitionBackgroundColorIfSet(change, a,
                         backgroundColorForTransition);
 
                 if (!isTask && a.getExtensionEdges() != 0x0) {
@@ -606,12 +606,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                         mTransactionPool, mMainExecutor, animRelOffset, cornerRadius,
                         clipRect);
 
-                final TransitionInfo.AnimationOptions options;
-                if (Flags.moveAnimationOptionsToChange()) {
-                    options = change.getAnimationOptions();
-                } else {
-                    options = info.getAnimationOptions();
-                }
+                final TransitionInfo.AnimationOptions options = change.getAnimationOptions();
                 if (options != null) {
                     attachThumbnail(animations, onAnimFinish, change, options, cornerRadius);
                 }
@@ -834,12 +829,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         final boolean isOpeningType = TransitionUtil.isOpeningType(type);
         final boolean enter = TransitionUtil.isOpeningType(changeMode);
         final boolean isTask = change.getTaskInfo() != null;
-        final TransitionInfo.AnimationOptions options;
-        if (Flags.moveAnimationOptionsToChange()) {
-            options = change.getAnimationOptions();
-        } else {
-            options = info.getAnimationOptions();
-        }
+        final TransitionInfo.AnimationOptions options = change.getAnimationOptions();
         final int overrideType = options != null ? options.getType() : ANIM_NONE;
         final int userId = options != null ? options.getUserId() : UserHandle.USER_CURRENT;
         final Rect endBounds = TransitionUtil.isClosingType(changeMode)

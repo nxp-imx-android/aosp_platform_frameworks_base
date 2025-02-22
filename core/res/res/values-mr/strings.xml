@@ -353,14 +353,10 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"आपल्‍या महत्त्वाच्या मापनांविषयी सेन्सर डेटा अ‍ॅक्सेस करा"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"सूचना"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"सूचना दाखवा"</string>
-    <!-- no translation found for permgrouplab_xr_tracking (7418994009794287471) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (6777198859446500821) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (1194833982988144536) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (9178027369004805829) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR ट्रॅकिंग डेटा"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"तुमच्याबद्दल आणि तुमच्या सभोवतालच्या वातावरणाबद्दल XR डेटा अ‍ॅक्सेस करा"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"संवेदनशील XR ट्रॅकिंग डेटा"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"संवेदनशील ट्रॅकिंग डेटा अ‍ॅक्सेस करा, जसे की डोळ्यांची हालचाल"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"विंडोमधील आशय पुन्हा मिळवा"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"तुम्ही वापरत असलेल्‍या विंडोमधील आशय तपासा."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"स्पर्श करून अन्वेषण सुरू करा"</string>
@@ -656,38 +652,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"ॲपला तुमच्या फोटो संग्रहामध्ये सुधारणा करण्याची अनुमती देते."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"तुमच्या मीडिया संग्रहातून स्थाने वाचा"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"ॲपला तुमच्या मीडिया संग्रहामध्येील स्थाने वाचण्यासाठी अनुमती देते."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (7989596289790269059) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (870510233930553355) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6914457357027049512) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (5788889152304524730) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (2272048395128283324) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (2622783922311211866) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (6478233866595566940) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8639715900104966456) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (1309731456372087270) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (231597390513699188) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (6518646430502858641) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (4508880777646198656) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (409126403264393251) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (6223368011593524179) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (7117098718465619023) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (939504041387836853) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"तुमच्या डोळ्यांची अंदाजे हालचाल ट्रॅक करा"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"अ‍ॅपला तुमच्या डोळ्यांची अंदाजे हालचाल ट्रॅक करण्याची अनुमती देते."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"तुम्ही कुठे पाहत आहात ते ट्रॅक करा"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"अ‍ॅपला तुमच्या डोळ्यांच्या अचूक हालचालीचा डेटा अ‍ॅक्सेस करण्याची अनुमती देते."</string>
+    <string name="permlab_face_tracking" msgid="2272048395128283324">"तुमचा चेहरा ट्रॅक करा"</string>
+    <string name="permdesc_face_tracking" msgid="2622783922311211866">"अ‍ॅपला फेस ट्रॅकिंग डेटा अ‍ॅक्सेस करण्याची अनुमती देते."</string>
+    <string name="permlab_hand_tracking" msgid="6478233866595566940">"तुमचे हात ट्रॅक करा"</string>
+    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"अ‍ॅपला हँड ट्रॅकिंग डेटा अ‍ॅक्सेस करण्याची अनुमती देते."</string>
+    <string name="permlab_head_tracking" msgid="1309731456372087270">"तुमचे डोके ट्रॅक करा"</string>
+    <string name="permdesc_head_tracking" msgid="231597390513699188">"अ‍ॅपला हेड ट्रॅकिंग डेटा अ‍ॅक्सेस करण्याची अनुमती देते."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"तुमच्या आजूबाजूचे वातावरण समजून घ्या"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"तुमच्या सभोवतालच्या वातावरणाबद्दलचा ट्रॅकिंग डेटा अ‍ॅक्सेस करण्यासाठी अ‍ॅपला अनुमती देते."</string>
+    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"तुमच्या आजूबाजूचे वातावरण सविस्तरपणे समजून घ्या"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"अ‍ॅपला तुमच्या सभोवतालच्या वातावरणाबद्दलचा ट्रॅकिंग डेटा अत्यंत तपशिलवार अ‍ॅक्सेस करण्याची अनुमती देते."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"फोरग्राउंडमध्ये नसताना XR डेटा अ‍ॅक्सेस करा"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"फोरग्राउंडमध्ये नसतानाही अ‍ॅपला XR डेटा अ‍ॅक्सेस करण्याची अनुमती देते."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"बायोमेट्रिक वापरा"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"बायोमेट्रिक किंवा स्क्रीन लॉक वापरा"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"हे तुम्हीच आहात याची पडताळणी करा"</string>

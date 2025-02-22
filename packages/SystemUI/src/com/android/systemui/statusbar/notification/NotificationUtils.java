@@ -26,6 +26,7 @@ import com.android.internal.util.ContrastColorUtil;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.ListEntry;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.util.Compile;
 
@@ -80,7 +81,7 @@ public class NotificationUtils {
     private static final boolean INCLUDE_HASH_CODE_IN_LIST_ENTRY_LOG_KEY = false;
 
     /** Get the notification key, reformatted for logging, for the (optional) entry */
-    public static String logKey(ListEntry entry) {
+    public static String logKey(PipelineEntry entry) {
         if (entry == null) {
             return "null";
         }

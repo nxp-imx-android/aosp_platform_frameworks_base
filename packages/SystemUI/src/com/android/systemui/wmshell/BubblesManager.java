@@ -23,6 +23,7 @@ import static android.service.notification.NotificationListenerService.REASON_AP
 import static android.service.notification.NotificationListenerService.REASON_APP_CANCEL_ALL;
 import static android.service.notification.NotificationListenerService.REASON_GROUP_SUMMARY_CANCELED;
 import static android.service.notification.NotificationListenerService.REASON_PACKAGE_BANNED;
+import static android.service.notification.NotificationListenerService.REASON_PACKAGE_CHANGED;
 import static android.service.notification.NotificationStats.DISMISSAL_BUBBLE;
 import static android.service.notification.NotificationStats.DISMISS_SENTIMENT_NEUTRAL;
 
@@ -451,7 +452,8 @@ public class BubblesManager {
             public void onEntryRemoved(NotificationEntry entry,
                     @NotifCollection.CancellationReason int reason) {
                 if (reason == REASON_APP_CANCEL || reason == REASON_APP_CANCEL_ALL
-                        || reason == REASON_PACKAGE_BANNED) {
+                        || reason == REASON_PACKAGE_BANNED
+                        || reason == REASON_PACKAGE_CHANGED) {
                     BubblesManager.this.onEntryRemoved(entry);
                 }
             }

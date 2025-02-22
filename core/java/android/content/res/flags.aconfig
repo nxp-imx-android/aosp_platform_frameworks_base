@@ -76,6 +76,14 @@ flag {
 }
 
 flag {
+    name: "rro_constraints"
+    is_exported: false
+    namespace: "resource_manager"
+    description: "Feature flag for setting constraints for a RRO"
+    bug: "371801644"
+}
+
+flag {
     name: "rro_control_for_android_no_overlayable"
     is_exported: true
     namespace: "resource_manager"

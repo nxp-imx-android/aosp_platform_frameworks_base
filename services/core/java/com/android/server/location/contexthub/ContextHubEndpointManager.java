@@ -17,6 +17,7 @@
 package com.android.server.location.contexthub;
 
 import android.annotation.IntDef;
+import android.annotation.NonNull;
 import android.content.Context;
 import android.hardware.contexthub.ContextHubInfo;
 import android.hardware.contexthub.EndpointInfo;
@@ -240,7 +241,7 @@ import java.util.function.Consumer;
      */
     /* package */ IContextHubEndpoint registerEndpoint(
             HubEndpointInfo pendingEndpointInfo,
-            IContextHubEndpointCallback callback,
+            @NonNull IContextHubEndpointCallback callback,
             String packageName,
             String attributionTag)
             throws RemoteException {

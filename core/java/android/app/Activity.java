@@ -7684,16 +7684,19 @@ public class Activity extends ContextThemeWrapper
     /**
      * Change the desired orientation of this activity. If the activity is currently in the
      * foreground or otherwise impacting the screen orientation, the screen is immediately changed
-     * (possibly causing the activity to be restarted). Otherwise, the requested orientation is used
-     * the next time the activity is visible.
+     * (possibly causing the activity to be restarted). Otherwise, the new orientation is used the
+     * next time the activity is visible.
      *
      * <aside class="note"><b>Note:</b>
      *     <ul>
-     *         <li>Device manufacturers can configure devices to override (ignore) calls to this
-     *             method to improve the layout of orientation-restricted apps.</li>
+     *         <li>To improve the layout of apps on form factors with smallest width >= 600dp, the
+     *             system ignores calls to this method for apps that target Android 16 (API level
+     *             36) or higher.</li>
+     *         <li>Device manufacturers can configure devices to ignore calls to this method to
+     *             improve the layout of orientation-restricted apps.</li>
      *         <li>On devices with Android 16 (API level 36) or higher installed, virtual device
-     *             owners (limited to select trusted and privileged apps) can optimize app layout on
-     *             displays they manage by ignoring calls to this method. See also
+     *             owners (select trusted and privileged apps) can optimize app layout on displays
+     *             they manage by ignoring calls to this method. See also
      *             <a href="https://source.android.com/docs/core/permissions/app-streaming">
      *               Companion app streaming</a>.</li>
      *     </ul>
@@ -7717,17 +7720,20 @@ public class Activity extends ContextThemeWrapper
     }
 
     /**
-     * Return the current requested orientation of the activity. This is either the orientation
-     * requested in the app manifest, or the last requested orientation given to
+     * Returns the current requested orientation of the activity, which is either the orientation
+     * requested in the app manifest or the last orientation given to
      * {@link #setRequestedOrientation(int)}.
      *
      * <aside class="note"><b>Note:</b>
      *     <ul>
+     *         <li>To improve the layout of apps on form factors with smallest width >= 600dp, the
+     *             system ignores calls to this method for apps that target Android 16 (API level
+     *             36) or higher.</li>
      *         <li>Device manufacturers can configure devices to ignore calls to this method to
      *             improve the layout of orientation-restricted apps.</li>
      *         <li>On devices with Android 16 (API level 36) or higher installed, virtual device
-     *             owners (limited to select trusted and privileged apps) can optimize app layout on
-     *             displays they manage by ignoring calls to this method. See also
+     *             owners (select trusted and privileged apps) can optimize app layout on displays
+     *             they manage by ignoring calls to this method. See also
      *             <a href="https://source.android.com/docs/core/permissions/app-streaming">
      *               Companion app streaming</a>.</li>
      *     </ul>

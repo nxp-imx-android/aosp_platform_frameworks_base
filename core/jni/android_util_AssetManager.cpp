@@ -424,6 +424,15 @@ static void NativeSetConfiguration(JNIEnv* env, jclass /*clazz*/, jlong ptr, jin
   assetmanager->SetDefaultLocale(default_locale_int);
 }
 
+static void NativeSetOverlayConstraints(JNIEnv* /*env*/, jclass /*clazz*/, jlong ptr,
+                                        jint displayId, jint deviceId) {
+    ATRACE_NAME("AssetManager::SetDisplayIdAndDeviceId");
+
+    auto assetmanager = LockAndStartAssetManager(ptr);
+    assetmanager->SetOverlayConstraints(static_cast<int32_t>(displayId),
+                                        static_cast<int32_t>(deviceId));
+}
+
 static jobject NativeGetAssignedPackageIdentifiers(JNIEnv* env, jclass /*clazz*/, jlong ptr,
                                                    jboolean includeOverlays,
                                                    jboolean includeLoaders) {
@@ -1554,6 +1563,7 @@ static const JNINativeMethod gAssetManagerMethods[] = {
         {"nativeSetApkAssets", "(J[Landroid/content/res/ApkAssets;ZZ)V", (void*)NativeSetApkAssets},
         {"nativeSetConfiguration", "(JIILjava/lang/String;[Ljava/lang/String;IIIIIIIIIIIIIIIIZ)V",
          (void*)NativeSetConfiguration},
+        {"nativeSetOverlayConstraints", "(JII)V", (void*)NativeSetOverlayConstraints},
         {"nativeGetAssignedPackageIdentifiers", "(JZZ)Landroid/util/SparseArray;",
          (void*)NativeGetAssignedPackageIdentifiers},
 

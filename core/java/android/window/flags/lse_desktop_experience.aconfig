@@ -206,6 +206,13 @@ flag {
 }
 
 flag {
+    name: "enable_camera_compat_for_desktop_windowing_opt_out_api"
+    namespace: "lse_desktop_experience"
+    description: "Introduces a developer API to opt-out of Camera Compat treatment for fixed-orientation apps in desktop windowing mode"
+    bug: "397165621"
+}
+
+flag {
     name: "enable_task_stack_observer_in_shell"
     namespace: "lse_desktop_experience"
     description: "Introduces a new observer in shell to track the task stack."
@@ -787,4 +794,21 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Show recent apps in the taskbar overflow."
     bug: "368119679"
+}
+
+flag {
+    name: "enable_projected_display_desktop_mode"
+    namespace: "lse_desktop_experience"
+    description: "Enable Desktop Mode on Projected Mode devices but constrained to the external display."
+    bug: "384568161"
+}
+
+flag {
+    name: "enable_persisting_density_scale_for_connected_displays"
+    namespace: "lse_desktop_experience"
+    description: "Enables persisting density scale on resolution change for connected displays."
+    bug: "392855657"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

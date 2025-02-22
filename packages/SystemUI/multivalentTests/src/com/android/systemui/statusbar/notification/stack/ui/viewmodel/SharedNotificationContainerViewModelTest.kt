@@ -62,6 +62,8 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.setTransition
+import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableDualShade
@@ -363,6 +365,8 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             assertThat(alpha).isEqualTo(1f)
 
             // Start transitioning to glanceable hub
+            kosmos.sceneInteractor.changeScene(Scenes.Lockscreen, "")
+
             val progress = 0.6f
             kosmos.setTransition(
                 sceneTransition = Transition(from = Scenes.Lockscreen, to = Scenes.Communal),
@@ -396,6 +400,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             assertThat(alpha).isIn(Range.closed(0f, 1f))
 
             // Finish transition to glanceable hub
+            kosmos.sceneInteractor.changeScene(Scenes.Communal, "")
             kosmos.setTransition(
                 sceneTransition = Idle(Scenes.Communal),
                 stateTransition =
@@ -432,6 +437,8 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             assertThat(alpha).isEqualTo(1f)
 
             // Start transitioning to glanceable hub
+            kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "")
+
             val progress = 0.6f
             kosmos.setTransition(
                 sceneTransition = Transition(from = Scenes.Lockscreen, to = Scenes.Communal),
@@ -464,6 +471,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             assertThat(alpha).isEqualTo(0)
 
             // Finish transition to glanceable hub
+            kosmos.sceneInteractor.changeScene(Scenes.Communal, "")
             kosmos.setTransition(
                 sceneTransition = Idle(Scenes.Communal),
                 stateTransition =
@@ -492,6 +500,8 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             assertThat(alpha).isEqualTo(0f)
 
             // Start transitioning to glanceable hub
+            kosmos.sceneInteractor.changeScene(Scenes.Lockscreen, "")
+
             val progress = 0.6f
             kosmos.setTransition(
                 sceneTransition = Transition(from = Scenes.Lockscreen, to = Scenes.Communal),
@@ -524,6 +534,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             assertThat(alpha).isEqualTo(0)
 
             // Finish transition to glanceable hub
+            kosmos.sceneInteractor.changeScene(Scenes.Communal, "")
             kosmos.setTransition(
                 sceneTransition = Idle(Scenes.Communal),
                 stateTransition =
@@ -587,7 +598,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             assertThat(isOnLockscreen).isTrue()
 
             kosmos.setTransition(
-                sceneTransition = Idle(Scenes.Bouncer),
+                sceneTransition = Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer)),
                 stateTransition = TransitionStep(from = LOCKSCREEN, to = PRIMARY_BOUNCER),
             )
             assertThat(isOnLockscreen).isTrue()
@@ -601,7 +612,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             val isOnLockscreen by collectLastValue(underTest.isOnLockscreen)
 
             setTransition(
-                sceneTransition = Idle(Scenes.Bouncer),
+                sceneTransition = Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer)),
                 stateTransition = TransitionStep(from = LOCKSCREEN, to = PRIMARY_BOUNCER),
             )
             assertThat(isOnLockscreen).isTrue()
@@ -659,6 +670,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             assertThat(isOnGlanceableHubWithoutShade).isFalse()
 
             // Move to glanceable hub
+            kosmos.sceneInteractor.changeScene(Scenes.Communal, "")
             kosmos.setTransition(
                 sceneTransition = Idle(Scenes.Communal),
                 stateTransition = TransitionStep(from = LOCKSCREEN, to = GLANCEABLE_HUB),
@@ -681,6 +693,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
             shadeTestUtil.setQsExpansion(0f)
             shadeTestUtil.setLockscreenShadeExpansion(0f)
+            kosmos.sceneInteractor.changeScene(Scenes.Communal, "")
             kosmos.setTransition(
                 sceneTransition = Idle(Scenes.Communal),
                 stateTransition = TransitionStep(from = LOCKSCREEN, to = GLANCEABLE_HUB),

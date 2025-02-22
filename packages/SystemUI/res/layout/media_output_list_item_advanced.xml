@@ -20,7 +20,8 @@
     android:id="@+id/device_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="@dimen/media_output_dialog_margin_horizontal"
+    android:layout_marginHorizontal="@dimen/media_output_dialog_margin_horizontal"
+    android:focusable="true"
     android:baselineAligned="false">
     <FrameLayout
         android:layout_weight="1"
@@ -77,6 +78,7 @@
         </FrameLayout>
 
         <LinearLayout
+            android:id="@+id/text_content"
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_gravity="center_vertical|start"
@@ -86,7 +88,7 @@
             android:layout_marginStart="72dp">
             <TextView
                 android:id="@+id/title"
-                android:importantForAccessibility="no"
+                android:focusable="false"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
@@ -96,6 +98,7 @@
                 android:textSize="16sp"/>
             <TextView
                 android:id="@+id/subtitle"
+                android:focusable="false"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:marqueeRepeatLimit="marquee_forever"
@@ -124,7 +127,6 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
-            android:indeterminate="true"
             android:layout_gravity="end|center"
             android:indeterminateOnly="true"
             android:importantForAccessibility="no"
@@ -135,30 +137,23 @@
         android:layout_width="@dimen/media_output_dialog_item_height"
         android:layout_height="@dimen/media_output_dialog_item_height"
         android:visibility="gone"
-        android:layout_marginBottom="6dp"
         android:layout_marginStart="7dp"
-        android:layout_gravity="end|center"
-        android:gravity="center"
         android:background="@drawable/media_output_item_background_active">
         <CheckBox
             android:id="@+id/check_box"
-            android:focusable="false"
-            android:importantForAccessibility="no"
-            android:layout_gravity="center"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:button="@drawable/media_output_item_check_box"
+            android:foreground="@drawable/media_output_item_check_box"
+            android:foregroundGravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:button="@null"
             android:visibility="gone"
             />
-        <ImageView
-            android:id="@+id/media_output_item_end_click_icon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:focusable="false"
-            android:importantForAccessibility="no"
-            android:layout_gravity="center"
-            android:indeterminate="true"
-            android:indeterminateOnly="true"
+        <ImageButton
+            android:id="@+id/end_area_image_button"
+            android:background="@android:color/transparent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
             android:visibility="gone"/>
     </FrameLayout>
 </LinearLayout>
