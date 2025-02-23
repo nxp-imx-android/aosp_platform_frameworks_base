@@ -5367,6 +5367,9 @@ public class AlarmManagerService extends SystemService {
                         // to do any wakelock or stats tracking, so we have nothing
                         // left to do here but go on to the next thing.
                         mSendFinishCount++;
+                        if (Flags.acquireWakelockBeforeSend()) {
+                            mWakeLock.release();
+                        }
                         return;
                     }
                 } else {
@@ -5404,6 +5407,9 @@ public class AlarmManagerService extends SystemService {
                         // stats management to do.  It threw before we posted the delayed
                         // timeout message, so we're done here.
                         mListenerFinishCount++;
+                        if (Flags.acquireWakelockBeforeSend()) {
+                            mWakeLock.release();
+                        }
                         return;
                     }
                 }

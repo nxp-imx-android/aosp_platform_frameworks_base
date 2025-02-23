@@ -974,6 +974,41 @@ public final class AlarmManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ACQUIRE_WAKELOCK_BEFORE_SEND)
+    public void testWakelockReleasedWhenSendFails() throws Exception {
+        final long triggerTime = mNowElapsedTest + 5000;
+        final PendingIntent alarmPi = getNewMockPendingIntent();
+        setTestAlarm(ELAPSED_REALTIME_WAKEUP, triggerTime, alarmPi);
+
+        doThrow(new PendingIntent.CanceledException("test")).when(alarmPi).send(eq(mMockContext),
+                eq(0), any(Intent.class), any(), any(Handler.class), isNull(), any());
+
+        mNowElapsedTest = mTestTimer.getElapsed();
+        mTestTimer.expire();
+
+        final InOrder inOrder = Mockito.inOrder(mWakeLock);
+        inOrder.verify(mWakeLock).acquire();
+        inOrder.verify(mWakeLock).release();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ACQUIRE_WAKELOCK_BEFORE_SEND)
+    public void testWakelockReleasedOnListenerException() throws Exception {
+        final long triggerTime = mNowElapsedTest + 5000;
+        final IAlarmListener listener = getNewListener(() -> {
+            throw new RuntimeException("test");
+        });
+        setTestAlarmWithListener(ELAPSED_REALTIME_WAKEUP, triggerTime, listener);
+
+        mNowElapsedTest = mTestTimer.getElapsed();
+        mTestTimer.expire();
+
+        final InOrder inOrder = Mockito.inOrder(mWakeLock);
+        inOrder.verify(mWakeLock).acquire();
+        inOrder.verify(mWakeLock).release();
+    }
+
+    @Test
     public void testMinFuturityCoreUid() {
         setDeviceConfigLong(KEY_MIN_FUTURITY, 10L);
         assertEquals(10, mService.mConstants.MIN_FUTURITY);
