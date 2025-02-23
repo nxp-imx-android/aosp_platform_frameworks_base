@@ -16,6 +16,9 @@
 
 package com.android.systemui.securelockdevice.domain.interactor
 
+import com.android.systemui.biometrics.domain.interactor.facePropertyInteractor
+import com.android.systemui.biometrics.domain.interactor.fingerprintPropertyInteractor
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryBiometricSettingsInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -26,6 +29,9 @@ val Kosmos.secureLockDeviceInteractor by
         SecureLockDeviceInteractor(
             applicationScope = applicationCoroutineScope,
             secureLockDeviceRepository = secureLockDeviceRepository,
+            biometricSettingsInteractor = deviceEntryBiometricSettingsInteractor,
             deviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor,
+            fingerprintPropertyInteractor = fingerprintPropertyInteractor,
+            facePropertyInteractor = facePropertyInteractor,
         )
     }

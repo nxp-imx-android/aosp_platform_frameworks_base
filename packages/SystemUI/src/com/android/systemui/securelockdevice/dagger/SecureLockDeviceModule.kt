@@ -16,9 +16,12 @@
 package com.android.systemui.securelockdevice.dagger
 
 import android.security.authenticationpolicy.AuthenticationPolicyManager
+import com.android.systemui.biometrics.domain.interactor.FacePropertyInteractor
+import com.android.systemui.biometrics.domain.interactor.FingerprintPropertyInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBiometricSettingsInteractor
 import com.android.systemui.deviceentry.domain.interactor.SystemUIDeviceEntryFaceAuthInteractor
 import com.android.systemui.keyguard.data.repository.BiometricSettingsRepository
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepository
@@ -52,12 +55,18 @@ interface SecureLockDeviceModule {
         fun providesSecureLockDeviceInteractor(
             @Application applicationScope: CoroutineScope,
             secureLockDeviceRepository: SecureLockDeviceRepository,
+            biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
             deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
+            fingerprintPropertyInteractor: FingerprintPropertyInteractor,
+            facePropertyInteractor: FacePropertyInteractor,
         ): SecureLockDeviceInteractor {
             return SecureLockDeviceInteractor(
                 applicationScope = applicationScope,
                 secureLockDeviceRepository = secureLockDeviceRepository,
+                biometricSettingsInteractor = biometricSettingsInteractor,
                 deviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor,
+                fingerprintPropertyInteractor = fingerprintPropertyInteractor,
+                facePropertyInteractor = facePropertyInteractor,
             )
         }
     }

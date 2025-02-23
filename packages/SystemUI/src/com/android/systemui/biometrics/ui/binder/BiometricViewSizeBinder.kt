@@ -371,7 +371,7 @@ object BiometricViewSizeBinder {
                 }
             } else {
                 lifecycleScope.launch {
-                    viewModel.iconPosition.collect { position ->
+                    viewModel.iconViewModel.iconPosition.collect { position ->
                         if (position != Rect()) {
                             val iconParams =
                                 iconHolderView.layoutParams as ConstraintLayout.LayoutParams
@@ -470,7 +470,7 @@ object BiometricViewSizeBinder {
                 }
 
                 lifecycleScope.launch {
-                    viewModel.iconSize.collect { iconSize ->
+                    viewModel.iconViewModel.iconSize.collect { iconSize ->
                         iconHolderView.layoutParams.width = iconSize.first
                         iconHolderView.layoutParams.height = iconSize.second
                         mediumConstraintSet.constrainWidth(R.id.biometric_icon, iconSize.first)

@@ -32,7 +32,6 @@ import android.hardware.biometrics.PromptContentView
 import android.os.UserHandle
 import android.text.TextPaint
 import android.util.Log
-import android.util.RotationUtils
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.accessibility.AccessibilityManager
@@ -90,7 +89,7 @@ class PromptViewModel
 constructor(
     displayStateInteractor: DisplayStateInteractor,
     private val promptSelectorInteractor: PromptSelectorInteractor,
-    @Application private val context: Context,
+    @Application internal val context: Context,
     deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
     udfpsOverlayInteractor: UdfpsOverlayInteractor,
     biometricStatusInteractor: BiometricStatusInteractor,
@@ -101,6 +100,7 @@ constructor(
     accessibilityManager: AccessibilityManager,
     promptFallbackViewModelFactory: PromptFallbackViewModel.Factory,
     shadeInteractor: ShadeInteractor,
+    biometricAuthIconViewModelFactory: BiometricAuthIconViewModel.Factory,
 ) {
     /** Viewmodel for the fallback view */
     val promptFallbackViewModel = promptFallbackViewModelFactory.create()
@@ -137,106 +137,8 @@ constructor(
             promptViewModel = this,
         )
 
-    /** Layout params for fingerprint iconView */
-    val fingerprintIconWidth: Int =
-        context.resources.getDimensionPixelSize(R.dimen.biometric_dialog_fingerprint_icon_width)
-    val fingerprintIconHeight: Int =
-        context.resources.getDimensionPixelSize(R.dimen.biometric_dialog_fingerprint_icon_height)
-
-    /** Layout params for face iconView */
-    val faceIconWidth: Int =
-        context.resources.getDimensionPixelSize(R.dimen.biometric_dialog_face_icon_size)
-    val faceIconHeight: Int =
-        context.resources.getDimensionPixelSize(R.dimen.biometric_dialog_face_icon_size)
-
-    /** Padding for placing icons */
-    val portraitSmallBottomPadding =
-        context.resources.getDimensionPixelSize(
-            R.dimen.biometric_prompt_portrait_small_bottom_padding
-        )
-    val portraitMediumBottomPadding =
-        context.resources.getDimensionPixelSize(
-            R.dimen.biometric_prompt_portrait_medium_bottom_padding
-        )
-    val portraitLargeScreenBottomPadding =
-        context.resources.getDimensionPixelSize(
-            R.dimen.biometric_prompt_portrait_large_screen_bottom_padding
-        )
-    val landscapeSmallBottomPadding =
-        context.resources.getDimensionPixelSize(
-            R.dimen.biometric_prompt_landscape_small_bottom_padding
-        )
-    val landscapeSmallHorizontalPadding =
-        context.resources.getDimensionPixelSize(
-            R.dimen.biometric_prompt_landscape_small_horizontal_padding
-        )
-    val landscapeMediumBottomPadding =
-        context.resources.getDimensionPixelSize(
-            R.dimen.biometric_prompt_landscape_medium_bottom_padding
-        )
-    val landscapeMediumHorizontalPadding =
-        context.resources.getDimensionPixelSize(
-            R.dimen.biometric_prompt_landscape_medium_horizontal_padding
-        )
-
     val udfpsOverlayParams: StateFlow<UdfpsOverlayParams> =
         udfpsOverlayInteractor.udfpsOverlayParams
-
-    private val udfpsSensorBounds: Flow<Rect> =
-        combine(udfpsOverlayParams, displayStateInteractor.currentRotation) { params, rotation ->
-                val rotatedBounds = Rect(params.sensorBounds)
-                RotationUtils.rotateBounds(
-                    rotatedBounds,
-                    params.naturalDisplayWidth,
-                    params.naturalDisplayHeight,
-                    rotation.ordinal,
-                )
-                Rect(
-                    rotatedBounds.left,
-                    rotatedBounds.top,
-                    params.logicalDisplayWidth - rotatedBounds.right,
-                    params.logicalDisplayHeight - rotatedBounds.bottom,
-                )
-            }
-            .distinctUntilChanged()
-
-    private val udfpsSensorWidth: Flow<Int> = udfpsOverlayParams.map { it.sensorBounds.width() }
-    private val udfpsSensorHeight: Flow<Int> = udfpsOverlayParams.map { it.sensorBounds.height() }
-
-    val legacyFingerprintSensorWidth: Flow<Int> =
-        combine(modalities, udfpsSensorWidth) { modalities, udfpsSensorWidth ->
-            if (modalities.hasUdfps) {
-                udfpsSensorWidth
-            } else {
-                fingerprintIconWidth
-            }
-        }
-
-    val legacyFingerprintSensorHeight: Flow<Int> =
-        combine(modalities, udfpsSensorHeight) { modalities, udfpsSensorHeight ->
-            if (modalities.hasUdfps) {
-                udfpsSensorHeight
-            } else {
-                fingerprintIconHeight
-            }
-        }
-
-    private val _isAuthenticating: MutableStateFlow<Boolean> = MutableStateFlow(false)
-
-    /** If the user is currently authenticating (i.e. at least one biometric is scanning). */
-    val isAuthenticating: Flow<Boolean> = _isAuthenticating.asStateFlow()
-
-    private val _isAuthenticated: MutableStateFlow<PromptAuthState> =
-        MutableStateFlow(PromptAuthState(false))
-
-    /** If the user has successfully authenticated and confirmed (when explicitly required). */
-    val isAuthenticated: Flow<PromptAuthState> = _isAuthenticated.asStateFlow()
-
-    /** If the auth is pending confirmation. */
-    val isPendingConfirmation: Flow<Boolean> =
-        isAuthenticated.map { authState ->
-            authState.isAuthenticated && authState.needsUserConfirmation
-        }
 
     private val _isOverlayTouched: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -268,8 +170,25 @@ constructor(
     /** A message to show the user, if there is an error, hint, or help to show. */
     val message: Flow<PromptMessage> = _message.asStateFlow()
 
+    private val _isAuthenticating: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    /** If the user is currently authenticating (i.e. at least one biometric is scanning). */
+    val isAuthenticating: Flow<Boolean> = _isAuthenticating.asStateFlow()
+
     /** Whether an error message is currently being shown. */
     val showingError: Flow<Boolean> = message.map { it.isError }.distinctUntilChanged()
+
+    private val _isAuthenticated: MutableStateFlow<PromptAuthState> =
+        MutableStateFlow(PromptAuthState(false))
+
+    /** If the user has successfully authenticated and confirmed (when explicitly required). */
+    val isAuthenticated: Flow<PromptAuthState> = _isAuthenticated.asStateFlow()
+
+    /** If the auth is pending confirmation. */
+    val isPendingConfirmation: Flow<Boolean> =
+        isAuthenticated.map { authState ->
+            authState.isAuthenticated && authState.needsUserConfirmation
+        }
 
     private val isRetrySupported: Flow<Boolean> = modalities.map { it.hasFace }
 
@@ -384,65 +303,6 @@ constructor(
             R.dimen.biometric_prompt_two_pane_medium_horizontal_guideline_padding
         )
 
-    /** Rect for positioning biometric icon */
-    val iconPosition: Flow<Rect> =
-        combine(udfpsSensorBounds, size, position, modalities) {
-                sensorBounds,
-                size,
-                position,
-                modalities ->
-                when (position) {
-                    PromptPosition.Bottom ->
-                        if (size.isSmall) {
-                            Rect(0, 0, 0, portraitSmallBottomPadding)
-                        } else if (size.isMedium && modalities.hasUdfps) {
-                            Rect(0, 0, 0, sensorBounds.bottom)
-                        } else if (size.isMedium) {
-                            Rect(0, 0, 0, portraitMediumBottomPadding)
-                        } else {
-                            // Large screen
-                            Rect(0, 0, 0, portraitLargeScreenBottomPadding)
-                        }
-                    PromptPosition.Right ->
-                        if (size.isSmall || modalities.hasFaceOnly) {
-                            Rect(0, 0, landscapeSmallHorizontalPadding, landscapeSmallBottomPadding)
-                        } else if (size.isMedium && modalities.hasUdfps) {
-                            Rect(0, 0, sensorBounds.right, sensorBounds.bottom)
-                        } else {
-                            // SFPS
-                            Rect(
-                                0,
-                                0,
-                                landscapeMediumHorizontalPadding,
-                                landscapeMediumBottomPadding,
-                            )
-                        }
-                    PromptPosition.Left ->
-                        if (size.isSmall || modalities.hasFaceOnly) {
-                            Rect(landscapeSmallHorizontalPadding, 0, 0, landscapeSmallBottomPadding)
-                        } else if (size.isMedium && modalities.hasUdfps) {
-                            Rect(sensorBounds.left, 0, 0, sensorBounds.bottom)
-                        } else {
-                            // SFPS
-                            Rect(
-                                landscapeMediumHorizontalPadding,
-                                0,
-                                0,
-                                landscapeMediumBottomPadding,
-                            )
-                        }
-                    PromptPosition.Top ->
-                        if (size.isSmall) {
-                            Rect(0, 0, 0, portraitSmallBottomPadding)
-                        } else if (size.isMedium && modalities.hasUdfps) {
-                            Rect(0, 0, 0, sensorBounds.bottom)
-                        } else {
-                            Rect(0, 0, 0, portraitMediumBottomPadding)
-                        }
-                }
-            }
-            .distinctUntilChanged()
-
     /**
      * If the API caller or the user's personal preferences require explicit confirmation after
      * successful authentication. Confirmation always required when in explicit flow.
@@ -475,9 +335,6 @@ constructor(
             }
             .distinctUntilChanged()
 
-    val iconViewModel: PromptIconViewModel =
-        PromptIconViewModel(this, displayStateInteractor, promptSelectorInteractor)
-
     private val _isIconViewLoaded = MutableStateFlow(false)
 
     /**
@@ -496,24 +353,6 @@ constructor(
     fun setIsIconViewLoaded(iconViewLoaded: Boolean) {
         _isIconViewLoaded.value = iconViewLoaded
     }
-
-    /** The size of the biometric icon */
-    val iconSize: Flow<Pair<Int, Int>> =
-        combine(iconViewModel.activeAuthType, modalities, udfpsSensorWidth, udfpsSensorHeight) {
-            activeAuthType,
-            modalities,
-            udfpsSensorWidth,
-            udfpsSensorHeight ->
-            if (activeAuthType == PromptIconViewModel.AuthType.Face) {
-                Pair(faceIconWidth, faceIconHeight)
-            } else {
-                if (modalities.hasUdfps) {
-                    Pair(udfpsSensorWidth, udfpsSensorHeight)
-                } else {
-                    Pair(fingerprintIconWidth, fingerprintIconHeight)
-                }
-            }
-        }
 
     /** (logoIcon, logoDescription) for the prompt. */
     val logoInfo: Flow<Pair<Drawable?, String>> =
@@ -537,6 +376,17 @@ constructor(
     /** Custom content view for the prompt. */
     val contentView: Flow<PromptContentView?> =
         promptSelectorInteractor.prompt.map { it?.contentView }.distinctUntilChanged()
+
+    /** ViewModel for the biometric icon in the prompt. */
+    val iconViewModel =
+        PromptIconViewModel(
+            this,
+            context,
+            biometricAuthIconViewModelFactory.create(
+                promptViewModel = this,
+                secureLockDeviceViewModel = null,
+            ),
+        )
 
     private val originalDescription =
         promptSelectorInteractor.prompt.map { it?.description ?: "" }.distinctUntilChanged()
@@ -683,13 +533,14 @@ constructor(
      * from opposite side of the screen
      */
     val guidelineBounds: Flow<Rect> =
-        combine(iconPosition, promptKind, size, position, modalities, hasOnlyOneLineTitle) {
-                _,
+        combine(
+                iconViewModel.iconPosition,
                 promptKind,
                 size,
                 position,
                 modalities,
-                hasOnlyOneLineTitle ->
+                hasOnlyOneLineTitle,
+            ) { _, promptKind, size, position, modalities, hasOnlyOneLineTitle ->
                 var left = 0
                 var top = 0
                 var right = 0
@@ -733,8 +584,8 @@ constructor(
                 size,
                 hideSensorIcon,
                 guidelineBounds,
-                iconPosition,
-                iconSize,
+                iconViewModel.iconPosition,
+                iconViewModel.iconSize,
             ) { currentView, position, size, hideSensor, guidelines, iconPosition, iconSize ->
                 BiometricPromptLayoutState(
                     currentView,
