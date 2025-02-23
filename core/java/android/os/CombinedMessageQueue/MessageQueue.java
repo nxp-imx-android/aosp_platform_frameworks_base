@@ -232,7 +232,7 @@ public final class MessageQueue {
 
         traceMessageCount();
         PerfettoTrace.instant(PerfettoTrace.MQ_CATEGORY, "message_queue_send")
-                .addFlow(msg.mEventId.get())
+                .setFlow(msg.mEventId.get())
                 .beginProto()
                 .beginNested(2004 /* message_queue */)
                 .addField(2 /* receiving_thread_name */, mThread.getName())

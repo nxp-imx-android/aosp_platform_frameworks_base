@@ -205,7 +205,7 @@ public final class Looper {
                 .addField(1 /* sending_thread_name */, msg.mSendingThreadName)
                 .endNested()
                 .endProto()
-                .addTerminatingFlow(msg.mEventId.get())
+                .setTerminatingFlow(msg.mEventId.get())
                 .emit();
 
         // This must be in a local variabe, in case a UI event sets the logger

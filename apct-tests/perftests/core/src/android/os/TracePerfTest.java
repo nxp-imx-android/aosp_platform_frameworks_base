@@ -147,7 +147,7 @@ public class TracePerfTest {
                 .addField(1 /* sending_thread_name */, "foo")
                 .endNested()
                 .endProto()
-                .addTerminatingFlow(5)
+                .setTerminatingFlow(5)
                 .emit();
 
         BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
@@ -158,7 +158,7 @@ public class TracePerfTest {
                     .addField(1 /* sending_thread_name */, "foo")
                     .endNested()
                     .endProto()
-                    .addTerminatingFlow(5)
+                    .setTerminatingFlow(5)
                     .emit();
         }
     }

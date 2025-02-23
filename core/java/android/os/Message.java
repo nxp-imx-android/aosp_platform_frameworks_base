@@ -23,7 +23,7 @@ import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.annotations.VisibleForTesting;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *
@@ -43,7 +43,7 @@ public final class Message implements Parcelable {
      *
      * @hide Only for use within the system server.
      */
-    public final AtomicInteger mEventId = new AtomicInteger();
+    public final AtomicLong mEventId = new AtomicLong();
 
     /**
      * User-defined message code so that the recipient can identify
