@@ -61,7 +61,14 @@ class DefaultClockProvider(
 
     override fun getClocks(): List<ClockMetadata> {
         var clocks = listOf(ClockMetadata(DEFAULT_CLOCK_ID))
-        if (isClockReactiveVariantsEnabled) clocks += ClockMetadata(FLEX_CLOCK_ID)
+        if (isClockReactiveVariantsEnabled) {
+            clocks +=
+                ClockMetadata(
+                    FLEX_CLOCK_ID,
+                    isDeprecated = true,
+                    replacementTarget = DEFAULT_CLOCK_ID,
+                )
+        }
         return clocks
     }
 
