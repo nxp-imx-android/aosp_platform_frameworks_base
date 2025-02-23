@@ -96,7 +96,9 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
                 qsLogger,
                 bluetoothController,
                 featureFlags,
-            ) { bluetoothDetailsContentViewModel }
+            ) {
+                bluetoothDetailsContentViewModel
+            }
 
         tile.initialize()
         testableLooper.processAllMessages()
