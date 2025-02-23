@@ -16,6 +16,8 @@
 
 package com.android.server.accessibility.autoclick;
 
+import static android.provider.Settings.Secure.ACCESSIBILITY_AUTOCLICK_PANEL_POSITION;
+
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK;
@@ -23,13 +25,16 @@ import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTO
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AutoclickType;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.CORNER_BOTTOM_LEFT;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.CORNER_BOTTOM_RIGHT;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.CORNER_TOP_LEFT;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.CORNER_TOP_RIGHT;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.ClickPanelControllerInterface;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.POSITION_DELIMITER;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
+import android.provider.Settings;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableContext;
 import android.testing.TestableLooper;
@@ -92,7 +97,8 @@ public class AutoclickTypePanelTest {
         mTestableContext.addMockSystemService(Context.WINDOW_SERVICE, mMockWindowManager);
 
         mAutoclickTypePanel =
-                new AutoclickTypePanel(mTestableContext, mMockWindowManager, clickPanelController);
+                new AutoclickTypePanel(mTestableContext, mMockWindowManager,
+                        mTestableContext.getUserId(), clickPanelController);
         View contentView = mAutoclickTypePanel.getContentViewForTesting();
         mLeftClickButton = contentView.findViewById(R.id.accessibility_autoclick_left_click_layout);
         mRightClickButton =
@@ -292,6 +298,96 @@ public class AutoclickTypePanelTest {
         assertThat(params.gravity).isEqualTo(Gravity.START | Gravity.TOP);
         assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting())
                 .isEqualTo(CORNER_BOTTOM_LEFT);
+    }
+
+    @Test
+    public void restorePanelPosition_noSavedPosition_useDefault() {
+        // Given no saved position in Settings.
+        Settings.Secure.putString(mTestableContext.getContentResolver(),
+                ACCESSIBILITY_AUTOCLICK_PANEL_POSITION, null);
+
+        // Create panel which triggers position restoration internally.
+        AutoclickTypePanel panel = new AutoclickTypePanel(mTestableContext, mMockWindowManager,
+                mTestableContext.getUserId(),
+                clickPanelController);
+
+        // Verify panel is positioned at default bottom-right corner.
+        WindowManager.LayoutParams params = panel.getLayoutParamsForTesting();
+        assertThat(panel.getCurrentCornerIndexForTesting()).isEqualTo(CORNER_BOTTOM_RIGHT);
+        assertThat(params.gravity).isEqualTo(Gravity.END | Gravity.BOTTOM);
+        assertThat(params.x).isEqualTo(15);  // Default edge margin.
+        assertThat(params.y).isEqualTo(90);  // Default bottom offset.
+    }
+
+    @Test
+    public void restorePanelPosition_position_button() {
+        // Move panel to top-left by clicking position button twice.
+        mPositionButton.callOnClick();
+        mPositionButton.callOnClick();
+
+        // Hide panel to trigger position saving.
+        mAutoclickTypePanel.hide();
+
+        // Verify position is correctly saved in Settings.
+        String savedPosition = Settings.Secure.getStringForUser(
+                mTestableContext.getContentResolver(),
+                ACCESSIBILITY_AUTOCLICK_PANEL_POSITION, mTestableContext.getUserId());
+        String[] parts = savedPosition.split(POSITION_DELIMITER);
+        assertThat(parts).hasLength(4);
+        assertThat(Integer.parseInt(parts[0])).isEqualTo(Gravity.START | Gravity.TOP);
+        assertThat(Integer.parseInt(parts[1])).isEqualTo(15);
+        assertThat(Integer.parseInt(parts[2])).isEqualTo(30);
+        assertThat(Integer.parseInt(parts[3])).isEqualTo(CORNER_TOP_LEFT);
+
+        // Show panel to trigger position restoration.
+        mAutoclickTypePanel.show();
+
+        // Then verify position is restored correctly.
+        WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParamsForTesting();
+        assertThat(params.gravity).isEqualTo(Gravity.START | Gravity.TOP);
+        assertThat(params.x).isEqualTo(15);
+        assertThat(params.y).isEqualTo(30);
+        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting()).isEqualTo(
+                CORNER_TOP_LEFT);
+    }
+
+    @Test
+    public void restorePanelPosition_dragToLeft() {
+        // Get initial panel position.
+        View contentView = mAutoclickTypePanel.getContentViewForTesting();
+        int[] panelLocation = new int[2];
+        contentView.getLocationOnScreen(panelLocation);
+
+        // Simulate drag from initial position to left side of screen.
+        int screenWidth = mTestableContext.getResources().getDisplayMetrics().widthPixels;
+        dispatchDragSequence(contentView,
+                /* startX =*/ panelLocation[0], /* startY =*/ panelLocation[1],
+                /* endX =*/ (float) screenWidth / 4, /* endY =*/ panelLocation[1] + 10);
+
+        // Hide panel to trigger position saving.
+        mAutoclickTypePanel.hide();
+
+        // Verify position is saved correctly.
+        String savedPosition = Settings.Secure.getStringForUser(
+                mTestableContext.getContentResolver(),
+                ACCESSIBILITY_AUTOCLICK_PANEL_POSITION, mTestableContext.getUserId());
+        String[] parts = savedPosition.split(POSITION_DELIMITER);
+        assertThat(parts).hasLength(4);
+        assertThat(Integer.parseInt(parts[0])).isEqualTo(Gravity.START | Gravity.TOP);
+        assertThat(Integer.parseInt(parts[1])).isEqualTo(15);
+        assertThat(Integer.parseInt(parts[2])).isEqualTo(panelLocation[1] + 10);
+        assertThat(Integer.parseInt(parts[3])).isEqualTo(CORNER_BOTTOM_LEFT);
+
+        // Show panel to trigger position restoration.
+        mAutoclickTypePanel.show();
+
+        // Then verify dragged position is restored.
+        WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParamsForTesting();
+        assertThat(params.gravity).isEqualTo(Gravity.START | Gravity.TOP);
+        assertThat(params.x).isEqualTo(15); // PANEL_EDGE_MARGIN
+        assertThat(params.y).isEqualTo(panelLocation[1] + 10);
+        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting()).isEqualTo(
+                CORNER_BOTTOM_LEFT);
     }
 
     // Helper method to handle drag event sequences
