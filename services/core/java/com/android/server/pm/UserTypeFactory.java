@@ -128,6 +128,7 @@ public final class UserTypeFactory {
                 .setName(USER_TYPE_PROFILE_CLONE)
                 .setBaseType(FLAG_PROFILE)
                 .setMaxAllowedPerParent(1)
+                .setProfileParentRequired(true)
                 .setLabels(R.string.profile_label_clone)
                 .setIconBadge(com.android.internal.R.drawable.ic_clone_icon_badge)
                 .setBadgePlain(com.android.internal.R.drawable.ic_clone_badge)
@@ -177,6 +178,7 @@ public final class UserTypeFactory {
                 .setBaseType(FLAG_PROFILE)
                 .setDefaultUserInfoPropertyFlags(FLAG_MANAGED_PROFILE)
                 .setMaxAllowedPerParent(1)
+                .setProfileParentRequired(true)
                 .setLabels(
                         R.string.profile_label_work,
                         R.string.profile_label_work_2,
@@ -226,6 +228,7 @@ public final class UserTypeFactory {
                 .setName(USER_TYPE_PROFILE_TEST)
                 .setBaseType(FLAG_PROFILE)
                 .setMaxAllowedPerParent(2)
+                .setProfileParentRequired(true)
                 .setLabels(
                         R.string.profile_label_test,
                         R.string.profile_label_test,
@@ -259,6 +262,7 @@ public final class UserTypeFactory {
                 .setName(USER_TYPE_PROFILE_COMMUNAL)
                 .setBaseType(FLAG_PROFILE)
                 .setMaxAllowed(1)
+                .setProfileParentRequired(false)
                 .setEnabled(UserManager.isCommunalProfileEnabled() ? 1 : 0)
                 .setLabels(R.string.profile_label_communal)
                 .setIconBadge(com.android.internal.R.drawable.ic_test_icon_badge_experiment)
@@ -295,6 +299,7 @@ public final class UserTypeFactory {
         return new UserTypeDetails.Builder()
                 .setName(USER_TYPE_PROFILE_PRIVATE)
                 .setBaseType(FLAG_PROFILE)
+                .setProfileParentRequired(true)
                 .setMaxAllowedPerParent(1)
                 .setEnabled(UserManager.isPrivateProfileEnabled() ? 1 : 0)
                 .setLabels(R.string.profile_label_private)
@@ -387,6 +392,7 @@ public final class UserTypeFactory {
                 .setBaseType(FLAG_FULL)
                 .setDefaultUserInfoPropertyFlags(FLAG_RESTRICTED)
                 .setMaxAllowed(UNLIMITED_NUMBER_OF_USERS)
+                .setProfileParentRequired(false) // they have a "parent", but not a profile parent
                 // NB: UserManagerService.createRestrictedProfile() applies hardcoded restrictions.
                 .setDefaultRestrictions(null);
     }
@@ -541,6 +547,8 @@ public final class UserTypeFactory {
                     builder = new UserTypeDetails.Builder();
                     builder.setName(typeName);
                     builder.setBaseType(FLAG_PROFILE);
+                    // Custom parentless profiles are not yet supported.
+                    builder.setProfileParentRequired(true);
                     builders.put(typeName, builder);
                 } else {
                     throw new IllegalArgumentException("Creation of non-profile user type "
