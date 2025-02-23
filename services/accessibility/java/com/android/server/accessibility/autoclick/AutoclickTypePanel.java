@@ -16,6 +16,7 @@
 
 package com.android.server.accessibility.autoclick;
 
+import static android.provider.Settings.Secure.ACCESSIBILITY_AUTOCLICK_PANEL_POSITION;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
 import android.annotation.IntDef;
@@ -23,6 +24,8 @@ import android.content.Context;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -51,6 +54,9 @@ public class AutoclickTypePanel {
     public static final int CORNER_BOTTOM_LEFT = 1;
     public static final int CORNER_TOP_LEFT = 2;
     public static final int CORNER_TOP_RIGHT = 3;
+
+    // Used to remember and restore panel's position.
+    protected static final String POSITION_DELIMITER = ",";
 
     // Distance between panel and screen edge.
     // TODO(b/396402941): Finalize edge margin.
@@ -112,6 +118,8 @@ public class AutoclickTypePanel {
 
     private final WindowManager mWindowManager;
 
+    private final int mUserId;
+
     private WindowManager.LayoutParams mParams;
 
     private final ClickPanelControllerInterface mClickPanelController;
@@ -142,9 +150,11 @@ public class AutoclickTypePanel {
     public AutoclickTypePanel(
             Context context,
             WindowManager windowManager,
+            int userId,
             ClickPanelControllerInterface clickPanelController) {
         mContext = context;
         mWindowManager = windowManager;
+        mUserId = userId;
         mClickPanelController = clickPanelController;
         mParams = getDefaultLayoutParams();
 
@@ -308,6 +318,9 @@ public class AutoclickTypePanel {
     }
 
     public void show() {
+        // Restores the panel position from saved settings. If no valid position is saved,
+        // defaults to bottom-right corner.
+        restorePanelPosition();
         mWindowManager.addView(mContentView, mParams);
     }
 
@@ -315,6 +328,9 @@ public class AutoclickTypePanel {
         // Sets the button background to unselected styling, this is necessary to make sure the
         // button background styling is correct when the panel shows up next time.
         toggleSelectedButtonStyle(mSelectedButton, /* isSelected= */ false);
+
+        // Save the panel's position when user turns off the autoclick.
+        savePanelPosition();
 
         mWindowManager.removeView(mContentView);
     }
@@ -422,6 +438,79 @@ public class AutoclickTypePanel {
             default:
                 throw new IllegalArgumentException("Invalid corner: " + corner);
         }
+    }
+
+    private void savePanelPosition() {
+        String positionString = TextUtils.join(POSITION_DELIMITER, new String[]{
+                String.valueOf(mParams.gravity),
+                String.valueOf(mParams.x),
+                String.valueOf(mParams.y),
+                String.valueOf(mCurrentCornerIndex)
+        });
+        Settings.Secure.putStringForUser(mContext.getContentResolver(),
+                ACCESSIBILITY_AUTOCLICK_PANEL_POSITION, positionString, mUserId);
+    }
+
+    /**
+     * Restores the panel position from saved settings. If no valid position is saved,
+     * defaults to bottom-right corner.
+     */
+    private void restorePanelPosition() {
+        // Try to get saved position from settings.
+        String savedPosition = Settings.Secure.getStringForUser(mContext.getContentResolver(),
+                ACCESSIBILITY_AUTOCLICK_PANEL_POSITION, mUserId);
+        if (savedPosition == null) {
+            setPanelPositionForCorner(mParams, CORNER_BOTTOM_RIGHT);
+            mCurrentCornerIndex = 0;
+            return;
+        }
+
+        // Parse saved position string in "gravity,x,y,corner" format.
+        String[] parts = TextUtils.split(savedPosition, POSITION_DELIMITER);
+        if (!isValidPositionParts(parts)) {
+            setPanelPositionForCorner(mParams, CORNER_BOTTOM_RIGHT);
+            mCurrentCornerIndex = 0;
+            return;
+        }
+
+        // Restore the saved position values.
+        mParams.gravity = Integer.parseInt(parts[0]);
+        mParams.x = Integer.parseInt(parts[1]);
+        mParams.y = Integer.parseInt(parts[2]);
+        mCurrentCornerIndex = Integer.parseInt(parts[3]);
+    }
+
+    private boolean isValidPositionParts(String[] parts) {
+        // Check basic array validity.
+        if (parts == null || parts.length != 4) {
+            return false;
+        }
+
+        // Parse values after validating they are numbers.
+        int gravity = Integer.parseInt(parts[0]);
+        int x = Integer.parseInt(parts[1]);
+        int y = Integer.parseInt(parts[2]);
+        int cornerIndex = Integer.parseInt(parts[3]);
+
+        // Check gravity is valid (START/END | TOP/BOTTOM).
+        if (gravity != (Gravity.START | Gravity.TOP) && gravity != (Gravity.END | Gravity.TOP)
+                && gravity != (Gravity.START | Gravity.BOTTOM) && gravity != (Gravity.END
+                | Gravity.BOTTOM)) {
+            return false;
+        }
+
+        // Check coordinates are positive and within screen bounds.
+        int screenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
+        int screenHeight = mContext.getResources().getDisplayMetrics().heightPixels;
+        if (x < 0 || x > screenWidth || y < 0 || y > screenHeight) {
+            return false;
+        }
+
+        // Check corner index is valid.
+        if (cornerIndex < 0 || cornerIndex >= 4) {
+            return false;
+        }
+        return true;
     }
 
     @VisibleForTesting
