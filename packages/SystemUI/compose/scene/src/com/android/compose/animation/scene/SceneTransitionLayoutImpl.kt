@@ -122,6 +122,9 @@ internal class SceneTransitionLayoutImpl(
      * This is used to enable transformations and shared elements across NestedSTLs.
      */
     internal val ancestors: List<Ancestor> = emptyList(),
+
+    /** Whether elements and scene should be tagged using `Modifier.testTag`. */
+    internal val implicitTestTags: Boolean = false,
     lookaheadScope: LookaheadScope? = null,
     defaultEffectFactory: OverscrollFactory,
 ) {

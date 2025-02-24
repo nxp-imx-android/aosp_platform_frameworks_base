@@ -40,7 +40,7 @@ import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutStateForTests
 import com.android.compose.animation.scene.Scale
 import com.android.compose.animation.scene.SceneKey
-import com.android.compose.animation.scene.SceneTransitionLayout
+import com.android.compose.animation.scene.SceneTransitionLayoutForTesting
 import com.android.compose.animation.scene.SceneTransitions
 import com.android.compose.animation.scene.TestScenes
 import com.android.compose.animation.scene.testNestedTransition
@@ -114,7 +114,7 @@ class NestedElementTransformationTest {
         @Composable
         (states: List<MutableSceneTransitionLayoutState>) -> Unit =
         { states ->
-            SceneTransitionLayout(states[0]) {
+            SceneTransitionLayoutForTesting(states[0]) {
                 scene(TestScenes.SceneA, content = { TestElement(elementVariant0A) })
                 scene(
                     TestScenes.SceneB,
