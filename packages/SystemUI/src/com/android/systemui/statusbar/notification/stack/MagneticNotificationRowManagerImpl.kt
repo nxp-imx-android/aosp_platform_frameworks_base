@@ -291,7 +291,7 @@ constructor(
          * currently being swiped. From the center outwards, the multipliers apply to the neighbors
          * of the swiped view.
          */
-        private val MAGNETIC_TRANSLATION_MULTIPLIERS = listOf(0.18f, 0.28f, 0.5f, 0.28f, 0.18f)
+        private val MAGNETIC_TRANSLATION_MULTIPLIERS = listOf(0.04f, 0.12f, 0.5f, 0.12f, 0.04f)
 
         const val MAGNETIC_REDUCTION = 0.65f
 
@@ -299,7 +299,7 @@ constructor(
         private const val DETACH_STIFFNESS = 800f
         private const val DETACH_DAMPING_RATIO = 0.95f
         private const val SNAP_BACK_STIFFNESS = 550f
-        private const val SNAP_BACK_DAMPING_RATIO = 0.52f
+        private const val SNAP_BACK_DAMPING_RATIO = 0.6f
 
         // Maximum value of corner roundness that gets applied during the pre-detach dragging
         private const val MAX_PRE_DETACH_ROUNDNESS = 0.8f
