@@ -70,6 +70,8 @@ import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.SmartReplyController;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor;
+import com.android.systemui.statusbar.notification.collection.GroupEntry;
+import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
@@ -106,6 +108,7 @@ import kotlinx.coroutines.test.TestScope;
 
 import org.mockito.ArgumentCaptor;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -338,6 +341,46 @@ public class NotificationTestHelper {
     }
 
     /**
+     * Returns an {@link GroupEntry} group with the given number of child
+     * notifications.
+     */
+    public GroupEntry createGroupEntry(int numChildren,
+            @Nullable List<NotificationEntry> additionalChildren) {
+        Notification summary = new Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .setGroupSummary(true)
+                .setGroup(GROUP_KEY)
+                .build();
+
+        NotificationEntry summaryEntry = new NotificationEntryBuilder()
+                .setPkg(PKG)
+                .setOpPkg(PKG)
+                .setId(mId++)
+                .setUid(UID)
+                .setInitialPid(2000)
+                .setNotification(summary)
+                .setParent(GroupEntry.ROOT_ENTRY)
+                .build();
+        GroupEntryBuilder groupEntry = new GroupEntryBuilder()
+                .setSummary(summaryEntry);
+
+        for (int i = 0; i < numChildren; i++) {
+            NotificationEntry child = new NotificationEntryBuilder()
+                    .setParent(GroupEntry.ROOT_ENTRY)
+                    .setNotification(new Notification.Builder(mContext, "")
+                            .setSmallIcon(R.drawable.ic_person)
+                            .setGroup(GROUP_KEY)
+                            .build())
+                    .build();
+            groupEntry.addChild(child);
+        }
+        for (NotificationEntry entry : additionalChildren) {
+            groupEntry.addChild(entry);
+        }
+        return groupEntry.build();
+    }
+
+    /**
      * Returns an {@link ExpandableNotificationRow} group with the given number of child
      * notifications.
      */
@@ -408,6 +451,23 @@ public class NotificationTestHelper {
                 .setCanBubble(true)
                 .build();
         return row;
+    }
+
+    /**
+     * Returns an {@link NotificationEntry} that should be shown as a bubble and is part
+     * of a group of notifications.
+     */
+    public NotificationEntry createBubbleEntryInGroup() throws Exception {
+        Notification n = createNotification(false /* isGroupSummary */,
+                GROUP_KEY /* groupKey */,
+                makeBubbleMetadata(null /* deleteIntent */, false /* autoExpand */));
+        n.flags |= FLAG_BUBBLE;
+        NotificationEntry entry = generateEntry(n, PKG, UID, USER_HANDLE,
+                mDefaultInflationFlags, IMPORTANCE_HIGH);
+        modifyRanking(entry)
+                .setCanBubble(true)
+                .build();
+        return entry;
     }
 
     /**
@@ -572,6 +632,41 @@ public class NotificationTestHelper {
     public KeyguardBypassController getKeyguardBypassController() {
         return mKeyguardBypassController;
     }
+
+    private NotificationEntry generateEntry(
+            Notification notification,
+            String pkg,
+            int uid,
+            UserHandle userHandle,
+            @InflationFlag int extraInflationFlags,
+            int importance)
+            throws Exception {
+        final NotificationChannel channel =
+                new NotificationChannel(
+                        notification.getChannelId(),
+                        notification.getChannelId(),
+                        importance);
+        channel.setBlockable(true);
+
+        NotificationEntry entry = new NotificationEntryBuilder()
+                .setPkg(pkg)
+                .setOpPkg(pkg)
+                .setId(mId++)
+                .setUid(uid)
+                .setInitialPid(2000)
+                .setNotification(notification)
+                .setUser(userHandle)
+                .setPostTime(System.currentTimeMillis())
+                .setChannel(channel)
+                .updateRanking(rankingBuilder -> rankingBuilder.setIsConversation(
+                        notification.isStyle(Notification.MessagingStyle.class)
+                ))
+                .build();
+
+
+        return entry;
+    }
+
 
     private ExpandableNotificationRow generateRow(
             Notification notification,

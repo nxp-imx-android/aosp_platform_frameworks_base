@@ -589,25 +589,45 @@ public final class NotificationEntry extends ListEntry {
     /**
      * Get the children that are actually attached to this notification's row.
      *
-     * TODO: Seems like most callers here should probably be using
-     * {@link GroupMembershipManager#getChildren(PipelineEntry)}
+     * TODO: Seems like most callers here should be asking a PipelineEntry, not a NotificationEntry
      */
     public @Nullable List<NotificationEntry> getAttachedNotifChildren() {
-        if (row == null) {
-            return null;
+        if (NotificationBundleUi.isEnabled()) {
+            if (isGroupSummary()) {
+                return ((GroupEntry) getParent()).getChildren();
+            }
+        } else {
+            if (row == null) {
+                return null;
+            }
+
+            List<ExpandableNotificationRow> rowChildren = row.getAttachedChildren();
+            if (rowChildren == null) {
+                return null;
+            }
+
+            ArrayList<NotificationEntry> children = new ArrayList<>();
+            for (ExpandableNotificationRow child : rowChildren) {
+                children.add(child.getEntry());
+            }
+
+            return children;
+        }
+        return null;
+    }
+
+    private boolean isGroupSummary() {
+        if (getParent() == null) {
+            // The entry is not attached, so it doesn't count.
+            return false;
+        }
+        PipelineEntry pipelineEntry = getParent();
+        if (!(pipelineEntry instanceof GroupEntry groupEntry)) {
+            return false;
         }
 
-        List<ExpandableNotificationRow> rowChildren = row.getAttachedChildren();
-        if (rowChildren == null) {
-            return null;
-        }
-
-        ArrayList<NotificationEntry> children = new ArrayList<>();
-        for (ExpandableNotificationRow child : rowChildren) {
-            children.add(child.getEntry());
-        }
-
-        return children;
+        // If entry is a summary, its parent is a GroupEntry with summary = entry.
+        return groupEntry.getSummary() == this;
     }
 
     public void notifyFullScreenIntentLaunched() {

@@ -135,6 +135,8 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.notification.NotifPipelineFlags;
+import com.android.systemui.statusbar.notification.collection.GroupEntry;
+import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
@@ -150,6 +152,7 @@ import com.android.systemui.statusbar.notification.interruption.VisualInterrupti
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProviderTestUtil;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotificationTestHelper;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.phone.DozeParameters;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.policy.BatteryController;
@@ -1227,7 +1230,35 @@ public class BubblesTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBubbleSummaryDismissal_suppressesSummaryAndBubbleFromShade() throws Exception {
+        // GIVEN a group summary with a bubble child
+        NotificationEntry groupedBubble = mNotificationTestHelper.createBubbleEntryInGroup();
+        GroupEntry groupSummary = mNotificationTestHelper.createGroupEntry(
+                0, List.of(groupedBubble));
+        mEntryListener.onEntryAdded(groupedBubble);
+        when(mCommonNotifCollection.getEntry(groupedBubble.getKey()))
+                .thenReturn(groupedBubble);
+        assertTrue(mBubbleData.hasBubbleInStackWithKey(groupedBubble.getKey()));
+
+        // WHEN the summary is dismissed
+        mBubblesManager.handleDismissalInterception(groupSummary.getSummary());
+
+        // THEN the summary and bubbled child are suppressed from the shade
+        assertTrue(mBubbleController.isBubbleNotificationSuppressedFromShade(
+                groupedBubble.getKey(),
+                groupedBubble.getSbn().getGroupKey()));
+        assertTrue(mBubbleController.getImplCachedState().isBubbleNotificationSuppressedFromShade(
+                groupedBubble.getKey(),
+                groupedBubble.getSbn().getGroupKey()));
+        assertTrue(mBubbleData.isSummarySuppressed(
+                groupSummary.getSummary().getSbn().getGroupKey()));
+    }
+
+    @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testBubbleSummaryDismissal_suppressesSummaryAndBubbleFromShade_rows()
+            throws Exception {
         // GIVEN a group summary with a bubble child
         ExpandableNotificationRow groupSummary = mNotificationTestHelper.createGroup(0);
         ExpandableNotificationRow groupedBubble = mNotificationTestHelper.createBubbleInGroup();
@@ -1251,7 +1282,32 @@ public class BubblesTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testAppRemovesSummary_removesAllBubbleChildren() throws Exception {
+        // GIVEN a group summary with a bubble child
+        NotificationEntry groupedBubble = mNotificationTestHelper.createBubbleEntryInGroup();
+        GroupEntry groupSummary = mNotificationTestHelper.createGroupEntry(
+                0, List.of(groupedBubble));
+        mEntryListener.onEntryAdded(groupedBubble);
+        when(mCommonNotifCollection.getEntry(groupedBubble.getKey()))
+                .thenReturn(groupedBubble);
+        assertTrue(mBubbleData.hasBubbleInStackWithKey(groupedBubble.getKey()));
+
+        // GIVEN the summary is dismissed
+        mBubblesManager.handleDismissalInterception(groupSummary.getSummary());
+
+        // WHEN the summary is cancelled by the app
+        mEntryListener.onEntryRemoved(groupSummary.getSummary(), REASON_APP_CANCEL);
+
+        // THEN the summary and its children are removed from bubble data
+        assertFalse(mBubbleData.hasBubbleInStackWithKey(groupedBubble.getKey()));
+        assertFalse(mBubbleData.isSummarySuppressed(
+                groupSummary.getSummary().getSbn().getGroupKey()));
+    }
+
+    @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testAppRemovesSummary_removesAllBubbleChildren_rows() throws Exception {
         // GIVEN a group summary with a bubble child
         ExpandableNotificationRow groupSummary = mNotificationTestHelper.createGroup(0);
         ExpandableNotificationRow groupedBubble = mNotificationTestHelper.createBubbleInGroup();
@@ -1274,7 +1330,50 @@ public class BubblesTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testSummaryDismissalMarksBubblesHiddenFromShadeAndDismissesNonBubbledChildren()
+            throws Exception {
+        // GIVEN a group summary with two (non-bubble) children and one bubble child
+        NotificationEntry groupedBubble = mNotificationTestHelper.createBubbleEntryInGroup();
+        GroupEntry groupSummary = mNotificationTestHelper.createGroupEntry(
+                2, List.of(groupedBubble));
+        mEntryListener.onEntryAdded(groupedBubble);
+        when(mCommonNotifCollection.getEntry(groupedBubble.getKey()))
+                .thenReturn(groupedBubble);
+
+        // WHEN the summary is dismissed
+        mBubblesManager.handleDismissalInterception(groupSummary.getSummary());
+
+        // THEN only the NON-bubble children are dismissed
+        List<NotificationEntry> children = groupSummary.getChildren();
+        verify(mNotifCallback, times(1)).removeNotification(
+                eq(children.get(0)), any(), eq(REASON_GROUP_SUMMARY_CANCELED));
+        verify(mNotifCallback, times(1)).removeNotification(
+                eq(children.get(1)), any(), eq(REASON_GROUP_SUMMARY_CANCELED));
+        verify(mNotifCallback, never()).removeNotification(eq(groupedBubble),
+                any(), anyInt());
+
+        // THEN the bubble child still exists as a bubble and is suppressed from the shade
+        assertTrue(mBubbleData.hasBubbleInStackWithKey(groupedBubble.getKey()));
+        assertTrue(mBubbleController.isBubbleNotificationSuppressedFromShade(
+                groupedBubble.getKey(),
+                groupedBubble.getSbn().getGroupKey()));
+        assertTrue(mBubbleController.getImplCachedState().isBubbleNotificationSuppressedFromShade(
+                groupedBubble.getKey(),
+                groupedBubble.getSbn().getGroupKey()));
+
+        // THEN the summary is also suppressed from the shade
+        assertTrue(mBubbleController.isBubbleNotificationSuppressedFromShade(
+                groupSummary.getSummary().getKey(),
+                groupSummary.getSummary().getSbn().getGroupKey()));
+        assertTrue(mBubbleController.getImplCachedState().isBubbleNotificationSuppressedFromShade(
+                groupSummary.getSummary().getKey(),
+                groupSummary.getSummary().getSbn().getGroupKey()));
+    }
+
+    @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testSummaryDismissalMarksBubblesHiddenFromShadeAndDismissesNonBubbledChildren_row()
             throws Exception {
         // GIVEN a group summary with two (non-bubble) children and one bubble child
         ExpandableNotificationRow groupSummary = mNotificationTestHelper.createGroup(2);
