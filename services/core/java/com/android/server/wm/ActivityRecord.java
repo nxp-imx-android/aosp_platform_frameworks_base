@@ -3076,7 +3076,7 @@ final class ActivityRecord extends WindowToken {
         if (win == null) {
             return;
         }
-        isOpaque = isOpaque & !PixelFormat.formatHasAlpha(win.getAttrs().format);
+        isOpaque = isOpaque & !PixelFormat.formatHasAlpha(win.mAttrs.format);
         win.mWinAnimator.setOpaqueLocked(isOpaque);
     }
 

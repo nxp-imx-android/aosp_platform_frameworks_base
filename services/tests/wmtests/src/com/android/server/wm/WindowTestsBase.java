@@ -136,6 +136,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1022,6 +1023,16 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         final Configuration c = new Configuration();
         displayContent.computeScreenConfiguration(c);
         displayContent.performDisplayOverrideConfigUpdate(c);
+    }
+
+    static void setFieldValue(Object o, String fieldName, Object value) {
+        try {
+            final Field field = o.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(o, value);
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     static void makeDisplayLargeScreen(DisplayContent displayContent) {

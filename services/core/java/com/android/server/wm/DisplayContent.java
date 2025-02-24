@@ -5816,7 +5816,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // For each window, we only take the rects that fall within its touchable region.
         forAllWindows(w -> {
             if (!w.canReceiveTouchInput() || !w.isVisible()
-                    || (w.getAttrs().flags & FLAG_NOT_TOUCHABLE) != 0
+                    || (w.mAttrs.flags & FLAG_NOT_TOUCHABLE) != 0
                     || unhandled.isEmpty()) {
                 return;
             }
@@ -5906,7 +5906,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (win.mWmService.mConstants.mSystemGestureExclusionLogDebounceTimeoutMillis <= 0) {
             return false;
         }
-        final WindowManager.LayoutParams attrs = win.getAttrs();
+        final WindowManager.LayoutParams attrs = win.mAttrs;
         final int type = attrs.type;
         return type != TYPE_WALLPAPER
                 && type != TYPE_APPLICATION_STARTING
