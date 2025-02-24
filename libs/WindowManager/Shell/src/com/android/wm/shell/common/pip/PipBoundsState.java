@@ -377,6 +377,16 @@ public class PipBoundsState {
 
     /** Sets the preferred size of PIP as specified by the activity in PIP mode. */
     public void setOverrideMinSize(@Nullable Size overrideMinSize) {
+        if (overrideMinSize != null) {
+            final Size defaultSize = mSizeSpecSource.getDefaultSize(getAspectRatio());
+            if (overrideMinSize.getWidth() > defaultSize.getWidth()
+                    || overrideMinSize.getHeight() > defaultSize.getHeight()) {
+                ProtoLog.w(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                        "Ignore override min size(%s): larger than default size (%s)",
+                        overrideMinSize, defaultSize);
+                return;
+            }
+        }
         final boolean changed = !Objects.equals(overrideMinSize, getOverrideMinSize());
         mSizeSpecSource.setOverrideMinSize(overrideMinSize);
         if (changed && mOnMinimalSizeChangeCallback != null) {

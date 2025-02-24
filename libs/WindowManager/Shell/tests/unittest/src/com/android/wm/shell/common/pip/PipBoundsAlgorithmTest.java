@@ -147,7 +147,9 @@ public class PipBoundsAlgorithmTest extends ShellTestCase {
     public void getDefaultBounds_widerOverrideMinSize_matchesMinSizeWidthAndDefaultAspectRatio() {
         overrideDefaultAspectRatio(1.0f);
         // The min size's aspect ratio is greater than the default aspect ratio.
-        final Size overrideMinSize = new Size(150, 120);
+        final Size widerSize = mSizeSpecSource.getDefaultSize(1.5f);
+        final Size overrideMinSize = new Size(
+                widerSize.getWidth() / 2, widerSize.getHeight() / 2);
 
         mPipBoundsState.setOverrideMinSize(overrideMinSize);
         final Rect defaultBounds = mPipBoundsAlgorithm.getDefaultBounds();
@@ -163,7 +165,9 @@ public class PipBoundsAlgorithmTest extends ShellTestCase {
     public void getDefaultBounds_tallerOverrideMinSize_matchesMinSizeHeightAndDefaultAspectRatio() {
         overrideDefaultAspectRatio(1.0f);
         // The min size's aspect ratio is greater than the default aspect ratio.
-        final Size overrideMinSize = new Size(120, 150);
+        final Size tallerSize = mSizeSpecSource.getDefaultSize(0.5f);
+        final Size overrideMinSize = new Size(
+                tallerSize.getWidth() / 2, tallerSize.getHeight() / 2);
 
         mPipBoundsState.setOverrideMinSize(overrideMinSize);
         final Rect defaultBounds = mPipBoundsAlgorithm.getDefaultBounds();
@@ -306,10 +310,12 @@ public class PipBoundsAlgorithmTest extends ShellTestCase {
                 DEFAULT_ASPECT_RATIO,
                 (MAX_ASPECT_RATIO + DEFAULT_ASPECT_RATIO) / 2
         };
+        final Size defaultSize = mSizeSpecSource.getDefaultSize(1.0f);
+        final int defaultMinHeight = defaultSize.getHeight() / 2;
         final Size[] minimalSizes = new Size[] {
-                new Size((int) (200 * aspectRatios[0]), 200),
-                new Size((int) (200 * aspectRatios[1]), 200),
-                new Size((int) (200 * aspectRatios[2]), 200)
+                new Size((int) (defaultMinHeight * aspectRatios[0]), defaultMinHeight),
+                new Size((int) (defaultMinHeight * aspectRatios[1]), defaultMinHeight),
+                new Size((int) (defaultMinHeight * aspectRatios[2]), defaultMinHeight)
         };
         for (int i = 0; i < aspectRatios.length; i++) {
             final float aspectRatio = aspectRatios[i];
@@ -331,15 +337,17 @@ public class PipBoundsAlgorithmTest extends ShellTestCase {
 
     @Test
     public void getAdjustedDestinationBounds_ignoreMinBounds() {
-        final float aspectRatio = (DEFAULT_ASPECT_RATIO + MAX_ASPECT_RATIO) / 2;
-        final Rect currentBounds = new Rect(0, 0, 0, 100);
-        currentBounds.right = (int) (currentBounds.height() * aspectRatio) + currentBounds.left;
-        final Size minSize = new Size(currentBounds.width() / 2, currentBounds.height() / 2);
+        final float oldAspectRatio = (DEFAULT_ASPECT_RATIO + MAX_ASPECT_RATIO) / 2;
+        final float newAspectRatio = (DEFAULT_ASPECT_RATIO + MIN_ASPECT_RATIO) / 2;
+        final Size defaultSize = mSizeSpecSource.getDefaultSize(oldAspectRatio);
+        final Size minSize = new Size(
+                defaultSize.getWidth() / 2, defaultSize.getHeight() / 2);
+        final Rect currentBounds = new Rect(0, 0, defaultSize.getWidth(), defaultSize.getHeight());
 
-        mPipBoundsState.setAspectRatio(aspectRatio);
+        mPipBoundsState.setAspectRatio(newAspectRatio);
         mPipBoundsState.setOverrideMinSize(minSize);
         final Rect destinationBounds = mPipBoundsAlgorithm.getAdjustedDestinationBounds(
-                currentBounds, aspectRatio);
+                currentBounds, newAspectRatio);
 
         assertTrue("Destination bounds ignores minimal size",
                 destinationBounds.width() > minSize.getWidth()

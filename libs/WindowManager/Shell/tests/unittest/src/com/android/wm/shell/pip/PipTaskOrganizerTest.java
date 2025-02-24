@@ -164,10 +164,12 @@ public class PipTaskOrganizerTest extends ShellTestCase {
 
     @Test
     public void startSwipePipToHome_updatesOverrideMinSize() {
-        final Size minSize = new Size(400, 320);
+        final Rational aspectRatio = new Rational(2, 1);
+        final Size defaultSize = mSizeSpecSource.getDefaultSize(aspectRatio.floatValue());
+        final Size minSize = new Size(defaultSize.getWidth() / 2, defaultSize.getHeight() / 2);
 
         mPipTaskOrganizer.startSwipePipToHome(mComponent1, createActivityInfo(minSize),
-                createPipParams(null));
+                createPipParams(aspectRatio));
 
         assertEquals(minSize, mPipBoundsState.getOverrideMinSize());
     }
@@ -192,10 +194,12 @@ public class PipTaskOrganizerTest extends ShellTestCase {
 
     @Test
     public void onTaskAppeared_updatesOverrideMinSize() {
-        final Size minSize = new Size(400, 320);
+        final Rational aspectRatio = new Rational(2, 1);
+        final Size defaultSize = mSizeSpecSource.getDefaultSize(aspectRatio.floatValue());
+        final Size minSize = new Size(defaultSize.getWidth() / 2, defaultSize.getHeight() / 2);
 
         mPipTaskOrganizer.onTaskAppeared(
-                createTaskInfo(mComponent1, createPipParams(null), minSize),
+                createTaskInfo(mComponent1, createPipParams(aspectRatio), minSize),
                 mock(SurfaceControl.class));
 
         assertEquals(minSize, mPipBoundsState.getOverrideMinSize());
@@ -248,13 +252,15 @@ public class PipTaskOrganizerTest extends ShellTestCase {
 
     @Test
     public void onTaskInfoChanged_inPip_updatesOverrideMinSize() {
+        final Rational aspectRatio = new Rational(2, 1);
+        final Size defaultSize = mSizeSpecSource.getDefaultSize(aspectRatio.floatValue());
+        final Size minSize = new Size(defaultSize.getWidth() / 2, defaultSize.getHeight() / 2);
         mPipTaskOrganizer.onTaskAppeared(createTaskInfo(mComponent1,
-                createPipParams(null)), mock(SurfaceControl.class));
+                createPipParams(aspectRatio)), mock(SurfaceControl.class));
         sendOnPipTransitionFinished(TRANSITION_DIRECTION_TO_PIP);
 
-        final Size minSize = new Size(400, 320);
         mPipTaskOrganizer.onTaskInfoChanged(createTaskInfo(mComponent2,
-                createPipParams(null), minSize));
+                createPipParams(aspectRatio), minSize));
 
         assertEquals(minSize, mPipBoundsState.getOverrideMinSize());
     }

@@ -51,7 +51,6 @@ import java.util.function.Consumer;
 @SmallTest
 public class PipBoundsStateTest extends ShellTestCase {
 
-    private static final Size DEFAULT_SIZE = new Size(10, 10);
     private static final float DEFAULT_SNAP_FRACTION = 1.0f;
 
     /** The minimum possible size of the override min size's width or height */
@@ -184,10 +183,14 @@ public class PipBoundsStateTest extends ShellTestCase {
     @Test
     public void testSetOverrideMinSize_changed_callbackInvoked() {
         final Runnable callback = mock(Runnable.class);
-        mPipBoundsState.setOverrideMinSize(new Size(5, 5));
+        mPipBoundsState.setAspectRatio(2f);
+        final Size defaultSize = mSizeSpecSource.getDefaultSize(mPipBoundsState.getAspectRatio());
+        mPipBoundsState.setOverrideMinSize(
+                new Size(defaultSize.getWidth() / 2, defaultSize.getHeight() / 2));
         mPipBoundsState.setOnMinimalSizeChangeCallback(callback);
 
-        mPipBoundsState.setOverrideMinSize(new Size(10, 10));
+        mPipBoundsState.setOverrideMinSize(
+                new Size(defaultSize.getWidth() / 4, defaultSize.getHeight() / 4));
 
         verify(callback).run();
     }
@@ -195,11 +198,32 @@ public class PipBoundsStateTest extends ShellTestCase {
     @Test
     public void testSetOverrideMinSize_notChanged_callbackNotInvoked() {
         final Runnable callback = mock(Runnable.class);
-        mPipBoundsState.setOverrideMinSize(new Size(100, 150));
+        mPipBoundsState.setAspectRatio(2f);
+        final Size defaultSize = mSizeSpecSource.getDefaultSize(mPipBoundsState.getAspectRatio());
+        mPipBoundsState.setOverrideMinSize(
+                new Size(defaultSize.getWidth() / 2, defaultSize.getHeight() / 2));
         mPipBoundsState.setOnMinimalSizeChangeCallback(callback);
 
-        mPipBoundsState.setOverrideMinSize(new Size(100, 150));
+        mPipBoundsState.setOverrideMinSize(
+                new Size(defaultSize.getWidth() / 2, defaultSize.getHeight() / 2));
 
+        verify(callback, never()).run();
+    }
+
+    @Test
+    public void testSetOverrideMinSize_tooLarge_ignored() {
+        final Runnable callback = mock(Runnable.class);
+        mPipBoundsState.setAspectRatio(2f);
+        final Size defaultSize = mSizeSpecSource.getDefaultSize(mPipBoundsState.getAspectRatio());
+        final Size halfSize = new Size(defaultSize.getWidth() / 2, defaultSize.getHeight() / 2);
+        final Size doubleSize = new Size(defaultSize.getWidth() * 2, defaultSize.getHeight() * 2);
+        mPipBoundsState.setOverrideMinSize(halfSize);
+        mPipBoundsState.setOnMinimalSizeChangeCallback(callback);
+
+        mPipBoundsState.setOverrideMinSize(doubleSize);
+
+        assertEquals("Override min size should be ignored",
+                mPipBoundsState.getOverrideMinSize(), halfSize);
         verify(callback, never()).run();
     }
 
@@ -208,11 +232,13 @@ public class PipBoundsStateTest extends ShellTestCase {
         mPipBoundsState.setOverrideMinSize(null);
         assertEquals(0, mPipBoundsState.getOverrideMinEdgeSize());
 
-        mPipBoundsState.setOverrideMinSize(new Size(100, 110));
-        assertEquals(100, mPipBoundsState.getOverrideMinEdgeSize());
+        mPipBoundsState.setAspectRatio(2f);
+        final Size defaultSize = mSizeSpecSource.getDefaultSize(mPipBoundsState.getAspectRatio());
+        final Size halfSize = new Size(defaultSize.getWidth() / 2, defaultSize.getHeight() / 2);
+        mPipBoundsState.setOverrideMinSize(halfSize);
 
-        mPipBoundsState.setOverrideMinSize(new Size(150, 200));
-        assertEquals(150, mPipBoundsState.getOverrideMinEdgeSize());
+        assertEquals(Math.min(halfSize.getWidth(), halfSize.getHeight()),
+                mPipBoundsState.getOverrideMinEdgeSize());
     }
 
     @Test
