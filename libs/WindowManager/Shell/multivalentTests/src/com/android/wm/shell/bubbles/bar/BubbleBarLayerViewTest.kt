@@ -19,7 +19,9 @@ package com.android.wm.shell.bubbles.bar
 import android.animation.AnimatorTestRule
 import android.content.Context
 import android.content.pm.LauncherApps
+import android.graphics.Insets
 import android.graphics.PointF
+import android.graphics.Rect
 import android.os.Handler
 import android.os.UserManager
 import android.view.IWindowManager
@@ -61,6 +63,7 @@ import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.animation.PhysicsAnimatorTestUtils
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation
+import com.android.wm.shell.shared.bubbles.DeviceConfig
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -80,6 +83,10 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class BubbleBarLayerViewTest {
+    companion object {
+        const val SCREEN_WIDTH = 2000
+        const val SCREEN_HEIGHT = 1000
+    }
 
     @get:Rule val animatorTestRule: AnimatorTestRule = AnimatorTestRule(this)
 
@@ -111,6 +118,16 @@ class BubbleBarLayerViewTest {
 
         bubblePositioner = BubblePositioner(context, windowManager)
         bubblePositioner.setShowingInBubbleBar(true)
+        val deviceConfig =
+            DeviceConfig(
+                windowBounds = Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
+                isLargeScreen = true,
+                isSmallTablet = false,
+                isLandscape = true,
+                isRtl = false,
+                insets = Insets.of(10, 20, 30, 40)
+            )
+        bubblePositioner.update(deviceConfig)
 
         testBubblesList = mutableListOf()
         val bubbleData = mock<BubbleData>()
@@ -311,6 +328,48 @@ class BubbleBarLayerViewTest {
         assertThat(uiEventLoggerFake.logs[0].eventId)
             .isEqualTo(BubbleLogger.Event.BUBBLE_BAR_MOVED_RIGHT_DRAG_EXP_VIEW.id)
         assertThat(uiEventLoggerFake.logs[0]).hasBubbleInfo(bubble)
+    }
+
+    @Test
+    fun testUpdateExpandedView_updateLocation() {
+        bubblePositioner.bubbleBarLocation = BubbleBarLocation.RIGHT
+        val bubble = createBubble("first")
+
+        getInstrumentation().runOnMainSync {
+            bubbleBarLayerView.showExpandedView(bubble)
+        }
+        waitForExpandedViewAnimation()
+
+        val previousX = bubble.bubbleBarExpandedView!!.x
+
+        bubblePositioner.bubbleBarLocation = BubbleBarLocation.LEFT
+        getInstrumentation().runOnMainSync {
+            bubbleBarLayerView.updateExpandedView()
+        }
+
+        assertThat(bubble.bubbleBarExpandedView!!.x).isNotEqualTo(previousX)
+    }
+
+    @Test
+    fun testUpdatedExpandedView_updateLocation_skipWhileAnimating() {
+        bubblePositioner.bubbleBarLocation = BubbleBarLocation.RIGHT
+        val bubble = createBubble("first")
+
+        getInstrumentation().runOnMainSync {
+            bubbleBarLayerView.showExpandedView(bubble)
+        }
+        waitForExpandedViewAnimation()
+
+        val previousX = bubble.bubbleBarExpandedView!!.x
+        bubble.bubbleBarExpandedView!!.isAnimating = true
+
+        bubblePositioner.bubbleBarLocation = BubbleBarLocation.LEFT
+        getInstrumentation().runOnMainSync {
+            bubbleBarLayerView.updateExpandedView()
+        }
+
+        // Expanded view is not updated while animating
+        assertThat(bubble.bubbleBarExpandedView!!.x).isEqualTo(previousX)
     }
 
     private fun createBubble(key: String): Bubble {
