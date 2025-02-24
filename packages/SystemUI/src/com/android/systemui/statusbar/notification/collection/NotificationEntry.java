@@ -297,20 +297,20 @@ public final class NotificationEntry extends ListEntry {
             return NotificationEntry.this.getRow();
         }
 
+        @Nullable
         @Override
-        public boolean isGroupRoot() {
+        public EntryAdapter getGroupRoot() {
+            // TODO (b/395857098): for backwards compatibility this will return null if called
+            // on a group summary that's not in a bundles, but it should return itself.
             if (isTopLevelEntry() || getParent() == null) {
-                return false;
+                return null;
             }
             if (NotificationEntry.this.getParent() instanceof GroupEntry parentGroupEntry) {
-                return parentGroupEntry.getSummary() == NotificationEntry.this;
+                if (parentGroupEntry.getSummary() != null) {
+                    return parentGroupEntry.getSummary().mEntryAdapter;
+                }
             }
-            return false;
-        }
-
-        @Override
-        public StateFlow<Boolean> isSensitive() {
-            return NotificationEntry.this.isSensitive();
+            return null;
         }
 
         @Override

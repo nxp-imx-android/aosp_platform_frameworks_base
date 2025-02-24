@@ -65,8 +65,8 @@ class BundleEntryTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    fun isGroupRoot_adapter() {
-        assertThat(underTest.entryAdapter.isGroupRoot).isTrue()
+    fun getGroupRoot_adapter() {
+        assertThat(underTest.entryAdapter.groupRoot).isEqualTo(underTest.entryAdapter)
     }
 
     @Test

@@ -25,7 +25,6 @@ import android.app.Notification;
 import android.content.Context;
 import android.os.Build;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -35,19 +34,12 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 
 import java.util.List;
 
-import kotlinx.coroutines.flow.MutableStateFlow;
-import kotlinx.coroutines.flow.StateFlow;
-import kotlinx.coroutines.flow.StateFlowKt;
-
 /**
  * Class to represent notifications bundled by classification.
  */
 public class BundleEntry extends PipelineEntry {
 
     private final BundleEntryAdapter mEntryAdapter;
-
-    // TODO(b/394483200): move NotificationEntry's implementation to PipelineEntry?
-    private final MutableStateFlow<Boolean> mSensitive = StateFlowKt.MutableStateFlow(false);
 
     // TODO (b/389839319): implement the row
     private ExpandableNotificationRow mRow;
@@ -105,26 +97,20 @@ public class BundleEntry extends PipelineEntry {
             return true;
         }
 
-        @NonNull
         @Override
         public String getKey() {
             return mKey;
         }
 
         @Override
-        @Nullable
         public ExpandableNotificationRow getRow() {
             return mRow;
         }
 
+        @Nullable
         @Override
-        public boolean isGroupRoot() {
-            return true;
-        }
-
-        @Override
-        public StateFlow<Boolean> isSensitive() {
-            return BundleEntry.this.mSensitive;
+        public EntryAdapter getGroupRoot() {
+            return this;
         }
 
         @Override

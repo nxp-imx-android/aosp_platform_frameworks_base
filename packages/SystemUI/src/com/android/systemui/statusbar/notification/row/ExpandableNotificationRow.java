@@ -404,25 +404,17 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 : mGroupMembershipManager.isGroupSummary(mEntry);
         if (!shouldShowPublic() && (!mIsMinimized || isExpanded()) && isGroupRoot) {
             mGroupExpansionChanging = true;
-            if (NotificationBundleUi.isEnabled()) {
-                final boolean wasExpanded =  mGroupExpansionManager.isGroupExpanded(mEntryAdapter);
-                boolean nowExpanded = mGroupExpansionManager.toggleGroupExpansion(mEntryAdapter);
-                mOnExpandClickListener.onExpandClicked(this, mEntryAdapter, nowExpanded);
-                if (shouldLogExpandClickMetric) {
-                    mMetricsLogger.action(
-                            MetricsEvent.ACTION_NOTIFICATION_GROUP_EXPANDER, nowExpanded);
-                }
-                onExpansionChanged(true /* userAction */, wasExpanded);
-            } else {
-                final boolean wasExpanded = mGroupExpansionManager.isGroupExpanded(mEntry);
-                boolean nowExpanded = mGroupExpansionManager.toggleGroupExpansion(mEntry);
-                mOnExpandClickListener.onExpandClicked(mEntry, v, nowExpanded);
-                if (shouldLogExpandClickMetric) {
-                    mMetricsLogger.action(
-                            MetricsEvent.ACTION_NOTIFICATION_GROUP_EXPANDER, nowExpanded);
-                }
-                onExpansionChanged(true /* userAction */, wasExpanded);
+            final boolean wasExpanded = NotificationBundleUi.isEnabled()
+                    ? mGroupExpansionManager.isGroupExpanded(mEntryAdapter)
+                    : mGroupExpansionManager.isGroupExpanded(mEntry);
+            boolean nowExpanded = NotificationBundleUi.isEnabled()
+                    ? mGroupExpansionManager.toggleGroupExpansion(mEntryAdapter)
+                    : mGroupExpansionManager.toggleGroupExpansion(mEntry);
+            mOnExpandClickListener.onExpandClicked(mEntry, v, nowExpanded);
+            if (shouldLogExpandClickMetric) {
+                mMetricsLogger.action(MetricsEvent.ACTION_NOTIFICATION_GROUP_EXPANDER, nowExpanded);
             }
+            onExpansionChanged(true /* userAction */, wasExpanded);
         } else if (mEnableNonGroupedNotificationExpand) {
             if (v.isAccessibilityFocused()) {
                 mPrivateLayout.setFocusOnVisibilityChange();
@@ -443,11 +435,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             }
 
             notifyHeightChanged(/* needsAnimation= */ true);
-            if (NotificationBundleUi.isEnabled()) {
-                mOnExpandClickListener.onExpandClicked(this, mEntryAdapter, nowExpanded);
-            } else {
-                mOnExpandClickListener.onExpandClicked(mEntry, v, nowExpanded);
-            }
+            mOnExpandClickListener.onExpandClicked(mEntry, v, nowExpanded);
             if (shouldLogExpandClickMetric) {
                 mMetricsLogger.action(MetricsEvent.ACTION_NOTIFICATION_EXPANDER, nowExpanded);
             }
@@ -2958,9 +2946,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 && !mChildrenContainer.showingAsLowPriority()) {
             final boolean wasExpanded = isGroupExpanded();
             if (NotificationBundleUi.isEnabled()) {
-                if (mEntryAdapter.isGroupRoot()) {
-                    mGroupExpansionManager.setGroupExpanded(mEntryAdapter, userExpanded);
-                }
+                mGroupExpansionManager.setGroupExpanded(mEntryAdapter, userExpanded);
             } else {
                 mGroupExpansionManager.setGroupExpanded(mEntry, userExpanded);
             }
@@ -3454,9 +3440,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     public void makeActionsVisibile() {
         setUserExpanded(true, true);
         if (isChildInGroup()) {
-            if (!NotificationBundleUi.isEnabled()) {
-                // this is only called if row.getParent() instanceof NotificationStackScrollLayout,
-                // so there is never a group to expand
+            if (NotificationBundleUi.isEnabled()) {
+                mGroupExpansionManager.setGroupExpanded(mEntryAdapter, true);
+            } else {
                 mGroupExpansionManager.setGroupExpanded(mEntry, true);
             }
         }
@@ -4040,9 +4026,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     public interface OnExpandClickListener {
         void onExpandClicked(NotificationEntry clickedEntry, View clickedView, boolean nowExpanded);
-
-        void onExpandClicked(ExpandableNotificationRow row, EntryAdapter clickedEntry,
-                boolean nowExpanded);
     }
 
     @Override
