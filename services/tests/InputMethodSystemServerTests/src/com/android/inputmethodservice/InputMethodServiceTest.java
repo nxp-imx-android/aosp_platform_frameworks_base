@@ -1294,7 +1294,7 @@ public class InputMethodServiceTest {
         mInstrumentation.waitForIdleSync();
         final var postScreenshot = mInstrumentation.getUiAutomation().takeScreenshot();
         mDumpOnFailure.dumpOnFailure("post-getUiObject", postScreenshot);
-        assertWithMessage("UiObject with " + bySelector + " was found").that(uiObject).isNull();
+        assertWithMessage("UiObject with " + bySelector + " was found").that(uiObject).isNotNull();
         return uiObject;
     }
 
