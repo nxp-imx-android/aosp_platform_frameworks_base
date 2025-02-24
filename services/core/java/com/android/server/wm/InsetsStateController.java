@@ -225,13 +225,16 @@ class InsetsStateController {
         for (int i = mProviders.size() - 1; i >= 0; i--) {
             final InsetsSourceProvider provider = mProviders.valueAt(i);
             final @InsetsType int type = provider.getSource().getType();
+            final boolean isImeProvider = type == WindowInsets.Type.ime();
             if ((type & changedTypes) != 0) {
-                final boolean isImeProvider = type == WindowInsets.Type.ime();
                 changed |= provider.updateClientVisibility(
-                                caller, isImeProvider ? statsToken : null)
+                        caller, isImeProvider ? statsToken : null)
                         // Fake control target cannot change the client visibility, but it should
                         // change the insets with its newly requested visibility.
                         || (caller == provider.getFakeControlTarget());
+            } else if (isImeProvider && android.view.inputmethod.Flags.refactorInsetsController()) {
+                ImeTracker.forLogging().onCancelled(statsToken,
+                        ImeTracker.PHASE_WM_SET_REMOTE_TARGET_IME_VISIBILITY);
             }
         }
         if (changed) {
