@@ -16,6 +16,7 @@
 
 package com.android.systemui.volume.dialog.sliders.ui.viewmodel
 
+import android.content.applicationContext
 import com.android.internal.logging.uiEventLogger
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -29,6 +30,7 @@ import com.android.systemui.volume.dialog.sliders.domain.model.volumeDialogSlide
 val Kosmos.volumeDialogSliderViewModel by
     Kosmos.Fixture {
         VolumeDialogSliderViewModel(
+            context = applicationContext,
             sliderType = volumeDialogSliderType,
             interactor = volumeDialogSliderInteractor,
             inputEventsInteractor = volumeDialogSliderInputEventsInteractor,

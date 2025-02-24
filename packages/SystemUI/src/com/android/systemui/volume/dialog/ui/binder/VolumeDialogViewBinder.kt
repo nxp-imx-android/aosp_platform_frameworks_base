@@ -18,10 +18,12 @@ package com.android.systemui.volume.dialog.ui.binder
 
 import android.app.Dialog
 import android.content.Context
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.view.WindowInsets
+import android.view.accessibility.AccessibilityEvent
 import androidx.compose.ui.util.lerp
 import androidx.core.view.updatePadding
 import androidx.dynamicanimation.animation.DynamicAnimation
@@ -47,6 +49,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.scan
@@ -81,9 +84,18 @@ constructor(
         // Root view of the Volume Dialog.
         val root: ViewGroup = dialog.requireViewById(R.id.volume_dialog)
 
+        root.accessibilityDelegate = Accessibility(viewModel)
+        root.setOnHoverListener { _, event ->
+            viewModel.onHover(
+                event.actionMasked == MotionEvent.ACTION_HOVER_ENTER ||
+                    event.actionMasked == MotionEvent.ACTION_HOVER_MOVE
+            )
+            true
+        }
         animateVisibility(root, dialog, viewModel.dialogVisibilityModel)
 
         viewModel.dialogTitle
+            .filter { it.isNotEmpty() }
             .onEach { dialog.window?.setTitle(it) }
             .launchInTraced("VDVB#dialogTitle", this)
         viewModel.isHalfOpened
@@ -150,6 +162,7 @@ constructor(
                             jankListenerFactory.show(view).also(animation::addUpdateListener)
                         animation.animateToFinalPosition(FRACTION_SHOW)
                     }
+
                     is VolumeDialogVisibilityModel.Dismissed -> {
                         tracer.traceVisibilityEnd(it)
                         junkListener?.let(animation::removeUpdateListener)
@@ -158,6 +171,7 @@ constructor(
                         animation.suspendAnimate(FRACTION_HIDE)
                         dialog.dismiss()
                     }
+
                     is VolumeDialogVisibilityModel.Invisible -> {
                         // do nothing
                     }
@@ -199,5 +213,30 @@ constructor(
             return
         }
         animate().setDuration(150).translationY(offsetPx).suspendAnimate()
+    }
+
+    private class Accessibility(private val viewModel: VolumeDialogViewModel) :
+        View.AccessibilityDelegate() {
+
+        override fun dispatchPopulateAccessibilityEvent(
+            host: View,
+            event: AccessibilityEvent,
+        ): Boolean {
+            // Activities populate their title here. Follow that example.
+            val title = viewModel.dialogTitle.value
+            if (title.isNotEmpty()) {
+                event.text.add(title)
+            }
+            return true
+        }
+
+        override fun onRequestSendAccessibilityEvent(
+            host: ViewGroup,
+            child: View,
+            event: AccessibilityEvent,
+        ): Boolean {
+            viewModel.resetDialogTimeout()
+            return super.onRequestSendAccessibilityEvent(host, child, event)
+        }
     }
 }

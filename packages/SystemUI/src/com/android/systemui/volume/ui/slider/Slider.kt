@@ -250,8 +250,8 @@ private fun Haptics.createViewModel(
 
 data class AccessibilityParams(
     val label: String,
-    val currentStateDescription: String?,
-    val disabledMessage: String?,
+    val currentStateDescription: String? = null,
+    val disabledMessage: String? = null,
 )
 
 sealed interface Haptics {

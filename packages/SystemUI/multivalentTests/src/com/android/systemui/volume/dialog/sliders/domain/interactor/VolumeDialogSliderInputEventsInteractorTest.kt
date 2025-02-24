@@ -17,10 +17,10 @@
 package com.android.systemui.volume.dialog.sliders.domain.interactor
 
 import android.app.ActivityManager
-import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.accessibility.data.repository.accessibilityRepository
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.fakeVolumeDialogController
@@ -35,24 +35,19 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.runner.RunWith
 
 private val volumeDialogTimeout = 3.seconds
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@TestableLooper.RunWithLooper
 class VolumeDialogSliderInputEventsInteractorTest : SysuiTestCase() {
 
-    private val kosmos = testKosmos()
+    private val kosmos =
+        testKosmos().apply { accessibilityRepository.setRecommendedTimeout(volumeDialogTimeout) }
 
-    private lateinit var underTest: VolumeDialogSliderInputEventsInteractor
-
-    @Before
-    fun setup() {
-        underTest = kosmos.volumeDialogSliderInputEventsInteractor
-    }
+    private val underTest: VolumeDialogSliderInputEventsInteractor =
+        kosmos.volumeDialogSliderInputEventsInteractor
 
     @Test
     fun inputEvents_resetDialogVisibilityTimeout() =
