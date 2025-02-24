@@ -26,7 +26,6 @@ import android.view.Display.INVALID_DISPLAY
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE
-import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
@@ -1239,39 +1238,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
         assertThat(repo.isTaskMinimizedPipInDisplay(DEFAULT_DESKTOP_ID, taskId = 1)).isTrue()
         assertThat(repo.isTaskMinimizedPipInDisplay(SECOND_DISPLAY, taskId = 2)).isTrue()
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
-    fun setPipShouldKeepDesktopActive_shouldKeepDesktopActive() {
-        assertThat(repo.shouldDesktopBeActiveForPip(DEFAULT_DESKTOP_ID)).isFalse()
-
-        repo.setTaskInPip(DEFAULT_DESKTOP_ID, taskId = 1, enterPip = true)
-        repo.setPipShouldKeepDesktopActive(DEFAULT_DESKTOP_ID, keepActive = true)
-
-        assertThat(repo.shouldDesktopBeActiveForPip(DEFAULT_DESKTOP_ID)).isTrue()
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
-    fun setPipShouldNotKeepDesktopActive_shouldNotKeepDesktopActive() {
-        repo.setTaskInPip(DEFAULT_DESKTOP_ID, taskId = 1, enterPip = true)
-        assertThat(repo.shouldDesktopBeActiveForPip(DEFAULT_DESKTOP_ID)).isTrue()
-
-        repo.setPipShouldKeepDesktopActive(DEFAULT_DESKTOP_ID, keepActive = false)
-
-        assertThat(repo.shouldDesktopBeActiveForPip(DEFAULT_DESKTOP_ID)).isFalse()
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
-    fun removeTaskInPip_shouldNotKeepDesktopActive() {
-        repo.setTaskInPip(DEFAULT_DESKTOP_ID, taskId = 1, enterPip = true)
-        assertThat(repo.shouldDesktopBeActiveForPip(DEFAULT_DESKTOP_ID)).isTrue()
-
-        repo.setTaskInPip(DEFAULT_DESKTOP_ID, taskId = 1, enterPip = false)
-
-        assertThat(repo.shouldDesktopBeActiveForPip(DEFAULT_DESKTOP_ID)).isFalse()
     }
 
     @Test

@@ -28,7 +28,6 @@ import androidx.core.util.forEach
 import androidx.core.util.valueIterator
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
@@ -70,9 +69,6 @@ class DesktopRepository(
      *   fullscreen task launched on top of the desk. Cleared when the transparent task is closed or
      *   sent to back. (top is at index 0).
      * @property pipTaskId the task id of PiP task entered while in Desktop Mode.
-     * @property pipShouldKeepDesktopActive whether an active PiP window should keep the desk
-     *   active. Only false when we are explicitly exiting Desktop Mode (via user action) while
-     *   there is an active PiP window.
      */
     private data class Desk(
         val deskId: Int,
@@ -86,8 +82,6 @@ class DesktopRepository(
         var fullImmersiveTaskId: Int? = null,
         var topTransparentFullscreenTaskId: Int? = null,
         var pipTaskId: Int? = null,
-        // TODO: b/389960283 - consolidate this with [DesktopDisplay#activeDeskId].
-        var pipShouldKeepDesktopActive: Boolean = true,
     ) {
         fun deepCopy(): Desk =
             Desk(
@@ -101,7 +95,6 @@ class DesktopRepository(
                 fullImmersiveTaskId = fullImmersiveTaskId,
                 topTransparentFullscreenTaskId = topTransparentFullscreenTaskId,
                 pipTaskId = pipTaskId,
-                pipShouldKeepDesktopActive = pipShouldKeepDesktopActive,
             )
 
         // TODO: b/362720497 - remove when multi-desktops is enabled where instances aren't
@@ -115,7 +108,6 @@ class DesktopRepository(
             fullImmersiveTaskId = null
             topTransparentFullscreenTaskId = null
             pipTaskId = null
-            pipShouldKeepDesktopActive = true
         }
     }
 
@@ -625,7 +617,6 @@ class DesktopRepository(
                 ?: error("Expected active desk in display: $displayId")
         if (enterPip) {
             activeDesk.pipTaskId = taskId
-            activeDesk.pipShouldKeepDesktopActive = true
         } else {
             activeDesk.pipTaskId =
                 if (activeDesk.pipTaskId == taskId) null
@@ -638,17 +629,7 @@ class DesktopRepository(
                     activeDesk.pipTaskId
                 }
         }
-        notifyVisibleTaskListeners(displayId, getVisibleTaskCount(displayId))
     }
-
-    /**
-     * Returns whether there is a PiP that was entered/minimized from Desktop in this display's
-     * active desk.
-     *
-     * TODO: b/389960283 - add explicit [deskId] argument.
-     */
-    fun isMinimizedPipPresentInDisplay(displayId: Int): Boolean =
-        desktopData.getActiveDesk(displayId)?.pipTaskId != null
 
     /**
      * Returns whether the given task is the Desktop-entered PiP task in this display's active desk.
@@ -657,25 +638,6 @@ class DesktopRepository(
      */
     fun isTaskMinimizedPipInDisplay(displayId: Int, taskId: Int): Boolean =
         desktopData.getActiveDesk(displayId)?.pipTaskId == taskId
-
-    /**
-     * Returns whether a desk should be active in this display due to active PiP.
-     *
-     * TODO: b/389960283 - add explicit [deskId] argument.
-     */
-    fun shouldDesktopBeActiveForPip(displayId: Int): Boolean =
-        Flags.enableDesktopWindowingPip() &&
-            isMinimizedPipPresentInDisplay(displayId) &&
-            (desktopData.getActiveDesk(displayId)?.pipShouldKeepDesktopActive ?: false)
-
-    /**
-     * Saves whether a PiP window should keep Desktop session active in this display.
-     *
-     * TODO: b/389960283 - add explicit [deskId] argument.
-     */
-    fun setPipShouldKeepDesktopActive(displayId: Int, keepActive: Boolean) {
-        desktopData.getActiveDesk(displayId)?.pipShouldKeepDesktopActive = keepActive
-    }
 
     /**
      * Saves callback to handle a pending PiP transition being aborted.
@@ -772,12 +734,8 @@ class DesktopRepository(
     }
 
     private fun notifyVisibleTaskListeners(displayId: Int, visibleTasksCount: Int) {
-        val visibleAndPipTasksCount =
-            if (shouldDesktopBeActiveForPip(displayId)) visibleTasksCount + 1 else visibleTasksCount
         visibleTasksListeners.forEach { (listener, executor) ->
-            executor.execute {
-                listener.onTasksVisibilityChanged(displayId, visibleAndPipTasksCount)
-            }
+            executor.execute { listener.onTasksVisibilityChanged(displayId, visibleTasksCount) }
         }
     }
 

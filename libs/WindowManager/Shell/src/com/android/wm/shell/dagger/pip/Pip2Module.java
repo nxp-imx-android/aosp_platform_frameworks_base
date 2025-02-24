@@ -42,7 +42,6 @@ import com.android.wm.shell.common.pip.SizeSpecSource;
 import com.android.wm.shell.dagger.WMShellBaseModule;
 import com.android.wm.shell.dagger.WMSingleton;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
-import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
 import com.android.wm.shell.pip2.phone.PhonePipMenuController;
 import com.android.wm.shell.pip2.phone.PipController;
 import com.android.wm.shell.pip2.phone.PipMotionHelper;
@@ -238,11 +237,9 @@ public abstract class Pip2Module {
     static PipDesktopState providePipDesktopState(
             PipDisplayLayoutState pipDisplayLayoutState,
             Optional<DesktopUserRepositories> desktopUserRepositoriesOptional,
-            Optional<DesktopWallpaperActivityTokenProvider>
-                    desktopWallpaperActivityTokenProviderOptional,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer
     ) {
         return new PipDesktopState(pipDisplayLayoutState, desktopUserRepositoriesOptional,
-                desktopWallpaperActivityTokenProviderOptional, rootTaskDisplayAreaOrganizer);
+                rootTaskDisplayAreaOrganizer);
     }
 }

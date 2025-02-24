@@ -19,18 +19,12 @@ package com.android.wm.shell.common.pip;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 
-import android.app.ActivityManager;
 import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
-import android.window.WindowContainerToken;
-import android.window.WindowContainerTransaction;
 
 import com.android.window.flags.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
-import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
-import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
-import com.android.wm.shell.pip2.phone.PipTransition;
 
 import java.util.Optional;
 
@@ -38,32 +32,23 @@ import java.util.Optional;
 public class PipDesktopState {
     private final PipDisplayLayoutState mPipDisplayLayoutState;
     private final Optional<DesktopUserRepositories> mDesktopUserRepositoriesOptional;
-    private final Optional<DesktopWallpaperActivityTokenProvider>
-            mDesktopWallpaperActivityTokenProviderOptional;
     private final RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
 
     public PipDesktopState(PipDisplayLayoutState pipDisplayLayoutState,
             Optional<DesktopUserRepositories> desktopUserRepositoriesOptional,
-            Optional<DesktopWallpaperActivityTokenProvider>
-                    desktopWallpaperActivityTokenProviderOptional,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer) {
         mPipDisplayLayoutState = pipDisplayLayoutState;
         mDesktopUserRepositoriesOptional = desktopUserRepositoriesOptional;
-        mDesktopWallpaperActivityTokenProviderOptional =
-                desktopWallpaperActivityTokenProviderOptional;
         mRootTaskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer;
     }
 
     /**
      * Returns whether PiP in Desktop Windowing is enabled by checking the following:
      * - Desktop Windowing in PiP flag is enabled
-     * - DesktopWallpaperActivityTokenProvider is injected
      * - DesktopUserRepositories is injected
      */
     public boolean isDesktopWindowingPipEnabled() {
-        return Flags.enableDesktopWindowingPip()
-                && mDesktopWallpaperActivityTokenProviderOptional.isPresent()
-                && mDesktopUserRepositoriesOptional.isPresent();
+        return Flags.enableDesktopWindowingPip() && mDesktopUserRepositoriesOptional.isPresent();
     }
 
     /** Returns whether PiP in Connected Displays is enabled by checking the flag. */
@@ -89,43 +74,8 @@ public class PipDesktopState {
             return false;
         }
         final int displayId = mPipDisplayLayoutState.getDisplayId();
-        return getDesktopRepository().isAnyDeskActive(displayId)
-                || getDesktopWallpaperActivityTokenProvider().isWallpaperActivityVisible(displayId)
+        return mDesktopUserRepositoriesOptional.get().getCurrent().isAnyDeskActive(displayId)
                 || isDisplayInFreeform();
-    }
-
-    /** Returns whether {@param pipTask} would be entering in a Desktop Mode session. */
-    public boolean isPipEnteringInDesktopMode(ActivityManager.RunningTaskInfo pipTask) {
-        // Early return if PiP in Desktop Windowing is not supported.
-        if (!isDesktopWindowingPipEnabled()) {
-            return false;
-        }
-        final DesktopRepository desktopRepository = getDesktopRepository();
-        return desktopRepository.isAnyDeskActive(pipTask.getDisplayId())
-                || desktopRepository.isMinimizedPipPresentInDisplay(pipTask.getDisplayId());
-    }
-
-    /**
-     * Invoked when an EXIT_PiP transition is detected in {@link PipTransition}.
-     * Returns whether the PiP exiting should also trigger the active Desktop Mode session to exit.
-     */
-    public boolean shouldExitPipExitDesktopMode() {
-        // Early return if PiP in Desktop Windowing is not supported.
-        if (!isDesktopWindowingPipEnabled()) {
-            return false;
-        }
-        final int displayId = mPipDisplayLayoutState.getDisplayId();
-        return !getDesktopRepository().isAnyDeskActive(displayId)
-                && getDesktopWallpaperActivityTokenProvider().isWallpaperActivityVisible(displayId);
-    }
-
-    /**
-     * Returns a {@link WindowContainerTransaction} that reorders the {@link WindowContainerToken}
-     * of the DesktopWallpaperActivity for the display with the given {@param displayId}.
-     */
-    public WindowContainerTransaction getWallpaperActivityTokenWct(int displayId) {
-        return new WindowContainerTransaction().reorder(
-                getDesktopWallpaperActivityTokenProvider().getToken(displayId), /* onTop= */ false);
     }
 
     /**
@@ -148,13 +98,5 @@ public class PipDesktopState {
 
         // By default, or if the task is going to fullscreen, reset the windowing mode to undefined.
         return WINDOWING_MODE_UNDEFINED;
-    }
-
-    private DesktopRepository getDesktopRepository() {
-        return mDesktopUserRepositoriesOptional.get().getCurrent();
-    }
-
-    private DesktopWallpaperActivityTokenProvider getDesktopWallpaperActivityTokenProvider() {
-        return mDesktopWallpaperActivityTokenProviderOptional.get();
     }
 }

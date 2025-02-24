@@ -41,7 +41,6 @@ import androidx.test.filters.SmallTest;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
-import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -62,10 +61,7 @@ import java.util.Optional;
 public class PipDesktopStateTest {
     @Mock private PipDisplayLayoutState mMockPipDisplayLayoutState;
     @Mock private Optional<DesktopUserRepositories> mMockDesktopUserRepositoriesOptional;
-    @Mock private Optional<DesktopWallpaperActivityTokenProvider>
-            mMockDesktopWallpaperActivityTokenProviderOptional;
     @Mock private DesktopUserRepositories mMockDesktopUserRepositories;
-    @Mock private DesktopWallpaperActivityTokenProvider mMockDesktopWallpaperActivityTokenProvider;
     @Mock private DesktopRepository mMockDesktopRepository;
     @Mock private RootTaskDisplayAreaOrganizer mMockRootTaskDisplayAreaOrganizer;
     @Mock private ActivityManager.RunningTaskInfo mMockTaskInfo;
@@ -78,11 +74,8 @@ public class PipDesktopStateTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mMockDesktopUserRepositoriesOptional.get()).thenReturn(mMockDesktopUserRepositories);
-        when(mMockDesktopWallpaperActivityTokenProviderOptional.get()).thenReturn(
-                mMockDesktopWallpaperActivityTokenProvider);
         when(mMockDesktopUserRepositories.getCurrent()).thenReturn(mMockDesktopRepository);
         when(mMockDesktopUserRepositoriesOptional.isPresent()).thenReturn(true);
-        when(mMockDesktopWallpaperActivityTokenProviderOptional.isPresent()).thenReturn(true);
 
         when(mMockTaskInfo.getDisplayId()).thenReturn(DISPLAY_ID);
         when(mMockPipDisplayLayoutState.getDisplayId()).thenReturn(DISPLAY_ID);
@@ -93,7 +86,6 @@ public class PipDesktopStateTest {
 
         mPipDesktopState = new PipDesktopState(mMockPipDisplayLayoutState,
                 mMockDesktopUserRepositoriesOptional,
-                mMockDesktopWallpaperActivityTokenProviderOptional,
                 mMockRootTaskDisplayAreaOrganizer);
     }
 
@@ -110,67 +102,9 @@ public class PipDesktopStateTest {
     }
 
     @Test
-    public void isDesktopWindowingPipEnabled_desktopWallpaperEmpty_returnsFalse() {
-        when(mMockDesktopWallpaperActivityTokenProviderOptional.isPresent()).thenReturn(false);
-
-        assertFalse(mPipDesktopState.isDesktopWindowingPipEnabled());
-    }
-
-    @Test
     @EnableFlags(FLAG_ENABLE_CONNECTED_DISPLAYS_PIP)
     public void isConnectedDisplaysPipEnabled_returnsTrue() {
         assertTrue(mPipDesktopState.isConnectedDisplaysPipEnabled());
-    }
-
-    @Test
-    public void isPipEnteringInDesktopMode_visibleCountZero_minimizedPipPresent_returnsTrue() {
-        when(mMockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false);
-        when(mMockDesktopRepository.isMinimizedPipPresentInDisplay(DISPLAY_ID)).thenReturn(true);
-
-        assertTrue(mPipDesktopState.isPipEnteringInDesktopMode(mMockTaskInfo));
-    }
-
-    @Test
-    public void isPipEnteringInDesktopMode_visibleCountNonzero_minimizedPipAbsent_returnsTrue() {
-        when(mMockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true);
-        when(mMockDesktopRepository.isMinimizedPipPresentInDisplay(DISPLAY_ID)).thenReturn(false);
-
-        assertTrue(mPipDesktopState.isPipEnteringInDesktopMode(mMockTaskInfo));
-    }
-
-    @Test
-    public void isPipEnteringInDesktopMode_visibleCountZero_minimizedPipAbsent_returnsFalse() {
-        when(mMockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false);
-        when(mMockDesktopRepository.isMinimizedPipPresentInDisplay(DISPLAY_ID)).thenReturn(false);
-
-        assertFalse(mPipDesktopState.isPipEnteringInDesktopMode(mMockTaskInfo));
-    }
-
-    @Test
-    public void shouldExitPipExitDesktopMode_visibleCountZero_wallpaperInvisible_returnsFalse() {
-        when(mMockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false);
-        when(mMockDesktopWallpaperActivityTokenProvider.isWallpaperActivityVisible(
-                DISPLAY_ID)).thenReturn(false);
-
-        assertFalse(mPipDesktopState.shouldExitPipExitDesktopMode());
-    }
-
-    @Test
-    public void shouldExitPipExitDesktopMode_visibleCountNonzero_wallpaperVisible_returnsFalse() {
-        when(mMockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true);
-        when(mMockDesktopWallpaperActivityTokenProvider.isWallpaperActivityVisible(
-                DISPLAY_ID)).thenReturn(true);
-
-        assertFalse(mPipDesktopState.shouldExitPipExitDesktopMode());
-    }
-
-    @Test
-    public void shouldExitPipExitDesktopMode_visibleCountZero_wallpaperVisible_returnsTrue() {
-        when(mMockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false);
-        when(mMockDesktopWallpaperActivityTokenProvider.isWallpaperActivityVisible(
-                DISPLAY_ID)).thenReturn(true);
-
-        assertTrue(mPipDesktopState.shouldExitPipExitDesktopMode());
     }
 
     @Test
