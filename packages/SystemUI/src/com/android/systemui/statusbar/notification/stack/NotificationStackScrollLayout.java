@@ -2134,7 +2134,7 @@ public class NotificationStackScrollLayout
         }
     }
 
-    public ViewGroup getViewParentForNotification(NotificationEntry entry) {
+    public ViewGroup getViewParentForNotification() {
         return this;
     }
 

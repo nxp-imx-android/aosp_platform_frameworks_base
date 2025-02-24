@@ -84,7 +84,7 @@ class NotificationTransitionAnimatorControllerTest : SysuiTestCase() {
         controller.onIntentStarted(willAnimate = false)
 
         assertTrue(HeadsUpUtil.isClickedHeadsUpNotification(notification))
-        assertFalse(notification.entry.isExpandAnimationRunning)
+        assertFalse(notification.isLaunchAnimationRunning)
         val isExpandAnimationRunning by
             testScope.collectLastValue(
                 notificationLaunchAnimationInteractor.isLaunchAnimationRunning
@@ -107,7 +107,7 @@ class NotificationTransitionAnimatorControllerTest : SysuiTestCase() {
         controller.onTransitionAnimationCancelled()
 
         assertTrue(HeadsUpUtil.isClickedHeadsUpNotification(notification))
-        assertFalse(notification.entry.isExpandAnimationRunning)
+        assertFalse(notification.isLaunchAnimationRunning)
         val isExpandAnimationRunning by
             testScope.collectLastValue(
                 notificationLaunchAnimationInteractor.isLaunchAnimationRunning
@@ -130,7 +130,7 @@ class NotificationTransitionAnimatorControllerTest : SysuiTestCase() {
         controller.onTransitionAnimationEnd(isExpandingFullyAbove = true)
 
         assertFalse(HeadsUpUtil.isClickedHeadsUpNotification(notification))
-        assertFalse(notification.entry.isExpandAnimationRunning)
+        assertFalse(notification.isLaunchAnimationRunning)
         val isExpandAnimationRunning by
             testScope.collectLastValue(
                 notificationLaunchAnimationInteractor.isLaunchAnimationRunning
@@ -199,7 +199,7 @@ class NotificationTransitionAnimatorControllerTest : SysuiTestCase() {
     fun testNotificationIsExpandingDuringAnimation() {
         controller.onIntentStarted(willAnimate = true)
 
-        assertTrue(notification.entry.isExpandAnimationRunning)
+        assertTrue(notification.isLaunchAnimationRunning)
         val isExpandAnimationRunning by
             testScope.collectLastValue(
                 notificationLaunchAnimationInteractor.isLaunchAnimationRunning

@@ -299,6 +299,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private boolean mIsSystemChildExpanded;
     private PinnedStatus mPinnedStatus = PinnedStatus.NotPinned;
     private boolean mExpandAnimationRunning;
+    private boolean mLaunchAnimationRunning;
     private AboveShelfChangedListener mAboveShelfChangedListener;
     private HeadsUpManager mHeadsUpManager;
     private Consumer<Boolean> mHeadsUpAnimatingAwayListener;
@@ -4476,5 +4477,23 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             return;
         }
         mLogger.logRemoveTransientRow(row.getLoggingKey(), mLoggingKey);
+    }
+
+    /** Set whether this notification is currently used to animate a launch. */
+    public void setLaunchAnimationRunning(boolean launchAnimationRunning) {
+        if (NotificationBundleUi.isEnabled()) {
+            mLaunchAnimationRunning = launchAnimationRunning;
+        } else {
+            getEntry().setExpandAnimationRunning(launchAnimationRunning);
+        }
+    }
+
+    /** Whether this notification is currently used to animate a launch. */
+    public boolean isLaunchAnimationRunning() {
+        if (NotificationBundleUi.isEnabled()) {
+            return mLaunchAnimationRunning;
+        } else {
+            return getEntry().isExpandAnimationRunning();
+        }
     }
 }
