@@ -62,7 +62,7 @@ import com.android.systemui.scene.domain.startable.scrimStartable
 import com.android.systemui.scene.sceneContainerConfig
 import com.android.systemui.scene.shared.model.sceneDataSource
 import com.android.systemui.scene.ui.view.mockWindowRootViewProvider
-import com.android.systemui.settings.brightness.domain.interactor.brightnessMirrorShowingInteractor
+import com.android.systemui.settings.brightness.data.repository.brightnessMirrorShowingRepository
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeLayoutParams
@@ -162,7 +162,7 @@ class KosmosJavaAdapter() {
     val sharedNotificationContainerInteractor by lazy {
         kosmos.sharedNotificationContainerInteractor
     }
-    val brightnessMirrorShowingInteractor by lazy { kosmos.brightnessMirrorShowingInteractor }
+    val brightnessMirrorShowingRepository by lazy { kosmos.brightnessMirrorShowingRepository }
     val qsLongPressEffect by lazy { kosmos.qsLongPressEffect }
     val shadeController by lazy { kosmos.shadeController }
     val shadeRepository by lazy { kosmos.shadeRepository }
