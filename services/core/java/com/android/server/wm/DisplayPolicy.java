@@ -1875,18 +1875,40 @@ public class DisplayPolicy {
     }
 
     void notifyDisplayAddSystemDecorations() {
-        mHandler.post(() -> {
+        if (enableDisplayContentModeManagement()) {
             final int displayId = getDisplayId();
-            StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
-            if (statusBar != null) {
-                statusBar.onDisplayAddSystemDecorations(displayId);
-            }
-            final WallpaperManagerInternal wpMgr = LocalServices
-                    .getService(WallpaperManagerInternal.class);
-            if (wpMgr != null) {
-                wpMgr.onDisplayAddSystemDecorations(displayId);
-            }
-        });
+            final boolean isSystemDecorationsSupported =
+                    mDisplayContent.isSystemDecorationsSupported();
+            final boolean isHomeSupported = mDisplayContent.isHomeSupported();
+            mHandler.post(() -> {
+                if (isSystemDecorationsSupported) {
+                    StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
+                    if (statusBar != null) {
+                        statusBar.onDisplayAddSystemDecorations(displayId);
+                    }
+                }
+                if (isHomeSupported) {
+                    final WallpaperManagerInternal wpMgr =
+                            LocalServices.getService(WallpaperManagerInternal.class);
+                    if (wpMgr != null) {
+                        wpMgr.onDisplayAddSystemDecorations(displayId);
+                    }
+                }
+            });
+        } else {
+            mHandler.post(() -> {
+                final int displayId = getDisplayId();
+                StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
+                if (statusBar != null) {
+                    statusBar.onDisplayAddSystemDecorations(displayId);
+                }
+                final WallpaperManagerInternal wpMgr = LocalServices
+                        .getService(WallpaperManagerInternal.class);
+                if (wpMgr != null) {
+                    wpMgr.onDisplayAddSystemDecorations(displayId);
+                }
+            });
+        }
     }
 
     void notifyDisplayRemoveSystemDecorations() {
