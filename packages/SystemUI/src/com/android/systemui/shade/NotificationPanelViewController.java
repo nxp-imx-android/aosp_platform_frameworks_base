@@ -1788,7 +1788,8 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
         // height - which means user is swiping down. Otherwise shade QS will either not show at all
         // with HUN movement or it will blink when touching HUN initially
         boolean qsShouldExpandWithHeadsUp = !mSplitShadeEnabled
-                || (!mHeadsUpManager.isTrackingHeadsUp() || expandedHeight > mHeadsUpStartHeight);
+                || (!mHeadsUpManager.isTrackingHeadsUp().getValue()
+                || expandedHeight > mHeadsUpStartHeight);
         if (goingBetweenClosedShadeAndExpandedQs && qsShouldExpandWithHeadsUp) {
             float qsExpansionFraction;
             if (mSplitShadeEnabled) {
@@ -2048,7 +2049,7 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
         // motion has the expected speed. We also only want this on non-lockscreen for now.
         if (mSplitShadeEnabled && mBarState == SHADE) {
             boolean transitionFromHeadsUp = (mHeadsUpManager != null
-                    && mHeadsUpManager.isTrackingHeadsUp()) || mExpandingFromHeadsUp;
+                    && mHeadsUpManager.isTrackingHeadsUp().getValue()) || mExpandingFromHeadsUp;
             // heads-up starting height is too close to mSplitShadeFullTransitionDistance and
             // when dragging HUN transition is already 90% complete. It makes shade become
             // immediately visible when starting to drag. We want to set distance so that

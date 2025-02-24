@@ -91,16 +91,17 @@ import com.android.systemui.statusbar.policy.dagger.RemoteInputViewSubcomponent
 import com.android.systemui.util.Assert.runWithCurrentThreadAsMainThread
 import com.android.systemui.util.DeviceConfigProxyFake
 import com.android.systemui.util.concurrency.FakeExecutor
-import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
 import org.junit.Assert.assertTrue
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
+import org.mockito.kotlin.whenever
 
 class ExpandableNotificationRowBuilder(
     private val context: Context,
@@ -149,7 +150,10 @@ class ExpandableNotificationRowBuilder(
 
         mGroupExpansionManager = GroupExpansionManagerImpl(mDumpManager, mGroupMembershipManager)
         mUserManager = Mockito.mock(UserManager::class.java, STUB_ONLY)
-        mHeadsUpManager = Mockito.mock(HeadsUpManager::class.java, STUB_ONLY)
+        mHeadsUpManager =
+            Mockito.mock(HeadsUpManager::class.java, STUB_ONLY).apply {
+                whenever(isTrackingHeadsUp()).thenReturn(MutableStateFlow(false))
+            }
         mIconManager =
             IconManager(
                 Mockito.mock(CommonNotifCollection::class.java, STUB_ONLY),

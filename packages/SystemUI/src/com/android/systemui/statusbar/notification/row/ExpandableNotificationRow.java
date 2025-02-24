@@ -3728,7 +3728,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (!ignoreTemporaryStates && mGuts != null && mGuts.isExposed()) {
             return mGuts.getIntrinsicHeight();
         } else if (!ignoreTemporaryStates && canShowHeadsUp() && mIsHeadsUp
-                && mHeadsUpManager.isTrackingHeadsUp()) {
+                && mHeadsUpManager.isTrackingHeadsUp().getValue()) {
             return getPinnedHeadsUpHeight(false /* atLeastMinHeight */);
         } else if (mIsSummaryWithChildren && !isGroupExpanded() && !shouldShowPublic()) {
             return mChildrenContainer.getMinHeight();
