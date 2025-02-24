@@ -840,8 +840,6 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         proc.pauseConfigurationDispatch();
 
         try {
-            // schedule launch ticks to collect information about slow apps.
-            r.startLaunchTickingLocked();
             r.lastLaunchTime = SystemClock.uptimeMillis();
             r.setProcess(proc);
 
@@ -1485,7 +1483,6 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             if (DEBUG_IDLE) Slog.d(TAG_IDLE, "activityIdleInternal: Callers="
                     + Debug.getCallers(4));
             mHandler.removeMessages(IDLE_TIMEOUT_MSG, r);
-            r.finishLaunchTickingLocked();
             if (fromTimeout) {
                 reportActivityLaunched(fromTimeout, r, INVALID_DELAY, -1 /* launchState */);
             }
@@ -2766,10 +2763,6 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 case TOP_RESUMED_STATE_LOSS_TIMEOUT_MSG: {
                     final ActivityRecord r = (ActivityRecord) msg.obj;
                     Slog.w(TAG, "Activity top resumed state loss timeout for " + r);
-                    if (r.hasProcess()) {
-                        mService.logAppTooSlow(r.app, r.topResumedStateLossTime,
-                                "top state loss for " + r);
-                    }
                     handleTopResumedStateReleased(true /* timeout */);
                 } break;
                 default:

@@ -5685,10 +5685,6 @@ class Task extends TaskFragment {
         return foundParentInTask;
     }
 
-    void removeLaunchTickMessages() {
-        forAllActivities(ActivityRecord::removeLaunchTickRunnable);
-    }
-
     private void updateTransitLocked(@WindowManager.TransitionType int transit,
             ActivityOptions options) {
         if (options != null) {
