@@ -28,7 +28,7 @@ class FakeAudioSharingRepository : AudioSharingRepository {
 
     private val mutableInAudioSharing: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    private val mutableAudioSourceStateUpdate = MutableSharedFlow<Unit>()
+    private val mutableAudioSourceStateUpdate = MutableSharedFlow<Unit>(replay = 1)
 
     var sourceAdded: Boolean = false
         private set
