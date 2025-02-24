@@ -16,9 +16,11 @@
 
 package com.android.wm.shell.pip2.phone;
 
+import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.os.SystemProperties;
 import android.view.SurfaceControl;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
@@ -28,6 +30,7 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.common.ScreenshotUtils;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDesktopState;
@@ -39,12 +42,22 @@ import com.android.wm.shell.shared.split.SplitScreenConstants;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * Scheduler for Shell initiated PiP transitions and animations.
  */
 public class PipScheduler {
     private static final String TAG = PipScheduler.class.getSimpleName();
+
+    /**
+     * The fixed start delay in ms when fading out the content overlay from bounds animation.
+     * The fadeout animation is guaranteed to start after the client has drawn under the new config.
+     */
+    public static final int EXTRA_CONTENT_OVERLAY_FADE_OUT_DELAY_MS =
+            SystemProperties.getInt(
+                    "persist.wm.debug.extra_content_overlay_fade_out_delay_ms", 400);
+    private static final int CONTENT_OVERLAY_FADE_OUT_DURATION_MS = 500;
 
     private final Context mContext;
     private final PipBoundsState mPipBoundsState;
@@ -60,6 +73,7 @@ public class PipScheduler {
     @Nullable private Runnable mUpdateMovementBoundsRunnable;
 
     private PipAlphaAnimatorSupplier mPipAlphaAnimatorSupplier;
+    private Supplier<PictureInPictureParams> mPipParamsSupplier;
 
     public PipScheduler(Context context,
             PipBoundsState pipBoundsState,
@@ -222,6 +236,16 @@ public class PipScheduler {
         tx.apply();
     }
 
+    void startOverlayFadeoutAnimation(@NonNull SurfaceControl overlayLeash,
+            boolean withStartDelay, @NonNull Runnable onAnimationEnd) {
+        PipAlphaAnimator animator = mPipAlphaAnimatorSupplier.get(mContext, overlayLeash,
+                null /* startTx */, null /* finishTx */, PipAlphaAnimator.FADE_OUT);
+        animator.setDuration(CONTENT_OVERLAY_FADE_OUT_DURATION_MS);
+        animator.setStartDelay(withStartDelay ? EXTRA_CONTENT_OVERLAY_FADE_OUT_DELAY_MS : 0);
+        animator.setAnimationEndCallback(onAnimationEnd);
+        animator.start();
+    }
+
     void setUpdateMovementBoundsRunnable(@Nullable Runnable updateMovementBoundsRunnable) {
         mUpdateMovementBoundsRunnable = updateMovementBoundsRunnable;
     }
@@ -236,6 +260,25 @@ public class PipScheduler {
         if (mPipBoundsState.getBounds().equals(newBounds)) {
             return;
         }
+
+        // Take a screenshot of PiP and fade it out after resize is finished if seamless resize
+        // is off and if the PiP size is changing.
+        boolean animateCrossFadeResize = !getPipParams().isSeamlessResizeEnabled()
+                && !(mPipBoundsState.getBounds().width() == newBounds.width()
+                && mPipBoundsState.getBounds().height() == newBounds.height());
+        if (animateCrossFadeResize) {
+            final Rect crop = new Rect(newBounds);
+            crop.offsetTo(0, 0);
+            // Note: Put this at layer=MAX_VALUE-2 since the input consumer for PIP is placed at
+            //       MAX_VALUE-1
+            final SurfaceControl snapshotSurface = ScreenshotUtils.takeScreenshot(
+                    mSurfaceControlTransactionFactory.getTransaction(),
+                    mPipTransitionState.getPinnedTaskLeash(), crop, Integer.MAX_VALUE - 2);
+            startOverlayFadeoutAnimation(snapshotSurface, false /* withStartDelay */, () -> {
+                mSurfaceControlTransactionFactory.getTransaction().remove(snapshotSurface).apply();
+            });
+        }
+
         mPipBoundsState.setBounds(newBounds);
         maybeUpdateMovementBounds();
     }
@@ -258,5 +301,15 @@ public class PipScheduler {
     @VisibleForTesting
     void setPipAlphaAnimatorSupplier(@NonNull PipAlphaAnimatorSupplier supplier) {
         mPipAlphaAnimatorSupplier = supplier;
+    }
+
+    void setPipParamsSupplier(@NonNull Supplier<PictureInPictureParams> pipParamsSupplier) {
+        mPipParamsSupplier = pipParamsSupplier;
+    }
+
+    @NonNull
+    private PictureInPictureParams getPipParams() {
+        if (mPipParamsSupplier == null) return new PictureInPictureParams.Builder().build();
+        return mPipParamsSupplier.get();
     }
 }
