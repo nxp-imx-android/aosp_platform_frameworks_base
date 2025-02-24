@@ -1282,6 +1282,10 @@ public class NotificationManager {
      * delegate for (see {@link #canNotifyAsPackage(String)}), or it will not be returned. To query
      * a channel as a notification delegate, call this method from a context created for that
      * package (see {@link Context#createPackageContext(String, int)}).</p>
+     *
+     * <p>If a conversation channel with the given conversation id is not found, this method will
+     * instead return the parent channel with the given channel ID, or {@code null} if neither
+     * exists.</p>
      */
     public @Nullable NotificationChannel getNotificationChannel(@NonNull String channelId,
             @NonNull String conversationId) {
