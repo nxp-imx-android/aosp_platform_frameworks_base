@@ -58,6 +58,7 @@ import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.notification.AboveShelfObserver;
 import com.android.systemui.statusbar.notification.DynamicPrivacyController;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.render.NotifShadeEventSource;
 import com.android.systemui.statusbar.notification.domain.interactor.NotificationAlertsInteractor;
@@ -253,6 +254,23 @@ class StatusBarNotificationPresenter implements NotificationPresenter, CommandQu
             if (mStatusBarStateController.getState() == StatusBarState.KEYGUARD) {
                 mShadeTransitionController.goToLockedShade(
                         clickedEntry.getRow(), /* needsQSAnimation = */ true);
+            } else if (clickedEntry.isSensitive().getValue() && isInLockedDownShade()) {
+                mStatusBarStateController.setLeaveOpenOnKeyguardHide(true);
+                // launch the bouncer if the device is locked
+                mActivityStarter.dismissKeyguardThenExecute(() -> false /* dismissAction */
+                        , null /* cancelRunnable */, false /* afterKeyguardGone */);
+            }
+        }
+    }
+
+    @Override
+    public void onExpandClicked(ExpandableNotificationRow row, EntryAdapter clickedEntry,
+            boolean nowExpanded) {
+        mHeadsUpManager.setExpanded(clickedEntry.getKey(), row, nowExpanded);
+        mPowerInteractor.wakeUpIfDozing("NOTIFICATION_CLICK", PowerManager.WAKE_REASON_GESTURE);
+        if (nowExpanded) {
+            if (mStatusBarStateController.getState() == StatusBarState.KEYGUARD) {
+                mShadeTransitionController.goToLockedShade(row, /* needsQSAnimation = */ true);
             } else if (clickedEntry.isSensitive().getValue() && isInLockedDownShade()) {
                 mStatusBarStateController.setLeaveOpenOnKeyguardHide(true);
                 // launch the bouncer if the device is locked
