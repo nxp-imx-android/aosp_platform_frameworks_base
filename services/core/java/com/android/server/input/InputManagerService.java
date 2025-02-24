@@ -343,6 +343,9 @@ public class InputManagerService extends IInputManager.Stub
     // Manages battery state for input devices.
     private final BatteryController mBatteryController;
 
+    // Monitors any changes to the sysfs nodes when an input device is connected.
+    private final SysfsNodeMonitor mSysfsNodeMonitor;
+
     @Nullable
     private final TouchpadDebugViewController mTouchpadDebugViewController;
 
@@ -535,6 +538,8 @@ public class InputManagerService extends IInputManager.Stub
                         injector.getLooper(), this) : null;
         mBatteryController = new BatteryController(mContext, mNative, injector.getLooper(),
                 injector.getUEventManager());
+        mSysfsNodeMonitor = new SysfsNodeMonitor(mContext, mNative, injector.getLooper(),
+                injector.getUEventManager());
         mKeyboardBacklightController = injector.getKeyboardBacklightController(mNative);
         mStickyModifierStateController = new StickyModifierStateController();
         mInputDataStore = new InputDataStore();
@@ -664,6 +669,7 @@ public class InputManagerService extends IInputManager.Stub
 
         mKeyboardLayoutManager.systemRunning();
         mBatteryController.systemRunning();
+        mSysfsNodeMonitor.systemRunning();
         mKeyboardBacklightController.systemRunning();
         mKeyboardLedController.systemRunning();
         mKeyRemapper.systemRunning();
