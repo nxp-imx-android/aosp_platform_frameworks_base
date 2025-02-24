@@ -87,6 +87,7 @@ public class LongScreenshotActivity extends Activity {
     private final ImageExporter mImageExporter;
     private final LongScreenshotData mLongScreenshotHolder;
     private final ActionIntentExecutor mActionExecutor;
+    private final ActionIntentCreator mActionIntentCreator;
 
     private ImageView mPreview;
     private ImageView mTransitionView;
@@ -117,13 +118,15 @@ public class LongScreenshotActivity extends Activity {
     @Inject
     public LongScreenshotActivity(UiEventLogger uiEventLogger, ImageExporter imageExporter,
             @Main Executor mainExecutor, @Background Executor bgExecutor,
-            LongScreenshotData longScreenshotHolder, ActionIntentExecutor actionExecutor) {
+            LongScreenshotData longScreenshotHolder, ActionIntentExecutor actionExecutor,
+            ActionIntentCreator actionIntentCreator) {
         mUiEventLogger = uiEventLogger;
         mUiExecutor = mainExecutor;
         mBackgroundExecutor = bgExecutor;
         mImageExporter = imageExporter;
         mLongScreenshotHolder = longScreenshotHolder;
         mActionExecutor = actionExecutor;
+        mActionIntentCreator = actionIntentCreator;
     }
 
 
@@ -348,7 +351,7 @@ public class LongScreenshotActivity extends Activity {
         if (mScreenshotUserHandle != Process.myUserHandle()) {
             // TODO: Fix transition for work profile. Omitting it in the meantime.
             mActionExecutor.launchIntentAsync(
-                    ActionIntentCreator.INSTANCE.createEdit(uri, this),
+                    mActionIntentCreator.createEdit(uri),
                     mScreenshotUserHandle, false,
                     /* activityOptions */ null, /* transitionCoordinator */ null);
         } else {
@@ -376,7 +379,7 @@ public class LongScreenshotActivity extends Activity {
     }
 
     private void doShare(Uri uri) {
-        Intent shareIntent = ActionIntentCreator.INSTANCE.createShare(uri);
+        Intent shareIntent = mActionIntentCreator.createShare(uri);
         mActionExecutor.launchIntentAsync(shareIntent, mScreenshotUserHandle, false,
                 /* activityOptions */ null, /* transitionCoordinator */ null);
     }

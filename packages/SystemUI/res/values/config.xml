@@ -501,7 +501,16 @@
     <!-- Smartspace trampoline activity that is used when the user taps smartspace. -->
     <string name="config_smartspaceTrampolineActivityComponent" translatable="false">com.google.android.apps.gsa.staticplugins.opa.smartspace.ExportedSmartspaceTrampolineActivity</string>
 
-    <!-- Screenshot editing default activity.  Must handle ACTION_EDIT image/png intents.
+    <!-- Screenshot editing default activity. Will only be used if the provided component exists and
+      is enabled.
+
+      Must handle ACTION_EDIT image/png intents.
+      Blank falls back to config_screenshotEditor.
+      This name is in the ComponentName flattened format (package/class)  -->
+    <string name="config_preferredScreenshotEditor" translatable="false"></string>
+
+    <!-- Screenshot editing activity used if config_preferredScreenshotEditor is not available.
+     Must handle ACTION_EDIT image/png intents.
          Blank sends the user to the Chooser first.
          This name is in the ComponentName flattened format (package/class)  -->
     <string name="config_screenshotEditor" translatable="false"></string>
