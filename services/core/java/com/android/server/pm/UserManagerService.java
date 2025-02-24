@@ -1078,7 +1078,7 @@ public class UserManagerService extends IUserManager.Stub {
         mUserVisibilityMediator = new UserVisibilityMediator(mHandler);
         mUserDataPreparer = userDataPreparer;
         mUserTypes = UserTypeFactory.getUserTypes();
-        invalidateOwnerNameIfNecessary(context.getResources(), true /* forceUpdate */);
+        invalidateOwnerNameIfNecessary(getContextResources(), true /* forceUpdate */);
         synchronized (mPackagesLock) {
             mUsersDir = new File(dataDir, USER_INFO_DIR);
             mUsersDir.mkdirs();
@@ -1184,6 +1184,15 @@ public class UserManagerService extends IUserManager.Stub {
                 && android.multiuser.Flags.enablePrivateSpaceFeatures();
     }
 
+    private Resources getSystemResources() {
+        return android.multiuser.Flags.useUnifiedResources()
+                ? getContextResources() : Resources.getSystem();
+    }
+
+    private Resources getContextResources() {
+        return mContext.getResources();
+    }
+
     /**
      * This method retrieves the  {@link UserManagerInternal} only for the purpose of
      * PackageManagerService construction.
@@ -1223,7 +1232,7 @@ public class UserManagerService extends IUserManager.Stub {
             // Avoid marking pre-created users for removal.
             return;
         }
-        if (ui.lastLoggedInTime == 0 && ui.isGuest() && Resources.getSystem().getBoolean(
+        if (ui.lastLoggedInTime == 0 && ui.isGuest() && getSystemResources().getBoolean(
                 com.android.internal.R.bool.config_guestUserAutoCreated)) {
             // Avoid marking auto-created but not-yet-logged-in guest user for removal. Because a
             // new one will be created anyway, and this one doesn't have any personal data in it yet
@@ -1402,7 +1411,7 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         if (isHeadlessSystemUserMode()) {
-            final int bootStrategy = mContext.getResources()
+            final int bootStrategy = getContextResources()
                     .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
             switch (bootStrategy) {
                 case BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER:
@@ -2983,7 +2992,7 @@ public class UserManagerService extends IUserManager.Stub {
     boolean isUserSwitcherEnabled(@UserIdInt int userId) {
         boolean multiUserSettingOn = Settings.Global.getInt(mContext.getContentResolver(),
                 Settings.Global.USER_SWITCHER_ENABLED,
-                Resources.getSystem().getBoolean(com.android.internal
+                getSystemResources().getBoolean(com.android.internal
                         .R.bool.config_showUserSwitcherByDefault) ? 1 : 0) != 0;
 
         return UserManager.supportsMultipleUsers()
@@ -4672,7 +4681,7 @@ public class UserManagerService extends IUserManager.Stub {
             UserData userData = getUserDataNoChecks(UserHandle.USER_SYSTEM);
             if ("Primary".equals(userData.info.name)) {
                 userData.info.name =
-                        mContext.getResources().getString(com.android.internal.R.string.owner_name);
+                        getContextResources().getString(com.android.internal.R.string.owner_name);
                 userIdsToWrite.add(userData.info.id);
             }
             userVersion = 1;
@@ -5002,7 +5011,7 @@ public class UserManagerService extends IUserManager.Stub {
 
         final Bundle restrictions = new Bundle();
         try {
-            final String[] defaultFirstUserRestrictions = mContext.getResources().getStringArray(
+            final String[] defaultFirstUserRestrictions = getContextResources().getStringArray(
                     com.android.internal.R.array.config_defaultFirstUserRestrictions);
             for (String userRestriction : defaultFirstUserRestrictions) {
                 if (UserRestrictionsUtils.isValidRestriction(userRestriction)) {
@@ -6178,7 +6187,7 @@ public class UserManagerService extends IUserManager.Stub {
             // If the user switch hasn't been explicitly toggled on or off by the user, turn it on.
             if (android.provider.Settings.Global.getString(mContext.getContentResolver(),
                     android.provider.Settings.Global.USER_SWITCHER_ENABLED) == null) {
-                if (Resources.getSystem().getBoolean(
+                if (getSystemResources().getBoolean(
                         com.android.internal.R.bool.config_enableUserSwitcherUponUserCreation)) {
                     android.provider.Settings.Global.putInt(mContext.getContentResolver(),
                             android.provider.Settings.Global.USER_SWITCHER_ENABLED, 1);
@@ -7490,7 +7499,6 @@ public class UserManagerService extends IUserManager.Stub {
         final long now = System.currentTimeMillis();
         final long nowRealtime = SystemClock.elapsedRealtime();
         final StringBuilder sb = new StringBuilder();
-        final Resources resources = Resources.getSystem();
 
         if (args != null && args.length > 0) {
             switch (args[0]) {
@@ -7573,13 +7581,14 @@ public class UserManagerService extends IUserManager.Stub {
         pw.println();
         int effectiveMaxSupportedUsers = UserManager.getMaxSupportedUsers();
         pw.print("  Max users: " + effectiveMaxSupportedUsers);
-        int defaultMaxSupportedUsers = resources.getInteger(R.integer.config_multiuserMaximumUsers);
+        int defaultMaxSupportedUsers = getSystemResources()
+                .getInteger(R.integer.config_multiuserMaximumUsers);
         if (effectiveMaxSupportedUsers != defaultMaxSupportedUsers) {
             pw.print(" (built-in value: " + defaultMaxSupportedUsers + ")");
         }
         pw.println(" (limit reached: " + isUserLimitReached() + ")");
         pw.println("  Supports switchable users: " + UserManager.supportsMultipleUsers());
-        pw.println("  All guests ephemeral: " + resources.getBoolean(
+        pw.println("  All guests ephemeral: " + getSystemResources().getBoolean(
                 com.android.internal.R.bool.config_guestUserEphemeral));
         pw.println("  Force ephemeral users: " + mForceEphemeralUsers);
         final boolean isHeadlessSystemUserMode = isHeadlessSystemUserMode();
@@ -7594,7 +7603,7 @@ public class UserManagerService extends IUserManager.Stub {
             }
         }
         if (isHeadlessSystemUserMode) {
-            pw.println("  Can switch to headless system user: " + resources
+            pw.println("  Can switch to headless system user: " + getSystemResources()
                     .getBoolean(com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser));
         }
         pw.println("  User version: " + mUserVersion);
@@ -8536,8 +8545,7 @@ public class UserManagerService extends IUserManager.Stub {
      * or downgraded to non-admin status.
      */
     public boolean isMainUserPermanentAdmin() {
-        return Resources.getSystem()
-                .getBoolean(R.bool.config_isMainUserPermanentAdmin);
+        return getSystemResources().getBoolean(R.bool.config_isMainUserPermanentAdmin);
     }
 
     /**
@@ -8546,8 +8554,7 @@ public class UserManagerService extends IUserManager.Stub {
      * it is not a full user.
      */
     public boolean canSwitchToHeadlessSystemUser() {
-        return Resources.getSystem()
-                .getBoolean(R.bool.config_canSwitchToHeadlessSystemUser);
+        return getSystemResources().getBoolean(R.bool.config_canSwitchToHeadlessSystemUser);
     }
 
     /**
