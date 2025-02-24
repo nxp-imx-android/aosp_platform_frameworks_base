@@ -1146,6 +1146,27 @@ static void nativeSetShadowRadius(JNIEnv* env, jclass clazz, jlong transactionOb
     transaction->setShadowRadius(ctrl, shadowRadius);
 }
 
+static void nativeSetBorderSettings(JNIEnv* env, jclass clazz, jlong transactionObj,
+                                    jlong nativeObject, jobject settingsObj) {
+    Parcel* settingsParcel = parcelForJavaObject(env, settingsObj);
+    if (settingsParcel == NULL) {
+        doThrowNPE(env);
+        return;
+    }
+    gui::BorderSettings settings;
+    status_t err = settings.readFromParcel(settingsParcel);
+    if (err != NO_ERROR) {
+        jniThrowException(env, "java/lang/IllegalArgumentException",
+                          "BorderSettings parcel has wrong format");
+        return;
+    }
+
+    auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
+    const auto ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+
+    transaction->setBorderSettings(ctrl, settings);
+}
+
 static void nativeSetTrustedOverlay(JNIEnv* env, jclass clazz, jlong transactionObj,
                                     jlong nativeObject, jint trustedOverlay) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
@@ -2570,6 +2591,8 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             (void*) nativeSetEdgeExtensionEffect },
     {"nativeSetShadowRadius", "(JJF)V",
             (void*)nativeSetShadowRadius },
+    {"nativeSetBorderSettings", "(JJLandroid/os/Parcel;)V",
+            (void*)nativeSetBorderSettings },
     {"nativeSetFrameRate", "(JJFII)V",
             (void*)nativeSetFrameRate },
     {"nativeSetDefaultFrameRateCompatibility", "(JJI)V",
