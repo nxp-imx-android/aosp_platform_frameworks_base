@@ -89,7 +89,7 @@ ASurfaceControl* ASurfaceControl_createFromWindow(ANativeWindow* window, const c
     CHECK_NOT_NULL(window);
     CHECK_NOT_NULL(debug_name);
 
-    sp<SurfaceComposerClient> client = new SurfaceComposerClient();
+    sp<SurfaceComposerClient> client = sp<SurfaceComposerClient>::make();
     if (client->initCheck() != NO_ERROR) {
         return nullptr;
     }
