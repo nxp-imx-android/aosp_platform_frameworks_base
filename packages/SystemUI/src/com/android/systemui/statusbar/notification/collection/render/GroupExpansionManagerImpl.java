@@ -29,6 +29,7 @@ import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener;
+import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.io.PrintWriter;
@@ -162,41 +163,38 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
     @Override
     public boolean isGroupExpanded(EntryAdapter entry) {
         NotificationBundleUi.assertInNewMode();
-        return mExpandedCollections.contains(mGroupMembershipManager.getGroupRoot(entry));
+        ExpandableNotificationRow parent = entry.getRow().getNotificationParent();
+        return mExpandedCollections.contains(entry)
+                || (parent != null && mExpandedCollections.contains(parent.getEntryAdapter()));
     }
 
     @Override
-    public void setGroupExpanded(EntryAdapter entry, boolean expanded) {
+    public void setGroupExpanded(EntryAdapter groupRoot, boolean expanded) {
         NotificationBundleUi.assertInNewMode();
-        EntryAdapter groupParent = mGroupMembershipManager.getGroupRoot(entry);
-        if (!entry.isAttached()) {
+        if (!groupRoot.isAttached()) {
             if (expanded) {
                 Log.wtf(TAG, "Cannot expand group that is not attached");
-            } else {
-                // The entry is no longer attached, but we still want to make sure we don't have
-                // a stale expansion state.
-                groupParent = entry;
             }
         }
 
         boolean changed;
         if (expanded) {
-            changed = mExpandedCollections.add(groupParent);
+            changed = mExpandedCollections.add(groupRoot);
         } else {
-            changed = mExpandedCollections.remove(groupParent);
+            changed = mExpandedCollections.remove(groupRoot);
         }
 
         // Only notify listeners if something changed.
         if (changed) {
-            sendOnGroupExpandedChange(entry, expanded);
+            sendOnGroupExpandedChange(groupRoot, expanded);
         }
     }
 
     @Override
-    public boolean toggleGroupExpansion(EntryAdapter entry) {
+    public boolean toggleGroupExpansion(EntryAdapter groupRoot) {
         NotificationBundleUi.assertInNewMode();
-        setGroupExpanded(entry, !isGroupExpanded(entry));
-        return isGroupExpanded(entry);
+        setGroupExpanded(groupRoot, !isGroupExpanded(groupRoot));
+        return isGroupExpanded(groupRoot);
     }
 
     @Override

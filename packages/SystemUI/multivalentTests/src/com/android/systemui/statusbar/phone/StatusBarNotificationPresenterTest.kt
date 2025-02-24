@@ -54,6 +54,7 @@ import com.android.systemui.statusbar.notification.interruption.VisualInterrupti
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionRefactor
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.notificationStackScrollLayoutController
 import com.android.systemui.statusbar.notification.visualInterruptionDecisionProvider
 import com.android.systemui.statusbar.notificationLockscreenUserManager
@@ -293,6 +294,7 @@ class StatusBarNotificationPresenterTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun testExpandSensitiveNotification_onLockScreen_opensShade() =
         kosmos.runTest {
             // Given we are on the keyguard
@@ -303,11 +305,10 @@ class StatusBarNotificationPresenterTest : SysuiTestCase() {
             )
 
             // When the user expands a sensitive Notification
-            val row = createRow()
-            val entry =
-                row.entry.apply { setSensitive(/* sensitive= */ true, /* deviceSensitive= */ true) }
+            val row = createRow(createNotificationEntry())
+            row.entry.apply { setSensitive(/* sensitive= */ true, /* deviceSensitive= */ true) }
 
-            underTest.onExpandClicked(entry, mock(), /* nowExpanded= */ true)
+            underTest.onExpandClicked(row.entry, mock(), /* nowExpanded= */ true)
 
             // Then we open the locked shade
             verify(kosmos.lockscreenShadeTransitionController)
@@ -317,6 +318,32 @@ class StatusBarNotificationPresenterTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun testExpandSensitiveNotification_onLockScreen_opensShade_entryAdapter() =
+        kosmos.runTest {
+            // Given we are on the keyguard
+            kosmos.sysuiStatusBarStateController.state = StatusBarState.KEYGUARD
+            // And the device is locked
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
+                AuthenticationMethodModel.Pin
+            )
+
+            // When the user expands a sensitive Notification
+            val entry = createNotificationEntry()
+            val row = createRow(entry)
+            entry.setSensitive(/* sensitive= */ true, /* deviceSensitive= */ true)
+
+            underTest.onExpandClicked(row, row.entryAdapter, /* nowExpanded= */ true)
+
+            // Then we open the locked shade
+            verify(kosmos.lockscreenShadeTransitionController)
+                // Explicit parameters to avoid issues with Kotlin default arguments in Mockito
+                .goToLockedShade(row, true)
+        }
+
+    @Test
+    @EnableSceneContainer
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
     fun testExpandSensitiveNotification_onLockedShade_showsBouncer() =
         kosmos.runTest {
             // Given we are on the locked shade
@@ -328,10 +355,33 @@ class StatusBarNotificationPresenterTest : SysuiTestCase() {
 
             // When the user expands a sensitive Notification
             val entry =
-                createRow().entry.apply {
+                createRow(createNotificationEntry()).entry.apply {
                     setSensitive(/* sensitive= */ true, /* deviceSensitive= */ true)
                 }
             underTest.onExpandClicked(entry, mock(), /* nowExpanded= */ true)
+
+            // Then we show the bouncer
+            verify(kosmos.activityStarter).dismissKeyguardThenExecute(any(), eq(null), eq(false))
+        }
+
+    @Test
+    @EnableSceneContainer
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun testExpandSensitiveNotification_onLockedShade_showsBouncer_entryAdapter() =
+        kosmos.runTest {
+            // Given we are on the locked shade
+            kosmos.sysuiStatusBarStateController.state = StatusBarState.SHADE_LOCKED
+            // And the device is locked
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
+                AuthenticationMethodModel.Pin
+            )
+
+            // When the user expands a sensitive Notification
+            val entry = createNotificationEntry()
+            val row = createRow(entry)
+            entry.setSensitive(/* sensitive= */ true, /* deviceSensitive= */ true)
+
+            underTest.onExpandClicked(row, row.entryAdapter, /* nowExpanded= */ true)
 
             // Then we show the bouncer
             verify(kosmos.activityStarter).dismissKeyguardThenExecute(any(), eq(null), eq(false))
@@ -398,10 +448,13 @@ class StatusBarNotificationPresenterTest : SysuiTestCase() {
         interruptSuppressor = suppressorCaptor.lastValue
     }
 
-    private fun createRow(): ExpandableNotificationRow {
+    private fun createRow(entry: NotificationEntry): ExpandableNotificationRow {
         val row: ExpandableNotificationRow = mock()
-        val entry: NotificationEntry = createNotificationEntry()
-        whenever(row.entry).thenReturn(entry)
+        if (NotificationBundleUi.isEnabled) {
+            whenever(row.entryAdapter).thenReturn(entry.entryAdapter)
+        } else {
+            whenever(row.entry).thenReturn(entry)
+        }
         entry.row = row
         return row
     }

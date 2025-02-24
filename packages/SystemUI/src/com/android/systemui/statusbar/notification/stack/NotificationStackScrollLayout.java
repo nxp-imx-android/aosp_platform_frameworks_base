@@ -1810,16 +1810,22 @@ public class NotificationStackScrollLayout
 
     private ExpandableNotificationRow getTopHeadsUpRow() {
         ExpandableNotificationRow row = mTopHeadsUpRow;
-        if (row.isChildInGroup()) {
-            final NotificationEntry groupSummary =
-                    mGroupMembershipManager.getGroupSummary(row.getEntry());
-            if (groupSummary != null) {
-                row = groupSummary.getRow();
+        if (NotificationBundleUi.isEnabled()) {
+            if (mGroupMembershipManager.isChildInGroup(row.getEntryAdapter())
+                    && row.isChildInGroup()) {
+                row = row.getNotificationParent();
+            }
+        } else {
+            if (row.isChildInGroup()) {
+                final NotificationEntry groupSummary =
+                        mGroupMembershipManager.getGroupSummary(row.getEntry());
+                if (groupSummary != null) {
+                    row = groupSummary.getRow();
+                }
             }
         }
         return row;
     }
-
     /**
      * @return the position from where the appear transition ends when expanding.
      * Measured in absolute height.
@@ -1966,10 +1972,19 @@ public class NotificationStackScrollLayout
                     && touchY >= top && touchY <= bottom && touchX >= left && touchX <= right) {
                 if (slidingChild instanceof ExpandableNotificationRow row) {
                     NotificationEntry entry = row.getEntry();
+                    boolean isEntrySummaryForTopHun;
+                    if (NotificationBundleUi.isEnabled()) {
+                        isEntrySummaryForTopHun = Objects.equals(
+                                ((ExpandableNotificationRow) slidingChild).getNotificationParent(),
+                                mTopHeadsUpRow);
+                    } else {
+                        isEntrySummaryForTopHun = mTopHeadsUpRow != null &&
+                                mGroupMembershipManager.getGroupSummary(mTopHeadsUpRow.getEntry())
+                                == entry;
+                    }
                     if (!mIsExpanded && row.isHeadsUp() && row.isPinned()
                             && mTopHeadsUpRow != row
-                            && mGroupMembershipManager.getGroupSummary(mTopHeadsUpRow.getEntry())
-                            != entry) {
+                            && !isEntrySummaryForTopHun) {
                         continue;
                     }
                     return row.getViewAtPosition(touchY - childTop);
