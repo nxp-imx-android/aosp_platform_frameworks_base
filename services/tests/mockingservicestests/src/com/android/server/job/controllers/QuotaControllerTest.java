@@ -2388,6 +2388,104 @@ public class QuotaControllerTest {
         }
     }
 
+    @Test
+    @EnableFlags({Flags.FLAG_ADJUST_QUOTA_DEFAULT_CONSTANTS,
+            Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER})
+    public void testGetTimeUntilQuotaConsumedLocked_Installer() {
+        PackageInfo pi = new PackageInfo();
+        pi.packageName = SOURCE_PACKAGE;
+        pi.requestedPermissions = new String[]{Manifest.permission.INSTALL_PACKAGES};
+        pi.requestedPermissionsFlags = new int[]{PackageInfo.REQUESTED_PERMISSION_GRANTED};
+        pi.applicationInfo = new ApplicationInfo();
+        pi.applicationInfo.uid = mSourceUid;
+        doReturn(List.of(pi)).when(mPackageManager).getInstalledPackagesAsUser(anyInt(), anyInt());
+        doReturn(PackageManager.PERMISSION_GRANTED).when(mContext).checkPermission(
+                eq(Manifest.permission.INSTALL_PACKAGES), anyInt(), eq(mSourceUid));
+        mQuotaController.onSystemServicesReady();
+
+        final long now = JobSchedulerService.sElapsedRealtimeClock.millis();
+        // Close to RARE boundary.
+        mQuotaController.saveTimingSession(SOURCE_USER_ID, SOURCE_PACKAGE,
+                createTimingSession(
+                        now - (mQcConstants.WINDOW_SIZE_RARE_MS - 30 * SECOND_IN_MILLIS),
+                        90 * SECOND_IN_MILLIS, 5), false);
+        // Far away from FREQUENT boundary.
+        mQuotaController.saveTimingSession(SOURCE_USER_ID, SOURCE_PACKAGE,
+                createTimingSession(
+                        now - (mQcConstants.WINDOW_SIZE_FREQUENT_MS -  HOUR_IN_MILLIS),
+                        2 * MINUTE_IN_MILLIS, 5), false);
+        // Overlap WORKING_SET boundary.
+        mQuotaController.saveTimingSession(SOURCE_USER_ID, SOURCE_PACKAGE,
+                createTimingSession(
+                        now - (mQcConstants.WINDOW_SIZE_WORKING_MS + MINUTE_IN_MILLIS),
+                        2 * MINUTE_IN_MILLIS, 5), false);
+        // Close to ACTIVE boundary.
+        mQuotaController.saveTimingSession(SOURCE_USER_ID, SOURCE_PACKAGE,
+                createTimingSession(
+                        now - (mQcConstants.WINDOW_SIZE_ACTIVE_MS -  MINUTE_IN_MILLIS),
+                        2 * MINUTE_IN_MILLIS, 5), false);
+        // Close to EXEMPTED boundary.
+        mQuotaController.saveTimingSession(SOURCE_USER_ID, SOURCE_PACKAGE,
+                createTimingSession(
+                        now - (mQcConstants.WINDOW_SIZE_EXEMPTED_MS -  MINUTE_IN_MILLIS),
+                        2 * MINUTE_IN_MILLIS, 5), false);
+
+        // No additional quota for the system installer when the app is in RARE, FREQUENT,
+        // WORKING_SET or ACTIVE bucket.
+        setStandbyBucket(RARE_INDEX);
+        synchronized (mQuotaController.mLock) {
+            assertEquals(30 * SECOND_IN_MILLIS,
+                    mQuotaController.getRemainingExecutionTimeLocked(
+                            SOURCE_USER_ID, SOURCE_PACKAGE));
+            assertEquals(2 * MINUTE_IN_MILLIS,
+                    mQuotaController.getTimeUntilQuotaConsumedLocked(
+                            SOURCE_USER_ID, SOURCE_PACKAGE));
+        }
+
+        setStandbyBucket(FREQUENT_INDEX);
+        synchronized (mQuotaController.mLock) {
+            assertEquals(2 * MINUTE_IN_MILLIS,
+                    mQuotaController.getRemainingExecutionTimeLocked(
+                            SOURCE_USER_ID, SOURCE_PACKAGE));
+            assertEquals(2 * MINUTE_IN_MILLIS,
+                    mQuotaController.getTimeUntilQuotaConsumedLocked(
+                            SOURCE_USER_ID, SOURCE_PACKAGE));
+        }
+
+        setStandbyBucket(WORKING_INDEX);
+        synchronized (mQuotaController.mLock) {
+            assertEquals(5 * MINUTE_IN_MILLIS,
+                    mQuotaController.getRemainingExecutionTimeLocked(
+                            SOURCE_USER_ID, SOURCE_PACKAGE));
+            assertEquals(6 * MINUTE_IN_MILLIS,
+                    mQuotaController.getTimeUntilQuotaConsumedLocked(
+                            SOURCE_USER_ID, SOURCE_PACKAGE));
+        }
+
+        // ACTIVE window != allowed time.
+        setStandbyBucket(ACTIVE_INDEX);
+        synchronized (mQuotaController.mLock) {
+            assertEquals(6 * MINUTE_IN_MILLIS,
+                    mQuotaController.getRemainingExecutionTimeLocked(
+                            SOURCE_USER_ID, SOURCE_PACKAGE));
+            assertEquals(8 * MINUTE_IN_MILLIS,
+                    mQuotaController.getTimeUntilQuotaConsumedLocked(
+                            SOURCE_USER_ID, SOURCE_PACKAGE));
+        }
+
+        // Additional quota for the system installer when the app is in EXEMPTED bucket.
+        // EXEMPTED window == allowed time.
+        setStandbyBucket(EXEMPTED_INDEX);
+        synchronized (mQuotaController.mLock) {
+            assertEquals(18 * MINUTE_IN_MILLIS,
+                    mQuotaController.getRemainingExecutionTimeLocked(
+                            SOURCE_USER_ID, SOURCE_PACKAGE));
+            assertEquals(mQcConstants.MAX_EXECUTION_TIME_MS - 8 * MINUTE_IN_MILLIS,
+                    mQuotaController.getTimeUntilQuotaConsumedLocked(
+                            SOURCE_USER_ID, SOURCE_PACKAGE));
+        }
+    }
+
     /**
      * Test getTimeUntilQuotaConsumedLocked when the app is close to the max execution limit.
      */
@@ -4119,6 +4217,12 @@ public class QuotaControllerTest {
         assertEquals(85 * SECOND_IN_MILLIS, mQuotaController.getEJRewardNotificationSeenMs());
         assertEquals(84 * SECOND_IN_MILLIS, mQuotaController.getEJGracePeriodTempAllowlistMs());
         assertEquals(83 * SECOND_IN_MILLIS, mQuotaController.getEJGracePeriodTopAppMs());
+
+        mSetFlagsRule.enableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
+        setDeviceConfigLong(QcConstants.KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS,
+                6 * MINUTE_IN_MILLIS);
+        assertEquals(6 * MINUTE_IN_MILLIS,
+                mQuotaController.getAllowedTimePeriodAdditionInstallerMs());
     }
 
     @Test
@@ -4222,6 +4326,13 @@ public class QuotaControllerTest {
         assertEquals(0, mQuotaController.getEJGracePeriodTempAllowlistMs());
         assertEquals(0, mQuotaController.getEJGracePeriodTopAppMs());
 
+        mSetFlagsRule.enableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
+        setDeviceConfigLong(QcConstants.KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS,
+                -MINUTE_IN_MILLIS);
+        assertEquals(0,
+                mQuotaController.getAllowedTimePeriodAdditionInstallerMs());
+        mSetFlagsRule.disableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
+
         // Invalid configurations.
         // In_QUOTA_BUFFER should never be greater than ALLOWED_TIME_PER_PERIOD
         setDeviceConfigLong(QcConstants.KEY_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS,
@@ -4237,8 +4348,17 @@ public class QuotaControllerTest {
                 10 * MINUTE_IN_MILLIS);
         setDeviceConfigLong(QcConstants.KEY_IN_QUOTA_BUFFER_MS, 5 * MINUTE_IN_MILLIS);
 
-        assertTrue(mQuotaController.getInQuotaBufferMs()
+        assertTrue(mQuotaController.getAllowedTimePeriodAdditionInstallerMs()
                 <= mQuotaController.getAllowedTimePerPeriodMs()[FREQUENT_INDEX]);
+
+        mSetFlagsRule.enableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
+        // ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER should never be greater than
+        // ALLOWED_TIME_PER_PERIOD.
+        setDeviceConfigLong(QcConstants.KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS,
+                 15 * MINUTE_IN_MILLIS);
+        assertTrue(mQuotaController.getInQuotaBufferMs()
+                <= mQuotaController.getAllowedTimePerPeriodMs()[EXEMPTED_INDEX]);
+        mSetFlagsRule.disableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
 
         // Test larger than a day. Controller should cap at one day.
         setDeviceConfigLong(QcConstants.KEY_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS,
@@ -4318,6 +4438,12 @@ public class QuotaControllerTest {
         assertEquals(5 * MINUTE_IN_MILLIS, mQuotaController.getEJRewardNotificationSeenMs());
         assertEquals(HOUR_IN_MILLIS, mQuotaController.getEJGracePeriodTempAllowlistMs());
         assertEquals(HOUR_IN_MILLIS, mQuotaController.getEJGracePeriodTopAppMs());
+
+        mSetFlagsRule.enableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
+        setDeviceConfigLong(QcConstants.KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS,
+                25 * HOUR_IN_MILLIS);
+        assertEquals(0, mQuotaController.getAllowedTimePeriodAdditionInstallerMs());
+        mSetFlagsRule.disableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
     }
 
     /** Tests that TimingSessions aren't saved when the device is charging. */
