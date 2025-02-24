@@ -1452,9 +1452,10 @@ public class DisplayPolicy {
      * @param win The window being positioned.
      * @param attrs The LayoutParams of the window.
      * @param attached For sub-windows, the window it is attached to. Otherwise null.
+     * @param imeLayeringTarget the current IME layering target, if any.
      */
     public void applyPostLayoutPolicyLw(WindowState win, WindowManager.LayoutParams attrs,
-            WindowState attached, WindowState imeTarget) {
+            WindowState attached, @Nullable WindowState imeLayeringTarget) {
         if (attrs.type == TYPE_NAVIGATION_BAR) {
             // Keep mHasBottomNavigationBar updated to make sure the bar color control is working
             // correctly.
@@ -1462,7 +1463,7 @@ public class DisplayPolicy {
         }
         final boolean affectsSystemUi = win.canAffectSystemUiFlags();
         if (DEBUG_LAYOUT) Slog.i(TAG, "Win " + win + ": affectsSystemUi=" + affectsSystemUi);
-        applyKeyguardPolicy(win, imeTarget);
+        applyKeyguardPolicy(win, imeLayeringTarget);
 
         // Check if the freeform window overlaps with the navigation bar area.
         if (!mIsFreeformWindowOverlappingWithNavBar && win.inFreeformWindowingMode()
@@ -1714,11 +1715,12 @@ public class DisplayPolicy {
      * Applies the keyguard policy to a specific window.
      *
      * @param win The window to apply the keyguard policy.
-     * @param imeTarget The current IME target window.
+     * @param imeLayeringTarget The current IME layering target, if any.
      */
-    private void applyKeyguardPolicy(WindowState win, WindowState imeTarget) {
+    private void applyKeyguardPolicy(WindowState win, @Nullable WindowState imeLayeringTarget) {
         if (win.canBeHiddenByKeyguard()) {
-            final boolean shouldBeHiddenByKeyguard = shouldBeHiddenByKeyguard(win, imeTarget);
+            final boolean shouldBeHiddenByKeyguard = shouldBeHiddenByKeyguard(win,
+                    imeLayeringTarget);
             if (win.mIsImWindow) {
                 // Notify IME insets provider to freeze the IME insets. In case when turning off
                 // the screen, the IME insets source window will be hidden because of keyguard
@@ -1735,15 +1737,16 @@ public class DisplayPolicy {
         }
     }
 
-    private boolean shouldBeHiddenByKeyguard(WindowState win, WindowState imeTarget) {
+    private boolean shouldBeHiddenByKeyguard(WindowState win,
+            @Nullable WindowState imeLayeringTarget) {
         if (!mDisplayContent.isDefaultDisplay || !isKeyguardShowing()) {
             return false;
         }
 
         // Show IME over the keyguard if the target allows it.
-        final boolean showImeOverKeyguard =
-                imeTarget != null && win.mIsImWindow && imeTarget.isDisplayed() && (
-                        imeTarget.canShowWhenLocked() || !imeTarget.canBeHiddenByKeyguard());
+        final boolean showImeOverKeyguard = imeLayeringTarget != null && win.mIsImWindow
+                && imeLayeringTarget.isDisplayed() && (imeLayeringTarget.canShowWhenLocked()
+                    || !imeLayeringTarget.canBeHiddenByKeyguard());
         if (showImeOverKeyguard) {
             return false;
         }
@@ -2565,7 +2568,7 @@ public class DisplayPolicy {
 
         if (candidate != null && candidate.isDimming()) {
             // The IME window and the dimming window are competing. Check if the dimming window can
-            // be IME target or not.
+            // be IME layering target or not.
             if (LayoutParams.mayUseInputMethod(candidate.mAttrs.flags)) {
                 // The IME window is above the dimming window.
                 return imeWindow;

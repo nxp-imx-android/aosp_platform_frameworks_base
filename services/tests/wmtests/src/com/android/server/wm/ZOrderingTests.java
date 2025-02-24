@@ -294,7 +294,7 @@ public class ZOrderingTests extends WindowTestsBase {
         final WindowState appAboveImeTarget = createWindow("appAboveImeTarget");
 
         mDisplayContent.setImeLayeringTarget(imeAppTarget);
-        mDisplayContent.setImeControlTarget(imeAppTarget);
+        mDisplayContent.setImeControlTargetForTesting(imeAppTarget);
         mDisplayContent.assignChildLayers(mTransaction);
 
         // Ime should be above all app windows except for non-fullscreen app window above it and
@@ -312,7 +312,7 @@ public class ZOrderingTests extends WindowTestsBase {
     }
 
     @Test
-    public void testAssignWindowLayers_ForImeNonAppImeTarget() {
+    public void testAssignWindowLayers_ForImeNonAppImeLayeringTarget() {
         final WindowState imeSystemOverlayTarget = newWindowBuilder("imeSystemOverlayTarget",
                 TYPE_SYSTEM_OVERLAY).setDisplay(mDisplayContent).setOwnerCanAddInternalSystemWindow(
                 true).build();
@@ -320,8 +320,8 @@ public class ZOrderingTests extends WindowTestsBase {
         mDisplayContent.setImeLayeringTarget(imeSystemOverlayTarget);
         mDisplayContent.assignChildLayers(mTransaction);
 
-        // The IME target base layer is higher than all window except for the nav bar window, so the
-        // IME should be above all windows except for the nav bar.
+        // The IME layering target base layer is higher than all window except for the nav bar
+        // window, so the IME should be above all windows except for the nav bar.
         assertWindowHigher(mImeWindow, imeSystemOverlayTarget);
         assertWindowHigher(mImeWindow, mChildAppWindowAbove);
         assertWindowHigher(mImeWindow, mAppWindow);
@@ -329,7 +329,7 @@ public class ZOrderingTests extends WindowTestsBase {
         // The IME has a higher base layer than the status bar so we may expect it to go
         // above the status bar once they are both in the Non-App layer, as past versions of this
         // test enforced. However this seems like the wrong behavior unless the status bar is the
-        // IME target.
+        // IME layering target.
         assertWindowHigher(mNavBarWindow, mImeWindow);
         assertWindowHigher(mStatusBarWindow, mImeWindow);
 
@@ -340,7 +340,7 @@ public class ZOrderingTests extends WindowTestsBase {
     @Test
     public void testAssignWindowLayers_ForStatusBarImeTarget() {
         mDisplayContent.setImeLayeringTarget(mStatusBarWindow);
-        mDisplayContent.setImeControlTarget(mStatusBarWindow);
+        mDisplayContent.setImeControlTargetForTesting(mStatusBarWindow);
         mDisplayContent.assignChildLayers(mTransaction);
 
         assertWindowHigher(mImeWindow, mChildAppWindowAbove);
@@ -405,7 +405,7 @@ public class ZOrderingTests extends WindowTestsBase {
                 TYPE_APPLICATION).setWindowToken(mAppWindow.mActivityRecord).build();
         mDisplayContent.setImeInputTarget(imeAppTarget);
         mDisplayContent.setImeLayeringTarget(imeAppTarget);
-        mDisplayContent.setImeControlTarget(imeAppTarget);
+        mDisplayContent.setImeControlTargetForTesting(imeAppTarget);
 
         // Set a popup IME layering target and keeps the original IME control target behinds it.
         final WindowState popupImeTargetWin = newWindowBuilder("popupImeTargetWin",
@@ -464,7 +464,7 @@ public class ZOrderingTests extends WindowTestsBase {
 
     @Test
     public void testPopupWindowAndParentIsImeTarget_expectHigherThanIme_inMultiWindow() {
-        // Simulate the app window is in multi windowing mode and being IME target
+        // Simulate the app window is in multi windowing mode and is IME layering and input target
         mAppWindow.getConfiguration().windowConfiguration.setWindowingMode(
                 WINDOWING_MODE_MULTI_WINDOW);
         mDisplayContent.setImeLayeringTarget(mAppWindow);
@@ -488,7 +488,7 @@ public class ZOrderingTests extends WindowTestsBase {
 
     @Test
     public void testSystemDialogWindow_expectHigherThanIme_inMultiWindow() {
-        // Simulate the app window is in multi windowing mode and being IME target
+        // Simulate the app window is in multi windowing mode and is IME layering and input target
         mAppWindow.getConfiguration().windowConfiguration.setWindowingMode(
                 WINDOWING_MODE_MULTI_WINDOW);
         mDisplayContent.setImeLayeringTarget(mAppWindow);

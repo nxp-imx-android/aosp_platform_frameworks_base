@@ -2657,7 +2657,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         if (enableFlexibleSplit()) {
             // We could migrate to/return the new INDEX enums here since most callers just care that
             // this value isn't SPLIT_POSITION_UNDEFINED, but
-            // ImePositionProcessor#getImeTargetPosition actually uses the leftTop/bottomRight value
+            // ImePositionProcessor#getImeLayeringTargetPosition actually uses the
+            // leftTop/bottomRight value
             StageTaskListener stageForToken = mStageOrderOperator.getAllStages().stream()
                     .filter(stage -> stage.containsToken(token))
                     .findFirst().orElse(null);

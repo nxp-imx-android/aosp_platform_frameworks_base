@@ -1446,7 +1446,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (dc != null && mDisplayContent != null && dc != mDisplayContent
                 && mDisplayContent.getImeInputTarget() == this) {
             dc.updateImeInputAndControlTarget(getImeInputTarget());
-            mDisplayContent.setImeInputTarget(null);
+            mDisplayContent.setImeInputTarget(null /* target */);
         }
         super.onDisplayChanged(dc);
         // Window was not laid out for this display yet, so make sure mLayoutSeq does not match.
@@ -2172,7 +2172,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // the IME surface may be wrongly positioned when the window configuration affects the
             // IME surface association. (e.g. Attach IME surface on the display instead of the
             // app when the app bounds being letterboxed.)
-            mDisplayContent.updateImeControlTarget(isImeLayeringTarget() /* updateImeParent */);
+            mDisplayContent.updateImeControlTarget(
+                    isImeLayeringTarget() /* forceUpdateImeParent */);
             // Fix the starting window to task when Activity has changed.
             if (mStartingData != null && mStartingData.mAssociatedTask == null
                     && mTempConfiguration.windowConfiguration.getRotation()
@@ -2207,21 +2208,21 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
         final DisplayContent dc = getDisplayContent();
         if (isImeOverlayLayeringTarget()) {
-            mWmService.dispatchImeTargetOverlayVisibilityChanged(mClient.asBinder(), mAttrs.type,
-                    false /* visible */, true /* removed */, dc.getDisplayId());
+            mWmService.dispatchImeOverlayLayeringTargetVisibilityChanged(mClient.asBinder(),
+                    mAttrs.type, false /* visible */, true /* removed */, dc.getDisplayId());
         }
         if (isImeLayeringTarget()) {
             // Remove the attached IME screenshot surface.
             dc.removeImeSurfaceByTarget(this);
-            // Make sure to set mImeLayeringTarget as null when the removed window is the
-            // IME target, in case computeImeTarget may use the outdated target.
-            dc.setImeLayeringTarget(null);
-            dc.computeImeTarget(true /* updateImeTarget */);
+            // Set mImeLayeringTarget as null when the removed window is the IME layering target,
+            // in case computeImeLayeringTarget may use the outdated target.
+            dc.setImeLayeringTarget(null /* target */);
+            dc.computeImeLayeringTarget(true /* update */);
         }
         if (dc.getImeInputTarget() == this && !inRelaunchingActivity()) {
             mWmService.dispatchImeInputTargetVisibilityChanged(mClient.asBinder(),
                     false /* visible */, true /* removed */, dc.getDisplayId());
-            dc.updateImeInputAndControlTarget(null);
+            dc.updateImeInputAndControlTarget(null /* target */);
         }
 
         // Check if window provides non decor insets before clearing its provided insets.
@@ -2421,9 +2422,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         mHasSurface = hasSurface;
     }
 
-    boolean canBeImeTarget() {
+    /** Check if the window can be the IME layering target. */
+    boolean canBeImeLayeringTarget() {
         if (mIsImWindow) {
-            // IME windows can't be IME targets. IME targets are required to be below the IME
+            // IME windows can't be IME layering targets as these must be below the IME
             // windows and that wouldn't be possible if the IME window is its own target...silly.
             return false;
         }
@@ -2433,13 +2435,14 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
 
         if (mAttrs.type == TYPE_SCREENSHOT) {
-            // Disallow screenshot windows from being IME targets
+            // Disallow screenshot windows from being IME layering targets
             return false;
         }
 
-        final boolean windowsAreFocusable = mActivityRecord == null || mActivityRecord.windowsAreFocusable();
+        final boolean windowsAreFocusable = mActivityRecord == null
+                || mActivityRecord.windowsAreFocusable();
         if (!windowsAreFocusable) {
-            // This window can't be an IME target if the app's windows should not be focusable.
+            // Can't be an IME layering target if the app's windows are not be focusable.
             return false;
         }
 
@@ -2454,7 +2457,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // TODO(b/159911356): Remove this special casing (originally added in commit e75d872).
         } else {
             // TODO(b/145812508): Clean this up in S, may depend on b/141738570
-            //  The current logic lets windows become the "ime target" even though they are
+            //  The current logic lets windows become the "ime layering target" even though they are
             //  not-focusable and can thus never actually start input.
             //  Ideally, this would reject windows where mayUseInputMethod() == false, but this
             //  also impacts Z-ordering of and delivery of IME insets to child windows, which means
@@ -2463,8 +2466,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
             final int fl = mAttrs.flags & (FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM);
 
-            // Can only be an IME target if both FLAG_NOT_FOCUSABLE and FLAG_ALT_FOCUSABLE_IM are
-            // set or both are cleared...and not a starting window.
+            // Can only be an IME layering target if both FLAG_NOT_FOCUSABLE and
+            // FLAG_ALT_FOCUSABLE_IM are set or both are cleared...and not a starting window.
             if (fl != 0 && fl != (FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM)) {
                 return false;
             }
@@ -5253,21 +5256,22 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
 
         if (isChildWindow()) {
-            // If we are a child of the input method target we need this promotion.
+            // If we are a child of the IME layering target we need this promotion.
             if (getParentWindow().isImeLayeringTarget()) {
                 return true;
             }
         } else if (mActivityRecord != null) {
-            // Likewise if we share a token with the Input method target and are ordered
+            // Likewise if we share a token with the IME layering target and are ordered
             // above it but not necessarily a child (e.g. a Dialog) then we also need
             // this promotion.
-            final WindowState imeTarget = getImeLayeringTarget();
-            boolean inTokenWithAndAboveImeTarget = imeTarget != null && imeTarget != this
-                    && imeTarget.mToken == mToken
+            final WindowState imeLayeringTarget = getImeLayeringTarget();
+            boolean inTokenWithAndAboveImeLayeringTarget = imeLayeringTarget != null
+                    && imeLayeringTarget != this
+                    && imeLayeringTarget.mToken == mToken
                     && mAttrs.type != TYPE_APPLICATION_STARTING
                     && getParent() != null
-                    && imeTarget.compareTo(this) <= 0;
-            return inTokenWithAndAboveImeTarget;
+                    && imeLayeringTarget.compareTo(this) <= 0;
+            return inTokenWithAndAboveImeLayeringTarget;
         }
 
         // The condition is for the system dialog not belonging to any Activity.
@@ -5275,10 +5279,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         // should be placed above the IME window.
         if ((mAttrs.flags & (FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM))
                 == FLAG_ALT_FOCUSABLE_IM && isTrustedOverlay() && canAddInternalSystemWindow()) {
-            // Check the current IME target so that it does not lift this window above the IME if
-            // the Z-order of the current IME layering target is greater than it.
-            final WindowState imeTarget = getImeLayeringTarget();
-            return imeTarget != null && imeTarget != this && imeTarget.compareTo(this) <= 0;
+            // Check the current IME layering target so that it does not lift this window above the
+            // IME if the Z-order of the current IME layering target is greater than it.
+            final WindowState imeLayeringTarget = getImeLayeringTarget();
+            return imeLayeringTarget != null && imeLayeringTarget != this
+                    && imeLayeringTarget.compareTo(this) <= 0;
         }
         return false;
     }
@@ -5312,9 +5317,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             t.setLayer(mSurfaceControl, Integer.MAX_VALUE);
             return;
         }
-        // See comment in assignRelativeLayerForImeTargetChild
+        // See comment in assignRelativeLayerForImeLayeringTargetChild
         if (needsRelativeLayeringToIme()) {
-            getDisplayContent().assignRelativeLayerForImeTargetChild(t, this);
+            getDisplayContent().assignRelativeLayerForImeLayeringTargetChild(t, this);
             return;
         }
         super.assignLayer(t, layer);
@@ -5436,11 +5441,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 && (mAttrs.flags & (FLAG_ALT_FOCUSABLE_IM | FLAG_NOT_FOCUSABLE)) != 0;
     }
 
+    @Nullable
     WindowState getImeLayeringTarget() {
         final InsetsControlTarget target = getDisplayContent().getImeTarget(IME_TARGET_LAYERING);
         return target != null ? target.getWindow() : null;
     }
 
+    @Nullable
     WindowState getImeInputTarget() {
         final InputTarget target = mDisplayContent.getImeInputTarget();
         return target != null ? target.getWindowState() : null;

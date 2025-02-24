@@ -465,7 +465,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
 
     private WindowState createCommonWindow(WindowState parent, int type, String name) {
         final WindowState win = newWindowBuilder(name, type).setParent(parent).build();
-        // Prevent common windows from been IME targets.
+        // Prevent common windows from being IME layering targets.
         win.mAttrs.flags |= FLAG_NOT_FOCUSABLE;
         return win;
     }

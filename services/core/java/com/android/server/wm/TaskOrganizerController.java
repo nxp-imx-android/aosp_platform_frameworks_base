@@ -972,9 +972,10 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         pendingEventsQueue.addPendingTaskEvent(pending);
     }
 
+    @Nullable
     @Override
-    public WindowContainerToken getImeTarget(int displayId) {
-        enforceTaskPermission("getImeTarget()");
+    public WindowContainerToken getImeLayeringTarget(int displayId) {
+        enforceTaskPermission("getImeLayeringTarget()");
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {

@@ -58,8 +58,11 @@ interface ITaskOrganizerController {
     /** Gets all root tasks on a display (ordered from top-to-bottom) */
     List<ActivityManager.RunningTaskInfo> getRootTasks(int displayId, in int[] activityTypes);
 
-    /** Get the {@link WindowContainerToken} of the task which contains the current ime target */
-    WindowContainerToken getImeTarget(int display);
+    /**
+     * Get the {@link WindowContainerToken} of the task which contains the current IME layering
+     * target
+     */
+    @nullable WindowContainerToken getImeLayeringTarget(int display);
 
     /**
      * Requests that the given task organizer is notified when back is pressed on the root activity

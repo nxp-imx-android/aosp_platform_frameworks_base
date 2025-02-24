@@ -1694,13 +1694,14 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     }
 
     /**
-     * Transient-launch activities cannot be IME target (see {@link WindowState#canBeImeTarget}),
-     * so re-compute in case the IME target is changed after transition.
+     * Transient-launch activities cannot be IME layering target (see
+     * {@link WindowState#canBeImeLayeringTarget}), so re-compute in case the IME layering target is
+     * changed after transition.
      */
     private void updateImeForVisibleTransientLaunch(@NonNull DisplayContent dc) {
-        final WindowState imeTarget = dc.computeImeTarget(true /* updateImeTarget */);
+        final WindowState imeLayeringTarget = dc.computeImeLayeringTarget(true /* update */);
         final WindowState imeWindow = dc.mInputMethodWindow;
-        if (imeWindow == null || imeTarget == null
+        if (imeWindow == null || imeLayeringTarget == null
                 || !mController.hasCollectingRotationChange(dc, dc.getRotation())) {
             return;
         }
@@ -1711,7 +1712,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         final InsetsSourceProvider sourceProvider = imeWindow.getControllableInsetProvider();
         if (sourceProvider == null || sourceProvider.mControl == null
                 || !sourceProvider.isClientVisible()
-                || imeTarget == sourceProvider.getControlTarget()) {
+                || imeLayeringTarget == sourceProvider.getControlTarget()) {
             return;
         }
         final SurfaceControl imeInsetsLeash = sourceProvider.mControl.getLeash();

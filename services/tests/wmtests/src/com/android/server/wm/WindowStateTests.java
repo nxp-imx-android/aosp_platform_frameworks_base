@@ -279,11 +279,11 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    public void testCanBeImeTarget() {
+    public void testCanBeImeLayeringTarget() {
         final WindowState appWindow = newWindowBuilder("appWindow", TYPE_APPLICATION).build();
         final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
 
-        // Setting FLAG_NOT_FOCUSABLE prevents the window from being an IME target.
+        // Setting FLAG_NOT_FOCUSABLE prevents the window from being an IME layering target.
         appWindow.mAttrs.flags |= FLAG_NOT_FOCUSABLE;
         imeWindow.mAttrs.flags |= FLAG_NOT_FOCUSABLE;
 
@@ -291,37 +291,37 @@ public class WindowStateTests extends WindowTestsBase {
         appWindow.setHasSurface(true);
         imeWindow.setHasSurface(true);
 
-        // Windows with FLAG_NOT_FOCUSABLE can't be IME targets
-        assertFalse(appWindow.canBeImeTarget());
-        assertFalse(imeWindow.canBeImeTarget());
+        // Windows with FLAG_NOT_FOCUSABLE can't be IME layering targets
+        assertFalse(appWindow.canBeImeLayeringTarget());
+        assertFalse(imeWindow.canBeImeLayeringTarget());
 
-        // Add IME target flags
+        // Add IME layering target flags
         appWindow.mAttrs.flags |= (FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM);
         imeWindow.mAttrs.flags |= (FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM);
 
-        // Visible app window with flags can be IME target while an IME window can never be an IME
-        // target regardless of its visibility or flags.
-        assertTrue(appWindow.canBeImeTarget());
-        assertFalse(imeWindow.canBeImeTarget());
+        // Visible app window with flags can be IME layering target while an IME window can never
+        // be an IME layering target regardless of its visibility or flags.
+        assertTrue(appWindow.canBeImeLayeringTarget());
+        assertFalse(imeWindow.canBeImeLayeringTarget());
 
-        // Verify PINNED windows can't be IME target.
+        // Verify PINNED windows can't be IME layering target.
         int initialMode = appWindow.mActivityRecord.getWindowingMode();
         appWindow.mActivityRecord.setWindowingMode(WINDOWING_MODE_PINNED);
-        assertFalse(appWindow.canBeImeTarget());
+        assertFalse(appWindow.canBeImeLayeringTarget());
         appWindow.mActivityRecord.setWindowingMode(initialMode);
 
-        // Verify that app window can still be IME target as long as it is visible (even if
+        // Verify that app window can still be IME layering target as long as it is visible (even if
         // it is going to become invisible).
         appWindow.mActivityRecord.setVisibleRequested(false);
-        assertTrue(appWindow.canBeImeTarget());
+        assertTrue(appWindow.canBeImeLayeringTarget());
 
         // Make windows invisible
         appWindow.hide(false /* doAnimation */, false /* requestAnim */);
         imeWindow.hide(false /* doAnimation */, false /* requestAnim */);
 
-        // Invisible window can't be IME targets even if they have the right flags.
-        assertFalse(appWindow.canBeImeTarget());
-        assertFalse(imeWindow.canBeImeTarget());
+        // Invisible window can't be IME layering targets even if they have the right flags.
+        assertFalse(appWindow.canBeImeLayeringTarget());
+        assertFalse(imeWindow.canBeImeLayeringTarget());
 
         // Simulate the window is in split screen root task.
         final Task rootTask = createTask(mDisplayContent,
@@ -329,8 +329,8 @@ public class WindowStateTests extends WindowTestsBase {
         rootTask.setFocusable(false);
         appWindow.mActivityRecord.reparent(rootTask, 0 /* position */, "test");
 
-        // Make sure canBeImeTarget is false;
-        assertFalse(appWindow.canBeImeTarget());
+        // Make sure canBeImeLayeringTarget is false;
+        assertFalse(appWindow.canBeImeLayeringTarget());
     }
 
     @Test
@@ -1207,7 +1207,7 @@ public class WindowStateTests extends WindowTestsBase {
 
         // Simulate app plays closing transition to app2.
         app.mActivityRecord.commitVisibility(false, false);
-        mDisplayContent.computeImeTarget(true /* updateImeTarget */);
+        mDisplayContent.computeImeLayeringTarget(true /* update */);
         assertTrue(app.mActivityRecord.mLastImeShown);
 
         // Verify the IME insets is visible on app, but not for app2 during app task switching.
@@ -1280,7 +1280,7 @@ public class WindowStateTests extends WindowTestsBase {
 
         // Expect updateImeParent will be invoked when the configuration of the IME control
         // target has changed.
-        verify(app.getDisplayContent()).updateImeControlTarget(eq(true) /* updateImeParent */);
+        verify(app.getDisplayContent()).updateImeControlTarget(eq(true) /* forceUpdateImeParent */);
         assertEquals(mAppWindow, mDisplayContent.getImeTarget(IME_TARGET_CONTROL).getWindow());
     }
 
@@ -1297,11 +1297,11 @@ public class WindowStateTests extends WindowTestsBase {
         // Simulate notificationShade is shown and being IME layering target.
         mNotificationShadeWindow.setHasSurface(true);
         mNotificationShadeWindow.mAttrs.flags &= ~FLAG_NOT_FOCUSABLE;
-        assertTrue(mNotificationShadeWindow.canBeImeTarget());
+        assertTrue(mNotificationShadeWindow.canBeImeLayeringTarget());
         mDisplayContent.getInsetsStateController().getOrCreateSourceProvider(ID_IME, ime())
                 .setWindowContainer(mImeWindow, null, null);
 
-        mDisplayContent.computeImeTarget(true);
+        mDisplayContent.computeImeLayeringTarget(true /* update */);
         assertEquals(mNotificationShadeWindow, mDisplayContent.getImeTarget(IME_TARGET_LAYERING));
         mDisplayContent.getInsetsStateController().getRawInsetsState()
                 .setSourceVisible(ID_IME, true);
@@ -1419,32 +1419,32 @@ public class WindowStateTests extends WindowTestsBase {
         final InputMethodManagerInternal immi = InputMethodManagerInternal.get();
         spyOn(immi);
 
-        final WindowState imeTarget = newWindowBuilder("imeTarget",
+        final WindowState imeInputTarget = newWindowBuilder("imeInputTarget",
                 TYPE_BASE_APPLICATION).setWindowToken(
                 createActivityRecord(mDisplayContent)).build();
 
-        imeTarget.mActivityRecord.setVisibleRequested(true);
-        makeWindowVisible(imeTarget);
-        mDisplayContent.setImeInputTarget(imeTarget);
+        imeInputTarget.mActivityRecord.setVisibleRequested(true);
+        makeWindowVisible(imeInputTarget);
+        mDisplayContent.setImeInputTarget(imeInputTarget);
         waitHandlerIdle(mWm.mH);
-        verify(immi).onImeInputTargetVisibilityChanged(imeTarget.mClient.asBinder(),
+        verify(immi).onImeInputTargetVisibilityChanged(imeInputTarget.mClient.asBinder(),
                 true /* visibleAndNotRemoved */, mDisplayContent.getDisplayId());
         reset(immi);
 
-        imeTarget.mActivityRecord.setVisibleRequested(false);
+        imeInputTarget.mActivityRecord.setVisibleRequested(false);
         waitHandlerIdle(mWm.mH);
-        verify(immi).onImeInputTargetVisibilityChanged(imeTarget.mClient.asBinder(),
+        verify(immi).onImeInputTargetVisibilityChanged(imeInputTarget.mClient.asBinder(),
                 false /* visibleAndNotRemoved */, mDisplayContent.getDisplayId());
         reset(immi);
 
-        imeTarget.removeImmediately();
-        verify(immi).onImeInputTargetVisibilityChanged(imeTarget.mClient.asBinder(),
+        imeInputTarget.removeImmediately();
+        verify(immi).onImeInputTargetVisibilityChanged(imeInputTarget.mClient.asBinder(),
                 false /* visibleAndNotRemoved */, mDisplayContent.getDisplayId());
     }
 
     @SetupWindows(addWindows = {W_INPUT_METHOD})
     @Test
-    public void testImeTargetChangeListener_OnImeTargetOverlayVisibilityChanged() {
+    public void testImeTargetChangeListener_setHasVisibleImeLayeringOverlay() {
         final InputMethodManagerInternal immi = InputMethodManagerInternal.get();
         spyOn(immi);
 

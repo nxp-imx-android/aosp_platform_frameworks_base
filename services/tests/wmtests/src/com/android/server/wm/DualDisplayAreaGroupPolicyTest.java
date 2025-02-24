@@ -387,12 +387,12 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         spyOn(secondActivityWin);
 
         // firstActivityWin should be the target
-        doReturn(true).when(firstActivityWin).canBeImeTarget();
-        doReturn(false).when(secondActivityWin).canBeImeTarget();
+        doReturn(true).when(firstActivityWin).canBeImeLayeringTarget();
+        doReturn(false).when(secondActivityWin).canBeImeLayeringTarget();
 
-        WindowState imeTarget = mDisplay.computeImeTarget(true /* updateImeTarget */);
+        WindowState imeLayeringTarget = mDisplay.computeImeLayeringTarget(true /* update */);
 
-        assertThat(imeTarget).isEqualTo(firstActivityWin);
+        assertThat(imeLayeringTarget).isEqualTo(firstActivityWin);
         verify(mFirstRoot).placeImeContainer(imeContainer);
         assertThat(imeContainer.getRootDisplayArea()).isEqualTo(mFirstRoot);
         assertThat(imeContainer.getParent().asDisplayArea().mFeatureId)
@@ -402,12 +402,12 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         assertThat(mSecondRoot.findAreaForTokenInLayer(imeToken)).isNull();
 
         // secondActivityWin should be the target
-        doReturn(false).when(firstActivityWin).canBeImeTarget();
-        doReturn(true).when(secondActivityWin).canBeImeTarget();
+        doReturn(false).when(firstActivityWin).canBeImeLayeringTarget();
+        doReturn(true).when(secondActivityWin).canBeImeLayeringTarget();
 
-        imeTarget = mDisplay.computeImeTarget(true /* updateImeTarget */);
+        imeLayeringTarget = mDisplay.computeImeLayeringTarget(true /* update */);
 
-        assertThat(imeTarget).isEqualTo(secondActivityWin);
+        assertThat(imeLayeringTarget).isEqualTo(secondActivityWin);
         verify(mSecondRoot).placeImeContainer(imeContainer);
         assertThat(imeContainer.getRootDisplayArea()).isEqualTo(mSecondRoot);
         assertThat(imeContainer.getParent().asDisplayArea().mFeatureId)
@@ -430,21 +430,21 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         spyOn(secondActivityWin);
 
         // firstActivityWin should be the target
-        doReturn(true).when(firstActivityWin).canBeImeTarget();
-        doReturn(false).when(secondActivityWin).canBeImeTarget();
+        doReturn(true).when(firstActivityWin).canBeImeLayeringTarget();
+        doReturn(false).when(secondActivityWin).canBeImeLayeringTarget();
 
-        WindowState imeTarget = mDisplay.computeImeTarget(true /* updateImeTarget */);
-        assertThat(imeTarget).isEqualTo(firstActivityWin);
+        WindowState imeLayeringTarget = mDisplay.computeImeLayeringTarget(true /* update */);
+        assertThat(imeLayeringTarget).isEqualTo(firstActivityWin);
         verify(mFirstRoot).placeImeContainer(imeContainer);
 
         // secondActivityWin should be the target
-        doReturn(false).when(firstActivityWin).canBeImeTarget();
-        doReturn(true).when(secondActivityWin).canBeImeTarget();
+        doReturn(false).when(firstActivityWin).canBeImeLayeringTarget();
+        doReturn(true).when(secondActivityWin).canBeImeLayeringTarget();
 
         spyOn(mDisplay.mInputMethodWindow);
-        imeTarget = mDisplay.computeImeTarget(true /* updateImeTarget */);
+        imeLayeringTarget = mDisplay.computeImeLayeringTarget(true /* update */);
 
-        assertThat(imeTarget).isEqualTo(secondActivityWin);
+        assertThat(imeLayeringTarget).isEqualTo(secondActivityWin);
         verify(mSecondRoot).placeImeContainer(imeContainer);
         // verify hide() was called on InputMethodWindow.
         verify(mDisplay.mInputMethodWindow).hide(false /* doAnimation */, false /* requestAnim */);
@@ -464,18 +464,18 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
                 TYPE_APPLICATION_STARTING).setWindowToken(mFirstActivity).build();
         spyOn(firstActivityWin);
         // firstActivityWin should be the target
-        doReturn(true).when(firstActivityWin).canBeImeTarget();
+        doReturn(true).when(firstActivityWin).canBeImeLayeringTarget();
 
         // Main precondition for this test: organize the ImeContainer.
         final IDisplayAreaOrganizer mockImeOrganizer = mock(IDisplayAreaOrganizer.class);
         when(mockImeOrganizer.asBinder()).thenReturn(new Binder());
         imeContainer.setOrganizer(mockImeOrganizer);
 
-        WindowState imeTarget = mDisplay.computeImeTarget(true /* updateImeTarget */);
+        WindowState imeLayeringTarget = mDisplay.computeImeLayeringTarget(true /* update */);
 
-        // The IME target must be updated but the don't reparent organized ImeContainers.
+        // The IME layering target must be updated but the don't reparent organized ImeContainers.
         // See DisplayAreaOrganizer#FEATURE_IME.
-        assertThat(imeTarget).isEqualTo(firstActivityWin);
+        assertThat(imeLayeringTarget).isEqualTo(firstActivityWin);
         verify(mFirstRoot, never()).placeImeContainer(imeContainer);
 
         // Clean up organizer.
@@ -497,11 +497,11 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         final WindowState firstActivityWin = newWindowBuilder("firstActivityWin",
                 TYPE_APPLICATION_STARTING).setWindowToken(mFirstActivity).build();
         spyOn(firstActivityWin);
-        doReturn(true).when(firstActivityWin).canBeImeTarget();
-        WindowState imeTarget = mDisplay.computeImeTarget(true /* updateImeTarget */);
+        doReturn(true).when(firstActivityWin).canBeImeLayeringTarget();
+        WindowState imeLayeringTarget = mDisplay.computeImeLayeringTarget(true /* update */);
 
         // There is no IME_PLACEHOLDER in the firstRoot, so the ImeContainer will not be reparented.
-        assertThat(imeTarget).isEqualTo(firstActivityWin);
+        assertThat(imeLayeringTarget).isEqualTo(firstActivityWin);
         verify(mFirstRoot).placeImeContainer(imeContainer);
         assertThat(imeContainer.getRootDisplayArea()).isEqualTo(mDisplay);
         assertThat(imeContainer.getParent().asDisplayArea().mFeatureId)

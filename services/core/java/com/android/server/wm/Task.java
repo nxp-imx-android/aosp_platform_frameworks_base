@@ -5744,10 +5744,10 @@ class Task extends TaskFragment {
         }
 
         try {
-            // Defer updating the IME target since the new IME target will try to get computed
-            // before updating all closing and opening apps, which can cause the ime target to
-            // get calculated incorrectly.
-            mDisplayContent.deferUpdateImeTarget();
+            // Defer updating the IME layering target since the it will try to get computed before
+            // updating all closing and opening apps, which can cause it to get calculated
+            // incorrectly.
+            mDisplayContent.deferUpdateImeLayeringTarget();
 
             // Don't refocus if invisible to current user
             final ActivityRecord top = tr.getTopNonFinishingActivity();
@@ -5785,7 +5785,7 @@ class Task extends TaskFragment {
                 mRootWindowContainer.resumeFocusedTasksTopActivities();
             }
         } finally {
-            mDisplayContent.continueUpdateImeTarget();
+            mDisplayContent.continueUpdateImeLayeringTarget();
         }
     }
 
