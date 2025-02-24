@@ -20,11 +20,9 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_OFFSET;
 import static android.window.TransitionInfo.FLAG_IS_BEHIND_STARTING_WINDOW;
-import static android.window.TransitionInfo.FLAG_TRANSLUCENT;
 
 import static com.android.wm.shell.activityembedding.ActivityEmbeddingAnimationSpec.createShowSnapshotForClosingAnimation;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.addBackgroundToTransition;
-import static com.android.wm.shell.transition.TransitionAnimationHelper.edgeExtendWindow;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.getTransitionBackgroundColorIfSet;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_TASK_FRAGMENT_DRAG_RESIZE;
 
@@ -144,10 +142,6 @@ class ActivityEmbeddingAnimationRunner {
             // ending states.
             prepareForJumpCut(info, startTransaction);
         } else {
-            if (!com.android.graphics.libgui.flags.Flags.edgeExtensionShader()) {
-                addEdgeExtensionIfNeeded(startTransaction, finishTransaction,
-                        postStartTransactionCallbacks, adapters);
-            }
             addBackgroundColorIfNeeded(info, startTransaction, finishTransaction, adapters);
             for (ActivityEmbeddingAnimationAdapter adapter : adapters) {
                 duration = Math.max(duration, adapter.getDurationHint());
@@ -327,34 +321,6 @@ class ActivityEmbeddingAnimationRunner {
         startTransaction.setFrameTimelineVsync(Choreographer.getInstance().getVsyncId());
         for (ActivityEmbeddingAnimationAdapter adapter : adapters) {
             adapter.prepareForFirstFrame(startTransaction);
-        }
-    }
-
-    /** Adds edge extension to the surfaces that have such an animation property. */
-    private void addEdgeExtensionIfNeeded(@NonNull SurfaceControl.Transaction startTransaction,
-            @NonNull SurfaceControl.Transaction finishTransaction,
-            @NonNull List<Consumer<SurfaceControl.Transaction>> postStartTransactionCallbacks,
-            @NonNull List<ActivityEmbeddingAnimationAdapter> adapters) {
-        for (ActivityEmbeddingAnimationAdapter adapter : adapters) {
-            final Animation animation = adapter.mAnimation;
-            if (animation.getExtensionEdges() == 0) {
-                continue;
-            }
-            if (adapter.mChange.hasFlags(FLAG_TRANSLUCENT)
-                    && adapter.mChange.getActivityComponent() != null) {
-                // Skip edge extension for translucent activity.
-                continue;
-            }
-            final TransitionInfo.Change change = adapter.mChange;
-            if (TransitionUtil.isOpeningType(adapter.mChange.getMode())) {
-                // Need to screenshot after startTransaction is applied otherwise activity
-                // may not be visible or ready yet.
-                postStartTransactionCallbacks.add(
-                        t -> edgeExtendWindow(change, animation, t, finishTransaction));
-            } else {
-                // Can screenshot now (before startTransaction is applied)
-                edgeExtendWindow(change, animation, startTransaction, finishTransaction);
-            }
         }
     }
 

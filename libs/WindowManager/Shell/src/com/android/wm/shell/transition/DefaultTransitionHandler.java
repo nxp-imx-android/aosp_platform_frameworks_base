@@ -63,7 +63,6 @@ import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITI
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_NONE;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_OPEN;
 import static com.android.wm.shell.transition.DefaultSurfaceAnimator.buildSurfaceAnimation;
-import static com.android.wm.shell.transition.TransitionAnimationHelper.edgeExtendWindow;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.getTransitionBackgroundColorIfSet;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.getTransitionTypeFromInfo;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.isCoveredByOpaqueFullscreenChange;
@@ -519,21 +518,9 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                         backgroundColorForTransition);
 
                 if (!isTask && a.getExtensionEdges() != 0x0) {
-                    if (com.android.graphics.libgui.flags.Flags.edgeExtensionShader()) {
-                        startTransaction.setEdgeExtensionEffect(
-                                change.getLeash(), a.getExtensionEdges());
-                        finishTransaction.setEdgeExtensionEffect(change.getLeash(), /* edge */ 0);
-                    } else {
-                        if (!TransitionUtil.isOpeningType(mode)) {
-                            // Can screenshot now (before startTransaction is applied)
-                            edgeExtendWindow(change, a, startTransaction, finishTransaction);
-                        } else {
-                            // Need to screenshot after startTransaction is applied otherwise
-                            // activity may not be visible or ready yet.
-                            postStartTransactionCallbacks
-                                    .add(t -> edgeExtendWindow(change, a, t, finishTransaction));
-                        }
-                    }
+                    startTransaction.setEdgeExtensionEffect(
+                            change.getLeash(), a.getExtensionEdges());
+                    finishTransaction.setEdgeExtensionEffect(change.getLeash(), /* edge */ 0);
                 }
 
                 final Rect clipRect = TransitionUtil.isClosingType(mode)
