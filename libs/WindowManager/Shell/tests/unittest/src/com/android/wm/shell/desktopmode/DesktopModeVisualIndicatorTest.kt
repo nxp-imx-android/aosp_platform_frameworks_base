@@ -36,6 +36,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider
+import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
@@ -67,6 +68,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
     @Mock private lateinit var taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
     @Mock private lateinit var displayLayout: DisplayLayout
     @Mock private lateinit var bubbleBoundsProvider: BubbleDropTargetBoundsProvider
+    @Mock private lateinit var snapEventHandler: SnapEventHandler
 
     private lateinit var visualIndicator: DesktopModeVisualIndicator
     private val desktopExecutor = TestShellExecutor()
@@ -356,6 +358,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
                 taskDisplayAreaOrganizer,
                 dragStartState,
                 bubbleBoundsProvider,
+                snapEventHandler,
             )
     }
 
