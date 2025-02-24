@@ -225,7 +225,7 @@ public class ResizeVeil @JvmOverloads constructor(
             val veilAnimT = surfaceControlTransactionSupplier.get()
             val iconAnimT = surfaceControlTransactionSupplier.get()
             veilAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-                duration = RESIZE_ALPHA_DURATION
+                duration = VEIL_ENTRY_ALPHA_ANIMATION_DURATION
                 addUpdateListener {
                     veilAnimT.setAlpha(background, animatedValue as Float)
                             .apply()
@@ -243,7 +243,8 @@ public class ResizeVeil @JvmOverloads constructor(
                 })
             }
             iconAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-                duration = RESIZE_ALPHA_DURATION
+                duration = ICON_ALPHA_ANIMATION_DURATION
+                startDelay = ICON_ENTRY_DELAY
                 addUpdateListener {
                     iconAnimT.setAlpha(icon, animatedValue as Float)
                             .apply()
@@ -387,23 +388,38 @@ public class ResizeVeil @JvmOverloads constructor(
         if (background == null || icon == null) return
 
         veilAnimator = ValueAnimator.ofFloat(1f, 0f).apply {
-            duration = RESIZE_ALPHA_DURATION
+            duration = VEIL_EXIT_ALPHA_ANIMATION_DURATION
+            startDelay = VEIL_EXIT_DELAY
             addUpdateListener {
                 surfaceControlTransactionSupplier.get()
                         .setAlpha(background, animatedValue as Float)
-                        .setAlpha(icon, animatedValue as Float)
                         .apply()
             }
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
                     surfaceControlTransactionSupplier.get()
                             .hide(background)
-                            .hide(icon)
                             .apply()
                 }
             })
         }
+        iconAnimator = ValueAnimator.ofFloat(1f, 0f).apply {
+            duration = ICON_ALPHA_ANIMATION_DURATION
+            addUpdateListener {
+                surfaceControlTransactionSupplier.get()
+                    .setAlpha(icon, animatedValue as Float)
+                    .apply()
+            }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    surfaceControlTransactionSupplier.get()
+                        .hide(icon)
+                        .apply()
+                }
+            })
+        }
         veilAnimator?.start()
+        iconAnimator?.start()
         isVisible = false
     }
 
@@ -451,7 +467,11 @@ public class ResizeVeil @JvmOverloads constructor(
 
     companion object {
         private const val TAG = "ResizeVeil"
-        private const val RESIZE_ALPHA_DURATION = 100L
+        private const val ICON_ALPHA_ANIMATION_DURATION = 50L
+        private const val VEIL_ENTRY_ALPHA_ANIMATION_DURATION = 50L
+        private const val VEIL_EXIT_ALPHA_ANIMATION_DURATION = 200L
+        private const val ICON_ENTRY_DELAY = 33L
+        private const val VEIL_EXIT_DELAY = 33L
         private const val VEIL_CONTAINER_LAYER = TaskConstants.TASK_CHILD_LAYER_RESIZE_VEIL
 
         /** The background is a child of the veil container layer and goes at the bottom.  */
