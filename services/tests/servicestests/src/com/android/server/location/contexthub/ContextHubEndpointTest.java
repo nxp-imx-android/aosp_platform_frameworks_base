@@ -17,9 +17,9 @@
 package com.android.server.location.contexthub;
 
 import static com.google.common.truth.Truth.assertThat;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,14 +33,20 @@ import android.hardware.contexthub.HubMessage;
 import android.hardware.contexthub.IContextHubEndpoint;
 import android.hardware.contexthub.IContextHubEndpointCallback;
 import android.hardware.contexthub.IEndpointCommunication;
+import android.hardware.contexthub.Message;
 import android.hardware.contexthub.MessageDeliveryStatus;
 import android.hardware.contexthub.Reason;
+import android.hardware.location.IContextHubTransactionCallback;
+import android.hardware.location.NanoAppState;
 import android.os.Binder;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
-
+import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,11 +57,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.util.Collections;
-
 @RunWith(AndroidJUnit4.class)
 @Presubmit
 public class ContextHubEndpointTest {
+    private static final String TAG = "ContextHubEndpointTest";
+
     private static final int SESSION_ID_RANGE = ContextHubEndpointManager.SERVICE_SESSION_RANGE;
     private static final int MIN_SESSION_ID = 0;
     private static final int MAX_SESSION_ID = MIN_SESSION_ID + SESSION_ID_RANGE - 1;
@@ -204,6 +210,68 @@ public class ContextHubEndpointTest {
         unregisterExampleEndpoint(endpoint);
         verify(mMockEndpointCommunications).closeEndpointSession(sessionId, Reason.ENDPOINT_GONE);
         assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+    }
+
+    @Test
+    public void testMessageTransaction() throws RemoteException {
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+        testMessageTransactionInternal(endpoint, /* deliverMessageStatus= */ true);
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
+    @Test
+    public void testMessageTransactionCleanupOnUnregistration() throws RemoteException {
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+        testMessageTransactionInternal(endpoint, /* deliverMessageStatus= */ false);
+
+        unregisterExampleEndpoint(endpoint);
+        assertThat(mTransactionManager.numReliableMessageTransactionPending()).isEqualTo(0);
+    }
+
+    /** A helper method to create a session and validates reliable message sending. */
+    private void testMessageTransactionInternal(
+            IContextHubEndpoint endpoint, boolean deliverMessageStatus) throws RemoteException {
+        HubEndpointInfo targetInfo =
+                new HubEndpointInfo(
+                        TARGET_ENDPOINT_NAME,
+                        TARGET_ENDPOINT_ID,
+                        ENDPOINT_PACKAGE_NAME,
+                        Collections.emptyList());
+        int sessionId = endpoint.openSession(targetInfo, /* serviceDescriptor= */ null);
+        mEndpointManager.onEndpointSessionOpenComplete(sessionId);
+
+        final int messageType = 1234;
+        HubMessage message =
+                new HubMessage.Builder(messageType, new byte[] {1, 2, 3, 4, 5})
+                        .setResponseRequired(true)
+                        .build();
+        IContextHubTransactionCallback callback =
+                new IContextHubTransactionCallback.Stub() {
+                    @Override
+                    public void onQueryResponse(int result, List<NanoAppState> nanoappList) {
+                        Log.i(TAG, "Received onQueryResponse callback, result=" + result);
+                    }
+
+                    @Override
+                    public void onTransactionComplete(int result) {
+                        Log.i(TAG, "Received onTransactionComplete callback, result=" + result);
+                    }
+                };
+        endpoint.sendMessage(sessionId, message, callback);
+        ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
+        verify(mMockEndpointCommunications, timeout(1000))
+                .sendMessageToEndpoint(eq(sessionId), messageCaptor.capture());
+        Message halMessage = messageCaptor.getValue();
+        assertThat(halMessage.type).isEqualTo(message.getMessageType());
+        assertThat(halMessage.content).isEqualTo(message.getMessageBody());
+        assertThat(mTransactionManager.numReliableMessageTransactionPending()).isEqualTo(1);
+
+        if (deliverMessageStatus) {
+            mEndpointManager.onMessageDeliveryStatusReceived(
+                    sessionId, halMessage.sequenceNumber, ErrorCode.OK);
+            assertThat(mTransactionManager.numReliableMessageTransactionPending()).isEqualTo(0);
+        }
     }
 
     private IContextHubEndpoint registerExampleEndpoint() throws RemoteException {
