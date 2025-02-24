@@ -249,3 +249,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "audio_stream_media_service_by_receive_state"
+    namespace: "cross_device_experiences"
+    description: "Start or update audio stream media service by receive state"
+    bug: "398700619"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
