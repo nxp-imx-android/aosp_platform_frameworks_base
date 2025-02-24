@@ -31,12 +31,14 @@ import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.ShellExecutor
+import com.android.wm.shell.desktopmode.DesktopRepository.Companion.INVALID_DESK_ID
 import com.android.wm.shell.desktopmode.persistence.Desktop
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.fail
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -1428,6 +1430,161 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                 minimizedTasks = any(),
                 freeformTasksInZOrder = any(),
             )
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun addDesk_updatesListener() {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+
+        repo.addDesk(displayId = 0, deskId = 1)
+        executor.flushAll()
+
+        val lastAddition = assertNotNull(listener.lastAddition)
+        assertThat(lastAddition.displayId).isEqualTo(0)
+        assertThat(lastAddition.deskId).isEqualTo(1)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun removeDesk_updatesListener() {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(displayId = 0, deskId = 1)
+
+        repo.removeDesk(deskId = 1)
+        executor.flushAll()
+
+        val lastRemoval = assertNotNull(listener.lastRemoval)
+        assertThat(lastRemoval.displayId).isEqualTo(0)
+        assertThat(lastRemoval.deskId).isEqualTo(1)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun removeDesk_didNotExist_doesNotUpdateListener() {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(displayId = 0, deskId = 1)
+
+        repo.removeDesk(deskId = 2)
+        executor.flushAll()
+
+        assertThat(listener.lastRemoval).isNull()
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun removeDesk_wasActive_updatesActiveChangeListener() {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(displayId = 0, deskId = 1)
+        repo.setActiveDesk(displayId = 0, deskId = 1)
+
+        repo.removeDesk(deskId = 1)
+        executor.flushAll()
+
+        val lastActivationChange = assertNotNull(listener.lastActivationChange)
+        assertThat(lastActivationChange.displayId).isEqualTo(0)
+        assertThat(lastActivationChange.oldActive).isEqualTo(1)
+        assertThat(lastActivationChange.newActive).isEqualTo(INVALID_DESK_ID)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun setDeskActive_fromNoActive_updatesListener() {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(displayId = 1, deskId = 1)
+
+        repo.setActiveDesk(displayId = 1, deskId = 1)
+        executor.flushAll()
+
+        val lastActivationChange = assertNotNull(listener.lastActivationChange)
+        assertThat(lastActivationChange.displayId).isEqualTo(1)
+        assertThat(lastActivationChange.oldActive).isEqualTo(INVALID_DESK_ID)
+        assertThat(lastActivationChange.newActive).isEqualTo(1)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun setDeskActive_fromOtherActive_updatesListener() {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(displayId = 1, deskId = 1)
+        repo.addDesk(displayId = 1, deskId = 2)
+        repo.setActiveDesk(displayId = 1, deskId = 1)
+
+        repo.setActiveDesk(displayId = 1, deskId = 2)
+        executor.flushAll()
+
+        val lastActivationChange = assertNotNull(listener.lastActivationChange)
+        assertThat(lastActivationChange.displayId).isEqualTo(1)
+        assertThat(lastActivationChange.oldActive).isEqualTo(1)
+        assertThat(lastActivationChange.newActive).isEqualTo(2)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun setDeskInactive_updatesListener() {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(displayId = 0, deskId = 1)
+        repo.setActiveDesk(displayId = 0, deskId = 1)
+
+        repo.setDeskInactive(deskId = 1)
+        executor.flushAll()
+
+        val lastActivationChange = assertNotNull(listener.lastActivationChange)
+        assertThat(lastActivationChange.displayId).isEqualTo(0)
+        assertThat(lastActivationChange.oldActive).isEqualTo(1)
+        assertThat(lastActivationChange.newActive).isEqualTo(INVALID_DESK_ID)
+    }
+
+    private class TestDeskChangeListener : DesktopRepository.DeskChangeListener {
+        var lastAddition: LastAddition? = null
+            private set
+
+        var lastRemoval: LastRemoval? = null
+            private set
+
+        var lastActivationChange: LastActivationChange? = null
+            private set
+
+        override fun onDeskAdded(displayId: Int, deskId: Int) {
+            lastAddition = LastAddition(displayId, deskId)
+        }
+
+        override fun onDeskRemoved(displayId: Int, deskId: Int) {
+            lastRemoval = LastRemoval(displayId, deskId)
+        }
+
+        override fun onActiveDeskChanged(
+            displayId: Int,
+            newActiveDeskId: Int,
+            oldActiveDeskId: Int,
+        ) {
+            lastActivationChange =
+                LastActivationChange(
+                    displayId = displayId,
+                    oldActive = oldActiveDeskId,
+                    newActive = newActiveDeskId,
+                )
+        }
+
+        data class LastAddition(val displayId: Int, val deskId: Int)
+
+        data class LastRemoval(val displayId: Int, val deskId: Int)
+
+        data class LastActivationChange(val displayId: Int, val oldActive: Int, val newActive: Int)
     }
 
     class TestListener : DesktopRepository.ActiveTasksListener {
