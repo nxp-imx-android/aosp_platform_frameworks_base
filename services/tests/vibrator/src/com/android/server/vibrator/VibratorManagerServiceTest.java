@@ -147,6 +147,9 @@ public class VibratorManagerServiceTest {
             new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build();
     private static final AudioAttributes AUDIO_NOTIFICATION_ATTRS =
             new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION).build();
+    private static final AudioAttributes AUDIO_HAPTIC_FEEDBACK_ATTRS =
+            new AudioAttributes.Builder().setUsage(
+                    AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build();
     private static final VibrationAttributes ALARM_ATTRS =
             new VibrationAttributes.Builder().setUsage(VibrationAttributes.USAGE_ALARM).build();
     private static final VibrationAttributes HAPTIC_FEEDBACK_ATTRS =
@@ -2674,7 +2677,8 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    public void onExternalVibration_thenDeniedAppOps_doNotCancelVibration() throws Throwable {
+    @DisableFlags(android.os.vibrator.Flags.FLAG_FIX_EXTERNAL_VIBRATION_SYSTEM_UPDATE_AWARE)
+    public void onExternalVibration_legacyDeniedAppOps_doNotCancelVibration() throws Throwable {
         mockVibrators(1);
         mVibratorProviders.get(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
         VibratorManagerService service = createSystemReadyService();
@@ -2697,7 +2701,32 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    public void onExternalVibration_thenPowerModeChanges_doNotCancelVibration() throws Exception {
+    @EnableFlags(android.os.vibrator.Flags.FLAG_FIX_EXTERNAL_VIBRATION_SYSTEM_UPDATE_AWARE)
+    public void onExternalVibration_thenDeniedAppOps_cancelVibration() throws Throwable {
+        mockVibrators(1);
+        mVibratorProviders.get(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        VibratorManagerService service = createSystemReadyService();
+
+        IExternalVibrationController externalVibrationControllerMock =
+                mock(IExternalVibrationController.class);
+        ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
+                AUDIO_ALARM_ATTRS, externalVibrationControllerMock, mock(IBinder.class));
+        ExternalVibrationScale scale = mExternalVibratorService.onExternalVibrationStart(
+                externalVibration);
+
+        assertThat(scale.scaleLevel).isNotEqualTo(ExternalVibrationScale.ScaleLevel.SCALE_MUTE);
+
+        when(mAppOpsManagerMock.checkAudioOpNoThrow(eq(AppOpsManager.OP_VIBRATE),
+                eq(AudioAttributes.USAGE_ALARM), anyInt(), anyString()))
+                .thenReturn(AppOpsManager.MODE_IGNORED);
+        service.mAppOpsChangeListener.onOpChanged(AppOpsManager.OP_VIBRATE, null);
+
+        verify(externalVibrationControllerMock).mute();
+    }
+
+    @Test
+    @DisableFlags(android.os.vibrator.Flags.FLAG_FIX_EXTERNAL_VIBRATION_SYSTEM_UPDATE_AWARE)
+    public void onExternalVibration_legacyPowerModeChanges_doNotCancelVibration() throws Exception {
         mockVibrators(1);
         mVibratorProviders.get(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
         createSystemReadyService();
@@ -2705,7 +2734,7 @@ public class VibratorManagerServiceTest {
         IExternalVibrationController externalVibrationControllerMock =
                 mock(IExternalVibrationController.class);
         ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_ALARM_ATTRS, externalVibrationControllerMock, mock(IBinder.class));
+                AUDIO_HAPTIC_FEEDBACK_ATTRS, externalVibrationControllerMock, mock(IBinder.class));
         ExternalVibrationScale scale = mExternalVibratorService.onExternalVibrationStart(
                 externalVibration);
 
@@ -2717,7 +2746,29 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    public void onExternalVibration_thenSettingsChange_doNotCancelVibration() throws Exception {
+    @EnableFlags(android.os.vibrator.Flags.FLAG_FIX_EXTERNAL_VIBRATION_SYSTEM_UPDATE_AWARE)
+    public void onExternalVibration_thenPowerModeChanges_cancelVibration() throws Exception {
+        mockVibrators(1);
+        mVibratorProviders.get(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        createSystemReadyService();
+
+        IExternalVibrationController externalVibrationControllerMock =
+                mock(IExternalVibrationController.class);
+        ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
+                AUDIO_HAPTIC_FEEDBACK_ATTRS, externalVibrationControllerMock, mock(IBinder.class));
+        ExternalVibrationScale scale = mExternalVibratorService.onExternalVibrationStart(
+                externalVibration);
+
+        assertThat(scale.scaleLevel).isNotEqualTo(ExternalVibrationScale.ScaleLevel.SCALE_MUTE);
+
+        mRegisteredPowerModeListener.onLowPowerModeChanged(LOW_POWER_STATE);
+
+        verify(externalVibrationControllerMock).mute();
+    }
+
+    @Test
+    @DisableFlags(android.os.vibrator.Flags.FLAG_FIX_EXTERNAL_VIBRATION_SYSTEM_UPDATE_AWARE)
+    public void onExternalVibration_legacySettingsChange_doNotCancelVibration() throws Exception {
         mockVibrators(1);
         mVibratorProviders.get(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
         VibratorManagerService service = createSystemReadyService();
@@ -2739,7 +2790,31 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    public void onExternalVibration_thenScreenTurnsOff_doNotCancelVibration() throws Throwable {
+    @EnableFlags(android.os.vibrator.Flags.FLAG_FIX_EXTERNAL_VIBRATION_SYSTEM_UPDATE_AWARE)
+    public void onExternalVibration_thenSettingsChange_cancelVibration() throws Exception {
+        mockVibrators(1);
+        mVibratorProviders.get(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        VibratorManagerService service = createSystemReadyService();
+
+        IExternalVibrationController externalVibrationControllerMock =
+                mock(IExternalVibrationController.class);
+        ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
+                AUDIO_ALARM_ATTRS, externalVibrationControllerMock, mock(IBinder.class));
+        ExternalVibrationScale scale = mExternalVibratorService.onExternalVibrationStart(
+                externalVibration);
+
+        assertThat(scale.scaleLevel).isNotEqualTo(ExternalVibrationScale.ScaleLevel.SCALE_MUTE);
+
+        setUserSetting(Settings.System.ALARM_VIBRATION_INTENSITY, Vibrator.VIBRATION_INTENSITY_OFF);
+        service.mVibrationSettings.mSettingObserver.onChange(false);
+        service.updateServiceState();
+
+        verify(externalVibrationControllerMock).mute();
+    }
+
+    @Test
+    @DisableFlags(android.os.vibrator.Flags.FLAG_FIX_EXTERNAL_VIBRATION_SYSTEM_UPDATE_AWARE)
+    public void onExternalVibration_legacyScreenTurnsOff_doNotCancelVibration() throws Exception {
         mockVibrators(1);
         mVibratorProviders.get(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
         VibratorManagerService service = createSystemReadyService();
@@ -2759,7 +2834,30 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    public void onExternalVibration_thenFgUserRequestsMute_doNotCancelVibration() throws Throwable {
+    @EnableFlags(android.os.vibrator.Flags.FLAG_FIX_EXTERNAL_VIBRATION_SYSTEM_UPDATE_AWARE)
+    public void onExternalVibration_thenScreenTurnsOff_cancelVibration() throws Exception {
+        mockVibrators(1);
+        mVibratorProviders.get(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        VibratorManagerService service = createSystemReadyService();
+
+        IExternalVibrationController externalVibrationControllerMock =
+                mock(IExternalVibrationController.class);
+        ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
+                AUDIO_ALARM_ATTRS, externalVibrationControllerMock, mock(IBinder.class));
+        ExternalVibrationScale scale = mExternalVibratorService.onExternalVibrationStart(
+                externalVibration);
+
+        assertThat(scale.scaleLevel).isNotEqualTo(ExternalVibrationScale.ScaleLevel.SCALE_MUTE);
+
+        service.mIntentReceiver.onReceive(mContextSpy, new Intent(Intent.ACTION_SCREEN_OFF));
+
+        verify(externalVibrationControllerMock).mute();
+    }
+
+    @Test
+    @DisableFlags(android.os.vibrator.Flags.FLAG_FIX_EXTERNAL_VIBRATION_SYSTEM_UPDATE_AWARE)
+    public void onExternalVibration_legacyFgUserRequestsMute_doNotCancelVibration()
+            throws Exception {
         assumeTrue(UserManagerInternal.shouldShowNotificationForBackgroundUserSounds());
         mockVibrators(1);
         mVibratorProviders.get(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
@@ -2778,6 +2876,29 @@ public class VibratorManagerServiceTest {
                 BackgroundUserSoundNotifier.ACTION_MUTE_SOUND));
 
         verify(externalVibrationControllerMock, never()).mute();
+    }
+
+    @Test
+    @EnableFlags(android.os.vibrator.Flags.FLAG_FIX_EXTERNAL_VIBRATION_SYSTEM_UPDATE_AWARE)
+    public void onExternalVibration_thenFgUserRequestsMute_cancelVibration() throws Exception {
+        assumeTrue(UserManagerInternal.shouldShowNotificationForBackgroundUserSounds());
+        mockVibrators(1);
+        mVibratorProviders.get(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        VibratorManagerService service = createSystemReadyService();
+
+        IExternalVibrationController externalVibrationControllerMock =
+                mock(IExternalVibrationController.class);
+        ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
+                AUDIO_ALARM_ATTRS, externalVibrationControllerMock, mock(IBinder.class));
+        ExternalVibrationScale scale = mExternalVibratorService.onExternalVibrationStart(
+                externalVibration);
+
+        assertThat(scale.scaleLevel).isNotEqualTo(ExternalVibrationScale.ScaleLevel.SCALE_MUTE);
+
+        service.mIntentReceiver.onReceive(mContextSpy, new Intent(
+                BackgroundUserSoundNotifier.ACTION_MUTE_SOUND));
+
+        verify(externalVibrationControllerMock).mute();
     }
 
     @Test
