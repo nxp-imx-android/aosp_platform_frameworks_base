@@ -7,13 +7,6 @@ container: "system"
 
 flag {
     namespace: "windowing_sdk"
-    name: "activity_embedding_overlay_presentation_flag"
-    description: "Whether the overlay presentation feature is enabled"
-    bug: "293370683"
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "task_fragment_system_organizer_flag"
     description: "Whether the TaskFragment system organizer feature is enabled"
     bug: "284050041"

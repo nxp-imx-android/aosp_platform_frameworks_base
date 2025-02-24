@@ -2088,14 +2088,16 @@ public class TransitionTests extends WindowTestsBase {
 
     @Test
     public void testOverrideAnimationOptionsToInfoIfNecessary_customAnimOptions() {
-        ActivityRecord r = initializeOverrideAnimationOptionsTest();
-        TransitionInfo.AnimationOptions options = TransitionInfo.AnimationOptions
+        final ActivityRecord r = initializeOverrideAnimationOptionsTest();
+        final TransitionInfo.AnimationOptions options = TransitionInfo.AnimationOptions
                 .makeCustomAnimOptions("testPackage", Resources.ID_NULL,
                         TransitionInfo.AnimationOptions.DEFAULT_ANIMATION_RESOURCES_ID,
                         TransitionInfo.AnimationOptions.DEFAULT_ANIMATION_RESOURCES_ID,
-                        Color.GREEN, false /* overrideTaskTransition */);
+                        false /* overrideTaskTransition */);
         mTransition.setOverrideAnimation(options, r, null /* startCallback */,
                 null /* finishCallback */);
+        final int expectedBackgroundColor = Color.GREEN;
+        mTransition.setOverrideBackgroundColor(expectedBackgroundColor);
 
         mTransition.overrideAnimationOptionsToInfoIfNecessary(mInfo);
 
@@ -2115,12 +2117,13 @@ public class TransitionTests extends WindowTestsBase {
         assertEquals("Activity change's AnimationOptions must be overridden.",
                 options, activityChange.getAnimationOptions());
         assertEquals("Activity change's background color must be overridden.",
-                options.getBackgroundColor(), activityChange.getBackgroundColor());
+                expectedBackgroundColor, activityChange.getBackgroundColor());
+
     }
 
     @Test
     public void testOverrideAnimationOptionsToInfoIfNecessary_haveTaskFragmentAnimParams() {
-        ActivityRecord r = initializeOverrideAnimationOptionsTest();
+        final ActivityRecord r = initializeOverrideAnimationOptionsTest();
 
         final TaskFragment embeddedTf = mTransition.mTargets.get(2).mContainer.asTaskFragment();
         embeddedTf.setAnimationParams(new TaskFragmentAnimationParams.Builder()
@@ -2128,13 +2131,15 @@ public class TransitionTests extends WindowTestsBase {
                 .setOpenAnimationResId(0x12345678)
                 .build());
 
-        TransitionInfo.AnimationOptions options = TransitionInfo.AnimationOptions
+        final TransitionInfo.AnimationOptions options = TransitionInfo.AnimationOptions
                 .makeCustomAnimOptions("testPackage", Resources.ID_NULL,
                         TransitionInfo.AnimationOptions.DEFAULT_ANIMATION_RESOURCES_ID,
                         TransitionInfo.AnimationOptions.DEFAULT_ANIMATION_RESOURCES_ID,
-                        Color.GREEN, false /* overrideTaskTransition */);
+                        false /* overrideTaskTransition */);
         mTransition.setOverrideAnimation(options, r, null /* startCallback */,
                 null /* finishCallback */);
+        final int expectedBackgroundColor = Color.GREEN;
+        mTransition.setOverrideBackgroundColor(expectedBackgroundColor);
 
         final TransitionInfo.Change displayChange = mInfo.getChanges().get(0);
         final TransitionInfo.Change taskChange = mInfo.getChanges().get(1);
@@ -2147,7 +2152,7 @@ public class TransitionTests extends WindowTestsBase {
                 .makeCustomAnimOptions("testPackage", 0x12345678,
                         TransitionInfo.AnimationOptions.DEFAULT_ANIMATION_RESOURCES_ID,
                         TransitionInfo.AnimationOptions.DEFAULT_ANIMATION_RESOURCES_ID,
-                        0, false /* overrideTaskTransition */);
+                        false /* overrideTaskTransition */);
         embeddedTfChange.setAnimationOptions(expectedOptions);
 
         mTransition.overrideAnimationOptionsToInfoIfNecessary(mInfo);
@@ -2163,19 +2168,21 @@ public class TransitionTests extends WindowTestsBase {
         assertEquals("Activity change's AnimationOptions must be overridden.",
                 options, activityChange.getAnimationOptions());
         assertEquals("Activity change's background color must be overridden.",
-                options.getBackgroundColor(), activityChange.getBackgroundColor());
+                expectedBackgroundColor, activityChange.getBackgroundColor());
     }
 
     @Test
     public void testOverrideAnimationOptionsToInfoIfNecessary_customAnimOptionsWithTaskOverride() {
-        ActivityRecord r = initializeOverrideAnimationOptionsTest();
-        TransitionInfo.AnimationOptions options = TransitionInfo.AnimationOptions
+        final ActivityRecord r = initializeOverrideAnimationOptionsTest();
+        final TransitionInfo.AnimationOptions options = TransitionInfo.AnimationOptions
                 .makeCustomAnimOptions("testPackage", Resources.ID_NULL,
                         TransitionInfo.AnimationOptions.DEFAULT_ANIMATION_RESOURCES_ID,
                         TransitionInfo.AnimationOptions.DEFAULT_ANIMATION_RESOURCES_ID,
-                        Color.GREEN, true /* overrideTaskTransition */);
+                        true /* overrideTaskTransition */);
         mTransition.setOverrideAnimation(options, r, null /* startCallback */,
                 null /* finishCallback */);
+        final int expectedBackgroundColor = Color.GREEN;
+        mTransition.setOverrideBackgroundColor(expectedBackgroundColor);
 
         mTransition.overrideAnimationOptionsToInfoIfNecessary(mInfo);
 
@@ -2189,7 +2196,7 @@ public class TransitionTests extends WindowTestsBase {
         assertEquals("Task change's AnimationOptions must be overridden.",
                 options, taskChange.getAnimationOptions());
         assertEquals("Task change's background color must be overridden.",
-                options.getBackgroundColor(), taskChange.getBackgroundColor());
+                expectedBackgroundColor, taskChange.getBackgroundColor());
         assertEquals("Embedded TF change's AnimationOptions must be overridden.",
                 options, embeddedTfChange.getAnimationOptions());
         assertEquals("Embedded TF change's background color must be overridden.",
@@ -2197,7 +2204,7 @@ public class TransitionTests extends WindowTestsBase {
         assertEquals("Activity change's AnimationOptions must be overridden.",
                 options, activityChange.getAnimationOptions());
         assertEquals("Activity change's background color must be overridden.",
-                options.getBackgroundColor(), activityChange.getBackgroundColor());
+                expectedBackgroundColor, activityChange.getBackgroundColor());
     }
 
     private ActivityRecord initializeOverrideAnimationOptionsTest() {

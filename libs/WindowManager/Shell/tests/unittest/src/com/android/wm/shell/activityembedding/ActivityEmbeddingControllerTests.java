@@ -195,8 +195,8 @@ public class ActivityEmbeddingControllerTests extends ActivityEmbeddingAnimation
         final TransitionInfo.Change change = info.getChanges().getFirst();
 
         change.setAnimationOptions(TransitionInfo.AnimationOptions
-                .makeCustomAnimOptions("packageName", 0 /* enterResId */, 0 /* exitResId */,
-                        0 /* backgroundColor */, false /* overrideTaskTransition */));
+                .makeCustomAnimOptions("packageName", 0 /* enterResId */, 0 /* changeResId */,
+                        0 /* exitResId */, false /* overrideTaskTransition */));
         assertTrue(mController.shouldAnimate(info));
 
         change.setAnimationOptions(TransitionInfo.AnimationOptions

@@ -107,7 +107,6 @@ import androidx.window.extensions.embedding.TransactionManager.TransactionRecord
 import androidx.window.extensions.layout.WindowLayoutComponentImpl;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.window.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -421,9 +420,6 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
     public void setActivityStackAttributesCalculator(
             @NonNull Function<ActivityStackAttributesCalculatorParams, ActivityStackAttributes>
                     calculator) {
-        if (!Flags.activityEmbeddingOverlayPresentationFlag()) {
-            return;
-        }
         synchronized (mLock) {
             mActivityStackAttributesCalculator = calculator;
         }
@@ -431,9 +427,6 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
 
     @Override
     public void clearActivityStackAttributesCalculator() {
-        if (!Flags.activityEmbeddingOverlayPresentationFlag()) {
-            return;
-        }
         synchronized (mLock) {
             mActivityStackAttributesCalculator = null;
         }
@@ -623,9 +616,6 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
     @Override
     public void updateActivityStackAttributes(@NonNull ActivityStack.Token activityStackToken,
                                               @NonNull ActivityStackAttributes attributes) {
-        if (!Flags.activityEmbeddingOverlayPresentationFlag()) {
-            return;
-        }
         Objects.requireNonNull(activityStackToken);
         Objects.requireNonNull(attributes);
 
@@ -652,9 +642,6 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
     @Nullable
     public ParentContainerInfo getParentContainerInfo(
             @NonNull ActivityStack.Token activityStackToken) {
-        if (!Flags.activityEmbeddingOverlayPresentationFlag()) {
-            return null;
-        }
         Objects.requireNonNull(activityStackToken);
         synchronized (mLock) {
             final TaskFragmentContainer container = getContainer(activityStackToken.getRawToken());
@@ -670,9 +657,6 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
     @Override
     @Nullable
     public ActivityStack.Token getActivityStackToken(@NonNull String tag) {
-        if (!Flags.activityEmbeddingOverlayPresentationFlag()) {
-            return null;
-        }
         Objects.requireNonNull(tag);
         synchronized (mLock) {
             final TaskFragmentContainer taskFragmentContainer =
@@ -3152,8 +3136,7 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
                 final TaskFragmentContainer launchedInTaskFragment;
                 if (launchingActivity != null) {
                     final String overlayTag = options.getString(KEY_OVERLAY_TAG);
-                    if (Flags.activityEmbeddingOverlayPresentationFlag()
-                            && overlayTag != null) {
+                    if (overlayTag != null) {
                         launchedInTaskFragment = createOrUpdateOverlayTaskFragmentIfNeeded(wct,
                                 options, intent, launchingActivity);
                     } else {
