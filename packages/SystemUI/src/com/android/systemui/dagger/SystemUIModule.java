@@ -21,6 +21,7 @@ import android.app.Service;
 import android.app.backup.BackupManager;
 import android.content.Context;
 import android.service.dreams.IDreamManager;
+import android.view.Display;
 
 import androidx.annotation.Nullable;
 
@@ -86,8 +87,8 @@ import com.android.systemui.mediaprojection.MediaProjectionModule;
 import com.android.systemui.mediaprojection.appselector.MediaProjectionActivitiesModule;
 import com.android.systemui.mediaprojection.taskswitcher.MediaProjectionTaskSwitcherModule;
 import com.android.systemui.mediarouter.MediaRouterModule;
-import com.android.systemui.model.SceneContainerPlugin;
 import com.android.systemui.model.SysUiState;
+import com.android.systemui.model.SysUiStateImpl;
 import com.android.systemui.motiontool.MotionToolModule;
 import com.android.systemui.navigationbar.NavigationBarComponent;
 import com.android.systemui.navigationbar.gestural.dagger.GestureModule;
@@ -113,7 +114,6 @@ import com.android.systemui.scene.ui.view.WindowRootViewComponent;
 import com.android.systemui.screenrecord.ScreenRecordModule;
 import com.android.systemui.screenshot.dagger.ScreenshotModule;
 import com.android.systemui.security.data.repository.SecurityRepositoryModule;
-import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeDisplayAwareModule;
@@ -326,10 +326,9 @@ public abstract class SystemUIModule {
     @SysUISingleton
     @Provides
     static SysUiState provideSysUiState(
-            DisplayTracker displayTracker,
             DumpManager dumpManager,
-            SceneContainerPlugin sceneContainerPlugin) {
-        final SysUiState state = new SysUiState(displayTracker, sceneContainerPlugin);
+            SysUiStateImpl.Factory sysUiStateFactory) {
+        final SysUiState state = sysUiStateFactory.create(Display.DEFAULT_DISPLAY);
         dumpManager.registerDumpable(state);
         return state;
     }

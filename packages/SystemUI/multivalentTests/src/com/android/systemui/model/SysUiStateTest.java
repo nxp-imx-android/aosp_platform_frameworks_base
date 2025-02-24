@@ -20,6 +20,8 @@ package com.android.systemui.model;
 import static android.view.Display.DEFAULT_DISPLAY;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -28,7 +30,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
-import com.android.systemui.settings.FakeDisplayTracker;
+import com.android.systemui.settings.DisplayTracker;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -46,14 +48,23 @@ public class SysUiStateTest extends SysuiTestCase {
     private KosmosJavaAdapter mKosmos;
     private SysUiState.SysUiStateCallback mCallback;
     private SysUiState mFlagsContainer;
+    private DisplayTracker mDisplayTracker;
+    private SceneContainerPlugin mSceneContainerPlugin;
+
+    private SysUiState createInstance(int displayId) {
+        var sysuiState = new SysUiStateImpl(displayId, mSceneContainerPlugin);
+        sysuiState.addCallback(mCallback);
+        return sysuiState;
+    }
 
     @Before
     public void setup() {
-        FakeDisplayTracker displayTracker = new FakeDisplayTracker(mContext);
         mKosmos = new KosmosJavaAdapter(this);
-        mFlagsContainer = new SysUiState(displayTracker, mKosmos.getSceneContainerPlugin());
+        mDisplayTracker = mKosmos.getDisplayTracker();
+        mFlagsContainer = mKosmos.getSysuiState();
+        mSceneContainerPlugin = mKosmos.getSceneContainerPlugin();
         mCallback = mock(SysUiState.SysUiStateCallback.class);
-        mFlagsContainer.addCallback(mCallback);
+        mFlagsContainer = createInstance(DEFAULT_DISPLAY);
     }
 
     @Test
@@ -69,20 +80,17 @@ public class SysUiStateTest extends SysuiTestCase {
         setFlags(FLAG_2);
 
         verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1);
-        verify(mCallback, times(1))
-                .onSystemUiStateChanged(FLAG_1 | FLAG_2);
+        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1 | FLAG_2);
     }
 
     @Test
     public void addMultipleRemoveOne_setFlag() {
         setFlags(FLAG_1);
         setFlags(FLAG_2);
-        mFlagsContainer.setFlag(FLAG_1, false)
-                .commitUpdate(DISPLAY_ID);
+        mFlagsContainer.setFlag(FLAG_1, false).commitUpdate(DISPLAY_ID);
 
         verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1);
-        verify(mCallback, times(1))
-                .onSystemUiStateChanged(FLAG_1 | FLAG_2);
+        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1 | FLAG_2);
         verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_2);
     }
 
@@ -97,8 +105,7 @@ public class SysUiStateTest extends SysuiTestCase {
     @Test
     public void addMultipleRemoveOne_setFlags() {
         setFlags(FLAG_1, FLAG_2, FLAG_3, FLAG_4);
-        mFlagsContainer.setFlag(FLAG_2, false)
-                .commitUpdate(DISPLAY_ID);
+        mFlagsContainer.setFlag(FLAG_2, false).commitUpdate(DISPLAY_ID);
 
         int expected1 = FLAG_1 | FLAG_2 | FLAG_3 | FLAG_4;
         verify(mCallback, times(1)).onSystemUiStateChanged(expected1);
@@ -115,10 +122,31 @@ public class SysUiStateTest extends SysuiTestCase {
         verify(mCallback, times(0)).onSystemUiStateChanged(expected);
     }
 
+    @Test
+    public void setFlag_receivedForDefaultDisplay() {
+        setFlags(FLAG_1);
+
+        verify(mCallback, times(1)).onSystemUiStateChangedForDisplay(FLAG_1, DEFAULT_DISPLAY);
+    }
+
+    @Test
+    public void setFlag_externalDisplayInstance_defaultDisplayCallbackNotPropagated() {
+        var instance = createInstance(/* displayId = */ 2);
+        reset(mCallback);
+        setFlags(instance, FLAG_1);
+
+        verify(mCallback, times(1)).onSystemUiStateChangedForDisplay(FLAG_1, /* displayId= */ 2);
+        verify(mCallback, never()).onSystemUiStateChanged(FLAG_1);
+    }
+
     private void setFlags(int... flags) {
-        for (int i = 0; i < flags.length; i++) {
-            mFlagsContainer.setFlag(flags[i], true);
+        setFlags(mFlagsContainer, flags);
+    }
+
+    private void setFlags(SysUiState instance, int... flags) {
+        for (int flag : flags) {
+            instance.setFlag(flag, true);
         }
-        mFlagsContainer.commitUpdate(DISPLAY_ID);
+        instance.commitUpdate();
     }
 }

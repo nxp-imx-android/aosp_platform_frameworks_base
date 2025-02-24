@@ -16,26 +16,78 @@
 package com.android.systemui.model
 
 import android.util.Log
+import android.view.Display
 import com.android.systemui.Dumpable
-import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.settings.DisplayTracker
+import com.android.systemui.model.SysUiState.SysUiStateCallback
 import com.android.systemui.shared.system.QuickStepContract
 import com.android.systemui.shared.system.QuickStepContract.SystemUiStateFlags
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dalvik.annotation.optimization.NeverCompile
 import java.io.PrintWriter
 
 /** Contains sysUi state flags and notifies registered listeners whenever changes happen. */
-@SysUISingleton
-class SysUiState(
-    private val displayTracker: DisplayTracker,
+interface SysUiState : Dumpable {
+    /**
+     * Add listener to be notified of changes made to SysUI state.
+     *
+     * The callback will also be called as part of this function.
+     */
+    fun addCallback(callback: SysUiStateCallback)
+
+    /** Removes a callback for state changes. */
+    fun removeCallback(callback: SysUiStateCallback)
+
+    /** Returns whether a flag is enabled in this state. */
+    fun isFlagEnabled(@SystemUiStateFlags flag: Long): Boolean
+
+    /** Returns the current sysui state flags. */
+    val flags: Long
+
+    /** Methods to this call can be chained together before calling [commitUpdate]. */
+    fun setFlag(@SystemUiStateFlags flag: Long, enabled: Boolean): SysUiState
+
+    /** Call to save all the flags updated from [setFlag]. */
+    @Deprecated("Each SysUIState instance is now display specific. Just use commitUpdate()")
+    fun commitUpdate(displayId: Int)
+
+    /** Call to save all the flags updated from [setFlag]. */
+    fun commitUpdate()
+
+    /** Notify all those who are registered that the state has changed. */
+    fun notifyAndSetSystemUiStateChanged(newFlags: Long, oldFlags: Long)
+
+    /** Callback to be notified whenever system UI state flags are changed. */
+    interface SysUiStateCallback {
+        /** To be called when any SysUiStateFlag gets updated **for the default display** */
+        fun onSystemUiStateChanged(@SystemUiStateFlags sysUiFlags: Long)
+
+        /** To be called when any SysUiStateFlag gets updated for a specific [displayId]. */
+        fun onSystemUiStateChangedForDisplay(
+            @SystemUiStateFlags sysUiFlags: Long,
+            displayId: Int,
+        ) {}
+    }
+
+    companion object {
+        const val DEBUG: Boolean = false
+    }
+}
+
+class SysUiStateImpl
+@AssistedInject
+constructor(
+    @Assisted private val displayId: Int,
     private val sceneContainerPlugin: SceneContainerPlugin?,
-) : Dumpable {
+) : SysUiState {
     /** Returns the current sysui state flags. */
     @get:SystemUiStateFlags
     @SystemUiStateFlags
-    var flags: Long = 0
-        private set
+    override val flags: Long
+        get() = _flags
 
+    private var _flags: Long = 0
     private val callbacks: MutableList<SysUiStateCallback> = ArrayList()
     private var flagsToSet: Long = 0
     private var flagsToClear: Long = 0
@@ -44,26 +96,26 @@ class SysUiState(
      * Add listener to be notified of changes made to SysUI state. The callback will also be called
      * as part of this function.
      */
-    fun addCallback(callback: SysUiStateCallback) {
+    override fun addCallback(callback: SysUiStateCallback) {
         callbacks.add(callback)
         callback.onSystemUiStateChanged(flags)
     }
 
     /** Callback will no longer receive events on state change */
-    fun removeCallback(callback: SysUiStateCallback) {
+    override fun removeCallback(callback: SysUiStateCallback) {
         callbacks.remove(callback)
     }
 
-    fun isFlagEnabled(@SystemUiStateFlags flag: Long): Boolean {
+    override fun isFlagEnabled(@SystemUiStateFlags flag: Long): Boolean {
         return (flags and flag) != 0L
     }
 
     /** Methods to this call can be chained together before calling [.commitUpdate]. */
-    fun setFlag(@SystemUiStateFlags flag: Long, enabled: Boolean): SysUiState {
+    override fun setFlag(@SystemUiStateFlags flag: Long, enabled: Boolean): SysUiState {
         var enabled = enabled
         val overrideOrNull = sceneContainerPlugin?.flagValueOverride(flag)
         if (overrideOrNull != null && enabled != overrideOrNull) {
-            if (DEBUG) {
+            if (SysUiState.DEBUG) {
                 Log.d(
                     TAG,
                     "setFlag for flag $flag and value $enabled overridden to $overrideOrNull by scene container plugin",
@@ -81,20 +133,22 @@ class SysUiState(
         return this
     }
 
-    /** Call to save all the flags updated from [.setFlag]. */
-    fun commitUpdate(displayId: Int) {
-        updateFlags(displayId)
+    @Deprecated(
+        "Each SysUIState instance is now display specific. Just use commitUpdate.",
+        ReplaceWith("commitUpdate()"),
+    )
+    override fun commitUpdate(displayId: Int) {
+        // TODO b/398011576 - handle updates for different displays.
+        commitUpdate()
+    }
+
+    override fun commitUpdate() {
+        updateFlags()
         flagsToSet = 0
         flagsToClear = 0
     }
 
-    private fun updateFlags(displayId: Int) {
-        if (displayId != displayTracker.defaultDisplayId) {
-            // Ignore non-default displays for now
-            Log.w(TAG, "Ignoring flag update for display: $displayId", Throwable())
-            return
-        }
-
+    private fun updateFlags() {
         var newState = flags
         newState = newState or flagsToSet
         newState = newState and flagsToClear.inv()
@@ -102,16 +156,22 @@ class SysUiState(
     }
 
     /** Notify all those who are registered that the state has changed. */
-    private fun notifyAndSetSystemUiStateChanged(newFlags: Long, oldFlags: Long) {
-        if (DEBUG) {
+    override fun notifyAndSetSystemUiStateChanged(newFlags: Long, oldFlags: Long) {
+        if (SysUiState.DEBUG) {
             Log.d(TAG, "SysUiState changed: old=$oldFlags new=$newFlags")
         }
         if (newFlags != oldFlags) {
             callbacks.forEach { callback: SysUiStateCallback ->
-                callback.onSystemUiStateChanged(newFlags)
+                if (displayId == Display.DEFAULT_DISPLAY) {
+                    callback.onSystemUiStateChanged(newFlags)
+                }
+                callback.onSystemUiStateChangedForDisplay(
+                    sysUiFlags = newFlags,
+                    displayId = displayId,
+                )
             }
 
-            flags = newFlags
+            _flags = newFlags
         }
     }
 
@@ -127,14 +187,13 @@ class SysUiState(
         pw.println(QuickStepContract.isAssistantGestureDisabled(flags))
     }
 
-    /** Callback to be notified whenever system UI state flags are changed. */
-    interface SysUiStateCallback {
-        /** To be called when any SysUiStateFlag gets updated */
-        fun onSystemUiStateChanged(@SystemUiStateFlags sysUiFlags: Long)
+    @AssistedFactory
+    interface Factory {
+        /** Creates a new instance of [SysUiStateImpl] for a given [displayId]. */
+        fun create(displayId: Int): SysUiStateImpl
     }
 
     companion object {
         private val TAG: String = SysUiState::class.java.simpleName
-        const val DEBUG: Boolean = false
     }
 }

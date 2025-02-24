@@ -35,8 +35,7 @@ import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.keyguard.ui.view.InWindowLauncherUnlockAnimationManager
-import com.android.systemui.model.SysUiState
-import com.android.systemui.model.sceneContainerPlugin
+import com.android.systemui.model.sysUiState
 import com.android.systemui.navigationbar.NavigationBarController
 import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.process.ProcessWrapper
@@ -93,7 +92,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     @Mock private lateinit var processWrapper: ProcessWrapper
     private val displayTracker = FakeDisplayTracker(mContext)
     private val fakeSystemClock = FakeSystemClock()
-    private val sysUiState = SysUiState(displayTracker, kosmos.sceneContainerPlugin)
+    private val sysUiState = kosmos.sysUiState
     private val wakefulnessLifecycle =
         WakefulnessLifecycle(mContext, null, fakeSystemClock, dumpManager)
 
@@ -161,7 +160,8 @@ class LauncherProxyServiceTest : SysuiTestCase() {
         wakefulnessLifecycle.dispatchFinishedGoingToSleep()
         clearInvocations(launcherProxy)
 
-        wakefulnessLifecycle.dispatchFinishedWakingUp()
+        wakefulnessLifecycle
+            .dispatchFinishedWakingUp()
 
         verify(launcherProxy)
             .onSystemUiStateChanged(
