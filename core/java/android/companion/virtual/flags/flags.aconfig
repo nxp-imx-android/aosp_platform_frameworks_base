@@ -143,3 +143,10 @@ flag {
     is_fixed_read_only: true
     bug: "370928384"
 }
+
+flag {
+    name: "device_aware_settings_override"
+    namespace: "virtual_devices"
+    description: "Settings override for virtual devices"
+    bug: "371801645"
+}
