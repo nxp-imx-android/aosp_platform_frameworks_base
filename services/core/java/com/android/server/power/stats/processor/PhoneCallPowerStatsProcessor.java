@@ -39,6 +39,21 @@ class PhoneCallPowerStatsProcessor extends PowerStatsProcessor {
         mTmpDeviceStats = new long[mDescriptor.statsArrayLength];
     }
 
+    private boolean unpackMobileRadioStatsDescriptor(PowerStats.Descriptor descriptor) {
+        if (descriptor == null) {
+            return false;
+        }
+
+        if (descriptor.equals(mMobileRadioStatsDescriptor)) {
+            return true;
+        }
+
+        mMobileRadioStatsDescriptor = descriptor;
+        mMobileRadioStatsLayout = new MobileRadioPowerStatsLayout(mMobileRadioStatsDescriptor);
+        mTmpMobileRadioDeviceStats = new long[mMobileRadioStatsDescriptor.statsArrayLength];
+        return true;
+    }
+
     @Override
     void finish(PowerComponentAggregatedPowerStats stats, long timestampMs) {
         stats.setPowerStatsDescriptor(mDescriptor);
@@ -50,16 +65,8 @@ class PhoneCallPowerStatsProcessor extends PowerStatsProcessor {
             return;
         }
 
-        if (mMobileRadioStatsDescriptor == null) {
-            mMobileRadioStatsDescriptor = mobileRadioStats.getPowerStatsDescriptor();
-            if (mMobileRadioStatsDescriptor == null) {
-                return;
-            }
-
-            mMobileRadioStatsLayout =
-                    new MobileRadioPowerStatsLayout(
-                            mMobileRadioStatsDescriptor);
-            mTmpMobileRadioDeviceStats = new long[mMobileRadioStatsDescriptor.statsArrayLength];
+        if (!unpackMobileRadioStatsDescriptor(mobileRadioStats.getPowerStatsDescriptor())) {
+            return;
         }
 
         MultiStateStats.States[] deviceStateConfig =
