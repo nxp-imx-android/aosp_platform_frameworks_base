@@ -24,6 +24,7 @@ import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.shade.transition.LargeScreenShadeInterpolator
 import com.android.systemui.statusbar.StatusBarState
+import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository
 import com.android.systemui.statusbar.notification.headsup.AvalancheController
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.util.mockito.mock
@@ -47,6 +48,7 @@ class AmbientStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val statusBarKeyguardViewManager = mock<StatusBarKeyguardViewManager>()
     private val largeScreenShadeInterpolator = mock<LargeScreenShadeInterpolator>()
     private val avalancheController = mock<AvalancheController>()
+    private val headsupRepository = mock<HeadsUpRepository>()
 
     private lateinit var sut: AmbientState
 
@@ -72,6 +74,7 @@ class AmbientStateTest(flags: FlagsParameterization) : SysuiTestCase() {
                 bypassController,
                 statusBarKeyguardViewManager,
                 largeScreenShadeInterpolator,
+                headsupRepository,
                 avalancheController,
             )
     }
