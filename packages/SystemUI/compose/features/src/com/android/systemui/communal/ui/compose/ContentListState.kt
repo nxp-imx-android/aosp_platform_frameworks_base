@@ -77,6 +77,16 @@ internal constructor(
         list.apply { add(toIndex, removeAt(fromIndex)) }
     }
 
+    /** Swap the two items in the list with the given indices. */
+    fun swapItems(index1: Int, index2: Int) {
+        list.apply {
+            val item1 = get(index1)
+            val item2 = get(index2)
+            set(index2, item1)
+            set(index1, item2)
+        }
+    }
+
     /** Remove widget from the list and the database. */
     fun onRemove(indexToRemove: Int) {
         if (list[indexToRemove].isWidgetContent()) {
