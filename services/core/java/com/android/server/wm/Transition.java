@@ -3630,11 +3630,6 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             }
             final boolean nowVisible = wc.isVisibleRequested();
             if (nowVisible == mVisible) {
-                if (mRestoringTransientHide) {
-                    // The requested visibility has not changed for transient-hide containers, but
-                    // we are restoring them so we should considering them moving to front again
-                    return TRANSIT_TO_FRONT;
-                }
                 return TRANSIT_CHANGE;
             }
             if (mExistenceChanged) {
