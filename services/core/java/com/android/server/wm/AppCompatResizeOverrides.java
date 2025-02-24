@@ -24,6 +24,7 @@ import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZA
 import static com.android.server.wm.AppCompatUtils.isChangeEnabled;
 
 import android.annotation.NonNull;
+import android.annotation.UserIdInt;
 import android.content.pm.PackageManager;
 
 import com.android.server.wm.utils.OptPropFactory;
@@ -52,7 +53,8 @@ class AppCompatResizeOverrides {
                 PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES);
         mAllowRestrictedResizability = AppCompatUtils.asLazy(() -> {
             // Application level.
-            if (allowRestrictedResizability(packageManager, mActivityRecord.packageName)) {
+            if (allowRestrictedResizability(packageManager, mActivityRecord.packageName,
+                    mActivityRecord.mUserId)) {
                 return true;
             }
             // Activity level.
@@ -68,10 +70,11 @@ class AppCompatResizeOverrides {
         });
     }
 
-    static boolean allowRestrictedResizability(PackageManager pm, String packageName) {
+    static boolean allowRestrictedResizability(@NonNull PackageManager pm,
+            @NonNull String packageName, @UserIdInt int userId) {
         try {
-            return pm.getProperty(PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY, packageName)
-                    .getBoolean();
+            return pm.getPropertyAsUser(PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY, packageName,
+                            null /* className */, userId).getBoolean();
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
