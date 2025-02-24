@@ -5840,7 +5840,8 @@ public class NotificationStackScrollLayout
                             targets.getBefore(),
                             targets.getSwiped(),
                             targets.getAfter());
-
+            mController.getNotificationRoundnessManager()
+                    .setRoundnessForAffectedViews(/* roundness */ 1f);
         }
 
         updateFirstAndLastBackgroundViews();
@@ -5851,8 +5852,10 @@ public class NotificationStackScrollLayout
 
     void onSwipeEnd() {
         updateFirstAndLastBackgroundViews();
-        mController.getNotificationRoundnessManager()
-                .setViewsAffectedBySwipe(null, null, null);
+        if (!magneticNotificationSwipes()) {
+            mController.getNotificationRoundnessManager()
+                    .setViewsAffectedBySwipe(null, null, null);
+        }
         // Round bottom corners for notification right before shelf.
         mShelf.updateAppearance();
     }

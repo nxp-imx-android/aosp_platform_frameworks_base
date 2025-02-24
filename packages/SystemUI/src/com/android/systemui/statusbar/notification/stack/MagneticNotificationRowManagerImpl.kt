@@ -27,6 +27,7 @@ import com.google.android.msdl.domain.MSDLPlayer
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.pow
+import org.jetbrains.annotations.TestOnly
 
 @SysUISingleton
 class MagneticNotificationRowManagerImpl
@@ -41,14 +42,15 @@ constructor(
     var currentState = State.IDLE
         private set
 
-    // Magnetic and roundable targets
+    // Magnetic targets
     var currentMagneticListeners = listOf<MagneticRowListener?>()
         private set
 
-    var currentRoundableTargets: RoundableTargets? = null
-        private set
-
     private var magneticDetachThreshold = Float.POSITIVE_INFINITY
+
+    // Has the roundable target been set for the magnetic view that is being swiped.
+    val isSwipedViewRoundableSet: Boolean
+        @TestOnly get() = notificationRoundnessManager.isSwipedViewSet
 
     // Animation spring forces
     private val detachForce =
@@ -83,12 +85,14 @@ constructor(
         sectionsManager: NotificationSectionsManager,
     ) {
         // Update roundable targets
-        currentRoundableTargets =
+        notificationRoundnessManager.clear()
+        val currentRoundableTargets =
             notificationTargetsHelper.findRoundableTargets(
                 expandableNotificationRow,
                 stackScrollLayout,
                 sectionsManager,
             )
+        notificationRoundnessManager.setRoundableTargets(currentRoundableTargets)
 
         // Update magnetic targets
         val newListeners =
@@ -127,6 +131,7 @@ constructor(
                 currentState = State.PULLING
             }
             State.PULLING -> {
+                updateRoundness(translation)
                 if (canTargetBeDismissed) {
                     pullDismissibleRow(translation)
                 } else {
@@ -139,6 +144,14 @@ constructor(
             }
         }
         return true
+    }
+
+    private fun updateRoundness(translation: Float) {
+        val normalizedTranslation = abs(swipedRowMultiplier * translation) / magneticDetachThreshold
+        notificationRoundnessManager.setRoundnessForAffectedViews(
+            /* roundness */ normalizedTranslation.coerceIn(0f, MAX_PRE_DETACH_ROUNDNESS),
+            /* animate */ false,
+        )
     }
 
     private fun pullDismissibleRow(translation: Float) {
@@ -203,9 +216,10 @@ constructor(
     private fun detach(listener: MagneticRowListener, toPosition: Float) {
         listener.cancelMagneticAnimations()
         listener.triggerMagneticForce(toPosition, detachForce)
-        currentRoundableTargets?.let {
-            notificationRoundnessManager.setViewsAffectedBySwipe(it.before, it.swiped, it.after)
-        }
+        notificationRoundnessManager.setRoundnessForAffectedViews(
+            /* roundness */ 1f,
+            /* animate */ true,
+        )
         msdlPlayer.playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
     }
 
@@ -240,6 +254,8 @@ constructor(
         }
     }
 
+    override fun resetRoundness() = notificationRoundnessManager.clear()
+
     override fun reset() {
         currentMagneticListeners.forEach {
             it?.cancelMagneticAnimations()
@@ -247,7 +263,7 @@ constructor(
         }
         currentState = State.IDLE
         currentMagneticListeners = listOf()
-        currentRoundableTargets = null
+        notificationRoundnessManager.clear()
     }
 
     private fun List<MagneticRowListener?>.swipedListener(): MagneticRowListener? =
@@ -255,6 +271,11 @@ constructor(
 
     private fun ExpandableNotificationRow.isSwipedTarget(): Boolean =
         magneticRowListener == currentMagneticListeners.swipedListener()
+
+    private fun NotificationRoundnessManager.clear() = setViewsAffectedBySwipe(null, null, null)
+
+    private fun NotificationRoundnessManager.setRoundableTargets(targets: RoundableTargets) =
+        setViewsAffectedBySwipe(targets.before, targets.swiped, targets.after)
 
     enum class State {
         IDLE,
@@ -279,6 +300,9 @@ constructor(
         private const val DETACH_DAMPING_RATIO = 0.95f
         private const val SNAP_BACK_STIFFNESS = 550f
         private const val SNAP_BACK_DAMPING_RATIO = 0.52f
+
+        // Maximum value of corner roundness that gets applied during the pre-detach dragging
+        private const val MAX_PRE_DETACH_ROUNDNESS = 0.8f
 
         private val VIBRATION_ATTRIBUTES_PIPELINING =
             VibrationAttributes.Builder()
