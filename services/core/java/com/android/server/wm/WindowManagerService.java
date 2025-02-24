@@ -1583,14 +1583,18 @@ public class WindowManagerService extends IWindowManager.Stub
                 return WindowManagerGlobal.ADD_DUPLICATE_ADD;
             }
 
-            if (type == TYPE_PRIVATE_PRESENTATION && !displayContent.isPrivate()) {
+            if (type == TYPE_PRIVATE_PRESENTATION
+                    && !mPresentationController.canPresent(null /*win*/, displayContent, type,
+                    callingUid)) {
                 ProtoLog.w(WM_ERROR,
                         "Attempted to add private presentation window to a non-private display.  "
                                 + "Aborting.");
                 return WindowManagerGlobal.ADD_PERMISSION_DENIED;
             }
 
-            if (type == TYPE_PRESENTATION && !displayContent.getDisplay().isPublicPresentation()) {
+            if (type == TYPE_PRESENTATION
+                    && !mPresentationController.canPresent(null /*win*/, displayContent, type,
+                    callingUid)) {
                 ProtoLog.w(WM_ERROR,
                         "Attempted to add presentation window to a non-suitable display.  "
                                 + "Aborting.");
@@ -1830,7 +1834,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
                 win.mTransitionController.collect(win.mToken);
                 res |= addWindowInner(win, displayPolicy, activity, displayContent, outInsetsState,
-                        outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs);
+                        outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs,
+                        callingUid);
                 // A presentation hides all activities behind on the same display.
                 win.mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
                         /*notifyClients=*/ true);
@@ -1841,7 +1846,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
             } else {
                 res |= addWindowInner(win, displayPolicy, activity, displayContent, outInsetsState,
-                        outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs);
+                        outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs,
+                        callingUid);
             }
         }
 
@@ -1854,7 +1860,7 @@ public class WindowManagerService extends IWindowManager.Stub
             @NonNull ActivityRecord activity, @NonNull DisplayContent displayContent,
             @NonNull InsetsState outInsetsState, @NonNull Rect outAttachedFrame,
             @NonNull InsetsSourceControl.Array outActiveControls, @NonNull IWindow client,
-            @NonNull float[] outSizeCompatScale, @NonNull LayoutParams attrs) {
+            @NonNull float[] outSizeCompatScale, @NonNull LayoutParams attrs, int uid) {
         int res = 0;
         final int type = attrs.type;
         boolean imMayMove = true;
@@ -1971,7 +1977,7 @@ public class WindowManagerService extends IWindowManager.Stub
         outSizeCompatScale[0] = win.getCompatScaleForClient();
 
         if (res >= ADD_OKAY && win.isPresentation()) {
-            mPresentationController.onPresentationAdded(win);
+            mPresentationController.onPresentationAdded(win, uid);
         }
 
         return res;

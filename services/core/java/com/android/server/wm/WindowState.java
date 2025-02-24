@@ -2435,7 +2435,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 mAnimatingExit = true;
                 mRemoveOnExit = true;
                 mToken.setVisibleRequested(false);
-                mWmService.mPresentationController.onPresentationRemoved(this);
                 // A presentation hides all activities behind on the same display.
                 mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
                         /*notifyClients=*/ true);
