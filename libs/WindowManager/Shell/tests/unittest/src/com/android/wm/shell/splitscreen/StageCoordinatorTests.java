@@ -38,6 +38,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -48,6 +50,7 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -58,6 +61,7 @@ import android.app.ActivityOptions;
 import android.app.PendingIntent;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -196,6 +200,7 @@ public class StageCoordinatorTests extends ShellTestCase {
         when(token.asBinder()).thenReturn(mBinder);
         when(mRunningTaskInfo.getToken()).thenReturn(token);
         when(mTaskOrganizer.getRunningTaskInfo(mTaskId)).thenReturn(mRunningTaskInfo);
+        when(mTaskOrganizer.startNewTransition(anyInt(), any())).thenReturn(new Binder());
         when(mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)).thenReturn(mDisplayAreaInfo);
 
         when(mSplitLayout.getTopLeftBounds()).thenReturn(mBounds1);
@@ -557,6 +562,60 @@ public class StageCoordinatorTests extends ShellTestCase {
         assertFalse(c != null && c.getWindowingMode() == WINDOWING_MODE_FULLSCREEN);
     }
 
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    public void testRequestEnterSplit_didNotEnterSplitSelect_doesNotApplyTransaction() {
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        mStageCoordinator.registerSplitSelectListener(
+                new TestSplitSelectListener(/* alwaysEnter = */ false));
+
+        final IBinder transition = mStageCoordinator.requestEnterSplitSelect(mRunningTaskInfo, wct,
+                SPLIT_POSITION_TOP_OR_LEFT, new Rect(0, 0, 100, 100));
+
+        assertNull(transition);
+        verify(mTaskOrganizer, never()).applyTransaction(wct);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    public void testRequestEnterSplit_enteredSplitSelect_appliesTransaction() {
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        mStageCoordinator.registerSplitSelectListener(
+                new TestSplitSelectListener(/* alwaysEnter = */ true));
+
+        final IBinder transition = mStageCoordinator.requestEnterSplitSelect(mRunningTaskInfo, wct,
+                SPLIT_POSITION_TOP_OR_LEFT, new Rect(0, 0, 100, 100));
+
+        assertNull(transition);
+        verify(mTaskOrganizer).applyTransaction(wct);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    public void testRequestEnterSplit_didNotEnterSplitSelect_doesNotStartTransition() {
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        mStageCoordinator.registerSplitSelectListener(
+                new TestSplitSelectListener(/* alwaysEnter = */ false));
+
+        final IBinder transition = mStageCoordinator.requestEnterSplitSelect(mRunningTaskInfo, wct,
+                SPLIT_POSITION_TOP_OR_LEFT, new Rect(0, 0, 100, 100));
+
+        assertNull(transition);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    public void testRequestEnterSplit_enteredSplitSelect_startsTransition() {
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        mStageCoordinator.registerSplitSelectListener(
+                new TestSplitSelectListener(/* alwaysEnter = */ true));
+
+        final IBinder transition = mStageCoordinator.requestEnterSplitSelect(mRunningTaskInfo, wct,
+                SPLIT_POSITION_TOP_OR_LEFT, new Rect(0, 0, 100, 100));
+
+        assertNotNull(transition);
+    }
+
     private Transitions createTestTransitions() {
         ShellInit shellInit = new ShellInit(mMainExecutor);
         final Transitions t = new Transitions(mContext, shellInit, mock(ShellController.class),
@@ -565,5 +624,19 @@ public class StageCoordinatorTests extends ShellTestCase {
                 mock(FocusTransitionObserver.class));
         shellInit.init();
         return t;
+    }
+
+    private static class TestSplitSelectListener implements SplitScreen.SplitSelectListener {
+        private final boolean mAlwaysEnter;
+
+        TestSplitSelectListener(boolean alwaysEnter) {
+            mAlwaysEnter = alwaysEnter;
+        }
+
+        @Override
+        public boolean onRequestEnterSplitSelect(ActivityManager.RunningTaskInfo taskInfo,
+                int splitPosition, Rect taskBounds) {
+            return mAlwaysEnter;
+        }
     }
 }
