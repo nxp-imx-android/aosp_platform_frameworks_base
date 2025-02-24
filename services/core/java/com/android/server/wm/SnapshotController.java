@@ -31,8 +31,6 @@ import android.util.ArrayMap;
 import android.view.WindowManager;
 import android.window.TaskSnapshot;
 
-import com.android.window.flags.Flags;
-
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
@@ -146,12 +144,6 @@ class SnapshotController {
             boolean allOpensOptInOnBackInvoked() {
                 if (mOpenActivities.isEmpty()) {
                     return false;
-                }
-                // TODO (b/362183912) always capture activity snapshot will cause performance
-                //  regression, remove flag after ramp up
-                if (!Flags.deferPredictiveAnimationIfNoSnapshot()
-                        && Flags.alwaysCaptureActivitySnapshot()) {
-                    return true;
                 }
                 for (int i = mOpenActivities.size() - 1; i >= 0; --i) {
                     if (!mOpenActivities.get(i).mOptInOnBackInvoked) {
