@@ -47,15 +47,18 @@ fun Modifier.drawInOverlay(): Modifier {
 }
 
 @Composable
-internal fun FullScreenComposeViewInOverlay(modifier: (ComposeView) -> Modifier = { Modifier }) {
+internal fun FullScreenComposeViewInOverlay(
+    overlay: ViewGroupOverlay? = null,
+    modifier: (ComposeView) -> Modifier = { Modifier },
+) {
     val context = LocalContext.current
     val localView = LocalView.current
     val compositionContext = rememberCompositionContext()
     val displayMetrics = context.resources.displayMetrics
     val displaySize = IntSize(displayMetrics.widthPixels, displayMetrics.heightPixels)
+    val overlay = overlay ?: localView.rootView.overlay as ViewGroupOverlay
 
-    DisposableEffect(context, localView, compositionContext, displaySize) {
-        val overlay = localView.rootView.overlay as ViewGroupOverlay
+    DisposableEffect(context, localView, overlay, compositionContext, displaySize) {
         val view =
             ComposeView(context).apply {
                 setParentCompositionContext(compositionContext)
