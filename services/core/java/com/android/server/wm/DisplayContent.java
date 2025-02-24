@@ -3271,7 +3271,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             return false;
         }
 
-        // TODO(b/391965805): Remove this after introducing FLAG_ALLOW_SYSTEM_DECORATIONS_CHANGE.
+        // TODO(b/391965805): Remove this after introducing FLAG_ALLOW_CONTENT_MODE_SWITCH.
+        if ((mDisplay.getFlags() & Display.FLAG_REAR) != 0) {
+            return false;
+        }
+
+        // TODO(b/391965805): Remove this after introducing FLAG_ALLOW_CONTENT_MODE_SWITCH.
         // Virtual displays cannot add or remove system decorations during their lifecycle.
         if (mDisplay.getType() == Display.TYPE_VIRTUAL) {
             return false;
