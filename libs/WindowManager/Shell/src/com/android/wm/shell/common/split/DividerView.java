@@ -130,8 +130,6 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
         public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
             super.onInitializeAccessibilityNodeInfo(host, info);
             final DividerSnapAlgorithm snapAlgorithm = mSplitLayout.mDividerSnapAlgorithm;
-            info.addAction(new AccessibilityAction(R.id.action_swap_apps,
-                    mContext.getString(R.string.accessibility_action_divider_swap)));
             if (mSplitLayout.isLeftRightSplit()) {
                 info.addAction(new AccessibilityAction(R.id.action_move_tl_full,
                         mContext.getString(R.string.accessibility_action_divider_left_full)));
@@ -150,6 +148,8 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 }
                 info.addAction(new AccessibilityAction(R.id.action_move_rb_full,
                         mContext.getString(R.string.accessibility_action_divider_right_full)));
+                info.addAction(new AccessibilityAction(R.id.action_swap_apps,
+                        mContext.getString(R.string.accessibility_action_divider_swap_horizontal)));
             } else {
                 info.addAction(new AccessibilityAction(R.id.action_move_tl_full,
                         mContext.getString(R.string.accessibility_action_divider_top_full)));
@@ -168,6 +168,8 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 }
                 info.addAction(new AccessibilityAction(R.id.action_move_rb_full,
                         mContext.getString(R.string.accessibility_action_divider_bottom_full)));
+                info.addAction(new AccessibilityAction(R.id.action_swap_apps,
+                        mContext.getString(R.string.accessibility_action_divider_swap_vertical)));
             }
         }
 
