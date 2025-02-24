@@ -719,6 +719,30 @@ public class BluetoothUtils {
         }
     }
 
+    /** Check if the {@link CachedBluetoothDevice} is a media device */
+    @WorkerThread
+    public static boolean isMediaDevice(@Nullable CachedBluetoothDevice cachedDevice) {
+        if (cachedDevice == null) return false;
+        return cachedDevice.getProfiles().stream()
+                .anyMatch(
+                        profile ->
+                                profile instanceof A2dpProfile
+                                        || profile instanceof HearingAidProfile
+                                        || profile instanceof LeAudioProfile
+                                        || profile instanceof HeadsetProfile);
+    }
+
+    /** Check if the {@link CachedBluetoothDevice} supports LE Audio profile */
+    @WorkerThread
+    public static boolean isLeAudioSupported(@Nullable CachedBluetoothDevice cachedDevice) {
+        if (cachedDevice == null) return false;
+        return cachedDevice.getProfiles().stream()
+                .anyMatch(
+                        profile ->
+                                profile instanceof LeAudioProfile
+                                        && profile.isEnabled(cachedDevice.getDevice()));
+    }
+
     /** Returns if the broadcast is on-going. */
     @WorkerThread
     public static boolean isBroadcasting(@Nullable LocalBluetoothManager manager) {

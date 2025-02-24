@@ -54,6 +54,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.annotation.WorkerThread;
 
 import com.android.settingslib.R;
 import com.android.settingslib.flags.Flags;
@@ -64,6 +65,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -107,6 +109,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
     private static final String SETTINGS_PKG = "com.android.settings";
     private static final String SYSUI_PKG = "com.android.systemui";
     private static final String TAG = "LocalBluetoothLeBroadcast";
+    private static final String AUTO_REJOIN_BROADCAST_TAG = "REJOIN_LE_BROADCAST_ID";
     private static final boolean DEBUG = BluetoothUtils.D;
     private static final String VALID_PASSWORD_CHARACTERS =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{}|;:,"
@@ -120,6 +123,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
     // Order of this profile in device profiles list
     private static final int ORDINAL = 1;
     static final int UNKNOWN_VALUE_PLACEHOLDER = -1;
+    private static final int JUST_BOND_MILLIS_THRESHOLD = 30000; // 30s
     private static final Uri[] SETTINGS_URIS =
             new Uri[] {
                 Settings.Secure.getUriFor(Settings.Secure.BLUETOOTH_LE_BROADCAST_NAME),
@@ -1282,5 +1286,88 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
     private boolean isWorkProfile(Context context) {
         UserManager userManager = context.getSystemService(UserManager.class);
         return userManager != null && userManager.isManagedProfile();
+    }
+
+    /** Handle profile connected for {@link CachedBluetoothDevice}. */
+    @WorkerThread
+    public void handleProfileConnected(@NonNull CachedBluetoothDevice cachedDevice,
+            int bluetoothProfile, @Nullable LocalBluetoothManager btManager) {
+        if (!Flags.promoteAudioSharingForSecondAutoConnectedLeaDevice()) {
+            Log.d(TAG, "Skip handleProfileConnected, flag off");
+            return;
+        }
+        if (!SYSUI_PKG.equals(mContext.getPackageName())) {
+            Log.d(TAG, "Skip handleProfileConnected, not a valid caller");
+            return;
+        }
+        if (!BluetoothUtils.isMediaDevice(cachedDevice)) {
+            Log.d(TAG, "Skip handleProfileConnected, not a media device");
+            return;
+        }
+        Timestamp bondTimestamp = cachedDevice.getBondTimestamp();
+        if (bondTimestamp != null) {
+            long diff = System.currentTimeMillis() - bondTimestamp.getTime();
+            if (diff <= JUST_BOND_MILLIS_THRESHOLD) {
+                Log.d(TAG, "Skip handleProfileConnected, just bond within " + diff);
+                return;
+            }
+        }
+        if (!isEnabled(null)) {
+            Log.d(TAG, "Skip handleProfileConnected, not broadcasting");
+            return;
+        }
+        BluetoothDevice device = cachedDevice.getDevice();
+        if (device == null) {
+            Log.d(TAG, "Skip handleProfileConnected, null device");
+            return;
+        }
+        // TODO: sync source in a reasonable place
+        if (BluetoothUtils.hasConnectedBroadcastSourceForBtDevice(device, btManager)) {
+            Log.d(TAG, "Skip handleProfileConnected, already has source");
+            return;
+        }
+        if (isAutoRejoinDevice(device)) {
+            Log.d(TAG, "Skip handleProfileConnected, auto rejoin device");
+            return;
+        }
+        boolean isLeAudioSupported = BluetoothUtils.isLeAudioSupported(cachedDevice);
+        // For eligible (LE audio) remote device, we only check assistant profile connected.
+        if (isLeAudioSupported
+                && bluetoothProfile != BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT) {
+            Log.d(TAG, "Skip handleProfileConnected, lea sink, not the assistant profile");
+            return;
+        }
+        boolean isFirstConnectedProfile = isFirstConnectedProfile(cachedDevice, bluetoothProfile);
+        // For ineligible (classic) remote device, we only check its first connected profile.
+        if (!isLeAudioSupported && !isFirstConnectedProfile) {
+            Log.d(TAG, "Skip handleProfileConnected, classic sink, not the first profile");
+            return;
+        }
+
+        Intent intent = new Intent(
+                LocalBluetoothLeBroadcast.ACTION_LE_AUDIO_SHARING_DEVICE_CONNECTED);
+        intent.putExtra(LocalBluetoothLeBroadcast.EXTRA_BLUETOOTH_DEVICE, device);
+        intent.setPackage(SETTINGS_PKG);
+        Log.d(TAG, "notify device connected, device = " + device.getAnonymizedAddress());
+
+        mContext.sendBroadcast(intent);
+    }
+
+    private boolean isAutoRejoinDevice(@Nullable BluetoothDevice bluetoothDevice) {
+        String metadataValue = BluetoothUtils.getFastPairCustomizedField(bluetoothDevice,
+                AUTO_REJOIN_BROADCAST_TAG);
+        return getLatestBroadcastId() != UNKNOWN_VALUE_PLACEHOLDER && Objects.equals(metadataValue,
+                String.valueOf(getLatestBroadcastId()));
+    }
+
+    private boolean isFirstConnectedProfile(@Nullable CachedBluetoothDevice cachedDevice,
+            int bluetoothProfile) {
+        if (cachedDevice == null) return false;
+        return cachedDevice.getProfiles().stream()
+                .noneMatch(
+                        profile ->
+                                profile.getProfileId() != bluetoothProfile
+                                        && profile.getConnectionStatus(cachedDevice.getDevice())
+                                        == BluetoothProfile.STATE_CONNECTED);
     }
 }

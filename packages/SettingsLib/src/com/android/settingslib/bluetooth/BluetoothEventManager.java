@@ -29,6 +29,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -37,6 +38,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.settingslib.R;
+import com.android.settingslib.flags.Flags;
+import com.android.settingslib.utils.ThreadUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,6 +68,7 @@ public class BluetoothEventManager {
     private final android.os.Handler mReceiverHandler;
     private final UserHandle mUserHandle;
     private final Context mContext;
+    private boolean mIsWorkProfile = false;
 
     interface Handler {
         void onReceive(Context context, Intent intent, BluetoothDevice device);
@@ -140,6 +144,9 @@ public class BluetoothEventManager {
         addHandler(BluetoothAdapter.ACTION_AUTO_ON_STATE_CHANGED, new AutoOnStateChangedHandler());
 
         registerAdapterIntentReceiver();
+
+        UserManager userManager = context.getSystemService(UserManager.class);
+        mIsWorkProfile = userManager != null && userManager.isManagedProfile();
     }
 
     /** Register to start receiving callbacks for Bluetooth events. */
@@ -220,20 +227,32 @@ public class BluetoothEventManager {
             callback.onProfileConnectionStateChanged(device, state, bluetoothProfile);
         }
 
+        if (mIsWorkProfile) {
+            Log.d(TAG, "Skip profileConnectionStateChanged for audio sharing, work profile");
+            return;
+        }
+
+        LocalBluetoothLeBroadcast broadcast = mBtManager == null ? null
+                : mBtManager.getProfileManager().getLeAudioBroadcastProfile();
+        LocalBluetoothLeBroadcastAssistant assistant = mBtManager == null ? null
+                : mBtManager.getProfileManager().getLeAudioBroadcastAssistantProfile();
         // Trigger updateFallbackActiveDeviceIfNeeded when ASSISTANT profile disconnected when
         // audio sharing is enabled.
         if (bluetoothProfile == BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT
                 && state == BluetoothAdapter.STATE_DISCONNECTED
-                && BluetoothUtils.isAudioSharingUIAvailable(mContext)) {
-            LocalBluetoothProfileManager profileManager = mBtManager.getProfileManager();
-            if (profileManager != null
-                    && profileManager.getLeAudioBroadcastProfile() != null
-                    && profileManager.getLeAudioBroadcastProfile().isProfileReady()
-                    && profileManager.getLeAudioBroadcastAssistantProfile() != null
-                    && profileManager.getLeAudioBroadcastAssistantProfile().isProfileReady()) {
-                Log.d(TAG, "updateFallbackActiveDeviceIfNeeded, ASSISTANT profile disconnected");
-                profileManager.getLeAudioBroadcastProfile().updateFallbackActiveDeviceIfNeeded();
-            }
+                && BluetoothUtils.isAudioSharingUIAvailable(mContext)
+                && broadcast != null && assistant != null && broadcast.isProfileReady()
+                && assistant.isProfileReady()) {
+            Log.d(TAG, "updateFallbackActiveDeviceIfNeeded, ASSISTANT profile disconnected");
+            broadcast.updateFallbackActiveDeviceIfNeeded();
+        }
+        // Dispatch handleOnProfileStateChanged to local broadcast profile
+        if (Flags.promoteAudioSharingForSecondAutoConnectedLeaDevice()
+                && broadcast != null
+                && state == BluetoothAdapter.STATE_CONNECTED) {
+            Log.d(TAG, "dispatchProfileConnectionStateChanged to local broadcast profile");
+            var unused = ThreadUtils.postOnBackgroundThread(
+                    () -> broadcast.handleProfileConnected(device, bluetoothProfile, mBtManager));
         }
     }
 
