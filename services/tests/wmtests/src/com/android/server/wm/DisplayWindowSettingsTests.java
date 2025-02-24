@@ -42,6 +42,7 @@ import static org.mockito.Matchers.eq;
 import android.annotation.NonNull;
 import android.app.WindowConfiguration;
 import android.content.ContentResolver;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.provider.Settings;
 import android.view.Display;
@@ -53,6 +54,7 @@ import androidx.test.filters.SmallTest;
 import com.android.server.LocalServices;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.wm.DisplayWindowSettings.SettingsProvider.SettingsEntry;
+import com.android.window.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -266,6 +268,23 @@ public class DisplayWindowSettingsTests extends WindowTestsBase {
         mDisplayWindowSettings.applySettingsToDisplayLocked(mSecondaryDisplay);
 
         assertEquals(600 /* density */, mSecondaryDisplay.mBaseDisplayDensity);
+
+        mWm.clearForcedDisplayDensityForUser(mSecondaryDisplay.getDisplayId(), 0 /* userId */);
+        assertEquals(mSecondaryDisplay.mInitialDisplayDensity,
+                mSecondaryDisplay.mBaseDisplayDensity);
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_PERSISTING_DENSITY_SCALE_FOR_CONNECTED_DISPLAYS)
+    @Test
+    public void testSetForcedDensityRatio() {
+        mDisplayWindowSettings.setForcedDensity(mSecondaryDisplay.getDisplayInfo(),
+                300 /* density */, 0 /* userId */);
+        mDisplayWindowSettings.setForcedDensityRatio(mSecondaryDisplay.getDisplayInfo(),
+                2.0f /* ratio */);
+        mDisplayWindowSettings.applySettingsToDisplayLocked(mSecondaryDisplay);
+
+        assertEquals(mSecondaryDisplay.mInitialDisplayDensity * 2.0f,
+                mSecondaryDisplay.mBaseDisplayDensity, 0.01);
 
         mWm.clearForcedDisplayDensityForUser(mSecondaryDisplay.getDisplayId(), 0 /* userId */);
         assertEquals(mSecondaryDisplay.mInitialDisplayDensity,
