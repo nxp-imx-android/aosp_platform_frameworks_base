@@ -712,13 +712,17 @@ final class AccessibilityController {
             if (!isMagnifierActivated) {
                 return;
             }
-            // All opening/closing situations.
+            // All opening/closing/recents transitions
+            boolean notify = (flags & TRANSIT_FLAG_IS_RECENTS) != 0;
             switch (type) {
                 case WindowManager.TRANSIT_OPEN:
                 case WindowManager.TRANSIT_TO_FRONT:
                 case WindowManager.TRANSIT_CLOSE:
                 case WindowManager.TRANSIT_TO_BACK:
-                    mUserContextChangedNotifier.onWMTransition(type, flags);
+                    notify = true;
+            }
+            if (notify) {
+                mUserContextChangedNotifier.onWMTransition(type, flags);
             }
         }
 
@@ -1088,8 +1092,7 @@ final class AccessibilityController {
             // causing the notifying, or the recents/home window is removed, then we won't need the
             // delayed notification anymore.
             void onWMTransition(@TransitionType int type, @TransitionFlags int flags) {
-                if (type == WindowManager.TRANSIT_TO_FRONT
-                        && (flags & TRANSIT_FLAG_IS_RECENTS) != 0) {
+                if ((flags & TRANSIT_FLAG_IS_RECENTS) != 0) {
                     // Delay the recents to front transition notification then send after if needed.
                     mHasDelayedNotificationForRecentsToFrontTransition = true;
                 } else {
