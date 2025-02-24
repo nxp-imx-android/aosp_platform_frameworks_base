@@ -552,7 +552,9 @@ class BubbleTaskViewListenerTest {
 
     private fun createAppBubble(usePendingIntent: Boolean = false): Bubble {
         val target = Intent(context, TestActivity::class.java)
+        val component = ComponentName(context, TestActivity::class.java)
         target.setPackage(context.packageName)
+        target.setComponent(component)
         if (usePendingIntent) {
             // Robolectric doesn't seem to play nice with PendingIntents, have to mock it.
             val pendingIntent = mock<PendingIntent>()
