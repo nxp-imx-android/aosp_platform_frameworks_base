@@ -74,7 +74,7 @@ class NotificationTransitionAnimatorController(
     }
 
     private val notificationEntry = notification.entry
-    private val notificationKey = notificationEntry.sbn.key
+    private val notificationKey = notification.key
 
     override val isLaunching: Boolean = true
 
@@ -175,7 +175,7 @@ class NotificationTransitionAnimatorController(
         HeadsUpUtil.setNeedsHeadsUpDisappearAnimationAfterClick(notification, animate)
 
         headsUpManager.removeNotification(
-            row.entry.key,
+            row.key,
             true /* releaseImmediately */,
             animate,
             reason,

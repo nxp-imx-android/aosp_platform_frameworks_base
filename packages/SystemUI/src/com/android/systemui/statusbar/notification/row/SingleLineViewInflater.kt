@@ -417,8 +417,8 @@ internal object SingleLineViewInflater {
     ): HybridNotificationView? {
         if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) return null
 
-        logger.logInflateSingleLine(entry, reinflateFlags, isConversation)
-        logger.logAsyncTaskProgress(entry, "inflating single-line content view")
+        logger.logInflateSingleLine(entry.logKey, reinflateFlags, isConversation)
+        logger.logAsyncTaskProgress(entry.logKey, "inflating single-line content view")
 
         var view: HybridNotificationView? = null
 

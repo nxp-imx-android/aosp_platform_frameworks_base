@@ -670,7 +670,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
     }
 
     private void removeHunAfterClick(ExpandableNotificationRow row) {
-        String key = row.getEntry().getSbn().getKey();
+        String key = row.getKey();
         if (mHeadsUpManager != null && mHeadsUpManager.isHeadsUpEntry(key)) {
             // Release the HUN notification to the shade.
             if (mPresenter.isPresenterFullyCollapsed()) {

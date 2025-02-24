@@ -611,7 +611,8 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     public void testCanDismiss_immediately() throws Exception {
         ExpandableNotificationRow row =
                 mNotificationTestHelper.createRow(mNotificationTestHelper.createNotification());
-        when(mNotificationTestHelper.getDismissibilityProvider().isDismissable(row.getEntry()))
+        when(mNotificationTestHelper.getDismissibilityProvider().isDismissable(
+                row.getEntry().getKey()))
                 .thenReturn(true);
         row.performDismiss(false);
         verify(mNotificationTestHelper.getOnUserInteractionCallback())
@@ -623,7 +624,8 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     public void testCanDismiss() throws Exception {
         ExpandableNotificationRow row =
                 mNotificationTestHelper.createRow(mNotificationTestHelper.createNotification());
-        when(mNotificationTestHelper.getDismissibilityProvider().isDismissable(row.getEntry()))
+        when(mNotificationTestHelper.getDismissibilityProvider().isDismissable(
+                row.getEntry().getKey()))
                 .thenReturn(true);
         row.performDismiss(false);
         TestableLooper.get(this).processAllMessages();
@@ -635,7 +637,8 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     public void testCannotDismiss() throws Exception {
         ExpandableNotificationRow row =
                 mNotificationTestHelper.createRow(mNotificationTestHelper.createNotification());
-        when(mNotificationTestHelper.getDismissibilityProvider().isDismissable(row.getEntry()))
+        when(mNotificationTestHelper.getDismissibilityProvider().isDismissable(
+                row.getEntry().getKey()))
                 .thenReturn(false);
         row.performDismiss(false);
         verify(mNotificationTestHelper.getOnUserInteractionCallback(), never())

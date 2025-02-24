@@ -141,7 +141,7 @@ public class HeadsUpTouchHelper implements Gefingerpoken {
                 if (mPickedChild != null && mTouchingHeadsUpView) {
                     // We may swallow this click if the heads up just came in.
                     if (mHeadsUpManager.shouldSwallowClick(
-                            mPickedChild.getEntry().getSbn().getKey())) {
+                            mPickedChild.getKey())) {
                         endMotion();
                         return true;
                     }
@@ -209,7 +209,7 @@ public class HeadsUpTouchHelper implements Gefingerpoken {
                     if (mPickedChild != null && mTouchingHeadsUpView) {
                         // We may swallow this click if the heads up just came in.
                         if (mHeadsUpManager.shouldSwallowClick(
-                                mPickedChild.getEntry().getSbn().getKey())) {
+                                mPickedChild.getKey())) {
                             endMotion();
                             setTrackingHeadsUp(false);
                             return true;
