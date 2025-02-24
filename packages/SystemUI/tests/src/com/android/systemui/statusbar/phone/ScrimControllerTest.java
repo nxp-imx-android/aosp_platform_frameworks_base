@@ -343,7 +343,8 @@ public class ScrimControllerTest extends SysuiTestCase {
     }
 
     @Test
-@DisableSceneContainer void transitionToShadeLocked() {
+    @DisableSceneContainer
+    public void transitionToShadeLocked() {
         mScrimController.legacyTransitionTo(SHADE_LOCKED);
         mScrimController.setQsPosition(1f, 0);
         finishAnimationsImmediately();
