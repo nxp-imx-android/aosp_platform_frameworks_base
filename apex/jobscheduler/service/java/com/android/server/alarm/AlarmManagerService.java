@@ -2995,6 +2995,8 @@ public class AlarmManagerService extends SystemService {
             pw.print(Flags.FLAG_START_USER_BEFORE_SCHEDULED_ALARMS,
                     Flags.startUserBeforeScheduledAlarms());
             pw.println();
+            pw.print(Flags.FLAG_ACQUIRE_WAKELOCK_BEFORE_SEND, Flags.acquireWakelockBeforeSend());
+            pw.println();
             pw.decreaseIndent();
             pw.println();
 
