@@ -105,6 +105,7 @@ interface CommunalModule {
         const val LOGGABLE_PREFIXES = "loggable_prefixes"
         const val LAUNCHER_PACKAGE = "launcher_package"
         const val SWIPE_TO_HUB = "swipe_to_hub"
+        const val SHOW_UMO = "show_umo"
 
         @Provides
         @Communal
@@ -149,6 +150,12 @@ interface CommunalModule {
         @Named(SWIPE_TO_HUB)
         fun provideSwipeToHub(@Main resources: Resources): Boolean {
             return resources.getBoolean(R.bool.config_swipeToOpenGlanceableHub)
+        }
+
+        @Provides
+        @Named(SHOW_UMO)
+        fun provideShowUmo(@Main resources: Resources): Boolean {
+            return resources.getBoolean(R.bool.config_showUmoOnHub)
         }
     }
 }
