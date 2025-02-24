@@ -89,6 +89,10 @@ public class CollapsingToolbarDelegate {
 
     private boolean mIsExpressiveTheme;
 
+    public CollapsingToolbarDelegate(@NonNull HostCallback hostCallback) {
+        this(hostCallback, /* useCollapsingToolbar= */ true);
+    }
+
     public CollapsingToolbarDelegate(@NonNull HostCallback hostCallback,
             boolean useCollapsingToolbar) {
         mHostCallback = hostCallback;
