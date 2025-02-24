@@ -19470,7 +19470,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     /**
      * @hide
      */
-    @EnforcePermission("android.permission.INTERACT_ACROSS_USERS_FULL")
+    @EnforcePermission(INTERACT_ACROSS_USERS_FULL)
     public IBinder refreshIntentCreatorToken(Intent intent) {
         refreshIntentCreatorToken_enforcePermission();
         IBinder binder = intent.getCreatorToken();
