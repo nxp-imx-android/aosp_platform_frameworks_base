@@ -15,32 +15,37 @@
  */
 package com.android.test.input
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.filters.MediumTest
-
 import android.app.ActivityManager
 import android.app.ApplicationExitInfo
-import android.content.Context
-import android.graphics.Rect
+import android.app.Instrumentation
+import android.content.Intent
 import android.hardware.display.DisplayManager
 import android.os.Build
+import android.os.Bundle
+import android.os.IBinder
 import android.os.IInputConstants.UNMULTIPLIED_DEFAULT_DISPATCHING_TIMEOUT_MILLIS
 import android.os.SystemClock
-import android.server.wm.CtsWindowInfoUtils.waitForStableWindowGeometry
+import android.server.wm.CtsWindowInfoUtils.getWindowCenter
+import android.server.wm.CtsWindowInfoUtils.waitForWindowOnTop
 import android.testing.PollingCheck
-
+import android.view.InputEvent
+import android.view.MotionEvent
+import android.view.MotionEvent.ACTION_DOWN
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.MediumTest
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
-
+import com.android.cts.input.BlockingQueueEventVerifier
 import com.android.cts.input.DebugInputRule
 import com.android.cts.input.ShowErrorDialogsRule
 import com.android.cts.input.UinputTouchScreen
-
+import com.android.cts.input.inputeventmatchers.withMotionAction
 import java.time.Duration
-
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.function.Supplier
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -51,13 +56,34 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
+ * Click on the center of the window identified by the provided window token.
+ * The click is performed using "UinputTouchScreen" device.
+ * If the touchscreen device is closed too soon, it may cause the click to be dropped. Therefore,
+ * the provided runnable can ensure that the click is delivered before the device is closed, thus
+ * avoiding this race.
+ */
+private fun clickOnWindow(
+    token: IBinder,
+    displayId: Int,
+    instrumentation: Instrumentation,
+    waitForEvent: Runnable,
+) {
+    val displayManager = instrumentation.context.getSystemService(DisplayManager::class.java)
+    val display = displayManager.getDisplay(displayId)
+    val point = getWindowCenter({ token }, display.displayId)
+    UinputTouchScreen(instrumentation, display).use { touchScreen ->
+        touchScreen.touchDown(point.x, point.y).lift()
+        // If the device is allowed to close without waiting here, the injected click may be dropped
+        waitForEvent.run()
+    }
+}
+
+/**
  * This test makes sure that an unresponsive gesture monitor gets an ANR.
  *
  * The gesture monitor must be registered from a different process than the instrumented process.
- * Otherwise, when the test runs, you will get:
- * Test failed to run to completion.
- * Reason: 'Instrumentation run failed due to 'keyDispatchingTimedOut''.
- * Check device logcat for details
+ * Otherwise, when the test runs, you will get: Test failed to run to completion. Reason:
+ * 'Instrumentation run failed due to 'keyDispatchingTimedOut''. Check device logcat for details
  * RUNNER ERROR: Instrumentation run failed due to 'keyDispatchingTimedOut'
  */
 @MediumTest
@@ -65,30 +91,43 @@ import org.junit.runner.RunWith
 class AnrTest {
     companion object {
         private const val TAG = "AnrTest"
-        private const val ALL_PIDS = 0
         private const val NO_MAX = 0
     }
 
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
-    private var hideErrorDialogs = 0
     private lateinit var PACKAGE_NAME: String
-    private val DISPATCHING_TIMEOUT = (UNMULTIPLIED_DEFAULT_DISPATCHING_TIMEOUT_MILLIS *
-            Build.HW_TIMEOUT_MULTIPLIER)
+    private val DISPATCHING_TIMEOUT =
+        (UNMULTIPLIED_DEFAULT_DISPATCHING_TIMEOUT_MILLIS * Build.HW_TIMEOUT_MULTIPLIER)
+    private var remoteWindowToken: IBinder? = null
+    private var remoteDisplayId: Int? = null
+    private var remotePid: Int? = null
+    private val remoteInputEvents = LinkedBlockingQueue<InputEvent>()
+    private val verifier = BlockingQueueEventVerifier(remoteInputEvents)
 
-    @get:Rule
-    val debugInputRule = DebugInputRule()
+    val binder =
+        object : IAnrTestService.Stub() {
+            override fun provideActivityInfo(token: IBinder, displayId: Int, pid: Int) {
+                remoteWindowToken = token
+                remoteDisplayId = displayId
+                remotePid = pid
+            }
 
-    @get:Rule
-    val showErrorDialogs = ShowErrorDialogsRule()
+            override fun notifyMotion(event: MotionEvent) {
+                remoteInputEvents.add(event)
+            }
+        }
+
+    @get:Rule val showErrorDialogs = ShowErrorDialogsRule()
+
+    @get:Rule val debugInputRule = DebugInputRule()
 
     @Before
     fun setUp() {
+        startUnresponsiveActivity()
         PACKAGE_NAME = UnresponsiveGestureMonitorActivity::class.java.getPackage()!!.getName()
     }
 
-    @After
-    fun tearDown() {
-    }
+    @After fun tearDown() {}
 
     @Test
     @DebugInputRule.DebugInput(bug = 339924248)
@@ -112,7 +151,7 @@ class AnrTest {
         val timestamp = System.currentTimeMillis()
         val uiDevice: UiDevice = UiDevice.getInstance(instrumentation)
         val closeAppButton: UiObject2? =
-                uiDevice.wait(Until.findObject(By.res("android:id/aerr_close")), 20000)
+            uiDevice.wait(Until.findObject(By.res("android:id/aerr_close")), 20000)
         if (closeAppButton == null) {
             fail("Could not find anr dialog/close button")
             return
@@ -120,10 +159,10 @@ class AnrTest {
         closeAppButton.click()
         /**
          * We must wait for the app to be fully closed before exiting this test. This is because
-         * another test may again invoke 'am start' for the same activity.
-         * If the 1st process that got ANRd isn't killed by the time second 'am start' runs,
-         * the killing logic will apply to the newly launched 'am start' instance, and the second
-         * test will fail because the unresponsive activity will never be launched.
+         * another test may again invoke 'am start' for the same activity. If the 1st process that
+         * got ANRd isn't killed by the time second 'am start' runs, the killing logic will apply to
+         * the newly launched 'am start' instance, and the second test will fail because the
+         * unresponsive activity will never be launched.
          */
         waitForNewExitReasonAfter(timestamp)
     }
@@ -132,7 +171,7 @@ class AnrTest {
         // Find anr dialog and tap on wait
         val uiDevice: UiDevice = UiDevice.getInstance(instrumentation)
         val waitButton: UiObject2? =
-                uiDevice.wait(Until.findObject(By.res("android:id/aerr_wait")), 20000)
+            uiDevice.wait(Until.findObject(By.res("android:id/aerr_wait")), 20000)
         if (waitButton == null) {
             fail("Could not find anr dialog/wait button")
             return
@@ -144,7 +183,7 @@ class AnrTest {
         lateinit var infos: List<ApplicationExitInfo>
         instrumentation.runOnMainSync {
             val am = instrumentation.getContext().getSystemService(ActivityManager::class.java)!!
-            infos = am.getHistoricalProcessExitReasons(PACKAGE_NAME, ALL_PIDS, NO_MAX)
+            infos = am.getHistoricalProcessExitReasons(PACKAGE_NAME, remotePid!!, NO_MAX)
         }
         return infos
     }
@@ -159,37 +198,32 @@ class AnrTest {
         assertEquals(ApplicationExitInfo.REASON_ANR, reasons[0].reason)
     }
 
-    private fun clickOnObject(obj: UiObject2) {
-        val displayManager =
-            instrumentation.context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-        val display = displayManager.getDisplay(obj.getDisplayId())
-        val rect: Rect = obj.visibleBounds
-        UinputTouchScreen(instrumentation, display).use { touchScreen ->
-            touchScreen
-                .touchDown(rect.centerX(), rect.centerY())
-                .lift()
-        }
-    }
-
     private fun triggerAnr() {
-        startUnresponsiveActivity()
-        val uiDevice: UiDevice = UiDevice.getInstance(instrumentation)
-        val obj: UiObject2? = uiDevice.wait(Until.findObject(By.pkg(PACKAGE_NAME)), 10000)
-
-        if (obj == null) {
-            fail("Could not find unresponsive activity")
-            return
-        }
-
-        clickOnObject(obj)
+        clickOnWindow(
+            remoteWindowToken!!,
+            remoteDisplayId!!,
+            instrumentation,
+        ) { verifier.assertReceivedMotion(withMotionAction(ACTION_DOWN)) }
 
         SystemClock.sleep(DISPATCHING_TIMEOUT.toLong()) // default ANR timeout for gesture monitors
     }
 
     private fun startUnresponsiveActivity() {
-        val flags = " -W -n "
-        val startCmd = "am start $flags $PACKAGE_NAME/.UnresponsiveGestureMonitorActivity"
-        instrumentation.uiAutomation.executeShellCommand(startCmd)
-        waitForStableWindowGeometry(Duration.ofSeconds(5))
+        val intent =
+            Intent(instrumentation.targetContext, UnresponsiveGestureMonitorActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NEW_DOCUMENT
+        val bundle = Bundle()
+        bundle.putBinder("serviceBinder", binder)
+        intent.putExtra("serviceBundle", bundle)
+        instrumentation.targetContext.startActivity(intent)
+        // first, wait for the token to become valid
+        PollingCheck.check(
+                "UnresponsiveGestureMonitorActivity failed to call 'provideActivityInfo'",
+                Duration.ofSeconds(5).toMillis()) { remoteWindowToken != null }
+        // next, wait for the window of the activity to get on top
+        // we could combine the two checks above, but the current setup makes it easier to detect
+        // errors
+        assertTrue("Remote activity window did not become visible",
+          waitForWindowOnTop(Duration.ofSeconds(5), Supplier { remoteWindowToken }))
     }
 }
