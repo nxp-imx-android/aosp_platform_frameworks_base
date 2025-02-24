@@ -757,6 +757,7 @@ public abstract class WMShellModule {
             ToggleResizeDesktopTaskTransitionHandler toggleResizeDesktopTaskTransitionHandler,
             DragToDesktopTransitionHandler dragToDesktopTransitionHandler,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
+            DesktopRepositoryInitializer desktopRepositoryInitializer,
             Optional<DesktopImmersiveController> desktopImmersiveController,
             DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver,
             LaunchAdjacentController launchAdjacentController,
@@ -802,6 +803,7 @@ public abstract class WMShellModule {
                 dragToDesktopTransitionHandler,
                 desktopImmersiveController.get(),
                 desktopUserRepositories,
+                desktopRepositoryInitializer,
                 recentsTransitionHandler,
                 multiInstanceHelper,
                 mainExecutor,
@@ -1309,10 +1311,12 @@ public abstract class WMShellModule {
     static Optional<DesktopDisplayEventHandler> provideDesktopDisplayEventHandler(
             Context context,
             ShellInit shellInit,
+            @ShellMainThread CoroutineScope mainScope,
             DisplayController displayController,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             Optional<DesktopTasksController> desktopTasksController,
-            Optional<DesktopDisplayModeController> desktopDisplayModeController
+            Optional<DesktopDisplayModeController> desktopDisplayModeController,
+            DesktopRepositoryInitializer desktopRepositoryInitializer
     ) {
         if (!DesktopModeStatus.canEnterDesktopMode(context)) {
             return Optional.empty();
@@ -1321,7 +1325,9 @@ public abstract class WMShellModule {
                 new DesktopDisplayEventHandler(
                         context,
                         shellInit,
+                        mainScope,
                         displayController,
+                        desktopRepositoryInitializer,
                         desktopUserRepositories.get(),
                         desktopTasksController.get(),
                         desktopDisplayModeController.get()));

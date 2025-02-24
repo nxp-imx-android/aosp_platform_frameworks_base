@@ -132,10 +132,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                     .toBuilder()
                     .putDesktopRepoByUser(
                         userId,
-                        currentRepository
-                            .toBuilder()
-                            .putDesktop(desktopId, desktop.build())
-                            .build(),
+                        currentRepository.toBuilder().putDesktop(desktopId, desktop.build()).build(),
                     )
                     .build()
             }
@@ -145,6 +142,33 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                 "Error in updating desktop mode related data, data is " +
                     "stored in a file named $DESKTOP_REPOSITORIES_DATASTORE_FILE",
                 exception,
+            )
+        }
+    }
+
+    /** Removes the desktop from the persistent repository. */
+    suspend fun removeDesktop(userId: Int, desktopId: Int) {
+        try {
+            dataStore.updateData { persistentRepositories: DesktopPersistentRepositories ->
+                val currentRepository =
+                    persistentRepositories.getDesktopRepoByUserOrDefault(
+                        userId,
+                        DesktopRepositoryState.getDefaultInstance(),
+                    )
+                persistentRepositories
+                    .toBuilder()
+                    .putDesktopRepoByUser(
+                        userId,
+                        currentRepository.toBuilder().removeDesktop(desktopId).build(),
+                    )
+                    .build()
+            }
+        } catch (throwable: Throwable) {
+            Log.e(
+                TAG,
+                "Error in removing desktop related data, data is " +
+                    "stored in a file named $DESKTOP_REPOSITORIES_DATASTORE_FILE",
+                throwable,
             )
         }
     }

@@ -429,6 +429,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             dragToDesktopTransitionHandler,
             mMockDesktopImmersiveController,
             userRepositories,
+            repositoryInitializer,
             recentsTransitionHandler,
             multiInstanceHelper,
             shellExecutor,
@@ -5049,6 +5050,55 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.deskId == 0
                 }
             )
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun activateDesk_hasNonRunningTask_startsTask() {
+        val deskId = 0
+        val nonRunningTask =
+            setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 0, background = true)
+
+        val transition = Binder()
+        val deskChange = mock(TransitionInfo.Change::class.java)
+        whenever(transitions.startTransition(eq(TRANSIT_TO_FRONT), any(), anyOrNull()))
+            .thenReturn(transition)
+        whenever(desksOrganizer.isDeskActiveAtEnd(deskChange, deskId)).thenReturn(true)
+        // Make desk inactive by activating another desk.
+        taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 1)
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
+
+        controller.activateDesk(deskId, RemoteTransition(TestRemoteTransition()))
+
+        val wct = getLatestWct(TRANSIT_TO_FRONT, OneShotRemoteHandler::class.java)
+        assertNotNull(wct)
+        wct.assertLaunchTask(nonRunningTask.taskId, WINDOWING_MODE_FREEFORM)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun activateDesk_hasRunningTask_reordersTask() {
+        val deskId = 0
+        val runningTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 0)
+
+        val transition = Binder()
+        val deskChange = mock(TransitionInfo.Change::class.java)
+        whenever(transitions.startTransition(eq(TRANSIT_TO_FRONT), any(), anyOrNull()))
+            .thenReturn(transition)
+        whenever(desksOrganizer.isDeskActiveAtEnd(deskChange, deskId)).thenReturn(true)
+        // Make desk inactive by activating another desk.
+        taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 1)
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
+
+        controller.activateDesk(deskId, RemoteTransition(TestRemoteTransition()))
+
+        verify(desksOrganizer).reorderTaskToFront(any(), eq(deskId), eq(runningTask))
     }
 
     @Test

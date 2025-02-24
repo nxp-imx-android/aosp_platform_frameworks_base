@@ -1203,6 +1203,17 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND, FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
+    fun removeDesk_removesFromPersistence() =
+        runTest(StandardTestDispatcher()) {
+            repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
+
+            repo.removeDesk(deskId = 2)
+
+            verify(persistentRepository).removeDesktop(DEFAULT_USER_ID, 2)
+        }
+
+    @Test
     fun getTaskInFullImmersiveState_byDisplay() {
         repo.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         repo.setActiveDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
