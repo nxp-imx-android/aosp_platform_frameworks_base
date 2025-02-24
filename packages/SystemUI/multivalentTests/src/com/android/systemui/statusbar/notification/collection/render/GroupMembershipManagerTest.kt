@@ -170,21 +170,6 @@ class GroupMembershipManagerTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    fun isChildEntryAdapterInGroup_child() {
-        val groupKey = "group"
-        val summary =
-            NotificationEntryBuilder()
-                .setGroup(mContext, groupKey)
-                .setGroupSummary(mContext, true)
-                .build()
-        val entry = NotificationEntryBuilder().setGroup(mContext, groupKey).build()
-        GroupEntryBuilder().setKey(groupKey).setSummary(summary).addChild(entry).build()
-
-        assertThat(underTest.isChildInGroup(entry.entryAdapter)).isTrue()
-    }
-
-    @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isGroupRoot_topLevelEntry() {
         val entry = NotificationEntryBuilder().setParent(GroupEntry.ROOT_ENTRY).build()
         assertThat(underTest.isGroupRoot(entry.entryAdapter)).isFalse()
@@ -217,5 +202,41 @@ class GroupMembershipManagerTest : SysuiTestCase() {
         GroupEntryBuilder().setKey(groupKey).setSummary(summary).addChild(entry).build()
 
         assertThat(underTest.isGroupRoot(entry.entryAdapter)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getGroupRoot_topLevelEntry() {
+        val entry = NotificationEntryBuilder().setParent(GroupEntry.ROOT_ENTRY).build()
+        assertThat(underTest.getGroupRoot(entry.entryAdapter)).isNull()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getGroupRoot_summary() {
+        val groupKey = "group"
+        val summary =
+            NotificationEntryBuilder()
+                .setGroup(mContext, groupKey)
+                .setGroupSummary(mContext, true)
+                .build()
+        GroupEntryBuilder().setKey(groupKey).setSummary(summary).build()
+
+        assertThat(underTest.getGroupRoot(summary.entryAdapter)).isEqualTo(summary.entryAdapter)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getGroupRoot_child() {
+        val groupKey = "group"
+        val summary =
+            NotificationEntryBuilder()
+                .setGroup(mContext, groupKey)
+                .setGroupSummary(mContext, true)
+                .build()
+        val entry = NotificationEntryBuilder().setGroup(mContext, groupKey).build()
+        GroupEntryBuilder().setKey(groupKey).setSummary(summary).addChild(entry).build()
+
+        assertThat(underTest.getGroupRoot(entry.entryAdapter)).isEqualTo(summary.entryAdapter)
     }
 }
