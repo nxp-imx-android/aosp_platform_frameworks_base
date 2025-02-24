@@ -1164,9 +1164,11 @@ public class AudioService extends IAudioService.Stub
     @GuardedBy("mAccessibilityServiceUidsLock")
     private int[] mAccessibilityServiceUids;
 
-    // Uid of the active input method service to check if caller is the one or not.
-    private int mInputMethodServiceUid = android.os.Process.INVALID_UID;
+    // Input Method
     private final Object mInputMethodServiceUidLock = new Object();
+    // Uid of the active input method service to check if caller is the one or not.
+    @GuardedBy("mInputMethodServiceUidLock")
+    private int mInputMethodServiceUid = android.os.Process.INVALID_UID;
 
     private int mEncodedSurroundMode;
     private String mEnabledSurroundFormats;
