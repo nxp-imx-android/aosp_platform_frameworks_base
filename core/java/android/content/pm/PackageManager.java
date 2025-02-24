@@ -5003,10 +5003,9 @@ public abstract class PackageManager {
      * supports the Android XR Spatial APIs. The feature version indicates the highest version of
      * the Android XR Spatial APIs supported by the device.
      *
-     * <p>Also see <a href="https://developer.android.com/xr">Getting started with Spatializing
-     * your app</a>.
+     * <p>Also see <a href="https://developer.android.com/develop/xr">Develop with the Android XR
+     * SDK</a>.
      */
-    // TODO(b/374330735): update public documentation once link content is finalized
     @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
     @SdkConstant(SdkConstantType.FEATURE)
     public static final String FEATURE_XR_API_SPATIAL =
