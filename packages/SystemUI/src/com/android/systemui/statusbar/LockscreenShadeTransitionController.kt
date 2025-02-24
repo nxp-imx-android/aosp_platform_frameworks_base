@@ -36,6 +36,7 @@ import com.android.systemui.shade.domain.interactor.ShadeLockscreenInteractor
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.AmbientState
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController
 import com.android.systemui.statusbar.phone.CentralSurfaces
@@ -391,7 +392,9 @@ constructor(
             }
             if (view is ExpandableNotificationRow) {
                 // Only drag down on sensitive views, otherwise the ExpandHelper will take this
-                return view.entry.isSensitive.value
+                return if (NotificationBundleUi.isEnabled)
+                    view.entryAdapter?.isSensitive?.value == true
+                else view.entry.isSensitive.value
             }
         }
         return false
