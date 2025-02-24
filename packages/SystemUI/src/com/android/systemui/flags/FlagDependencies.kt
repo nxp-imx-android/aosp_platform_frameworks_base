@@ -29,8 +29,6 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.notification.collection.SortBySectionTimeFlag
 import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionRefactor
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiAod
 import com.android.systemui.statusbar.notification.shared.NotificationAvalancheSuppression
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun
@@ -51,8 +49,6 @@ class FlagDependencies @Inject constructor(featureFlags: FeatureFlagsClassic, ha
         PriorityPeopleSection.token dependsOn SortBySectionTimeFlag.token
         NotificationMinimalism.token dependsOn NotificationThrottleHun.token
         ModesEmptyShadeFix.token dependsOn modesUi
-
-        PromotedNotificationUiAod.token dependsOn PromotedNotificationUi.token
 
         // SceneContainer dependencies
         SceneContainerFlag.getFlagDependencies().forEach { (alpha, beta) -> alpha dependsOn beta }
