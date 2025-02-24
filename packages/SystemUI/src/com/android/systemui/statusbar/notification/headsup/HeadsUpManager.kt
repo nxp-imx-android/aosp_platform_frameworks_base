@@ -19,7 +19,9 @@ package com.android.systemui.statusbar.notification.headsup
 import android.graphics.Region
 import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
+import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import dagger.Binds
 import dagger.Module
 import java.io.PrintWriter
@@ -151,6 +153,12 @@ interface HeadsUpManager : Dumpable {
     fun releaseAllImmediately()
 
     fun setAnimationStateHandler(handler: AnimationStateHandler)
+
+    /**
+    * Set an entry to be expanded and therefore stick in the heads up area if it's pinned until
+    * it's collapsed again.
+    */
+    fun setExpanded(key: String, row: ExpandableNotificationRow, expanded: Boolean)
 
     /**
      * Set an entry to be expanded and therefore stick in the heads up area if it's pinned until
@@ -309,6 +317,8 @@ class HeadsUpManagerEmptyImpl @Inject constructor() : HeadsUpManager {
     ) = false
 
     override fun setAnimationStateHandler(handler: AnimationStateHandler) {}
+
+    override fun setExpanded(key: String, row: ExpandableNotificationRow, expanded: Boolean) {}
 
     override fun setExpanded(entry: NotificationEntry, expanded: Boolean) {}
 
