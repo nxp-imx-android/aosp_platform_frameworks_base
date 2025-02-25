@@ -252,6 +252,10 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Повезани сте са <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Повезани смо са уређајем <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Проширите групу."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Отворите апликацију."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Није повезано."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Роминг"</string>
@@ -329,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Унос"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Слушни апарати"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Укључује се..."</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Не можете да прилагодите осветљеност јер је контролише апликација у врху"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Аутоматска ротација"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Аутоматско ротирање екрана"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Локација"</string>
@@ -986,8 +991,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Прикажи иконе обавештења ниског приоритета"</string>
     <string name="other" msgid="429768510980739978">"Друго"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"укључивање или искључивање величине плочице"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"уклонили плочицу"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"додали плочицу на последњу позицију"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Преместите плочицу"</string>
@@ -1540,10 +1544,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Да бисте прегледали недавне апликације, превуците нагоре и задржите са три прста на тачпеду"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Да бисте погледали све апликације, притисните тастер радњи на тастатури"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Редиговано"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Откључајте за приказ"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Откључајте да бисте видели кôд"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Контекстуално образовање"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Користите тачпед за враћање назад"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Превуците улево или удесно са три прста. Додирните да бисте видели више покрета."</string>

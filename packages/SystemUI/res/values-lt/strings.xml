@@ -150,7 +150,7 @@
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"Sustabdyti perdavimą?"</string>
     <string name="cast_to_other_device_stop_dialog_message_entire_screen_with_device" msgid="1474703115926205251">"Šiuo metu perduodate visą ekraną į šį įrenginį: <xliff:g id="DEVICE_NAME">%1$s</xliff:g>"</string>
     <string name="cast_to_other_device_stop_dialog_message_entire_screen" msgid="8419219169553867625">"Šiuo metu perduodate visą ekraną į įrenginį netoliese"</string>
-    <string name="cast_to_other_device_stop_dialog_message_specific_app_with_device" msgid="2715934698604085519">"Šiuo metu perduodate programą (<xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>) į šį įrenginį: <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
+    <string name="cast_to_other_device_stop_dialog_message_specific_app_with_device" msgid="2715934698604085519">"Šiuo metu perduodate programą „<xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>“ į šį įrenginį: <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="cast_to_other_device_stop_dialog_message_specific_app" msgid="8616103075630934513">"Šiuo metu į įrenginį netoliese perduodate šią programą: <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>"</string>
     <string name="cast_to_other_device_stop_dialog_message_generic_with_device" msgid="9213582497852420203">"Šiuo metu perduodate į šį įrenginį: <xliff:g id="DEVICE_NAME">%1$s</xliff:g>"</string>
     <string name="cast_to_other_device_stop_dialog_message_generic" msgid="4100272100480415076">"Šiuo metu perduodate į įrenginį netoliese"</string>
@@ -252,6 +252,10 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Prisijungta prie „<xliff:g id="BLUETOOTH">%s</xliff:g>“."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Prisijungta prie <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Išskleisti grupę."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Atidaryti programą."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Neprijungta."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Tarptinklinis ryšys"</string>
@@ -329,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Įvestis"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Klausos aparatai"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Įjungiama…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Negalima koreguoti ryškumo, nes jį valdo viršuje esanti programa"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Automatinis pasukimas"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Automatiškai sukti ekraną"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Vietovė"</string>
@@ -986,8 +991,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Rodyti mažo prioriteto pranešimų piktogramas"</string>
     <string name="other" msgid="429768510980739978">"Kita"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"perjungti išklotinės elemento dydį"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"pašalintumėte išklotinės elementą"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"pridėti išklotinės elementą paskutinėje pozicijoje"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Perkelti išklotinės elementą"</string>
@@ -1540,10 +1544,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Peržiūrėkite naujausias programas, jutiklinėje dalyje perbraukę aukštyn trimis pirštais ir palaikę"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Jei norite peržiūrėti visas programas, paspauskite klaviatūros veiksmų klavišą"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Paslėpta"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Atrakinkite ir peržiūrėkite"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Atrakinkite ir peržiūrėkite kodą"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Kontekstinis švietimas"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Naudokite klaviatūrą, kad grįžtumėte atgal"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Perbraukite į kairę ar dešinę trimis pirštais. Palieskite, kad sužinotumėte daugiau gestų."</string>
