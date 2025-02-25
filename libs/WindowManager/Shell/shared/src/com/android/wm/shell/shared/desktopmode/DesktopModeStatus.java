@@ -22,6 +22,7 @@ import static com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper.enabl
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.TaskInfo;
 import android.content.Context;
 import android.hardware.display.DisplayManager;
 import android.os.SystemProperties;
@@ -284,6 +285,16 @@ public class DesktopModeStatus {
     public static boolean overridesShowAppHandle(@NonNull Context context) {
         return (Flags.showAppHandleLargeScreens() || enableBubbleToFullscreen())
                 && deviceHasLargeScreen(context);
+    }
+
+    /**
+     * @return If {@code true} we set opaque background for all freeform tasks to prevent freeform
+     * tasks below from being visible if freeform task window above is translucent.
+     * Otherwise if fluid resize is enabled, add a background to freeform tasks.
+     */
+    public static boolean shouldSetBackground(@NonNull TaskInfo taskInfo) {
+        return taskInfo.isFreeform() && (!DesktopModeStatus.isVeiledResizeEnabled()
+                || DesktopModeFlags.ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS.isTrue());
     }
 
     /**
