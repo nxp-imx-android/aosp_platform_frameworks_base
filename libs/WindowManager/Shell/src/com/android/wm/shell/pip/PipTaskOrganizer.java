@@ -782,7 +782,7 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
     private boolean isPipExitingToDesktopMode() {
         DesktopRepository currentRepo = getCurrentRepo();
         return Flags.enableDesktopWindowingPip() && currentRepo != null
-                && (currentRepo.getVisibleTaskCount(mTaskInfo.displayId) > 0
+                && (currentRepo.isAnyDeskActive(mTaskInfo.displayId)
                     || isDisplayInFreeform());
     }
 

@@ -67,8 +67,6 @@ import com.android.wm.shell.transition.Transitions;
 
 import dagger.Lazy;
 
-import java.util.Optional;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -77,6 +75,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.Optional;
 
 /**
  * Tests for {@link CompatUIController}.
@@ -707,13 +707,13 @@ public class CompatUIControllerTest extends ShellTestCase {
     @EnableFlags(Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE)
     public void testUpdateActiveTaskInfo_removeAllComponentWhenInDesktopModeFlagEnabled() {
         TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
-        when(mDesktopUserRepositories.getCurrent().getVisibleTaskCount(DISPLAY_ID)).thenReturn(0);
+        when(mDesktopUserRepositories.getCurrent().isAnyDeskActive(DISPLAY_ID)).thenReturn(false);
 
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
 
         verify(mController, never()).removeLayouts(taskInfo.taskId);
 
-        when(mDesktopUserRepositories.getCurrent().getVisibleTaskCount(DISPLAY_ID)).thenReturn(2);
+        when(mDesktopUserRepositories.getCurrent().isAnyDeskActive(DISPLAY_ID)).thenReturn(true);
 
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
 
@@ -724,14 +724,14 @@ public class CompatUIControllerTest extends ShellTestCase {
     @RequiresFlagsDisabled(Flags.FLAG_APP_COMPAT_UI_FRAMEWORK)
     @DisableFlags(Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE)
     public void testUpdateActiveTaskInfo_removeAllComponentWhenInDesktopModeFlagDisabled() {
-        when(mDesktopUserRepositories.getCurrent().getVisibleTaskCount(DISPLAY_ID)).thenReturn(0);
+        when(mDesktopUserRepositories.getCurrent().isAnyDeskActive(DISPLAY_ID)).thenReturn(false);
         TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
 
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
 
         verify(mController, never()).removeLayouts(taskInfo.taskId);
 
-        when(mDesktopUserRepositories.getCurrent().getVisibleTaskCount(DISPLAY_ID)).thenReturn(2);
+        when(mDesktopUserRepositories.getCurrent().isAnyDeskActive(DISPLAY_ID)).thenReturn(true);
 
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
 

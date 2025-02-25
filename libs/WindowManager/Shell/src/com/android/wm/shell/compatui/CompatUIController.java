@@ -872,7 +872,7 @@ public class CompatUIController implements OnDisplaysChangedListener,
             return false;
         }
         boolean isDesktopModeShowing = mDesktopUserRepositories.get().getCurrent()
-                .getVisibleTaskCount(taskInfo.displayId) > 0;
+                .isAnyDeskActive(taskInfo.displayId);
         return DesktopModeFlags.ENABLE_DESKTOP_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE_BUGFIX
                 .isTrue() && isDesktopModeShowing;
     }

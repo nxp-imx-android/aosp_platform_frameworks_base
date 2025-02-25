@@ -1064,34 +1064,40 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    fun visibleTaskCount_noTasks_returnsZero() {
-        assertThat(controller.visibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(0)
+    fun isAnyDeskActive_noTasks_returnsFalse() {
+        assertThat(controller.isAnyDeskActive(DEFAULT_DISPLAY)).isFalse()
     }
 
     @Test
-    fun visibleTaskCount_twoTasks_bothVisible_returnsTwo() {
+    fun isAnyDeskActive_twoTasks_bothVisible_returnsTrue() {
         setUpHomeTask()
+
         setUpFreeformTask().also(::markTaskVisible)
         setUpFreeformTask().also(::markTaskVisible)
-        assertThat(controller.visibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(2)
+
+        assertThat(controller.isAnyDeskActive(DEFAULT_DISPLAY)).isTrue()
     }
 
     @Test
-    fun visibleTaskCount_twoTasks_oneVisible_returnsOne() {
+    fun isInDesktop_twoTasks_oneVisible_returnsTrue() {
         setUpHomeTask()
+
         setUpFreeformTask().also(::markTaskVisible)
         setUpFreeformTask().also(::markTaskHidden)
-        assertThat(controller.visibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(1)
+
+        assertThat(controller.isAnyDeskActive(DEFAULT_DISPLAY)).isTrue()
     }
 
     @Test
-    fun visibleTaskCount_twoTasksVisibleOnDifferentDisplays_returnsOne() {
+    fun isAnyDeskActive_twoTasksVisibleOnDifferentDisplays_returnsTrue() {
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         setUpHomeTask()
+
         setUpFreeformTask(DEFAULT_DISPLAY).also(::markTaskVisible)
         setUpFreeformTask(SECOND_DISPLAY).also(::markTaskVisible)
-        assertThat(controller.visibleTaskCount(SECOND_DISPLAY)).isEqualTo(1)
+
+        assertThat(controller.isAnyDeskActive(SECOND_DISPLAY)).isTrue()
     }
 
     @Test

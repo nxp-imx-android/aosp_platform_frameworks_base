@@ -337,8 +337,8 @@ class DesktopTasksController(
         activateDefaultDeskInDisplay(displayId, remoteTransition)
     }
 
-    /** Gets number of visible freeform tasks in [displayId]. */
-    fun visibleTaskCount(displayId: Int): Int = taskRepository.getVisibleTaskCount(displayId)
+    /** Returns whether the given display has an active desk. */
+    fun isAnyDeskActive(displayId: Int): Boolean = taskRepository.isAnyDeskActive(displayId)
 
     /**
      * Returns true if any of the following is true:
@@ -346,9 +346,16 @@ class DesktopTasksController(
      * - A transparent fullscreen task exists on top in Desktop Mode
      * - PiP on Desktop Windowing is enabled, there is an active PiP window and the desktop
      *   wallpaper is visible.
+     *
+     * TODO: b/362720497 - consolidate with [isAnyDeskActive].
+     *     - top-transparent-fullscreen case: should not be needed if we allow it to launch inside
+     *       the desk in fullscreen instead of force-exiting desktop and having to trick this method
+     *       into thinking it is in desktop mode when a task in this state exists.
+     *     - PIP case: a PIP presence should influence desk activation, so
+     *       [DesktopRepository#isAnyDeskActive] should be sufficient.
      */
     fun isDesktopModeShowing(displayId: Int): Boolean {
-        val hasVisibleTasks = visibleTaskCount(displayId) > 0
+        val hasVisibleTasks = taskRepository.isAnyDeskActive(displayId)
         val hasTopTransparentFullscreenTask =
             taskRepository.getTopTransparentFullscreenTaskId(displayId) != null
         val hasMinimizedPip =

@@ -162,7 +162,7 @@ class SystemModalsTransitionHandler(
         }
 
     private fun isDesktopModeShowing(displayId: Int): Boolean =
-        desktopUserRepositories.current.getVisibleTaskCount(displayId) > 0
+        desktopUserRepositories.current.isAnyDeskActive(displayId)
 
     override fun handleRequest(
         transition: IBinder,

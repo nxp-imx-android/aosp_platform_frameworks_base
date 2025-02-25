@@ -84,7 +84,7 @@ class DesktopActivityOrientationChangeHandler(
         if (!Flags.respectOrientationChangeForUnresizeable()) return
         val task = shellTaskOrganizer.getRunningTaskInfo(taskId) ?: return
         val taskRepository = desktopUserRepositories.current
-        val isDesktopModeShowing = taskRepository.getVisibleTaskCount(task.displayId) > 0
+        val isDesktopModeShowing = taskRepository.isAnyDeskActive(task.displayId)
         if (!isDesktopModeShowing || !task.isFreeform || task.isResizeable) return
 
         val taskBounds = task.configuration.windowConfiguration.bounds
