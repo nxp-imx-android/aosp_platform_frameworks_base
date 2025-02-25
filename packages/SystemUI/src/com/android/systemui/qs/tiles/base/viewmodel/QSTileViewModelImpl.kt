@@ -83,6 +83,7 @@ class QSTileViewModelImpl<DATA_TYPE>(
     private val backgroundDispatcher: CoroutineDispatcher,
     uiBackgroundDispatcher: CoroutineDispatcher,
     private val tileScope: CoroutineScope,
+    override val tileDetailsViewModel: TileDetailsViewModel? = null,
 ) : QSTileViewModel, Dumpable {
 
     private val users: MutableStateFlow<UserHandle> =
@@ -113,9 +114,6 @@ class QSTileViewModelImpl<DATA_TYPE>(
             .flatMapLatest { tileDataInteractor().availability(it) }
             .flowOn(backgroundDispatcher)
             .stateIn(tileScope, SharingStarted.WhileSubscribed(), true)
-
-    override val detailsViewModel: TileDetailsViewModel?
-        get() = userActionInteractor().detailsViewModel
 
     override fun forceUpdate() {
         tileScope.launch(context = backgroundDispatcher) { forceUpdates.emit(Unit) }

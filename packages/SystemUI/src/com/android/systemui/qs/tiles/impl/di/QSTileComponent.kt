@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.tiles.impl.di
 
+import com.android.systemui.plugins.qs.TileDetailsViewModel
 import com.android.systemui.qs.tiles.base.interactor.QSTileDataInteractor
 import com.android.systemui.qs.tiles.base.interactor.QSTileDataToStateMapper
 import com.android.systemui.qs.tiles.base.interactor.QSTileUserActionInteractor

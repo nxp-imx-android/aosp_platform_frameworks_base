@@ -18,13 +18,10 @@ package com.android.systemui.qs.tiles.impl.internet.domain.interactor
 
 import android.content.Intent
 import android.provider.Settings
-import com.android.systemui.animation.Expandable
 import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.plugins.qs.TileDetailsViewModel
 import com.android.systemui.qs.tiles.base.actions.QSTileIntentUserInputHandler
 import com.android.systemui.qs.tiles.base.interactor.QSTileInput
 import com.android.systemui.qs.tiles.base.interactor.QSTileUserActionInteractor
-import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.dialog.InternetDialogManager
 import com.android.systemui.qs.tiles.impl.internet.domain.model.InternetTileModel
 import com.android.systemui.qs.tiles.viewmodel.QSTileUserAction
@@ -41,7 +38,6 @@ constructor(
     private val internetDialogManager: InternetDialogManager,
     private val accessPointController: AccessPointController,
     private val qsTileIntentUserActionHandler: QSTileIntentUserInputHandler,
-    private val internetDetailsViewModelFactory: InternetDetailsViewModel.Factory,
 ) : QSTileUserActionInteractor<InternetTileModel> {
 
     override suspend fun handleInput(input: QSTileInput<InternetTileModel>): Unit =
@@ -58,16 +54,12 @@ constructor(
                     }
                 }
                 is QSTileUserAction.LongClick -> {
-                    handleLongClick(action.expandable)
+                    qsTileIntentUserActionHandler.handle(
+                        action.expandable,
+                        Intent(Settings.ACTION_WIFI_SETTINGS),
+                    )
                 }
                 else -> {}
             }
         }
-
-    override val detailsViewModel: TileDetailsViewModel =
-        internetDetailsViewModelFactory.create { handleLongClick(null) }
-
-    private fun handleLongClick(expandable: Expandable?) {
-        qsTileIntentUserActionHandler.handle(expandable, Intent(Settings.ACTION_WIFI_SETTINGS))
-    }
 }
