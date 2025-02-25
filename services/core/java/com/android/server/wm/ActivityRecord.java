@@ -2326,13 +2326,16 @@ final class ActivityRecord extends WindowToken {
             if (isActivityTypeHome()) {
                 // The snapshot of home is only used once because it won't be updated while screen
                 // is on (see {@link TaskSnapshotController#screenTurningOff}).
-                mWmService.mTaskSnapshotController.removeSnapshotCache(task.mTaskId);
                 final Transition transition = mTransitionController.getCollectingTransition();
                 if (transition != null && (transition.getFlags()
                         & WindowManager.TRANSIT_FLAG_KEYGUARD_GOING_AWAY_NO_ANIMATION) == 0) {
+                    mWmService.mTaskSnapshotController.removeSnapshotCache(task.mTaskId);
                     // Only use snapshot of home as starting window when unlocking directly.
                     return false;
                 }
+                // Add a reference before removing snapshot from cache.
+                snapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
+                mWmService.mTaskSnapshotController.removeSnapshotCache(task.mTaskId);
             }
             return createSnapshot(snapshot, typeParameter);
         }
