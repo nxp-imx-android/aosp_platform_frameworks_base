@@ -663,7 +663,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * {@link android.view.inputmethod.InputConnection}.
      *
      * @see #updateImeInputAndControlTarget
-     * @see WindowManagerInternal#updateInputMethodTargetWindow
+     * @see WindowManagerInternal#updateImeTargetWindow
      * @see #findFocusedWindow()
      */
     @Nullable

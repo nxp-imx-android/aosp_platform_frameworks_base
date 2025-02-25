@@ -617,6 +617,12 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     private final CopyOnWriteArrayList<InputMethodListListener> mInputMethodListListeners =
             new CopyOnWriteArrayList<>();
 
+    /**
+     * Mapping of startInput token to IME target window token. This is set before dispatching
+     * the startInput to the IME (in {@link #attachNewInputLocked}), and read when the IME replied
+     * to it (in {@link #reportStartInputLocked}). When read, it is reported as the new IME target
+     * in WindowManagerService.
+     */
     @GuardedBy("ImfLock.class")
     @SharedByAllUsersField
     private final WeakHashMap<IBinder, IBinder> mImeTargetWindowMap = new WeakHashMap<>();
@@ -1901,9 +1907,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     void onUnbindCurrentMethodByReset(@UserIdInt int userId) {
         final var userData = getUserData(userId);
         final var visibilityStateComputer = userData.mVisibilityStateComputer;
-        final ImeTargetWindowState winState = visibilityStateComputer.getWindowStateOrNull(
+        final ImeTargetWindowState targetWindowState = visibilityStateComputer.getWindowStateOrNull(
                 userData.mImeBindingState.mFocusedWindow);
-        if (winState != null && !winState.isRequestedImeVisible()
+        if (targetWindowState != null && !targetWindowState.isRequestedImeVisible()
                 && !visibilityStateComputer.isInputShown()) {
             // Normally, the focus window will apply the IME visibility state to
             // WindowManager when the IME has applied it. But it would be too late when
@@ -1924,9 +1930,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     private boolean isShowRequestedForCurrentWindow(@UserIdInt int userId) {
         final var userData = getUserData(userId);
         final var visibilityStateComputer = userData.mVisibilityStateComputer;
-        final ImeTargetWindowState state = visibilityStateComputer.getWindowStateOrNull(
+        final ImeTargetWindowState targetWindowState = visibilityStateComputer.getWindowStateOrNull(
                 userData.mImeBindingState.mFocusedWindow);
-        return state != null && state.isRequestedImeVisible();
+        return targetWindowState != null && targetWindowState.isRequestedImeVisible();
     }
 
     @GuardedBy("ImfLock.class")
@@ -1940,8 +1946,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             userData.mBoundToMethod = true;
         }
 
-        final boolean restarting = !initial;
         final Binder startInputToken = new Binder();
+        mImeTargetWindowMap.put(startInputToken, userData.mImeBindingState.mFocusedWindow);
+        final boolean restarting = !initial;
         final StartInputInfo info = new StartInputInfo(userId,
                 bindingController.getCurToken(), bindingController.getCurTokenDisplayId(),
                 bindingController.getCurId(), startInputReason,
@@ -1950,7 +1957,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 userData.mImeBindingState.mFocusedWindow, userData.mCurEditorInfo,
                 userData.mImeBindingState.mFocusedWindowSoftInputMode,
                 bindingController.getSequenceNumber());
-        mImeTargetWindowMap.put(startInputToken, userData.mImeBindingState.mFocusedWindow);
         mStartInputHistory.addEntry(info);
 
         // Seems that PackageManagerInternal#grantImplicitAccess() doesn't handle cross-user
@@ -2074,14 +2080,14 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
         // Compute the final shown display ID with validated cs.selfReportedDisplayId for this
         // session & other conditions.
-        ImeTargetWindowState winState = visibilityStateComputer.getWindowStateOrNull(
+        final ImeTargetWindowState targetWindowState = visibilityStateComputer.getWindowStateOrNull(
                 userData.mImeBindingState.mFocusedWindow);
-        if (winState == null) {
+        if (targetWindowState == null) {
             return InputBindResult.NOT_IME_TARGET_WINDOW;
         }
         final int csDisplayId = cs.mSelfReportedDisplayId;
         bindingController.setDisplayIdToShowIme(
-                visibilityStateComputer.computeImeDisplayId(winState, csDisplayId));
+                visibilityStateComputer.computeImeDisplayId(targetWindowState, csDisplayId));
 
         // Potentially override the selected input method if the new display belongs to a virtual
         // device with a custom IME.
@@ -2848,12 +2854,11 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @BinderThread
     @GuardedBy("ImfLock.class")
     private void reportStartInputLocked(IBinder startInputToken, @NonNull UserData userData) {
-        final IBinder targetWindow = mImeTargetWindowMap.get(startInputToken);
-        if (targetWindow != null) {
-            mWindowManagerInternal.updateInputMethodTargetWindow(targetWindow);
+        final IBinder targetWindowToken = mImeTargetWindowMap.get(startInputToken);
+        if (targetWindowToken != null) {
+            mWindowManagerInternal.updateImeTargetWindow(targetWindowToken);
         }
-        final var visibilityStateComputer = userData.mVisibilityStateComputer;
-        visibilityStateComputer.setLastImeTargetWindow(targetWindow);
+        userData.mVisibilityStateComputer.setLastImeTargetWindow(targetWindowToken);
     }
 
     @GuardedBy("ImfLock.class")
@@ -3715,7 +3720,13 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         return shouldHideSoftInput;
     }
 
-    private boolean isImeClientFocused(IBinder windowToken, ClientState cs) {
+    /**
+     * Checks whether the specified IME client has IME focus or not.
+     *
+     * @param windowToken the token of the IME client window.
+     * @param cs          the IME client state.
+     */
+    private boolean isImeClientFocused(IBinder windowToken, @NonNull ClientState cs) {
         final int imeClientFocus = mWindowManagerInternal.hasInputMethodClientFocus(
                 windowToken, cs.mUid, cs.mPid, cs.mSelfReportedDisplayId);
         return imeClientFocus == WindowManagerInternal.ImeClientFocusResult.HAS_IME_FOCUS;
@@ -3727,7 +3738,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     public void startInputOrWindowGainedFocusAsync(
             @StartInputReason int startInputReason, IInputMethodClient client, IBinder windowToken,
             @StartInputFlags int startInputFlags, @SoftInputModeFlags int softInputMode,
-            int windowFlags, @Nullable EditorInfo editorInfo,
+            @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
             IRemoteInputConnection inputConnection,
             IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
@@ -3741,7 +3752,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     public InputBindResult startInputOrWindowGainedFocus(
             @StartInputReason int startInputReason, IInputMethodClient client, IBinder windowToken,
             @StartInputFlags int startInputFlags, @SoftInputModeFlags int softInputMode,
-            int windowFlags, @Nullable EditorInfo editorInfo,
+            @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
             IRemoteInputConnection inputConnection,
             IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
@@ -3812,7 +3823,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                         return InputBindResult.INVALID_USER;
                     }
 
-                    // Ensure that caller's focused window and display parameters are allowd to
+                    // Ensure that caller's focused window and display parameters are allowed to
                     // display input method.
                     final int imeClientFocus = mWindowManagerInternal.hasInputMethodClientFocus(
                             windowToken, cs.mUid, cs.mPid, cs.mSelfReportedDisplayId);
@@ -3902,7 +3913,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     private InputBindResult startInputOrWindowGainedFocusInternalLocked(
             @StartInputReason int startInputReason, IInputMethodClient client,
             @NonNull IBinder windowToken, @StartInputFlags int startInputFlags,
-            @SoftInputModeFlags int softInputMode, int windowFlags, EditorInfo editorInfo,
+            @SoftInputModeFlags int softInputMode,
+            @WindowManager.LayoutParams.Flags int windowFlags, EditorInfo editorInfo,
             IRemoteInputConnection inputContext,
             @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @NonNull InputMethodBindingController bindingController,
@@ -3930,18 +3942,18 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final var userData = getUserData(userId);
         final boolean sameWindowFocused = userData.mImeBindingState.mFocusedWindow == windowToken;
         final boolean isTextEditor = (startInputFlags & StartInputFlags.IS_TEXT_EDITOR) != 0;
-        final boolean startInputByWinGainedFocus =
+        final boolean isStartInputByWindowGainFocus =
                 (startInputFlags & StartInputFlags.WINDOW_GAINED_FOCUS) != 0;
         final int toolType = editorInfo != null
                 ? editorInfo.getInitialToolType() : MotionEvent.TOOL_TYPE_UNKNOWN;
 
-        // Init the focused window state (e.g. whether the editor has focused or IME focus has
+        // Init the IME target window state (e.g. whether there is a focused editor or IME focus has
         // changed from another window).
-        final ImeTargetWindowState windowState = new ImeTargetWindowState(
-                softInputMode, windowFlags, !sameWindowFocused, isTextEditor,
-                startInputByWinGainedFocus, toolType);
+        final var targetWindowState = new ImeTargetWindowState(softInputMode, windowFlags,
+                !sameWindowFocused /* imeFocusChanged */, isTextEditor /* hasFocusedEditor */,
+                isStartInputByWindowGainFocus, toolType);
         final var visibilityStateComputer = userData.mVisibilityStateComputer;
-        visibilityStateComputer.setWindowState(windowToken, windowState);
+        visibilityStateComputer.setWindowState(windowToken, targetWindowState);
 
         if (sameWindowFocused && isTextEditor) {
             ProtoLog.v(IMMS_DEBUG,
@@ -3960,8 +3972,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     null, null, null, null, -1, false);
         }
 
-        userData.mImeBindingState = new ImeBindingState(bindingController.getUserId(), windowToken,
-                softInputMode, cs, editorInfo);
+        userData.mImeBindingState = new ImeBindingState(bindingController.getUserId(),
+                windowToken /* focusedWindow */, softInputMode, cs, editorInfo);
         mFocusedWindowPerceptible.put(windowToken, true);
 
         // We want to start input before showing the IME, but after closing
@@ -3971,11 +3983,12 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         boolean didStart = false;
         InputBindResult res = null;
 
-        final ImeVisibilityResult imeVisRes = visibilityStateComputer.computeState(windowState,
+        final ImeVisibilityResult imeVisRes = visibilityStateComputer.computeState(
+                targetWindowState,
                 isSoftInputModeStateVisibleAllowed(unverifiedTargetSdkVersion, startInputFlags),
                 imeRequestedVisible);
         if (imeVisRes != null) {
-            boolean isShow = false;
+            final boolean isShow;
             switch (imeVisRes.getReason()) {
                 case SoftInputShowHideReason.SHOW_RESTORE_IME_VISIBILITY:
                 case SoftInputShowHideReason.SHOW_AUTO_EDITOR_FORWARD_NAV:
@@ -3990,6 +4003,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                                 imeDispatcher, bindingController);
                         didStart = true;
                     }
+                    break;
+                default:
+                    isShow = false;
                     break;
             }
             final var statsToken = createStatsTokenForFocusedClient(isShow, imeVisRes.getReason(),

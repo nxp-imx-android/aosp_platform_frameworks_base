@@ -1117,7 +1117,8 @@ public final class InputMethodManager {
 
     private boolean startInputOnWindowFocusGainInternal(@StartInputReason int startInputReason,
             View focusedView, @StartInputFlags int startInputFlags,
-            @SoftInputModeFlags int softInputMode, int windowFlags) {
+            @SoftInputModeFlags int softInputMode,
+            @WindowManager.LayoutParams.Flags int windowFlags) {
         synchronized (mH) {
             mCurrentEditorInfo = null;
             mCompletions = null;
@@ -3400,7 +3401,8 @@ public final class InputMethodManager {
     @RequiresPermission(value = Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)
     private boolean startInputInner(@StartInputReason int startInputReason,
             @Nullable IBinder windowGainingFocus, @StartInputFlags int startInputFlags,
-            @SoftInputModeFlags int softInputMode, int windowFlags) {
+            @SoftInputModeFlags int softInputMode,
+            @WindowManager.LayoutParams.Flags int windowFlags) {
         final View view;
         synchronized (mH) {
             view = getServedViewLocked();
@@ -3673,7 +3675,7 @@ public final class InputMethodManager {
             @StartInputFlags int startInputFlags,
             @StartInputReason int startInputReason,
             @SoftInputModeFlags int softInputMode,
-            int windowFlags) {
+            @WindowManager.LayoutParams.Flags int windowFlags) {
         return (startInputFlags & StartInputFlags.WINDOW_GAINED_FOCUS) == 0
                 && (startInputFlags & StartInputFlags.IS_TEXT_EDITOR) == 0
                 && previousViewFocusParameters != null

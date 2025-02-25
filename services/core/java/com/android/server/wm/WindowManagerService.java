@@ -8118,15 +8118,13 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
-        public void updateInputMethodTargetWindow(@NonNull IBinder imeTargetWindowToken) {
+        public void updateImeTargetWindow(@NonNull IBinder windowToken) {
             // TODO (b/34628091): Use this method to address the window animation issue.
             if (DEBUG_INPUT_METHOD) {
-                Slog.w(TAG_WM, "updateInputMethodTargetWindow:"
-                        + " imeTargetWindowToken=" + imeTargetWindowToken);
+                Slog.w(TAG_WM, "updateImeTargetWindow windowToken: " + windowToken);
             }
             synchronized (mGlobalLock) {
-                final InputTarget imeInputTarget =
-                        getInputTargetFromWindowTokenLocked(imeTargetWindowToken);
+                final InputTarget imeInputTarget = getInputTargetFromWindowTokenLocked(windowToken);
                 if (imeInputTarget != null) {
                     imeInputTarget.getDisplayContent()
                             .updateImeInputAndControlTarget(imeInputTarget);
@@ -8255,8 +8253,8 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
-        public @ImeClientFocusResult int hasInputMethodClientFocus(IBinder windowToken,
-                int uid, int pid, int displayId) {
+        @ImeClientFocusResult
+        public int hasInputMethodClientFocus(IBinder windowToken, int uid, int pid, int displayId) {
             if (displayId == Display.INVALID_DISPLAY) {
                 return ImeClientFocusResult.INVALID_DISPLAY_ID;
             }
