@@ -80,7 +80,7 @@ class PresentationController implements DisplayManager.DisplayListener {
         return mPresentations.contains(displayId);
     }
 
-    private boolean isPresentationVisible(int displayId) {
+    boolean isPresentationVisible(int displayId) {
         final Presentation presentation = mPresentations.get(displayId);
         return presentation != null && presentation.mWin.mToken.isVisibleRequested();
     }
