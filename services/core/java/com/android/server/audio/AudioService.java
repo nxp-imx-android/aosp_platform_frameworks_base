@@ -11407,7 +11407,7 @@ public class AudioService extends IAudioService.Stub
 
     /** see {@link AudioManager#getFocusDuckedUidsForTest()} */
     @Override
-    @EnforcePermission("android.permission.QUERY_AUDIO_STATE")
+    @EnforcePermission(QUERY_AUDIO_STATE)
     public @NonNull List<Integer> getFocusDuckedUidsForTest() {
         super.getFocusDuckedUidsForTest_enforcePermission();
         return mPlaybackMonitor.getFocusDuckedUids();
@@ -11434,7 +11434,7 @@ public class AudioService extends IAudioService.Stub
      * @see AudioManager#getFocusFadeOutDurationForTest()
      * @return the fade out duration, in ms
      */
-    @EnforcePermission("android.permission.QUERY_AUDIO_STATE")
+    @EnforcePermission(QUERY_AUDIO_STATE)
     public long getFocusFadeOutDurationForTest() {
         super.getFocusFadeOutDurationForTest_enforcePermission();
         return mMediaFocusControl.getFocusFadeOutDurationForTest();
@@ -11447,7 +11447,7 @@ public class AudioService extends IAudioService.Stub
      * @return the time gap after a fade out completion on focus loss, and fade in start, in ms
      */
     @Override
-    @EnforcePermission("android.permission.QUERY_AUDIO_STATE")
+    @EnforcePermission(QUERY_AUDIO_STATE)
     public long getFocusUnmuteDelayAfterFadeOutForTest() {
         super.getFocusUnmuteDelayAfterFadeOutForTest_enforcePermission();
         return mMediaFocusControl.getFocusUnmuteDelayAfterFadeOutForTest();
