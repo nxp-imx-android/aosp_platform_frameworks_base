@@ -23,13 +23,8 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.data.repository.DisplayRepository
-import com.android.systemui.display.data.repository.DisplayScopeRepository
 import com.android.systemui.statusbar.data.repository.LightBarControllerStore
 import com.android.systemui.statusbar.data.repository.PrivacyDotWindowControllerStore
-import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
-import com.android.systemui.statusbar.phone.AutoHideControllerStore
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
-import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStateRepositoryStore
 import com.android.systemui.util.kotlin.pairwiseBy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -44,15 +39,9 @@ class MultiDisplayStatusBarStarter
 @Inject
 constructor(
     @Application private val applicationScope: CoroutineScope,
-    private val displayScopeRepository: DisplayScopeRepository,
-    private val statusBarOrchestratorFactory: StatusBarOrchestrator.Factory,
-    private val statusBarWindowStateRepositoryStore: StatusBarWindowStateRepositoryStore,
-    private val statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
+    private val multiDisplayStatusBarOrchestratorStore: MultiDisplayStatusBarOrchestratorStore,
     private val displayRepository: DisplayRepository,
-    private val initializerStore: StatusBarInitializerStore,
-    private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     private val statusBarInitializerStore: StatusBarInitializerStore,
-    private val autoHideControllerStore: AutoHideControllerStore,
     private val privacyDotWindowControllerStore: PrivacyDotWindowControllerStore,
     private val lightBarControllerStore: LightBarControllerStore,
     private val windowManager: IWindowManager,
@@ -74,15 +63,14 @@ constructor(
                         // TODO(b/393191204): Split navbar, status bar, etc. functionality
                         // from WindowManager#shouldShowSystemDecors.
                         if (windowManager.shouldShowSystemDecors(it.displayId)) {
-                            createAndStartComponentsForDisplay(it)
+                            createAndStartComponentsForDisplay(it.displayId)
                         }
                     }
                 }
         }
     }
 
-    private fun createAndStartComponentsForDisplay(display: Display) {
-        val displayId = display.displayId
+    private fun createAndStartComponentsForDisplay(displayId: Int) {
         createAndStartOrchestratorForDisplay(displayId)
         createAndStartInitializerForDisplay(displayId)
         startPrivacyDotForDisplay(displayId)
@@ -97,22 +85,7 @@ constructor(
     }
 
     private fun createAndStartOrchestratorForDisplay(displayId: Int) {
-        val statusBarModeRepository = statusBarModeRepositoryStore.forDisplay(displayId) ?: return
-        val statusBarInitializer = initializerStore.forDisplay(displayId) ?: return
-        val statusBarWindowController =
-            statusBarWindowControllerStore.forDisplay(displayId) ?: return
-        val autoHideController = autoHideControllerStore.forDisplay(displayId) ?: return
-        statusBarOrchestratorFactory
-            .create(
-                displayId,
-                displayScopeRepository.scopeForDisplay(displayId),
-                statusBarWindowStateRepositoryStore.forDisplay(displayId),
-                statusBarModeRepository,
-                statusBarInitializer,
-                statusBarWindowController,
-                autoHideController,
-            )
-            .start()
+        multiDisplayStatusBarOrchestratorStore.forDisplay(displayId)?.start()
     }
 
     private fun createAndStartInitializerForDisplay(displayId: Int) {

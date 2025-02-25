@@ -77,6 +77,10 @@ constructor(
     }
 
     override val instanceClass = PrivacyDotWindowController::class.java
+
+    override suspend fun onDisplayRemovalAction(instance: PrivacyDotWindowController) {
+        instance.stop()
+    }
 }
 
 @Module
