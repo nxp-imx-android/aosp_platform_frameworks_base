@@ -59,6 +59,7 @@ class ClockSizeTransition(
             addTransition(ClockFaceOutTransition(config, clockViewModel, logBuffer))
             addTransition(ClockFaceInTransition(config, clockViewModel, logBuffer))
         }
+
         addTransition(SmartspaceMoveTransition(config, clockViewModel, logBuffer))
     }
 
@@ -210,7 +211,6 @@ class ClockSizeTransition(
                         str3 = "$bounds"
                     }
                 }
-
                 to.view.setVisibility(vis ?: View.VISIBLE)
                 to.view.setAlpha(alpha)
                 to.view.setRect(bounds)
@@ -297,9 +297,17 @@ class ClockSizeTransition(
                         logger.e("No large clock set, falling back")
                         addTarget(customR.id.lockscreen_clock_view_large)
                     }
+                if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                    addTarget(sharedR.id.date_smartspace_view_large)
+                    addTarget(sharedR.id.weather_smartspace_view_large)
+                }
             } else {
                 logger.i("Adding small clock")
                 addTarget(customR.id.lockscreen_clock_view)
+                if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                    addTarget(sharedR.id.date_smartspace_view)
+                    addTarget(sharedR.id.weather_smartspace_view)
+                }
             }
         }
 
@@ -378,7 +386,9 @@ class ClockSizeTransition(
             duration =
                 if (isLargeClock) STATUS_AREA_MOVE_UP_MILLIS else STATUS_AREA_MOVE_DOWN_MILLIS
             interpolator = Interpolators.EMPHASIZED
-            addTarget(sharedR.id.date_smartspace_view)
+            if (!com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                addTarget(sharedR.id.date_smartspace_view)
+            }
             addTarget(sharedR.id.bc_smartspace_view)
 
             // Notifications normally and media on split shade needs to be moved

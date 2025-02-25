@@ -159,7 +159,7 @@ constructor(
             factory = { context ->
                 FrameLayout(context).apply {
                     addView(
-                        lockscreenSmartspaceController.buildAndConnectWeatherView(this).apply {
+                        lockscreenSmartspaceController.buildAndConnectWeatherView(this, false).apply {
                             layoutParams =
                                 FrameLayout.LayoutParams(
                                     FrameLayout.LayoutParams.WRAP_CONTENT,
@@ -184,7 +184,7 @@ constructor(
             factory = { context ->
                 FrameLayout(context).apply {
                     addView(
-                        lockscreenSmartspaceController.buildAndConnectDateView(this).apply {
+                        lockscreenSmartspaceController.buildAndConnectDateView(this, false).apply {
                             layoutParams =
                                 FrameLayout.LayoutParams(
                                     FrameLayout.LayoutParams.WRAP_CONTENT,

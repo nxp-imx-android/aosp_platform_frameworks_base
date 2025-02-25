@@ -23,6 +23,7 @@ import android.transition.TransitionValues
 import android.view.ViewGroup
 import com.android.app.animation.Interpolators
 import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.shared.R as sharedR
 
 class DefaultClockSteppingTransition(
     private val clock: ClockController,
@@ -31,6 +32,10 @@ class DefaultClockSteppingTransition(
         interpolator = Interpolators.LINEAR
         duration = KEYGUARD_STATUS_VIEW_CUSTOM_CLOCK_MOVE_DURATION_MS
         addTarget(clock.largeClock.view)
+        if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+            addTarget(sharedR.id.date_smartspace_view_large)
+            addTarget(sharedR.id.weather_smartspace_view_large)
+        }
     }
 
     private fun captureValues(transitionValues: TransitionValues) {
