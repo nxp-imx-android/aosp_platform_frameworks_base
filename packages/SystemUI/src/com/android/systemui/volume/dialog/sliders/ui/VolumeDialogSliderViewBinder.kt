@@ -29,18 +29,13 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.SliderState
-import androidx.compose.material3.VerticalSlider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -49,16 +44,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.theme.PlatformTheme
 import com.android.compose.ui.graphics.painter.DrawablePainter
+import com.android.systemui.haptics.slider.SliderHapticFeedbackFilter
 import com.android.systemui.haptics.slider.compose.ui.SliderHapticsViewModel
-import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.volume.dialog.sliders.dagger.VolumeDialogSliderScope
 import com.android.systemui.volume.dialog.sliders.ui.compose.VolumeDialogSliderTrack
 import com.android.systemui.volume.dialog.sliders.ui.viewmodel.VolumeDialogOverscrollViewModel
 import com.android.systemui.volume.dialog.sliders.ui.viewmodel.VolumeDialogSliderViewModel
-import com.android.systemui.volume.haptics.ui.VolumeHapticsConfigsProvider
+import com.android.systemui.volume.ui.slider.AccessibilityParams
+import com.android.systemui.volume.ui.slider.Haptics
+import com.android.systemui.volume.ui.slider.Slider
 import javax.inject.Inject
-import kotlin.math.round
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
@@ -90,7 +86,7 @@ constructor(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun VolumeDialogSlider(
     viewModel: VolumeDialogSliderViewModel,
@@ -108,59 +104,8 @@ private fun VolumeDialogSlider(
         )
     val collectedSliderStateModel by viewModel.state.collectAsStateWithLifecycle(null)
     val sliderStateModel = collectedSliderStateModel ?: return
-
-    val steps = with(sliderStateModel.valueRange) { endInclusive - start - 1 }.toInt()
-
     val interactionSource = remember { MutableInteractionSource() }
-    val hapticsViewModel: SliderHapticsViewModel? =
-        hapticsViewModelFactory?.let {
-            rememberViewModel(traceName = "SliderHapticsViewModel") {
-                it.create(
-                    interactionSource,
-                    sliderStateModel.valueRange,
-                    Orientation.Vertical,
-                    VolumeHapticsConfigsProvider.sliderHapticFeedbackConfig(
-                        sliderStateModel.valueRange
-                    ),
-                    VolumeHapticsConfigsProvider.seekableSliderTrackerConfig,
-                )
-            }
-        }
 
-    val sliderState =
-        remember(steps, sliderStateModel.valueRange) {
-            SliderState(
-                    value = sliderStateModel.value,
-                    valueRange = sliderStateModel.valueRange,
-                    steps = steps,
-                )
-                .also { sliderState ->
-                    sliderState.onValueChangeFinished = {
-                        viewModel.onSliderChangeFinished(sliderState.value)
-                        hapticsViewModel?.onValueChangeEnded()
-                    }
-                    sliderState.onValueChange = { newValue ->
-                        sliderState.value = newValue
-                        hapticsViewModel?.addVelocityDataPoint(newValue)
-                        overscrollViewModel.setSlider(
-                            value = sliderState.value,
-                            min = sliderState.valueRange.start,
-                            max = sliderState.valueRange.endInclusive,
-                        )
-                        viewModel.setStreamVolume(newValue, true)
-                    }
-                }
-        }
-
-    var lastDiscreteStep by remember { mutableFloatStateOf(round(sliderStateModel.value)) }
-    LaunchedEffect(sliderStateModel.value) {
-        val value = sliderStateModel.value
-        sliderState.value = value
-        if (value != lastDiscreteStep) {
-            lastDiscreteStep = value
-            hapticsViewModel?.onValueChange(value)
-        }
-    }
     LaunchedEffect(interactionSource) {
         interactionSource.interactions.collect {
             when (it) {
@@ -171,24 +116,33 @@ private fun VolumeDialogSlider(
         }
     }
 
-    VerticalSlider(
-        state = sliderState,
-        enabled = !sliderStateModel.isDisabled,
-        reverseDirection = true,
+    Slider(
+        value = sliderStateModel.value,
+        valueRange = sliderStateModel.valueRange,
+        onValueChanged = { value ->
+            overscrollViewModel.setSlider(
+                value = value,
+                min = sliderStateModel.valueRange.start,
+                max = sliderStateModel.valueRange.endInclusive,
+            )
+            viewModel.setStreamVolume(value, true)
+        },
+        onValueChangeFinished = { viewModel.onSliderChangeFinished(it) },
+        isEnabled = !sliderStateModel.isDisabled,
+        isReverseDirection = true,
+        isVertical = true,
         colors = colors,
         interactionSource = interactionSource,
-        modifier =
-            modifier.pointerInput(Unit) {
-                coroutineScope {
-                    val currentContext = currentCoroutineContext()
-                    awaitPointerEventScope {
-                        while (currentContext.isActive) {
-                            viewModel.onTouchEvent(awaitPointerEvent())
-                        }
-                    }
-                }
-            },
-        track = {
+        haptics =
+            hapticsViewModelFactory?.let {
+                Haptics.Enabled(
+                    hapticsViewModelFactory = it,
+                    hapticFilter = SliderHapticFeedbackFilter(),
+                    orientation = Orientation.Vertical,
+                )
+            } ?: Haptics.Disabled,
+        stepDistance = 1f,
+        track = { sliderState ->
             VolumeDialogSliderTrack(
                 sliderState,
                 colors = colors,
@@ -201,6 +155,19 @@ private fun VolumeDialogSlider(
                 },
             )
         },
+        accessibilityParams =
+            AccessibilityParams(label = "", currentStateDescription = "", disabledMessage = ""),
+        modifier =
+            modifier.pointerInput(Unit) {
+                coroutineScope {
+                    val currentContext = currentCoroutineContext()
+                    awaitPointerEventScope {
+                        while (currentContext.isActive) {
+                            viewModel.onTouchEvent(awaitPointerEvent())
+                        }
+                    }
+                }
+            },
     )
 }
 

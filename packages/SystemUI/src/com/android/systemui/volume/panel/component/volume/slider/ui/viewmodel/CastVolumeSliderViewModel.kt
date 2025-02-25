@@ -86,7 +86,7 @@ constructor(
             icon = Icon.Resource(R.drawable.ic_cast, null),
             label = context.getString(R.string.media_device_cast),
             isEnabled = true,
-            a11yStep = 1,
+            a11yStep = 1f,
         )
     }
 
@@ -96,7 +96,7 @@ constructor(
         override val icon: Icon,
         override val label: String,
         override val isEnabled: Boolean,
-        override val a11yStep: Int,
+        override val a11yStep: Float,
     ) : SliderState {
         override val hapticFilter: SliderHapticFeedbackFilter
             get() = SliderHapticFeedbackFilter()

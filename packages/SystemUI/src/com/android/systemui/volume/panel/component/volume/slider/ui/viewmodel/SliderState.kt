@@ -36,7 +36,7 @@ sealed interface SliderState {
      * A11y slider controls works by adjusting one step up or down. The default slider step isn't
      * enough to trigger rounding to the correct value.
      */
-    val a11yStep: Int
+    val a11yStep: Float
     val a11yClickDescription: String?
     val a11yStateDescription: String?
     val disabledMessage: String?
@@ -49,7 +49,7 @@ sealed interface SliderState {
         override val icon: Icon? = null
         override val label: String = ""
         override val disabledMessage: String? = null
-        override val a11yStep: Int = 0
+        override val a11yStep: Float = 0f
         override val a11yClickDescription: String? = null
         override val a11yStateDescription: String? = null
         override val isEnabled: Boolean = true
