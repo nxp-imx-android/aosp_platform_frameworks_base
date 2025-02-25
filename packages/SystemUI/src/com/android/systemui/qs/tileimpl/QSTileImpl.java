@@ -74,6 +74,8 @@ import com.android.systemui.qs.logging.QSLogger;
 
 import java.io.PrintWriter;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Base quick-settings tile, extend this to create a new tile.
@@ -127,6 +129,8 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
     private int mIsFullQs;
 
     private final LifecycleRegistry mLifecycle = new LifecycleRegistry(this);
+    private final AtomicBoolean mIsDestroyed = new AtomicBoolean(false);
+    private final AtomicInteger mCurrentTileUser = new AtomicInteger();
 
     /**
      * Provides a new {@link TState} of the appropriate type to use between this tile and the
@@ -203,6 +207,7 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
         mMetricsLogger = metricsLogger;
         mStatusBarStateController = statusBarStateController;
         mActivityStarter = activityStarter;
+        mCurrentTileUser.set(host.getUserId());
 
         resetStates();
         mUiHandler.post(() -> mLifecycle.setCurrentState(CREATED));
@@ -352,11 +357,19 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
     }
 
     public void userSwitch(int newUserId) {
+        mCurrentTileUser.set(newUserId);
         mHandler.obtainMessage(H.USER_SWITCH, newUserId, 0).sendToTarget();
         postStale();
     }
 
+    @Override
+    public int getCurrentTileUser() {
+        return mCurrentTileUser.get();
+    }
+
     public void destroy() {
+        // We mark it as soon as we start the destroy process, as nothing can interrupt it.
+        mIsDestroyed.set(true);
         mHandler.sendEmptyMessage(H.DESTROY);
     }
 
@@ -365,7 +378,7 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
      *
      * Should be called upon creation of the tile, before performing other operations
      */
-    public void initialize() {
+    public final void initialize() {
         mHandler.sendEmptyMessage(H.INITIALIZE);
     }
 
@@ -523,6 +536,11 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
         mUiHandler.post(() -> {
             mLifecycle.setCurrentState(DESTROYED);
         });
+    }
+
+    @Override
+    public final boolean isDestroyed() {
+        return mIsDestroyed.get();
     }
 
     protected void checkIfRestrictionEnforcedByAdminOnly(State state, String userRestriction) {
@@ -799,7 +817,7 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
      */
     @Override
     public void dump(PrintWriter pw, String[] args) {
-        pw.println(this.getClass().getSimpleName() + ":");
+        pw.print(this.getClass().getSimpleName() + ":");
         pw.print("    "); pw.println(getState().toString());
     }
 }

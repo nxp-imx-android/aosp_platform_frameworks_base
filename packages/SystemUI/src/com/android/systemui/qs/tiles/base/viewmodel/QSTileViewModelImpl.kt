@@ -97,6 +97,9 @@ class QSTileViewModelImpl<DATA_TYPE>(
 
     private val tileData: SharedFlow<DATA_TYPE?> = createTileDataFlow()
 
+    override val currentTileUser: Int
+        get() = users.value.identifier
+
     override val state: StateFlow<QSTileState?> =
         tileData
             .map { data ->
