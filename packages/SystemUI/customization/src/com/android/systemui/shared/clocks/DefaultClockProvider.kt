@@ -28,6 +28,7 @@ import com.android.systemui.plugins.clocks.ClockMetadata
 import com.android.systemui.plugins.clocks.ClockPickerConfig
 import com.android.systemui.plugins.clocks.ClockProvider
 import com.android.systemui.plugins.clocks.ClockSettings
+import com.android.systemui.shared.clocks.FlexClockController.Companion.AXIS_PRESETS
 import com.android.systemui.shared.clocks.FlexClockController.Companion.getDefaultAxes
 
 private val TAG = DefaultClockProvider::class.simpleName
@@ -98,16 +99,16 @@ class DefaultClockProvider(
             throw IllegalArgumentException("${settings.clockId} is unsupported by $TAG")
         }
 
-        val fontAxes =
-            if (!isClockReactiveVariantsEnabled) listOf()
-            else getDefaultAxes(settings).merge(settings.axes)
         return ClockPickerConfig(
             settings.clockId ?: DEFAULT_CLOCK_ID,
             resources.getString(R.string.clock_default_name),
             resources.getString(R.string.clock_default_description),
             resources.getDrawable(R.drawable.clock_default_thumbnail, null),
             isReactiveToTone = true,
-            axes = fontAxes,
+            axes =
+                if (!isClockReactiveVariantsEnabled) emptyList()
+                else getDefaultAxes(settings).merge(settings.axes),
+            axisPresets = if (!isClockReactiveVariantsEnabled) emptyList() else AXIS_PRESETS,
         )
     }
 
