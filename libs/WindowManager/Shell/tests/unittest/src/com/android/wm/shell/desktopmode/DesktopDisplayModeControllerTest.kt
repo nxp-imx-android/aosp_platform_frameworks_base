@@ -22,6 +22,8 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.content.ContentResolver
 import android.os.Binder
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS
 import android.testing.AndroidTestingRunner
@@ -32,6 +34,7 @@ import android.window.DisplayAreaInfo
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.never
+import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
@@ -139,6 +142,17 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
+    fun displayWindowingModeSwitchOnDisplayConnected_fullscreenDisplay_flagDisabled() {
+        testDisplayWindowingModeSwitch(
+            defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            extendedDisplayEnabled = true,
+            expectToSwitch = false,
+        )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
     fun displayWindowingModeSwitchOnDisplayConnected_extendedDisplayDisabled() {
         testDisplayWindowingModeSwitch(
             defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
@@ -148,6 +162,7 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
     fun displayWindowingModeSwitchOnDisplayConnected_fullscreenDisplay() {
         testDisplayWindowingModeSwitch(
             defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
@@ -157,6 +172,7 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
     fun displayWindowingModeSwitchOnDisplayConnected_freeformDisplay() {
         testDisplayWindowingModeSwitch(
             defaultWindowingMode = WINDOWING_MODE_FREEFORM,
@@ -166,6 +182,7 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
     fun displayWindowingModeSwitch_existingTasksOnConnected() {
         defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
         whenever(mockWindowManager.getWindowingMode(anyInt())).thenReturn(WINDOWING_MODE_FULLSCREEN)
@@ -184,6 +201,7 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
     fun displayWindowingModeSwitch_existingTasksOnDisconnected() {
         defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
         whenever(mockWindowManager.getWindowingMode(anyInt())).thenAnswer {
