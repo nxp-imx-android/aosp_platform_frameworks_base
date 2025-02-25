@@ -2636,7 +2636,7 @@ public class ZenModeConfig implements Parcelable {
             enabled = source.readInt() == 1;
             snoozing = source.readInt() == 1;
             if (source.readInt() == 1) {
-                name = source.readString();
+                name = source.readString8();
             }
             zenMode = source.readInt();
             conditionId = source.readParcelable(null, android.net.Uri.class);
@@ -2644,18 +2644,18 @@ public class ZenModeConfig implements Parcelable {
             component = source.readParcelable(null, android.content.ComponentName.class);
             configurationActivity = source.readParcelable(null, android.content.ComponentName.class);
             if (source.readInt() == 1) {
-                id = source.readString();
+                id = source.readString8();
             }
             creationTime = source.readLong();
             if (source.readInt() == 1) {
-                enabler = source.readString();
+                enabler = source.readString8();
             }
             zenPolicy = source.readParcelable(null, android.service.notification.ZenPolicy.class);
             zenDeviceEffects = source.readParcelable(null, ZenDeviceEffects.class);
-            pkg = source.readString();
+            pkg = source.readString8();
             allowManualInvocation = source.readBoolean();
-            iconResName = source.readString();
-            triggerDescription = source.readString();
+            iconResName = source.readString8();
+            triggerDescription = source.readString8();
             type = source.readInt();
             userModifiedFields = source.readInt();
             zenPolicyUserModifiedFields = source.readInt();
@@ -2703,7 +2703,7 @@ public class ZenModeConfig implements Parcelable {
             dest.writeInt(snoozing ? 1 : 0);
             if (name != null) {
                 dest.writeInt(1);
-                dest.writeString(name);
+                dest.writeString8(name);
             } else {
                 dest.writeInt(0);
             }
@@ -2714,23 +2714,23 @@ public class ZenModeConfig implements Parcelable {
             dest.writeParcelable(configurationActivity, 0);
             if (id != null) {
                 dest.writeInt(1);
-                dest.writeString(id);
+                dest.writeString8(id);
             } else {
                 dest.writeInt(0);
             }
             dest.writeLong(creationTime);
             if (enabler != null) {
                 dest.writeInt(1);
-                dest.writeString(enabler);
+                dest.writeString8(enabler);
             } else {
                 dest.writeInt(0);
             }
             dest.writeParcelable(zenPolicy, 0);
             dest.writeParcelable(zenDeviceEffects, 0);
-            dest.writeString(pkg);
+            dest.writeString8(pkg);
             dest.writeBoolean(allowManualInvocation);
-            dest.writeString(iconResName);
-            dest.writeString(triggerDescription);
+            dest.writeString8(iconResName);
+            dest.writeString8(triggerDescription);
             dest.writeInt(type);
             dest.writeInt(userModifiedFields);
             dest.writeInt(zenPolicyUserModifiedFields);
