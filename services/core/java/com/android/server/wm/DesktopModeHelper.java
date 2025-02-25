@@ -79,7 +79,7 @@ public final class DesktopModeHelper {
     }
 
     @VisibleForTesting
-    static boolean isDeviceEligibleForDesktopMode(@NonNull Context context) {
+    public static boolean isDeviceEligibleForDesktopMode(@NonNull Context context) {
         if (!shouldEnforceDeviceRestrictions()) {
             return true;
         }
