@@ -1317,25 +1317,23 @@ class DesktopTasksController(
             applyFreeformDisplayChange(wct, task, displayId)
         }
 
-        val activationRunnable: RunOnTransitStart?
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksOrganizer.moveTaskToDesk(wct, destinationDeskId, task)
-            prepareForDeskActivation(displayId, wct)
-            desksOrganizer.activateDesk(wct, destinationDeskId)
-            activationRunnable = { transition ->
-                desksTransitionObserver.addPendingTransition(
-                    DeskTransition.ActiveDeskWithTask(
-                        token = transition,
-                        displayId = displayId,
-                        deskId = destinationDeskId,
-                        enterTaskId = task.taskId,
-                    )
-                )
-            }
         } else {
             wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
-            activationRunnable = null
         }
+        addDeskActivationChanges(destinationDeskId, wct)
+        val activationRunnable: RunOnTransitStart = { transition ->
+            desksTransitionObserver.addPendingTransition(
+                DeskTransition.ActiveDeskWithTask(
+                    token = transition,
+                    displayId = displayId,
+                    deskId = destinationDeskId,
+                    enterTaskId = task.taskId,
+                )
+            )
+        }
+
         if (Flags.enableDisplayFocusInShellTransitions()) {
             // Bring the destination display to top with includingParents=true, so that the
             // destination display gains the display focus, which makes the top task in the display

@@ -2781,6 +2781,73 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveToNextDisplay_toDesktopInOtherDisplay_bringsExistingTasksToFront() {
+        val transition = Binder()
+        val sourceDeskId = 0
+        val targetDeskId = 2
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = targetDeskId)
+        taskRepository.setDeskInactive(deskId = targetDeskId)
+        // Set up two display ids
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+        // Create a mock for the target display area: second display
+        val secondDisplayArea = DisplayAreaInfo(MockToken().token(), SECOND_DISPLAY, 0)
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(SECOND_DISPLAY))
+            .thenReturn(secondDisplayArea)
+        whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+            .thenReturn(transition)
+        val task1 = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = sourceDeskId)
+        val task2 = setUpFreeformTask(displayId = SECOND_DISPLAY, deskId = targetDeskId)
+
+        controller.moveToNextDisplay(task1.taskId)
+
+        // Existing desktop task in the target display is moved to front.
+        val wct = getLatestTransition()
+        wct.assertReorder(task2.token, /* toTop= */ true)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
+        Flags.FLAG_ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+    )
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveToNextDisplay_toDesktopInOtherDisplay_movesHomeAndWallpaperToFront() {
+        val homeTask = setUpHomeTask(displayId = SECOND_DISPLAY)
+        whenever(desktopWallpaperActivityTokenProvider.getToken(SECOND_DISPLAY))
+            .thenReturn(wallpaperToken)
+        val transition = Binder()
+        val sourceDeskId = 0
+        val targetDeskId = 2
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = targetDeskId)
+        taskRepository.setDeskInactive(deskId = targetDeskId)
+        // Set up two display ids
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+        // Create a mock for the target display area: second display
+        val secondDisplayArea = DisplayAreaInfo(MockToken().token(), SECOND_DISPLAY, 0)
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(SECOND_DISPLAY))
+            .thenReturn(secondDisplayArea)
+        whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+            .thenReturn(transition)
+        val task1 = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = sourceDeskId)
+
+        controller.moveToNextDisplay(task1.taskId)
+
+        // Home / Wallpaper should be moved to front as the background of desktop tasks, otherwise
+        // fullscreen (non-desktop) tasks could remain visible.
+        val wct = getLatestTransition()
+        val homeReorderIndex = wct.indexOfReorder(homeTask, toTop = true)
+        val wallpaperReorderIndex = wct.indexOfReorder(wallpaperToken, toTop = true)
+        assertThat(homeReorderIndex).isNotEqualTo(-1)
+        assertThat(wallpaperReorderIndex).isNotEqualTo(-1)
+        // Wallpaper last, to be in front of Home.
+        assertThat(wallpaperReorderIndex).isGreaterThan(homeReorderIndex)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToNextDisplay_toDeskInOtherDisplay_movesToDeskAndActivates() {
         val transition = Binder()
@@ -2851,6 +2918,35 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .addPendingTransition(
                 DeskTransition.DeactivateDesk(token = transition, deskId = sourceDeskId)
             )
+    }
+
+    @Test
+    fun moveToNextDisplay_movingToDesktop_sendsTaskbarRoundingUpdate() {
+        val transition = Binder()
+        val sourceDeskId = 1
+        val targetDeskId = 2
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = targetDeskId)
+        taskRepository.setDeskInactive(deskId = targetDeskId)
+        // Set up two display ids
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+        // Create a mock for the target display area: second display
+        val secondDisplayArea = DisplayAreaInfo(MockToken().token(), SECOND_DISPLAY, 0)
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(SECOND_DISPLAY))
+            .thenReturn(secondDisplayArea)
+        whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+            .thenReturn(transition)
+
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = sourceDeskId)
+        taskRepository.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = sourceDeskId,
+            taskId = task.taskId,
+            isVisible = true,
+        )
+        controller.moveToNextDisplay(task.taskId)
+
+        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean())
     }
 
     @Test
@@ -6783,6 +6879,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val arg = argumentCaptor<WindowContainerTransaction>()
         verify(desktopMixedTransitionHandler)
             .startLaunchTransition(eq(type), arg.capture(), anyOrNull(), anyOrNull(), anyOrNull())
+        return arg.lastValue
+    }
+
+    private fun getLatestTransition(): WindowContainerTransaction {
+        val arg = argumentCaptor<WindowContainerTransaction>()
+        verify(transitions).startTransition(any(), arg.capture(), anyOrNull())
         return arg.lastValue
     }
 
