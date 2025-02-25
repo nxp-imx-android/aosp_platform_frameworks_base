@@ -30,6 +30,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.FlakyTest
 import androidx.test.filters.SmallTest
+import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
@@ -55,19 +56,21 @@ class DragAndDropTest : SysuiTestCase() {
         listState: EditTileListState,
         onSetTiles: (List<TileSpec>) -> Unit,
     ) {
-        DefaultEditTileGrid(
-            listState = listState,
-            otherTiles = listOf(),
-            columns = 4,
-            largeTilesSpan = 4,
-            modifier = Modifier.fillMaxSize(),
-            onAddTile = {},
-            onRemoveTile = {},
-            onSetTiles = onSetTiles,
-            onResize = { _, _ -> },
-            onStopEditing = {},
-            onReset = null,
-        )
+        PlatformTheme {
+            DefaultEditTileGrid(
+                listState = listState,
+                otherTiles = listOf(),
+                columns = 4,
+                largeTilesSpan = 4,
+                modifier = Modifier.fillMaxSize(),
+                onAddTile = {},
+                onRemoveTile = {},
+                onSetTiles = onSetTiles,
+                onResize = { _, _ -> },
+                onStopEditing = {},
+                onReset = null,
+            )
+        }
     }
 
     @Test

@@ -18,7 +18,6 @@ package com.android.systemui.qs.composefragment
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Configuration
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Bundle
@@ -49,7 +48,6 @@ import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -72,8 +70,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.layout.positionOnScreen
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
@@ -255,7 +251,7 @@ constructor(
 
     @Composable
     private fun Content() {
-        PlatformTheme(isDarkTheme = true /* Delete AlwaysDarkMode when removing this */) {
+        PlatformTheme {
             ProvideShortcutHelperIndication(interactionsConfig = interactionsConfig()) {
                 // TODO(b/389985793): Make sure that there is no coroutine work or recompositions
                 // happening when alwaysCompose is true but isQsVisibleAndAnyShadeExpanded is false.
@@ -746,25 +742,22 @@ constructor(
                         )
                         val BrightnessSlider =
                             @Composable {
-                                AlwaysDarkMode {
-                                    Box(
-                                        Modifier.systemGestureExclusionInShade(
-                                            enabled = {
-                                                layoutState.transitionState is TransitionState.Idle
-                                            }
-                                        )
-                                    ) {
-                                        BrightnessSliderContainer(
-                                            viewModel =
-                                                containerViewModel.brightnessSliderViewModel,
-                                            containerColors =
-                                                ContainerColors(
-                                                    Color.Transparent,
-                                                    ContainerColors.defaultContainerColor,
-                                                ),
-                                            modifier = Modifier.fillMaxWidth(),
-                                        )
-                                    }
+                                Box(
+                                    Modifier.systemGestureExclusionInShade(
+                                        enabled = {
+                                            layoutState.transitionState is TransitionState.Idle
+                                        }
+                                    )
+                                ) {
+                                    BrightnessSliderContainer(
+                                        viewModel = containerViewModel.brightnessSliderViewModel,
+                                        containerColors =
+                                            ContainerColors(
+                                                Color.Transparent,
+                                                ContainerColors.defaultContainerColor,
+                                            ),
+                                        modifier = Modifier.fillMaxWidth(),
+                                    )
                                 }
                             }
                         val TileGrid =
@@ -1241,28 +1234,3 @@ private fun interactionsConfig() =
 
 private inline val alwaysCompose
     get() = Flags.alwaysComposeQsUiFragment()
-
-/**
- * Forces the configuration and themes to be dark theme. This is needed in order to have
- * [colorResource] retrieve the dark mode colors.
- *
- * This should be removed when we remove the force dark mode in [PlatformTheme] at the root of the
- * compose hierarchy.
- */
-@Composable
-private fun AlwaysDarkMode(content: @Composable () -> Unit) {
-    val currentConfig = LocalConfiguration.current
-    val darkConfig =
-        Configuration(currentConfig).apply {
-            uiMode =
-                (uiMode and (Configuration.UI_MODE_NIGHT_MASK.inv())) or
-                    Configuration.UI_MODE_NIGHT_YES
-        }
-    val newContext = LocalContext.current.createConfigurationContext(darkConfig)
-    CompositionLocalProvider(
-        LocalConfiguration provides darkConfig,
-        LocalContext provides newContext,
-    ) {
-        content()
-    }
-}
