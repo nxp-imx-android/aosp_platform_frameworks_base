@@ -26,7 +26,12 @@ java_defaults {
     libs: [
         "jsr330",
     ],
+    lint: {
+        extra_check_modules: ["SystemUILintChecker"],
+        warning_checks: ["MissingApacheLicenseDetector"],
+    },
     kotlincflags: [
+        "-Xexplicit-api=warning",
         "-Xjvm-default=all",
     ],
     defaults_visibility: [":__subpackages__"],
