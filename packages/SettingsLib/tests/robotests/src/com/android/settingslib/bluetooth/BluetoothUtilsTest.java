@@ -1349,6 +1349,36 @@ public class BluetoothUtilsTest {
     }
 
     @Test
+    public void isMediaDevice_returnsFalse() {
+        when(mCachedBluetoothDevice.getProfiles()).thenReturn(ImmutableList.of(mAssistant));
+        assertThat(BluetoothUtils.isMediaDevice(mCachedBluetoothDevice)).isFalse();
+    }
+
+    @Test
+    public void isMediaDevice_returnsTrue() {
+        when(mCachedBluetoothDevice.getProfiles()).thenReturn(ImmutableList.of(mLeAudioProfile));
+        assertThat(BluetoothUtils.isMediaDevice(mCachedBluetoothDevice)).isTrue();
+    }
+
+    @Test
+    public void isLeAudioSupported_returnsFalse() {
+        when(mCachedBluetoothDevice.getProfiles()).thenReturn(ImmutableList.of(mLeAudioProfile));
+        when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
+        when(mLeAudioProfile.isEnabled(mBluetoothDevice)).thenReturn(false);
+
+        assertThat(BluetoothUtils.isLeAudioSupported(mCachedBluetoothDevice)).isFalse();
+    }
+
+    @Test
+    public void isLeAudioSupported_returnsTrue() {
+        when(mCachedBluetoothDevice.getProfiles()).thenReturn(ImmutableList.of(mLeAudioProfile));
+        when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
+        when(mLeAudioProfile.isEnabled(mBluetoothDevice)).thenReturn(true);
+
+        assertThat(BluetoothUtils.isLeAudioSupported(mCachedBluetoothDevice)).isTrue();
+    }
+
+    @Test
     public void isTemporaryBondDevice_hasMetadata_returnsTrue() {
         when(mBluetoothDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
                 .thenReturn(TEMP_BOND_METADATA.getBytes());
