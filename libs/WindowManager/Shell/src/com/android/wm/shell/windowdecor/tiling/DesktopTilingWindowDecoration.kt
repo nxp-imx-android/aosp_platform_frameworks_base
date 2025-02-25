@@ -103,6 +103,7 @@ class DesktopTilingWindowDecoration(
     @VisibleForTesting
     var desktopTilingDividerWindowManager: DesktopTilingDividerWindowManager? = null
     private lateinit var dividerBounds: Rect
+    private var isDarkMode = false
     private var isResizing = false
     private var isTilingFocused = false
 
@@ -129,6 +130,7 @@ class DesktopTilingWindowDecoration(
         val isTiled = destinationBounds != taskInfo.configuration.windowConfiguration.bounds
 
         initTilingApps(resizeMetadata, position, taskInfo)
+        isDarkMode = isTaskInDarkMode(taskInfo)
         // Observe drag resizing to break tiling if a task is drag resized.
         desktopModeWindowDecoration.addDragResizeListener(this)
 
@@ -232,6 +234,7 @@ class DesktopTilingWindowDecoration(
                     transactionSupplier,
                     dividerBounds,
                     displayContext,
+                    isDarkMode,
                 )
             }
         // a leash to present the divider on top of, without re-parenting.
@@ -355,6 +358,17 @@ class DesktopTilingWindowDecoration(
         wct.setBounds(rightTiledTask.taskInfo.token, rightTiledTask.bounds)
         transitions.startTransition(TRANSIT_CHANGE, wct, this)
     }
+
+    fun onTaskInfoChange(taskInfo: RunningTaskInfo) {
+        val isCurrentTaskInDarkMode = isTaskInDarkMode(taskInfo)
+        if (isCurrentTaskInDarkMode == isDarkMode || !isTilingManagerInitialised) return
+        isDarkMode = isCurrentTaskInDarkMode
+        desktopTilingDividerWindowManager?.onUiModeChange(isDarkMode)
+    }
+
+    fun isTaskInDarkMode(taskInfo: RunningTaskInfo): Boolean =
+        (taskInfo.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+            Configuration.UI_MODE_NIGHT_YES
 
     override fun startAnimation(
         transition: IBinder,

@@ -137,6 +137,10 @@ class DesktopTilingDecorViewModel(
         }
     }
 
+    fun onTaskInfoChange(taskInfo: RunningTaskInfo) {
+        tilingTransitionHandlerByDisplayId.get(taskInfo.displayId)?.onTaskInfoChange(taskInfo)
+    }
+
     override fun onDisplayChange(
         displayId: Int,
         fromRotation: Int,
