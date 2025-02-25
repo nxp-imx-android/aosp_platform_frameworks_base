@@ -132,8 +132,8 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
                 @Nullable EditorInfo editorInfo, IRemoteInputConnection inputConnection,
                 IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
                 int unverifiedTargetSdkVersion, @UserIdInt int userId,
-                @NonNull ImeOnBackInvokedDispatcher imeDispatcher, int startInputSeq,
-                boolean useAsyncShowHideMethod);
+                @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
+                int startInputSeq, boolean useAsyncShowHideMethod);
 
         InputBindResult startInputOrWindowGainedFocus(
                 @StartInputReason int startInputReason, IInputMethodClient client,
@@ -142,7 +142,7 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
                 @Nullable EditorInfo editorInfo, IRemoteInputConnection inputConnection,
                 IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
                 int unverifiedTargetSdkVersion, @UserIdInt int userId,
-                @NonNull ImeOnBackInvokedDispatcher imeDispatcher);
+                @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible);
 
         void showInputMethodPickerFromClient(IInputMethodClient client, int auxiliarySubtypeMode);
 
@@ -324,11 +324,11 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
             IRemoteInputConnection inputConnection,
             IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher) {
+            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible) {
         return mCallback.startInputOrWindowGainedFocus(
                 startInputReason, client, windowToken, startInputFlags, softInputMode,
                 windowFlags, editorInfo, inputConnection, remoteAccessibilityInputConnection,
-                unverifiedTargetSdkVersion, userId, imeDispatcher);
+                unverifiedTargetSdkVersion, userId, imeDispatcher, imeRequestedVisible);
     }
 
     @Override
@@ -340,13 +340,13 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
             IRemoteInputConnection inputConnection,
             IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, int startInputSeq,
-            boolean useAsyncShowHideMethod) {
+            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
+            int startInputSeq, boolean useAsyncShowHideMethod) {
         mCallback.startInputOrWindowGainedFocusAsync(
                 startInputReason, client, windowToken, startInputFlags, softInputMode,
                 windowFlags, editorInfo, inputConnection, remoteAccessibilityInputConnection,
-                unverifiedTargetSdkVersion, userId, imeDispatcher, startInputSeq,
-                useAsyncShowHideMethod);
+                unverifiedTargetSdkVersion, userId, imeDispatcher, imeRequestedVisible,
+                startInputSeq, useAsyncShowHideMethod);
     }
 
     @Override

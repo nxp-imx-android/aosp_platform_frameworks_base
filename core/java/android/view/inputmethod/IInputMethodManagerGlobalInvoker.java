@@ -379,7 +379,7 @@ final class IInputMethodManagerGlobalInvoker {
             @Nullable IRemoteInputConnection remoteInputConnection,
             @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher) {
+            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible) {
         final IInputMethodManager service = getService();
         if (service == null) {
             return InputBindResult.NULL;
@@ -388,7 +388,7 @@ final class IInputMethodManagerGlobalInvoker {
             return service.startInputOrWindowGainedFocus(startInputReason, client, windowToken,
                     startInputFlags, softInputMode, windowFlags, editorInfo, remoteInputConnection,
                     remoteAccessibilityInputConnection, unverifiedTargetSdkVersion, userId,
-                    imeDispatcher);
+                    imeDispatcher, imeRequestedVisible);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -408,7 +408,8 @@ final class IInputMethodManagerGlobalInvoker {
             @Nullable IRemoteInputConnection remoteInputConnection,
             @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean useAsyncShowHideMethod) {
+            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
+            boolean useAsyncShowHideMethod) {
         final IInputMethodManager service = getService();
         if (service == null) {
             return -1;
@@ -417,7 +418,8 @@ final class IInputMethodManagerGlobalInvoker {
             service.startInputOrWindowGainedFocusAsync(startInputReason, client, windowToken,
                     startInputFlags, softInputMode, windowFlags, editorInfo, remoteInputConnection,
                     remoteAccessibilityInputConnection, unverifiedTargetSdkVersion, userId,
-                    imeDispatcher, advanceAngGetStartInputSequenceNumber(), useAsyncShowHideMethod);
+                    imeDispatcher, imeRequestedVisible, advanceAngGetStartInputSequenceNumber(),
+                    useAsyncShowHideMethod);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
