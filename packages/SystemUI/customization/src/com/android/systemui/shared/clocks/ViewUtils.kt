@@ -18,18 +18,21 @@ package com.android.systemui.shared.clocks
 
 import android.graphics.Rect
 import android.view.View
+import com.android.systemui.shared.clocks.VPoint.Companion.center
+import com.android.systemui.shared.clocks.VPointF.Companion.center
 
-fun computeLayoutDiff(
-    view: View,
-    targetRegion: Rect,
-    isLargeClock: Boolean,
-): Pair<Float, Float> {
-    val parent = view.parent
-    if (parent is View && parent.isLaidOut() && isLargeClock) {
-        return Pair(
-            targetRegion.centerX() - parent.width / 2f,
-            targetRegion.centerY() - parent.height / 2f
-        )
+object ViewUtils {
+    fun View.computeLayoutDiff(targetRegion: Rect, isLargeClock: Boolean): VPointF {
+        val parent = this.parent
+        if (parent is View && parent.isLaidOut() && isLargeClock) {
+            return targetRegion.center - parent.size / 2f
+        }
+        return VPointF.ZERO
     }
-    return Pair(0f, 0f)
+
+    val View.size: VPointF
+        get() = VPointF(width, height)
+
+    val View.measuredSize: VPointF
+        get() = VPointF(measuredWidth, measuredHeight)
 }
