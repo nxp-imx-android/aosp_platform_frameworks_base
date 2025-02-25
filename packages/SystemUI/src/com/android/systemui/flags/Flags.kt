@@ -160,9 +160,6 @@ object Flags {
     // TODO(b/291315866): Tracking Bug
     @JvmField val SIGNAL_CALLBACK_DEPRECATION = releasedFlag("signal_callback_deprecation")
 
-    // TODO(b/301610137): Tracking bug
-    @JvmField val NEW_NETWORK_SLICE_UI = releasedFlag("new_network_slice_ui")
-
     // TODO(b/311222557): Tracking bug
     val ROAMING_INDICATOR_VIA_DISPLAY_INFO = releasedFlag("roaming_indicator_via_display_info")
 

@@ -19,8 +19,6 @@ package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 import com.android.systemui.Flags.statusBarStaticInoutIndicators
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.flags.FeatureFlagsClassic
-import com.android.systemui.flags.Flags.NEW_NETWORK_SLICE_UI
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.core.NewStatusBarIcons
@@ -79,7 +77,6 @@ class MobileIconViewModel(
     iconInteractor: MobileIconInteractor,
     airplaneModeInteractor: AirplaneModeInteractor,
     constants: ConnectivityConstants,
-    flags: FeatureFlagsClassic,
     scope: CoroutineScope,
 ) : MobileIconViewModelCommon {
     private val cellProvider by lazy {
@@ -88,7 +85,6 @@ class MobileIconViewModel(
             iconInteractor,
             airplaneModeInteractor,
             constants,
-            flags,
             scope,
         )
     }
@@ -179,7 +175,6 @@ private class CellularIconViewModel(
     iconInteractor: MobileIconInteractor,
     airplaneModeInteractor: AirplaneModeInteractor,
     constants: ConnectivityConstants,
-    flags: FeatureFlagsClassic,
     scope: CoroutineScope,
 ) : MobileIconViewModelCommon {
     override val isVisible: StateFlow<Boolean> =
@@ -286,16 +281,13 @@ private class CellularIconViewModel(
             .stateIn(scope, SharingStarted.WhileSubscribed(), null)
 
     override val networkTypeBackground =
-        if (!flags.isEnabled(NEW_NETWORK_SLICE_UI)) {
-                flowOf(null)
-            } else {
-                iconInteractor.showSliceAttribution.map {
-                    when {
-                        it && NewStatusBarIcons.isEnabled ->
-                            Icon.Resource(R.drawable.mobile_network_type_background_updated, null)
-                        it -> Icon.Resource(R.drawable.mobile_network_type_background, null)
-                        else -> null
-                    }
+        iconInteractor.showSliceAttribution
+            .map {
+                when {
+                    it && NewStatusBarIcons.isEnabled ->
+                        Icon.Resource(R.drawable.mobile_network_type_background_updated, null)
+                    it -> Icon.Resource(R.drawable.mobile_network_type_background, null)
+                    else -> null
                 }
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), null)

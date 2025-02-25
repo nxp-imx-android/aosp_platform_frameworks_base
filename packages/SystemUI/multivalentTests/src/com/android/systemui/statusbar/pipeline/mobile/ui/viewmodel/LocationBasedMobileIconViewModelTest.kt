@@ -71,7 +71,6 @@ class LocationBasedMobileIconViewModelTest : SysuiTestCase() {
     private val connectivityRepository = FakeConnectivityRepository()
     private val flags =
         FakeFeatureFlagsClassic().also {
-            it.set(Flags.NEW_NETWORK_SLICE_UI, false)
             it.set(Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS, true)
         }
 
@@ -133,7 +132,7 @@ class LocationBasedMobileIconViewModelTest : SysuiTestCase() {
                 iconsInteractor.isForceHidden,
                 repository,
                 context,
-                MobileIconCarrierIdOverridesFake()
+                MobileIconCarrierIdOverridesFake(),
             )
 
         commonImpl =
@@ -142,7 +141,6 @@ class LocationBasedMobileIconViewModelTest : SysuiTestCase() {
                 interactor,
                 airplaneModeInteractor,
                 constants,
-                flags,
                 testScope.backgroundScope,
             )
 

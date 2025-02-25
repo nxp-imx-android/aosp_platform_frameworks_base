@@ -39,8 +39,6 @@ import com.android.systemui.bouncer.ui.viewmodel.bouncerOverlayContentViewModel
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.flags.Flags
-import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.ui.viewmodel.lockscreenUserActionsViewModel
 import com.android.systemui.kosmos.Kosmos
@@ -111,8 +109,6 @@ class SceneFrameworkIntegrationTest : SysuiTestCase() {
             overrideResource(R.bool.config_enable_emergency_call_while_sim_locked, true)
             whenever(mockTelecomManager.isInCall).thenReturn(false)
             whenever(emergencyAffordanceManager.needsEmergencyAffordance()).thenReturn(true)
-
-            fakeFeatureFlagsClassic.apply { set(Flags.NEW_NETWORK_SLICE_UI, false) }
 
             fakeMobileConnectionsRepository.isAnySimSecure.value = false
 
