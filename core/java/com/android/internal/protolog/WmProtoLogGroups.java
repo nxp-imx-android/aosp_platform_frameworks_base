@@ -30,6 +30,8 @@ public enum WmProtoLogGroups implements IProtoLogGroup {
     WM_ERROR(true, true, true, Consts.TAG_WM),
     WM_DEBUG_ORIENTATION(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
             Consts.TAG_WM),
+    WM_DEBUG_ORIENTATION_CHANGE(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
+            Consts.TAG_WM),
     WM_DEBUG_FOCUS_LIGHT(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
             Consts.TAG_WM),
     WM_DEBUG_BOOT(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,

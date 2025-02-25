@@ -3673,6 +3673,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         pw.println();
         super.dump(pw, prefix, dumpAll);
+        pw.print(prefix);
+        if (mHasSetIgnoreOrientationRequest) {
+            pw.print("mHasSetIgnoreOrientationRequest=true ");
+        }
+        pw.print("ignoreOrientationRequest="); pw.println(getIgnoreOrientationRequest());
         pw.print(prefix); pw.print("mLayoutSeq="); pw.println(mLayoutSeq);
 
         pw.print("  mCurrentFocus="); pw.println(mCurrentFocus);
