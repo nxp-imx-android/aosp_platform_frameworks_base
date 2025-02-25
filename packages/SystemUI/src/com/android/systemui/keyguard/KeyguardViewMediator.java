@@ -241,7 +241,7 @@ import java.util.function.Consumer;
  * directly to the keyguard UI is posted to a {@link android.os.Handler} to ensure it is taken on the UI
  * thread of the keyguard.
  */
-public class KeyguardViewMediator implements CoreStartable, Dumpable,
+public class KeyguardViewMediator implements CoreStartable,
         StatusBarStateController.StateListener {
 
     private static final boolean ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS =
