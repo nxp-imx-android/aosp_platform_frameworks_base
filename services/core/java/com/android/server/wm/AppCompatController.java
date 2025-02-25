@@ -33,6 +33,8 @@ class AppCompatController {
     @NonNull
     private final AppCompatAspectRatioPolicy mAspectRatioPolicy;
     @NonNull
+    private final AppCompatSafeRegionPolicy mSafeRegionPolicy;
+    @NonNull
     private final AppCompatReachabilityPolicy mReachabilityPolicy;
     @NonNull
     private final DesktopAppCompatAspectRatioPolicy mDesktopAspectRatioPolicy;
@@ -62,6 +64,7 @@ class AppCompatController {
         mOrientationPolicy = new AppCompatOrientationPolicy(activityRecord, mAppCompatOverrides);
         mAspectRatioPolicy = new AppCompatAspectRatioPolicy(activityRecord,
                 mTransparentPolicy, mAppCompatOverrides);
+        mSafeRegionPolicy = new AppCompatSafeRegionPolicy(activityRecord);
         mReachabilityPolicy = new AppCompatReachabilityPolicy(activityRecord,
                 wmService.mAppCompatConfiguration);
         mLetterboxPolicy = new AppCompatLetterboxPolicy(activityRecord,
@@ -87,6 +90,11 @@ class AppCompatController {
     @NonNull
     AppCompatAspectRatioPolicy getAspectRatioPolicy() {
         return mAspectRatioPolicy;
+    }
+
+    @NonNull
+    AppCompatSafeRegionPolicy getSafeRegionPolicy() {
+        return mSafeRegionPolicy;
     }
 
     @NonNull
@@ -163,6 +171,6 @@ class AppCompatController {
         getTransparentPolicy().dump(pw, prefix);
         getLetterboxPolicy().dump(pw, prefix);
         getSizeCompatModePolicy().dump(pw, prefix);
+        getSafeRegionPolicy().dump(pw, prefix);
     }
-
 }
