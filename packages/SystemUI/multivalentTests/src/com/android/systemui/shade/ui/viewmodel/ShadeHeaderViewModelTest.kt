@@ -15,7 +15,9 @@ import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -51,12 +53,11 @@ import org.mockito.MockitoAnnotations
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
 class ShadeHeaderViewModelTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testScope = kosmos.testScope
-    private val mobileIconsInteractor = kosmos.fakeMobileIconsInteractor
-    private val sceneInteractor = kosmos.sceneInteractor
-    private val deviceEntryInteractor = kosmos.deviceEntryInteractor
-
+    private val mobileIconsInteractor by lazy { kosmos.fakeMobileIconsInteractor }
+    private val sceneInteractor by lazy { kosmos.sceneInteractor }
+    private val deviceEntryInteractor by lazy { kosmos.deviceEntryInteractor }
     private val underTest by lazy { kosmos.shadeHeaderViewModel }
 
     @Before

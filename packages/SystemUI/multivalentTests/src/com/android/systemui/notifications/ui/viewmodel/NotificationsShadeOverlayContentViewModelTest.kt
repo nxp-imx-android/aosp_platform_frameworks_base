@@ -65,8 +65,7 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
-    private val sceneInteractor = kosmos.sceneInteractor
-
+    private val sceneInteractor by lazy { kosmos.sceneInteractor }
     private val underTest by lazy { kosmos.notificationsShadeOverlayContentViewModel }
 
     @Before
