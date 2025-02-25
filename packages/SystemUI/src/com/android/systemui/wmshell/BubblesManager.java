@@ -70,6 +70,7 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
 import com.android.systemui.statusbar.notification.collection.notifcollection.DismissedByUserStats;
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener;
+import com.android.systemui.statusbar.notification.collection.notifcollection.UpdateSource;
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider;
 import com.android.systemui.statusbar.phone.StatusBarWindowCallback;
@@ -444,8 +445,8 @@ public class BubblesManager {
             }
 
             @Override
-            public void onEntryUpdated(NotificationEntry entry, boolean fromSystem) {
-                BubblesManager.this.onEntryUpdated(entry, fromSystem);
+            public void onEntryUpdated(NotificationEntry entry, UpdateSource source) {
+                BubblesManager.this.onEntryUpdated(entry, source != UpdateSource.SystemUi);
             }
 
             @Override

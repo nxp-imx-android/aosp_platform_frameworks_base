@@ -36,6 +36,7 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifFilter
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
+import com.android.systemui.statusbar.notification.collection.notifcollection.UpdateSource
 import com.android.systemui.statusbar.notification.domain.interactor.SeenNotificationsInteractor
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.headsup.headsUpEvents
@@ -274,17 +275,22 @@ constructor(
                 if (
                     keyguardRepository.isKeyguardShowing() || !statusBarStateController.isExpanded
                 ) {
-                    logger.logUnseenAdded(entry.key)
+                    logger.logUnseenAdded(entry.key, entry.sbn.postTime)
                     unseenNotifications.add(entry)
                     unseenEntryAdded.tryEmit(entry)
                 }
             }
 
-            override fun onEntryUpdated(entry: NotificationEntry) {
+            override fun onEntryUpdated(entry: NotificationEntry, source: UpdateSource) {
                 if (
                     keyguardRepository.isKeyguardShowing() || !statusBarStateController.isExpanded
                 ) {
-                    logger.logUnseenUpdated(entry.key)
+                    logger.logUnseenUpdated(entry.key, source, entry.sbn.postTime)
+                    // We are not marking a notif as unseen if it's updated by the SystemServer
+                    // (for example, auto-grouping), or the SystemUi, not the App.
+                    if (source != UpdateSource.App) {
+                        return
+                    }
                     unseenNotifications.add(entry)
                     unseenEntryAdded.tryEmit(entry)
                 }

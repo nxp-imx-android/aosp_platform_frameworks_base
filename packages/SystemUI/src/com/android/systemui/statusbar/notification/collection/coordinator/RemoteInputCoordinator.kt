@@ -38,6 +38,7 @@ import com.android.systemui.statusbar.notification.collection.notifcollection.In
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender
 import com.android.systemui.statusbar.notification.collection.notifcollection.SelfTrackingLifetimeExtender
+import com.android.systemui.statusbar.notification.collection.notifcollection.UpdateSource
 import java.io.PrintWriter
 import javax.inject.Inject
 
@@ -103,15 +104,15 @@ constructor(
      */
     val mCollectionListener =
         object : NotifCollectionListener {
-            override fun onEntryUpdated(entry: NotificationEntry, fromSystem: Boolean) {
+            override fun onEntryUpdated(entry: NotificationEntry, source: UpdateSource) {
                 if (DEBUG) {
                     Log.d(
                         TAG,
                         "mCollectionListener.onEntryUpdated(entry=${entry.key}," +
-                            " fromSystem=$fromSystem)",
+                            " source=$source)",
                     )
                 }
-                if (fromSystem) {
+                if (source != UpdateSource.SystemUi) {
                     if (lifetimeExtensionRefactor()) {
                         if (
                             (entry.getSbn().getNotification().flags and
