@@ -132,7 +132,8 @@ constructor(
     /** Methods to this call can be chained together before calling [.commitUpdate]. */
     override fun setFlag(@SystemUiStateFlags flag: Long, enabled: Boolean): SysUiState {
         var enabled = enabled
-        val overrideOrNull = sceneContainerPlugin?.flagValueOverride(flag)
+        val overrideOrNull =
+            sceneContainerPlugin?.flagValueOverride(flag = flag, displayId = displayId)
         if (overrideOrNull != null && enabled != overrideOrNull) {
             if (SysUiState.DEBUG) {
                 Log.d(
