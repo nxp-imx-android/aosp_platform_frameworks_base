@@ -1515,7 +1515,7 @@ public class Build {
                 VERSION_CODES.VANILLA_ICE_CREAM * SDK_INT_MULTIPLIER;
 
         /**
-         * The upcoming, not yet finalized, version of Android.
+         * Android 36.0.
          */
         public static final int BAKLAVA = VERSION_CODES.BAKLAVA * SDK_INT_MULTIPLIER;
     }
