@@ -386,8 +386,7 @@
     <string name="debug_hw_drawing_category" msgid="5830815169336975162">"עיבוד מואץ של חומרה"</string>
     <string name="media_category" msgid="8122076702526144053">"מדיה"</string>
     <string name="debug_monitoring_category" msgid="1597387133765424994">"מעקב"</string>
-    <!-- no translation found for window_management_category (2015535427098365170) -->
-    <skip />
+    <string name="window_management_category" msgid="2015535427098365170">"ניהול החלונות"</string>
     <string name="strict_mode" msgid="889864762140862437">"מצב קפדני מופעל"</string>
     <string name="strict_mode_summary" msgid="1838248687233554654">"‏המסך יהבהב כשאפליקציות יבצעו פעולות ארוכות ב-thread הראשי"</string>
     <string name="pointer_location" msgid="7516929526199520173">"מיקום מצביע"</string>
