@@ -236,7 +236,6 @@ static install_status_t extractNativeLibFromApk(ZipFileRO* zipFile, ZipEntryRO z
         return INSTALL_FAILED_CONTAINER_ERROR;
     }
 
-#ifdef ENABLE_PUNCH_HOLES
     // punch extracted elf files as well. This will fail where compression is on (like f2fs) but it
     // will be useful for ext4 based systems
     struct statfs64 fsInfo;
@@ -253,7 +252,6 @@ static install_status_t extractNativeLibFromApk(ZipFileRO* zipFile, ZipEntryRO z
                   zipFile->getZipFileName());
         }
     }
-#endif // ENABLE_PUNCH_HOLES
 
     ALOGV("Successfully moved %s to %s\n", localTmpFileName, localFileName);
 
@@ -332,7 +330,6 @@ static install_status_t copyFileIfChanged(JNIEnv* env, void* arg, ZipFileRO* zip
             return INSTALL_FAILED_INVALID_APK;
         }
 
-#ifdef ENABLE_PUNCH_HOLES
         // if library is uncompressed, punch hole in it in place
         if (!punchHolesInElf64(zipFile->getZipFileName(), offset)) {
             ALOGW("Failed to punch uncompressed elf file :%s inside apk : %s at offset: "
@@ -345,7 +342,6 @@ static install_status_t copyFileIfChanged(JNIEnv* env, void* arg, ZipFileRO* zip
         if (!punchHolesInZip(zipFile->getZipFileName(), offset, extraFieldLength)) {
             ALOGW("Failed to punch apk : %s at extra field", zipFile->getZipFileName());
         }
-#endif // ENABLE_PUNCH_HOLES
 
         return INSTALL_SUCCEEDED;
     }
