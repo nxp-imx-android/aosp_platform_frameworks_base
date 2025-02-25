@@ -27,9 +27,9 @@ import android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERN
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.IWindowManager
 import android.view.WindowManager.TRANSIT_CHANGE
+import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
@@ -47,7 +47,7 @@ class DesktopDisplayModeController(
 ) {
 
     fun refreshDisplayWindowingMode() {
-        if (!Flags.enableDisplayWindowingModeSwitching()) return
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue) return
         // TODO: b/375319538 - Replace the check with a DisplayManager API once it's available.
         val isExtendedDisplayEnabled =
             0 !=

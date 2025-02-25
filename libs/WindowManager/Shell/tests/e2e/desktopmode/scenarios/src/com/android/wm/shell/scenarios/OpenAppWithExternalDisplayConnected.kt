@@ -25,6 +25,7 @@ import android.tools.Rotation
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.util.DisplayMetrics
+import android.window.DesktopExperienceFlags
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.launcher3.tapl.LauncherInstrumentation
@@ -64,7 +65,7 @@ constructor(private val rotation: Rotation = Rotation.ROTATION_0) {
     @Before
     fun setup() {
         Assume.assumeTrue(Flags.enableDesktopWindowingMode() && tapl.isTablet)
-        Assume.assumeTrue(Flags.enableDisplayWindowingModeSwitching())
+        Assume.assumeTrue(DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue)
         tapl.setEnableRotation(true)
         tapl.setExpectedRotation(rotation.value)
         ChangeDisplayOrientationRule.setRotation(rotation)
