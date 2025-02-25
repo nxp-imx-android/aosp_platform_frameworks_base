@@ -129,7 +129,7 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
 
     private void updateColors() {
         if (notificationRowTransparency()) {
-            mNormalColor = SurfaceEffectColors.surfaceEffect1(getResources());
+            mNormalColor = SurfaceEffectColors.surfaceEffect1(getContext());
         } else {
             mNormalColor = mContext.getColor(
                     com.android.internal.R.color.materialColorSurfaceContainerHigh);
