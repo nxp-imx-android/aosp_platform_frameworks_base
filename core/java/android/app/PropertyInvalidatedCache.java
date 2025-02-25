@@ -293,6 +293,7 @@ public class PropertyInvalidatedCache<Query, Result> {
 
     // The test mode. This is only used to ensure that the test functions setTestMode() and
     // testPropertyName() are used correctly.
+    @GuardedBy("sGlobalLock")
     private static boolean sTestMode = false;
 
     /**
@@ -668,7 +669,7 @@ public class PropertyInvalidatedCache<Query, Result> {
         // True if this handler is in test mode.  If it is in test mode, then nonces are stored
         // and retrieved from mTestNonce.
         @GuardedBy("mLock")
-        private boolean mTestMode = false;
+        private boolean mTestMode;
 
         // This is the local value of the nonce, as last set by the NonceHandler.  It is always
         // updated by the setNonce() operation.  The getNonce() operation returns this value in
@@ -692,6 +693,9 @@ public class PropertyInvalidatedCache<Query, Result> {
 
         NonceHandler(@NonNull String name) {
             mName = name;
+            synchronized (sGlobalLock) {
+                mTestMode = sTestMode;
+            }
         }
 
         /**
@@ -1414,9 +1418,13 @@ public class PropertyInvalidatedCache<Query, Result> {
 
     /**
      * Enable or disable testing.  The protocol requires that the mode toggle: for instance, it is
-     * illegal to clear the test mode if the test mode is already off.  The purpose is solely to
-     * ensure that test clients do not forget to use the test mode properly, even though the
-     * current logic does not care.
+     * illegal to clear the test mode if the test mode is already off.  Enabling test mode puts
+     * all caches in the process into test mode; all nonces are initialized to UNSET and
+     * subsequent reads and writes are to process memory.  This has the effect of disabling all
+     * caches that are not local to the process.  Disabling test mode restores caches to normal
+     * operation.
+     * @param mode The desired test mode.
+     * @throws IllegalStateException if the supplied mode is already set.
      * @hide
      */
     @VisibleForTesting
@@ -1431,10 +1439,8 @@ public class PropertyInvalidatedCache<Query, Result> {
                 }
             }
             sTestMode = mode;
-            if (mode) {
-                // No action when testing begins.
-            } else {
-                resetAfterTestLocked();
+            if (Flags.picTestMode() || !mode) {
+                setTestModeLocked(mode);
             }
         }
     }
@@ -1445,11 +1451,11 @@ public class PropertyInvalidatedCache<Query, Result> {
      * that were not originally in test mode.
      */
     @GuardedBy("sGlobalLock")
-    private static void resetAfterTestLocked() {
+    private static void setTestModeLocked(boolean mode) {
         for (Iterator<String> e = sHandlers.keys().asIterator(); e.hasNext(); ) {
             String s = e.next();
             final NonceHandler h = sHandlers.get(s);
-            h.setTestMode(false);
+            h.setTestMode(mode);
         }
     }
 
