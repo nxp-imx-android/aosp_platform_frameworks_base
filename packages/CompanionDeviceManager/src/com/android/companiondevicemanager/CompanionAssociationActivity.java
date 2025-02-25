@@ -592,6 +592,15 @@ public class CompanionAssociationActivity extends FragmentActivity implements
             mDeviceListRecyclerView.setVisibility(View.VISIBLE);
         }
 
+        // Set accessibility action for mCancelScanLayout (wraps mButtonCancelScan) for TalkBack.
+        mButtonCancelScan.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK);
+            }
+        });
+
+
         mSummary.setVisibility(View.GONE);
         mButtonAllow.setVisibility(View.GONE);
         mButtonNotAllow.setVisibility(View.GONE);
