@@ -120,16 +120,18 @@ class AggregatedPowerStats {
      *                      {@link com.android.internal.os.MonotonicClock}
      * @param currentTime   current time in milliseconds, see {@link System#currentTimeMillis()}
      */
-    void addClockUpdate(long monotonicTime, @CurrentTimeMillisLong long currentTime) {
+    boolean addClockUpdate(long monotonicTime, @CurrentTimeMillisLong long currentTime) {
         ClockUpdate clockUpdate = new ClockUpdate();
         clockUpdate.monotonicTime = monotonicTime;
         clockUpdate.currentTime = currentTime;
         if (mClockUpdates.size() < MAX_CLOCK_UPDATES) {
             mClockUpdates.add(clockUpdate);
+            return true;
         } else {
             Slog.i(TAG, "Too many clock updates. Replacing the previous update with "
                     + DateFormat.format("yyyy-MM-dd-HH-mm-ss", currentTime));
             mClockUpdates.set(mClockUpdates.size() - 1, clockUpdate);
+            return false;
         }
     }
 
