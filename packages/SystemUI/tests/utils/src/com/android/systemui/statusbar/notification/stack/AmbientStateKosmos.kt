@@ -22,6 +22,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.shade.transition.largeScreenShadeInterpolator
 import com.android.systemui.statusbar.notification.headsup.mockAvalancheController
+import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.statusbar.phone.statusBarKeyguardViewManager
 
 val Kosmos.ambientState by Fixture {
@@ -32,6 +33,7 @@ val Kosmos.ambientState by Fixture {
         /*bypassController=*/ stackScrollAlgorithmBypassController,
         /*statusBarKeyguardViewManager=*/ statusBarKeyguardViewManager,
         /*largeScreenShadeInterpolator=*/ largeScreenShadeInterpolator,
+        /*headsUpRepository=*/ headsUpNotificationRepository,
         /*avalancheController=*/ mockAvalancheController,
     )
 }
