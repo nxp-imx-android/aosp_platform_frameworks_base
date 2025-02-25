@@ -2151,6 +2151,14 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             mLastRequest = null;
         }
 
+        void flush() {
+            if (mLastTransit != null) {
+                start();
+                finish();
+                clear();
+            }
+        }
+
         @Override
         public void onTransitionReady(IBinder transitToken, TransitionInfo transitionInfo,
                 SurfaceControl.Transaction transaction, SurfaceControl.Transaction finishT)
