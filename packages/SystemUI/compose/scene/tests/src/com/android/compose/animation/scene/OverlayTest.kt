@@ -90,7 +90,7 @@ class OverlayTest {
         lateinit var coroutineScope: CoroutineScope
         rule.setContent {
             coroutineScope = rememberCoroutineScope()
-            SceneTransitionLayout(state, Modifier.size(200.dp)) {
+            SceneTransitionLayoutForTesting(state, Modifier.size(200.dp)) {
                 scene(SceneA) { Box(Modifier.fillMaxSize()) { Foo() } }
                 overlay(OverlayA) { Foo() }
             }
@@ -132,7 +132,7 @@ class OverlayTest {
         lateinit var coroutineScope: CoroutineScope
         rule.setContent {
             coroutineScope = rememberCoroutineScope()
-            SceneTransitionLayout(state, Modifier.size(200.dp)) {
+            SceneTransitionLayoutForTesting(state, Modifier.size(200.dp)) {
                 scene(SceneA) { Box(Modifier.fillMaxSize()) { Foo() } }
                 overlay(OverlayA) { Foo() }
                 overlay(OverlayB) { Foo() }
@@ -230,7 +230,7 @@ class OverlayTest {
         lateinit var coroutineScope: CoroutineScope
         rule.setContent {
             coroutineScope = rememberCoroutineScope()
-            SceneTransitionLayout(state, Modifier.size(200.dp)) {
+            SceneTransitionLayoutForTesting(state, Modifier.size(200.dp)) {
                 scene(SceneA) { Box(Modifier.fillMaxSize()) { MovableBar() } }
                 overlay(OverlayA) { MovableBar() }
                 overlay(OverlayB) { MovableBar() }
@@ -302,7 +302,7 @@ class OverlayTest {
             }
         var alignment by mutableStateOf(Alignment.Center)
         rule.setContent {
-            SceneTransitionLayout(state, Modifier.size(200.dp)) {
+            SceneTransitionLayoutForTesting(state, Modifier.size(200.dp)) {
                 scene(SceneA) { Box(Modifier.fillMaxSize()) { Foo() } }
                 overlay(OverlayA, alignment = alignment) { Foo() }
             }
@@ -761,7 +761,7 @@ class OverlayTest {
         val movableElementChildTag = "movableElementChildTag"
         val scope =
             rule.setContentAndCreateMainScope {
-                SceneTransitionLayout(state) {
+                SceneTransitionLayoutForTesting(state) {
                     scene(SceneA) {
                         MovableElement(key, Modifier) {
                             content { Box(Modifier.testTag(movableElementChildTag).size(100.dp)) }

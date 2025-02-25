@@ -169,7 +169,7 @@ internal fun Modifier.element(
             Modifier.maybeElevateInContent(layoutImpl, content, key, currentTransitionStates)
         }
         .then(ElementModifier(layoutImpl, currentTransitionStates, content, key))
-        .testTag(key.testTag)
+        .thenIf(layoutImpl.implicitTestTags) { Modifier.testTag(key.testTag) }
 }
 
 /**
