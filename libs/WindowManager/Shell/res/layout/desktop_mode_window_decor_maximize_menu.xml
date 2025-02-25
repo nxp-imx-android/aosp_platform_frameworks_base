@@ -79,7 +79,7 @@
             android:layout_marginEnd="4dp">
 
             <Button
-                android:layout_width="94dp"
+                android:layout_width="108dp"
                 android:layout_height="60dp"
                 android:id="@+id/maximize_menu_size_toggle_button"
                 style="?android:attr/buttonBarButtonStyle"
@@ -126,7 +126,7 @@
                 <Button
                     android:id="@+id/maximize_menu_snap_left_button"
                     style="?android:attr/buttonBarButtonStyle"
-                    android:layout_width="41dp"
+                    android:layout_width="48dp"
                     android:layout_height="@dimen/desktop_mode_maximize_menu_button_height"
                     android:layout_marginEnd="4dp"
                     android:background="@drawable/desktop_mode_maximize_menu_button_background"
@@ -137,7 +137,7 @@
                 <Button
                     android:id="@+id/maximize_menu_snap_right_button"
                     style="?android:attr/buttonBarButtonStyle"
-                    android:layout_width="41dp"
+                    android:layout_width="48dp"
                     android:layout_height="@dimen/desktop_mode_maximize_menu_button_height"
                     android:background="@drawable/desktop_mode_maximize_menu_button_background"
                     android:importantForAccessibility="yes"
