@@ -138,6 +138,7 @@ import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
+import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.OneShotRemoteHandler
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
@@ -196,6 +197,7 @@ class DesktopTasksController(
     private val recentTasksController: RecentTasksController?,
     private val interactionJankMonitor: InteractionJankMonitor,
     @ShellMainThread private val handler: Handler,
+    private val focusTransitionObserver: FocusTransitionObserver,
     private val desktopModeEventLogger: DesktopModeEventLogger,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
@@ -216,7 +218,7 @@ class DesktopTasksController(
     private var visualIndicator: DesktopModeVisualIndicator? = null
     private var userId: Int
     private val desktopModeShellCommandHandler: DesktopModeShellCommandHandler =
-        DesktopModeShellCommandHandler(this)
+        DesktopModeShellCommandHandler(this, focusTransitionObserver)
 
     private val mOnAnimationFinishedCallback = { releaseVisualIndicator() }
     private lateinit var snapEventHandler: SnapEventHandler
