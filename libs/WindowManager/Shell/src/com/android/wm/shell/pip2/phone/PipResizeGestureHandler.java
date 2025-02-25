@@ -395,6 +395,7 @@ public class PipResizeGestureHandler implements
     void finishResize() {
         if (mLastResizeBounds.isEmpty()) {
             resetState();
+            return;
         }
 
         // Cache initial bounds after release for animation before mLastResizeBounds are modified.
