@@ -155,8 +155,7 @@ private fun VolumeDialogSlider(
                 },
             )
         },
-        accessibilityParams =
-            AccessibilityParams(label = "", currentStateDescription = "", disabledMessage = ""),
+        accessibilityParams = AccessibilityParams(label = sliderStateModel.label),
         modifier =
             modifier.pointerInput(Unit) {
                 coroutineScope {

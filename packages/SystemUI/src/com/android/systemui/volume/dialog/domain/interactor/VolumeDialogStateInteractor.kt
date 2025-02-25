@@ -95,6 +95,10 @@ constructor(
         volumeDialogStateRepository.updateState { it.copy(isShowingCsdWarning = model) }
     }
 
+    fun setHovering(isHovering: Boolean) {
+        volumeDialogStateRepository.updateState { it.copy(isHovering = isHovering) }
+    }
+
     /** Returns a copy of [model] filled with the values from [VolumeDialogController.State]. */
     private fun VolumeDialogController.State.copyIntoModel(
         model: VolumeDialogStateModel

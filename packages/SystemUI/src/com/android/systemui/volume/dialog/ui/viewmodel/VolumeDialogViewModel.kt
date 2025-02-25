@@ -27,6 +27,7 @@ import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.DevicePostureController
 import com.android.systemui.statusbar.policy.devicePosture
 import com.android.systemui.statusbar.policy.onConfigChanged
+import com.android.systemui.volume.dialog.dagger.scope.VolumeDialog
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
 import com.android.systemui.volume.dialog.domain.interactor.VolumeDialogStateInteractor
 import com.android.systemui.volume.dialog.domain.interactor.VolumeDialogVisibilityInteractor
@@ -36,11 +37,14 @@ import com.android.systemui.volume.dialog.shared.model.streamLabel
 import com.android.systemui.volume.dialog.sliders.domain.interactor.VolumeDialogSlidersInteractor
 import com.android.systemui.volume.dialog.sliders.domain.model.VolumeDialogSliderType
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 /** Provides a state for the Volume Dialog. */
@@ -49,9 +53,10 @@ class VolumeDialogViewModel
 @Inject
 constructor(
     private val context: Context,
-    dialogVisibilityInteractor: VolumeDialogVisibilityInteractor,
+    @VolumeDialog coroutineScope: CoroutineScope,
+    private val dialogVisibilityInteractor: VolumeDialogVisibilityInteractor,
     volumeDialogSlidersInteractor: VolumeDialogSlidersInteractor,
-    volumeDialogStateInteractor: VolumeDialogStateInteractor,
+    private val volumeDialogStateInteractor: VolumeDialogStateInteractor,
     devicePostureController: DevicePostureController,
     configurationController: ConfigurationController,
 ) {
@@ -67,16 +72,16 @@ constructor(
         }
     val dialogVisibilityModel: Flow<VolumeDialogVisibilityModel> =
         dialogVisibilityInteractor.dialogVisibility
-    val dialogTitle: Flow<String> =
+    val dialogTitle: StateFlow<String> =
         combine(
                 volumeDialogStateInteractor.volumeDialogState,
                 volumeDialogSlidersInteractor.sliders.map { it.slider },
             ) { state: VolumeDialogStateModel, sliderType: VolumeDialogSliderType ->
                 state.streamModels[sliderType.audioStream]?.let { model ->
                     context.getString(R.string.volume_dialog_title, model.streamLabel(context))
-                }
+                } ?: ""
             }
-            .filterNotNull()
+            .stateIn(coroutineScope, SharingStarted.Eagerly, "")
 
     private val touchableBoundsViews: MutableCollection<View> = mutableSetOf()
 
@@ -100,5 +105,14 @@ constructor(
     suspend fun addTouchableBounds(vararg views: View): Nothing = suspendCancellableCoroutine {
         touchableBoundsViews.addAll(views)
         it.invokeOnCancellation { touchableBoundsViews.removeAll(views.toSet()) }
+    }
+
+    fun onHover(isHovering: Boolean) {
+        volumeDialogStateInteractor.setHovering(isHovering)
+        resetDialogTimeout()
+    }
+
+    fun resetDialogTimeout() {
+        dialogVisibilityInteractor.resetDismissTimeout()
     }
 }
