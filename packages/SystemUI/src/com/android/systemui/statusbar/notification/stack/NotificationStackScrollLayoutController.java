@@ -1908,8 +1908,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         }
 
         @Override
-        public ViewGroup getViewParentForNotification(NotificationEntry entry) {
-            return mView.getViewParentForNotification(entry);
+        public ViewGroup getViewParentForNotification() {
+            return mView.getViewParentForNotification();
         }
 
         @Override
