@@ -61,6 +61,8 @@ import com.android.wm.shell.windowdecor.common.OPACITY_15
 import com.android.wm.shell.windowdecor.common.OPACITY_55
 import com.android.wm.shell.windowdecor.common.OPACITY_65
 import com.android.wm.shell.windowdecor.common.Theme
+import com.android.wm.shell.windowdecor.common.DrawableInsets
+import com.android.wm.shell.windowdecor.common.createRippleDrawable
 import com.android.wm.shell.windowdecor.extension.isLightCaptionBarAppearance
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
 
@@ -635,59 +637,8 @@ class AppHeaderViewHolder(
         )
     }
 
-    @ColorInt
-    private fun replaceColorAlpha(@ColorInt color: Int, alpha: Int): Int {
-        return Color.argb(
-            alpha,
-            Color.red(color),
-            Color.green(color),
-            Color.blue(color)
-        )
-    }
-
-    private fun createRippleDrawable(
-        @ColorInt color: Int,
-        cornerRadius: Int,
-        drawableInsets: DrawableInsets,
-    ): RippleDrawable {
-        return RippleDrawable(
-            ColorStateList(
-                arrayOf(
-                    intArrayOf(android.R.attr.state_hovered),
-                    intArrayOf(android.R.attr.state_pressed),
-                    intArrayOf(),
-                ),
-                intArrayOf(
-                    replaceColorAlpha(color, OPACITY_11),
-                    replaceColorAlpha(color, OPACITY_15),
-                    Color.TRANSPARENT
-                )
-            ),
-            null /* content */,
-            LayerDrawable(arrayOf(
-                ShapeDrawable().apply {
-                    shape = RoundRectShape(
-                        FloatArray(8) { cornerRadius.toFloat() },
-                        null /* inset */,
-                        null /* innerRadii */
-                    )
-                    paint.color = Color.WHITE
-                }
-            )).apply {
-                require(numberOfLayers == 1) { "Must only contain one layer" }
-                setLayerInset(0 /* index */,
-                    drawableInsets.l, drawableInsets.t, drawableInsets.r, drawableInsets.b)
-            }
-        )
-    }
-
     private enum class SizeToggleDirection {
         MAXIMIZE, RESTORE
-    }
-
-    private data class DrawableInsets(val l: Int, val t: Int, val r: Int, val b: Int) {
-        constructor(vertical: Int = 0, horizontal: Int = 0) :
-                this(horizontal, vertical, horizontal, vertical)
     }
 
     private data class Header(
