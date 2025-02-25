@@ -62,6 +62,14 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
         displays.forEach { addDisplay(it) }
     }
 
+    suspend operator fun plusAssign(display: Display) {
+        addDisplay(display)
+    }
+
+    suspend operator fun minusAssign(displayId: Int) {
+        removeDisplay(displayId)
+    }
+
     suspend fun addDisplay(display: Display) {
         flow.value += display
         displayIdFlow.value += display.displayId

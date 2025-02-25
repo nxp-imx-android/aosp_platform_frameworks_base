@@ -18,6 +18,9 @@ package com.android.systemui.model
 import android.util.Log
 import android.view.Display
 import com.android.systemui.Dumpable
+import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.display.data.repository.PerDisplayInstanceProviderWithTeardown
+import com.android.systemui.dump.DumpManager
 import com.android.systemui.model.SysUiState.SysUiStateCallback
 import com.android.systemui.shared.system.QuickStepContract
 import com.android.systemui.shared.system.QuickStepContract.SystemUiStateFlags
@@ -26,6 +29,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dalvik.annotation.optimization.NeverCompile
 import java.io.PrintWriter
+import javax.inject.Inject
 
 /** Contains sysUi state flags and notifies registered listeners whenever changes happen. */
 interface SysUiState : Dumpable {
@@ -70,6 +74,13 @@ interface SysUiState : Dumpable {
         ) {}
     }
 
+    /**
+     * Destroys an instance. It shouldn't be used anymore afterwards.
+     *
+     * This is mainly used to clean up instances associated with displays that are removed.
+     */
+    fun destroy()
+
     companion object {
         const val DEBUG: Boolean = false
     }
@@ -80,7 +91,15 @@ class SysUiStateImpl
 constructor(
     @Assisted private val displayId: Int,
     private val sceneContainerPlugin: SceneContainerPlugin?,
+    private val dumpManager: DumpManager,
 ) : SysUiState {
+
+    private val debugName = "SysUiStateImpl-ForDisplay=$displayId"
+
+    init {
+        dumpManager.registerNormalDumpable(debugName, this)
+    }
+
     /** Returns the current sysui state flags. */
     @get:SystemUiStateFlags
     @SystemUiStateFlags
@@ -187,6 +206,10 @@ constructor(
         pw.println(QuickStepContract.isAssistantGestureDisabled(flags))
     }
 
+    override fun destroy() {
+        dumpManager.unregisterDumpable(debugName)
+    }
+
     @AssistedFactory
     interface Factory {
         /** Creates a new instance of [SysUiStateImpl] for a given [displayId]. */
@@ -195,5 +218,18 @@ constructor(
 
     companion object {
         private val TAG: String = SysUiState::class.java.simpleName
+    }
+}
+
+/** Creates and destroy instances of [SysUiState] */
+@SysUISingleton
+class SysUIStateInstanceProvider @Inject constructor(private val factory: SysUiStateImpl.Factory) :
+    PerDisplayInstanceProviderWithTeardown<SysUiState> {
+    override fun createInstance(displayId: Int): SysUiState {
+        return factory.create(displayId)
+    }
+
+    override fun destroyInstance(instance: SysUiState) {
+        instance.destroy()
     }
 }

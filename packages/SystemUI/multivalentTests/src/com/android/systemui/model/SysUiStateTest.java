@@ -19,6 +19,9 @@ package com.android.systemui.model;
 
 import static android.view.Display.DEFAULT_DISPLAY;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -29,8 +32,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.dump.DumpManager;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
-import com.android.systemui.settings.DisplayTracker;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -48,11 +51,11 @@ public class SysUiStateTest extends SysuiTestCase {
     private KosmosJavaAdapter mKosmos;
     private SysUiState.SysUiStateCallback mCallback;
     private SysUiState mFlagsContainer;
-    private DisplayTracker mDisplayTracker;
     private SceneContainerPlugin mSceneContainerPlugin;
+    private DumpManager mDumpManager;
 
     private SysUiState createInstance(int displayId) {
-        var sysuiState = new SysUiStateImpl(displayId, mSceneContainerPlugin);
+        var sysuiState = new SysUiStateImpl(displayId, mSceneContainerPlugin, mDumpManager);
         sysuiState.addCallback(mCallback);
         return sysuiState;
     }
@@ -60,10 +63,10 @@ public class SysUiStateTest extends SysuiTestCase {
     @Before
     public void setup() {
         mKosmos = new KosmosJavaAdapter(this);
-        mDisplayTracker = mKosmos.getDisplayTracker();
         mFlagsContainer = mKosmos.getSysuiState();
         mSceneContainerPlugin = mKosmos.getSceneContainerPlugin();
         mCallback = mock(SysUiState.SysUiStateCallback.class);
+        mDumpManager = mock(DumpManager.class);
         mFlagsContainer = createInstance(DEFAULT_DISPLAY);
     }
 
@@ -137,6 +140,18 @@ public class SysUiStateTest extends SysuiTestCase {
 
         verify(mCallback, times(1)).onSystemUiStateChangedForDisplay(FLAG_1, /* displayId= */ 2);
         verify(mCallback, never()).onSystemUiStateChanged(FLAG_1);
+    }
+
+    @Test
+    public void init_registersWithDumpManager() {
+        verify(mDumpManager).registerNormalDumpable(any(), eq(mFlagsContainer));
+    }
+
+    @Test
+    public void destroy_unregistersWithDumpManager() {
+        mFlagsContainer.destroy();
+
+        verify(mDumpManager).unregisterDumpable(anyString());
     }
 
     private void setFlags(int... flags) {

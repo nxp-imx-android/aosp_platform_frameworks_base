@@ -17,10 +17,11 @@
 package com.android.systemui.model
 
 import android.view.Display
+import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import org.mockito.Mockito.spy
 
 val Kosmos.sysUiState by Fixture {
-    spy(SysUiStateImpl(Display.DEFAULT_DISPLAY, sceneContainerPlugin))
+    spy(SysUiStateImpl(Display.DEFAULT_DISPLAY, sceneContainerPlugin, dumpManager))
 }
