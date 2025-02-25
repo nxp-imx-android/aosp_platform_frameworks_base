@@ -484,7 +484,7 @@ public class PerformAdbBackupTask extends FullBackupTask implements BackupRestor
     }
 
     @Override
-    public void handleCancel(boolean cancelAll) {
+    public void handleCancel(@CancellationReason int cancellationReason) {
         final PackageInfo target = mCurrentTarget;
         Slog.w(TAG, "adb backup cancel of " + target);
         if (target != null) {

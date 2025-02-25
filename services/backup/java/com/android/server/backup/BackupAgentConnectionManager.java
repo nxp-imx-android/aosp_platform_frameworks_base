@@ -44,6 +44,7 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
+import com.android.server.backup.BackupRestoreTask.CancellationReason;
 import com.android.server.backup.internal.LifecycleOperationStorage;
 
 import java.util.Set;
@@ -298,20 +299,22 @@ public class BackupAgentConnectionManager {
             // Offload operation cancellation off the main thread as the cancellation callbacks
             // might call out to BackupTransport. Other operations started on the same package
             // before the cancellation callback has executed will also be cancelled by the callback.
-            Runnable cancellationRunnable = () -> {
-                // handleCancel() causes the PerformFullTransportBackupTask to go on to
-                // tearDownAgentAndKill: that will unbindBackupAgent in the Activity Manager, so
-                // that the package being backed up doesn't get stuck in restricted mode until the
-                // backup time-out elapses.
-                for (int token : mOperationStorage.operationTokensForPackage(packageName)) {
-                    if (DEBUG) {
-                        Slog.d(TAG,
-                                mUserIdMsg + "agentDisconnected: will handleCancel(all) for token:"
-                                        + Integer.toHexString(token));
-                    }
-                    mUserBackupManagerService.handleCancel(token, true /* cancelAll */);
-                }
-            };
+            Runnable cancellationRunnable =
+                    () -> {
+                        // On handleCancel(), the operation will call unbindAgent() which will make
+                        // sure the app doesn't get stuck in restricted mode.
+                        for (int token : mOperationStorage.operationTokensForPackage(packageName)) {
+                            if (DEBUG) {
+                                Slog.d(
+                                        TAG,
+                                        mUserIdMsg
+                                                + "agentDisconnected: cancelling for token:"
+                                                + Integer.toHexString(token));
+                            }
+                            mUserBackupManagerService.handleCancel(
+                                    token, CancellationReason.AGENT_DISCONNECTED);
+                        }
+                    };
             getThreadForCancellation(cancellationRunnable).start();
 
             mAgentConnectLock.notifyAll();
