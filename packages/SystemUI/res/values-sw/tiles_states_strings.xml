@@ -58,7 +58,7 @@
   </string-array>
   <string-array name="tile_states_flashlight">
     <item msgid="3465257127433353857">"Hakipatikani"</item>
-    <item msgid="5044688398303285224">"Kimezimwa"</item>
+    <item msgid="5044688398303285224">"Imezimwa"</item>
     <item msgid="8527389108867454098">"Kimewashwa"</item>
   </string-array>
   <string-array name="tile_states_rotation">
@@ -73,7 +73,7 @@
   </string-array>
   <string-array name="tile_states_airplane">
     <item msgid="1985366811411407764">"Hakipatikani"</item>
-    <item msgid="4801037224991420996">"Kimezimwa"</item>
+    <item msgid="4801037224991420996">"Imezimwa"</item>
     <item msgid="1982293347302546665">"Kimewashwa"</item>
   </string-array>
   <string-array name="tile_states_location">
