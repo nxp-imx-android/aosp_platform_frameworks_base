@@ -21,6 +21,7 @@ import android.content.Context
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Bundle
+import android.os.Trace
 import android.util.IndentingPrintWriter
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -112,6 +113,7 @@ import com.android.systemui.plugins.qs.QS
 import com.android.systemui.plugins.qs.QSContainerController
 import com.android.systemui.qs.composefragment.SceneKeys.QuickQuickSettings
 import com.android.systemui.qs.composefragment.SceneKeys.QuickSettings
+import com.android.systemui.qs.composefragment.SceneKeys.debugName
 import com.android.systemui.qs.composefragment.SceneKeys.toIdleSceneKey
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.composefragment.ui.NotificationScrimClipParams
@@ -286,6 +288,12 @@ constructor(
      */
     @Composable
     private fun CollapsableQuickSettingsSTL() {
+        val nextCookie = remember {
+            object {
+                var value = 0
+            }
+        }
+        val transitionToCookie = remember { mutableMapOf<TransitionState.Transition, Int>() }
         val sceneState =
             rememberMutableSceneTransitionLayoutState(
                 initialScene = remember { viewModel.expansionState.toIdleSceneKey() },
@@ -299,6 +307,20 @@ constructor(
                             toEditMode()
                         }
                     },
+                onTransitionStart = { transition ->
+                    val cookie = nextCookie.value++
+                    transitionToCookie[transition] = cookie
+                    Trace.beginAsyncSection(
+                        "CollapsableQuickSettingsSTL ${transition.debugName}",
+                        cookie,
+                    )
+                },
+                onTransitionEnd = { transition ->
+                    Trace.endAsyncSection(
+                        "CollapsableQuickSettingsSTL ${transition.debugName}",
+                        transitionToCookie.remove(transition) ?: -1,
+                    )
+                },
             )
 
         LaunchedEffect(Unit) {
@@ -854,6 +876,9 @@ object SceneKeys {
     val QuickQuickSettings = SceneKey("QuickQuickSettingsScene")
     val QuickSettings = SceneKey("QuickSettingsScene")
     val EditMode = SceneKey("EditModeScene")
+
+    val TransitionState.Transition.debugName: String
+        get() = "[from=${fromContent.debugName}, to=${toContent.debugName}]"
 
     fun QSFragmentComposeViewModel.QSExpansionState.toIdleSceneKey(): SceneKey {
         return when {
