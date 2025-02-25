@@ -1803,6 +1803,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Modo dunha soa man"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Atenuación extra"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Dispositivos auditivos"</string>
+    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Desconectado"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Conectado"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Activo"</string>

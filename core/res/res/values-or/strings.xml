@@ -327,7 +327,7 @@
     <string name="permgroupdesc_contacts" msgid="9163927941244182567">"ଆପଣଙ୍କ ଯୋଗାଯୋଗ ଆକ୍ସେସ୍ କରେ"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"ଲୋକେସନ"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"ଏହି ଡିଭାଇସ୍‌ର ଲୋକେସନ୍‍ ଆକ୍ସେସ୍‍ କରେ"</string>
-    <string name="permgrouplab_calendar" msgid="6426860926123033230">"କେଲେଣ୍ଡର"</string>
+    <string name="permgrouplab_calendar" msgid="6426860926123033230">"Calendar"</string>
     <string name="permgroupdesc_calendar" msgid="6762751063361489379">"ଆପଣଙ୍କ କ୍ୟାଲେଣ୍ଡର୍‍ ଆକ୍ସେସ୍‍ କରେ"</string>
     <string name="permgrouplab_sms" msgid="795737735126084874">"SMS"</string>
     <string name="permgroupdesc_sms" msgid="5726462398070064542">"SMS ମେସେଜ୍‍ ପଠାନ୍ତୁ ଓ ଦେଖନ୍ତୁ"</string>
@@ -1803,6 +1803,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ଏକ-ହାତ ମୋଡ୍"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ଅତ୍ୟଧିକ ଡିମ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ଶ୍ରବଣ ଡିଭାଇସଗୁଡ଼ିକ"</string>
+    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"ଡିସକନେକ୍ଟ କରାଯାଇଛି"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"କନେକ୍ଟ କରାଯାଇଛି"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"ସକ୍ରିୟ"</string>
