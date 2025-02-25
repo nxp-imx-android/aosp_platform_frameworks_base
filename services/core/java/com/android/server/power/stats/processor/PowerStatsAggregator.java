@@ -98,14 +98,18 @@ public class PowerStatsAggregator {
 
                     if (!startedSession) {
                         mStats.start(item.time);
-                        mStats.addClockUpdate(item.time, item.currentTime);
+                        if (!mStats.addClockUpdate(item.time, item.currentTime)) {
+                            break;
+                        }
                         if (baseTime == UNINITIALIZED) {
                             baseTime = item.time;
                         }
                         startedSession = true;
                     } else if (item.cmd == BatteryStats.HistoryItem.CMD_CURRENT_TIME
                                || item.cmd == BatteryStats.HistoryItem.CMD_RESET) {
-                        mStats.addClockUpdate(item.time, item.currentTime);
+                        if (!mStats.addClockUpdate(item.time, item.currentTime)) {
+                            break;
+                        }
                     }
 
                     lastTime = item.time;
@@ -164,7 +168,9 @@ public class PowerStatsAggregator {
                                 consumer.accept(mStats);
                             }
                             mStats.reset();
-                            mStats.addClockUpdate(item.time, item.currentTime);
+                            if (!mStats.addClockUpdate(item.time, item.currentTime)) {
+                                break;
+                            }
                             baseTime = lastTime = item.time;
                         }
                         mStats.addPowerStats(item.powerStats, item.time);

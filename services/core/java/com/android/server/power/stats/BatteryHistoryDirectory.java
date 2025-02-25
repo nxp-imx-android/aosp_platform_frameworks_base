@@ -143,6 +143,7 @@ public class BatteryHistoryDirectory implements BatteryStatsHistory.BatteryHisto
     /**
      * Returns the maximum storage size allocated to battery history.
      */
+    @Override
     public int getMaxHistorySize() {
         return mMaxHistorySize;
     }
