@@ -3416,6 +3416,8 @@ class Task extends TaskFragment {
                         : WindowInsets.Type.defaultVisible();
         AppCompatUtils.fillAppCompatTaskInfo(this, info, top);
         info.topActivityMainWindowFrame = calculateTopActivityMainWindowFrameForTaskInfo(top);
+        // If new Tasks launched from this Task should be Bubble, this should also be a Bubble.
+        info.isAppBubble = mLaunchNextToBubble;
     }
 
     /**
