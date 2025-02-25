@@ -485,6 +485,9 @@ public final class ContextHubManager {
     /**
      * Returns the list of ContextHubInfo objects describing the available Context Hubs.
      *
+     * To find the list of hubs that include all Hubs (including both Context Hubs and Vendor Hubs),
+     * use the {@link #getHubs()} method instead.
+     *
      * @return the list of ContextHubInfo objects
      *
      * @see ContextHubInfo
@@ -499,8 +502,8 @@ public final class ContextHubManager {
     }
 
     /**
-     * Returns the list of HubInfo objects describing the available hubs (including ContextHub and
-     * VendorHub). This method is primarily used for debugging purposes as most clients care about
+     * Returns the list of HubInfo objects describing the available hubs (including Context Hubs and
+     * Vendor Hubs). This method is primarily used for debugging purposes as most clients care about
      * endpoints and services more than hubs.
      *
      * @return the list of HubInfo objects
