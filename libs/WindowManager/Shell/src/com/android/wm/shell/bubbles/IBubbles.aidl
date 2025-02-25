@@ -51,9 +51,11 @@ interface IBubbles {
 
     oneway void stopBubbleDrag(in BubbleBarLocation location, in int topOnScreen) = 11;
 
-    oneway void showShortcutBubble(in ShortcutInfo info) = 12;
+    oneway void showShortcutBubble(in ShortcutInfo info, in @nullable BubbleBarLocation location) = 12;
 
-    oneway void showAppBubble(in Intent intent, in UserHandle user) = 13;
+    oneway void showAppBubble(in Intent intent, in UserHandle user, in @nullable BubbleBarLocation location) = 13;
 
     oneway void showExpandedView() = 14;
+
+    oneway void showDropTarget(in boolean show, in @nullable BubbleBarLocation location) = 15;
 }
