@@ -31,7 +31,7 @@ java_defaults {
         warning_checks: ["MissingApacheLicenseDetector"],
     },
     kotlincflags: [
-        "-Xexplicit-api=warning",
+        "-Xexplicit-api=strict",
         "-Xjvm-default=all",
     ],
     defaults_visibility: [":__subpackages__"],
