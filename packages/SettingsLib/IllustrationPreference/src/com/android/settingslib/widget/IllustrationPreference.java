@@ -447,6 +447,10 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
         illustrationView.setMaxWidth((int) (restrictedMaxHeight * aspectRatio));
     }
 
+    public boolean isAnimatable() {
+        return mIsAnimatable;
+    }
+
     private void startAnimation(Drawable drawable) {
         if (!(drawable instanceof Animatable)) {
             return;
