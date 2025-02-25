@@ -6005,12 +6005,6 @@ final class ActivityRecord extends WindowToken {
             setVisibility(false);
 
             switch (mState) {
-                case STOPPING:
-                case STOPPED:
-                    // Reset the flag indicating that an app can enter picture-in-picture once the
-                    // activity is hidden
-                    supportsEnterPipOnTaskSwitch = false;
-                    break;
                 case RESUMED:
                 case INITIALIZING:
                 case PAUSING:
