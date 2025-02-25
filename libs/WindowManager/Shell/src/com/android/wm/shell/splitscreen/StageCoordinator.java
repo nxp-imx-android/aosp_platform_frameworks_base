@@ -2079,8 +2079,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                             Math.max(topLeftBounds.top, 0);
                     bottomRightBounds.right =
                             Math.min(bottomRightBounds.right, mSplitLayout.getDisplayWidth());
-                    bottomRightBounds.top =
-                            Math.min(bottomRightBounds.top, mSplitLayout.getDisplayHeight());
+                    bottomRightBounds.bottom =
+                            Math.min(bottomRightBounds.bottom, mSplitLayout.getDisplayHeight());
 
                     // TODO (b/349828130): Can change to getState() fully after brief soak time.
                     if (mSplitState.get() != currentSnapPosition) {
