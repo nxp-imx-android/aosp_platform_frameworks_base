@@ -55,7 +55,6 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
         val layerCfg =
             LayerConfig(
                 style = FontTextStyle(lineHeight = 147.25f),
-                timespec = DigitalTimespec.DIGIT_PAIR,
                 alignment = DigitalAlignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER),
                 aodStyle =
                     FontTextStyle(
@@ -63,12 +62,23 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
                         transitionDuration = 750,
                     ),
 
-                // Placeholder
+                // Placeholders
+                timespec = DigitalTimespec.TIME_FULL_FORMAT,
                 dateTimeFormat = "hh:mm",
             )
 
-        createController(layerCfg.copy(dateTimeFormat = "hh"))
-        createController(layerCfg.copy(dateTimeFormat = "mm"))
+        createController(
+            layerCfg.copy(timespec = DigitalTimespec.FIRST_DIGIT, dateTimeFormat = "hh")
+        )
+        createController(
+            layerCfg.copy(timespec = DigitalTimespec.SECOND_DIGIT, dateTimeFormat = "hh")
+        )
+        createController(
+            layerCfg.copy(timespec = DigitalTimespec.FIRST_DIGIT, dateTimeFormat = "mm")
+        )
+        createController(
+            layerCfg.copy(timespec = DigitalTimespec.SECOND_DIGIT, dateTimeFormat = "mm")
+        )
     }
 
     private fun refreshTime() {

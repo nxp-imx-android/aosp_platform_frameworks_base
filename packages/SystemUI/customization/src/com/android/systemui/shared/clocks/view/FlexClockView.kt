@@ -124,8 +124,10 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
             maxChildSize.y * AOD_VERTICAL_TRANSLATE_RATIO
         )
         */
+
+        val xScale = if (childViews.size < 4) 1f else 2f
         val yBuffer = context.resources.getDimensionPixelSize(R.dimen.clock_vertical_digit_buffer)
-        return (maxChildSize + aodTranslate.abs()) * VPointF(1f, 2f) + VPointF(0f, yBuffer)
+        return (maxChildSize + aodTranslate.abs()) * VPointF(xScale, 2f) + VPointF(0f, yBuffer)
     }
 
     override fun onViewAdded(child: View?) {
@@ -226,18 +228,21 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
                     when (child.id) {
                         R.id.HOUR_FIRST_DIGIT -> VPointF.ZERO
                         R.id.HOUR_SECOND_DIGIT -> VPointF(x, 0f)
-                        R.id.MINUTE_FIRST_DIGIT -> VPointF(0f, y + yBuffer)
-                        R.id.MINUTE_SECOND_DIGIT -> this
                         R.id.HOUR_DIGIT_PAIR -> VPointF.ZERO
-                        // Add a small vertical buffer for the second digit pair
+                        // Add a small vertical buffer for second line views
                         R.id.MINUTE_DIGIT_PAIR -> VPointF(0f, y + yBuffer)
+                        R.id.MINUTE_FIRST_DIGIT -> VPointF(0f, y + yBuffer)
+                        R.id.MINUTE_SECOND_DIGIT -> VPointF(x, y + yBuffer)
                         else -> VPointF.ZERO
                     }
                 }
 
             val childSize = child.measuredSize
-            offset += VPointF((measuredWidth - childSize.x) / 2f, 0f)
             offset += aodTranslate.abs()
+
+            // Horizontal offset to center each view in the available space
+            val midX = if (childViews.size < 4) measuredWidth / 2f else measuredWidth / 4f
+            offset += VPointF(midX - childSize.x / 2f, 0f)
 
             val setPos = if (isLayout) child::layout else child::setLeftTopRightBottom
             setPos(
