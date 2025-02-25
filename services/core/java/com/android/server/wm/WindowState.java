@@ -2655,7 +2655,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // The client gave us a touchable region and so first
             // we calculate the untouchable region, then punch that out of our
             // expanded modal region.
-            mTmpRegion.set(0, 0, frame.right, frame.bottom);
+            mTmpRegion.set(0, 0, frame.width(), frame.height());
             mTmpRegion.op(mGivenTouchableRegion, Region.Op.DIFFERENCE);
             region.op(mTmpRegion, Region.Op.DIFFERENCE);
         }
