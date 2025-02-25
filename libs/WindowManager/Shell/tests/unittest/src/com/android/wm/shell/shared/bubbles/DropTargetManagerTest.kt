@@ -18,7 +18,6 @@ package com.android.wm.shell.shared.bubbles
 
 import android.content.Context
 import android.graphics.Rect
-import android.view.View
 import android.widget.FrameLayout
 import androidx.core.animation.AnimatorTestRule
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
@@ -58,8 +57,8 @@ class DropTargetManagerTest {
     private val bubbleRightDragZone =
         DragZone.Bubble.Right(bounds = Rect(200, 0, 300, 100), dropTarget = Rect(200, 0, 280, 150))
 
-    private val dropTargetView: View
-        get() = container.getChildAt(0)
+    private val dropTargetView: DropTargetView
+        get() = container.getChildAt(0) as DropTargetView
 
     @Before
     fun setUp() {
@@ -238,8 +237,9 @@ class DropTargetManagerTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             dropTargetManager.onDragEnded()
-            // advance the timer by 100ms so the animation doesn't complete
-            animatorTestRule.advanceTimeBy(100)
+            // advance the timer by 50ms so the animation doesn't complete
+            // needs to be < DropTargetManager.DROP_TARGET_ALPHA_OUT_DURATION
+            animatorTestRule.advanceTimeBy(50)
         }
         assertThat(container.childCount).isEqualTo(1)
 
@@ -320,10 +320,10 @@ class DropTargetManagerTest {
     }
 
     private fun verifyDropTargetPosition(rect: Rect) {
-        assertThat(dropTargetView.scaleX).isEqualTo(rect.width())
-        assertThat(dropTargetView.scaleY).isEqualTo(rect.height())
-        assertThat(dropTargetView.translationX).isEqualTo(rect.exactCenterX())
-        assertThat(dropTargetView.translationY).isEqualTo(rect.exactCenterY())
+        assertThat(dropTargetView.getRect().left).isEqualTo(rect.left)
+        assertThat(dropTargetView.getRect().top).isEqualTo(rect.top)
+        assertThat(dropTargetView.getRect().right).isEqualTo(rect.right)
+        assertThat(dropTargetView.getRect().bottom).isEqualTo(rect.bottom)
     }
 
     private class FakeDragZoneChangedListener : DropTargetManager.DragZoneChangedListener {
