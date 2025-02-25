@@ -268,6 +268,9 @@
      72dp (content margin) - 12dp (action padding) - 4dp (button inset) -->
     <dimen name="notification_2025_actions_margin_start">56dp</dimen>
 
+    <!-- Notification action button text size -->
+    <dimen name="notification_2025_action_text_size">16sp</dimen>
+
     <!-- The margin on the end of most content views (ignores the expander) -->
     <dimen name="notification_content_margin_end">16dp</dimen>
 

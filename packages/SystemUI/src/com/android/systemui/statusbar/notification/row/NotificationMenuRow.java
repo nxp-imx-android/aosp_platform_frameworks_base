@@ -16,7 +16,7 @@
 
 package com.android.systemui.statusbar.notification.row;
 
-import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
+import static android.app.Flags.notificationsRedesignTemplates;
 import static android.view.HapticFeedbackConstants.CLOCK_TICK;
 
 import static com.android.systemui.SwipeHelper.SWIPED_FAR_ENOUGH_SIZE_FRACTION;
@@ -706,8 +706,11 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
     static NotificationMenuItem createInfoItem(Context context) {
         Resources res = context.getResources();
         String infoDescription = res.getString(R.string.notification_menu_gear_description);
+        int layoutId = notificationsRedesignTemplates()
+                ? R.layout.notification_2025_info
+                : R.layout.notification_info;
         NotificationInfo infoContent = (NotificationInfo) LayoutInflater.from(context).inflate(
-                R.layout.notification_info, null, false);
+                layoutId, null, false);
         return new NotificationMenuItem(context, infoDescription, infoContent,
                 R.drawable.ic_settings);
     }
