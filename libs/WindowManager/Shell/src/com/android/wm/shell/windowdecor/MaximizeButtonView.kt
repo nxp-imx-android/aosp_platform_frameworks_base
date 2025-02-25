@@ -39,10 +39,7 @@ import android.window.DesktopModeFlags
 private const val OPEN_MAXIMIZE_MENU_DELAY_ON_HOVER_MS = 350
 private const val MAX_DRAWABLE_ALPHA = 255
 
-class MaximizeButtonView(
-        context: Context,
-        attrs: AttributeSet
-) : FrameLayout(context, attrs) {
+class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
     lateinit var onHoverAnimationFinishedListener: () -> Unit
     private val hoverProgressAnimatorSet = AnimatorSet()
     var hoverDisabled = false
@@ -53,10 +50,6 @@ class MaximizeButtonView(
         (stubProgressBarContainer.inflate() as FrameLayout)
             .requireViewById(R.id.progress_bar)
     }
-    private val maximizeButtonText =
-        context.resources.getString(R.string.desktop_mode_maximize_menu_maximize_button_text)
-    private val restoreButtonText =
-        context.resources.getString(R.string.desktop_mode_maximize_menu_restore_button_text)
 
     init {
         LayoutInflater.from(context).inflate(R.layout.maximize_menu_button, this, true)
@@ -158,12 +151,6 @@ class MaximizeButtonView(
     /** Set the drawable resource to use for the maximize button. */
     fun setIcon(@DrawableRes icon: Int) {
         maximizeWindow.setImageResource(icon)
-        when (icon) {
-            R.drawable.decor_desktop_mode_immersive_or_maximize_exit_button_dark ->
-                maximizeWindow.contentDescription = restoreButtonText
-            R.drawable.decor_desktop_mode_maximize_button_dark ->
-                maximizeWindow.contentDescription = maximizeButtonText
-        }
     }
 
     companion object {

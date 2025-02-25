@@ -5784,8 +5784,8 @@ public class UserManagerService extends IUserManager.Stub {
         final boolean isRestricted = UserManager.isUserTypeRestricted(userType);
         final boolean isDemo = UserManager.isUserTypeDemo(userType);
         final boolean isManagedProfile = UserManager.isUserTypeManagedProfile(userType);
-        final boolean isCommunalProfile = UserManager.isUserTypeCommunalProfile(userType);
         final boolean isPrivateProfile = UserManager.isUserTypePrivateProfile(userType);
+        final boolean requiresProfileParent = userTypeDetails.isProfileParentRequired();
 
         final long ident = Binder.clearCallingIdentity();
         UserInfo userInfo;
@@ -5825,7 +5825,7 @@ public class UserManagerService extends IUserManager.Stub {
                             UserManager.USER_OPERATION_ERROR_MAX_USERS);
                 }
                 // TODO(b/142482943): Perhaps let the following code apply to restricted users too.
-                if (isProfile && !isCommunalProfile &&
+                if (requiresProfileParent &&
                         !canAddMoreProfilesToUser(userType, parentId, false)) {
                     throwCheckedUserOperationException(
                             "Cannot add more profiles of type " + userType

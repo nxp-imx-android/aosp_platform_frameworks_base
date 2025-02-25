@@ -44,6 +44,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.plugins.ActivityStarter
+import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import javax.inject.Inject
@@ -52,6 +53,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -91,221 +93,226 @@ constructor(
     private var job: Job? = null
 
     /**
-     * Shows the details content.
+     * Binds the bluetooth details view with BluetoothDetailsContentManager.
      *
-     * @param view The view from which the dialog is shown. If view is null, it should show the
-     *   bluetooth tile details view.
-     *
-     * TODO: b/378513956 Refactor this method into 2. One is called by the dialog to show the
-     *   dialog, another is called by the details view model to bind the view.
+     * @param view The view from which the bluetooth details content is shown.
      */
-    fun showDetailsContent(expandable: Expandable?, view: View?) {
+    fun bindDetailsView(view: View) {
+        // If `QsDetailedView` is not enabled, it should show the dialog.
+        QsDetailedView.assertInNewMode()
+
         cancelJob()
 
         job =
             coroutineScope.launch(context = mainDispatcher) {
-                var updateDeviceItemJob: Job?
-                var updateDialogUiJob: Job? = null
-                val dialog: SystemUIDialog?
-                val context: Context
-
-                if (view == null) {
-                    // Render with dialog
-                    val dialogDelegate = createBluetoothTileDialog()
-                    dialog = dialogDelegate.createDialog()
-                    context = dialog.context
-
-                    val controller =
-                        expandable?.dialogTransitionController(
-                            DialogCuj(
-                                InteractionJankMonitor.CUJ_SHADE_DIALOG_OPEN,
-                                INTERACTION_JANK_TAG,
-                            )
-                        )
-                    controller?.let {
-                        dialogTransitionAnimator.show(
-                            dialog,
-                            it,
-                            animateBackgroundBoundsChange = true,
-                        )
-                    } ?: dialog.show()
-                    // contentManager is created after dialog.show
-                    contentManager = dialogDelegate.contentManager
-                } else {
-                    // Render with tile details view
-                    dialog = null
-                    context = view.context
-                    contentManager = createContentManager()
-                    contentManager.bind(view)
-                    contentManager.start()
-                }
-
-                updateDeviceItemJob = launch {
-                    deviceItemInteractor.updateDeviceItems(context, DeviceFetchTrigger.FIRST_LOAD)
-                }
-
-                // deviceItemUpdate is emitted when device item list is done fetching, update UI and
-                // stop the progress bar.
-                combine(
-                        deviceItemInteractor.deviceItemUpdate,
-                        deviceItemInteractor.showSeeAllUpdate,
-                    ) { deviceItem, showSeeAll ->
-                        updateDialogUiJob?.cancel()
-                        updateDialogUiJob = launch {
-                            contentManager.apply {
-                                onDeviceItemUpdated(
-                                    deviceItem,
-                                    showSeeAll,
-                                    showPairNewDevice =
-                                        bluetoothStateInteractor.isBluetoothEnabled(),
-                                )
-                                animateProgressBar(false)
-                            }
-                        }
-                    }
-                    .launchIn(this)
-
-                // deviceItemUpdateRequest is emitted when a bluetooth callback is called, re-fetch
-                // the device item list and animate the progress bar.
-                merge(
-                        deviceItemInteractor.deviceItemUpdateRequest,
-                        audioModeInteractor.isOngoingCall,
-                        bluetoothDeviceMetadataInteractor.metadataUpdate,
-                        if (
-                            audioSharingInteractor.audioSharingAvailable() &&
-                                audioSharingInteractor.qsDialogImprovementAvailable()
-                        ) {
-                            audioSharingInteractor.audioSourceStateUpdate
-                        } else {
-                            emptyFlow()
-                        },
-                    )
-                    .onEach {
-                        contentManager.animateProgressBar(true)
-                        updateDeviceItemJob?.cancel()
-                        updateDeviceItemJob = launch {
-                            deviceItemInteractor.updateDeviceItems(
-                                context,
-                                DeviceFetchTrigger.BLUETOOTH_CALLBACK_RECEIVED,
-                            )
-                        }
-                    }
-                    .launchIn(this)
-
-                if (audioSharingInteractor.audioSharingAvailable()) {
-                    if (audioSharingInteractor.qsDialogImprovementAvailable()) {
-                        launch { audioSharingInteractor.handleAudioSourceWhenReady() }
-                    }
-
-                    audioSharingButtonViewModelFactory.create().run {
-                        audioSharingButtonStateUpdate
-                            .onEach {
-                                when (it) {
-                                    is AudioSharingButtonState.Visible -> {
-                                        contentManager.onAudioSharingButtonUpdated(
-                                            VISIBLE,
-                                            context.getString(it.resId),
-                                            it.isActive,
-                                        )
-                                    }
-                                    is AudioSharingButtonState.Gone -> {
-                                        contentManager.onAudioSharingButtonUpdated(
-                                            GONE,
-                                            label = null,
-                                            isActive = false,
-                                        )
-                                    }
-                                }
-                            }
-                            .launchIn(this@launch)
-                        launch { activate() }
-                    }
-                }
-
-                // bluetoothStateUpdate is emitted when bluetooth on/off state is changed, re-fetch
-                // the device item list.
-                bluetoothStateInteractor.bluetoothStateUpdate
-                    .onEach {
-                        contentManager.onBluetoothStateUpdated(
-                            it,
-                            UiProperties.build(it, isAutoOnToggleFeatureAvailable()),
-                        )
-                        updateDeviceItemJob?.cancel()
-                        updateDeviceItemJob = launch {
-                            deviceItemInteractor.updateDeviceItems(
-                                context,
-                                DeviceFetchTrigger.BLUETOOTH_STATE_CHANGE_RECEIVED,
-                            )
-                        }
-                    }
-                    .launchIn(this)
-
-                // bluetoothStateToggle is emitted when user toggles the bluetooth state switch,
-                // send the new value to the bluetoothStateInteractor and animate the progress bar.
-                contentManager.bluetoothStateToggle
-                    .filterNotNull()
-                    .onEach {
-                        contentManager.animateProgressBar(true)
-                        bluetoothStateInteractor.setBluetoothEnabled(it)
-                    }
-                    .launchIn(this)
-
-                // deviceItemClick is emitted when user clicked on a device item.
-                contentManager.deviceItemClick
-                    .filterNotNull()
-                    .onEach {
-                        when (it.target) {
-                            DeviceItemClick.Target.ENTIRE_ROW -> {
-                                deviceItemActionInteractor.onClick(it.deviceItem, dialog)
-                                logger.logDeviceClick(
-                                    it.deviceItem.cachedBluetoothDevice.address,
-                                    it.deviceItem.type,
-                                )
-                            }
-
-                            DeviceItemClick.Target.ACTION_ICON -> {
-                                deviceItemActionInteractor.onActionIconClick(it.deviceItem) { intent
-                                    ->
-                                    startSettingsActivity(intent, it.clickedView)
-                                }
-                            }
-                        }
-                    }
-                    .launchIn(this)
-
-                // contentHeight is emitted when the dialog is dismissed.
-                contentManager.contentHeight
-                    .filterNotNull()
-                    .onEach {
-                        withContext(backgroundDispatcher) {
-                            sharedPreferences.edit().putInt(CONTENT_HEIGHT_PREF_KEY, it).apply()
-                        }
-                    }
-                    .launchIn(this)
-
-                if (isAutoOnToggleFeatureAvailable()) {
-                    // bluetoothAutoOnUpdate is emitted when bluetooth auto on on/off state is
-                    // changed.
-                    bluetoothAutoOnInteractor.isEnabled
-                        .onEach {
-                            contentManager.onBluetoothAutoOnUpdated(
-                                it,
-                                if (it) R.string.turn_on_bluetooth_auto_info_enabled
-                                else R.string.turn_on_bluetooth_auto_info_disabled,
-                            )
-                        }
-                        .launchIn(this)
-
-                    // bluetoothAutoOnToggle is emitted when user toggles the bluetooth auto on
-                    // switch, send the new value to the bluetoothAutoOnInteractor.
-                    contentManager.bluetoothAutoOnToggle
-                        .filterNotNull()
-                        .onEach { bluetoothAutoOnInteractor.setEnabled(it) }
-                        .launchIn(this)
-                }
-
-                produce<Unit> { awaitClose { dialog?.cancel() } }
+                contentManager = createContentManager()
+                contentManager.bind(view)
+                contentManager.start()
+                updateDetailsUI(context = view.context, dialog = null)
             }
+    }
+
+    /** Shows the bluetooth dialog. */
+    fun showDialog(expandable: Expandable?) {
+        // If `QsDetailedView` is enabled, it should show the details view.
+        QsDetailedView.assertInLegacyMode()
+
+        cancelJob()
+
+        job =
+            coroutineScope.launch(context = mainDispatcher) {
+                val dialogDelegate = createBluetoothTileDialog()
+                val dialog = dialogDelegate.createDialog()
+
+                val controller =
+                    expandable?.dialogTransitionController(
+                        DialogCuj(
+                            InteractionJankMonitor.CUJ_SHADE_DIALOG_OPEN,
+                            INTERACTION_JANK_TAG,
+                        )
+                    )
+                controller?.let {
+                    dialogTransitionAnimator.show(dialog, it, animateBackgroundBoundsChange = true)
+                } ?: dialog.show()
+                // contentManager is created after dialog.show
+                contentManager = dialogDelegate.contentManager
+                updateDetailsUI(dialog.context, dialog)
+            }
+    }
+
+    /** Unbinds the details view when it goes away. */
+    fun unbindDetailsView() {
+        cancelJob()
+        contentManager.releaseView()
+    }
+
+    private suspend fun updateDetailsUI(context: Context, dialog: SystemUIDialog?) {
+        coroutineScope {
+            var updateDeviceItemJob: Job?
+            var updateDialogUiJob: Job? = null
+
+            updateDeviceItemJob = launch {
+                deviceItemInteractor.updateDeviceItems(context, DeviceFetchTrigger.FIRST_LOAD)
+            }
+
+            // deviceItemUpdate is emitted when device item list is done fetching, update UI and
+            // stop the progress bar.
+            combine(deviceItemInteractor.deviceItemUpdate, deviceItemInteractor.showSeeAllUpdate) {
+                    deviceItem,
+                    showSeeAll ->
+                    updateDialogUiJob?.cancel()
+                    updateDialogUiJob = launch {
+                        contentManager.apply {
+                            onDeviceItemUpdated(
+                                deviceItem,
+                                showSeeAll,
+                                showPairNewDevice = bluetoothStateInteractor.isBluetoothEnabled(),
+                            )
+                            animateProgressBar(false)
+                        }
+                    }
+                }
+                .launchIn(this)
+
+            // deviceItemUpdateRequest is emitted when a bluetooth callback is called, re-fetch
+            // the device item list and animate the progress bar.
+            merge(
+                    deviceItemInteractor.deviceItemUpdateRequest,
+                    audioModeInteractor.isOngoingCall,
+                    bluetoothDeviceMetadataInteractor.metadataUpdate,
+                    if (
+                        audioSharingInteractor.audioSharingAvailable() &&
+                            audioSharingInteractor.qsDialogImprovementAvailable()
+                    ) {
+                        audioSharingInteractor.audioSourceStateUpdate
+                    } else {
+                        emptyFlow()
+                    },
+                )
+                .onEach {
+                    contentManager.animateProgressBar(true)
+                    updateDeviceItemJob?.cancel()
+                    updateDeviceItemJob = launch {
+                        deviceItemInteractor.updateDeviceItems(
+                            context,
+                            DeviceFetchTrigger.BLUETOOTH_CALLBACK_RECEIVED,
+                        )
+                    }
+                }
+                .launchIn(this)
+
+            if (audioSharingInteractor.audioSharingAvailable()) {
+                if (audioSharingInteractor.qsDialogImprovementAvailable()) {
+                    launch { audioSharingInteractor.handleAudioSourceWhenReady() }
+                }
+
+                audioSharingButtonViewModelFactory.create().run {
+                    audioSharingButtonStateUpdate
+                        .onEach {
+                            when (it) {
+                                is AudioSharingButtonState.Visible -> {
+                                    contentManager.onAudioSharingButtonUpdated(
+                                        VISIBLE,
+                                        context.getString(it.resId),
+                                        it.isActive,
+                                    )
+                                }
+                                is AudioSharingButtonState.Gone -> {
+                                    contentManager.onAudioSharingButtonUpdated(
+                                        GONE,
+                                        label = null,
+                                        isActive = false,
+                                    )
+                                }
+                            }
+                        }
+                        .launchIn(this@coroutineScope)
+                    launch { activate() }
+                }
+            }
+
+            // bluetoothStateUpdate is emitted when bluetooth on/off state is changed, re-fetch
+            // the device item list.
+            bluetoothStateInteractor.bluetoothStateUpdate
+                .onEach {
+                    contentManager.onBluetoothStateUpdated(
+                        it,
+                        UiProperties.build(it, isAutoOnToggleFeatureAvailable()),
+                    )
+                    updateDeviceItemJob?.cancel()
+                    updateDeviceItemJob = launch {
+                        deviceItemInteractor.updateDeviceItems(
+                            context,
+                            DeviceFetchTrigger.BLUETOOTH_STATE_CHANGE_RECEIVED,
+                        )
+                    }
+                }
+                .launchIn(this)
+
+            // bluetoothStateToggle is emitted when user toggles the bluetooth state switch,
+            // send the new value to the bluetoothStateInteractor and animate the progress bar.
+            contentManager.bluetoothStateToggle
+                .filterNotNull()
+                .onEach {
+                    contentManager.animateProgressBar(true)
+                    bluetoothStateInteractor.setBluetoothEnabled(it)
+                }
+                .launchIn(this)
+
+            // deviceItemClick is emitted when user clicked on a device item.
+            contentManager.deviceItemClick
+                .filterNotNull()
+                .onEach {
+                    when (it.target) {
+                        DeviceItemClick.Target.ENTIRE_ROW -> {
+                            deviceItemActionInteractor.onClick(it.deviceItem, dialog)
+                            logger.logDeviceClick(
+                                it.deviceItem.cachedBluetoothDevice.address,
+                                it.deviceItem.type,
+                            )
+                        }
+
+                        DeviceItemClick.Target.ACTION_ICON -> {
+                            deviceItemActionInteractor.onActionIconClick(it.deviceItem) { intent ->
+                                startSettingsActivity(intent, it.clickedView)
+                            }
+                        }
+                    }
+                }
+                .launchIn(this)
+
+            // contentHeight is emitted when the dialog is dismissed.
+            contentManager.contentHeight
+                .filterNotNull()
+                .onEach {
+                    withContext(backgroundDispatcher) {
+                        sharedPreferences.edit().putInt(CONTENT_HEIGHT_PREF_KEY, it).apply()
+                    }
+                }
+                .launchIn(this)
+
+            if (isAutoOnToggleFeatureAvailable()) {
+                // bluetoothAutoOnUpdate is emitted when bluetooth auto on on/off state is
+                // changed.
+                bluetoothAutoOnInteractor.isEnabled
+                    .onEach {
+                        contentManager.onBluetoothAutoOnUpdated(
+                            it,
+                            if (it) R.string.turn_on_bluetooth_auto_info_enabled
+                            else R.string.turn_on_bluetooth_auto_info_disabled,
+                        )
+                    }
+                    .launchIn(this)
+
+                // bluetoothAutoOnToggle is emitted when user toggles the bluetooth auto on
+                // switch, send the new value to the bluetoothAutoOnInteractor.
+                contentManager.bluetoothAutoOnToggle
+                    .filterNotNull()
+                    .onEach { bluetoothAutoOnInteractor.setEnabled(it) }
+                    .launchIn(this)
+            }
+            produce<Unit> { awaitClose { dialog?.cancel() } }
+        }
     }
 
     private suspend fun createBluetoothTileDialog(): BluetoothTileDialogDelegate {

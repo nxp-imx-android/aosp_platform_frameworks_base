@@ -97,6 +97,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.Unminim
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.DragStartState
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType
+import com.android.wm.shell.desktopmode.DesktopRepository.DeskChangeListener
 import com.android.wm.shell.desktopmode.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion.DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.DragToDesktopStateListener
@@ -2700,10 +2701,12 @@ class DesktopTasksController(
     /**
      * Adds split screen changes to a transaction. Note that bounds are not reset here due to
      * animation; see {@link onDesktopSplitSelectAnimComplete}
-     *
-     * TODO: b/394268248 - desk needs to be deactivated.
      */
-    private fun addMoveToSplitChanges(wct: WindowContainerTransaction, taskInfo: RunningTaskInfo) {
+    private fun addMoveToSplitChanges(
+        wct: WindowContainerTransaction,
+        taskInfo: RunningTaskInfo,
+        deskId: Int?,
+    ): RunOnTransitStart? {
         // This windowing mode is to get the transition animation started; once we complete
         // split select, we will change windowing mode to undefined and inherit from split stage.
         // Going to undefined here causes task to flicker to the top left.
@@ -2713,11 +2716,12 @@ class DesktopTasksController(
         // want it overridden in multi-window.
         wct.setDensityDpi(taskInfo.token, getDefaultDensityDpi())
 
-        performDesktopExitCleanupIfNeeded(
+        return performDesktopExitCleanupIfNeeded(
             taskId = taskInfo.taskId,
             displayId = taskInfo.displayId,
+            deskId = deskId,
             wct = wct,
-            forceToFullscreen = false,
+            forceToFullscreen = true,
             shouldEndUpAtHome = false,
         )
     }
@@ -2949,14 +2953,21 @@ class DesktopTasksController(
                     }
                 dragToDesktopTransitionHandler.cancelDragToDesktopTransition(cancelState)
             } else {
+                val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
+                logV("Split requested for task=%d in desk=%d", taskInfo.taskId, deskId)
                 val wct = WindowContainerTransaction()
-                addMoveToSplitChanges(wct, taskInfo)
-                splitScreenController.requestEnterSplitSelect(
-                    taskInfo,
-                    wct,
-                    if (leftOrTop) SPLIT_POSITION_TOP_OR_LEFT else SPLIT_POSITION_BOTTOM_OR_RIGHT,
-                    taskInfo.configuration.windowConfiguration.bounds,
-                )
+                val runOnTransitStart = addMoveToSplitChanges(wct, taskInfo, deskId)
+                val transition =
+                    splitScreenController.requestEnterSplitSelect(
+                        taskInfo,
+                        wct,
+                        if (leftOrTop) SPLIT_POSITION_TOP_OR_LEFT
+                        else SPLIT_POSITION_BOTTOM_OR_RIGHT,
+                        taskInfo.configuration.windowConfiguration.bounds,
+                    )
+                if (transition != null) {
+                    runOnTransitStart?.invoke(transition)
+                }
             }
         }
     }
@@ -3050,6 +3061,7 @@ class DesktopTasksController(
                     rootTaskDisplayAreaOrganizer,
                     dragStartState,
                     bubbleController.getOrNull()?.bubbleDropTargetBoundsProvider,
+                    snapEventHandler,
                 )
         if (visualIndicator == null) visualIndicator = indicator
         return indicator.updateIndicatorType(PointF(inputX, taskTop))
@@ -3497,7 +3509,47 @@ class DesktopTasksController(
         private lateinit var remoteListener:
             SingleInstanceRemoteListener<DesktopTasksController, IDesktopTaskListener>
 
-        private val listener: VisibleTasksListener =
+        private val deskChangeListener: DeskChangeListener =
+            object : DeskChangeListener {
+                override fun onDeskAdded(displayId: Int, deskId: Int) {
+                    ProtoLog.v(
+                        WM_SHELL_DESKTOP_MODE,
+                        "IDesktopModeImpl: onDeskAdded display=%d deskId=%d",
+                        displayId,
+                        deskId,
+                    )
+                    remoteListener.call { l -> l.onDeskAdded(displayId, deskId) }
+                }
+
+                override fun onDeskRemoved(displayId: Int, deskId: Int) {
+                    ProtoLog.v(
+                        WM_SHELL_DESKTOP_MODE,
+                        "IDesktopModeImpl: onDeskRemoved display=%d deskId=%d",
+                        displayId,
+                        deskId,
+                    )
+                    remoteListener.call { l -> l.onDeskRemoved(displayId, deskId) }
+                }
+
+                override fun onActiveDeskChanged(
+                    displayId: Int,
+                    newActiveDeskId: Int,
+                    oldActiveDeskId: Int,
+                ) {
+                    ProtoLog.v(
+                        WM_SHELL_DESKTOP_MODE,
+                        "IDesktopModeImpl: onActiveDeskChanged display=%d new=%d old=%d",
+                        displayId,
+                        newActiveDeskId,
+                        oldActiveDeskId,
+                    )
+                    remoteListener.call { l ->
+                        l.onActiveDeskChanged(displayId, newActiveDeskId, oldActiveDeskId)
+                    }
+                }
+            }
+
+        private val visibleTasksListener: VisibleTasksListener =
             object : VisibleTasksListener {
                 override fun onTasksVisibilityChanged(displayId: Int, visibleTasksCount: Int) {
                     ProtoLog.v(
@@ -3561,7 +3613,14 @@ class DesktopTasksController(
                     controller,
                     { c ->
                         run {
-                            c.taskRepository.addVisibleTasksListener(listener, c.mainExecutor)
+                            c.taskRepository.addDeskChangeListener(
+                                deskChangeListener,
+                                c.mainExecutor,
+                            )
+                            c.taskRepository.addVisibleTasksListener(
+                                visibleTasksListener,
+                                c.mainExecutor,
+                            )
                             c.taskbarDesktopTaskListener = taskbarDesktopTaskListener
                             c.desktopModeEnterExitTransitionListener =
                                 desktopModeEntryExitTransitionListener
@@ -3569,7 +3628,8 @@ class DesktopTasksController(
                     },
                     { c ->
                         run {
-                            c.taskRepository.removeVisibleTasksListener(listener)
+                            c.taskRepository.removeDeskChangeListener(deskChangeListener)
+                            c.taskRepository.removeVisibleTasksListener(visibleTasksListener)
                             c.taskbarDesktopTaskListener = null
                             c.desktopModeEnterExitTransitionListener = null
                         }

@@ -545,6 +545,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
 
                 public void handleChildViewDismissed(View view) {
                     // The View needs to clean up the Swipe states, e.g. roundness.
+                    mMagneticNotificationRowManager.resetRoundness();
                     mView.onSwipeEnd();
                     if (mView.getClearAllInProgress()) {
                         return;
@@ -629,7 +630,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 @Override
                 public void onChildSnapBackOvershoots() {
                     if (Flags.magneticNotificationSwipes()) {
-                        mNotificationRoundnessManager.setViewsAffectedBySwipe(null, null, null);
+                        mMagneticNotificationRowManager.resetRoundness();
                     }
                 }
 

@@ -35,6 +35,9 @@ import com.android.wm.shell.shared.annotations.ShellMainThread
 import java.io.PrintWriter
 import java.util.concurrent.Executor
 import java.util.function.Consumer
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.forEach
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -116,6 +119,7 @@ class DesktopRepository(
         }
     }
 
+    private val deskChangeListeners = ArrayMap<DeskChangeListener, Executor>()
     private val activeTasksListeners = ArraySet<ActiveTasksListener>()
     private val visibleTasksListeners = ArrayMap<VisibleTasksListener, Executor>()
 
@@ -143,6 +147,11 @@ class DesktopRepository(
         } else {
             SingleDesktopData()
         }
+
+    /** Adds a listener to be notified of updates about desk changes. */
+    fun addDeskChangeListener(listener: DeskChangeListener, executor: Executor) {
+        deskChangeListeners[listener] = executor
+    }
 
     /** Adds [activeTasksListener] to be notified of updates to active tasks. */
     fun addActiveTaskListener(activeTasksListener: ActiveTasksListener) {
@@ -196,6 +205,11 @@ class DesktopRepository(
         return desktopExclusionRegion
     }
 
+    /** Removes the previously registered listener. */
+    fun removeDeskChangeListener(listener: DeskChangeListener) {
+        deskChangeListeners.remove(listener)
+    }
+
     /** Remove the previously registered [activeTasksListener] */
     fun removeActiveTasksListener(activeTasksListener: ActiveTasksListener) {
         activeTasksListeners.remove(activeTasksListener)
@@ -210,6 +224,9 @@ class DesktopRepository(
     fun addDesk(displayId: Int, deskId: Int) {
         logD("addDesk for displayId=%d and deskId=%d", displayId, deskId)
         desktopData.createDesk(displayId, deskId)
+        deskChangeListeners.forEach { (listener, executor) ->
+            executor.execute { listener.onDeskAdded(displayId = displayId, deskId = deskId) }
+        }
     }
 
     /** Returns the ids of the existing desks in the given display. */
@@ -229,12 +246,37 @@ class DesktopRepository(
     /** Sets the given desk as the active one in the given display. */
     fun setActiveDesk(displayId: Int, deskId: Int) {
         logD("setActiveDesk for displayId=%d and deskId=%d", displayId, deskId)
+        val oldActiveDeskId = desktopData.getActiveDesk(displayId)?.deskId ?: INVALID_DESK_ID
         desktopData.setActiveDesk(displayId = displayId, deskId = deskId)
+        deskChangeListeners.forEach { (listener, executor) ->
+            executor.execute {
+                listener.onActiveDeskChanged(
+                    displayId = displayId,
+                    newActiveDeskId = deskId,
+                    oldActiveDeskId = oldActiveDeskId,
+                )
+            }
+        }
     }
 
     /** Sets the given desk as inactive if it was active. */
     fun setDeskInactive(deskId: Int) {
+        val displayId = desktopData.getDisplayForDesk(deskId)
+        val activeDeskId = desktopData.getActiveDesk(displayId)?.deskId ?: INVALID_DESK_ID
+        if (activeDeskId == INVALID_DESK_ID || activeDeskId != deskId) {
+            // Desk wasn't active.
+            return
+        }
         desktopData.setDeskInactive(deskId)
+        deskChangeListeners.forEach { (listener, executor) ->
+            executor.execute {
+                listener.onActiveDeskChanged(
+                    displayId = displayId,
+                    newActiveDeskId = INVALID_DESK_ID,
+                    oldActiveDeskId = deskId,
+                )
+            }
+        }
     }
 
     /** Returns the id of the active desk in the given display, if any. */
@@ -897,8 +939,21 @@ class DesktopRepository(
                 ?: return emptySet<Int>().also {
                     logW("Could not find desk to remove: deskId=%d", deskId)
                 }
+        val wasActive = desktopData.getActiveDesk(desk.displayId)?.deskId == desk.deskId
         val activeTasks = ArraySet(desk.activeTasks)
         desktopData.remove(desk.deskId)
+        deskChangeListeners.forEach { (listener, executor) ->
+            executor.execute {
+                if (wasActive) {
+                    listener.onActiveDeskChanged(
+                        displayId = desk.displayId,
+                        newActiveDeskId = INVALID_DESK_ID,
+                        oldActiveDeskId = desk.deskId,
+                    )
+                }
+                listener.onDeskRemoved(displayId = desk.displayId, deskId = desk.deskId)
+            }
+        }
         return activeTasks
     }
 
@@ -1019,6 +1074,18 @@ class DesktopRepository(
                     pw.println(desk.topTransparentFullscreenTaskId)
                 }
             }
+    }
+
+    /** Listens to changes of desks state. */
+    interface DeskChangeListener {
+        /** Called when a new desk is added to a display. */
+        fun onDeskAdded(displayId: Int, deskId: Int)
+
+        /** Called when a desk is removed from a display. */
+        fun onDeskRemoved(displayId: Int, deskId: Int)
+
+        /** Called when the active desk in a display has changed. */
+        fun onActiveDeskChanged(displayId: Int, newActiveDeskId: Int, oldActiveDeskId: Int)
     }
 
     /** Listens to changes for active tasks in desktop mode. */
@@ -1281,6 +1348,8 @@ class DesktopRepository(
 
     companion object {
         private const val TAG = "DesktopRepository"
+
+        @VisibleForTesting const val INVALID_DESK_ID = -1
     }
 }
 

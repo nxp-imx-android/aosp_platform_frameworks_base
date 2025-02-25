@@ -148,7 +148,7 @@ constructor(
                         junkListener?.let(animation::removeUpdateListener)
                         junkListener =
                             jankListenerFactory.show(view).also(animation::addUpdateListener)
-                        animation.animateToFinalPosition(FRACTION_SHOW)
+                        animation.suspendAnimate(FRACTION_SHOW)
                     }
                     is VolumeDialogVisibilityModel.Dismissed -> {
                         tracer.traceVisibilityEnd(it)

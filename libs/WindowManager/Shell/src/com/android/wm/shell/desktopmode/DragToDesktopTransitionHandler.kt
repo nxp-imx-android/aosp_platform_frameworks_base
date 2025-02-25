@@ -1138,8 +1138,11 @@ constructor(
             .spring(FloatProperties.RECT_HEIGHT, endBounds.height().toFloat(), sizeSpringConfig)
             .addUpdateListener { animBounds, _ ->
                 val animFraction =
-                    (animBounds.width() - startBounds.width()).toFloat() /
-                        (endBounds.width() - startBounds.width())
+                    getAnimationFraction(
+                        startBounds = startBounds,
+                        endBounds = endBounds,
+                        animBounds = animBounds,
+                    )
                 val animScale = startScale + animFraction * (1 - startScale)
                 // Freeform animation starts with freeform animation offset relative to the commit
                 // animation and plays until the commit animation ends. For instance:
@@ -1191,16 +1194,38 @@ constructor(
             .start()
     }
 
-    private fun logV(msg: String, vararg arguments: Any?) {
-        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
-    }
-
-    private fun logE(msg: String, vararg arguments: Any?) {
-        ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
-    }
-
     companion object {
         private const val TAG = "SpringDragToDesktopTransitionHandler"
+
+        @VisibleForTesting
+        fun getAnimationFraction(startBounds: Rect, endBounds: Rect, animBounds: Rect): Float {
+            if (startBounds.width() != endBounds.width()) {
+                return (animBounds.width() - startBounds.width()).toFloat() /
+                    (endBounds.width() - startBounds.width())
+            }
+            if (startBounds.height() != endBounds.height()) {
+                return (animBounds.height() - startBounds.height()).toFloat() /
+                    (endBounds.height() - startBounds.height())
+            }
+            logW(
+                "same start and end sizes, returning 0: " +
+                    "startBounds=$startBounds, endBounds=$endBounds, animBounds=$animBounds"
+            )
+            return 0f
+        }
+
+        private fun logV(msg: String, vararg arguments: Any?) {
+            ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+        }
+
+        private fun logW(msg: String, vararg arguments: Any?) {
+            ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+        }
+
+        private fun logE(msg: String, vararg arguments: Any?) {
+            ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+        }
+
         /** The freeform tasks initial scale when committing the drag-to-desktop gesture. */
         private val FREEFORM_TASKS_INITIAL_SCALE =
             propertyValue("freeform_tasks_initial_scale", scale = 100f, default = 0.9f)

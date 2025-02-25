@@ -122,6 +122,7 @@ import android.view.RemoteAnimationTarget;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.widget.Toast;
+import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
 import android.window.RemoteTransition;
 import android.window.TransitionInfo;
@@ -219,6 +220,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     private final Context mContext;
     private final List<SplitScreen.SplitScreenListener> mListeners = new ArrayList<>();
     private final Set<SplitScreen.SplitSelectListener> mSelectListeners = new HashSet<>();
+    private final Transitions mTransitions;
     private final DisplayController mDisplayController;
     private final DisplayImeController mDisplayImeController;
     private final DisplayInsetsController mDisplayInsetsController;
@@ -419,6 +421,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     iconProvider,
                     mWindowDecorViewModel, STAGE_TYPE_SIDE);
         }
+        mTransitions = transitions;
         mDisplayController = displayController;
         mDisplayImeController = displayImeController;
         mDisplayInsetsController = displayInsetsController;
@@ -455,6 +458,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mTaskOrganizer = taskOrganizer;
         mMainStage = mainStage;
         mSideStage = sideStage;
+        mTransitions = transitions;
         mDisplayController = displayController;
         mDisplayImeController = displayImeController;
         mDisplayInsetsController = displayInsetsController;
@@ -660,16 +664,22 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         return mLogger;
     }
 
-    void requestEnterSplitSelect(ActivityManager.RunningTaskInfo taskInfo,
+    @Nullable
+    IBinder requestEnterSplitSelect(ActivityManager.RunningTaskInfo taskInfo,
             WindowContainerTransaction wct, int splitPosition, Rect taskBounds) {
         boolean enteredSplitSelect = false;
         for (SplitScreen.SplitSelectListener listener : mSelectListeners) {
             enteredSplitSelect |= listener.onRequestEnterSplitSelect(taskInfo, splitPosition,
                     taskBounds);
         }
-        if (enteredSplitSelect) {
-            mTaskOrganizer.applyTransaction(wct);
+        if (!enteredSplitSelect) {
+            return null;
         }
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
+            mTaskOrganizer.applyTransaction(wct);
+            return null;
+        }
+        return mTransitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null);
     }
 
     void startShortcut(String packageName, String shortcutId, @SplitPosition int position,

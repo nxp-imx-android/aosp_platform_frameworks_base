@@ -104,7 +104,7 @@ import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.qs.QSFragmentLegacy;
 import com.android.systemui.res.R;
 import com.android.systemui.screenrecord.RecordingController;
-import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractor;
+import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository;
 import com.android.systemui.shade.data.repository.FakeShadeRepository;
 import com.android.systemui.shade.data.repository.ShadeAnimationRepository;
 import com.android.systemui.shade.data.repository.ShadeRepository;
@@ -314,8 +314,8 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     protected ShadeRepository mShadeRepository;
     protected FakeMSDLPlayer mMSDLPlayer = mKosmos.getMsdlPlayer();
 
-    protected BrightnessMirrorShowingInteractor mBrightnessMirrorShowingInteractor =
-            mKosmos.getBrightnessMirrorShowingInteractor();
+    protected BrightnessMirrorShowingRepository mBrightnessMirrorShowingRepository =
+            mKosmos.getBrightnessMirrorShowingRepository();
 
     protected final FalsingManagerFake mFalsingManager = new FalsingManagerFake();
     protected final Optional<SysUIUnfoldComponent> mSysUIUnfoldComponent = Optional.empty();
@@ -588,7 +588,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 mPowerInteractor,
                 mKeyguardClockPositionAlgorithm,
                 mMSDLPlayer,
-                mBrightnessMirrorShowingInteractor,
+                mBrightnessMirrorShowingRepository,
                 new BlurConfig(0f, 0f));
         mNotificationPanelViewController.initDependencies(
                 mCentralSurfaces,

@@ -80,7 +80,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             // THEN the magnetic and roundable targets are defined and the state is TARGETS_SET
             assertThat(underTest.currentState).isEqualTo(State.TARGETS_SET)
             assertThat(underTest.currentMagneticListeners.isNotEmpty()).isTrue()
-            assertThat(underTest.currentRoundableTargets).isNotNull()
+            assertThat(underTest.isSwipedViewRoundableSet).isTrue()
         }
 
     @Test
@@ -279,6 +279,19 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
 
             // THEN magnetic animations are cancelled
             assertThat(magneticAnimationsCancelled[neighborIndex]).isTrue()
+        }
+
+    @Test
+    fun onResetRoundness_swipedRoundableGetsCleared() =
+        kosmos.testScope.runTest {
+            // GIVEN targets are set
+            setTargets()
+
+            // WHEN we reset the roundness
+            underTest.resetRoundness()
+
+            // THEN the swiped roundable gets cleared
+            assertThat(underTest.isSwipedViewRoundableSet).isFalse()
         }
 
     @After

@@ -159,6 +159,8 @@ import kotlin.Pair;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
+import org.jetbrains.annotations.NotNull;
+
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
 import kotlinx.coroutines.MainCoroutineDispatcher;
@@ -935,6 +937,18 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         return mDesktopTilingDecorViewModel.moveTaskToFrontIfTiled(taskInfo);
     }
 
+    @Override
+    @NotNull
+    public Rect getLeftSnapBoundsIfTiled(int displayId) {
+        return mDesktopTilingDecorViewModel.getLeftSnapBoundsIfTiled(displayId);
+    }
+
+    @Override
+    @NotNull
+    public Rect getRightSnapBoundsIfTiled(int displayId) {
+        return mDesktopTilingDecorViewModel.getRightSnapBoundsIfTiled(displayId);
+    }
+
     private class DesktopModeTouchEventListener extends GestureDetector.SimpleOnGestureListener
             implements View.OnClickListener, View.OnTouchListener, View.OnLongClickListener,
             View.OnGenericMotionListener, DragDetector.MotionEventHandler {
@@ -974,7 +988,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             final int touchSlop = ViewConfiguration.get(mContext).getScaledTouchSlop();
             final long appHandleHoldToDragDuration =
                     DesktopModeFlags.ENABLE_HOLD_TO_DRAG_APP_HANDLE.isTrue()
-                    ? APP_HANDLE_HOLD_TO_DRAG_DURATION_MS : 0;
+                            ? APP_HANDLE_HOLD_TO_DRAG_DURATION_MS : 0;
             mHandleDragDetector = new DragDetector(this, appHandleHoldToDragDuration,
                     touchSlop);
             mHeaderDragDetector = new DragDetector(this, APP_HEADER_HOLD_TO_DRAG_DURATION_MS,
@@ -1027,7 +1041,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         decoration.mTaskInfo.userId);
                 if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
                         && desktopRepository.isTaskInFullImmersiveState(
-                                decoration.mTaskInfo.taskId)) {
+                        decoration.mTaskInfo.taskId)) {
                     // Task is in immersive and should exit.
                     onEnterOrExitImmersive(decoration.mTaskInfo);
                 } else {
@@ -1321,6 +1335,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         /**
          * Perform a task size toggle on release of the double-tap, assuming no drag event
          * was handled during the double-tap.
+         *
          * @param e The motion event that occurred during the double-tap gesture.
          * @return true if the event should be consumed, false if not
          */
@@ -1346,6 +1361,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     class EventReceiver extends InputEventReceiver {
         private InputMonitor mInputMonitor;
         private int mTasksOnDisplay;
+
         EventReceiver(InputMonitor inputMonitor, InputChannel channel, Looper looper) {
             super(channel, looper);
             mInputMonitor = inputMonitor;
@@ -1397,6 +1413,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     /**
      * Check if an EventReceiver exists on a particular display.
      * If it does, increment its task count. Otherwise, create one for that display.
+     *
      * @param displayId the display to check against
      */
     private void incrementEventReceiverTasks(int displayId) {
@@ -1902,7 +1919,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         @Override
         public void onAnimationStart(int taskId, Transaction t, Rect bounds) {
             final DesktopModeWindowDecoration decoration = mWindowDecorByTaskId.get(taskId);
-            if (decoration == null)  {
+            if (decoration == null) {
                 t.apply();
                 return;
             }
@@ -1986,15 +2003,15 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             return activityTaskManager.getRecentTasks(Integer.MAX_VALUE,
                     ActivityManager.RECENT_WITH_EXCLUDED,
                     info.userId).getList().stream().filter(
-                            recentTaskInfo -> {
-                                if (recentTaskInfo.taskId == info.taskId) {
-                                    return false;
-                                }
-                                final String recentTaskPackageName =
-                                        ComponentUtils.getPackageName(recentTaskInfo);
-                                return packageName != null
-                                        && packageName.equals(recentTaskPackageName);
-                            }
+                    recentTaskInfo -> {
+                        if (recentTaskInfo.taskId == info.taskId) {
+                            return false;
+                        }
+                        final String recentTaskPackageName =
+                                ComponentUtils.getPackageName(recentTaskInfo);
+                        return packageName != null
+                                && packageName.equals(recentTaskPackageName);
+                    }
             ).toList().size();
         } catch (RemoteException e) {
             throw new RuntimeException(e);

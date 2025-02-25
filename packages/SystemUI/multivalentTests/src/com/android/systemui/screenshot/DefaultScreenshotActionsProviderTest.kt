@@ -46,6 +46,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
     private val actionExecutor = mock<ActionExecutor>()
     private val uiEventLogger = mock<UiEventLogger>()
     private val actionsCallback = mock<ScreenshotActionsController.ActionsCallback>()
+    private val actionIntentCreator = ActionIntentCreator(context, context.packageManager)
 
     private val request = ScreenshotData.forTesting(userHandle = UserHandle.OWNER)
     private val validResult = ScreenshotSavedResult(Uri.EMPTY, Process.myUserHandle(), 0)
@@ -196,6 +197,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         return DefaultScreenshotActionsProvider(
             context,
             uiEventLogger,
+            actionIntentCreator,
             UUID.randomUUID(),
             request,
             actionExecutor,

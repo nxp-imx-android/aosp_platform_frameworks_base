@@ -28,9 +28,11 @@ import com.android.internal.logging.UiEventLogger
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.flags.Flags
+import com.android.systemui.Flags.FLAG_QS_TILE_DETAILED_VIEW
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.ActivityStarter
@@ -194,9 +196,9 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun testShowDetailsContent_noAnimation() {
+    fun testShowDialog_noAnimation() {
         testScope.runTest {
-            bluetoothDetailsContentViewModel.showDetailsContent(null, null)
+            bluetoothDetailsContentViewModel.showDialog(null)
             runCurrent()
 
             verify(mDialogTransitionAnimator, never()).show(any(), any(), any())
@@ -204,9 +206,9 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun testShowDetailsContent_animated() {
+    fun testShowDialog_animated() {
         testScope.runTest {
-            bluetoothDetailsContentViewModel.showDetailsContent(expandable, null)
+            bluetoothDetailsContentViewModel.showDialog(expandable)
             runCurrent()
 
             verify(mDialogTransitionAnimator).show(any(), any(), anyBoolean())
@@ -214,9 +216,11 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun testShowDetailsContent_animated_inDetailsView() {
+    @EnableSceneContainer
+    @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW)
+    fun testBindDetailsView() {
         testScope.runTest {
-            bluetoothDetailsContentViewModel.showDetailsContent(expandable, mockView)
+            bluetoothDetailsContentViewModel.bindDetailsView(mockView)
             runCurrent()
 
             verify(bluetoothDetailsContentManager).bind(mockView)
@@ -225,10 +229,10 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun testShowDetailsContent_animated_callInBackgroundThread() {
+    fun testShowDialog_animated_callInBackgroundThread() {
         testScope.runTest {
             backgroundExecutor.execute {
-                bluetoothDetailsContentViewModel.showDetailsContent(expandable, null)
+                bluetoothDetailsContentViewModel.showDialog(expandable)
                 runCurrent()
 
                 verify(mDialogTransitionAnimator).show(any(), any(), anyBoolean())
@@ -237,10 +241,12 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun testShowDetailsContent_animated_callInBackgroundThread_inDetailsView() {
+    @EnableSceneContainer
+    @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW)
+    fun testBindDetailsView_callInBackgroundThread() {
         testScope.runTest {
             backgroundExecutor.execute {
-                bluetoothDetailsContentViewModel.showDetailsContent(expandable, mockView)
+                bluetoothDetailsContentViewModel.bindDetailsView(mockView)
                 runCurrent()
 
                 verify(bluetoothDetailsContentManager).bind(mockView)
@@ -250,9 +256,21 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun testShowDetailsContent_fetchDeviceItem() {
+    fun testShowDialog_fetchDeviceItem() {
         testScope.runTest {
-            bluetoothDetailsContentViewModel.showDetailsContent(null, null)
+            bluetoothDetailsContentViewModel.showDialog(null)
+            runCurrent()
+
+            verify(deviceItemInteractor).deviceItemUpdate
+        }
+    }
+
+    @Test
+    @EnableSceneContainer
+    @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW)
+    fun testBindDetailsView_fetchDeviceItem() {
+        testScope.runTest {
+            bluetoothDetailsContentViewModel.bindDetailsView(mockView)
             runCurrent()
 
             verify(deviceItemInteractor).deviceItemUpdate
@@ -263,7 +281,24 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
     fun testStartSettingsActivity_activityLaunched_dialogDismissed() {
         testScope.runTest {
             whenever(deviceItem.cachedBluetoothDevice).thenReturn(cachedBluetoothDevice)
-            bluetoothDetailsContentViewModel.showDetailsContent(null, null)
+            bluetoothDetailsContentViewModel.showDialog(null)
+            runCurrent()
+
+            val clickedView = View(context)
+            bluetoothDetailsContentViewModel.onPairNewDeviceClicked(clickedView)
+
+            verify(uiEventLogger).log(BluetoothTileDialogUiEvent.PAIR_NEW_DEVICE_CLICKED)
+            verify(activityStarter).postStartActivityDismissingKeyguard(any(), anyInt(), nullable())
+        }
+    }
+
+    @Test
+    @EnableSceneContainer
+    @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW)
+    fun testStartSettingsActivity_activityLaunched_detailsViewDismissed() {
+        testScope.runTest {
+            whenever(deviceItem.cachedBluetoothDevice).thenReturn(cachedBluetoothDevice)
+            bluetoothDetailsContentViewModel.bindDetailsView(mockView)
             runCurrent()
 
             val clickedView = View(context)

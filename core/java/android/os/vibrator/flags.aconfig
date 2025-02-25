@@ -155,3 +155,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "haptics"
+    name: "fix_external_vibration_system_update_aware"
+    description: "Fix the audio-coupled haptics handling of system updates."
+    bug: "372241975"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

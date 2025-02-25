@@ -53,7 +53,6 @@ import android.content.pm.UserPackage;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.DexmakerShareClassLoaderRule;
@@ -68,7 +67,6 @@ import com.android.internal.app.SuspendedAppActivity;
 import com.android.internal.app.UnlaunchableAppActivity;
 import com.android.server.LocalServices;
 import com.android.server.am.ActivityManagerService;
-import com.android.window.flags.Flags;
 
 import org.junit.After;
 import org.junit.Before;
@@ -242,7 +240,6 @@ public class ActivityStartInterceptorTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NORMALIZE_HOME_INTENT)
     public void testInterceptIncorrectHomeIntent() {
         // Create a non-standard home intent
         final Intent homeIntent = new Intent(Intent.ACTION_MAIN);

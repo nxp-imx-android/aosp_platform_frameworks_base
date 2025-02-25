@@ -37,10 +37,13 @@ import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.window.DesktopModeFlags
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.withStyledAttributes
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import com.android.internal.R.color.materialColorOnSecondaryContainer
@@ -50,9 +53,6 @@ import com.android.internal.R.color.materialColorSurfaceContainerHigh
 import com.android.internal.R.color.materialColorSurfaceContainerLow
 import com.android.internal.R.color.materialColorSurfaceDim
 import com.android.wm.shell.R
-import android.window.DesktopModeFlags
-import androidx.core.view.ViewCompat
-import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import com.android.wm.shell.windowdecor.MaximizeButtonView
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.OPACITY_100
@@ -145,6 +145,15 @@ class AppHeaderViewHolder(
     val appNameTextWidth: Int
         get() = appNameTextView.width
 
+    private val a11yAnnounceTextMaximize: String =
+        context.getString(R.string.app_header_talkback_action_maximize_button_text)
+    private val a11yAnnounceTextRestore: String =
+        context.getString(R.string.app_header_talkback_action_restore_button_text)
+
+    private lateinit var sizeToggleDirection: SizeToggleDirection
+    private lateinit var a11yTextMaximize: String
+    private lateinit var a11yTextRestore: String
+
     init {
         captionView.setOnTouchListener(onCaptionTouchListener)
         captionHandle.setOnTouchListener(onCaptionTouchListener)
@@ -163,15 +172,15 @@ class AppHeaderViewHolder(
 
         val a11yActionSnapLeft = AccessibilityAction(
             R.id.action_snap_left,
-            context.resources.getString(R.string.desktop_mode_a11y_action_snap_left)
+            context.getString(R.string.desktop_mode_a11y_action_snap_left)
         )
         val a11yActionSnapRight = AccessibilityAction(
             R.id.action_snap_right,
-            context.resources.getString(R.string.desktop_mode_a11y_action_snap_right)
+            context.getString(R.string.desktop_mode_a11y_action_snap_right)
         )
         val a11yActionMaximizeRestore = AccessibilityAction(
             R.id.action_maximize_restore,
-            context.resources.getString(R.string.desktop_mode_a11y_action_maximize_restore)
+            context.getString(R.string.desktop_mode_a11y_action_maximize_restore)
         )
 
         captionHandle.accessibilityDelegate = object : View.AccessibilityDelegate() {
@@ -236,19 +245,19 @@ class AppHeaderViewHolder(
             null
         )
 
-        // Update a11y announcement to say "double tap to maximize or restore window size"
-        ViewCompat.replaceAccessibilityAction(
-            maximizeWindowButton,
-            AccessibilityActionCompat.ACTION_CLICK,
-            context.getString(R.string.maximize_button_talkback_action_maximize_restore_text),
-            null
-        )
-
-        // Update a11y announcement out to say "double tap to minimize app window"
+        // Update a11y announcement to say "double tap to minimize app window"
         ViewCompat.replaceAccessibilityAction(
             minimizeWindowButton,
             AccessibilityActionCompat.ACTION_CLICK,
-            context.getString(R.string.minimize_button_talkback_action_maximize_restore_text),
+            context.getString(R.string.app_header_talkback_action_minimize_button_text),
+            null
+        )
+
+        // Update a11y announcement to say "double tap to close app window"
+        ViewCompat.replaceAccessibilityAction(
+            closeWindowButton,
+            AccessibilityActionCompat.ACTION_CLICK,
+            context.getString(R.string.app_header_talkback_action_close_button_text),
             null
         )
     }
@@ -268,6 +277,26 @@ class AppHeaderViewHolder(
         appNameTextView.text = name
         openMenuButton.contentDescription =
             context.getString(R.string.desktop_mode_app_header_chip_text, name)
+
+        closeWindowButton.contentDescription = context.getString(R.string.close_button_text, name)
+        minimizeWindowButton.contentDescription =
+            context.getString(R.string.minimize_button_text, name)
+
+        a11yTextMaximize = context.getString(R.string.maximize_button_text, name)
+        a11yTextRestore = context.getString(R.string.restore_button_text, name)
+
+        updateMaximizeButtonContentDescription()
+    }
+
+    private fun updateMaximizeButtonContentDescription() {
+        if (this::a11yTextRestore.isInitialized &&
+            this::a11yTextMaximize.isInitialized &&
+            this::sizeToggleDirection.isInitialized) {
+            maximizeWindowButton.contentDescription = when (sizeToggleDirection) {
+                SizeToggleDirection.MAXIMIZE -> a11yTextMaximize
+                SizeToggleDirection.RESTORE -> a11yTextRestore
+            }
+        }
     }
 
     /** Sets the app's icon in the header. */
@@ -388,7 +417,34 @@ class AppHeaderViewHolder(
                     drawableInsets = maximizeDrawableInsets
                 )
             )
-            setIcon(getMaximizeButtonIcon(isTaskMaximized, inFullImmersiveState))
+            val icon = getMaximizeButtonIcon(isTaskMaximized, inFullImmersiveState)
+            setIcon(icon)
+
+            when (icon) {
+                R.drawable.decor_desktop_mode_immersive_or_maximize_exit_button_dark -> {
+                    sizeToggleDirection = SizeToggleDirection.RESTORE
+
+                    // Update a11y announcement to say "double tap to maximize app window size"
+                    ViewCompat.replaceAccessibilityAction(
+                        maximizeWindowButton,
+                        AccessibilityActionCompat.ACTION_CLICK,
+                        a11yAnnounceTextRestore,
+                        null
+                    )
+                }
+                R.drawable.decor_desktop_mode_maximize_button_dark -> {
+                    sizeToggleDirection = SizeToggleDirection.MAXIMIZE
+
+                    // Update a11y announcement to say "double tap to restore app window size"
+                    ViewCompat.replaceAccessibilityAction(
+                        maximizeWindowButton,
+                        AccessibilityActionCompat.ACTION_CLICK,
+                        a11yAnnounceTextMaximize,
+                        null
+                    )
+                }
+            }
+            updateMaximizeButtonContentDescription()
         }
         // Close button.
         closeWindowButton.apply {
@@ -623,6 +679,10 @@ class AppHeaderViewHolder(
                     drawableInsets.l, drawableInsets.t, drawableInsets.r, drawableInsets.b)
             }
         )
+    }
+
+    private enum class SizeToggleDirection {
+        MAXIMIZE, RESTORE
     }
 
     private data class DrawableInsets(val l: Int, val t: Int, val r: Int, val b: Int) {

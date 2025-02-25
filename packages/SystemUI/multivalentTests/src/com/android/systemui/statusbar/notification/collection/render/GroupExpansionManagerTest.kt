@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.collection.render
 
 import android.os.Build
+import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
@@ -29,9 +30,12 @@ import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
 import com.android.systemui.statusbar.notification.collection.ListEntry
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
+import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager.OnGroupExpansionChangeListener
+import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
+import com.android.systemui.statusbar.notification.row.NotificationTestHelper
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
@@ -55,55 +59,57 @@ class GroupExpansionManagerTest : SysuiTestCase() {
 
     private lateinit var underTest: GroupExpansionManagerImpl
 
+    private lateinit var testHelper: NotificationTestHelper
     private val dumpManager: DumpManager = mock()
     private val groupMembershipManager: GroupMembershipManager = mock()
 
     private val pipeline: NotifPipeline = mock()
     private lateinit var beforeRenderListListener: OnBeforeRenderListListener
 
-    private val summary1 = notificationSummaryEntry("foo", 1)
-    private val summary2 = notificationSummaryEntry("bar", 1)
-    private val entries =
-        listOf<ListEntry>(
-            GroupEntryBuilder()
-                .setSummary(summary1)
-                .setChildren(
-                    listOf(
-                        notificationEntry("foo", 2),
-                        notificationEntry("foo", 3),
-                        notificationEntry("foo", 4)
-                    )
-                )
-                .build(),
-            GroupEntryBuilder()
-                .setSummary(summary2)
-                .setChildren(
-                    listOf(
-                        notificationEntry("bar", 2),
-                        notificationEntry("bar", 3),
-                        notificationEntry("bar", 4)
-                    )
-                )
-                .build(),
-            notificationEntry("baz", 1)
-        )
+    private lateinit var summary1: NotificationEntry
+    private lateinit var summary2: NotificationEntry
+    private lateinit var entries: List<ListEntry>
 
-    private fun notificationEntry(pkg: String, id: Int) =
-        NotificationEntryBuilder().setPkg(pkg).setId(id).build().apply { row = mock() }
-
-    private fun notificationSummaryEntry(pkg: String, id: Int) =
-        NotificationEntryBuilder().setPkg(pkg).setId(id).setParent(GroupEntry.ROOT_ENTRY).build()
-            .apply { row = mock() }
+    private fun notificationEntry(pkg: String, id: Int, parent: ExpandableNotificationRow?) =
+        NotificationEntryBuilder().setPkg(pkg).setId(id).build().apply {
+            row = testHelper.createRow().apply {
+                setIsChildInGroup(true, parent)
+            }
+        }
 
     @Before
     fun setUp() {
+        testHelper = NotificationTestHelper(mContext, mDependency)
+
+        summary1 = testHelper.createRow().entry
+        summary2 = testHelper.createRow().entry
+        entries =
+            listOf<ListEntry>(
+                GroupEntryBuilder()
+                    .setSummary(summary1)
+                    .setChildren(
+                        listOf(
+                            notificationEntry("foo", 2, summary1.row),
+                            notificationEntry("foo", 3, summary1.row),
+                            notificationEntry("foo", 4, summary1.row)
+                        )
+                    )
+                    .build(),
+                GroupEntryBuilder()
+                    .setSummary(summary2)
+                    .setChildren(
+                        listOf(
+                            notificationEntry("bar", 2, summary2.row),
+                            notificationEntry("bar", 3, summary2.row),
+                            notificationEntry("bar", 4, summary2.row)
+                        )
+                    )
+                    .build(),
+                notificationEntry("baz", 1, null)
+            )
+
         whenever(groupMembershipManager.getGroupSummary(summary1)).thenReturn(summary1)
         whenever(groupMembershipManager.getGroupSummary(summary2)).thenReturn(summary2)
-
-        whenever(groupMembershipManager.getGroupRoot(summary1.entryAdapter))
-            .thenReturn(summary1.entryAdapter)
-        whenever(groupMembershipManager.getGroupRoot(summary2.entryAdapter))
-            .thenReturn(summary2.entryAdapter)
 
         underTest = GroupExpansionManagerImpl(dumpManager, groupMembershipManager)
     }
@@ -220,5 +226,16 @@ class GroupExpansionManagerTest : SysuiTestCase() {
         beforeRenderListListener.onBeforeRenderList(emptyList())
         verify(listener).onGroupExpansionChange(summary1.row, false)
         verifyNoMoreInteractions(listener)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun isGroupExpanded() {
+        underTest.setGroupExpanded(summary1.entryAdapter, true)
+
+        assertThat(underTest.isGroupExpanded(summary1.entryAdapter)).isTrue();
+        assertThat(underTest.isGroupExpanded(
+            (entries[0] as? GroupEntry)?.getChildren()?.get(0)?.entryAdapter))
+            .isTrue();
     }
 }

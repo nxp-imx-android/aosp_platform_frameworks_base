@@ -36,7 +36,7 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractor
+import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractorPassThrough
 import com.android.systemui.statusbar.phone.DozeServiceHost
 import com.android.systemui.statusbar.phone.ScrimController
 import com.android.systemui.statusbar.phone.ScrimState
@@ -64,7 +64,7 @@ constructor(
     biometricUnlockInteractor: BiometricUnlockInteractor,
     private val statusBarKeyguardViewManager: StatusBarKeyguardViewManager,
     private val alternateBouncerInteractor: AlternateBouncerInteractor,
-    brightnessMirrorShowingInteractor: BrightnessMirrorShowingInteractor,
+    brightnessMirrorShowingInteractor: BrightnessMirrorShowingInteractorPassThrough,
     private val dozeServiceHost: DozeServiceHost,
 ) : CoreStartable {
 

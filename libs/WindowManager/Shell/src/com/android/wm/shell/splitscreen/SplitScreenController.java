@@ -54,6 +54,7 @@ import android.content.pm.ShortcutInfo;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.ArrayMap;
@@ -580,10 +581,13 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
      * @param wct transaction to apply if this is a valid request
      * @param splitPosition the split position this task should move to
      * @param taskBounds current freeform bounds of the task entering split
+     *
+     * @return the token of the transition that started as a result of entering split select.
      */
-    public void requestEnterSplitSelect(ActivityManager.RunningTaskInfo taskInfo,
+    @Nullable
+    public IBinder requestEnterSplitSelect(ActivityManager.RunningTaskInfo taskInfo,
             WindowContainerTransaction wct, int splitPosition, Rect taskBounds) {
-        mStageCoordinator.requestEnterSplitSelect(taskInfo, wct, splitPosition, taskBounds);
+        return mStageCoordinator.requestEnterSplitSelect(taskInfo, wct, splitPosition, taskBounds);
     }
 
     /**

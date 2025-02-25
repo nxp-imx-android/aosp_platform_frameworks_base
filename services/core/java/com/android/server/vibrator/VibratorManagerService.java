@@ -1015,9 +1015,12 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 updateAlwaysOnLocked(mAlwaysOnEffects.valueAt(i));
             }
 
-            // TODO(b/372241975): investigate why external vibrations were not handled here before
-            if (mCurrentSession == null
-                    || (mCurrentSession instanceof ExternalVibrationSession)) {
+            if (mCurrentSession == null) {
+                return;
+            }
+
+            if (!Flags.fixExternalVibrationSystemUpdateAware()
+                    && (mCurrentSession instanceof ExternalVibrationSession)) {
                 return;
             }
 
@@ -1025,7 +1028,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             if (inputDevicesChanged || (ignoreStatus != null)) {
                 if (DEBUG) {
                     Slog.d(TAG, "Canceling vibration because settings changed: "
-                            + (inputDevicesChanged ? "input devices changed" : ignoreStatus));
+                            + (ignoreStatus == null ? "input devices changed" : ignoreStatus));
                 }
                 mCurrentSession.requestEnd(Status.CANCELLED_BY_SETTINGS_UPDATE);
             }
@@ -2334,14 +2337,22 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     @GuardedBy("mLock")
     private void maybeClearCurrentAndNextSessionsLocked(
             Predicate<VibrationSession> shouldEndSessionPredicate, Status endStatus) {
-        // TODO(b/372241975): investigate why external vibrations were not handled here before
-        if (!(mNextSession instanceof ExternalVibrationSession)
-                && shouldEndSessionPredicate.test(mNextSession)) {
-            clearNextSessionLocked(endStatus);
-        }
-        if (!(mCurrentSession instanceof ExternalVibrationSession)
-                && shouldEndSessionPredicate.test(mCurrentSession)) {
-            mCurrentSession.requestEnd(endStatus);
+        if (Flags.fixExternalVibrationSystemUpdateAware()) {
+            if (shouldEndSessionPredicate.test(mNextSession)) {
+                clearNextSessionLocked(endStatus);
+            }
+            if (shouldEndSessionPredicate.test(mCurrentSession)) {
+                mCurrentSession.requestEnd(endStatus);
+            }
+        } else {
+            if (!(mNextSession instanceof ExternalVibrationSession)
+                    && shouldEndSessionPredicate.test(mNextSession)) {
+                clearNextSessionLocked(endStatus);
+            }
+            if (!(mCurrentSession instanceof ExternalVibrationSession)
+                    && shouldEndSessionPredicate.test(mCurrentSession)) {
+                mCurrentSession.requestEnd(endStatus);
+            }
         }
     }
 
@@ -2535,6 +2546,9 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                             Slog.d(TAG, "Stopping external vibration: " + vib);
                         }
                         mCurrentSession.requestEnd(Status.FINISHED);
+                    } else if (Build.IS_DEBUGGABLE) {
+                        Slog.wtf(TAG, "VibrationSession invalid on external vibration stop."
+                                + " currentSession=" + mCurrentSession + ", received=" + vib);
                     }
                 }
             } finally {

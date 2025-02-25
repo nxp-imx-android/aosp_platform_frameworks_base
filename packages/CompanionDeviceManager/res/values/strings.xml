@@ -139,6 +139,12 @@
     <!-- Back button for the helper consent dialog [CHAR LIMIT=30] -->
     <string name="consent_back">Back</string>
 
+    <!-- Downward arrow button action for scroll down the permission list [CHAR LIMIT=30] -->
+    <string name="downward_arrow_action">Scroll down the list</string>
+
+    <!-- Downward arrow button [CHAR LIMIT=30] -->
+    <string name="downward_arrow">Downward arrow</string>
+
     <!-- Expand permission in the list CHAR LIMIT=30] -->
     <string name="permission_expand">Expand <xliff:g id="permission_type" example="Notification">%1$s</xliff:g></string>
 

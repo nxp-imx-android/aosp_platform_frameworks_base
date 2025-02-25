@@ -83,6 +83,7 @@ import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
+import static com.android.window.flags.Flags.FLAG_ENABLE_PERSISTING_DENSITY_SCALE_FOR_CONNECTED_DISPLAYS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -1414,7 +1415,7 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay();
         final WindowState win = newWindowBuilder("win", TYPE_BASE_APPLICATION).setDisplay(
                 dc).build();
-        win.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
         win.setSystemGestureExclusion(Collections.singletonList(new Rect(10, 20, 30, 40)));
 
         performLayout(dc);
@@ -1447,11 +1448,11 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay();
         final WindowState win = newWindowBuilder("win", TYPE_BASE_APPLICATION).setDisplay(
                 dc).build();
-        win.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
         win.setSystemGestureExclusion(Collections.singletonList(new Rect(10, 20, 30, 40)));
 
         final WindowState win2 = newWindowBuilder("win2", TYPE_APPLICATION).setDisplay(dc).build();
-        win2.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win2.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
         win2.setSystemGestureExclusion(Collections.singletonList(new Rect(20, 30, 40, 50)));
 
         performLayout(dc);
@@ -1476,14 +1477,14 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay();
         final WindowState win = newWindowBuilder("base", TYPE_BASE_APPLICATION).setDisplay(
                 dc).build();
-        win.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
         win.setSystemGestureExclusion(Collections.singletonList(new Rect(0, 0, 1000, 1000)));
 
         final WindowState win2 = newWindowBuilder("modal", TYPE_APPLICATION).setDisplay(dc).build();
-        win2.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
-        win2.getAttrs().privateFlags |= PRIVATE_FLAG_NO_MOVE_ANIMATION;
-        win2.getAttrs().width = 10;
-        win2.getAttrs().height = 10;
+        win2.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win2.mAttrs.privateFlags |= PRIVATE_FLAG_NO_MOVE_ANIMATION;
+        win2.mAttrs.width = 10;
+        win2.mAttrs.height = 10;
         win2.setSystemGestureExclusion(Collections.emptyList());
 
         performLayout(dc);
@@ -1502,10 +1503,10 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay();
         final WindowState win = newWindowBuilder("win", TYPE_BASE_APPLICATION).setDisplay(
                 dc).build();
-        win.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
-        win.getAttrs().layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-        win.getAttrs().privateFlags |= PRIVATE_FLAG_NO_MOVE_ANIMATION;
-        win.getAttrs().insetsFlags.behavior = BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
+        win.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win.mAttrs.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        win.mAttrs.privateFlags |= PRIVATE_FLAG_NO_MOVE_ANIMATION;
+        win.mAttrs.insetsFlags.behavior = BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
         win.setRequestedVisibleTypes(0, navigationBars() | statusBars());
         win.mActivityRecord.mTargetSdk = P;
 
@@ -1527,9 +1528,9 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay();
         final WindowState win = newWindowBuilder("win", TYPE_BASE_APPLICATION).setDisplay(
                 dc).build();
-        win.getAttrs().flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
-        win.getAttrs().layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-        win.getAttrs().privateFlags |= PRIVATE_FLAG_UNRESTRICTED_GESTURE_EXCLUSION;
+        win.mAttrs.flags |= FLAG_LAYOUT_IN_SCREEN | FLAG_LAYOUT_INSET_DECOR;
+        win.mAttrs.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+        win.mAttrs.privateFlags |= PRIVATE_FLAG_UNRESTRICTED_GESTURE_EXCLUSION;
         win.setSystemGestureExclusion(Collections.singletonList(dc.getBounds()));
 
         performLayout(dc);
@@ -2870,6 +2871,74 @@ public class DisplayContentTests extends WindowTestsBase {
 
         dc.onDisplayInfoChangeApplied();
         assertFalse(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSISTING_DENSITY_SCALE_FOR_CONNECTED_DISPLAYS)
+    @Test
+    public void testForcedDensityRatioSetForExternalDisplays_persistDensityScaleFlagEnabled() {
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.type = Display.TYPE_EXTERNAL;
+        final DisplayContent displayContent = createNewDisplay(displayInfo);
+        final int baseWidth = 1280;
+        final int baseHeight = 720;
+        final int baseDensity = 320;
+        final float baseXDpi = 60;
+        final float baseYDpi = 60;
+
+        displayContent.mInitialDisplayWidth = baseWidth;
+        displayContent.mInitialDisplayHeight = baseHeight;
+        displayContent.mInitialDisplayDensity = baseDensity;
+        displayContent.updateBaseDisplayMetrics(baseWidth, baseHeight, baseDensity, baseXDpi,
+                baseYDpi);
+
+        final int forcedDensity = 640;
+
+        // Verify that forcing the density is honored and the size doesn't change.
+        displayContent.setForcedDensity(forcedDensity, 0 /* userId */);
+        verifySizes(displayContent, baseWidth, baseHeight, forcedDensity);
+
+        // Verify that density ratio is set correctly.
+        assertEquals((float) forcedDensity / baseDensity,
+                displayContent.mExternalDisplayForcedDensityRatio, 0.01);
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSISTING_DENSITY_SCALE_FOR_CONNECTED_DISPLAYS)
+    @Test
+    public void testForcedDensityUpdateForExternalDisplays_persistDensityScaleFlagEnabled() {
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.type = Display.TYPE_EXTERNAL;
+        final DisplayContent displayContent = createNewDisplay(displayInfo);
+        final int baseWidth = 1280;
+        final int baseHeight = 720;
+        final int baseDensity = 320;
+        final float baseXDpi = 60;
+        final float baseYDpi = 60;
+
+        displayContent.mInitialDisplayWidth = baseWidth;
+        displayContent.mInitialDisplayHeight = baseHeight;
+        displayContent.mInitialDisplayDensity = baseDensity;
+        displayContent.updateBaseDisplayMetrics(baseWidth, baseHeight, baseDensity, baseXDpi,
+                baseYDpi);
+
+        final int forcedDensity = 640;
+
+        // Verify that forcing the density is honored and the size doesn't change.
+        displayContent.setForcedDensity(forcedDensity, 0 /* userId */);
+        verifySizes(displayContent, baseWidth, baseHeight, forcedDensity);
+
+        // Verify that density ratio is set correctly.
+        assertEquals((float) 2.0f,
+                displayContent.mExternalDisplayForcedDensityRatio, 0.001);
+
+
+        displayContent.mInitialDisplayDensity = 160;
+        displayContent.updateBaseDisplayMetrics(baseWidth, baseHeight, baseDensity, baseXDpi,
+                baseYDpi);
+
+        // Verify that forced density is updated based on the ratio.
+        assertEquals(320, displayContent.mBaseDisplayDensity);
     }
 
     @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)

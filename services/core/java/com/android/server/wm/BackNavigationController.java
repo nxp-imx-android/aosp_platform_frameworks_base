@@ -222,7 +222,7 @@ class BackNavigationController {
                     }
                 }
             }
-            final boolean canInterruptInView = (window.getAttrs().privateFlags
+            final boolean canInterruptInView = (window.mAttrs.privateFlags
                     & PRIVATE_FLAG_APP_PROGRESS_GENERATION_ALLOWED) != 0;
             infoBuilder.setAppProgressAllowed(canInterruptInView && !transferGestureToEmbedded
                     && callbackInfo.isAnimationCallback());
@@ -1552,7 +1552,7 @@ class BackNavigationController {
             }
 
             void createStartingSurface(@Nullable TaskSnapshot snapshot) {
-                if (Flags.deferPredictiveAnimationIfNoSnapshot() && snapshot == null) {
+                if (snapshot == null) {
                     return;
                 }
                 if (mAdaptors[0].mSwitchType == DIALOG_CLOSE) {

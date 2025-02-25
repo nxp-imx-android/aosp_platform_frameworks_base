@@ -39,14 +39,12 @@ import android.animation.Animator;
 import android.annotation.NonNull;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.platform.test.annotations.EnableFlags;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.window.TransitionInfo;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.window.flags.Flags;
 import com.android.wm.shell.transition.TransitionInfoBuilder;
 
 import com.google.testing.junit.testparameterinjector.TestParameter;
@@ -135,8 +133,8 @@ public class ActivityEmbeddingAnimationRunnerTests extends ActivityEmbeddingAnim
                 .addChange(createChange(FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY, TRANSIT_OPEN))
                 .build();
         info.getChanges().getFirst().setAnimationOptions(TransitionInfo.AnimationOptions
-                .makeCustomAnimOptions("packageName", 0 /* enterResId */, 0 /* exitResId */,
-                        0 /* backgroundColor */, false /* overrideTaskTransition */));
+                .makeCustomAnimOptions("packageName", 0 /* enterResId */, 0 /* changeResId */,
+                        0 /* exitResId */, false /* overrideTaskTransition */));
         final Animator animator = mAnimRunner.createAnimator(
                 info, mStartTransaction, mFinishTransaction,
                 () -> mFinishCallback.onTransitionFinished(null /* wct */),
@@ -146,12 +144,9 @@ public class ActivityEmbeddingAnimationRunnerTests extends ActivityEmbeddingAnim
         assertEquals(0, animator.getDuration());
     }
 
-    // TODO(b/243518738): Rewrite with TestParameter
-    @EnableFlags(Flags.FLAG_ACTIVITY_EMBEDDING_OVERLAY_PRESENTATION_FLAG)
     @Test
     public void testCalculateParentBounds_flagEnabled_emptyParentSize() {
         TransitionInfo.Change change;
-        final TransitionInfo.Change stubChange = createChange(0 /* flags */);
         final Rect actualParentBounds = new Rect();
         change = prepareChangeForParentBoundsCalculationTest(
                 new Point(0, 0) /* endRelOffset */,
@@ -159,17 +154,15 @@ public class ActivityEmbeddingAnimationRunnerTests extends ActivityEmbeddingAnim
                 new Point() /* endParentSize */
         );
 
-        calculateParentBounds(change, stubChange, actualParentBounds);
+        calculateParentBounds(change, actualParentBounds);
 
         assertTrue("Parent bounds must be empty because end parent size is not set.",
                 actualParentBounds.isEmpty());
     }
 
-    @EnableFlags(Flags.FLAG_ACTIVITY_EMBEDDING_OVERLAY_PRESENTATION_FLAG)
     @Test
     public void testCalculateParentBounds_flagEnabled(
             @TestParameter ParentBoundsTestParameters params) {
-        final TransitionInfo.Change stubChange = createChange(0 /*flags*/);
         final Rect parentBounds = params.getParentBounds();
         final Rect endAbsBounds = params.getEndAbsBounds();
         final TransitionInfo.Change change = prepareChangeForParentBoundsCalculationTest(
@@ -178,7 +171,7 @@ public class ActivityEmbeddingAnimationRunnerTests extends ActivityEmbeddingAnim
                 endAbsBounds, new Point(parentBounds.width(), parentBounds.height()));
         final Rect actualParentBounds = new Rect();
 
-        calculateParentBounds(change, stubChange, actualParentBounds);
+        calculateParentBounds(change, actualParentBounds);
 
         assertEquals(parentBounds, actualParentBounds);
     }

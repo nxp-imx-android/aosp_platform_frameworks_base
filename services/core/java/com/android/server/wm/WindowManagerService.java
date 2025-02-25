@@ -1869,7 +1869,7 @@ public class WindowManagerService extends IWindowManager.Stub
         } else if (type == TYPE_INPUT_METHOD
                 // IME window is always touchable.
                 // Ignore non-touchable windows e.g. Stylus InkWindow.java.
-                && (win.getAttrs().flags & FLAG_NOT_TOUCHABLE) == 0) {
+                && (win.mAttrs.flags & FLAG_NOT_TOUCHABLE) == 0) {
             displayContent.setInputMethodWindowLocked(win);
             imMayMove = false;
         } else if (type == TYPE_INPUT_METHOD_DIALOG) {

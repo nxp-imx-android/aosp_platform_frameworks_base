@@ -29,7 +29,7 @@
 
     <ImageView
         android:id="@+id/image"
-        android:contentDescription="@+id/label"
+        android:importantForAccessibility="no"
         style="@style/DesktopModeHandleMenuActionButtonImage"/>
 
     <com.android.wm.shell.windowdecor.MarqueedTextView

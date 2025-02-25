@@ -1846,9 +1846,9 @@ class Task extends TaskFragment {
 
     private void updateAllowForceResizeOverride() {
         try {
-            mAllowForceResizeOverride = mAtmService.mContext.getPackageManager().getProperty(
+            mAllowForceResizeOverride = mAtmService.mContext.getPackageManager().getPropertyAsUser(
                     PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES,
-                    getBasePackageName()).getBoolean();
+                    getBasePackageName(), null /* className */, mUserId).getBoolean();
         } catch (PackageManager.NameNotFoundException e) {
             // Package not found or property not defined, reset to default value.
             mAllowForceResizeOverride = true;
@@ -2170,25 +2170,29 @@ class Task extends TaskFragment {
 
     void adjustForMinimalTaskDimensions(@NonNull Rect bounds, @NonNull Rect previousBounds,
             @NonNull Configuration parentConfig) {
-        int minWidth = mMinWidth;
-        int minHeight = mMinHeight;
         // If the task has no requested minimal size, we'd like to enforce a minimal size
         // so that the user can not render the task fragment too small to manipulate. We don't need
         // to do this for the root pinned task as the bounds are controlled by the system.
-        if (!inPinnedWindowingMode()) {
-            // Use Display specific min sizes when there is one associated with this Task.
-            final int defaultMinSizeDp = mDisplayContent == null
-                    ? DEFAULT_MIN_TASK_SIZE_DP : mDisplayContent.mMinSizeOfResizeableTaskDp;
-            final float density = (float) parentConfig.densityDpi / DisplayMetrics.DENSITY_DEFAULT;
-            final int defaultMinSize = (int) (defaultMinSizeDp * density);
-
-            if (minWidth == INVALID_MIN_SIZE) {
-                minWidth = defaultMinSize;
-            }
-            if (minHeight == INVALID_MIN_SIZE) {
-                minHeight = defaultMinSize;
-            }
+        if (inPinnedWindowingMode()) {
+            Slog.i(TAG, "Skip adjustForMinimalTaskDimensions for pip task");
+            return;
         }
+
+        int minWidth = mMinWidth;
+        int minHeight = mMinHeight;
+        // Use Display specific min sizes when there is one associated with this Task.
+        final int defaultMinSizeDp = mDisplayContent == null
+                ? DEFAULT_MIN_TASK_SIZE_DP : mDisplayContent.mMinSizeOfResizeableTaskDp;
+        final float density = (float) parentConfig.densityDpi / DisplayMetrics.DENSITY_DEFAULT;
+        final int defaultMinSize = (int) (defaultMinSizeDp * density);
+
+        if (minWidth == INVALID_MIN_SIZE) {
+            minWidth = defaultMinSize;
+        }
+        if (minHeight == INVALID_MIN_SIZE) {
+            minHeight = defaultMinSize;
+        }
+
         if (bounds.isEmpty()) {
             // If inheriting parent bounds, check if parent bounds adhere to minimum size. If they
             // do, we can just skip.
@@ -3580,7 +3584,7 @@ class Task extends TaskFragment {
                 & StartingWindowInfo.TYPE_PARAMETER_ACTIVITY_CREATED) != 0) {
             final WindowState topMainWin = getTopFullscreenMainWindow();
             if (topMainWin != null) {
-                info.mainWindowLayoutParams = topMainWin.getAttrs();
+                info.mainWindowLayoutParams = topMainWin.mAttrs;
                 info.requestedVisibleTypes = topMainWin.getRequestedVisibleTypes();
             }
         }
@@ -5683,10 +5687,6 @@ class Task extends TaskFragment {
         }
         Binder.restoreCallingIdentity(origId);
         return foundParentInTask;
-    }
-
-    void removeLaunchTickMessages() {
-        forAllActivities(ActivityRecord::removeLaunchTickRunnable);
     }
 
     private void updateTransitLocked(@WindowManager.TransitionType int transit,
