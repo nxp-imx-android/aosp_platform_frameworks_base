@@ -473,7 +473,7 @@ public class BubbleBarLayerView extends FrameLayout
 
     /** Updates the expanded view size and position. */
     public void updateExpandedView() {
-        if (mExpandedView == null || mExpandedBubble == null) return;
+        if (mExpandedView == null || mExpandedBubble == null || mExpandedView.isAnimating()) return;
         boolean isOverflowExpanded = mExpandedBubble.getKey().equals(BubbleOverflow.KEY);
         mPositioner.getBubbleBarExpandedViewBounds(mPositioner.isBubbleBarOnLeft(),
                 isOverflowExpanded, mTempRect);
