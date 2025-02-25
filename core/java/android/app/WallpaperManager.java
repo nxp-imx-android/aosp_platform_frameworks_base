@@ -322,6 +322,14 @@ public class WallpaperManager {
             "android.wallpaper.lockscreen_tap";
 
     /**
+     * Command for {@link #sendWallpaperCommand}: reported when the surface control that could be
+     * used to transform the wallpaper is available
+     * @hide
+     */
+    public static final String COMMAND_TRANSFORM_SURFACE_CONTROL =
+            "android.wallpaper.transform_surface_control";
+
+    /**
      * Extra passed back from setWallpaper() giving the new wallpaper's assigned ID.
      * @hide
      */
