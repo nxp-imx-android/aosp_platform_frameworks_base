@@ -34,10 +34,9 @@ import static org.junit.Assert.fail;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -165,7 +164,7 @@ public class AccessibilityShortcutControllerTest {
                 .thenReturn(accessibilityManager);
         when(mFrameworkObjectProvider.getAlertDialogBuilder(mContext))
                 .thenReturn(mAlertDialogBuilder);
-        when(mFrameworkObjectProvider.makeToastFromText(eq(mContext), anyObject(), anyInt()))
+        when(mFrameworkObjectProvider.makeToastFromText(eq(mContext), any(), anyInt()))
                 .thenReturn(mToast);
         when(mFrameworkObjectProvider.getSystemUiContext()).thenReturn(mContext);
         when(mFrameworkObjectProvider.getTextToSpeech(eq(mContext), any()))
@@ -179,20 +178,20 @@ public class AccessibilityShortcutControllerTest {
         ResolveInfo resolveInfo = mock(ResolveInfo.class);
         resolveInfo.serviceInfo = mock(ServiceInfo.class);
         resolveInfo.serviceInfo.applicationInfo = mApplicationInfo;
-        when(resolveInfo.loadLabel(anyObject())).thenReturn(PACKAGE_NAME_STRING);
+        when(resolveInfo.loadLabel(any())).thenReturn(PACKAGE_NAME_STRING);
         when(mServiceInfo.getResolveInfo()).thenReturn(resolveInfo);
         when(mServiceInfo.getComponentName())
                 .thenReturn(ComponentName.unflattenFromString(SERVICE_NAME_STRING));
         when(mServiceInfo.loadSummary(any())).thenReturn(SERVICE_NAME_SUMMARY);
 
-        when(mAlertDialogBuilder.setTitle(anyObject())).thenReturn(mAlertDialogBuilder);
+        when(mAlertDialogBuilder.setTitle(any())).thenReturn(mAlertDialogBuilder);
         when(mAlertDialogBuilder.setCancelable(anyBoolean())).thenReturn(mAlertDialogBuilder);
-        when(mAlertDialogBuilder.setMessage(anyObject())).thenReturn(mAlertDialogBuilder);
-        when(mAlertDialogBuilder.setPositiveButton(anyInt(), anyObject()))
+        when(mAlertDialogBuilder.setMessage(any())).thenReturn(mAlertDialogBuilder);
+        when(mAlertDialogBuilder.setPositiveButton(anyInt(), any()))
                 .thenReturn(mAlertDialogBuilder);
-        when(mAlertDialogBuilder.setNegativeButton(anyInt(), anyObject()))
+        when(mAlertDialogBuilder.setNegativeButton(anyInt(), any()))
                 .thenReturn(mAlertDialogBuilder);
-        when(mAlertDialogBuilder.setOnCancelListener(anyObject())).thenReturn(mAlertDialogBuilder);
+        when(mAlertDialogBuilder.setOnCancelListener(any())).thenReturn(mAlertDialogBuilder);
         when(mAlertDialogBuilder.create()).thenReturn(mAlertDialog);
 
         mLayoutParams.privateFlags = 0;
@@ -348,7 +347,7 @@ public class AccessibilityShortcutControllerTest {
         configureShortcutEnabled(ENABLED_EXCEPT_LOCK_SCREEN);
         AccessibilityShortcutController accessibilityShortcutController = getController();
         accessibilityShortcutController.performAccessibilityShortcut();
-        verify(mVibrator).vibrate(aryEq(VIBRATOR_PATTERN_LONG), eq(-1), anyObject());
+        verify(mVibrator).vibrate(aryEq(VIBRATOR_PATTERN_LONG), eq(-1), any());
     }
 
     @Test

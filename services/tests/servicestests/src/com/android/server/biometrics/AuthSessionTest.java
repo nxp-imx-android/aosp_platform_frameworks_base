@@ -42,7 +42,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -451,7 +450,7 @@ public class AuthSessionTest {
         assertEquals(startFingerprintNow ? BiometricSensor.STATE_AUTHENTICATING
                         : BiometricSensor.STATE_COOKIE_RETURNED,
                 session.mPreAuthInfo.eligibleSensors.get(fingerprintSensorId).getSensorState());
-        verify(mBiometricContext).updateContext((OperationContextExt) anyObject(),
+        verify(mBiometricContext).updateContext((OperationContextExt) any(),
                 eq(session.isCrypto()));
 
         // start fingerprint sensor if it was delayed
@@ -554,7 +553,7 @@ public class AuthSessionTest {
 
         session.onDialogDismissed(DISMISSED_REASON_BIOMETRIC_CONFIRMED, null);
         verify(mBiometricFrameworkStatsLogger, times(1)).authenticate(
-                (OperationContextExt) anyObject(),
+                (OperationContextExt) any(),
                 eq(BiometricsProtoEnums.MODALITY_FACE),
                 eq(BiometricsProtoEnums.ACTION_UNKNOWN),
                 eq(BiometricsProtoEnums.CLIENT_BIOMETRIC_PROMPT),
@@ -582,10 +581,10 @@ public class AuthSessionTest {
 
         session.onDialogDismissed(DISMISSED_REASON_BIOMETRIC_CONFIRM_NOT_REQUIRED, null);
         verify(mBiometricFrameworkStatsLogger, never()).authenticate(
-                anyObject(), anyInt(), anyInt(), anyInt(), anyBoolean(), anyLong(), anyInt(),
+                any(), anyInt(), anyInt(), anyInt(), anyBoolean(), anyLong(), anyInt(),
                 anyBoolean(), anyInt(), eq(-1f));
         verify(mBiometricFrameworkStatsLogger, never()).error(
-                anyObject(), anyInt(), anyInt(), anyInt(), anyBoolean(), anyLong(), anyInt(),
+                any(), anyInt(), anyInt(), anyInt(), anyBoolean(), anyLong(), anyInt(),
                 anyInt(), anyInt());
     }
 
@@ -605,7 +604,7 @@ public class AuthSessionTest {
 
         session.onDialogDismissed(DISMISSED_REASON_NEGATIVE, null);
         verify(mBiometricFrameworkStatsLogger, times(1)).error(
-                (OperationContextExt) anyObject(),
+                (OperationContextExt) any(),
                 eq(BiometricsProtoEnums.MODALITY_FACE),
                 eq(BiometricsProtoEnums.ACTION_AUTHENTICATE),
                 eq(BiometricsProtoEnums.CLIENT_BIOMETRIC_PROMPT),
@@ -632,7 +631,7 @@ public class AuthSessionTest {
 
         session.onDialogDismissed(DISMISSED_REASON_CONTENT_VIEW_MORE_OPTIONS, null);
         verify(mBiometricFrameworkStatsLogger, times(1)).error(
-                (OperationContextExt) anyObject(),
+                (OperationContextExt) any(),
                 eq(BiometricsProtoEnums.MODALITY_FACE),
                 eq(BiometricsProtoEnums.ACTION_AUTHENTICATE),
                 eq(BiometricsProtoEnums.CLIENT_BIOMETRIC_PROMPT),
