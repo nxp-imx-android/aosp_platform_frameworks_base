@@ -239,7 +239,6 @@ public class KeyguardPatternView extends KeyguardInputView
                             R.dimen.keyguard_pattern_activated_dot_size));
             mLockPatternView.setPathWidth(
                     getResources().getDimensionPixelSize(R.dimen.keyguard_pattern_stroke_width));
-            mLockPatternView.setKeepDotActivated(true);
         }
 
         mEcaView = findViewById(R.id.keyguard_selector_fade_container);
