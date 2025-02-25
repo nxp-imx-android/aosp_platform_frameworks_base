@@ -62,6 +62,7 @@ public class MessagingLayout extends FrameLayout
     public static final Interpolator LINEAR_OUT_SLOW_IN = new PathInterpolator(0f, 0f, 0.2f, 1f);
     public static final Interpolator FAST_OUT_LINEAR_IN = new PathInterpolator(0.4f, 0f, 1f, 1f);
     public static final Interpolator FAST_OUT_SLOW_IN = new PathInterpolator(0.4f, 0f, 0.2f, 1f);
+    private static final int MAX_SUMMARIZATION_LINES = 3;
     public static final OnLayoutChangeListener MESSAGING_PROPERTY_ANIMATOR
             = new MessagingPropertyAnimator();
     private final PeopleHelper mPeopleHelper = new PeopleHelper();
@@ -222,7 +223,7 @@ public class MessagingLayout extends FrameLayout
         List<MessagingMessage> newMessagingMessages;
         mSummarizedContent = extras.getCharSequence(Notification.EXTRA_SUMMARIZED_CONTENT);
         if (!TextUtils.isEmpty(mSummarizedContent) && mIsCollapsed) {
-            mMessagingLinearLayout.setMaxDisplayedLines(2);
+            mMessagingLinearLayout.setMaxDisplayedLines(MAX_SUMMARIZATION_LINES);
             Notification.MessagingStyle.Message summary =
                     new Notification.MessagingStyle.Message(mSummarizedContent,  0, "");
             newMessagingMessages = createMessages(List.of(summary), false, usePrecomputedText);
