@@ -1803,6 +1803,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ஒற்றைக் கைப் பயன்முறை"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"மிகக் குறைவான வெளிச்சம்"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"செவித்துணைக் கருவிகள்"</string>
+    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"இணைப்புநீக்கப்பட்டது"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"இணைக்கப்பட்டுள்ளது"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"செயலில் உள்ளது"</string>
