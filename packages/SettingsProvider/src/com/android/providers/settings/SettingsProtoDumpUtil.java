@@ -1722,6 +1722,9 @@ class SettingsProtoDumpUtil {
                 Settings.Secure.ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT,
                 SecureSettingsProto.Accessibility.AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT);
         dumpSetting(s, p,
+                Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK,
+                SecureSettingsProto.Accessibility.AUTOCLICK_REVERT_TO_LEFT_CLICK);
+        dumpSetting(s, p,
                 Settings.Secure.ACCESSIBILITY_AUTOCLICK_ENABLED,
                 SecureSettingsProto.Accessibility.AUTOCLICK_ENABLED);
         dumpSetting(s, p,

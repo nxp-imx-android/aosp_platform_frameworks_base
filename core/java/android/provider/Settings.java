@@ -9357,6 +9357,16 @@ public final class Settings {
                 "accessibility_autoclick_panel_position";
 
         /**
+         * Setting that specifies whether autoclick type reverts to left click after performing
+         * an action when {@link #ACCESSIBILITY_AUTOCLICK_ENABLED} is set.
+         *
+         * @see #ACCESSIBILITY_AUTOCLICK_ENABLED
+         * @hide
+         */
+        public static final String ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK =
+                "accessibility_autoclick_revert_to_left_click";
+
+        /**
          * Whether or not larger size icons are used for the pointer of mouse/trackpad for
          * accessibility.
          * (0 = false, 1 = true)
