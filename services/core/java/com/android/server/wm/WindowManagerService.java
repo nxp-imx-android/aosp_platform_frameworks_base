@@ -4773,6 +4773,26 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     }
 
+    @EnforcePermission(android.Manifest.permission.MANAGE_APP_TOKENS)
+    @Override
+    public void updateDisplayWindowAnimatingTypes(int displayId, @InsetsType int animatingTypes) {
+        updateDisplayWindowAnimatingTypes_enforcePermission();
+        if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
+            final long origId = Binder.clearCallingIdentity();
+            try {
+                synchronized (mGlobalLock) {
+                    final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                    if (dc == null || dc.mRemoteInsetsControlTarget == null) {
+                        return;
+                    }
+                    dc.mRemoteInsetsControlTarget.setAnimatingTypes(animatingTypes);
+                }
+            } finally {
+                Binder.restoreCallingIdentity(origId);
+            }
+        }
+    }
+
     @Override
     public int watchRotation(IRotationWatcher watcher, int displayId) {
         final DisplayContent displayContent;
