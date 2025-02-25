@@ -242,6 +242,10 @@ final class AppCompatUtils {
         if (aspectRatioPolicy.isLetterboxedForAspectRatioOnly()) {
             return "ASPECT_RATIO";
         }
+        if (activityRecord.mAppCompatController.getSafeRegionPolicy()
+                .isLetterboxedForSafeRegionOnly()) {
+            return "SAFE_REGION";
+        }
         return "UNKNOWN_REASON";
     }
 

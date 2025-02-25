@@ -58,11 +58,16 @@ class AppCompatSafeRegionPolicy {
     }
 
     /**
-     * Computes bounds when letterboxing is required only for the safe region bounds.
+     * Computes bounds when letterboxing is required only for the safe region bounds if needed.
      */
-    public void resolveSafeRegionBoundsConfiguration(@NonNull Configuration resolvedConfig,
+    public void resolveSafeRegionBoundsConfigurationIfNeeded(@NonNull Configuration resolvedConfig,
             @NonNull Configuration newParentConfig) {
         if (mLatestSafeRegionBounds.isEmpty()) {
+            return;
+        }
+        // If activity can not be letterboxed for a safe region only or it has not been attached
+        // to a WindowContainer yet.
+        if (!isLetterboxedForSafeRegionOnly() || mActivityRecord.getParent() == null) {
             return;
         }
         resolvedConfig.windowConfiguration.setBounds(mLatestSafeRegionBounds);
@@ -70,6 +75,11 @@ class AppCompatSafeRegionPolicy {
     }
 
     /**
+     * Safe region bounds can either be applied along with size compat, fixed orientation or
+     * aspect ratio conditions by sandboxing them to the safe region bounds. Or it can be applied
+     * independently when no other letterboxing condition is triggered. This method helps detecting
+     * the latter case.
+     *
      * @return {@code true} if the activity is letterboxed only due to the safe region being set on
      * the current or ancestor window container.
      */

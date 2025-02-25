@@ -4738,6 +4738,83 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    public void testAreBoundsLetterboxed_letterboxedForSafeRegionOnly_returnsFalse() {
+        setUpLandscapeLargeScreenDisplayWithApp();
+
+        assertFalse(mActivity.areBoundsLetterboxed());
+        verifyLogAppCompatState(mActivity, APP_COMPAT_STATE_CHANGED__STATE__NOT_LETTERBOXED);
+
+        setupSafeRegionBoundsParameters(/* dw */ 300, /* dh */ 200);
+
+        // For an activity letterboxed only due to safe region, areBoundsLetterboxed will return
+        // false
+        assertFalse(mActivity.areBoundsLetterboxed());
+        verifyLogAppCompatState(mActivity, APP_COMPAT_STATE_CHANGED__STATE__NOT_LETTERBOXED);
+        assertTrue(mActivity.mAppCompatController.getSafeRegionPolicy()
+                .isLetterboxedForSafeRegionOnly());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    public void testAreBoundsLetterboxed_letterboxedForSafeRegionAndFixedOrientation_returnTrue() {
+        setUpLandscapeLargeScreenDisplayWithApp();
+        mActivity.mDisplayContent.setIgnoreOrientationRequest(true /* ignoreOrientationRequest */);
+
+        assertFalse(mActivity.areBoundsLetterboxed());
+        verifyLogAppCompatState(mActivity, APP_COMPAT_STATE_CHANGED__STATE__NOT_LETTERBOXED);
+
+        final Rect safeRegionBounds = setupSafeRegionBoundsParameters(/* dw */ 500, /* dh */ 200);
+
+        prepareUnresizable(mActivity, SCREEN_ORIENTATION_PORTRAIT);
+
+        // Activity is letterboxed due to fixed orientation within the safe region
+        assertTrue(mActivity.mAppCompatController.getAspectRatioPolicy()
+                .isLetterboxedForFixedOrientationAndAspectRatio());
+        assertTrue(mActivity.areBoundsLetterboxed());
+        verifyLogAppCompatState(mActivity,
+                APP_COMPAT_STATE_CHANGED__STATE__LETTERBOXED_FOR_FIXED_ORIENTATION);
+        assertFalse(mActivity.mAppCompatController.getSafeRegionPolicy()
+                .isLetterboxedForSafeRegionOnly());
+        assertTrue(safeRegionBounds.contains(mActivity.getBounds()));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    public void testAreBoundsLetterboxed_letterboxedForSafeRegionAndAspectRatio_returnTrue() {
+        setUpPortraitLargeScreenDisplayWithApp();
+
+        assertFalse(mActivity.areBoundsLetterboxed());
+        verifyLogAppCompatState(mActivity, APP_COMPAT_STATE_CHANGED__STATE__NOT_LETTERBOXED);
+
+        final Rect safeRegionBounds = setupSafeRegionBoundsParameters(/* dw */ 200, /* dh */ 300);
+
+        prepareMinAspectRatio(mActivity, 16 / 9f, SCREEN_ORIENTATION_PORTRAIT);
+
+        // Activity is letterboxed due to min aspect ratio within the safe region
+        assertFalse(mActivity.mAppCompatController.getAspectRatioPolicy()
+                .isLetterboxedForFixedOrientationAndAspectRatio());
+        assertTrue(mActivity.mAppCompatController.getAspectRatioPolicy()
+                .isLetterboxedForAspectRatioOnly());
+        assertFalse(mActivity.inSizeCompatMode());
+        assertTrue(mActivity.areBoundsLetterboxed());
+        verifyLogAppCompatState(mActivity,
+                APP_COMPAT_STATE_CHANGED__STATE__LETTERBOXED_FOR_ASPECT_RATIO);
+        assertTrue(safeRegionBounds.contains(mActivity.getBounds()));
+    }
+
+    private Rect setupSafeRegionBoundsParameters(int dw, int dh) {
+        final AppCompatController appCompatController = mActivity.mAppCompatController;
+        final AppCompatSafeRegionPolicy safeRegionPolicy =
+                appCompatController.getSafeRegionPolicy();
+        safeRegionPolicy.setNeedsSafeRegionBounds(true);
+        spyOn(mTask);
+        final Rect safeRegionBounds = new Rect(100, 200, 100 + dw, 200 + dh);
+        doReturn(safeRegionBounds).when(mTask).getSafeRegionBounds();
+        return safeRegionBounds;
+    }
+
+    @Test
     public void testAreBoundsLetterboxed_letterboxedForSizeCompat_returnsTrue() {
         setUpDisplaySizeWithApp(1000, 2500);
         mActivity.mDisplayContent.setIgnoreOrientationRequest(true /* ignoreOrientationRequest */);
