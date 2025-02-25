@@ -28,6 +28,7 @@ import static org.mockito.kotlin.VerificationKt.times;
 import static org.mockito.kotlin.VerificationKt.verify;
 
 import android.app.ActivityManager;
+import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Matrix;
@@ -47,6 +48,7 @@ import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
 import com.android.wm.shell.splitscreen.SplitScreenController;
+import com.android.wm.shell.util.StubTransaction;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -107,6 +109,8 @@ public class PipSchedulerTest {
         mPipScheduler.setSurfaceControlTransactionFactory(mMockFactory);
         mPipScheduler.setPipAlphaAnimatorSupplier((context, leash, startTx, finishTx, direction) ->
                 mMockAlphaAnimator);
+        final PictureInPictureParams params = new PictureInPictureParams.Builder().build();
+        mPipScheduler.setPipParamsSupplier(() -> params);
 
         SurfaceControl testLeash = new SurfaceControl.Builder()
                 .setContainerLayer()
@@ -287,6 +291,28 @@ public class PipSchedulerTest {
         mPipScheduler.scheduleFinishResizePip(TEST_BOUNDS);
 
         verify(mMockUpdateMovementBoundsRunnable, times(1)).run();
+    }
+
+    @Test
+    public void finishResize_nonSeamless_alphaAnimatorStarted() {
+        final PictureInPictureParams params =
+                new PictureInPictureParams.Builder().setSeamlessResizeEnabled(false).build();
+        mPipScheduler.setPipParamsSupplier(() -> params);
+        when(mMockFactory.getTransaction()).thenReturn(new StubTransaction());
+
+        mPipScheduler.scheduleFinishResizePip(TEST_BOUNDS);
+
+        verify(mMockAlphaAnimator, times(1)).start();
+    }
+
+    @Test
+    public void finishResize_seamless_animatorNotStarted() {
+        final PictureInPictureParams params =
+                new PictureInPictureParams.Builder().setSeamlessResizeEnabled(true).build();
+        mPipScheduler.setPipParamsSupplier(() -> params);
+
+        mPipScheduler.scheduleFinishResizePip(TEST_BOUNDS);
+        verify(mMockAlphaAnimator, never()).start();
     }
 
     private void setNullPipTaskToken() {

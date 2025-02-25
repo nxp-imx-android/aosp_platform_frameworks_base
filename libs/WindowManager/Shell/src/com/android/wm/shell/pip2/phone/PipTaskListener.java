@@ -91,6 +91,7 @@ public class PipTaskListener implements ShellTaskOrganizer.TaskListener,
             });
         }
         mPipResizeAnimatorSupplier = PipResizeAnimator::new;
+        mPipScheduler.setPipParamsSupplier(this::getPictureInPictureParams);
     }
 
     void setPictureInPictureParams(@Nullable PictureInPictureParams params) {
