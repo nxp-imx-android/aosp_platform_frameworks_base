@@ -2301,6 +2301,52 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
     }
 
     /**
+     * Verify that we skip broadcasts at enqueue if {@link BroadcastSkipPolicy} decides it
+     * should be skipped.
+     */
+    @EnableFlags(Flags.FLAG_AVOID_NOTE_OP_AT_ENQUEUE)
+    @Test
+    public void testSkipPolicy_atEnqueueTime() throws Exception {
+        final ProcessRecord callerApp = makeActiveProcessRecord(PACKAGE_RED);
+        final ProcessRecord receiverGreenApp = makeActiveProcessRecord(PACKAGE_GREEN);
+        final ProcessRecord receiverBlueApp = makeActiveProcessRecord(PACKAGE_BLUE);
+
+        final Intent airplane = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+        final Object greenReceiver = makeRegisteredReceiver(receiverGreenApp);
+        final Object blueReceiver = makeRegisteredReceiver(receiverBlueApp);
+        final Object yellowReceiver = makeManifestReceiver(PACKAGE_YELLOW, CLASS_YELLOW);
+        final Object orangeReceiver = makeManifestReceiver(PACKAGE_ORANGE, CLASS_ORANGE);
+
+        doAnswer(invocation -> {
+            final BroadcastRecord r = invocation.getArgument(0);
+            final Object o = invocation.getArgument(1);
+            if (airplane.getAction().equals(r.intent.getAction())
+                    && (isReceiverEquals(o, greenReceiver)
+                    || isReceiverEquals(o, orangeReceiver))) {
+                return "test skipped receiver";
+            }
+            return null;
+        }).when(mSkipPolicy).shouldSkipAtEnqueueMessage(any(BroadcastRecord.class), any());
+        enqueueBroadcast(makeBroadcastRecord(airplane, callerApp,
+                List.of(greenReceiver, blueReceiver, yellowReceiver, orangeReceiver)));
+
+        waitForIdle();
+        // Verify that only blue and yellow receiver apps received the broadcast.
+        verifyScheduleRegisteredReceiver(never(), receiverGreenApp, USER_SYSTEM);
+        verify(mSkipPolicy, never()).shouldSkipMessage(any(BroadcastRecord.class),
+                eq(greenReceiver));
+        verifyScheduleRegisteredReceiver(receiverBlueApp, airplane);
+        final ProcessRecord receiverYellowApp = mAms.getProcessRecordLocked(PACKAGE_YELLOW,
+                getUidForPackage(PACKAGE_YELLOW));
+        verifyScheduleReceiver(receiverYellowApp, airplane);
+        final ProcessRecord receiverOrangeApp = mAms.getProcessRecordLocked(PACKAGE_ORANGE,
+                getUidForPackage(PACKAGE_ORANGE));
+        assertNull(receiverOrangeApp);
+        verify(mSkipPolicy, never()).shouldSkipMessage(any(BroadcastRecord.class),
+                eq(orangeReceiver));
+    }
+
+    /**
      * Verify broadcasts to runtime receivers in cached processes are deferred
      * until that process leaves the cached state.
      */

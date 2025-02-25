@@ -3437,6 +3437,15 @@ public class AppOpsManager {
     }
 
     /**
+     * Returns whether the provided {@code op} is a valid op code or not.
+     *
+     * @hide
+     */
+    public static boolean isValidOp(int op) {
+        return op >= 0 && op < sAppOpInfos.length;
+    }
+
+    /**
      * @hide
      */
     public static int strDebugOpToOp(String op) {
