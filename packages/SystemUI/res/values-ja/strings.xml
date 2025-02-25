@@ -252,6 +252,10 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g>に接続しました。"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g>に接続されています。"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"グループを開きます。"</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"アプリを開きます。"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"接続されていません。"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"ローミング"</string>
@@ -329,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"入力"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"補聴器"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ON にしています…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"明るさはトップ アプリによって制御されているため、調整できません"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"自動回転"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"画面を自動回転します"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"位置情報"</string>
@@ -986,8 +991,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"優先度の低い通知アイコンを表示"</string>
     <string name="other" msgid="429768510980739978">"その他"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"タイルのサイズを切り替えます"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"タイルを削除"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"タイルを最後の位置に追加する"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"タイルを移動"</string>
@@ -1540,10 +1544,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"最近使ったアプリを表示するには、3 本の指でタッチパッドを上にスワイプして長押しします"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"すべてのアプリを表示するには、キーボードのアクションキーを押してください"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"削除済み"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"表示するにはロックを解除してください"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"コードを表示するにはロックを解除してください"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"コンテキスト メニューに関する説明"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"タッチパッドを使用して、前の画面に戻る"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"3 本の指で左または右にスワイプします。ジェスチャーの詳細を確認するにはタップしてください。"</string>

@@ -245,16 +245,17 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"بلوتوث متصل است."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"نماد دستگاه بلوتوث"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"برای پیکربندی جزئیات دستگاه کلیک کنید"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"‫<xliff:g id="DEVICE_NAME">%s</xliff:g>. پیکربندی جزئیات دستگاه"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"دیدن تمام دستگاه‌ها"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"جفت کردن دستگاه جدید"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"درصد شارژ باتری مشخص نیست."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"به <xliff:g id="BLUETOOTH">%s</xliff:g> متصل شد."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"به <xliff:g id="CAST">%s</xliff:g> متصل شد."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"گروه را از هم باز می‌کند."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"برنامه را باز می‌کند."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"متصل نیست."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"فراگردی"</string>
@@ -332,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"ورودی"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"سمعک"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"روشن کردن…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"نمی‌توان روشنایی را تنظیم کرد زیرا برنامه بالایی آن را کنترل می‌کند"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"چرخش خودکار"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"چرخش خودکار صفحه‌نمایش"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"مکان"</string>
@@ -614,7 +616,7 @@
     <string name="media_projection_action_text" msgid="3634906766918186440">"اکنون شروع کنید"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"اعلانی موجود نیست"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"اعلان جدیدی وجود ندارد"</string>
-    <string name="adaptive_notification_edu_hun_title" msgid="2594042455998795122">"«استراحت اعلان‌ها» اکنون روشن است"</string>
+    <string name="adaptive_notification_edu_hun_title" msgid="2594042455998795122">"«آرام‌سازی اعلان‌ها» اکنون روشن است"</string>
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"وقتی به‌طور هم‌زمان تعداد بسیار زیادی اعلان دریافت کنید، میزان صدای دستگاه و هشدارها به‌طور خودکار تا ۲ دقیقه کاهش می‌یابد."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"خاموش کردن"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"برای دیدن اعلان‌های قبلی قفل را باز کنید"</string>
@@ -901,10 +903,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"چندوظیفگی"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"استفاده از صفحهٔ دونیمه با قرار گرفتن برنامه در سمت راست"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"استفاده از صفحهٔ دونیمه با قرار گرفتن برنامه در سمت چپ"</string>
-    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
-    <skip />
-    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
-    <skip />
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"استفاده از حالت تمام‌صفحه"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"استفاده از نمای ویژه رایانه رومیزی"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"رفتن به برنامه سمت راست یا پایین درحین استفاده از صفحهٔ دونیمه"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"رفتن به برنامه سمت چپ یا بالا درحین استفاده از صفحهٔ دونیمه"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"درحین صفحهٔ دونیمه: برنامه‌ای را با دیگری جابه‌جا می‌کند"</string>
@@ -991,8 +991,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"نمایش نمادهای اعلان کم‌اهمیت"</string>
     <string name="other" msgid="429768510980739978">"موارد دیگر"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"تغییر اندازه کاشی"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"برداشتن کاشی"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"افزودن کاشی به آخرین جایگاه"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"انتقال کاشی"</string>
@@ -1507,8 +1506,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"مشاهده برنامه‌های اخیر"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"جابه‌جایی بین برنامه‌ها"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"تمام"</string>
-    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
-    <skip />
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"بعدی"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"دوباره امتحان کنید!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"برگشتن"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"با سه انگشت روی صفحه لمسی تند به چپ یا راست بکشید."</string>
@@ -1546,10 +1544,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"برای مشاهده برنامه‌های اخیر، در صفحه لمسی با سه انگشت تند به‌بالا بکشید و نگه دارید"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"برای مشاهده همه برنامه‌ها، دکمه کنش در صفحه‌کلید را فشار دهید"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"محوشده"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"برای مشاهده، قفل دستگاه را باز کنید"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"برای مشاهده کد، قفل دستگاه را باز کنید"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"آموزش زمینه‌ای"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"برای برگشتن از صفحه لمسی استفاده کنید"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"با سه انگشت تند به‌چپ یا راست بکشید. برای آشنایی با اشاره‌های بیشتر، تک‌ضرب بزنید."</string>

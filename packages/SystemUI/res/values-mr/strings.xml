@@ -252,6 +252,10 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> शी कनेक्‍ट केले."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> शी कनेक्ट केले."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"गटाचा विस्तार करा."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"अ‍ॅप उघडा."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"कनेक्ट केले नाही."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"रोमिंग"</string>
@@ -329,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"इनपुट"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"श्रवणयंत्रे"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"सुरू करत आहे…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"ब्राइटनेस ॲडजस्ट करू शकत नाही, कारण तो टॉप ॲपद्वारे नियंत्रित केला जात आहे"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ऑटो-रोटेट"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"ऑटो-रोटेट स्क्रीन"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"स्थान"</string>
@@ -581,7 +586,7 @@
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"एक अ‍ॅप कास्ट करा"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"संपूर्ण स्क्रीन कास्ट करा"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"तुम्ही तुमची संपूर्ण स्क्रीन कास्ट करता, तेव्हा तुमच्या स्क्रीनवरील सर्व गोष्टी दृश्यमान असतात. त्यामुळे पासवर्ड, पेमेंट तपशील, मेसेज, फोटो आणि ऑडिओ व व्हिडिओ यांसारख्या गोष्टींबाबत सावधगिरी बाळगा."</string>
-    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"तुम्ही अ‍ॅप कास्ट करता, तेव्हा त्या अ‍ॅपमध्ये दाखवल्या किंवा प्ले होणाऱ्या सर्व गोष्टी दृश्यमान असतात. त्यामुळे पासवर्ड, पेमेंट तपशील, मेसेज, फोटो आणि ऑडिओ व व्हिडिओ यांसारख्या गोष्टींबाबत सावधगिरी बाळगा."</string>
+    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"तुम्ही अ‍ॅप कास्ट करता, तेव्हा त्या अ‍ॅपमध्ये दाखवलेल्या किंवा प्ले होणाऱ्या सर्व गोष्टी दृश्यमान असतात. त्यामुळे पासवर्ड, पेमेंट तपशील, मेसेज, फोटो आणि ऑडिओ व व्हिडिओ यांसारख्या गोष्टींबाबत सावधगिरी बाळगा."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"स्क्रीन कास्‍ट करा"</string>
     <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"कास्ट करण्यासाठी ॲप निवडा"</string>
     <string name="media_projection_entry_generic_permission_dialog_title" msgid="4519802931547483628">"शेअर करणे सुरू करायचे आहे का?"</string>
@@ -986,8 +991,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"कमी प्राधान्य सूचना आयकन दर्शवा"</string>
     <string name="other" msgid="429768510980739978">"अन्य"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"टाइलचा आकार टॉगल करा"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"टाइल काढून टाका"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"टाइल शेवटच्या स्थानावर जोडा"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"टाइल हलवा"</string>
@@ -1540,10 +1544,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"अलीकडील ॲप्स पाहण्यासाठी, टचपॅडवर तीन बोटांनी वरती स्वाइप करा आणि धरून ठेवा"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"तुमची सर्व ॲप्स पाहण्यासाठी, तुमच्या कीबोर्डवरील अ‍ॅक्शन की प्रेस करा"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"रिडॅक्ट केलेले"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"पाहण्यासाठी अनलॉक करा"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"कोड पाहण्यासाठी अनलॉक करा"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"संदर्भीय शिक्षण"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"मागे जाण्यासाठी तुमचा टचपॅड वापरा"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"तीन बोटांनी डावीकडे किंवा उजवीकडे स्वाइप करा. आणखी जेश्चर जाणून घेण्यासाठी टॅप करा."</string>

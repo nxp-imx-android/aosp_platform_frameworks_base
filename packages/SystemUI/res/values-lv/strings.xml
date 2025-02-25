@@ -245,16 +245,17 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth savienojums ir izveidots."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth ierīces ikona"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Lai konfigurētu ierīces informāciju, noklikšķiniet"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfigurējiet ierīces informāciju."</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Skatiet visas ierīces."</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Savienojiet pārī jaunu ierīci."</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Akumulatora uzlādes līmenis procentos nav zināms."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Ir izveidots savienojum ar <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Savienots ar ierīci <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Izvērst grupu."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Atvērt lietojumprogrammu."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Savienojums nav izveidots."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Viesabonēšana"</string>
@@ -332,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Ievade"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Dzirdes aparāti"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Notiek ieslēgšana…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Nevar mainīt spilgtumu, jo to kontrolē aktīvā lietotne."</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Automātiska pagriešana"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Automātiska ekrāna pagriešana"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Atrašanās vieta"</string>
@@ -586,7 +588,7 @@
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Apraidot visu ekrānu, ir redzams viss ekrāna saturs. Tāpēc piesardzīgi apejieties ar parolēm, maksājumu informāciju, ziņojumiem, fotoattēliem un audio un video saturu."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"Apraidot lietotni, ir redzams viss attiecīgajā lietotnē rādītais vai atskaņotais. Tāpēc piesardzīgi apejieties ar parolēm, maksājumu informāciju, ziņojumiem, fotoattēliem un audio un video saturu."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"Apraidīt ekrānu"</string>
-    <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"Lietotnes izvēlēšanās apraide"</string>
+    <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"Lietotnes izvēle apraidei"</string>
     <string name="media_projection_entry_generic_permission_dialog_title" msgid="4519802931547483628">"Vai sākt kopīgošanu?"</string>
     <string name="media_projection_entry_generic_permission_dialog_warning_entire_screen" msgid="5407906851409410209">"Kopīgošanas, ierakstīšanas vai apraides laikā Android var piekļūt visam, kas tiek rādīts jūsu ekrānā vai atskaņots jūsu ierīcē. Tāpēc piesardzīgi apejieties ar parolēm, maksājumu informāciju, ziņojumiem, fotoattēliem un audio un video saturu."</string>
     <string name="media_projection_entry_generic_permission_dialog_warning_single_app" msgid="3454859977888159495">"Lietotnes kopīgošanas, ierakstīšanas vai apraides laikā Android var piekļūt visam, kas tiek rādīts vai atskaņots attiecīgajā lietotnē. Tāpēc piesardzīgi apejieties ar parolēm, maksājumu informāciju, ziņojumiem, fotoattēliem un audio un video saturu."</string>
@@ -901,10 +903,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Vairākuzdevumu režīms"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Izmantot ekrāna sadalīšanu ar lietotni labajā pusē"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Izmantot ekrāna sadalīšanu ar lietotni kreisajā pusē"</string>
-    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
-    <skip />
-    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
-    <skip />
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Izmantot pilnekrāna režīmu"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Izmantot skatu datorā"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Pāriet uz lietotni pa labi/lejā, kamēr izmantojat sadalīto ekrānu."</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Pāriet uz lietotni pa kreisi/augšā, kamēr izmantojat sadalīto ekrānu."</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Ekrāna sadalīšanas režīmā: pārvietot lietotni no viena ekrāna uz otru"</string>
@@ -991,8 +991,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Rādīt zemas prioritātes paziņojumu ikonas"</string>
     <string name="other" msgid="429768510980739978">"Citi"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"pārslēgt elementa lielumu"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"noņemt elementu"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"pievienotu elementu pēdējā pozīcijā"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Pārvietot elementu"</string>
@@ -1507,8 +1506,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Skatīt nesen izmantotās lietotnes"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Pārslēgties starp lietotnēm"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Gatavs"</string>
-    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
-    <skip />
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Tālāk"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Mēģiniet vēlreiz."</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Atpakaļ"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Skārienpaliktnī ar trīs pirkstiem velciet pa kreisi vai pa labi."</string>
@@ -1546,10 +1544,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Lai skatītu nesenās lietotnes, ar trīs pirkstiem uz skārienpaliktņa velciet augšup un turiet."</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Lai skatītu visas savas lietotnes, tastatūrā nospiediet darbību taustiņu."</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Rediģēts"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Atbloķējiet, lai skatītu"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Atbloķējiet, lai skatītu kodu"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Kontekstuāla pamācība"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Atgriešanās, izmantojot skārienpaliktni"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Ar trīs pirkstiem velciet pa kreisi vai pa labi. Lai apgūtu citus žestus, pieskarieties šeit."</string>

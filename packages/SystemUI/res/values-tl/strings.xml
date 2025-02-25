@@ -245,16 +245,17 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Nakakonekta ang Bluetooth."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Icon ng Bluetooth device"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"I-click para i-configure ang detalye ng device"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. I-configure ang detalye ng device"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Tingnan ang lahat ng device"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Magpares ng bagong device"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Hindi alam ang porsyento ng baterya."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Nakakonekta sa <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Nakakonekta sa <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"I-expand ang grupo."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Buksan ang application."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Hindi nakakonekta."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>
@@ -332,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Input"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Mga hearing aid"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Ino-on…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Hindi ma-adjust ang liwanag dahil kinokontrol ito ng nangingibabaw na app"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"I-auto rotate"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Awtomatikong i-rotate ang screen"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Lokasyon"</string>
@@ -901,10 +903,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Pag-multitask"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Gumamit ng split screen nang nasa kanan ang app"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Gumamit ng split screen nang nasa kaliwa ang app"</string>
-    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
-    <skip />
-    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
-    <skip />
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Gamitin ang full screen"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Gamitin ang desktop view"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Lumipat sa app sa kanan o ibaba habang ginagamit ang split screen"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Lumipat sa app sa kaliwa o itaas habang ginagamit ang split screen"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Habang nasa split screen: magpalit-palit ng app"</string>
@@ -991,8 +991,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Ipakita ang mga icon ng notification na may mababang priority"</string>
     <string name="other" msgid="429768510980739978">"Iba pa"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"i-toggle ang laki ng tile"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"alisin ang tile"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"magdagdag ng tile sa huling posisyon"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Ilipat ang tile"</string>
@@ -1507,8 +1506,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Tingnan ang mga kamakailang app"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Lumipat ng app"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Tapos na"</string>
-    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
-    <skip />
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Susunod"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Subukan ulit!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Bumalik"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Mag-swipe pakaliwa o pakanan gamit ang tatlong daliri sa iyong touchpad"</string>
@@ -1546,10 +1544,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Para tingnan ang kamakailang app, mag-swipe pataas at i-hold gamit ang tatlong daliri sa touchpad"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Para tingnan ang lahat ng iyong app, pindutin ang action key sa keyboard mo"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Na-redact"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"I-unlock para tingnan"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"I-unlock para tingnan ang code"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Edukasyon ayon sa konteksto"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Gamitin ang iyong touchpad para bumalik"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Mag-swipe pakaliwa o pakanan gamit ang tatlong daliri. I-tap para matuto pa tungkol sa mga galaw."</string>

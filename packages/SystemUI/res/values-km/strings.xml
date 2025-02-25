@@ -245,16 +245,17 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"បាន​តភ្ជាប់​ប៊្លូធូស។"</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"រូបឧបករណ៍​ប៊្លូធូស"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ចុចដើម្បីកំណត់រចនាសម្ព័ន្ធព័ត៌មានលម្អិតអំពីឧបករណ៍"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. កំណត់រចនាសម្ព័ន្ធព័ត៌មានលម្អិតឧបករណ៍"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"មើលឧបករណ៍ទាំងអស់"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"ផ្គូផ្គង​ឧបករណ៍ថ្មី"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"មិនដឹងអំពី​ភាគរយថ្មទេ។"</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"បាន​ភ្ជាប់​ទៅ <xliff:g id="BLUETOOTH">%s</xliff:g> ។"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"បានភ្ជាប់ទៅ <xliff:g id="CAST">%s</xliff:g>"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ពង្រីកក្រុម។"</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"បើកកម្មវិធី។"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"មិន​បាន​តភ្ជាប់​។"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"រ៉ូ​មីង"</string>
@@ -332,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"បញ្ចូល"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"ឧបករណ៍ជំនួយការស្ដាប់"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"កំពុង​បើក..."</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"មិនអាចកែតម្រូវកម្រិតពន្លឺបានទេ ដោយសារវាកំពុងស្ថិតក្រោមការគ្រប់គ្រងរបស់កម្មវិធីខាងលើគេ"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"បង្វិល​ស្វ័យ​ប្រវត្តិ"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"បង្វិលអេក្រង់ស្វ័យប្រវត្តិ"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"ទី​តាំង​"</string>
@@ -901,10 +903,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ការដំណើរការបានច្រើន"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ប្រើមុខងារបំបែកអេក្រង់ជាមួយកម្មវិធីនៅខាងស្ដាំ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ប្រើមុខងារបំបែកអេក្រង់ជាមួយកម្មវិធីនៅខាងឆ្វេង"</string>
-    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
-    <skip />
-    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
-    <skip />
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"ប្រើអេក្រង់ពេញ"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"ប្រើទិដ្ឋភាព​លើកុំព្យូទ័រ"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"ប្ដូរទៅកម្មវិធីនៅខាងស្ដាំ ឬខាងក្រោម ពេលកំពុងប្រើមុខងារ​បំបែកអេក្រង់"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"ប្ដូរទៅកម្មវិធីនៅខាងឆ្វេង ឬខាងលើ ពេលកំពុងប្រើមុខងារ​បំបែកអេក្រង់"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"ក្នុងអំឡុងពេលប្រើមុខងារបំបែកអេក្រង់៖ ជំនួសកម្មវិធីពីមួយទៅមួយទៀត"</string>
@@ -991,8 +991,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"បង្ហាញ​រូប​ការជូនដំណឹង​ដែលមានអាទិភាពទាប"</string>
     <string name="other" msgid="429768510980739978">"ផ្សេងៗ"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"បិទ/បើកទំហំរបស់ប្រអប់"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ដកប្រអប់ចេញ"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"បញ្ចូលប្រអប់ទៅទីតាំងចុងក្រោយ"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ផ្លាស់ទី​ប្រអប់"</string>
@@ -1507,8 +1506,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"មើលកម្មវិធីថ្មីៗ"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ប្ដូរ​កម្មវិធី"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"រួចរាល់"</string>
-    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
-    <skip />
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"បន្ទាប់"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"សូមព្យាយាមម្ដងទៀត!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"ថយ​ក្រោយ"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"អូសទៅឆ្វេង ឬស្ដាំដោយប្រើ​ម្រាមដៃបីនៅលើផ្ទាំងប៉ះរបស់អ្នក"</string>
@@ -1546,10 +1544,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"ដើម្បីមើលកម្មវិធីថ្មីៗ សូមអូសឡើងលើ ហើយសង្កត់ឱ្យជាប់ដោយប្រើម្រាមដៃបីនៅលើផ្ទាំងប៉ះ"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"ដើម្បីមើលកម្មវិធីទាំងអស់របស់អ្នក សូមចុចគ្រាប់ចុចសកម្មភាពនៅលើក្ដារចុចរបស់អ្នក"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"បាន​កែ​លម្អ​ពាក្យពេចន៍"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"ដោះសោដើម្បីមើល"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"ដោះសោដើម្បីមើលកូដ"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"ការអប់រំ​តាមបរិបទ"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"ប្រើផ្ទាំងប៉ះរបស់អ្នក ដើម្បីថយក្រោយ"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"អូសទៅឆ្វេង ឬស្ដាំដោយប្រើ​ម្រាមដៃបី។ ចុច ដើម្បីស្វែងយល់បន្ថែមអំពីចលនា។"</string>
