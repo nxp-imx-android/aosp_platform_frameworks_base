@@ -45,6 +45,7 @@ interface ClockFaceEvents {
      * render within the centered targetRect to avoid obstructing other elements. The specified
      * targetRegion is relative to the parent view.
      */
+    @Deprecated("No longer necessary, pending removal")
     fun onTargetRegionChanged(targetRegion: Rect?)
 
     /** Called to notify the clock about its display. */

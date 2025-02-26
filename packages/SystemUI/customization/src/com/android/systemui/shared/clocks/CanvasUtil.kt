@@ -17,6 +17,8 @@
 package com.android.systemui.shared.clocks
 
 import android.graphics.Canvas
+import com.android.systemui.plugins.clocks.VPoint
+import com.android.systemui.plugins.clocks.VPointF
 
 object CanvasUtil {
     fun Canvas.translate(pt: VPointF) = this.translate(pt.x, pt.y)

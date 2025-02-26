@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shared.clocks
+package com.android.systemui.plugins.clocks
 
 import android.graphics.Point
 import android.graphics.PointF
@@ -30,10 +30,10 @@ private val Y_MASK: ULong = 0x00000000FFFFFFFFU
 
 private fun unpackX(data: ULong): Int = ((data and X_MASK) shr 32).toInt()
 
-private fun unpackY(data: ULong): Int = (data and Y_MASK).toInt()
+private fun unpackY(data: ULong): Int = ((data and Y_MASK) shr 0).toInt()
 
 private fun pack(x: Int, y: Int): ULong {
-    return ((x.toULong() shl 32) and X_MASK) or (y.toULong() and Y_MASK)
+    return ((x.toULong() shl 32) and X_MASK) or ((y.toULong() shl 0) and Y_MASK)
 }
 
 @JvmInline
@@ -43,8 +43,6 @@ value class VPointF(private val data: ULong) {
 
     val y: Float
         get() = Float.fromBits(unpackY(data))
-
-    constructor() : this(0f, 0f)
 
     constructor(pt: PointF) : this(pt.x, pt.y)
 
@@ -145,8 +143,6 @@ value class VPoint(private val data: ULong) {
 
     val y: Int
         get() = unpackY(data)
-
-    constructor() : this(0, 0)
 
     constructor(x: Int, y: Int) : this(pack(x, y))
 

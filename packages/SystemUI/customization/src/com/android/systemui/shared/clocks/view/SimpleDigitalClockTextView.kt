@@ -23,7 +23,6 @@ import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
-import android.graphics.RectF
 import android.os.VibrationEffect
 import android.text.Layout
 import android.text.TextPaint
@@ -45,6 +44,10 @@ import com.android.systemui.plugins.clocks.ClockFontAxisSetting
 import com.android.systemui.plugins.clocks.ClockFontAxisSetting.Companion.replace
 import com.android.systemui.plugins.clocks.ClockFontAxisSetting.Companion.toFVar
 import com.android.systemui.plugins.clocks.ClockLogger
+import com.android.systemui.plugins.clocks.VPoint
+import com.android.systemui.plugins.clocks.VPointF
+import com.android.systemui.plugins.clocks.VPointF.Companion.size
+import com.android.systemui.plugins.clocks.VRectF
 import com.android.systemui.shared.Flags.ambientAod
 import com.android.systemui.shared.clocks.CanvasUtil.translate
 import com.android.systemui.shared.clocks.CanvasUtil.use
@@ -53,9 +56,6 @@ import com.android.systemui.shared.clocks.DigitTranslateAnimator
 import com.android.systemui.shared.clocks.DimensionParser
 import com.android.systemui.shared.clocks.FLEX_CLOCK_ID
 import com.android.systemui.shared.clocks.FontTextStyle
-import com.android.systemui.shared.clocks.VPoint
-import com.android.systemui.shared.clocks.VPointF
-import com.android.systemui.shared.clocks.VPointF.Companion.size
 import com.android.systemui.shared.clocks.ViewUtils.measuredSize
 import com.android.systemui.shared.clocks.ViewUtils.size
 import com.android.systemui.shared.clocks.toClockAxisSetting
@@ -66,11 +66,11 @@ import kotlin.math.roundToInt
 
 private val TAG = SimpleDigitalClockTextView::class.simpleName!!
 
-private fun Paint.getTextBounds(text: CharSequence, result: RectF = RectF()): RectF {
-    val rect = Rect()
-    this.getTextBounds(text, 0, text.length, rect)
-    result.set(rect)
-    return result
+private val tempRect = Rect()
+
+private fun Paint.getTextBounds(text: CharSequence): VRectF {
+    this.getTextBounds(text, 0, text.length, tempRect)
+    return VRectF(tempRect)
 }
 
 enum class VerticalAlignment {
@@ -143,7 +143,7 @@ open class SimpleDigitalClockTextView(
         fidgetFontVariation = buildFidgetVariation(lsFontAxes).toFVar()
     }
 
-    var onViewBoundsChanged: ((RectF) -> Unit)? = null
+    var onViewBoundsChanged: ((VRectF) -> Unit)? = null
     private val parser = DimensionParser(clockCtx.context)
     var maxSingleDigitHeight = -1f
     var maxSingleDigitWidth = -1f
@@ -159,13 +159,13 @@ open class SimpleDigitalClockTextView(
     private val initThread = Thread.currentThread()
 
     // textBounds is the size of text in LS, which only measures current text in lockscreen style
-    var textBounds = RectF()
+    var textBounds = VRectF.ZERO
     // prevTextBounds and targetTextBounds are to deal with dozing animation between LS and AOD
     // especially for the textView which has different bounds during the animation
     // prevTextBounds holds the state we are transitioning from
-    private val prevTextBounds = RectF()
+    private var prevTextBounds = VRectF.ZERO
     // targetTextBounds holds the state we are interpolating to
-    private val targetTextBounds = RectF()
+    private var targetTextBounds = VRectF.ZERO
     protected val logger = ClockLogger(this, clockCtx.messageBuffer, this::class.simpleName!!)
         get() = field ?: ClockLogger.INIT_LOGGER
 
@@ -215,8 +215,8 @@ open class SimpleDigitalClockTextView(
         lockScreenPaint.typeface = typefaceCache.getTypefaceForVariant(lsFontVariation)
         typeface = lockScreenPaint.typeface
 
-        lockScreenPaint.getTextBounds(text, textBounds)
-        targetTextBounds.set(textBounds)
+        textBounds = lockScreenPaint.getTextBounds(text)
+        targetTextBounds = textBounds
 
         textAnimator.setTextStyle(TextAnimator.Style(fVar = lsFontVariation))
         measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
@@ -287,7 +287,7 @@ open class SimpleDigitalClockTextView(
         canvas.use {
             digitTranslateAnimator?.apply { canvas.translate(currentTranslation) }
             canvas.translate(getDrawTranslation(interpBounds))
-            if (isLayoutRtl()) canvas.translate(interpBounds.width() - textBounds.width(), 0f)
+            if (isLayoutRtl()) canvas.translate(interpBounds.width - textBounds.width, 0f)
             textAnimator.draw(canvas)
         }
     }
@@ -302,16 +302,12 @@ open class SimpleDigitalClockTextView(
         super.setAlpha(alpha)
     }
 
-    private val layoutBounds = RectF()
+    private var layoutBounds = VRectF.ZERO
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
         logger.onLayout(changed, left, top, right, bottom)
-
-        layoutBounds.left = left.toFloat()
-        layoutBounds.top = top.toFloat()
-        layoutBounds.right = right.toFloat()
-        layoutBounds.bottom = bottom.toFloat()
+        layoutBounds = VRectF(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
     }
 
     override fun invalidate() {
@@ -408,10 +404,10 @@ open class SimpleDigitalClockTextView(
     }
 
     fun refreshText() {
-        lockScreenPaint.getTextBounds(text, textBounds)
-        if (this::textAnimator.isInitialized) {
-            textAnimator.textInterpolator.targetPaint.getTextBounds(text, targetTextBounds)
-        }
+        textBounds = lockScreenPaint.getTextBounds(text)
+        targetTextBounds =
+            if (!this::textAnimator.isInitialized) textBounds
+            else textAnimator.textInterpolator.targetPaint.getTextBounds(text)
 
         if (layout == null) {
             requestLayout()
@@ -432,23 +428,23 @@ open class SimpleDigitalClockTextView(
     }
 
     /** Returns the interpolated text bounding rect based on interpolation progress */
-    private fun getInterpolatedTextBounds(progress: Float = getInterpolatedProgress()): RectF {
+    private fun getInterpolatedTextBounds(progress: Float = getInterpolatedProgress()): VRectF {
         if (progress <= 0f) {
             return prevTextBounds
         } else if (!textAnimator.isRunning || progress >= 1f) {
             return targetTextBounds
         }
 
-        return RectF().apply {
-            left = lerp(prevTextBounds.left, targetTextBounds.left, progress)
-            right = lerp(prevTextBounds.right, targetTextBounds.right, progress)
-            top = lerp(prevTextBounds.top, targetTextBounds.top, progress)
-            bottom = lerp(prevTextBounds.bottom, targetTextBounds.bottom, progress)
-        }
+        return VRectF(
+            left = lerp(prevTextBounds.left, targetTextBounds.left, progress),
+            right = lerp(prevTextBounds.right, targetTextBounds.right, progress),
+            top = lerp(prevTextBounds.top, targetTextBounds.top, progress),
+            bottom = lerp(prevTextBounds.bottom, targetTextBounds.bottom, progress),
+        )
     }
 
     private fun computeMeasuredSize(
-        interpBounds: RectF,
+        interpBounds: VRectF,
         widthMeasureSpec: Int = measuredWidthAndState,
         heightMeasureSpec: Int = measuredHeightAndState,
     ): VPointF {
@@ -461,11 +457,11 @@ open class SimpleDigitalClockTextView(
         return VPointF(
             when {
                 mode.x == EXACTLY -> MeasureSpec.getSize(widthMeasureSpec).toFloat()
-                else -> interpBounds.width() + 2 * lockScreenPaint.strokeWidth
+                else -> interpBounds.width + 2 * lockScreenPaint.strokeWidth
             },
             when {
                 mode.y == EXACTLY -> MeasureSpec.getSize(heightMeasureSpec).toFloat()
-                else -> interpBounds.height() + 2 * lockScreenPaint.strokeWidth
+                else -> interpBounds.height + 2 * lockScreenPaint.strokeWidth
             },
         )
     }
@@ -489,44 +485,23 @@ open class SimpleDigitalClockTextView(
     }
 
     /** Set the location of the view to match the interpolated text bounds */
-    private fun setInterpolatedLocation(measureSize: VPointF): RectF {
-        val targetRect = RectF()
-        targetRect.apply {
-            when (xAlignment) {
-                XAlignment.LEFT -> {
-                    left = layoutBounds.left
-                    right = layoutBounds.left + measureSize.x
-                }
-                XAlignment.CENTER -> {
-                    left = layoutBounds.centerX() - measureSize.x / 2f
-                    right = layoutBounds.centerX() + measureSize.x / 2f
-                }
-                XAlignment.RIGHT -> {
-                    left = layoutBounds.right - measureSize.x
-                    right = layoutBounds.right
-                }
-            }
+    private fun setInterpolatedLocation(measureSize: VPointF): VRectF {
+        val pos =
+            VPointF(
+                when (xAlignment) {
+                    XAlignment.LEFT -> layoutBounds.left
+                    XAlignment.CENTER -> layoutBounds.center.x - measureSize.x / 2f
+                    XAlignment.RIGHT -> layoutBounds.right - measureSize.x
+                },
+                when (verticalAlignment) {
+                    VerticalAlignment.TOP -> layoutBounds.top
+                    VerticalAlignment.CENTER -> layoutBounds.center.y - measureSize.y / 2f
+                    VerticalAlignment.BOTTOM -> layoutBounds.bottom - measureSize.y
+                    VerticalAlignment.BASELINE -> layoutBounds.center.y - measureSize.y / 2f
+                },
+            )
 
-            when (verticalAlignment) {
-                VerticalAlignment.TOP -> {
-                    top = layoutBounds.top
-                    bottom = layoutBounds.top + measureSize.y
-                }
-                VerticalAlignment.CENTER -> {
-                    top = layoutBounds.centerY() - measureSize.y / 2f
-                    bottom = layoutBounds.centerY() + measureSize.y / 2f
-                }
-                VerticalAlignment.BOTTOM -> {
-                    top = layoutBounds.bottom - measureSize.y
-                    bottom = layoutBounds.bottom
-                }
-                VerticalAlignment.BASELINE -> {
-                    top = layoutBounds.centerY() - measureSize.y / 2f
-                    bottom = layoutBounds.centerY() + measureSize.y / 2f
-                }
-            }
-        }
-
+        val targetRect = VRectF.fromTopLeft(pos, measureSize)
         setFrame(
             targetRect.left.roundToInt(),
             targetRect.top.roundToInt(),
@@ -537,7 +512,7 @@ open class SimpleDigitalClockTextView(
         return targetRect
     }
 
-    private fun getDrawTranslation(interpBounds: RectF): VPointF {
+    private fun getDrawTranslation(interpBounds: VRectF): VPointF {
         val sizeDiff = this.measuredSize - interpBounds.size
         val alignment =
             VPointF(
@@ -586,11 +561,11 @@ open class SimpleDigitalClockTextView(
         if (fontSizePx > 0) {
             setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSizePx)
             lockScreenPaint.textSize = textSize
-            lockScreenPaint.getTextBounds(text, textBounds)
-            targetTextBounds.set(textBounds)
+            textBounds = lockScreenPaint.getTextBounds(text)
+            targetTextBounds = textBounds
         }
         if (!constrainedByHeight) {
-            val lastUnconstrainedHeight = textBounds.height() + lockScreenPaint.strokeWidth * 2
+            val lastUnconstrainedHeight = textBounds.height + lockScreenPaint.strokeWidth * 2
             fontSizeAdjustFactor = lastUnconstrainedHeight / lastUnconstrainedTextSize
         }
 
@@ -608,8 +583,8 @@ open class SimpleDigitalClockTextView(
 
         for (i in 0..9) {
             val rectForCalculate = lockScreenPaint.getTextBounds("$i")
-            maxSingleDigitHeight = max(maxSingleDigitHeight, rectForCalculate.height())
-            maxSingleDigitWidth = max(maxSingleDigitWidth, rectForCalculate.width())
+            maxSingleDigitHeight = max(maxSingleDigitHeight, rectForCalculate.height)
+            maxSingleDigitWidth = max(maxSingleDigitWidth, rectForCalculate.width)
         }
         maxSingleDigitWidth += 2 * lockScreenPaint.strokeWidth
         maxSingleDigitHeight += 2 * lockScreenPaint.strokeWidth
@@ -637,8 +612,8 @@ open class SimpleDigitalClockTextView(
      * and targetPaint will store the state we transition to
      */
     private fun updateTextBoundsForTextAnimator() {
-        textAnimator.textInterpolator.basePaint.getTextBounds(text, prevTextBounds)
-        textAnimator.textInterpolator.targetPaint.getTextBounds(text, targetTextBounds)
+        prevTextBounds = textAnimator.textInterpolator.basePaint.getTextBounds(text)
+        targetTextBounds = textAnimator.textInterpolator.targetPaint.getTextBounds(text)
     }
 
     /**

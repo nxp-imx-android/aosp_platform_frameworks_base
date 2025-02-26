@@ -16,7 +16,6 @@
 
 package com.android.systemui.plugins.clocks
 
-import android.graphics.Rect
 import android.view.View
 import android.view.View.MeasureSpec
 import com.android.systemui.log.core.LogLevel
@@ -56,7 +55,10 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
     }
 
     fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        d({ "onLayout($bool1, ${Rect(int1, int2, long1.toInt(), long2.toInt())})" }) {
+        d({
+            val rect = VRect(int1.toShort(), int2.toShort(), long1.toShort(), long2.toShort())
+            "onLayout($bool1, $rect)"
+        }) {
             bool1 = changed
             int1 = left
             int2 = top
