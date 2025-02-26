@@ -84,6 +84,7 @@ import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.ExternalInterfaceBinder
+import com.android.wm.shell.common.HomeIntentProvider
 import com.android.wm.shell.common.MultiInstanceHelper
 import com.android.wm.shell.common.MultiInstanceHelper.Companion.getComponent
 import com.android.wm.shell.common.RemoteCallable
@@ -210,6 +211,7 @@ class DesktopTasksController(
     private val desktopModeCompatPolicy: DesktopModeCompatPolicy,
     private val dragToDisplayTransitionHandler: DragToDisplayTransitionHandler,
     private val moveToDisplayTransitionHandler: DesktopModeMoveToDisplayTransitionHandler,
+    private val homeIntentProvider: HomeIntentProvider,
 ) :
     RemoteCallable<DesktopTasksController>,
     Transitions.TransitionHandler,
@@ -1691,34 +1693,7 @@ class DesktopTasksController(
     }
 
     private fun addLaunchHomePendingIntent(wct: WindowContainerTransaction, displayId: Int) {
-        val userHandle = UserHandle.of(userId)
-        val launchHomeIntent =
-            Intent(Intent.ACTION_MAIN).apply {
-                if (displayId != DEFAULT_DISPLAY) {
-                    addCategory(Intent.CATEGORY_SECONDARY_HOME)
-                } else {
-                    addCategory(Intent.CATEGORY_HOME)
-                }
-            }
-        val options =
-            ActivityOptions.makeBasic().apply {
-                launchWindowingMode = WINDOWING_MODE_FULLSCREEN
-                pendingIntentBackgroundActivityStartMode =
-                    ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
-                if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
-                    launchDisplayId = displayId
-                }
-            }
-        val pendingIntent =
-            PendingIntent.getActivityAsUser(
-                context,
-                /* requestCode= */ 0,
-                launchHomeIntent,
-                PendingIntent.FLAG_IMMUTABLE,
-                /* options= */ null,
-                userHandle,
-            )
-        wct.sendPendingIntent(pendingIntent, launchHomeIntent, options.toBundle())
+        homeIntentProvider.addLaunchHomePendingIntent(wct, displayId, userId)
     }
 
     private fun addWallpaperActivity(displayId: Int, wct: WindowContainerTransaction) {

@@ -69,6 +69,7 @@ import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.FloatingContentCoordinator;
+import com.android.wm.shell.common.HomeIntentProvider;
 import com.android.wm.shell.common.LaunchAdjacentController;
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController;
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorSurface;
@@ -80,6 +81,7 @@ import com.android.wm.shell.common.UserProfileContexts;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.compatui.letterbox.LetterboxCommandHandler;
 import com.android.wm.shell.compatui.letterbox.LetterboxTransitionObserver;
+import com.android.wm.shell.crashhandling.ShellCrashHandler;
 import com.android.wm.shell.dagger.back.ShellBackAnimationModule;
 import com.android.wm.shell.dagger.pip.PipModule;
 import com.android.wm.shell.desktopmode.CloseDesktopTaskTransitionHandler;
@@ -775,7 +777,8 @@ public abstract class WMShellModule {
             UserProfileContexts userProfileContexts,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DragToDisplayTransitionHandler dragToDisplayTransitionHandler,
-            DesktopModeMoveToDisplayTransitionHandler moveToDisplayTransitionHandler) {
+            DesktopModeMoveToDisplayTransitionHandler moveToDisplayTransitionHandler,
+            HomeIntentProvider homeIntentProvider) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -816,7 +819,8 @@ public abstract class WMShellModule {
                 userProfileContexts,
                 desktopModeCompatPolicy,
                 dragToDisplayTransitionHandler,
-                moveToDisplayTransitionHandler);
+                moveToDisplayTransitionHandler,
+                homeIntentProvider);
     }
 
     @WMSingleton
@@ -1536,7 +1540,8 @@ public abstract class WMShellModule {
             Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserverOptional,
             Optional<DesktopDisplayEventHandler> desktopDisplayEventHandler,
             Optional<DesktopModeKeyGestureHandler> desktopModeKeyGestureHandler,
-            Optional<SystemModalsTransitionHandler> systemModalsTransitionHandler) {
+            Optional<SystemModalsTransitionHandler> systemModalsTransitionHandler,
+            ShellCrashHandler shellCrashHandler) {
         return new Object();
     }
 
@@ -1554,6 +1559,22 @@ public abstract class WMShellModule {
             ShellController shellController,
             ShellInit shellInit) {
         return new UserProfileContexts(context, shellController, shellInit);
+    }
+
+    @WMSingleton
+    @Provides
+    static ShellCrashHandler provideShellCrashHandler(
+            Context context,
+            ShellTaskOrganizer shellTaskOrganizer,
+            HomeIntentProvider homeIntentProvider,
+            ShellInit shellInit) {
+        return new ShellCrashHandler(context, shellTaskOrganizer, homeIntentProvider, shellInit);
+    }
+
+    @WMSingleton
+    @Provides
+    static HomeIntentProvider provideHomeIntentProvider(Context context) {
+        return new HomeIntentProvider(context);
     }
 
 }
