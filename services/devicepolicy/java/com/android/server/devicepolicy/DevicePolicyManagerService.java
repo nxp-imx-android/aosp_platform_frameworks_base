@@ -245,6 +245,7 @@ import static android.app.admin.ProvisioningException.ERROR_REMOVE_NON_REQUIRED_
 import static android.app.admin.ProvisioningException.ERROR_SETTING_PROFILE_OWNER_FAILED;
 import static android.app.admin.ProvisioningException.ERROR_SET_DEVICE_OWNER_FAILED;
 import static android.app.admin.ProvisioningException.ERROR_STARTING_PROFILE_FAILED;
+import static android.content.Context.RECEIVER_NOT_EXPORTED;
 import static android.content.Intent.ACTION_MANAGED_PROFILE_AVAILABLE;
 import static android.content.Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
@@ -485,6 +486,7 @@ import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.telephony.data.ApnSetting;
+import android.telephony.euicc.EuiccManager;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.ArrayMap;
@@ -641,6 +643,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     @VisibleForTesting
     static final String ACTION_PROFILE_OFF_DEADLINE =
             "com.android.server.ACTION_PROFILE_OFF_DEADLINE";
+
+    /** Broadcast action invoked when a managed eSIM is removed while deleting work profile. */
+    private static final String ACTION_ESIM_REMOVED_WITH_MANAGED_PROFILE =
+            "com.android.server.ACTION_ESIM_REMOVED_WITH_MANAGED_PROFILE";
+
+    /** Extra for the subscription ID of the managed eSIM removed while deleting work profile. */
+    private static final String EXTRA_REMOVED_ESIM_SUBSCRIPTION_ID =
+            "com.android.server.EXTRA_ESIM_REMOVED_WITH_MANAGED_PROFILE_SUBSCRIPTION_ID";
 
     private static final String CALLED_FROM_PARENT = "calledFromParent";
     private static final String NOT_CALLED_FROM_PARENT = "notCalledFromParent";
@@ -1265,6 +1275,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 removeCredentialManagementApp(intent.getData().getSchemeSpecificPart());
             } else if (Intent.ACTION_MANAGED_PROFILE_ADDED.equals(action)) {
                 clearWipeProfileNotification();
+            } else if (Intent.ACTION_MANAGED_PROFILE_REMOVED.equals(action)) {
+                removeManagedEmbeddedSubscriptionsForUser(userHandle);
             } else if (Intent.ACTION_DATE_CHANGED.equals(action)
                     || Intent.ACTION_TIME_CHANGED.equals(action)) {
                 // Update freeze period record when clock naturally progresses to the next day
@@ -1297,6 +1309,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 triggerPolicyComplianceCheckIfNeeded(userHandle, suspended);
             } else if (LOGIN_ACCOUNTS_CHANGED_ACTION.equals(action)) {
                 calculateHasIncompatibleAccounts();
+            } else if (ACTION_ESIM_REMOVED_WITH_MANAGED_PROFILE.equals(action)) {
+                int removedSubscriptionId = intent.getIntExtra(EXTRA_REMOVED_ESIM_SUBSCRIPTION_ID,
+                        -1);
+                Slogf.i(LOG_TAG,
+                        "Deleted subscription with ID %d because owning managed profile was "
+                                + "removed",
+                        removedSubscriptionId);
             }
         }
 
@@ -2210,9 +2229,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         mContext.registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, mHandler);
         filter = new IntentFilter();
         filter.addAction(Intent.ACTION_MANAGED_PROFILE_ADDED);
+        filter.addAction(Intent.ACTION_MANAGED_PROFILE_REMOVED);
         filter.addAction(Intent.ACTION_TIME_CHANGED);
         filter.addAction(Intent.ACTION_DATE_CHANGED);
         mContext.registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, mHandler);
+        filter = new IntentFilter();
+        filter.addAction(ACTION_ESIM_REMOVED_WITH_MANAGED_PROFILE);
+        mContext.registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null,
+                mHandler, RECEIVER_NOT_EXPORTED);
 
         LocalServices.addService(DevicePolicyManagerInternal.class, mLocalService);
 
@@ -3968,6 +3992,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             deletedUsers.remove(userInfo.id);
         }
         for (Integer userId : deletedUsers) {
+            removeManagedEmbeddedSubscriptionsForUser(userId);
             removeUserData(userId);
             mDevicePolicyEngine.handleUserRemoved(userId);
         }
@@ -8096,6 +8121,45 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private void clearWipeProfileNotification() {
         mInjector.getNotificationManager().cancel(SystemMessage.NOTE_PROFILE_WIPED);
     }
+
+    /**
+     * Remove eSIM subscriptions that are managed by any of the admin packages of the given
+     * userHandle.
+     */
+    private void removeManagedEmbeddedSubscriptionsForUser(int userHandle) {
+        if (!Flags.removeManagedEsimOnWorkProfileDeletion()) {
+            return;
+        }
+
+        Slogf.i(LOG_TAG,
+                "Managed profile with ID=%d deleted: going to remove managed embedded "
+                        + "subscriptions", userHandle);
+        String profileOwnerPackage = mOwners.getProfileOwnerPackage(userHandle);
+        if (profileOwnerPackage == null) {
+            Slogf.wtf(LOG_TAG, "Profile owner package for managed profile is null");
+            return;
+        }
+        IntArray managedSubscriptionIds = getSubscriptionIdsInternal(profileOwnerPackage);
+        deleteEmbeddedSubscriptions(managedSubscriptionIds);
+    }
+
+    private void deleteEmbeddedSubscriptions(IntArray subscriptionIds) {
+        EuiccManager euiccManager = mContext.getSystemService(EuiccManager.class);
+        for (int subscriptionId : subscriptionIds.toArray()) {
+            Slogf.i(LOG_TAG, "Deleting embedded subscription with ID %d", subscriptionId);
+            euiccManager.deleteSubscription(subscriptionId,
+                    createCallbackPendingIntentForRemovingManagedSubscription(
+                            subscriptionId));
+        }
+    }
+
+    private PendingIntent createCallbackPendingIntentForRemovingManagedSubscription(
+            Integer subscriptionId) {
+        Intent intent = new Intent(ACTION_ESIM_REMOVED_WITH_MANAGED_PROFILE);
+        intent.putExtra(EXTRA_REMOVED_ESIM_SUBSCRIPTION_ID, subscriptionId);
+        return PendingIntent.getBroadcast(mContext, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+    }
+
 
     @Override
     public void setFactoryResetProtectionPolicy(ComponentName who, String callerPackageName,
