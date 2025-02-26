@@ -865,6 +865,7 @@
     </style>
 
     <style name="MediaPlayer.SessionAction.Primary" parent="MediaPlayer.SessionAction">
+        <item name="android:tint">@android:color/system_on_primary_dark</item>
         <item name="android:background">@drawable/qs_media_round_button_background</item>
         <item name="android:backgroundTint">@color/media_player_solid_button_bg</item>
     </style>
