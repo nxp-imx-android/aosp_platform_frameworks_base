@@ -1365,6 +1365,21 @@ public final class DreamManagerService extends SystemService {
             }
         }
 
+        @Override
+        public void setScreensaverEnabled(boolean enabled) {
+            checkPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS);
+            final UserHandle userHandle = getCallingUserHandle();
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                        Settings.Secure.SCREENSAVER_ENABLED, enabled ? 1 : 0,
+                        userHandle.getIdentifier());
+                mPowerManagerInternal.updateSettings();
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+        }
+
         boolean canLaunchDreamActivity(String dreamPackageName, String packageName,
                 int callingUid) {
             if (dreamPackageName == null || packageName == null) {
