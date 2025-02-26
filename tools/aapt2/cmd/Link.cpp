@@ -58,6 +58,7 @@
 #include "java/ProguardRules.h"
 #include "link/FeatureFlagsFilter.h"
 #include "link/FlagDisabledResourceRemover.h"
+#include "link/FlaggedXmlVersioner.h"
 #include "link/Linkers.h"
 #include "link/ManifestFixer.h"
 #include "link/NoDefaultResourceRemover.h"
@@ -503,10 +504,19 @@ std::vector<std::unique_ptr<xml::XmlResource>> ResourceFileFlattener::LinkAndVer
   const ConfigDescription& config = file_op->config;
   ResourceEntry* entry = file_op->entry;
 
+  FlaggedXmlVersioner flagged_xml_versioner;
+  auto flag_split_resources = flagged_xml_versioner.Process(context_, doc);
+
+  std::vector<std::unique_ptr<xml::XmlResource>> final_resources;
   XmlCompatVersioner xml_compat_versioner(&rules_);
   const util::Range<ApiVersion> api_range{config.sdkVersion,
                                           FindNextApiVersionForConfig(entry, config)};
-  return xml_compat_versioner.Process(context_, doc, api_range);
+  for (auto& split_res : flag_split_resources) {
+    auto inner_resources = xml_compat_versioner.Process(context_, split_res.get(), api_range);
+    final_resources.insert(final_resources.end(), std::make_move_iterator(inner_resources.begin()),
+                           std::make_move_iterator(inner_resources.end()));
+  }
+  return final_resources;
 }
 
 ResourceFile::Type XmlFileTypeForOutputFormat(OutputFormat format) {

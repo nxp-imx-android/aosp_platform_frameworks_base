@@ -163,7 +163,7 @@ TEST_F(FlaggedResourcesTest, EnabledXmlELementAttributeRemoved) {
   auto loaded_apk = LoadedApk::LoadApkFromPath(apk_path, &noop_diag);
 
   std::string output;
-  DumpXmlTreeToString(loaded_apk.get(), "res/layout-v22/layout1.xml", &output);
+  DumpXmlTreeToString(loaded_apk.get(), "res/layout-v36/layout1.xml", &output);
   ASSERT_FALSE(output.contains("test.package.trueFlag"));
   ASSERT_TRUE(output.contains("FIND_ME"));
   ASSERT_TRUE(output.contains("test.package.readWriteFlag"));
