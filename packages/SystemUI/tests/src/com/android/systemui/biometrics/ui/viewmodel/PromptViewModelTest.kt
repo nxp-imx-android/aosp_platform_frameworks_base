@@ -28,6 +28,7 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.hardware.biometrics.BiometricFingerprintConstants
+import android.hardware.biometrics.BiometricPrompt
 import android.hardware.biometrics.PromptContentItemBulletedText
 import android.hardware.biometrics.PromptContentView
 import android.hardware.biometrics.PromptContentViewWithMoreOptionsButton
@@ -42,6 +43,7 @@ import android.platform.test.annotations.EnableFlags
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.Surface
+import android.view.accessibility.accessibilityManager
 import androidx.test.filters.SmallTest
 import com.android.app.activityTaskManager
 import com.android.keyguard.AuthInteractionProperties
@@ -200,6 +202,8 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         overrideResource(R.dimen.biometric_dialog_face_icon_size, mockFaceIconSize)
 
         kosmos.applicationContext = context
+        whenever(kosmos.accessibilityManager.getRecommendedTimeoutMillis(anyInt(), anyInt()))
+            .thenReturn(BiometricPrompt.HIDE_DIALOG_DELAY)
 
         if (testCase.fingerprint?.isAnyUdfpsType == true) {
             kosmos.authController = authController
