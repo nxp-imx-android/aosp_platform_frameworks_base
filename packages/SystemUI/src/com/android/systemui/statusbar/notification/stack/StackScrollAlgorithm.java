@@ -36,6 +36,8 @@ import com.android.systemui.statusbar.NotificationShelf;
 import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView;
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView;
+import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
+import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
@@ -57,6 +59,9 @@ public class StackScrollAlgorithm {
     private static final String TAG = "StackScrollAlgorithm";
     private static final SourceType STACK_SCROLL_ALGO = SourceType.from("StackScrollAlgorithm");
     private final ViewGroup mHostView;
+    @Nullable
+    private final HeadsUpAnimator mHeadsUpAnimator;
+
     private float mPaddingBetweenElements;
     private float mGapHeight;
     private float mGapHeightOnLockscreen;
@@ -79,8 +84,12 @@ public class StackScrollAlgorithm {
     private int mHeadsUpAppearHeightBottom;
     private int mHeadsUpCyclingPadding;
 
-    public StackScrollAlgorithm(Context context, ViewGroup hostView) {
+    public StackScrollAlgorithm(
+            Context context,
+            ViewGroup hostView,
+            @Nullable HeadsUpAnimator headsUpAnimator) {
         mHostView = hostView;
+        mHeadsUpAnimator = headsUpAnimator;
         initView(context);
     }
 
@@ -112,6 +121,9 @@ public class StackScrollAlgorithm {
         mQuickQsOffsetHeight = SystemBarUtils.getQuickQsOffsetHeight(context);
         mSmallCornerRadius = res.getDimension(R.dimen.notification_corner_radius_small);
         mLargeCornerRadius = res.getDimension(R.dimen.notification_corner_radius);
+        if (NotificationsHunSharedAnimationValues.isEnabled()) {
+            mHeadsUpAnimator.updateResources(context);
+        }
     }
 
     /**
@@ -251,6 +263,7 @@ public class StackScrollAlgorithm {
     }
 
     public void setHeadsUpAppearHeightBottom(int headsUpAppearHeightBottom) {
+        NotificationsHunSharedAnimationValues.assertInLegacyMode();
         mHeadsUpAppearHeightBottom = headsUpAppearHeightBottom;
     }
 
@@ -1042,14 +1055,22 @@ public class StackScrollAlgorithm {
                     childState.setYTranslation(inSpaceTranslation + extraTranslation);
                     cyclingInHunHeight = -1;
                 } else if (!ambientState.isDozing()) {
-                    if (shouldHunAppearFromBottom(ambientState, childState)) {
-                        // move to the bottom of the screen
-                        childState.setYTranslation(
-                                mHeadsUpAppearHeightBottom + mHeadsUpAppearStartAboveScreen);
+                    boolean shouldHunAppearFromBottom =
+                            shouldHunAppearFromBottom(ambientState, childState);
+                    if (NotificationsHunSharedAnimationValues.isEnabled()) {
+                        int yTranslation =
+                                mHeadsUpAnimator.getHeadsUpYTranslation(shouldHunAppearFromBottom);
+                        childState.setYTranslation(yTranslation);
                     } else {
-                        // move to the top of the screen
-                        childState.setYTranslation(-ambientState.getStackTopMargin()
-                                - mHeadsUpAppearStartAboveScreen);
+                        if (shouldHunAppearFromBottom) {
+                            // move to the bottom of the screen
+                            childState.setYTranslation(
+                                    mHeadsUpAppearHeightBottom + mHeadsUpAppearStartAboveScreen);
+                        } else {
+                            // move to the top of the screen
+                            childState.setYTranslation(-ambientState.getStackTopMargin()
+                                    - mHeadsUpAppearStartAboveScreen);
+                        }
                     }
                 } else {
                     // Make sure row yTranslation is at maximum the HUN yTranslation,
