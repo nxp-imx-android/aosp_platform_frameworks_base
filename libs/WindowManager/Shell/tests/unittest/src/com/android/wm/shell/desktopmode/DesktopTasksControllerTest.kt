@@ -2819,7 +2819,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToNextDisplay_toDesktopInOtherDisplay_bringsExistingTasksToFront() {
         val transition = Binder()
         val sourceDeskId = 0
@@ -2851,7 +2850,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY,
         Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
     )
-    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToNextDisplay_toDesktopInOtherDisplay_movesHomeAndWallpaperToFront() {
         val homeTask = setUpHomeTask(displayId = SECOND_DISPLAY)
         whenever(desktopWallpaperActivityTokenProvider.getToken(SECOND_DISPLAY))
@@ -3498,6 +3496,20 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
 
         verify(snapEventHandler).removeTaskIfTiled(eq(DEFAULT_DISPLAY), eq(task.taskId))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_fullscreenTask_switchToDesktop_movesTaskToDesk() {
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 5)
+        setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 5)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 5)
+
+        val fullscreenTask = createFullscreenTask()
+        val wct = controller.handleRequest(Binder(), createTransition(fullscreenTask))
+
+        assertNotNull(wct, "should handle request")
+        verify(desksOrganizer).moveTaskToDesk(wct = wct, deskId = 5, task = fullscreenTask)
     }
 
     @Test

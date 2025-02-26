@@ -1252,6 +1252,8 @@ class DesktopTasksController(
      * Move [task] to display with [displayId].
      *
      * No-op if task is already on that display per [RunningTaskInfo.displayId].
+     *
+     * TODO: b/399411604 - split this up into smaller functions.
      */
     private fun moveToDisplay(task: RunningTaskInfo, displayId: Int) {
         logV("moveToDisplay: taskId=%d displayId=%d", task.taskId, displayId)
@@ -1307,16 +1309,24 @@ class DesktopTasksController(
 
         // TODO: b/393977830 and b/397437641 - do not assume that freeform==desktop.
         if (!task.isFreeform) {
-            addMoveToDesktopChanges(wct, task, displayId)
-        } else if (Flags.enableMoveToNextDisplayShortcut()) {
-            applyFreeformDisplayChange(wct, task, displayId)
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                prepareMoveTaskToDesk(wct, task, destinationDeskId)
+            } else {
+                addMoveToDesktopChanges(wct, task, displayId)
+            }
+        } else {
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                desksOrganizer.moveTaskToDesk(wct, destinationDeskId, task)
+            }
+            if (Flags.enableMoveToNextDisplayShortcut()) {
+                applyFreeformDisplayChange(wct, task, displayId)
+            }
         }
 
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            desksOrganizer.moveTaskToDesk(wct, destinationDeskId, task)
-        } else {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
         }
+
         addDeskActivationChanges(destinationDeskId, wct)
         val activationRunnable: RunOnTransitStart = { transition ->
             desksTransitionObserver.addPendingTransition(
@@ -2408,7 +2418,12 @@ class DesktopTasksController(
         if (shouldFullscreenTaskLaunchSwitchToDesktop(task)) {
             logD("Switch fullscreen task to freeform on transition: taskId=%d", task.taskId)
             return WindowContainerTransaction().also { wct ->
-                addMoveToDesktopChanges(wct, task)
+                val deskId = getDefaultDeskId(task.displayId)
+                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                    prepareMoveTaskToDesk(wct, task, deskId)
+                } else {
+                    addMoveToDesktopChanges(wct, task)
+                }
                 // In some launches home task is moved behind new task being launched. Make sure
                 // that's not the case for launches in desktop. Also, if this launch is the first
                 // one to trigger the desktop mode (e.g., when [forceEnterDesktop()]), activate the
