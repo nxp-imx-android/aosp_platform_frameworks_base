@@ -832,3 +832,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_desktop_opening_deeplink_minimize_animation_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enabling a minimize animation when a new window is opened via deeplink and the Desktop Windowing open windows limit is reached."
+    bug: "360329773"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
