@@ -5063,8 +5063,6 @@
     <!-- Notification action button. Click it will open the bluetooth device details page for this hearing device. It will be shown when making a phone call with the hearing device. [CHAR LIMIT=none] -->
     <string name="hearing_device_notification_settings_button">Settings</string>
 
-    <!-- Text spoken when the current user is switched if accessibility is enabled. [CHAR LIMIT=none] -->
-    <string name="user_switched">Current user <xliff:g id="name" example="Bob">%1$s</xliff:g>.</string>
     <!-- Message shown when switching to a user [CHAR LIMIT=none] -->
     <string name="user_switching_message">Switching to <xliff:g id="name" example="Bob">%1$s</xliff:g>\u2026</string>
     <!-- Message when logging out a user on a split user system -->
