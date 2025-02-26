@@ -24,7 +24,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
-import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
+import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.flashlight.domain.model.FlashlightTileModel
 import com.android.systemui.utils.leaks.FakeFlashlightController
 import com.google.common.truth.Truth.assertThat
@@ -57,6 +57,7 @@ class FlashlightTileDataInteractorTest : SysuiTestCase() {
 
         assertThat(availability).isTrue()
     }
+
     @Test
     fun availabilityOffMatchesController() = runTest {
         controller.hasFlashlight = false

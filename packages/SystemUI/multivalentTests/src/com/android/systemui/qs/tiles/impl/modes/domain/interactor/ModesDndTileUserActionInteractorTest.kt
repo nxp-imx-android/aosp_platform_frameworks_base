@@ -26,9 +26,9 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.mainCoroutineContext
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.shared.QSSettingsPackageRepository
-import com.android.systemui.qs.tiles.base.actions.QSTileIntentUserInputHandlerSubject
-import com.android.systemui.qs.tiles.base.actions.qsTileIntentUserInputHandler
-import com.android.systemui.qs.tiles.base.interactor.QSTileInputTestKtx
+import com.android.systemui.qs.tiles.base.domain.actions.QSTileIntentUserInputHandlerSubject
+import com.android.systemui.qs.tiles.base.domain.actions.qsTileIntentUserInputHandler
+import com.android.systemui.qs.tiles.base.domain.model.QSTileInputTestKtx
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesDndTileModel
 import com.android.systemui.statusbar.policy.data.repository.zenModeRepository
 import com.android.systemui.statusbar.policy.domain.interactor.zenModeInteractor

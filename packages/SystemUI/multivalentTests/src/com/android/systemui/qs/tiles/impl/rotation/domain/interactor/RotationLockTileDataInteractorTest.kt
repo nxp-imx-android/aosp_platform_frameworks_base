@@ -29,7 +29,7 @@ import com.android.systemui.camera.data.repository.fakeCameraAutoRotateRepositor
 import com.android.systemui.camera.data.repository.fakeCameraSensorPrivacyRepository
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
+import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.whenever
