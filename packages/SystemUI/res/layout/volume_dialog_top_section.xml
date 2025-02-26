@@ -22,7 +22,6 @@
     android:clipChildren="false"
     android:clipToPadding="false"
     android:gravity="center"
-    android:layoutDirection="ltr"
     android:paddingEnd="@dimen/volume_dialog_ringer_drawer_diff_end_margin"
     app:layoutDescription="@xml/volume_dialog_ringer_drawer_motion_scene">
 
