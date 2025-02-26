@@ -23,8 +23,6 @@ import android.view.Display;
 import android.view.DisplayAddress;
 import android.view.DisplayEventReceiver;
 
-import com.android.internal.annotations.KeepForWeakReference;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,7 +33,6 @@ final class ModeChangeObserver {
     private final DisplayModeDirector.Injector mInjector;
 
     @SuppressWarnings("unused")
-    @KeepForWeakReference
     private DisplayEventReceiver mModeChangeListener;
     private final SparseArray<Set<Integer>> mRejectedModesByDisplay = new SparseArray<>();
     private Looper mLooper;
