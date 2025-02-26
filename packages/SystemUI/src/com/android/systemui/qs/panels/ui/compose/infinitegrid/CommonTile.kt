@@ -105,30 +105,31 @@ fun LargeTileContent(
         val focusBorderColor = MaterialTheme.colorScheme.secondary
         Box(
             modifier =
-                Modifier.size(CommonTileDefaults.ToggleTargetSize).thenIf(toggleClick != null) {
-                    Modifier.borderOnFocus(color = focusBorderColor, iconShape.topEnd)
-                        .clip(iconShape)
-                        .verticalSquish(squishiness)
-                        .drawBehind { drawRect(animatedBackgroundColor) }
-                        .combinedClickable(
-                            onClick = toggleClick!!,
-                            onLongClick = onLongClick,
-                            onLongClickLabel = longPressLabel,
-                            hapticFeedbackEnabled = !Flags.msdlFeedback(),
-                        )
-                        .thenIf(accessibilityUiState != null) {
-                            Modifier.semantics {
-                                    accessibilityUiState as AccessibilityUiState
-                                    contentDescription = accessibilityUiState.contentDescription
-                                    stateDescription = accessibilityUiState.stateDescription
-                                    accessibilityUiState.toggleableState?.let {
-                                        toggleableState = it
+                Modifier.size(CommonTileDefaults.ToggleTargetSize)
+                    .clip(iconShape)
+                    .verticalSquish(squishiness)
+                    .drawBehind { drawRect(animatedBackgroundColor) }
+                    .thenIf(toggleClick != null) {
+                        Modifier.borderOnFocus(color = focusBorderColor, iconShape.topEnd)
+                            .combinedClickable(
+                                onClick = toggleClick!!,
+                                onLongClick = onLongClick,
+                                onLongClickLabel = longPressLabel,
+                                hapticFeedbackEnabled = !Flags.msdlFeedback(),
+                            )
+                            .thenIf(accessibilityUiState != null) {
+                                Modifier.semantics {
+                                        accessibilityUiState as AccessibilityUiState
+                                        contentDescription = accessibilityUiState.contentDescription
+                                        stateDescription = accessibilityUiState.stateDescription
+                                        accessibilityUiState.toggleableState?.let {
+                                            toggleableState = it
+                                        }
+                                        role = Role.Switch
                                     }
-                                    role = Role.Switch
-                                }
-                                .sysuiResTag(TEST_TAG_TOGGLE)
-                        }
-                }
+                                    .sysuiResTag(TEST_TAG_TOGGLE)
+                            }
+                    }
         ) {
             SmallTileContent(
                 iconProvider = iconProvider,
