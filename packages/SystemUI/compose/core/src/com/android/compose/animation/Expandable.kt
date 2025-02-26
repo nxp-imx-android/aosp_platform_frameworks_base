@@ -84,6 +84,7 @@ import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.android.compose.modifiers.thenIf
 import com.android.compose.ui.graphics.FullScreenComposeViewInOverlay
+import com.android.systemui.animation.ComposableControllerFactory
 import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.TransitionAnimator
 import kotlin.math.max
@@ -119,6 +120,10 @@ import kotlin.math.min
  *    }
  * ```
  *
+ * [transitionControllerFactory] must be defined when this [Expandable] is registered for a
+ * long-term launch or return animation, to ensure that animation controllers can be created
+ * correctly.
+ *
  * @sample com.android.systemui.compose.gallery.ActivityLaunchScreen
  * @sample com.android.systemui.compose.gallery.DialogLaunchScreen
  */
@@ -134,10 +139,17 @@ fun Expandable(
     // TODO(b/285250939): Default this to true then remove once the Compose QS expandables have
     // proven that the new implementation is robust.
     useModifierBasedImplementation: Boolean = false,
+    transitionControllerFactory: ComposableControllerFactory? = null,
     content: @Composable (Expandable) -> Unit,
 ) {
     Expandable(
-        rememberExpandableController(color, shape, contentColor, borderStroke),
+        rememberExpandableController(
+            color,
+            shape,
+            contentColor,
+            borderStroke,
+            transitionControllerFactory,
+        ),
         modifier,
         onClick,
         interactionSource,
@@ -182,6 +194,17 @@ fun Expandable(
     content: @Composable (Expandable) -> Unit,
 ) {
     val controller = controller as ExpandableControllerImpl
+
+    if (controller.transitionControllerFactory != null) {
+        DisposableEffect(controller.transitionControllerFactory) {
+            // Notify the transition controller factory that the expandable is now available, so it
+            // can move forward with any pending requests.
+            controller.transitionControllerFactory.onCompose(controller.expandable)
+            // Once this composable is gone, the transition controller factory must be notified so
+            // it doesn't accepts requests providing stale content.
+            onDispose { controller.transitionControllerFactory.onDispose() }
+        }
+    }
 
     if (useModifierBasedImplementation) {
         Box(modifier.expandable(controller, onClick, interactionSource)) {
