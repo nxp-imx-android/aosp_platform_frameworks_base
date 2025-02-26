@@ -54,7 +54,7 @@ public class LowLightCondition extends Condition {
     }
 
     @Override
-    protected int getStartStrategy() {
+    public int getStartStrategy() {
         // As this condition keeps the lowlight sensor active, it should only run when needed.
         return START_WHEN_NEEDED;
     }

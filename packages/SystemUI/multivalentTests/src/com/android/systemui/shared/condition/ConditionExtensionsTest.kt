@@ -19,6 +19,10 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class ConditionExtensionsTest : SysuiTestCase() {
     private lateinit var testScope: TestScope
+    private val testCallback =
+        Condition.Callback {
+            // This is a no-op
+        }
 
     @Before
     fun setUp() {
@@ -33,7 +37,7 @@ class ConditionExtensionsTest : SysuiTestCase() {
 
             assertThat(condition.isConditionSet).isFalse()
 
-            condition.start()
+            condition.testStart()
             assertThat(condition.isConditionSet).isTrue()
             assertThat(condition.isConditionMet).isTrue()
         }
@@ -46,7 +50,7 @@ class ConditionExtensionsTest : SysuiTestCase() {
 
             assertThat(condition.isConditionSet).isFalse()
 
-            condition.start()
+            condition.testStart()
             assertThat(condition.isConditionSet).isTrue()
             assertThat(condition.isConditionMet).isFalse()
         }
@@ -56,7 +60,7 @@ class ConditionExtensionsTest : SysuiTestCase() {
         testScope.runTest {
             val flow = emptyFlow<Boolean>()
             val condition = flow.toCondition(scope = this, Condition.START_EAGERLY)
-            condition.start()
+            condition.testStop()
 
             assertThat(condition.isConditionSet).isFalse()
             assertThat(condition.isConditionMet).isFalse()
@@ -72,7 +76,7 @@ class ConditionExtensionsTest : SysuiTestCase() {
                     strategy = Condition.START_EAGERLY,
                     initialValue = true,
                 )
-            condition.start()
+            condition.testStart()
 
             assertThat(condition.isConditionSet).isTrue()
             assertThat(condition.isConditionMet).isTrue()
@@ -88,7 +92,7 @@ class ConditionExtensionsTest : SysuiTestCase() {
                     strategy = Condition.START_EAGERLY,
                     initialValue = false,
                 )
-            condition.start()
+            condition.testStart()
 
             assertThat(condition.isConditionSet).isTrue()
             assertThat(condition.isConditionMet).isFalse()
@@ -99,7 +103,7 @@ class ConditionExtensionsTest : SysuiTestCase() {
         testScope.runTest {
             val flow = MutableStateFlow(false)
             val condition = flow.toCondition(scope = this, strategy = Condition.START_EAGERLY)
-            condition.start()
+            condition.testStart()
 
             assertThat(condition.isConditionSet).isTrue()
             assertThat(condition.isConditionMet).isFalse()
@@ -110,7 +114,7 @@ class ConditionExtensionsTest : SysuiTestCase() {
             flow.value = false
             assertThat(condition.isConditionMet).isFalse()
 
-            condition.stop()
+            condition.testStop()
         }
 
     @Test
@@ -120,10 +124,18 @@ class ConditionExtensionsTest : SysuiTestCase() {
             val condition = flow.toCondition(scope = this, strategy = Condition.START_EAGERLY)
             assertThat(flow.subscriptionCount.value).isEqualTo(0)
 
-            condition.start()
+            condition.testStart()
             assertThat(flow.subscriptionCount.value).isEqualTo(1)
 
-            condition.stop()
+            condition.testStop()
             assertThat(flow.subscriptionCount.value).isEqualTo(0)
         }
+
+    fun Condition.testStart() {
+        addCallback(testCallback)
+    }
+
+    fun Condition.testStop() {
+        removeCallback(testCallback)
+    }
 }
