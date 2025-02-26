@@ -92,9 +92,6 @@ public final class MessageQueue {
     // queue for async messages when inserting a message at the tail.
     private int mAsyncMessageCount;
 
-    /**
-     * @hide
-     */
     private final AtomicLong mMessageCount = new AtomicLong();
     private final Thread mThread;
     private final long mTid;
