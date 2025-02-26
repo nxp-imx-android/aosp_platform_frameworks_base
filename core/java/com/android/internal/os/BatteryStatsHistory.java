@@ -181,6 +181,11 @@ public class BatteryStatsHistory {
      */
     public interface BatteryHistoryStore {
         /**
+         * Returns the maximum amount of storage that can be occupied by the battery history story.
+         */
+        int getMaxHistorySize();
+
+        /**
          * Returns the table of contents, in the chronological order.
          */
         List<BatteryHistoryFragment> getFragments();
@@ -513,6 +518,22 @@ public class BatteryStatsHistory {
      */
     public void setMaxHistoryBufferSize(int maxHistoryBufferSize) {
         mMaxHistoryBufferSize = maxHistoryBufferSize;
+    }
+
+    /**
+     * Returns a high estimate of how many items are currently included in the battery history.
+     */
+    public int getEstimatedItemCount() {
+        int estimatedBytes = mHistoryBuffer.dataSize();
+        if (mStore != null) {
+            estimatedBytes += mStore.getMaxHistorySize() * 10;  // account for the compression ratio
+        }
+        if (mHistoryParcels != null) {
+            for (int i = mHistoryParcels.size() - 1; i >= 0; i--) {
+                estimatedBytes += mHistoryParcels.get(i).dataSize();
+            }
+        }
+        return estimatedBytes / 4;    // Minimum size of a history item is 4 bytes
     }
 
     /**

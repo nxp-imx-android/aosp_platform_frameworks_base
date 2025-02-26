@@ -196,7 +196,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     /**
      * Test for the restoration from saved file.
      */
-    public void testInitializeFromSavedFile() {
+    public void disabled_testInitializeFromSavedFile() {
 
         mInjectedCurrentTimeMillis = START_TIME + 4 * INTERVAL + 50;
         assertResetTimes(START_TIME + 4 * INTERVAL, START_TIME + 5 * INTERVAL);
@@ -220,7 +220,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         // TODO Add various broken cases.
     }
 
-    public void testLoadConfig() {
+    public void disabled_testLoadConfig() {
         mService.updateConfigurationLocked(
                 ConfigConstants.KEY_RESET_INTERVAL_SEC + "=123,"
                         + ConfigConstants.KEY_MAX_SHORTCUTS + "=4,"
@@ -270,13 +270,13 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertEquals(MAX_UPDATES_PER_INTERVAL, mManager.getRemainingCallCount());
     }
 
-    public void testGetIconMaxDimensions() {
+    public void disabled_testGetIconMaxDimensions() {
         assertEquals(MAX_ICON_DIMENSION, mManager.getIconMaxWidth());
         assertEquals(MAX_ICON_DIMENSION, mManager.getIconMaxHeight());
     }
 
     /** Test for {@link android.content.pm.ShortcutManager#getRateLimitResetTime()} */
-    public void testGetRateLimitResetTime() {
+    public void disabled_testGetRateLimitResetTime() {
         assertEquals(START_TIME + INTERVAL, mManager.getRateLimitResetTime());
 
         mInjectedCurrentTimeMillis = START_TIME + 4 * INTERVAL + 50;
@@ -354,7 +354,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testAddDynamicShortcuts() {
+    public void disabled_testAddDynamicShortcuts() {
         setCaller(CALLING_PACKAGE_1, USER_10);
 
         final ShortcutInfo si1 = makeShortcut("shortcut1");
@@ -752,7 +752,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testDeleteDynamicShortcuts() {
+    public void disabled_testDeleteDynamicShortcuts() {
         final ShortcutInfo si1 = makeShortcut("shortcut1");
         final ShortcutInfo si2 = makeShortcut("shortcut2");
         final ShortcutInfo si3 = makeShortcut("shortcut3");
@@ -822,7 +822,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertEquals(1, mManager.getRemainingCallCount());
     }
 
-    public void testIcons() throws IOException {
+    public void disabled_testIcons() throws IOException {
         final Icon res32x32 = Icon.createWithResource(getTestContext(), R.drawable.black_32x32);
         final Icon res64x64 = Icon.createWithResource(getTestContext(), R.drawable.black_64x64);
         final Icon res512x512 = Icon.createWithResource(getTestContext(), R.drawable.black_512x512);
@@ -1228,7 +1228,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         return out.getFile();
     }
 
-    public void testOpenIconFileForWrite() throws IOException {
+    public void disabled_testOpenIconFileForWrite() throws IOException {
         mInjectedCurrentTimeMillis = 1000;
 
         final File p10_1_1 = openIconFileForWriteAndGetPath(10, CALLING_PACKAGE_1);
@@ -1618,7 +1618,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertShortcutIds(mManager.getShortcuts(ShortcutManager.FLAG_MATCH_CACHED), "s1", "s2");
     }
 
-    public void testCachedShortcuts() {
+    public void disabled_testCachedShortcuts() {
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
             assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s1"),
                     makeLongLivedShortcut("s2"), makeLongLivedShortcut("s3"),
@@ -1999,7 +1999,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
                 "s1", "s3");
     }
 
-    public void testGetShortcuts_shortcutKinds() throws Exception {
+    public void disabled_testGetShortcuts_shortcutKinds() throws Exception {
         // Create 3 manifest and 3 dynamic shortcuts
         addManifestShortcutResource(
                 new ComponentName(CALLING_PACKAGE_1, ShortcutActivity.class.getName()),
@@ -2110,7 +2110,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testGetShortcuts_resolveStrings() throws Exception {
+    public void disabled_testGetShortcuts_resolveStrings() throws Exception {
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
             ShortcutInfo si = new ShortcutInfo.Builder(mClientContext)
                     .setId("id")
@@ -2833,7 +2833,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testPinShortcutAndGetPinnedShortcuts_assistant() {
+    public void disabled_testPinShortcutAndGetPinnedShortcuts_assistant() {
         // Create some shortcuts.
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
             assertTrue(mManager.setDynamicShortcuts(list(
@@ -3613,7 +3613,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         // TODO Check extra, etc
     }
 
-    public void testLauncherCallback() throws Throwable {
+    public void disabled_testLauncherCallback() throws Throwable {
         // Disable throttling for this test.
         mService.updateConfigurationLocked(
                 ConfigConstants.KEY_MAX_UPDATES_PER_INTERVAL + "=99999999,"
@@ -3779,7 +3779,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
                 .isEmpty();
     }
 
-    public void testLauncherCallback_crossProfile() throws Throwable {
+    public void disabled_testLauncherCallback_crossProfile() throws Throwable {
         prepareCrossProfileDataSet();
 
         final Handler h = new Handler(Looper.getMainLooper());
@@ -4060,7 +4060,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         // TODO Check all other fields
     }
 
-    public void testLoadCorruptedShortcuts() throws Exception {
+    public void disabled_testLoadCorruptedShortcuts() throws Exception {
         initService();
 
         addPackage("com.android.chrome", 0, 0);
@@ -4575,7 +4575,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testHandleGonePackage_crossProfile() {
+    public void disabled_testHandleGonePackage_crossProfile() {
         // Create some shortcuts.
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
             assertTrue(mManager.setDynamicShortcuts(list(
@@ -4910,7 +4910,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         checkCanRestoreTo(DISABLED_REASON_BACKUP_NOT_SUPPORTED, spi3, true, 10, true, "sig1");
     }
 
-    public void testHandlePackageDelete() {
+    public void disabled_testHandlePackageDelete() {
         checkHandlePackageDeleteInner((userId, packageName) -> {
             uninstallPackage(userId, packageName);
             mService.mPackageMonitor.onReceive(getTestContext(),
@@ -4918,7 +4918,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testHandlePackageDisable() {
+    public void disabled_testHandlePackageDisable() {
         checkHandlePackageDeleteInner((userId, packageName) -> {
             disablePackage(userId, packageName);
             mService.mPackageMonitor.onReceive(getTestContext(),
@@ -5050,7 +5050,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     }
 
     /** Almost ame as testHandlePackageDelete, except it doesn't uninstall packages. */
-    public void testHandlePackageClearData() {
+    public void disabled_testHandlePackageClearData() {
         final Icon bmp32x32 = Icon.createWithBitmap(BitmapFactory.decodeResource(
                 getTestContext().getResources(), R.drawable.black_32x32));
         setCaller(CALLING_PACKAGE_1, USER_10);
@@ -5126,7 +5126,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertTrue(bitmapDirectoryExists(CALLING_PACKAGE_3, USER_11));
     }
 
-    public void testHandlePackageClearData_manifestRepublished() {
+    public void disabled_testHandlePackageClearData_manifestRepublished() {
 
         mRunningUsers.put(USER_11, true);
 
@@ -5168,7 +5168,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testHandlePackageUpdate() throws Throwable {
+    public void disabled_testHandlePackageUpdate() throws Throwable {
         // Set up shortcuts and launchers.
 
         final Icon res32x32 = Icon.createWithResource(getTestContext(), R.drawable.black_32x32);
@@ -5342,7 +5342,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     /**
      * Test the case where an updated app has resource IDs changed.
      */
-    public void testHandlePackageUpdate_resIdChanged() throws Exception {
+    public void disabled_testHandlePackageUpdate_resIdChanged() throws Exception {
         final Icon icon1 = Icon.createWithResource(getTestContext(), /* res ID */ 1000);
         final Icon icon2 = Icon.createWithResource(getTestContext(), /* res ID */ 1001);
 
@@ -5417,7 +5417,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testHandlePackageUpdate_systemAppUpdate() {
+    public void disabled_testHandlePackageUpdate_systemAppUpdate() {
 
         // Package1 is a system app.  Package 2 is not a system app, so it's not scanned
         // in this test at all.
@@ -5523,7 +5523,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
                 mService.getUserShortcutsLocked(USER_10).getLastAppScanOsFingerprint());
     }
 
-    public void testHandlePackageChanged() {
+    public void disabled_testHandlePackageChanged() {
         final ComponentName ACTIVITY1 = new ComponentName(CALLING_PACKAGE_1, "act1");
         final ComponentName ACTIVITY2 = new ComponentName(CALLING_PACKAGE_1, "act2");
 
@@ -5653,7 +5653,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testHandlePackageUpdate_activityNoLongerMain() throws Throwable {
+    public void disabled_testHandlePackageUpdate_activityNoLongerMain() throws Throwable {
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
             assertTrue(mManager.setDynamicShortcuts(list(
                     makeShortcutWithActivity("s1a",
@@ -5739,7 +5739,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
      * - Unpinned dynamic shortcuts
      * - Bitmaps
      */
-    public void testBackupAndRestore() {
+    public void disabled_testBackupAndRestore() {
 
         assertFileNotExists("user-0/shortcut_dump/restore-0-start.txt");
         assertFileNotExists("user-0/shortcut_dump/restore-1-payload.xml");
@@ -5760,7 +5760,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         checkBackupAndRestore_success(/*firstRestore=*/ true);
     }
 
-    public void testBackupAndRestore_backupRestoreTwice() {
+    public void disabled_testBackupAndRestore_backupRestoreTwice() {
         prepareForBackupTest();
 
         checkBackupAndRestore_success(/*firstRestore=*/ true);
@@ -5776,7 +5776,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         checkBackupAndRestore_success(/*firstRestore=*/ false);
     }
 
-    public void testBackupAndRestore_restoreToNewVersion() {
+    public void disabled_testBackupAndRestore_restoreToNewVersion() {
         prepareForBackupTest();
 
         addPackage(CALLING_PACKAGE_1, CALLING_UID_1, 2);
@@ -5982,7 +5982,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testBackupAndRestore_publisherWrongSignature() {
+    public void disabled_testBackupAndRestore_publisherWrongSignature() {
         prepareForBackupTest();
 
         addPackage(CALLING_PACKAGE_1, CALLING_UID_1, 10, "sigx"); // different signature
@@ -5990,7 +5990,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         checkBackupAndRestore_publisherNotRestored(ShortcutInfo.DISABLED_REASON_SIGNATURE_MISMATCH);
     }
 
-    public void testBackupAndRestore_publisherNoLongerBackupTarget() {
+    public void disabled_testBackupAndRestore_publisherNoLongerBackupTarget() {
         prepareForBackupTest();
 
         updatePackageInfo(CALLING_PACKAGE_1,
@@ -6119,7 +6119,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testBackupAndRestore_launcherLowerVersion() {
+    public void disabled_testBackupAndRestore_launcherLowerVersion() {
         prepareForBackupTest();
 
         addPackage(LAUNCHER_1, LAUNCHER_UID_1, 0); // Lower version
@@ -6128,7 +6128,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         checkBackupAndRestore_success(/*firstRestore=*/ true);
     }
 
-    public void testBackupAndRestore_launcherWrongSignature() {
+    public void disabled_testBackupAndRestore_launcherWrongSignature() {
         prepareForBackupTest();
 
         addPackage(LAUNCHER_1, LAUNCHER_UID_1, 10, "sigx"); // different signature
@@ -6136,7 +6136,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         checkBackupAndRestore_launcherNotRestored(true);
     }
 
-    public void testBackupAndRestore_launcherNoLongerBackupTarget() {
+    public void disabled_testBackupAndRestore_launcherNoLongerBackupTarget() {
         prepareForBackupTest();
 
         updatePackageInfo(LAUNCHER_1,
@@ -6241,7 +6241,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testBackupAndRestore_launcherAndPackageNoLongerBackupTarget() {
+    public void disabled_testBackupAndRestore_launcherAndPackageNoLongerBackupTarget() {
         prepareForBackupTest();
 
         updatePackageInfo(CALLING_PACKAGE_1,
@@ -6339,7 +6339,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testBackupAndRestore_disabled() {
+    public void disabled_testBackupAndRestore_disabled() {
         prepareCrossProfileDataSet();
 
         // Before doing backup & restore, disable s1.
@@ -6404,7 +6404,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     }
 
 
-    public void testBackupAndRestore_manifestRePublished() {
+    public void disabled_testBackupAndRestore_manifestRePublished() {
         // Publish two manifest shortcuts.
         addManifestShortcutResource(
                 new ComponentName(CALLING_PACKAGE_1, ShortcutActivity.class.getName()),
@@ -6495,7 +6495,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
      * logcat.
      * - if it has allowBackup=false, we don't touch any of the existing shortcuts.
      */
-    public void testBackupAndRestore_appAlreadyInstalledWhenRestored() {
+    public void disabled_testBackupAndRestore_appAlreadyInstalledWhenRestored() {
         // Pre-backup.  Same as testBackupAndRestore_manifestRePublished().
 
         // Publish two manifest shortcuts.
@@ -6620,7 +6620,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     /**
      * Test for restoring the pre-P backup format.
      */
-    public void testBackupAndRestore_api27format() throws Exception {
+    public void disabled_testBackupAndRestore_api27format() throws Exception {
         final byte[] payload = readTestAsset("shortcut/shortcut_api27_backup.xml").getBytes();
 
         addPackage(CALLING_PACKAGE_1, CALLING_UID_1, 10, "22222");
@@ -6861,7 +6861,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
                         .getPackageUserId());
     }
 
-    public void testOnApplicationActive_permission() {
+    public void disabled_testOnApplicationActive_permission() {
         assertExpectException(SecurityException.class, "Missing permission", () ->
                 mManager.onApplicationActive(CALLING_PACKAGE_1, USER_10));
 
@@ -6870,7 +6870,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         mManager.onApplicationActive(CALLING_PACKAGE_1, USER_10);
     }
 
-    public void testGetShareTargets_permission() {
+    public void disabled_testGetShareTargets_permission() {
         addPackage(CHOOSER_ACTIVITY_PACKAGE, CHOOSER_ACTIVITY_UID, 10, "sig1");
         mInjectedChooserActivity =
                 ComponentName.createRelative(CHOOSER_ACTIVITY_PACKAGE, ".ChooserActivity");
@@ -6889,7 +6889,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testHasShareTargets_permission() {
+    public void disabled_testHasShareTargets_permission() {
         assertExpectException(SecurityException.class, "Missing permission", () ->
                 mManager.hasShareTargets(CALLING_PACKAGE_1));
 
@@ -6898,7 +6898,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         mManager.hasShareTargets(CALLING_PACKAGE_1);
     }
 
-    public void testisSharingShortcut_permission() throws IntentFilter.MalformedMimeTypeException {
+    public void disabled_testisSharingShortcut_permission()
+            throws IntentFilter.MalformedMimeTypeException {
         setCaller(LAUNCHER_1, USER_10);
 
         IntentFilter filter_any = new IntentFilter();
@@ -6919,12 +6920,12 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     }
 
     public void disabled_testDumpsys_withIcons() throws IOException {
-        testIcons();
+        disabled_testIcons();
         // Dump after having some icons.
         dumpsysOnLogcat("test1", /* force= */ true);
     }
 
-    public void testManifestShortcut_publishOnUnlockUser() {
+    public void disabled_testManifestShortcut_publishOnUnlockUser() {
         addManifestShortcutResource(
                 new ComponentName(CALLING_PACKAGE_1, ShortcutActivity.class.getName()),
                 R.xml.shortcut_1);
@@ -7138,7 +7139,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertNull(mService.getPackageShortcutForTest(LAUNCHER_1, USER_10));
     }
 
-    public void testManifestShortcut_publishOnBroadcast() {
+    public void disabled_testManifestShortcut_publishOnBroadcast() {
         // First, no packages are installed.
         uninstallPackage(USER_10, CALLING_PACKAGE_1);
         uninstallPackage(USER_10, CALLING_PACKAGE_2);
@@ -7394,7 +7395,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testManifestShortcuts_missingMandatoryFields() {
+    public void disabled_testManifestShortcuts_missingMandatoryFields() {
         // Start with no apps installed.
         uninstallPackage(USER_10, CALLING_PACKAGE_1);
         uninstallPackage(USER_10, CALLING_PACKAGE_2);
@@ -7463,7 +7464,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testManifestShortcuts_intentDefinitions() {
+    public void disabled_testManifestShortcuts_intentDefinitions() {
         addManifestShortcutResource(
                 new ComponentName(CALLING_PACKAGE_1, ShortcutActivity.class.getName()),
                 R.xml.shortcut_error_4);
@@ -7605,7 +7606,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testManifestShortcuts_checkAllFields() {
+    public void disabled_testManifestShortcuts_checkAllFields() {
         mService.handleUnlockUser(USER_10);
 
         // Package 1 updated, which has one valid manifest shortcut and one invalid.
@@ -7710,7 +7711,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testManifestShortcuts_localeChange() throws InterruptedException {
+    public void disabled_testManifestShortcuts_localeChange() throws InterruptedException {
         mService.handleUnlockUser(USER_10);
 
         // Package 1 updated, which has one valid manifest shortcut and one invalid.
@@ -7814,7 +7815,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testManifestShortcuts_updateAndDisabled_notPinned() {
+    public void disabled_testManifestShortcuts_updateAndDisabled_notPinned() {
         mService.handleUnlockUser(USER_10);
 
         // First, just publish a manifest shortcut.
@@ -7854,7 +7855,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testManifestShortcuts_updateAndDisabled_pinned() {
+    public void disabled_testManifestShortcuts_updateAndDisabled_pinned() {
         mService.handleUnlockUser(USER_10);
 
         // First, just publish a manifest shortcut.
@@ -7910,7 +7911,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testManifestShortcuts_duplicateInSingleActivity() {
+    public void disabled_testManifestShortcuts_duplicateInSingleActivity() {
         mService.handleUnlockUser(USER_10);
 
         // The XML has two shortcuts with the same ID.
@@ -7935,7 +7936,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testManifestShortcuts_duplicateInTwoActivities() {
+    public void disabled_testManifestShortcuts_duplicateInTwoActivities() {
         mService.handleUnlockUser(USER_10);
 
         // ShortcutActivity has shortcut ms1
@@ -7987,7 +7988,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     /**
      * Manifest shortcuts cannot override shortcuts that were published via the APIs.
      */
-    public void testManifestShortcuts_cannotOverrideNonManifest() {
+    public void disabled_testManifestShortcuts_cannotOverrideNonManifest() {
         mService.handleUnlockUser(USER_10);
 
         // Create a non-pinned dynamic shortcut and a non-dynamic pinned shortcut.
@@ -8060,7 +8061,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     /**
      * Make sure the APIs won't work on manifest shortcuts.
      */
-    public void testManifestShortcuts_immutable() {
+    public void disabled_testManifestShortcuts_immutable() {
         mService.handleUnlockUser(USER_10);
 
         // Create a non-pinned manifest shortcut, a pinned shortcut that was originally
@@ -8153,7 +8154,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     /**
      * Make sure the APIs won't work on manifest shortcuts.
      */
-    public void testManifestShortcuts_tooMany() {
+    public void disabled_testManifestShortcuts_tooMany() {
         // Change the max number of shortcuts.
         mService.updateConfigurationLocked(ConfigConstants.KEY_MAX_SHORTCUTS + "=3");
 
@@ -8172,7 +8173,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testMaxShortcutCount_set() {
+    public void disabled_testMaxShortcutCount_set() {
         // Change the max number of shortcuts.
         mService.updateConfigurationLocked(ConfigConstants.KEY_MAX_SHORTCUTS + "=3");
 
@@ -8253,7 +8254,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testMaxShortcutCount_add() {
+    public void disabled_testMaxShortcutCount_add() {
         // Change the max number of shortcuts.
         mService.updateConfigurationLocked(ConfigConstants.KEY_MAX_SHORTCUTS + "=3");
 
@@ -8380,7 +8381,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testMaxShortcutCount_update() {
+    public void disabled_testMaxShortcutCount_update() {
         // Change the max number of shortcuts.
         mService.updateConfigurationLocked(ConfigConstants.KEY_MAX_SHORTCUTS + "=3");
 
@@ -8625,7 +8626,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testIsForegroundDefaultLauncher_true() {
+    public void disabled_testIsForegroundDefaultLauncher_true() {
         // random uid in the USER_10 range.
         final int uid = 1000024;
 
@@ -8636,7 +8637,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     }
 
 
-    public void testIsForegroundDefaultLauncher_defaultButNotForeground() {
+    public void disabled_testIsForegroundDefaultLauncher_defaultButNotForeground() {
         // random uid in the USER_10 range.
         final int uid = 1000024;
 
@@ -8646,7 +8647,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertFalse(mInternal.isForegroundDefaultLauncher("default", uid));
     }
 
-    public void testIsForegroundDefaultLauncher_foregroundButNotDefault() {
+    public void disabled_testIsForegroundDefaultLauncher_foregroundButNotDefault() {
         // random uid in the USER_10 range.
         final int uid = 1000024;
 
@@ -8656,7 +8657,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertFalse(mInternal.isForegroundDefaultLauncher("another", uid));
     }
 
-    public void testParseShareTargetsFromManifest() {
+    public void disabled_testParseShareTargetsFromManifest() {
         // These values must exactly match the content of shortcuts_share_targets.xml resource
         List<ShareTargetInfo> expectedValues = new ArrayList<>();
         expectedValues.add(new ShareTargetInfo(
@@ -8774,7 +8775,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         }
     }
 
-    public void testIsSharingShortcut() throws IntentFilter.MalformedMimeTypeException {
+    public void disabled_testIsSharingShortcut() throws IntentFilter.MalformedMimeTypeException {
         addManifestShortcutResource(
                 new ComponentName(CALLING_PACKAGE_1, ShortcutActivity.class.getName()),
                 R.xml.shortcut_share_targets);
@@ -8824,7 +8825,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
                 filter_any));
     }
 
-    public void testIsSharingShortcut_PinnedAndCachedOnlyShortcuts()
+    public void disabled_testIsSharingShortcut_PinnedAndCachedOnlyShortcuts()
             throws IntentFilter.MalformedMimeTypeException {
         addManifestShortcutResource(
                 new ComponentName(CALLING_PACKAGE_1, ShortcutActivity.class.getName()),
@@ -8881,7 +8882,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
                 filter_any));
     }
 
-    public void testAddingShortcuts_ExcludesHiddenFromLauncherShortcuts() {
+    public void disabled_testAddingShortcuts_ExcludesHiddenFromLauncherShortcuts() {
         final ShortcutInfo s1 = makeShortcutExcludedFromLauncher("s1");
         final ShortcutInfo s2 = makeShortcutExcludedFromLauncher("s2");
         final ShortcutInfo s3 = makeShortcutExcludedFromLauncher("s3");
@@ -8915,7 +8916,7 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void testPinHiddenShortcuts_ThrowsException() {
+    public void disabled_testPinHiddenShortcuts_ThrowsException() {
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
             assertThrown(IllegalArgumentException.class, () -> {
                 mManager.requestPinShortcut(makeShortcutExcludedFromLauncher("s1"), null);

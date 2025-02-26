@@ -33,7 +33,4 @@ class FakeQSTileUserActionInteractor<T> : QSTileUserActionInteractor<T> {
     override suspend fun handleInput(input: QSTileInput<T>) {
         mutex.withLock { mutableInputs.add(input) }
     }
-
-    override var detailsViewModel: TileDetailsViewModel? =
-        FakeTileDetailsViewModel("FakeQSTileUserActionInteractor")
 }

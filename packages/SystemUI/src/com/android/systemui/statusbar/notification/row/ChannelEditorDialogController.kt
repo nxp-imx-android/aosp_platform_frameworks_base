@@ -21,7 +21,6 @@ import android.app.INotificationManager
 import android.app.NotificationChannel
 import android.app.NotificationChannel.DEFAULT_CHANNEL_ID
 import android.app.NotificationChannelGroup
-import android.app.NotificationManager.IMPORTANCE_NONE
 import android.app.NotificationManager.Importance
 import android.content.Context
 import android.graphics.Color
@@ -40,7 +39,7 @@ import android.widget.TextView
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.res.R
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
 import javax.inject.Inject
 
 private const val TAG = "ChannelDialogController"
@@ -59,9 +58,9 @@ private const val TAG = "ChannelDialogController"
  */
 @SysUISingleton
 class ChannelEditorDialogController @Inject constructor(
-    @ShadeDisplayAware private val context: Context,
+    private val shadeDialogContextInteractor: ShadeDialogContextInteractor,
     private val noMan: INotificationManager,
-    private val dialogBuilder: ChannelEditorDialog.Builder
+    private val dialogBuilder: ChannelEditorDialog.Builder,
 ) {
 
     private var prepared = false
@@ -272,7 +271,7 @@ class ChannelEditorDialogController @Inject constructor(
     }
 
     private fun initDialog() {
-        dialogBuilder.setContext(context)
+        dialogBuilder.setContext(shadeDialogContextInteractor.context)
         dialog = dialogBuilder.build()
 
         dialog.window?.requestFeature(Window.FEATURE_NO_TITLE)

@@ -620,7 +620,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
     }
 
     private boolean isDismissable(NotificationEntry entry) {
-        return mDismissibilityProvider.isDismissable(entry);
+        return mDismissibilityProvider.isDismissable(entry.getKey());
     }
 
     /**

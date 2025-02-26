@@ -363,10 +363,11 @@ class MultiDisplayVeiledResizeTaskPositioner(
         dragEventListeners.remove(dragEventListener)
     }
 
-    override fun onTopologyChanged(topology: DisplayTopology) {
+    override fun onTopologyChanged(topology: DisplayTopology?) {
         // TODO: b/383069173 - Cancel window drag when topology changes happen during drag.
 
         displayIds.clear()
+        if (topology == null) return
         val displayBounds = topology.getAbsoluteBounds()
         displayIds.addAll(List(displayBounds.size()) { displayBounds.keyAt(it) })
     }

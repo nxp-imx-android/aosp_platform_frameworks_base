@@ -37,4 +37,7 @@ object StubQSTileViewModel : QSTileViewModel {
     override fun onActionPerformed(userAction: QSTileUserAction) = error("Don't call stubs")
 
     override fun destroy() = error("Don't call stubs")
+
+    override val currentTileUser: Int
+        get() = error("Don't call stubs")
 }

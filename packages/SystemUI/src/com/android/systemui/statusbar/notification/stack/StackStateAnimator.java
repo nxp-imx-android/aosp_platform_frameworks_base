@@ -422,7 +422,7 @@ public class StackStateAnimator {
             if (changingView instanceof ExpandableNotificationRow && mLogger != null) {
                 loggable = true;
                 isHeadsUp = ((ExpandableNotificationRow) changingView).isHeadsUp();
-                key = ((ExpandableNotificationRow) changingView).getEntry().getKey();
+                key = ((ExpandableNotificationRow) changingView).getKey();
             }
             if (event.animationType ==
                     NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_ADD) {

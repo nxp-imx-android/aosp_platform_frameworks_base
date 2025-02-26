@@ -196,3 +196,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "report_animating_insets_types"
+  namespace: "input_method"
+  description: "Adding animating insets types and report IME visibility at the beginning of hiding"
+  bug: "393049691"
+}

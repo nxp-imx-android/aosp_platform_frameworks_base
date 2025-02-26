@@ -19,6 +19,7 @@ package com.android.systemui.qs.tiles.di
 import android.os.UserHandle
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.qs.instanceIdSequenceFake
+import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.TileCategory
 import com.android.systemui.qs.tiles.base.viewmodel.QSTileViewModelFactory
@@ -56,7 +57,11 @@ val Kosmos.customTileViewModelFactory: QSTileViewModelFactory.Component by
                     override val config: QSTileConfig = config
                     override val isAvailable: StateFlow<Boolean> = MutableStateFlow(true)
 
-                    override fun onUserChanged(user: UserHandle) {}
+                    override var currentTileUser = currentTilesInteractor.userId.value
+
+                    override fun onUserChanged(user: UserHandle) {
+                        currentTileUser = user.identifier
+                    }
 
                     override fun forceUpdate() {}
 
@@ -68,7 +73,7 @@ val Kosmos.customTileViewModelFactory: QSTileViewModelFactory.Component by
         }
     }
 
-val Kosmos.newQSTileFactory by
+var Kosmos.newQSTileFactory by
     Kosmos.Fixture {
         NewQSTileFactory(
             qSTileConfigProvider,

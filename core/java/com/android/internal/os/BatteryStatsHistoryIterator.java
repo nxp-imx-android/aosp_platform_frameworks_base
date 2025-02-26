@@ -47,6 +47,8 @@ public class BatteryStatsHistoryIterator implements Iterator<BatteryStats.Histor
     private boolean mClosed;
     private long mBaseMonotonicTime;
     private long mBaseTimeUtc;
+    private int mItemIndex = 0;
+    private int mMaxHistoryItems;
 
     public BatteryStatsHistoryIterator(@NonNull BatteryStatsHistory history, long startTimeMs,
             long endTimeMs) {
@@ -54,6 +56,7 @@ public class BatteryStatsHistoryIterator implements Iterator<BatteryStats.Histor
         mStartTimeMs = startTimeMs;
         mEndTimeMs = (endTimeMs != MonotonicClock.UNDEFINED) ? endTimeMs : Long.MAX_VALUE;
         mHistoryItem.clear();
+        mMaxHistoryItems = history.getEstimatedItemCount();
     }
 
     @Override
@@ -80,6 +83,11 @@ public class BatteryStatsHistoryIterator implements Iterator<BatteryStats.Histor
 
     private void advance() {
         while (true) {
+            if (mItemIndex > mMaxHistoryItems) {
+                Slog.wtfStack(TAG, "Number of battery history items is too large: " + mItemIndex);
+                break;
+            }
+
             Parcel p = mBatteryStatsHistory.getNextParcel(mStartTimeMs, mEndTimeMs);
             if (p == null) {
                 break;
@@ -109,6 +117,7 @@ public class BatteryStatsHistoryIterator implements Iterator<BatteryStats.Histor
                 break;
             }
             if (mHistoryItem.time >= mStartTimeMs) {
+                mItemIndex++;
                 mNextItemReady = true;
                 return;
             }

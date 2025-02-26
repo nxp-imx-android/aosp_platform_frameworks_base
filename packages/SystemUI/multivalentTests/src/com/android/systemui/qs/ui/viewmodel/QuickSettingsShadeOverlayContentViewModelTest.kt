@@ -61,8 +61,7 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
             usingMediaInComposeFragment = false // This is not for the compose fragment
         }
     private val testScope = kosmos.testScope
-    private val sceneInteractor = kosmos.sceneInteractor
-
+    private val sceneInteractor by lazy { kosmos.sceneInteractor }
     private val underTest by lazy { kosmos.quickSettingsShadeOverlayContentViewModel }
 
     @Before

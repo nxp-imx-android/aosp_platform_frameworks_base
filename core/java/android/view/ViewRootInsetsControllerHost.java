@@ -171,6 +171,13 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
     }
 
     @Override
+    public void updateAnimatingTypes(@WindowInsets.Type.InsetsType int animatingTypes) {
+        if (mViewRoot != null) {
+            mViewRoot.updateAnimatingTypes(animatingTypes);
+        }
+    }
+
+    @Override
     public boolean hasAnimationCallbacks() {
         if (mViewRoot.mView == null) {
             return false;
@@ -272,13 +279,6 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
             return mViewRoot.mTranslator;
         }
         return null;
-    }
-
-    @Override
-    public void notifyAnimationRunningStateChanged(boolean running) {
-        if (mViewRoot != null) {
-            mViewRoot.notifyInsetsAnimationRunningStateChanged(running);
-        }
     }
 
     @Override

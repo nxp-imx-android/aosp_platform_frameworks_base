@@ -275,11 +275,7 @@ public class StackScrollAlgorithm {
     public static void debugLogView(View view, String s) {
         String viewString = "";
         if (view instanceof ExpandableNotificationRow row) {
-            if (row.getEntry() == null) {
-                viewString = "ExpandableNotificationRow has null NotificationEntry";
-            } else {
-                viewString = row.getEntry().getSbn().getId() + "";
-            }
+            viewString = row.getKey();
         } else if (view == null) {
             viewString = "View is null";
         } else if (view instanceof SectionHeaderView) {
@@ -413,10 +409,8 @@ public class StackScrollAlgorithm {
      */
     public boolean isCyclingOut(ExpandableNotificationRow row, AmbientState ambientState) {
         if (!NotificationHeadsUpCycling.isEnabled()) return false;
-        if (row.getEntry() == null) return false;
-        if (row.getEntry().getKey() == null) return false;
         String cyclingOutKey = ambientState.getAvalanchePreviousHunKey();
-        return row.getEntry().getKey().equals(cyclingOutKey);
+        return row.getKey().equals(cyclingOutKey);
     }
 
     /**
@@ -424,10 +418,8 @@ public class StackScrollAlgorithm {
      */
     public boolean isCyclingIn(ExpandableNotificationRow row, AmbientState ambientState) {
         if (!NotificationHeadsUpCycling.isEnabled()) return false;
-        if (row.getEntry() == null) return false;
-        if (row.getEntry().getKey() == null) return false;
         String cyclingInKey = ambientState.getAvalancheShowingHunKey();
-        return row.getEntry().getKey().equals(cyclingInKey);
+        return row.getKey().equals(cyclingInKey);
     }
 
     /** Updates the dimmed and hiding sensitive states of the children. */

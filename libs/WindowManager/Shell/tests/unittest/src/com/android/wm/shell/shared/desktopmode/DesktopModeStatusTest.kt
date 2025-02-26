@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.shared.desktopmode
 
+import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.content.Context
 import android.content.res.Resources
 import android.platform.test.annotations.DisableFlags
@@ -27,6 +28,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.R
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.util.createTaskInfo
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
@@ -152,6 +154,70 @@ class DesktopModeStatusTest : ShellTestCase() {
         assertThat(DesktopModeStatus.canEnterDesktopMode(mockContext)).isTrue()
     }
 
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+        Flags.FLAG_ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS,
+    )
+    @Test
+    fun shouldSetBackground_BTWFlagEnabled_freeformTask_returnsTrue() {
+        val freeFormTaskInfo = createTaskInfo(deviceWindowingMode = WINDOWING_MODE_FREEFORM)
+        assertThat(DesktopModeStatus.shouldSetBackground(freeFormTaskInfo)).isTrue()
+    }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+        Flags.FLAG_ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS,
+    )
+    @Test
+    fun shouldSetBackground_BTWFlagEnabled_notFreeformTask_returnsFalse() {
+        val notFreeFormTaskInfo = createTaskInfo()
+        assertThat(DesktopModeStatus.shouldSetBackground(notFreeFormTaskInfo)).isFalse()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    @DisableFlags(Flags.FLAG_ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS)
+    @Test
+    fun shouldSetBackground_BTWFlagDisabled_freeformTaskAndFluid_returnsTrue() {
+        val freeFormTaskInfo = createTaskInfo(deviceWindowingMode = WINDOWING_MODE_FREEFORM)
+
+        setIsVeiledResizeEnabled(false)
+        assertThat(DesktopModeStatus.shouldSetBackground(freeFormTaskInfo)).isTrue()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    @DisableFlags(Flags.FLAG_ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS)
+    @Test
+    fun shouldSetBackground_BTWFlagDisabled_freeformTaskAndVeiled_returnsFalse() {
+        val freeFormTaskInfo = createTaskInfo(deviceWindowingMode = WINDOWING_MODE_FREEFORM)
+
+        setIsVeiledResizeEnabled(true)
+        assertThat(DesktopModeStatus.shouldSetBackground(freeFormTaskInfo)).isFalse()
+    }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+        Flags.FLAG_ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS,
+    )
+    @Test
+    fun shouldSetBackground_BTWFlagEnabled_freeformTaskAndFluid_returnsTrue() {
+        val freeFormTaskInfo = createTaskInfo(deviceWindowingMode = WINDOWING_MODE_FREEFORM)
+
+        setIsVeiledResizeEnabled(false)
+        assertThat(DesktopModeStatus.shouldSetBackground(freeFormTaskInfo)).isTrue()
+    }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+        Flags.FLAG_ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS,
+    )
+    @Test
+    fun shouldSetBackground_BTWFlagEnabled_windowModesTask_freeformTaskAndVeiled_returnsTrue() {
+        val freeFormTaskInfo = createTaskInfo(deviceWindowingMode = WINDOWING_MODE_FREEFORM)
+
+        setIsVeiledResizeEnabled(true)
+        assertThat(DesktopModeStatus.shouldSetBackground(freeFormTaskInfo)).isTrue()
+    }
+
     @Test
     fun isDeviceEligibleForDesktopMode_configDEModeOnAndIntDispHostsDesktop_returnsTrue() {
         doReturn(true).whenever(mockResources).getBoolean(eq(R.bool.config_isDesktopModeSupported))
@@ -253,5 +319,12 @@ class DesktopModeStatusTest : ShellTestCase() {
         val deviceRestrictions = DesktopModeStatus::class.java.getDeclaredField("ENFORCE_DEVICE_RESTRICTIONS")
         deviceRestrictions.isAccessible = true
         deviceRestrictions.setBoolean(/* obj= */ null, /* z= */ !eligible)
+    }
+
+    private fun setIsVeiledResizeEnabled(enabled: Boolean) {
+        val deviceRestrictions =
+            DesktopModeStatus::class.java.getDeclaredField("IS_VEILED_RESIZE_ENABLED")
+        deviceRestrictions.isAccessible = true
+        deviceRestrictions.setBoolean(/* obj= */ null, /* z= */ enabled)
     }
 }

@@ -1458,7 +1458,7 @@ public class NotificationChildrenContainer extends ViewGroup
                 if (AsyncHybridViewInflation.isEnabled()) {
                     minExpandHeight += mMinSingleLineHeight;
                 } else {
-                    Log.e(TAG, "getMinHeight: child " + child.getEntry().getKey()
+                    Log.e(TAG, "getMinHeight: child " + child.getKey()
                             + " single line view is null", new Exception());
                 }
             }
@@ -1688,8 +1688,8 @@ public class NotificationChildrenContainer extends ViewGroup
     public void addTransientView(View view, int index) {
         if (mLogger != null && view instanceof ExpandableNotificationRow) {
             mLogger.addTransientRow(
-                    ((ExpandableNotificationRow) view).getEntry(),
-                    getContainingNotification().getEntry(),
+                    ((ExpandableNotificationRow) view).getLoggingKey(),
+                    getContainingNotification().getLoggingKey(),
                     index
             );
         }
@@ -1700,8 +1700,8 @@ public class NotificationChildrenContainer extends ViewGroup
     public void removeTransientView(View view) {
         if (mLogger != null && view instanceof ExpandableNotificationRow) {
             mLogger.removeTransientRow(
-                    ((ExpandableNotificationRow) view).getEntry(),
-                    getContainingNotification().getEntry()
+                    ((ExpandableNotificationRow) view).getLoggingKey(),
+                    getContainingNotification().getLoggingKey()
             );
         }
         super.removeTransientView(view);

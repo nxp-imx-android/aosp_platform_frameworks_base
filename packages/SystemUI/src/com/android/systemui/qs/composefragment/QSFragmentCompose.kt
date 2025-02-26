@@ -252,18 +252,17 @@ constructor(
                     Box(
                         modifier =
                             Modifier.graphicsLayer { alpha = viewModel.viewAlpha }
+                                .thenIf(notificationScrimClippingParams.isEnabled) {
+                                    Modifier.notificationScrimClip {
+                                        notificationScrimClippingParams.params
+                                    }
+                                }
                                 .thenIf(!Flags.notificationShadeBlur()) {
-                                    // Clipping before translation to match QSContainerImpl.onDraw
                                     Modifier.offset {
                                         IntOffset(
                                             x = 0,
                                             y = viewModel.viewTranslationY.fastRoundToInt(),
                                         )
-                                    }
-                                }
-                                .thenIf(notificationScrimClippingParams.isEnabled) {
-                                    Modifier.notificationScrimClip {
-                                        notificationScrimClippingParams.params
                                     }
                                 }
                                 // Disable touches in the whole composable while the mirror is

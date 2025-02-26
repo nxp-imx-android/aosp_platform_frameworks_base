@@ -789,17 +789,17 @@ public class NotificationStackScrollLayout
     private void logHunSkippedForUnexpectedState(ExpandableNotificationRow enr,
                                                  boolean expected, boolean actual) {
         if (mLogger == null) return;
-        mLogger.hunSkippedForUnexpectedState(enr.getEntry(), expected, actual);
+        mLogger.hunSkippedForUnexpectedState(enr.getLoggingKey(), expected, actual);
     }
 
     private void logHunAnimationSkipped(ExpandableNotificationRow enr, String reason) {
         if (mLogger == null) return;
-        mLogger.hunAnimationSkipped(enr.getEntry(), reason);
+        mLogger.hunAnimationSkipped(enr.getLoggingKey(), reason);
     }
 
     private void logHunAnimationEventAdded(ExpandableNotificationRow enr, int type) {
         if (mLogger == null) return;
-        mLogger.hunAnimationEventAdded(enr.getEntry(), type);
+        mLogger.hunAnimationEventAdded(enr.getLoggingKey(), type);
     }
 
     private void onDrawDebug(Canvas canvas) {
@@ -2134,7 +2134,7 @@ public class NotificationStackScrollLayout
         }
     }
 
-    public ViewGroup getViewParentForNotification(NotificationEntry entry) {
+    public ViewGroup getViewParentForNotification() {
         return this;
     }
 
@@ -2917,17 +2917,17 @@ public class NotificationStackScrollLayout
         if (child instanceof ExpandableNotificationRow) {
             if (container instanceof NotificationChildrenContainer) {
                 mLogger.addTransientChildNotificationToChildContainer(
-                        ((ExpandableNotificationRow) child).getEntry(),
+                        ((ExpandableNotificationRow) child).getLoggingKey(),
                         ((NotificationChildrenContainer) container)
-                                .getContainingNotification().getEntry()
+                                .getContainingNotification().getLoggingKey()
                 );
             } else if (container instanceof NotificationStackScrollLayout) {
                 mLogger.addTransientChildNotificationToNssl(
-                        ((ExpandableNotificationRow) child).getEntry()
+                        ((ExpandableNotificationRow) child).getLoggingKey()
                 );
             } else {
                 mLogger.addTransientChildNotificationToViewGroup(
-                        ((ExpandableNotificationRow) child).getEntry(),
+                        ((ExpandableNotificationRow) child).getLoggingKey(),
                         container
                 );
             }
@@ -2937,7 +2937,7 @@ public class NotificationStackScrollLayout
     @Override
     public void addTransientView(View view, int index) {
         if (mLogger != null && view instanceof ExpandableNotificationRow) {
-            mLogger.addTransientRow(((ExpandableNotificationRow) view).getEntry(), index);
+            mLogger.addTransientRow(((ExpandableNotificationRow) view).getLoggingKey(), index);
         }
         super.addTransientView(view, index);
     }
@@ -2945,7 +2945,7 @@ public class NotificationStackScrollLayout
     @Override
     public void removeTransientView(View view) {
         if (mLogger != null && view instanceof ExpandableNotificationRow) {
-            mLogger.removeTransientRow(((ExpandableNotificationRow) view).getEntry());
+            mLogger.removeTransientRow(((ExpandableNotificationRow) view).getLoggingKey());
         }
         super.removeTransientView(view);
     }
@@ -2996,7 +2996,7 @@ public class NotificationStackScrollLayout
         String key = "";
         if (mDebugRemoveAnimation) {
             if (child instanceof ExpandableNotificationRow) {
-                key = ((ExpandableNotificationRow) child).getEntry().getKey();
+                key = ((ExpandableNotificationRow) child).getKey();
             }
             Log.d(TAG, "generateRemoveAnimation " + key);
         }
@@ -3418,7 +3418,7 @@ public class NotificationStackScrollLayout
                         + " isHeadsUp=" + isHeadsUp
                         + " type=" + type
                         + " onBottom=" + onBottom
-                        + " row=" + row.getEntry().getKey());
+                        + " row=" + row.getKey());
             }
             logHunAnimationEventAdded(row, type);
         }
@@ -3493,7 +3493,7 @@ public class NotificationStackScrollLayout
             if (mDebugRemoveAnimation) {
                 String key = "";
                 if (child instanceof ExpandableNotificationRow) {
-                    key = ((ExpandableNotificationRow) child).getEntry().getKey();
+                    key = ((ExpandableNotificationRow) child).getKey();
                 }
                 Log.d(TAG, "created Remove Event - SwipedOut: " + childWasSwipedOut + " " + key);
             }
@@ -4381,7 +4381,7 @@ public class NotificationStackScrollLayout
         if (mLogger == null) {
             return;
         }
-        mLogger.transientNotificationRowTraversalCleaned(transientView.getEntry(), reason);
+        mLogger.transientNotificationRowTraversalCleaned(transientView.getLoggingKey(), reason);
     }
 
     void onPanelTrackingStarted() {
@@ -5075,7 +5075,7 @@ public class NotificationStackScrollLayout
                     + " addAnimation=" + addAnimation
                     + (row.getEntry() == null ? " entry NULL "
                             : " isSeenInShade=" + row.getEntry().isSeenInShade()
-                                    + " row=" + row.getEntry().getKey())
+                                    + " row=" + row.getKey())
                     + " mIsExpanded=" + mIsExpanded
                     + " isHeadsUp=" + isHeadsUp);
         }
@@ -6781,7 +6781,7 @@ public class NotificationStackScrollLayout
         NotificationChildrenContainer childrenContainer = row.getChildrenContainer();
         if (childrenContainer == null) {
             Log.wtf(TAG, "Tried to update group header alignment for something that's "
-                    + "not a group; key = " + row.getEntry().getKey());
+                    + "not a group; key = " + row.getKey());
             return;
         }
         NotificationHeaderView header = childrenContainer.getGroupHeader();

@@ -278,13 +278,13 @@ internal constructor(
             val fs =
                 when (val first = s.firstVisibleChild) {
                     null -> "(null)"
-                    is ExpandableNotificationRow -> first.entry.key
+                    is ExpandableNotificationRow -> first.loggingKey
                     else -> Integer.toHexString(System.identityHashCode(first))
                 }
             val ls =
                 when (val last = s.lastVisibleChild) {
                     null -> "(null)"
-                    is ExpandableNotificationRow -> last.entry.key
+                    is ExpandableNotificationRow -> last.loggingKey
                     else -> Integer.toHexString(System.identityHashCode(last))
                 }
             Log.d(TAG, "updateSections: f=$fs s=$i")

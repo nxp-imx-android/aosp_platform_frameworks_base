@@ -736,6 +736,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     private @InsetsType int mRequestedVisibleTypes = WindowInsets.Type.defaultVisible();
 
+    private @InsetsType int mAnimatingTypes = 0;
+
     /**
      * Freeze the insets state in some cases that not necessarily keeps up-to-date to the client.
      * (e.g app exiting transition)
@@ -840,6 +842,27 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             @InsetsType int requestedVisibleTypes, @InsetsType int mask) {
         return setRequestedVisibleTypes(
                 mRequestedVisibleTypes & ~mask | requestedVisibleTypes & mask);
+    }
+
+    @Override
+    public @InsetsType int getAnimatingTypes() {
+        return mAnimatingTypes;
+    }
+
+    @Override
+    public void setAnimatingTypes(@InsetsType int animatingTypes) {
+        if (mAnimatingTypes != animatingTypes) {
+            if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+                Trace.instant(TRACE_TAG_WINDOW_MANAGER,
+                        TextUtils.formatSimple("%s: setAnimatingTypes(%s)",
+                                getName(),
+                                animatingTypes));
+            }
+            mInsetsAnimationRunning = animatingTypes != 0;
+            mWmService.scheduleAnimationLocked();
+
+            mAnimatingTypes = animatingTypes;
+        }
     }
 
     /**
@@ -2435,7 +2458,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 mAnimatingExit = true;
                 mRemoveOnExit = true;
                 mToken.setVisibleRequested(false);
-                mWmService.mPresentationController.onPresentationRemoved(this);
                 // A presentation hides all activities behind on the same display.
                 mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
                         /*notifyClients=*/ true);
@@ -2656,7 +2678,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // The client gave us a touchable region and so first
             // we calculate the untouchable region, then punch that out of our
             // expanded modal region.
-            mTmpRegion.set(0, 0, frame.right, frame.bottom);
+            mTmpRegion.set(0, 0, frame.width(), frame.height());
             mTmpRegion.op(mGivenTouchableRegion, Region.Op.DIFFERENCE);
             region.op(mTmpRegion, Region.Op.DIFFERENCE);
         }
@@ -6076,17 +6098,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (mDisplayContent != null) {
             mDisplayContent.refreshImeSecureFlag(getSyncTransaction());
         }
-        mWmService.scheduleAnimationLocked();
-    }
-
-    void notifyInsetsAnimationRunningStateChanged(boolean running) {
-        if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
-            Trace.instant(TRACE_TAG_WINDOW_MANAGER,
-                    TextUtils.formatSimple("%s: notifyInsetsAnimationRunningStateChanged(%s)",
-                    getName(),
-                    Boolean.toString(running)));
-        }
-        mInsetsAnimationRunning = running;
         mWmService.scheduleAnimationLocked();
     }
 

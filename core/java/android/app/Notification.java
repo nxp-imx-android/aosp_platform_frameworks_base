@@ -25,6 +25,9 @@ import static android.app.admin.DevicePolicyResources.Drawables.WORK_PROFILE_ICO
 import static android.app.admin.DevicePolicyResources.UNDEFINED;
 import static android.graphics.drawable.Icon.TYPE_URI;
 import static android.graphics.drawable.Icon.TYPE_URI_ADAPTIVE_BITMAP;
+import static android.util.TypedValue.COMPLEX_UNIT_PX;
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import static java.util.Objects.requireNonNull;
 
@@ -6001,6 +6004,8 @@ public class Notification implements Parcelable
                 contentView.setViewVisibility(p.mTextViewId, View.GONE);
                 contentView.setTextViewText(p.mTextViewId, null);
             }
+
+            updateExpanderAlignment(contentView, p, hasSecondLine);
             setHeaderlessVerticalMargins(contentView, p, hasSecondLine);
 
             // Update margins to leave space for the top line (but not for headerless views like
@@ -6010,10 +6015,27 @@ public class Notification implements Parcelable
                 int margin = getContentMarginTop(mContext,
                         R.dimen.notification_2025_content_margin_top);
                 contentView.setViewLayoutMargin(R.id.notification_main_column,
-                        RemoteViews.MARGIN_TOP, margin, TypedValue.COMPLEX_UNIT_PX);
+                        RemoteViews.MARGIN_TOP, margin, COMPLEX_UNIT_PX);
             }
 
             return contentView;
+        }
+
+        private static void updateExpanderAlignment(RemoteViews contentView,
+                StandardTemplateParams p, boolean hasSecondLine) {
+            if (notificationsRedesignTemplates() && p.mHeaderless) {
+                if (!hasSecondLine) {
+                    // If there's no text, let's center the expand button vertically to align things
+                    // more nicely. This is handled separately for notifications that use a
+                    // NotificationHeaderView, see NotificationHeaderView#centerTopLine.
+                    contentView.setViewLayoutHeight(R.id.expand_button, MATCH_PARENT,
+                            COMPLEX_UNIT_PX);
+                } else {
+                    // Otherwise, just use the default height for the button to keep it top-aligned.
+                    contentView.setViewLayoutHeight(R.id.expand_button, WRAP_CONTENT,
+                            COMPLEX_UNIT_PX);
+                }
+            }
         }
 
         private static void setHeaderlessVerticalMargins(RemoteViews contentView,
@@ -9560,7 +9582,7 @@ public class Notification implements Parcelable
                 int marginStart = res.getDimensionPixelSize(
                         R.dimen.notification_2025_content_margin_start);
                 contentView.setViewLayoutMargin(R.id.title,
-                        RemoteViews.MARGIN_START, marginStart, TypedValue.COMPLEX_UNIT_PX);
+                        RemoteViews.MARGIN_START, marginStart, COMPLEX_UNIT_PX);
             }
             if (isLegacyHeaderless) {
                 // Collapsed legacy messaging style has a 1-line limit.

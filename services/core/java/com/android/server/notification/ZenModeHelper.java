@@ -48,6 +48,7 @@ import static android.service.notification.ZenModeConfig.isImplicitRuleId;
 import static com.android.internal.util.FrameworkStatsLog.DND_MODE_RULE;
 import static com.android.internal.util.Preconditions.checkArgument;
 import static com.android.server.notification.Flags.preventZenDeviceEffectsWhileDriving;
+import static com.android.server.notification.Flags.limitZenConfigSize;
 
 import static java.util.Objects.requireNonNull;
 
@@ -192,6 +193,7 @@ public class ZenModeHelper {
     private final ConditionProviders.Config mServiceConfig;
     private final SystemUiSystemPropertiesFlags.FlagResolver mFlagResolver;
     private final ZenModeEventLogger mZenModeEventLogger;
+    private final ZenConfigTrimmer mConfigTrimmer;
 
     @VisibleForTesting protected int mZenMode;
     @VisibleForTesting protected NotificationManager.Policy mConsolidatedPolicy;
@@ -226,6 +228,7 @@ public class ZenModeHelper {
         mClock = clock;
         addCallback(mMetrics);
         mAppOps = context.getSystemService(AppOpsManager.class);
+        mConfigTrimmer = new ZenConfigTrimmer(mContext);
 
         mDefaultConfig = Flags.modesUi()
                 ? ZenModeConfig.getDefaultConfig()
@@ -2061,20 +2064,20 @@ public class ZenModeHelper {
                 Log.w(TAG, "Invalid config in setConfigLocked; " + config);
                 return false;
             }
+            if (limitZenConfigSize() && (origin == ORIGIN_APP || origin == ORIGIN_USER_IN_APP)) {
+                mConfigTrimmer.trimToMaximumSize(config);
+            }
+
             if (config.user != mUser) {
                 // simply store away for background users
-                synchronized (mConfigLock) {
-                    mConfigs.put(config.user, config);
-                }
+                mConfigs.put(config.user, config);
                 if (DEBUG) Log.d(TAG, "setConfigLocked: store config for user " + config.user);
                 return true;
             }
             // handle CPS backed conditions - danger! may modify config
             mConditions.evaluateConfig(config, null, false /*processSubscriptions*/);
 
-            synchronized (mConfigLock) {
-                mConfigs.put(config.user, config);
-            }
+            mConfigs.put(config.user, config);
             if (DEBUG) Log.d(TAG, "setConfigLocked reason=" + reason, new Throwable());
             ZenLog.traceConfig(origin, reason, triggeringComponent, mConfig, config, callingUid);
 

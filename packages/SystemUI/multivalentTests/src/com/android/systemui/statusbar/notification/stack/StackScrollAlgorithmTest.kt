@@ -20,7 +20,9 @@ import com.android.systemui.shade.transition.LargeScreenShadeInterpolator
 import com.android.systemui.statusbar.NotificationShelf
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.notification.RoundableState
+import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
+import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView.FooterViewState
@@ -56,9 +58,11 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val stackScrollAlgorithm = StackScrollAlgorithm(context, hostView)
     private val notificationRow = mock<ExpandableNotificationRow>()
     private val notificationEntry = mock<NotificationEntry>()
+    private val notificationEntryAdapter = mock<EntryAdapter>()
     private val dumpManager = mock<DumpManager>()
     private val mStatusBarKeyguardViewManager = mock<StatusBarKeyguardViewManager>()
     private val notificationShelf = mock<NotificationShelf>()
+    private val headsUpRepository = mock<HeadsUpRepository>()
     private val emptyShadeView =
         EmptyShadeView(context, /* attrs= */ null).apply {
             layout(/* l= */ 0, /* t= */ 0, /* r= */ 100, /* b= */ 100)
@@ -72,6 +76,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
             /* bypassController */ { false },
             mStatusBarKeyguardViewManager,
             largeScreenShadeInterpolator,
+            headsUpRepository,
             avalancheController,
         )
 
@@ -109,8 +114,10 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         Assume.assumeFalse(isTv())
         mDependency.injectTestDependency(FeatureFlags::class.java, featureFlags)
         whenever(notificationShelf.viewState).thenReturn(ExpandableViewState())
+        whenever(notificationRow.key).thenReturn("key")
         whenever(notificationRow.viewState).thenReturn(ExpandableViewState())
         whenever(notificationRow.entry).thenReturn(notificationEntry)
+        whenever(notificationRow.entryAdapter).thenReturn(notificationEntryAdapter)
         whenever(notificationRow.roundableState)
             .thenReturn(RoundableState(notificationRow, notificationRow, 0f))
         ambientState.isSmallScreen = true
@@ -452,7 +459,11 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     fun resetViewStates_hunsOverlapping_bottomHunClipped() {
         val topHun = mockExpandableNotificationRow()
+        whenever(topHun.key).thenReturn("key")
+        whenever(topHun.entryAdapter).thenReturn(notificationEntryAdapter)
         val bottomHun = mockExpandableNotificationRow()
+        whenever(bottomHun.key).thenReturn("key")
+        whenever(bottomHun.entryAdapter).thenReturn(notificationEntryAdapter)
         whenever(topHun.isHeadsUp).thenReturn(true)
         whenever(topHun.isPinned).thenReturn(true)
         whenever(bottomHun.isHeadsUp).thenReturn(true)

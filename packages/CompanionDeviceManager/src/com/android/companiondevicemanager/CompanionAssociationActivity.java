@@ -452,7 +452,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
     }
 
     private void stopDiscovery() {
-        if (!mRequest.isSelfManaged()) {
+        if (mRequest != null && !mRequest.isSelfManaged()) {
             CompanionDeviceDiscoveryService.stop(this);
         }
     }

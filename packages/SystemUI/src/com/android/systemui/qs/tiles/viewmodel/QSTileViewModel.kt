@@ -39,8 +39,11 @@ interface QSTileViewModel {
     val isAvailable: StateFlow<Boolean>
 
     /** Specifies the [TileDetailsViewModel] for constructing the corresponding details view. */
-    val detailsViewModel: TileDetailsViewModel?
+    val tileDetailsViewModel: TileDetailsViewModel?
         get() = null
+
+    /** Returns the current user for this tile */
+    val currentTileUser: Int
 
     /**
      * Notifies about the user change. Implementations should avoid using 3rd party userId sources
@@ -65,8 +68,6 @@ interface QSTileViewModel {
     fun destroy()
 }
 
-/**
- * Returns the immediate state of the tile or null if the state haven't been collected yet.
- */
+/** Returns the immediate state of the tile or null if the state haven't been collected yet. */
 val QSTileViewModel.currentState: QSTileState?
     get() = state.value

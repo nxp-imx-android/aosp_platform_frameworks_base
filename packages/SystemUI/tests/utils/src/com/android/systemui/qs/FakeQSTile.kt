@@ -22,7 +22,7 @@ import com.android.systemui.plugins.qs.QSTile
 
 class FakeQSTile(var user: Int, var available: Boolean = true) : QSTile {
     private var tileSpec: String? = null
-    var destroyed = false
+    private var destroyed = false
     var hasDetailsViewModel: Boolean = true
     private var state = QSTile.State()
     val callbacks = mutableListOf<QSTile.Callback>()
@@ -64,6 +64,10 @@ class FakeQSTile(var user: Int, var available: Boolean = true) : QSTile {
         user = currentUser
     }
 
+    override fun getCurrentTileUser(): Int {
+        return user
+    }
+
     override fun getMetricsCategory(): Int {
         return 0
     }
@@ -74,6 +78,10 @@ class FakeQSTile(var user: Int, var available: Boolean = true) : QSTile {
 
     override fun destroy() {
         destroyed = true
+    }
+
+    override fun isDestroyed(): Boolean {
+        return destroyed
     }
 
     override fun getTileLabel(): CharSequence {

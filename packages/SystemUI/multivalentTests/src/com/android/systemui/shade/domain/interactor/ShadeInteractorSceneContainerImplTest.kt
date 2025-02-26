@@ -50,11 +50,10 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
-    private val configurationRepository = kosmos.fakeConfigurationRepository
-    private val keyguardRepository = kosmos.fakeKeyguardRepository
-    private val sceneInteractor = kosmos.sceneInteractor
+    private val configurationRepository by lazy { kosmos.fakeConfigurationRepository }
+    private val keyguardRepository by lazy { kosmos.fakeKeyguardRepository }
+    private val sceneInteractor by lazy { kosmos.sceneInteractor }
     private val shadeTestUtil by lazy { kosmos.shadeTestUtil }
-
     private val underTest by lazy { kosmos.shadeInteractorSceneContainerImpl }
 
     @Test

@@ -141,6 +141,7 @@ cc_defaults {
                 "libsync",
                 "libui",
                 "aconfig_text_flags_c_lib",
+                "aconfig_view_accessibility_flags_c_lib",
                 "server_configurable_flags",
                 "libaconfig_storage_read_api_cc",
                 "libgraphicsenv",

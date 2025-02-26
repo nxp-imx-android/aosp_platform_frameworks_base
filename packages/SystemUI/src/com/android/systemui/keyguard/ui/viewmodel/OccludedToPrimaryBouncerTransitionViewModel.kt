@@ -51,7 +51,7 @@ constructor(
                 if (Flags.notificationShadeBlur()) {
                     transitionAnimation.immediatelyTransitionTo(blurConfig.maxBlurRadiusPx)
                 } else {
-                    emptyFlow()
+                    transitionAnimation.immediatelyTransitionTo(blurConfig.minBlurRadiusPx)
                 },
             flowWhenShadeIsNotExpanded =
                 transitionAnimation.immediatelyTransitionTo(blurConfig.maxBlurRadiusPx),

@@ -82,7 +82,7 @@ oneway interface IStatusBar
      * Notify system UI the immersive mode changed. This shall be removed when client immersive is
      * enabled.
      */
-    void immersiveModeChanged(int rootDisplayAreaId, boolean isImmersiveMode);
+    void immersiveModeChanged(int rootDisplayAreaId, boolean isImmersiveMode, int windowType);
 
     void dismissKeyboardShortcutsMenu();
     void toggleKeyboardShortcutsMenu(int deviceId);

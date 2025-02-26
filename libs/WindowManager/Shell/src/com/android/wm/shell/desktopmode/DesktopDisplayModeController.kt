@@ -27,9 +27,9 @@ import android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERN
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.IWindowManager
 import android.view.WindowManager.TRANSIT_CHANGE
+import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
@@ -47,31 +47,9 @@ class DesktopDisplayModeController(
 ) {
 
     fun refreshDisplayWindowingMode() {
-        if (!Flags.enableDisplayWindowingModeSwitching()) return
-        // TODO: b/375319538 - Replace the check with a DisplayManager API once it's available.
-        val isExtendedDisplayEnabled =
-            0 !=
-                Settings.Global.getInt(
-                    context.contentResolver,
-                    DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS,
-                    0,
-                )
-        if (!isExtendedDisplayEnabled) {
-            // No action needed in mirror or projected mode.
-            return
-        }
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue) return
 
-        val hasNonDefaultDisplay =
-            rootTaskDisplayAreaOrganizer.getDisplayIds().any { displayId ->
-                displayId != DEFAULT_DISPLAY
-            }
-        val targetDisplayWindowingMode =
-            if (hasNonDefaultDisplay) {
-                WINDOWING_MODE_FREEFORM
-            } else {
-                // Use the default display windowing mode when no non-default display.
-                windowManager.getWindowingMode(DEFAULT_DISPLAY)
-            }
+        val targetDisplayWindowingMode = getTargetWindowingModeForDefaultDisplay()
         val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)
         requireNotNull(tdaInfo) { "DisplayAreaInfo of DEFAULT_DISPLAY must be non-null." }
         val currentDisplayWindowingMode = tdaInfo.configuration.windowConfiguration.windowingMode
@@ -110,6 +88,25 @@ class DesktopDisplayModeController(
         }
         transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
     }
+
+    private fun getTargetWindowingModeForDefaultDisplay(): Int {
+        if (isExtendedDisplayEnabled() && hasExternalDisplay()) {
+            return WINDOWING_MODE_FREEFORM
+        }
+        return windowManager.getWindowingMode(DEFAULT_DISPLAY)
+    }
+
+    // TODO: b/375319538 - Replace the check with a DisplayManager API once it's available.
+    private fun isExtendedDisplayEnabled() =
+        0 !=
+            Settings.Global.getInt(
+                context.contentResolver,
+                DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS,
+                0,
+            )
+
+    private fun hasExternalDisplay() =
+        rootTaskDisplayAreaOrganizer.getDisplayIds().any { it != DEFAULT_DISPLAY }
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)

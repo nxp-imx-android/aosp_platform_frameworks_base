@@ -2564,7 +2564,7 @@ public class DisplayPolicy {
             final int rootDisplayAreaId = root == null ? FEATURE_UNDEFINED : root.mFeatureId;
             // TODO(b/277290737): Move this to the client side, instead of using a proxy.
             callStatusBarSafely(statusBar -> statusBar.immersiveModeChanged(getDisplayId(),
-                        rootDisplayAreaId, isImmersiveMode));
+                        rootDisplayAreaId, isImmersiveMode, win.getWindowType()));
         }
 
         // Show transient bars for panic if needed.

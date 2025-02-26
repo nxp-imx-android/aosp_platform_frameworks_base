@@ -165,7 +165,7 @@ constructor(
             label = label,
             disabledMessage = disabledMessage,
             isEnabled = isEnabled,
-            a11yStep = volumeRange.step,
+            a11yStep = volumeRange.step.toFloat(),
             a11yClickDescription =
                 if (isAffectedByMute) {
                     context.getString(
@@ -307,7 +307,7 @@ constructor(
         override val label: String,
         override val disabledMessage: String?,
         override val isEnabled: Boolean,
-        override val a11yStep: Int,
+        override val a11yStep: Float,
         override val a11yClickDescription: String?,
         override val a11yStateDescription: String?,
         override val isMutable: Boolean,

@@ -332,7 +332,9 @@ public class HeadsUpManagerImpl
             onEntryAdded(headsUpEntry, requestedPinnedStatus);
             // TODO(b/328390331) move accessibility events to the view layer
             entry.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
-            entry.setIsHeadsUpEntry(true);
+            if (!NotificationBundleUi.isEnabled()) {
+                entry.setIsHeadsUpEntry(true);
+            }
 
             updateNotificationInternal(entry.getKey(), requestedPinnedStatus);
             entry.setInterruption();

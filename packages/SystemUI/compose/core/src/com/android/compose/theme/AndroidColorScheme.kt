@@ -78,6 +78,10 @@ class AndroidColorScheme(
     val underSurface: Color,
     val weatherTemp: Color,
     val widgetBackground: Color,
+    val surfaceEffect0: Color,
+    val surfaceEffect1: Color,
+    val surfaceEffect2: Color,
+    val surfaceEffect3: Color,
 ) {
     companion object {
         internal fun color(context: Context, @ColorRes id: Int): Color {
@@ -123,6 +127,10 @@ class AndroidColorScheme(
                 underSurface = color(context, R.color.customColorUnderSurface),
                 weatherTemp = color(context, R.color.customColorWeatherTemp),
                 widgetBackground = color(context, R.color.customColorWidgetBackground),
+                surfaceEffect0 = color(context, R.color.surface_effect_0),
+                surfaceEffect1 = color(context, R.color.surface_effect_1),
+                surfaceEffect2 = color(context, R.color.surface_effect_2),
+                surfaceEffect3 = color(context, R.color.surface_effect_3),
             )
         }
     }

@@ -580,7 +580,8 @@ public class CommandQueue extends IStatusBar.Stub implements
         /**
          * @see IStatusBar#immersiveModeChanged
          */
-        default void immersiveModeChanged(int rootDisplayAreaId, boolean isImmersiveMode) {}
+        default void immersiveModeChanged(int rootDisplayAreaId, boolean isImmersiveMode,
+                int windowType) {}
 
         /**
          * @see IStatusBar#moveFocusedTaskToDesktop(int)
@@ -876,11 +877,13 @@ public class CommandQueue extends IStatusBar.Stub implements
     }
 
     @Override
-    public void immersiveModeChanged(int rootDisplayAreaId, boolean isImmersiveMode) {
+    public void immersiveModeChanged(int rootDisplayAreaId, boolean isImmersiveMode,
+            int windowType) {
         synchronized (mLock) {
             final SomeArgs args = SomeArgs.obtain();
             args.argi1 = rootDisplayAreaId;
             args.argi2 = isImmersiveMode ? 1 : 0;
+            args.argi3 = windowType;
             mHandler.obtainMessage(MSG_IMMERSIVE_CHANGED, args).sendToTarget();
         }
     }
@@ -2030,8 +2033,10 @@ public class CommandQueue extends IStatusBar.Stub implements
                     args = (SomeArgs) msg.obj;
                     int rootDisplayAreaId = args.argi1;
                     boolean isImmersiveMode = args.argi2 != 0;
+                    int windowType = args.argi3;
                     for (int i = 0; i < mCallbacks.size(); i++) {
-                        mCallbacks.get(i).immersiveModeChanged(rootDisplayAreaId, isImmersiveMode);
+                        mCallbacks.get(i).immersiveModeChanged(rootDisplayAreaId, isImmersiveMode,
+                                windowType);
                     }
                     break;
                 case MSG_ENTER_DESKTOP: {

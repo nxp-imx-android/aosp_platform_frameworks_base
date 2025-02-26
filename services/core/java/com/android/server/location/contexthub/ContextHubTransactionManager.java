@@ -29,6 +29,7 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 
 import java.time.Duration;
 import java.util.ArrayDeque;
@@ -165,52 +166,61 @@ import java.util.concurrent.atomic.AtomicInteger;
     /**
      * Creates a transaction for loading a nanoapp.
      *
-     * @param contextHubId       the ID of the hub to load the nanoapp to
-     * @param nanoAppBinary      the binary of the nanoapp to load
+     * @param contextHubId the ID of the hub to load the nanoapp to
+     * @param nanoAppBinary the binary of the nanoapp to load
      * @param onCompleteCallback the client on complete callback
      * @return the generated transaction
      */
     /* package */ ContextHubServiceTransaction createLoadTransaction(
-            int contextHubId, NanoAppBinary nanoAppBinary,
-            IContextHubTransactionCallback onCompleteCallback, String packageName) {
+            int contextHubId,
+            NanoAppBinary nanoAppBinary,
+            IContextHubTransactionCallback onCompleteCallback,
+            String packageName) {
         return new ContextHubServiceTransaction(
-                mNextAvailableId.getAndIncrement(), ContextHubTransaction.TYPE_LOAD_NANOAPP,
-                nanoAppBinary.getNanoAppId(), packageName) {
+                mNextAvailableId.getAndIncrement(),
+                ContextHubTransaction.TYPE_LOAD_NANOAPP,
+                nanoAppBinary.getNanoAppId(),
+                packageName) {
             @Override
-                /* package */ int onTransact() {
+            /* package */ int onTransact() {
                 try {
                     return mContextHubProxy.loadNanoapp(
                             contextHubId, nanoAppBinary, this.getTransactionId());
                 } catch (RemoteException e) {
-                    Log.e(TAG, "RemoteException while trying to load nanoapp with ID 0x" +
-                            Long.toHexString(nanoAppBinary.getNanoAppId()), e);
+                    Log.e(
+                            TAG,
+                            "RemoteException while trying to load nanoapp with ID 0x"
+                                    + Long.toHexString(nanoAppBinary.getNanoAppId()),
+                            e);
                     return ContextHubTransaction.RESULT_FAILED_UNKNOWN;
                 }
             }
 
             @Override
-                /* package */ void onTransactionComplete(@ContextHubTransaction.Result int result) {
+            /* package */ void onTransactionComplete(@ContextHubTransaction.Result int result) {
                 ContextHubStatsLog.write(
                         ContextHubStatsLog.CHRE_CODE_DOWNLOAD_TRANSACTED,
                         nanoAppBinary.getNanoAppId(),
                         nanoAppBinary.getNanoAppVersion(),
                         ContextHubStatsLog
-                            .CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_TYPE__TYPE_LOAD,
+                                .CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_TYPE__TYPE_LOAD,
                         toStatsTransactionResult(result));
 
-                ContextHubEventLogger.getInstance().logNanoappLoad(
-                        contextHubId,
-                        nanoAppBinary.getNanoAppId(),
-                        nanoAppBinary.getNanoAppVersion(),
-                        nanoAppBinary.getBinary().length,
-                        result == ContextHubTransaction.RESULT_SUCCESS);
+                ContextHubEventLogger.getInstance()
+                        .logNanoappLoad(
+                                contextHubId,
+                                nanoAppBinary.getNanoAppId(),
+                                nanoAppBinary.getNanoAppVersion(),
+                                nanoAppBinary.getBinary().length,
+                                result == ContextHubTransaction.RESULT_SUCCESS);
 
                 if (result == ContextHubTransaction.RESULT_SUCCESS) {
                     // NOTE: The legacy JNI code used to do a query right after a load success
                     // to synchronize the service cache. Instead store the binary that was
                     // requested to load to update the cache later without doing a query.
                     mNanoAppStateManager.addNanoAppInstance(
-                            contextHubId, nanoAppBinary.getNanoAppId(),
+                            contextHubId,
+                            nanoAppBinary.getNanoAppId(),
                             nanoAppBinary.getNanoAppVersion());
                 }
                 try {
@@ -228,42 +238,51 @@ import java.util.concurrent.atomic.AtomicInteger;
     /**
      * Creates a transaction for unloading a nanoapp.
      *
-     * @param contextHubId       the ID of the hub to unload the nanoapp from
-     * @param nanoAppId          the ID of the nanoapp to unload
+     * @param contextHubId the ID of the hub to unload the nanoapp from
+     * @param nanoAppId the ID of the nanoapp to unload
      * @param onCompleteCallback the client on complete callback
      * @return the generated transaction
      */
     /* package */ ContextHubServiceTransaction createUnloadTransaction(
-            int contextHubId, long nanoAppId, IContextHubTransactionCallback onCompleteCallback,
+            int contextHubId,
+            long nanoAppId,
+            IContextHubTransactionCallback onCompleteCallback,
             String packageName) {
         return new ContextHubServiceTransaction(
-                mNextAvailableId.getAndIncrement(), ContextHubTransaction.TYPE_UNLOAD_NANOAPP,
-                nanoAppId, packageName) {
+                mNextAvailableId.getAndIncrement(),
+                ContextHubTransaction.TYPE_UNLOAD_NANOAPP,
+                nanoAppId,
+                packageName) {
             @Override
-                /* package */ int onTransact() {
+            /* package */ int onTransact() {
                 try {
                     return mContextHubProxy.unloadNanoapp(
                             contextHubId, nanoAppId, this.getTransactionId());
                 } catch (RemoteException e) {
-                    Log.e(TAG, "RemoteException while trying to unload nanoapp with ID 0x" +
-                            Long.toHexString(nanoAppId), e);
+                    Log.e(
+                            TAG,
+                            "RemoteException while trying to unload nanoapp with ID 0x"
+                                    + Long.toHexString(nanoAppId),
+                            e);
                     return ContextHubTransaction.RESULT_FAILED_UNKNOWN;
                 }
             }
 
             @Override
-                /* package */ void onTransactionComplete(@ContextHubTransaction.Result int result) {
+            /* package */ void onTransactionComplete(@ContextHubTransaction.Result int result) {
                 ContextHubStatsLog.write(
-                        ContextHubStatsLog.CHRE_CODE_DOWNLOAD_TRANSACTED, nanoAppId,
+                        ContextHubStatsLog.CHRE_CODE_DOWNLOAD_TRANSACTED,
+                        nanoAppId,
                         0 /* nanoappVersion */,
                         ContextHubStatsLog
-                            .CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_TYPE__TYPE_UNLOAD,
+                                .CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_TYPE__TYPE_UNLOAD,
                         toStatsTransactionResult(result));
 
-                ContextHubEventLogger.getInstance().logNanoappUnload(
-                        contextHubId,
-                        nanoAppId,
-                        result == ContextHubTransaction.RESULT_SUCCESS);
+                ContextHubEventLogger.getInstance()
+                        .logNanoappUnload(
+                                contextHubId,
+                                nanoAppId,
+                                result == ContextHubTransaction.RESULT_SUCCESS);
 
                 if (result == ContextHubTransaction.RESULT_SUCCESS) {
                     mNanoAppStateManager.removeNanoAppInstance(contextHubId, nanoAppId);
@@ -283,31 +302,37 @@ import java.util.concurrent.atomic.AtomicInteger;
     /**
      * Creates a transaction for enabling a nanoapp.
      *
-     * @param contextHubId       the ID of the hub to enable the nanoapp on
-     * @param nanoAppId          the ID of the nanoapp to enable
+     * @param contextHubId the ID of the hub to enable the nanoapp on
+     * @param nanoAppId the ID of the nanoapp to enable
      * @param onCompleteCallback the client on complete callback
      * @return the generated transaction
      */
     /* package */ ContextHubServiceTransaction createEnableTransaction(
-            int contextHubId, long nanoAppId, IContextHubTransactionCallback onCompleteCallback,
+            int contextHubId,
+            long nanoAppId,
+            IContextHubTransactionCallback onCompleteCallback,
             String packageName) {
         return new ContextHubServiceTransaction(
-                mNextAvailableId.getAndIncrement(), ContextHubTransaction.TYPE_ENABLE_NANOAPP,
+                mNextAvailableId.getAndIncrement(),
+                ContextHubTransaction.TYPE_ENABLE_NANOAPP,
                 packageName) {
             @Override
-                /* package */ int onTransact() {
+            /* package */ int onTransact() {
                 try {
                     return mContextHubProxy.enableNanoapp(
                             contextHubId, nanoAppId, this.getTransactionId());
                 } catch (RemoteException e) {
-                    Log.e(TAG, "RemoteException while trying to enable nanoapp with ID 0x" +
-                            Long.toHexString(nanoAppId), e);
+                    Log.e(
+                            TAG,
+                            "RemoteException while trying to enable nanoapp with ID 0x"
+                                    + Long.toHexString(nanoAppId),
+                            e);
                     return ContextHubTransaction.RESULT_FAILED_UNKNOWN;
                 }
             }
 
             @Override
-                /* package */ void onTransactionComplete(@ContextHubTransaction.Result int result) {
+            /* package */ void onTransactionComplete(@ContextHubTransaction.Result int result) {
                 try {
                     onCompleteCallback.onTransactionComplete(result);
                 } catch (RemoteException e) {
@@ -320,31 +345,37 @@ import java.util.concurrent.atomic.AtomicInteger;
     /**
      * Creates a transaction for disabling a nanoapp.
      *
-     * @param contextHubId       the ID of the hub to disable the nanoapp on
-     * @param nanoAppId          the ID of the nanoapp to disable
+     * @param contextHubId the ID of the hub to disable the nanoapp on
+     * @param nanoAppId the ID of the nanoapp to disable
      * @param onCompleteCallback the client on complete callback
      * @return the generated transaction
      */
     /* package */ ContextHubServiceTransaction createDisableTransaction(
-            int contextHubId, long nanoAppId, IContextHubTransactionCallback onCompleteCallback,
+            int contextHubId,
+            long nanoAppId,
+            IContextHubTransactionCallback onCompleteCallback,
             String packageName) {
         return new ContextHubServiceTransaction(
-                mNextAvailableId.getAndIncrement(), ContextHubTransaction.TYPE_DISABLE_NANOAPP,
+                mNextAvailableId.getAndIncrement(),
+                ContextHubTransaction.TYPE_DISABLE_NANOAPP,
                 packageName) {
             @Override
-                /* package */ int onTransact() {
+            /* package */ int onTransact() {
                 try {
                     return mContextHubProxy.disableNanoapp(
                             contextHubId, nanoAppId, this.getTransactionId());
                 } catch (RemoteException e) {
-                    Log.e(TAG, "RemoteException while trying to disable nanoapp with ID 0x" +
-                            Long.toHexString(nanoAppId), e);
+                    Log.e(
+                            TAG,
+                            "RemoteException while trying to disable nanoapp with ID 0x"
+                                    + Long.toHexString(nanoAppId),
+                            e);
                     return ContextHubTransaction.RESULT_FAILED_UNKNOWN;
                 }
             }
 
             @Override
-                /* package */ void onTransactionComplete(@ContextHubTransaction.Result int result) {
+            /* package */ void onTransactionComplete(@ContextHubTransaction.Result int result) {
                 try {
                     onCompleteCallback.onTransactionComplete(result);
                 } catch (RemoteException e) {
@@ -447,18 +478,20 @@ import java.util.concurrent.atomic.AtomicInteger;
     /**
      * Creates a transaction for querying for a list of nanoapps.
      *
-     * @param contextHubId       the ID of the hub to query
+     * @param contextHubId the ID of the hub to query
      * @param onCompleteCallback the client on complete callback
      * @return the generated transaction
      */
     /* package */ ContextHubServiceTransaction createQueryTransaction(
-            int contextHubId, IContextHubTransactionCallback onCompleteCallback,
+            int contextHubId,
+            IContextHubTransactionCallback onCompleteCallback,
             String packageName) {
         return new ContextHubServiceTransaction(
-                mNextAvailableId.getAndIncrement(), ContextHubTransaction.TYPE_QUERY_NANOAPPS,
+                mNextAvailableId.getAndIncrement(),
+                ContextHubTransaction.TYPE_QUERY_NANOAPPS,
                 packageName) {
             @Override
-                /* package */ int onTransact() {
+            /* package */ int onTransact() {
                 try {
                     return mContextHubProxy.queryNanoapps(contextHubId);
                 } catch (RemoteException e) {
@@ -468,12 +501,12 @@ import java.util.concurrent.atomic.AtomicInteger;
             }
 
             @Override
-                /* package */ void onTransactionComplete(@ContextHubTransaction.Result int result) {
+            /* package */ void onTransactionComplete(@ContextHubTransaction.Result int result) {
                 onQueryResponse(result, Collections.emptyList());
             }
 
             @Override
-                /* package */ void onQueryResponse(
+            /* package */ void onQueryResponse(
                     @ContextHubTransaction.Result int result, List<NanoAppState> nanoAppStateList) {
                 try {
                     onCompleteCallback.onQueryResponse(result, nanoAppStateList);
@@ -539,6 +572,14 @@ import java.util.concurrent.atomic.AtomicInteger;
         }
     }
 
+    @VisibleForTesting
+    /* package */
+    int numReliableMessageTransactionPending() {
+        synchronized (mReliableMessageLock) {
+            return mReliableMessageTransactionMap.size();
+        }
+    }
+
     /**
      * Handles a transaction response from a Context Hub.
      *
@@ -585,18 +626,21 @@ import java.util.concurrent.atomic.AtomicInteger;
     void onMessageDeliveryResponse(int messageSequenceNumber, boolean success) {
         if (!Flags.reliableMessageRetrySupportService()) {
             TransactionAcceptConditions conditions =
-                    transaction -> transaction.getTransactionType()
-                            == ContextHubTransaction.TYPE_RELIABLE_MESSAGE
-                    && transaction.getMessageSequenceNumber()
-                            == messageSequenceNumber;
+                    transaction ->
+                            transaction.getTransactionType()
+                                            == ContextHubTransaction.TYPE_RELIABLE_MESSAGE
+                                    && transaction.getMessageSequenceNumber()
+                                            == messageSequenceNumber;
             ContextHubServiceTransaction transaction = getTransactionAndHandleNext(conditions);
             if (transaction == null) {
-                Log.w(TAG, "Received unexpected message delivery response (expected"
-                        + " message sequence number = "
-                        + messageSequenceNumber
-                        + ", received messageSequenceNumber = "
-                        + messageSequenceNumber
-                        + ")");
+                Log.w(
+                        TAG,
+                        "Received unexpected message delivery response (expected"
+                                + " message sequence number = "
+                                + messageSequenceNumber
+                                + ", received messageSequenceNumber = "
+                                + messageSequenceNumber
+                                + ")");
                 return;
             }
 
@@ -640,8 +684,10 @@ import java.util.concurrent.atomic.AtomicInteger;
      */
     /* package */
     void onQueryResponse(List<NanoAppState> nanoAppStateList) {
-        TransactionAcceptConditions conditions = transaction ->
-                transaction.getTransactionType() == ContextHubTransaction.TYPE_QUERY_NANOAPPS;
+        TransactionAcceptConditions conditions =
+                transaction ->
+                        transaction.getTransactionType()
+                                == ContextHubTransaction.TYPE_QUERY_NANOAPPS;
         ContextHubServiceTransaction transaction = getTransactionAndHandleNext(conditions);
         if (transaction == null) {
             Log.w(TAG, "Received unexpected query response");
@@ -968,24 +1014,33 @@ import java.util.concurrent.atomic.AtomicInteger;
     private int toStatsTransactionResult(@ContextHubTransaction.Result int result) {
         switch (result) {
             case ContextHubTransaction.RESULT_SUCCESS:
-                return ContextHubStatsLog.CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_SUCCESS;
+                return ContextHubStatsLog
+                        .CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_SUCCESS;
             case ContextHubTransaction.RESULT_FAILED_BAD_PARAMS:
-                return ContextHubStatsLog.CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_BAD_PARAMS;
+                return ContextHubStatsLog
+                        .CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_BAD_PARAMS;
             case ContextHubTransaction.RESULT_FAILED_UNINITIALIZED:
-                return ContextHubStatsLog.CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_UNINITIALIZED;
+                return ContextHubStatsLog
+                        .CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_UNINITIALIZED;
             case ContextHubTransaction.RESULT_FAILED_BUSY:
-                return ContextHubStatsLog.CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_BUSY;
+                return ContextHubStatsLog
+                        .CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_BUSY;
             case ContextHubTransaction.RESULT_FAILED_AT_HUB:
-                return ContextHubStatsLog.CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_AT_HUB;
+                return ContextHubStatsLog
+                        .CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_AT_HUB;
             case ContextHubTransaction.RESULT_FAILED_TIMEOUT:
-                return ContextHubStatsLog.CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_TIMEOUT;
+                return ContextHubStatsLog
+                        .CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_TIMEOUT;
             case ContextHubTransaction.RESULT_FAILED_SERVICE_INTERNAL_FAILURE:
-                return ContextHubStatsLog.CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_SERVICE_INTERNAL_FAILURE;
+                return ContextHubStatsLog
+                        .CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_SERVICE_INTERNAL_FAILURE;
             case ContextHubTransaction.RESULT_FAILED_HAL_UNAVAILABLE:
-                return ContextHubStatsLog.CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_HAL_UNAVAILABLE;
+                return ContextHubStatsLog
+                        .CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_HAL_UNAVAILABLE;
             case ContextHubTransaction.RESULT_FAILED_UNKNOWN:
             default: /* fall through */
-                return ContextHubStatsLog.CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_UNKNOWN;
+                return ContextHubStatsLog
+                        .CHRE_CODE_DOWNLOAD_TRANSACTED__TRANSACTION_RESULT__TRANSACTION_RESULT_FAILED_UNKNOWN;
         }
     }
 

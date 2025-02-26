@@ -43,7 +43,10 @@ import android.util.SparseArray;
 import com.android.internal.annotations.GuardedBy;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * A class that represents a broker for the endpoint registered by the client app. This class
@@ -111,6 +114,11 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
 
         private final boolean mRemoteInitiated;
 
+        /**
+         * The set of seq # for pending reliable messages started by this endpoint for this session.
+         */
+        private final Set<Integer> mPendingSequenceNumbers = new HashSet<>();
+
         SessionInfo(HubEndpointInfo remoteEndpointInfo, boolean remoteInitiated) {
             mRemoteEndpointInfo = remoteEndpointInfo;
             mRemoteInitiated = remoteInitiated;
@@ -130,6 +138,24 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
 
         public boolean isActive() {
             return mSessionState == SessionState.ACTIVE;
+        }
+
+        public boolean isReliableMessagePending(int sequenceNumber) {
+            return mPendingSequenceNumbers.contains(sequenceNumber);
+        }
+
+        public void setReliableMessagePending(int sequenceNumber) {
+            mPendingSequenceNumbers.add(sequenceNumber);
+        }
+
+        public void setReliableMessageCompleted(int sequenceNumber) {
+            mPendingSequenceNumbers.remove(sequenceNumber);
+        }
+
+        public void forEachPendingReliableMessage(Consumer<Integer> consumer) {
+            for (int sequenceNumber : mPendingSequenceNumbers) {
+                consumer.accept(sequenceNumber);
+            }
         }
     }
 
@@ -208,10 +234,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             try {
                 mSessionInfoMap.put(sessionId, new SessionInfo(destination, false));
                 mHubInterface.openEndpointSession(
-                        sessionId,
-                        halEndpointInfo.id,
-                        mHalEndpointInfo.id,
-                        serviceDescriptor);
+                        sessionId, halEndpointInfo.id, mHalEndpointInfo.id, serviceDescriptor);
             } catch (RemoteException | IllegalArgumentException | UnsupportedOperationException e) {
                 Log.e(TAG, "Exception while calling HAL openEndpointSession", e);
                 cleanupSessionResources(sessionId);
@@ -286,34 +309,42 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     public void sendMessage(
             int sessionId, HubMessage message, IContextHubTransactionCallback callback) {
         super.sendMessage_enforcePermission();
-        Message halMessage = ContextHubServiceUtil.createHalMessage(message);
-        if (!isSessionActive(sessionId)) {
-            throw new SecurityException(
-                    "sendMessage called on inactive session (id= " + sessionId + ")");
-        }
-
-        if (callback == null) {
-            try {
-                mHubInterface.sendMessageToEndpoint(sessionId, halMessage);
-            } catch (RemoteException e) {
-                Log.w(TAG, "Exception while sending message on session " + sessionId, e);
+        synchronized (mOpenSessionLock) {
+            SessionInfo info = mSessionInfoMap.get(sessionId);
+            if (info == null) {
+                throw new IllegalArgumentException(
+                        "sendMessage for invalid session id=" + sessionId);
             }
-        } else {
-            ContextHubServiceTransaction transaction =
-                    mTransactionManager.createSessionMessageTransaction(
-                            mHubInterface, sessionId, halMessage, mPackageName, callback);
-            try {
-                mTransactionManager.addTransaction(transaction);
-            } catch (IllegalStateException e) {
-                Log.e(
-                        TAG,
-                        "Unable to add a transaction in sendMessageToEndpoint "
-                                + "(session ID = "
-                                + sessionId
-                                + ")",
-                        e);
-                transaction.onTransactionComplete(
-                        ContextHubTransaction.RESULT_FAILED_SERVICE_INTERNAL_FAILURE);
+            if (!info.isActive()) {
+                throw new SecurityException(
+                        "sendMessage called on inactive session (id= " + sessionId + ")");
+            }
+
+            Message halMessage = ContextHubServiceUtil.createHalMessage(message);
+            if (callback == null) {
+                try {
+                    mHubInterface.sendMessageToEndpoint(sessionId, halMessage);
+                } catch (RemoteException e) {
+                    Log.w(TAG, "Exception while sending message on session " + sessionId, e);
+                }
+            } else {
+                ContextHubServiceTransaction transaction =
+                        mTransactionManager.createSessionMessageTransaction(
+                                mHubInterface, sessionId, halMessage, mPackageName, callback);
+                try {
+                    mTransactionManager.addTransaction(transaction);
+                    info.setReliableMessagePending(transaction.getMessageSequenceNumber());
+                } catch (IllegalStateException e) {
+                    Log.e(
+                            TAG,
+                            "Unable to add a transaction in sendMessageToEndpoint "
+                                    + "(session ID = "
+                                    + sessionId
+                                    + ")",
+                            e);
+                    transaction.onTransactionComplete(
+                            ContextHubTransaction.RESULT_FAILED_SERVICE_INTERNAL_FAILURE);
+                }
             }
         }
     }
@@ -393,7 +424,9 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 int id = mSessionInfoMap.keyAt(i);
                 int count = i + 1;
                 sb.append(
-                        "  " + count + ". id="
+                        "  "
+                                + count
+                                + ". id="
                                 + id
                                 + ", remote:"
                                 + mSessionInfoMap.get(id).getRemoteEndpointInfo());
@@ -461,13 +494,24 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     /* package */ void onMessageReceived(int sessionId, HubMessage message) {
         byte code = onMessageReceivedInternal(sessionId, message);
         if (code != ErrorCode.OK && message.isResponseRequired()) {
-            sendMessageDeliveryStatus(
-                    sessionId, message.getMessageSequenceNumber(), code);
+            sendMessageDeliveryStatus(sessionId, message.getMessageSequenceNumber(), code);
         }
     }
 
     /* package */ void onMessageDeliveryStatusReceived(
             int sessionId, int sequenceNumber, byte errorCode) {
+        synchronized (mOpenSessionLock) {
+            SessionInfo info = mSessionInfoMap.get(sessionId);
+            if (info == null || !info.isActive()) {
+                Log.w(TAG, "Received delivery status for invalid session: id=" + sessionId);
+                return;
+            }
+            if (!info.isReliableMessagePending(sequenceNumber)) {
+                Log.w(TAG, "Received delivery status for unknown seq: " + sequenceNumber);
+                return;
+            }
+            info.setReliableMessageCompleted(sequenceNumber);
+        }
         mTransactionManager.onMessageDeliveryResponse(sequenceNumber, errorCode == ErrorCode.OK);
     }
 
@@ -492,7 +536,6 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 onCloseEndpointSession(id, Reason.HUB_RESET);
             }
         }
-        // TODO(b/390029594): Cancel any ongoing reliable communication transactions
     }
 
     private Optional<Byte> onEndpointSessionOpenRequestInternal(
@@ -515,9 +558,11 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             mSessionInfoMap.put(sessionId, new SessionInfo(initiator, true));
         }
 
-        boolean success = invokeCallback(
-                (consumer) ->
-                        consumer.onSessionOpenRequest(sessionId, initiator, serviceDescriptor));
+        boolean success =
+                invokeCallback(
+                        (consumer) ->
+                                consumer.onSessionOpenRequest(
+                                        sessionId, initiator, serviceDescriptor));
         return success ? Optional.empty() : Optional.of(Reason.UNSPECIFIED);
     }
 
@@ -590,8 +635,15 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     private boolean cleanupSessionResources(int sessionId) {
         synchronized (mOpenSessionLock) {
             SessionInfo info = mSessionInfoMap.get(sessionId);
-            if (info != null && !info.isRemoteInitiated()) {
-                mEndpointManager.returnSessionId(sessionId);
+            if (info != null) {
+                if (!info.isRemoteInitiated()) {
+                    mEndpointManager.returnSessionId(sessionId);
+                }
+                info.forEachPendingReliableMessage(
+                        (sequenceNumber) -> {
+                            mTransactionManager.onMessageDeliveryResponse(
+                                    sequenceNumber, /* success= */ false);
+                        });
                 mSessionInfoMap.remove(sessionId);
             }
             return info != null;
@@ -646,10 +698,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                         try {
                             mWakeLock.release();
                         } catch (RuntimeException e) {
-                            Log.e(
-                                    TAG,
-                                    "Releasing the wakelock for all acquisitions fails - ",
-                                    e);
+                            Log.e(TAG, "Releasing the wakelock for all acquisitions fails - ", e);
                             break;
                         }
                     }

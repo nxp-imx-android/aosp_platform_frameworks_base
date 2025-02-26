@@ -42,7 +42,7 @@ import java.util.function.Supplier;
 @DependsOn(target = Icon.class)
 @DependsOn(target = State.class)
 public interface QSTile {
-    int VERSION = 4;
+    int VERSION = 5;
 
     String getTileSpec();
 
@@ -78,6 +78,7 @@ public interface QSTile {
     void longClick(@Nullable Expandable expandable);
 
     void userSwitch(int currentUser);
+    int getCurrentTileUser();
 
     /**
      * @deprecated not needed as {@link com.android.internal.logging.UiEvent} will use
@@ -149,6 +150,8 @@ public interface QSTile {
     default TileDetailsViewModel getDetailsViewModel() {
         return null;
     }
+
+    boolean isDestroyed();
 
     @ProvidesInterface(version = Callback.VERSION)
     interface Callback {

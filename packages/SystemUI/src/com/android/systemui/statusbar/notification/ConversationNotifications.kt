@@ -74,7 +74,7 @@ constructor(
             else
                 Notification.MessagingStyle.CONVERSATION_TYPE_LEGACY
         entry.ranking.conversationShortcutInfo?.let { shortcutInfo ->
-            logger.logAsyncTaskProgress(entry, "getting shortcut icon")
+            logger.logAsyncTaskProgress(entry.logKey, "getting shortcut icon")
             messagingStyle.shortcutIcon = launcherApps.getShortcutIcon(shortcutInfo)
             shortcutInfo.label?.let { label -> messagingStyle.conversationTitle = label }
         }

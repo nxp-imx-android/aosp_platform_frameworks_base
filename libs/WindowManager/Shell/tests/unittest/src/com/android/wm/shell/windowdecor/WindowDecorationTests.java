@@ -24,7 +24,6 @@ import static android.view.WindowInsets.Type.captionBar;
 import static android.view.WindowInsets.Type.mandatorySystemGestures;
 import static android.view.WindowInsets.Type.statusBars;
 
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.wm.shell.MockSurfaceControlHelper.createMockSurfaceControlBuilder;
 import static com.android.wm.shell.MockSurfaceControlHelper.createMockSurfaceControlTransaction;
 
@@ -51,7 +50,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.quality.Strictness.LENIENT;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager;
@@ -79,13 +77,11 @@ import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.dx.mockito.inline.extended.StaticMockitoSession;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.tests.R;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewContainer;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
@@ -564,12 +560,7 @@ public class WindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void testRelayout_fluidResizeEnabled_freeformTask_setTaskSurfaceColor() {
-        StaticMockitoSession mockitoSession = mockitoSession().mockStatic(
-                DesktopModeStatus.class).strictness(
-                LENIENT).startMocking();
-        when(DesktopModeStatus.isVeiledResizeEnabled()).thenReturn(false);
-
+    public void testRelayout_shouldSetBackground_freeformTask_setTaskSurfaceColor() {
         final Display defaultDisplay = mock(Display.class);
         doReturn(defaultDisplay).when(mMockDisplayController)
                 .getDisplay(Display.DEFAULT_DISPLAY);
@@ -595,11 +586,10 @@ public class WindowDecorationTests extends ShellTestCase {
                 .build();
         final TestWindowDecoration windowDecor = createWindowDecoration(taskInfo);
 
+        mRelayoutParams.mShouldSetBackground = true;
         windowDecor.relayout(taskInfo, true /* hasGlobalFocus */);
 
         verify(mMockSurfaceControlStartT).setColor(mMockTaskSurface, new float[]{1.f, 1.f, 0.f});
-
-        mockitoSession.finishMocking();
     }
 
     @Test
@@ -627,11 +617,7 @@ public class WindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void testRelayout_fluidResizeEnabled_fullscreenTask_clearTaskSurfaceColor() {
-        StaticMockitoSession mockitoSession = mockitoSession().mockStatic(
-                DesktopModeStatus.class).strictness(LENIENT).startMocking();
-        when(DesktopModeStatus.isVeiledResizeEnabled()).thenReturn(false);
-
+    public void testRelayout_shouldNotSetBackground_fullscreenTask_clearTaskSurfaceColor() {
         final Display defaultDisplay = mock(Display.class);
         doReturn(defaultDisplay).when(mMockDisplayController)
                 .getDisplay(Display.DEFAULT_DISPLAY);
@@ -655,12 +641,11 @@ public class WindowDecorationTests extends ShellTestCase {
                 .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
                 .build();
         final TestWindowDecoration windowDecor = createWindowDecoration(taskInfo);
+        mRelayoutParams.mIsCaptionVisible = false;
 
         windowDecor.relayout(taskInfo, true /* hasGlobalFocus */);
 
         verify(mMockSurfaceControlStartT).unsetColor(mMockTaskSurface);
-
-        mockitoSession.finishMocking();
     }
 
     @Test

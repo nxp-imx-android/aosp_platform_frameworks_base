@@ -101,7 +101,7 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
     private fun testDisplayWindowingModeSwitch(
         defaultWindowingMode: Int,
         extendedDisplayEnabled: Boolean,
-        expectTransition: Boolean,
+        expectToSwitch: Boolean,
     ) {
         defaultTDA.configuration.windowConfiguration.windowingMode = defaultWindowingMode
         whenever(mockWindowManager.getWindowingMode(anyInt())).thenReturn(defaultWindowingMode)
@@ -113,10 +113,14 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
 
         settingsSession.use {
             connectExternalDisplay()
-            defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
+            if (expectToSwitch) {
+                // Assumes [connectExternalDisplay] properly triggered the switching transition.
+                // Will verify the transition later along with [disconnectExternalDisplay].
+                defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
+            }
             disconnectExternalDisplay()
 
-            if (expectTransition) {
+            if (expectToSwitch) {
                 val arg = argumentCaptor<WindowContainerTransaction>()
                 verify(transitions, times(2))
                     .startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
@@ -139,7 +143,7 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
         testDisplayWindowingModeSwitch(
             defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
             extendedDisplayEnabled = false,
-            expectTransition = false,
+            expectToSwitch = false,
         )
     }
 
@@ -148,7 +152,7 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
         testDisplayWindowingModeSwitch(
             defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
             extendedDisplayEnabled = true,
-            expectTransition = true,
+            expectToSwitch = true,
         )
     }
 
@@ -157,7 +161,7 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
         testDisplayWindowingModeSwitch(
             defaultWindowingMode = WINDOWING_MODE_FREEFORM,
             extendedDisplayEnabled = true,
-            expectTransition = false,
+            expectToSwitch = false,
         )
     }
 

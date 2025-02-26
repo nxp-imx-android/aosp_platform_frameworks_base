@@ -61,6 +61,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.extension.TaskInfoKt;
@@ -247,6 +248,10 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
         relayoutParams.mOccludingCaptionElements.add(controlsElement);
         relayoutParams.mCaptionTopPadding = getTopPadding(relayoutParams,
                 taskInfo.getConfiguration().windowConfiguration.getBounds(), displayInsetsState);
+        // Set opaque background for all freeform tasks to prevent freeform tasks below
+        // from being visible if freeform task window above is translucent.
+        // Otherwise if fluid resize is enabled, add a background to freeform tasks.
+        relayoutParams.mShouldSetBackground = DesktopModeStatus.shouldSetBackground(taskInfo);
     }
 
     @SuppressLint("MissingPermission")

@@ -116,3 +116,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "additional_quota_for_system_installer"
+    namespace: "backstage_power"
+    description: "Offer additional quota for system installer"
+    bug: "398264531"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

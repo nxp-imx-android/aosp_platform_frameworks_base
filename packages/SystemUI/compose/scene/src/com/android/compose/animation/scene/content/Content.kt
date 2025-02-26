@@ -173,7 +173,7 @@ internal sealed class Content(
                 .thenIf(layoutImpl.state.isElevationPossible(content = key, element = null)) {
                     Modifier.container(containerState)
                 }
-                .testTag(key.testTag)
+                .thenIf(layoutImpl.implicitTestTags) { Modifier.testTag(key.testTag) }
         ) {
             CompositionLocalProvider(LocalOverscrollFactory provides lastFactory) {
                 scope.content()
@@ -301,6 +301,7 @@ internal class ContentScopeImpl(
             sharedElementMap = layoutImpl.elements,
             ancestors = ancestors,
             lookaheadScope = layoutImpl.lookaheadScope,
+            implicitTestTags = layoutImpl.implicitTestTags,
         )
     }
 }

@@ -157,6 +157,7 @@ import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFi
 import static com.android.server.wm.utils.RegionUtils.forEachRectReverse;
 import static com.android.server.wm.utils.RegionUtils.rectListToRegion;
 import static com.android.window.flags.Flags.enablePersistingDensityScaleForConnectedDisplays;
+import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -3835,13 +3836,18 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     /**
      * Looking for the focused window on this display if the top focused display hasn't been
-     * found yet (topFocusedDisplayId is INVALID_DISPLAY) or per-display focused was allowed.
+     * found yet (topFocusedDisplayId is INVALID_DISPLAY), per-display focused was allowed, or
+     * the display is presenting. The last one is needed to update system bar visibility in response
+     * to presentation visibility because per-display focus is needed to change system bar
+     * visibility, but the display shouldn't get global focus when a presentation gets shown.
      *
      * @param topFocusedDisplayId Id of the top focused display.
      * @return The focused window or null if there isn't any or no need to seek.
      */
     WindowState findFocusedWindowIfNeeded(int topFocusedDisplayId) {
-        return (hasOwnFocus() || topFocusedDisplayId == INVALID_DISPLAY)
+        return (hasOwnFocus() || topFocusedDisplayId == INVALID_DISPLAY
+                || (enablePresentationForConnectedDisplays()
+                && mWmService.mPresentationController.isPresentationVisible(mDisplayId)))
                     ? findFocusedWindow() : null;
     }
 
@@ -6932,6 +6938,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         /** The actual requested visible inset types for this display */
         private @InsetsType int mRequestedVisibleTypes = WindowInsets.Type.defaultVisible();
 
+        private @InsetsType int mAnimatingTypes = 0;
+
         /** The component name of the top focused window on this display */
         private ComponentName mTopFocusedComponentName = null;
 
@@ -7068,6 +7076,18 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 return changedTypes;
             }
             return 0;
+        }
+
+        @Override
+        public @InsetsType int getAnimatingTypes() {
+            return mAnimatingTypes;
+        }
+
+        @Override
+        public void setAnimatingTypes(@InsetsType int animatingTypes) {
+            if (mAnimatingTypes != animatingTypes) {
+                mAnimatingTypes = animatingTypes;
+            }
         }
     }
 

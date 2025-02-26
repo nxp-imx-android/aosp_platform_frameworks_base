@@ -1651,9 +1651,65 @@ public class AppOpsManager {
     /** @hide Similar to {@link OP_CONTROL_AUDIO}, but doesn't require capabilities. */
     public static final int OP_CONTROL_AUDIO_PARTIAL = AppOpEnums.APP_OP_CONTROL_AUDIO_PARTIAL;
 
+    /**
+     * Access coarse eye tracking data.
+     *
+     * @hide
+     */
+    public static final int OP_EYE_TRACKING_COARSE =
+            AppOpEnums.APP_OP_EYE_TRACKING_COARSE;
+
+    /**
+     * Access fine eye tracking data.
+     *
+     * @hide
+     */
+    public static final int OP_EYE_TRACKING_FINE =
+            AppOpEnums.APP_OP_EYE_TRACKING_FINE;
+
+    /**
+     * Access face tracking data.
+     *
+     * @hide
+     */
+    public static final int OP_FACE_TRACKING =
+            AppOpEnums.APP_OP_FACE_TRACKING;
+
+    /**
+     * Access hand tracking data.
+     *
+     * @hide
+     */
+    public static final int OP_HAND_TRACKING =
+            AppOpEnums.APP_OP_HAND_TRACKING;
+
+    /**
+     * Access head tracking data.
+     *
+     * @hide
+     */
+    public static final int OP_HEAD_TRACKING =
+            AppOpEnums.APP_OP_HEAD_TRACKING;
+
+    /**
+     * Access coarse scene tracking data.
+     *
+     * @hide
+     */
+    public static final int OP_SCENE_UNDERSTANDING_COARSE =
+            AppOpEnums.APP_OP_SCENE_UNDERSTANDING_COARSE;
+
+    /**
+     * Access fine scene tracking data.
+     *
+     * @hide
+     */
+    public static final int OP_SCENE_UNDERSTANDING_FINE =
+            AppOpEnums.APP_OP_SCENE_UNDERSTANDING_FINE;
+
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public static final int _NUM_OP = 156;
+    public static final int _NUM_OP = 163;
 
     /**
      * All app ops represented as strings.
@@ -1813,6 +1869,13 @@ public class AppOpsManager {
             OPSTR_WRITE_SYSTEM_PREFERENCES,
             OPSTR_CONTROL_AUDIO,
             OPSTR_CONTROL_AUDIO_PARTIAL,
+            OPSTR_EYE_TRACKING_COARSE,
+            OPSTR_EYE_TRACKING_FINE,
+            OPSTR_FACE_TRACKING,
+            OPSTR_HAND_TRACKING,
+            OPSTR_HEAD_TRACKING,
+            OPSTR_SCENE_UNDERSTANDING_COARSE,
+            OPSTR_SCENE_UNDERSTANDING_FINE,
     })
     public @interface AppOpString {}
 
@@ -2579,6 +2642,36 @@ public class AppOpsManager {
     /** @hide Access to a audio playback and control APIs without capability requirements */
     public static final String OPSTR_CONTROL_AUDIO_PARTIAL = "android:control_audio_partial";
 
+    /** @hide Access coarse eye tracking data. */
+    @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
+    public static final String OPSTR_EYE_TRACKING_COARSE = "android:eye_tracking_coarse";
+
+    /** @hide Access fine eye tracking data. */
+    @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
+    public static final String OPSTR_EYE_TRACKING_FINE = "android:eye_tracking_fine";
+
+    /** @hide Access face tracking data. */
+    @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
+    public static final String OPSTR_FACE_TRACKING = "android:face_tracking";
+
+    /** @hide Access hand tracking data. */
+    @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
+    public static final String OPSTR_HAND_TRACKING = "android:hand_tracking";
+
+    /** @hide Access head tracking data. */
+    @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
+    public static final String OPSTR_HEAD_TRACKING = "android:head_tracking";
+
+    /** @hide Access coarse scene tracking data. */
+    @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
+    public static final String OPSTR_SCENE_UNDERSTANDING_COARSE =
+            "android:scene_understanding_coarse";
+
+    /** @hide Access fine scene tracking data. */
+    @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
+    public static final String OPSTR_SCENE_UNDERSTANDING_FINE =
+            "android:scene_understanding_fine";
+
     /** {@link #sAppOpsToNote} not initialized yet for this op */
     private static final byte SHOULD_COLLECT_NOTE_OP_NOT_INITIALIZED = 0;
     /** Should not collect noting of this app-op in {@link #sAppOpsToNote} */
@@ -2657,6 +2750,14 @@ public class AppOpsManager {
             Flags.replaceBodySensorPermissionEnabled() ? OP_READ_HEART_RATE : OP_NONE,
             Flags.replaceBodySensorPermissionEnabled() ? OP_READ_SKIN_TEMPERATURE : OP_NONE,
             Flags.replaceBodySensorPermissionEnabled() ? OP_READ_OXYGEN_SATURATION : OP_NONE,
+            // Android XR
+            android.xr.Flags.xrManifestEntries() ? OP_EYE_TRACKING_COARSE : OP_NONE,
+            android.xr.Flags.xrManifestEntries() ? OP_EYE_TRACKING_FINE : OP_NONE,
+            android.xr.Flags.xrManifestEntries() ? OP_FACE_TRACKING : OP_NONE,
+            android.xr.Flags.xrManifestEntries() ? OP_HAND_TRACKING : OP_NONE,
+            android.xr.Flags.xrManifestEntries() ? OP_HEAD_TRACKING : OP_NONE,
+            android.xr.Flags.xrManifestEntries() ? OP_SCENE_UNDERSTANDING_COARSE : OP_NONE,
+            android.xr.Flags.xrManifestEntries() ? OP_SCENE_UNDERSTANDING_FINE : OP_NONE,
     };
 
     /**
@@ -3192,6 +3293,41 @@ public class AppOpsManager {
                 "CONTROL_AUDIO").setDefaultMode(AppOpsManager.MODE_FOREGROUND).build(),
         new AppOpInfo.Builder(OP_CONTROL_AUDIO_PARTIAL, OPSTR_CONTROL_AUDIO_PARTIAL,
                 "CONTROL_AUDIO_PARTIAL").setDefaultMode(AppOpsManager.MODE_FOREGROUND).build(),
+        new AppOpInfo.Builder(OP_EYE_TRACKING_COARSE, OPSTR_EYE_TRACKING_COARSE,
+                "EYE_TRACKING_COARSE")
+                .setPermission(android.xr.Flags.xrManifestEntries()
+                    ? Manifest.permission.EYE_TRACKING_COARSE : null)
+                .build(),
+        new AppOpInfo.Builder(OP_EYE_TRACKING_FINE, OPSTR_EYE_TRACKING_FINE,
+                "EYE_TRACKING_FINE")
+                .setPermission(android.xr.Flags.xrManifestEntries()
+                    ? Manifest.permission.EYE_TRACKING_FINE : null)
+                .build(),
+        new AppOpInfo.Builder(OP_FACE_TRACKING, OPSTR_FACE_TRACKING,
+                "FACE_TRACKING")
+                .setPermission(android.xr.Flags.xrManifestEntries()
+                    ? Manifest.permission.FACE_TRACKING : null)
+                .build(),
+        new AppOpInfo.Builder(OP_HAND_TRACKING, OPSTR_HAND_TRACKING,
+                "HAND_TRACKING")
+                .setPermission(android.xr.Flags.xrManifestEntries()
+                    ? Manifest.permission.HAND_TRACKING : null)
+                .build(),
+        new AppOpInfo.Builder(OP_HEAD_TRACKING, OPSTR_HEAD_TRACKING,
+                "HEAD_TRACKING")
+                .setPermission(android.xr.Flags.xrManifestEntries()
+                    ? Manifest.permission.HEAD_TRACKING : null)
+                .build(),
+        new AppOpInfo.Builder(OP_SCENE_UNDERSTANDING_COARSE, OPSTR_SCENE_UNDERSTANDING_COARSE,
+                "SCENE_UNDERSTANDING_COARSE")
+                .setPermission(android.xr.Flags.xrManifestEntries()
+                    ? Manifest.permission.SCENE_UNDERSTANDING_COARSE : null)
+                .build(),
+        new AppOpInfo.Builder(OP_SCENE_UNDERSTANDING_FINE, OPSTR_SCENE_UNDERSTANDING_FINE,
+                "SCENE_UNDERSTANDING_FINE")
+                .setPermission(android.xr.Flags.xrManifestEntries()
+                    ? Manifest.permission.SCENE_UNDERSTANDING_FINE : null)
+                .build(),
     };
 
     // The number of longs needed to form a full bitmask of app ops
@@ -3298,6 +3434,15 @@ public class AppOpsManager {
      */
     public static @NonNull String opToPublicName(int op) {
         return sAppOpInfos[op].name;
+    }
+
+    /**
+     * Returns whether the provided {@code op} is a valid op code or not.
+     *
+     * @hide
+     */
+    public static boolean isValidOp(int op) {
+        return op >= 0 && op < sAppOpInfos.length;
     }
 
     /**

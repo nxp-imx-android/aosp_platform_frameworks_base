@@ -732,7 +732,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
 
         @Override
         public void immersiveModeChanged(int displayId, int rootDisplayAreaId,
-                boolean isImmersiveMode) {
+                boolean isImmersiveMode, int windowType) {
             if (mBar == null) {
                 return;
             }
@@ -746,7 +746,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
             if (!CLIENT_TRANSIENT) {
                 // Only call from here when the client transient is not enabled.
                 try {
-                    mBar.immersiveModeChanged(rootDisplayAreaId, isImmersiveMode);
+                    mBar.immersiveModeChanged(rootDisplayAreaId, isImmersiveMode, windowType);
                 } catch (RemoteException ex) {
                 }
             }

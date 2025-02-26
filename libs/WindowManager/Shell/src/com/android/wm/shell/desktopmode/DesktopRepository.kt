@@ -1007,6 +1007,21 @@ class DesktopRepository(
     fun saveBoundsBeforeFullImmersive(taskId: Int, bounds: Rect) =
         boundsBeforeFullImmersiveByTaskId.set(taskId, Rect(bounds))
 
+    /** Returns the current state of the desktop, formatted for usage by remote clients. */
+    fun getDeskDisplayStateForRemote(): Array<DisplayDeskState> =
+        desktopData
+            .desksSequence()
+            .groupBy { it.displayId }
+            .map { (displayId, desks) ->
+                val activeDeskId = desktopData.getActiveDesk(displayId)?.deskId
+                DisplayDeskState().apply {
+                    this.displayId = displayId
+                    this.activeDeskId = activeDeskId ?: INVALID_DESK_ID
+                    this.deskIds = desks.map { it.deskId }.toIntArray()
+                }
+            }
+            .toTypedArray()
+
     /** TODO: b/389960283 - consider updating only the changing desks. */
     private fun updatePersistentRepository(displayId: Int) {
         val desks = desktopData.desksSequence(displayId).map { desk -> desk.deepCopy() }.toList()

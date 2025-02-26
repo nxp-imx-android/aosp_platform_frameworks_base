@@ -812,3 +812,12 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+flag {
+    name: "enable_drag_to_desktop_incoming_transitions_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix handling incoming transitions during the DragToDesktop transition."
+    bug: "397135730"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

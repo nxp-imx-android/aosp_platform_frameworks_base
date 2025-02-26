@@ -88,7 +88,7 @@ public class NotificationBackgroundView extends View implements Dumpable,
         mDarkColoredStatefulColors = getResources().getColorStateList(
                 R.color.notification_state_color_dark);
         if (notificationRowTransparency()) {
-            mNormalColor = SurfaceEffectColors.surfaceEffect1(getResources());
+            mNormalColor = SurfaceEffectColors.surfaceEffect1(getContext());
         } else  {
             mNormalColor = mContext.getColor(
                     com.android.internal.R.color.materialColorSurfaceContainerHigh);
@@ -321,7 +321,7 @@ public class NotificationBackgroundView extends View implements Dumpable,
                 new PorterDuffColorFilter(
                         isColorized()
                                 ? ColorUtils.setAlphaComponent(mTintColor, (int) (255 * 0.9f))
-                                : SurfaceEffectColors.surfaceEffect1(getResources()),
+                                : SurfaceEffectColors.surfaceEffect1(getContext()),
                         PorterDuff.Mode.SRC)); // SRC operator discards the drawable's color+alpha
     }
 

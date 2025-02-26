@@ -100,6 +100,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksLimiter;
 import com.android.wm.shell.desktopmode.DesktopTasksTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
+import com.android.wm.shell.desktopmode.DragToDisplayTransitionHandler;
 import com.android.wm.shell.desktopmode.EnterDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.OverviewToDesktopTransitionObserver;
@@ -770,7 +771,8 @@ public abstract class WMShellModule {
             DesksOrganizer desksOrganizer,
             DesksTransitionObserver desksTransitionObserver,
             UserProfileContexts userProfileContexts,
-            DesktopModeCompatPolicy desktopModeCompatPolicy) {
+            DesktopModeCompatPolicy desktopModeCompatPolicy,
+            DragToDisplayTransitionHandler dragToDisplayTransitionHandler) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -808,7 +810,8 @@ public abstract class WMShellModule {
                 desksOrganizer,
                 desksTransitionObserver,
                 userProfileContexts,
-                desktopModeCompatPolicy);
+                desktopModeCompatPolicy,
+                dragToDisplayTransitionHandler);
     }
 
     @WMSingleton
@@ -930,6 +933,12 @@ public abstract class WMShellModule {
                 : new DefaultDragToDesktopTransitionHandler(
                         context, transitions, rootTaskDisplayAreaOrganizer, desktopUserRepositories,
                         interactionJankMonitor, bubbleController);
+    }
+
+    @WMSingleton
+    @Provides
+    static DragToDisplayTransitionHandler provideDragToDisplayTransitionHandler() {
+        return new DragToDisplayTransitionHandler();
     }
 
     @WMSingleton

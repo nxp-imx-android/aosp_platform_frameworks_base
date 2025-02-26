@@ -177,8 +177,10 @@ public class DisplayManagerGlobalTest {
     @RequiresFlagsEnabled(Flags.FLAG_DELAY_IMPLICIT_RR_REGISTRATION_UNTIL_RR_ACCESSED)
     public void test_refreshRateRegistration_implicitRRCallbacksEnabled()
             throws RemoteException {
+        DisplayManager.DisplayListener displayListener1 =
+                Mockito.mock(DisplayManager.DisplayListener.class);
         // Subscription without supplied events doesn't subscribe to RR events
-        mDisplayManagerGlobal.registerDisplayListener(mDisplayListener, mHandler,
+        mDisplayManagerGlobal.registerDisplayListener(displayListener1, mHandler,
                 ALL_DISPLAY_EVENTS, /* packageName= */ null,
                 /* isEventFilterExplicit */ false);
         Mockito.verify(mDisplayManager)
@@ -187,7 +189,9 @@ public class DisplayManagerGlobalTest {
         // After registering to refresh rate changes, subscription without supplied events subscribe
         // to RR events
         mDisplayManagerGlobal.registerForRefreshRateChanges();
-        mDisplayManagerGlobal.registerDisplayListener(mDisplayListener, mHandler,
+        DisplayManager.DisplayListener displayListener2 =
+                Mockito.mock(DisplayManager.DisplayListener.class);
+        mDisplayManagerGlobal.registerDisplayListener(displayListener2, mHandler,
                 ALL_DISPLAY_EVENTS, /* packageName= */ null,
                 /* isEventFilterExplicit */ false);
         Mockito.verify(mDisplayManager)
@@ -203,7 +207,9 @@ public class DisplayManagerGlobalTest {
         }
 
         // Subscription to RR when events are supplied doesn't happen
-        mDisplayManagerGlobal.registerDisplayListener(mDisplayListener, mHandler,
+        DisplayManager.DisplayListener displayListener3 =
+                Mockito.mock(DisplayManager.DisplayListener.class);
+        mDisplayManagerGlobal.registerDisplayListener(displayListener3, mHandler,
                 ALL_DISPLAY_EVENTS, /* packageName= */ null,
                 /* isEventFilterExplicit */ true);
         Mockito.verify(mDisplayManager)
@@ -214,7 +220,6 @@ public class DisplayManagerGlobalTest {
         int subscribedListenersCount = 0;
         int nonSubscribedListenersCount = 0;
         for (DisplayManagerGlobal.DisplayListenerDelegate delegate: delegates) {
-
             if (delegate.isEventFilterExplicit()) {
                 assertEquals(ALL_DISPLAY_EVENTS, delegate.mInternalEventFlagsMask);
                 nonSubscribedListenersCount++;

@@ -32,7 +32,6 @@ import com.android.systemui.scene.shared.model.Overlays
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 
 /**
  * Breaks down PRIMARY BOUNCER->LOCKSCREEN transition into discrete steps for corresponding views to
@@ -81,7 +80,7 @@ constructor(
                 if (Flags.notificationShadeBlur()) {
                     transitionAnimation.immediatelyTransitionTo(blurConfig.maxBlurRadiusPx)
                 } else {
-                    emptyFlow()
+                    transitionAnimation.immediatelyTransitionTo(blurConfig.minBlurRadiusPx)
                 },
             flowWhenShadeIsNotExpanded =
                 transitionAnimation.sharedFlow(
