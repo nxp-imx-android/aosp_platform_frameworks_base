@@ -29,6 +29,7 @@ import com.android.systemui.animation.AnimatorTestRule
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.privacy.OngoingPrivacyChip
 import com.android.systemui.statusbar.BatteryStatusChip
+import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.AnimatingIn
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.AnimatingOut
@@ -118,11 +119,11 @@ class SystemStatusAnimationSchedulerImplTest : SysuiTestCase() {
     }
 
     @Test
-    fun testBatteryStatusEvent_standardAnimationLifecycle() = runTest {
+    fun testStatusEvent_standardAnimationLifecycle() = runTest {
         // Instantiate class under test with TestScope from runTest
-        initializeSystemStatusAnimationScheduler(testScope = this)
+        initializeSystemStatusAnimationScheduler(this)
 
-        val batteryChip = createAndScheduleFakeBatteryEvent()
+        val eventChip = createAndScheduleFakeEvent()
 
         // assert that animation is queued
         assertEquals(AnimationQueued, systemStatusAnimationScheduler.animationState.value)
@@ -131,8 +132,7 @@ class SystemStatusAnimationSchedulerImplTest : SysuiTestCase() {
         advanceTimeBy(DEBOUNCE_DELAY + 1)
         // status chip starts animating in after debounce delay
         assertEquals(AnimatingIn, systemStatusAnimationScheduler.animationState.value)
-        assertEquals(0f, batteryChip.contentView.alpha)
-        assertEquals(0f, batteryChip.view.alpha)
+        assertEquals(0f, eventChip.view.alpha)
         verify(listener, times(1)).onSystemEventAnimationBegin()
 
         // skip appear animation
@@ -140,23 +140,20 @@ class SystemStatusAnimationSchedulerImplTest : SysuiTestCase() {
         advanceTimeBy(APPEAR_ANIMATION_DURATION)
         // assert that status chip is visible
         assertEquals(RunningChipAnim, systemStatusAnimationScheduler.animationState.value)
-        assertEquals(1f, batteryChip.contentView.alpha)
-        assertEquals(1f, batteryChip.view.alpha)
+        assertEquals(1f, eventChip.view.alpha)
 
         // skip status chip display time
         advanceTimeBy(DISPLAY_LENGTH + 1)
         // assert that it is still visible but switched to the AnimatingOut state
         assertEquals(AnimatingOut, systemStatusAnimationScheduler.animationState.value)
-        assertEquals(1f, batteryChip.contentView.alpha)
-        assertEquals(1f, batteryChip.view.alpha)
+        assertEquals(1f, eventChip.view.alpha)
         verify(listener, times(1)).onSystemEventAnimationFinish(false)
 
         // skip disappear animation
         animatorTestRule.advanceTimeBy(DISAPPEAR_ANIMATION_DURATION)
         // assert that it is not visible anymore
         assertEquals(Idle, systemStatusAnimationScheduler.animationState.value)
-        assertEquals(0f, batteryChip.contentView.alpha)
-        assertEquals(0f, batteryChip.view.alpha)
+        assertEquals(0f, eventChip.view.alpha)
     }
 
     /** Regression test for b/294104969. */
@@ -226,8 +223,8 @@ class SystemStatusAnimationSchedulerImplTest : SysuiTestCase() {
         initializeSystemStatusAnimationScheduler(testScope = this)
 
         // create and schedule low priority event
-        val batteryChip = createAndScheduleFakeBatteryEvent()
-        batteryChip.view.alpha = 0f
+        val eventChip = createAndScheduleFakeEvent()
+        eventChip.view.alpha = 0f
 
         // assert that animation is queued
         assertEquals(AnimationQueued, systemStatusAnimationScheduler.animationState.value)
@@ -244,7 +241,7 @@ class SystemStatusAnimationSchedulerImplTest : SysuiTestCase() {
         // high priority status chip is visible while low priority status chip is not visible
         assertEquals(RunningChipAnim, systemStatusAnimationScheduler.animationState.value)
         assertEquals(1f, privacyChip.view.alpha)
-        assertEquals(0f, batteryChip.view.alpha)
+        assertEquals(0f, eventChip.view.alpha)
     }
 
     @Test
@@ -253,14 +250,14 @@ class SystemStatusAnimationSchedulerImplTest : SysuiTestCase() {
         initializeSystemStatusAnimationScheduler(testScope = this)
 
         // create and schedule low priority event
-        val batteryChip = createAndScheduleFakeBatteryEvent()
+        val eventChip = createAndScheduleFakeEvent()
 
         // fast forward to RunningChipAnim state
         fastForwardAnimationToState(RunningChipAnim)
 
         // assert that chip is displayed
         assertEquals(RunningChipAnim, systemStatusAnimationScheduler.animationState.value)
-        assertEquals(1f, batteryChip.view.alpha)
+        assertEquals(1f, eventChip.view.alpha)
 
         // create and schedule high priority event
         val privacyChip = createAndScheduleFakePrivacyEvent()
@@ -284,7 +281,7 @@ class SystemStatusAnimationSchedulerImplTest : SysuiTestCase() {
         // high priority status chip is visible while low priority status chip is not visible
         assertEquals(RunningChipAnim, systemStatusAnimationScheduler.animationState.value)
         assertEquals(1f, privacyChip.view.alpha)
-        assertEquals(0f, batteryChip.view.alpha)
+        assertEquals(0f, eventChip.view.alpha)
     }
 
     @Test
@@ -293,7 +290,7 @@ class SystemStatusAnimationSchedulerImplTest : SysuiTestCase() {
         initializeSystemStatusAnimationScheduler(testScope = this)
 
         // create and schedule low priority event
-        val batteryChip = createAndScheduleFakeBatteryEvent()
+        val eventChip = createAndScheduleFakeEvent()
 
         // skip debounce delay
         advanceTimeBy(DEBOUNCE_DELAY + 1)
@@ -331,7 +328,7 @@ class SystemStatusAnimationSchedulerImplTest : SysuiTestCase() {
         // high priority status chip is visible while low priority status chip is not visible
         assertEquals(RunningChipAnim, systemStatusAnimationScheduler.animationState.value)
         assertEquals(1f, privacyChip.view.alpha)
-        assertEquals(0f, batteryChip.view.alpha)
+        assertEquals(0f, eventChip.view.alpha)
     }
 
     @Test
@@ -343,8 +340,8 @@ class SystemStatusAnimationSchedulerImplTest : SysuiTestCase() {
         val privacyChip = createAndScheduleFakePrivacyEvent()
 
         // create and schedule low priority event
-        val batteryChip = createAndScheduleFakeBatteryEvent()
-        batteryChip.view.alpha = 0f
+        val eventChip = createAndScheduleFakeEvent()
+        eventChip.view.alpha = 0f
 
         // skip debounce delay and appear animation
         advanceTimeBy(DEBOUNCE_DELAY + APPEAR_ANIMATION_DURATION + 1)
@@ -353,7 +350,7 @@ class SystemStatusAnimationSchedulerImplTest : SysuiTestCase() {
         // high priority status chip is visible while low priority status chip is not visible
         assertEquals(RunningChipAnim, systemStatusAnimationScheduler.animationState.value)
         assertEquals(1f, privacyChip.view.alpha)
-        assertEquals(0f, batteryChip.view.alpha)
+        assertEquals(0f, eventChip.view.alpha)
     }
 
     @Test
@@ -649,12 +646,17 @@ class SystemStatusAnimationSchedulerImplTest : SysuiTestCase() {
         systemStatusAnimationScheduler.onStatusEvent(fakeEvent)
     }
 
-    private fun createAndScheduleFakeBatteryEvent(): BatteryStatusChip {
-        val batteryChip = BatteryStatusChip(mContext)
-        val fakeBatteryEvent =
-            FakeStatusEvent(viewCreator = { batteryChip }, priority = 50, forceVisible = false)
-        systemStatusAnimationScheduler.onStatusEvent(fakeBatteryEvent)
-        return batteryChip
+    private fun createAndScheduleFakeEvent(): BackgroundAnimatableView {
+        val eventChip =
+            if (NewStatusBarIcons.isEnabled) {
+                BGImageView(mContext)
+            } else {
+                BatteryStatusChip(mContext)
+            }
+        val fakeStatusEvent =
+            FakeStatusEvent(viewCreator = { eventChip }, priority = 50, forceVisible = false)
+        systemStatusAnimationScheduler.onStatusEvent(fakeStatusEvent)
+        return eventChip
     }
 
     private fun initializeSystemStatusAnimationScheduler(
