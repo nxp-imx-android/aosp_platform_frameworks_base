@@ -23,7 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntRect
@@ -35,7 +34,6 @@ import com.android.systemui.communal.smartspace.SmartspaceInteractionHandler
 import com.android.systemui.communal.ui.compose.section.AmbientStatusBarSection
 import com.android.systemui.communal.ui.compose.section.CommunalLockSection
 import com.android.systemui.communal.ui.compose.section.CommunalPopupSection
-import com.android.systemui.communal.ui.compose.section.CommunalToDreamButtonSection
 import com.android.systemui.communal.ui.compose.section.HubOnboardingSection
 import com.android.systemui.communal.ui.view.layout.sections.CommunalAppWidgetSection
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
@@ -61,7 +59,6 @@ constructor(
     private val ambientStatusBarSection: AmbientStatusBarSection,
     private val communalPopupSection: CommunalPopupSection,
     private val widgetSection: CommunalAppWidgetSection,
-    private val communalToDreamButtonSection: CommunalToDreamButtonSection,
     private val hubOnboardingSection: HubOnboardingSection,
 ) {
 
@@ -103,13 +100,11 @@ constructor(
                             Modifier.element(Communal.Elements.IndicationArea).fillMaxWidth()
                         )
                     }
-                    with(communalToDreamButtonSection) { Button() }
                 },
             ) { measurables, constraints ->
                 val communalGridMeasurable = measurables[0]
                 val lockIconMeasurable = measurables[1]
                 val bottomAreaMeasurable = measurables[2]
-                val screensaverButtonMeasurable: Measurable? = measurables.getOrNull(3)
 
                 val noMinConstraints = constraints.copy(minWidth = 0, minHeight = 0)
 
@@ -152,9 +147,6 @@ constructor(
 
                 val bottomAreaPlaceable = bottomAreaMeasurable.measure(noMinConstraints)
 
-                val screensaverButtonPlaceable =
-                    screensaverButtonMeasurable?.measure(noMinConstraints)
-
                 val communalGridPlaceable =
                     communalGridMeasurable.measure(
                         noMinConstraints.copy(maxHeight = lockIconBounds.top)
@@ -166,26 +158,12 @@ constructor(
 
                     val bottomAreaTop = constraints.maxHeight - bottomAreaPlaceable.height
                     bottomAreaPlaceable.place(x = 0, y = bottomAreaTop)
-
-                    val screensaverButtonPaddingInt = screensaverButtonPadding.roundToPx()
-                    screensaverButtonPlaceable?.place(
-                        x =
-                            constraints.maxWidth -
-                                screensaverButtonPaddingInt -
-                                screensaverButtonPlaceable.width,
-                        y =
-                            constraints.maxHeight -
-                                screensaverButtonPaddingInt -
-                                screensaverButtonPlaceable.height,
-                    )
                 }
             }
         }
     }
 
     companion object {
-        private val screensaverButtonPadding: Dp = 24.dp
-
         // TODO(b/382739998): Remove these hardcoded values once lock icon size and bottom area
         // position are sorted.
         private val lockIconSize: Dp = 54.dp
