@@ -334,7 +334,7 @@ constructor(
                         } else if (state.fromContent == overlay) {
                             state.progress.map { progress -> 1 - progress }
                         } else {
-                            flowOf(0f)
+                            state.currentOverlays().map { if (overlay in it) 1f else 0f }
                         }
                 }
             }

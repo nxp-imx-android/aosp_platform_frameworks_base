@@ -21,6 +21,7 @@ import android.content.Context
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.flow.flowName
 import com.android.systemui.Flags.glanceableHubV2
+import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.common.shared.model.NotificationContainerBounds
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
@@ -107,7 +108,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -133,6 +133,7 @@ constructor(
     private val keyguardInteractor: KeyguardInteractor,
     private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
     private val shadeInteractor: ShadeInteractor,
+    private val bouncerInteractor: BouncerInteractor,
     shadeModeInteractor: ShadeModeInteractor,
     notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
     private val alternateBouncerToGoneTransitionViewModel:
@@ -518,8 +519,13 @@ constructor(
                             combineTransform(
                                 shadeInteractor.shadeExpansion,
                                 shadeInteractor.qsExpansion,
-                            ) { shadeExpansion, qsExpansion ->
-                                if (qsExpansion == 1f) {
+                                bouncerInteractor.bouncerExpansion,
+                            ) { shadeExpansion, qsExpansion, bouncerExpansion ->
+                                if (bouncerExpansion == 1f) {
+                                    emit(0f)
+                                } else if (bouncerExpansion > 0f) {
+                                    emit(1 - bouncerExpansion)
+                                } else if (qsExpansion == 1f) {
                                     // Ensure HUNs will be visible in QS shade (at least while
                                     // unlocked)
                                     emit(1f)
@@ -528,19 +534,36 @@ constructor(
                                     emit(1f - qsExpansion)
                                 }
                             }
-                        Split -> isAnyExpanded.filter { it }.map { 1f }
+                        Split ->
+                            combineTransform(isAnyExpanded, bouncerInteractor.bouncerExpansion) {
+                                isAnyExpanded,
+                                bouncerExpansion ->
+                                if (bouncerExpansion == 1f) {
+                                    emit(0f)
+                                } else if (bouncerExpansion > 0f) {
+                                    emit(1 - bouncerExpansion)
+                                } else if (isAnyExpanded) {
+                                    emit(1f)
+                                }
+                            }
                         Dual ->
                             combineTransform(
                                 shadeModeInteractor.isShadeLayoutWide,
                                 headsUpNotificationInteractor.get().isHeadsUpOrAnimatingAway,
                                 shadeInteractor.shadeExpansion,
                                 shadeInteractor.qsExpansion,
+                                bouncerInteractor.bouncerExpansion,
                             ) {
                                 isShadeLayoutWide,
                                 isHeadsUpOrAnimatingAway,
                                 shadeExpansion,
-                                qsExpansion ->
-                                if (isShadeLayoutWide) {
+                                qsExpansion,
+                                bouncerExpansion ->
+                                if (bouncerExpansion == 1f) {
+                                    emit(0f)
+                                } else if (bouncerExpansion > 0f) {
+                                    emit(1 - bouncerExpansion)
+                                } else if (isShadeLayoutWide) {
                                     if (shadeExpansion > 0f) {
                                         emit(1f)
                                     }

@@ -49,6 +49,9 @@ interface NotificationScrollView {
     /** Max alpha for this view */
     fun setMaxAlpha(alpha: Float)
 
+    /** Set whether this view is occluded by something else. */
+    fun setOccluded(isOccluded: Boolean)
+
     /** Sets a clipping shape, which defines the drawable area of this view. */
     fun setClippingShape(shape: ShadeScrimShape?)
 
