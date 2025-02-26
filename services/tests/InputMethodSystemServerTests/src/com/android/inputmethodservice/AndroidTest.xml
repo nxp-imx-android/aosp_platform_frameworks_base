@@ -18,6 +18,9 @@
     <option name="test-suite-tag" value="apct" />
     <option name="test-suite-tag" value="apct-instrumentation" />
 
+    <!-- Needed for reading the app files for the test artifacts -->
+    <target_preparer class="com.android.tradefed.targetprep.RootTargetPreparer"/>
+
     <target_preparer class="com.android.tradefed.targetprep.suite.SuiteApkInstaller">
         <option name="cleanup-apks" value="true" />
         <option name="install-arg" value="-t" />
