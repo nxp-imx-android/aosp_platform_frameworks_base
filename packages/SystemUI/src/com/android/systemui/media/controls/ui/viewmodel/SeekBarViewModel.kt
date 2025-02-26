@@ -41,7 +41,7 @@ import com.android.systemui.util.concurrency.RepeatableExecutor
 import javax.inject.Inject
 import kotlin.math.abs
 
-private const val POSITION_UPDATE_INTERVAL_MILLIS = 100L
+private const val POSITION_UPDATE_INTERVAL_MILLIS = 500L
 private const val MIN_FLING_VELOCITY_SCALE_FACTOR = 10
 
 private const val TRACE_POSITION_NAME = "SeekBarPollingPosition"
