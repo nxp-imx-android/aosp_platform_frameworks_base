@@ -2056,12 +2056,13 @@ class DesktopTasksController(
             triggerTask?.let { task ->
                 when {
                     // Check if freeform task launch during recents should be handled
-                    shouldHandleMidRecentsFreeformLaunch -> handleMidRecentsFreeformTaskLaunch(task)
+                    shouldHandleMidRecentsFreeformLaunch ->
+                        handleMidRecentsFreeformTaskLaunch(task, transition)
                     // Check if the closing task needs to be handled
                     TransitionUtil.isClosingType(request.type) ->
                         handleTaskClosing(task, transition, request.type)
                     // Check if the top task shouldn't be allowed to enter desktop mode
-                    isIncompatibleTask(task) -> handleIncompatibleTaskLaunch(task)
+                    isIncompatibleTask(task) -> handleIncompatibleTaskLaunch(task, transition)
                     // Check if fullscreen task should be updated
                     task.isFullscreen -> handleFullscreenTaskLaunch(task, transition)
                     // Check if freeform task should be updated
@@ -2300,20 +2301,23 @@ class DesktopTasksController(
      * This is a special case where we want to launch the task in fullscreen instead of freeform.
      */
     private fun handleMidRecentsFreeformTaskLaunch(
-        task: RunningTaskInfo
+        task: RunningTaskInfo,
+        transition: IBinder,
     ): WindowContainerTransaction? {
         logV("DesktopTasksController: handleMidRecentsFreeformTaskLaunch")
         val wct = WindowContainerTransaction()
-        addMoveToFullscreenChanges(
-            wct = wct,
-            taskInfo = task,
-            willExitDesktop =
-                willExitDesktop(
-                    triggerTaskId = task.taskId,
-                    displayId = task.displayId,
-                    forceExitDesktop = true,
-                ),
-        )
+        val runOnTransitStart =
+            addMoveToFullscreenChanges(
+                wct = wct,
+                taskInfo = task,
+                willExitDesktop =
+                    willExitDesktop(
+                        triggerTaskId = task.taskId,
+                        displayId = task.displayId,
+                        forceExitDesktop = true,
+                    ),
+            )
+        runOnTransitStart?.invoke(transition)
         wct.reorder(task.token, true)
         return wct
     }
@@ -2337,16 +2341,18 @@ class DesktopTasksController(
                 // launched. We should make this task go to fullscreen instead of freeform. Note
                 // that this means any re-launch of a freeform window outside of desktop will be in
                 // fullscreen as long as default-desktop flag is disabled.
-                addMoveToFullscreenChanges(
-                    wct = wct,
-                    taskInfo = task,
-                    willExitDesktop =
-                        willExitDesktop(
-                            triggerTaskId = task.taskId,
-                            displayId = task.displayId,
-                            forceExitDesktop = true,
-                        ),
-                )
+                val runOnTransitStart =
+                    addMoveToFullscreenChanges(
+                        wct = wct,
+                        taskInfo = task,
+                        willExitDesktop =
+                            willExitDesktop(
+                                triggerTaskId = task.taskId,
+                                displayId = task.displayId,
+                                forceExitDesktop = true,
+                            ),
+                    )
+                runOnTransitStart?.invoke(transition)
                 return wct
             }
             bringDesktopAppsToFrontBeforeShowingNewTask(task.displayId, wct, task.taskId)
@@ -2442,7 +2448,8 @@ class DesktopTasksController(
             // If a freeform task receives a request for a fullscreen launch, apply the same
             // changes we do for similar transitions. The task not having WINDOWING_MODE_UNDEFINED
             // set when needed can interfere with future split / multi-instance transitions.
-            return WindowContainerTransaction().also { wct ->
+            val wct = WindowContainerTransaction()
+            val runOnTransitStart =
                 addMoveToFullscreenChanges(
                     wct = wct,
                     taskInfo = task,
@@ -2453,7 +2460,8 @@ class DesktopTasksController(
                             forceExitDesktop = true,
                         ),
                 )
-            }
+            runOnTransitStart?.invoke(transition)
+            return wct
         }
         return null
     }
@@ -2468,7 +2476,10 @@ class DesktopTasksController(
      * If a task is not compatible with desktop mode freeform, it should always be launched in
      * fullscreen.
      */
-    private fun handleIncompatibleTaskLaunch(task: RunningTaskInfo): WindowContainerTransaction? {
+    private fun handleIncompatibleTaskLaunch(
+        task: RunningTaskInfo,
+        transition: IBinder,
+    ): WindowContainerTransaction? {
         logV("handleIncompatibleTaskLaunch")
         if (!isDesktopModeShowing(task.displayId) && !forceEnterDesktop(task.displayId)) return null
         // Only update task repository for transparent task.
@@ -2480,7 +2491,8 @@ class DesktopTasksController(
         }
         // Already fullscreen, no-op.
         if (task.isFullscreen) return null
-        return WindowContainerTransaction().also { wct ->
+        val wct = WindowContainerTransaction()
+        val runOnTransitStart =
             addMoveToFullscreenChanges(
                 wct = wct,
                 taskInfo = task,
@@ -2491,7 +2503,8 @@ class DesktopTasksController(
                         forceExitDesktop = true,
                     ),
             )
-        }
+        runOnTransitStart?.invoke(transition)
+        return wct
     }
 
     /**
