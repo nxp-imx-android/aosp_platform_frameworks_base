@@ -21,6 +21,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.os.Handler
 import android.os.IBinder
 import android.view.SurfaceControl.Transaction
+import android.view.WindowManager.TRANSIT_TO_BACK
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
@@ -61,7 +62,9 @@ class DesktopMinimizationTransitionHandler(
         finishTransaction: Transaction,
         finishCallback: Transitions.TransitionFinishCallback,
     ): Boolean {
-        if (!TransitionUtil.isClosingType(info.type)) return false
+        val shouldAnimate =
+            TransitionUtil.isClosingType(info.type) || info.type == Transitions.TRANSIT_MINIMIZE
+        if (!shouldAnimate) return false
 
         val animations = mutableListOf<Animator>()
         val onAnimFinish: (Animator) -> Unit = { animator ->
@@ -75,10 +78,14 @@ class DesktopMinimizationTransitionHandler(
             }
         }
 
+        val checkChangeMode = { change: TransitionInfo.Change ->
+            change.mode == info.type ||
+                (info.type == Transitions.TRANSIT_MINIMIZE && change.mode == TRANSIT_TO_BACK)
+        }
         animations +=
             info.changes
                 .filter {
-                    it.mode == info.type && it.taskInfo?.windowingMode == WINDOWING_MODE_FREEFORM
+                    checkChangeMode(it) && it.taskInfo?.windowingMode == WINDOWING_MODE_FREEFORM
                 }
                 .mapNotNull { createMinimizeAnimation(it, finishTransaction, onAnimFinish) }
         if (animations.isEmpty()) return false
