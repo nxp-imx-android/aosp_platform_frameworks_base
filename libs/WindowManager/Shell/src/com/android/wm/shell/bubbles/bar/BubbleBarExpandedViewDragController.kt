@@ -21,7 +21,11 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.bubbles.BubblePositioner
+import com.android.wm.shell.shared.bubbles.BubbleBarLocation
 import com.android.wm.shell.shared.bubbles.DismissView
+import com.android.wm.shell.shared.bubbles.DragZoneFactory
+import com.android.wm.shell.shared.bubbles.DraggedObject
+import com.android.wm.shell.shared.bubbles.DropTargetManager
 import com.android.wm.shell.shared.bubbles.RelativeTouchListener
 import com.android.wm.shell.shared.magnetictarget.MagnetizedObject
 
@@ -33,6 +37,8 @@ class BubbleBarExpandedViewDragController(
     private val animationHelper: BubbleBarAnimationHelper,
     private val bubblePositioner: BubblePositioner,
     private val pinController: BubbleExpandedViewPinController,
+    private val dropTargetManager: DropTargetManager?,
+    private val dragZoneFactory: DragZoneFactory?,
     @get:VisibleForTesting val dragListener: DragListener,
 ) {
 
@@ -97,7 +103,21 @@ class BubbleBarExpandedViewDragController(
         override fun onDown(v: View, ev: MotionEvent): Boolean {
             // While animating, don't allow new touch events
             if (expandedView.isAnimating) return false
-            pinController.onDragStart(bubblePositioner.isBubbleBarOnLeft)
+            if (dropTargetManager != null && dragZoneFactory != null) {
+                val draggedObject = DraggedObject.ExpandedView(
+                    if (bubblePositioner.isBubbleBarOnLeft) {
+                        BubbleBarLocation.LEFT
+                    } else {
+                        BubbleBarLocation.RIGHT
+                    }
+                )
+                dropTargetManager.onDragStarted(
+                    draggedObject,
+                    dragZoneFactory.createSortedDragZones(draggedObject)
+                )
+            } else {
+                pinController.onDragStart(bubblePositioner.isBubbleBarOnLeft)
+            }
             isDragged = true
             return true
         }
@@ -117,7 +137,11 @@ class BubbleBarExpandedViewDragController(
             expandedView.translationX = expandedViewInitialTranslationX + dx
             expandedView.translationY = expandedViewInitialTranslationY + dy
             dismissView.show()
-            pinController.onDragUpdate(ev.rawX, ev.rawY)
+            if (dropTargetManager != null) {
+                dropTargetManager.onDragUpdated(ev.rawX.toInt(), ev.rawY.toInt())
+            } else {
+                pinController.onDragUpdate(ev.rawX, ev.rawY)
+            }
         }
 
         override fun onUp(
@@ -140,7 +164,11 @@ class BubbleBarExpandedViewDragController(
 
         private fun finishDrag() {
             if (!isStuckToDismiss) {
-                pinController.onDragEnd()
+                if (dropTargetManager != null) {
+                    dropTargetManager.onDragEnded()
+                } else {
+                    pinController.onDragEnd()
+                }
                 dragListener.onReleased(inDismiss = false)
                 animationHelper.animateToRestPosition()
                 dismissView.hide()

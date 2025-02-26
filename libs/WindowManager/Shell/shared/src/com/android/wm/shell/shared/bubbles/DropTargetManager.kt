@@ -33,7 +33,6 @@ import com.android.wm.shell.shared.R
 class DropTargetManager(
     private val context: Context,
     private val container: FrameLayout,
-    private val isLayoutRtl: Boolean,
     private val dragZoneChangedListener: DragZoneChangedListener,
 ) {
 
@@ -41,6 +40,7 @@ class DropTargetManager(
     private val dropTargetView = DropTargetView(context)
     private var animator: ValueAnimator? = null
     private var morphRect: RectF = RectF(0f, 0f, 0f, 0f)
+    private val isLayoutRtl = container.isLayoutRtl
 
     private companion object {
         const val MORPH_ANIM_DURATION = 250L
@@ -80,9 +80,11 @@ class DropTargetManager(
 
     /** Called when the drag ended. */
     fun onDragEnded() {
+        val dropState = state ?: return
         startFadeAnimation(from = dropTargetView.alpha, to = 0f) {
             container.removeView(dropTargetView)
         }
+        dragZoneChangedListener.onDragEnded(dropState.currentDragZone)
         state = null
     }
 
@@ -156,6 +158,9 @@ class DropTargetManager(
 
         /** Called when the object was dragged to a different drag zone. */
         fun onDragZoneChanged(from: DragZone, to: DragZone)
+
+        /** Called when the drag has ended with the zone it ended in. */
+        fun onDragEnded(zone: DragZone)
     }
 
     private fun Animator.doOnEnd(onEnd: () -> Unit) {
