@@ -188,7 +188,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
             SCREEN_ORIENTATION_LANDSCAPE,
         )
 
-        verify(resizeTransitionHandler, never()).startTransition(any(), any())
+        verify(resizeTransitionHandler, never()).startTransition(any(), any(), any())
     }
 
     @Test
@@ -209,7 +209,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
             SCREEN_ORIENTATION_LANDSCAPE,
         )
 
-        verify(resizeTransitionHandler, never()).startTransition(any(), any())
+        verify(resizeTransitionHandler, never()).startTransition(any(), any(), any())
     }
 
     @Test
@@ -225,7 +225,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
 
         handler.handleActivityOrientationChange(task, newTask)
 
-        verify(resizeTransitionHandler, never()).startTransition(any(), any())
+        verify(resizeTransitionHandler, never()).startTransition(any(), any(), any())
     }
 
     @Test
@@ -240,7 +240,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
             SCREEN_ORIENTATION_LANDSCAPE,
         )
 
-        verify(resizeTransitionHandler, never()).startTransition(any(), any())
+        verify(resizeTransitionHandler, never()).startTransition(any(), any(), any())
     }
 
     @Test
@@ -318,7 +318,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
         val arg: ArgumentCaptor<WindowContainerTransaction> =
             ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
         verify(resizeTransitionHandler, atLeastOnce())
-            .startTransition(capture(arg), eq(currentBounds))
+            .startTransition(capture(arg), eq(currentBounds), isNull())
         return arg.value
     }
 

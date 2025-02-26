@@ -114,6 +114,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     private val split_divider_width = 10
 
     @Captor private lateinit var wctCaptor: ArgumentCaptor<WindowContainerTransaction>
+    @Captor private lateinit var callbackCaptor: ArgumentCaptor<(() -> Unit)>
 
     @Before
     fun setUp() {
@@ -134,7 +135,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
                 userRepositories,
                 desktopModeEventLogger,
                 focusTransitionObserver,
-                mainExecutor
+                mainExecutor,
             )
         whenever(context.createContextAsUser(any(), any())).thenReturn(context)
         whenever(userRepositories.current).thenReturn(desktopRepository)
@@ -158,7 +159,8 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             BOUNDS,
         )
 
-        verify(toggleResizeDesktopTaskTransitionHandler).startTransition(capture(wctCaptor), any())
+        verify(toggleResizeDesktopTaskTransitionHandler)
+            .startTransition(capture(wctCaptor), any(), any())
         for (change in wctCaptor.value.changes) {
             val bounds = change.value.configuration.windowConfiguration.bounds
             val leftBounds = getLeftTaskBounds()
@@ -185,7 +187,8 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             BOUNDS,
         )
 
-        verify(toggleResizeDesktopTaskTransitionHandler).startTransition(capture(wctCaptor), any())
+        verify(toggleResizeDesktopTaskTransitionHandler)
+            .startTransition(capture(wctCaptor), any(), any())
         for (change in wctCaptor.value.changes) {
             val bounds = change.value.configuration.windowConfiguration.bounds
             val leftBounds = getRightTaskBounds()
@@ -220,7 +223,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         )
 
         verify(toggleResizeDesktopTaskTransitionHandler, times(1))
-            .startTransition(capture(wctCaptor), any())
+            .startTransition(capture(wctCaptor), any(), any())
         verify(returnToDragStartAnimator, times(1)).start(any(), any(), any(), any(), anyOrNull())
         for (change in wctCaptor.value.changes) {
             val bounds = change.value.configuration.windowConfiguration.bounds
@@ -308,9 +311,13 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             DesktopTasksController.SnapPosition.LEFT,
             BOUNDS,
         )
+        verify(toggleResizeDesktopTaskTransitionHandler, times(2))
+            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
+        (callbackCaptor.value).invoke()
         task1.isFocused = true
 
-        assertThat(tilingDecoration.moveTiledPairToFront(task1.taskId, isFocusedOnDisplay = true)).isTrue()
+        assertThat(tilingDecoration.moveTiledPairToFront(task1.taskId, isFocusedOnDisplay = true))
+            .isTrue()
         verify(transitions, times(1)).startTransition(eq(TRANSIT_TO_FRONT), any(), eq(null))
     }
 
@@ -341,6 +348,9 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         )
         task1.isFocused = true
         task3.isFocused = true
+        verify(toggleResizeDesktopTaskTransitionHandler, times(2))
+            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
+        (callbackCaptor.value).invoke()
 
         assertThat(tilingDecoration.moveTiledPairToFront(task3.taskId, true)).isFalse()
         assertThat(tilingDecoration.moveTiledPairToFront(task1.taskId, true)).isTrue()
@@ -372,9 +382,14 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             DesktopTasksController.SnapPosition.LEFT,
             BOUNDS,
         )
+        verify(toggleResizeDesktopTaskTransitionHandler, times(2))
+            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
+        (callbackCaptor.value).invoke()
 
-        assertThat(tilingDecoration.moveTiledPairToFront(task3.taskId, isFocusedOnDisplay = true)).isFalse()
-        assertThat(tilingDecoration.moveTiledPairToFront(task1.taskId, isFocusedOnDisplay = true)).isTrue()
+        assertThat(tilingDecoration.moveTiledPairToFront(task3.taskId, isFocusedOnDisplay = true))
+            .isFalse()
+        assertThat(tilingDecoration.moveTiledPairToFront(task1.taskId, isFocusedOnDisplay = true))
+            .isTrue()
         verify(transitions, times(1)).startTransition(eq(TRANSIT_TO_FRONT), any(), eq(null))
     }
 
@@ -482,27 +497,29 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         tilingDecoration.onDividerHandleDragStart(motionEvent)
         // Log start event for task1 and task2, but the tasks are the same in
         // this test, so we verify the same log twice.
-        verify(desktopModeEventLogger, times(2)).logTaskResizingStarted(
-            ResizeTrigger.TILING_DIVIDER,
-            DesktopModeEventLogger.Companion.InputMethod.UNKNOWN_INPUT_METHOD,
-            task1,
-            BOUNDS.width() / 2,
-            BOUNDS.height(),
-            displayController,
-        )
+        verify(desktopModeEventLogger, times(2))
+            .logTaskResizingStarted(
+                ResizeTrigger.TILING_DIVIDER,
+                DesktopModeEventLogger.Companion.InputMethod.UNKNOWN_INPUT_METHOD,
+                task1,
+                BOUNDS.width() / 2,
+                BOUNDS.height(),
+                displayController,
+            )
 
         tilingDecoration.onDividerHandleMoved(BOUNDS, transaction)
         tilingDecoration.onDividerHandleDragEnd(BOUNDS, transaction, motionEvent)
         // Log end event for task1 and task2, but the tasks are the same in
         // this test, so we verify the same log twice.
-        verify(desktopModeEventLogger, times(2)).logTaskResizingEnded(
-            ResizeTrigger.TILING_DIVIDER,
-            DesktopModeEventLogger.Companion.InputMethod.UNKNOWN_INPUT_METHOD,
-            task1,
-            BOUNDS.width(),
-            BOUNDS.height(),
-            displayController,
-        )
+        verify(desktopModeEventLogger, times(2))
+            .logTaskResizingEnded(
+                ResizeTrigger.TILING_DIVIDER,
+                DesktopModeEventLogger.Companion.InputMethod.UNKNOWN_INPUT_METHOD,
+                task1,
+                BOUNDS.width(),
+                BOUNDS.height(),
+                displayController,
+            )
     }
 
     @Test

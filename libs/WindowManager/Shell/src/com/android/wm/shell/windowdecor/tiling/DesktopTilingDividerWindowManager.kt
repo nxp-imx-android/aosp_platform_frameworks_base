@@ -16,6 +16,9 @@
 
 package com.android.wm.shell.windowdecor.tiling
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Path
@@ -144,7 +147,6 @@ class DesktopTilingDividerWindowManager(
      * @param relativeLeash the task leash that the TilingDividerView should be shown on top of.
      */
     fun generateViewHost(relativeLeash: SurfaceControl) {
-        val t = transactionSupplier.get()
         val surfaceControlViewHost =
             SurfaceControlViewHost(context, context.display, this, "DesktopTilingManager")
         val dividerView =
@@ -155,22 +157,40 @@ class DesktopTilingDividerWindowManager(
         val tmpDividerBounds = Rect()
         getDividerBounds(tmpDividerBounds)
         dividerView.setup(this, tmpDividerBounds, handleRegionSize, isDarkMode)
-        t.setRelativeLayer(leash, relativeLeash, 1)
-            .setPosition(
-                leash,
-                dividerBounds.left.toFloat() - maxRoundedCornerRadius,
-                dividerBounds.top.toFloat(),
-            )
-            .show(leash)
-        syncQueue.runInSync { transaction ->
-            transaction.merge(t)
-            t.close()
-        }
-        dividerShown = true
+        val dividerAnimatorT = transactionSupplier.get()
+        val dividerAnimator =
+            ValueAnimator.ofFloat(0f, 1f).apply {
+                duration = DIVIDER_FADE_IN_ALPHA_DURATION
+                addUpdateListener {
+                    dividerAnimatorT.setAlpha(leash, animatedValue as Float).apply()
+                }
+                addListener(
+                    object : AnimatorListenerAdapter() {
+                        override fun onAnimationStart(animation: Animator) {
+                            dividerAnimatorT
+                                .setRelativeLayer(leash, relativeLeash, 1)
+                                .setPosition(
+                                    leash,
+                                    dividerBounds.left.toFloat() - maxRoundedCornerRadius,
+                                    dividerBounds.top.toFloat(),
+                                )
+                                .setAlpha(leash, 0f)
+                                .show(leash)
+                                .apply()
+                        }
+
+                        override fun onAnimationEnd(animation: Animator) {
+                            dividerAnimatorT.setAlpha(leash, 1f).apply()
+                            dividerShown = true
+                        }
+                    }
+                )
+            }
+        dividerAnimator.start()
         viewHost = surfaceControlViewHost
-        dividerView.addOnLayoutChangeListener(this)
         tilingDividerView = dividerView
         updateTouchRegion()
+        dividerView.addOnLayoutChangeListener(this)
     }
 
     /** Changes divider colour if dark/light mode is toggled. */
@@ -310,5 +330,9 @@ class DesktopTilingDividerWindowManager(
                 RoundedCorner.POSITION_BOTTOM_LEFT,
             )
             .maxOf { position -> display.getRoundedCorner(position)?.getRadius() ?: 0 }
+    }
+
+    companion object {
+        private const val DIVIDER_FADE_IN_ALPHA_DURATION = 300L
     }
 }
