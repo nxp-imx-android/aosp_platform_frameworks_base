@@ -102,11 +102,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
- * Run as {@code atest FrameworksMockingServicesTests:com.android.server.pm.UserManagerServiceTest}
+ * Run as {@code atest
+ * FrameworksMockingServicesTests:com.android.server.pm.UserManagerServiceMockedTest}
  */
-public final class UserManagerServiceTest {
+public final class UserManagerServiceMockedTest {
 
-    private static final String TAG = UserManagerServiceTest.class.getSimpleName();
+    private static final String TAG = UserManagerServiceMockedTest.class.getSimpleName();
 
     /**
      * Id for a simple user (that doesn't have profiles).
