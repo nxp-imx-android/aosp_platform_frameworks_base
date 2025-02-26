@@ -312,7 +312,6 @@ public class BackgroundActivityStartController {
         private final @ActivityManager.ProcessState int mCallingUidProcState;
         private final boolean mIsCallingUidPersistentSystemProcess;
         final BackgroundStartPrivileges mBalAllowedByPiSender;
-        final BackgroundStartPrivileges mBalAllowedByPiCreatorWithHardening;
         final BackgroundStartPrivileges mBalAllowedByPiCreator;
         private final String mRealCallingPackage;
         private final int mRealCallingUid;
@@ -379,22 +378,14 @@ public class BackgroundActivityStartController {
 
             if (mAutoOptInCaller) {
                 // grant BAL privileges unless explicitly opted out
-                mBalAllowedByPiCreatorWithHardening = mBalAllowedByPiCreator =
+                mBalAllowedByPiCreator =
                         callerBackgroundActivityStartMode == MODE_BACKGROUND_ACTIVITY_START_DENIED
                                 ? BackgroundStartPrivileges.NONE
                                 : BackgroundStartPrivileges.ALLOW_BAL;
             } else {
                 // for PendingIntents we restrict BAL based on target_sdk
-                mBalAllowedByPiCreatorWithHardening = getBackgroundStartPrivilegesAllowedByCreator(
+                mBalAllowedByPiCreator = getBackgroundStartPrivilegesAllowedByCreator(
                         callingUid, callingPackage, checkedOptions);
-                final BackgroundStartPrivileges mBalAllowedByPiCreatorWithoutHardening =
-                        callerBackgroundActivityStartMode
-                                == MODE_BACKGROUND_ACTIVITY_START_DENIED
-                                ? BackgroundStartPrivileges.NONE
-                                : BackgroundStartPrivileges.ALLOW_BAL;
-                mBalAllowedByPiCreator = balRequireOptInByPendingIntentCreator()
-                        ? mBalAllowedByPiCreatorWithHardening
-                        : mBalAllowedByPiCreatorWithoutHardening;
             }
 
             if (mAutoOptInReason != null) {
@@ -585,9 +576,8 @@ public class BackgroundActivityStartController {
             if (mCallerApp != null) {
                 sb.append("; inVisibleTask: ").append(mCallerApp.hasActivityInVisibleTask());
             }
-            sb.append("; balAllowedByPiCreator: ").append(mBalAllowedByPiCreator);
-            sb.append("; balAllowedByPiCreatorWithHardening: ")
-                    .append(mBalAllowedByPiCreatorWithHardening);
+            sb.append("; balAllowedByPiCreator: ")
+                    .append(mBalAllowedByPiCreator);
             if (mResultForCaller != null) {
                 sb.append("; resultIfPiCreatorAllowsBal: ")
                         .append(balCodeToString(mResultForCaller.mCode));
