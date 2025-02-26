@@ -9358,10 +9358,17 @@ public final class ActiveServices {
                                             + "for package "
                                             + packageName);
                         }
-                        setServiceForegroundInnerLocked(sr, sr.foregroundId,
-                                sr.foregroundNoti, /* flags */ 0,
-                                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK,
-                                /* callingUidStart */ 0, /* systemRequestedTransition */ true);
+                        try {
+                            setServiceForegroundInnerLocked(sr, sr.foregroundId,
+                                    sr.foregroundNoti, /* flags */ 0,
+                                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK,
+                                    /* callingUidStart */ 0, /* systemRequestedTransition */ true);
+                        } catch (Exception e) {
+                            Slog.w(TAG,
+                                    "Exception in system initiated foreground service transition "
+                                            + "for package " + packageName
+                                            + ":" + e.toString());
+                        }
                     } else {
                         if (DEBUG_FOREGROUND_SERVICE) {
                             Slog.d(TAG,
@@ -9411,10 +9418,17 @@ public final class ActiveServices {
                                             + "for package "
                                             + packageName);
                         }
-                        setServiceForegroundInnerLocked(sr, /* id */ 0,
-                                /* notification */ null, /* flags */ 0,
-                                /* foregroundServiceType */ 0, /* callingUidStart */ 0,
-                                /* systemRequestedTransition */ true);
+                        try {
+                            setServiceForegroundInnerLocked(sr, /* id */ 0,
+                                    /* notification */ null, /* flags */ 0,
+                                    /* foregroundServiceType */ 0, /* callingUidStart */ 0,
+                                    /* systemRequestedTransition */ true);
+                        } catch (Exception e) {
+                            Slog.wtf(TAG,
+                                    "Exception in system initiated background service transition "
+                                            + "for package " + packageName
+                                            + ":" + e.toString());
+                        }
                     } else {
                         if (DEBUG_FOREGROUND_SERVICE) {
                             Slog.d(TAG, "Ignoring system initiated transition of foreground"
