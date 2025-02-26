@@ -562,12 +562,15 @@ constructor(
         var userId: Int = lockScreenUserManager.getCurrentUserId()
         var entry: NotificationEntry? = null
         if (expandView is ExpandableNotificationRow) {
-            entry = expandView.entry
             expandView.setUserExpanded(/* userExpanded= */ true, /* allowChildExpansion= */ true)
             // Indicate that the group expansion is changing at this time -- this way the group
             // and children backgrounds / divider animations will look correct.
             expandView.isGroupExpansionChanging = true
-            userId = entry.sbn.userId
+            if (NotificationBundleUi.isEnabled) {
+                userId = expandView.entryAdapter?.sbn?.userId!!
+            } else {
+                userId = expandView.entry.sbn.userId
+            }
         }
         var fullShadeNeedsBouncer =
             (!lockScreenUserManager.shouldShowLockscreenNotifications() ||

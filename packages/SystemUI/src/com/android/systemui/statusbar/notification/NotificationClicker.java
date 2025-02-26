@@ -25,6 +25,7 @@ import com.android.systemui.DejankUtils;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.wm.shell.bubbles.Bubbles;
 
 import java.util.Optional;
@@ -99,8 +100,14 @@ public final class NotificationClicker implements View.OnClickListener {
         row.setJustClicked(true);
         DejankUtils.postAfterTraversal(() -> row.setJustClicked(false));
 
-        if (!row.getEntry().isBubble() && mBubblesOptional.isPresent()) {
-            mBubblesOptional.get().collapseStack();
+        if (NotificationBundleUi.isEnabled()) {
+            if (!row.getEntryAdapter().isBubbleCapable() && mBubblesOptional.isPresent()) {
+                mBubblesOptional.get().collapseStack();
+            }
+        } else {
+            if (!row.getEntry().isBubble() && mBubblesOptional.isPresent()) {
+                mBubblesOptional.get().collapseStack();
+            }
         }
 
         mNotificationActivityStarter.onNotificationClicked(entry, row);

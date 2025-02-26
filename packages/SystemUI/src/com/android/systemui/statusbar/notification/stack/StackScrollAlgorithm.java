@@ -39,6 +39,7 @@ import com.android.systemui.statusbar.notification.footer.ui.view.FooterView;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling;
 
 import java.util.ArrayList;
@@ -911,7 +912,9 @@ public class StackScrollAlgorithm {
                 if (SceneContainerFlag.isEnabled()) {
                     if (shouldHunBeVisibleWhenScrolled(row.isHeadsUp(),
                             childState.headsUpIsVisible, row.showingPulsing(),
-                            ambientState.isOnKeyguard(), row.getEntry().isStickyAndNotDemoted())) {
+                            ambientState.isOnKeyguard(), NotificationBundleUi.isEnabled()
+                                    ? row.getEntryAdapter().canPeek()
+                                    : row.getEntry().isStickyAndNotDemoted())) {
                         // the height of this child before clamping it to the top
                         float unmodifiedChildHeight = childState.height;
                         clampHunToTop(
@@ -963,7 +966,9 @@ public class StackScrollAlgorithm {
                 } else {
                     if (shouldHunBeVisibleWhenScrolled(row.mustStayOnScreen(),
                             childState.headsUpIsVisible, row.showingPulsing(),
-                            ambientState.isOnKeyguard(), row.getEntry().isStickyAndNotDemoted())) {
+                            ambientState.isOnKeyguard(), NotificationBundleUi.isEnabled()
+                                    ? row.getEntryAdapter().canPeek()
+                                    : row.getEntry().isStickyAndNotDemoted())) {
                         // Ensure that the heads up is always visible even when scrolled off.
                         // NSSL y starts at top of screen in non-split-shade, but below the qs
                         // offset

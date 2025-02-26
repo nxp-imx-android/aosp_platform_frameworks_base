@@ -21,12 +21,15 @@ import static android.app.Notification.CATEGORY_CALL;
 import static android.app.Notification.CATEGORY_EVENT;
 import static android.app.Notification.CATEGORY_MESSAGE;
 import static android.app.Notification.CATEGORY_REMINDER;
+import static android.app.Notification.FLAG_BUBBLE;
 import static android.app.Notification.FLAG_FSI_REQUESTED_BUT_DENIED;
 import static android.app.Notification.FLAG_PROMOTED_ONGOING;
+import static android.app.NotificationManager.IMPORTANCE_MIN;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_AMBIENT;
 
 import static com.android.systemui.statusbar.NotificationEntryHelper.modifyRanking;
 import static com.android.systemui.statusbar.NotificationEntryHelper.modifySbn;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_ALERTING;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -35,6 +38,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.app.Notification;
@@ -662,6 +666,126 @@ public class NotificationEntryTest extends SysuiTestCase {
         entry.setRow(row);
 
         assertThat(entry.getEntryAdapter().getIcons()).isEqualTo(entry.getIcons());
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void isColorized() {
+        Notification notification = new Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .setColorized(true)
+                .build();
+
+        NotificationEntry entry = new NotificationEntryBuilder()
+                .setNotification(notification)
+                .build();
+        assertThat(entry.getEntryAdapter().isColorized()).isEqualTo(
+                entry.getSbn().getNotification().isColorized());
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void getSbn() {
+        Notification notification = new Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .build();
+
+        NotificationEntry entry = new NotificationEntryBuilder()
+                .setNotification(notification)
+                .build();
+        assertThat(entry.getEntryAdapter().getSbn()).isEqualTo(
+                entry.getSbn());
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void canDragAndDrop() {
+        PendingIntent pi = mock(PendingIntent.class);
+        when(pi.isActivity()).thenReturn(true);
+        Notification notification = new Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .setContentIntent(pi)
+                .build();
+
+        NotificationEntry entry = new NotificationEntryBuilder()
+                .setNotification(notification)
+                .build();
+        assertThat(entry.getEntryAdapter().canDragAndDrop()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void isBubble() {
+        Notification notification = new Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .setFlag(FLAG_BUBBLE, true)
+                .build();
+
+        NotificationEntry entry = new NotificationEntryBuilder()
+                .setNotification(notification)
+                .build();
+        assertThat(entry.getEntryAdapter().isBubbleCapable()).isEqualTo(entry.isBubble());
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void getStyle() {
+        Notification notification = new Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .setStyle(new Notification.BigTextStyle())
+                .build();
+
+        NotificationEntry entry = new NotificationEntryBuilder()
+                .setNotification(notification)
+                .build();
+        assertThat(entry.getEntryAdapter().getStyle()).isEqualTo(entry.getNotificationStyle());
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void getSectionBucket() {
+        Notification notification = new Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .setStyle(new Notification.BigTextStyle())
+                .build();
+
+        NotificationEntry entry = new NotificationEntryBuilder()
+                .setNotification(notification)
+                .build();
+        entry.setBucket(BUCKET_ALERTING);
+
+        assertThat(entry.getEntryAdapter().getSectionBucket()).isEqualTo(BUCKET_ALERTING);
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void isAmbient() {
+        Notification notification = new Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .build();
+
+        NotificationEntry entry = new NotificationEntryBuilder()
+                .setNotification(notification)
+                .setImportance(IMPORTANCE_MIN)
+                .build();
+
+        assertThat(entry.getEntryAdapter().isAmbient()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void canShowFullScreen() {
+        Notification notification = new Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .setFullScreenIntent(mock(PendingIntent.class), true)
+                .build();
+
+        NotificationEntry entry = new NotificationEntryBuilder()
+                .setNotification(notification)
+                .setImportance(IMPORTANCE_MIN)
+                .build();
+
+        assertThat(entry.getEntryAdapter().isFullScreenCapable()).isTrue();
     }
 
     private Notification.Action createContextualAction(String title) {

@@ -29,6 +29,7 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.LockscreenShadeTransitionController
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
+import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.domain.interactor.SeenNotificationsInteractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded
@@ -436,6 +437,9 @@ class NotificationStackSizeCalculatorTest : SysuiTestCase() {
         val row = mock(ExpandableNotificationRow::class.java)
         val entry = mock(NotificationEntry::class.java)
         whenever(entry.isStickyAndNotDemoted).thenReturn(isSticky)
+        val entryAdapter = mock(EntryAdapter::class.java)
+        whenever(entryAdapter.canPeek()).thenReturn(isSticky)
+        whenever(row.entryAdapter).thenReturn(entryAdapter)
         val sbn = mock(StatusBarNotification::class.java)
         whenever(entry.sbn).thenReturn(sbn)
         whenever(row.entry).thenReturn(entry)
