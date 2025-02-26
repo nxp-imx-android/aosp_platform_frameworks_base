@@ -25,6 +25,7 @@ import static android.view.Display.TYPE_VIRTUAL;
 import static android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_SEAMLESS;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION_CHANGE;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_OPEN;
 import static com.android.server.wm.DisplayRotationProto.FIXED_TO_USER_ROTATION_MODE;
 import static com.android.server.wm.DisplayRotationProto.FROZEN_TO_USER_ROTATION;
@@ -587,11 +588,6 @@ public class DisplayRotation {
                 ActivityInfo.screenOrientationToString(lastOrientation), lastOrientation,
                 Surface.rotationToString(oldRotation), oldRotation);
 
-        ProtoLog.v(WM_DEBUG_ORIENTATION,
-                "Display id=%d selected orientation %s (%d), got rotation %s (%d)", displayId,
-                ActivityInfo.screenOrientationToString(lastOrientation), lastOrientation,
-                Surface.rotationToString(rotation), rotation);
-
         if (oldRotation == rotation) {
             // No change.
             return false;
@@ -601,9 +597,11 @@ public class DisplayRotation {
             mDisplayRotationCoordinator.onDefaultDisplayRotationChanged(rotation);
         }
 
-        ProtoLog.v(WM_DEBUG_ORIENTATION,
-                "Display id=%d rotation changed to %d from %d, lastOrientation=%d",
-                        displayId, rotation, oldRotation, lastOrientation);
+        ProtoLog.i(WM_DEBUG_ORIENTATION_CHANGE, "Display id=%d rotation changed to %d from %d,"
+                        + " lastOrientation=%d userRotationMode=%d userRotation=%d"
+                        + " lastSensorRotation=%d",
+                displayId, rotation, oldRotation, lastOrientation, mUserRotationMode, mUserRotation,
+                mLastSensorRotation);
 
         mRotation = rotation;
 
