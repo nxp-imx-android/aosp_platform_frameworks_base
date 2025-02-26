@@ -472,15 +472,14 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
     ): Boolean {
-        val runningTask = shellTaskOrganizer.getRunningTaskInfo(taskId)
-        val backgroundTask = recentTasksController?.findTaskInBackground(taskId)
-        if (runningTask == null && backgroundTask == null) {
+        val task =
+            shellTaskOrganizer.getRunningTaskInfo(taskId)
+                ?: recentTasksController?.findTaskInBackground(taskId)
+        if (task == null) {
             logW("moveTaskToDefaultDeskAndActivate taskId=%d not found", taskId)
             return false
         }
-        // TODO(342378842): Instead of using default display, support multiple displays
-        val displayId = runningTask?.displayId ?: DEFAULT_DISPLAY
-        val deskId = getDefaultDeskId(displayId)
+        val deskId = getDefaultDeskId(task.displayId)
         return moveTaskToDesk(
             taskId = taskId,
             deskId = deskId,
@@ -532,14 +531,14 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
     ): Boolean {
-        if (recentTasksController?.findTaskInBackground(taskId) == null) {
+        val task = recentTasksController?.findTaskInBackground(taskId)
+        if (task == null) {
             logW("moveBackgroundTaskToDesktop taskId=%d not found", taskId)
             return false
         }
         logV("moveBackgroundTaskToDesktop with taskId=%d", taskId)
-        // TODO(342378842): Instead of using default display, support multiple displays
         val taskIdToMinimize =
-            bringDesktopAppsToFrontBeforeShowingNewTask(DEFAULT_DISPLAY, wct, taskId)
+            bringDesktopAppsToFrontBeforeShowingNewTask(task.displayId, wct, taskId)
         val exitResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
                 wct = wct,
