@@ -308,34 +308,28 @@ private fun Modifier.expandable(
     interactionSource: MutableInteractionSource? = null,
 ): Modifier {
     val controller = controller as ExpandableControllerImpl
+    val graphicsLayer = rememberGraphicsLayer()
 
     val isAnimating = controller.isAnimating
-    val drawInOverlayModifier =
-        if (isAnimating) {
-            val graphicsLayer = rememberGraphicsLayer()
-
-            FullScreenComposeViewInOverlay(controller.overlay) { view ->
-                Modifier.then(DrawExpandableInOverlayElement(view, controller, graphicsLayer))
-            }
-
-            Modifier.drawWithContent { graphicsLayer.record { this@drawWithContent.drawContent() } }
-        } else {
-            null
+    if (isAnimating) {
+        FullScreenComposeViewInOverlay(controller.overlay) { view ->
+            Modifier.then(DrawExpandableInOverlayElement(view, controller, graphicsLayer))
         }
+    }
 
+    val drawContent = !isAnimating && !controller.isDialogShowing
     return this.thenIf(onClick != null) { Modifier.minimumInteractiveComponentSize() }
-        .thenIf(!isAnimating) {
+        .thenIf(drawContent) {
             Modifier.border(controller)
                 .then(clickModifier(controller, onClick, interactionSource))
                 .background(controller.color, controller.shape)
         }
-        .thenIf(drawInOverlayModifier != null) { drawInOverlayModifier!! }
         .onPlaced { controller.boundsInComposeViewRoot = it.boundsInRoot() }
-        .thenIf(!isAnimating && controller.isDialogShowing) {
-            Modifier.layout { measurable, constraints ->
-                measurable.measure(constraints).run {
-                    layout(width, height) { /* Do not place/draw. */ }
-                }
+        .drawWithContent {
+            graphicsLayer.record { this@drawWithContent.drawContent() }
+
+            if (drawContent) {
+                drawLayer(graphicsLayer)
             }
         }
 }
