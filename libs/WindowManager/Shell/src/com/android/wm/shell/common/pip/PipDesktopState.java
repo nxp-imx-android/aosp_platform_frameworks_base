@@ -20,6 +20,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 
 import android.app.ActivityManager;
+import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
@@ -67,7 +68,7 @@ public class PipDesktopState {
 
     /** Returns whether PiP in Connected Displays is enabled by checking the flag. */
     public boolean isConnectedDisplaysPipEnabled() {
-        return Flags.enableConnectedDisplaysPip();
+        return DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_PIP.isTrue();
     }
 
     /** Returns whether the display with the PiP task is in freeform windowing mode. */

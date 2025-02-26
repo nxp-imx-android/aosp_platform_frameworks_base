@@ -32,6 +32,7 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.SurfaceControl;
+import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
 import android.window.WindowContainerTransaction;
 
@@ -41,7 +42,6 @@ import androidx.annotation.Nullable;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.Preconditions;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayChangeController;
@@ -303,7 +303,8 @@ public class PipController implements ConfigurationChangeListener,
     public void onDisplayRemoved(int displayId) {
         // If PiP was active on an external display that is removed, clean up states and set
         // {@link PipDisplayLayoutState} to DEFAULT_DISPLAY.
-        if (Flags.enableConnectedDisplaysPip() && mPipTransitionState.isInPip()
+        if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_PIP.isTrue()
+                && mPipTransitionState.isInPip()
                 && displayId == mPipDisplayLayoutState.getDisplayId()
                 && displayId != DEFAULT_DISPLAY) {
             mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
@@ -384,7 +385,7 @@ public class PipController implements ConfigurationChangeListener,
 
         // If PiP is enabled on Connected Displays, update PipDisplayLayoutState to have the correct
         // display info that PiP is entering in.
-        if (Flags.enableConnectedDisplaysPip()) {
+        if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_PIP.isTrue()) {
             final DisplayLayout displayLayout = mDisplayController.getDisplayLayout(displayId);
             if (displayLayout != null) {
                 mPipDisplayLayoutState.setDisplayId(displayId);
