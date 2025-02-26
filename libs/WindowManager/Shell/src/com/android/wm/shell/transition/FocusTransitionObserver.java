@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.transition;
 
+import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
@@ -213,6 +214,17 @@ public class FocusTransitionObserver {
         }
         final RunningTaskInfo focusedTaskOnDisplay = mFocusedTaskOnDisplay.get(task.displayId);
         return focusedTaskOnDisplay != null && focusedTaskOnDisplay.taskId == task.taskId;
+    }
+
+    /**
+     * Gets the globally focused task ID.
+     */
+    public int getGloballyFocusedTaskId() {
+        if (!enableDisplayFocusInShellTransitions() || mFocusedDisplayId == INVALID_DISPLAY) {
+            return INVALID_TASK_ID;
+        }
+        final RunningTaskInfo globallyFocusedTask = mFocusedTaskOnDisplay.get(mFocusedDisplayId);
+        return globallyFocusedTask != null ? globallyFocusedTask.taskId : INVALID_TASK_ID;
     }
 
     /**

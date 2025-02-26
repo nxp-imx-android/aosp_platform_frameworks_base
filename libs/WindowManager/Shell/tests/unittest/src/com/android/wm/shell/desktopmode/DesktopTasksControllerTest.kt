@@ -145,6 +145,7 @@ import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
+import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.OneShotRemoteHandler
 import com.android.wm.shell.transition.TestRemoteTransition
 import com.android.wm.shell.transition.Transitions
@@ -239,6 +240,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var taskbarDesktopTaskListener: TaskbarDesktopTaskListener
     @Mock private lateinit var freeformTaskTransitionStarter: FreeformTaskTransitionStarter
     @Mock private lateinit var mockHandler: Handler
+    @Mock private lateinit var focusTransitionObserver: FocusTransitionObserver
     @Mock private lateinit var desktopModeEventLogger: DesktopModeEventLogger
     @Mock private lateinit var desktopModeUiEventLogger: DesktopModeUiEventLogger
     @Mock lateinit var persistentRepository: DesktopPersistentRepository
@@ -423,6 +425,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             recentTasksController,
             mockInteractionJankMonitor,
             mockHandler,
+            focusTransitionObserver,
             desktopModeEventLogger,
             desktopModeUiEventLogger,
             desktopWallpaperActivityTokenProvider,
