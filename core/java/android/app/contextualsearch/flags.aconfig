@@ -23,6 +23,18 @@ flag {
     bug: "371065456"
 }
 
+
+flag {
+  name: "report_secure_surfaces_in_assist_structure"
+  namespace: "windowing_frontend"
+  description: "SurfaceView reports when the surface is using a SECURE flag."
+  bug: "390504528"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+
 flag {
     name: "contextual_search_prevent_self_capture"
     namespace: "sysui_integrations"
