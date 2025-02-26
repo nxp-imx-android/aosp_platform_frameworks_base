@@ -345,7 +345,6 @@ public class PipController implements ConfigurationChangeListener,
             return;
         }
 
-        mPipTouchHandler.updateMinMaxSize(mPipBoundsState.getAspectRatio());
         mPipMenuController.hideMenu();
 
         if (mPipTransitionState.isInFixedRotation()) {
@@ -366,6 +365,8 @@ public class PipController implements ConfigurationChangeListener,
             mPipBoundsState.setBounds(toBounds);
         }
         t.setBounds(mPipTransitionState.getPipTaskToken(), mPipBoundsState.getBounds());
+        // Update the size spec in PipBoundsState afterwards.
+        mPipBoundsState.updateMinMaxSize(mPipBoundsState.getAspectRatio());
     }
 
     private void setDisplayLayout(DisplayLayout layout) {
