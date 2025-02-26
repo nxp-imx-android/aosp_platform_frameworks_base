@@ -16,6 +16,10 @@
 
 package com.android.server.wm;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
+
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.DesktopModeHelper.canEnterDesktopMode;
@@ -23,10 +27,13 @@ import static com.android.server.wm.DesktopModeHelper.canEnterDesktopMode;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
+import android.app.WindowConfiguration;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.util.Slog;
+import android.window.DesktopModeFlags;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
 /**
  * The class that defines default launch params for tasks in desktop mode
@@ -74,6 +81,13 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             appendLog("task null, skipping");
             return RESULT_SKIP;
         }
+
+        if (DesktopModeFlags.DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX.isTrue()
+                && !isEnteringDesktopMode(task, options, currentParams)) {
+            appendLog("not entering desktop mode, skipping");
+            return RESULT_SKIP;
+        }
+
         if (com.android.window.flags.Flags.fixLayoutExistingTask()
                 && task.getCreatedByOrganizerTask() != null) {
             appendLog("has created-by-organizer-task, skipping");
@@ -120,6 +134,62 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 outParams.mBounds, this::appendLog);
         appendLog("final desktop mode task bounds set to %s", outParams.mBounds);
         return RESULT_CONTINUE;
+    }
+
+    /**
+     * Returns true if a task is entering desktop mode, due to its windowing mode being freeform or
+     * if there exists other freeform tasks on the display.
+     */
+    @VisibleForTesting
+    boolean isEnteringDesktopMode(
+            @NonNull Task task,
+            @Nullable ActivityOptions options,
+            @NonNull LaunchParamsController.LaunchParams currentParams) {
+        //  As freeform tasks cannot exist outside of desktop mode, it is safe to assume if
+        //  freeform tasks are visible we are in desktop mode and as a result any launching
+        //  activity will also enter desktop mode. On this same relationship, we can also assume
+        //  if there are not visible freeform tasks but a freeform activity is now launching, it
+        //  will force the device into desktop mode.
+        return (task.getDisplayContent().getTopMostVisibleFreeformActivity() != null
+                    && checkSourceWindowModesCompatible(task, options, currentParams))
+                || isRequestingFreeformWindowMode(task, options, currentParams);
+    }
+
+    private boolean isRequestingFreeformWindowMode(
+            @NonNull Task task,
+            @Nullable ActivityOptions options,
+            @NonNull LaunchParamsController.LaunchParams currentParams) {
+        return task.inFreeformWindowingMode()
+                || (options != null && options.getLaunchWindowingMode() == WINDOWING_MODE_FREEFORM)
+                || (currentParams.hasWindowingMode()
+                && currentParams.mWindowingMode == WINDOWING_MODE_FREEFORM);
+    }
+
+    /**
+     * Returns true is all possible source window modes are compatible with desktop mode.
+     */
+    private boolean checkSourceWindowModesCompatible(
+            @NonNull Task task,
+            @Nullable ActivityOptions options,
+            @NonNull LaunchParamsController.LaunchParams currentParams) {
+        return isCompatibleDesktopWindowingMode(task.getWindowingMode())
+                && (options == null
+                    || isCompatibleDesktopWindowingMode(options.getLaunchWindowingMode()))
+                && isCompatibleDesktopWindowingMode(currentParams.mWindowingMode);
+    }
+
+    /**
+     * Returns true is the requesting window mode is one that can lead to the activity entering
+     * desktop.
+     */
+    private boolean isCompatibleDesktopWindowingMode(
+            @WindowConfiguration.WindowingMode int windowingMode) {
+        return switch (windowingMode) {
+            case WINDOWING_MODE_UNDEFINED,
+                 WINDOWING_MODE_FULLSCREEN,
+                 WINDOWING_MODE_FREEFORM -> true;
+            default -> false;
+        };
     }
 
     private void initLogBuilder(Task task, ActivityRecord activity) {
