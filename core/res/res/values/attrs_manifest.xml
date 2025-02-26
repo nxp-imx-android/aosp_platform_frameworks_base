@@ -854,8 +854,21 @@
          <aside class="note"><b>Note:</b>
             <ul>
                 <li>To improve the layout of apps on form factors with smallest width >= 600dp, the
-                    system ignores this attribute for apps that target Android 16 (API level 36) or
-                    higher.</li>
+                    system ignores the following values of this attribute for apps that target
+                    Android 16 (API level 36) or higher:
+                    <ul>
+                      <li><code>portrait</code></li>
+                      <li><code>landscape</code></li>
+                      <li><code>reversePortrait</code></li>
+                      <li><code>reverseLandscape</code></li>
+                      <li><code>sensorPortrait</code></li>
+                      <li><code>sensorLandscape</code></li>
+                      <li><code>userPortrait</code></li>
+                      <li><code>userLandscape</code></li>
+                    </ul>
+                    <p>The values are treated as if the app had set orientation as
+                       <code>unspecified</code>.</p>
+                </li>
                 <li>Device manufacturers can configure devices to override (ignore) this attribute
                     to improve the layout of apps.</li>
                 <li>On devices with Android 16 (API level 36) or higher installed, virtual device
