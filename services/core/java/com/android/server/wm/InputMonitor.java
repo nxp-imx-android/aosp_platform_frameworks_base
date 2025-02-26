@@ -438,8 +438,8 @@ final class InputMonitor {
                                     SoftInputShowHideReason.HIDE_RECENTS_ANIMATION,
                                     mDisplayContent.getDisplayId());
                         }
-                        // Ensure removing the IME snapshot when the app no longer to show on the
-                        // task snapshot (also taking the new task snaphot to update the overview).
+                        // Ensure removing the IME screenshot when the app no longer to show on the
+                        // task snapshot (also taking the new task snapshot to update the overview).
                         final ActivityRecord app = mDisplayContent.getImeInputTarget() != null
                                 ? mDisplayContent.getImeInputTarget().getActivityRecord() : null;
                         if (app != null) {

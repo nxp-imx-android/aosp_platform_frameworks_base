@@ -84,8 +84,8 @@ class ShowImeOnAppStartWhenLaunchingAppFromFixedOrientationTest(flicker: LegacyF
     fun imeLayerAlphaOneAfterSnapshotStartingWindowRemoval() {
         val layerTrace = flicker.reader.readLayersTrace() ?: error("Unable to read layers trace")
 
-        // Find the entries immediately after the IME snapshot has disappeared
-        val imeSnapshotRemovedEntries =
+        // Find the entries immediately after the snapshot starting window was removed
+        val afterSnapshotStartingWindowRemovedEntries =
             layerTrace.entries
                 .asSequence()
                 .zipWithNext { prev, next ->
@@ -101,7 +101,7 @@ class ShowImeOnAppStartWhenLaunchingAppFromFixedOrientationTest(flicker: LegacyF
                 .filterNotNull()
 
         // If we find it, make sure the IME is visible and fully animated in.
-        imeSnapshotRemovedEntries.forEach { entry ->
+        afterSnapshotStartingWindowRemovedEntries.forEach { entry ->
             val entrySubject = LayerTraceEntrySubject(entry)
             val imeLayerSubjects =
                 entrySubject.subjects.filter {
