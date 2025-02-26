@@ -96,7 +96,7 @@ public final class MessageQueue {
      * @hide
      */
     private final AtomicLong mMessageCount = new AtomicLong();
-    private final Thread mThread;
+    private final String mThreadName;
     private final long mTid;
 
     /**
@@ -133,7 +133,7 @@ public final class MessageQueue {
         mUseConcurrent = sIsProcessAllowedToUseConcurrent;
         mQuitAllowed = quitAllowed;
         mPtr = nativeInit();
-        mThread = Thread.currentThread();
+        mThreadName = Thread.currentThread().getName();
         mTid = Process.myTid();
     }
 
@@ -226,7 +226,7 @@ public final class MessageQueue {
                 .addFlow(msg.mEventId.get())
                 .beginProto()
                 .beginNested(2004 /* message_queue */)
-                .addField(2 /* receiving_thread_name */, mThread.getName())
+                .addField(2 /* receiving_thread_name */, mThreadName)
                 .addField(3 /* message_code */, msg.what)
                 .addField(4 /* message_delay_ms */, when - SystemClock.uptimeMillis())
                 .endNested()
@@ -237,7 +237,7 @@ public final class MessageQueue {
     /** @hide */
     private void traceMessageCount() {
         PerfettoTrace.counter(PerfettoTrace.MQ_CATEGORY, mMessageCount.get())
-                .usingThreadCounterTrack(mTid, mThread.getName())
+                .usingThreadCounterTrack(mTid, mThreadName)
                 .emit();
     }
 
