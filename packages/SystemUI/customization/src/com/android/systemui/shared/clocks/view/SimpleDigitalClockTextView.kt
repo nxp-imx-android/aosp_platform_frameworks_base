@@ -425,12 +425,10 @@ open class SimpleDigitalClockTextView(
         return VPointF(
             when {
                 mode.x == EXACTLY -> MeasureSpec.getSize(widthMeasureSpec).toFloat()
-                isSingleDigit() -> maxSingleDigitWidth
                 else -> interpBounds.width() + 2 * lockScreenPaint.strokeWidth
             },
             when {
                 mode.y == EXACTLY -> MeasureSpec.getSize(heightMeasureSpec).toFloat()
-                isSingleDigit() -> maxSingleDigitHeight
                 else -> interpBounds.height() + 2 * lockScreenPaint.strokeWidth
             },
         )
