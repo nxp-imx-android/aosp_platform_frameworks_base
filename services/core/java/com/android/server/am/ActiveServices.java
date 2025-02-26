@@ -9191,7 +9191,9 @@ public final class ActiveServices {
         } else {
             synchronized (mAm.mPidsSelfLocked) {
                 callerApp = mAm.mPidsSelfLocked.get(callingPid);
-                caller = callerApp.getThread();
+                if (callerApp != null) {
+                    caller = callerApp.getThread();
+                }
             }
         }
         if (callerApp == null) {
