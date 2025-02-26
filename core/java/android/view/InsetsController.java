@@ -2067,7 +2067,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         if ((types & ime()) != 0) {
             final InsetsSourceControl imeControl = mImeSourceConsumer.getControl();
             // Skip showing animation once that made by system for some reason.
-            // (e.g. starting window with IME snapshot)
+            // (e.g. starting window with hasImeSurface)
             if (imeControl != null) {
                 skipsAnim = imeControl.getAndClearSkipAnimationOnce() && show
                         && mImeSourceConsumer.hasViewFocusWhenWindowFocusGain();

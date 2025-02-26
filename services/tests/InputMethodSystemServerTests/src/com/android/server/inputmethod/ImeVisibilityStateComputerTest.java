@@ -27,13 +27,9 @@ import static android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.internal.inputmethod.SoftInputShowHideReason.HIDE_WHEN_INPUT_TARGET_INVISIBLE;
-import static com.android.internal.inputmethod.SoftInputShowHideReason.REMOVE_IME_SCREENSHOT_FROM_IMMS;
-import static com.android.internal.inputmethod.SoftInputShowHideReason.SHOW_IME_SCREENSHOT_FROM_IMMS;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.ImeTargetWindowState;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.ImeVisibilityResult;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_HIDE_IME_EXPLICIT;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_REMOVE_IME_SNAPSHOT;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_SHOW_IME_SNAPSHOT;
 import static com.android.server.inputmethod.InputMethodManagerService.FALLBACK_DISPLAY_ID;
 import static com.android.server.inputmethod.InputMethodManagerService.ImeDisplayValidator;
 
@@ -277,30 +273,27 @@ public class ImeVisibilityStateComputerTest extends InputMethodManagerServiceTes
     }
 
     @Test
-    public void testOnInteractiveChanged() {
+    public void testShouldShowImeScreenshot() {
         synchronized (ImfLock.class) {
             mComputer.getOrCreateWindowState(mWindowToken);
-            // Precondition: ensure IME has shown before hiding request.
+            // Precondition: ensure IME has shown before screenshot request.
             mComputer.requestImeVisibility(mWindowToken, true);
             mComputer.setInputShown(true);
 
-            // No need any visibility change When initially shows IME on the device was interactive.
-            ImeVisibilityStateComputer.ImeVisibilityResult result = mComputer.onInteractiveChanged(
-                    mWindowToken, true /* interactive */);
-            assertThat(result).isNull();
+            // No screenshot visibility change when IME initially shown while interactive.
+            Boolean shouldShow = mComputer.shouldShowImeScreenshot(mWindowToken,
+                    true /* interactive */);
+            assertThat(shouldShow).isNull();
 
-            // Show the IME screenshot to capture the last IME visible state when the device
-            // inactive.
-            result = mComputer.onInteractiveChanged(mWindowToken, false /* interactive */);
-            assertThat(result).isNotNull();
-            assertThat(result.getState()).isEqualTo(STATE_SHOW_IME_SNAPSHOT);
-            assertThat(result.getReason()).isEqualTo(SHOW_IME_SCREENSHOT_FROM_IMMS);
+            // Show the screenshot when the device became non-interactive.
+            shouldShow = mComputer.shouldShowImeScreenshot(mWindowToken, false /* interactive */);
+            assertThat(shouldShow).isNotNull();
+            assertThat(shouldShow).isTrue();
 
-            // Remove the IME screenshot when the device became interactive again.
-            result = mComputer.onInteractiveChanged(mWindowToken, true /* interactive */);
-            assertThat(result).isNotNull();
-            assertThat(result.getState()).isEqualTo(STATE_REMOVE_IME_SNAPSHOT);
-            assertThat(result.getReason()).isEqualTo(REMOVE_IME_SCREENSHOT_FROM_IMMS);
+            // Remove the screenshot when the device became interactive again.
+            shouldShow = mComputer.shouldShowImeScreenshot(mWindowToken, true /* interactive */);
+            assertThat(shouldShow).isNotNull();
+            assertThat(shouldShow).isFalse();
         }
     }
 

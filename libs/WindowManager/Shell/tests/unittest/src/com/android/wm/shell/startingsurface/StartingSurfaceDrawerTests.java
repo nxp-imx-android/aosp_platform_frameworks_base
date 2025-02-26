@@ -234,12 +234,12 @@ public class StartingSurfaceDrawerTests extends ShellTestCase {
         }) {
             when(TaskSnapshotWindow.create(eq(windowInfo), eq(mBinder), eq(snapshot), any(),
                     any())).thenReturn(mockSnapshotWindow);
-            // Simulate a task snapshot window created with IME snapshot shown.
+            // Simulate a task snapshot window created with hasImeSurface.
             mStartingSurfaceDrawer.makeTaskSnapshotWindow(windowInfo, snapshot);
             waitHandlerIdle(mTestHandler);
 
-            // Verify the task snapshot with IME snapshot will be removed when received the real IME
-            // drawn callback.
+            // Verify the task snapshot with hasImeSurface will be removed when receiving the
+            // callback that the real IME was drawn.
             // makeTaskSnapshotWindow shall call removeWindowSynced before there add a new
             // StartingWindowRecord for the task.
             mStartingSurfaceDrawer.onImeDrawnOnTask(1);

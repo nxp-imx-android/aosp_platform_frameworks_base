@@ -443,7 +443,7 @@ final class InputMonitor {
                         final ActivityRecord app = mDisplayContent.getImeInputTarget() != null
                                 ? mDisplayContent.getImeInputTarget().getActivityRecord() : null;
                         if (app != null) {
-                            mDisplayContent.removeImeSurfaceImmediately();
+                            mDisplayContent.removeImeScreenshotImmediately();
                             if (app.getTask() != null) {
                                 mDisplayContent.mAtmService.takeTaskSnapshot(app.getTask().mTaskId,
                                         true /* updateCache */);

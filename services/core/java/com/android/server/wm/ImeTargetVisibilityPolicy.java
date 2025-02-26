@@ -31,19 +31,19 @@ import android.view.WindowManager;
 public abstract class ImeTargetVisibilityPolicy {
 
     /**
-     * Shows the IME screenshot and attach it to the given IME target window.
+     * Shows the IME screenshot and attaches it to the given IME target window.
      *
-     * @param imeTarget The target window to show the IME screenshot.
-     * @param displayId A unique id to identify the display.
-     * @return {@code true} if success, {@code false} otherwise.
+     * @param imeTarget the token of the IME target window.
+     * @param displayId the ID of the display to show the screenshot on.
+     * @return {@code true} if successful, {@code false} otherwise.
      */
     public abstract boolean showImeScreenshot(@NonNull IBinder imeTarget, int displayId);
 
     /**
-     * Removes the IME screenshot on the given display.
+     * Removes the IME screenshot from the given display.
      *
      * @param displayId The target display of showing IME screenshot.
-     * @return {@code true} if success, {@code false} otherwise.
+     * @return {@code true} if successful, {@code false} otherwise.
      */
     public abstract boolean removeImeScreenshot(int displayId);
 

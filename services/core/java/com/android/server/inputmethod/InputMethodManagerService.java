@@ -5189,16 +5189,14 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             }
             if (mImePlatformCompatUtils.shouldUseSetInteractiveProtocol(
                     bindingController.getCurMethodUid())) {
-                // Handle IME visibility when interactive changed before finishing the input to
-                // ensure we preserve the last state as possible.
+                // Apply IME screenshot visibility before notifying the client, as it could dismiss
+                // the IME.
                 final var visibilityStateComputer = userData.mVisibilityStateComputer;
-                final ImeVisibilityResult imeVisRes = visibilityStateComputer.onInteractiveChanged(
+                final Boolean showScreenshot = visibilityStateComputer.shouldShowImeScreenshot(
                         userData.mImeBindingState.mFocusedWindow, interactive);
-                if (imeVisRes != null) {
-                    // Pass in a null statsToken as the IME snapshot is not tracked by ImeTracker.
-                    mVisibilityApplier.applyImeVisibility(userData.mImeBindingState.mFocusedWindow,
-                            null /* statsToken */, imeVisRes.getState(), imeVisRes.getReason(),
-                            userId);
+                if (showScreenshot != null) {
+                    mVisibilityApplier.applyImeScreenshotVisibility(
+                            userData.mImeBindingState.mFocusedWindow, showScreenshot, userId);
                 }
                 // Eligible IME processes use new "setInteractive" protocol.
                 userData.mCurClient.mClient.setInteractive(mIsInteractive,

@@ -2333,7 +2333,7 @@ public class DisplayContentTests extends WindowTestsBase {
         DisplayContent.ImeScreenshot curSnapshot = mDisplayContent.mImeScreenshot;
         spyOn(curSnapshot);
         mDisplayContent.showImeScreenshot();
-        verify(curSnapshot).detach(any());
+        verify(curSnapshot).removeSurface(any());
         assertNotNull(mDisplayContent.mImeScreenshot);
         assertNotEquals(curSnapshot, mDisplayContent.mImeScreenshot);
     }

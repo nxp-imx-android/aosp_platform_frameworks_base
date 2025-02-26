@@ -1593,7 +1593,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                     transientTDA.pauseBackTasks(null /* resuming */);
                 }
             }
-            dc.removeImeSurfaceImmediately();
+            dc.removeImeScreenshotImmediately();
             dc.handleCompleteDeferredRemoval();
         }
         validateKeyguardOcclusion();
