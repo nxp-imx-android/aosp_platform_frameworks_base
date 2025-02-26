@@ -17,11 +17,25 @@
 package com.android.systemui.model
 
 import android.view.Display
+import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor
+import com.android.systemui.display.data.repository.FakePerDisplayRepository
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import org.mockito.Mockito.spy
 
-val Kosmos.sysUiState by Fixture {
-    spy(SysUiStateImpl(Display.DEFAULT_DISPLAY, sceneContainerPlugin, dumpManager))
+val Kosmos.sysUiState by Fixture { sysUiStateFactory.create(Display.DEFAULT_DISPLAY) }
+
+val Kosmos.sysUiStateFactory by Fixture {
+    object : SysUiStateImpl.Factory {
+        override fun create(displayId: Int): SysUiStateImpl {
+            return spy(SysUiStateImpl(Display.DEFAULT_DISPLAY, sceneContainerPlugin, dumpManager))
+        }
+    }
+}
+
+val Kosmos.fakeSysUIStatePerDisplayRepository by Fixture { FakePerDisplayRepository<SysUiState>() }
+
+val Kosmos.sysuiStateInteractor by Fixture {
+    SysUIStateDisplaysInteractor(fakeSysUIStatePerDisplayRepository)
 }

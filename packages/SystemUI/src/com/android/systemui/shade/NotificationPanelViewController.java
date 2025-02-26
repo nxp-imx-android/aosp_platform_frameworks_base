@@ -65,6 +65,7 @@ import android.os.Trace;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 import android.util.MathUtils;
+import android.view.Display;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.MotionEvent;
@@ -96,6 +97,8 @@ import com.android.systemui.Gefingerpoken;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
 import com.android.systemui.classifier.Classifier;
 import com.android.systemui.classifier.FalsingCollector;
+import com.android.systemui.common.domain.interactor.StateChange;
+import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.DisplayId;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -450,7 +453,9 @@ public final class NotificationPanelViewController implements
     private final MediaDataManager mMediaDataManager;
     @PanelState
     private int mCurrentPanelState = STATE_CLOSED;
+    @Deprecated // Use SysUIStateInteractor instead
     private final SysUiState mSysUiState;
+    private final SysUIStateDisplaysInteractor mSysUIStateDisplaysInteractor;
     private final NotificationShadeDepthController mDepthController;
     private final NavigationBarController mNavigationBarController;
     private final int mDisplayId;
@@ -607,6 +612,7 @@ public final class NotificationPanelViewController implements
             ShadeRepository shadeRepository,
             Optional<SysUIUnfoldComponent> unfoldComponent,
             SysUiState sysUiState,
+            SysUIStateDisplaysInteractor sysUIStateDisplaysInteractor,
             KeyguardUnlockAnimationController keyguardUnlockAnimationController,
             KeyguardIndicationController keyguardIndicationController,
             NotificationListContainer notificationListContainer,
@@ -738,6 +744,7 @@ public final class NotificationPanelViewController implements
         mMediaDataManager = mediaDataManager;
         mTapAgainViewController = tapAgainViewController;
         mSysUiState = sysUiState;
+        mSysUIStateDisplaysInteractor = sysUIStateDisplaysInteractor;
         mKeyguardBypassController = bypassController;
         mUpdateMonitor = keyguardUpdateMonitor;
         mLockscreenShadeTransitionController = lockscreenShadeTransitionController;
@@ -2701,13 +2708,41 @@ public final class NotificationPanelViewController implements
             Log.d(TAG, "Updating panel sysui state flags: fullyExpanded="
                     + isFullyExpanded() + " inQs=" + mQsController.getExpanded());
         }
+        if (ShadeWindowGoesAround.isEnabled()) {
+            setPerDisplaySysUIStateFlags();
+        } else {
+            setDefaultDisplayFlags();
+        }
+    }
+
+    private int getShadeDisplayId() {
+        if (mView != null && mView.getDisplay() != null) return mView.getDisplay().getDisplayId();
+        return Display.DEFAULT_DISPLAY;
+    }
+
+    private void setPerDisplaySysUIStateFlags() {
+        mSysUIStateDisplaysInteractor.setFlagsExclusivelyToDisplay(
+                getShadeDisplayId(),
+                new StateChange()
+                        .setFlag(SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE,
+                                isPanelExpanded() && !isCollapsing())
+                        .setFlag(SYSUI_STATE_NOTIFICATION_PANEL_EXPANDED,
+                                isFullyExpanded() && !mQsController.getExpanded())
+                        .setFlag(SYSUI_STATE_QUICK_SETTINGS_EXPANDED,
+                                isFullyExpanded() && mQsController.getExpanded())
+        );
+    }
+
+    @Deprecated
+    private void setDefaultDisplayFlags() {
         mSysUiState
                 .setFlag(SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE,
                         isPanelExpanded() && !isCollapsing())
                 .setFlag(SYSUI_STATE_NOTIFICATION_PANEL_EXPANDED,
                         isFullyExpanded() && !mQsController.getExpanded())
                 .setFlag(SYSUI_STATE_QUICK_SETTINGS_EXPANDED,
-                        isFullyExpanded() && mQsController.getExpanded()).commitUpdate(mDisplayId);
+                        isFullyExpanded() && mQsController.getExpanded()).commitUpdate(
+                        mDisplayId);
     }
 
     private void debugLog(String fmt, Object... args) {
