@@ -16,7 +16,7 @@
 
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 
-package com.android.systemui.volume.ui.slider
+package com.android.systemui.volume.ui.compose.slider
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -61,8 +61,6 @@ import kotlinx.coroutines.launch
 
 private val defaultSpring =
     SpringSpec<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessHigh)
-private val defaultTrack: @Composable (SliderState) -> Unit =
-    @Composable { SliderDefaults.Track(it) }
 
 @Composable
 fun Slider(
@@ -79,7 +77,14 @@ fun Slider(
     haptics: Haptics = Haptics.Disabled,
     isVertical: Boolean = false,
     isReverseDirection: Boolean = false,
-    track: (@Composable (SliderState) -> Unit)? = null,
+    track: (@Composable (SliderState) -> Unit) = { SliderDefaults.Track(it) },
+    thumb: (@Composable (SliderState, MutableInteractionSource) -> Unit) = { _, _ ->
+        SliderDefaults.Thumb(
+            interactionSource = interactionSource,
+            colors = colors,
+            enabled = isEnabled,
+        )
+    },
 ) {
     require(stepDistance >= 0) { "stepDistance must not be negative" }
     val coroutineScope = rememberCoroutineScope()
@@ -139,7 +144,8 @@ fun Slider(
             reverseDirection = isReverseDirection,
             interactionSource = interactionSource,
             colors = colors,
-            track = track ?: defaultTrack,
+            track = track,
+            thumb = { thumb(it, interactionSource) },
             modifier = modifier.clearAndSetSemantics(semantics),
         )
     } else {
@@ -148,7 +154,8 @@ fun Slider(
             enabled = isEnabled,
             interactionSource = interactionSource,
             colors = colors,
-            track = track ?: defaultTrack,
+            track = track,
+            thumb = { thumb(it, interactionSource) },
             modifier = modifier.clearAndSetSemantics(semantics),
         )
     }
