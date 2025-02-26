@@ -1611,7 +1611,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     fun moveTaskToDesktop_desktopWallpaperDisabled_nonRunningTask_launchesInFreeform() {
-        val task = createTaskInfo(1)
+        val task = createRecentTaskInfo(1)
         whenever(shellTaskOrganizer.getRunningTaskInfo(anyInt())).thenReturn(null)
         whenever(recentTasksController.findTaskInBackground(anyInt())).thenReturn(task)
 
@@ -1626,7 +1626,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     fun moveTaskToDesktop_desktopWallpaperEnabled_nonRunningTask_launchesInFreeform() {
         whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
-        val task = createTaskInfo(1)
+        val task = createRecentTaskInfo(1)
         whenever(shellTaskOrganizer.getRunningTaskInfo(anyInt())).thenReturn(null)
         whenever(recentTasksController.findTaskInBackground(anyInt())).thenReturn(task)
 
@@ -1798,7 +1798,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(transitions.startTransition(anyInt(), any(), transitionHandlerArgCaptor.capture()))
             .thenReturn(Binder())
 
-        val task = createTaskInfo(1)
+        val task = createRecentTaskInfo(1)
         whenever(shellTaskOrganizer.getRunningTaskInfo(anyInt())).thenReturn(null)
         whenever(recentTasksController.findTaskInBackground(anyInt())).thenReturn(task)
         controller.moveTaskToDefaultDeskAndActivate(
@@ -1810,6 +1810,34 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(desktopModeEnterExitTransitionListener)
             .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
         assertIs<OneShotRemoteHandler>(transitionHandlerArgCaptor.firstValue)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
+        Flags.FLAG_ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+    )
+    fun moveBackgroundTaskToDesktop_nonDefaultDisplay_reordersHomeAndWallpaperOfNonDefaultDisplay() {
+        val homeTask = setUpHomeTask(displayId = SECOND_DISPLAY)
+        val wallpaperToken = MockToken().token()
+        whenever(desktopWallpaperActivityTokenProvider.getToken(SECOND_DISPLAY))
+            .thenReturn(wallpaperToken)
+        val task = setUpFreeformTask(displayId = SECOND_DISPLAY, deskId = 2, background = true)
+
+        controller.moveTaskToDefaultDeskAndActivate(
+            taskId = task.taskId,
+            transitionSource = UNKNOWN,
+            remoteTransition = RemoteTransition(spy(TestRemoteTransition())),
+        )
+
+        val wct = getLatestTransition()
+        val homeReorderIndex = wct.indexOfReorder(homeTask, toTop = true)
+        val wallpaperReorderIndex = wct.indexOfReorder(wallpaperToken, toTop = true)
+        assertThat(homeReorderIndex).isNotEqualTo(-1)
+        assertThat(wallpaperReorderIndex).isNotEqualTo(-1)
+        // Wallpaper last, to be in front of Home.
+        assertThat(wallpaperReorderIndex).isGreaterThan(homeReorderIndex)
     }
 
     @Test
@@ -2463,7 +2491,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     fun moveTaskToFront_backgroundTask_launchesTask() {
-        val task = createTaskInfo(1)
+        val task = createRecentTaskInfo(1)
         whenever(shellTaskOrganizer.getRunningTaskInfo(anyInt())).thenReturn(null)
         whenever(
                 desktopMixedTransitionHandler.startLaunchTransition(
@@ -2485,7 +2513,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     fun moveTaskToFront_backgroundTaskBringsTasksOverLimit_minimizesBackTask() {
         val freeformTasks = (1..MAX_TASK_LIMIT).map { _ -> setUpFreeformTask() }
-        val task = createTaskInfo(1001)
+        val task = createRecentTaskInfo(1001)
         whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(null)
         whenever(
                 desktopMixedTransitionHandler.startLaunchTransition(
@@ -6711,7 +6739,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         if (background) {
             whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(null)
             whenever(recentTasksController.findTaskInBackground(task.taskId))
-                .thenReturn(createTaskInfo(task.taskId))
+                .thenReturn(createRecentTaskInfo(taskId = task.taskId, displayId = displayId))
         } else {
             whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
         }
@@ -7146,8 +7174,9 @@ private fun WindowContainerTransaction?.anyWindowingModeChange(
     } ?: false
 }
 
-private fun createTaskInfo(id: Int) =
+private fun createRecentTaskInfo(taskId: Int, displayId: Int = DEFAULT_DISPLAY) =
     RecentTaskInfo().apply {
-        taskId = id
+        this.taskId = taskId
+        this.displayId = displayId
         token = WindowContainerToken(mock(IWindowContainerToken::class.java))
     }
