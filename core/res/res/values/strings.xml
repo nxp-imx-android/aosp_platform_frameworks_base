@@ -5362,7 +5362,7 @@
     <!-- Notification shown when device owner silently installs a package [CHAR LIMIT=NONE] -->
     <string name="package_installed_device_owner">Installed by your admin.\nGo to settings to view granted permissions</string>
     <!-- Notification shown when device owner silently updates a package [CHAR LIMIT=NONE] -->
-    <string name="package_updated_device_owner">Updated by your admin</string>
+    <string name="package_updated_device_owner">Updated by your admin.\nGo to settings to view granted permissions</string>
     <!-- Notification shown when device owner silently deletes a package [CHAR LIMIT=NONE] -->
     <string name="package_deleted_device_owner">Deleted by your admin</string>
 
