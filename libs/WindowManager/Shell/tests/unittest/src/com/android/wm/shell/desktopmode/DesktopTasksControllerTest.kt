@@ -334,6 +334,16 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(enterDesktopTransitionHandler.moveToDesktop(any(), any())).thenAnswer { Binder() }
         whenever(exitDesktopTransitionHandler.startTransition(any(), any(), any(), any()))
             .thenReturn(Binder())
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    any(),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
         whenever(displayController.getDisplayLayout(anyInt())).thenReturn(displayLayout)
         whenever(displayController.getDisplayContext(anyInt())).thenReturn(mockDisplayContext)
         whenever(displayController.getDisplay(anyInt())).thenReturn(display)
@@ -6570,6 +6580,25 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(launchingTaskReorderIndex).isNotEqualTo(-1)
         assertThat(wallpaperReorderIndex).isNotEqualTo(-1)
         assertThat(launchingTaskReorderIndex).isGreaterThan(wallpaperReorderIndex)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun startLaunchTransition_desktopNotShowing_updatesDesktopEnterExitListener() {
+        setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 0)
+        taskRepository.setDeskInactive(deskId = 0)
+
+        controller.startLaunchTransition(
+            transitionType = TRANSIT_OPEN,
+            wct = WindowContainerTransaction(),
+            launchingTaskId = null,
+        )
+
+        verify(desktopModeEnterExitTransitionListener).onEnterDesktopModeTransitionStarted(any())
     }
 
     @Test

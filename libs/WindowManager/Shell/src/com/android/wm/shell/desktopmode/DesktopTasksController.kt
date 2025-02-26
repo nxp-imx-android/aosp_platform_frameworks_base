@@ -1121,12 +1121,13 @@ class DesktopTasksController(
                 excludeTaskId = launchingTaskId,
                 reason = DesktopImmersiveController.ExitReason.TASK_LAUNCH,
             )
-        var deskIdToActivate: Int? = null
-        if (
-            DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue &&
+        var activationRunOnTransitStart: RunOnTransitStart? = null
+        val shouldActivateDesk =
+            (DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue ||
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) &&
                 !isDesktopModeShowing(displayId)
-        ) {
-            deskIdToActivate =
+        if (shouldActivateDesk) {
+            val deskIdToActivate =
                 checkNotNull(
                     launchingTaskId?.let { taskRepository.getDeskIdForTask(it) }
                         ?: getDefaultDeskId(displayId)
@@ -1136,6 +1137,18 @@ class DesktopTasksController(
             // Desk activation must be handled before app launch-related transactions.
             activateDeskWct.merge(launchTransaction, /* transfer= */ true)
             launchTransaction = activateDeskWct
+            activationRunOnTransitStart = { transition ->
+                desksTransitionObserver.addPendingTransition(
+                    DeskTransition.ActivateDesk(
+                        token = transition,
+                        displayId = displayId,
+                        deskId = deskIdToActivate,
+                    )
+                )
+            }
+            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+                FREEFORM_ANIMATION_DURATION
+            )
         }
         val t =
             if (remoteTransition == null) {
@@ -1169,24 +1182,7 @@ class DesktopTasksController(
         if (launchingTaskId != null && taskRepository.isMinimizedTask(launchingTaskId)) {
             addPendingUnminimizeTransition(t, displayId, launchingTaskId, unminimizeReason)
         }
-        if (
-            DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
-                deskIdToActivate != null
-        ) {
-            if (DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue) {
-                desksTransitionObserver.addPendingTransition(
-                    DeskTransition.ActivateDesk(
-                        token = t,
-                        displayId = displayId,
-                        deskId = deskIdToActivate,
-                    )
-                )
-            }
-
-            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-                FREEFORM_ANIMATION_DURATION
-            )
-        }
+        activationRunOnTransitStart?.invoke(t)
         exitImmersiveResult.asExit()?.runOnTransitionStart?.invoke(t)
         return t
     }
