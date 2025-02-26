@@ -569,6 +569,10 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
         mIsolatedMessage = isolatedMessage;
         updateImageContainerVisibility();
         mMessages = group;
+        if (android.widget.flags.Flags.dropNonExistingMessages()) {
+            // remove messages from mAddedMessages when they are no longer in mMessages.
+            mAddedMessages.removeIf(message -> !mMessages.contains(message));
+        }
         updateMessageColor();
     }
 

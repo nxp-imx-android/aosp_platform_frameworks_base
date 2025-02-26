@@ -1188,6 +1188,12 @@ public class ConversationLayout extends FrameLayout
             }
             newGroup.setMessages(group);
         }
+
+        if (Flags.dropNonExistingMessages()) {
+            // remove groups from mAddedGroups when they are no longer in mGroups.
+            mAddedGroups.removeIf(
+                    messagingGroup -> !mGroups.contains(messagingGroup));
+        }
     }
 
     /**

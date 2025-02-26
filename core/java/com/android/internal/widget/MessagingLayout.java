@@ -44,6 +44,7 @@ import android.view.animation.PathInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+import android.widget.flags.Flags;
 
 import com.android.internal.R;
 
@@ -558,6 +559,12 @@ public class MessagingLayout extends FrameLayout
                 mMessagingLinearLayout.addView(newGroup, groupIndex);
             }
             newGroup.setMessages(group);
+        }
+
+        if (Flags.dropNonExistingMessages()) {
+            // remove groups from mAddedGroups when they are no longer in mGroups.
+            mAddedGroups.removeIf(
+                    messagingGroup -> !mGroups.contains(messagingGroup));
         }
     }
 
