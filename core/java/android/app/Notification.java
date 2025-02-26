@@ -9526,14 +9526,21 @@ public class Notification implements Parcelable
                     .viewType(viewType)
                     .highlightExpander(isConversationLayout)
                     .hideProgress(true)
-                    .text(null)
                     .hideLeftIcon(isOneToOne)
                     .hideRightIcon(hideRightIcons || isOneToOne);
             if (notificationsRedesignTemplates()) {
+                String lastMessage = !mMessages.isEmpty()
+                        ? mMessages.getLast().mText.toString() : null;
+
                 p.title(conversationTitle)
+                        // The text is not actually displayed like this (since we're using a
+                        // MessagingLinearLayout instead of the regular text), but we're using it to
+                        // know whether the notification will have a second line in practice.
+                        .text(lastMessage)
                         .hideAppName(isCollapsed);
             } else {
                 p.title(isLegacyHeaderless ? conversationTitle : null)
+                        .text(null)
                         .headerTextSecondary(isLegacyHeaderless ? null : conversationTitle);
             }
             RemoteViews contentView = mBuilder.applyStandardTemplateWithActions(
