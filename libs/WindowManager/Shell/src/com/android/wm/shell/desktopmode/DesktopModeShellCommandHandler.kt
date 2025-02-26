@@ -17,6 +17,7 @@
 package com.android.wm.shell.desktopmode
 
 import android.window.DesktopExperienceFlags
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.UNKNOWN
 import com.android.wm.shell.sysui.ShellCommandHandler
 import java.io.PrintWriter
@@ -183,8 +184,12 @@ class DesktopModeShellCommandHandler(private val controller: DesktopTasksControl
                 pw.println("Error: task id should be an integer")
                 return false
             }
-        pw.println("Not implemented.")
-        return false
+        controller.moveTaskToFront(
+            /* taskId= */ taskId,
+            /* remoteTransition= */ null,
+            /* unminimizeReason= */ UnminimizeReason.UNKNOWN,
+        )
+        return true
     }
 
     private fun runMoveTaskOutOfDesk(args: Array<String>, pw: PrintWriter): Boolean {
