@@ -882,3 +882,10 @@ flag {
     description: "Enable some improvements in size compat mode for connected displays."
     bug: "399752440"
 }
+
+flag {
+    name: "form_factor_based_desktop_first_switch"
+    namespace: "lse_desktop_experience"
+    description: "Enables the desktop-first mode switching logic based on its form factor."
+    bug: "394736817"
+}
