@@ -789,7 +789,7 @@ public class BatteryStatsHistory {
      */
     public boolean readFragmentToParcel(Parcel out, BatteryHistoryFragment fragment) {
         byte[] data = mStore.readFragment(fragment);
-        if (data == null) {
+        if (data == null || data.length == 0) {
             return false;
         }
         out.unmarshall(data, 0, data.length);
@@ -934,6 +934,10 @@ public class BatteryStatsHistory {
                     continue;
                 }
 
+                if (data.length == 0) {
+                    continue;
+                }
+
                 out.writeBoolean(true);
                 if (useBlobs) {
                     out.writeBlob(data, 0, data.length);
@@ -976,9 +980,11 @@ public class BatteryStatsHistory {
                 return false;
             }
 
-            parcel.unmarshall(data, 0, data.length);
-            parcel.setDataPosition(0);
-            readHistoryBuffer(parcel);
+            if (data.length > 0) {
+                parcel.unmarshall(data, 0, data.length);
+                parcel.setDataPosition(0);
+                readHistoryBuffer(parcel);
+            }
         } catch (Exception e) {
             Slog.e(TAG, "Error reading battery history", e);
             reset();

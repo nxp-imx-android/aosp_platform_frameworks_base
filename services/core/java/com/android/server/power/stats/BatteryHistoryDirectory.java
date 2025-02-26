@@ -251,6 +251,10 @@ public class BatteryHistoryDirectory implements BatteryStatsHistory.BatteryHisto
         try (FileInputStream stream = file.openRead()) {
             byte[] header = new byte[FILE_FORMAT_BYTES];
             if (stream.read(header, 0, FILE_FORMAT_BYTES) == -1) {
+                if (file.getBaseFile().length() == 0) {
+                    return new byte[0];
+                }
+
                 Slog.e(TAG, "Invalid battery history file format " + file.getBaseFile());
                 deleteFragment(fragment);
                 return null;
