@@ -46,6 +46,7 @@ import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Region;
 import android.gui.BorderSettings;
 import android.gui.BoxShadowSettings;
@@ -171,11 +172,11 @@ public final class SurfaceControl implements Parcelable {
     private static native void nativeSetCornerRadius(
             long transactionObj, long nativeObject, float topLeft, float topRight,
                                 float bottomLeft, float bottomRight);
-    private static native void nativeSetClientDrawnCornerRadius(long transactionObj,
-            long nativeObject, float clientDrawnCornerRadius);
     private static native void nativeSetClientDrawnCornerRadius(
             long transactionObj, long nativeObject, float topLeft, float topRight,
-                                                float bottomLeft, float bottomRight);
+                                                float bottomLeft, float bottomRight,
+                                                float cropTop, float cropLeft,
+                                                float cropBottom, float cropRight);
     private static native void nativeSetBackgroundBlurRadius(long transactionObj, long nativeObject,
             int blurRadius);
     private static native void nativeSetBackgroundBlurScale(long transactionObj, long nativeObject,
@@ -3590,18 +3591,6 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
-         * Adds a callback that is called after WindowInfosListeners from the systems server are
-         * complete. This is primarily used to ensure that InputDispatcher::setInputWindowsLocked
-         * has been called before running the added callback.
-         *
-         * @hide
-         */
-        public Transaction addWindowInfosReportedListener(@NonNull Runnable listener) {
-            nativeAddWindowInfosReportedListener(mNativeObject, listener);
-            return this;
-        }
-
-        /**
          * Adds a transaction barrier.
          *
          * @param barrier Transaction Barrier.
@@ -3614,6 +3603,19 @@ public final class SurfaceControl implements Parcelable {
             barrier.writeToParcel(barrierParcel, 0);
             barrierParcel.setDataPosition(0);
             nativeAddTransactionBarrier(mNativeObject, barrierParcel);
+            return this;
+        }
+
+
+        /**
+         * Adds a callback that is called after WindowInfosListeners from the systems server are
+         * complete. This is primarily used to ensure that InputDispatcher::setInputWindowsLocked
+         * has been called before running the added callback.
+         *
+         * @hide
+         */
+        public Transaction addWindowInfosReportedListener(@NonNull Runnable listener) {
+            nativeAddWindowInfosReportedListener(mNativeObject, listener);
             return this;
         }
 
@@ -3870,38 +3872,9 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
-         * Disables corner radius of a {@link SurfaceControl}. When the radius set by
-         * {@link Transaction#setCornerRadius(SurfaceControl, float)} is equal to
-         * clientDrawnCornerRadius the corner radius drawn by SurfaceFlinger is disabled.
-         *
-         * @param sc SurfaceControl
-         * @param clientDrawnCornerRadius Corner radius drawn by the client
-         * @return Itself.
-         * @hide
-         */
-        @NonNull
-        public Transaction setClientDrawnCornerRadius(@NonNull SurfaceControl sc,
-                                                            float clientDrawnCornerRadius) {
-            checkPreconditions(sc);
-            if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
-                SurfaceControlRegistry.getProcessInstance().checkCallStackDebugging(
-                        "setClientDrawnCornerRadius", this, sc, "clientDrawnCornerRadius="
-                        + clientDrawnCornerRadius);
-            }
-            if (Flags.ignoreCornerRadiusAndShadows()) {
-                nativeSetClientDrawnCornerRadius(mNativeObject, sc.mNativeObject,
-                                                                clientDrawnCornerRadius);
-            } else {
-                Log.w(TAG, "setClientDrawnCornerRadius was called but"
-                            + "ignore_corner_radius_and_shadows flag is disabled");
-            }
-
-            return this;
-        }
-
-        /**
          * Disables corner radius of a {@link SurfaceControl}. When the radius set by {@link
          * Transaction#setCornerRadius(SurfaceControl, float)} is equal to clientDrawnCornerRadius
+         * and the crop set by the client matches the bounds in SurfaceFlinger,
          * the corner radius drawn by SurfaceFlinger is disabled.
          *
          * @hide
@@ -3909,7 +3882,7 @@ public final class SurfaceControl implements Parcelable {
         @NonNull
         public Transaction setClientDrawnCornerRadius(
                 @NonNull SurfaceControl sc, float topLeft, float topRight,
-                    float bottomLeft, float bottomRight) {
+                    float bottomLeft, float bottomRight, RectF crop) {
             checkPreconditions(sc);
             if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
                 SurfaceControlRegistry.getProcessInstance()
@@ -3920,7 +3893,8 @@ public final class SurfaceControl implements Parcelable {
                                 "topLeft=" + topLeft
                                 + " , topRight=" + topRight
                                 + ", bottomLeft=" + bottomLeft
-                                + " , bottomRight=" + bottomRight);
+                                + " , bottomRight=" + bottomRight
+                                + ", crop=" + crop);
             }
             if (!com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii()) {
                 Log.w(TAG, "setClientDrawnCornerRadius was called but"
@@ -3929,7 +3903,8 @@ public final class SurfaceControl implements Parcelable {
             }
 
             nativeSetClientDrawnCornerRadius(mNativeObject, sc.mNativeObject,
-                                            topLeft, topRight, bottomLeft, bottomRight);
+                                            topLeft, topRight, bottomLeft, bottomRight,
+                                            crop.left, crop.top, crop.right, crop.bottom);
 
             return this;
         }

@@ -129,6 +129,7 @@ import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClie
 import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.INSETS_CONTROLLER;
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 
+import static com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii;
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.alwaysSeqIdLayout;
@@ -1159,6 +1160,8 @@ public final class ViewRootImpl implements ViewParent,
     private int mFrameRateCategoryNormalCount = 0;
     private int mFrameRateCategoryLowCount = 0;
 
+    private CornerRadii mCornerRadii = new CornerRadii();
+
     /*
      * the variables below are used to determine whther a dVRR feature should be enabled
      */
@@ -1208,6 +1211,28 @@ public final class ViewRootImpl implements ViewParent,
                 }
             }
         };
+
+    private BLASTBufferQueue.CornerRadiiCallback mCornerRadiiCallback =
+            new BLASTBufferQueue.CornerRadiiCallback() {
+                @Override
+                public void onCornerRadiiChanged(float[] cornerRadii) {
+                    if (cornerRadii != null && cornerRadii.length == 4) {
+                        CornerRadii newCornerRadii = new CornerRadii();
+                        newCornerRadii.topLeft = cornerRadii[0];
+                        newCornerRadii.topRight = cornerRadii[1];
+                        newCornerRadii.bottomLeft = cornerRadii[2];
+                        newCornerRadii.bottomRight = cornerRadii[3];
+                        if (!mCornerRadii.equals(newCornerRadii)) {
+                            mCornerRadii = newCornerRadii;
+                            invalidate();
+                        }
+                    } else {
+                        Log.wtf(TAG, "Corner radii received is null or invalid"
+                                + (cornerRadii == null ? "null" : "length " + cornerRadii.length));
+                    }
+                }
+            };
+
     private final Rect mChildBoundingInsets = new Rect();
     private boolean mChildBoundingInsetsChanged = false;
 
@@ -2826,6 +2851,7 @@ public final class ViewRootImpl implements ViewParent,
                 mWindowAttributes.format);
         mBlastBufferQueue.setTransactionHangCallback(sTransactionHangCallback);
         mBlastBufferQueue.setWaitForBufferReleaseCallback(mChoreographer::onWaitForBufferRelease);
+        mBlastBufferQueue.setCornerRadiiCallback(mCornerRadiiCallback);
         Surface blastSurface;
         if (addSchandleToVriSurface()) {
             blastSurface = mBlastBufferQueue.createSurfaceWithHandle();
@@ -4142,6 +4168,16 @@ public final class ViewRootImpl implements ViewParent,
                     threadedRenderer.setup(mWidth, mHeight, mAttachInfo,
                             mWindowAttributes.surfaceInsets);
                     mNeedsRendererSetup = false;
+                }
+
+                if (setClientDrawnCornerRadii() && !mCornerRadii.isEmpty()
+                                            && mSurfaceControl.isValid()) {
+                    applyTransactionOnDraw(mTransaction
+                            .setClientDrawnCornerRadius(mSurfaceControl, mCornerRadii.topLeft,
+                            mCornerRadii.topRight, mCornerRadii.bottomLeft,
+                            mCornerRadii.bottomRight,
+                            threadedRenderer.getRoundedClipBounds()));
+                    threadedRenderer.setCornerRadius(mCornerRadii);
                 }
             }
 
@@ -9757,7 +9793,8 @@ public final class ViewRootImpl implements ViewParent,
                 && params.surfaceInsets.bottom == 0
                 // Don't make surface opaque when resizing to reduce the amount of
                 // artifacts shown in areas the app isn't drawing content to.
-                && !dragResizing) {
+                && !dragResizing
+                && mCornerRadii.isEmpty()) {
             opaque = true;
         }
 
@@ -10148,6 +10185,35 @@ public final class ViewRootImpl implements ViewParent,
             viewCount += other.viewCount;
             renderNodeMemoryUsage += other.renderNodeMemoryUsage;
             renderNodeMemoryAllocated += other.renderNodeMemoryAllocated;
+        }
+    }
+
+    static final class CornerRadii {
+        public float topLeft;
+        public float topRight;
+        public float bottomRight;
+        public float bottomLeft;
+
+        boolean isEmpty() {
+            return topLeft == 0 && topRight == 0
+                    && bottomRight == 0 && bottomLeft == 0;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof CornerRadii)) {
+                return false;
+            }
+            CornerRadii cr = (CornerRadii) o;
+            return topLeft == cr.topLeft &&
+                   topRight == cr.topRight &&
+                   bottomRight == cr.bottomRight &&
+                   bottomLeft == cr.bottomLeft;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(topLeft, topRight, bottomRight, bottomLeft);
         }
     }
 

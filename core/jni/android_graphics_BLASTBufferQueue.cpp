@@ -20,6 +20,7 @@
 #include <android_runtime/android_view_Surface.h>
 #include <android_util_Binder.h>
 #include <gui/BLASTBufferQueue.h>
+#include <gui/CornerRadii.h>
 #include <gui/Surface.h>
 #include <gui/SurfaceComposerClient.h>
 #include <nativehelper/JNIHelp.h>
@@ -119,6 +120,52 @@ public:
 private:
     JavaVM* mVm;
     jobject mWaitForBufferReleaseObject;
+};
+
+struct {
+    jmethodID onCornerRadiiChanged;
+} gCornerRadiiCallback;
+
+class CornerRadiiCallbackWrapper : public LightRefBase<CornerRadiiCallbackWrapper> {
+public:
+    explicit CornerRadiiCallbackWrapper(JNIEnv* env, jobject jobject) {
+        env->GetJavaVM(&mVm);
+        mCornerRadiiCallbackObject = env->NewGlobalRef(jobject);
+        LOG_ALWAYS_FATAL_IF(!mCornerRadiiCallbackObject, "Failed to make global ref");
+    }
+
+    ~CornerRadiiCallbackWrapper() {
+        if (mCornerRadiiCallbackObject != nullptr) {
+            getenv(mVm)->DeleteGlobalRef(mCornerRadiiCallbackObject);
+            mCornerRadiiCallbackObject = nullptr;
+        }
+    }
+
+    void onCornerRadiiChanged(const gui::CornerRadii cornerRadii) {
+        JNIEnv* env = getenv(mVm);
+        ScopedLocalRef<jfloatArray> javaCornerRadiiArray(env, env->NewFloatArray(4));
+        if (javaCornerRadiiArray == nullptr) {
+            ALOGE("Failed to create new Java float array for cornerRadii");
+            return;
+        }
+
+        jfloat tempCornerRadii[4];
+        tempCornerRadii[0] = cornerRadii.topLeft.x;
+        tempCornerRadii[1] = cornerRadii.topRight.x;
+        tempCornerRadii[2] = cornerRadii.bottomLeft.x;
+        tempCornerRadii[3] = cornerRadii.bottomRight.x;
+
+        env->SetFloatArrayRegion(javaCornerRadiiArray.get(), 0, 4, tempCornerRadii);
+        getenv(mVm)->CallVoidMethod(mCornerRadiiCallbackObject,
+                                    gCornerRadiiCallback.onCornerRadiiChanged,
+                                    javaCornerRadiiArray.get());
+
+        DieIfException(env, "Uncaught exception in CornerRadiiCallback.");
+    }
+
+private:
+    JavaVM* mVm;
+    jobject mCornerRadiiCallbackObject;
 };
 
 static jlong nativeCreate(JNIEnv* env, jclass clazz, jstring jName,
@@ -251,6 +298,19 @@ static void nativeSetApplyToken(JNIEnv* env, jclass clazz, jlong ptr, jobject ap
     return queue->setApplyToken(std::move(token));
 }
 
+static void nativeSetCornerRadiiCallback(JNIEnv* env, jclass clazz, jlong ptr,
+                                         jobject cornerRadiiCallback) {
+    auto queue = reinterpret_cast<BLASTBufferQueue*>(ptr);
+    if (cornerRadiiCallback == nullptr) {
+        queue->setCornerRadiiCallback(nullptr);
+    } else {
+        auto wrapper = sp<CornerRadiiCallbackWrapper>::make(env, cornerRadiiCallback);
+        queue->setCornerRadiiCallback([wrapper](const gui::CornerRadii cornerRadii) {
+            wrapper->onCornerRadiiChanged(cornerRadii);
+        });
+    }
+}
+
 static void nativeSetWaitForBufferReleaseCallback(JNIEnv* env, jclass clazz, jlong ptr,
                                                   jobject waitForBufferReleaseCallback) {
     auto queue = reinterpret_cast<BLASTBufferQueue*>(ptr);
@@ -287,6 +347,9 @@ static const JNINativeMethod gMethods[] = {
         {"nativeSetWaitForBufferReleaseCallback",
          "(JLandroid/graphics/BLASTBufferQueue$WaitForBufferReleaseCallback;)V",
          (void*)nativeSetWaitForBufferReleaseCallback},
+        {"nativeSetCornerRadiiCallback",
+         "(JLandroid/graphics/BLASTBufferQueue$CornerRadiiCallback;)V",
+         (void*)nativeSetCornerRadiiCallback},
         // clang-format on
 };
 
@@ -312,6 +375,10 @@ int register_android_graphics_BLASTBufferQueue(JNIEnv* env) {
             FindClassOrDie(env, "android/graphics/BLASTBufferQueue$WaitForBufferReleaseCallback");
     gWaitForBufferReleaseCallback.onWaitForBufferRelease =
             GetMethodIDOrDie(env, waitForBufferReleaseClass, "onWaitForBufferRelease", "(J)V");
+    jclass cornerRadiiCallbackClass =
+            FindClassOrDie(env, "android/graphics/BLASTBufferQueue$CornerRadiiCallback");
+    gCornerRadiiCallback.onCornerRadiiChanged =
+            GetMethodIDOrDie(env, cornerRadiiCallbackClass, "onCornerRadiiChanged", "([F)V");
 
     return 0;
 }
