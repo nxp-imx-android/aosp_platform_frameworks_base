@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.notification.collection.render
 
-import android.os.Build
-import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
@@ -26,6 +24,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.log.assertLogsWtf
+import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
 import com.android.systemui.statusbar.notification.collection.ListEntry
@@ -36,12 +35,13 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.OnBefo
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager.OnGroupExpansionChangeListener
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.NotificationTestHelper
+import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.withArgCaptor
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assume
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -54,11 +54,11 @@ import org.mockito.Mockito.`when` as whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class GroupExpansionManagerTest : SysuiTestCase() {
-    @get:Rule
-    val setFlagsRule = SetFlagsRule()
+    @get:Rule val setFlagsRule = SetFlagsRule()
 
     private lateinit var underTest: GroupExpansionManagerImpl
 
+    private val kosmos = testKosmos()
     private lateinit var testHelper: NotificationTestHelper
     private val dumpManager: DumpManager = mock()
     private val groupMembershipManager: GroupMembershipManager = mock()
@@ -66,15 +66,14 @@ class GroupExpansionManagerTest : SysuiTestCase() {
     private val pipeline: NotifPipeline = mock()
     private lateinit var beforeRenderListListener: OnBeforeRenderListListener
 
+    private val factory: EntryAdapterFactoryImpl = kosmos.entryAdapterFactory
     private lateinit var summary1: NotificationEntry
     private lateinit var summary2: NotificationEntry
     private lateinit var entries: List<ListEntry>
 
     private fun notificationEntry(pkg: String, id: Int, parent: ExpandableNotificationRow?) =
         NotificationEntryBuilder().setPkg(pkg).setId(id).build().apply {
-            row = testHelper.createRow().apply {
-                setIsChildInGroup(true, parent)
-            }
+            row = testHelper.createRow().apply { setIsChildInGroup(true, parent) }
         }
 
     @Before
@@ -91,7 +90,7 @@ class GroupExpansionManagerTest : SysuiTestCase() {
                         listOf(
                             notificationEntry("foo", 2, summary1.row),
                             notificationEntry("foo", 3, summary1.row),
-                            notificationEntry("foo", 4, summary1.row)
+                            notificationEntry("foo", 4, summary1.row),
                         )
                     )
                     .build(),
@@ -101,11 +100,11 @@ class GroupExpansionManagerTest : SysuiTestCase() {
                         listOf(
                             notificationEntry("bar", 2, summary2.row),
                             notificationEntry("bar", 3, summary2.row),
-                            notificationEntry("bar", 4, summary2.row)
+                            notificationEntry("bar", 4, summary2.row),
                         )
                     )
                     .build(),
-                notificationEntry("baz", 1, null)
+                notificationEntry("baz", 1, null),
             )
 
         whenever(groupMembershipManager.getGroupSummary(summary1)).thenReturn(summary1)
@@ -135,18 +134,20 @@ class GroupExpansionManagerTest : SysuiTestCase() {
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun notifyOnlyOnChange_withEntryAdapter() {
+        val entryAdapter1 = factory.create(summary1)
+        val entryAdapter2 = factory.create(summary2)
         var listenerCalledCount = 0
         underTest.registerGroupExpansionChangeListener { _, _ -> listenerCalledCount++ }
 
-        underTest.setGroupExpanded(summary1.entryAdapter, false)
+        underTest.setGroupExpanded(entryAdapter1, false)
         assertThat(listenerCalledCount).isEqualTo(0)
-        underTest.setGroupExpanded(summary1.entryAdapter, true)
+        underTest.setGroupExpanded(entryAdapter1, true)
         assertThat(listenerCalledCount).isEqualTo(1)
-        underTest.setGroupExpanded(summary2.entryAdapter, true)
+        underTest.setGroupExpanded(entryAdapter2, true)
         assertThat(listenerCalledCount).isEqualTo(2)
-        underTest.setGroupExpanded(summary1.entryAdapter, true)
+        underTest.setGroupExpanded(entryAdapter1, true)
         assertThat(listenerCalledCount).isEqualTo(2)
-        underTest.setGroupExpanded(summary2.entryAdapter, false)
+        underTest.setGroupExpanded(entryAdapter2, false)
         assertThat(listenerCalledCount).isEqualTo(3)
     }
 
@@ -168,16 +169,17 @@ class GroupExpansionManagerTest : SysuiTestCase() {
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun expandUnattachedEntryAdapter() {
+        val entryAdapter = factory.create(summary1)
         // First, expand the entry when it is attached.
-        underTest.setGroupExpanded(summary1.entryAdapter, true)
-        assertThat(underTest.isGroupExpanded(summary1.entryAdapter)).isTrue()
+        underTest.setGroupExpanded(entryAdapter, true)
+        assertThat(underTest.isGroupExpanded(entryAdapter)).isTrue()
 
         // Un-attach it, and un-expand it.
         NotificationEntryBuilder.setNewParent(summary1, null)
-        underTest.setGroupExpanded(summary1.entryAdapter, false)
+        underTest.setGroupExpanded(entryAdapter, false)
 
         // Expanding again should throw.
-        assertLogsWtf { underTest.setGroupExpanded(summary1.entryAdapter, true) }
+        assertLogsWtf { underTest.setGroupExpanded(entryAdapter, true) }
     }
 
     @Test
@@ -207,6 +209,7 @@ class GroupExpansionManagerTest : SysuiTestCase() {
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun syncWithPipeline_withEntryAdapter() {
+        val entryAdapter = factory.create(summary1)
         underTest.attach(pipeline)
         beforeRenderListListener = withArgCaptor {
             verify(pipeline).addOnBeforeRenderListListener(capture())
@@ -219,7 +222,7 @@ class GroupExpansionManagerTest : SysuiTestCase() {
         verify(listener, never()).onGroupExpansionChange(any(), any())
 
         // Expand one of the groups.
-        underTest.setGroupExpanded(summary1.entryAdapter, true)
+        underTest.setGroupExpanded(entryAdapter, true)
         verify(listener).onGroupExpansionChange(summary1.row, true)
 
         // Empty the pipeline list and verify that the group is no longer expanded.
@@ -231,11 +234,15 @@ class GroupExpansionManagerTest : SysuiTestCase() {
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isGroupExpanded() {
-        underTest.setGroupExpanded(summary1.entryAdapter, true)
+        val entryAdapter = summary1.row.entryAdapter
+        underTest.setGroupExpanded(entryAdapter, true)
 
-        assertThat(underTest.isGroupExpanded(summary1.entryAdapter)).isTrue();
-        assertThat(underTest.isGroupExpanded(
-            (entries[0] as? GroupEntry)?.getChildren()?.get(0)?.entryAdapter))
-            .isTrue();
+        assertThat(underTest.isGroupExpanded(entryAdapter)).isTrue()
+        assertThat(
+                underTest.isGroupExpanded(
+                    (entries[0] as? GroupEntry)?.getChildren()?.get(0)?.row?.entryAdapter
+                )
+            )
+            .isTrue()
     }
 }
