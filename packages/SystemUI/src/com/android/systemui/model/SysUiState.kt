@@ -16,7 +16,6 @@
 package com.android.systemui.model
 
 import android.util.Log
-import android.view.Display
 import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.data.repository.PerDisplayInstanceProviderWithTeardown
@@ -64,14 +63,9 @@ interface SysUiState : Dumpable {
 
     /** Callback to be notified whenever system UI state flags are changed. */
     interface SysUiStateCallback {
-        /** To be called when any SysUiStateFlag gets updated **for the default display** */
-        fun onSystemUiStateChanged(@SystemUiStateFlags sysUiFlags: Long)
 
         /** To be called when any SysUiStateFlag gets updated for a specific [displayId]. */
-        fun onSystemUiStateChangedForDisplay(
-            @SystemUiStateFlags sysUiFlags: Long,
-            displayId: Int,
-        ) {}
+        fun onSystemUiStateChanged(@SystemUiStateFlags sysUiFlags: Long, displayId: Int)
     }
 
     /**
@@ -85,6 +79,8 @@ interface SysUiState : Dumpable {
         const val DEBUG: Boolean = false
     }
 }
+
+private const val TAG = "SysUIState"
 
 class SysUiStateImpl
 @AssistedInject
@@ -117,7 +113,7 @@ constructor(
      */
     override fun addCallback(callback: SysUiStateCallback) {
         callbacks.add(callback)
-        callback.onSystemUiStateChanged(flags)
+        callback.onSystemUiStateChanged(flags, displayId)
     }
 
     /** Callback will no longer receive events on state change */
@@ -182,13 +178,7 @@ constructor(
         }
         if (newFlags != oldFlags) {
             callbacks.forEach { callback: SysUiStateCallback ->
-                if (displayId == Display.DEFAULT_DISPLAY) {
-                    callback.onSystemUiStateChanged(newFlags)
-                }
-                callback.onSystemUiStateChangedForDisplay(
-                    sysUiFlags = newFlags,
-                    displayId = displayId,
-                )
+                callback.onSystemUiStateChanged(newFlags, displayId)
             }
 
             _flags = newFlags

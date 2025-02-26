@@ -461,7 +461,7 @@ public class BubblesTest extends SysuiTestCase {
         when(mZenModeController.getConfig()).thenReturn(mZenModeConfig);
 
         mSysUiState = mKosmos.getSysuiState();
-        mSysUiState.addCallback(sysUiFlags -> {
+        mSysUiState.addCallback((sysUiFlags, displayId) -> {
             mSysUiStateBubblesManageMenuExpanded =
                     (sysUiFlags
                             & QuickStepContract.SYSUI_STATE_BUBBLES_MANAGE_MENU_EXPANDED) != 0;

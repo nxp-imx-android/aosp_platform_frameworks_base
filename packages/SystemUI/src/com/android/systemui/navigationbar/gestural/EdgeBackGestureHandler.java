@@ -355,11 +355,12 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
 
     private final SysUiState.SysUiStateCallback mSysUiStateCallback =
             new SysUiState.SysUiStateCallback() {
-        @Override
-        public void onSystemUiStateChanged(@SystemUiStateFlags long sysUiFlags) {
-            mSysUiFlags = sysUiFlags;
-        }
-    };
+                @Override
+                public void onSystemUiStateChanged(@SystemUiStateFlags long sysUiFlags,
+                        int displayId) {
+                    mSysUiFlags = sysUiFlags;
+                }
+            };
 
     private final Consumer<Boolean> mOnIsInPipStateChangedListener =
             (isInPip) -> mIsInPip = isInPip;
