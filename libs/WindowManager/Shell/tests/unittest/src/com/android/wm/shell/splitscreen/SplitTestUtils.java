@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.splitscreen;
 
+import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
+
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -58,6 +60,7 @@ public class SplitTestUtils {
         doReturn(leash).when(out).getDividerLeash();
         doReturn(bounds1).when(out).getTopLeftBounds();
         doReturn(bounds2).when(out).getBottomRightBounds();
+        doReturn(SNAP_TO_2_50_50).when(out).calculateCurrentSnapPosition();
         return out;
     }
 
