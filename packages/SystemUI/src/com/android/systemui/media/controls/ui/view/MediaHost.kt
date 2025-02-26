@@ -208,6 +208,7 @@ class MediaHost(
      * the visibility has changed
      */
     fun updateViewVisibility() {
+        val oldState = state.visible
         state.visible =
             if (mediaCarouselController.isLockedAndHidden()) {
                 false
@@ -217,9 +218,9 @@ class MediaHost(
                 mediaDataManager.hasAnyMediaOrRecommendation()
             }
         val newVisibility = if (visible) View.VISIBLE else View.GONE
-        if (newVisibility != hostView.visibility) {
+        if (oldState != state.visible || newVisibility != hostView.visibility) {
             hostView.visibility = newVisibility
-            debugLogger.logMediaHostVisibility(location, visible)
+            debugLogger.logMediaHostVisibility(location, visible, oldState)
             visibleChangedListeners.forEach { it.invoke(visible) }
         }
     }

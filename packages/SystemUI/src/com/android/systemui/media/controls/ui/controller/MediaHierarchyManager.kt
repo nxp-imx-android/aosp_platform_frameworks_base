@@ -1129,10 +1129,11 @@ constructor(
         traceSection("MediaHierarchyManager#updateHostAttachment") {
             if (SceneContainerFlag.isEnabled) {
                 // No need to manage transition states - just update the desired location directly
-                logger.logMediaHostAttachment(desiredLocation)
+                val host = getHost(desiredLocation)
+                logger.logMediaHostAttachment(desiredLocation, host?.visible)
                 mediaCarouselController.onDesiredLocationChanged(
                     desiredLocation = desiredLocation,
-                    desiredHostState = getHost(desiredLocation),
+                    desiredHostState = host,
                     animate = false,
                 )
                 return
@@ -1169,7 +1170,8 @@ constructor(
                     // that and directly set the mediaFrame's bounds within the premeasured host.
                     targetHost.addView(mediaFrame)
                 }
-                logger.logMediaHostAttachment(currentAttachmentLocation)
+                val host = getHost(currentAttachmentLocation)
+                logger.logMediaHostAttachment(currentAttachmentLocation, host?.visible)
                 if (isCrossFadeAnimatorRunning) {
                     // When cross-fading with an animation, we only notify the media carousel of the
                     // location change, once the view is reattached to the new place and not
@@ -1313,6 +1315,7 @@ constructor(
                 isHomeScreenShadeVisibleToUser() ||
                 isGlanceableHubVisibleToUser()
         val mediaVisible = qsExpanded || hasActiveMediaOrRecommendation
+        logger.logUserVisibilityChange(shadeVisible, mediaVisible)
         mediaCarouselController.mediaCarouselScrollHandler.visibleToUser =
             shadeVisible && mediaVisible
     }
