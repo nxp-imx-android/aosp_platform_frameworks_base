@@ -20,8 +20,8 @@ import static android.app.Flags.notificationsRedesignTemplates;
 import static android.app.Notification.Action.SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
 
-import static com.android.systemui.Flags.notificationsPinnedHunInShade;
 import static com.android.systemui.Flags.notificationRowTransparency;
+import static com.android.systemui.Flags.notificationsPinnedHunInShade;
 import static com.android.systemui.flags.Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE;
 import static com.android.systemui.statusbar.notification.NotificationUtils.logKey;
 import static com.android.systemui.statusbar.notification.collection.NotificationEntry.DismissState.PARENT_DISMISSED;
@@ -1678,14 +1678,15 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (view != null) {
             view.setBackgroundTintColor(color);
         }
-        if (notificationRowTransparency()
-                && (mBackgroundNormal != null)) {
+        if (notificationRowTransparency() && mBackgroundNormal != null) {
             if (NotificationBundleUi.isEnabled()) {
-                mBackgroundNormal.setBgIsColorized(mEntryAdapter.isColorized());
+                mBackgroundNormal.setBgIsColorized(
+                        usesTransparentBackground() && mEntryAdapter.isColorized());
             } else {
                 if (mEntry != null) {
                     mBackgroundNormal.setBgIsColorized(
-                            mEntry.getSbn().getNotification().isColorized());
+                            usesTransparentBackground()
+                                    && mEntry.getSbn().getNotification().isColorized());
                 }
             }
         }
