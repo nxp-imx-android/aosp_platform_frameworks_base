@@ -42,19 +42,11 @@ import com.android.internal.R;
  */
 public class MediaRouteControllerDialog extends AlertDialog implements
         MediaRouteControllerContentManager.Delegate {
-    // TODO(b/360050020): Eventually these 2 variables should be in the content manager instead of
-    //  here. So these should be removed when the migration is completed.
-    private final MediaRouter mRouter;
-    private final MediaRouter.RouteInfo mRoute;
-
     private final MediaRouteControllerContentManager mContentManager;
 
     public MediaRouteControllerDialog(Context context, int theme) {
         super(context, theme);
-
         mContentManager = new MediaRouteControllerContentManager(context, this);
-        mRouter = (MediaRouter) context.getSystemService(Context.MEDIA_ROUTER_SERVICE);
-        mRoute = mRouter.getSelectedRoute();
     }
 
     @Override
@@ -91,7 +83,8 @@ public class MediaRouteControllerDialog extends AlertDialog implements
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
                 || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            mRoute.requestUpdateVolume(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ? -1 : 1);
+            mContentManager.requestUpdateRouteVolume(
+                    keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ? -1 : 1);
             return true;
         }
         return super.onKeyDown(keyCode, event);
