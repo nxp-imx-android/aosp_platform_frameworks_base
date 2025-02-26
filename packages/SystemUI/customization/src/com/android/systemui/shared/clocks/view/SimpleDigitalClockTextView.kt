@@ -31,6 +31,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.util.MathUtils.lerp
 import android.util.TypedValue
+import android.view.View
 import android.view.View.MeasureSpec.EXACTLY
 import android.view.animation.Interpolator
 import android.view.animation.PathInterpolator
@@ -74,14 +75,38 @@ private fun Paint.getTextBounds(text: CharSequence, result: RectF = RectF()): Re
 enum class VerticalAlignment {
     TOP,
     BOTTOM,
-    BASELINE, // default
+    BASELINE,
     CENTER,
 }
 
 enum class HorizontalAlignment {
+    LEFT {
+        override fun resolveXAlignment(view: View) = XAlignment.LEFT
+    },
+    RIGHT {
+        override fun resolveXAlignment(view: View) = XAlignment.RIGHT
+    },
+    START {
+        override fun resolveXAlignment(view: View): XAlignment {
+            return if (view.isLayoutRtl()) XAlignment.RIGHT else XAlignment.LEFT
+        }
+    },
+    END {
+        override fun resolveXAlignment(view: View): XAlignment {
+            return if (view.isLayoutRtl()) XAlignment.LEFT else XAlignment.RIGHT
+        }
+    },
+    CENTER {
+        override fun resolveXAlignment(view: View) = XAlignment.CENTER
+    };
+
+    abstract fun resolveXAlignment(view: View): XAlignment
+}
+
+enum class XAlignment {
     LEFT,
     RIGHT,
-    CENTER, // default
+    CENTER,
 }
 
 @SuppressLint("AppCompatCustomView")
@@ -155,7 +180,11 @@ open class SimpleDigitalClockTextView(
     }
 
     var verticalAlignment: VerticalAlignment = VerticalAlignment.BASELINE
-    var horizontalAlignment: HorizontalAlignment = HorizontalAlignment.LEFT
+    var horizontalAlignment: HorizontalAlignment = HorizontalAlignment.CENTER
+
+    val xAlignment: XAlignment
+        get() = horizontalAlignment.resolveXAlignment(this)
+
     var isAnimationEnabled = true
     var dozeFraction: Float = 0f
         set(value) {
@@ -257,6 +286,7 @@ open class SimpleDigitalClockTextView(
         canvas.use {
             digitTranslateAnimator?.apply { canvas.translate(currentTranslation) }
             canvas.translate(getDrawTranslation(interpBounds))
+            if (isLayoutRtl()) canvas.translate(interpBounds.width() - textBounds.width(), 0f)
             textAnimator.draw(canvas)
         }
     }
@@ -457,16 +487,16 @@ open class SimpleDigitalClockTextView(
     private fun setInterpolatedLocation(measureSize: VPointF): RectF {
         val targetRect = RectF()
         targetRect.apply {
-            when (horizontalAlignment) {
-                HorizontalAlignment.LEFT -> {
+            when (xAlignment) {
+                XAlignment.LEFT -> {
                     left = layoutBounds.left
                     right = layoutBounds.left + measureSize.x
                 }
-                HorizontalAlignment.CENTER -> {
+                XAlignment.CENTER -> {
                     left = layoutBounds.centerX() - measureSize.x / 2f
                     right = layoutBounds.centerX() + measureSize.x / 2f
                 }
-                HorizontalAlignment.RIGHT -> {
+                XAlignment.RIGHT -> {
                     left = layoutBounds.right - measureSize.x
                     right = layoutBounds.right
                 }
@@ -506,10 +536,10 @@ open class SimpleDigitalClockTextView(
         val sizeDiff = this.measuredSize - interpBounds.size
         val alignment =
             VPointF(
-                when (horizontalAlignment) {
-                    HorizontalAlignment.LEFT -> 0f
-                    HorizontalAlignment.CENTER -> 0.5f
-                    HorizontalAlignment.RIGHT -> 1f
+                when (xAlignment) {
+                    XAlignment.LEFT -> 0f
+                    XAlignment.CENTER -> 0.5f
+                    XAlignment.RIGHT -> 1f
                 },
                 when (verticalAlignment) {
                     VerticalAlignment.TOP -> 0f

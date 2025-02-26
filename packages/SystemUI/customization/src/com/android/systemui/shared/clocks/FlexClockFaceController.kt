@@ -247,7 +247,7 @@ class FlexClockFaceController(clockCtx: ClockContext, private val isLargeClock: 
                 timespec = DigitalTimespec.TIME_FULL_FORMAT,
                 style = FontTextStyle(fontSizeScale = 0.98f),
                 aodStyle = FontTextStyle(),
-                alignment = DigitalAlignment(HorizontalAlignment.LEFT, VerticalAlignment.CENTER),
+                alignment = DigitalAlignment(HorizontalAlignment.START, VerticalAlignment.CENTER),
                 dateTimeFormat = "h:mm",
             )
     }
