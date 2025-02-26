@@ -1169,43 +1169,15 @@ class DesktopTasksController(
             return
         }
 
+        if (splitScreenController.isTaskInSplitScreen(task.taskId)) {
+            moveSplitPairToDisplay(task, displayId)
+            return
+        }
+
         val wct = WindowContainerTransaction()
         val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
         if (displayAreaInfo == null) {
             logW("moveToDisplay: display not found")
-            return
-        }
-
-        // check if the task is part of splitscreen
-        if (
-            Flags.enableNonDefaultDisplaySplit() &&
-                Flags.enableMoveToNextDisplayShortcut() &&
-                splitScreenController.isTaskInSplitScreen(task.taskId)
-        ) {
-            val activeDeskId = taskRepository.getActiveDeskId(displayId)
-            logV("moveToDisplay: moving split root to displayId=%d", displayId)
-            val stageCoordinatorRootTaskToken =
-                splitScreenController.multiDisplayProvider.getDisplayRootForDisplayId(
-                    DEFAULT_DISPLAY
-                )
-            wct.reparent(stageCoordinatorRootTaskToken, displayAreaInfo.token, true /* onTop */)
-            val deactivationRunnable =
-                if (activeDeskId != null) {
-                    // Split is being placed on top of an existing desk in the target display. Make
-                    // sure it is cleaned up.
-                    performDesktopExitCleanUp(
-                        wct = wct,
-                        deskId = activeDeskId,
-                        displayId = displayId,
-                        willExitDesktop = true,
-                        shouldEndUpAtHome = false,
-                    )
-                } else {
-                    null
-                }
-            val transition =
-                transitions.startTransition(TRANSIT_CHANGE, wct, moveToDisplayTransitionHandler)
-            deactivationRunnable?.invoke(transition)
             return
         }
 
@@ -1267,6 +1239,53 @@ class DesktopTasksController(
             transitions.startTransition(TRANSIT_CHANGE, wct, moveToDisplayTransitionHandler)
         deactivationRunnable?.invoke(transition)
         activationRunnable?.invoke(transition)
+    }
+
+    /**
+     * Move split pair associated with the [task] to display with [displayId].
+     *
+     * No-op if task is already on that display per [RunningTaskInfo.displayId].
+     */
+    private fun moveSplitPairToDisplay(task: RunningTaskInfo, displayId: Int) {
+        if (!splitScreenController.isTaskInSplitScreen(task.taskId)) {
+            return
+        }
+
+        if (!Flags.enableNonDefaultDisplaySplit() || !Flags.enableMoveToNextDisplayShortcut()) {
+            return
+        }
+
+        val wct = WindowContainerTransaction()
+        val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
+        if (displayAreaInfo == null) {
+            logW("moveSplitPairToDisplay: display not found")
+            return
+        }
+
+        val activeDeskId = taskRepository.getActiveDeskId(displayId)
+        logV("moveSplitPairToDisplay: moving split root to displayId=%d", displayId)
+
+        val stageCoordinatorRootTaskToken =
+            splitScreenController.multiDisplayProvider.getDisplayRootForDisplayId(DEFAULT_DISPLAY)
+        wct.reparent(stageCoordinatorRootTaskToken, displayAreaInfo.token, true /* onTop */)
+
+        val deactivationRunnable =
+            if (activeDeskId != null) {
+                // Split is being placed on top of an existing desk in the target display. Make
+                // sure it is cleaned up.
+                performDesktopExitCleanUp(
+                    wct = wct,
+                    deskId = activeDeskId,
+                    displayId = displayId,
+                    willExitDesktop = true,
+                    shouldEndUpAtHome = false,
+                )
+            } else {
+                null
+            }
+        val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+        deactivationRunnable?.invoke(transition)
+        return
     }
 
     /**
