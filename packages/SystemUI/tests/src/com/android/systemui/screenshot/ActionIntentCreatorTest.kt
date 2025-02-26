@@ -35,6 +35,10 @@ import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import kotlinx.coroutines.test.TestCoroutineScheduler
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
@@ -43,9 +47,13 @@ import org.mockito.Mockito.`when` as whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class ActionIntentCreatorTest : SysuiTestCase() {
+    private val scheduler = TestCoroutineScheduler()
+    private val mainDispatcher = UnconfinedTestDispatcher(scheduler)
+    private val testScope = TestScope(mainDispatcher)
     val context = mock<Context>()
     val packageManager = mock<PackageManager>()
-    private val actionIntentCreator = ActionIntentCreator(context, packageManager)
+    private val actionIntentCreator =
+        ActionIntentCreator(context, packageManager, testScope.backgroundScope, mainDispatcher)
 
     @Test
     fun testCreateShare() {
@@ -132,7 +140,7 @@ class ActionIntentCreatorTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
-    fun testCreateEditLegacy() {
+    fun testCreateEditLegacy() = runTest {
         val uri = Uri.parse("content://fake")
 
         whenever(context.getString(eq(R.string.config_screenshotEditor))).thenReturn("")
@@ -155,7 +163,7 @@ class ActionIntentCreatorTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
-    fun testCreateEditLegacy_embeddedUserIdRemoved() {
+    fun testCreateEditLegacy_embeddedUserIdRemoved() = runTest {
         val uri = Uri.parse("content://555@fake")
         whenever(context.getString(eq(R.string.config_screenshotEditor))).thenReturn("")
 
@@ -166,7 +174,7 @@ class ActionIntentCreatorTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
-    fun testCreateEditLegacy_withEditor() {
+    fun testCreateEditLegacy_withEditor() = runTest {
         val uri = Uri.parse("content://fake")
         val component = ComponentName("com.android.foo", "com.android.foo.Something")
 
@@ -180,7 +188,7 @@ class ActionIntentCreatorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
-    fun testCreateEdit() {
+    fun testCreateEdit() = runTest {
         val uri = Uri.parse("content://fake")
 
         whenever(context.getString(eq(R.string.config_screenshotEditor))).thenReturn("")
@@ -203,7 +211,7 @@ class ActionIntentCreatorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
-    fun testCreateEdit_embeddedUserIdRemoved() {
+    fun testCreateEdit_embeddedUserIdRemoved() = runTest {
         val uri = Uri.parse("content://555@fake")
         whenever(context.getString(eq(R.string.config_screenshotEditor))).thenReturn("")
 
@@ -214,7 +222,7 @@ class ActionIntentCreatorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
-    fun testCreateEdit_withPreferredEditorEnabled() {
+    fun testCreateEdit_withPreferredEditorEnabled() = runTest {
         val uri = Uri.parse("content://fake")
         val fallbackComponent = ComponentName("com.android.foo", "com.android.foo.Something")
         val preferredComponent = ComponentName("com.android.bar", "com.android.bar.Something")
@@ -243,7 +251,7 @@ class ActionIntentCreatorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
-    fun testCreateEdit_withPreferredEditorDisabled() {
+    fun testCreateEdit_withPreferredEditorDisabled() = runTest {
         val uri = Uri.parse("content://fake")
         val fallbackComponent = ComponentName("com.android.foo", "com.android.foo.Something")
         val preferredComponent = ComponentName("com.android.bar", "com.android.bar.Something")
@@ -266,7 +274,7 @@ class ActionIntentCreatorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
-    fun testCreateEdit_withFallbackEditor() {
+    fun testCreateEdit_withFallbackEditor() = runTest {
         val uri = Uri.parse("content://fake")
         val component = ComponentName("com.android.foo", "com.android.foo.Something")
 
