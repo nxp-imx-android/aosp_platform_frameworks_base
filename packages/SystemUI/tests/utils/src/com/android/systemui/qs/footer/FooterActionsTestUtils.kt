@@ -58,7 +58,7 @@ import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.settings.FakeGlobalSettings
 import com.android.systemui.util.settings.GlobalSettings
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
 
@@ -94,7 +94,7 @@ class FooterActionsTestUtils(
         return createFooterActionsViewModel(
             context,
             footerActionsInteractor,
-            flowOf(shadeMode),
+            MutableStateFlow(shadeMode),
             falsingManager,
             globalActionsDialogLite,
             mockActivityStarter,
