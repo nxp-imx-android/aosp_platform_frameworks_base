@@ -20,7 +20,6 @@ import android.app.Notification.MediaStyle
 import android.media.session.MediaSession
 import android.platform.test.flag.junit.FlagsParameterization
 import android.provider.Settings
-import android.service.notification.StatusBarNotification
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.dumpManager
@@ -222,16 +221,19 @@ class OriginalUnseenKeyguardCoordinatorTest(flags: FlagsParameterization) : Sysu
                         mock<ExpandableNotificationRow>().apply {
                             whenever(isMediaRow).thenReturn(true)
                         }
-                    sbn = SbnBuilder().setNotification(
-                        Notification.Builder(context, "channel").setStyle(
-                            MediaStyle().setMediaSession(
-                                MediaSession(
-                                    context,
-                                    "tag"
-                                ).sessionToken
+                    sbn =
+                        SbnBuilder()
+                            .setNotification(
+                                Notification.Builder(context, "channel")
+                                    .setStyle(
+                                        MediaStyle()
+                                            .setMediaSession(
+                                                MediaSession(context, "tag").sessionToken
+                                            )
+                                    )
+                                    .build()
                             )
-                        ).build()
-                    ).build()
+                            .build()
                 }
             collectionListener.onEntryAdded(fakeEntry)
 
