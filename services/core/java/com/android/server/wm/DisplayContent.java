@@ -156,7 +156,6 @@ import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELD
 import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFields;
 import static com.android.server.wm.utils.RegionUtils.forEachRectReverse;
 import static com.android.server.wm.utils.RegionUtils.rectListToRegion;
-import static com.android.window.flags.Flags.enablePersistingDensityScaleForConnectedDisplays;
 import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 
 import android.annotation.IntDef;
@@ -237,6 +236,7 @@ import android.view.WindowManager;
 import android.view.WindowManager.DisplayImePolicy;
 import android.view.WindowManagerPolicyConstants.PointerEventListener;
 import android.view.inputmethod.ImeTracker;
+import android.window.DesktopExperienceFlags;
 import android.window.DisplayWindowPolicyController;
 import android.window.IDisplayAreaOrganizer;
 import android.window.ScreenCapture;
@@ -3154,7 +3154,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
         }
         // Update the base density if there is a forced density ratio.
-        if (enablePersistingDensityScaleForConnectedDisplays()
+        if (DesktopExperienceFlags.ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS.isTrue()
                 && mIsDensityForced && mExternalDisplayForcedDensityRatio != 0.0f) {
             mBaseDisplayDensity = (int)
                     (mInitialDisplayDensity * mExternalDisplayForcedDensityRatio + 0.5);
@@ -3189,7 +3189,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             density = 0;
         }
         // Save the new density ratio to settings for external displays.
-        if (enablePersistingDensityScaleForConnectedDisplays()
+        if (DesktopExperienceFlags.ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS.isTrue()
                 && mDisplayInfo.type == TYPE_EXTERNAL) {
             mExternalDisplayForcedDensityRatio = (float)
                     mBaseDisplayDensity / getInitialDisplayDensity();

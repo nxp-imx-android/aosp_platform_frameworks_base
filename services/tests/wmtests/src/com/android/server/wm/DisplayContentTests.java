@@ -87,7 +87,7 @@ import static com.android.server.wm.TransitionSubject.assertThat;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
-import static com.android.window.flags.Flags.FLAG_ENABLE_PERSISTING_DENSITY_SCALE_FOR_CONNECTED_DISPLAYS;
+import static com.android.window.flags.Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -2921,7 +2921,7 @@ public class DisplayContentTests extends WindowTestsBase {
         assertFalse(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
     }
 
-    @EnableFlags(FLAG_ENABLE_PERSISTING_DENSITY_SCALE_FOR_CONNECTED_DISPLAYS)
+    @EnableFlags(FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testForcedDensityRatioSetForExternalDisplays_persistDensityScaleFlagEnabled() {
         final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
@@ -2951,7 +2951,7 @@ public class DisplayContentTests extends WindowTestsBase {
                 displayContent.mExternalDisplayForcedDensityRatio, 0.01);
     }
 
-    @EnableFlags(FLAG_ENABLE_PERSISTING_DENSITY_SCALE_FOR_CONNECTED_DISPLAYS)
+    @EnableFlags(FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testForcedDensityUpdateForExternalDisplays_persistDensityScaleFlagEnabled() {
         final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
