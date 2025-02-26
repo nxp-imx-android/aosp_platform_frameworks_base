@@ -89,7 +89,6 @@ import kotlin.math.min
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
@@ -381,16 +380,8 @@ object KeyguardRootViewBinder {
                     if (wallpaperFocalAreaViewModel.hasFocalArea.value) {
                         launch {
                             wallpaperFocalAreaViewModel.wallpaperFocalAreaBounds.collect {
-                                wallpaperFocalAreaBounds ->
-                                wallpaperFocalAreaViewModel.setFocalAreaBounds(
-                                    wallpaperFocalAreaBounds
-                                )
+                                wallpaperFocalAreaViewModel.setFocalAreaBounds(it)
                             }
-                        }
-                        launch {
-                            wallpaperFocalAreaViewModel.wallpaperFocalAreaBounds
-                                .filterNotNull()
-                                .collect { wallpaperFocalAreaViewModel.setFocalAreaBounds(it) }
                         }
                     }
                 }

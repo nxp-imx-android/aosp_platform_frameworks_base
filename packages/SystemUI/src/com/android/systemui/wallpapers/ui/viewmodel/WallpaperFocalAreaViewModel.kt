@@ -26,6 +26,7 @@ import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInter
 import javax.inject.Inject
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 
 class WallpaperFocalAreaViewModel
@@ -39,25 +40,31 @@ constructor(
     val wallpaperFocalAreaBounds =
         combine(
                 wallpaperFocalAreaInteractor.wallpaperFocalAreaBounds,
+                keyguardTransitionInteractor.startedKeyguardTransitionStep,
+                // Emit transition state when FINISHED instead of STARTED to avoid race with
+                // wakingup command, causing layout change command not be received.
                 keyguardTransitionInteractor
                     .transition(
                         edge = Edge.create(to = Scenes.Lockscreen),
                         edgeWithoutSceneContainer = Edge.create(to = KeyguardState.LOCKSCREEN),
                     )
-                    .filter { transitionStep ->
-                        // Should not filter by TransitionState.STARTED, it may race with
-                        // wakingup command, causing layout change command not be received.
-                        transitionStep.transitionState == TransitionState.FINISHED
-                    },
-                ::Pair,
+                    .filter { it.transitionState == TransitionState.FINISHED },
+                ::Triple,
             )
-            .map { (bounds, _) -> bounds }
+            .map { (bounds, startedStep, _) ->
+                // Avoid sending wrong bounds when transitioning from LOCKSCREEN to GONE
+                if (
+                    startedStep.to == KeyguardState.LOCKSCREEN &&
+                        startedStep.from != KeyguardState.LOCKSCREEN
+                ) {
+                    bounds
+                } else {
+                    null
+                }
+            }
+            .filterNotNull()
 
     fun setFocalAreaBounds(bounds: RectF) {
         wallpaperFocalAreaInteractor.setFocalAreaBounds(bounds)
-    }
-
-    fun setTapPosition(x: Float, y: Float) {
-        wallpaperFocalAreaInteractor.setTapPosition(x, y)
     }
 }
