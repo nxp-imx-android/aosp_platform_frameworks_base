@@ -22,6 +22,7 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.Flags
 import com.android.systemui.customization.R as customR
 import com.android.systemui.keyguard.shared.model.KeyguardBlueprint
 import com.android.systemui.keyguard.ui.view.layout.blueprints.transitions.IntraBlueprintTransition
@@ -81,7 +82,7 @@ object KeyguardBlueprintViewBinder {
 
                             logger.logConstraintSet(cs, clockViewModel)
                             cs.applyTo(constraintLayout)
-                            if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                                 manuallySetDateWeatherConstraintsOnConstraintLayout(
                                     cs,
                                     constraintLayout,
@@ -110,7 +111,7 @@ object KeyguardBlueprintViewBinder {
                                 }
                             logger.logConstraintSet(cs, clockViewModel)
                             cs.applyTo(constraintLayout)
-                            if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                                 manuallySetDateWeatherConstraintsOnConstraintLayout(
                                     cs,
                                     constraintLayout,
@@ -168,7 +169,7 @@ object KeyguardBlueprintViewBinder {
             str1 = "${cs.getConstraint(smartspaceDateId).propertySet.alpha}"
         }
 
-        if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+        if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
             this.i({ "applyCsToSmartspaceWeather: vis=${getVisText(int1)}; alpha=$str1" }) {
                 val smartspaceDateId = sharedR.id.weather_smartspace_view
                 int1 = cs.getVisibility(smartspaceDateId)

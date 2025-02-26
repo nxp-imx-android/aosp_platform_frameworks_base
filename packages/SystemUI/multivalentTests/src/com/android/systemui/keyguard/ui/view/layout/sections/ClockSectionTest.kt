@@ -130,7 +130,7 @@ class ClockSectionTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testApplyDefaultConstraints_LargeClock_SplitShade() =
         kosmos.testScope.runTest {
             with(kosmos) {
@@ -147,7 +147,7 @@ class ClockSectionTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testApplyDefaultConstraints_LargeClock_SplitShade_ReactiveVariantsOn() =
         kosmos.testScope.runTest {
             with(kosmos) {
@@ -165,7 +165,7 @@ class ClockSectionTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testApplyDefaultConstraints_LargeClock_NonSplitShade() =
         kosmos.testScope.runTest {
             with(kosmos) {
@@ -189,7 +189,7 @@ class ClockSectionTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testApplyDefaultConstraints_LargeClock_NonSplitShade_reactiveVariantsOn() =
         kosmos.testScope.runTest {
             with(kosmos) {
@@ -262,7 +262,7 @@ class ClockSectionTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testApplyDefaultConstraints_SmallClock_SplitShade() =
         kosmos.testScope.runTest {
             with(kosmos) {
@@ -286,7 +286,7 @@ class ClockSectionTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testApplyDefaultConstraints_SmallClock_SplitShade_ReactiveVariantsOn() =
         kosmos.testScope.runTest {
             with(kosmos) {
@@ -311,7 +311,7 @@ class ClockSectionTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testApplyDefaultConstraints_SmallClock_NonSplitShade() =
         kosmos.testScope.runTest {
             with(kosmos) {
@@ -334,7 +334,7 @@ class ClockSectionTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_VARIANTS)
+    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testApplyDefaultConstraints_SmallClock_NonSplitShade_ReactiveVariantsOn() =
         kosmos.testScope.runTest {
             with(kosmos) {

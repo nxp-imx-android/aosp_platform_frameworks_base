@@ -297,14 +297,14 @@ class ClockSizeTransition(
                         logger.e("No large clock set, falling back")
                         addTarget(customR.id.lockscreen_clock_view_large)
                     }
-                if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                     addTarget(sharedR.id.date_smartspace_view_large)
                     addTarget(sharedR.id.weather_smartspace_view_large)
                 }
             } else {
                 logger.i("Adding small clock")
                 addTarget(customR.id.lockscreen_clock_view)
-                if (com.android.systemui.shared.Flags.clockReactiveVariants()) {
+                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                     addTarget(sharedR.id.date_smartspace_view)
                     addTarget(sharedR.id.weather_smartspace_view)
                 }
@@ -386,7 +386,7 @@ class ClockSizeTransition(
             duration =
                 if (isLargeClock) STATUS_AREA_MOVE_UP_MILLIS else STATUS_AREA_MOVE_DOWN_MILLIS
             interpolator = Interpolators.EMPHASIZED
-            if (!com.android.systemui.shared.Flags.clockReactiveVariants()) {
+            if (!com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                 addTarget(sharedR.id.date_smartspace_view)
             }
             addTarget(sharedR.id.bc_smartspace_view)
