@@ -390,27 +390,9 @@ class ShadeHeaderControllerTest : SysuiTestCase() {
     fun testControllersCreatedAndInitialized() {
         verify(variableDateViewController).init()
 
-        verify(batteryMeterViewController).init()
-        verify(batteryMeterViewController).ignoreTunerUpdates()
-
         val inOrder = Mockito.inOrder(mShadeCarrierGroupControllerBuilder)
         inOrder.verify(mShadeCarrierGroupControllerBuilder).setShadeCarrierGroup(carrierGroup)
         inOrder.verify(mShadeCarrierGroupControllerBuilder).build()
-    }
-
-    @Test
-    fun batteryModeControllerCalledWhenQsExpandedFractionChanges() {
-        whenever(qsBatteryModeController.getBatteryMode(Mockito.same(null), eq(0f)))
-            .thenReturn(BatteryMeterView.MODE_ON)
-        whenever(qsBatteryModeController.getBatteryMode(Mockito.same(null), eq(1f)))
-            .thenReturn(BatteryMeterView.MODE_ESTIMATE)
-        shadeHeaderController.qsVisible = true
-
-        val times = 10
-        repeat(times) { shadeHeaderController.qsExpandedFraction = it / (times - 1).toFloat() }
-
-        verify(batteryMeterView).setPercentShowMode(BatteryMeterView.MODE_ON)
-        verify(batteryMeterView).setPercentShowMode(BatteryMeterView.MODE_ESTIMATE)
     }
 
     @Test
