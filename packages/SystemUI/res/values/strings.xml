@@ -1024,6 +1024,12 @@
     <string name="hearing_devices_ambient_control_left">Left</string>
     <!-- QuickSettings: The text to show the control is for right side device. [CHAR LIMIT=30] -->
     <string name="hearing_devices_ambient_control_right">Right</string>
+    <!-- QuickSettings: Content description for unified ambient control slider. [CHAR LIMIT=NONE] -->
+    <string name="hearing_devices_ambient_control_description">Surroundings</string>
+    <!-- QuickSettings: Content description for left ambient control slider. [CHAR LIMIT=NONE] -->
+    <string name="hearing_devices_ambient_control_left_description">Left surroundings</string>
+    <!-- QuickSettings: Content description for left ambient control slider. [CHAR LIMIT=NONE] -->
+    <string name="hearing_devices_ambient_control_right_description">Right surroundings</string>
     <!-- QuickSettings: Content description for a button, that expands ambient volume sliders [CHAR_LIMIT=NONE] -->
     <string name="hearing_devices_ambient_expand_controls">Expand to left and right separated controls</string>
     <!-- QuickSettings: Content description for a button, that collapses ambient volume sliders [CHAR LIMIT=NONE] -->

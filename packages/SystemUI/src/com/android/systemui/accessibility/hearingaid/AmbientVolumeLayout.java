@@ -327,8 +327,19 @@ public class AmbientVolumeLayout extends LinearLayout implements AmbientVolumeUi
         slider.addOnChangeListener(mSliderOnChangeListener);
         if (side == SIDE_LEFT) {
             slider.setTitle(mContext.getString(R.string.hearing_devices_ambient_control_left));
+            slider.setContentDescription(
+                    mContext.getString(R.string.hearing_devices_ambient_control_left));
+            slider.setSliderContentDescription(
+                    mContext.getString(R.string.hearing_devices_ambient_control_left_description));
         } else if (side == SIDE_RIGHT) {
             slider.setTitle(mContext.getString(R.string.hearing_devices_ambient_control_right));
+            slider.setContentDescription(
+                    mContext.getString(R.string.hearing_devices_ambient_control_right));
+            slider.setSliderContentDescription(
+                    mContext.getString(R.string.hearing_devices_ambient_control_right_description));
+        } else {
+            slider.setSliderContentDescription(
+                    mContext.getString(R.string.hearing_devices_ambient_control_description));
         }
         mSideToSliderMap.put(side, slider);
     }
