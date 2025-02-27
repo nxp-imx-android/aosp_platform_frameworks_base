@@ -122,6 +122,8 @@ public enum DesktopModeFlags {
     ENABLE_TILE_RESIZING(Flags::enableTileResizing, true),
     ENABLE_TOP_VISIBLE_ROOT_TASK_PER_USER_TRACKING(Flags::enableTopVisibleRootTaskPerUserTracking,
             true),
+    ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX(
+            Flags::enableVisualIndicatorInTransitionBugfix, false),
     ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS(Flags::enableWindowingDynamicInitialBounds, true),
     ENABLE_WINDOWING_EDGE_DRAG_RESIZE(Flags::enableWindowingEdgeDragResize, true),
     ENABLE_WINDOWING_SCALED_RESIZING(Flags::enableWindowingScaledResizing, true),
