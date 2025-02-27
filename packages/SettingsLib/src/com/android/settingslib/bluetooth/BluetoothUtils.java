@@ -51,6 +51,8 @@ import com.android.settingslib.widget.AdaptiveOutlineDrawable;
 import com.google.common.collect.ImmutableSet;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -1267,5 +1269,16 @@ public class BluetoothUtils {
         }
 
         return false;
+    }
+
+    /** Gets key missing count of the device. This is a workaround before the API is rolled out. */
+    public static Integer getKeyMissingCount(BluetoothDevice device) {
+        try {
+            Method m = BluetoothDevice.class.getDeclaredMethod("getKeyMissingCount");
+            return (int) m.invoke(device);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            Log.w(TAG, "error happens when getKeyMissingCount.");
+            return null;
+        }
     }
 }
