@@ -42,6 +42,7 @@ import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.res.R
+import com.android.systemui.scene.ui.view.WindowRootViewKeyEventHandler
 import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository
 import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractorPassThrough
 import com.android.systemui.shade.NotificationShadeWindowView.InteractionEventHandler
@@ -69,7 +70,6 @@ import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import com.android.systemui.unfold.SysUIUnfoldComponent
 import com.android.systemui.unfold.UnfoldTransitionProgressProvider
 import com.android.systemui.util.mockito.any
-import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.systemui.window.ui.viewmodel.WindowRootViewModel
@@ -85,12 +85,12 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.Captor
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper(setAsMainLooper = true)
@@ -175,13 +175,14 @@ class NotificationShadeWindowViewTest : SysuiTestCase() {
         featureFlags.set(Flags.SPLIT_SHADE_SUBPIXEL_OPTIMIZATION, true)
         mSetFlagsRule.enableFlags(AConfigFlags.FLAG_REVAMPED_BOUNCER_MESSAGES)
         testScope = TestScope()
+        val falsingCollector = FalsingCollectorFake()
         controller =
             NotificationShadeWindowViewController(
                 blurUtils,
                 windowRootViewModelFactory,
                 choreographer,
                 lockscreenShadeTransitionController,
-                FalsingCollectorFake(),
+                falsingCollector,
                 statusBarStateController,
                 dockManager,
                 notificationShadeDepthController,
@@ -212,7 +213,7 @@ class NotificationShadeWindowViewTest : SysuiTestCase() {
                 NotificationLaunchAnimationInteractor(NotificationLaunchAnimationRepository()),
                 featureFlags,
                 FakeSystemClock(),
-                Mockito.mock(SysUIKeyEventHandler::class.java),
+                WindowRootViewKeyEventHandler({ mock<SysUIKeyEventHandler>() }, falsingCollector),
                 quickSettingsController,
                 primaryBouncerInteractor,
                 alternateBouncerInteractor,
