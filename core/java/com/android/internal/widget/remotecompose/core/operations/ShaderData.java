@@ -390,7 +390,7 @@ public class ShaderData extends Operation implements VariableSupport, Serializab
     @Override
     public void serialize(MapSerializer serializer) {
         serializer
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("shaderTextId", mShaderTextId)
                 .add("shaderID", mShaderID)
                 .add("uniformRawFloatMap", mUniformRawFloatMap)

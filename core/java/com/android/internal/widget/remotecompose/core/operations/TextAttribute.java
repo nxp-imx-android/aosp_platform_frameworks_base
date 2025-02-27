@@ -173,7 +173,7 @@ public class TextAttribute extends PaintOperation implements Serializable {
     @Override
     public void serialize(MapSerializer serializer) {
         serializer
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("id", mId)
                 .add("textId", mTextId)
                 .add("measureType", typeToString());

@@ -388,6 +388,16 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAwa
         mInner.setColor(colorName, colorValue);
     }
 
+    /**
+     * This sets long based on its name.
+     *
+     * @param name Name of the color
+     * @param value The new long value
+     */
+    public void setLong(String name, long value) {
+        mInner.setLong(name, value);
+    }
+
     private void mapColors() {
         String[] name = getNamedColors();
 

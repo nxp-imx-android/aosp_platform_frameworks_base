@@ -184,7 +184,7 @@ public class PaddingModifierOperation extends Operation implements ModifierOpera
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "PaddingModifierOperation")
+                .addType("PaddingModifierOperation")
                 .add("left", mLeft)
                 .add("top", mTop)
                 .add("right", mRight)

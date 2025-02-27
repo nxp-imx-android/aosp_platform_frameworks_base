@@ -132,7 +132,7 @@ public class TextMerge extends Operation implements Serializable {
     @Override
     public void serialize(MapSerializer serializer) {
         serializer
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("id", mTextId)
                 .add("leftId", mSrcId1)
                 .add("rightId", mSrcId2);

@@ -156,7 +156,7 @@ public class CanvasOperations extends PaintOperation
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", CLASS_NAME).add("list", mList);
+        serializer.addType(CLASS_NAME).add("list", mList);
     }
 
     /**

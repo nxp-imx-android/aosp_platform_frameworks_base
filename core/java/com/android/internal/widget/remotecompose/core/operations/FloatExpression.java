@@ -160,6 +160,9 @@ public class FloatExpression extends Operation implements VariableSupport, Seria
                 mLastAnimatedValue = lastComputedValue;
                 context.loadFloat(mId, lastComputedValue);
                 context.needsRepaint();
+                if (mFloatAnimation.isPropagate()) {
+                    markDirty();
+                }
             }
         } else if (mSpring != null) {
             float lastComputedValue = mSpring.get(t - mLastChange);
@@ -169,8 +172,12 @@ public class FloatExpression extends Operation implements VariableSupport, Seria
                 context.needsRepaint();
             }
         } else {
-            float v =
-                    mExp.eval(context.getCollectionsAccess(), mPreCalcValue, mPreCalcValue.length);
+            float v = 0;
+            try {
+                v = mExp.eval(context.getCollectionsAccess(), mPreCalcValue, mPreCalcValue.length);
+            } catch (Exception e) {
+                throw new RuntimeException(this.toString() + " len = " + mPreCalcValue.length, e);
+            }
             if (mFloatAnimation != null) {
                 mFloatAnimation.setTargetValue(v);
             }
@@ -344,7 +351,7 @@ public class FloatExpression extends Operation implements VariableSupport, Seria
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.EXPRESSION)
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("id", mId)
                 .addFloatExpressionSrc("srcValues", mSrcValue)
                 .add("animation", mFloatAnimation);

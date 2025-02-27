@@ -41,7 +41,7 @@ public class ComponentVisibilityOperation extends Operation
     private static final int OP_CODE = Operations.MODIFIER_VISIBILITY;
 
     int mVisibilityId;
-    @NonNull Component.Visibility mVisibility = Component.Visibility.VISIBLE;
+    int mVisibility = Component.Visibility.VISIBLE;
     private LayoutComponent mParent;
 
     public ComponentVisibilityOperation(int id) {
@@ -124,11 +124,11 @@ public class ComponentVisibilityOperation extends Operation
     @Override
     public void updateVariables(@NonNull RemoteContext context) {
         int visibility = context.getInteger(mVisibilityId);
-        if (visibility == Component.Visibility.VISIBLE.ordinal()) {
+        if (Component.Visibility.isVisible(visibility)) {
             mVisibility = Component.Visibility.VISIBLE;
-        } else if (visibility == Component.Visibility.GONE.ordinal()) {
+        } else if (Component.Visibility.isGone(visibility)) {
             mVisibility = Component.Visibility.GONE;
-        } else if (visibility == Component.Visibility.INVISIBLE.ordinal()) {
+        } else if (Component.Visibility.isInvisible(visibility)) {
             mVisibility = Component.Visibility.INVISIBLE;
         } else {
             mVisibility = Component.Visibility.GONE;
@@ -150,8 +150,8 @@ public class ComponentVisibilityOperation extends Operation
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "ComponentVisibilityOperation")
+                .addType("ComponentVisibilityOperation")
                 .add("visibilityId", mVisibilityId)
-                .add("visibility", mVisibility);
+                .add("visibility", Component.Visibility.toString(mVisibility));
     }
 }

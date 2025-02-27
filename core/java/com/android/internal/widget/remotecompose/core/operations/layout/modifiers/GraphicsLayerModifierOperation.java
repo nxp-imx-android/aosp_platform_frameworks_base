@@ -352,7 +352,7 @@ public class GraphicsLayerModifierOperation extends DecoratorModifierOperation {
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "GraphicsLayerModifierOperation")
+                .addType("GraphicsLayerModifierOperation")
                 .add("scaleX", mScaleX)
                 .add("scaleX", mScaleX)
                 .add("rotationX", mRotationX)

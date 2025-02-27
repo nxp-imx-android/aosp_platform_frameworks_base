@@ -507,7 +507,7 @@ public class ColorExpression extends Operation implements VariableSupport, Seria
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", CLASS_NAME).add("id", mId);
+        serializer.addType(CLASS_NAME).add("id", mId);
         switch (mMode) {
             case COLOR_COLOR_INTERPOLATE:
             case ID_COLOR_INTERPOLATE:

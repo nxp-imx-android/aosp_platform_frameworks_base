@@ -128,6 +128,6 @@ public class DrawSector extends DrawBase6 {
     @Override
     public void serialize(MapSerializer serializer) {
         serialize(serializer, "left", "top", "right", "bottom", "startAngle", "sweepAngle")
-                .add("type", CLASS_NAME);
+                .addType(CLASS_NAME);
     }
 }

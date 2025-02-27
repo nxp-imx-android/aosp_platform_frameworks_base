@@ -129,6 +129,6 @@ public class TouchUpModifierOperation extends ListActionsOperation implements To
     @Override
     public void serialize(MapSerializer serializer) {
         super.serialize(serializer);
-        serializer.add("type", "TouchUpModifierOperation");
+        serializer.addType("TouchUpModifierOperation");
     }
 }

@@ -100,6 +100,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.managers
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.CollapsibleColumnLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.CollapsibleRowLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.ColumnLayout;
+import com.android.internal.widget.remotecompose.core.operations.layout.managers.FitBoxLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.RowLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.StateLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.TextLayout;
@@ -231,6 +232,7 @@ public class Operations {
     public static final int LAYOUT_ROOT = 200;
     public static final int LAYOUT_CONTENT = 201;
     public static final int LAYOUT_BOX = 202;
+    public static final int LAYOUT_FIT_BOX = 176;
     public static final int LAYOUT_ROW = 203;
     public static final int LAYOUT_COLLAPSIBLE_ROW = 230;
     public static final int LAYOUT_COLUMN = 204;
@@ -391,6 +393,7 @@ public class Operations {
         map.put(LAYOUT_ROOT, RootLayoutComponent::read);
         map.put(LAYOUT_CONTENT, LayoutComponentContent::read);
         map.put(LAYOUT_BOX, BoxLayout::read);
+        map.put(LAYOUT_FIT_BOX, FitBoxLayout::read);
         map.put(LAYOUT_COLUMN, ColumnLayout::read);
         map.put(LAYOUT_COLLAPSIBLE_COLUMN, CollapsibleColumnLayout::read);
         map.put(LAYOUT_ROW, RowLayout::read);

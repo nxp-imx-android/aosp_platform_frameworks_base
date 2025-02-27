@@ -253,6 +253,6 @@ public class ClickModifierOperation extends PaintOperation
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.addTags(SerializeTags.MODIFIER).add("type", "ClickModifierOperation");
+        serializer.addTags(SerializeTags.MODIFIER).addType("ClickModifierOperation");
     }
 }

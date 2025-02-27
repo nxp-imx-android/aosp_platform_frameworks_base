@@ -131,6 +131,6 @@ public class TouchDownModifierOperation extends ListActionsOperation implements 
     @Override
     public void serialize(MapSerializer serializer) {
         super.serialize(serializer);
-        serializer.add("type", "TouchDownModifierOperation");
+        serializer.addType("TouchDownModifierOperation");
     }
 }

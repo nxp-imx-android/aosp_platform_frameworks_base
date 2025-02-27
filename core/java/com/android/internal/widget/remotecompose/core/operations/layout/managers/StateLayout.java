@@ -413,7 +413,7 @@ public class StateLayout extends LayoutManager {
                 if (index != currentLayoutIndex && index != previousLayoutIndex) {
                     pane.mVisibility = Visibility.GONE;
                 }
-                if (index == currentLayoutIndex && pane.mVisibility != Visibility.VISIBLE) {
+                if (index == currentLayoutIndex && !pane.isVisible()) {
                     pane.mVisibility = Visibility.VISIBLE;
                 }
                 index++;
@@ -511,7 +511,7 @@ public class StateLayout extends LayoutManager {
                 && previousLayout.mAnimateMeasure == null) {
             inTransition = false;
             LayoutManager previous = getLayout(previousLayoutIndex);
-            if (previous != currentLayout && previous.mVisibility != Visibility.GONE) {
+            if (previous != currentLayout && !previous.isGone()) {
                 previous.mVisibility = Visibility.GONE;
                 previous.needsRepaint();
             }

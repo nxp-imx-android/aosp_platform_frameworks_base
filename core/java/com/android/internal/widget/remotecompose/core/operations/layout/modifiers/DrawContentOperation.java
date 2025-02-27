@@ -120,6 +120,6 @@ public class DrawContentOperation extends Operation
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.addTags(SerializeTags.MODIFIER).add("type", "DrawContentOperation");
+        serializer.addTags(SerializeTags.MODIFIER).addType("DrawContentOperation");
     }
 }

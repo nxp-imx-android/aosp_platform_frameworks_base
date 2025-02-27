@@ -140,6 +140,6 @@ public class DrawLine extends DrawBase4 implements SerializableToString {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serialize(serializer, "startX", "startY", "endX", "endY").add("type", CLASS_NAME);
+        serialize(serializer, "startX", "startY", "endX", "endY").addType(CLASS_NAME);
     }
 }

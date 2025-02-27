@@ -237,7 +237,7 @@ public class ClickArea extends Operation
     @Override
     public void serialize(MapSerializer serializer) {
         serializer
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("id", mId)
                 .add("contentDescriptionId", mContentDescription)
                 .add("left", mLeft, mOutLeft)

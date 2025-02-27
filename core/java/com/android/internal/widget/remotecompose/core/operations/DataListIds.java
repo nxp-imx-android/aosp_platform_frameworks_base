@@ -150,8 +150,9 @@ public class DataListIds extends Operation implements VariableSupport, ArrayAcce
         return 0;
     }
 
+    @SuppressWarnings("JdkImmutableCollections")
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", CLASS_NAME).add("id", mId).add("ids", List.of(mIds));
+        serializer.addType(CLASS_NAME).add("id", mId).add("ids", List.of(mIds));
     }
 }

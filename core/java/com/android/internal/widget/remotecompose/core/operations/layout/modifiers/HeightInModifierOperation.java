@@ -107,7 +107,7 @@ public class HeightInModifierOperation extends DimensionInModifierOperation {
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "HeightInModifierOperation")
+                .addType("HeightInModifierOperation")
                 .add("min", mV1, mValue1)
                 .add("max", mV2, mValue2);
     }
