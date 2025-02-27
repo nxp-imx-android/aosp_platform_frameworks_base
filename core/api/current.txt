@@ -16993,7 +16993,7 @@ package android.graphics {
     method public void setFilterBitmap(boolean);
     method public void setFlags(int);
     method public void setFontFeatureSettings(String);
-    method @FlaggedApi("com.android.text.flags.typeface_redesign_readonly") public boolean setFontVariationOverride(@Nullable String);
+    method @FlaggedApi("com.android.text.flags.typeface_redesign_readonly") public void setFontVariationOverride(@Nullable String);
     method public boolean setFontVariationSettings(String);
     method public void setHinting(int);
     method public void setLetterSpacing(float);

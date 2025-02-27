@@ -2206,26 +2206,21 @@ public class Paint {
      * @param fontVariationOverride font variation override. You can pass null or empty string for
      *                              clearing font variation override.
      *
-     * @return true if the provided font variation settings is valid. Otherwise returns false.
-     *
+     * @throws IllegalArgumentException If given string is not a valid font variation settings
+     *                                  format
      * @see #getFontVariationSettings()
      * @see #setFontVariationSettings(String)
      * @see #getFontVariationOverride()
      * @see FontVariationAxis
      */
     @FlaggedApi(FLAG_TYPEFACE_REDESIGN_READONLY)
-    public boolean setFontVariationOverride(@Nullable String fontVariationOverride) {
+    public void setFontVariationOverride(@Nullable String fontVariationOverride) {
         if (Objects.equals(fontVariationOverride, mFontVariationOverride)) {
-            return true;
+            return;
         }
 
-        List<FontVariationAxis> axes;
-        try {
-            axes = FontVariationAxis.fromFontVariationSettingsForList(fontVariationOverride);
-        } catch (IllegalArgumentException e) {
-            Log.i(TAG, "failed to parse font variation settings.", e);
-            return false;
-        }
+        List<FontVariationAxis> axes =
+                FontVariationAxis.fromFontVariationSettingsForList(fontVariationOverride);
         long builderPtr = nCreateFontVariationBuilder(axes.size());
         for (int i = 0; i < axes.size(); ++i) {
             FontVariationAxis axis = axes.get(i);
@@ -2234,7 +2229,6 @@ public class Paint {
         }
         nSetFontVariationOverride(mNativePaint, builderPtr);
         mFontVariationOverride = fontVariationOverride;
-        return true;
     }
 
     /**
