@@ -132,7 +132,12 @@ public class RankingCoordinator implements Coordinator {
         public void onEntriesUpdated(@NonNull List<PipelineEntry> entries) {
             mHasSilentEntries = false;
             for (int i = 0; i < entries.size(); i++) {
-                if (entries.get(i).getRepresentativeEntry().getSbn().isClearable()) {
+                NotificationEntry notifEntry = entries.get(i).getRepresentativeEntry();
+                if (notifEntry == null) {
+                    // TODO(b/395698521) Handle BundleEntry
+                    continue;
+                }
+                if (notifEntry.getSbn().isClearable()) {
                     mHasSilentEntries = true;
                     break;
                 }
@@ -147,6 +152,7 @@ public class RankingCoordinator implements Coordinator {
         @Override
         public boolean isInSection(PipelineEntry entry) {
             return !mHighPriorityProvider.isHighPriority(entry)
+                    && entry.getRepresentativeEntry() != null
                     && entry.getRepresentativeEntry().isAmbient();
         }
 
@@ -161,7 +167,12 @@ public class RankingCoordinator implements Coordinator {
         public void onEntriesUpdated(@NonNull List<PipelineEntry> entries) {
             mHasMinimizedEntries = false;
             for (int i = 0; i < entries.size(); i++) {
-                if (entries.get(i).getRepresentativeEntry().getSbn().isClearable()) {
+                NotificationEntry notifEntry = entries.get(i).getRepresentativeEntry();
+                if (notifEntry == null) {
+                    // TODO(b/395698521) Handle BundleEntry
+                    continue;
+                }
+                if (notifEntry.getSbn().isClearable()) {
                     mHasMinimizedEntries = true;
                     break;
                 }
