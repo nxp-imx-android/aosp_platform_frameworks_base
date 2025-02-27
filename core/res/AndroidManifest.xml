@@ -8995,13 +8995,13 @@
 
     <!-- @SystemApi
         @FlaggedApi("android.permission.flags.text_classifier_choice_api_enabled")
-        This permission is required to access the specific text classifier you need from the
+        This permission is required to access the specific text classifier from the
         TextClassificationManager.
-        <p>Protection level: signature|role
+        <p>Protection level: signature|role|privileged
     @hide
     -->
     <permission android:name="android.permission.ACCESS_TEXT_CLASSIFIER_BY_TYPE"
-        android:protectionLevel="signature|role"
+        android:protectionLevel="signature|role|privileged"
         android:featureFlag="android.permission.flags.text_classifier_choice_api_enabled"/>
 
     <!-- Attribution for Geofencing service. -->
