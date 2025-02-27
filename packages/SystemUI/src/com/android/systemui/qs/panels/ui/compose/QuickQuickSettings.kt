@@ -57,7 +57,6 @@ fun ContentScope.QuickQuickSettings(
         onDispose { tiles.forEach { it.stopListening(token) } }
     }
     val columns = viewModel.columns
-    var cellIndex = 0
     Box(modifier = modifier) {
         GridAnchor()
         VerticalSpannedGrid(
@@ -67,17 +66,23 @@ fun ContentScope.QuickQuickSettings(
             spans = spans,
             modifier = Modifier.sysuiResTag("qqs_tile_layout"),
             keys = { sizedTiles[it].tile.spec },
-        ) { spanIndex ->
+        ) { spanIndex, column, isFirstInColumn, isLastInColumn ->
             val it = sizedTiles[spanIndex]
-            val column = cellIndex % columns
-            cellIndex += it.width
             Element(it.tile.spec.toElementKey(spanIndex), Modifier) {
                 Tile(
                     tile = it.tile,
                     iconOnly = it.isIcon,
                     squishiness = { squishiness },
                     coroutineScope = scope,
-                    bounceableInfo = bounceables.bounceableInfo(it, spanIndex, column, columns),
+                    bounceableInfo =
+                        bounceables.bounceableInfo(
+                            it,
+                            index = spanIndex,
+                            column = column,
+                            columns = columns,
+                            isFirstInRow = isFirstInColumn,
+                            isLastInRow = isLastInColumn,
+                        ),
                     tileHapticsViewModelFactoryProvider =
                         viewModel.tileHapticsViewModelFactoryProvider,
                     // There should be no QuickQuickSettings when the details view is enabled.
