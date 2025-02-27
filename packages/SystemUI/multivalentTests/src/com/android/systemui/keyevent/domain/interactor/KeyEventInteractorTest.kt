@@ -57,4 +57,17 @@ class KeyEventInteractorTest : SysuiTestCase() {
             repository.setPowerButtonDown(true)
             assertThat(isPowerDown).isTrue()
         }
+
+    @Test
+    fun testPowerButtonBeingLongPressedInteractor() =
+        runTest {
+            val isPowerButtonLongPressed by collectLastValue(
+                underTest.isPowerButtonLongPressed)
+
+            repository.setPowerButtonBeingLongPressed(false)
+            assertThat(isPowerButtonLongPressed).isFalse()
+
+            repository.setPowerButtonBeingLongPressed(true)
+            assertThat(isPowerButtonLongPressed).isTrue()
+        }
 }
