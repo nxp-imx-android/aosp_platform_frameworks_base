@@ -16,6 +16,7 @@
 
 package android.permission;
 
+import static android.companion.virtual.VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT;
 import static android.content.pm.PackageManager.FLAG_PERMISSION_GRANTED_BY_DEFAULT;
 import static android.content.pm.PackageManager.FLAG_PERMISSION_GRANTED_BY_ROLE;
 import static android.content.pm.PackageManager.FLAG_PERMISSION_POLICY_FIXED;
@@ -2039,12 +2040,49 @@ public final class PermissionManager {
                 new PackageNamePermissionQuery(permName, pkgName, persistentDeviceId, userId));
     }
 
+    /**
+     * When checking a device-aware permission on a remote device, if the permission is CAMERA
+     * or RECORD_AUDIO we need to check remote device's corresponding capability. If the remote
+     * device doesn't have capability fall back to checking permission on the default device.
+     *
+     * @hide
+     */
+    public static int resolveDeviceIdForPermissionCheck(@NonNull Context context, int deviceId,
+            @Nullable String permission) {
+        if (deviceId == Context.DEVICE_ID_DEFAULT || !DEVICE_AWARE_PERMISSIONS.contains(
+                permission)) {
+            return Context.DEVICE_ID_DEFAULT;
+        }
+
+        VirtualDeviceManager virtualDeviceManager =
+                context.getSystemService(VirtualDeviceManager.class);
+        if (virtualDeviceManager == null) {
+            Slog.e(LOG_TAG, "VDM is not enabled when device id is not default. deviceId = "
+                    + deviceId);
+        } else {
+            VirtualDevice virtualDevice = virtualDeviceManager.getVirtualDevice(deviceId);
+            if (virtualDevice != null) {
+                if ((Objects.equals(permission, Manifest.permission.RECORD_AUDIO)
+                        && !virtualDevice.hasCustomAudioInputSupport())
+                        || (Objects.equals(permission, Manifest.permission.CAMERA)
+                        && !virtualDevice.hasCustomCameraSupport())) {
+                    deviceId = Context.DEVICE_ID_DEFAULT;
+                }
+            } else {
+                Slog.e(LOG_TAG,
+                        "virtualDevice is not found when device id is not default. deviceId = "
+                                + deviceId);
+            }
+        }
+        return deviceId;
+    }
+
     @Nullable
     private String getPersistentDeviceId(int deviceId) {
         String persistentDeviceId = null;
 
         if (deviceId == Context.DEVICE_ID_DEFAULT) {
-            persistentDeviceId = VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT;
+            persistentDeviceId = PERSISTENT_DEVICE_ID_DEFAULT;
         } else {
             VirtualDeviceManager virtualDeviceManager = mContext.getSystemService(
                     VirtualDeviceManager.class);
