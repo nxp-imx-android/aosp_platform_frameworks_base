@@ -39,6 +39,7 @@ import com.android.app.animation.Interpolators.LINEAR
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.dynamicanimation.animation.SpringAnimation
 import com.android.internal.dynamicanimation.animation.SpringForce
+import com.android.systemui.Flags.moveTransitionAnimationLayer
 import com.android.systemui.shared.Flags.returnAnimationFrameworkLibrary
 import com.android.systemui.shared.Flags.returnAnimationFrameworkLongLived
 import java.util.concurrent.Executor
@@ -508,6 +509,8 @@ class TransitionAnimator(
      * the animation (if ![Controller.isLaunching]), and will have SRC blending mode (ultimately
      * punching a hole in the [transition container][Controller.transitionContainer]) iff [drawHole]
      * is true.
+     *
+     * TODO(b/397646693): remove drawHole altogether.
      *
      * If [startVelocity] (expressed in pixels per second) is not null, a multi-spring animation
      * using it for the initial momentum will be used instead of the default interpolators. In this
@@ -1183,6 +1186,10 @@ class TransitionAnimator(
                 if (drawHole) {
                     drawable.setXfermode(SRC_MODE)
                 }
+            } else if (moveTransitionAnimationLayer() && fadeOutProgress >= 1 && drawHole) {
+                // If [drawHole] is true, draw it once the opening content is done fading in.
+                drawable.alpha = 0x00
+                drawable.setXfermode(SRC_MODE)
             } else {
                 drawable.alpha = 0xFF
             }
