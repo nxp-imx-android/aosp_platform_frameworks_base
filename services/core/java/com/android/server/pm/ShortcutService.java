@@ -1792,7 +1792,7 @@ public class ShortcutService extends IShortcutService.Stub {
     void injectPostToHandlerDebounced(@NonNull final Object token, @NonNull final Runnable r) {
         Objects.requireNonNull(token);
         Objects.requireNonNull(r);
-        synchronized (mServiceLock) {
+        synchronized (mHandler) {
             mHandler.removeCallbacksAndMessages(token);
             mHandler.postDelayed(r, token, CALLBACK_DELAY);
         }
