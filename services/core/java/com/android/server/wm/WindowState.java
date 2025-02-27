@@ -2213,9 +2213,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (isImeLayeringTarget()) {
             // Remove the attached IME screenshot.
             dc.removeImeScreenshotByTarget(this);
-            // Set mImeLayeringTarget as null when the removed window is the IME layering target,
-            // in case computeImeLayeringTarget may use the outdated target.
-            dc.setImeLayeringTarget(null /* target */);
             dc.computeImeLayeringTarget(true /* update */);
         }
         if (dc.getImeInputTarget() == this && !inRelaunchingActivity()) {
