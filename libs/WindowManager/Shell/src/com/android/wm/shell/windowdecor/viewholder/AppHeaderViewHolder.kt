@@ -83,6 +83,7 @@ class AppHeaderViewHolder(
         val inFullImmersiveState: Boolean,
         val hasGlobalFocus: Boolean,
         val enableMaximizeLongClick: Boolean,
+        val isCaptionVisible: Boolean,
     ) : Data()
 
     private val decorThemeUtil = DecorThemeUtil(context)
@@ -264,7 +265,8 @@ class AppHeaderViewHolder(
             data.isTaskMaximized,
             data.inFullImmersiveState,
             data.hasGlobalFocus,
-            data.enableMaximizeLongClick
+            data.enableMaximizeLongClick,
+            data.isCaptionVisible,
         )
     }
 
@@ -306,6 +308,7 @@ class AppHeaderViewHolder(
         inFullImmersiveState: Boolean,
         hasGlobalFocus: Boolean,
         enableMaximizeLongClick: Boolean,
+        isCaptionVisible: Boolean,
     ) {
         if (DesktopModeFlags.ENABLE_THEMED_APP_HEADERS.isTrue()) {
             bindDataWithThemedHeaders(
@@ -314,13 +317,21 @@ class AppHeaderViewHolder(
                 inFullImmersiveState,
                 hasGlobalFocus,
                 enableMaximizeLongClick,
+                isCaptionVisible,
             )
         } else {
-            bindDataLegacy(taskInfo, hasGlobalFocus)
+            bindDataLegacy(taskInfo, hasGlobalFocus, isCaptionVisible)
         }
     }
 
-    private fun bindDataLegacy(taskInfo: RunningTaskInfo, hasGlobalFocus: Boolean) {
+    private fun bindDataLegacy(
+        taskInfo: RunningTaskInfo,
+        hasGlobalFocus: Boolean,
+        isCaptionVisible: Boolean,
+    ) {
+        if (DesktopModeFlags.ENABLE_DESKTOP_APP_HANDLE_ANIMATION.isTrue()) {
+            setCaptionVisibility(isCaptionVisible)
+        }
         captionView.setBackgroundColor(getCaptionBackgroundColor(taskInfo, hasGlobalFocus))
         val color = getAppNameAndButtonColor(taskInfo, hasGlobalFocus)
         val alpha = Color.alpha(color)
@@ -359,9 +370,14 @@ class AppHeaderViewHolder(
         inFullImmersiveState: Boolean,
         hasGlobalFocus: Boolean,
         enableMaximizeLongClick: Boolean,
+        isCaptionVisible: Boolean,
     ) {
         val header = fillHeaderInfo(taskInfo, hasGlobalFocus)
         val headerStyle = getHeaderStyle(header)
+
+        if (DesktopModeFlags.ENABLE_DESKTOP_APP_HANDLE_ANIMATION.isTrue()) {
+            setCaptionVisibility(isCaptionVisible)
+        }
 
         // Caption Background
         when (headerStyle.background) {
@@ -462,6 +478,11 @@ class AppHeaderViewHolder(
             // Disable long-click to open maximize menu when in immersive.
             null
         }
+    }
+
+    private fun setCaptionVisibility(visible: Boolean) {
+        val v = if (visible) View.VISIBLE else View.GONE
+        captionView.visibility = v
     }
 
     override fun onHandleMenuOpened() {}
