@@ -177,12 +177,30 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
         val v = holder.itemView
         // Update padding
         if (SettingsThemeHelper.isExpressiveTheme(context)) {
-            val paddingStart = if (backgroundRes == 0) mNormalPaddingStart else mGroupPaddingStart
-            val paddingEnd = if (backgroundRes == 0) mNormalPaddingEnd else mGroupPaddingEnd
+            val (paddingStart, paddingEnd) = getStartEndPadding(position, backgroundRes)
             v.setPaddingRelative(paddingStart, v.paddingTop, paddingEnd, v.paddingBottom)
+            v.clipToOutline = backgroundRes != 0
         }
         // Update background
         v.setBackgroundResource(backgroundRes)
+    }
+
+    private fun getStartEndPadding(position: Int, backgroundRes: Int): Pair<Int, Int> {
+        val item = getItem(position)
+        return when {
+            // This item handles edge to edge itself
+            item is NormalPaddingMixin && item is GroupSectionDividerMixin -> 0 to 0
+
+            // According to mappingPreferenceGroup(), backgroundRes == 0 means this item is
+            // GroupSectionDividerMixin or PreferenceCategory, which is design to have normal
+            // padding.
+            // NormalPaddingMixin items are also designed to have normal padding.
+            backgroundRes == 0 || item is NormalPaddingMixin ->
+                mNormalPaddingStart to mNormalPaddingEnd
+
+            // Other items are suppose to have group padding.
+            else -> mGroupPaddingStart to mGroupPaddingEnd
+        }
     }
 
     @DrawableRes
