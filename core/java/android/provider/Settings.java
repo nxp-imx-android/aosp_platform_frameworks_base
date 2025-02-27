@@ -10601,6 +10601,9 @@ public final class Settings {
          *
          * @hide
          */
+        @TestApi
+        @Readable
+        @SuppressLint({"UnflaggedApi", "NoSettingsProvider"}) // @TestApi purely for CTS support.
         public static final String GLANCEABLE_HUB_ENABLED = "glanceable_hub_enabled";
 
         /**
