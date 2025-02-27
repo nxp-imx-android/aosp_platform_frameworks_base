@@ -3582,14 +3582,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @GuardedBy("getLockObject()")
     private boolean maybeMigrateMemoryTaggingLocked(String backupId) {
-        if (!Flags.setMtePolicyCoexistence()) {
-            Slog.i(LOG_TAG, "Memory Tagging not migrated because coexistence "
-                    + "support is disabled.");
-            return false;
-        }
         if (mOwners.isMemoryTaggingMigrated()) {
-            // TODO: Remove log after Flags.setMtePolicyCoexistence full rollout.
-            Slog.v(LOG_TAG, "Memory Tagging was previously migrated to policy engine.");
             return false;
         }
 
@@ -16354,7 +16347,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private static <V> PolicyDefinition<V> getPolicyDefinitionForIdentifier(
             @NonNull String identifier) {
         Objects.requireNonNull(identifier);
-        if (Flags.setMtePolicyCoexistence() && MEMORY_TAGGING_POLICY.equals(identifier)) {
+        if (MEMORY_TAGGING_POLICY.equals(identifier)) {
             return (PolicyDefinition<V>) PolicyDefinition.MEMORY_TAGGING;
         } else {
             return (PolicyDefinition<V>) getPolicyDefinitionForRestriction(identifier);
@@ -23759,46 +23752,21 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             Preconditions.checkCallAuthorization(isDefaultDeviceOwner(caller));
         }
 
-        if (Flags.setMtePolicyCoexistence()) {
-            enforcePermission(MANAGE_DEVICE_POLICY_MTE, caller.getPackageName(),
-                    UserHandle.USER_ALL);
-        } else {
-            Preconditions.checkCallAuthorization(
-                    isDefaultDeviceOwner(caller)
-                    || isProfileOwnerOfOrganizationOwnedDevice(caller));
-        }
+        enforcePermission(MANAGE_DEVICE_POLICY_MTE, caller.getPackageName(),
+                UserHandle.USER_ALL);
 
         synchronized (getLockObject()) {
-            if (Flags.setMtePolicyCoexistence()) {
-                final EnforcingAdmin admin = enforcePermissionAndGetEnforcingAdmin(null,
-                        MANAGE_DEVICE_POLICY_MTE, callerPackageName, caller.getUserId());
-                if (flags != DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY) {
-                    mDevicePolicyEngine.setGlobalPolicy(
-                            PolicyDefinition.MEMORY_TAGGING,
-                            admin,
-                            new IntegerPolicyValue(flags));
-                } else {
-                    mDevicePolicyEngine.removeGlobalPolicy(
-                            PolicyDefinition.MEMORY_TAGGING,
-                            admin);
-                }
+            final EnforcingAdmin admin = enforcePermissionAndGetEnforcingAdmin(null,
+                    MANAGE_DEVICE_POLICY_MTE, callerPackageName, caller.getUserId());
+            if (flags != DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY) {
+                mDevicePolicyEngine.setGlobalPolicy(
+                        PolicyDefinition.MEMORY_TAGGING,
+                        admin,
+                        new IntegerPolicyValue(flags));
             } else {
-                ActiveAdmin admin =
-                        getDeviceOwnerOrProfileOwnerOfOrganizationOwnedDeviceLocked();
-                if (admin != null) {
-                    final String memtagProperty = "arm64.memtag.bootctl";
-                    if (flags == DevicePolicyManager.MTE_ENABLED) {
-                        mInjector.systemPropertiesSet(memtagProperty, "memtag");
-                    } else if (flags == DevicePolicyManager.MTE_DISABLED) {
-                        mInjector.systemPropertiesSet(memtagProperty, "memtag-off");
-                    } else if (flags == DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY) {
-                        if (admin.mtePolicy != DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY) {
-                            mInjector.systemPropertiesSet(memtagProperty, "default");
-                        }
-                    }
-                    admin.mtePolicy = flags;
-                    saveSettingsLocked(caller.getUserId());
-                }
+                mDevicePolicyEngine.removeGlobalPolicy(
+                        PolicyDefinition.MEMORY_TAGGING,
+                        admin);
             }
 
             DevicePolicyEventLogger.createEvent(DevicePolicyEnums.SET_MTE_POLICY)
@@ -23816,10 +23784,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
         Preconditions.checkCallAuthorization(isSystemUid(getCallerIdentity()),
                 "Only system services can call setMtePolicyBySystem");
-
-        if (!Flags.setMtePolicyCoexistence()) {
-            throw new UnsupportedOperationException("System can not set MTE policy only");
-        }
 
         EnforcingAdmin admin = EnforcingAdmin.createSystemEnforcingAdmin(systemEntity);
         if (policy != DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY) {
@@ -23858,31 +23822,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     @Override
     public int getMtePolicy(String callerPackageName) {
         final CallerIdentity caller = getCallerIdentity(callerPackageName);
-        if (Flags.setMtePolicyCoexistence()) {
-            enforcePermission(MANAGE_DEVICE_POLICY_MTE, caller.getPackageName(),
-                    UserHandle.USER_ALL);
-        } else {
-            Preconditions.checkCallAuthorization(
-                    isDefaultDeviceOwner(caller)
-                    || isProfileOwnerOfOrganizationOwnedDevice(caller)
-                    || isSystemUid(caller));
-        }
+        enforcePermission(MANAGE_DEVICE_POLICY_MTE, caller.getPackageName(),
+                UserHandle.USER_ALL);
 
         synchronized (getLockObject()) {
-            if (Flags.setMtePolicyCoexistence()) {
-                final EnforcingAdmin admin = enforcePermissionAndGetEnforcingAdmin(null,
-                        MANAGE_DEVICE_POLICY_MTE, callerPackageName, caller.getUserId());
-                final Integer policyFromAdmin = mDevicePolicyEngine.getGlobalPolicySetByAdmin(
-                        PolicyDefinition.MEMORY_TAGGING, admin);
-                return (policyFromAdmin != null ? policyFromAdmin
-                        : DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY);
-            } else {
-                ActiveAdmin admin =
-                        getDeviceOwnerOrProfileOwnerOfOrganizationOwnedDeviceLocked();
-                return admin != null
-                        ? admin.mtePolicy
-                        : DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY;
-            }
+            final EnforcingAdmin admin = enforcePermissionAndGetEnforcingAdmin(null,
+                    MANAGE_DEVICE_POLICY_MTE, callerPackageName, caller.getUserId());
+            final Integer policyFromAdmin = mDevicePolicyEngine.getGlobalPolicySetByAdmin(
+                    PolicyDefinition.MEMORY_TAGGING, admin);
+            return (policyFromAdmin != null ? policyFromAdmin
+                    : DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY);
         }
     }
 
