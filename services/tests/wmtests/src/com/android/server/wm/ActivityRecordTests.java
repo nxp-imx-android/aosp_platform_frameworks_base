@@ -32,6 +32,7 @@ import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_ALWAYS;
 import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_DEFAULT;
 import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_IF_ALLOWLISTED;
 import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_NEVER;
+import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION;
 import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
@@ -133,6 +134,7 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.provider.DeviceConfig;
@@ -736,7 +738,25 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
+    @DisableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT)
     public void testOrientation_dontAllowFixedOrientationForCameraCompatFreeformIfNotEnabled() {
+        final ActivityRecord activity = setupDisplayAndActivityForCameraCompat(
+                /* isCameraRunning= */ true, WINDOWING_MODE_FREEFORM);
+
+        // Task in landscape.
+        assertEquals(ORIENTATION_LANDSCAPE, activity.getTask().getConfiguration().orientation);
+        // Activity is not letterboxed.
+        assertEquals(ORIENTATION_LANDSCAPE, activity.getConfiguration().orientation);
+        assertFalse(activity.mAppCompatController.getAspectRatioPolicy()
+                .isLetterboxedForFixedOrientationAndAspectRatio());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT})
+    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION})
+    public void testOrientation_dontAllowFixedOrientationForCameraCompatFreeformIfOptedOut() {
         final ActivityRecord activity = setupDisplayAndActivityForCameraCompat(
                 /* isCameraRunning= */ true, WINDOWING_MODE_FREEFORM);
 
