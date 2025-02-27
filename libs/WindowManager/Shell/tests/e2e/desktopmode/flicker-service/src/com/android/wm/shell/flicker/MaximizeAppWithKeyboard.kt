@@ -23,6 +23,7 @@ import android.tools.flicker.annotation.FlickerConfigProvider
 import android.tools.flicker.config.FlickerConfig
 import android.tools.flicker.config.FlickerServiceConfig
 import android.tools.flicker.junit.FlickerServiceJUnit4ClassRunner
+import com.android.server.wm.flicker.helpers.DesktopModeAppHelper.MaximizeDesktopAppTrigger
 import com.android.wm.shell.flicker.DesktopModeFlickerScenarios.Companion.MAXIMIZE_APP
 import com.android.wm.shell.scenarios.MaximizeAppWindow
 import org.junit.Test
@@ -35,7 +36,10 @@ import org.junit.runner.RunWith
  * stable display bounds.
  */
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
-class MaximizeAppWithKeyboard : MaximizeAppWindow(rotation = ROTATION_90, usingKeyboard = true) {
+class MaximizeAppWithKeyboard : MaximizeAppWindow(
+    rotation = ROTATION_90,
+    trigger = MaximizeDesktopAppTrigger.KEYBOARD_SHORTCUT
+) {
     @ExpectedScenarios(["MAXIMIZE_APP"])
     @Test
     override fun maximizeAppWindow() = super.maximizeAppWindow()
