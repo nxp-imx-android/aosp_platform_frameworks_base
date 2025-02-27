@@ -2981,7 +2981,11 @@ class ContextImpl extends Context {
 
     private void updateResourceOverlayConstraints() {
         if (mResources != null) {
-            mResources.getAssets().setOverlayConstraints(getDisplayId(), getDeviceId());
+            // Avoid calling getDisplay() here, as it makes a binder call into
+            // DisplayManagerService if the relevant DisplayInfo is not cached in
+            // DisplayManagerGlobal.
+            int displayId = mDisplay != null ? mDisplay.getDisplayId() : Display.DEFAULT_DISPLAY;
+            mResources.getAssets().setOverlayConstraints(displayId, getDeviceId());
         }
     }
 
