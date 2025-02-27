@@ -19,19 +19,26 @@ package com.android.systemui.statusbar.notification.promoted
 import android.app.Flags
 import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
+import android.content.Context
 import android.graphics.PorterDuff
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
+import android.view.View.MeasureSpec.AT_MOST
+import android.view.View.MeasureSpec.EXACTLY
+import android.view.View.MeasureSpec.UNSPECIFIED
+import android.view.View.MeasureSpec.makeMeasureSpec
 import android.view.View.VISIBLE
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.ViewStub
 import android.widget.Chronometer
 import android.widget.DateTimeView
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.annotation.DimenRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -42,7 +49,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.isVisible
@@ -88,22 +97,12 @@ fun AODPromotedNotification(
     }
 
     key(content.identity) {
-        val sidePaddings = dimensionResource(systemuiR.dimen.notification_side_paddings)
-        val sidePaddingValues = PaddingValues(horizontal = sidePaddings, vertical = 0.dp)
-
-        val borderStroke = BorderStroke(1.dp, SecondaryText.brush)
-
-        val borderRadius = dimensionResource(systemuiR.dimen.notification_corner_radius)
-        val borderShape = RoundedCornerShape(borderRadius)
-
-        Box(modifier = modifier.padding(sidePaddingValues)) {
-            AODPromotedNotificationView(
-                layoutResource = layoutResource,
-                content = content,
-                audiblyAlertedIconVisible = audiblyAlertedIconVisible,
-                modifier = Modifier.border(borderStroke, borderShape),
-            )
-        }
+        AODPromotedNotificationView(
+            layoutResource = layoutResource,
+            content = content,
+            audiblyAlertedIconVisible = audiblyAlertedIconVisible,
+            modifier = modifier,
+        )
     }
 }
 
@@ -114,27 +113,91 @@ fun AODPromotedNotificationView(
     audiblyAlertedIconVisible: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    AndroidView(
-        factory = { context ->
-            val view =
-                traceSection("$TAG.inflate") {
-                    LayoutInflater.from(context).inflate(layoutResource, /* root= */ null)
-                }
+    val sidePaddings = dimensionResource(systemuiR.dimen.notification_side_paddings)
+    val sidePaddingValues = PaddingValues(horizontal = sidePaddings, vertical = 0.dp)
 
-            val updater =
-                traceSection("$TAG.findViews") { AODPromotedNotificationViewUpdater(view) }
+    val boxModifier = modifier.padding(sidePaddingValues)
 
-            view.setTag(viewUpdaterTagId, updater)
+    val borderStroke = BorderStroke(1.dp, SecondaryText.brush)
 
-            view
-        },
-        update = { view ->
-            val updater = view.getTag(viewUpdaterTagId) as AODPromotedNotificationViewUpdater
+    val borderRadius = dimensionResource(systemuiR.dimen.notification_corner_radius)
+    val borderShape = RoundedCornerShape(borderRadius)
 
-            traceSection("$TAG.update") { updater.update(content, audiblyAlertedIconVisible) }
-        },
-        modifier = modifier,
-    )
+    val maxHeight =
+        with(LocalDensity.current) {
+                scaledFontHeight(systemuiR.dimen.notification_max_height_for_promoted_ongoing)
+                    .toPx()
+            }
+            .toInt()
+
+    val viewModifier = Modifier.border(borderStroke, borderShape)
+
+    Box(modifier = boxModifier) {
+        AndroidView(
+            factory = { context ->
+                val notif =
+                    traceSection("$TAG.inflate") {
+                        LayoutInflater.from(context).inflate(layoutResource, /* root= */ null)
+                    }
+                val updater =
+                    traceSection("$TAG.findViews") { AODPromotedNotificationViewUpdater(notif) }
+
+                val frame = FrameLayoutWithMaxHeight(maxHeight, context)
+                frame.addView(notif)
+                frame.setTag(viewUpdaterTagId, updater)
+
+                frame
+            },
+            update = { frame ->
+                val updater = frame.getTag(viewUpdaterTagId) as AODPromotedNotificationViewUpdater
+
+                traceSection("$TAG.update") { updater.update(content, audiblyAlertedIconVisible) }
+                frame.maxHeight = maxHeight
+            },
+            modifier = viewModifier,
+        )
+    }
+}
+
+private class FrameLayoutWithMaxHeight(maxHeight: Int, context: Context) : FrameLayout(context) {
+    var maxHeight = maxHeight
+        set(value) {
+            if (field != value) {
+                field = value
+                requestLayout()
+            }
+        }
+
+    // This mirrors the logic in NotificationContentView.onMeasure.
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        if (childCount < 1) {
+            return
+        }
+
+        val child = getChildAt(0)
+        val childLayoutHeight = child.layoutParams.height
+        val childHeightSpec =
+            if (childLayoutHeight >= 0) {
+                makeMeasureSpec(maxHeight.coerceAtMost(childLayoutHeight), EXACTLY)
+            } else {
+                makeMeasureSpec(maxHeight, AT_MOST)
+            }
+        measureChildWithMargins(child, widthMeasureSpec, 0, childHeightSpec, 0)
+        val childMeasuredHeight = child.measuredHeight
+
+        val ownHeightMode = MeasureSpec.getMode(heightMeasureSpec)
+        val ownHeightSize = MeasureSpec.getSize(heightMeasureSpec)
+
+        val ownMeasuredWidth = MeasureSpec.getSize(widthMeasureSpec)
+        val ownMeasuredHeight =
+            if (ownHeightMode != UNSPECIFIED) {
+                childMeasuredHeight.coerceAtMost(ownHeightSize)
+            } else {
+                childMeasuredHeight
+            }
+
+        setMeasuredDimension(ownMeasuredWidth, ownMeasuredHeight)
+    }
 }
 
 private val PromotedNotificationContentModel.layoutResource: Int?
@@ -519,6 +582,11 @@ private enum class AodPromotedNotificationColor(val colorInt: Int) {
     SecondaryText(android.graphics.Color.WHITE);
 
     val brush = SolidColor(androidx.compose.ui.graphics.Color(colorInt))
+}
+
+@Composable
+private fun scaledFontHeight(@DimenRes dimenId: Int): Dp {
+    return dimensionResource(dimenId) * LocalDensity.current.fontScale.coerceAtLeast(1f)
 }
 
 private val viewUpdaterTagId = systemuiR.id.aod_promoted_notification_view_updater_tag

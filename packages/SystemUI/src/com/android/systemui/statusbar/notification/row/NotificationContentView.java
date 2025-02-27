@@ -269,6 +269,7 @@ public class NotificationContentView extends FrameLayout implements Notification
         mNotificationMaxHeight = maxHeight;
     }
 
+    // This logic is mirrored in FrameLayoutWithMaxHeight.onMeasure in AODPromotedNotification.kt.
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
