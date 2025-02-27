@@ -2071,26 +2071,40 @@ public final class ViewRootImpl implements ViewParent,
      */
     @VisibleForTesting
     public @ForceDarkType.ForceDarkTypeDef int determineForceDarkType() {
-        if (forceInvertColor()) {
-            // Force invert ignores all developer opt-outs.
-            // We also ignore dark theme, since the app developer can override the user's preference
-            // for dark mode in configuration.uiMode. Instead, we assume that both force invert and
-            // the system's dark theme are enabled.
-            if (getUiModeManager().getForceInvertState() == UiModeManager.FORCE_INVERT_TYPE_DARK) {
-                return ForceDarkType.FORCE_INVERT_COLOR_DARK;
+        TypedArray a = mContext.obtainStyledAttributes(R.styleable.Theme);
+        try {
+            if (forceInvertColor()) {
+                // Force invert ignores all developer opt-outs.
+                // We also ignore dark theme, since the app developer can override the user's
+                // preference for dark mode in configuration.uiMode. Instead, we assume that both
+                // force invert and the system's dark theme are enabled.
+                if (getUiModeManager().getForceInvertState() ==
+                        UiModeManager.FORCE_INVERT_TYPE_DARK) {
+                    final boolean isLightTheme =
+                        a.getBoolean(R.styleable.Theme_isLightTheme, false);
+                    // TODO: b/372558459 - Also check the background ColorDrawable color lightness
+                    // TODO: b/368725782 - Use hwui color area detection instead of / in
+                    //  addition to these heuristics.
+                    if (isLightTheme) {
+                        return ForceDarkType.FORCE_INVERT_COLOR_DARK;
+                    } else {
+                        return ForceDarkType.NONE;
+                    }
+                }
             }
-        }
 
-        boolean useAutoDark = getNightMode() == Configuration.UI_MODE_NIGHT_YES;
-        if (useAutoDark) {
-            boolean forceDarkAllowedDefault =
-                    SystemProperties.getBoolean(ThreadedRenderer.DEBUG_FORCE_DARK, false);
-            TypedArray a = mContext.obtainStyledAttributes(R.styleable.Theme);
-            useAutoDark = a.getBoolean(R.styleable.Theme_isLightTheme, true)
-                    && a.getBoolean(R.styleable.Theme_forceDarkAllowed, forceDarkAllowedDefault);
+            boolean useAutoDark = getNightMode() == Configuration.UI_MODE_NIGHT_YES;
+            if (useAutoDark) {
+                boolean forceDarkAllowedDefault =
+                        SystemProperties.getBoolean(ThreadedRenderer.DEBUG_FORCE_DARK, false);
+                useAutoDark = a.getBoolean(R.styleable.Theme_isLightTheme, true)
+                        && a.getBoolean(R.styleable.Theme_forceDarkAllowed,
+                            forceDarkAllowedDefault);
+            }
+            return useAutoDark ? ForceDarkType.FORCE_DARK : ForceDarkType.NONE;
+        } finally {
             a.recycle();
         }
-        return useAutoDark ? ForceDarkType.FORCE_DARK : ForceDarkType.NONE;
     }
 
     private void updateForceDarkMode() {

@@ -49,6 +49,7 @@ enum class BitmapPalette {
     Unknown,
     Light,
     Dark,
+    Colorful,
 };
 
 namespace uirenderer {
