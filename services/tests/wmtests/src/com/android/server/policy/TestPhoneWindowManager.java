@@ -45,7 +45,6 @@ import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_SHUT
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_SHUT_OFF_NO_CONFIRM;
 import static com.android.server.policy.PhoneWindowManager.POWER_VOLUME_UP_BEHAVIOR_MUTE;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -130,9 +129,9 @@ import org.mockito.MockSettings;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.quality.Strictness;
-import org.mockito.stubbing.Answer;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.function.Supplier;
 
 class TestPhoneWindowManager {
@@ -542,6 +541,17 @@ class TestPhoneWindowManager {
                 mPhoneWindowManager.mLongPressOnPowerAssistantTimeoutMs = 500;
                 break;
         }
+    }
+
+    void overrideLongPressPowerForSyntheticEvent(final int behavior,
+            final BlockingQueue<InputEvent> eventQueue) throws RemoteException {
+        mPhoneWindowManager.getStatusBarService();
+        spyOn(mPhoneWindowManager.mStatusBarService);
+        Mockito.doAnswer(invocation -> {
+            eventQueue.add(new KeyEvent(invocation.getArgument(0)));
+            return null;
+        }).when(mPhoneWindowManager.mStatusBarService).handleSystemKey(any());
+        overrideLongPressOnPower(behavior);
     }
 
     void overrideLongPressOnHomeBehavior(int behavior) {

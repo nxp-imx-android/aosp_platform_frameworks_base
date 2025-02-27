@@ -114,6 +114,7 @@ import static com.android.server.wm.WindowManagerPolicyProto.ROTATION;
 import static com.android.server.wm.WindowManagerPolicyProto.ROTATION_MODE;
 import static com.android.server.wm.WindowManagerPolicyProto.SCREEN_ON_FULLY;
 import static com.android.server.wm.WindowManagerPolicyProto.WINDOW_MANAGER_DRAW_COMPLETE;
+import static com.android.systemui.shared.Flags.enableLppSqueezeEffect;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.Nullable;
@@ -1496,6 +1497,20 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         final int behavior = getResolvedLongPressOnPowerBehavior();
         Slog.d(TAG, "powerLongPress: eventTime=" + eventTime
                 + " mLongPressOnPowerBehavior=" + mLongPressOnPowerBehavior);
+
+        // Sending a synthetic KeyEvent to StatusBar service with flag FLAG_LONG_PRESS set, when
+        // power button is long pressed
+        if (enableLppSqueezeEffect()) {
+            // Long press is detected in a callback, so there's no explicit hardware KeyEvent
+            // available here. Instead, we create a synthetic power key event that has properties
+            // similar to the original one.
+            final KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KEYCODE_POWER);
+            event.setFlags(KeyEvent.FLAG_LONG_PRESS);
+            // setting both downTime and eventTime as same as downTime is sent as eventTime for long
+            // press event in SingleKeyGestureDetector's handler
+            event.setTime(eventTime, eventTime);
+            sendSystemKeyToStatusBarAsync(event);
+        }
 
         switch (behavior) {
             case LONG_PRESS_POWER_NOTHING:
