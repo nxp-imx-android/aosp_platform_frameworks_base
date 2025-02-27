@@ -20,6 +20,7 @@ import android.app.Flags
 import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
 import android.graphics.PorterDuff
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -80,9 +81,13 @@ fun AODPromotedNotification(
     val content = viewModel.content ?: return
     val audiblyAlertedIconVisible = viewModel.audiblyAlertedIconVisible
 
-    key(content.identity) {
-        val layoutResource = content.layoutResource ?: return
+    val layoutResource = content.layoutResource
+    if (layoutResource == null) {
+        Log.w(TAG, "not displaying promoted notif with ineligible style on AOD")
+        return
+    }
 
+    key(content.identity) {
         val sidePaddings = dimensionResource(systemuiR.dimen.notification_side_paddings)
         val sidePaddingValues = PaddingValues(horizontal = sidePaddings, vertical = 0.dp)
 
