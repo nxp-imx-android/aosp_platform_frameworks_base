@@ -73,6 +73,7 @@ final class PackageMetrics {
     public static final int STEP_DEXOPT = 5;
     public static final int STEP_FREEZE_INSTALL = 6;
     public static final int STEP_RESTORE = 7;
+    public static final int STEP_WAIT_DEXOPT = 8;
 
     @IntDef(prefix = {"STEP_"}, value = {
             STEP_PREPARE,
@@ -81,7 +82,8 @@ final class PackageMetrics {
             STEP_COMMIT,
             STEP_DEXOPT,
             STEP_FREEZE_INSTALL,
-            STEP_RESTORE
+            STEP_RESTORE,
+            STEP_WAIT_DEXOPT
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface StepInt {
