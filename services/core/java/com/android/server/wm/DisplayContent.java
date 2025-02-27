@@ -629,11 +629,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     int mLayoutSeq = 0;
 
-    /** The number of deferrals of updating the IME layering target. */
-    private int mUpdateImeLayeringTargetDeferCount;
-    /** Whether the IME layering target was requested to be updated while being deferred. */
-    private boolean mUpdateImeLayeringTargetRequestedWhileDeferred;
-
     private MagnificationSpec mMagnificationSpec;
 
     private InputMonitor mInputMonitor;
@@ -4168,14 +4163,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         final WindowState curTarget = mImeLayeringTarget;
-        if (!canUpdateImeLayeringTarget()) {
-            if (DEBUG_INPUT_METHOD) {
-                Slog.w(TAG_WM, "Defer updating IME layering target");
-            }
-            mUpdateImeLayeringTargetRequestedWhileDeferred = true;
-            return curTarget;
-        }
-
         // TODO(multidisplay): Needs some serious rethought when the target and IME are not on the
         // same display. Or even when the current IME/target are not on the same screen as the next
         // IME/target. For now only look for input windows on the main screen.
@@ -5628,40 +5615,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         } finally {
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         }
-    }
-
-    /**
-     * Defers updating the IME layering target, tracking the number of deferrals in a counter. When
-     * all of these are cleared through {@link #continueUpdateImeLayeringTarget} the update will
-     * take place.
-     */
-    void deferUpdateImeLayeringTarget() {
-        if (mUpdateImeLayeringTargetDeferCount == 0) {
-            mUpdateImeLayeringTargetRequestedWhileDeferred = false;
-        }
-        mUpdateImeLayeringTargetDeferCount++;
-    }
-
-    /**
-     * Attempts to continue updating the IME layering target by clearing one deferred update set
-     * by {@link #deferUpdateImeLayeringTarget}. If no deferred updates remain, and the update
-     * was requested while deferred, then this will trigger the update.
-     */
-    void continueUpdateImeLayeringTarget() {
-        if (mUpdateImeLayeringTargetDeferCount == 0) {
-            return;
-        }
-
-        mUpdateImeLayeringTargetDeferCount--;
-        if (mUpdateImeLayeringTargetDeferCount == 0
-                && mUpdateImeLayeringTargetRequestedWhileDeferred) {
-            computeImeLayeringTarget(true /* update */);
-        }
-    }
-
-    /** Checks whether the IME layering target can be updated, or is currently being deferred. */
-    private boolean canUpdateImeLayeringTarget() {
-        return mUpdateImeLayeringTargetDeferCount == 0;
     }
 
     InputMonitor getInputMonitor() {

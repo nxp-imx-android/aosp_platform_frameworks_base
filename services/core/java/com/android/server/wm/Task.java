@@ -5795,49 +5795,37 @@ class Task extends TaskFragment {
             tr.forAllActivities(a -> { a.appTimeTracker = timeTracker; });
         }
 
-        try {
-            // Defer updating the IME layering target since the it will try to get computed before
-            // updating all closing and opening apps, which can cause it to get calculated
-            // incorrectly.
-            mDisplayContent.deferUpdateImeLayeringTarget();
-
-            // Don't refocus if invisible to current user
-            final ActivityRecord top = tr.getTopNonFinishingActivity();
-            if (top == null || !top.showToCurrentUser()) {
-                positionChildAtTop(tr);
-                if (top != null) {
-                    mTaskSupervisor.mRecentTasks.add(top.getTask());
-                }
-                ActivityOptions.abort(options);
-                return;
+        // Don't refocus if invisible to current user
+        final ActivityRecord top = tr.getTopNonFinishingActivity();
+        if (top == null || !top.showToCurrentUser()) {
+            positionChildAtTop(tr);
+            if (top != null) {
+                mTaskSupervisor.mRecentTasks.add(top.getTask());
             }
+            ActivityOptions.abort(options);
+            return;
+        }
 
-            // Set focus to the top running activity of this task and move all its parents to top.
-            top.moveFocusableActivityToTop(reason);
+        // Set focus to the top running activity of this task and move all its parents to top.
+        top.moveFocusableActivityToTop(reason);
 
-            if (DEBUG_TRANSITION) Slog.v(TAG_TRANSITION, "Prepare to front transition: task=" + tr);
-            if (noAnimation) {
-                mTaskSupervisor.mNoAnimActivities.add(top);
-                mTransitionController.collect(top);
-                mTransitionController.setNoAnimation(top);
-                ActivityOptions.abort(options);
-            } else {
-                updateTransitLocked(TRANSIT_TO_FRONT, options);
-            }
+        if (DEBUG_TRANSITION) Slog.v(TAG_TRANSITION, "Prepare to front transition: task=" + tr);
+        if (noAnimation) {
+            mTaskSupervisor.mNoAnimActivities.add(top);
+            mTransitionController.collect(top);
+            mTransitionController.setNoAnimation(top);
+            ActivityOptions.abort(options);
+        } else {
+            updateTransitLocked(TRANSIT_TO_FRONT, options);
+        }
 
-            // If a new task is moved to the front, then mark the existing top activity as
-            // supporting
+        // If a new task is moved to the front, then mark the existing top activity as supporting
+        // picture-in-picture while paused only if the task would not be considered an overlay on
+        // top of the current activity (eg. not fullscreen, or the assistant)
+        enableEnterPipOnTaskSwitch(pipCandidate, tr, null /* toFrontActivity */, options);
 
-            // picture-in-picture while paused only if the task would not be considered an oerlay
-            // on top
-            // of the current activity (eg. not fullscreen, or the assistant)
-            enableEnterPipOnTaskSwitch(pipCandidate, tr, null /* toFrontActivity */, options);
-
-            if (!deferResume) {
-                mRootWindowContainer.resumeFocusedTasksTopActivities();
-            }
-        } finally {
-            mDisplayContent.continueUpdateImeLayeringTarget();
+        if (!deferResume) {
+            mRootWindowContainer.resumeFocusedTasksTopActivities();
         }
     }
 
