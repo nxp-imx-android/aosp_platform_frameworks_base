@@ -90,15 +90,16 @@ constructor(@MediaCarouselControllerLog private val buffer: LogBuffer) {
 
     fun logCarouselVisible() = buffer.log(TAG, LogLevel.DEBUG, {}, { "showing carousel" })
 
-    fun logMediaHostVisibility(location: Int, visible: Boolean) {
+    fun logMediaHostVisibility(location: Int, visible: Boolean, oldState: Boolean) {
         buffer.log(
             TAG,
             LogLevel.DEBUG,
             {
                 int1 = location
                 bool1 = visible
+                bool2 = oldState
             },
-            { "media host visibility changed location=$location, visible:$visible" },
+            { "media host visibility changed location=$location, visible:$visible, was:$oldState" },
         )
     }
 }
