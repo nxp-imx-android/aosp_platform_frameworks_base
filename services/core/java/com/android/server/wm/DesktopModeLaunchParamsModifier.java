@@ -42,6 +42,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
 
     private static final String TAG =
             TAG_WITH_CLASS_NAME ? "DesktopModeLaunchParamsModifier" : TAG_ATM;
+
     private static final boolean DEBUG = false;
 
     private StringBuilder mLogBuilder;
@@ -133,6 +134,14 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         DesktopModeBoundsCalculator.updateInitialBounds(task, layout, activity, options,
                 outParams.mBounds, this::appendLog);
         appendLog("final desktop mode task bounds set to %s", outParams.mBounds);
+        if (options != null && options.getFlexibleLaunchSize()) {
+            // Return result done to prevent other modifiers from respecting option bounds and
+            // applying further cascading. Since other modifiers are being skipped in this case,
+            // this modifier is now also responsible to respecting the options launch windowing
+            // mode.
+            outParams.mWindowingMode = options.getLaunchWindowingMode();
+            return RESULT_DONE;
+        }
         return RESULT_CONTINUE;
     }
 
