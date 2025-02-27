@@ -39,9 +39,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.compose.ui.platform.ComposeView;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.widget.NotificationExpandButton;
+import com.android.systemui.notifications.ui.composable.row.BundleHeaderKt;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.CrossFadeHelper;
@@ -58,8 +60,10 @@ import com.android.systemui.statusbar.notification.row.HybridGroupManager;
 import com.android.systemui.statusbar.notification.row.HybridNotificationView;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
+import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModelImpl;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,6 +121,13 @@ public class NotificationChildrenContainer extends ViewGroup
      * Whether or not individual notifications that are part of this container will have shadows.
      */
     private boolean mEnableShadowOnChildNotifications;
+
+    /**
+     * This view is only set when this NCC is a bundle. If this view is set, all other header
+     * view variants have to be null.
+     */
+    private ComposeView mBundleHeaderView;
+    private BundleHeaderViewModelImpl mBundleHeaderViewModel;
 
     private NotificationHeaderView mGroupHeader;
     private NotificationHeaderViewWrapper mGroupHeaderWrapper;
@@ -188,6 +199,9 @@ public class NotificationChildrenContainer extends ViewGroup
                     R.dimen.notification_children_container_top_padding);
             mHeaderHeight = mCollapsedHeaderMargin + mAdditionalExpandedHeaderMargin;
         }
+        if (mBundleHeaderView != null) {
+            initBundleDimens();
+        }
         mCollapsedBottomPadding = res.getDimensionPixelOffset(
                 R.dimen.notification_children_collapsed_bottom_padding);
         mEnableShadowOnChildNotifications =
@@ -243,6 +257,10 @@ public class NotificationChildrenContainer extends ViewGroup
                     mMinimizedGroupHeader.getMeasuredWidth(),
                     mMinimizedGroupHeader.getMeasuredHeight());
         }
+        if (mBundleHeaderView != null) {
+            mBundleHeaderView.layout(0, 0, mBundleHeaderView.getMeasuredWidth(),
+                    mBundleHeaderView.getMeasuredHeight());
+        }
     }
 
     @Override
@@ -293,6 +311,9 @@ public class NotificationChildrenContainer extends ViewGroup
         }
         if (mMinimizedGroupHeader != null) {
             mMinimizedGroupHeader.measure(widthMeasureSpec, headerHeightSpec);
+        }
+        if (mBundleHeaderView != null) {
+            mBundleHeaderView.measure(widthMeasureSpec, headerHeightSpec);
         }
 
         setMeasuredDimension(width, height);
@@ -480,6 +501,28 @@ public class NotificationChildrenContainer extends ViewGroup
         removeView(mMinimizedGroupHeader);
         mMinimizedGroupHeader = null;
         mMinimizedGroupHeaderWrapper = null;
+    }
+
+    /**
+     * Init the bundle header view. The ComposeView is initialized within with the passed viewModel.
+     * This can only be init once and not in conjunction with any other header view.
+     */
+    public void initBundleHeader(@NonNull BundleHeaderViewModelImpl viewModel) {
+        if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return;
+        if (mBundleHeaderView != null) return;
+        initBundleDimens();
+
+        mBundleHeaderViewModel = viewModel;
+        mBundleHeaderView = BundleHeaderKt.createComposeView(mBundleHeaderViewModel, getContext());
+        addView(mBundleHeaderView);
+        invalidate();
+    }
+
+    private void initBundleDimens() {
+        NotificationBundleUi.assertInNewMode();
+        mCollapsedHeaderMargin = mHeaderHeight;
+        mAdditionalExpandedHeaderMargin = 0;
+        mCollapsedBottomPadding = 0;
     }
 
     /**
@@ -1298,6 +1341,17 @@ public class NotificationChildrenContainer extends ViewGroup
                 mGroupHeader.setHeaderBackgroundDrawable(cd);
             } else {
                 mGroupHeader.setHeaderBackgroundDrawable(null);
+            }
+        }
+        if (mBundleHeaderView != null) {
+            if (expanded) {
+                ColorDrawable cd = new ColorDrawable();
+                cd.setColor(mContainingNotification.calculateBgColor());
+                // TODO(b/389839492): The backgroundDrawable needs an outline like in the original:
+                //  setOutlineProvider(mProvider);
+                mBundleHeaderViewModel.setBackgroundDrawable(cd);
+            } else {
+                mBundleHeaderViewModel.setBackgroundDrawable(null);
             }
         }
     }
