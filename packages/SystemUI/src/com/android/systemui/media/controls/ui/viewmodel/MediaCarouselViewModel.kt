@@ -49,7 +49,6 @@ constructor(
     private val visualStabilityProvider: VisualStabilityProvider,
     private val interactor: MediaCarouselInteractor,
     private val controlInteractorFactory: MediaControlInteractorFactory,
-    private val recommendationsViewModel: MediaRecommendationsViewModel,
     private val logger: MediaUiEventLogger,
     private val mediaLogger: MediaLogger,
 ) {
@@ -69,7 +68,7 @@ constructor(
                             when (commonModel) {
                                 is MediaCommonModel.MediaControl -> add(toViewModel(commonModel))
                                 is MediaCommonModel.MediaRecommendations ->
-                                    add(toViewModel(commonModel))
+                                    return@forEach // TODO(b/382680767): remove
                             }
                         }
                     }
@@ -94,8 +93,6 @@ constructor(
 
     private val mediaControlByInstanceId =
         mutableMapOf<InstanceId, MediaCommonViewModel.MediaControl>()
-
-    private var mediaRecs: MediaCommonViewModel.MediaRecommendations? = null
 
     private var modelsPendingRemoval: MutableSet<MediaCommonModel> = mutableSetOf()
 
@@ -149,37 +146,6 @@ constructor(
         )
     }
 
-    private fun toViewModel(
-        commonModel: MediaCommonModel.MediaRecommendations
-    ): MediaCommonViewModel.MediaRecommendations {
-        return mediaRecs?.copy(
-            key = commonModel.recsLoadingModel.key,
-            loadingEnabled = interactor.isRecommendationActive(),
-        )
-            ?: MediaCommonViewModel.MediaRecommendations(
-                    key = commonModel.recsLoadingModel.key,
-                    loadingEnabled = interactor.isRecommendationActive(),
-                    recsViewModel = recommendationsViewModel,
-                    onAdded = { commonViewModel ->
-                        mediaLogger.logMediaRecommendationCardAdded(
-                            commonModel.recsLoadingModel.key
-                        )
-                        onMediaRecommendationAddedOrUpdated(
-                            commonViewModel as MediaCommonViewModel.MediaRecommendations
-                        )
-                    },
-                    onRemoved = { immediatelyRemove ->
-                        onMediaRecommendationRemoved(commonModel, immediatelyRemove)
-                    },
-                    onUpdated = { commonViewModel ->
-                        onMediaRecommendationAddedOrUpdated(
-                            commonViewModel as MediaCommonViewModel.MediaRecommendations
-                        )
-                    },
-                )
-                .also { mediaRecs = it }
-    }
-
     private fun onMediaControlAddedOrUpdated(
         commonViewModel: MediaCommonViewModel,
         commonModel: MediaCommonModel.MediaControl,
@@ -194,32 +160,6 @@ constructor(
             }
         } else {
             modelsPendingRemoval.remove(commonModel)
-        }
-    }
-
-    private fun onMediaRecommendationAddedOrUpdated(
-        commonViewModel: MediaCommonViewModel.MediaRecommendations
-    ) {
-        if (!interactor.isRecommendationActive()) {
-            commonViewModel.onRemoved(true)
-        }
-    }
-
-    private fun onMediaRecommendationRemoved(
-        commonModel: MediaCommonModel.MediaRecommendations,
-        immediatelyRemove: Boolean,
-    ) {
-        mediaLogger.logMediaRecommendationCardRemoved(commonModel.recsLoadingModel.key)
-        if (immediatelyRemove || isReorderingAllowed()) {
-            interactor.dismissSmartspaceRecommendation(commonModel.recsLoadingModel.key, 0L)
-            mediaRecs = null
-            if (!immediatelyRemove) {
-                // Although it wasn't requested, we were able to process the removal
-                // immediately since reordering is allowed. So, notify hosts to update
-                updateHostVisibility()
-            }
-        } else {
-            modelsPendingRemoval.add(commonModel)
         }
     }
 

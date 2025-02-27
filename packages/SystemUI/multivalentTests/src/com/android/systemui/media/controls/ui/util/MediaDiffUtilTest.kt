@@ -23,7 +23,6 @@ import com.android.internal.logging.InstanceId
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.media.controls.ui.viewmodel.MediaCommonViewModel
 import com.android.systemui.media.controls.ui.viewmodel.mediaControlViewModel
-import com.android.systemui.media.controls.ui.viewmodel.mediaRecommendationsViewModel
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.fail
@@ -56,25 +55,6 @@ class MediaDiffUtilTest : SysuiTestCase() {
     }
 
     @Test
-    fun newMediaRecommendationsAdded() {
-        val mediaRecs = createMediaRecommendations(KEY_MEDIA_SMARTSPACE, true)
-        val oldList = listOf<MediaCommonViewModel>()
-        val newList = listOf(mediaRecs)
-        val mediaLoadedCallback = MediaViewModelCallback(oldList, newList)
-        val mediaLoadedListUpdateCallback =
-            MediaViewModelListUpdateCallback(
-                oldList,
-                newList,
-                { commonViewModel, _ -> assertThat(commonViewModel).isEqualTo(mediaRecs) },
-                { commonViewModel, _ -> fail("Unexpected to update $commonViewModel") },
-                { fail("Unexpected to remove $it") },
-                { commonViewModel, _, _ -> fail("Unexpected to move $commonViewModel ") },
-            )
-
-        DiffUtil.calculateDiff(mediaLoadedCallback).dispatchUpdatesTo(mediaLoadedListUpdateCallback)
-    }
-
-    @Test
     fun updateMediaControl_contentChanged() {
         val mediaControl = createMediaControl(InstanceId.fakeInstanceId(123), true)
         val oldList = listOf(mediaControl)
@@ -86,25 +66,6 @@ class MediaDiffUtilTest : SysuiTestCase() {
                 newList,
                 { commonViewModel, _ -> fail("Unexpected to add $commonViewModel") },
                 { commonViewModel, _ -> assertThat(commonViewModel).isNotEqualTo(mediaControl) },
-                { fail("Unexpected to remove $it") },
-                { commonViewModel, _, _ -> fail("Unexpected to move $commonViewModel ") },
-            )
-
-        DiffUtil.calculateDiff(mediaLoadedCallback).dispatchUpdatesTo(mediaLoadedListUpdateCallback)
-    }
-
-    @Test
-    fun updateMediaRecommendations_contentChanged() {
-        val mediaRecs = createMediaRecommendations(KEY_MEDIA_SMARTSPACE, true)
-        val oldList = listOf(mediaRecs)
-        val newList = listOf(mediaRecs.copy(key = KEY_MEDIA_SMARTSPACE_2))
-        val mediaLoadedCallback = MediaViewModelCallback(oldList, newList)
-        val mediaLoadedListUpdateCallback =
-            MediaViewModelListUpdateCallback(
-                oldList,
-                newList,
-                { commonViewModel, _ -> fail("Unexpected to add $commonViewModel") },
-                { commonViewModel, _ -> assertThat(commonViewModel).isNotEqualTo(mediaRecs) },
                 { fail("Unexpected to remove $it") },
                 { commonViewModel, _, _ -> fail("Unexpected to move $commonViewModel ") },
             )
@@ -133,27 +94,6 @@ class MediaDiffUtilTest : SysuiTestCase() {
     }
 
     @Test
-    fun mediaRecommendationsMoved() {
-        val mediaControl1 = createMediaControl(InstanceId.fakeInstanceId(123), true)
-        val mediaControl2 = createMediaControl(InstanceId.fakeInstanceId(456), false)
-        val mediaRecs = createMediaRecommendations(KEY_MEDIA_SMARTSPACE, true)
-        val oldList = listOf(mediaRecs, mediaControl1, mediaControl2)
-        val newList = listOf(mediaControl1, mediaControl2, mediaRecs)
-        val mediaLoadedCallback = MediaViewModelCallback(oldList, newList)
-        val mediaLoadedListUpdateCallback =
-            MediaViewModelListUpdateCallback(
-                oldList,
-                newList,
-                { commonViewModel, _ -> fail("Unexpected to add $commonViewModel") },
-                { commonViewModel, _ -> fail("Unexpected to update $commonViewModel") },
-                { fail("Unexpected to remove $it") },
-                { commonViewModel, _, _ -> assertThat(commonViewModel).isEqualTo(mediaRecs) },
-            )
-
-        DiffUtil.calculateDiff(mediaLoadedCallback).dispatchUpdatesTo(mediaLoadedListUpdateCallback)
-    }
-
-    @Test
     fun mediaControlRemoved() {
         val mediaControl = createMediaControl(InstanceId.fakeInstanceId(123), true)
         val oldList = listOf(mediaControl)
@@ -172,25 +112,6 @@ class MediaDiffUtilTest : SysuiTestCase() {
         DiffUtil.calculateDiff(mediaLoadedCallback).dispatchUpdatesTo(mediaLoadedListUpdateCallback)
     }
 
-    @Test
-    fun mediaRecommendationsRemoved() {
-        val mediaRecs = createMediaRecommendations(KEY_MEDIA_SMARTSPACE_2, false)
-        val oldList = listOf(mediaRecs)
-        val newList = listOf<MediaCommonViewModel>()
-        val mediaLoadedCallback = MediaViewModelCallback(oldList, newList)
-        val mediaLoadedListUpdateCallback =
-            MediaViewModelListUpdateCallback(
-                oldList,
-                newList,
-                { commonViewModel, _ -> fail("Unexpected to add $commonViewModel") },
-                { commonViewModel, _ -> fail("Unexpected to update $commonViewModel") },
-                { commonViewModel -> assertThat(commonViewModel).isEqualTo(mediaRecs) },
-                { commonViewModel, _, _ -> fail("Unexpected to move $commonViewModel ") },
-            )
-
-        DiffUtil.calculateDiff(mediaLoadedCallback).dispatchUpdatesTo(mediaLoadedListUpdateCallback)
-    }
-
     private fun createMediaControl(
         instanceId: InstanceId,
         immediatelyUpdateUi: Boolean,
@@ -201,26 +122,7 @@ class MediaDiffUtilTest : SysuiTestCase() {
             controlViewModel = kosmos.mediaControlViewModel,
             onAdded = {},
             onRemoved = {},
-            onUpdated = {}
+            onUpdated = {},
         )
-    }
-
-    private fun createMediaRecommendations(
-        key: String,
-        loadingEnabled: Boolean,
-    ): MediaCommonViewModel.MediaRecommendations {
-        return MediaCommonViewModel.MediaRecommendations(
-            key = key,
-            loadingEnabled = loadingEnabled,
-            recsViewModel = kosmos.mediaRecommendationsViewModel,
-            onAdded = {},
-            onRemoved = {},
-            onUpdated = {}
-        )
-    }
-
-    companion object {
-        private const val KEY_MEDIA_SMARTSPACE = "MEDIA_SMARTSPACE_ID"
-        private const val KEY_MEDIA_SMARTSPACE_2 = "MEDIA_SMARTSPACE_ID_2"
     }
 }
