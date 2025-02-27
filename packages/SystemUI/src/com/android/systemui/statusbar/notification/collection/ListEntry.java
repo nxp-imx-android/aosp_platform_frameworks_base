@@ -66,10 +66,6 @@ public abstract class ListEntry extends PipelineEntry {
         return mPreviousAttachState.getParent();
     }
 
-    public int getSectionIndex() {
-        return mAttachState.getSection() != null ? mAttachState.getSection().getIndex() : -1;
-    }
-
     /**
      * Stores the current attach state into {@link #getPreviousAttachState()}} and then starts a
      * fresh attach state (all entries will be null/default-initialized).

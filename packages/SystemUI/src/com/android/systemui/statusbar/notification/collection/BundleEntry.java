@@ -63,11 +63,6 @@ public class BundleEntry extends PipelineEntry {
         return null;
     }
 
-    @Override
-    public int getSectionIndex() {
-        return 0;
-    }
-
     @Nullable
     @Override
     public PipelineEntry getParent() {
