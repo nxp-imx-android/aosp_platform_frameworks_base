@@ -533,8 +533,7 @@ class DesktopTasksController(
             return false
         }
         logV("moveBackgroundTaskToDesktop with taskId=%d", taskId)
-        val taskIdToMinimize =
-            bringDesktopAppsToFrontBeforeShowingNewTask(task.displayId, wct, taskId)
+        val taskIdToMinimize = bringDesktopAppsToFront(task.displayId, wct, taskId)
         val exitResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
                 wct = wct,
@@ -599,13 +598,7 @@ class DesktopTasksController(
                 reason = DesktopImmersiveController.ExitReason.TASK_LAUNCH,
             )
 
-        val taskIdToMinimize =
-            prepareMoveTaskToDeskAndActivate(
-                wct = wct,
-                displayId = displayId,
-                deskId = deskId,
-                task = task,
-            )
+        val taskIdToMinimize = addDeskActivationWithMovingTaskChanges(deskId, wct, task)
 
         val transition: IBinder
         if (remoteTransition != null) {
@@ -637,44 +630,6 @@ class DesktopTasksController(
             taskRepository.setActiveDesk(displayId = displayId, deskId = deskId)
         }
         return true
-    }
-
-    /**
-     * Applies the necessary changes and operations to [wct] to move a task into a desk and
-     * activating that desk. This includes showing pre-existing tasks of that desk behind the new
-     * task (but minimizing one of them if needed) and showing Home and the desktop wallpaper.
-     *
-     * @return the id of the task that is being minimized, if any.
-     */
-    private fun prepareMoveTaskToDeskAndActivate(
-        wct: WindowContainerTransaction,
-        displayId: Int,
-        deskId: Int,
-        task: RunningTaskInfo,
-    ): Int? {
-        val taskIdToMinimize =
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                // Activate the desk first.
-                prepareForDeskActivation(displayId, wct)
-                desksOrganizer.activateDesk(wct, deskId)
-                if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-                    // TODO: b/362720497 - do non-running tasks need to be restarted with
-                    // |wct#startTask|?
-                }
-                taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
-                    doesAnyTaskRequireTaskbarRounding(displayId)
-                )
-                // TODO: b/362720497 - activating a desk with the intention to move a new task to
-                //  it means we may need to minimize something in the activating desk. Do so here
-                //  similar to how it's done in #bringDesktopAppsToFrontBeforeShowingNewTask
-                //  instead of returning null.
-                null
-            } else {
-                // Bring other apps to front first.
-                bringDesktopAppsToFrontBeforeShowingNewTask(displayId, wct, task.taskId)
-            }
-        addMoveToDeskTaskChanges(wct = wct, task = task, deskId = deskId)
-        return taskIdToMinimize
     }
 
     private fun invokeCallbackToOverview(transition: IBinder, callback: IMoveToDesktopCallback?) {
@@ -734,13 +689,7 @@ class DesktopTasksController(
                 moveHomeTask(context.displayId, wct)
             }
         }
-        val taskIdToMinimize =
-            prepareMoveTaskToDeskAndActivate(
-                wct = wct,
-                displayId = taskInfo.displayId,
-                deskId = deskId,
-                task = taskInfo,
-            )
+        val taskIdToMinimize = addDeskActivationWithMovingTaskChanges(deskId, wct, taskInfo)
         val exitResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
                 wct = wct,
@@ -1725,12 +1674,6 @@ class DesktopTasksController(
         }
     }
 
-    private fun bringDesktopAppsToFrontBeforeShowingNewTask(
-        displayId: Int,
-        wct: WindowContainerTransaction,
-        newTaskIdInFront: Int,
-    ): Int? = bringDesktopAppsToFront(displayId, wct, newTaskIdInFront)
-
     @Deprecated("Use activeDesk() instead.", ReplaceWith("activateDesk()"))
     private fun bringDesktopAppsToFront(
         displayId: Int,
@@ -2355,7 +2298,7 @@ class DesktopTasksController(
                 runOnTransitStart?.invoke(transition)
                 return wct
             }
-            bringDesktopAppsToFrontBeforeShowingNewTask(task.displayId, wct, task.taskId)
+            bringDesktopAppsToFront(task.displayId, wct, task.taskId)
             wct.reorder(task.token, true)
             return wct
         }
@@ -2426,7 +2369,7 @@ class DesktopTasksController(
                     task.baseIntent.flags.and(Intent.FLAG_ACTIVITY_TASK_ON_HOME) != 0 ||
                         !isDesktopModeShowing(task.displayId)
                 ) {
-                    bringDesktopAppsToFrontBeforeShowingNewTask(task.displayId, wct, task.taskId)
+                    bringDesktopAppsToFront(task.displayId, wct, task.taskId)
                     wct.reorder(task.token, true)
                 }
 
@@ -2548,6 +2491,20 @@ class DesktopTasksController(
             doesAnyTaskRequireTaskbarRounding(task.displayId, task.taskId)
         )
         return if (wct.isEmpty) null else wct
+    }
+
+    /**
+     * Applies the [wct] changes need when a task is first moving to a desk and the desk needs to be
+     * activated.
+     */
+    private fun addDeskActivationWithMovingTaskChanges(
+        deskId: Int,
+        wct: WindowContainerTransaction,
+        task: RunningTaskInfo,
+    ): Int? {
+        val taskIdToMinimize = addDeskActivationChanges(deskId, wct, task)
+        addMoveToDeskTaskChanges(wct = wct, task = task, deskId = deskId)
+        return taskIdToMinimize
     }
 
     /**
@@ -2819,9 +2776,13 @@ class DesktopTasksController(
     }
 
     /** Activates the given desk but without starting a transition. */
-    fun addDeskActivationChanges(deskId: Int, wct: WindowContainerTransaction) {
+    fun addDeskActivationChanges(
+        deskId: Int,
+        wct: WindowContainerTransaction,
+        newTask: RunningTaskInfo? = null,
+    ): Int? {
         val displayId = taskRepository.getDisplayForDesk(deskId)
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+        return if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             prepareForDeskActivation(displayId, wct)
             desksOrganizer.activateDesk(wct, deskId)
             if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
@@ -2830,8 +2791,12 @@ class DesktopTasksController(
             taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
                 doesAnyTaskRequireTaskbarRounding(displayId)
             )
+            // TODO: b/362720497 - activating a desk with the intention to move a new task to
+            //  it means we may need to minimize something in the activating desk. Do so here
+            //  similar to how it's done in #bringDesktopAppsToFront instead of returning null.
+            null
         } else {
-            bringDesktopAppsToFront(displayId, wct)
+            bringDesktopAppsToFront(displayId, wct, newTask?.taskId)
         }
     }
 
