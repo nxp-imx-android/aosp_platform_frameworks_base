@@ -15,6 +15,7 @@ import com.android.systemui.bouncer.ui.viewmodel.KeyguardBouncerViewModel
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToPrimaryBouncerTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToGoneTransitionViewModel
 import com.android.systemui.log.BouncerLogger
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
@@ -30,6 +31,8 @@ data class LegacyBouncerDependencies
 constructor(
     val viewModel: KeyguardBouncerViewModel,
     val primaryBouncerToGoneTransitionViewModel: PrimaryBouncerToGoneTransitionViewModel,
+    val glanceableHubToPrimaryBouncerTransitionViewModel:
+        GlanceableHubToPrimaryBouncerTransitionViewModel,
     val componentFactory: KeyguardBouncerComponent.Factory,
     val messageAreaControllerFactory: KeyguardMessageAreaController.Factory,
     val bouncerMessageInteractor: BouncerMessageInteractor,
@@ -82,6 +85,7 @@ constructor(
                 view,
                 deps.viewModel,
                 deps.primaryBouncerToGoneTransitionViewModel,
+                deps.glanceableHubToPrimaryBouncerTransitionViewModel,
                 deps.componentFactory,
                 deps.messageAreaControllerFactory,
                 deps.bouncerMessageInteractor,

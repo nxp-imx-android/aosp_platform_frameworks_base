@@ -28,6 +28,8 @@ import static org.mockito.Mockito.when;
 
 import android.animation.ValueAnimator;
 import android.content.pm.UserInfo;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -54,6 +56,7 @@ import com.android.systemui.scene.ui.view.WindowRootView;
 import com.android.systemui.shared.system.InputChannelCompat;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.phone.CentralSurfaces;
+import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.wm.shell.animation.FlingAnimationUtils;
 
 import org.junit.Before;
@@ -127,10 +130,16 @@ public class BouncerFullscreenSwipeTouchHandlerTest extends SysuiTestCase {
     @Mock
     WindowRootView mWindowRootView;
 
+    @Mock
+    Resources mResources;
+
     private SceneInteractor mSceneInteractor;
+
+    private KeyguardStateController mKeyguardStateController;
 
     private static final float TOUCH_REGION = .3f;
     private static final float MIN_BOUNCER_HEIGHT = .05f;
+    private final Configuration mConfiguration = new Configuration();
 
     private static final Rect SCREEN_BOUNDS = new Rect(0, 0, 1024, 100);
     private static final UserInfo CURRENT_USER_INFO = new UserInfo(
@@ -153,6 +162,8 @@ public class BouncerFullscreenSwipeTouchHandlerTest extends SysuiTestCase {
     public void setup() {
         mKosmos = new KosmosJavaAdapter(this);
         mSceneInteractor = spy(mKosmos.getSceneInteractor());
+        mKeyguardStateController = mKosmos.getKeyguardStateController();
+        mConfiguration.orientation = Configuration.ORIENTATION_PORTRAIT;
 
         MockitoAnnotations.initMocks(this);
         mTouchHandler = new BouncerSwipeTouchHandler(
@@ -172,7 +183,9 @@ public class BouncerFullscreenSwipeTouchHandlerTest extends SysuiTestCase {
                 mKeyguardInteractor,
                 mSceneInteractor,
                 mKosmos.getShadeRepository(),
-                Optional.of(() -> mWindowRootView));
+                Optional.of(() -> mWindowRootView),
+                mKeyguardStateController,
+                mKosmos.getCommunalSettingsInteractor());
 
         when(mScrimManager.getCurrentController()).thenReturn(mScrimController);
         when(mValueAnimatorCreator.create(anyFloat(), anyFloat())).thenReturn(mValueAnimator);
@@ -180,6 +193,9 @@ public class BouncerFullscreenSwipeTouchHandlerTest extends SysuiTestCase {
         when(mFlingAnimationUtils.getMinVelocityPxPerSecond()).thenReturn(Float.MAX_VALUE);
         when(mTouchSession.getBounds()).thenReturn(SCREEN_BOUNDS);
         when(mKeyguardInteractor.isKeyguardDismissible()).thenReturn(MutableStateFlow(false));
+        when(mKeyguardStateController.isKeyguardScreenRotationAllowed()).thenReturn(true);
+        when(mWindowRootView.getResources()).thenReturn(mResources);
+        when(mResources.getConfiguration()).thenReturn(mConfiguration);
     }
 
     /**

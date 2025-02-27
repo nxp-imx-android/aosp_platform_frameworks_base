@@ -25,6 +25,8 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewTreeObserver
+import android.view.ViewTreeObserver.OnPreDrawListener
 import android.view.WindowInsetsController
 import android.widget.FrameLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -717,6 +719,37 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
             .getSecurityView(any(), any(), onViewInflatedCallbackArgumentCaptor.capture())
         onViewInflatedCallbackArgumentCaptor.value.onViewInflated(inputViewController)
         verify(inputViewController).onStartingToHide()
+    }
+
+    @Test
+    fun startAppearAnimation_ifDelayed() {
+        val argumentCaptor = ArgumentCaptor.forClass(OnPreDrawListener::class.java)
+        whenever(view.isAppearAnimationDelayed).thenReturn(true)
+        val viewTreeObserver: ViewTreeObserver = mock()
+        whenever(view.viewTreeObserver).thenReturn(viewTreeObserver)
+
+        underTest.startAppearAnimationIfDelayed()
+
+        verify(view).alpha = 1f
+        verify(viewTreeObserver).addOnPreDrawListener(argumentCaptor.capture())
+        argumentCaptor.value.onPreDraw()
+
+        verify(view).startAppearAnimation(any(SecurityMode::class.java))
+        verify(view).setIsAppearAnimationDelayed(false)
+    }
+
+    @Test
+    fun appearAnimation_willNotStart_ifNotDelayed() {
+        whenever(view.isAppearAnimationDelayed).thenReturn(false)
+        val viewTreeObserver: ViewTreeObserver = mock()
+        whenever(view.viewTreeObserver).thenReturn(viewTreeObserver)
+
+        underTest.startAppearAnimationIfDelayed()
+
+        verify(view, never()).alpha
+        verify(viewTreeObserver, never()).addOnPreDrawListener(any())
+
+        verify(view, never()).startAppearAnimation(any(SecurityMode::class.java))
     }
 
     @Test
