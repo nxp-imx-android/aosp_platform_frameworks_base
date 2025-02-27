@@ -1803,8 +1803,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ଏକ-ହାତ ମୋଡ୍"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ଅତ୍ୟଧିକ ଡିମ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ଶ୍ରବଣ ଡିଭାଇସଗୁଡ଼ିକ"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"ଅଟୋକ୍ଲିକ"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"ଡିସକନେକ୍ଟ କରାଯାଇଛି"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"କନେକ୍ଟ କରାଯାଇଛି"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"ସକ୍ରିୟ"</string>
@@ -1825,7 +1824,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"ହେଣ୍ଡସ-ଫ୍ରି କଲିଂ ପାଇଁ ଆପଣ ଆପଣଙ୍କର ଶ୍ରବଣ ଯନ୍ତ୍ର ମାଇକ୍ରୋଫୋନ ବ୍ୟବହାର କରିପାରିବେ। କଲ ସମୟରେ ଏହା କେବଳ ଆପଣଙ୍କର ମାଇକକୁ ସୁଇଚ କରିଥାଏ।"</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"ସୁଇଚ କରନ୍ତୁ"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"ସେଟିଂସ"</string>
-    <string name="user_switched" msgid="7249833311585228097">"ବର୍ତ୍ତମାନର ୟୁଜର୍‌ ହେଉଛନ୍ତି <xliff:g id="NAME">%1$s</xliff:g>।"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g>ରେ ସୁଇଚ ହେଉଛି…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g>ଙ୍କୁ ଲଗଆଉଟ୍‍ କରାଯାଉଛି…"</string>
     <string name="owner_name" msgid="8713560351570795743">"ମାଲିକ"</string>

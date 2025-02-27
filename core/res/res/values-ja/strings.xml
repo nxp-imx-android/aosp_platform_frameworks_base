@@ -1803,8 +1803,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"片手モード"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"さらに輝度を下げる"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"補聴器"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"自動クリック"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"未接続"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"接続済み"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"有効"</string>
@@ -1825,7 +1824,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"補聴器のマイクを使ってハンズフリー通話を行えます。通話時のみマイクが切り替わります。"</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"切り替える"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"設定"</string>
-    <string name="user_switched" msgid="7249833311585228097">"現在のユーザーは<xliff:g id="NAME">%1$s</xliff:g>です。"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g>に切り替えています…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g> をログアウトしています…"</string>
     <string name="owner_name" msgid="8713560351570795743">"所有者"</string>

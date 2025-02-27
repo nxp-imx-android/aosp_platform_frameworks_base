@@ -1803,8 +1803,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"โหมดมือเดียว"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"หรี่แสงเพิ่มเติม"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"เครื่องช่วยฟัง"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"การคลิกอัตโนมัติ"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"เลิกเชื่อมต่อแล้ว"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"เชื่อมต่อแล้ว"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"ใช้งานอยู่"</string>
@@ -1825,7 +1824,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"คุณใช้ไมโครโฟนของเครื่องช่วยฟังเพื่อโทรแบบแฮนด์ฟรีได้ การดำเนินการนี้เพียงแค่เปลี่ยนไมโครโฟนระหว่างการโทรเท่านั้น"</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"เปลี่ยน"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"การตั้งค่า"</string>
-    <string name="user_switched" msgid="7249833311585228097">"ผู้ใช้ปัจจุบัน <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"กำลังเปลี่ยนเป็น<xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"กำลังออกจากระบบ <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"เจ้าของ"</string>
@@ -2281,7 +2279,7 @@
     <string name="conversation_title_fallback_one_to_one" msgid="1980753619726908614">"การสนทนา"</string>
     <string name="conversation_title_fallback_group_chat" msgid="456073374993104303">"บทสนทนากลุ่ม"</string>
     <string name="unread_convo_overflow" msgid="920517615597353833">"<xliff:g id="MAX_UNREAD_COUNT">%1$d</xliff:g>+"</string>
-    <string name="resolver_personal_tab" msgid="2051260504014442073">"ส่วนบุคคล"</string>
+    <string name="resolver_personal_tab" msgid="2051260504014442073">"ส่วนตัว"</string>
     <string name="resolver_work_tab" msgid="2690019516263167035">"งาน"</string>
     <string name="resolver_personal_tab_accessibility" msgid="5739524949153091224">"มุมมองส่วนตัว"</string>
     <string name="resolver_work_tab_accessibility" msgid="4753168230363802734">"ดูงาน"</string>

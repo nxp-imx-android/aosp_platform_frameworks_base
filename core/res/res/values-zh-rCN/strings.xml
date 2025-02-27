@@ -1825,7 +1825,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"您可以使用助听器麦克风进行免提通话。此操作只会切换通话期间的麦克风。"</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"切换"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"设置"</string>
-    <string name="user_switched" msgid="7249833311585228097">"当前用户是<xliff:g id="NAME">%1$s</xliff:g>。"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"正在切换为<xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"正在将<xliff:g id="NAME">%1$s</xliff:g>退出账号…"</string>
     <string name="owner_name" msgid="8713560351570795743">"机主"</string>

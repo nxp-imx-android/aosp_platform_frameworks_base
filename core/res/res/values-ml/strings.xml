@@ -1803,8 +1803,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ഒറ്റക്കൈ മോഡ്"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"കൂടുതൽ ഡിം ചെയ്യൽ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ശ്രവണ ഉപകരണങ്ങൾ"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"ഓട്ടോക്ലിക്ക്"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"വിച്‌ഛേദിച്ചു"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"കണക്റ്റ് ചെയ്‌തു"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"സജീവം"</string>
@@ -1825,7 +1824,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"ഹാൻഡ്‌സ്‌-ഫ്രീ ആയി കോൾ ചെയ്യാൻ നിങ്ങളുടെ ശ്രവണ സഹായി മൈക്രോഫോൺ ഉപയോഗിക്കാം. ഇത് കോൾ സമയത്ത് മാത്രം നിങ്ങളുടെ മൈക്ക് മാറ്റുന്നു."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"മാറുക"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"ക്രമീകരണം"</string>
-    <string name="user_switched" msgid="7249833311585228097">"നിലവിലെ ഉപയോക്താവ് <xliff:g id="NAME">%1$s</xliff:g> ആണ്."</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g> എന്ന ഉപയോക്താവിലേക്ക് മാറുന്നു…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g> ലോഗൌട്ട് ചെയ്യുന്നു…"</string>
     <string name="owner_name" msgid="8713560351570795743">"ഉടമ"</string>

@@ -1825,7 +1825,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Du kan bruke mikrofonen i høreapparatet til å ringe håndfritt. Dette fører bare til at mikrofonen byttes under samtalen."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Bytt"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Innstillinger"</string>
-    <string name="user_switched" msgid="7249833311585228097">"Gjeldende bruker: <xliff:g id="NAME">%1$s</xliff:g>."</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Bytter til <xliff:g id="NAME">%1$s</xliff:g> …"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"Logger av <xliff:g id="NAME">%1$s</xliff:g> …"</string>
     <string name="owner_name" msgid="8713560351570795743">"Eier"</string>

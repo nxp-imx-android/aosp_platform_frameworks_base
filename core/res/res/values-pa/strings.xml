@@ -1803,8 +1803,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ਇੱਕ ਹੱਥ ਮੋਡ"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ਜ਼ਿਆਦਾ ਘੱਟ ਚਮਕ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ਸੁਣਨ ਵਾਲੇ ਡੀਵਾਈਸ"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"ਸਵੈ-ਕਲਿੱਕ"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"ਡਿਸਕਨੈਕਟ ਹੋ ਗਿਆ"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"ਕਨੈਕਟ ਹੈ"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"ਕਿਰਿਆਸ਼ੀਲ"</string>
@@ -1825,7 +1824,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"ਤੁਸੀਂ ਹੱਥ-ਰਹਿਤ ਕਾਲਿੰਗ ਲਈ ਆਪਣੇ ਸੁਣਨ ਦੇ ਸਾਧਨ ਦੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦੇ ਹੋ। ਇਹ ਸਿਰਫ਼ ਕਾਲ ਦੌਰਾਨ ਹੀ ਤੁਹਾਡੇ ਮਾਈਕ ਨੂੰ ਸਵਿੱਚ ਕਰਦਾ ਹੈ।"</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"ਸਵਿੱਚ ਕਰੋ"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"ਸੈਟਿੰਗਾਂ"</string>
-    <string name="user_switched" msgid="7249833311585228097">"ਮੌਜੂਦਾ ਉਪਭੋਗਤਾ <xliff:g id="NAME">%1$s</xliff:g>।"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g> \'ਤੇ ਸਵਿੱਚ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g> ਨੂੰ ਲਾਗ-ਆਉਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ …"</string>
     <string name="owner_name" msgid="8713560351570795743">"ਮਾਲਕ"</string>

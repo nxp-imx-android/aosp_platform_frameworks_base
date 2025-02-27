@@ -1825,7 +1825,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Угуу аппаратыңыздын микрофонун үн режиминде чалуу үчүн колдоно аласыз. Микрофонуңуз чалуу учурунда гана которулат."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Которулуу"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Параметрлер"</string>
-    <string name="user_switched" msgid="7249833311585228097">"Учурдагы колдонуучу <xliff:g id="NAME">%1$s</xliff:g>."</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g> дегенге которулууда…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g> чыгууда…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Ээси"</string>
@@ -2502,8 +2501,8 @@
     <string name="satellite_manual_selection_state_popup_ok" msgid="2459664752624985095">"Күйгүзүү"</string>
     <string name="satellite_manual_selection_state_popup_cancel" msgid="973605633339469252">"Артка кайтуу"</string>
     <string name="unarchival_session_app_label" msgid="6811856981546348205">"Кезекте турат..."</string>
-    <string name="satellite_sos_available_notification_title" msgid="5396708154268096124">"Спутник SOS эми жеткиликтүү"</string>
-    <string name="satellite_sos_available_notification_summary" msgid="1727088812951848330">"Мобилдик Интернет же Wi-Fi тармагы жок болсо, кырсыктаганда жардамга келчү кызматтарга билдирүү жөнөтө аласыз. Google Messages демейки жазышуу колдонмоңуз болушу керек."</string>
+    <string name="satellite_sos_available_notification_title" msgid="5396708154268096124">"Спутник SOS кызматы иштеп баштады"</string>
+    <string name="satellite_sos_available_notification_summary" msgid="1727088812951848330">"Мобилдик Интернет же Wi-Fi жок болгон учурда, кырсыктаганда жардамга келчү кызматтарга билдирүү жөнөтө аласыз. Google Жазышуу демейки колдонмоңуз болушу керек."</string>
     <string name="satellite_sos_not_supported_notification_title" msgid="2659100983227637285">"Спутник SOS колдоого алынбайт"</string>
     <string name="satellite_sos_not_supported_notification_summary" msgid="1071762454665310549">"Бул түзмөктө спутник SOS колдоого алынбайт"</string>
     <string name="satellite_sos_not_provisioned_notification_title" msgid="8564738683795406715">"Спутник SOS туураланган жок"</string>
