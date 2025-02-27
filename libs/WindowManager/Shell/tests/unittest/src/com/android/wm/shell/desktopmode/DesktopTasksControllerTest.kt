@@ -2913,11 +2913,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(desksOrganizer).activateDesk(any(), eq(targetDeskId))
         verify(desksTransitionsObserver)
             .addPendingTransition(
-                DeskTransition.ActiveDeskWithTask(
+                DeskTransition.ActivateDesk(
                     token = transition,
                     displayId = SECOND_DISPLAY,
                     deskId = targetDeskId,
-                    enterTaskId = task.taskId,
                 )
             )
     }
