@@ -25,11 +25,10 @@ import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.PointerCoords
 import android.view.MotionEvent.PointerProperties
 import android.view.MotionPredictor
-
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.filters.LargeTest
 import androidx.test.ext.junit.runners.AndroidJUnit4
-
+import androidx.test.filters.LargeTest
+import androidx.test.platform.app.InstrumentationRegistry
+import java.time.Duration
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -37,14 +36,12 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-import java.time.Duration
-
 private fun getStylusMotionEvent(
-        eventTime: Duration,
-        action: Int,
-        x: Float,
-        y: Float,
-        ): MotionEvent{
+    eventTime: Duration,
+    action: Int,
+    x: Float,
+    y: Float,
+): MotionEvent {
     val pointerCount = 1
     val properties = arrayOfNulls<MotionEvent.PointerProperties>(pointerCount)
     val coords = arrayOfNulls<MotionEvent.PointerCoords>(pointerCount)
@@ -58,37 +55,49 @@ private fun getStylusMotionEvent(
         coords[i]!!.y = y
     }
 
-    return MotionEvent.obtain(/*downTime=*/0, eventTime.toMillis(), action, properties.size,
-                properties, coords, /*metaState=*/0, /*buttonState=*/0,
-                /*xPrecision=*/0f, /*yPrecision=*/0f, /*deviceId=*/0, /*edgeFlags=*/0,
-                InputDevice.SOURCE_STYLUS, /*flags=*/0)
+    return MotionEvent.obtain(
+        /*downTime=*/ 0,
+        eventTime.toMillis(),
+        action,
+        properties.size,
+        properties,
+        coords,
+        /*metaState=*/ 0,
+        /*buttonState=*/ 0,
+        /*xPrecision=*/ 0f,
+        /*yPrecision=*/ 0f,
+        /*deviceId=*/ 0,
+        /*edgeFlags=*/ 0,
+        InputDevice.SOURCE_STYLUS,
+        /*flags=*/ 0,
+    )
 }
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 class MotionPredictorBenchmark {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
-    @get:Rule
-    val perfStatusReporter = PerfStatusReporter()
+    @get:Rule val perfStatusReporter = PerfStatusReporter()
     private val initialPropertyValue =
-            SystemProperties.get("persist.input.enable_motion_prediction")
-
+        SystemProperties.get("persist.input.enable_motion_prediction")
 
     @Before
     fun setUp() {
         instrumentation.uiAutomation.executeShellCommand(
-            "setprop persist.input.enable_motion_prediction true")
+            "setprop persist.input.enable_motion_prediction true"
+        )
     }
 
     @After
     fun tearDown() {
         instrumentation.uiAutomation.executeShellCommand(
-            "setprop persist.input.enable_motion_prediction $initialPropertyValue")
+            "setprop persist.input.enable_motion_prediction $initialPropertyValue"
+        )
     }
 
     /**
-     * In a typical usage, app will send the event to the predictor and then call .predict to draw
-     * a prediction. In a loop, we keep sending MOVE and then calling .predict to simulate this.
+     * In a typical usage, app will send the event to the predictor and then call .predict to draw a
+     * prediction. In a loop, we keep sending MOVE and then calling .predict to simulate this.
      */
     @Test
     fun timeRecordAndPredict() {
@@ -99,10 +108,16 @@ class MotionPredictorBenchmark {
         var eventPosition = 0f
         val positionInterval = 10f
 
-        val predictor = MotionPredictor(/*isPredictionEnabled=*/true, offset.toNanos().toInt())
+        val predictor = MotionPredictor(/* isPredictionEnabled= */ true, offset.toNanos().toInt())
         // ACTION_DOWN t=0 x=0 y=0
-        predictor.record(getStylusMotionEvent(
-            eventTime, ACTION_DOWN, /*x=*/eventPosition, /*y=*/eventPosition))
+        predictor.record(
+            getStylusMotionEvent(
+                eventTime,
+                ACTION_DOWN,
+                /*x=*/ eventPosition,
+                /*y=*/ eventPosition,
+            )
+        )
 
         val state = perfStatusReporter.getBenchmarkState()
         while (state.keepRunning()) {
@@ -110,8 +125,13 @@ class MotionPredictorBenchmark {
             eventPosition += positionInterval
 
             // Send MOVE event and then call .predict
-            val moveEvent = getStylusMotionEvent(
-                eventTime, ACTION_MOVE, /*x=*/eventPosition, /*y=*/eventPosition)
+            val moveEvent =
+                getStylusMotionEvent(
+                    eventTime,
+                    ACTION_MOVE,
+                    /*x=*/ eventPosition,
+                    /*y=*/ eventPosition,
+                )
             predictor.record(moveEvent)
             val predictionTime = eventTime + eventInterval
             val predicted = checkNotNull(predictor.predict(predictionTime.toNanos()))
@@ -129,7 +149,7 @@ class MotionPredictorBenchmark {
 
         val state = perfStatusReporter.getBenchmarkState()
         while (state.keepRunning()) {
-            MotionPredictor(/*isPredictionEnabled=*/true, offsetNanos)
+            MotionPredictor(/* isPredictionEnabled= */ true, offsetNanos)
         }
     }
 }

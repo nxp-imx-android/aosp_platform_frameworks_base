@@ -19,12 +19,9 @@ import android.perftests.utils.PerfStatusReporter
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.VelocityTracker
-
 import androidx.test.filters.LargeTest
 import androidx.test.runner.AndroidJUnit4
-
 import java.time.Duration
-
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -74,22 +71,23 @@ private class ScrollMotionState : MotionState() {
         props.id = 0
         val coords = MotionEvent.PointerCoords()
         coords.setAxisValue(MotionEvent.AXIS_SCROLL, DEFAULT_SCROLL_AMOUNT)
-        val motionEvent = MotionEvent.obtain(
-            /*downTime=*/0,
-            currentTime.toMillis(),
-            MotionEvent.ACTION_SCROLL,
-            /*pointerCount=*/1,
-            arrayOf(props),
-            arrayOf(coords),
-            /*metaState=*/0,
-            /*buttonState=*/0,
-            /*xPrecision=*/0f,
-            /*yPrecision=*/0f,
-            /*deviceId=*/1,
-            /*edgeFlags=*/0,
-            InputDevice.SOURCE_ROTARY_ENCODER,
-            /*flags=*/0
-        )
+        val motionEvent =
+            MotionEvent.obtain(
+                /*downTime=*/ 0,
+                currentTime.toMillis(),
+                MotionEvent.ACTION_SCROLL,
+                /*pointerCount=*/ 1,
+                arrayOf(props),
+                arrayOf(coords),
+                /*metaState=*/ 0,
+                /*buttonState=*/ 0,
+                /*xPrecision=*/ 0f,
+                /*yPrecision=*/ 0f,
+                /*deviceId=*/ 1,
+                /*edgeFlags=*/ 0,
+                InputDevice.SOURCE_ROTARY_ENCODER,
+                /*flags=*/ 0,
+            )
 
         currentTime = currentTime.plus(DEFAULT_TIME_JUMP)
 
@@ -113,13 +111,15 @@ private class PlanarMotionState : MotionState() {
 
     override fun createMotionEvent(): MotionEvent {
         val action: Int = if (downEventCreated) MotionEvent.ACTION_MOVE else MotionEvent.ACTION_DOWN
-        val motionEvent = MotionEvent.obtain(
-            /*downTime=*/START_TIME.toMillis(),
-            currentTime.toMillis(),
-            action,
-            x,
-            y,
-            /*metaState=*/0)
+        val motionEvent =
+            MotionEvent.obtain(
+                /*downTime=*/ START_TIME.toMillis(),
+                currentTime.toMillis(),
+                action,
+                x,
+                y,
+                /*metaState=*/ 0,
+            )
 
         if (downEventCreated) {
             x += INCREMENT
@@ -155,16 +155,15 @@ private class PlanarMotionState : MotionState() {
 /**
  * Benchmark tests for [VelocityTracker]
  *
- * Build/Install/Run:
- * atest VelocityTrackerBenchmarkTest
+ * Build/Install/Run: atest VelocityTrackerBenchmarkTest
  */
 @LargeTest
 @RunWith(AndroidJUnit4::class)
 class VelocityTrackerBenchmarkTest {
-    @get:Rule
-    val perfStatusReporter: PerfStatusReporter = PerfStatusReporter()
+    @get:Rule val perfStatusReporter: PerfStatusReporter = PerfStatusReporter()
 
     private val velocityTracker = VelocityTracker.obtain()
+
     @Before
     fun setup() {
         velocityTracker.clear()
