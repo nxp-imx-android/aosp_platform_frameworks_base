@@ -18,7 +18,6 @@ package com.android.systemui.wallpapers
 
 import android.app.Flags
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
@@ -43,6 +42,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.spy
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyZeroInteractions
@@ -61,23 +61,20 @@ class GradientColorWallpaperTest : SysuiTestCase() {
 
     @Mock private lateinit var mockContext: Context
 
-    @Mock private lateinit var mockResources: Resources
-
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
+
+        val spyResources = spy(context.resources)
 
         whenever(surfaceHolder.surface).thenReturn(surface)
         whenever(surfaceHolder.surfaceFrame).thenReturn(surfaceFrame)
         whenever(surface.lockHardwareCanvas()).thenReturn(canvas)
         whenever(mockContext.getColor(anyInt())).thenReturn(1)
-        whenever(mockContext.resources).thenReturn(mockResources)
-        whenever(
-                mockResources.getDimensionPixelOffset(
-                    eq(R.dimen.gradient_color_wallpaper_center_offset)
-                )
-            )
-            .thenReturn(OFFSET_PX)
+        whenever(mockContext.resources).thenReturn(spyResources)
+        doReturn(OFFSET_PX)
+            .`when`(spyResources)
+            .getDimensionPixelOffset(eq(R.dimen.gradient_color_wallpaper_center_offset))
     }
 
     private fun createGradientColorWallpaperEngine(): Engine {
@@ -106,7 +103,8 @@ class GradientColorWallpaperTest : SysuiTestCase() {
 
         engine.onSurfaceRedrawNeeded(surfaceHolder)
 
-        verify(canvas).drawRect(any<RectF>(), any<Paint>())
+        // One rect for the background, one rect for the foreground mask.
+        verify(canvas, times(2)).drawRect(any<RectF>(), any<Paint>())
         verify(canvas, times(2)).drawCircle(anyFloat(), anyFloat(), anyFloat(), any<Paint>())
     }
 
