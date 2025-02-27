@@ -490,6 +490,17 @@ flag {
     description: "Sets Launch powermode for activity launches earlier"
     bug: "399380676"
     is_fixed_read_only: true
+        metadata {
+            purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "scramble_snapshot_file_name"
+    namespace: "windowing_frontend"
+    description: "Scramble the file name of task snapshot."
+    bug: "293139053"
+    is_fixed_read_only: true
     metadata {
         purpose: PURPOSE_BUGFIX
     }

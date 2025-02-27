@@ -107,14 +107,18 @@ class ActivitySnapshotController extends AbsAppSnapshotController<ActivityRecord
                 && !ActivityManager.isLowRamDeviceStatic(); // Don't support Android Go
         setSnapshotEnabled(snapshotEnabled);
         mSnapshotPersistQueue = persistQueue;
-        mPersistInfoProvider = createPersistInfoProvider(service,
-                Environment::getDataSystemCeDirectory);
+        mPersistInfoProvider = createPersistInfoProvider(service);
         mPersister = new TaskSnapshotPersister(
                 persistQueue,
                 mPersistInfoProvider,
                 shouldDisableSnapshots());
         mSnapshotLoader = new AppSnapshotLoader(mPersistInfoProvider);
         initialize(new ActivitySnapshotCache());
+    }
+
+    @VisibleForTesting
+    PersistInfoProvider createPersistInfoProvider(WindowManagerService service) {
+        return createPersistInfoProvider(service, Environment::getDataSystemCeDirectory);
     }
 
     @Override

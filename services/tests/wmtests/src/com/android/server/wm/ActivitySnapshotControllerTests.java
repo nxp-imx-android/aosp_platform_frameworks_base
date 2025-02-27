@@ -63,11 +63,23 @@ public class ActivitySnapshotControllerTests extends TaskSnapshotPersisterTestBa
         super(0.8f /* highResScale */, 0.5f /* lowResScale */);
     }
 
+    private class TestActivitySnapshotController extends ActivitySnapshotController {
+        TestActivitySnapshotController(WindowManagerService service,
+                SnapshotPersistQueue persistQueue) {
+            super(service, persistQueue);
+        }
+        @Override
+        BaseAppSnapshotPersister.PersistInfoProvider createPersistInfoProvider(
+                WindowManagerService service) {
+            return mPersister.mPersistInfoProvider;
+        }
+    }
     @Override
     @Before
     public void setUp() {
         super.setUp();
-        mActivitySnapshotController = new ActivitySnapshotController(mWm, mSnapshotPersistQueue);
+        mActivitySnapshotController = new TestActivitySnapshotController(
+                mWm, mSnapshotPersistQueue);
         spyOn(mActivitySnapshotController);
         doReturn(false).when(mActivitySnapshotController).shouldDisableSnapshots();
         mActivitySnapshotController.resetTmpFields();
