@@ -21,6 +21,7 @@ import static android.view.MotionEvent.BUTTON_SECONDARY;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_DELAY_DEFAULT;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT_DEFAULT;
+import static android.view.accessibility.AccessibilityManager.AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT;
 
 import static com.android.server.accessibility.autoclick.AutoclickIndicatorView.SHOW_INDICATOR_DELAY_TIME;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK;
@@ -159,7 +160,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
                     initiateAutoclickIndicator(handler);
                 }
 
-                mClickScheduler = new ClickScheduler(handler, AUTOCLICK_DELAY_DEFAULT);
+                mClickScheduler = new ClickScheduler(
+                            handler, AUTOCLICK_DELAY_DEFAULT);
                 mAutoclickSettingsObserver = new AutoclickSettingsObserver(mUserId, handler);
                 mAutoclickSettingsObserver.start(
                         mContext.getContentResolver(),
@@ -304,6 +306,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 Settings.Secure.getUriFor(
                         Settings.Secure.ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT);
 
+        private final Uri mAutoclickRevertToLeftClickSettingUri =
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK);
+
         private ContentResolver mContentResolver;
         private ClickScheduler mClickScheduler;
         private AutoclickIndicatorScheduler mAutoclickIndicatorScheduler;
@@ -368,6 +374,13 @@ public class AutoclickController extends BaseEventStreamTransformation {
                         /* observer= */ this,
                         mUserId);
                 onChange(/* selfChange= */ true, mAutoclickIgnoreMinorCursorMovementSettingUri);
+
+                mContentResolver.registerContentObserver(
+                        mAutoclickRevertToLeftClickSettingUri,
+                        /* notifyForDescendants= */ false,
+                        /* observer= */ this,
+                        mUserId);
+                onChange(/* selfChange= */ true, mAutoclickRevertToLeftClickSettingUri);
             }
         }
 
@@ -423,6 +436,20 @@ public class AutoclickController extends BaseEventStreamTransformation {
                                     mUserId)
                             == AccessibilityUtils.State.ON;
                     mClickScheduler.setIgnoreMinorCursorMovement(ignoreMinorCursorMovement);
+                }
+
+                if (mAutoclickRevertToLeftClickSettingUri.equals(uri)) {
+                    boolean revertToLeftClick =
+                            Settings.Secure.getIntForUser(
+                                    mContentResolver,
+                                    Settings.Secure
+                                            .ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK,
+                                    AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT
+                                            ? AccessibilityUtils.State.ON
+                                            : AccessibilityUtils.State.OFF,
+                                    mUserId)
+                            == AccessibilityUtils.State.ON;
+                    mClickScheduler.setRevertToLeftClick(revertToLeftClick);
                 }
             }
         }
@@ -505,6 +532,9 @@ public class AutoclickController extends BaseEventStreamTransformation {
         /** Whether the minor cursor movement should be ignored. */
         private boolean mIgnoreMinorCursorMovement = AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT_DEFAULT;
 
+        /** Whether the autoclick type reverts to left click once performing an action. */
+        private boolean mRevertToLeftClick = AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT;
+
         /** Whether there is pending click. */
         private boolean mActive;
         /** If active, time at which pending click is scheduled. */
@@ -555,6 +585,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
             sendClick();
             resetInternalState();
+            resetSelectedClickTypeIfNecessary();
         }
 
         /**
@@ -633,6 +664,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
             return mDelay;
         }
 
+        @VisibleForTesting
+        boolean getRevertToLeftClickForTesting() {
+            return mRevertToLeftClick;
+        }
+
         /**
          * Updates the time at which click sequence should occur.
          *
@@ -692,6 +728,12 @@ public class AutoclickController extends BaseEventStreamTransformation {
             }
         }
 
+        private void resetSelectedClickTypeIfNecessary() {
+            if (mRevertToLeftClick && mActiveClickType != AUTOCLICK_TYPE_LEFT_CLICK) {
+                mAutoclickTypePanel.resetSelectedClickType();
+            }
+        }
+
         /**
          * @param event Observed motion event.
          * @return Whether the event coords are far enough from the anchor for the event not to be
@@ -714,6 +756,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
         public void setIgnoreMinorCursorMovement(boolean ignoreMinorCursorMovement) {
             mIgnoreMinorCursorMovement = ignoreMinorCursorMovement;
+        }
+
+        public void setRevertToLeftClick(boolean revertToLeftClick) {
+            mRevertToLeftClick = revertToLeftClick;
         }
 
         private void updateMovementSlop(double slop) {

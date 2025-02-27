@@ -283,7 +283,11 @@ public class AutoclickTypePanel {
         // The pause button calls `togglePause()` directly so it does not need extra logic.
         mPauseButton.setOnClickListener(v -> togglePause());
 
-        // Initializes panel as collapsed state and only displays the left click button.
+        resetSelectedClickType();
+    }
+
+    /** Reset panel as collapsed state and only displays the left click button. */
+    public void resetSelectedClickType() {
         hideAllClickTypeButtons();
         mLeftClickButton.setVisibility(View.VISIBLE);
         setSelectedClickType(AUTOCLICK_TYPE_LEFT_CLICK);
