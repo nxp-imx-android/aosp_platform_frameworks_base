@@ -1706,10 +1706,18 @@ public class AppStandbyController
             restoreAppToRare(packageName, userId, nowElapsed, reason);
         }
         // Clear out the list of restored apps that need to have their standby buckets adjusted
-        // if they still haven't been installed eight hours after restore.
-        // Note: if the device reboots within these first 8 hours, this list will be lost since it's
-        // not persisted - this is the expected behavior for now and may be updated in the future.
-        mHandler.postDelayed(() -> mAppsToRestoreToRare.remove(userId), 8 * ONE_HOUR);
+        // if they still haven't been installed two days after initial restore.
+        final long delayMillis = Flags.persistRestoreToRareAppsList()
+                ? AppIdleHistory.RESTORE_TO_RARE_APPS_LIST_EXPIRY : 8 * ONE_HOUR;
+        mHandler.postDelayed(() -> mAppsToRestoreToRare.remove(userId), delayMillis);
+
+        // Persist the file in case the device reboots within 2 days after the initial restore.
+        if (Flags.persistRestoreToRareAppsList()) {
+            synchronized (mAppIdleLock) {
+                mAppIdleHistory.writeRestoreToRareAppsList(
+                        userId, mAppsToRestoreToRare.get(userId));
+            }
+        }
     }
 
     /** Adjust the standby bucket of the given package for the user to RARE. */
@@ -2272,6 +2280,22 @@ public class AppStandbyController
                 } else if (!Intent.ACTION_PACKAGE_ADDED.equals(action)) {
                     clearAppIdleForPackage(pkgName, userId);
                 } else {
+                    // Do a lazy read of the persisted list, if necessary.
+                    if (Flags.persistRestoreToRareAppsList()
+                            && mAppsToRestoreToRare.get(userId) == null) {
+                        synchronized (mAppIdleLock) {
+                            final ArraySet<String> restoredApps =
+                                    mAppIdleHistory.readRestoreToRareAppsList(userId);
+                            if (restoredApps != null) {
+                                mAppsToRestoreToRare.addAll(userId, restoredApps);
+                                // Clear out the list of restored apps if they still haven't been
+                                // installed in two days - at worst, we are allowing for up to
+                                // 4 days for reinstallation (device reboots just before 2 days)
+                                mHandler.postDelayed(() -> mAppsToRestoreToRare.remove(userId),
+                                        AppIdleHistory.RESTORE_TO_RARE_APPS_LIST_EXPIRY);
+                            }
+                        }
+                    }
                     // Package was just added and it's not being replaced.
                     if (mAppsToRestoreToRare.contains(userId, pkgName)) {
                         restoreAppToRare(pkgName, userId, mInjector.elapsedRealtime(),
@@ -2454,6 +2478,8 @@ public class AppStandbyController
                 + ": " + Flags.avoidIdleCheck());
         pw.println("    " + Flags.FLAG_ADJUST_DEFAULT_BUCKET_ELEVATION_PARAMS
                 + ": " + Flags.adjustDefaultBucketElevationParams());
+        pw.println("    " + Flags.FLAG_PERSIST_RESTORE_TO_RARE_APPS_LIST
+                + ": " + Flags.persistRestoreToRareAppsList());
         pw.println();
 
         synchronized (mCarrierPrivilegedLock) {
