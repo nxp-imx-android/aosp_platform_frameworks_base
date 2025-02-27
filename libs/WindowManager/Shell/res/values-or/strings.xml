@@ -43,10 +43,8 @@
     <string name="accessibility_action_divider_left_50" msgid="3488317024557521561">"ବାମ ପଟକୁ 50% କରନ୍ତୁ"</string>
     <string name="accessibility_action_divider_left_30" msgid="6023611335723838727">"ବାମ ପଟେ 30%"</string>
     <string name="accessibility_action_divider_right_full" msgid="3408505054325944903">"ଡାହାଣ ପଟକୁ ପୂର୍ଣ୍ଣ ସ୍କ୍ରୀନ୍‍ କରନ୍ତୁ"</string>
-    <!-- no translation found for accessibility_action_divider_swap_vertical (3644891227133372072) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_swap_horizontal (2722197605446631628) -->
-    <skip />
+    <string name="accessibility_action_divider_swap_vertical" msgid="3644891227133372072">"ବଟମ ସହ ଟପକୁ ଆପ ସ୍ବାପ କରନ୍ତୁ"</string>
+    <string name="accessibility_action_divider_swap_horizontal" msgid="2722197605446631628">"ଡାହାଣ ସହ ବାମକୁ ଆପ ସ୍ବାପ କରନ୍ତୁ"</string>
     <string name="accessibility_action_divider_top_full" msgid="3495871951082107594">"ଉପର ଆଡ଼କୁ ପୂର୍ଣ୍ଣ ସ୍କ୍ରୀନ୍‍ କରନ୍ତୁ"</string>
     <string name="accessibility_action_divider_top_70" msgid="1779164068887875474">"ଉପର ଆଡ଼କୁ 70% କରନ୍ତୁ"</string>
     <string name="accessibility_action_divider_top_50" msgid="8649582798829048946">"ଉପର ଆଡ଼କୁ 50% କରନ୍ତୁ"</string>
@@ -115,14 +113,10 @@
     <string name="letterbox_restart_restart" msgid="8529976234412442973">"ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ"</string>
     <string name="letterbox_restart_dialog_checkbox_title" msgid="5252918008140768386">"ପୁଣି ଦେଖାନ୍ତୁ ନାହିଁ"</string>
     <string name="letterbox_reachability_reposition_text" msgid="3522042240665748268">"ଏହି ଆପକୁ ମୁଭ\nକରିବା ପାଇଁ ଦୁଇଥର-ଟାପ କରନ୍ତୁ"</string>
-    <!-- no translation found for maximize_button_text (8106849394538234709) -->
-    <skip />
-    <!-- no translation found for restore_button_text (5377571986086775288) -->
-    <skip />
-    <!-- no translation found for minimize_button_text (5213953162664451152) -->
-    <skip />
-    <!-- no translation found for close_button_text (4544839489310949894) -->
-    <skip />
+    <string name="maximize_button_text" msgid="8106849394538234709">"<xliff:g id="APP_NAME">%1$s</xliff:g> ବଡ଼ କରନ୍ତୁ"</string>
+    <string name="restore_button_text" msgid="5377571986086775288">"<xliff:g id="APP_NAME">%1$s</xliff:g> ରିଷ୍ଟୋର କରନ୍ତୁ"</string>
+    <string name="minimize_button_text" msgid="5213953162664451152">"<xliff:g id="APP_NAME">%1$s</xliff:g> ଛୋଟ କରନ୍ତୁ"</string>
+    <string name="close_button_text" msgid="4544839489310949894">"<xliff:g id="APP_NAME">%1$s</xliff:g> ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="back_button_text" msgid="1469718707134137085">"ପଛକୁ ଫେରନ୍ତୁ"</string>
     <string name="handle_text" msgid="4419667835599523257">"ଆପର ହେଣ୍ଡେଲ"</string>
     <string name="app_icon_text" msgid="2823268023931811747">"ଆପ ଆଇକନ"</string>
@@ -158,14 +152,10 @@
     <string name="maximize_menu_talkback_action_snap_left_text" msgid="500309467459084564">"ବାମପଟକୁ ୱିଣ୍ଡୋ ରିସାଇଜ କରନ୍ତୁ"</string>
     <string name="maximize_menu_talkback_action_snap_right_text" msgid="7010831426654467163">"ଡାହାଣପଟକୁ ୱିଣ୍ଡୋ ରିସାଇଜ କରନ୍ତୁ"</string>
     <string name="maximize_menu_talkback_action_maximize_restore_text" msgid="4942610897847934859">"ୱିଣ୍ଡୋ ସାଇଜକୁ ମେକ୍ସିମାଇଜ କିମ୍ବା ରିଷ୍ଟୋର କରନ୍ତୁ"</string>
-    <!-- no translation found for app_header_talkback_action_maximize_button_text (8776156791095878638) -->
-    <skip />
-    <!-- no translation found for app_header_talkback_action_restore_button_text (2153022340772980863) -->
-    <skip />
-    <!-- no translation found for app_header_talkback_action_minimize_button_text (7491054416186901764) -->
-    <skip />
-    <!-- no translation found for app_header_talkback_action_close_button_text (5159612596378268926) -->
-    <skip />
+    <string name="app_header_talkback_action_maximize_button_text" msgid="8776156791095878638">"ଆପ ଇଣ୍ଡୋ ଆକାର ବଡ଼ କରନ୍ତୁ"</string>
+    <string name="app_header_talkback_action_restore_button_text" msgid="2153022340772980863">"ୱିଣ୍ଡୋ ଆକାର ରିଷ୍ଟୋର କରନ୍ତୁ"</string>
+    <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"ଆପ ୱିଣ୍ଡୋକୁ ମିନିମାଇଜ କରନ୍ତୁ"</string>
+    <string name="app_header_talkback_action_close_button_text" msgid="5159612596378268926">"ଆପ ୱିଣ୍ଡୋ ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="open_by_default_settings_text" msgid="2526548548598185500">"ଡିଫଲ୍ଟ ସେଟିଂସକୁ ଖୋଲନ୍ତୁ"</string>
     <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"ଏହି ଆପ ପାଇଁ ୱେବ ଲିଙ୍କଗୁଡ଼ିକୁ କିପରି ଖୋଲିବେ, ତାହା ବାଛନ୍ତୁ"</string>
     <string name="open_by_default_dialog_in_app_text" msgid="6978022419634199806">"ଆପରେ"</string>
