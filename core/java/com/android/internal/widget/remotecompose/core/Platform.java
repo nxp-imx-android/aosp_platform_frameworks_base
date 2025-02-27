@@ -47,6 +47,14 @@ public interface Platform {
     int getImageHeight(@NonNull Object image);
 
     /**
+     * Returns true if the platform-specific image object has format ALPHA_8
+     *
+     * @param image platform-specific image object
+     * @return whether or not the platform-specific image object has format ALPHA_8
+     */
+    boolean isAlpha8Image(@NonNull Object image);
+
+    /**
      * Converts a platform-specific path object into a platform-independent float buffer
      *
      * @param path
@@ -106,6 +114,11 @@ public interface Platform {
 
                 @Override
                 public int getImageHeight(@NonNull Object image) {
+                    throw new UnsupportedOperationException();
+                }
+
+                @Override
+                public boolean isAlpha8Image(@NonNull Object image) {
                     throw new UnsupportedOperationException();
                 }
 

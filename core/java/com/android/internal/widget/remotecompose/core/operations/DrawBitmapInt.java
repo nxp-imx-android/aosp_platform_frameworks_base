@@ -25,6 +25,7 @@ import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
 import com.android.internal.widget.remotecompose.core.semantics.AccessibleComponent;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 
 import java.util.List;
 
@@ -229,5 +230,21 @@ public class DrawBitmapInt extends PaintOperation implements AccessibleComponent
                 mDstRight,
                 mDstBottom,
                 mContentDescId);
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .addType(CLASS_NAME)
+                .add("imageId", mImageId)
+                .add("contentDescriptionId", mContentDescId)
+                .add("srcLeft", mSrcLeft)
+                .add("srcTop", mSrcTop)
+                .add("srcRight", mSrcRight)
+                .add("srcBottom", mSrcBottom)
+                .add("dstLeft", mDstLeft)
+                .add("dstTop", mDstTop)
+                .add("dstRight", mDstRight)
+                .add("dstBottom", mDstBottom);
     }
 }

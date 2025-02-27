@@ -32,8 +32,10 @@ import com.android.internal.widget.remotecompose.core.documentation.Documentatio
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
 import com.android.internal.widget.remotecompose.core.operations.utilities.AnimatedFloatExpression;
 import com.android.internal.widget.remotecompose.core.operations.utilities.NanMap;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /** This provides the command to call a floatfunction defined in floatfunction */
@@ -181,5 +183,14 @@ public class FloatFunctionCall extends PaintOperation implements VariableSupport
             updateVariables(remoteContext);
         }
         mFunction.execute(remoteContext);
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .addType(CLASS_NAME)
+                .add("id", mId)
+                .add("args", Collections.singletonList(mArgs))
+                .add("outArgs", Collections.singletonList(mOutArgs));
     }
 }

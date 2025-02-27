@@ -157,7 +157,7 @@ public class HostNamedActionOperation extends Operation implements ActionOperati
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "HostNamedActionOperation")
+                .addType("HostNamedActionOperation")
                 .add("textId", mTextId)
                 .add("actionType", getActionType(mType))
                 .add("valueId", mValueId);

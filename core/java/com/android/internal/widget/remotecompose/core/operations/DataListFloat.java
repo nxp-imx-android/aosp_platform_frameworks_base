@@ -148,8 +148,9 @@ public class DataListFloat extends Operation implements VariableSupport, ArrayAc
         return mValues.length;
     }
 
+    @SuppressWarnings("JdkImmutableCollections")
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", CLASS_NAME).add("id", mId).add("values", List.of(mValues));
+        serializer.addType(CLASS_NAME).add("id", mId).add("values", List.of(mValues));
     }
 }

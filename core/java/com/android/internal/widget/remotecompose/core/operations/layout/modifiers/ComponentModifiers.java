@@ -327,7 +327,7 @@ public class ComponentModifiers extends PaintOperation
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "ComponentModifiers")
+                .addType("ComponentModifiers")
                 .add("modifiers", mList);
     }
 }

@@ -131,7 +131,7 @@ public class ValueIntegerChangeActionOperation extends Operation implements Acti
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER, SerializeTags.ACTION)
-                .add("type", "ValueIntegerChangeActionOperation")
+                .addType("ValueIntegerChangeActionOperation")
                 .add("targetValueId", mTargetValueId)
                 .add("value", mValue);
     }

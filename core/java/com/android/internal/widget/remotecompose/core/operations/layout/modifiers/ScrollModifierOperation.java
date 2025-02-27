@@ -397,7 +397,7 @@ public class ScrollModifierOperation extends ListActionsOperation
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "ScrollModifierOperation")
+                .addType("ScrollModifierOperation")
                 .add("direction", mDirection)
                 .add("max", mMax)
                 .add("notchMax", mNotchMax)

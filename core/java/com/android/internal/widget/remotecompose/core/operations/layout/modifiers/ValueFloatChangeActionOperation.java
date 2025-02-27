@@ -126,7 +126,7 @@ public class ValueFloatChangeActionOperation extends Operation implements Action
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER, SerializeTags.ACTION)
-                .add("type", "ValueFloatChangeActionOperation")
+                .addType("ValueFloatChangeActionOperation")
                 .add("targetValueId", mTargetValueId)
                 .add("value", mValue);
     }

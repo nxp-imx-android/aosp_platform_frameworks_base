@@ -211,6 +211,14 @@ public abstract class RemoteContext {
     public abstract void clearNamedFloatOverride(String floatName);
 
     /**
+     * Set the value of a named long. This modifies the content of a LongConstant
+     *
+     * @param name the name of the float to override
+     * @param value Override the default float
+     */
+    public abstract void setNamedLong(String name, long value);
+
+    /**
      * Set the value of a named Object. This overrides the Object in the document
      *
      * @param dataName the name of the Object to override

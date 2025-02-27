@@ -244,7 +244,7 @@ public class DrawTextAnchored extends PaintOperation implements VariableSupport,
     @Override
     public void serialize(MapSerializer serializer) {
         serializer
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("textId", mTextID)
                 .add("x", mX, mOutX)
                 .add("y", mY, mOutY)

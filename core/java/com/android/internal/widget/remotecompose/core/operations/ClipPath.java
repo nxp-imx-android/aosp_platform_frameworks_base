@@ -133,7 +133,7 @@ public class ClipPath extends PaintOperation implements Serializable {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", CLASS_NAME).add("id", mId).add("regionOp", regionOpToString());
+        serializer.addType(CLASS_NAME).add("id", mId).add("regionOp", regionOpToString());
     }
 
     String regionOpToString() {

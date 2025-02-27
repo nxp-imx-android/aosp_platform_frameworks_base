@@ -131,6 +131,6 @@ public class BooleanConstant extends Operation implements Serializable {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", CLASS_NAME).add("id", mId).add("value", mValue);
+        serializer.addType(CLASS_NAME).add("id", mId).add("value", mValue);
     }
 }

@@ -114,6 +114,6 @@ public class MatrixRotate extends DrawBase3 {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serialize(serializer, "rotate", "pivotX", "pivotY").add("type", CLASS_NAME);
+        serialize(serializer, "rotate", "pivotX", "pivotY").addType(CLASS_NAME);
     }
 }

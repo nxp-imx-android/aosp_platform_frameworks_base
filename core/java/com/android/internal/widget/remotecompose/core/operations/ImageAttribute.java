@@ -26,7 +26,9 @@ import com.android.internal.widget.remotecompose.core.PaintContext;
 import com.android.internal.widget.remotecompose.core.PaintOperation;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 
+import java.util.Collections;
 import java.util.List;
 
 /** Operation to extract meta Attributes from image data objects */
@@ -160,6 +162,27 @@ public class ImageAttribute extends PaintOperation {
             case IMAGE_HEIGHT:
                 context.getContext().loadFloat(mId, bitmapData.getHeight());
                 break;
+        }
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .addType(CLASS_NAME)
+                .add("id", mId)
+                .add("imageId", mImageId)
+                .add("args", Collections.singletonList(mArgs))
+                .addType(typeToString());
+    }
+
+    private String typeToString() {
+        switch (mType) {
+            case IMAGE_WIDTH:
+                return "IMAGE_WIDTH";
+            case IMAGE_HEIGHT:
+                return "IMAGE_HEIGHT";
+            default:
+                return "INVALID_TYPE";
         }
     }
 }

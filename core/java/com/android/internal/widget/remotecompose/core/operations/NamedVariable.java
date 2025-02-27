@@ -25,7 +25,6 @@ import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
-import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
@@ -43,6 +42,8 @@ public class NamedVariable extends Operation implements Serializable {
     public static final int FLOAT_TYPE = 1;
     public static final int STRING_TYPE = 0;
     public static final int IMAGE_TYPE = 3;
+    public static final int INT_TYPE = 4;
+    public static final int LONG_TYPE = 5;
 
     public NamedVariable(int varId, int varType, @NonNull String name) {
         this.mVarId = varId;
@@ -122,7 +123,7 @@ public class NamedVariable extends Operation implements Serializable {
     public static void documentation(@NonNull DocumentationBuilder doc) {
         doc.operation("Data Operations", OP_CODE, CLASS_NAME)
                 .description("Add a string name for an ID")
-                .field(DocumentedOperation.INT, "varId", "id to label")
+                .field(INT, "varId", "id to label")
                 .field(INT, "varType", "The type of variable")
                 .field(UTF8, "name", "String");
     }
@@ -141,7 +142,7 @@ public class NamedVariable extends Operation implements Serializable {
     @Override
     public void serialize(MapSerializer serializer) {
         serializer
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("varId", mVarId)
                 .add("varName", mVarName)
                 .add("varType", typeToString());
@@ -157,6 +158,8 @@ public class NamedVariable extends Operation implements Serializable {
                 return "STRING_TYPE";
             case IMAGE_TYPE:
                 return "IMAGE_TYPE";
+            case INT_TYPE:
+                return "INT_TYPE";
             default:
                 return "INVALID_TYPE";
         }

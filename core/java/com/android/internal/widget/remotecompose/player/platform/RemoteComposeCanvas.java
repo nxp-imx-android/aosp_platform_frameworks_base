@@ -200,6 +200,16 @@ public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachSta
         mARContext.setNamedColorOverride(colorName, colorValue);
     }
 
+    /**
+     * set the value of a long associated with this name.
+     *
+     * @param name Name of color typically "android.xxx"
+     * @param value the long value
+     */
+    public void setLong(String name, long value) {
+        mARContext.setNamedLong(name, value);
+    }
+
     public RemoteComposeDocument getDocument() {
         return mDocument;
     }

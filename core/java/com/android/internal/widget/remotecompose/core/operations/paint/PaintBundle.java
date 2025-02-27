@@ -1248,7 +1248,7 @@ public class PaintBundle implements Serializable {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", "PaintBundle");
+        serializer.addType("PaintBundle");
         List<Map<String, Object>> list = new ArrayList<>();
         int i = 0;
         while (i < mPos) {
@@ -1336,6 +1336,7 @@ public class PaintBundle implements Serializable {
         serializer.add("operations", list);
     }
 
+    @SuppressWarnings("JdkImmutableCollections")
     private static Map<String, Object> getVariable(int value) {
         float fValue = Float.intBitsToFloat(value);
         if (Float.isNaN(fValue)) {
@@ -1344,6 +1345,7 @@ public class PaintBundle implements Serializable {
         return orderedOf("type", "Value", "value", fValue);
     }
 
+    @SuppressWarnings("JdkImmutableCollections")
     private static int serializeGradient(
             int cmd, int[] array, int i, List<Map<String, Object>> list) {
         int ret = i;

@@ -106,6 +106,6 @@ public class MatrixScale extends DrawBase4 {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serialize(serializer, "scaleX", "scaleY", "pivotX", "pivotY").add("type", CLASS_NAME);
+        serialize(serializer, "scaleX", "scaleY", "pivotX", "pivotY").addType(CLASS_NAME);
     }
 }

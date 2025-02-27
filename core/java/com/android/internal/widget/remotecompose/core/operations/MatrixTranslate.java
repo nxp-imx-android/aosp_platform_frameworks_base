@@ -102,6 +102,6 @@ public class MatrixTranslate extends DrawBase2 {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serialize(serializer, "dx", "dy").add("type", CLASS_NAME);
+        serialize(serializer, "dx", "dy").addType(CLASS_NAME);
     }
 }

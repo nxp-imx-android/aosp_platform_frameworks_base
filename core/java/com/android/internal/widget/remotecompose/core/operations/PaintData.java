@@ -131,6 +131,6 @@ public class PaintData extends PaintOperation implements VariableSupport, Serial
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", CLASS_NAME).add("paintBundle", mPaintData);
+        serializer.addType(CLASS_NAME).add("paintBundle", mPaintData);
     }
 }

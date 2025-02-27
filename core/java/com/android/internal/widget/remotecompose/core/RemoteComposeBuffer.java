@@ -98,6 +98,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.managers
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.CollapsibleColumnLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.CollapsibleRowLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.ColumnLayout;
+import com.android.internal.widget.remotecompose.core.operations.layout.managers.FitBoxLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.RowLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.StateLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.TextLayout;
@@ -281,13 +282,7 @@ public class RemoteComposeBuffer {
             int dstRight,
             int dstBottom,
             @Nullable String contentDescription) {
-        int imageId = mRemoteComposeState.dataGetId(image);
-        if (imageId == -1) {
-            imageId = mRemoteComposeState.cacheData(image);
-            byte[] data = mPlatform.imageToByteArray(image); // todo: potential npe
-            BitmapData.apply(
-                    mBuffer, imageId, imageWidth, imageHeight, data); // todo: potential npe
-        }
+        int imageId = storeBitmap(image);
         int contentDescriptionId = 0;
         if (contentDescription != null) {
             contentDescriptionId = addText(contentDescription);
@@ -443,16 +438,7 @@ public class RemoteComposeBuffer {
             float right,
             float bottom,
             @Nullable String contentDescription) {
-        int imageId = mRemoteComposeState.dataGetId(image);
-        if (imageId == -1) {
-            imageId = mRemoteComposeState.cacheData(image);
-            byte[] data = mPlatform.imageToByteArray(image); // todo: potential npe
-            int imageWidth = mPlatform.getImageWidth(image);
-            int imageHeight = mPlatform.getImageHeight(image);
-
-            BitmapData.apply(
-                    mBuffer, imageId, imageWidth, imageHeight, data); // todo: potential npe
-        }
+        int imageId = storeBitmap(image);
         addDrawBitmap(imageId, left, top, right, bottom, contentDescription);
     }
 
@@ -523,15 +509,7 @@ public class RemoteComposeBuffer {
             int scaleType,
             float scaleFactor,
             @Nullable String contentDescription) {
-        int imageId = mRemoteComposeState.dataGetId(image);
-        if (imageId == -1) {
-            imageId = mRemoteComposeState.cacheData(image);
-            byte[] data = mPlatform.imageToByteArray(image); // todo: potential npe
-            int imageWidth = mPlatform.getImageWidth(image);
-            int imageHeight = mPlatform.getImageHeight(image);
-
-            BitmapData.apply(mBuffer, imageId, imageWidth, imageHeight, data); // todo: potential pe
-        }
+        int imageId = storeBitmap(image);
         int contentDescriptionId = 0;
         if (contentDescription != null) {
             contentDescriptionId = addText(contentDescription);
@@ -559,16 +537,7 @@ public class RemoteComposeBuffer {
      * @return id of the image useful with
      */
     public int addBitmap(@NonNull Object image) {
-        int imageId = mRemoteComposeState.dataGetId(image);
-        if (imageId == -1) {
-            imageId = mRemoteComposeState.cacheData(image);
-            byte[] data = mPlatform.imageToByteArray(image); // tODO: potential npe
-            int imageWidth = mPlatform.getImageWidth(image);
-            int imageHeight = mPlatform.getImageHeight(image);
-
-            BitmapData.apply(mBuffer, imageId, imageWidth, imageHeight, data);
-        }
-        return imageId;
+        return storeBitmap(image);
     }
 
     /**
@@ -578,18 +547,7 @@ public class RemoteComposeBuffer {
      * @return id of the image useful with
      */
     public int addBitmap(@NonNull Object image, @NonNull String name) {
-        int imageId = mRemoteComposeState.dataGetId(image);
-        if (imageId == -1) {
-            imageId = mRemoteComposeState.cacheData(image);
-            byte[] data = mPlatform.imageToByteArray(image); // todo: potential npe
-            int imageWidth = mPlatform.getImageWidth(image);
-            int imageHeight = mPlatform.getImageHeight(image);
-
-            BitmapData.apply(mBuffer, imageId, imageWidth, imageHeight, data);
-            setBitmapName(imageId, name);
-        }
-
-        return imageId;
+        return storeBitmap(image);
     }
 
     /**
@@ -1393,7 +1351,7 @@ public class RemoteComposeBuffer {
      * @return the id of the command representing long
      */
     public int addLong(long value) {
-        int id = mRemoteComposeState.cacheData(value);
+        int id = mRemoteComposeState.nextId();
         LongConstant.apply(mBuffer, id, value);
         return id;
     }
@@ -1405,7 +1363,7 @@ public class RemoteComposeBuffer {
      * @return the id
      */
     public int addBoolean(boolean value) {
-        int id = mRemoteComposeState.cacheData(value);
+        int id = mRemoteComposeState.nextId();
         BooleanConstant.apply(mBuffer, id, value);
         return id;
     }
@@ -1821,33 +1779,14 @@ public class RemoteComposeBuffer {
     }
 
     /**
-     * This defines the name of the color given the id.
-     *
-     * @param id of the color
-     * @param name Name of the color
-     */
-    public void setColorName(int id, @NonNull String name) {
-        NamedVariable.apply(mBuffer, id, NamedVariable.COLOR_TYPE, name);
-    }
-
-    /**
-     * This defines the name of the string given the id
-     *
-     * @param id of the string
-     * @param name name of the string
-     */
-    public void setStringName(int id, @NonNull String name) {
-        NamedVariable.apply(mBuffer, id, NamedVariable.STRING_TYPE, name);
-    }
-
-    /**
-     * This defines the name of the float given the id
+     * This defines the name of a type of given object
      *
      * @param id of the float
      * @param name name of the float
+     * @param type the type of variable NamedVariable.COLOR_TYPE, STRING_TYPE, etc
      */
-    public void setFloatName(int id, String name) {
-        NamedVariable.apply(mBuffer, id, NamedVariable.FLOAT_TYPE, name);
+    public void setNamedVariable(int id, @NonNull String name, int type) {
+        NamedVariable.apply(mBuffer, id, type, name);
     }
 
     /**
@@ -2136,6 +2075,19 @@ public class RemoteComposeBuffer {
     public void addBoxStart(int componentId, int animationId, int horizontal, int vertical) {
         mLastComponentId = getComponentId(componentId);
         BoxLayout.apply(mBuffer, mLastComponentId, animationId, horizontal, vertical);
+    }
+
+    /**
+     * Add a fitbox start tag
+     *
+     * @param componentId component id
+     * @param animationId animation id
+     * @param horizontal horizontal alignment
+     * @param vertical vertical alignment
+     */
+    public void addFitBoxStart(int componentId, int animationId, int horizontal, int vertical) {
+        mLastComponentId = getComponentId(componentId);
+        FitBoxLayout.apply(mBuffer, mLastComponentId, animationId, horizontal, vertical);
     }
 
     /**
@@ -2438,5 +2390,36 @@ public class RemoteComposeBuffer {
     /** In the context of a component draw modifier, draw the content of the component */
     public void drawComponentContent() {
         DrawContent.apply(mBuffer);
+    }
+
+    /**
+     * Ensures the bitmap is stored.
+     *
+     * @param image the bitbap to store
+     * @return the id of the bitmap
+     */
+    private int storeBitmap(Object image) {
+        int imageId = mRemoteComposeState.dataGetId(image);
+        if (imageId == -1) {
+            imageId = mRemoteComposeState.cacheData(image);
+            byte[] data = mPlatform.imageToByteArray(image); // todo: potential npe
+            short imageWidth = (short) mPlatform.getImageWidth(image);
+            short imageHeight = (short) mPlatform.getImageHeight(image);
+            if (mPlatform.isAlpha8Image(image)) {
+                BitmapData.apply(
+                        mBuffer,
+                        imageId,
+                        BitmapData.TYPE_PNG_ALPHA_8,
+                        imageWidth,
+                        BitmapData.ENCODING_INLINE,
+                        imageHeight,
+                        data); // todo: potential npe
+            } else {
+                BitmapData.apply(
+                        mBuffer, imageId, imageWidth, imageHeight, data); // todo: potential npe
+            }
+        }
+
+        return imageId;
     }
 }

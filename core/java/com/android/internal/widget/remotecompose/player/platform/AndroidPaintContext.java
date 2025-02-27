@@ -290,8 +290,8 @@ public class AndroidPaintContext extends PaintContext {
         }
 
         if ((flags & PaintContext.TEXT_MEASURE_FONT_HEIGHT) != 0) {
-            bounds[1] = Math.round(mCachedFontMetrics.top);
-            bounds[3] = Math.round(mCachedFontMetrics.bottom);
+            bounds[1] = Math.round(mCachedFontMetrics.ascent);
+            bounds[3] = Math.round(mCachedFontMetrics.descent);
         } else {
             bounds[1] = mTmpRect.top;
             bounds[3] = mTmpRect.bottom;
@@ -344,6 +344,7 @@ public class AndroidPaintContext extends PaintContext {
             default:
         }
         staticLayoutBuilder.setMaxLines(maxLines);
+        staticLayoutBuilder.setIncludePad(false);
 
         StaticLayout staticLayout = staticLayoutBuilder.build();
         return new AndroidComputedTextLayout(
