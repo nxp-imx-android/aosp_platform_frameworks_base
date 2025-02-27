@@ -53,7 +53,8 @@ class DragZoneFactoryTest {
         tabletPortrait.copy(windowBounds = Rect(0, 0, 800, 900), isSmallTablet = true)
     private val foldableLandscape =
         foldablePortrait.copy(windowBounds = Rect(0, 0, 900, 800), isLandscape = true)
-    private val splitScreenModeChecker = SplitScreenModeChecker { SplitScreenMode.NONE }
+    private var splitScreenMode = SplitScreenMode.NONE
+    private val splitScreenModeChecker = SplitScreenModeChecker { splitScreenMode }
     private var isDesktopWindowModeSupported = true
     private val desktopWindowModeChecker = DesktopWindowModeChecker { isDesktopWindowModeSupported }
 
@@ -283,7 +284,7 @@ class DragZoneFactoryTest {
     }
 
     @Test
-    fun dragZonesForBubble_tablet_desktopModeDisabled() {
+    fun dragZonesForBubble_desktopModeDisabled() {
         isDesktopWindowModeSupported = false
         dragZoneFactory =
             DragZoneFactory(
@@ -298,7 +299,7 @@ class DragZoneFactoryTest {
     }
 
     @Test
-    fun dragZonesForExpandedView_tablet_desktopModeDisabled() {
+    fun dragZonesForExpandedView_desktopModeDisabled() {
         isDesktopWindowModeSupported = false
         dragZoneFactory =
             DragZoneFactory(
@@ -312,6 +313,38 @@ class DragZoneFactoryTest {
                 DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
             )
         assertThat(dragZones.filterIsInstance<DragZone.DesktopWindow>()).isEmpty()
+    }
+
+    @Test
+    fun dragZonesForBubble_splitScreenModeUnsupported() {
+        splitScreenMode = SplitScreenMode.UNSUPPORTED
+        dragZoneFactory =
+            DragZoneFactory(
+                context,
+                foldableLandscape,
+                splitScreenModeChecker,
+                desktopWindowModeChecker
+            )
+        val dragZones =
+            dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
+        assertThat(dragZones.filterIsInstance<DragZone.Split>()).isEmpty()
+    }
+
+    @Test
+    fun dragZonesForExpandedView_splitScreenModeUnsupported() {
+        splitScreenMode = SplitScreenMode.UNSUPPORTED
+        dragZoneFactory =
+            DragZoneFactory(
+                context,
+                foldableLandscape,
+                splitScreenModeChecker,
+                desktopWindowModeChecker
+            )
+        val dragZones =
+            dragZoneFactory.createSortedDragZones(
+                DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
+            )
+        assertThat(dragZones.filterIsInstance<DragZone.Split>()).isEmpty()
     }
 
     private inline fun <reified T> verifyInstance(): DragZoneVerifier = { dragZone ->
