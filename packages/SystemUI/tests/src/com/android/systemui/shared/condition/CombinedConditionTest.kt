@@ -35,8 +35,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class CombinedConditionTest : SysuiTestCase() {
 
-    class FakeCondition
-    constructor(
+    class FakeCondition(
         scope: CoroutineScope,
         initialValue: Boolean?,
         overriding: Boolean = false,
@@ -46,7 +45,7 @@ class CombinedConditionTest : SysuiTestCase() {
         val started: Boolean
             get() = _started
 
-        override fun start() {
+        override suspend fun start() {
             _started = true
         }
 
