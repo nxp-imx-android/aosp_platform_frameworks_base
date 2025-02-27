@@ -974,6 +974,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         } else if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
         }
+        updateBackgroundOpacity();
     }
 
     /**
@@ -1678,10 +1679,15 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             view.setBackgroundTintColor(color);
         }
         if (notificationRowTransparency()
-                && (mBackgroundNormal != null)
-                && (mEntry != null)) {
-            mBackgroundNormal.setBgIsColorized(
-                    mEntry.getSbn().getNotification().isColorized());
+                && (mBackgroundNormal != null)) {
+            if (NotificationBundleUi.isEnabled()) {
+                mBackgroundNormal.setBgIsColorized(mEntryAdapter.isColorized());
+            } else {
+                if (mEntry != null) {
+                    mBackgroundNormal.setBgIsColorized(
+                            mEntry.getSbn().getNotification().isColorized());
+                }
+            }
         }
     }
 
@@ -2205,7 +2211,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                     R.dimen.notification_min_height);
         }
         mMaxSmallHeightWithSummarization = NotificationUtils.getFontScaledHeight(mContext,
-                com.android.internal.R.dimen.notification_min_height);
+                com.android.internal.R.dimen.notification_collapsed_height_with_summarization);
         mMaxExpandedHeight = NotificationUtils.getFontScaledHeight(mContext,
                 R.dimen.notification_max_height);
         mMaxExpandedHeightForPromotedOngoing = NotificationUtils.getFontScaledHeight(mContext,
@@ -2373,7 +2379,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             return traceTag;
         }
 
-        return traceTag + "(" + getEntry().getNotificationStyle() + ")";
+        if (NotificationBundleUi.isEnabled()) {
+            return traceTag + "(" + getEntryAdapter().getStyle() + ")";
+        } else {
+            return traceTag + "(" + getEntry().getNotificationStyle() + ")";
+        }
     }
 
     @Override
@@ -3067,6 +3077,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                     mChildrenContainer.setOnKeyguard(onKeyguard);
                 }
             }
+            updateBackgroundOpacity();
         }
     }
 
@@ -3696,8 +3707,14 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             return true;
         }
         // The colorized background is another layer with which all other elements overlap
-        if (getEntry().getSbn().getNotification().isColorized()) {
-            return true;
+        if (NotificationBundleUi.isEnabled()) {
+            if (mEntryAdapter.isColorized()) {
+                return true;
+            }
+        } else {
+            if (getEntry().getSbn().getNotification().isColorized()) {
+                return true;
+            }
         }
         // Check if the showing layout has a need for overlapping rendering.
         // NOTE: We could check both public and private layouts here, but becuause these states
@@ -4504,6 +4521,14 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             return mLaunchAnimationRunning;
         } else {
             return getEntry().isExpandAnimationRunning();
+        }
+    }
+
+    private void updateBackgroundOpacity() {
+        if (mBackgroundNormal != null) {
+            // Row background should be opaque when it's displayed as a heads-up notification or
+            // displayed on keyguard.
+            mBackgroundNormal.setForceOpaque(mIsHeadsUp || mOnKeyguard);
         }
     }
 }

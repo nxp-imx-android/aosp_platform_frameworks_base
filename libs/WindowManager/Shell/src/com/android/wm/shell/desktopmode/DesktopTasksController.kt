@@ -138,6 +138,7 @@ import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
+import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.OneShotRemoteHandler
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
@@ -196,6 +197,7 @@ class DesktopTasksController(
     private val recentTasksController: RecentTasksController?,
     private val interactionJankMonitor: InteractionJankMonitor,
     @ShellMainThread private val handler: Handler,
+    private val focusTransitionObserver: FocusTransitionObserver,
     private val desktopModeEventLogger: DesktopModeEventLogger,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
@@ -217,7 +219,7 @@ class DesktopTasksController(
     private var visualIndicator: DesktopModeVisualIndicator? = null
     private var userId: Int
     private val desktopModeShellCommandHandler: DesktopModeShellCommandHandler =
-        DesktopModeShellCommandHandler(this)
+        DesktopModeShellCommandHandler(this, focusTransitionObserver)
 
     private val mOnAnimationFinishedCallback = { releaseVisualIndicator() }
     private lateinit var snapEventHandler: SnapEventHandler
@@ -337,8 +339,8 @@ class DesktopTasksController(
         activateDefaultDeskInDisplay(displayId, remoteTransition)
     }
 
-    /** Gets number of visible freeform tasks in [displayId]. */
-    fun visibleTaskCount(displayId: Int): Int = taskRepository.getVisibleTaskCount(displayId)
+    /** Returns whether the given display has an active desk. */
+    fun isAnyDeskActive(displayId: Int): Boolean = taskRepository.isAnyDeskActive(displayId)
 
     /**
      * Returns true if any of the following is true:
@@ -346,9 +348,16 @@ class DesktopTasksController(
      * - A transparent fullscreen task exists on top in Desktop Mode
      * - PiP on Desktop Windowing is enabled, there is an active PiP window and the desktop
      *   wallpaper is visible.
+     *
+     * TODO: b/362720497 - consolidate with [isAnyDeskActive].
+     *     - top-transparent-fullscreen case: should not be needed if we allow it to launch inside
+     *       the desk in fullscreen instead of force-exiting desktop and having to trick this method
+     *       into thinking it is in desktop mode when a task in this state exists.
+     *     - PIP case: a PIP presence should influence desk activation, so
+     *       [DesktopRepository#isAnyDeskActive] should be sufficient.
      */
     fun isDesktopModeShowing(displayId: Int): Boolean {
-        val hasVisibleTasks = visibleTaskCount(displayId) > 0
+        val hasVisibleTasks = taskRepository.isAnyDeskActive(displayId)
         val hasTopTransparentFullscreenTask =
             taskRepository.getTopTransparentFullscreenTaskId(displayId) != null
         val hasMinimizedPip =
@@ -463,15 +472,14 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
     ): Boolean {
-        val runningTask = shellTaskOrganizer.getRunningTaskInfo(taskId)
-        val backgroundTask = recentTasksController?.findTaskInBackground(taskId)
-        if (runningTask == null && backgroundTask == null) {
+        val task =
+            shellTaskOrganizer.getRunningTaskInfo(taskId)
+                ?: recentTasksController?.findTaskInBackground(taskId)
+        if (task == null) {
             logW("moveTaskToDefaultDeskAndActivate taskId=%d not found", taskId)
             return false
         }
-        // TODO(342378842): Instead of using default display, support multiple displays
-        val displayId = runningTask?.displayId ?: DEFAULT_DISPLAY
-        val deskId = getDefaultDeskId(displayId)
+        val deskId = getDefaultDeskId(task.displayId)
         return moveTaskToDesk(
             taskId = taskId,
             deskId = deskId,
@@ -523,14 +531,14 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
     ): Boolean {
-        if (recentTasksController?.findTaskInBackground(taskId) == null) {
+        val task = recentTasksController?.findTaskInBackground(taskId)
+        if (task == null) {
             logW("moveBackgroundTaskToDesktop taskId=%d not found", taskId)
             return false
         }
         logV("moveBackgroundTaskToDesktop with taskId=%d", taskId)
-        // TODO(342378842): Instead of using default display, support multiple displays
         val taskIdToMinimize =
-            bringDesktopAppsToFrontBeforeShowingNewTask(DEFAULT_DISPLAY, wct, taskId)
+            bringDesktopAppsToFrontBeforeShowingNewTask(task.displayId, wct, taskId)
         val exitResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
                 wct = wct,
@@ -1312,25 +1320,23 @@ class DesktopTasksController(
             applyFreeformDisplayChange(wct, task, displayId)
         }
 
-        val activationRunnable: RunOnTransitStart?
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksOrganizer.moveTaskToDesk(wct, destinationDeskId, task)
-            prepareForDeskActivation(displayId, wct)
-            desksOrganizer.activateDesk(wct, destinationDeskId)
-            activationRunnable = { transition ->
-                desksTransitionObserver.addPendingTransition(
-                    DeskTransition.ActiveDeskWithTask(
-                        token = transition,
-                        displayId = displayId,
-                        deskId = destinationDeskId,
-                        enterTaskId = task.taskId,
-                    )
-                )
-            }
         } else {
             wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
-            activationRunnable = null
         }
+        addDeskActivationChanges(destinationDeskId, wct)
+        val activationRunnable: RunOnTransitStart = { transition ->
+            desksTransitionObserver.addPendingTransition(
+                DeskTransition.ActiveDeskWithTask(
+                    token = transition,
+                    displayId = displayId,
+                    deskId = destinationDeskId,
+                    enterTaskId = task.taskId,
+                )
+            )
+        }
+
         if (Flags.enableDisplayFocusInShellTransitions()) {
             // Bring the destination display to top with includingParents=true, so that the
             // destination display gains the display focus, which makes the top task in the display

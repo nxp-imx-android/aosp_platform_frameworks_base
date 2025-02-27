@@ -1803,6 +1803,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"한 손 모드"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"더 어둡게"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"청각 보조 기기"</string>
+    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"연결 끊김"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"연결됨"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"활성"</string>

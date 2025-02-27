@@ -16,8 +16,8 @@
 
 package android.graphics.drawable;
 
-import static com.android.graphics.flags.Flags.FLAG_GRADIENT_DRAWABLE_SHAPE_ROUNDED_CAP;
-import static com.android.graphics.flags.Flags.gradientDrawableShapeRoundedCap;
+import static com.android.graphics.flags.Flags.FLAG_GRADIENT_DRAWABLE_SHAPE_ARC_FOR_ROUNDED_CAP;
+import static com.android.graphics.flags.Flags.gradientDrawableShapeArcForRoundedCap;
 
 import android.annotation.ColorInt;
 import android.annotation.FlaggedApi;
@@ -132,7 +132,7 @@ public class GradientDrawable extends Drawable {
     /**
      * Shape is an arc.
      */
-    @FlaggedApi(FLAG_GRADIENT_DRAWABLE_SHAPE_ROUNDED_CAP)
+    @FlaggedApi(FLAG_GRADIENT_DRAWABLE_SHAPE_ARC_FOR_ROUNDED_CAP)
     public static final int ARC = 4;
 
     /** @hide */
@@ -874,7 +874,7 @@ public class GradientDrawable extends Drawable {
                 break;
             }
             case ARC:
-                if (gradientDrawableShapeRoundedCap()) {
+                if (gradientDrawableShapeArcForRoundedCap()) {
                     // TODO(b/394988176): Consider applying ARC drawing logic to RING shape.
                     float centerX = mRect.centerX();
                     float centerY = mRect.centerY();
@@ -2159,7 +2159,6 @@ public class GradientDrawable extends Drawable {
         public int mInnerRadius = -1;
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 124050218)
         public int mThickness = -1;
-        @UnsupportedAppUsage(trackingBug = 380000245)
         @StrokeCap public int mStrokeCap = ROUND;
 
         public boolean mDither = false;

@@ -32,7 +32,6 @@ import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_STATUS_BA
 import static com.android.systemui.statusbar.notification.collection.BundleEntry.ROOT_BUNDLES;
 import static com.android.systemui.statusbar.notification.collection.GroupEntry.ROOT_ENTRY;
 import static com.android.systemui.statusbar.notification.collection.NotifCollection.REASON_NOT_CANCELED;
-import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_ALERTING;
 
 import static java.util.Objects.requireNonNull;
 
@@ -42,6 +41,7 @@ import android.app.Notification;
 import android.app.Notification.MessagingStyle.Message;
 import android.app.NotificationChannel;
 import android.app.NotificationManager.Policy;
+import android.app.PendingIntent;
 import android.app.Person;
 import android.app.RemoteInput;
 import android.app.RemoteInputHistoryItem;
@@ -79,7 +79,6 @@ import com.android.systemui.statusbar.notification.row.shared.HeadsUpStatusBarMo
 import com.android.systemui.statusbar.notification.row.shared.NotificationContentModel;
 import com.android.systemui.statusbar.notification.row.shared.NotificationRowContentBinderRefactor;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
-import com.android.systemui.statusbar.notification.stack.PriorityBucket;
 import com.android.systemui.util.ListenerSet;
 
 import kotlinx.coroutines.flow.MutableStateFlow;
@@ -183,7 +182,6 @@ public final class NotificationEntry extends ListEntry {
             new ListenerSet<>();
 
     private boolean mPulseSupressed;
-    private int mBucket = BUCKET_ALERTING;
     private boolean mIsMarkedForUserTriggeredMovement;
     private boolean mIsHeadsUpEntry;
 
@@ -353,6 +351,56 @@ public final class NotificationEntry extends ListEntry {
         public IconPack getIcons() {
             return NotificationEntry.this.getIcons();
         }
+
+        @Override
+        public boolean isColorized() {
+            return getSbn().getNotification().isColorized();
+        }
+
+        @Override
+        @Nullable
+        public StatusBarNotification getSbn() {
+            return NotificationEntry.this.getSbn();
+        }
+
+        @Override
+        public boolean canDragAndDrop() {
+            boolean canBubble = canBubble();
+            Notification notif = getSbn().getNotification();
+            PendingIntent dragIntent = notif.contentIntent != null ? notif.contentIntent
+                    : notif.fullScreenIntent;
+            if (dragIntent != null && dragIntent.isActivity() && !canBubble) {
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean isBubbleCapable() {
+            return NotificationEntry.this.isBubble();
+        }
+
+        @Override
+        @Nullable
+        public String getStyle() {
+            return getNotificationStyle();
+        }
+
+        @Override
+        public int getSectionBucket() {
+            return mBucket;
+        }
+
+        @Override
+        public boolean isAmbient() {
+            return mRanking.isAmbient();
+        }
+
+        @Override
+        public boolean isFullScreenCapable() {
+            return getSbn().getNotification().fullScreenIntent != null;
+        }
+
     }
 
     public EntryAdapter getEntryAdapter() {
@@ -560,15 +608,6 @@ public final class NotificationEntry extends ListEntry {
         return wasBubble != isBubble();
     }
 
-    @PriorityBucket
-    public int getBucket() {
-        return mBucket;
-    }
-
-    public void setBucket(@PriorityBucket int bucket) {
-        mBucket = bucket;
-    }
-
     public ExpandableNotificationRow getRow() {
         return row;
     }
@@ -589,25 +628,45 @@ public final class NotificationEntry extends ListEntry {
     /**
      * Get the children that are actually attached to this notification's row.
      *
-     * TODO: Seems like most callers here should probably be using
-     * {@link GroupMembershipManager#getChildren(PipelineEntry)}
+     * TODO: Seems like most callers here should be asking a PipelineEntry, not a NotificationEntry
      */
     public @Nullable List<NotificationEntry> getAttachedNotifChildren() {
-        if (row == null) {
-            return null;
+        if (NotificationBundleUi.isEnabled()) {
+            if (isGroupSummary()) {
+                return ((GroupEntry) getParent()).getChildren();
+            }
+        } else {
+            if (row == null) {
+                return null;
+            }
+
+            List<ExpandableNotificationRow> rowChildren = row.getAttachedChildren();
+            if (rowChildren == null) {
+                return null;
+            }
+
+            ArrayList<NotificationEntry> children = new ArrayList<>();
+            for (ExpandableNotificationRow child : rowChildren) {
+                children.add(child.getEntry());
+            }
+
+            return children;
+        }
+        return null;
+    }
+
+    private boolean isGroupSummary() {
+        if (getParent() == null) {
+            // The entry is not attached, so it doesn't count.
+            return false;
+        }
+        PipelineEntry pipelineEntry = getParent();
+        if (!(pipelineEntry instanceof GroupEntry groupEntry)) {
+            return false;
         }
 
-        List<ExpandableNotificationRow> rowChildren = row.getAttachedChildren();
-        if (rowChildren == null) {
-            return null;
-        }
-
-        ArrayList<NotificationEntry> children = new ArrayList<>();
-        for (ExpandableNotificationRow child : rowChildren) {
-            children.add(child.getEntry());
-        }
-
-        return children;
+        // If entry is a summary, its parent is a GroupEntry with summary = entry.
+        return groupEntry.getSummary() == this;
     }
 
     public void notifyFullScreenIntentLaunched() {

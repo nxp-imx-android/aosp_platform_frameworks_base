@@ -245,16 +245,17 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth tilsluttet."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ikon for Bluetooth-enhed"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Klik for at konfigurere enhedsoplysninger"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfigurer enhedsoplysninger"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Se alle enheder"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Par ny enhed"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Batteriniveauet er ukendt."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Forbundet med <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Forbundet til <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Udvid gruppe."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Åbn app."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Ikke tilsluttet."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>
@@ -332,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Input"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Høreapparater"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Aktiverer…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Lysstyrken kan ikke justeres, fordi den styres af den øverste app"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Roter automatisk"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Roter skærmen automatisk"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Lokation"</string>
@@ -586,7 +588,7 @@
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Når du caster hele din skærm, er alt på skærmen synligt. Vær derfor forsigtig med ting såsom adgangskoder, betalingsoplysninger, beskeder, billeder, lyd og video."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"Når du caster en app, er alt, der vises eller afspilles i appen, synligt. Vær derfor forsigtig med ting såsom adgangskoder, betalingsoplysninger, beskeder, billeder, lyd og video."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"Cast skærm"</string>
-    <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"Vælg den app, du vil caste fra"</string>
+    <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"Vælg den app, du caste"</string>
     <string name="media_projection_entry_generic_permission_dialog_title" msgid="4519802931547483628">"Vil du begynde at dele?"</string>
     <string name="media_projection_entry_generic_permission_dialog_warning_entire_screen" msgid="5407906851409410209">"Når du deler, optager eller caster, har Android adgang til alt, der er synligt på din skærm eller afspilles på din enhed. Vær derfor forsigtig med ting såsom adgangskoder, betalingsoplysninger, beskeder, billeder, lyd og video."</string>
     <string name="media_projection_entry_generic_permission_dialog_warning_single_app" msgid="3454859977888159495">"Når du deler, optager eller caster en app, har Android adgang til alt, der vises eller afspilles i den pågældende app. Vær derfor forsigtig med ting såsom adgangskoder, betalingsoplysninger, beskeder, billeder, lyd og video."</string>
@@ -901,10 +903,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasking"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Brug opdelt skærm med appen til højre"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Brug opdelt skærm med appen til venstre"</string>
-    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
-    <skip />
-    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
-    <skip />
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Brug fuld skærm"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Brug computervenlig visning"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Skift til en app til højre eller nedenfor, når du bruger opdelt skærm"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Skift til en app til venstre eller ovenfor, når du bruger opdelt skærm"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Ved opdelt skærm: Udskift én app med en anden"</string>
@@ -1507,8 +1507,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Se seneste apps"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Skift mellem apps"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Udfør"</string>
-    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
-    <skip />
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Næste"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Prøv igen!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Gå tilbage"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Stryg til venstre eller højre med tre fingre på touchpladen"</string>

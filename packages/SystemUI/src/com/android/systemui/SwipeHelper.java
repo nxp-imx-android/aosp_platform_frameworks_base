@@ -54,6 +54,7 @@ import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationContentAlphaOptimization;
 import com.android.wm.shell.animation.FlingAnimationUtils;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
@@ -890,12 +891,16 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
         if (mFeatureFlags.isEnabled(Flags.NOTIFICATION_DRAG_TO_CONTENTS)) {
             if (v instanceof ExpandableNotificationRow) {
                 ExpandableNotificationRow enr = (ExpandableNotificationRow) v;
-                boolean canBubble = enr.getEntry().canBubble();
-                Notification notif = enr.getEntry().getSbn().getNotification();
-                PendingIntent dragIntent = notif.contentIntent != null ? notif.contentIntent
-                        : notif.fullScreenIntent;
-                if (dragIntent != null && dragIntent.isActivity() && !canBubble) {
-                    return true;
+                if (NotificationBundleUi.isEnabled()) {
+                    return enr.getEntryAdapter().canDragAndDrop();
+                } else {
+                    boolean canBubble = enr.getEntry().canBubble();
+                    Notification notif = enr.getEntry().getSbn().getNotification();
+                    PendingIntent dragIntent = notif.contentIntent != null ? notif.contentIntent
+                            : notif.fullScreenIntent;
+                    if (dragIntent != null && dragIntent.isActivity() && !canBubble) {
+                        return true;
+                    }
                 }
             }
         }

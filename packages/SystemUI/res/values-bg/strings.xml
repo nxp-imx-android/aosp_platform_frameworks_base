@@ -245,16 +245,17 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth е включен."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Икона за устройство с Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Кликнете, за да конфигурирате подробностите за устройството"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Конфигуриране на подробностите за устройството"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Вижте всички устройства"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Сдвояване на ново устройство"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Процентът на батерията е неизвестен."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Има връзка с <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Установена е връзка с/ъс <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Разгъване на групата."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Отваряне на приложението."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Няма връзка."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Роуминг"</string>
@@ -332,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Вход"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Слухови апарати"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Включва се..."</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Яркостта не може да се коригира, защото се контролира от приложението на екрана"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Авт. ориентация"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Автоматично завъртане на екрана"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Местоположение"</string>
@@ -901,10 +903,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Няколко задачи едновременно"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Използване на разделен екран с приложението вдясно"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Използване на разделен екран с приложението вляво"</string>
-    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
-    <skip />
-    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
-    <skip />
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Използване режима на цял екран"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Използване на изгледа за настолни компютри"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Превключване към приложението вдясно/отдолу в режима на разделен екран"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Превключване към приложението вляво/отгоре в режима на разделен екран"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"При разделен екран: замяна на дадено приложение с друго"</string>
@@ -991,8 +991,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Показване на иконите за известията с нисък приоритет"</string>
     <string name="other" msgid="429768510980739978">"Друго"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"превключване на размера на панела"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"премахване на панел"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"добавяне на панела на последната позиция"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Преместване на панел"</string>
@@ -1507,8 +1506,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Преглед на скорошните приложения"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Превключване на приложенията"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Готово"</string>
-    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
-    <skip />
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Напред"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Опитайте отново!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Назад"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Плъзнете три пръста наляво или надясно по сензорния панел"</string>
@@ -1546,10 +1544,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"За да прегледате скорошните приложения, плъзнете нагоре по сензорния панел с три пръста и задръжте"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"За да прегледате всичките си приложения, натиснете клавиша за действия на клавиатурата си"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Скрито"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Отключете за преглед"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Отключете, за да прегледате кода"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Контекстуално обучение"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Използвайте сензорния панел, за да се върнете назад"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Плъзнете три пръста наляво или надясно. Докоснете, за да научите повече жестове."</string>

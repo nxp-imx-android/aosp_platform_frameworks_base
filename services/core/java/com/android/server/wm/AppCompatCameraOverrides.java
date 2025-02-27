@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_DISABLE_FORCE_ROTATION;
 import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_DISABLE_REFRESH;
+import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION;
 import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT;
 import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_ENABLE_REFRESH_VIA_PAUSE;
 import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_ONLY_FOR_CAMERA;
@@ -183,9 +184,10 @@ class AppCompatCameraOverrides {
 
     private boolean shouldEnableCameraCompatFreeformTreatmentForApp() {
         if (mCameraCompatAllowOrientationTreatmentOptProp != null) {
+            // OptProp is not-null iff the opt-out flag is on.
             return mCameraCompatAllowOrientationTreatmentOptProp
                     .shouldEnableWithOptOutOverrideAndProperty(isChangeEnabled(mActivityRecord,
-                            OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT));
+                            OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION));
         } else {
             return isChangeEnabled(mActivityRecord,
                     OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT);

@@ -155,7 +155,7 @@
     <string name="cast_to_other_device_stop_dialog_message_generic_with_device" msgid="9213582497852420203">"फ़िलहाल, <xliff:g id="DEVICE_NAME">%1$s</xliff:g> पर कास्ट किया जा रहा है"</string>
     <string name="cast_to_other_device_stop_dialog_message_generic" msgid="4100272100480415076">"फ़िलहाल, आस-पास मौजूद किसी डिवाइस पर कास्ट किया जा रहा है"</string>
     <string name="cast_to_other_device_stop_dialog_button" msgid="6420183747435521834">"कास्ट करना बंद करें"</string>
-    <string name="close_dialog_button" msgid="4749497706540104133">"बंद करें"</string>
+    <string name="close_dialog_button" msgid="4749497706540104133">"अभी नहीं"</string>
     <string name="issuerecord_title" msgid="286627115110121849">"समस्या रिकॉर्ड करने वाला टूल"</string>
     <string name="issuerecord_background_processing_label" msgid="1666840264959336876">"समस्या का डेटा प्रोसेस हो रहा"</string>
     <string name="issuerecord_channel_description" msgid="6142326363431474632">"समस्या का डेटा इकट्ठा करने के लिए बैकग्राउंड में जारी गतिविधि की सूचना"</string>
@@ -252,6 +252,10 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> से कनेक्ट किया गया."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> से कनेक्ट है."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ग्रुप को बड़ा करें."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"ऐप्लिकेशन खोलें."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"कनेक्ट नहीं है."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"रोमिंग"</string>
@@ -329,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"इनपुट"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"कान की मशीनें"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ब्लूटूथ चालू हो रहा है…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"स्क्रीन की रोशनी को एडजस्ट नहीं किया जा सकता, क्योंकि इसे टॉप ऐप्लिकेशन कंट्रोल कर रहा है"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ऑटो-रोटेट"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"स्क्रीन का अपने-आप दिशा बदलना (ऑटो-रोटेट)"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"जगह की जानकारी"</string>

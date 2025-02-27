@@ -53,6 +53,7 @@ import java.util.Arrays;
 public class NotificationBackgroundView extends View implements Dumpable,
         ExpandableNotificationRow.DismissButtonTargetVisibilityListener {
 
+    private static final int MAX_ALPHA = 0xFF;
     private final boolean mDontModifyCorners;
     private Drawable mBackground;
     private int mClipTopAmount;
@@ -74,6 +75,7 @@ public class NotificationBackgroundView extends View implements Dumpable,
     private final ColorStateList mDarkColoredStatefulColors;
     private final int mNormalColor;
     private boolean mBgIsColorized = false;
+    private boolean mForceOpaque = false;
     private final int convexR = 9;
     private final int concaveR = 22;
 
@@ -154,6 +156,14 @@ public class NotificationBackgroundView extends View implements Dumpable,
      */
     public void setBgIsColorized(boolean b) {
         mBgIsColorized = b;
+    }
+
+    /** Sets if the background should be opaque. */
+    public void setForceOpaque(boolean forceOpaque) {
+        mForceOpaque = forceOpaque;
+        if (notificationRowTransparency()) {
+            updateBaseLayerColor();
+        }
     }
 
     private Path calculateDismissButtonCutoutPath(Rect backgroundBounds) {
@@ -317,11 +327,15 @@ public class NotificationBackgroundView extends View implements Dumpable,
         // Instead, we set a color filter that essentially replaces every pixel of the drawable.
         // For non-colorized notifications, this function specifies a new color token.
         // For colorized notifications, this uses a color that matches the tint color at 90% alpha.
+        int color = isColorized()
+                ? ColorUtils.setAlphaComponent(mTintColor, (int) (MAX_ALPHA * 0.9f))
+                : SurfaceEffectColors.surfaceEffect1(getContext());
+        if (mForceOpaque) {
+            color = ColorUtils.setAlphaComponent(color, MAX_ALPHA);
+        }
         getBaseBackgroundLayer().setColorFilter(
                 new PorterDuffColorFilter(
-                        isColorized()
-                                ? ColorUtils.setAlphaComponent(mTintColor, (int) (255 * 0.9f))
-                                : SurfaceEffectColors.surfaceEffect1(getContext()),
+                        color,
                         PorterDuff.Mode.SRC)); // SRC operator discards the drawable's color+alpha
     }
 

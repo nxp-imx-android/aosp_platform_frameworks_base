@@ -84,7 +84,7 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
         spyContext = spy(mContext)
         // Simulate having one Desktop task so that we see Desktop Mode as active
         whenever(desktopUserRepositories.current).thenReturn(desktopRepository)
-        whenever(desktopRepository.getVisibleTaskCount(anyInt())).thenReturn(1)
+        whenever(desktopRepository.isAnyDeskActive(anyInt())).thenReturn(true)
         whenever(spyContext.packageManager).thenReturn(packageManager)
         whenever(componentName.packageName).thenReturn(HOME_LAUNCHER_PACKAGE_NAME)
         whenever(packageManager.getHomeActivities(ArrayList())).thenReturn(componentName)
@@ -111,7 +111,7 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
 
     @Test
     fun startAnimation_desktopNotActive_doesNotAnimate() {
-        whenever(desktopUserRepositories.current.getVisibleTaskCount(anyInt())).thenReturn(1)
+        whenever(desktopUserRepositories.current.isAnyDeskActive(anyInt())).thenReturn(true)
         val info =
             TransitionInfoBuilder(TRANSIT_OPEN)
                 .addChange(TRANSIT_OPEN, createSystemModalTaskWithBaseActivity())

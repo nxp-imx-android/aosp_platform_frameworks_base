@@ -18,6 +18,7 @@ package com.android.systemui.volume.dialog.ui.viewmodel
 
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.statusbar.policy.devicePostureController
 import com.android.systemui.volume.dialog.domain.interactor.volumeDialogStateInteractor
@@ -28,6 +29,7 @@ val Kosmos.volumeDialogViewModel by
     Kosmos.Fixture {
         VolumeDialogViewModel(
             applicationContext,
+            applicationCoroutineScope,
             volumeDialogVisibilityInteractor,
             volumeDialogSlidersInteractor,
             volumeDialogStateInteractor,

@@ -49,6 +49,8 @@ import static com.android.server.wm.LaunchParamsController.LaunchParamsModifier.
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import android.app.ActivityOptions;
 import android.compat.testing.PlatformCompatChangeRule;
@@ -98,7 +100,8 @@ public class DesktopModeLaunchParamsModifierTests extends
         mResult = new LaunchParamsController.LaunchParams();
         mResult.reset();
 
-        mTarget = new DesktopModeLaunchParamsModifier(mContext);
+        mTarget = spy(new DesktopModeLaunchParamsModifier(mContext));
+        doReturn(true).when(mTarget).isEnteringDesktopMode(any(), any(), any());
     }
 
     @Test
@@ -134,6 +137,81 @@ public class DesktopModeLaunchParamsModifierTests extends
         setupDesktopModeLaunchParamsModifier();
 
         assertEquals(RESULT_SKIP, new CalculateRequestBuilder().setTask(null).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
+    public void testReturnsSkipIfIsEnteringDesktopModeFalse() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenReturn(false);
+
+        final Task task = new TaskBuilder(mSupervisor).build();
+
+        assertEquals(RESULT_SKIP, new CalculateRequestBuilder().setTask(task).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
+    public void testReturnsContinueIfVisibleFreeformTaskExists() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenCallRealMethod();
+
+        final DisplayContent dc = spy(createNewDisplay());
+        final Task existingFreeformTask = new TaskBuilder(mSupervisor).setCreateActivity(true)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).build();
+        doReturn(existingFreeformTask.getRootActivity()).when(dc)
+                .getTopMostVisibleFreeformActivity();
+        final Task launchingTask = new TaskBuilder(mSupervisor).build();
+        launchingTask.onDisplayChanged(dc);
+
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setTask(launchingTask).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
+    public void testReturnsContinueIfTaskInFreeform() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenCallRealMethod();
+
+        final Task task = new TaskBuilder(mSupervisor).setWindowingMode(WINDOWING_MODE_FREEFORM)
+                .build();
+
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setTask(task).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
+    public void testReturnsContinueIfFreeformRequestViaActivityOptions() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenCallRealMethod();
+
+        final Task task = new TaskBuilder(mSupervisor).build();
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchWindowingMode(WINDOWING_MODE_FREEFORM);
+
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
+    public void testReturnsContinueIfFreeformRequestViaPreviousModifier() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenCallRealMethod();
+
+        final Task task = new TaskBuilder(mSupervisor).build();
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchWindowingMode(WINDOWING_MODE_FREEFORM);
+
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
     }
 
     @Test

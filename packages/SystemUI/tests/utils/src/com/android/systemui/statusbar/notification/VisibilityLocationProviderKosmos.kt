@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shared.clocks
+package com.android.systemui.statusbar.notification
 
-import android.graphics.Rect
-import android.view.View
+import com.android.systemui.kosmos.Kosmos
+import org.mockito.kotlin.mock
 
-fun computeLayoutDiff(
-    view: View,
-    targetRegion: Rect,
-    isLargeClock: Boolean,
-): Pair<Float, Float> {
-    val parent = view.parent
-    if (parent is View && parent.isLaidOut() && isLargeClock) {
-        return Pair(
-            targetRegion.centerX() - parent.width / 2f,
-            targetRegion.centerY() - parent.height / 2f
-        )
-    }
-    return Pair(0f, 0f)
-}
+val Kosmos.visibilityLocationProvider: VisibilityLocationProvider by Kosmos.Fixture { mock() }

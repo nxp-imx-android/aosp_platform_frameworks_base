@@ -60,6 +60,7 @@ import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderVi
 import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -421,7 +422,12 @@ public class NotificationChildrenContainer extends ViewGroup
         Trace.beginSection("NotifChildCont#recreateHeader");
         mHeaderClickListener = listener;
         mIsConversation = isConversation;
-        StatusBarNotification notification = mContainingNotification.getEntry().getSbn();
+        StatusBarNotification notification = NotificationBundleUi.isEnabled()
+                ? mContainingNotification.getEntryAdapter().getSbn()
+                : mContainingNotification.getEntry().getSbn();
+        if (notification == null) {
+            return;
+        }
         final Notification.Builder builder = Notification.Builder.recoverBuilder(getContext(),
                 notification.getNotification());
         Trace.beginSection("recreateHeader#makeNotificationGroupHeader");
@@ -565,7 +571,12 @@ public class NotificationChildrenContainer extends ViewGroup
     void recreateLowPriorityHeader(Notification.Builder builder) {
         AsyncGroupHeaderViewInflation.assertInLegacyMode();
         RemoteViews header;
-        StatusBarNotification notification = mContainingNotification.getEntry().getSbn();
+        StatusBarNotification notification = NotificationBundleUi.isEnabled()
+                ? mContainingNotification.getEntryAdapter().getSbn()
+                : mContainingNotification.getEntry().getSbn();
+        if (notification == null) {
+            return;
+        }
         if (mIsMinimized) {
             if (builder == null) {
                 builder = Notification.Builder.recoverBuilder(getContext(),

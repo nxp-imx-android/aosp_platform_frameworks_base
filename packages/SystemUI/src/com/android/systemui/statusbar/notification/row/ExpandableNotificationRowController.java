@@ -127,7 +127,14 @@ public class ExpandableNotificationRowController implements NotifViewController 
                 @Override
                 public void onSettingChanged(Uri setting, int userId, String value) {
                     if (BUBBLES_SETTING_URI.equals(setting)) {
-                        final int viewUserId = mView.getEntry().getSbn().getUserId();
+                        if (NotificationBundleUi.isEnabled()
+                                && mView.getEntryAdapter().getSbn() == null) {
+                            // only valid for notification rows
+                            return;
+                        }
+                        final int viewUserId = NotificationBundleUi.isEnabled()
+                            ? mView.getEntryAdapter().getSbn().getUserId()
+                            : mView.getEntry().getSbn().getUserId();
                         if (viewUserId == UserHandle.USER_ALL || viewUserId == userId) {
                             mView.getPrivateLayout().setBubblesEnabledForUser(
                                     BUBBLES_SETTING_ENABLED_VALUE.equals(value));
@@ -376,8 +383,12 @@ public class ExpandableNotificationRowController implements NotifViewController 
             public void onViewAttachedToWindow(View v) {
                 if (NotificationBundleUi.isEnabled()) {
                     mView.setInitializationTime(mClock.elapsedRealtime());
+                    if (mView.getEntryAdapter().getSbn() != null) {
+                        mSettingsController.addCallback(BUBBLES_SETTING_URI, mSettingsListener);
+                    }
                 } else {
                     mView.getEntry().setInitializationTime(mClock.elapsedRealtime());
+                    mSettingsController.addCallback(BUBBLES_SETTING_URI, mSettingsListener);
                 }
                 mPluginManager.addPluginListener(mView,
                         NotificationMenuRowPlugin.class, false /* Allow multiple */);
@@ -385,7 +396,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
                     mView.setOnKeyguard(mStatusBarStateController.getState() == KEYGUARD);
                     mStatusBarStateController.addCallback(mStatusBarStateListener);
                 }
-                mSettingsController.addCallback(BUBBLES_SETTING_URI, mSettingsListener);
+
             }
 
             @Override

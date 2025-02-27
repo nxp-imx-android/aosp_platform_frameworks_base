@@ -43,6 +43,8 @@ import java.util.function.BooleanSupplier;
 public enum DesktopModeFlags {
     // All desktop mode related flags to be overridden by developer option toggle will be added here
     // go/keep-sorted start
+    DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX(
+            Flags::disableDesktopLaunchParamsOutsideDesktopBugFix, false),
     DISABLE_NON_RESIZABLE_APP_SNAP_RESIZE(Flags::disableNonResizableAppSnapResizing, true),
     ENABLE_ACCESSIBLE_CUSTOM_HEADERS(Flags::enableAccessibleCustomHeaders, true),
     ENABLE_APP_HEADER_WITH_TASK_DENSITY(Flags::enableAppHeaderWithTaskDensity, true),
@@ -113,6 +115,7 @@ public enum DesktopModeFlags {
     ENABLE_START_LAUNCH_TRANSITION_FROM_TASKBAR_BUGFIX(
             Flags::enableStartLaunchTransitionFromTaskbarBugfix, true),
     ENABLE_TASKBAR_OVERFLOW(Flags::enableTaskbarOverflow, false),
+    ENABLE_TASKBAR_RECENTS_LAYOUT_TRANSITION(Flags::enableTaskbarRecentsLayoutTransition, false),
     ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS(Flags::enableTaskResizingKeyboardShortcuts, true),
     ENABLE_TASK_STACK_OBSERVER_IN_SHELL(Flags::enableTaskStackObserverInShell, true),
     ENABLE_THEMED_APP_HEADERS(Flags::enableThemedAppHeaders, true),

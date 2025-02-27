@@ -245,16 +245,17 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"ಬ್ಲೂಟೂತ್‌‌ ಸಂಪರ್ಕಗೊಂಡಿದೆ."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ಬ್ಲೂಟೂತ್ ಸಾಧನ ಐಕಾನ್"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ಸಾಧನದ ವಿವರಗಳನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. ಸಾಧನದ ವಿವರಗಳನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಿ"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"ಎಲ್ಲಾ ಸಾಧನಗಳನ್ನು ನೋಡಿ"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"ಹೊಸ ಸಾಧನವನ್ನು ಪೇರ್ ಮಾಡಿ"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ಬ್ಯಾಟರಿ ಶೇಕಡಾವಾರು ತಿಳಿದಿಲ್ಲ."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> ಗೆ ಸಂಪರ್ಕಪಡಿಸಲಾಗಿದೆ."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗಿದೆ."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ಗುಂಪು ವಿಸ್ತರಿಸಿ."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"ಅಪ್ಲಿಕೇಶನ್ ತೆರೆಯಿರಿ."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"ರೋಮಿಂಗ್"</string>
@@ -332,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"ಇನ್‌ಪುಟ್"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"ಶ್ರವಣ ಸಾಧನಗಳು"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ಆನ್ ಮಾಡಲಾಗುತ್ತಿದೆ..."</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"ಬ್ರೈಟ್‌ನೆಸ್ ಅನ್ನು ಅಡ್ಜಸ್ಟ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ, ಏಕೆಂದರೆ ಅದನ್ನು ಟಾಪ್ ಆ್ಯಪ್ ನಿಯಂತ್ರಿಸುತ್ತಿದೆ"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ಸ್ವಯಂ-ತಿರುಗುವಿಕೆ"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"ಪರದೆಯನ್ನು ಸ್ವಯಂ-ತಿರುಗಿಸಿ"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"ಸ್ಥಳ"</string>
@@ -580,11 +582,11 @@
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"ಸ್ಕ್ರೀನ್‌ ಹಂಚಿಕೊಳ್ಳಿ"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಈ ಆಯ್ಕೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದೆ"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"ಹಂಚಿಕೊಳ್ಳಲು ಆ್ಯಪ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ"</string>
-    <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಕಾಸ್ಟ್ ಮಾಡಬೇಕೆ?"</string>
-    <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"ಒಂದು ಆ್ಯಪ್ ಅನ್ನು ಕಾಸ್ಟ್ ಮಾಡಿ"</string>
+    <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಬಿತ್ತರಿಸಬೇಕೇ?"</string>
+    <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"ಒಂದು ಆ್ಯಪ್ ಅನ್ನು ಬಿತ್ತರಿಸಿ"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಕ್ಯಾಸ್ಟ್ ಮಾಡಿ"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ನೀವು ಕ್ಯಾಸ್ಟ್ ಮಾಡುವಾಗ, ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಮೇಲೆ ಏನಾದರೂ ಗೋಚರಿಸುತ್ತದೆ. ಆದ್ದರಿಂದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಪಾವತಿ ವಿವರಗಳು, ಸಂದೇಶಗಳು, ಫೋಟೋಗಳು ಹಾಗೂ ಆಡಿಯೊ ಮತ್ತು ವೀಡಿಯೊದಂತಹ ವಿಷಯಗಳ ಕುರಿತು ಜಾಗರೂಕರಾಗಿರಿ."</string>
-    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"ನೀವು ಆ್ಯಪ್ ಅನ್ನು ಕ್ಯಾಸ್ಟ್ ಮಾಡುತ್ತಿರುವಾಗ, ಆ ಆ್ಯಪ್‌ನಲ್ಲಿ ತೋರಿಸಿರುವ ಅಥವಾ ಪ್ಲೇ ಮಾಡಿರುವುದು ಗೋಚರಿಸುತ್ತದೆ. ಆದ್ದರಿಂದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಪಾವತಿ ವಿವರಗಳು, ಸಂದೇಶಗಳು, ಫೋಟೋಗಳು ಹಾಗೂ ಆಡಿಯೊ ಮತ್ತು ವೀಡಿಯೊದಂತಹ ವಿಷಯಗಳ ಕುರಿತು ಜಾಗರೂಕರಾಗಿರಿ."</string>
+    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"ನೀವು ಆ್ಯಪ್ ಅನ್ನು ಬಿತ್ತರಿಸುತ್ತಿರುವಾಗ, ಆ ಆ್ಯಪ್‌ನಲ್ಲಿ ತೋರಿಸಿರುವ ಅಥವಾ ಪ್ಲೇ ಮಾಡಿರುವುದು ಗೋಚರಿಸುತ್ತದೆ. ಆದ್ದರಿಂದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಪಾವತಿ ವಿವರಗಳು, ಸಂದೇಶಗಳು, ಫೋಟೋಗಳು ಹಾಗೂ ಆಡಿಯೊ ಮತ್ತು ವೀಡಿಯೊದಂತಹ ವಿಷಯಗಳ ಕುರಿತು ಜಾಗರೂಕರಾಗಿರಿ."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ಬಿತ್ತರಿಸಿ"</string>
     <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"ಬಿತ್ತರಿಸಲು ಆ್ಯಪ್‌ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ"</string>
     <string name="media_projection_entry_generic_permission_dialog_title" msgid="4519802931547483628">"ಹಂಚಿಕೊಳ್ಳಲು ಪ್ರಾರಂಭಿಸಬೇಕೇ?"</string>
@@ -901,10 +903,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ಮಲ್ಟಿಟಾಸ್ಕಿಂಗ್"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ಬಲಭಾಗದಲ್ಲಿ ಆ್ಯಪ್ ಮೂಲಕ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಬಳಸಿ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ಎಡಭಾಗದಲ್ಲಿ ಆ್ಯಪ್ ಮೂಲಕ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಬಳಸಿ"</string>
-    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
-    <skip />
-    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
-    <skip />
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"ಫುಲ್‌ಸ್ಕ್ರೀನ್ ಅನ್ನು ಬಳಸಿ"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"ಡೆಸ್ಕ್‌ಟಾಪ್ ವೀಕ್ಷಣೆಯನ್ನು ಬಳಸಿ"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"ಸ್ಕ್ರೀನ್ ಬೇರ್ಪಡಿಸಿ ಮೋಡ್ ಬಳಸುವಾಗ ಬಲಭಾಗ ಅಥವಾ ಕೆಳಭಾಗದಲ್ಲಿರುವ ಆ್ಯಪ್‌ಗೆ ಬದಲಿಸಿ"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"ಸ್ಕ್ರೀನ್ ಬೇರ್ಪಡಿಸಿ ಮೋಡ್ ಬಳಸುವಾಗ ಎಡಭಾಗ ಅಥವಾ ಮೇಲ್ಭಾಗದಲ್ಲಿರುವ ಆ್ಯಪ್‌ಗೆ ಬದಲಿಸಿ"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"ಸ್ಕ್ರೀನ್ ಬೇರ್ಪಡಿಸುವ ಸಮಯದಲ್ಲಿ: ಒಂದು ಆ್ಯಪ್‌ನಿಂದ ಮತ್ತೊಂದು ಆ್ಯಪ್‌ಗೆ ಬದಲಿಸಿ"</string>
@@ -991,8 +991,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"ಕಡಿಮೆ-ಆದ್ಯತೆ ಸೂಚನೆಯ ಐಕಾನ್‌ಗಳನ್ನು ತೋರಿಸಿ"</string>
     <string name="other" msgid="429768510980739978">"ಇತರ"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ಟೈಲ್ ನ ಗಾತ್ರವನ್ನು ಟಾಗಲ್ ಮಾಡಿ"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ಟೈಲ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"ಕೊನೆಯ ಸ್ಥಾನಕ್ಕೆ ಟೈಲ್ ಅನ್ನು ಸೇರಿಸಿ"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ಟೈಲ್ ಸರಿಸಿ"</string>
@@ -1507,8 +1506,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"ಇತ್ತೀಚಿನ ಆ್ಯಪ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ಆ್ಯಪ್‌ಗಳನ್ನು ಬದಲಿಸಿ"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"ಮುಗಿದಿದೆ"</string>
-    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
-    <skip />
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"ಮುಂದಿನದು"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"ಪುನಃ ಪ್ರಯತ್ನಿಸಿ!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"ಹಿಂತಿರುಗಿ"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"ನಿಮ್ಮ ಟಚ್‌ಪ್ಯಾಡ್‌ನಲ್ಲಿ ಮೂರು ಬೆರಳುಗಳನ್ನು ಬಳಸಿ ಎಡ ಅಥವಾ ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
@@ -1546,10 +1544,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"ಇತ್ತೀಚಿನ ಆ್ಯಪ್‌ಗಳನ್ನು ನೋಡಲು, ಟಚ್‌ಪ್ಯಾಡ್‌ನಲ್ಲಿ ಮೂರು ಬೆರಳುಗಳಿಂದ ಮೇಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ ಹಾಗೂ ಹೋಲ್ಡ್ ಮಾಡಿ"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"ನಿಮ್ಮ ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಲು, ನಿಮ್ಮ ಕೀಬೋರ್ಡ್‌ನಲ್ಲಿರುವ ಆ್ಯಕ್ಷನ್‌ ಕೀಯನ್ನು ಒತ್ತಿರಿ"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"ಅರ್ಥಬದ್ಧವಾಗಿಸಲಾಗಿದೆ"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"ನೋಡಲು ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"ಕೋಡ್ ವೀಕ್ಷಿಸಲು ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"ಸಂದರ್ಭೋಚಿತ ಶಿಕ್ಷಣ"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"ಹಿಂತಿರುಗಲು ನಿಮ್ಮ ಟಚ್‌ಪ್ಯಾಡ್ ಅನ್ನು ಬಳಸಿ"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"ಮೂರು ಬೆರಳುಗಳಿಂದ ಎಡಕ್ಕೆ ಅಥವಾ ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ. ಇನ್ನಷ್ಟು ಗೆಸ್ಚರ್‌ಗಳನ್ನು ತಿಳಿಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ."</string>

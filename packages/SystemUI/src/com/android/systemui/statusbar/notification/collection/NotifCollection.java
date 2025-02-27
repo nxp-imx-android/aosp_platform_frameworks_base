@@ -96,6 +96,7 @@ import com.android.systemui.statusbar.notification.collection.notifcollection.No
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender;
 import com.android.systemui.statusbar.notification.collection.notifcollection.RankingAppliedEvent;
 import com.android.systemui.statusbar.notification.collection.notifcollection.RankingUpdatedEvent;
+import com.android.systemui.statusbar.notification.collection.notifcollection.UpdateSource;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
 import com.android.systemui.util.Assert;
 import com.android.systemui.util.NamedListenerSet;
@@ -547,6 +548,12 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
             // TODO: If a coalesced event ever gets here, it's possible to lose track of children,
             //  since their rankings might have been updated earlier (and thus we may no longer
             //  think a child is associated with this locally-dismissed entry).
+            // If the postTime remains the same, we can assume the update is from SystemServer, not
+            // the app.
+            long lastUpdateTime = entry.getSbn().getPostTime();
+            UpdateSource source = sbn.getPostTime() == lastUpdateTime
+                    ? UpdateSource.SystemServer
+                    : UpdateSource.App;
             cancelLocalDismissal(entry);
             cancelLifetimeExtension(entry);
             cancelDismissInterception(entry);
@@ -556,7 +563,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
             mEventQueue.add(new BindEntryEvent(entry, sbn));
 
             mLogger.logNotifUpdated(entry);
-            mEventQueue.add(new EntryUpdatedEvent(entry, true /* fromSystem */));
+            mEventQueue.add(new EntryUpdatedEvent(entry, source));
         }
     }
 
@@ -1045,7 +1052,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
         mEventQueue.add(new BindEntryEvent(entry, sbn));
 
         mLogger.logNotifUpdated(entry);
-        mEventQueue.add(new EntryUpdatedEvent(entry, false /* fromSystem */));
+        mEventQueue.add(new EntryUpdatedEvent(entry, UpdateSource.SystemUi));
 
         // Skip the applyRanking step and go straight to dispatching the events
         dispatchEventsAndRebuildList("updateNotificationInternally");

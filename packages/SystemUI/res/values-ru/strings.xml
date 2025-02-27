@@ -245,16 +245,17 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth-соединение установлено."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Значок устройства Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Нажмите, чтобы изменить информацию об устройстве"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"Настройка устройства \"<xliff:g id="DEVICE_NAME">%s</xliff:g>\""</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Показать все устройства"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Подключить устройство"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Уровень заряда батареи в процентах неизвестен."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g>: подключено."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Подключено к: <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Развернуть группу."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Открыть приложение."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Не подключено"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Роуминг"</string>
@@ -332,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Устройство ввода"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Слуховые аппараты"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Включение…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Невозможно изменить яркость,так как она регулируется общими настройками."</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Автоповорот"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Автоповорот экрана"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Геолокация"</string>
@@ -901,10 +903,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Многозадачность"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Разделить экран и поместить открытое приложение справа"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Разделить экран и поместить открытое приложение слева"</string>
-    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
-    <skip />
-    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
-    <skip />
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Полноэкранный режим"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Версия для ПК"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Перейти к приложению справа или внизу на разделенном экране"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Перейти к приложению слева или вверху на разделенном экране"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"В режиме разделения экрана заменить одно приложение другим"</string>
@@ -991,8 +991,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Показывать значки уведомлений с низким приоритетом"</string>
     <string name="other" msgid="429768510980739978">"Другое"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"изменить размер параметра"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"удалить панель"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"добавить параметр в конец"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Переместить панель"</string>
@@ -1507,8 +1506,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Просмотр недавних приложений"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Переход в другое приложение"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Готово"</string>
-    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
-    <skip />
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Далее"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Попробуйте ещё раз"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Назад"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Проведите тремя пальцами влево или вправо по сенсорной панели."</string>
@@ -1546,10 +1544,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Чтобы увидеть недавние приложения, проведите по сенсорной панели тремя пальцами вверх и удерживайте."</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Чтобы открыть список всех своих приложений, нажмите клавишу действия."</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Скрыто"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Разблокируйте экран, чтобы посмотреть."</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Разблокируйте экран, чтобы посмотреть код."</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Контекстные подсказки"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Используйте сенсорную панель, чтобы возвращаться назад"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Для этого проведите тремя пальцами влево или вправо. Чтобы посмотреть другие жесты, нажмите здесь."</string>

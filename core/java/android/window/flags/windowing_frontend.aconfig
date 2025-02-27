@@ -472,3 +472,14 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "reduce_task_snapshot_memory_usage"
+    namespace: "windowing_frontend"
+    description: "Reduce task snapshot memory usage in either heap and dmabuf."
+    bug: "238206323"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

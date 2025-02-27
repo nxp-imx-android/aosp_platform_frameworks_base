@@ -128,7 +128,7 @@ class DesktopTasksTransitionObserverTest {
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
     fun backNavigation_taskMinimized() {
         val task = createTaskInfo(1)
-        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(1)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
 
         transitionObserver.onTransitionReady(
             transition = mock(),
@@ -146,7 +146,9 @@ class DesktopTasksTransitionObserverTest {
     fun backNavigation_withCloseTransitionNotLastTask_taskMinimized() {
         val task = createTaskInfo(1)
         val transition = mock<IBinder>()
-        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(2)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.isOnlyVisibleTask(task.taskId, task.displayId)).thenReturn(false)
+        whenever(taskRepository.hasOnlyOneVisibleTask(task.displayId)).thenReturn(false)
         whenever(taskRepository.isClosingTask(task.taskId)).thenReturn(false)
         whenever(backAnimationController.latestTriggerBackTask).thenReturn(task.taskId)
 
@@ -173,7 +175,7 @@ class DesktopTasksTransitionObserverTest {
     fun backNavigation_withCloseTransitionLastTask_wallpaperActivityClosed_taskMinimized() {
         val task = createTaskInfo(1)
         val transition = mock<IBinder>()
-        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(1)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
         whenever(taskRepository.isClosingTask(task.taskId)).thenReturn(false)
         whenever(backAnimationController.latestTriggerBackTask).thenReturn(task.taskId)
 
@@ -202,7 +204,7 @@ class DesktopTasksTransitionObserverTest {
     fun backNavigation_withCloseTransitionLastTask_wallpaperActivityReordered_taskMinimized() {
         val task = createTaskInfo(1)
         val transition = mock<IBinder>()
-        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(1)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
         whenever(taskRepository.isClosingTask(task.taskId)).thenReturn(false)
         whenever(backAnimationController.latestTriggerBackTask).thenReturn(task.taskId)
 
@@ -227,7 +229,7 @@ class DesktopTasksTransitionObserverTest {
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
     fun backNavigation_nullTaskInfo_taskNotMinimized() {
         val task = createTaskInfo(1)
-        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(1)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
 
         transitionObserver.onTransitionReady(
             transition = mock(),
@@ -243,7 +245,7 @@ class DesktopTasksTransitionObserverTest {
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
     fun removeTasks_onTaskFullscreenLaunchWithOpenTransition_taskRemovedFromRepo() {
         val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
-        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(1)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
 
         transitionObserver.onTransitionReady(
@@ -261,7 +263,7 @@ class DesktopTasksTransitionObserverTest {
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
     fun removeTasks_onTaskFullscreenLaunchExitDesktopTransition_taskRemovedFromRepo() {
         val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
-        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(1)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
 
         transitionObserver.onTransitionReady(
@@ -280,7 +282,7 @@ class DesktopTasksTransitionObserverTest {
     fun closeLastTask_wallpaperTokenExists_wallpaperIsRemoved() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val task = createTaskInfo(1, WINDOWING_MODE_FREEFORM)
-        whenever(taskRepository.getVisibleTaskCount(task.displayId)).thenReturn(0)
+        whenever(taskRepository.isAnyDeskActive(task.displayId)).thenReturn(false)
 
         transitionObserver.onTransitionReady(
             transition = mockTransition,

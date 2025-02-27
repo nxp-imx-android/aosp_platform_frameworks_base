@@ -289,6 +289,8 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
             List<DeviceItem> hearingDeviceItemList = getHearingDeviceItemList();
             CachedBluetoothDevice activeHearingDevice = getActiveHearingDevice(
                     hearingDeviceItemList);
+            mLocalBluetoothManager.getEventManager().registerCallback(this);
+
             mMainExecutor.execute(() -> {
                 setupDeviceListView(dialog, hearingDeviceItemList);
                 setupPairNewDeviceButton(dialog);
@@ -298,21 +300,6 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
                 }
                 setupRelatedToolsView(dialog);
             });
-        });
-    }
-
-    @Override
-    public void onStart(@NonNull SystemUIDialog dialog) {
-        mBgExecutor.execute(() -> {
-            if (mLocalBluetoothManager != null) {
-                mLocalBluetoothManager.getEventManager().registerCallback(this);
-            }
-            if (mPresetController != null) {
-                mPresetController.registerHapCallback();
-            }
-            if (mAmbientController != null) {
-                mAmbientController.start();
-            }
         });
     }
 
@@ -378,6 +365,7 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
 
         mPresetLayout = dialog.requireViewById(R.id.preset_layout);
         mPresetLayout.setVisibility(mPresetController.isPresetControlAvailable() ? VISIBLE : GONE);
+        mBgExecutor.execute(() -> mPresetController.registerHapCallback());
     }
 
     private void setupAmbientControls(CachedBluetoothDevice activeHearingDevice) {
@@ -387,6 +375,7 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
                 mDialog.getContext(), mLocalBluetoothManager, ambientLayout);
         mAmbientController.setShowUiWhenLocalDataExist(false);
         mAmbientController.loadDevice(activeHearingDevice);
+        mBgExecutor.execute(() -> mAmbientController.start());
     }
 
     private void setupPairNewDeviceButton(SystemUIDialog dialog) {

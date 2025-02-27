@@ -64,6 +64,7 @@ import com.android.systemui.statusbar.notification.row.wrapper.NotificationCompa
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationCustomViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.phone.ExpandHeadsUpOnInlineReply;
 import com.android.systemui.statusbar.policy.InflatedSmartReplyState;
 import com.android.systemui.statusbar.policy.InflatedSmartReplyViewHolder;
@@ -594,12 +595,11 @@ public class NotificationContentView extends FrameLayout implements Notification
         if (mContainingNotification == null) {
             return null;
         }
-        final NotificationEntry entry = mContainingNotification.getEntry();
-        if (entry == null) {
-            return null;
+        if (NotificationBundleUi.isEnabled()) {
+            return mContainingNotification.getEntryAdapter().getSbn();
+        } else {
+            return mContainingNotification.getEntry().getSbn();
         }
-
-        return entry.getSbn();
     }
 
     /**

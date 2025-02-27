@@ -100,6 +100,17 @@ flag {
 }
 
 flag {
+    name: "disable_desktop_launch_params_outside_desktop_bug_fix"
+    namespace: "lse_desktop_experience"
+    description: "Prevents DesktopModeLaunchParamsModifier from modifying launch params for non /n"
+                 "desktop launches."
+    bug: "396108436"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_windowing_wallpaper_activity"
     namespace: "lse_desktop_experience"
     description: "Enables desktop wallpaper activity to show wallpaper in the desktop mode"
@@ -812,11 +823,32 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
 flag {
     name: "enable_drag_to_desktop_incoming_transitions_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables bugfix handling incoming transitions during the DragToDesktop transition."
     bug: "397135730"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_taskbar_recents_layout_transition"
+    namespace: "lse_desktop_experience"
+    description: "Enable Taskbar LayoutTransition for Recent Apps"
+    bug: "343521765"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_desktop_opening_deeplink_minimize_animation_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enabling a minimize animation when a new window is opened via deeplink and the Desktop Windowing open windows limit is reached."
+    bug: "360329773"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

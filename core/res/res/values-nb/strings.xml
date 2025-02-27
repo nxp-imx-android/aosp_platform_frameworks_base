@@ -276,7 +276,7 @@
     <string name="bugreport_option_full_title" msgid="7681035745950045690">"Fullstendig rapport"</string>
     <string name="bugreport_option_full_summary" msgid="1975130009258435885">"Bruk dette alternativet for minst mulig forstyrrelse på systemet når enheten din er treg eller ikke svarer, eller når du trenger alle rapportdelene. Det tas ikke noen skjermbilde, og du kan ikke legge til flere detaljer."</string>
     <string name="bugreport_countdown" msgid="6418620521782120755">"{count,plural, =1{Tar skjermbilde for feilrapporten om # sekund.}other{Tar skjermbilde for feilrapporten om # sekunder.}}"</string>
-    <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"En skjermbilde er tatt med feilrapporten"</string>
+    <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"Et skjermbilde er tatt med feilrapporten"</string>
     <string name="bugreport_screenshot_failure_toast" msgid="6736320861311294294">"Kunne ikke ta skjermbilde med feilrapporten"</string>
     <string name="global_action_toggle_silent_mode" msgid="8464352592860372188">"Stillemodus"</string>
     <string name="global_action_silent_mode_on_status" msgid="2371892537738632013">"Lyden er av"</string>
@@ -1803,6 +1803,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Enhåndsmodus"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Ekstra dimmet"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Høreapparater"</string>
+    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Frakoblet"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Tilkoblet"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Aktiv"</string>

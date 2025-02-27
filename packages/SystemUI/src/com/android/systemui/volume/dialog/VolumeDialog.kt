@@ -17,7 +17,6 @@
 package com.android.systemui.volume.dialog
 
 import android.content.Context
-import android.graphics.PixelFormat
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
@@ -51,10 +50,8 @@ constructor(
                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
             )
             addPrivateFlags(WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
-
             setType(WindowManager.LayoutParams.TYPE_VOLUME_OVERLAY)
             setWindowAnimations(-1)
-            setFormat(PixelFormat.TRANSLUCENT)
 
             attributes =
                 attributes.apply {

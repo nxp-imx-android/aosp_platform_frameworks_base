@@ -16,14 +16,18 @@
 
 package com.android.wm.shell.desktopmode
 
+import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.window.DesktopExperienceFlags
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.UNKNOWN
 import com.android.wm.shell.sysui.ShellCommandHandler
+import com.android.wm.shell.transition.FocusTransitionObserver
 import java.io.PrintWriter
 
 /** Handles the shell commands for the DesktopTasksController. */
-class DesktopModeShellCommandHandler(private val controller: DesktopTasksController) :
-    ShellCommandHandler.ShellCommandActionHandler {
+class DesktopModeShellCommandHandler(
+    private val controller: DesktopTasksController,
+    private val focusTransitionObserver: FocusTransitionObserver,
+) : ShellCommandHandler.ShellCommandActionHandler {
 
     override fun onShellCommand(args: Array<String>, pw: PrintWriter): Boolean =
         when (args[0]) {
@@ -76,20 +80,21 @@ class DesktopModeShellCommandHandler(private val controller: DesktopTasksControl
     }
 
     private fun runMoveToNextDisplay(args: Array<String>, pw: PrintWriter): Boolean {
+        var taskId = INVALID_TASK_ID
         if (args.size < 2) {
-            // First argument is the action name.
-            pw.println("Error: task id should be provided as arguments")
-            return false
-        }
-
-        val taskId =
+            taskId = focusTransitionObserver.globallyFocusedTaskId
+        } else {
             try {
-                args[1].toInt()
+                taskId = args[1].toInt()
             } catch (e: NumberFormatException) {
                 pw.println("Error: task id should be an integer")
                 return false
             }
-
+        }
+        if (taskId == INVALID_TASK_ID) {
+            pw.println("Error: no appropriate task found")
+            return false
+        }
         controller.moveToNextDisplay(taskId)
         return true
     }

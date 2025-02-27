@@ -292,7 +292,11 @@ constructor(
             parentView.removeView(smartSpaceView)
         }
 
-        smartSpaceView = lockscreenSmartspaceController.buildAndConnectDateView(parentView)
+        smartSpaceView =
+            lockscreenSmartspaceController.buildAndConnectDateView(
+                parent = parentView,
+                isLargeClock = false,
+            )
 
         val topPadding: Int =
             smartspaceViewModel.getLargeClockSmartspaceTopPadding(

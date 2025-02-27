@@ -245,16 +245,17 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"ബ്ലൂടൂത്ത് കണക്‌റ്റുചെയ്തു."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth ഉപകരണ ഐക്കൺ"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ഉപകരണത്തിന്റെ വിശദാംശങ്ങൾ കോൺഫിഗർ ചെയ്യാൻ ക്ലിക്ക് ചെയ്യുക"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. ഉപകരണ വിശദാംശങ്ങൾ കോൺഫിഗർ ചെയ്യുക"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"എല്ലാ ഉപകരണങ്ങളും കാണുക"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"പുതിയ ഉപകരണം ജോടിയാക്കുക"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ബാറ്ററി ശതമാനം അജ്ഞാതമാണ്."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> എന്നതിലേക്ക് കണക്‌റ്റുചെയ്‌തു."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> എന്നതിലേക്ക് കണക്റ്റുചെയ്തു."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ഗ്രൂപ്പ് വികസിപ്പിക്കുക."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"ആപ്പ് തുറക്കുക."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"കണക്റ്റുചെയ്‌തിട്ടില്ല."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"റോമിംഗ്"</string>
@@ -332,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"ഇൻപുട്ട്"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"ശ്രവണ സഹായികൾ"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ഓണാക്കുന്നു…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"തെളിച്ചം അഡ്‌ജസ്റ്റ് ചെയ്യാനാകില്ല, അത് നിയന്ത്രിക്കുന്നത് ഏറ്റവും മുകളിലുള്ള ആപ്പാണ്"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"സ്‌ക്രീൻ സ്വയമേവ തിരിയൽ"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"സ്‌ക്രീൻ സ്വയമേവ തിരിക്കുക"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"ലൊക്കേഷൻ"</string>
@@ -901,10 +903,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"മൾട്ടിടാസ്‌കിംഗ്"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"വലതുവശത്തുള്ള ആപ്പിനൊപ്പം സ്‌ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുക"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ഇടതുവശത്തുള്ള ആപ്പിനൊപ്പം സ്‌ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുക"</string>
-    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
-    <skip />
-    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
-    <skip />
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"പൂർണ സ്ക്രീൻ ഉപയോഗിക്കുക"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"ഡെസ്‌ക്ടോപ്പ് വ്യൂ ഉപയോഗിക്കുക"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"സ്ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുമ്പോൾ വലതുവശത്തെ/താഴത്തെ ആപ്പിലേക്ക് മാറുക"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"സ്ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുമ്പോൾ ഇടതുവശത്തെ/മുകളിലെ ആപ്പിലേക്ക് മാറൂ"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"സ്‌ക്രീൻ വിഭജന മോഡിൽ: ഒരു ആപ്പിൽ നിന്ന് മറ്റൊന്നിലേക്ക് മാറുക"</string>
@@ -991,8 +991,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"പ്രാധാന്യം കുറഞ്ഞ അറിയിപ്പ് ചിഹ്‌നങ്ങൾ"</string>
     <string name="other" msgid="429768510980739978">"മറ്റുള്ളവ"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ടൈലിന്റെ വലുപ്പം മാറ്റുക"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ടൈൽ നീക്കം ചെയ്യുക"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"അവസാന ഭാഗത്ത് ടൈൽ ചേർക്കുക"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ടൈൽ നീക്കുക"</string>
@@ -1507,8 +1506,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"അടുത്തിടെയുള്ള ആപ്പുകൾ കാണുക"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ആപ്പുകൾ മാറുക"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"പൂർത്തിയായി"</string>
-    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
-    <skip />
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"അടുത്തത്"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"വീണ്ടും ശ്രമിക്കുക!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"മടങ്ങുക"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"ടച്ച്‌പാഡിൽ മൂന്ന് വിരലുകൾ കൊണ്ട് ഇടത്തേക്കോ വലത്തേക്കോ സ്വൈപ്പ് ചെയ്യുക"</string>
@@ -1546,10 +1544,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"അടുത്തിടെ ഉപയോഗിച്ച ആപ്പുകൾ കാണാൻ, മൂന്ന് വിരലുകൾ ഉപയോഗിച്ച് ടച്ച്‌പാഡിൽ സ്വൈപ്പ് ചെയ്ത് പിടിക്കുക"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"എല്ലാ ആപ്പുകളും കാണാൻ, നിങ്ങളുടെ കീബോർഡിലെ ആക്‌ഷൻ കീ അമർത്തുക"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"മറച്ചത്"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"കാണാൻ, അൺലോക്ക് ചെയ്യുക"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"കോഡ് കാണാൻ അൺലോക്ക് ചെയ്യുക"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"സന്ദർഭോചിത വിദ്യാഭ്യാസം"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"തിരികെ പോകാൻ നിങ്ങളുടെ ടച്ച്‌പാഡ് ഉപയോഗിക്കുക"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"മൂന്ന് വിരലുകൾ കൊണ്ട് ഇടത്തേക്കോ വലത്തേക്കോ സ്വൈപ്പ് ചെയ്യൂ. കൂടുതൽ ജെസ്ച്ചറുകളറിയാൻ ടാപ്പ് ചെയ്യൂ."</string>

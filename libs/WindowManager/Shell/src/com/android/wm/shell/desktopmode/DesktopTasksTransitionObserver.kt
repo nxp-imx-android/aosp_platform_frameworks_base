@@ -26,6 +26,7 @@ import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_PIP
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.view.WindowManager.TRANSIT_TO_FRONT
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY
@@ -162,18 +163,24 @@ class DesktopTasksTransitionObserver(
                     continue
                 }
                 val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
-                val visibleTaskCount = desktopRepository.getVisibleTaskCount(taskInfo.displayId)
+                val isInDesktop = desktopRepository.isAnyDeskActive(taskInfo.displayId)
                 if (
-                    visibleTaskCount > 0 &&
+                    isInDesktop &&
                         change.mode == TRANSIT_TO_BACK &&
                         taskInfo.windowingMode == WINDOWING_MODE_FREEFORM
                 ) {
+                    val isLastTask =
+                        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                            desktopRepository.hasOnlyOneVisibleTask(taskInfo.displayId)
+                        } else {
+                            desktopRepository.isOnlyVisibleTask(taskInfo.taskId, taskInfo.displayId)
+                        }
                     desktopRepository.minimizeTask(taskInfo.displayId, taskInfo.taskId)
                     desktopMixedTransitionHandler.addPendingMixedTransition(
                         DesktopMixedTransitionHandler.PendingMixedTransition.Minimize(
                             transition,
                             taskInfo.taskId,
-                            visibleTaskCount == 1,
+                            isLastTask,
                         )
                     )
                 }
@@ -227,9 +234,9 @@ class DesktopTasksTransitionObserver(
         taskInfo: ActivityManager.RunningTaskInfo
     ): Int? {
         val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
-        val visibleTaskCount = desktopRepository.getVisibleTaskCount(taskInfo.displayId)
+        val isInDesktop = desktopRepository.isAnyDeskActive(taskInfo.displayId)
         if (
-            visibleTaskCount > 0 &&
+            isInDesktop &&
                 taskInfo.windowingMode == WINDOWING_MODE_FREEFORM &&
                 backAnimationController.latestTriggerBackTask == taskInfo.taskId &&
                 !desktopRepository.isClosingTask(taskInfo.taskId)
@@ -253,7 +260,7 @@ class DesktopTasksTransitionObserver(
 
             val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
             if (
-                desktopRepository.getVisibleTaskCount(taskInfo.displayId) == 0 &&
+                !desktopRepository.isAnyDeskActive(taskInfo.displayId) &&
                     change.mode == TRANSIT_CLOSE &&
                     taskInfo.windowingMode == WINDOWING_MODE_FREEFORM &&
                     desktopWallpaperActivityTokenProvider.getToken(taskInfo.displayId) != null

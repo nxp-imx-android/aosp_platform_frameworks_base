@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.animation.ActivityTransitionAnimator
+import com.android.systemui.animation.ComposableControllerFactory
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
@@ -77,6 +78,7 @@ fun rememberExpandableController(
     shape: Shape,
     contentColor: Color = contentColorFor(color),
     borderStroke: BorderStroke? = null,
+    transitionControllerFactory: ComposableControllerFactory? = null,
 ): ExpandableController {
     val composeViewRoot = LocalView.current
     val density = LocalDensity.current
@@ -95,6 +97,7 @@ fun rememberExpandableController(
             composeViewRoot,
             density,
             layoutDirection,
+            transitionControllerFactory,
         ) {
             ExpandableControllerImpl(
                 color,
@@ -103,6 +106,7 @@ fun rememberExpandableController(
                 borderStroke,
                 composeViewRoot,
                 density,
+                transitionControllerFactory,
                 layoutDirection,
                 { isComposed },
             )
@@ -127,6 +131,7 @@ internal class ExpandableControllerImpl(
     internal val borderStroke: BorderStroke?,
     internal val composeViewRoot: View,
     internal val density: Density,
+    internal val transitionControllerFactory: ComposableControllerFactory?,
     private val layoutDirection: LayoutDirection,
     private val isComposed: () -> Boolean,
 ) : ExpandableController {

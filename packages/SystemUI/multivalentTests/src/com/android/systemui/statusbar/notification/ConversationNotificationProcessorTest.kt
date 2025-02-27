@@ -111,13 +111,13 @@ class ConversationNotificationProcessorTest : SysuiTestCase() {
             .isNotNull()
 
         val processedSummary = nb.build().extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)
-        assertThat(processedSummary.toString()).isEqualTo("x$summarization")
+        assertThat(processedSummary.toString()).isEqualTo("x $summarization")
 
         val checkSpans = SpannableStringBuilder(processedSummary)
         assertThat(
                 checkSpans.getSpans(
                     /* queryStart = */ 0,
-                    /* queryEnd = */ 1,
+                    /* queryEnd = */ 2,
                     /* kind = */ ImageSpan::class.java,
                 )
             )

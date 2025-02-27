@@ -16,6 +16,7 @@
 
 package com.android.systemui.volume.dialog.sliders.ui.viewmodel
 
+import android.content.Context
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -63,6 +64,7 @@ private const val VOLUME_UPDATE_GRACE_PERIOD = 1000
 class VolumeDialogSliderViewModel
 @Inject
 constructor(
+    private val context: Context,
     private val sliderType: VolumeDialogSliderType,
     private val interactor: VolumeDialogSliderInteractor,
     private val visibilityInteractor: VolumeDialogVisibilityInteractor,
@@ -114,7 +116,7 @@ constructor(
                     }
                 },
             ) { isDisabledByZenMode, model, icon ->
-                model.toStateModel(icon = icon, isDisabled = isDisabledByZenMode)
+                model.toStateModel(context = context, icon = icon, isDisabled = isDisabledByZenMode)
             }
             .stateIn(coroutineScope, SharingStarted.Eagerly, null)
             .filterNotNull()

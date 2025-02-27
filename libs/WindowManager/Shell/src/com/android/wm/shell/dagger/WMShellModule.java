@@ -802,6 +802,7 @@ public abstract class WMShellModule {
                 recentTasksController.orElse(null),
                 interactionJankMonitor,
                 mainHandler,
+                focusTransitionObserver,
                 desktopModeEventLogger,
                 desktopModeUiEventLogger,
                 desktopWallpaperActivityTokenProvider,

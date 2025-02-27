@@ -16,6 +16,7 @@
 
 package com.android.systemui.volume.dialog.domain.interactor
 
+import com.android.systemui.accessibility.data.repository.accessibilityRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.plugins.volumeDialogController
@@ -28,8 +29,10 @@ val Kosmos.volumeDialogVisibilityInteractor by
         VolumeDialogVisibilityInteractor(
             applicationCoroutineScope,
             volumeDialogCallbacksInteractor,
+            volumeDialogStateInteractor,
             volumeTracer,
             volumeDialogVisibilityRepository,
+            accessibilityRepository,
             volumeDialogController,
             secureSettingsRepository,
         )

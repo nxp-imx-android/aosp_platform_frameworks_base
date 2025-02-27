@@ -16,6 +16,7 @@
 package com.android.systemui.statusbar.notification.row
 
 import android.annotation.SuppressLint
+import android.app.Flags
 import android.app.Notification
 import android.app.Notification.EXTRA_SUMMARIZED_CONTENT
 import android.app.Notification.MessagingStyle
@@ -49,10 +50,10 @@ import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
 import com.android.systemui.statusbar.notification.InflationException
 import com.android.systemui.statusbar.notification.NmSummarizationUiFlag
-import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.logKey
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_CONTRACTED
 import com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_EXPANDED
@@ -1519,6 +1520,10 @@ constructor(
             entry.setContentModel(result.contentModel)
             if (PromotedNotificationContentModel.featureFlagEnabled()) {
                 entry.promotedNotificationContentModel = result.promotedContent
+            }
+
+            if (PromotedNotificationUiForceExpanded.isEnabled) {
+                row.setPromotedOngoing(entry.isOngoingPromoted())
             }
 
             result.inflatedSmartReplyState?.let { row.privateLayout.setInflatedSmartReplyState(it) }

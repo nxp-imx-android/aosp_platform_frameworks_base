@@ -51,7 +51,7 @@ class FlagsVisitor : public xml::Visitor {
  private:
   bool ShouldRemove(std::unique_ptr<xml::Node>& node) {
     if (auto* el = NodeCast<Element>(node.get())) {
-      auto* attr = el->FindAttribute(xml::kSchemaAndroid, "featureFlag");
+      auto* attr = el->FindAttribute(xml::kSchemaAndroid, xml::kAttrFeatureFlag);
       if (attr == nullptr) {
         return false;
       }
@@ -76,7 +76,7 @@ class FlagsVisitor : public xml::Visitor {
             // Remove if flag==true && attr=="!flag" (negated) OR flag==false && attr=="flag"
             bool remove = *it->second.enabled == negated;
             if (!remove) {
-              el->RemoveAttribute(xml::kSchemaAndroid, "featureFlag");
+              el->RemoveAttribute(xml::kSchemaAndroid, xml::kAttrFeatureFlag);
             }
             return remove;
           }

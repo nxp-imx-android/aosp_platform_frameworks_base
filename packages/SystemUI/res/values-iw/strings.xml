@@ -255,6 +255,10 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"התבצע חיבור אל <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"מחובר אל <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"הרחבת הקבוצה."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"פתיחת האפליקציה."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"אין חיבור."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"נדידה"</string>
@@ -332,7 +336,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"קלט"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"מכשירי שמיעה"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ההפעלה מתבצעת…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"לא ניתן להתאים את הבהירות כי היא נשלטת על ידי האפליקציה העליונה"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"סיבוב אוטומטי"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"סיבוב אוטומטי של המסך"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"מיקום"</string>

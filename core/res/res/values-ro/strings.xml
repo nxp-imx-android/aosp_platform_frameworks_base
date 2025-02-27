@@ -1804,6 +1804,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Modul cu o mână"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Luminozitate redusă suplimentar"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Aparate auditive"</string>
+    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Deconectat"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Conectat"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Activ"</string>

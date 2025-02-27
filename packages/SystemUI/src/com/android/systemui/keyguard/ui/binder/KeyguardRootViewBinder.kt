@@ -69,6 +69,7 @@ import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shared.R as sharedR
 import com.android.systemui.statusbar.CrossFadeHelper
 import com.android.systemui.statusbar.VibratorHelper
 import com.android.systemui.statusbar.phone.ScreenOffAnimationController
@@ -88,7 +89,6 @@ import kotlin.math.min
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
@@ -188,6 +188,10 @@ object KeyguardRootViewBinder {
                         viewModel.translationY.collect { y ->
                             childViews[burnInLayerId]?.translationY = y
                             childViews[largeClockId]?.translationY = y
+                            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+                                childViews[largeClockDateId]?.translationY = y
+                                childViews[largeClockWeatherId]?.translationY = y
+                            }
                             childViews[aodPromotedNotificationId]?.translationY = y
                             childViews[aodNotificationIconContainerId]?.translationY = y
                         }
@@ -203,6 +207,7 @@ object KeyguardRootViewBinder {
                                     childViews[aodPromotedNotificationId]?.translationX = px
                                     childViews[aodNotificationIconContainerId]?.translationX = px
                                 }
+
                                 state.isToOrFrom(KeyguardState.GLANCEABLE_HUB) -> {
                                     for ((key, childView) in childViews.entries) {
                                         when (key) {
@@ -212,6 +217,7 @@ object KeyguardRootViewBinder {
                                             deviceEntryIcon -> {
                                                 // Do not move these views
                                             }
+
                                             else -> childView.translationX = px
                                         }
                                     }
@@ -374,16 +380,8 @@ object KeyguardRootViewBinder {
                     if (wallpaperFocalAreaViewModel.hasFocalArea.value) {
                         launch {
                             wallpaperFocalAreaViewModel.wallpaperFocalAreaBounds.collect {
-                                wallpaperFocalAreaBounds ->
-                                wallpaperFocalAreaViewModel.setFocalAreaBounds(
-                                    wallpaperFocalAreaBounds
-                                )
+                                wallpaperFocalAreaViewModel.setFocalAreaBounds(it)
                             }
-                        }
-                        launch {
-                            wallpaperFocalAreaViewModel.wallpaperFocalAreaBounds
-                                .filterNotNull()
-                                .collect { wallpaperFocalAreaViewModel.setFocalAreaBounds(it) }
                         }
                     }
                 }
@@ -582,6 +580,8 @@ object KeyguardRootViewBinder {
     private val aodPromotedNotificationId = AodPromotedNotificationSection.viewId
     private val aodNotificationIconContainerId = R.id.aod_notification_icon_container
     private val largeClockId = customR.id.lockscreen_clock_view_large
+    private val largeClockDateId = sharedR.id.date_smartspace_view_large
+    private val largeClockWeatherId = sharedR.id.weather_smartspace_view_large
     private val smallClockId = customR.id.lockscreen_clock_view
     private val indicationArea = R.id.keyguard_indication_area
     private val startButton = R.id.start_button

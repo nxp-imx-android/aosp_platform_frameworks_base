@@ -21,6 +21,13 @@
         <item name="android:textSize">@dimen/status_bar_clock_size</item>
         <item name="android:fontFamily">@*android:string/config_headlineFontFamilyMedium</item>
         <item name="android:textColor">@color/status_bar_clock_color</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+    </style>
+
+    <style name="TextAppearance.StatusBar.Carrier" parent="@*android:style/TextAppearance.StatusBar.Icon">
+        <item name="android:textSize">@dimen/status_bar_clock_size</item>
+        <item name="android:fontFamily">@*android:string/config_headlineFontFamilyMedium</item>
+        <item name="android:textColor">@color/status_bar_clock_color</item>
     </style>
 
     <style name="TextAppearance.StatusBar.UserChip" parent="@*android:style/TextAppearance.StatusBar.Icon">
@@ -557,7 +564,6 @@
         <item name="android:backgroundDimEnabled">false</item>
         <item name="android:showWhenLocked">true</item>
         <item name="android:windowBackground">@color/transparent</item>
-        <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowNoTitle">true</item>

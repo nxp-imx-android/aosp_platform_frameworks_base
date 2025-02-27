@@ -206,6 +206,13 @@ public class MediaRouteControllerContentManager {
         mDelegate.dismissView();
     }
 
+    /**
+     * Request the media route to update volume.
+     */
+    public void requestUpdateRouteVolume(int direction) {
+        mRoute.requestUpdateVolume(direction);
+    }
+
     private boolean isVolumeControlAvailable() {
         return mRoute.getVolumeHandling() == MediaRouter.RouteInfo.PLAYBACK_VOLUME_VARIABLE;
     }

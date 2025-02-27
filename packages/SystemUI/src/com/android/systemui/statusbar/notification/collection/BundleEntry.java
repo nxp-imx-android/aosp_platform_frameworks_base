@@ -24,6 +24,7 @@ import static android.app.NotificationChannel.SOCIAL_MEDIA_ID;
 import android.app.Notification;
 import android.content.Context;
 import android.os.Build;
+import android.service.notification.StatusBarNotification;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -162,6 +163,48 @@ public class BundleEntry extends PipelineEntry {
         public IconPack getIcons() {
             // TODO(b/396446620): implement bundle icons
             return null;
+        }
+
+        @Override
+        public boolean isColorized() {
+            return false;
+        }
+
+        @Override
+        @Nullable
+        public StatusBarNotification getSbn() {
+            return null;
+        }
+
+        @Override
+        public boolean canDragAndDrop() {
+            return false;
+        }
+
+        @Override
+        public boolean isBubbleCapable() {
+            return false;
+        }
+
+        @Override
+        @Nullable
+        public String getStyle() {
+            return null;
+        }
+
+        @Override
+        public int getSectionBucket() {
+            return mBucket;
+        }
+
+        @Override
+        public boolean isAmbient() {
+            return false;
+        }
+
+        @Override
+        public boolean isFullScreenCapable() {
+            return false;
         }
     }
 

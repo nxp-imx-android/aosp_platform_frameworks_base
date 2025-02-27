@@ -44,9 +44,9 @@ flag {
 }
 
 flag {
-  name: "gradient_drawable_shape_rounded_cap"
+  name: "gradient_drawable_shape_arc_for_rounded_cap"
   is_fixed_read_only: true
-  namespace: "core_graphics"
-  description: "Make GradientDrawable support drawing ring with rounded stroke cap."
+  namespace: "wear_frameworks"
+  description: "Make GradientDrawable support arc shape for drawing ring with rounded stroke cap."
   bug: "380000245"
 }

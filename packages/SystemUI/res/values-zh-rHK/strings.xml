@@ -252,6 +252,10 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"已連線至<xliff:g id="BLUETOOTH">%s</xliff:g>。"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"已連接至 <xliff:g id="CAST">%s</xliff:g>。"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"展開群組。"</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"開啟應用程式。"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"未連線。"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"漫遊"</string>
@@ -329,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"輸入"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"助聽器"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"正在開啟…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"無法調整亮度，因為目前是由上層應用程式控制亮度"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"自動旋轉"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"自動旋轉螢幕"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"位置"</string>
@@ -337,7 +342,7 @@
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"相機存取權"</string>
     <string name="quick_settings_mic_label" msgid="8392773746295266375">"麥克風存取權"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"允許"</string>
-    <string name="quick_settings_camera_mic_blocked" msgid="4710884905006788281">"已禁用"</string>
+    <string name="quick_settings_camera_mic_blocked" msgid="4710884905006788281">"已封鎖"</string>
     <string name="quick_settings_media_device_label" msgid="8034019242363789941">"媒體裝置"</string>
     <string name="quick_settings_user_title" msgid="8673045967216204537">"使用者"</string>
     <string name="quick_settings_wifi_label" msgid="2879507532983487244">"Wi-Fi"</string>
@@ -898,8 +903,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"多工處理"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"使用分割螢幕，並在右側顯示應用程式"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"使用分割螢幕，並在左側顯示應用程式"</string>
-    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"使用全螢幕模式"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"使用電腦檢視畫面"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"使用全螢幕"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"使用桌面電腦檢視模式"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"使用分割螢幕時，切換至右邊或下方的應用程式"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"使用分割螢幕時，切換至左邊或上方的應用程式"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"使用分割螢幕期間：更換應用程式"</string>
@@ -986,8 +991,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"顯示低優先順序通知圖示"</string>
     <string name="other" msgid="429768510980739978">"其他"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"切換圖塊大小"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"移除圖塊"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"加圖塊去上一個位置"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"移動圖塊"</string>
@@ -1540,10 +1544,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"如要查看最近使用的應用程式，請用三隻手指在觸控板上向上滑動並按住"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"如要查看所有應用程式，請在鍵盤上按下快捷操作鍵"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"已剔除"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"解鎖即可查看"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"解鎖即可查看驗證碼"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"內容教學"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"使用觸控板返回"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"用三隻手指向左或向右滑動。輕按即可瞭解更多手勢。"</string>

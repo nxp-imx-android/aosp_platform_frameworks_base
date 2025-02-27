@@ -331,7 +331,7 @@ constructor(
     }
 
     /** Constructs the date view and connects it to the smartspace service. */
-    fun buildAndConnectDateView(parent: ViewGroup): View? {
+    fun buildAndConnectDateView(parent: ViewGroup, isLargeClock: Boolean): View? {
         execution.assertIsMainThread()
 
         if (!isEnabled) {
@@ -346,6 +346,7 @@ constructor(
                 surfaceName = SmartspaceViewModel.SURFACE_DATE_VIEW,
                 parent = parent,
                 plugin = datePlugin,
+                isLargeClock = isLargeClock
             )
         connectSession()
 
@@ -353,7 +354,7 @@ constructor(
     }
 
     /** Constructs the weather view and connects it to the smartspace service. */
-    fun buildAndConnectWeatherView(parent: ViewGroup): View? {
+    fun buildAndConnectWeatherView(parent: ViewGroup, isLargeClock: Boolean): View? {
         execution.assertIsMainThread()
 
         if (!isEnabled) {
@@ -368,6 +369,7 @@ constructor(
                 surfaceName = SmartspaceViewModel.SURFACE_WEATHER_VIEW,
                 parent = parent,
                 plugin = weatherPlugin,
+                isLargeClock = isLargeClock,
             )
         connectSession()
 
@@ -390,6 +392,7 @@ constructor(
                 parent = parent,
                 plugin = plugin,
                 configPlugin = configPlugin,
+                isLargeClock = false,
             )
         connectSession()
 
@@ -401,12 +404,13 @@ constructor(
         parent: ViewGroup,
         plugin: BcSmartspaceDataPlugin?,
         configPlugin: BcSmartspaceConfigPlugin? = null,
+        isLargeClock: Boolean,
     ): View? {
         if (plugin == null) {
             return null
         }
 
-        val ssView = plugin.getView(parent)
+        val ssView = if (isLargeClock) plugin.getLargeClockView(parent) else plugin.getView(parent)
         configPlugin?.let { ssView.registerConfigProvider(it) }
         ssView.setBgHandler(bgHandler)
         ssView.setUiSurface(BcSmartspaceDataPlugin.UI_SURFACE_LOCK_SCREEN_AOD)

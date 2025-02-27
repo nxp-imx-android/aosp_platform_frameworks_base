@@ -43,7 +43,10 @@
     <string name="accessibility_action_divider_left_50" msgid="3488317024557521561">"左 50%"</string>
     <string name="accessibility_action_divider_left_30" msgid="6023611335723838727">"左 30%"</string>
     <string name="accessibility_action_divider_right_full" msgid="3408505054325944903">"右全画面"</string>
-    <string name="accessibility_action_divider_swap" msgid="7026003137401725787">"アプリを切り替える"</string>
+    <!-- no translation found for accessibility_action_divider_swap_vertical (3644891227133372072) -->
+    <skip />
+    <!-- no translation found for accessibility_action_divider_swap_horizontal (2722197605446631628) -->
+    <skip />
     <string name="accessibility_action_divider_top_full" msgid="3495871951082107594">"上部全画面"</string>
     <string name="accessibility_action_divider_top_70" msgid="1779164068887875474">"上 70%"</string>
     <string name="accessibility_action_divider_top_50" msgid="8649582798829048946">"上 50%"</string>
@@ -112,9 +115,14 @@
     <string name="letterbox_restart_restart" msgid="8529976234412442973">"再起動"</string>
     <string name="letterbox_restart_dialog_checkbox_title" msgid="5252918008140768386">"次回から表示しない"</string>
     <string name="letterbox_reachability_reposition_text" msgid="3522042240665748268">"ダブルタップすると\nこのアプリを移動できます"</string>
-    <string name="maximize_button_text" msgid="1650859196290301963">"最大化"</string>
-    <string name="minimize_button_text" msgid="271592547935841753">"最小化"</string>
-    <string name="close_button_text" msgid="2913281996024033299">"閉じる"</string>
+    <!-- no translation found for maximize_button_text (8106849394538234709) -->
+    <skip />
+    <!-- no translation found for restore_button_text (5377571986086775288) -->
+    <skip />
+    <!-- no translation found for minimize_button_text (5213953162664451152) -->
+    <skip />
+    <!-- no translation found for close_button_text (4544839489310949894) -->
+    <skip />
     <string name="back_button_text" msgid="1469718707134137085">"戻る"</string>
     <string name="handle_text" msgid="4419667835599523257">"アプリハンドル"</string>
     <string name="app_icon_text" msgid="2823268023931811747">"アプリのアイコン"</string>
@@ -150,8 +158,14 @@
     <string name="maximize_menu_talkback_action_snap_left_text" msgid="500309467459084564">"ウィンドウを左側にサイズ変更する"</string>
     <string name="maximize_menu_talkback_action_snap_right_text" msgid="7010831426654467163">"ウィンドウを右側にサイズ変更する"</string>
     <string name="maximize_menu_talkback_action_maximize_restore_text" msgid="4942610897847934859">"ウィンドウを最大化する、またはウィンドウを元のサイズに戻す"</string>
-    <string name="maximize_button_talkback_action_maximize_restore_text" msgid="4122441323153198455">"ウィンドウを最大化する、またはウィンドウを元のサイズに戻す"</string>
-    <string name="minimize_button_talkback_action_maximize_restore_text" msgid="8890767445425625935">"アプリ ウィンドウを最小化する"</string>
+    <!-- no translation found for app_header_talkback_action_maximize_button_text (8776156791095878638) -->
+    <skip />
+    <!-- no translation found for app_header_talkback_action_restore_button_text (2153022340772980863) -->
+    <skip />
+    <!-- no translation found for app_header_talkback_action_minimize_button_text (7491054416186901764) -->
+    <skip />
+    <!-- no translation found for app_header_talkback_action_close_button_text (5159612596378268926) -->
+    <skip />
     <string name="open_by_default_settings_text" msgid="2526548548598185500">"デフォルトの設定で開く"</string>
     <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"このアプリのウェブリンクを開く方法を選択"</string>
     <string name="open_by_default_dialog_in_app_text" msgid="6978022419634199806">"アプリ内"</string>
