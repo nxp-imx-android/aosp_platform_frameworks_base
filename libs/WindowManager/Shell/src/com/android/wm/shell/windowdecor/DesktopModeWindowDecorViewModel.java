@@ -1215,7 +1215,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             if (id == R.id.caption_handle) {
                 handleCaptionThroughStatusBar(e, decoration);
                 final boolean wasDragging = mIsDragging;
-                updateDragStatus(e.getActionMasked());
+                updateDragStatus(decoration, e);
                 final boolean upOrCancel = e.getActionMasked() == ACTION_UP
                         || e.getActionMasked() == ACTION_CANCEL;
                 if (wasDragging && upOrCancel) {
@@ -1229,6 +1229,13 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 return wasDragging;
             }
             return false;
+        }
+
+        private void setIsDragging(
+                @Nullable DesktopModeWindowDecoration decor, boolean isDragging) {
+            mIsDragging = isDragging;
+            if (decor == null) return;
+            decor.setIsDragging(isDragging);
         }
 
         private boolean handleFreeformMotionEvent(DesktopModeWindowDecoration decoration,
@@ -1250,7 +1257,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         final Rect initialBounds = mDragPositioningCallback.onDragPositioningStart(
                                 0 /* ctrlType */, e.getDisplayId(), e.getRawX(0),
                                 e.getRawY(0));
-                        updateDragStatus(e.getActionMasked());
+                        updateDragStatus(decoration, e);
                         mOnDragStartInitialBounds.set(initialBounds);
                     }
                     // Do not consume input event if a button is touched, otherwise it would
@@ -1277,7 +1284,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             newTaskBounds);
                     //  Flip mIsDragging only if the bounds actually changed.
                     if (mIsDragging || !newTaskBounds.equals(mOnDragStartInitialBounds)) {
-                        updateDragStatus(e.getActionMasked());
+                        updateDragStatus(decoration, e);
                     }
                     return true;
                 }
@@ -1310,7 +1317,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         // onClick call that results.
                         return false;
                     } else {
-                        updateDragStatus(e.getActionMasked());
+                        updateDragStatus(decoration, e);
                         return true;
                     }
                 }
@@ -1318,16 +1325,16 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             return true;
         }
 
-        private void updateDragStatus(int eventAction) {
-            switch (eventAction) {
+        private void updateDragStatus(DesktopModeWindowDecoration decor, MotionEvent e) {
+            switch (e.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL: {
-                    mIsDragging = false;
+                    setIsDragging(decor, false /* isDragging */);
                     break;
                 }
                 case MotionEvent.ACTION_MOVE: {
-                    mIsDragging = true;
+                    setIsDragging(decor, true /* isDragging */);
                     break;
                 }
             }

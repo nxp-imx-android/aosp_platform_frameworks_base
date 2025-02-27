@@ -207,7 +207,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final WindowDecorCaptionHandleRepository mWindowDecorCaptionHandleRepository;
     private final DesktopUserRepositories mDesktopUserRepositories;
     private boolean mIsRecentsTransitionRunning = false;
-
+    private boolean mIsDragging = false;
     private Runnable mLoadAppInfoRunnable;
     private Runnable mSetAppInfoRunnable;
 
@@ -513,7 +513,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         updateRelayoutParams(mRelayoutParams, mContext, taskInfo, mSplitScreenController,
                 applyStartTransactionOnDraw, shouldSetTaskVisibilityPositionAndCrop,
                 mIsStatusBarVisible, mIsKeyguardVisibleAndOccluded, inFullImmersive,
-                mDisplayController.getInsetsState(taskInfo.displayId), hasGlobalFocus,
+                mIsDragging, mDisplayController.getInsetsState(taskInfo.displayId), hasGlobalFocus,
                 displayExclusionRegion, mIsRecentsTransitionRunning,
                 mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo));
 
@@ -911,6 +911,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             boolean isStatusBarVisible,
             boolean isKeyguardVisibleAndOccluded,
             boolean inFullImmersiveMode,
+            boolean isDragging,
             @NonNull InsetsState displayInsetsState,
             boolean hasGlobalFocus,
             @NonNull Region displayExclusionRegion,
@@ -933,9 +934,13 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         relayoutParams.mAsyncViewHost = isAppHandle;
 
         final boolean showCaption;
-        if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
+        if (DesktopModeFlags.ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX.isTrue() && isDragging) {
+            // If the task is being dragged, the caption should not be hidden so that it continues
+            // receiving input
+            showCaption = true;
+        } else if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
             if (inFullImmersiveMode) {
-                showCaption = isStatusBarVisible && !isKeyguardVisibleAndOccluded;
+                showCaption = (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
             } else {
                 showCaption = taskInfo.isFreeform()
                         || (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
@@ -1796,6 +1801,13 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     void setIsRecentsTransitionRunning(boolean isRecentsTransitionRunning) {
         mIsRecentsTransitionRunning = isRecentsTransitionRunning;
+    }
+
+    /**
+     * Declares whether the window decoration is being dragged.
+     */
+    void setIsDragging(boolean isDragging) {
+        mIsDragging = isDragging;
     }
 
     /**
