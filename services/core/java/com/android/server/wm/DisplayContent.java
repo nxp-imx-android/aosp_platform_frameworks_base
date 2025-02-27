@@ -4387,6 +4387,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
             mImeInputTargetTokenListenerPair = null;
         }
+        ProtoLog.i(WM_DEBUG_IME, "setImeInputTarget %s", target);
         mImeInputTarget = target;
         // Notify listeners about IME input target window visibility by the target change.
         if (target != null) {
@@ -4712,6 +4713,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     void updateImeControlTarget(boolean forceUpdateImeParent) {
         final InsetsControlTarget prevImeControlTarget = mImeControlTarget;
         mImeControlTarget = computeImeControlTarget();
+        ProtoLog.i(WM_DEBUG_IME, "updateImeControlTarget %s", mImeControlTarget);
         mInsetsStateController.onImeControlTargetChanged(mImeControlTarget);
         // Update IME parent when IME insets leash created or the new IME layering target might
         // updated from setImeLayeringTarget, which is the best time that default IME visibility
@@ -4746,6 +4748,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         final var newParentWindow = computeImeParent();
         final SurfaceControl newParent =
                 newParentWindow != null ? newParentWindow.getSurfaceControl() : null;
+        ProtoLog.i(WM_DEBUG_IME, "updateImeParent %s", newParent);
         if (newParent != null && newParent != mInputMethodSurfaceParent) {
             mInputMethodSurfaceParentWindow = newParentWindow;
             mInputMethodSurfaceParent = newParent;
@@ -5551,6 +5554,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                             && imeLayeringTarget.mToken == imeControlTargetToken
                             && !imeLayeringTarget.inMultiWindowMode();
             if (canImeTargetSetRelativeLayer) {
+                ProtoLog.i(WM_DEBUG_IME, "assignRelativeLayerForIme to IME layering target %s",
+                        imeLayeringTarget);
                 mImeWindowsContainer.assignRelativeLayer(t, imeLayeringTarget.getSurfaceControl(),
                         // TODO: We need to use an extra level on the app surface to ensure
                         // this is always above SurfaceView but always below attached window.
@@ -5562,6 +5567,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // The IME surface parent may not be its window parent's surface
             // (@see #computeImeParent), so set relative layer here instead of letting the window
             // parent to assign layer.
+            ProtoLog.i(WM_DEBUG_IME, "assignRelativeLayerForIme to IME surface parent %s",
+                    mInputMethodSurfaceParent);
             mImeWindowsContainer.assignRelativeLayer(t, mInputMethodSurfaceParent, 1, forceUpdate);
         }
     }
