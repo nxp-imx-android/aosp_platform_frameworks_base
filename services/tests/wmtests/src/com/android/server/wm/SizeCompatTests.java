@@ -787,9 +787,9 @@ public class SizeCompatTests extends WindowTestsBase {
         assertFitted();
 
         rotateDisplay(mActivity.mDisplayContent, ROTATION_90);
-        mActivity.mDisplayContent.setImeLayeringTarget(addWindowToActivity(mActivity));
-        mActivity.mDisplayContent.setImeInputTarget(
-                mActivity.mDisplayContent.getImeLayeringTarget());
+        final var appWindow = addWindowToActivity(mActivity);
+        mActivity.mDisplayContent.setImeInputTarget(appWindow);
+        mActivity.mDisplayContent.setImeLayeringTarget(appWindow);
         // Because the aspect ratio of display doesn't exceed the max aspect ratio of activity.
         // The activity should still fill its parent container and IME can attach to the activity.
         assertTrue(mActivity.matchParentBounds());
