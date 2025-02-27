@@ -32,10 +32,9 @@ import android.content.Context;
 import android.util.Property;
 import android.view.View;
 
-import androidx.dynamicanimation.animation.DynamicAnimation;
-
 import com.android.app.animation.Interpolators;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.dynamicanimation.animation.DynamicAnimation;
 import com.android.systemui.res.R;
 import com.android.systemui.shared.clocks.AnimatableClockView;
 import com.android.systemui.statusbar.NotificationShelf;

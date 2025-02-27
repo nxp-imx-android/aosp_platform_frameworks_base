@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.stack
 
+import android.animation.AnimatorTestRule
 import android.animation.ValueAnimator
 import android.view.View
 import androidx.test.annotation.UiThreadTest
@@ -28,6 +29,7 @@ import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator
 import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator.Companion.TAG_ANIMATOR_TRANSLATION_Y
 import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator.Companion.Y_TRANSLATION
 import org.junit.Assert
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import kotlin.math.log2
@@ -38,6 +40,8 @@ import kotlin.math.sqrt
 @UiThreadTest
 class ViewStateTest : SysuiTestCase() {
     private val viewState = ViewState(true /* usePhysicsForMovement */)
+    @get:Rule
+    val animatorTestRule = AnimatorTestRule(this)
 
     @Suppress("DIVISION_BY_ZERO")
     @Test

@@ -18,9 +18,11 @@ package com.android.systemui.statusbar.notification.stack
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.AnimatorTestRule
 import com.android.systemui.res.R
@@ -44,6 +46,7 @@ import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.description
 import org.mockito.Mockito.eq
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.doNothing
 
 private const val VIEW_HEIGHT = 100
 private const val FULL_SHADE_APPEAR_TRANSLATION = 300
@@ -53,18 +56,20 @@ private const val HEADS_UP_ABOVE_SCREEN = 80
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
 class StackStateAnimatorTest : SysuiTestCase() {
+
+    @get:Rule val setFlagsRule = SetFlagsRule()
     @get:Rule val animatorTestRule = AnimatorTestRule(this)
 
     private lateinit var stackStateAnimator: StackStateAnimator
     private lateinit var headsUpAnimator: HeadsUpAnimator
     private val stackScroller: NotificationStackScrollLayout = mock()
     private val view: ExpandableView = mock()
-    private val viewState: ExpandableViewState =
-        ExpandableViewState().apply { height = VIEW_HEIGHT }
+    private lateinit var viewState: ExpandableViewState
     private val runnableCaptor: ArgumentCaptor<Runnable> = argumentCaptor()
 
     @Before
     fun setUp() {
+        viewState = ExpandableViewState().apply { height = VIEW_HEIGHT }
         overrideResource(
             R.dimen.go_to_full_shade_appearing_translation,
             FULL_SHADE_APPEAR_TRANSLATION,
@@ -153,6 +158,7 @@ class StackStateAnimatorTest : SysuiTestCase() {
             )
     }
 
+    @DisableFlags(Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     @Test
     @EnableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME)
     fun startAnimationForEvents_headsUpFromBottom_startsHeadsUpAppearAnim_flagOn() {
@@ -234,6 +240,32 @@ class StackStateAnimatorTest : SysuiTestCase() {
 
         verify(view, description("should be translated to the heads up appear start"))
             .translationY = -stackStateAnimator.mHeadsUpAppearStartAboveScreen
+        verify(view, description("should be called at the end of the disappear animation"))
+            .removeFromTransientContainer()
+    }
+
+    @EnableFlags(Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
+    @Test
+    fun startAnimationForEvents_startsHeadsUpDisappearAnim_physical() {
+        val disappearDuration = ANIMATION_DURATION_HEADS_UP_DISAPPEAR.toLong()
+        val event = AnimationEvent(view, AnimationEvent.ANIMATION_TYPE_HEADS_UP_DISAPPEAR)
+        clearInvocations(view)
+        stackStateAnimator.startAnimationForEvents(arrayListOf(event), 0)
+
+        verify(view)
+            .performRemoveAnimation(
+                /* duration= */ eq(disappearDuration),
+                /* delay= */ eq(0L),
+                /* translationDirection= */ eq(0f),
+                /* isHeadsUpAnimation= */ eq(true),
+                /* isHeadsUpCycling= */ eq(false),
+                /* onStartedRunnable= */ any(),
+                /* onFinishedRunnable= */ runnableCaptor.capture(),
+                /* animationListener= */ any(),
+                /* clipSide= */ eq(ExpandableView.ClipSide.BOTTOM),
+            )
+
+        runnableCaptor.value.run() // execute the end runnable
         verify(view, description("should be called at the end of the disappear animation"))
             .removeFromTransientContainer()
     }
