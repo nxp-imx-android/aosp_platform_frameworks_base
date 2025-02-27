@@ -72,6 +72,7 @@ public class NotificationGroupingUtil {
         mRow = row;
 
         final IconComparator iconVisibilityComparator = new IconComparator() {
+            @Override
             public boolean compare(View parent, View child, Object parentData,
                     Object childData) {
                 if (Flags.notificationsRedesignAppIcons() && mRow.isShowingAppIcon()) {
@@ -83,6 +84,7 @@ public class NotificationGroupingUtil {
             }
         };
         final IconComparator greyComparator = new IconComparator() {
+            @Override
             public boolean compare(View parent, View child, Object parentData,
                     Object childData) {
                 if (Flags.notificationsRedesignAppIcons() && mRow.isShowingAppIcon()) {
