@@ -48,6 +48,7 @@ import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.statusbar.NotificationInteractionTracker;
 import com.android.systemui.statusbar.notification.NotifPipelineFlags;
+import com.android.systemui.statusbar.notification.collection.coordinator.BundleCoordinator;
 import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection;
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeFinalizeFilterListener;
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener;
@@ -58,8 +59,10 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.SemiSt
 import com.android.systemui.statusbar.notification.collection.listbuilder.SemiStableSort.StableOrder;
 import com.android.systemui.statusbar.notification.collection.listbuilder.ShadeListBuilderHelper;
 import com.android.systemui.statusbar.notification.collection.listbuilder.ShadeListBuilderLogger;
+import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.DefaultNotifBundler;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.DefaultNotifStabilityManager;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Invalidator;
+import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifBundler;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifComparator;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifFilter;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter;
@@ -78,6 +81,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -122,7 +126,8 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
     private final List<NotifComparator> mNotifComparators = new ArrayList<>();
     private final List<NotifSection> mNotifSections = new ArrayList<>();
     private NotifStabilityManager mNotifStabilityManager;
-
+    private NotifBundler mNotifBundler;
+    private Map<String, BundleEntry> mIdToBundleEntry = new HashMap<>();
     private final NamedListenerSet<OnBeforeTransformGroupsListener>
             mOnBeforeTransformGroupsListeners = new NamedListenerSet<>();
     private final NamedListenerSet<OnBeforeSortListener>
@@ -273,6 +278,23 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         }
     }
 
+    void setBundler(NotifBundler bundler) {
+        Assert.isMainThread();
+        mPipelineState.requireState(STATE_IDLE);
+
+        // TODO(b/396301289) throw exception when setting more than once?
+        mNotifBundler = bundler;
+
+        if (mIdToBundleEntry.isEmpty()) {
+            if (mNotifBundler == null) {
+                throw new IllegalStateException("NotifBundler not attached.");
+            }
+            for (String id: mNotifBundler.getBundleIds()) {
+                mIdToBundleEntry.put(id, new BundleEntry(id));
+            }
+        }
+    }
+
     void setNotifStabilityManager(@NonNull NotifStabilityManager notifStabilityManager) {
         Assert.isMainThread();
         mPipelineState.requireState(STATE_IDLE);
@@ -295,6 +317,14 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             return DefaultNotifStabilityManager.INSTANCE;
         }
         return mNotifStabilityManager;
+    }
+
+    @NonNull
+    private NotifBundler getNotifBundler() {
+        if (mNotifBundler == null) {
+            return DefaultNotifBundler.INSTANCE;
+        }
+        return mNotifBundler;
     }
 
     void setComparators(List<NotifComparator> comparators) {
