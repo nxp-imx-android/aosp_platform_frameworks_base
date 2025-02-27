@@ -19,6 +19,7 @@ package com.android.systemui.common.domain.interactor
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.model.StateChange
 import com.android.systemui.model.fakeSysUIStatePerDisplayRepository
 import com.android.systemui.model.sysUiStateFactory
 import com.android.systemui.model.sysuiStateInteractor
