@@ -51,6 +51,7 @@ import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.dream.MediaDreamComplication
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
@@ -288,6 +289,9 @@ constructor(
             }
             updateUserVisibility()
         }
+
+    /** The expansion fraction of notification shade. */
+    var shadeExpandedFraction: Float = 0.0f
 
     /**
      * distance that the full shade transition takes in order for media to fully transition to the
@@ -868,7 +872,13 @@ constructor(
         if (isCurrentlyInGuidedTransformation()) {
             return false
         }
-        if (skipQqsOnExpansion) {
+        if (
+            skipQqsOnExpansion ||
+                (QSComposeFragment.isEnabled &&
+                    desiredLocation == LOCATION_QQS &&
+                    previousLocation == LOCATION_QS &&
+                    shadeExpandedFraction == 0.0f)
+        ) {
             return false
         }
         if (isHubTransition) {
