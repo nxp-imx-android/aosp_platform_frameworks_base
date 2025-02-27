@@ -117,6 +117,7 @@ open class SimpleDigitalClockTextView(
         fidgetFontVariation = buildFidgetVariation(lsFontAxes).toFVar()
     }
 
+    var onViewBoundsChanged: ((RectF) -> Unit)? = null
     private val parser = DimensionParser(clockCtx.context)
     var maxSingleDigitHeight = -1f
     var maxSingleDigitWidth = -1f
@@ -497,6 +498,7 @@ open class SimpleDigitalClockTextView(
             targetRect.right.roundToInt(),
             targetRect.bottom.roundToInt(),
         )
+        onViewBoundsChanged?.let { it(targetRect) }
         return targetRect
     }
 

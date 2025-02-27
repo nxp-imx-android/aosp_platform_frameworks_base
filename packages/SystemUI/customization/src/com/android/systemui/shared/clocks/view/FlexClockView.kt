@@ -100,6 +100,7 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
         updateLocale(Locale.getDefault())
     }
 
+    var onViewBoundsChanged: ((RectF) -> Unit)? = null
     private val digitOffsets = mutableMapOf<Int, Float>()
 
     protected fun calculateSize(
@@ -189,13 +190,21 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
 
     fun updateLocation() {
         val layoutBounds = this.layoutBounds ?: return
+        val bounds =
+            RectF(
+                layoutBounds.centerX() - measuredWidth / 2f,
+                layoutBounds.centerY() - measuredHeight / 2f,
+                layoutBounds.centerX() + measuredWidth / 2f,
+                layoutBounds.centerY() + measuredHeight / 2f,
+            )
         setFrame(
-            (layoutBounds.centerX() - measuredWidth / 2f).roundToInt(),
-            (layoutBounds.centerY() - measuredHeight / 2f).roundToInt(),
-            (layoutBounds.centerX() + measuredWidth / 2f).roundToInt(),
-            (layoutBounds.centerY() + measuredHeight / 2f).roundToInt(),
+            bounds.left.roundToInt(),
+            bounds.top.roundToInt(),
+            bounds.right.roundToInt(),
+            bounds.bottom.roundToInt(),
         )
         updateChildFrames(isLayout = false)
+        onViewBoundsChanged?.let { it(bounds) }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
