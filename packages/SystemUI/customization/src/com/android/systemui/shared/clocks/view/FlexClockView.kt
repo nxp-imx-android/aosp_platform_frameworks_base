@@ -33,6 +33,7 @@ import com.android.systemui.shared.clocks.CanvasUtil.translate
 import com.android.systemui.shared.clocks.CanvasUtil.use
 import com.android.systemui.shared.clocks.ClockContext
 import com.android.systemui.shared.clocks.DigitTranslateAnimator
+import com.android.systemui.shared.clocks.VPoint
 import com.android.systemui.shared.clocks.VPointF
 import com.android.systemui.shared.clocks.VPointF.Companion.max
 import com.android.systemui.shared.clocks.VPointF.Companion.times
@@ -109,13 +110,11 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
         shouldMeasureChildren: Boolean,
     ): VPointF {
         maxChildSize = VPointF(-1, -1)
-        fun SimpleDigitalClockTextView.getSize() = VPointF(measuredWidth, measuredHeight)
-
         childViews.forEach { textView ->
             if (shouldMeasureChildren) {
                 textView.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
             }
-            maxChildSize = max(maxChildSize, textView.getSize())
+            maxChildSize = max(maxChildSize, textView.measuredSize)
         }
         aodTranslate = VPointF.ZERO
         // TODO(b/364680879): Cleanup
@@ -180,8 +179,8 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
         )
 
     private fun updateMeasuredSize(
-        widthMeasureSpec: Int = measuredWidthAndState,
-        heightMeasureSpec: Int = measuredHeightAndState,
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
         shouldMeasureChildren: Boolean,
     ) {
         val size = calculateSize(widthMeasureSpec, heightMeasureSpec, shouldMeasureChildren)
@@ -357,7 +356,18 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
     }
 
     fun animateFidget(x: Float, y: Float) {
-        childViews.forEach { view -> view.animateFidget(x, y) }
+        val touchPt = VPointF(x, y)
+        val ints = intArrayOf(0, 0)
+        childViews
+            .sortedBy { view ->
+                view.getLocationInWindow(ints)
+                val loc = VPoint(ints[0], ints[1])
+                val center = loc + view.measuredSize / 2f
+                (center - touchPt).length()
+            }
+            .forEachIndexed { i, view ->
+                view.animateFidget(FIDGET_DELAYS[min(i, FIDGET_DELAYS.size - 1)])
+            }
     }
 
     private fun updateLocale(locale: Locale) {
@@ -440,6 +450,8 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
 
         val AOD_HORIZONTAL_TRANSLATE_RATIO = -0.15F
         val AOD_VERTICAL_TRANSLATE_RATIO = 0.075F
+
+        val FIDGET_DELAYS = listOf(0L, 75L, 150L, 225L)
 
         // Delays. Each digit's animation should have a slight delay, so we get a nice
         // "stepping" effect. When moving right, the second digit of the hour should move first.
