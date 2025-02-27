@@ -67,6 +67,7 @@ import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernizat
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarIconBlockListInteractor
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
+import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import dagger.assisted.Assisted
@@ -125,7 +126,7 @@ interface HomeStatusBarViewModel : Activatable {
     val primaryOngoingActivityChip: StateFlow<OngoingActivityChipModel>
 
     /** All supported activity chips, whether they are currently active or not. */
-    val ongoingActivityChips: StateFlow<MultipleOngoingActivityChipsModel>
+    val ongoingActivityChips: StateFlow<ChipsVisibilityModel>
 
     /**
      * The multiple ongoing activity chips that should be shown on the left-hand side of the status
@@ -251,8 +252,6 @@ constructor(
         shareToAppChipViewModel.stopDialogToShow
 
     override val primaryOngoingActivityChip = ongoingActivityChipsViewModel.primaryChip
-
-    override val ongoingActivityChips = ongoingActivityChipsViewModel.chips
 
     override val ongoingActivityChipsLegacy = ongoingActivityChipsViewModel.chipsLegacy
 
@@ -415,9 +414,24 @@ constructor(
             isHomeStatusBarAllowed && !isSecureCameraActive && !hideStartSideContentForHeadsUp
         }
 
+    override val ongoingActivityChips =
+        combine(ongoingActivityChipsViewModel.chips, canShowOngoingActivityChips) { chips, canShow
+                ->
+                ChipsVisibilityModel(chips, areChipsAllowed = canShow)
+            }
+            .stateIn(
+                bgScope,
+                SharingStarted.WhileSubscribed(),
+                initialValue =
+                    ChipsVisibilityModel(
+                        chips = MultipleOngoingActivityChipsModel(),
+                        areChipsAllowed = false,
+                    ),
+            )
+
     private val hasOngoingActivityChips =
         if (StatusBarChipsModernization.isEnabled) {
-            ongoingActivityChips.map { it.active.any { chip -> !chip.isHidden } }
+            ongoingActivityChips.map { it.chips.active.any { chip -> !chip.isHidden } }
         } else if (StatusBarNotifChips.isEnabled) {
             ongoingActivityChipsLegacy.map { it.primary is OngoingActivityChipModel.Active }
         } else {
