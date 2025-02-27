@@ -39,6 +39,7 @@ import com.android.internal.R
 import com.android.server.LocalServices
 import com.android.server.SystemService.TargetUser
 import com.android.server.pm.UserManagerInternal
+import com.android.server.supervision.SupervisionService.ACTION_CONFIRM_SUPERVISION_CREDENTIALS
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
@@ -245,6 +246,13 @@ class SupervisionServiceTest {
         userData = service.getUserDataLocked(USER_ID)
         assertThat(userData.supervisionLockScreenEnabled).isFalse()
         assertThat(userData.supervisionLockScreenOptions).isNull()
+    }
+
+    @Test
+    fun createConfirmSupervisionCredentialsIntent() {
+        val intent = checkNotNull(service.createConfirmSupervisionCredentialsIntent())
+        assertThat(intent.action).isEqualTo(ACTION_CONFIRM_SUPERVISION_CREDENTIALS)
+        assertThat(intent.getPackage()).isEqualTo("com.android.settings")
     }
 
     private val systemSupervisionPackage: String
