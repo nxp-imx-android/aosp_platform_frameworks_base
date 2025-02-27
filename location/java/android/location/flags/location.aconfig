@@ -168,3 +168,14 @@ flag {
     description: "Flag for GNSS assistance interface"
     bug: "209078566"
 }
+
+flag {
+    name: "update_min_location_request_interval"
+    namespace: "location"
+    description: "Flag for updating the default logic for the minimal interval for location request"
+    bug: "397444378"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
