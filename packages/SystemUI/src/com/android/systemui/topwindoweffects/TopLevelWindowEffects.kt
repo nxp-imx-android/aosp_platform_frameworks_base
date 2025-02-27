@@ -14,24 +14,46 @@
  * limitations under the License.
  */
 
-package com.android.systemui.effects;
+package com.android.systemui.topwindoweffects;
 
 import android.content.Context
 import android.graphics.PixelFormat
 import android.view.Gravity
 import android.view.WindowInsets
 import android.view.WindowManager
+import com.android.app.viewcapture.ViewCaptureAwareWindowManager
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
+import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @SysUISingleton
 class TopLevelWindowEffects @Inject constructor(
-    @Application private val context: Context
+    @Application private val context: Context,
+    @Application private val applicationScope: CoroutineScope,
+    private val windowManager: ViewCaptureAwareWindowManager,
+    private val squeezeEffectInteractor: SqueezeEffectInteractor
 ) : CoreStartable {
-    override fun start() {
 
+    override fun start() {
+        applicationScope.launch {
+            var root: EffectsWindowRoot? = null
+            squeezeEffectInteractor.isSqueezeEffectEnabled.collectLatest { enabled ->
+                // TODO: move window ops to a separate UI thread
+                if (enabled && root == null) {
+                    root = EffectsWindowRoot(context)
+                    root?.let { windowManager.addView(it, getWindowManagerLayoutParams()) }
+                } else if (root?.isAttachedToWindow == true) {
+                    windowManager.removeView(root)
+                    root = null
+                }
+            }
+        }
     }
 
     private fun getWindowManagerLayoutParams(): WindowManager.LayoutParams {

@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.systemui.effects.dagger
+package com.android.systemui.topwindoweffects.dagger
 
-import com.android.systemui.CoreStartable
-import com.android.systemui.effects.TopLevelWindowEffects
+import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository
+import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl
 import dagger.Binds
 import dagger.Module
-import dagger.multibindings.ClassKey
-import dagger.multibindings.IntoMap
 
 @Module
-interface TopLevelWindowEffectsModule {
+interface SqueezeEffectRepositoryModule {
 
     @Binds
-    @IntoMap
-    @ClassKey(TopLevelWindowEffects::class)
-    fun bindTopLevelWindowEffectsCoreStartable(impl: TopLevelWindowEffects): CoreStartable
+    fun squeezeEffectRepository(
+        squeezeEffectRepositoryImpl: SqueezeEffectRepositoryImpl
+    ) : SqueezeEffectRepository
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.effects.ui.compose
+package com.android.systemui.topwindoweffects.ui.compose
 
 import androidx.compose.runtime.Composable
 
