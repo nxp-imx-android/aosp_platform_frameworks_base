@@ -56,13 +56,13 @@ import com.android.systemui.util.WallpaperController
 import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import com.android.wm.shell.appzoomout.AppZoomOut
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import java.io.PrintWriter
 import java.util.Optional
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.sign
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Responsible for blurring the notification shade window, and applying a zoom effect to the
@@ -97,6 +97,7 @@ constructor(
         private const val MIN_VELOCITY = -MAX_VELOCITY
         private const val INTERACTION_BLUR_FRACTION = 0.8f
         private const val ANIMATION_BLUR_FRACTION = 1f - INTERACTION_BLUR_FRACTION
+        private const val TRANSITION_THRESHOLD = 0.98f
         private const val TAG = "DepthController"
     }
 
@@ -163,6 +164,9 @@ constructor(
     /**
      * When launching an app from the shade, the animations progress should affect how blurry the
      * shade is, overriding the expansion amount.
+     *
+     * TODO(b/399617511): remove this once [Flags.notificationShadeBlur] is launched and the Shade
+     *   closing is actually instantaneous.
      */
     var blursDisabledForAppLaunch: Boolean = false
         set(value) {
@@ -192,8 +196,12 @@ constructor(
                 return
             }
 
-            shadeAnimation.animateTo(0)
-            shadeAnimation.finishIfRunning()
+            if (Flags.notificationShadeBlur()) {
+                shadeAnimation.skipTo(0)
+            } else {
+                shadeAnimation.animateTo(0)
+                shadeAnimation.finishIfRunning()
+            }
         }
         @Deprecated(
             message =
@@ -515,6 +523,22 @@ constructor(
         scheduleUpdate()
     }
 
+    fun onTransitionAnimationProgress(progress: Float) {
+        if (!Flags.notificationShadeBlur() || !Flags.moveTransitionAnimationLayer()) return
+        // Because the Shade takes a few frames to actually trigger the unblur after a transition
+        // has ended, we need to disable it manually, or the opening window itself will be blurred
+        // for a few frames due to relative ordering. We do this towards the end, so that the
+        // window is already covering the background and the unblur is not visible.
+        if (progress >= TRANSITION_THRESHOLD && shadeAnimation.radius > 0) {
+            blursDisabledForAppLaunch = true
+        }
+    }
+
+    fun onTransitionAnimationEnd() {
+        if (!Flags.notificationShadeBlur() || !Flags.moveTransitionAnimationLayer()) return
+        blursDisabledForAppLaunch = false
+    }
+
     private fun updateShadeAnimationBlur(
         expansion: Float,
         tracking: Boolean,
@@ -660,11 +684,38 @@ constructor(
             springAnimation.addEndListener { _, _, _, _ -> pendingRadius = -1 }
         }
 
+        /**
+         * Starts an animation to [newRadius], or updates the current one if already ongoing.
+         * IMPORTANT: do NOT use this method + [finishIfRunning] to instantaneously change the value
+         * of the animation. The change will NOT be instantaneous. Use [skipTo] instead.
+         *
+         * Explanation:
+         * 1. If idle, [SpringAnimation.animateToFinalPosition] requests a start to the animation.
+         * 2. On the first frame after an idle animation is requested to start, the animation simply
+         *    acquires the starting value and does nothing else.
+         * 3. [SpringAnimation.skipToEnd] requests a fast-forward to the end value, but this happens
+         *    during calculation of the next animation value. Because on the first frame no such
+         *    calculation happens (point #2), there is one lagging frame where we still see the old
+         *    value.
+         */
         fun animateTo(newRadius: Int) {
             if (pendingRadius == newRadius) {
                 return
             }
             pendingRadius = newRadius
+            springAnimation.animateToFinalPosition(newRadius.toFloat())
+        }
+
+        /**
+         * Instantaneously set a new blur radius to this animation. Always use this instead of
+         * [animateTo] and [finishIfRunning] to make sure that the change takes effect in the next
+         * frame. See the doc for [animateTo] for an explanation.
+         */
+        fun skipTo(newRadius: Int) {
+            if (pendingRadius == newRadius) return
+            pendingRadius = newRadius
+            springAnimation.cancel()
+            springAnimation.setStartValue(newRadius.toFloat())
             springAnimation.animateToFinalPosition(newRadius.toFloat())
         }
 
