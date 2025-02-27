@@ -44,7 +44,7 @@ class Autopilot(val ship: Spacecraft, val universe: Universe) : Entity {
             if (enabled)
                 listOf(
                         "---- AUTOPILOT ENGAGED ----",
-                        "TGT: " + (target?.name?.toUpperCase() ?: "SELECTING..."),
+                        "TGT: " + (target?.name?.uppercase() ?: "SELECTING..."),
                         "EXE: $strategy" + if (debug.isNotEmpty()) " ($debug)" else "",
                     )
                     .joinToString("\n")
