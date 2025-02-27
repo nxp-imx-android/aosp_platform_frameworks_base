@@ -235,8 +235,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
     private static final int ANIMATION_DELAY_DIM_MS = 500;
 
-    private static final int ANIMATION_DURATION_SYNC_IME_MS = 285;
-    private static final int ANIMATION_DURATION_UNSYNC_IME_MS = 200;
+    static final int ANIMATION_DURATION_SYNC_IME_MS = 285;
+    static final int ANIMATION_DURATION_UNSYNC_IME_MS = 200;
 
     private static final int PENDING_CONTROL_TIMEOUT_MS = 2000;
 
@@ -256,11 +256,11 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             return 1f - SYSTEM_BARS_ALPHA_INTERPOLATOR.getInterpolation(innerFraction);
         }
     };
-    private static final Interpolator SYNC_IME_INTERPOLATOR =
+    static final Interpolator SYNC_IME_INTERPOLATOR =
             new PathInterpolator(0.2f, 0f, 0f, 1f);
     private static final Interpolator LINEAR_OUT_SLOW_IN_INTERPOLATOR =
             new PathInterpolator(0, 0, 0.2f, 1f);
-    private static final Interpolator FAST_OUT_LINEAR_IN_INTERPOLATOR =
+    static final Interpolator FAST_OUT_LINEAR_IN_INTERPOLATOR =
             new PathInterpolator(0.4f, 0f, 1f, 1f);
 
     /** Visible for WindowManagerWrapper */
