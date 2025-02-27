@@ -25,11 +25,19 @@ import com.android.systemui.kosmos.Kosmos.Fixture
 import org.mockito.Mockito.spy
 
 val Kosmos.sysUiState by Fixture { sysUiStateFactory.create(Display.DEFAULT_DISPLAY) }
+val Kosmos.sysUIStateDispatcher by Fixture { SysUIStateDispatcher() }
 
 val Kosmos.sysUiStateFactory by Fixture {
     object : SysUiStateImpl.Factory {
         override fun create(displayId: Int): SysUiStateImpl {
-            return spy(SysUiStateImpl(Display.DEFAULT_DISPLAY, sceneContainerPlugin, dumpManager))
+            return spy(
+                SysUiStateImpl(
+                    displayId,
+                    sceneContainerPlugin,
+                    dumpManager,
+                    sysUIStateDispatcher,
+                )
+            )
         }
     }
 }

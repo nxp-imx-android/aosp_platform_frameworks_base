@@ -55,9 +55,11 @@ public class SysUiStateTest extends SysuiTestCase {
     private SysUiState mFlagsContainer;
     private SceneContainerPlugin mSceneContainerPlugin;
     private DumpManager mDumpManager;
+    private SysUIStateDispatcher mSysUIStateDispatcher;
 
     private SysUiState createInstance(int displayId) {
-        var sysuiState = new SysUiStateImpl(displayId, mSceneContainerPlugin, mDumpManager);
+        var sysuiState = new SysUiStateImpl(displayId, mSceneContainerPlugin, mDumpManager,
+                mSysUIStateDispatcher);
         sysuiState.addCallback(mCallback);
         return sysuiState;
     }
@@ -69,6 +71,7 @@ public class SysUiStateTest extends SysuiTestCase {
         mSceneContainerPlugin = mKosmos.getSceneContainerPlugin();
         mCallback = mock(SysUiState.SysUiStateCallback.class);
         mDumpManager = mock(DumpManager.class);
+        mSysUIStateDispatcher = mKosmos.getSysUIStateDispatcher();
         mFlagsContainer = createInstance(DEFAULT_DISPLAY);
     }
 

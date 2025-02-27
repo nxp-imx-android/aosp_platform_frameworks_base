@@ -43,7 +43,9 @@ interface SysUiState : Dumpable {
     fun removeCallback(callback: SysUiStateCallback)
 
     /** Returns whether a flag is enabled in this state. */
-    fun isFlagEnabled(@SystemUiStateFlags flag: Long): Boolean
+    fun isFlagEnabled(@SystemUiStateFlags flag: Long): Boolean {
+        return (flags and flag) != 0L
+    }
 
     /** Returns the current sysui state flags. */
     val flags: Long
@@ -58,11 +60,8 @@ interface SysUiState : Dumpable {
     /** Call to save all the flags updated from [setFlag]. */
     fun commitUpdate()
 
-    /** Notify all those who are registered that the state has changed. */
-    fun notifyAndSetSystemUiStateChanged(newFlags: Long, oldFlags: Long)
-
     /** Callback to be notified whenever system UI state flags are changed. */
-    interface SysUiStateCallback {
+    fun interface SysUiStateCallback {
 
         /** To be called when any SysUiStateFlag gets updated for a specific [displayId]. */
         fun onSystemUiStateChanged(@SystemUiStateFlags sysUiFlags: Long, displayId: Int)
@@ -88,6 +87,7 @@ constructor(
     @Assisted private val displayId: Int,
     private val sceneContainerPlugin: SceneContainerPlugin?,
     private val dumpManager: DumpManager,
+    private val stateDispatcher: SysUIStateDispatcher,
 ) : SysUiState {
 
     private val debugName = "SysUiStateImpl-ForDisplay=$displayId"
@@ -103,45 +103,30 @@ constructor(
         get() = _flags
 
     private var _flags: Long = 0
-    private val callbacks: MutableList<SysUiStateCallback> = ArrayList()
     private var flagsToSet: Long = 0
     private var flagsToClear: Long = 0
 
     /**
      * Add listener to be notified of changes made to SysUI state. The callback will also be called
      * as part of this function.
+     *
+     * Note that the listener would receive updates for all displays.
      */
     override fun addCallback(callback: SysUiStateCallback) {
-        callbacks.add(callback)
+        stateDispatcher.registerListener(callback)
         callback.onSystemUiStateChanged(flags, displayId)
     }
 
     /** Callback will no longer receive events on state change */
     override fun removeCallback(callback: SysUiStateCallback) {
-        callbacks.remove(callback)
-    }
-
-    override fun isFlagEnabled(@SystemUiStateFlags flag: Long): Boolean {
-        return (flags and flag) != 0L
+        stateDispatcher.unregisterListener(callback)
     }
 
     /** Methods to this call can be chained together before calling [.commitUpdate]. */
     override fun setFlag(@SystemUiStateFlags flag: Long, enabled: Boolean): SysUiState {
-        var enabled = enabled
-        val overrideOrNull =
-            sceneContainerPlugin?.flagValueOverride(flag = flag, displayId = displayId)
-        if (overrideOrNull != null && enabled != overrideOrNull) {
-            if (SysUiState.DEBUG) {
-                Log.d(
-                    TAG,
-                    "setFlag for flag $flag and value $enabled overridden to $overrideOrNull by scene container plugin",
-                )
-            }
+        val toSet = flagWithOptionalOverrides(flag, enabled, displayId, sceneContainerPlugin)
 
-            enabled = overrideOrNull
-        }
-
-        if (enabled) {
+        if (toSet) {
             flagsToSet = flagsToSet or flag
         } else {
             flagsToClear = flagsToClear or flag
@@ -172,16 +157,13 @@ constructor(
     }
 
     /** Notify all those who are registered that the state has changed. */
-    override fun notifyAndSetSystemUiStateChanged(newFlags: Long, oldFlags: Long) {
+    private fun notifyAndSetSystemUiStateChanged(newFlags: Long, oldFlags: Long) {
         if (SysUiState.DEBUG) {
             Log.d(TAG, "SysUiState changed: old=$oldFlags new=$newFlags")
         }
         if (newFlags != oldFlags) {
-            callbacks.forEach { callback: SysUiStateCallback ->
-                callback.onSystemUiStateChanged(newFlags, displayId)
-            }
-
             _flags = newFlags
+            stateDispatcher.dispatchSysUIStateChange(newFlags, displayId)
         }
     }
 
@@ -210,6 +192,29 @@ constructor(
     companion object {
         private val TAG: String = SysUiState::class.java.simpleName
     }
+}
+
+/** Returns the flag value taking into account [SceneContainerPlugin] potential overrides. */
+fun flagWithOptionalOverrides(
+    flag: Long,
+    enabled: Boolean,
+    displayId: Int,
+    sceneContainerPlugin: SceneContainerPlugin?,
+): Boolean {
+    var toSet = enabled
+    val overrideOrNull = sceneContainerPlugin?.flagValueOverride(flag = flag, displayId = displayId)
+    if (overrideOrNull != null && toSet != overrideOrNull) {
+        if (SysUiState.DEBUG) {
+            Log.d(
+                TAG,
+                "setFlag for flag $flag and value $toSet overridden to " +
+                    "$overrideOrNull by scene container plugin",
+            )
+        }
+
+        toSet = overrideOrNull
+    }
+    return toSet
 }
 
 /** Creates and destroy instances of [SysUiState] */
