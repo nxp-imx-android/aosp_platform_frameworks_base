@@ -73,7 +73,7 @@ public class NotificationBackgroundView extends View implements Dumpable,
     private int mDrawableAlpha = 255;
     private final ColorStateList mLightColoredStatefulColors;
     private final ColorStateList mDarkColoredStatefulColors;
-    private final int mNormalColor;
+    private int mNormalColor;
     private boolean mBgIsColorized = false;
     private boolean mForceOpaque = false;
     private final int convexR = 9;
@@ -89,13 +89,11 @@ public class NotificationBackgroundView extends View implements Dumpable,
                 R.color.notification_state_color_light);
         mDarkColoredStatefulColors = getResources().getColorStateList(
                 R.color.notification_state_color_dark);
-        if (notificationRowTransparency()) {
-            mNormalColor = SurfaceEffectColors.surfaceEffect1(getContext());
-        } else  {
-            mNormalColor = mContext.getColor(
-                    com.android.internal.R.color.materialColorSurfaceContainerHigh);
-        }
         mFocusOverlayStroke = getResources().getDimension(R.dimen.notification_focus_stroke_width);
+    }
+
+    public void setNormalColor(int color) {
+        mNormalColor = color;
     }
 
     @Override
