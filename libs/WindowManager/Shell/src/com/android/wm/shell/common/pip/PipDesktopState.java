@@ -20,9 +20,9 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 
 import android.window.DesktopExperienceFlags;
+import android.window.DesktopModeFlags;
 import android.window.DisplayAreaInfo;
 
-import com.android.window.flags.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
@@ -48,12 +48,13 @@ public class PipDesktopState {
 
     /**
      * Returns whether PiP in Desktop Windowing is enabled by checking the following:
-     * - Desktop Windowing in PiP flag is enabled
+     * - PiP in Desktop Windowing flag is enabled
      * - DesktopUserRepositories is injected
      * - DragToDesktopTransitionHandler is injected
      */
     public boolean isDesktopWindowingPipEnabled() {
-        return Flags.enableDesktopWindowingPip() && mDesktopUserRepositoriesOptional.isPresent()
+        return DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue()
+                && mDesktopUserRepositoriesOptional.isPresent()
                 && mDragToDesktopTransitionHandlerOptional.isPresent();
     }
 
