@@ -63,6 +63,13 @@ public final class MediaProjectionConfig implements Parcelable {
     public static final int PROJECTION_SOURCE_APP = 1 << 3;
 
     /**
+     * Bitmask for setting whether this configuration is for projecting the content provided by an
+     * application.
+     */
+    @FlaggedApi(com.android.media.projection.flags.Flags.FLAG_APP_CONTENT_SHARING)
+    public static final int PROJECTION_SOURCE_APP_CONTENT = 1 << 4;
+
+    /**
      * The user, rather than the host app, determines which region of the display to capture.
      *
      * @hide
@@ -84,11 +91,12 @@ public final class MediaProjectionConfig implements Parcelable {
 
     private static final int[] PROJECTION_SOURCES =
             new int[]{PROJECTION_SOURCE_DISPLAY, PROJECTION_SOURCE_DISPLAY_REGION,
-                    PROJECTION_SOURCE_APP};
+                    PROJECTION_SOURCE_APP,
+                    PROJECTION_SOURCE_APP_CONTENT};
 
     private static final String[] PROJECTION_SOURCES_STRING =
             new String[]{"PROJECTION_SOURCE_DISPLAY", "PROJECTION_SOURCE_DISPLAY_REGION",
-                    "PROJECTION_SOURCE_APP"};
+                    "PROJECTION_SOURCE_APP", "PROJECTION_SOURCE_APP_CONTENT"};
 
     private static final int VALID_PROJECTION_SOURCES = createValidSourcesMask();
 
@@ -104,7 +112,7 @@ public final class MediaProjectionConfig implements Parcelable {
 
     /** @hide */
     @IntDef(flag = true, prefix = "PROJECTION_SOURCE_", value = {PROJECTION_SOURCE_DISPLAY,
-            PROJECTION_SOURCE_DISPLAY_REGION, PROJECTION_SOURCE_APP})
+            PROJECTION_SOURCE_DISPLAY_REGION, PROJECTION_SOURCE_APP, PROJECTION_SOURCE_APP_CONTENT})
     @Retention(SOURCE)
     public @interface MediaProjectionSource {
     }

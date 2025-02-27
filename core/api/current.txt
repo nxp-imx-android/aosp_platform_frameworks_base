@@ -27223,6 +27223,13 @@ package android.media.projection {
     method public void onStop();
   }
 
+  @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public final class MediaProjectionAppContent implements android.os.Parcelable {
+    ctor public MediaProjectionAppContent(@NonNull android.graphics.Bitmap, @NonNull CharSequence, int);
+    method public int describeContents();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.media.projection.MediaProjectionAppContent> CREATOR;
+  }
+
   public final class MediaProjectionConfig implements android.os.Parcelable {
     method @NonNull public static android.media.projection.MediaProjectionConfig createConfigForDefaultDisplay();
     method @NonNull public static android.media.projection.MediaProjectionConfig createConfigForUserChoice();
@@ -27234,6 +27241,7 @@ package android.media.projection {
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.media.projection.MediaProjectionConfig> CREATOR;
     field @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public static final int PROJECTION_SOURCE_APP = 8; // 0x8
+    field @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public static final int PROJECTION_SOURCE_APP_CONTENT = 16; // 0x10
     field @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public static final int PROJECTION_SOURCE_DISPLAY = 2; // 0x2
   }
 
