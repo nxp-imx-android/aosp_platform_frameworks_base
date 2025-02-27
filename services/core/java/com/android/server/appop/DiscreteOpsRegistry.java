@@ -177,6 +177,8 @@ abstract class DiscreteOpsRegistry {
      */
     abstract void writeAndClearOldAccessHistory();
 
+    void shutdown() {}
+
     /** Remove all discrete op events. */
     abstract void clearHistory();
 
