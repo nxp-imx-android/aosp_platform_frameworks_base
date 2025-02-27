@@ -33,6 +33,7 @@ import android.view.ViewConfiguration;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.InteractionJankMonitor;
+import com.android.systemui.Flags;
 import com.android.systemui.SwipeHelper;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.flags.FeatureFlags;
@@ -191,6 +192,11 @@ class NotificationSwipeHelper extends SwipeHelper implements NotificationSwipeAc
     @Override
     public boolean handleUpEvent(MotionEvent ev, View animView, float velocity,
             float translation) {
+        if (Flags.magneticNotificationSwipes()
+                && (mCallback.isMagneticViewDetached(animView) || swipedFastEnough())) {
+            dismiss(animView, velocity);
+            return true;
+        }
         NotificationMenuRowPlugin menuRow = getCurrentMenuRow();
         if (menuRow != null) {
             menuRow.onTouchEnd();

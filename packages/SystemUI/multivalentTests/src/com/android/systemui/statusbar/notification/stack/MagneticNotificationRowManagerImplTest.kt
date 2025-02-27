@@ -130,7 +130,9 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
         kosmos.testScope.runTest {
             // GIVEN a threshold of 100 px
             val threshold = 100f
-            underTest.setSwipeThresholdPx(threshold)
+            underTest.onDensityChange(
+                threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
+            )
 
             // GIVEN that targets are set and the rows are being pulled
             setTargets()
@@ -150,7 +152,9 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
         kosmos.testScope.runTest {
             // GIVEN a threshold of 100 px
             val threshold = 100f
-            underTest.setSwipeThresholdPx(threshold)
+            underTest.onDensityChange(
+                threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
+            )
 
             // GIVEN that targets are set and the rows are being pulled
             canRowBeDismissed = false
@@ -172,7 +176,9 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
         kosmos.testScope.runTest {
             // GIVEN a threshold of 100 px
             val threshold = 100f
-            underTest.setSwipeThresholdPx(threshold)
+            underTest.onDensityChange(
+                threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
+            )
 
             // GIVEN that targets are set and the rows are being pulled
             setTargets()
@@ -192,7 +198,9 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
         kosmos.testScope.runTest {
             // GIVEN a threshold of 100 px
             val threshold = 100f
-            underTest.setSwipeThresholdPx(threshold)
+            underTest.onDensityChange(
+                threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
+            )
 
             // GIVEN that targets are set and the rows are being pulled
             canRowBeDismissed = false
@@ -294,6 +302,15 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             assertThat(underTest.isSwipedViewRoundableSet).isFalse()
         }
 
+    @Test
+    fun isMagneticRowDismissible_isDismissibleWhenDetached() =
+        kosmos.testScope.runTest {
+            setDetachedState()
+
+            val isDismissible = underTest.isMagneticRowSwipeDetached(swipedRow)
+            assertThat(isDismissible).isTrue()
+        }
+
     @After
     fun tearDown() {
         // We reset the manager so that all MagneticRowListener can cancel all animations
@@ -302,7 +319,9 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
 
     private fun setDetachedState() {
         val threshold = 100f
-        underTest.setSwipeThresholdPx(threshold)
+        underTest.onDensityChange(
+            threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
+        )
 
         // Set the pulling state
         setTargets()
