@@ -426,6 +426,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"আশ-পাশ"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"বাওঁফাল"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"সোঁফাল"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"বাওঁ আৰু সোঁফালৰ পৃথক কৰা নিয়ন্ত্ৰণলৈ সংকোচন কৰক"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"একত্ৰিত নিয়ন্ত্ৰণলৈ সংকোচন কৰক"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"আশ-পাশৰ ধ্বনি মিউট কৰক"</string>
@@ -991,8 +997,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"কম গুৰুত্বপূৰ্ণ জাননীৰ আইকনসমূহ দেখুৱাওক"</string>
     <string name="other" msgid="429768510980739978">"অন্যান্য"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"টাইলৰ আকাৰ ট’গল কৰক"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"টাইল আঁতৰাবলৈ"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"অন্তিম স্থানত টাইল যোগ দিয়ক"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"টাইল স্থানান্তৰ কৰক"</string>
@@ -1545,10 +1550,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"শেহতীয়া এপ্‌সমূহ চাবলৈ টাচ্চপেডখনত তিনিটা আঙুলিৰে ওপৰলৈ ছোৱাইপ কৰি ধৰি ৰাখক"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"আপোনাৰ আটাইবোৰ এপ্‌ চাবলৈ আপোনাৰ কীব’ৰ্ডৰ কাৰ্য কীটোত টিপক"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"সম্পাদনা কৰা হৈছে"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"চাবলৈ আনলক কৰক"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"ক’ড চাবলৈ আনলক কৰক"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"প্ৰাসংগিক শিক্ষা"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"উভতি যাবলৈ আপোনাৰ টাচ্চপেড ব্যৱহাৰ কৰক"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"তিনিটা আঙুলি ব্যৱহাৰ কৰি বাওঁফাললৈ বা সোঁফাললৈ ছোৱাইপ কৰক। অধিক নিৰ্দেশ শিকিবলৈ টিপক।"</string>
@@ -1571,4 +1574,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"অজ্ঞাত"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"আটাইবোৰ টাইল ৰিছেট কৰিবনে?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"আটাইবোৰ ক্ষিপ্ৰ ছেটিঙৰ টাইল ডিভাইচৰ মূল ছেটিংছলৈ ৰিছেট হ’ব"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

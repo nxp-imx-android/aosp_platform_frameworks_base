@@ -428,6 +428,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Ympäristö"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Vasen"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Oikea"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Laajenna vasemmalle ja oikealle erilliset ohjaimet"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Tiivistä yhtenäiseksi säätimeksi"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Mykistä ympäristö"</string>
@@ -993,8 +999,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Näytä vähemmän tärkeät ilmoituskuvakkeet"</string>
     <string name="other" msgid="429768510980739978">"Muu"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ruudun koko päälle/pois"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"poista kiekko"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"lisää laatta viimeiseen kohtaan"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Siirrä kiekkoa"</string>
@@ -1547,10 +1552,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Näet äskeiset sovellukset, kun pyyhkäiset ylös ja pidät kosketuslevyä painettuna kolmella sormella."</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Jos haluat nähdä kaikki sovellukset, paina näppäimistön toimintonäppäintä"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Sensuroitu"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Avaa lukitus ja katso tiedot"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Avaa lukitus nähdäksesi koodin"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Kontekstuaalinen koulutus"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Takaisin siirtyminen kosketuslevyn avulla"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Pyyhkäise vasemmalle tai oikealle kolmella sormella. Lue lisää eleistä napauttamalla."</string>
@@ -1573,4 +1576,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Tuntematon"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Nollataanko kaikki laatat?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Kaikki pika-asetuslaatat palautetaan laitteen alkuperäisiin asetuksiin"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

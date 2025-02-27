@@ -426,6 +426,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"주변 소리"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"왼쪽"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"오른쪽"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"왼쪽 및 오른쪽 개별 제어로 확장"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"통합 제어로 축소"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"주변 소리 음소거"</string>
@@ -586,7 +592,7 @@
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"앱 1개 전송"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"전체 화면 전송"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"전체 화면을 전송하면 화면에 있는 모든 항목을 볼 수 있게 됩니다. 따라서 비밀번호, 결제 세부정보, 메시지, 사진, 오디오 및 동영상 등이 노출되지 않도록 주의하세요."</string>
-    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"앱을 전송하면 해당 앱에 표시되거나 재생되는 모든 항목을 볼 수 있게 됩니다. 따라서 비밀번호, 결제 세부정보, 메시지, 사진, 오디오 및 동영상 등이 노출되지 않도록 주의하세요."</string>
+    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"앱을 전송하면 해당 앱에 표시되거나 재생되는 모든 항목을 볼 수 있게 됩니다. 비밀번호, 결제 세부정보, 메시지, 사진, 오디오 및 동영상 등이 노출되지 않도록 주의하세요."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"화면 전송"</string>
     <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"전송할 앱 선택"</string>
     <string name="media_projection_entry_generic_permission_dialog_title" msgid="4519802931547483628">"공유를 시작하시겠습니까?"</string>
@@ -991,8 +997,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"우선순위가 낮은 알림 아이콘 표시"</string>
     <string name="other" msgid="429768510980739978">"기타"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"타일 크기 전환"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"타일 삭제"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"마지막 위치에 타일 추가"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"타일 이동"</string>
@@ -1545,10 +1550,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"최근 앱을 보려면 터치패드에서 세 손가락으로 위로 스와이프한 후 잠시 기다리세요"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"모든 앱을 보려면 키보드의 작업 키를 누르세요"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"수정됨"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"잠금 해제하여 보기"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"잠금 해제하여 코드 보기"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"컨텍스트 교육"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"터치패드를 사용하여 돌아가기"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"세 손가락을 사용해 왼쪽 또는 오른쪽으로 스와이프하세요. 더 많은 동작을 알아보려면 탭하세요."</string>
@@ -1571,4 +1574,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"알 수 없음"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"모든 타일을 재설정하시겠습니까?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"모든 빠른 설정 타일이 기기의 원래 설정으로 재설정됩니다."</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

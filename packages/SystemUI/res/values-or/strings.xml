@@ -252,10 +252,8 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> ସହ ସଂଯୁକ୍ତ"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> ସହିତ ସଂଯୁକ୍ତ।"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ଗ୍ରୁପକୁ ବିସ୍ତାର କରନ୍ତୁ।"</string>
-    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
-    <skip />
-    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
-    <skip />
+    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"ଗ୍ରୁପରେ ଡିଭାଇସ ଯୋଗ କରନ୍ତୁ।"</string>
+    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"ଗ୍ରୁପରୁ ଡିଭାଇସ କାଢ଼ି ଦିଅନ୍ତୁ।"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ଆପ୍ଲିକେସନ ଖୋଲନ୍ତୁ।"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"କନେକ୍ଟ ହୋଇନାହିଁ।"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"ରୋମିଙ୍ଗ"</string>
@@ -333,8 +331,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"ଇନପୁଟ୍"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"ଶ୍ରବଣ ଯନ୍ତ୍ର"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ଅନ୍ ହେଉଛି…"</string>
-    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
-    <skip />
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"ଟପ ଆପ ଦ୍ୱାରା ଉଜ୍ଜ୍ୱଳତା ନିୟନ୍ତ୍ରିତ ହେଉଥିବା ଯୋଗୁଁ ଏହାକୁ ଆଡଜଷ୍ଟ କରିପାରିବେ ନାହିଁ"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ଅଟୋ-ରୋଟେଟ"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"ଅଟୋ-ରୋଟେଟ ସ୍କ୍ରିନ"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"ଲୋକେସନ"</string>
@@ -426,6 +423,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"ପରିପାର୍ଶ୍ୱ"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ବାମ"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"ଡାହାଣ"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"ବାମ ଏବଂ ଡାହାଣ ଅଲଗା ନିୟନ୍ତ୍ରଣକୁ ବିସ୍ତାର କରନ୍ତୁ"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"ଏକତ୍ରିତ ନିୟନ୍ତ୍ରଣକୁ ସଙ୍କୁଚିତ କରନ୍ତୁ"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"ପରିପାର୍ଶ୍ୱକୁ ମ୍ୟୁଟ କରନ୍ତୁ"</string>
@@ -991,8 +994,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"କମ୍‍-ଅଗ୍ରାଧିକାର ବିଜ୍ଞପ୍ତି ଆଇକନ୍‍ ଦେଖାନ୍ତୁ"</string>
     <string name="other" msgid="429768510980739978">"ଅନ୍ୟ"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ଟାଇଲର ସାଇଜକୁ ଟୋଗଲ କରନ୍ତୁ"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ଟାଇଲ୍ କାଢ଼ି ଦିଅନ୍ତୁ"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"ଶେଷ ପୋଜିସନରେ ଟାଇଲ ଯୋଗ କରିବା"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ଟାଇଲ୍ ମୁଭ୍ କରନ୍ତୁ"</string>
@@ -1545,10 +1547,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"ବର୍ତ୍ତମାନର ଆପ୍ସ ଭ୍ୟୁ କରିବାକୁ, ଟଚପେଡରେ ତିନୋଟି ଆଙ୍ଗୁଠିରେ ଉପରକୁ ସ୍ୱାଇପ କରି ଧରି ରଖନ୍ତୁ"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"ଆପଣଙ୍କ ସମସ୍ତ ଆପ୍ସ ଭ୍ୟୁ କରିବା ପାଇଁ ଆପଣଙ୍କ କୀବୋର୍ଡରେ ଆକ୍ସନ କୀ\'କୁ ଦବାନ୍ତୁ"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"ଲୁଚା ଯାଇଥିବା"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"ଭ୍ୟୁ କରିବାକୁ ଅନଲକ କରନ୍ତୁ"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"ଭ୍ୟୁ କରିବାକୁ ଅନଲକ କରିବା କୋଡ"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"ପ୍ରାସଙ୍ଗିକ ଶିକ୍ଷା"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"ପଛକୁ ଫେରିବା ପାଇଁ ଆପଣଙ୍କ ଟଚପେଡକୁ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"ତିନୋଟି ଆଙ୍ଗୁଠିରେ ବାମ ବା ଡାହାଣକୁ ସ୍ୱାଇପ କରନ୍ତୁ। ଜେଶ୍ଚରଗୁଡ଼ିକ ବିଷୟରେ ଅଧିକ ଜାଣିବାକୁ ଟାପ କରନ୍ତୁ।"</string>
@@ -1571,4 +1571,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"ଅଜଣା"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"ସମସ୍ତ ଟାଇଲକୁ ରିସେଟ କରିବେ?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"ସମସ୍ତ କୁଇକ ସେଟିଂସ ଟାଇଲ ଡିଭାଇସର ମୂଳ ସେଟିଂସରେ ରିସେଟ ହୋଇଯିବ"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

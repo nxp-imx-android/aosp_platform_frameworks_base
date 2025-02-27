@@ -351,7 +351,7 @@
     <string name="quick_settings_networks_unavailable" msgid="1167847013337940082">"Redes indisponíveis"</string>
     <string name="quick_settings_wifi_detail_empty_text" msgid="483130889414601732">"Nenhuma rede Wi-Fi disponível"</string>
     <string name="quick_settings_wifi_secondary_label_transient" msgid="7501659015509357887">"Ativando…"</string>
-    <string name="quick_settings_cast_title" msgid="3033553249449938182">"Transmitir"</string>
+    <string name="quick_settings_cast_title" msgid="3033553249449938182">"Transmissão"</string>
     <string name="quick_settings_casting" msgid="1435880708719268055">"Transmitindo"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Dispositivo sem nome"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Não há dispositivos disponíveis"</string>
@@ -426,6 +426,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Som ambiente"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Lado esquerdo"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Lado direito"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Abrir para controles separados da esquerda e da direita"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Fechar para controle unificado"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Silenciar som ambiente"</string>
@@ -991,8 +997,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Mostrar ícones de notificações de baixa prioridade"</string>
     <string name="other" msgid="429768510980739978">"Outros"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"alternar o tamanho do bloco"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"remover o bloco"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"adicionar o bloco à última posição"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Mover bloco"</string>
@@ -1545,10 +1550,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Se quiser ver os apps recentes, deslize para cima e pressione o touchpad com três dedos"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Para ver todos os apps, pressione a tecla de ação no teclado"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Encoberto"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Desbloqueie para ver"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Desbloqueie para ver o código"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Educação contextual"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Use o touchpad para voltar"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Deslize para a esquerda ou direita usando três dedos. Toque para aprender outros gestos."</string>
@@ -1571,4 +1574,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Desconhecidos"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Redefinir todos os blocos?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Todos os blocos \"Configurações rápidas\" serão redefinidos para as configurações originais do dispositivo"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

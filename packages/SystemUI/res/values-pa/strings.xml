@@ -252,10 +252,8 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ।"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ।"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ਗਰੁੱਪ ਦਾ ਵਿਸਤਾਰ ਕਰੋ।"</string>
-    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
-    <skip />
-    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
-    <skip />
+    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"ਗਰੁੱਪ ਵਿੱਚ ਡੀਵਾਈਸ ਸ਼ਾਮਲ ਕਰੋ।"</string>
+    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"ਗਰੁੱਪ ਤੋਂ ਡੀਵਾਈਸ ਹਟਾਓ।"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ਐਪਲੀਕੇਸ਼ਨ ਖੋਲ੍ਹੋ।"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"ਕਨੈਕਟ ਨਹੀਂ ਕੀਤਾ।"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"ਰੋਮਿੰਗ"</string>
@@ -333,8 +331,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"ਇਨਪੁੱਟ"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"ਸੁਣਨ ਦੇ ਸਾਧਨ"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ਚਾਲੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…"</string>
-    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
-    <skip />
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"ਚਮਕ ਨੂੰ ਵਿਵਸਥਿਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ ਕਿਉਂਕਿ ਪਹਿਲਾਂ ਤੋਂ ਚੱਲ ਰਹੀ ਐਪ ਇਸਨੂੰ ਕੰਟਰੋਲ ਕਰ ਰਹੀ ਹੈ"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ਸਵੈ-ਘੁਮਾਓ"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"ਸਕ੍ਰੀਨ ਨੂੰ ਆਪਣੇ ਆਪ ਘੁੰਮਾਓ"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"ਟਿਕਾਣਾ"</string>
@@ -426,6 +423,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"ਆਲੇ-ਦੁਆਲੇ"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ਖੱਬੇ"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"ਸੱਜੇ"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"ਖੱਬੇ ਅਤੇ ਸੱਜੇ ਪਾਸੇ ਦੇ ਸ਼ੋਰ ਨੂੰ ਵੱਖ-ਵੱਖ ਕੰਟਰੋਲ ਕਰਨ ਲਈ ਵਿਸਤਾਰ ਕਰੋ"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"ਏਕੀਕ੍ਰਿਤ ਕੰਟਰੋਲ \'ਤੇ ਜਾਣ ਲਈ ਸਮੇਟੋ"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"ਆਲੇ-ਦੁਆਲੇ ਦੇ ਸ਼ੋਰ ਨੂੰ ਮਿਊਟ ਕਰੋ"</string>
@@ -1568,4 +1571,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"ਅਗਿਆਤ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"ਕੀ ਸਾਰੀਆਂ ਟਾਇਲਾਂ ਨੂੰ ਰੀਸੈੱਟ ਕਰਨਾ ਹੈ?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"ਸਾਰੀਆਂ ਤਤਕਾਲ ਸੈਟਿੰਗਾਂ ਟਾਇਲਾਂ ਡੀਵਾਈਸ ਦੀਆਂ ਮੂਲ ਸੈਟਿੰਗਾਂ \'ਤੇ ਰੀਸੈੱਟ ਹੋ ਜਾਣਗੀਆਂ"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

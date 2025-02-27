@@ -426,6 +426,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Paligid"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Kaliwa"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Kanan"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"I-expand sa kaliwa at kanang magkahiwalay na mga kontrol"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"I-collapse sa pinag-isang kontrol"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"I-mute ang paligid"</string>
@@ -1568,4 +1574,5 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Hindi Alam"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"I-reset ang lahat ng tile?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Magre-reset sa mga orihinal na setting ng device ang lahat ng tile ng Mga Mabilisang Setting"</string>
+    <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>
