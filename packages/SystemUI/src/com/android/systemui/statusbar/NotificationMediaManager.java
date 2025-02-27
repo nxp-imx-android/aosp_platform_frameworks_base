@@ -16,7 +16,6 @@
 package com.android.systemui.statusbar;
 
 import static com.android.systemui.Flags.mediaControlsUserInitiatedDeleteintent;
-import static com.android.systemui.Flags.notificationMediaManagerBackgroundExecution;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -116,12 +115,7 @@ public class NotificationMediaManager implements Dumpable {
             if (DEBUG_MEDIA) {
                 Log.v(TAG, "DEBUG_MEDIA: onMetadataChanged: " + metadata);
             }
-            if (notificationMediaManagerBackgroundExecution()) {
-                mBackgroundExecutor.execute(() -> setMediaMetadata(metadata));
-            } else {
-                setMediaMetadata(metadata);
-            }
-
+            mBackgroundExecutor.execute(() -> setMediaMetadata(metadata));
             dispatchUpdateMediaMetaData();
         }
     };
@@ -283,11 +277,7 @@ public class NotificationMediaManager implements Dumpable {
 
     public void addCallback(MediaListener callback) {
         mMediaListeners.add(callback);
-        if (notificationMediaManagerBackgroundExecution()) {
-            mBackgroundExecutor.execute(() -> updateMediaMetaData(callback));
-        } else {
-            updateMediaMetaData(callback);
-        }
+        mBackgroundExecutor.execute(() -> updateMediaMetaData(callback));
     }
 
     private void updateMediaMetaData(MediaListener callback) {
@@ -303,55 +293,13 @@ public class NotificationMediaManager implements Dumpable {
     public void findAndUpdateMediaNotifications() {
         // TODO(b/169655907): get the semi-filtered notifications for current user
         Collection<NotificationEntry> allNotifications = mNotifPipeline.getAllNotifs();
-        if (notificationMediaManagerBackgroundExecution()) {
-            // Create new sbn list to be accessed in background thread.
-            List<StatusBarNotification> statusBarNotifications = new ArrayList<>();
-            for (NotificationEntry entry: allNotifications) {
-                statusBarNotifications.add(entry.getSbn());
-            }
-            mBackgroundExecutor.execute(() -> findPlayingMediaNotification(statusBarNotifications));
-        } else {
-            findPlayingMediaNotification(allNotifications);
-        }
-        dispatchUpdateMediaMetaData();
-    }
-
-    /**
-     * Find a notification and media controller associated with the playing media session, and
-     * update this manager's internal state.
-     * TODO(b/273443374) check this method
-     */
-    void findPlayingMediaNotification(@NonNull Collection<NotificationEntry> allNotifications) {
-        // Promote the media notification with a controller in 'playing' state, if any.
-        NotificationEntry mediaNotification = null;
-        MediaController controller = null;
+        // Create new sbn list to be accessed in background thread.
+        List<StatusBarNotification> statusBarNotifications = new ArrayList<>();
         for (NotificationEntry entry : allNotifications) {
-            Notification notif = entry.getSbn().getNotification();
-            if (notif.isMediaNotification()) {
-                final MediaSession.Token token =
-                        entry.getSbn().getNotification().extras.getParcelable(
-                                Notification.EXTRA_MEDIA_SESSION, MediaSession.Token.class);
-                if (token != null) {
-                    MediaController aController = new MediaController(mContext, token);
-                    if (PlaybackState.STATE_PLAYING
-                            == getMediaControllerPlaybackState(aController)) {
-                        if (DEBUG_MEDIA) {
-                            Log.v(TAG, "DEBUG_MEDIA: found mediastyle controller matching "
-                                    + entry.getSbn().getKey());
-                        }
-                        mediaNotification = entry;
-                        controller = aController;
-                        break;
-                    }
-                }
-            }
+            statusBarNotifications.add(entry.getSbn());
         }
-
-        StatusBarNotification statusBarNotification = null;
-        if (mediaNotification != null) {
-            statusBarNotification = mediaNotification.getSbn();
-        }
-        setUpControllerAndKey(controller, statusBarNotification);
+        mBackgroundExecutor.execute(() -> findPlayingMediaNotification(statusBarNotifications));
+        dispatchUpdateMediaMetaData();
     }
 
     /**
@@ -415,11 +363,7 @@ public class NotificationMediaManager implements Dumpable {
     }
 
     public void clearCurrentMediaNotification() {
-        if (notificationMediaManagerBackgroundExecution()) {
-            mBackgroundExecutor.execute(this::clearMediaNotification);
-        } else {
-            clearMediaNotification();
-        }
+        mBackgroundExecutor.execute(this::clearMediaNotification);
     }
 
     private void clearMediaNotification() {
@@ -429,11 +373,7 @@ public class NotificationMediaManager implements Dumpable {
 
     private void dispatchUpdateMediaMetaData() {
         ArrayList<MediaListener> callbacks = new ArrayList<>(mMediaListeners);
-        if (notificationMediaManagerBackgroundExecution()) {
-            mBackgroundExecutor.execute(() -> updateMediaMetaData(callbacks));
-        } else {
-            updateMediaMetaData(callbacks);
-        }
+        mBackgroundExecutor.execute(() -> updateMediaMetaData(callbacks));
     }
 
     private void updateMediaMetaData(List<MediaListener> callbacks) {
