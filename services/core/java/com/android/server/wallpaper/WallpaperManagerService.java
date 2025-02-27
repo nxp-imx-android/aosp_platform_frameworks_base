@@ -1659,12 +1659,9 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         DisplayManager displayManager = mContext.getSystemService(DisplayManager.class);
         displayManager.registerDisplayListener(mDisplayListener, null /* handler */);
         WindowManager windowManager = mContext.getSystemService(WindowManager.class);
-        boolean isFoldable = mContext.getResources()
-                .getIntArray(R.array.config_foldedDeviceStates).length > 0;
         mWallpaperDisplayHelper = new WallpaperDisplayHelper(
-                displayManager, windowManager, mWindowManagerInternal, isFoldable);
+                displayManager, windowManager, mWindowManagerInternal, mContext.getResources());
         mWallpaperCropper = new WallpaperCropper(mWallpaperDisplayHelper);
-        mWindowManagerInternal.setWallpaperCropUtils(mWallpaperCropper::getCrop);
         mActivityManager = mContext.getSystemService(ActivityManager.class);
 
         if (mContext.getResources().getBoolean(
@@ -2503,9 +2500,11 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             List<Rect> result = new ArrayList<>();
             boolean rtl = TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())
                     == View.LAYOUT_DIRECTION_RTL;
+            WallpaperDefaultDisplayInfo defaultDisplayInfo =
+                    mWallpaperDisplayHelper.getDefaultDisplayInfo();
             for (Point displaySize : displaySizes) {
-                result.add(mWallpaperCropper.getCrop(
-                        displaySize, croppedBitmapSize, adjustedRelativeSuggestedCrops, rtl));
+                result.add(WallpaperCropper.getCrop(displaySize, defaultDisplayInfo,
+                        croppedBitmapSize, adjustedRelativeSuggestedCrops, rtl));
             }
             if (originalBitmap) result = WallpaperCropper.getOriginalCropHints(wallpaper, result);
             return result;
@@ -2541,8 +2540,11 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         List<Rect> result = new ArrayList<>();
         boolean rtl = TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())
                 == View.LAYOUT_DIRECTION_RTL;
+        WallpaperDefaultDisplayInfo defaultDisplayInfo =
+                mWallpaperDisplayHelper.getDefaultDisplayInfo();
         for (Point displaySize : displaySizes) {
-            result.add(mWallpaperCropper.getCrop(displaySize, bitmapSize, defaultCrops, rtl));
+            result.add(WallpaperCropper.getCrop(displaySize, defaultDisplayInfo, bitmapSize,
+                    defaultCrops, rtl));
         }
         return result;
     }

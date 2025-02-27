@@ -54,7 +54,6 @@ import android.window.ScreenCapture.ScreenshotHardwareBuffer;
 import com.android.internal.policy.KeyInterceptionInfo;
 import com.android.server.input.InputManagerService;
 import com.android.server.policy.WindowManagerPolicy;
-import com.android.server.wallpaper.WallpaperCropper.WallpaperCropUtils;
 import com.android.server.wm.SensitiveContentPackages.PackageInfo;
 
 import java.lang.annotation.Retention;
@@ -746,12 +745,6 @@ public abstract class WindowManagerInternal {
      *                       each type of {@link android.app.WallpaperManager.ScreenOrientation}.
      */
     public abstract void setWallpaperCropHints(IBinder windowToken, SparseArray<Rect> cropHints);
-
-    /**
-     * Transmits the {@link WallpaperCropUtils} instance to {@link WallpaperController}.
-     * {@link WallpaperCropUtils} contains the helpers to properly position the wallpaper.
-     */
-    public abstract void setWallpaperCropUtils(WallpaperCropUtils wallpaperCropUtils);
 
     /**
      * Returns {@code true} if a Window owned by {@code uid} has focus.
