@@ -41,6 +41,7 @@ import androidx.test.filters.SmallTest;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
+import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -63,6 +64,10 @@ public class PipDesktopStateTest {
     @Mock private Optional<DesktopUserRepositories> mMockDesktopUserRepositoriesOptional;
     @Mock private DesktopUserRepositories mMockDesktopUserRepositories;
     @Mock private DesktopRepository mMockDesktopRepository;
+    @Mock
+    private Optional<DragToDesktopTransitionHandler> mMockDragToDesktopTransitionHandlerOptional;
+    @Mock private DragToDesktopTransitionHandler mMockDragToDesktopTransitionHandler;
+
     @Mock private RootTaskDisplayAreaOrganizer mMockRootTaskDisplayAreaOrganizer;
     @Mock private ActivityManager.RunningTaskInfo mMockTaskInfo;
 
@@ -77,6 +82,10 @@ public class PipDesktopStateTest {
         when(mMockDesktopUserRepositories.getCurrent()).thenReturn(mMockDesktopRepository);
         when(mMockDesktopUserRepositoriesOptional.isPresent()).thenReturn(true);
 
+        when(mMockDragToDesktopTransitionHandlerOptional.get()).thenReturn(
+                mMockDragToDesktopTransitionHandler);
+        when(mMockDragToDesktopTransitionHandlerOptional.isPresent()).thenReturn(true);
+
         when(mMockTaskInfo.getDisplayId()).thenReturn(DISPLAY_ID);
         when(mMockPipDisplayLayoutState.getDisplayId()).thenReturn(DISPLAY_ID);
 
@@ -86,6 +95,7 @@ public class PipDesktopStateTest {
 
         mPipDesktopState = new PipDesktopState(mMockPipDisplayLayoutState,
                 mMockDesktopUserRepositoriesOptional,
+                mMockDragToDesktopTransitionHandlerOptional,
                 mMockRootTaskDisplayAreaOrganizer);
     }
 
@@ -102,6 +112,13 @@ public class PipDesktopStateTest {
     }
 
     @Test
+    public void isDesktopWindowingPipEnabled_dragToDesktopTransitionHandlerEmpty_returnsFalse() {
+        when(mMockDragToDesktopTransitionHandlerOptional.isPresent()).thenReturn(false);
+
+        assertFalse(mPipDesktopState.isDesktopWindowingPipEnabled());
+    }
+
+    @Test
     @EnableFlags(FLAG_ENABLE_CONNECTED_DISPLAYS_PIP)
     public void isConnectedDisplaysPipEnabled_returnsTrue() {
         assertTrue(mPipDesktopState.isConnectedDisplaysPipEnabled());
@@ -109,7 +126,6 @@ public class PipDesktopStateTest {
 
     @Test
     public void getOutPipWindowingMode_exitToDesktop_displayFreeform_returnsUndefined() {
-        // Set visible task count to 1 so isPipExitingToDesktopMode returns true
         when(mMockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true);
         setDisplayWindowingMode(WINDOWING_MODE_FREEFORM);
 
@@ -118,7 +134,6 @@ public class PipDesktopStateTest {
 
     @Test
     public void getOutPipWindowingMode_exitToDesktop_displayFullscreen_returnsFreeform() {
-        // Set visible task count to 1 so isPipExitingToDesktopMode returns true
         when(mMockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true);
         setDisplayWindowingMode(WINDOWING_MODE_FULLSCREEN);
 
@@ -130,6 +145,20 @@ public class PipDesktopStateTest {
         setDisplayWindowingMode(WINDOWING_MODE_FULLSCREEN);
 
         assertEquals(WINDOWING_MODE_UNDEFINED, mPipDesktopState.getOutPipWindowingMode());
+    }
+
+    @Test
+    public void isDragToDesktopInProgress_inProgress_returnsTrue() {
+        when(mMockDragToDesktopTransitionHandler.getInProgress()).thenReturn(true);
+
+        assertTrue(mPipDesktopState.isDragToDesktopInProgress());
+    }
+
+    @Test
+    public void isDragToDesktopInProgress_notInProgress_returnsFalse() {
+        when(mMockDragToDesktopTransitionHandler.getInProgress()).thenReturn(false);
+
+        assertFalse(mPipDesktopState.isDragToDesktopInProgress());
     }
 
     private void setDisplayWindowingMode(int windowingMode) {

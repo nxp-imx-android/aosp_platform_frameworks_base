@@ -25,6 +25,7 @@ import android.window.DisplayAreaInfo;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
+import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
 
 import java.util.Optional;
 
@@ -32,13 +33,16 @@ import java.util.Optional;
 public class PipDesktopState {
     private final PipDisplayLayoutState mPipDisplayLayoutState;
     private final Optional<DesktopUserRepositories> mDesktopUserRepositoriesOptional;
+    private final Optional<DragToDesktopTransitionHandler> mDragToDesktopTransitionHandlerOptional;
     private final RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
 
     public PipDesktopState(PipDisplayLayoutState pipDisplayLayoutState,
             Optional<DesktopUserRepositories> desktopUserRepositoriesOptional,
+            Optional<DragToDesktopTransitionHandler> dragToDesktopTransitionHandlerOptional,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer) {
         mPipDisplayLayoutState = pipDisplayLayoutState;
         mDesktopUserRepositoriesOptional = desktopUserRepositoriesOptional;
+        mDragToDesktopTransitionHandlerOptional = dragToDesktopTransitionHandlerOptional;
         mRootTaskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer;
     }
 
@@ -46,9 +50,11 @@ public class PipDesktopState {
      * Returns whether PiP in Desktop Windowing is enabled by checking the following:
      * - Desktop Windowing in PiP flag is enabled
      * - DesktopUserRepositories is injected
+     * - DragToDesktopTransitionHandler is injected
      */
     public boolean isDesktopWindowingPipEnabled() {
-        return Flags.enableDesktopWindowingPip() && mDesktopUserRepositoriesOptional.isPresent();
+        return Flags.enableDesktopWindowingPip() && mDesktopUserRepositoriesOptional.isPresent()
+                && mDragToDesktopTransitionHandlerOptional.isPresent();
     }
 
     /** Returns whether PiP in Connected Displays is enabled by checking the flag. */
@@ -98,5 +104,14 @@ public class PipDesktopState {
 
         // By default, or if the task is going to fullscreen, reset the windowing mode to undefined.
         return WINDOWING_MODE_UNDEFINED;
+    }
+
+    /** Returns whether there is a drag-to-desktop transition in progress. */
+    public boolean isDragToDesktopInProgress() {
+        // Early return if PiP in Desktop Windowing is not supported.
+        if (!isDesktopWindowingPipEnabled()) {
+            return false;
+        }
+        return mDragToDesktopTransitionHandlerOptional.get().getInProgress();
     }
 }

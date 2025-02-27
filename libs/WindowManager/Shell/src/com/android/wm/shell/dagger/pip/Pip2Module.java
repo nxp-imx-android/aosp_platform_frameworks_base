@@ -42,6 +42,7 @@ import com.android.wm.shell.common.pip.SizeSpecSource;
 import com.android.wm.shell.dagger.WMShellBaseModule;
 import com.android.wm.shell.dagger.WMSingleton;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
+import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
 import com.android.wm.shell.pip2.phone.PhonePipMenuController;
 import com.android.wm.shell.pip2.phone.PipController;
 import com.android.wm.shell.pip2.phone.PipMotionHelper;
@@ -58,6 +59,7 @@ import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
+import dagger.BindsOptionalOf;
 import dagger.Module;
 import dagger.Provides;
 
@@ -208,8 +210,9 @@ public abstract class Pip2Module {
 
     @WMSingleton
     @Provides
-    static PipTransitionState providePipTransitionState(@ShellMainThread Handler handler) {
-        return new PipTransitionState(handler);
+    static PipTransitionState providePipTransitionState(@ShellMainThread Handler handler,
+            PipDesktopState pipDesktopState) {
+        return new PipTransitionState(handler, pipDesktopState);
     }
 
     @WMSingleton
@@ -237,9 +240,13 @@ public abstract class Pip2Module {
     static PipDesktopState providePipDesktopState(
             PipDisplayLayoutState pipDisplayLayoutState,
             Optional<DesktopUserRepositories> desktopUserRepositoriesOptional,
+            Optional<DragToDesktopTransitionHandler> dragToDesktopTransitionHandlerOptional,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer
     ) {
         return new PipDesktopState(pipDisplayLayoutState, desktopUserRepositoriesOptional,
-                rootTaskDisplayAreaOrganizer);
+                dragToDesktopTransitionHandlerOptional, rootTaskDisplayAreaOrganizer);
     }
+
+    @BindsOptionalOf
+    abstract DragToDesktopTransitionHandler optionalDragToDesktopTransitionHandler();
 }
