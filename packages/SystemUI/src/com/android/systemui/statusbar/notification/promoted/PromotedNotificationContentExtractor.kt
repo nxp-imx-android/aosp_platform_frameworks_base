@@ -20,6 +20,7 @@ import android.app.Notification
 import android.app.Notification.BigPictureStyle
 import android.app.Notification.BigTextStyle
 import android.app.Notification.CallStyle
+import android.app.Notification.EXTRA_BIG_TEXT
 import android.app.Notification.EXTRA_CHRONOMETER_COUNT_DOWN
 import android.app.Notification.EXTRA_PROGRESS
 import android.app.Notification.EXTRA_PROGRESS_INDETERMINATE
@@ -27,8 +28,10 @@ import android.app.Notification.EXTRA_PROGRESS_MAX
 import android.app.Notification.EXTRA_SUB_TEXT
 import android.app.Notification.EXTRA_TEXT
 import android.app.Notification.EXTRA_TITLE
+import android.app.Notification.EXTRA_TITLE_BIG
 import android.app.Notification.EXTRA_VERIFICATION_ICON
 import android.app.Notification.EXTRA_VERIFICATION_TEXT
+import android.app.Notification.InboxStyle
 import android.app.Notification.ProgressStyle
 import android.content.Context
 import android.graphics.drawable.Icon
@@ -105,8 +108,8 @@ constructor(
         contentBuilder.shortCriticalText = notification.shortCriticalText()
         contentBuilder.lastAudiblyAlertedMs = entry.lastAudiblyAlertedMs
         contentBuilder.profileBadgeResId = null // TODO
-        contentBuilder.title = notification.title()
-        contentBuilder.text = notification.text()
+        contentBuilder.title = notification.resolveTitle(recoveredBuilder.style)
+        contentBuilder.text = notification.resolveText(recoveredBuilder.style)
         contentBuilder.skeletonLargeIcon = notification.skeletonLargeIcon(imageModelProvider)
         contentBuilder.oldProgress = notification.oldProgress()
 
@@ -127,7 +130,38 @@ constructor(
 
     private fun Notification.title(): CharSequence? = extras?.getCharSequence(EXTRA_TITLE)
 
+    private fun Notification.bigTitle(): CharSequence? = extras?.getCharSequence(EXTRA_TITLE_BIG)
+
+    private fun Notification.Style.bigTitleOverridesTitle(): Boolean {
+        return when (this) {
+            is BigTextStyle,
+            is BigPictureStyle,
+            is InboxStyle -> true
+            else -> false
+        }
+    }
+
+    private fun Notification.resolveTitle(style: Notification.Style?): CharSequence? {
+        return if (style?.bigTitleOverridesTitle() == true) {
+            bigTitle()
+        } else {
+            null
+        } ?: title()
+    }
+
     private fun Notification.text(): CharSequence? = extras?.getCharSequence(EXTRA_TEXT)
+
+    private fun Notification.bigText(): CharSequence? = extras?.getCharSequence(EXTRA_BIG_TEXT)
+
+    private fun Notification.Style.bigTextOverridesText(): Boolean = this is BigTextStyle
+
+    private fun Notification.resolveText(style: Notification.Style?): CharSequence? {
+        return if (style?.bigTextOverridesText() == true) {
+            bigText()
+        } else {
+            null
+        } ?: text()
+    }
 
     private fun Notification.subText(): String? = extras?.getString(EXTRA_SUB_TEXT)
 
@@ -233,13 +267,13 @@ constructor(
     private fun BigPictureStyle.extractContent(
         contentBuilder: PromotedNotificationContentModel.Builder
     ) {
-        // TODO?
+        // Big title is handled in resolveTitle, and big picture is unsupported.
     }
 
     private fun BigTextStyle.extractContent(
         contentBuilder: PromotedNotificationContentModel.Builder
     ) {
-        // TODO?
+        // Big title and big text are handled in resolveTitle and resolveText.
     }
 
     private fun CallStyle.extractContent(
