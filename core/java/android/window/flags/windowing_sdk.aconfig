@@ -153,3 +153,14 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "cleanup_dispatch_pending_transactions_remote_exception"
+    description: "Refactor to cleanup for RemoteException from dispatchPendingTransactions"
+    bug: "323801078"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
