@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -126,7 +127,7 @@ public class PipAlphaAnimatorTest {
     }
 
     @Test
-    public void onAnimationStart_setCornerAndShadowRadii() {
+    public void onAnimationStart_fadeInAnimator_setCornerAndShadowRadii() {
         mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
                 mMockFinishTransaction, PipAlphaAnimator.FADE_IN);
         mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
@@ -143,7 +144,26 @@ public class PipAlphaAnimatorTest {
     }
 
     @Test
-    public void onAnimationUpdate_setCornerAndShadowRadii() {
+    public void onAnimationStart_fadeOutAnimator_setCornerNoShadowRadii() {
+        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
+                mMockFinishTransaction, PipAlphaAnimator.FADE_OUT);
+        mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            mPipAlphaAnimator.start();
+            mPipAlphaAnimator.pause();
+        });
+
+        verify(mMockStartTransaction, atLeastOnce())
+                .setCornerRadius(eq(mTestLeash), eq(TEST_CORNER_RADIUS));
+        verify(mMockStartTransaction, never())
+                .setShadowRadius(eq(mTestLeash), eq(TEST_SHADOW_RADIUS));
+        verify(mMockStartTransaction, atLeastOnce())
+                .setShadowRadius(eq(mTestLeash), eq(0f));
+    }
+
+    @Test
+    public void onAnimationUpdate_fadeInAnimator_setCornerAndShadowRadii() {
         mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
                 mMockFinishTransaction, PipAlphaAnimator.FADE_IN);
         mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
@@ -160,7 +180,26 @@ public class PipAlphaAnimatorTest {
     }
 
     @Test
-    public void onAnimationEnd_setCornerAndShadowRadii() {
+    public void onAnimationUpdate_fadeOutAnimator_setCornerNoShadowRadii() {
+        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
+                mMockFinishTransaction, PipAlphaAnimator.FADE_OUT);
+        mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            mPipAlphaAnimator.start();
+            mPipAlphaAnimator.pause();
+        });
+
+        verify(mMockAnimateTransaction, atLeastOnce())
+                .setCornerRadius(eq(mTestLeash), eq(TEST_CORNER_RADIUS));
+        verify(mMockAnimateTransaction, never())
+                .setShadowRadius(eq(mTestLeash), eq(TEST_SHADOW_RADIUS));
+        verify(mMockAnimateTransaction, atLeastOnce())
+                .setShadowRadius(eq(mTestLeash), eq(0f));
+    }
+
+    @Test
+    public void onAnimationEnd_fadeInAnimator_setCornerAndShadowRadii() {
         mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
                 mMockFinishTransaction, PipAlphaAnimator.FADE_IN);
         mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
@@ -174,6 +213,25 @@ public class PipAlphaAnimatorTest {
                 .setCornerRadius(eq(mTestLeash), eq(TEST_CORNER_RADIUS));
         verify(mMockFinishTransaction, atLeastOnce())
                 .setShadowRadius(eq(mTestLeash), eq(TEST_SHADOW_RADIUS));
+    }
+
+    @Test
+    public void onAnimationEnd_fadeOutAnimator_setCornerNoShadowRadii() {
+        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
+                mMockFinishTransaction, PipAlphaAnimator.FADE_OUT);
+        mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            mPipAlphaAnimator.start();
+            mPipAlphaAnimator.end();
+        });
+
+        verify(mMockFinishTransaction, atLeastOnce())
+                .setCornerRadius(eq(mTestLeash), eq(TEST_CORNER_RADIUS));
+        verify(mMockFinishTransaction, never())
+                .setShadowRadius(eq(mTestLeash), eq(TEST_SHADOW_RADIUS));
+        verify(mMockFinishTransaction, atLeastOnce())
+                .setShadowRadius(eq(mTestLeash), eq(0f));
     }
 
     @Test

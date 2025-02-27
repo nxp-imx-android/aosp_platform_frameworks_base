@@ -131,9 +131,10 @@ public class PipAlphaAnimator extends ValueAnimator {
     }
 
     private void onAlphaAnimationUpdate(float alpha, SurfaceControl.Transaction tx) {
+        // only set shadow radius on fade in
         tx.setAlpha(mLeash, alpha)
                 .setCornerRadius(mLeash, mCornerRadius)
-                .setShadowRadius(mLeash, mShadowRadius);
+                .setShadowRadius(mLeash, mDirection == FADE_IN ? mShadowRadius : 0f);
         tx.apply();
     }
 
