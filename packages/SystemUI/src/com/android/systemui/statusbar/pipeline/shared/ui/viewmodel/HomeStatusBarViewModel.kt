@@ -369,15 +369,6 @@ constructor(
             )
             .flowOn(bgDispatcher)
 
-    private val isAnyChipVisible =
-        if (StatusBarChipsModernization.isEnabled) {
-            ongoingActivityChips.map { it.active.any { chip -> !chip.isHidden } }
-        } else if (StatusBarNotifChips.isEnabled) {
-            ongoingActivityChipsLegacy.map { it.primary is OngoingActivityChipModel.Active }
-        } else {
-            primaryOngoingActivityChip.map { it is OngoingActivityChipModel.Active }
-        }
-
     /**
      * True if we need to hide the usual start side content in order to show the heads up
      * notification info.
@@ -419,9 +410,23 @@ constructor(
         combine(
             isHomeStatusBarAllowed,
             keyguardInteractor.isSecureCameraActive,
-            headsUpNotificationInteractor.statusBarHeadsUpStatus,
-        ) { isHomeStatusBarAllowed, isSecureCameraActive, headsUpState ->
-            isHomeStatusBarAllowed && !isSecureCameraActive && !headsUpState.isPinned
+            hideStartSideContentForHeadsUp,
+        ) { isHomeStatusBarAllowed, isSecureCameraActive, hideStartSideContentForHeadsUp ->
+            isHomeStatusBarAllowed && !isSecureCameraActive && !hideStartSideContentForHeadsUp
+        }
+
+    private val hasOngoingActivityChips =
+        if (StatusBarChipsModernization.isEnabled) {
+            ongoingActivityChips.map { it.active.any { chip -> !chip.isHidden } }
+        } else if (StatusBarNotifChips.isEnabled) {
+            ongoingActivityChipsLegacy.map { it.primary is OngoingActivityChipModel.Active }
+        } else {
+            primaryOngoingActivityChip.map { it is OngoingActivityChipModel.Active }
+        }
+
+    private val isAnyChipVisible =
+        combine(hasOngoingActivityChips, canShowOngoingActivityChips) { hasChips, canShowChips ->
+            hasChips && canShowChips
         }
 
     override val isClockVisible: Flow<VisibilityModel> =
