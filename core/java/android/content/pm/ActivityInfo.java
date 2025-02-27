@@ -950,6 +950,8 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
             CONFIG_COLOR_MODE,
             CONFIG_FONT_SCALE,
             CONFIG_GRAMMATICAL_GENDER,
+            CONFIG_FONT_WEIGHT_ADJUSTMENT,
+            CONFIG_WINDOW_CONFIGURATION,
             CONFIG_ASSETS_PATHS,
             CONFIG_RESOURCES_UNUSED,
     })
