@@ -38,9 +38,15 @@ object AlternateBouncerUdfpsViewBinder {
         view.repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 view.alpha = 0f
+
                 launch("$TAG#viewModel.accessibilityDelegateHint") {
                     viewModel.accessibilityDelegateHint.collect { hint ->
                         view.accessibilityHintType = hint
+                        if (hint != DeviceEntryIconView.AccessibilityHintType.NONE) {
+                            view.setOnClickListener { viewModel.onTapped() }
+                        } else {
+                            view.setOnClickListener(null)
+                        }
                     }
                 }
 

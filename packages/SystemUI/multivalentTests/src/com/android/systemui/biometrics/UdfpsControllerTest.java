@@ -193,8 +193,6 @@ public class UdfpsControllerTest extends SysuiTestCase {
     @Mock
     private UdfpsOverlayInteractor mUdfpsOverlayInteractor;
     @Mock
-    private UdfpsKeyguardAccessibilityDelegate mUdfpsKeyguardAccessibilityDelegate;
-    @Mock
     private SelectedUserInteractor mSelectedUserInteractor;
 
     // Capture listeners so that they can be used to send events
@@ -321,7 +319,6 @@ public class UdfpsControllerTest extends SysuiTestCase {
                 mAlternateBouncerInteractor,
                 mInputManager,
                 mock(DeviceEntryFaceAuthInteractor.class),
-                mUdfpsKeyguardAccessibilityDelegate,
                 mSelectedUserInteractor,
                 mKeyguardTransitionInteractor,
                 mDeviceEntryUdfpsTouchOverlayViewModel,
