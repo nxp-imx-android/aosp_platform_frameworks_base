@@ -39,6 +39,8 @@
 
     <!-- Bubble drop target dimensions -->
     <dimen name="drop_target_elevation">1dp</dimen>
+    <dimen name="drop_target_radius">28dp</dimen>
+    <dimen name="drop_target_stroke">1dp</dimen>
     <dimen name="drop_target_full_screen_padding">20dp</dimen>
     <dimen name="drop_target_desktop_window_padding_small">100dp</dimen>
     <dimen name="drop_target_desktop_window_padding_large">130dp</dimen>
