@@ -710,6 +710,7 @@ public final class PerfettoTrackEventExtra {
     /**
      * Resets the track event extra.
      */
+    @android.ravenwood.annotation.RavenwoodReplace
     public void reset() {
         native_clear_args(mPtr);
         mPendingPointers.clear();
@@ -1338,5 +1339,9 @@ public final class PerfettoTrackEventExtra {
     private Flow getTerminatingFlow$ravenwood() {
         // Tracing currently completely disabled under Ravenwood
         return null;
+    }
+
+    private void reset$ravenwood() {
+        // Tracing currently completely disabled under Ravenwood
     }
 }
