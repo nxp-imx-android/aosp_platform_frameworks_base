@@ -2625,6 +2625,13 @@ public final class ActiveServices {
                     }
                     notification.flags |= Notification.FLAG_FOREGROUND_SERVICE;
                     r.foregroundNoti = notification;
+                    if (r.isForeground && foregroundServiceType != previousFgsType) {
+                        // An already foreground service is being started with a different fgs type
+                        // which results in the type changing without typical startForeground
+                        // logging.
+                        Slog.w(TAG_SERVICE, "FGS type change for " + r.shortInstanceName
+                                + " from " + previousFgsType + " to " + foregroundServiceType);
+                    }
                     mAm.mProcessStateController.setForegroundServiceType(r, foregroundServiceType);
                     if (!r.isForeground) {
                         final ServiceMap smap = getServiceMapLocked(r.userId);
