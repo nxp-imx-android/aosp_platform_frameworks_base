@@ -214,7 +214,7 @@ internal class AvailableHearingDeviceItemFactory : AvailableMediaDeviceItemFacto
     }
 }
 
-internal class ConnectedDeviceItemFactory : DeviceItemFactory() {
+internal open class ConnectedDeviceItemFactory : DeviceItemFactory() {
     override fun isFilterMatched(
         context: Context,
         cachedDevice: CachedBluetoothDevice,
@@ -235,6 +235,19 @@ internal class ConnectedDeviceItemFactory : DeviceItemFactory() {
             context.getString(actionAccessibilityLabelDisconnect),
             isActive = false,
         )
+    }
+}
+
+internal class ConnectedHearingDeviceItemFactory : ConnectedDeviceItemFactory() {
+    override fun isFilterMatched(
+        context: Context,
+        cachedDevice: CachedBluetoothDevice,
+        isOngoingCall: Boolean,
+        audioSharingAvailable: Boolean,
+    ): Boolean {
+        return cachedDevice.isHearingDevice &&
+            cachedDevice.bondState == BluetoothDevice.BOND_BONDED &&
+            cachedDevice.device.isConnected
     }
 }
 
@@ -274,7 +287,7 @@ internal class SavedHearingDeviceItemFactory : SavedDeviceItemFactory() {
             context,
             cachedDevice.getDevice(),
         ) &&
-            cachedDevice.isHearingAidDevice &&
+            cachedDevice.isHearingDevice &&
             cachedDevice.bondState == BluetoothDevice.BOND_BONDED &&
             !cachedDevice.isConnected
     }
