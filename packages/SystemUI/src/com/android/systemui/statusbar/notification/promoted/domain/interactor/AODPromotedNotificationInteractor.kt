@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.notification.promoted.domain.interactor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
 import com.android.systemui.util.kotlin.FlowDumperImpl
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -34,10 +33,7 @@ constructor(
 ) : FlowDumperImpl(dumpManager) {
     /** The content to show as the promoted notification on AOD */
     val content: Flow<PromotedNotificationContentModel?> =
-        promotedNotificationsInteractor.topPromotedNotificationContent
+        promotedNotificationsInteractor.aodPromotedNotification
 
-    val isPresent: Flow<Boolean> =
-        content
-            .map { (it != null) && (it.style != Style.Ineligible) }
-            .dumpWhileCollecting("isPresent")
+    val isPresent: Flow<Boolean> = content.map { it != null }.dumpWhileCollecting("isPresent")
 }

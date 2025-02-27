@@ -22,6 +22,8 @@ import com.android.systemui.statusbar.chips.call.domain.interactor.CallChipInter
 import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style.Ineligible
+import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -83,13 +85,13 @@ constructor(
             .map { list -> list.firstNotNullOfOrNull { it.promotedContent } }
             .distinctUntilNewInstance()
 
-    /** This is the top-most promoted notification, which should avoid regular changing. */
-    val topPromotedNotificationContent: Flow<PromotedNotificationContentModel?> =
+    /** This is the AOD promoted notification, which should avoid regular changing. */
+    val aodPromotedNotification: Flow<PromotedNotificationContentModel?> =
         combine(
                 topPromotedChipNotification,
                 activeNotificationsInteractor.topLevelRepresentativeNotifications,
             ) { topChipNotif, topLevelNotifs ->
-                topChipNotif ?: topLevelNotifs.firstNotNullOfOrNull { it.promotedContent }
+                topChipNotif?.takeIfAodEligible() ?: topLevelNotifs.firstAodEligibleOrNull()
             }
             // #equals() can be a bit expensive on this object, but this flow will regularly try to
             // emit the same immutable instance over and over, so just prevent that.
@@ -104,6 +106,16 @@ constructor(
             .map { list -> list.map { it.key } }
             .distinctUntilChanged()
             .flowOn(backgroundDispatcher)
+
+    private fun List<ActiveNotificationModel>.firstAodEligibleOrNull():
+        PromotedNotificationContentModel? {
+        return this.firstNotNullOfOrNull { it.promotedContent?.takeIfAodEligible() }
+    }
+
+    private fun PromotedNotificationContentModel.takeIfAodEligible():
+        PromotedNotificationContentModel? {
+        return this.takeUnless { it.style == Ineligible }
+    }
 
     /**
      * Returns flow where all subsequent repetitions of the same object instance are filtered out.
