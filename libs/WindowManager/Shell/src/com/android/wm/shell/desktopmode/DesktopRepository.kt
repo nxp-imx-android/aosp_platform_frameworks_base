@@ -485,7 +485,7 @@ class DesktopRepository(
     fun getExpandedTasksOrdered(displayId: Int): List<Int> =
         getFreeformTasksInZOrder(displayId).filter { !isMinimizedTask(it) }
 
-    @VisibleForTesting
+    /** Returns all active non-minimized tasks for [deskId] ordered from top to bottom. */
     fun getExpandedTasksIdsInDeskOrdered(deskId: Int): List<Int> =
         getFreeformTasksIdsInDeskInZOrder(deskId).filter { !isMinimizedTask(it) }
 

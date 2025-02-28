@@ -1009,11 +1009,14 @@ class DesktopTasksController(
         displayId: Int = DEFAULT_DISPLAY,
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
     ): IBinder {
+        val deskId =
+            launchingTaskId?.let { taskId -> taskRepository.getDeskIdForTask(taskId) }
+                ?: getDefaultDeskId(displayId)
         // TODO: b/397619806 - Consolidate sharable logic with [handleFreeformTaskLaunch].
         var launchTransaction = wct
         val taskIdToMinimize =
             addAndGetMinimizeChanges(
-                displayId,
+                deskId,
                 launchTransaction,
                 newTaskId = launchingTaskId,
                 launchingNewIntent = launchingTaskId == null,
@@ -2224,6 +2227,7 @@ class DesktopTasksController(
             logV("skip keyguard is locked")
             return null
         }
+        val deskId = getDefaultDeskId(task.displayId)
         val wct = WindowContainerTransaction()
         if (shouldFreeformTaskLaunchSwitchToFullscreen(task)) {
             logD("Bring desktop tasks to front on transition=taskId=%d", task.taskId)
@@ -2246,7 +2250,6 @@ class DesktopTasksController(
                 runOnTransitStart?.invoke(transition)
                 return wct
             }
-            val deskId = getDefaultDeskId(task.displayId)
             val runOnTransitStart = addDeskActivationChanges(deskId, wct, task)
             runOnTransitStart?.invoke(transition)
             wct.reorder(task.token, true)
@@ -2288,7 +2291,7 @@ class DesktopTasksController(
             reason = DesktopImmersiveController.ExitReason.TASK_LAUNCH,
         )
         // 2) minimize a Task if needed.
-        val taskIdToMinimize = addAndGetMinimizeChanges(task.displayId, wct, task.taskId)
+        val taskIdToMinimize = addAndGetMinimizeChanges(deskId, wct, task.taskId)
         addPendingAppLaunchTransition(transition, task.taskId, taskIdToMinimize)
         if (taskIdToMinimize != null) {
             addPendingMinimizeTransition(transition, taskIdToMinimize, MinimizeReason.TASK_LIMIT)
@@ -2334,7 +2337,7 @@ class DesktopTasksController(
                             // The desk was already showing and we're launching a new Task - we
                             // might need to minimize another Task.
                             val taskIdToMinimize =
-                                addAndGetMinimizeChanges(task.displayId, wct, task.taskId)
+                                addAndGetMinimizeChanges(deskId, wct, task.taskId)
                             taskIdToMinimize?.let { minimizingTaskId ->
                                 addPendingMinimizeTransition(
                                     transition,
@@ -2670,7 +2673,7 @@ class DesktopTasksController(
 
     /** Returns the ID of the Task that will be minimized, or null if no task will be minimized. */
     private fun addAndGetMinimizeChanges(
-        displayId: Int,
+        deskId: Int,
         wct: WindowContainerTransaction,
         newTaskId: Int?,
         launchingNewIntent: Boolean = false,
@@ -2679,7 +2682,7 @@ class DesktopTasksController(
         require(newTaskId == null || !launchingNewIntent)
         return desktopTasksLimiter
             .get()
-            .addAndGetMinimizeTaskChanges(displayId, wct, newTaskId, launchingNewIntent)
+            .addAndGetMinimizeTaskChanges(deskId, wct, newTaskId, launchingNewIntent)
     }
 
     private fun addPendingMinimizeTransition(
@@ -2782,9 +2785,20 @@ class DesktopTasksController(
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
             doesAnyTaskRequireTaskbarRounding(displayId)
         )
-        // TODO: b/362720497 - activating a desk with the intention to move a new task to
-        //  it means we may need to minimize something in the activating desk. Do so here
-        //  similar to how it's done in #bringDesktopAppsToFront.
+        val expandedTasksOrderedFrontToBack =
+            taskRepository.getExpandedTasksIdsInDeskOrdered(deskId = deskId)
+        // If we're adding a new Task we might need to minimize an old one
+        val taskIdToMinimize =
+            desktopTasksLimiter
+                .getOrNull()
+                ?.getTaskIdToMinimize(expandedTasksOrderedFrontToBack, newTaskIdInFront)
+        if (taskIdToMinimize != null) {
+            val taskToMinimize = shellTaskOrganizer.getRunningTaskInfo(taskIdToMinimize)
+            // TODO(b/365725441): Handle non running task minimization
+            if (taskToMinimize != null) {
+                desksOrganizer.minimizeTask(wct, deskId, taskToMinimize)
+            }
+        }
         return { transition ->
             val activateDeskTransition =
                 if (newTaskIdInFront != null) {
@@ -2802,6 +2816,9 @@ class DesktopTasksController(
                     )
                 }
             desksTransitionObserver.addPendingTransition(activateDeskTransition)
+            taskIdToMinimize?.let { minimizingTask ->
+                addPendingMinimizeTransition(transition, minimizingTask, MinimizeReason.TASK_LIMIT)
+            }
         }
     }
 

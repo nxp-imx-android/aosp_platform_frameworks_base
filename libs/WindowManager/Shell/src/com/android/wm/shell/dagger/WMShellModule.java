@@ -873,6 +873,7 @@ public abstract class WMShellModule {
             Transitions transitions,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             ShellTaskOrganizer shellTaskOrganizer,
+            DesksOrganizer desksOrganizer,
             InteractionJankMonitor interactionJankMonitor,
             @ShellMainThread Handler handler) {
         int maxTaskLimit = DesktopModeStatus.getMaxTaskLimit(context);
@@ -885,6 +886,7 @@ public abstract class WMShellModule {
                         transitions,
                         desktopUserRepositories,
                         shellTaskOrganizer,
+                        desksOrganizer,
                         maxTaskLimit <= 0 ? null : maxTaskLimit,
                         interactionJankMonitor,
                         context,
