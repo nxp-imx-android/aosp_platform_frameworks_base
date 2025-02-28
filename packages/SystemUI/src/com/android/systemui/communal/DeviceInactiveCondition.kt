@@ -18,6 +18,7 @@ package com.android.systemui.communal
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.shared.model.DozeStateModel.Companion.isDozeOff
@@ -28,6 +29,7 @@ import com.android.systemui.util.kotlin.JavaAdapter
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 /**
  * Condition which estimates device inactivity in order to avoid launching a full-screen activity
@@ -36,13 +38,14 @@ import kotlinx.coroutines.Job
 class DeviceInactiveCondition
 @Inject
 constructor(
-    @Application scope: CoroutineScope,
+    @Application private val applicationScope: CoroutineScope,
+    @Background backgroundScope: CoroutineScope,
     private val keyguardStateController: KeyguardStateController,
     private val wakefulnessLifecycle: WakefulnessLifecycle,
     private val keyguardUpdateMonitor: KeyguardUpdateMonitor,
     private val keyguardInteractor: KeyguardInteractor,
     private val javaAdapter: JavaAdapter,
-) : Condition(scope) {
+) : Condition(backgroundScope) {
     private var anyDozeListenerJob: Job? = null
     private var anyDoze = false
     private val keyguardStateCallback: KeyguardStateController.Callback =
@@ -67,7 +70,9 @@ constructor(
     override suspend fun start() {
         updateState()
         keyguardStateController.addCallback(keyguardStateCallback)
-        keyguardUpdateMonitor.registerCallback(keyguardUpdateCallback)
+
+        // Keyguard update monitor callbacks must be registered on the main thread
+        applicationScope.launch { keyguardUpdateMonitor.registerCallback(keyguardUpdateCallback) }
         wakefulnessLifecycle.addObserver(wakefulnessObserver)
         anyDozeListenerJob =
             javaAdapter.alwaysCollectFlow(keyguardInteractor.dozeTransitionModel) {
