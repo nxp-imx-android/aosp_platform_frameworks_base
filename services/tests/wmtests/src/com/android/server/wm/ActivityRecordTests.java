@@ -133,6 +133,7 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.provider.DeviceConfig;
@@ -722,6 +723,7 @@ public class ActivityRecordTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
+    @DisableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOrientation_allowFixedOrientationForCameraCompatInFreeformWindowing() {
         final ActivityRecord activity = setupDisplayAndActivityForCameraCompat(
