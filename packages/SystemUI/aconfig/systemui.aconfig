@@ -2103,3 +2103,13 @@ flag {
         purpose: PURPOSE_BUGFIX
    }
 }
+
+flag {
+    name: "always_compose_qs_ui_fragment"
+    namespace: "systemui"
+    description: "Have QQS and QS scenes in the Compose fragment always composed, not just when it should be visible."
+    bug: "389985793"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
