@@ -207,6 +207,9 @@ internal class SceneTransitionLayoutImpl(
     private val nestedScrollDispatcher = NestedScrollDispatcher()
     private val nestedScrollConnection = object : NestedScrollConnection {}
 
+    // TODO(b/399825091): Remove this.
+    private var scenesToAlwaysCompose: MutableList<Scene>? = null
+
     init {
         updateContents(builder, layoutDirection, defaultEffectFactory)
 
@@ -312,6 +315,7 @@ internal class SceneTransitionLayoutImpl(
                     key: SceneKey,
                     userActions: Map<UserAction, UserActionResult>,
                     effectFactory: OverscrollFactory?,
+                    alwaysCompose: Boolean,
                     content: @Composable InternalContentScope.() -> Unit,
                 ) {
                     require(!overlaysDefined) { "all scenes must be defined before overlays" }
@@ -324,6 +328,10 @@ internal class SceneTransitionLayoutImpl(
                         Content.calculateGlobalZIndex(parentZIndex, ++zIndex, ancestors.size)
                     val factory = effectFactory ?: defaultEffectFactory
                     if (scene != null) {
+                        check(alwaysCompose == scene.alwaysCompose) {
+                            "scene.alwaysCompose can not change"
+                        }
+
                         // Update an existing scene.
                         scene.content = content
                         scene.userActions = resolvedUserActions
@@ -332,7 +340,7 @@ internal class SceneTransitionLayoutImpl(
                         scene.maybeUpdateEffects(factory)
                     } else {
                         // New scene.
-                        scenes[key] =
+                        val scene =
                             Scene(
                                 key,
                                 this@SceneTransitionLayoutImpl,
@@ -341,7 +349,16 @@ internal class SceneTransitionLayoutImpl(
                                 zIndex.toFloat(),
                                 globalZIndex,
                                 factory,
+                                alwaysCompose,
                             )
+
+                        scenes[key] = scene
+
+                        if (alwaysCompose) {
+                            (scenesToAlwaysCompose
+                                    ?: mutableListOf<Scene>().also { scenesToAlwaysCompose = it })
+                                .add(scene)
+                        }
                     }
                 }
 
@@ -470,22 +487,24 @@ internal class SceneTransitionLayoutImpl(
 
     @Composable
     private fun Scenes() {
-        scenesToCompose().fastForEach { scene -> key(scene.key) { scene.Content() } }
+        scenesToCompose().fastForEach { (scene, isInvisible) ->
+            key(scene.key) { scene.Content(isInvisible = isInvisible) }
+        }
     }
 
-    private fun scenesToCompose(): List<Scene> {
+    private fun scenesToCompose(): List<SceneToCompose> {
         val transitions = state.currentTransitions
-        return if (transitions.isEmpty()) {
-            listOf(scene(state.transitionState.currentScene))
-        } else {
-            buildList {
-                val visited = mutableSetOf<SceneKey>()
-                fun maybeAdd(sceneKey: SceneKey) {
-                    if (visited.add(sceneKey)) {
-                        add(scene(sceneKey))
-                    }
+        return buildList {
+            val visited = mutableSetOf<SceneKey>()
+            fun maybeAdd(sceneKey: SceneKey, isInvisible: Boolean = false) {
+                if (visited.add(sceneKey)) {
+                    add(SceneToCompose(scene(sceneKey), isInvisible))
                 }
+            }
 
+            if (transitions.isEmpty()) {
+                maybeAdd(state.transitionState.currentScene)
+            } else {
                 // Compose the new scene we are going to first.
                 transitions.fastForEachReversed { transition ->
                     when (transition) {
@@ -504,8 +523,12 @@ internal class SceneTransitionLayoutImpl(
                 // Make sure that the current scene is always composed.
                 maybeAdd(transitions.last().currentScene)
             }
+
+            scenesToAlwaysCompose?.fastForEach { maybeAdd(it.key, isInvisible = true) }
         }
     }
+
+    private data class SceneToCompose(val scene: Scene, val isInvisible: Boolean)
 
     @Composable
     private fun BoxScope.Overlays() {

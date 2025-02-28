@@ -102,6 +102,7 @@ interface SceneTransitionLayoutScope<out CS : ContentScope> {
         key: SceneKey,
         userActions: Map<UserAction, UserActionResult> = emptyMap(),
         effectFactory: OverscrollFactory? = null,
+        alwaysCompose: Boolean = false,
         content: @Composable CS.() -> Unit,
     )
 
