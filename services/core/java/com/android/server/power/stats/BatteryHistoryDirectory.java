@@ -374,6 +374,10 @@ public class BatteryHistoryDirectory implements BatteryStatsHistory.BatteryHisto
     @SuppressWarnings("unchecked")
     @Override
     public List<BatteryHistoryFragment> getFragments() {
+        if (!mLock.isHeldByCurrentThread()) {
+            throw new IllegalStateException("Reading battery history without a lock");
+        }
+
         ensureInitialized();
         return (List<BatteryHistoryFragment>)
                 (List<? extends BatteryHistoryFragment>) mHistoryFiles;
@@ -440,44 +444,6 @@ public class BatteryHistoryDirectory implements BatteryStatsHistory.BatteryHisto
         }
 
         return file;
-    }
-
-    @Override
-    public BatteryHistoryFragment getNextFragment(BatteryHistoryFragment current, long startTimeMs,
-            long endTimeMs) {
-        ensureInitialized();
-
-        if (!mLock.isHeldByCurrentThread()) {
-            throw new IllegalStateException("Iterating battery history without a lock");
-        }
-
-        int nextFileIndex = 0;
-        int firstFileIndex = 0;
-        // skip the last file because its data is in history buffer.
-        int lastFileIndex = mHistoryFiles.size() - 2;
-        for (int i = lastFileIndex; i >= 0; i--) {
-            BatteryHistoryFragment fragment = mHistoryFiles.get(i);
-            if (current != null && fragment.monotonicTimeMs == current.monotonicTimeMs) {
-                nextFileIndex = i + 1;
-            }
-            if (fragment.monotonicTimeMs > endTimeMs) {
-                lastFileIndex = i - 1;
-            }
-            if (fragment.monotonicTimeMs <= startTimeMs) {
-                firstFileIndex = i;
-                break;
-            }
-        }
-
-        if (nextFileIndex < firstFileIndex) {
-            nextFileIndex = firstFileIndex;
-        }
-
-        if (nextFileIndex <= lastFileIndex) {
-            return mHistoryFiles.get(nextFileIndex);
-        }
-
-        return null;
     }
 
     @Override

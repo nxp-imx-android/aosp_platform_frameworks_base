@@ -22,6 +22,7 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
@@ -330,31 +331,24 @@ public class BatteryStatsHistoryTest {
             return invocation.callRealMethod();
         }).when(mHistory).readFragmentToParcel(any(), any());
 
-        // Prepare history for iteration
-        mHistory.iterate(0, MonotonicClock.UNDEFINED);
+        int eventsRead = 0;
+        BatteryStatsHistoryIterator iterator = mHistory.iterate(0, MonotonicClock.UNDEFINED);
+        while (iterator.hasNext()) {
+            HistoryItem item = iterator.next();
+            if (item.eventCode == HistoryItem.EVENT_JOB_START) {
+                eventsRead++;
+                assertThat(mReadFiles).containsExactly("123.bh");
+            } else if (item.eventCode == HistoryItem.EVENT_JOB_FINISH) {
+                eventsRead++;
+                assertThat(mReadFiles).containsExactly("123.bh", "1000.bh");
+            } else if (item.eventCode == HistoryItem.EVENT_ALARM) {
+                eventsRead++;
+                assertThat(mReadFiles).containsExactly("123.bh", "1000.bh", "2000.bh");
+            }
+        }
 
-        Parcel parcel = mHistory.getNextParcel(0, Long.MAX_VALUE);
-        assertThat(parcel).isNotNull();
-        assertThat(mReadFiles).containsExactly("123.bh");
-
-        // Skip to the end to force reading the next parcel
-        parcel.setDataPosition(parcel.dataSize());
-        mReadFiles.clear();
-        parcel = mHistory.getNextParcel(0, Long.MAX_VALUE);
-        assertThat(parcel).isNotNull();
-        assertThat(mReadFiles).containsExactly("1000.bh");
-
-        parcel.setDataPosition(parcel.dataSize());
-        mReadFiles.clear();
-        parcel = mHistory.getNextParcel(0, Long.MAX_VALUE);
-        assertThat(parcel).isNotNull();
-        assertThat(mReadFiles).containsExactly("2000.bh");
-
-        parcel.setDataPosition(parcel.dataSize());
-        mReadFiles.clear();
-        parcel = mHistory.getNextParcel(0, Long.MAX_VALUE);
-        assertThat(parcel).isNull();
-        assertThat(mReadFiles).isEmpty();
+        assertThat(eventsRead).isEqualTo(3);
+        assertThat(mReadFiles).containsExactly("123.bh", "1000.bh", "2000.bh", "3000.bh");
     }
 
     @Test
@@ -372,25 +366,19 @@ public class BatteryStatsHistoryTest {
             return invocation.callRealMethod();
         }).when(mHistory).readFragmentToParcel(any(), any());
 
-        // Prepare history for iteration
-        mHistory.iterate(1000, 3000);
+        BatteryStatsHistoryIterator iterator = mHistory.iterate(1000, 3000);
+        while (iterator.hasNext()) {
+            HistoryItem item = iterator.next();
+            if (item.eventCode == HistoryItem.EVENT_JOB_START) {
+                fail("Event outside the range");
+            } else if (item.eventCode == HistoryItem.EVENT_JOB_FINISH) {
+                assertThat(mReadFiles).containsExactly("1000.bh");
+            } else if (item.eventCode == HistoryItem.EVENT_ALARM) {
+                fail("Event outside the range");
+            }
+        }
 
-        Parcel parcel = mHistory.getNextParcel(1000, 3000);
-        assertThat(parcel).isNotNull();
-        assertThat(mReadFiles).containsExactly("1000.bh");
-
-        // Skip to the end to force reading the next parcel
-        parcel.setDataPosition(parcel.dataSize());
-        mReadFiles.clear();
-        parcel = mHistory.getNextParcel(1000, 3000);
-        assertThat(parcel).isNotNull();
-        assertThat(mReadFiles).containsExactly("2000.bh");
-
-        parcel.setDataPosition(parcel.dataSize());
-        mReadFiles.clear();
-        parcel = mHistory.getNextParcel(1000, 3000);
-        assertThat(parcel).isNull();
-        assertThat(mReadFiles).isEmpty();
+        assertThat(mReadFiles).containsExactly("1000.bh", "2000.bh");
     }
 
     private void prepareMultiFileHistory() {
