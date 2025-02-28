@@ -1128,6 +1128,7 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
                     mGestureBlockingActivityRunning.get(), mIsInPip, mDisplaySize,
                     mEdgeWidthLeft, mLeftInset, mEdgeWidthRight, mRightInset, mExcludeRegion));
         } else if (mAllowGesture || mLogGesture) {
+            boolean mLastFrameThresholdCrossed = mThresholdCrossed;
             if (!mThresholdCrossed) {
                 mEndPoint.x = (int) ev.getX();
                 mEndPoint.y = (int) ev.getY();
@@ -1180,9 +1181,7 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
                         return;
                     } else if (dx > dy && dx > mTouchSlop) {
                         if (mAllowGesture) {
-                            if (mBackAnimation != null) {
-                                mBackAnimation.onThresholdCrossed();
-                            } else {
+                            if (mBackAnimation == null) {
                                 pilferPointers();
                             }
                             mThresholdCrossed = true;
@@ -1197,6 +1196,9 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
                 // forward touch
                 mEdgeBackPlugin.onMotionEvent(ev);
                 dispatchToBackAnimation(ev);
+                if (mBackAnimation != null && mThresholdCrossed && !mLastFrameThresholdCrossed) {
+                    mBackAnimation.onThresholdCrossed();
+                }
             }
         }
     }

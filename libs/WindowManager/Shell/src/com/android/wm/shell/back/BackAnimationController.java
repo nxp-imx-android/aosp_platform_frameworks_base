@@ -28,6 +28,7 @@ import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static android.window.TransitionInfo.FLAG_SHOW_WALLPAPER;
 
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_PREDICTIVE_BACK_HOME;
+import static com.android.systemui.Flags.predictiveBackDelayTransition;
 import static com.android.window.flags.Flags.unifyBackNavigationTransition;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BACK_PREVIEW;
 
@@ -431,6 +432,11 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
     @VisibleForTesting
     public void onThresholdCrossed() {
         mThresholdCrossed = true;
+        BackTouchTracker activeTracker = getActiveTracker();
+        if (predictiveBackDelayTransition() && activeTracker != null && mActiveCallback == null
+                && mBackGestureStarted) {
+            startBackNavigation(activeTracker);
+        }
         // There was no focus window when calling startBackNavigation, still pilfer pointers so
         // the next focus window won't receive motion events.
         if (mBackNavigationInfo == null && mReceivedNullNavigationInfo) {
@@ -488,9 +494,14 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 if (swipeEdge == EDGE_NONE) {
                     // start animation immediately for non-gestural sources (without ACTION_MOVE
                     // events)
-                    mThresholdCrossed = true;
+                    if (!predictiveBackDelayTransition()) {
+                        mThresholdCrossed = true;
+                    }
                     mPointersPilfered = true;
                     onGestureStarted(touchX, touchY, swipeEdge);
+                    if (predictiveBackDelayTransition()) {
+                        onThresholdCrossed();
+                    }
                     mShouldStartOnNextMoveEvent = false;
                 } else {
                     mShouldStartOnNextMoveEvent = true;
@@ -544,14 +555,17 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             mPostCommitAnimationInProgress = false;
             mShellExecutor.removeCallbacks(mAnimationTimeoutRunnable);
             startSystemAnimation();
-        } else if (touchTracker == mCurrentTracker) {
-            // Only start the back navigation if no other gesture is being processed. Otherwise,
-            // the back navigation will fall back to legacy back event injection.
-            startBackNavigation(mCurrentTracker);
+        } else if (!predictiveBackDelayTransition()) {
+            startBackNavigation(touchTracker);
         }
     }
 
     private void startBackNavigation(@NonNull BackTouchTracker touchTracker) {
+        if (touchTracker != mCurrentTracker) {
+            // Only start the back navigation if no other gesture is being processed. Otherwise,
+            // the back navigation will fall back to legacy back event injection.
+            return;
+        }
         try {
             startLatencyTracking();
             if (mBackAnimationAdapter != null
