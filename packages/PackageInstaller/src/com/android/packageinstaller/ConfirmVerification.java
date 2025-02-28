@@ -26,6 +26,7 @@ import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_ERR
 import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY;
 import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_OK;
 import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_RETRY;
+import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
 import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
 import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED;
 import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
@@ -233,6 +234,9 @@ public class ConfirmVerification extends Activity {
                 yield flag;
             }
 
+            case VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION ->
+                    FLAG_VERIFICATION_FAILED_MAY_BYPASS;
+
             default -> {
                 Log.e(TAG, "Unknown user action needed reason: " + userActionNeededReason);
                 yield 0;
@@ -247,6 +251,9 @@ public class ConfirmVerification extends Activity {
 
             case VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE ->
                     R.string.verification_incomplete_summary;
+
+            case VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION ->
+                    R.string.lite_verification_summary;
 
             default -> R.string.cannot_install_package_summary;
         };

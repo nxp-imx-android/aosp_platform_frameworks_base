@@ -487,6 +487,16 @@ public class PackageInstaller {
             "android.content.pm.extra.VERIFICATION_EXTENSION_RESPONSE";
 
     /**
+     * An extra containing a boolean indicating whether the lite verification was performed on
+     * the app to be installed. It is included in the installation result returned via the
+     * {@link IntentSender} in {@link Session#commit(IntentSender)} when the installation failed.
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    public static final String EXTRA_VERIFICATION_LITE_PERFORMED =
+            "android.content.pm.extra.VERIFICATION_LITE_PERFORMED";
+
+
+    /**
      * Streaming installation pending.
      * Caller should make sure DataLoader is able to prepare image and reinitiate the operation.
      *
@@ -5036,12 +5046,19 @@ public class PackageInstaller {
         public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED = 2;
 
         /**
+         * Verification requires user intervention because only the lite version of the
+         * verification was completed on the request, not the full verification.
+         */
+        public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION = 3;
+
+        /**
          * @hide
          */
         @IntDef(value = {
                 VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN,
                 VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE,
                 VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED,
+                VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface UserActionNeededReason {

@@ -24,6 +24,7 @@ import static android.content.pm.DataLoaderType.STREAMING;
 import static android.content.pm.Flags.cloudCompilationVerification;
 import static android.content.pm.PackageInstaller.EXTRA_VERIFICATION_EXTENSION_RESPONSE;
 import static android.content.pm.PackageInstaller.EXTRA_VERIFICATION_FAILURE_REASON;
+import static android.content.pm.PackageInstaller.EXTRA_VERIFICATION_LITE_PERFORMED;
 import static android.content.pm.PackageInstaller.LOCATION_DATA_APP;
 import static android.content.pm.PackageInstaller.UNARCHIVAL_OK;
 import static android.content.pm.PackageInstaller.UNARCHIVAL_STATUS_UNSET;
@@ -40,6 +41,7 @@ import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_RET
 import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
 import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED;
 import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
+import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
 import static android.content.pm.PackageItemInfo.MAX_SAFE_LABEL_LENGTH;
 import static android.content.pm.PackageManager.INSTALL_FAILED_ABORTED;
 import static android.content.pm.PackageManager.INSTALL_FAILED_INSUFFICIENT_STORAGE;
@@ -486,6 +488,11 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
      * Holds the message describing the reason of a failed verification.
      */
     private String mVerificationFailedMessage = null;
+
+    /**
+     * Indicates whether a lite verification was conducted on the installation.
+     */
+    private boolean mVerificationLiteEnabled = false;
 
     /** Staging location where client data is written. */
     final File stageDir;
@@ -3225,13 +3232,30 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         public void onVerificationCompleteReceived(@NonNull VerificationStatus statusReceived,
                 @Nullable PersistableBundle extensionResponse) {
             mHandler.post(() -> {
-                if (statusReceived.isVerified()
-                        || mCurrentVerificationPolicy.get() == VERIFICATION_POLICY_NONE) {
-                    // Continue with the rest of the verification and installation.
-                    // TODO(b/360129657): also add extension response to successful install results
+                if (mCurrentVerificationPolicy.get() == VERIFICATION_POLICY_NONE) {
+                    // No policy applied. Continue with the rest of the verification and install.
                     resumeVerify();
                     return;
                 }
+                if (statusReceived.isVerified()) {
+                    if (statusReceived.isLite()) {
+                        mVerificationLiteEnabled = true;
+                        // This is a lite verification. Need further user action.
+                        mVerificationUserActionNeededReason =
+                                VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
+                        mVerificationFailedMessage = "This package could only be verified with "
+                                + "lite verification.";
+                        maybeSendUserActionForVerification(/* blockingFailure= */ false,
+                                /* extensionResponse= */ null);
+                    } else {
+                        // Verified. Continue with the rest of the verification and install.
+                        // TODO(b/360129657): also add extension response to successful install
+                        // results
+                        resumeVerify();
+                    }
+                    return;
+                }
+
                 // Package is blocked.
                 mVerificationUserActionNeededReason =
                         VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED;
@@ -3288,6 +3312,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             Bundle bundle = new Bundle();
             bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON,
                     getVerificationFailureReason(mVerificationUserActionNeededReason));
+            bundle.putBoolean(EXTRA_VERIFICATION_LITE_PERFORMED, mVerificationLiteEnabled);
             bundle.putParcelable(Intent.EXTRA_INTENT, intent);
             if (extensionResponse != null) {
                 bundle.putParcelable(EXTRA_VERIFICATION_EXTENSION_RESPONSE,
@@ -4991,6 +5016,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 Bundle bundle = new Bundle();
                 bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON,
                         getVerificationFailureReason(mVerificationUserActionNeededReason));
+                bundle.putBoolean(EXTRA_VERIFICATION_LITE_PERFORMED, mVerificationLiteEnabled);
 
                 setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg);
                 onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg, bundle);
@@ -5001,6 +5027,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 Bundle bundle = new Bundle();
                 bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON,
                         getVerificationFailureReason(mVerificationUserActionNeededReason));
+                bundle.putBoolean(EXTRA_VERIFICATION_LITE_PERFORMED, mVerificationLiteEnabled);
 
                 setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg);
                 onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg, bundle);
@@ -5010,6 +5037,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 Bundle bundle = new Bundle();
                 bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON,
                         getVerificationFailureReason(mVerificationUserActionNeededReason));
+                bundle.putBoolean(EXTRA_VERIFICATION_LITE_PERFORMED, mVerificationLiteEnabled);
 
                 setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, mVerificationFailedMessage);
                 onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE,
@@ -6166,6 +6194,10 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             if (extras.containsKey(EXTRA_VERIFICATION_FAILURE_REASON)) {
                 fillIn.putExtra(EXTRA_VERIFICATION_FAILURE_REASON,
                         extras.getInt(EXTRA_VERIFICATION_FAILURE_REASON));
+            }
+            if (extras.containsKey(EXTRA_VERIFICATION_LITE_PERFORMED)) {
+                fillIn.putExtra(EXTRA_VERIFICATION_LITE_PERFORMED,
+                        extras.getInt(EXTRA_VERIFICATION_LITE_PERFORMED));
             }
             if (extras.containsKey(Intent.EXTRA_INTENT)) {
                 fillIn.putExtra(Intent.EXTRA_INTENT,
