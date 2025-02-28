@@ -23,6 +23,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.DimenRes
 import androidx.annotation.LayoutRes
 import com.android.settingslib.Utils
+import com.android.systemui.statusbar.data.repository.StatusBarConfigurationState
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.onDensityOrFontScaleChanged
 import com.android.systemui.statusbar.policy.onThemeChanged
@@ -78,7 +79,7 @@ class ConfigurationStateImpl
 constructor(
     @Assisted private val configurationController: ConfigurationController,
     @Assisted private val context: Context,
-) : ConfigurationState {
+) : ConfigurationState, StatusBarConfigurationState {
 
     private val layoutInflater = LayoutInflater.from(context)
 
@@ -147,7 +148,7 @@ constructor(
          */
         fun create(
             context: Context,
-            configurationController: ConfigurationController
+            configurationController: ConfigurationController,
         ): ConfigurationStateImpl
     }
 }
