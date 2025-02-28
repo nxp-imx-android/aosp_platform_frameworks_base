@@ -136,6 +136,8 @@ public class NotificationContentView extends FrameLayout implements Notification
     @Nullable private NotificationViewWrapper mShownWrapper = null;
     private final HybridGroupManager mHybridGroupManager;
     private int mClipTopAmount;
+    private int mTopOverlap;
+    private int mBottomOverlap;
     private int mContentHeight;
     private int mVisibleType = VISIBLE_TYPE_NONE;
     private boolean mAnimate;
@@ -931,6 +933,27 @@ public class NotificationContentView extends FrameLayout implements Notification
         updateClipping();
     }
 
+    /**
+     * Sets the overlap on the top of the view with other views. As a result we should clip the
+     * background and content such that no overlap is visible anymore.
+     * This is related to setClipTopAmount, however it is a separate way to clip which is usually
+     * then combined with the clipTopAmount to take the maximum.
+     */
+    public void setTopOverlap(int topOverlap) {
+        mTopOverlap = topOverlap;
+        updateClipping();
+    }
+
+    /**
+     * Sets the overlap on the bottom of the view with other views. As a result we should clip the
+     * background and content such that no overlap is visible anymore.
+     * This is related to setClipBottomAmount, however it is a separate way to clip which is usually
+     * then combined with the clipBottomAmount to take the maximum.
+     */
+    public void setBottomOverlap(int bottomOverlap) {
+        mBottomOverlap = bottomOverlap;
+        updateClipping();
+    }
 
     public void setClipBottomAmount(int clipBottomAmount) {
         mClipBottomAmount = clipBottomAmount;
@@ -945,8 +968,10 @@ public class NotificationContentView extends FrameLayout implements Notification
 
     private void updateClipping() {
         if (mClipToActualHeight) {
-            int top = (int) (mClipTopAmount - getTranslationY());
-            int bottom = (int) (mUnrestrictedContentHeight - mClipBottomAmount - getTranslationY());
+            int clipTop = Math.max(mClipTopAmount, mTopOverlap);
+            int top = (int) (clipTop - getTranslationY());
+            int clipBottomAmount = Math.max(mClipBottomAmount, mBottomOverlap);
+            int bottom = (int) (mUnrestrictedContentHeight - clipBottomAmount - getTranslationY());
             bottom = Math.max(top, bottom);
             mClipBounds.set(0, top, getWidth(), bottom);
             setClipBounds(mClipBounds);
@@ -2252,7 +2277,7 @@ public class NotificationContentView extends FrameLayout implements Notification
      */
     @Override
     public boolean pointInView(float localX, float localY, float slop) {
-        float top = mClipTopAmount;
+        float top = Math.max(mClipTopAmount, mTopOverlap);
         float bottom = mUnrestrictedContentHeight;
         return localX >= -slop && localY >= top - slop && localX < ((mRight - mLeft) + slop) &&
                 localY < (bottom + slop);

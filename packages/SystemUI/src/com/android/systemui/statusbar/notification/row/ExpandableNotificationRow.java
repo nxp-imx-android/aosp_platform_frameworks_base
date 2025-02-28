@@ -1932,6 +1932,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
     }
 
+    public float getChildRenderingStartPosition() {
+        if (!isSummaryWithChildren()) {
+            return 0;
+        }
+        return getChildrenContainerNonNull().getChildRenderingStartPosition();
+    }
+
     public void setHeadsUpAnimatingAway(boolean headsUpAnimatingAway) {
         boolean wasAboveShelf = isAboveShelf();
         boolean changed = headsUpAnimatingAway != mHeadsupDisappearRunning;
@@ -2516,6 +2523,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mGutsStub.setOnInflateListener((stub, inflated) -> {
             mGuts = (NotificationGuts) inflated;
             mGuts.setClipTopAmount(getClipTopAmount());
+            mGuts.setClipBottomAmount(getClipBottomAmount());
+            mGuts.setTopOverlap(mTopOverlap);
+            mGuts.setBottomOverlap(mBottomOverlap);
             mGuts.setActualHeight(getActualHeight());
             mGutsStub = null;
         });
@@ -4053,6 +4063,35 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         if (mGuts != null) {
             mGuts.setClipTopAmount(clipTopAmount);
+        }
+    }
+
+    @Override
+    public void setTopOverlap(int topOverlap) {
+        if (mTopOverlap != topOverlap) {
+            super.setTopOverlap(topOverlap);
+            for (NotificationContentView l : mLayouts) {
+                l.setTopOverlap(topOverlap);
+            }
+            if (mGuts != null) {
+                mGuts.setTopOverlap(topOverlap);
+            }
+        }
+    }
+
+    @Override
+    public void setBottomOverlap(int bottomOverlap) {
+        if (mExpandAnimationRunning) {
+            return;
+        }
+        if (bottomOverlap != mBottomOverlap) {
+            super.setBottomOverlap(bottomOverlap);
+            for (NotificationContentView l : mLayouts) {
+                l.setBottomOverlap(bottomOverlap);
+            }
+            if (mGuts != null) {
+                mGuts.setBottomOverlap(bottomOverlap);
+            }
         }
     }
 

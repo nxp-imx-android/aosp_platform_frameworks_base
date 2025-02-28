@@ -63,9 +63,10 @@ public abstract class ExpandableOutlineView extends ExpandableView {
                 // Only when translating just the contents, does the outline need to be shifted.
                 int translation = !mDismissUsingRowTranslationX ? (int) getTranslation() : 0;
                 int left = Math.max(translation, 0);
-                int top = mClipTopAmount;
+                int top = Math.max(mClipTopAmount, mTopOverlap);
                 int right = getWidth() + Math.min(translation, 0);
-                int bottom = Math.max(getActualHeight() - mClipBottomAmount, top);
+                int clipBottomAmount = Math.max(mClipBottomAmount, mBottomOverlap);
+                int bottom = Math.max(getActualHeight() - clipBottomAmount, top);
                 outline.setRect(left, top, right, bottom);
             } else {
                 Path clipPath = getClipPath(false /* ignoreTranslation */);
@@ -91,6 +92,13 @@ public abstract class ExpandableOutlineView extends ExpandableView {
         return super.getClipHeight();
     }
 
+    public int getBackgroundBottom() {
+        if (mCustomOutline) {
+            return mOutlineRect.bottom;
+        }
+        return getActualHeight();
+    }
+
     protected Path getClipPath(boolean ignoreTranslation) {
         int left;
         int top;
@@ -105,12 +113,13 @@ public abstract class ExpandableOutlineView extends ExpandableView {
                     ? (int) getTranslation() : 0;
             int halfExtraWidth = (int) (mExtraWidthForClipping / 2.0f);
             left = Math.max(translation, 0) - halfExtraWidth;
-            top = mClipTopAmount;
+            top = Math.max(mClipTopAmount, mTopOverlap);
             right = getWidth() + halfExtraWidth + Math.min(translation, 0);
             // If the top is rounded we want the bottom to be at most at the top roundness, in order
             // to avoid the shadow changing when scrolling up.
+            int clipBottomAmount = Math.max(mClipBottomAmount, mBottomOverlap);
             bottom = Math.max(mMinimumHeightForClipping,
-                    Math.max(getActualHeight() - mClipBottomAmount, (int) (top + topRadius)));
+                    Math.max(getActualHeight() - clipBottomAmount, (int) (top + topRadius)));
         } else {
             left = mOutlineRect.left;
             top = mOutlineRect.top;
@@ -255,6 +264,23 @@ public abstract class ExpandableOutlineView extends ExpandableView {
         }
     }
 
+    @Override
+    public void setTopOverlap(int topOverlap) {
+        int previousAmount = mTopOverlap;
+        super.setTopOverlap(topOverlap);
+        if (previousAmount != topOverlap) {
+            applyRoundnessAndInvalidate();
+        }
+    }
+
+    @Override
+    public void setBottomOverlap(int bottomOverlap) {
+        int previousAmount = mBottomOverlap;
+        super.setBottomOverlap(bottomOverlap);
+        if (previousAmount != bottomOverlap) {
+            applyRoundnessAndInvalidate();
+        }
+    }
     @Override
     public void setClipBottomAmount(int clipBottomAmount) {
         int previousAmount = getClipBottomAmount();

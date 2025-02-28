@@ -632,6 +632,10 @@ public class NotificationChildrenContainer extends ViewGroup
         updateChildrenAppearance();
     }
 
+    public float getChildRenderingStartPosition() {
+        return mHeaderHeight + mDividerHeight;
+    }
+
     /**
      * Recreate the low-priority header.
      *
@@ -1257,7 +1261,8 @@ public class NotificationChildrenContainer extends ViewGroup
         for (int childIdx = 0; childIdx < count; childIdx++) {
             ExpandableNotificationRow slidingChild = mAttachedChildren.get(childIdx);
             float childTop = slidingChild.getTranslationY();
-            float top = childTop + Math.max(0, slidingChild.getClipTopAmount());
+            float top = childTop + Math.max(Math.max(0, slidingChild.getClipTopAmount()),
+                    slidingChild.getTopOverlap());
             float bottom = childTop + slidingChild.getActualHeight();
             if (y >= top && y <= bottom) {
                 if (NotificationBundleUi.isEnabled()) {

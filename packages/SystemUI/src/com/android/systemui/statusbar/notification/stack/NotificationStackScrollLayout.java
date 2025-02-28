@@ -67,6 +67,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
+import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 import android.view.WindowInsets;
 import android.view.WindowInsetsAnimation;
@@ -142,6 +143,7 @@ import com.google.errorprone.annotations.CompileTimeConstant;
 
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -215,6 +217,7 @@ public class NotificationStackScrollLayout
     private int mContentHeight;
     private float mIntrinsicContentHeight;
     private int mPaddingBetweenElements;
+    private int mMinimumSpacingBetweenChildren;
     private int mMaxTopPadding;
     private boolean mAnimateNextTopPaddingChange;
     private int mBottomPadding;
@@ -342,6 +345,7 @@ public class NotificationStackScrollLayout
     private Runnable mResetUserExpandedStatesRunnable;
     private ActivityStarter mActivityStarter;
     private final int[] mTempInt2 = new int[2];
+    private final float[] mTempFloat2 = new float[2];
     private final HashSet<Runnable> mAnimationFinishedRunnables = new HashSet<>();
     private final HashSet<ExpandableView> mClearTransientViewsWhenFinished = new HashSet<>();
     private final Map<ExpandableNotificationRow, HeadsUpAnimationEvent> mHeadsUpChangeAnimations
@@ -360,6 +364,8 @@ public class NotificationStackScrollLayout
     };
     private final NotificationSection[] mSections;
     private final ArrayList<ExpandableView> mTmpSortedChildren = new ArrayList<>();
+    private final ArrayList<ExpandableView> mTmpNonOverlapChildren = new ArrayList<>();
+    private final ArrayDeque<ExpandableView> mTmpStack = new ArrayDeque<>();
     protected ViewGroup mQsHeader;
 
     @Nullable
@@ -378,6 +384,19 @@ public class NotificationStackScrollLayout
         // Return zero when the two notifications end at the same location
         return Float.compare(endY, otherEndY);
     };
+    private final Comparator<ExpandableView> mNotGoneIndexComparator = (view, otherView) -> {
+        int compare = Integer.compare(view.getViewState().notGoneIndex,
+                otherView.getViewState().notGoneIndex);
+        if (compare != 0) {
+            return compare;
+        }
+        // same not gone index. let's prefer transient views to regular ones, since they are
+        // usually above
+        boolean firstTransient = view.getTransientContainer() != null;
+        boolean secondIsTransient = otherView.getTransientContainer() != null;
+        return -1 * Boolean.compare(firstTransient, secondIsTransient);
+    };
+
     private final ViewOutlineProvider mOutlineProvider = new ViewOutlineProvider() {
         @Override
         public void getOutline(View view, Outline outline) {
@@ -932,6 +951,8 @@ public class NotificationStackScrollLayout
         mAmbientState.reload(context);
         mPaddingBetweenElements = Math.max(1,
                 res.getDimensionPixelSize(R.dimen.notification_divider_height));
+        mMinimumSpacingBetweenChildren = Math.max(1,
+                res.getDimensionPixelSize(R.dimen.notification_minimum_spacing_between_children));
         mMinTopOverScrollToEscape = res.getDimensionPixelSize(
                 R.dimen.min_top_overscroll_to_qs);
         mStatusBarHeight = SystemBarUtils.getStatusBarHeight(mContext);
@@ -1367,11 +1388,189 @@ public class NotificationStackScrollLayout
         } else {
             startAnimationToState();
         }
+        avoidNotificationOverlaps();
         Trace.endSection();
     }
 
     private void onPreDrawDuringAnimation() {
         mShelf.updateAppearance();
+        avoidNotificationOverlaps();
+    }
+
+    /**
+     * Avoids overlaps between notifications by postprocessing its positions and adjusting clipping.
+     * Children are sorted by the notGoneIndex calculated in the algorithm.
+     * Usually the later views in the list are clipped on the top to avoid the overlap.
+     * However, views that are disappearing (because they are dismissed or removed) are clipped on
+     * the bottom instead to avoid the overlap.
+     */
+    @VisibleForTesting
+    void avoidNotificationOverlaps() {
+        if (!physicalNotificationMovement()) {
+            return;
+        }
+        createSortedNotificationLists(mTmpSortedChildren, mTmpNonOverlapChildren);
+        mTmpNonOverlapChildren.forEach((child) -> {
+            child.setBottomOverlap(0);
+            child.setTopOverlap(0);
+        });
+
+        // Now lets update the overlaps for the views, ensuring that we set the values for every
+        // view, otherwise they might get stuck
+        float minimumClipPosition = 0;
+        ExpandableView lastTransientView = null;
+        float transientClippingPosition = 0;
+        float lastGroupEnd = 0;
+        for (int i = 0; i < mTmpSortedChildren.size(); i++) {
+            ExpandableView expandableView = mTmpSortedChildren.get(i);
+            float currentTop = getRelativePosition(expandableView);
+            boolean isTransient = expandableView.getTransientContainer() != null;
+            boolean childInGroup = expandableView.isChildInGroup();
+            if (expandableView instanceof ExpandableNotificationRow) {
+                if (expandableView.getTransientContainer()
+                        instanceof NotificationChildrenContainer) {
+                    // Children are removed from their parent so isChildInGroup doesn't work anymore
+                    childInGroup = true;
+                }
+            }
+            if (!childInGroup) {
+                // if we're not a child and there was a group before, let's make sure the get
+                // at least the end of that last group
+                minimumClipPosition = Math.max(minimumClipPosition, lastGroupEnd);
+            }
+            float clipping = Math.max(minimumClipPosition - currentTop, 0);
+            int clippingInt = Math.round(clipping);
+            expandableView.setTopOverlap(clippingInt);
+            if (lastTransientView != null) {
+                // Clip the last transientView
+                float transientClipping = Math.max(transientClippingPosition - currentTop, 0);
+                lastTransientView.setBottomOverlap(Math.round(transientClipping));
+            }
+            if (expandableView instanceof ActivatableNotificationView anv) {
+                if (isTransient) {
+                    // TransientViews never clip the next, they are clipped themselves
+                    lastTransientView = expandableView;
+                    // When transient, we will be clipped ourselves. For that position we need to
+                    // take the difference from the actual height and not from the visible position
+                    float clipPosition = currentTop + expandableView.getActualHeight()
+                            + mMinimumSpacingBetweenChildren;
+                    transientClippingPosition = Math.max(minimumClipPosition, clipPosition);
+                } else {
+                    int backgroundBottom = anv.getBackgroundBottom();
+                    float clipPosition = currentTop + backgroundBottom
+                            + mMinimumSpacingBetweenChildren;
+                    float positionAfterView = Math.max(minimumClipPosition, clipPosition);
+                    lastTransientView = null;
+                    if (!expandableView.isSummaryWithChildren()
+                            || !expandableView.isGroupExpanded()) {
+                        // new clipping position is at our end
+                        minimumClipPosition = positionAfterView;
+                    } else {
+                        // new clip position is at our start
+                        float headerStart =
+                                currentTop + ((ExpandableNotificationRow) expandableView)
+                                        .getChildRenderingStartPosition();
+                        minimumClipPosition = Math.max(minimumClipPosition, headerStart);
+                        lastGroupEnd = positionAfterView;
+                    }
+                }
+            }
+            if (!isTransient) {
+                // only transient views are clipped on the bottom. Let's reset it otherwise!
+                expandableView.setBottomOverlap(0);
+            }
+        }
+        if (lastTransientView != null) {
+            lastTransientView.setBottomOverlap(0);
+        }
+        mTmpSortedChildren.clear();
+        mTmpNonOverlapChildren.clear();
+    }
+
+    /**
+     * Calculates the relative position of the view compared to ourselves. This is similar to
+     * getLocationOnScreen[1] however this also works for transientViews.
+     */
+    private float getRelativePosition(ExpandableView expandableView) {
+        mTempFloat2[0] = 0f;
+        mTempFloat2[1] = 0f;
+        if (!expandableView.hasIdentityMatrix()) {
+            expandableView.getMatrix().mapPoints(mTempFloat2);
+        }
+
+        mTempFloat2[1] += expandableView.getTop();
+
+        ViewParent viewParent = expandableView.getParent();
+        while (viewParent instanceof View && viewParent != this) {
+            final View view = (View) viewParent;
+
+            mTempFloat2[1] -= view.getScrollY();
+
+            if (!view.hasIdentityMatrix()) {
+                view.getMatrix().mapPoints(mTempFloat2);
+            }
+
+            mTempFloat2[1] += view.getTop();
+            viewParent = view.getParent();
+            if (viewParent == this) {
+                return mTempFloat2[1];
+            }
+        }
+        return mTempFloat2[1];
+    }
+
+    /**
+     * Fill a list of sorted children that should avoid overlap and a list who's overlap should
+     * be cleared / no overlaps should be handled.
+     * @param overlappingList the list where this result is fed into
+     * @param nonOverlappingList the list where we put views to reset
+     */
+    @VisibleForTesting
+    void createSortedNotificationLists(
+            List<ExpandableView> overlappingList,
+            List<ExpandableView> nonOverlappingList) {
+        for (int i = 0; i < getChildCount(); i++) {
+            ExpandableView child = getChildAtIndex(i);
+            mTmpStack.add(child);
+        }
+        for (int i = 0; i < getTransientViewCount(); i++) {
+            ExpandableView child = (ExpandableView) getTransientView(i);
+            mTmpStack.add(child);
+        }
+        while (!mTmpStack.isEmpty()) {
+            ExpandableView child = mTmpStack.pop();
+            if (child instanceof NotificationShelf) {
+                // we never overlap / clip the shelf
+                continue;
+            }
+            boolean canClip = true;
+            if (child instanceof ExpandableNotificationRow row) {
+                if (row.isChildInGroup()) {
+                    ExpandableNotificationRow notifParent = row.getNotificationParent();
+                    canClip = notifParent.isGroupExpanded()
+                            && !notifParent.isGroupExpansionChanging();
+                }
+                // handle the notGoneIndex for the children as well
+                List<ExpandableNotificationRow> children = row.getAttachedChildren();
+                if (row.isSummaryWithChildren() && children != null) {
+                    mTmpStack.addAll(children);
+                    // Add all the transient Views
+                    ViewGroup childrenContainer = row.getChildrenContainer();
+                    for (int j = 0; j < childrenContainer.getTransientViewCount(); j++) {
+                        ExpandableView childRow =
+                                (ExpandableView) childrenContainer.getTransientView(j);
+                        mTmpStack.add(childRow);
+                    }
+                }
+            }
+            if (canClip && child.getVisibility() == VISIBLE && child.getAlpha() != 0.0f) {
+                // This view should be clipped!
+                overlappingList.add(child);
+            } else {
+                nonOverlappingList.add(child);
+            }
+        }
+        Collections.sort(overlappingList, mNotGoneIndexComparator);
     }
 
     private void updateScrollStateForAddedChildren() {
@@ -1969,9 +2168,11 @@ public class NotificationStackScrollLayout
                 continue;
             }
             float childTop = slidingChild.getTranslationY();
-            float top = childTop + Math.max(0, slidingChild.getClipTopAmount());
-            float bottom = childTop + slidingChild.getActualHeight()
-                    - slidingChild.getClipBottomAmount();
+            float top = childTop + Math.max(Math.max(0, slidingChild.getClipTopAmount()),
+                    slidingChild.getTopOverlap());
+            int clipBottomAmount = Math.max(slidingChild.getClipBottomAmount(),
+                    slidingChild.getBottomOverlap());
+            float bottom = childTop + slidingChild.getActualHeight() - clipBottomAmount;
 
             // Allow the full width of this view to prevent gesture conflict on Keyguard (phone and
             // camera affordance).
@@ -4891,8 +5092,9 @@ public class NotificationStackScrollLayout
             if (child.getVisibility() == GONE) {
                 continue;
             }
+            int clipBottomAmount = Math.max(child.getClipBottomAmount(), child.getBottomOverlap());
             float bottom = child.getTranslationY() + child.getActualHeight()
-                    - child.getClipBottomAmount();
+                    - clipBottomAmount;
             if (bottom > max) {
                 max = bottom;
             }
@@ -4927,8 +5129,10 @@ public class NotificationStackScrollLayout
                     // we are above a notification entirely let's abort
                     return false;
                 }
+                int clipBottomAmount = Math.max(child.getClipBottomAmount(),
+                        child.getBottomOverlap());
                 boolean belowChild = touchY > childTop + child.getActualHeight()
-                        - child.getClipBottomAmount();
+                        - clipBottomAmount;
                 if (child == mFooterView) {
                     if (!belowChild && !mFooterView.isOnEmptySpace(touchX - mFooterView.getX(),
                             touchY - childTop)) {

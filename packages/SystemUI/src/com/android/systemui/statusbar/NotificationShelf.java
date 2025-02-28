@@ -370,7 +370,7 @@ public class NotificationShelf extends ActivatableNotificationView {
             right = isLayoutRtl() ? containerWidth : shelfWidth;
         }
 
-        final float top = mClipTopAmount;
+        final float top = Math.max(mClipTopAmount, mTopOverlap);
         final float bottom = getActualHeight();
 
         return isXInView(localX, slop, left, right)
@@ -670,9 +670,10 @@ public class NotificationShelf extends ActivatableNotificationView {
 
     private void updateIconClipAmount(ExpandableNotificationRow row) {
         float maxTop = row.getTranslationY();
-        if (getClipTopAmount() != 0) {
+        int clipTopAmount = Math.max(getClipTopAmount(), mTopOverlap);
+        if (clipTopAmount != 0) {
             // if the shelf is clipped, lets make sure we also clip the icon
-            maxTop = Math.max(maxTop, getTranslationY() + getClipTopAmount());
+            maxTop = Math.max(maxTop, getTranslationY() + clipTopAmount);
         }
         StatusBarIconView icon = NotificationBundleUi.isEnabled()
                 ? row.getEntryAdapter().getIcons().getShelfIcon()
