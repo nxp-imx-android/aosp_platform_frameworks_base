@@ -108,7 +108,9 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     private static final String EXTERNAL_VIBRATOR_SERVICE = "external_vibrator_service";
     private static final String VIBRATOR_CONTROL_SERVICE =
             "android.frameworks.vibrator.IVibratorControlService/default";
-    private static final boolean DEBUG = false;
+    // To enable these logs, run:
+    // 'adb shell setprop persist.log.tag.VibratorManagerService DEBUG && adb reboot'
+    private static final boolean DEBUG = VibratorDebugUtils.isDebuggable(TAG);
     private static final VibrationAttributes DEFAULT_ATTRIBUTES =
             new VibrationAttributes.Builder().build();
     private static final int ATTRIBUTES_ALL_BYPASS_FLAGS =
