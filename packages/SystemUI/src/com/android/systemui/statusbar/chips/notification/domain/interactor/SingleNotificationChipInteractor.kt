@@ -56,7 +56,7 @@ constructor(
     private val logger = Logger(logBuffer, "Notif".pad())
     // [StatusBarChipLogTag] recommends a max tag length of 20, so [extraLogTag] should NOT be the
     // top-level tag. It should instead be provided as the first string in each log message.
-    private val extraLogTag = "SingleChipInteractor[key=$key]"
+    private val extraLogTag = "SingleNotifChipInteractor[key=$key][id=${hashCode()}]"
 
     init {
         if (startingModel.promotedContent == null) {
