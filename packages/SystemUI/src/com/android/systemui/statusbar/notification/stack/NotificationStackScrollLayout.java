@@ -6469,30 +6469,50 @@ public class NotificationStackScrollLayout
         static AnimationFilter[] FILTERS = new AnimationFilter[]{
 
                 // ANIMATION_TYPE_ADD
-                new AnimationFilter()
-                        .animateAlpha()
-                        .animateHeight()
-                        .animateTopInset()
-                        .animateY()
-                        .animateZ()
-                        .hasDelays(),
+                physicalNotificationMovement()
+                        ? new AnimationFilter()
+                                .animateAlpha()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateY()
+                                .animateZ()
+                        : new AnimationFilter()
+                                .animateAlpha()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateY()
+                                .animateZ()
+                                .hasDelays(),
 
                 // ANIMATION_TYPE_REMOVE
-                new AnimationFilter()
-                        .animateAlpha()
-                        .animateHeight()
-                        .animateTopInset()
-                        .animateY()
-                        .animateZ()
-                        .hasDelays(),
+                physicalNotificationMovement()
+                        ? new AnimationFilter()
+                                .animateAlpha()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateY()
+                                .animateZ()
+                        : new AnimationFilter()
+                                .animateAlpha()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateY()
+                                .animateZ()
+                                .hasDelays(),
 
                 // ANIMATION_TYPE_REMOVE_SWIPED_OUT
-                new AnimationFilter()
-                        .animateHeight()
-                        .animateTopInset()
-                        .animateY()
-                        .animateZ()
-                        .hasDelays(),
+                physicalNotificationMovement()
+                        ? new AnimationFilter()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateY()
+                                .animateZ()
+                        : new AnimationFilter()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateY()
+                                .animateZ()
+                                .hasDelays(),
 
                 // ANIMATION_TYPE_TOP_PADDING_CHANGED
                 new AnimationFilter()

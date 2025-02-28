@@ -289,6 +289,10 @@ public class StackStateAnimator {
             long delayPerElement = ANIMATION_DELAY_PER_ELEMENT_INTERRUPTING;
             switch (event.animationType) {
                 case NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_ADD: {
+                    if (physicalNotificationMovement()) {
+                        // We don't want any delays when adding anymore
+                        continue;
+                    }
                     int ownIndex = viewState.notGoneIndex;
                     int changingIndex =
                             ((ExpandableView) (event.mChangingView)).getViewState().notGoneIndex;
@@ -302,6 +306,10 @@ public class StackStateAnimator {
                 case NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_REMOVE_SWIPED_OUT:
                     delayPerElement = ANIMATION_DELAY_PER_ELEMENT_MANUAL;
                 case NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_REMOVE: {
+                    if (physicalNotificationMovement()) {
+                        // We don't want any delays when removing anymore
+                        continue;
+                    }
                     int ownIndex = viewState.notGoneIndex;
                     boolean noNextView = event.viewAfterChangingView == null;
                     ExpandableView viewAfterChangingView = noNextView
