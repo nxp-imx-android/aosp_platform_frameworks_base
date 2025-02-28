@@ -29,8 +29,10 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.RankingBuilder
+import com.android.systemui.statusbar.notification.mockNotificationActivityStarter
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.entryAdapterFactory
+import com.android.systemui.statusbar.notification.row.mockNotificationActionClickManager
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.BUCKET_ALERTING
 import com.android.systemui.testKosmos
@@ -355,16 +357,27 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
-        val entry =
-            NotificationEntryBuilder()
-                .setNotification(notification)
-                .setImportance(NotificationManager.IMPORTANCE_MIN)
-                .build()
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
 
         underTest = factory.create(entry) as NotificationEntryAdapter
 
         underTest.onNotificationBubbleIconClicked()
-        verify((factory as? EntryAdapterFactoryImpl)?.getNotificationActivityStarter())
-            ?.onNotificationBubbleIconClicked(entry)
+        verify(kosmos.mockNotificationActivityStarter).onNotificationBubbleIconClicked(entry)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun onNotificationActionClicked() {
+        val notification: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .addAction(Mockito.mock(Notification.Action::class.java))
+                .build()
+
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+
+        underTest = factory.create(entry) as NotificationEntryAdapter
+        underTest.onNotificationActionClicked()
+        verify(kosmos.mockNotificationActionClickManager).onNotificationActionClicked(entry)
     }
 }

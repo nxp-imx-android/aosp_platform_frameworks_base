@@ -1071,7 +1071,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
 
         assertThat(underTest.canRemoveImmediately(notifEntry.key)).isFalse()
 
-        underTest.setUserActionMayIndirectlyRemove(notifEntry)
+        underTest.setUserActionMayIndirectlyRemove(notifEntry.key)
 
         assertThat(underTest.canRemoveImmediately(notifEntry.key)).isTrue()
     }

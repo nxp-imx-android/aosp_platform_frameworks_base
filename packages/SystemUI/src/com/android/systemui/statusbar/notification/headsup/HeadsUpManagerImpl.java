@@ -1126,8 +1126,8 @@ public class HeadsUpManagerImpl
      * @see HeadsUpCoordinator.mActionPressListener
      * @see #canRemoveImmediately(String)
      */
-    public void setUserActionMayIndirectlyRemove(@NonNull NotificationEntry entry) {
-        HeadsUpEntry headsUpEntry = getHeadsUpEntry(entry.getKey());
+    public void setUserActionMayIndirectlyRemove(@NonNull String entryKey) {
+        HeadsUpEntry headsUpEntry = getHeadsUpEntry(entryKey);
         if (headsUpEntry != null) {
             headsUpEntry.mUserActionMayIndirectlyRemove = true;
         }

@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -743,11 +744,12 @@ public class NotificationTestHelper {
                 mock(MetricsLogger.class),
                 mock(PeopleNotificationIdentifier.class),
                 mock(NotificationIconStyleProvider.class),
-                mock(VisualStabilityCoordinator.class)
+                mock(VisualStabilityCoordinator.class),
+                mock(NotificationActionClickManager.class)
         ).create(entry);
 
         row.initialize(
-                entryAdapter,
+                spy(entryAdapter),
                 entry,
                 mock(RemoteInputViewSubcomponent.Factory.class),
                 APP_NAME,
