@@ -17,7 +17,6 @@
 package com.android.server.wm;
 
 import static android.Manifest.permission.ACCESS_SURFACE_FLINGER;
-import static android.Manifest.permission.CONTROL_REMOTE_APP_TRANSITION_ANIMATIONS;
 import static android.Manifest.permission.INPUT_CONSUMER;
 import static android.Manifest.permission.INTERNAL_SYSTEM_WINDOW;
 import static android.Manifest.permission.MANAGE_APP_TOKENS;
@@ -88,7 +87,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.WindowManager.LayoutParams.TYPE_VOICE_INTERACTION;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.WindowManager.REMOVE_CONTENT_MODE_UNDEFINED;
-import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.WindowManager.fixScale;
@@ -3237,49 +3235,17 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     }
 
-    // TODO(multi-display): remove when no default display use case.
-    void prepareAppTransitionNone() {
-        if (!checkCallingPermission(MANAGE_APP_TOKENS, "prepareAppTransition()")) {
-            throw new SecurityException("Requires MANAGE_APP_TOKENS permission");
-        }
-        getDefaultDisplayContentLocked().prepareAppTransition(TRANSIT_NONE);
-    }
-
     @Override
     public void overridePendingAppTransitionMultiThumbFuture(
             IAppTransitionAnimationSpecsFuture specsFuture, IRemoteCallback callback,
             boolean scaleUp, int displayId) {
-        synchronized (mGlobalLock) {
-            final DisplayContent displayContent = mRoot.getDisplayContent(displayId);
-            if (displayContent == null) {
-                Slog.w(TAG, "Attempted to call overridePendingAppTransitionMultiThumbFuture"
-                        + " for the display " + displayId + " that does not exist.");
-                return;
-            }
-            displayContent.mAppTransition.overridePendingAppTransitionMultiThumbFuture(specsFuture,
-                    callback, scaleUp);
-        }
+        // TODO(b/365884835): remove this method and callers.
     }
 
     @Override
     public void overridePendingAppTransitionRemote(RemoteAnimationAdapter remoteAnimationAdapter,
             int displayId) {
-        if (!checkCallingPermission(CONTROL_REMOTE_APP_TRANSITION_ANIMATIONS,
-                "overridePendingAppTransitionRemote()")) {
-            throw new SecurityException(
-                    "Requires CONTROL_REMOTE_APP_TRANSITION_ANIMATIONS permission");
-        }
-        synchronized (mGlobalLock) {
-            final DisplayContent displayContent = mRoot.getDisplayContent(displayId);
-            if (displayContent == null) {
-                Slog.w(TAG, "Attempted to call overridePendingAppTransitionRemote"
-                        + " for the display " + displayId + " that does not exist.");
-                return;
-            }
-            remoteAnimationAdapter.setCallingPidUid(Binder.getCallingPid(), Binder.getCallingUid());
-            displayContent.mAppTransition.overridePendingAppTransitionRemote(
-                    remoteAnimationAdapter);
-        }
+        // TODO(b/365884835): remove this method and callers.
     }
 
     @Override
@@ -3393,11 +3359,6 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
             }
         }
-    }
-
-    @Override
-    public boolean isAppTransitionStateIdle() {
-        return getDefaultDisplayContentLocked().mAppTransition.isIdle();
     }
 
     @Override
@@ -7968,7 +7929,6 @@ public class WindowManagerService extends IWindowManager.Stub
         @Override
         public void registerAppTransitionListener(AppTransitionListener listener) {
             synchronized (mGlobalLock) {
-                getDefaultDisplayContentLocked().mAppTransition.registerListenerLocked(listener);
                 mAtmService.getTransitionController().registerLegacyListener(listener);
             }
         }
