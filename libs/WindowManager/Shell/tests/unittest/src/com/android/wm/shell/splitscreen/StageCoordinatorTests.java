@@ -475,7 +475,7 @@ public class StageCoordinatorTests extends ShellTestCase {
         mStageCoordinator.startTask(mTaskId, SPLIT_POSITION_TOP_OR_LEFT, null /*options*/,
                 null, SPLIT_INDEX_UNDEFINED);
         verify(mSplitScreenTransitions).startEnterTransition(anyInt(),
-                mWctCaptor.capture(), any(), any(), anyInt(), anyBoolean());
+                mWctCaptor.capture(), any(), any(), anyInt(), anyBoolean(), anyInt());
 
         int windowingMode = mWctCaptor.getValue().getChanges().get(mBinder).getWindowingMode();
         assertEquals(windowingMode, WINDOWING_MODE_UNDEFINED);
