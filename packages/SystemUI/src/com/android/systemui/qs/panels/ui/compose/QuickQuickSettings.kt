@@ -18,7 +18,6 @@ package com.android.systemui.qs.panels.ui.compose
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -41,6 +40,7 @@ import com.android.systemui.res.R
 fun ContentScope.QuickQuickSettings(
     viewModel: QuickQuickSettingsViewModel,
     modifier: Modifier = Modifier,
+    listening: () -> Boolean,
 ) {
 
     val sizedTiles = viewModel.tileViewModels
@@ -51,11 +51,6 @@ fun ContentScope.QuickQuickSettings(
 
     val spans by remember(sizedTiles) { derivedStateOf { sizedTiles.fastMap { it.width } } }
 
-    DisposableEffect(tiles) {
-        val token = Any()
-        tiles.forEach { it.startListening(token) }
-        onDispose { tiles.forEach { it.stopListening(token) } }
-    }
     val columns = viewModel.columns
     Box(modifier = modifier) {
         GridAnchor()
@@ -91,4 +86,6 @@ fun ContentScope.QuickQuickSettings(
             }
         }
     }
+
+    TileListener(tiles, listening)
 }

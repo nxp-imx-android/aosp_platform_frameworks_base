@@ -32,7 +32,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
@@ -65,17 +64,16 @@ constructor(
     @PaginatedBaseLayoutType private val delegateGridLayout: PaginatableGridLayout,
 ) : GridLayout by delegateGridLayout {
     @Composable
-    override fun ContentScope.TileGrid(tiles: List<TileViewModel>, modifier: Modifier) {
+    override fun ContentScope.TileGrid(
+        tiles: List<TileViewModel>,
+        modifier: Modifier,
+        listening: () -> Boolean,
+    ) {
         val viewModel =
             rememberViewModel(traceName = "PaginatedGridLayout-TileGrid") {
                 viewModelFactory.create()
             }
 
-        DisposableEffect(tiles) {
-            val token = Any()
-            tiles.forEach { it.startListening(token) }
-            onDispose { tiles.forEach { it.stopListening(token) } }
-        }
         val columns = viewModel.columns
         val rows = integerResource(R.integer.quick_settings_paginated_grid_num_rows)
 
@@ -122,7 +120,7 @@ constructor(
             ) {
                 val page = pages[it]
 
-                with(delegateGridLayout) { TileGrid(tiles = page, modifier = Modifier) }
+                with(delegateGridLayout) { TileGrid(tiles = page, modifier = Modifier, listening) }
             }
             FooterBar(
                 buildNumberViewModelFactory = viewModel.buildNumberViewModelFactory,
