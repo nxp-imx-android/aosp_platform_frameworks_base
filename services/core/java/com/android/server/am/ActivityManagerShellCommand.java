@@ -363,6 +363,8 @@ final class ActivityManagerShellCommand extends ShellCommand {
                     return runStopUser(pw);
                 case "is-user-stopped":
                     return runIsUserStopped(pw);
+                case "logout-user":
+                    return runLogoutUser(pw);
                 case "get-started-user-state":
                     return runGetStartedUserState(pw);
                 case "track-associations":
@@ -2777,6 +2779,15 @@ final class ActivityManagerShellCommand extends ShellCommand {
         return 0;
     }
 
+    int runLogoutUser(PrintWriter pw) {
+        int userId = UserHandle.parseUserArg(getNextArgRequired());
+        if (!mInternal.logoutUser(userId)) {
+            getErrPrintWriter().println("Failed to logout user: " + userId);
+            return -1;
+        }
+        return 0;
+    }
+
     int runGetStartedUserState(PrintWriter pw) throws RemoteException {
         mInternal.enforceCallingPermission(android.Manifest.permission.DUMP,
                 "runGetStartedUserState()");
@@ -4621,6 +4632,8 @@ final class ActivityManagerShellCommand extends ShellCommand {
             pw.println("      -f: force stop, even if user has an unstoppable parent.");
             pw.println("  is-user-stopped <USER_ID>");
             pw.println("      Returns whether <USER_ID> has been stopped or not.");
+            pw.println("  logout-user <USER_ID>");
+            pw.println("      Logs out the user.");
             pw.println("  get-started-user-state <USER_ID>");
             pw.println("      Gets the current state of the given started user.");
             pw.println("  track-associations");
