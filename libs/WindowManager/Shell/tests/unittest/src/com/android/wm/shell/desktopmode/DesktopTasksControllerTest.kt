@@ -3608,9 +3608,15 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val wct = controller.handleRequest(Binder(), createTransition(fullscreenTask))
 
         // Make sure we reorder the new task to top, and the back task to the bottom
-        assertThat(wct!!.hierarchyOps.size).isEqualTo(9)
+        assertThat(wct!!.hierarchyOps.size).isEqualTo(8)
         wct.assertReorderAt(0, fullscreenTask, toTop = true)
-        wct.assertReorderAt(8, freeformTasks[0], toTop = false)
+        // Oldest task that needs to minimized is never reordered to top over Home.
+        val taskToMinimize = freeformTasks[0]
+        wct.assertWithoutHop { hop ->
+            hop.container == taskToMinimize.token &&
+                hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                hop.toTop == true
+        }
     }
 
     @Test
@@ -3625,12 +3631,18 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val wct = controller.handleRequest(Binder(), createTransition(fullscreenTask))
 
-        assertThat(wct!!.hierarchyOps.size).isEqualTo(10)
+        assertThat(wct!!.hierarchyOps.size).isEqualTo(9)
         wct.assertReorderAt(0, fullscreenTask, toTop = true)
         // Make sure we reorder the home task to the top, desktop tasks to top of them and minimized
         // task is under the home task.
         wct.assertReorderAt(1, homeTask, toTop = true)
-        wct.assertReorderAt(9, freeformTasks[0], toTop = false)
+        // Oldest task that needs to minimized is never reordered to top over Home.
+        val taskToMinimize = freeformTasks[0]
+        wct.assertWithoutHop { hop ->
+            hop.container == taskToMinimize.token &&
+                hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                hop.toTop == true
+        }
     }
 
     @Test
