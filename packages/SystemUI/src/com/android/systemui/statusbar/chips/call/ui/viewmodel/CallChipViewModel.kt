@@ -144,7 +144,7 @@ constructor(
         } else {
             OngoingActivityChipModel.ClickBehavior.ExpandAction(
                 onClick = { expandable ->
-                    StatusBarChipsModernization.assertInNewMode()
+                    StatusBarChipsModernization.unsafeAssertInNewMode()
                     val animationController =
                         expandable.activityTransitionController(
                             Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP

@@ -386,7 +386,7 @@ constructor(
 
     @VisibleForTesting
     internal fun listenForDnd(scope: CoroutineScope): Job {
-        ModesUi.assertInNewMode()
+        ModesUi.unsafeAssertInNewMode()
         return scope.launch {
             zenModeInteractor.dndMode.collect {
                 val zenMode =

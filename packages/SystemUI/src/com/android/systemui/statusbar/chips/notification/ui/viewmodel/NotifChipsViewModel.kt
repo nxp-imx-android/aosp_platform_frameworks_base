@@ -71,7 +71,7 @@ constructor(
     private fun NotificationChipModel.toActivityChipModel(
         headsUpState: TopPinnedState
     ): OngoingActivityChipModel.Active {
-        StatusBarNotifChips.assertInNewMode()
+        StatusBarNotifChips.unsafeAssertInNewMode()
         val contentDescription = getContentDescription(this.appName)
         val icon =
             if (this.statusBarChipIconView != null) {
@@ -81,7 +81,7 @@ constructor(
                     contentDescription,
                 )
             } else {
-                StatusBarConnectedDisplays.assertInNewMode()
+                StatusBarConnectedDisplays.unsafeAssertInNewMode()
                 OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon(
                     this.key,
                     contentDescription,
@@ -103,7 +103,7 @@ constructor(
             }
         val clickBehavior =
             OngoingActivityChipModel.ClickBehavior.ShowHeadsUpNotification({
-                StatusBarChipsModernization.assertInNewMode()
+                StatusBarChipsModernization.unsafeAssertInNewMode()
                 clickListener.invoke()
             })
 

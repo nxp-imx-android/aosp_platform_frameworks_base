@@ -71,7 +71,7 @@ interface OngoingActivityChipViewModel {
             tag: String,
         ): (Expandable) -> Unit {
             return { expandable ->
-                StatusBarChipsModernization.assertInNewMode()
+                StatusBarChipsModernization.unsafeAssertInNewMode()
                 logger.log(tag, LogLevel.INFO, {}, { "Chip clicked" })
                 val dialog = dialogDelegate.createDialog()
 

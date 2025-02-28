@@ -51,7 +51,7 @@ constructor(
 ) : PerDisplayStoreImpl<StatusBarOrchestrator>(backgroundApplicationScope, displayRepository) {
 
     init {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
     }
 
     override fun createInstanceForDisplay(displayId: Int): StatusBarOrchestrator? {

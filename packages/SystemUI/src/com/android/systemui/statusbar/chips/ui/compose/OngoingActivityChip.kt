@@ -195,7 +195,7 @@ private fun ChipIcon(
             StatusBarIcon(colors, viewModel.impl.notification?.key, modifier) { viewModel.impl }
         }
         is OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon -> {
-            StatusBarConnectedDisplays.assertInNewMode()
+            StatusBarConnectedDisplays.unsafeAssertInNewMode()
             check(iconViewStore != null)
 
             StatusBarIcon(colors, viewModel.notificationKey, modifier) {

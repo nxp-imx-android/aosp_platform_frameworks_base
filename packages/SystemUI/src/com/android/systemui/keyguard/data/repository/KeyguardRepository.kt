@@ -662,12 +662,12 @@ constructor(
     }
 
     override fun setShowKeyguardWhenReenabled(isShowKeyguardWhenReenabled: Boolean) {
-        SceneContainerFlag.assertInNewMode()
+        SceneContainerFlag.unsafeAssertInNewMode()
         this.isShowKeyguardWhenReenabled = isShowKeyguardWhenReenabled
     }
 
     override fun isShowKeyguardWhenReenabled(): Boolean {
-        SceneContainerFlag.assertInNewMode()
+        SceneContainerFlag.unsafeAssertInNewMode()
         return isShowKeyguardWhenReenabled
     }
 

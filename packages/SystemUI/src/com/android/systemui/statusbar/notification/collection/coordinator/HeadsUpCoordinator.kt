@@ -125,7 +125,7 @@ constructor(
      * Must be run on the main thread.
      */
     private fun onPromotedNotificationChipTapEvent(key: String) {
-        StatusBarNotifChips.assertInNewMode()
+        StatusBarNotifChips.unsafeAssertInNewMode()
 
         val entry = notifCollection.getEntry(key)
         if (entry == null) {

@@ -59,7 +59,7 @@ public class GroupMembershipManagerImpl implements GroupMembershipManager {
 
     @Override
     public boolean isGroupRoot(@NonNull EntryAdapter entry) {
-        NotificationBundleUi.assertInNewMode();
+        NotificationBundleUi.unsafeAssertInNewMode();
         return entry.isGroupRoot();
     }
 
@@ -85,7 +85,7 @@ public class GroupMembershipManagerImpl implements GroupMembershipManager {
 
     @Override
     public boolean isChildInGroup(@NonNull EntryAdapter entry) {
-        NotificationBundleUi.assertInNewMode();
+        NotificationBundleUi.unsafeAssertInNewMode();
         // An entry is a child if it's not a group root or top level entry, but it is attached.
         return entry.isAttached() && !entry.isGroupRoot() && !entry.isTopLevelEntry();
     }

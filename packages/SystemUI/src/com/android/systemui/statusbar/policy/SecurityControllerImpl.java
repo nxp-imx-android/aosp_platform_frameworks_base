@@ -425,7 +425,7 @@ public class SecurityControllerImpl implements SecurityController {
     @Override
     @Nullable
     public Drawable getIcon() {
-        DeprecateDpmSupervisionApis.assertInNewMode();
+        DeprecateDpmSupervisionApis.unsafeAssertInNewMode();
         return isParentalControlsEnabled()
             ? mContext.getDrawable(R.drawable.ic_supervision)
             : null;
@@ -439,7 +439,7 @@ public class SecurityControllerImpl implements SecurityController {
     @Override
     @Nullable
     public CharSequence getLabel() {
-        DeprecateDpmSupervisionApis.assertInNewMode();
+        DeprecateDpmSupervisionApis.unsafeAssertInNewMode();
         return isParentalControlsEnabled()
                 ? mContext.getString(R.string.status_bar_supervision)
                 : null;

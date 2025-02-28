@@ -201,7 +201,7 @@ constructor(
     }
 
     override fun stop() {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
         configurationController.removeCallback(this)
         dumpManager.unregisterDumpable(dumpableName)
         commandRegistry.unregisterCommand(commandName)
