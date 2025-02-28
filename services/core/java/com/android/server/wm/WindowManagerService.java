@@ -6863,7 +6863,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 pw.print(' '); pw.println(imeControlTarget);
             }
             pw.print("  Minimum task size of display#"); pw.print(displayId);
-            pw.print(' '); pw.print(dc.mMinSizeOfResizeableTaskDp);
+            pw.print(' '); pw.println(dc.mMinSizeOfResizeableTaskDp);
         });
         pw.print("  mBlurEnabled="); pw.println(mBlurController.getBlurEnabled());
         pw.print("  mDisableSecureWindows="); pw.println(mDisableSecureWindows);
