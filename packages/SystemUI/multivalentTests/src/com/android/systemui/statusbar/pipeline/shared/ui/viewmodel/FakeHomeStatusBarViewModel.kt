@@ -62,7 +62,7 @@ class FakeHomeStatusBarViewModel(
     override val mediaProjectionStopDialogDueToCallEndedState =
         MutableStateFlow(MediaProjectionStopDialogModel.Hidden)
 
-    override val isHomeStatusBarAllowedByScene = MutableStateFlow(false)
+    override val isHomeStatusBarAllowed = MutableStateFlow(false)
 
     override val canShowOngoingActivityChips: Flow<Boolean> = MutableStateFlow(false)
 

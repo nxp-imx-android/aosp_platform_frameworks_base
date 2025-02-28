@@ -25,6 +25,7 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.log.table.tableLogBufferFactory
 import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.shareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ongoingActivityChipsViewModel
@@ -40,29 +41,34 @@ import com.android.systemui.statusbar.pipeline.shared.domain.interactor.homeStat
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.homeStatusBarInteractor
 
 var Kosmos.homeStatusBarViewModel: HomeStatusBarViewModel by
+    Kosmos.Fixture { homeStatusBarViewModelFactory.invoke(testableContext.displayId) }
+var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
     Kosmos.Fixture {
-        HomeStatusBarViewModelImpl(
-            testableContext.displayId,
-            batteryViewModelFactory,
-            tableLogBufferFactory,
-            homeStatusBarInteractor,
-            homeStatusBarIconBlockListInteractor,
-            lightsOutInteractor,
-            activeNotificationsInteractor,
-            darkIconInteractor,
-            headsUpNotificationInteractor,
-            keyguardTransitionInteractor,
-            keyguardInteractor,
-            statusBarOperatorNameViewModel,
-            sceneInteractor,
-            sceneContainerOcclusionInteractor,
-            shadeInteractor,
-            shareToAppChipViewModel,
-            ongoingActivityChipsViewModel,
-            statusBarPopupChipsViewModelFactory,
-            systemStatusEventAnimationInteractor,
-            multiDisplayStatusBarContentInsetsViewModelStore,
-            backgroundScope,
-            testDispatcher,
-        )
+        { displayId ->
+            HomeStatusBarViewModelImpl(
+                displayId,
+                batteryViewModelFactory,
+                tableLogBufferFactory,
+                homeStatusBarInteractor,
+                homeStatusBarIconBlockListInteractor,
+                lightsOutInteractor,
+                activeNotificationsInteractor,
+                darkIconInteractor,
+                headsUpNotificationInteractor,
+                keyguardTransitionInteractor,
+                keyguardInteractor,
+                statusBarOperatorNameViewModel,
+                sceneInteractor,
+                sceneContainerOcclusionInteractor,
+                shadeInteractor,
+                shareToAppChipViewModel,
+                ongoingActivityChipsViewModel,
+                statusBarPopupChipsViewModelFactory,
+                systemStatusEventAnimationInteractor,
+                multiDisplayStatusBarContentInsetsViewModelStore,
+                backgroundScope,
+                testDispatcher,
+                { shadeDisplaysInteractor },
+            )
+        }
     }

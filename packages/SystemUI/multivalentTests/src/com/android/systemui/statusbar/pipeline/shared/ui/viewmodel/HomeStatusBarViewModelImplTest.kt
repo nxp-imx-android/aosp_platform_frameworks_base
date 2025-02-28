@@ -30,6 +30,7 @@ import android.view.Display.DEFAULT_DISPLAY
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.data.repository.fake
@@ -57,6 +58,7 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.screenRecordRepository
+import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.NORMAL_PACKAGE
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.setUpPackageManagerForMediaProjection
@@ -95,7 +97,6 @@ import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runCurrent
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -500,9 +501,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneLockscreen_notOccluded_false() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_sceneLockscreen_notOccluded_false() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
             kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, taskInfo = null)
@@ -511,9 +513,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneLockscreen_occluded_true() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_sceneLockscreen_occluded_true() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
             kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true, taskInfo = null)
@@ -522,9 +525,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_overlayBouncer_false() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_overlayBouncer_false() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
             kosmos.sceneContainerRepository.showOverlay(Overlays.Bouncer)
@@ -533,9 +537,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneCommunal_false() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_sceneCommunal_false() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Communal)
 
@@ -543,9 +548,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneShade_false() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_sceneShade_false() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Shade)
 
@@ -553,9 +559,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneGone_true() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_sceneGone_true() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Gone)
 
@@ -563,9 +570,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneGoneWithNotificationsShadeOverlay_false() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_sceneGoneWithNotificationsShadeOverlay_false() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Gone)
             kosmos.sceneContainerRepository.showOverlay(Overlays.NotificationsShade)
@@ -575,12 +583,102 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneGoneWithQuickSettingsShadeOverlay_false() =
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_QsVisibleButInExternalDisplay_defaultStatusBarVisible() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Gone)
             kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
+            kosmos.fakeShadeDisplaysRepository.setDisplayId(EXTERNAL_DISPLAY)
+            runCurrent()
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_QsVisibleButInExternalDisplay_withFlagOff_defaultStatusBarInvisible() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Gone)
+            kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
+            kosmos.fakeShadeDisplaysRepository.setDisplayId(EXTERNAL_DISPLAY)
+            runCurrent()
+
+            // Shade position is ignored.
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_qsVisibleInThisDisplay_thisStatusBarInvisible() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Gone)
+            kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
+            kosmos.fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
+            runCurrent()
+
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_qsExpandedOnDefaultDisplay_statusBarInAnotherDisplay_visible() =
+        kosmos.runTest {
+            val underTest = homeStatusBarViewModelFactory(EXTERNAL_DISPLAY)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Gone)
+            kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
+            runCurrent()
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_onDefaultDisplayLockscreen_invisible() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
+            runCurrent()
+
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun isHomeStatusBarAllowed_onExternalDispalyWithLocksceren_invisible() =
+        kosmos.runTest {
+            val underTest = homeStatusBarViewModelFactory(EXTERNAL_DISPLAY)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
+            runCurrent()
+
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun isHomeStatusBarAllowed_legacy_onDefaultDisplayLockscreen_invisible() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            kosmos.fakeKeyguardTransitionRepository.transitionTo(
+                KeyguardState.GONE,
+                KeyguardState.LOCKSCREEN,
+            )
+
             runCurrent()
 
             assertThat(latest).isFalse()
@@ -1288,5 +1386,9 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
             to = KeyguardState.GONE,
             testScope = testScope,
         )
+    }
+
+    private companion object {
+        const val EXTERNAL_DISPLAY = 1
     }
 }

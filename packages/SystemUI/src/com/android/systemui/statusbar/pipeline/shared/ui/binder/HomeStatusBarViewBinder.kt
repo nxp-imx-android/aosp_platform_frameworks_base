@@ -249,7 +249,7 @@ constructor(
                 if (SceneContainerFlag.isEnabled) {
                     listener?.let { listener ->
                         launch {
-                            viewModel.isHomeStatusBarAllowedByScene.collect {
+                            viewModel.isHomeStatusBarAllowed.collect {
                                 listener.onIsHomeStatusBarAllowedBySceneChanged(it)
                             }
                         }
@@ -495,7 +495,7 @@ interface StatusBarVisibilityChangeListener {
 
     /**
      * Called when the scene state has changed such that the home status bar is newly allowed or no
-     * longer allowed. See [HomeStatusBarViewModel.isHomeStatusBarAllowedByScene].
+     * longer allowed. See [HomeStatusBarViewModel.isHomeStatusBarAllowed].
      */
     fun onIsHomeStatusBarAllowedBySceneChanged(isHomeStatusBarAllowedByScene: Boolean)
 }
