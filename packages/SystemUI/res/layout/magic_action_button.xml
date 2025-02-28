@@ -6,7 +6,7 @@
     android:background="@drawable/magic_action_button_background"
     android:drawablePadding="@dimen/magic_action_button_drawable_padding"
     android:ellipsize="none"
-    android:fontFamily="google-sans-flex"
+    android:fontFamily="google-sans-flex-medium"
     android:gravity="center"
     android:minWidth="0dp"
     android:paddingHorizontal="@dimen/magic_action_button_padding_horizontal"
