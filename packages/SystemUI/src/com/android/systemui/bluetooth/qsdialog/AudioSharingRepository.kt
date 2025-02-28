@@ -53,6 +53,7 @@ interface AudioSharingRepository {
 class AudioSharingRepositoryImpl(
     private val localBluetoothManager: LocalBluetoothManager,
     private val settingsLibAudioSharingRepository: SettingsLibAudioSharingRepository,
+    private val logger: BluetoothTileDialogLogger,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) : AudioSharingRepository {
 
@@ -79,7 +80,11 @@ class AudioSharingRepositoryImpl(
             }
             leAudioBroadcastProfile?.latestBluetoothLeBroadcastMetadata?.let { metadata ->
                 leAudioBroadcastAssistantProfile?.let {
-                    it.allConnectedDevices.forEach { sink -> it.addSource(sink, metadata, false) }
+                    it.allConnectedDevices.forEach { sink ->
+                        it.addSource(sink, metadata, false).also {
+                            logger.logAudioSharingRequest(AudioSharingRequest.ADD_SOURCE)
+                        }
+                    }
                 }
             }
         }
@@ -99,7 +104,9 @@ class AudioSharingRepositoryImpl(
             if (!settingsLibAudioSharingRepository.audioSharingAvailable()) {
                 return@withContext
             }
-            leAudioBroadcastProfile?.startPrivateBroadcast()
+            leAudioBroadcastProfile?.startPrivateBroadcast().also {
+                logger.logAudioSharingRequest(AudioSharingRequest.START_BROADCAST)
+            }
         }
     }
 
@@ -108,7 +115,9 @@ class AudioSharingRepositoryImpl(
             if (!settingsLibAudioSharingRepository.audioSharingAvailable()) {
                 return@withContext
             }
-            leAudioBroadcastProfile?.stopLatestBroadcast()
+            leAudioBroadcastProfile?.stopLatestBroadcast().also {
+                logger.logAudioSharingRequest(AudioSharingRequest.STOP_BROADCAST)
+            }
         }
     }
 }
