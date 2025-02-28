@@ -679,7 +679,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
                         j--;
                     }
                 }
-            } else {
+            } else if (tle instanceof NotificationEntry) {
                 // maybe put top-level-entries back into their previous groups
                 if (maybeSuppressGroupChange(tle.getRepresentativeEntry(), topLevelList)) {
                     // entry was put back into its previous group, so we remove it from the list of
@@ -687,7 +687,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
                     topLevelList.remove(i);
                     i--;
                 }
-            }
+            } // Promoters ignore bundles so we don't have to demote any here.
         }
         Trace.endSection();
     }
