@@ -793,7 +793,7 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
                     @Override
                     public void onDeviceDiscoveryDone(List<HdmiDeviceInfo> deviceInfos) {
                         for (HdmiDeviceInfo info : deviceInfos) {
-                            if (!isInputReady(info.getDeviceId())) {
+                            if (!isInputReady(info.getId())) {
                                 mService.getHdmiCecNetwork().removeCecDevice(
                                         HdmiCecLocalDeviceTv.this, info.getLogicalAddress());
                             }
