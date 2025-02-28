@@ -19,6 +19,19 @@ package com.android.server.power.hint;
 import static android.os.Flags.adpfUseFmqChannel;
 
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
+import static com.android.internal.util.FrameworkStatsLog.CPU_HEADROOM_REPORTED__STATUS__HAL_ERROR;
+import static com.android.internal.util.FrameworkStatsLog.CPU_HEADROOM_REPORTED__STATUS__SUCCESS;
+import static com.android.internal.util.FrameworkStatsLog.CPU_HEADROOM_REPORTED__STATUS__INVALID_TID;
+import static com.android.internal.util.FrameworkStatsLog.CPU_HEADROOM_REPORTED__STATUS__INSUFFICIENT_USER_MODE_TIME;
+import static com.android.internal.util.FrameworkStatsLog.CPU_HEADROOM_REPORTED__STATUS__INCONSISTENT_THREAD_CORE_AFFINITY;
+import static com.android.internal.util.FrameworkStatsLog.CPU_HEADROOM_REPORTED__TYPE__MIN;
+import static com.android.internal.util.FrameworkStatsLog.CPU_HEADROOM_REPORTED__TYPE__AVERAGE;
+import static com.android.internal.util.FrameworkStatsLog.CPU_HEADROOM_REPORTED__TYPE__UNKNOWN_CALCULATION_TYPE;
+import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__STATUS__SUCCESS;
+import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__STATUS__HAL_ERROR;
+import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__TYPE__MIN;
+import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__TYPE__AVERAGE;
+import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__TYPE__UNKNOWN_CALCULATION_TYPE;
 import static com.android.server.power.hint.Flags.adpfSessionTag;
 import static com.android.server.power.hint.Flags.powerhintThreadCleanup;
 import static com.android.server.power.hint.Flags.resetOnForkEnabled;
@@ -47,6 +60,7 @@ import android.hardware.power.SupportInfo;
 import android.hardware.power.WorkDuration;
 import android.os.Binder;
 import android.os.CpuHeadroomParamsInternal;
+import android.os.Flags;
 import android.os.GpuHeadroomParamsInternal;
 import android.os.Handler;
 import android.os.IBinder;
@@ -194,6 +208,7 @@ public final class HintManagerService extends SystemService {
 
     private final IPower mPowerHal;
     private int mPowerHalVersion;
+    private final int mVendorApiLevel;
     private SupportInfo mSupportInfo = null;
     private final PackageManager mPackageManager;
 
@@ -201,6 +216,7 @@ public final class HintManagerService extends SystemService {
 
     private static final String PROPERTY_SF_ENABLE_CPU_HINT = "debug.sf.enable_adpf_cpu_hint";
     private static final String PROPERTY_HWUI_ENABLE_HINT_MANAGER = "debug.hwui.use_hint_manager";
+    private static final String PROPERTY_VENDOR_API_LEVEL = "ro.vendor.api_level";
     private static final String PROPERTY_USE_HAL_HEADROOMS = "persist.hms.use_hal_headrooms";
     private static final String PROPERTY_CHECK_HEADROOM_TID = "persist.hms.check_headroom_tid";
     private static final String PROPERTY_CHECK_HEADROOM_AFFINITY =
@@ -289,10 +305,6 @@ public final class HintManagerService extends SystemService {
     @GuardedBy("mGpuHeadroomLock")
     private final HeadroomCache<GpuHeadroomParams, GpuHeadroomResult> mGpuHeadroomCache;
 
-    // these are set to default values in CpuHeadroomParamsInternal and GpuHeadroomParamsInternal
-    private final int mDefaultCpuHeadroomCalculationWindowMillis;
-    private final int mDefaultGpuHeadroomCalculationWindowMillis;
-
     @VisibleForTesting
     final IHintManager.Stub mService = new BinderService();
 
@@ -328,6 +340,7 @@ public final class HintManagerService extends SystemService {
                 LocalServices.getService(ActivityManagerInternal.class));
         mPowerHal = injector.createIPower();
         mPowerHalVersion = 0;
+        mVendorApiLevel = Integer.parseInt(SystemProperties.get(PROPERTY_VENDOR_API_LEVEL, ""));
         mUsesFmq = false;
         if (mPowerHal != null) {
             try {
@@ -336,10 +349,6 @@ public final class HintManagerService extends SystemService {
                 throw new IllegalStateException("Could not contact PowerHAL!", e);
             }
         }
-        mDefaultCpuHeadroomCalculationWindowMillis =
-                new CpuHeadroomParamsInternal().calculationWindowMillis;
-        mDefaultGpuHeadroomCalculationWindowMillis =
-                new GpuHeadroomParamsInternal().calculationWindowMillis;
         if (mSupportInfo.headroom.isCpuSupported) {
             mCpuHeadroomCache = new HeadroomCache<>(2, mSupportInfo.headroom.cpuMinIntervalMillis);
             mUidToLastUserModeJiffies = new ArrayMap<>();
@@ -668,6 +677,9 @@ public final class HintManagerService extends SystemService {
 
     private void registerStatsCallbacks() {
         final StatsManager statsManager = mContext.getSystemService(StatsManager.class);
+        if (statsManager == null) {
+            return;
+        }
         statsManager.setPullAtomCallback(
                 FrameworkStatsLog.ADPF_SYSTEM_COMPONENT_INFO,
                 null, // use default PullAtomMetadata values
@@ -678,6 +690,13 @@ public final class HintManagerService extends SystemService {
                 null, // use default PullAtomMetadata values
                 DIRECT_EXECUTOR,
                 this::onPullAtom);
+        if (Flags.adpf25q2Metrics()) {
+            statsManager.setPullAtomCallback(
+                    FrameworkStatsLog.ADPF_SUPPORT_INFO,
+                    null, // use default PullAtomMetadata values
+                    DIRECT_EXECUTOR,
+                    this::onPullAtom);
+        }
     }
 
     private int onPullAtom(int atomTag, @NonNull List<StatsEvent> data) {
@@ -709,12 +728,38 @@ public final class HintManagerService extends SystemService {
                                 sessionSnapshot.getMaxConcurrentSession(),
                                 sessionSnapshot.getMaxThreadCount(),
                                 sessionSnapshot.getPowerEfficientSessionCount(),
-                                sessionSnapshot.targetDurationNsList()
+                                sessionSnapshot.targetDurationNsList(),
+                                sessionSnapshot.getGraphicsPipelineSessionCount()
                         ));
                     }
                 }
             }
             restoreSessionSnapshot();
+        }
+        if (Flags.adpf25q2Metrics() && atomTag == FrameworkStatsLog.ADPF_SUPPORT_INFO) {
+            data.add(FrameworkStatsLog.buildStatsEvent(
+                    FrameworkStatsLog.ADPF_SUPPORT_INFO,
+                    mPowerHalVersion,
+                    mVendorApiLevel,
+                    mSupportInfo.usesSessions,
+                    mSupportInfo.boosts,
+                    mSupportInfo.modes,
+                    mSupportInfo.sessionHints,
+                    mSupportInfo.sessionModes,
+                    mSupportInfo.sessionTags,
+                    mSupportInfo.compositionData.isSupported,
+                    mSupportInfo.compositionData.disableGpuFences,
+                    mSupportInfo.compositionData.maxBatchSize,
+                    mSupportInfo.compositionData.alwaysBatch,
+                    mSupportInfo.headroom.isCpuSupported,
+                    mSupportInfo.headroom.isGpuSupported,
+                    mSupportInfo.headroom.cpuMinIntervalMillis,
+                    mSupportInfo.headroom.gpuMinIntervalMillis,
+                    mSupportInfo.headroom.cpuMinCalculationWindowMillis,
+                    mSupportInfo.headroom.cpuMaxCalculationWindowMillis,
+                    mSupportInfo.headroom.gpuMinCalculationWindowMillis,
+                    mSupportInfo.headroom.gpuMaxCalculationWindowMillis,
+                    mSupportInfo.headroom.cpuMaxTidCount));
         }
         return android.app.StatsManager.PULL_SUCCESS;
     }
@@ -1467,17 +1512,6 @@ public final class HintManagerService extends SystemService {
                         }
                     }
                 }
-
-                final long sessionIdForTracing = config.id != -1 ? config.id : halSessionPtr;
-                logPerformanceHintSessionAtom(
-                        callingUid, sessionIdForTracing, durationNanos, tids, tag);
-
-                synchronized (mSessionSnapshotMapLock) {
-                    // Update session snapshot upon session creation
-                    mSessionSnapshotMap.computeIfAbsent(callingUid, k -> new ArrayMap<>())
-                            .computeIfAbsent(tag, k -> new AppHintSessionSnapshot())
-                            .updateUponSessionCreation(tids.length, durationNanos);
-                }
                 AppHintSession hs = null;
                 synchronized (mLock) {
                     Integer configId = null;
@@ -1501,9 +1535,31 @@ public final class HintManagerService extends SystemService {
                     mUsesFmq = mUsesFmq || hasChannel(callingTgid, callingUid);
                 }
 
+                if (!Flags.adpf25q2Metrics()) {
+                    final long sessionIdForTracing = config.id != -1 ? config.id : halSessionPtr;
+                    logPerformanceHintSessionAtom(
+                            callingUid, sessionIdForTracing, durationNanos,
+                            tids, tag, false ,false);
+
+                    synchronized (mSessionSnapshotMapLock) {
+                        // Update session snapshot upon session creation
+                        mSessionSnapshotMap.computeIfAbsent(callingUid, k -> new ArrayMap<>())
+                                .computeIfAbsent(tag, k -> new AppHintSessionSnapshot())
+                                .updateUponSessionCreation(tids.length, durationNanos);
+                    }
+                }
+
+                boolean powerEfficiency = false;
+                boolean graphicsPipeline = false;
                 if (hs != null) {
                     if (creationConfig.modesToEnable != null) {
                         for (int sessionMode : creationConfig.modesToEnable) {
+                            if (sessionMode == SessionMode.POWER_EFFICIENCY) {
+                                powerEfficiency = true;
+                            }
+                            if (sessionMode == SessionMode.GRAPHICS_PIPELINE) {
+                                graphicsPipeline = true;
+                            }
                             hs.setMode(sessionMode, true);
                         }
                     }
@@ -1516,9 +1572,25 @@ public final class HintManagerService extends SystemService {
                     synchronized (mThreadsUsageObject) {
                         mThreadsUsageMap.computeIfAbsent(callingUid, k -> new ArraySet<>());
                         ArraySet<ThreadUsageTracker> threadsSet = mThreadsUsageMap.get(callingUid);
-                        for (int i = 0; i < tids.length; ++i) {
-                            threadsSet.add(new ThreadUsageTracker(tids[i], isGraphicsPipeline));
+                        if (threadsSet != null) {
+                            for (int i = 0; i < tids.length; ++i) {
+                                threadsSet.add(new ThreadUsageTracker(tids[i], isGraphicsPipeline));
+                            }
                         }
+                    }
+                }
+
+                if (Flags.adpf25q2Metrics()) {
+                    final long sessionIdForTracing = config.id != -1 ? config.id : halSessionPtr;
+                    logPerformanceHintSessionAtom(
+                            callingUid, sessionIdForTracing, durationNanos, tids,
+                            tag, powerEfficiency, graphicsPipeline);
+
+                    synchronized (mSessionSnapshotMapLock) {
+                        // Update session snapshot upon session creation
+                        mSessionSnapshotMap.computeIfAbsent(callingUid, k -> new ArrayMap<>())
+                                .computeIfAbsent(tag, k -> new AppHintSessionSnapshot())
+                                .updateUponSessionCreation(tids.length, durationNanos);
                     }
                 }
 
@@ -1597,6 +1669,13 @@ public final class HintManagerService extends SystemService {
                     final int tgid = Process.getThreadGroupLeader(Binder.getCallingPid());
                     for (int tid : params.tids) {
                         if (Process.getThreadGroupLeader(tid) != tgid) {
+                            if (Flags.adpf25q2Metrics()) {
+                                logCpuHeadroomReported(
+                                        /* cpuHeadroomParams= */ params,
+                                        /* status= */ CPU_HEADROOM_REPORTED__STATUS__INVALID_TID,
+                                        /* isFromCache= */ false,
+                                        /* value= */ -1);
+                            }
                             throw new SecurityException("TID " + tid
                                     + " doesn't belong to the calling process with pid "
                                     + tgid);
@@ -1604,13 +1683,22 @@ public final class HintManagerService extends SystemService {
                     }
                 }
                 if (mCheckHeadroomAffinity && params.tids.length > 1) {
-                    checkThreadAffinityForTids(params.tids);
+                    checkThreadAffinityForTids(params);
                 }
                 halParams.tids = params.tids;
             }
             synchronized (mCpuHeadroomLock) {
                 final CpuHeadroomResult res = mCpuHeadroomCache.get(halParams);
-                if (res != null) return res;
+                if (res != null) {
+                    if (Flags.adpf25q2Metrics()) {
+                        logCpuHeadroomReported(
+                                /* cpuHeadroomParams= */ params,
+                                /* status= */ CPU_HEADROOM_REPORTED__STATUS__SUCCESS,
+                                /* isFromCache= */ true,
+                                /* value= */ res.getGlobalHeadroom());
+                    }
+                    return res;
+                }
             }
             final boolean shouldCheckUserModeCpuTime =
                     mEnforceCpuHeadroomUserModeCpuTimeCheck
@@ -1622,33 +1710,98 @@ public final class HintManagerService extends SystemService {
             if (shouldCheckUserModeCpuTime) {
                 synchronized (mCpuHeadroomLock) {
                     if (!checkPerUidUserModeCpuTimeElapsedLocked(uid)) {
+                        if (Flags.adpf25q2Metrics()) {
+                            logCpuHeadroomReported(
+                                    /* cpuHeadroomParams= */ params,
+                                    /* status= */
+                                    CPU_HEADROOM_REPORTED__STATUS__INSUFFICIENT_USER_MODE_TIME,
+                                    /* isFromCache= */ false,
+                                    /* value= */ -1);
+                        }
                         return null;
                     }
                 }
             }
             // return from HAL directly
             try {
-                final CpuHeadroomResult result = mPowerHal.getCpuHeadroom(halParams);
-                if (result == null) {
+                final CpuHeadroomResult res = mPowerHal.getCpuHeadroom(halParams);
+                if (res == null) {
+                    if (Flags.adpf25q2Metrics()) {
+                        logCpuHeadroomReported(
+                                /* cpuHeadroomParams= */ params,
+                                /* status= */ CPU_HEADROOM_REPORTED__STATUS__HAL_ERROR,
+                                /* isFromCache= */ false,
+                                /* value= */ -1);
+                    }
                     Slog.wtf(TAG, "CPU headroom from Power HAL is invalid");
                     return null;
                 }
                 synchronized (mCpuHeadroomLock) {
-                    mCpuHeadroomCache.add(halParams, result);
+                    mCpuHeadroomCache.add(halParams, res);
                 }
                 if (shouldCheckUserModeCpuTime) {
                     synchronized (mCpuHeadroomLock) {
                         mUidToLastUserModeJiffies.put(uid, mLastCpuUserModeJiffies);
                     }
                 }
-                return result;
+                if (Flags.adpf25q2Metrics()) {
+                    logCpuHeadroomReported(
+                            /* cpuHeadroomParams= */ params,
+                            /* status= */ CPU_HEADROOM_REPORTED__STATUS__SUCCESS,
+                            /* isFromCache= */ false,
+                            /* value= */ res.getGlobalHeadroom());
+                }
+                return res;
             } catch (RemoteException e) {
+                if (Flags.adpf25q2Metrics()) {
+                    logCpuHeadroomReported(
+                            /* cpuHeadroomParams= */ params,
+                            /* status= */ CPU_HEADROOM_REPORTED__STATUS__HAL_ERROR,
+                            /* isFromCache= */ false,
+                            /* value= */ -1);
+                }
                 Slog.e(TAG, "Failed to get CPU headroom from Power HAL", e);
                 return null;
             }
         }
-        private void checkThreadAffinityForTids(int[] tids) {
+
+        private int convertCpuParamsCalculationTypeToEnum(int type) {
+            return switch (type) {
+                case CpuHeadroomParams.CalculationType.MIN ->
+                        CPU_HEADROOM_REPORTED__TYPE__MIN;
+                case CpuHeadroomParams.CalculationType.AVERAGE ->
+                        CPU_HEADROOM_REPORTED__TYPE__AVERAGE;
+                default -> CPU_HEADROOM_REPORTED__TYPE__UNKNOWN_CALCULATION_TYPE;
+            };
+        }
+
+        private int convertGpuParamsCalculationTypeToEnum(int type) {
+            return switch (type) {
+                case GpuHeadroomParams.CalculationType.MIN ->
+                        GPU_HEADROOM_REPORTED__TYPE__MIN;
+                case GpuHeadroomParams.CalculationType.AVERAGE ->
+                        GPU_HEADROOM_REPORTED__TYPE__AVERAGE;
+                default -> GPU_HEADROOM_REPORTED__TYPE__UNKNOWN_CALCULATION_TYPE;
+            };
+        }
+
+        private void logCpuHeadroomReported(
+                CpuHeadroomParamsInternal params, int status, boolean isFromCache, float value) {
+            if (params.tids == null || params.tids.length == 0) {
+                return;
+            }
+            FrameworkStatsLog.write(FrameworkStatsLog.CPU_HEADROOM_REPORTED,
+                    params.tids.length,
+                    params.calculationWindowMillis,
+                    convertCpuParamsCalculationTypeToEnum(params.calculationType),
+                    status,
+                    isFromCache,
+                    /* write it as [0, 1] */ (value / 100));
+        }
+
+        private void checkThreadAffinityForTids(CpuHeadroomParamsInternal params) {
             long[] reference = null;
+            int[] tids = params.tids;
             for (int tid : tids) {
                 long[] affinity;
                 try {
@@ -1660,6 +1813,13 @@ public final class HintManagerService extends SystemService {
                 if (reference == null) {
                     reference = affinity;
                 } else if (!Arrays.equals(reference, affinity)) {
+                    if (Flags.adpf25q2Metrics()) {
+                        logCpuHeadroomReported(
+                                /* cpuHeadroomParams= */ params,
+                                /* status= */ CPU_HEADROOM_REPORTED__STATUS__INCONSISTENT_THREAD_CORE_AFFINITY,
+                                /* isFromCache= */ false,
+                                /* value= */ -1);
+                    }
                     Slog.d(TAG, "Thread affinity is different: tid "
                             + tids[0] + "->" + Arrays.toString(reference) + ", tid "
                             + tid + "->" + Arrays.toString(affinity));
@@ -1754,23 +1914,63 @@ public final class HintManagerService extends SystemService {
             halParams.calculationWindowMillis = params.calculationWindowMillis;
             synchronized (mGpuHeadroomLock) {
                 final GpuHeadroomResult res = mGpuHeadroomCache.get(halParams);
-                if (res != null) return res;
+                if (res != null) {
+                    if (Flags.adpf25q2Metrics()) {
+                        logGpuHeadroomReported(
+                                /* gpuHeadroomParams= */ params,
+                                /* status= */ GPU_HEADROOM_REPORTED__STATUS__SUCCESS,
+                                /* isFromCache= */ true,
+                                /* value= */ res.getGlobalHeadroom());
+                    }
+                    return res;
+                }
             }
             // return from HAL directly
             try {
-                final GpuHeadroomResult headroom = mPowerHal.getGpuHeadroom(halParams);
-                if (headroom == null) {
+                final GpuHeadroomResult res = mPowerHal.getGpuHeadroom(halParams);
+                if (res == null) {
+                    if (Flags.adpf25q2Metrics()) {
+                        logGpuHeadroomReported(
+                                /* gpuHeadroomParams= */ params,
+                                /* status= */ GPU_HEADROOM_REPORTED__STATUS__HAL_ERROR,
+                                /* isFromCache= */ false,
+                                /* value= */ -1);
+                    }
                     Slog.wtf(TAG, "GPU headroom from Power HAL is invalid");
                     return null;
                 }
                 synchronized (mGpuHeadroomLock) {
-                    mGpuHeadroomCache.add(halParams, headroom);
+                    mGpuHeadroomCache.add(halParams, res);
                 }
-                return headroom;
+                if (Flags.adpf25q2Metrics()) {
+                    logGpuHeadroomReported(
+                            /* gpuHeadRoomParams= */ params,
+                            /* status= */ GPU_HEADROOM_REPORTED__STATUS__SUCCESS,
+                            /* isFromCache= */ false,
+                            /* value= */ res.getGlobalHeadroom());
+                }
+                return res;
             } catch (RemoteException e) {
+                if (Flags.adpf25q2Metrics()) {
+                    logGpuHeadroomReported(
+                            /* gpuHeadRoomParams= */ params,
+                            /* status= */ GPU_HEADROOM_REPORTED__STATUS__HAL_ERROR,
+                            /* isFromCache= */ false,
+                            /* value= */ -1);
+                }
                 Slog.e(TAG, "Failed to get GPU headroom from Power HAL", e);
                 return null;
             }
+        }
+
+        private void logGpuHeadroomReported(
+                GpuHeadroomParamsInternal params, int status, boolean isFromCache, float value) {
+            FrameworkStatsLog.write(FrameworkStatsLog.GPU_HEADROOM_REPORTED,
+                    params.calculationWindowMillis,
+                    convertGpuParamsCalculationTypeToEnum(params.calculationType),
+                    isFromCache,
+                    status,
+                    /* write it as [0, 1] */ (value / 100));
         }
 
         private void checkGpuHeadroomParams(GpuHeadroomParamsInternal params) {
@@ -1882,6 +2082,7 @@ public final class HintManagerService extends SystemService {
                     CpuHeadroomParamsInternal params = new CpuHeadroomParamsInternal();
                     params.usesDeviceHeadroom = true;
                     CpuHeadroomResult ret = getCpuHeadroom(params);
+                    pw.println("CPU Headroom parameters: " + params.toString());
                     pw.println("CPU headroom: " + (ret == null ? "N/A" : ret.getGlobalHeadroom()));
                 } catch (Exception e) {
                     Slog.d(TAG, "Failed to dump CPU headroom", e);
@@ -1896,8 +2097,8 @@ public final class HintManagerService extends SystemService {
                         + mSupportInfo.headroom.gpuMaxCalculationWindowMillis + "]");
                 try {
                     GpuHeadroomParamsInternal params = new GpuHeadroomParamsInternal();
-                    params.calculationWindowMillis = mDefaultGpuHeadroomCalculationWindowMillis;
                     GpuHeadroomResult ret = getGpuHeadroom(params);
+                    pw.println("GPU Headroom parameters: " + params.toString());
                     pw.println("GPU headroom: " + (ret == null ? "N/A" : ret.getGlobalHeadroom()));
                 } catch (Exception e) {
                     Slog.d(TAG, "Failed to dump GPU headroom", e);
@@ -1928,9 +2129,11 @@ public final class HintManagerService extends SystemService {
         }
 
         private void logPerformanceHintSessionAtom(int uid, long sessionId,
-                long targetDuration, int[] tids, @SessionTag int sessionTag) {
+                long targetDuration, int[] tids, @SessionTag int sessionTag,
+                boolean powerEfficiency, boolean graphicsPipeline) {
             FrameworkStatsLog.write(FrameworkStatsLog.PERFORMANCE_HINT_SESSION_REPORTED, uid,
-                    sessionId, targetDuration, tids.length, sessionTag);
+                    sessionId, targetDuration, tids.length, sessionTag,
+                    powerEfficiency, graphicsPipeline);
         }
 
         private int getUidApplicationCategory(int uid) {
