@@ -1236,7 +1236,6 @@ public class BubbleData {
 
     /** @return the bubble in the stack that matches the provided key. */
     @Nullable
-    @VisibleForTesting(visibility = PRIVATE)
     public Bubble getBubbleInStackWithKey(String key) {
         return getBubbleWithPredicate(mBubbles, b -> b.getKey().equals(key));
     }
