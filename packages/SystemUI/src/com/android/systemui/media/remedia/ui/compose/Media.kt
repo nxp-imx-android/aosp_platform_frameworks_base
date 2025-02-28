@@ -21,9 +21,15 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -36,23 +42,82 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformButton
 import com.android.compose.PlatformIconButton
+import com.android.compose.PlatformOutlinedButton
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
+import com.android.systemui.communal.ui.compose.extensions.detectLongPressGesture
 import com.android.systemui.media.remedia.shared.model.MediaSessionState
+import com.android.systemui.media.remedia.ui.viewmodel.MediaCardGutsViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaOutputSwitcherChipViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaPlayPauseActionViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSecondaryActionViewModel
+
+/** Renders the internal "guts" of a card. */
+@Composable
+private fun CardGuts(viewModel: MediaCardGutsViewModel, modifier: Modifier = Modifier) {
+    Box(
+        modifier =
+            modifier.pointerInput(Unit) { detectLongPressGesture { viewModel.onLongClick() } }
+    ) {
+        // Settings button.
+        Icon(
+            icon = checkNotNull(viewModel.settingsButton.icon),
+            modifier =
+                Modifier.align(Alignment.TopEnd).padding(top = 16.dp, end = 16.dp).clickable {
+                    viewModel.settingsButton.onClick()
+                },
+        )
+
+        //  Content.
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier =
+                Modifier.align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 32.dp, bottom = 40.dp),
+        ) {
+            Text(text = viewModel.text, color = Color.White)
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                PlatformButton(
+                    onClick = viewModel.primaryAction.onClick,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                ) {
+                    Text(
+                        text = checkNotNull(viewModel.primaryAction.text),
+                        color = LocalAndroidColorScheme.current.onPrimaryFixed,
+                    )
+                }
+
+                viewModel.secondaryAction?.let { button ->
+                    PlatformOutlinedButton(
+                        onClick = button.onClick,
+                        border = BorderStroke(width = 1.dp, color = Color.White),
+                    ) {
+                        Text(text = checkNotNull(button.text), color = Color.White)
+                    }
+                }
+            }
+        }
+    }
+}
 
 /** Renders the metadata labels of a track. */
 @Composable
