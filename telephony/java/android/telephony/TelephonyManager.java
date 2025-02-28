@@ -15669,7 +15669,8 @@ public class TelephonyManager {
      * have the required permission/privileges
      * @throws IllegalStateException if the Telephony process is not currently available.
      * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING}.
+     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING} or
+     *          {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
      *
      * @deprecated Please use {@link TelephonyManager#isEmergencyNumber(String)} instead.
      * @hide
@@ -15677,7 +15678,10 @@ public class TelephonyManager {
     @Deprecated
     @SystemApi
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
-    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+    @RequiresFeature(anyOf = {
+        PackageManager.FEATURE_TELEPHONY_CALLING,
+        PackageManager.FEATURE_TELEPHONY_MESSAGING
+    })
     public boolean isPotentialEmergencyNumber(@NonNull String number) {
         try {
             ITelephony telephony = getITelephony();
