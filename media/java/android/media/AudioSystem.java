@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
 
 /* IF YOU CHANGE ANY OF THE CONSTANTS IN THIS FILE, DO NOT FORGET
  * TO UPDATE THE CORRESPONDING NATIVE GLUE AND AudioManager.java.
@@ -1909,12 +1908,13 @@ public class AudioSystem
      * compatibility reasons.  Legacy apps will not understand these new device types
      * and it will raise false matches with old device types.
      */
-    public static int getDeviceMaskFromSet(@NonNull Set<Integer> deviceSet) {
+    public static int getDeviceMaskFromSet(@NonNull Set<AudioDeviceAttributes> deviceSet) {
         int deviceMask = DEVICE_NONE; // zero.
         int deviceInChecksum = DEVICE_BIT_IN;
-        for (Integer device : deviceSet) {
+        for (AudioDeviceAttributes deviceAttr : deviceSet) {
+            final int device = deviceAttr.getInternalType();
             if ((device & (device - 1) & ~DEVICE_BIT_IN) != 0) {
-                Log.v(TAG, "getDeviceMaskFromSet skipping multi-bit device value " + device);
+                Log.i(TAG, "getDeviceMaskFromSet skipping multi-bit device value " + device);
                 continue;
             }
             deviceMask |= device;
@@ -1930,15 +1930,15 @@ public class AudioSystem
 
     /** @hide */
     @NonNull
-    public static String deviceSetToString(@NonNull Set<Integer> devices) {
+    public static String deviceSetToString(@NonNull Set<AudioDeviceAttributes> devices) {
         int n = 0;
         StringBuilder sb = new StringBuilder();
-        for (Integer device : devices) {
+        for (AudioDeviceAttributes device : devices) {
             if (n++ > 0) {
                 sb.append(", ");
             }
-            sb.append(AudioSystem.getDeviceName(device));
-            sb.append("(" + Integer.toHexString(device) + ")");
+            sb.append(AudioSystem.getDeviceName(device.getInternalType()));
+            sb.append("(").append(Integer.toHexString(device.getInternalType())).append(")");
         }
         return sb.toString();
     }
@@ -2603,24 +2603,25 @@ public class AudioSystem
      * represent multiple audio device types.
      */
     @NonNull
-    public static Set<Integer> generateAudioDeviceTypesSet(
+    public static Set<AudioDeviceAttributes> generateAudioDeviceTypesSet(
             @NonNull List<AudioDeviceAttributes> deviceList) {
-        Set<Integer> deviceTypes = new TreeSet<>();
-        for (AudioDeviceAttributes device : deviceList) {
-            deviceTypes.add(device.getInternalType());
-        }
-        return deviceTypes;
+        return Set.copyOf(deviceList);
     }
 
     /**
      * @hide
-     * Return the intersection of two audio device types collections.
+     * Return the intersection of two audio device attributes which match the device types.
      */
-    public static Set<Integer> intersectionAudioDeviceTypes(
-            @NonNull Set<Integer> a, @NonNull Set<Integer> b) {
-        Set<Integer> intersection = new TreeSet<>(a);
-        intersection.retainAll(b);
-        return intersection;
+    public static Set<AudioDeviceAttributes> intersectionAudioDeviceTypes(
+            @NonNull Set<Integer> a, @NonNull Set<AudioDeviceAttributes> b) {
+        Set<AudioDeviceAttributes> result = new HashSet<>();
+        b.forEach(ada -> {
+            if (a.contains(ada.getInternalType())) {
+                result.add(ada);
+            }
+        });
+
+        return result;
     }
 
     /**
