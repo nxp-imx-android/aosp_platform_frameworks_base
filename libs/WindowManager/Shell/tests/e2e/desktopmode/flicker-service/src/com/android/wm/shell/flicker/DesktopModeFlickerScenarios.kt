@@ -19,6 +19,7 @@ package com.android.wm.shell.flicker
 import android.tools.PlatformConsts.DESKTOP_MODE_MINIMUM_WINDOW_HEIGHT
 import android.tools.PlatformConsts.DESKTOP_MODE_MINIMUM_WINDOW_WIDTH
 import android.tools.flicker.AssertionInvocationGroup
+import android.tools.flicker.assertors.assertions.AppLayerCoversFullScreenAtEnd
 import android.tools.flicker.assertors.assertions.ResizeVeilKeepsIncreasingInSize
 import android.tools.flicker.assertors.assertions.AppLayerIsInvisibleAtEnd
 import android.tools.flicker.assertors.assertions.AppLayerIsVisibleAlways
@@ -95,6 +96,59 @@ class DesktopModeFlickerScenarios {
                             AppWindowOnTopAtEnd(DESKTOP_MODE_APP),
                             AppWindowHasDesktopModeInitialBoundsAtTheEnd(DESKTOP_MODE_APP),
                             AppWindowBecomesVisible(DESKTOP_WALLPAPER)
+                        )
+                            .associateBy({ it }, { AssertionInvocationGroup.BLOCKING }),
+            )
+
+        val ENTER_DESKTOP_FROM_KEYBOARD_SHORTCUT =
+            FlickerConfigEntry(
+                scenarioId = ScenarioId("ENTER_DESKTOP_FROM_KEYBOARD_SHORTCUT"),
+                extractor =
+                ShellTransitionScenarioExtractor(
+                    transitionMatcher =
+                    object : ITransitionMatcher {
+                        override fun findAll(
+                            transitions: Collection<Transition>
+                        ): Collection<Transition> =
+                            transitions.filter {
+                                it.type == TransitionType.ENTER_DESKTOP_FROM_KEYBOARD_SHORTCUT
+                            }
+                    }
+                ),
+                assertions =
+                AssertionTemplates.COMMON_ASSERTIONS +
+                        listOf(
+                            AppLayerIsVisibleAlways(DESKTOP_MODE_APP),
+                            AppWindowOnTopAtEnd(DESKTOP_MODE_APP),
+                            AppWindowHasDesktopModeInitialBoundsAtTheEnd(DESKTOP_MODE_APP),
+                            AppWindowBecomesVisible(DESKTOP_WALLPAPER)
+                        )
+                            .associateBy({ it }, { AssertionInvocationGroup.BLOCKING }),
+            )
+
+        val EXIT_DESKTOP_FROM_KEYBOARD_SHORTCUT =
+            FlickerConfigEntry(
+                scenarioId = ScenarioId("EXIT_DESKTOP_FROM_KEYBOARD_SHORTCUT"),
+                extractor =
+                ShellTransitionScenarioExtractor(
+                    transitionMatcher =
+                    object : ITransitionMatcher {
+                        override fun findAll(
+                            transitions: Collection<Transition>
+                        ): Collection<Transition> =
+                            transitions.filter {
+                                it.type == TransitionType.EXIT_DESKTOP_MODE_KEYBOARD_SHORTCUT
+                            }
+                    }
+                ),
+                assertions =
+                AssertionTemplates.COMMON_ASSERTIONS +
+                        listOf(
+                            AppLayerIsVisibleAlways(DESKTOP_MODE_APP),
+                            AppLayerCoversFullScreenAtEnd(DESKTOP_MODE_APP),
+                            AppWindowOnTopAtStart(DESKTOP_MODE_APP),
+                            AppWindowOnTopAtEnd(DESKTOP_MODE_APP),
+                            AppWindowBecomesInvisible(DESKTOP_WALLPAPER)
                         )
                             .associateBy({ it }, { AssertionInvocationGroup.BLOCKING }),
             )
@@ -361,11 +415,10 @@ class DesktopModeFlickerScenarios {
                     object : ITransitionMatcher {
                         override fun findAll(
                             transitions: Collection<Transition>
-                        ): Collection<Transition> {
-                            return transitions.filter {
+                        ): Collection<Transition> =
+                            transitions.filter {
                                 it.type == TransitionType.DESKTOP_MODE_TOGGLE_RESIZE
                             }
-                        }
                     }
                 ),
                 assertions = AssertionTemplates.DESKTOP_MODE_APP_VISIBILITY_ASSERTIONS +
@@ -385,11 +438,10 @@ class DesktopModeFlickerScenarios {
                     object : ITransitionMatcher {
                         override fun findAll(
                             transitions: Collection<Transition>
-                        ): Collection<Transition> {
-                            return transitions.filter {
+                        ): Collection<Transition> =
+                            transitions.filter {
                                 it.type == TransitionType.DESKTOP_MODE_TOGGLE_RESIZE
                             }
-                        }
                     }
                 ),
                 assertions =
@@ -410,11 +462,10 @@ class DesktopModeFlickerScenarios {
                             object : ITransitionMatcher {
                                 override fun findAll(
                                     transitions: Collection<Transition>
-                                ): Collection<Transition> {
-                                    return transitions.filter {
+                                ): Collection<Transition> =
+                                    transitions.filter {
                                         it.type == TransitionType.TO_FRONT
                                     }
-                                }
                             }
                     ),
                 assertions =
@@ -434,9 +485,8 @@ class DesktopModeFlickerScenarios {
                     object : ITransitionMatcher {
                         override fun findAll(
                             transitions: Collection<Transition>
-                        ): Collection<Transition> {
-                                return transitions.filter { it.type == TransitionType.OPEN }
-                        }
+                        ): Collection<Transition> =
+                                transitions.filter { it.type == TransitionType.OPEN }
                     }
                 ),
                 assertions =
@@ -512,9 +562,8 @@ class DesktopModeFlickerScenarios {
                     object : ITransitionMatcher {
                         override fun findAll(
                             transitions: Collection<Transition>
-                        ): Collection<Transition> {
-                                return transitions.filter { it.type == TransitionType.OPEN }
-                        }
+                        ): Collection<Transition> =
+                                transitions.filter { it.type == TransitionType.OPEN }
                     }
                 ),
                 assertions =
@@ -553,11 +602,10 @@ class DesktopModeFlickerScenarios {
                     object : ITransitionMatcher {
                         override fun findAll(
                             transitions: Collection<Transition>
-                        ): Collection<Transition> {
-                                return listOf(transitions
+                        ): Collection<Transition> =
+                                listOf(transitions
                                     .filter { it.type == TransitionType.OPEN }
                                     .maxByOrNull { it.id }!!)
-                        }
                     }
                 ),
                 assertions =

@@ -28,10 +28,13 @@ import android.tools.device.apphelpers.IStandardAppHelper
 import android.tools.helpers.SYSTEMUI_PACKAGE
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.wm.WindowingMode
+import android.view.KeyEvent.KEYCODE_DPAD_DOWN
+import android.view.KeyEvent.KEYCODE_DPAD_UP
 import android.view.KeyEvent.KEYCODE_EQUALS
 import android.view.KeyEvent.KEYCODE_LEFT_BRACKET
 import android.view.KeyEvent.KEYCODE_MINUS
 import android.view.KeyEvent.KEYCODE_RIGHT_BRACKET
+import android.view.KeyEvent.META_CTRL_ON
 import android.view.KeyEvent.META_META_ON
 import android.view.WindowInsets
 import android.view.WindowManager
@@ -493,6 +496,22 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
 
         // drag the app window to top drag zone
         device.drag(startX, startY, endX, endY, 100)
+    }
+
+    fun enterDesktopModeViaKeyboard(
+        wmHelper: WindowManagerStateHelper,
+    ) {
+        val keyEventHelper = KeyEventHelper(getInstrumentation())
+        keyEventHelper.press(KEYCODE_DPAD_DOWN, META_META_ON or META_CTRL_ON)
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+    }
+
+    fun exitDesktopModeToFullScreenViaKeyboard(
+        wmHelper: WindowManagerStateHelper,
+    ) {
+        val keyEventHelper = KeyEventHelper(getInstrumentation())
+        keyEventHelper.press(KEYCODE_DPAD_UP, META_META_ON or META_CTRL_ON)
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
     fun enterDesktopModeFromAppHandleMenu(
