@@ -875,3 +875,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_size_compat_mode_improvements_for_connected_displays"
+    namespace: "lse_desktop_experience"
+    description: "Enable some improvements in size compat mode for connected displays."
+    bug: "399752440"
+}
