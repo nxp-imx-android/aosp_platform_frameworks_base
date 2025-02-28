@@ -207,6 +207,7 @@ private fun SecondaryActionContent(
         iconResource = (viewModel.icon as Icon.Resource).res,
         contentDescription = viewModel.icon.contentDescription?.load(),
         colors = IconButtonDefaults.iconButtonColors(contentColor = iconColor),
+        enabled = viewModel.isEnabled,
         modifier = modifier.size(48.dp).padding(13.dp),
     )
 }
