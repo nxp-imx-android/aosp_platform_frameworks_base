@@ -42,7 +42,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
@@ -128,6 +127,7 @@ import com.android.systemui.qs.panels.ui.compose.QuickQuickSettings
 import com.android.systemui.qs.panels.ui.compose.TileGrid
 import com.android.systemui.qs.shared.ui.ElementKeys
 import com.android.systemui.qs.ui.composable.QuickSettingsShade
+import com.android.systemui.qs.ui.composable.QuickSettingsShade.systemGestureExclusionInShade
 import com.android.systemui.qs.ui.composable.QuickSettingsTheme
 import com.android.systemui.res.R
 import com.android.systemui.util.LifecycleFragment
@@ -716,10 +716,7 @@ constructor(
                                 BrightnessSliderContainer(
                                     viewModel = containerViewModel.brightnessSliderViewModel,
                                     modifier =
-                                        Modifier.fillMaxWidth()
-                                            .height(
-                                                QuickSettingsShade.Dimensions.BrightnessSliderHeight
-                                            ),
+                                        Modifier.systemGestureExclusionInShade().fillMaxWidth(),
                                 )
                             }
                         val TileGrid =
