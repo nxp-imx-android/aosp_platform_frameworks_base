@@ -16,14 +16,14 @@
 
 package com.android.systemui.statusbar.featurepods.popups.ui.viewmodel
 
+import com.android.systemui.lifecycle.Activatable
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
-import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Interface for a view model that knows the display requirements for a single type of status bar
  * popup chip.
  */
-interface StatusBarPopupChipViewModel {
-    /** A flow modeling the popup chip that should be shown (or not shown). */
-    val chip: StateFlow<PopupChipModel>
+interface StatusBarPopupChipViewModel : Activatable {
+    /** A snapshot [State] modeling the popup chip that should be shown (or not shown). */
+    val chip: PopupChipModel
 }
