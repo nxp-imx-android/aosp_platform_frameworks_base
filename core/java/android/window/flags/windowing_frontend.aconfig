@@ -51,6 +51,17 @@ flag {
 }
 
 flag {
+  name: "use_cached_insets_for_display_switch"
+  namespace: "windowing_frontend"
+  description: "Reduce intermediate insets changes for display switch"
+  bug: "266197298"
+  is_fixed_read_only: true
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "edge_to_edge_by_default"
   namespace: "windowing_frontend"
   description: "Make app go edge-to-edge by default when targeting SDK 35 or greater"
