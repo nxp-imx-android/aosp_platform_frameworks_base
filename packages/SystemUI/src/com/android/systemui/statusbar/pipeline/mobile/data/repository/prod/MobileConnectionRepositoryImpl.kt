@@ -542,6 +542,10 @@ sealed interface CallbackEvent {
 
     data class OnCarrierRoamingNtnSignalStrengthChanged(val signalStrength: NtnSignalStrength) :
         CallbackEvent
+
+    data class OnCallBackModeStarted(val type: Int) : CallbackEvent
+
+    data class OnCallBackModeStopped(val type: Int) : CallbackEvent
 }
 
 /**
@@ -560,6 +564,8 @@ data class TelephonyCallbackState(
     val onCarrierRoamingNtnSignalStrengthChanged:
         CallbackEvent.OnCarrierRoamingNtnSignalStrengthChanged? =
         null,
+    val addedCallbackModes: Set<Int> = emptySet(),
+    val removedCallbackModes: Set<Int> = emptySet(),
 ) {
     fun applyEvent(event: CallbackEvent): TelephonyCallbackState {
         return when (event) {
@@ -578,6 +584,37 @@ data class TelephonyCallbackState(
             is CallbackEvent.OnSignalStrengthChanged -> copy(onSignalStrengthChanged = event)
             is CallbackEvent.OnCarrierRoamingNtnSignalStrengthChanged ->
                 copy(onCarrierRoamingNtnSignalStrengthChanged = event)
+            is CallbackEvent.OnCallBackModeStarted -> {
+                copy(
+                    addedCallbackModes =
+                        if (event.type !in removedCallbackModes) {
+                            addedCallbackModes + event.type
+                        } else {
+                            addedCallbackModes
+                        },
+                    removedCallbackModes =
+                        if (event.type !in addedCallbackModes) {
+                            removedCallbackModes - event.type
+                        } else {
+                            removedCallbackModes
+                        },
+                )
+            }
+            is CallbackEvent.OnCallBackModeStopped ->
+                copy(
+                    addedCallbackModes =
+                        if (event.type !in removedCallbackModes) {
+                            addedCallbackModes - event.type
+                        } else {
+                            addedCallbackModes
+                        },
+                    removedCallbackModes =
+                        if (event.type !in addedCallbackModes) {
+                            removedCallbackModes + event.type
+                        } else {
+                            removedCallbackModes
+                        },
+                )
         }
     }
 }

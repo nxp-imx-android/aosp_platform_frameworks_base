@@ -727,6 +727,7 @@ android_library {
         "TraceurCommon",
         "Traceur-res",
         "aconfig_settings_flags_lib",
+        "kairos",
     ],
 }
 

@@ -86,8 +86,8 @@ import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetwork
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.UnknownNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfig
-import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfigTest.Companion.configWithOverride
-import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfigTest.Companion.createTestConfig
+import com.android.systemui.statusbar.pipeline.mobile.data.model.testCarrierConfig
+import com.android.systemui.statusbar.pipeline.mobile.data.model.testCarrierConfigWithOverride
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository.Companion.DEFAULT_NUM_LEVELS
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileTelephonyHelpers.signalStrength
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileTelephonyHelpers.telephonyDisplayInfo
@@ -129,7 +129,7 @@ class MobileConnectionRepositoryTest : SysuiTestCase() {
     @Mock private lateinit var context: Context
 
     private val mobileMappings = FakeMobileMappingsProxy()
-    private val systemUiCarrierConfig = SystemUiCarrierConfig(SUB_1_ID, createTestConfig())
+    private val systemUiCarrierConfig = SystemUiCarrierConfig(SUB_1_ID, testCarrierConfig())
 
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testScope = TestScope(testDispatcher)
@@ -1314,13 +1314,13 @@ class MobileConnectionRepositoryTest : SysuiTestCase() {
             assertThat(latest).isEqualTo(DEFAULT_NUM_LEVELS)
 
             systemUiCarrierConfig.processNewCarrierConfig(
-                configWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
+                testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
             )
 
             assertThat(latest).isEqualTo(DEFAULT_NUM_LEVELS + 1)
 
             systemUiCarrierConfig.processNewCarrierConfig(
-                configWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, false)
+                testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, false)
             )
 
             assertThat(latest).isEqualTo(DEFAULT_NUM_LEVELS)
@@ -1336,13 +1336,13 @@ class MobileConnectionRepositoryTest : SysuiTestCase() {
             assertThat(latest).isEqualTo(false)
 
             systemUiCarrierConfig.processNewCarrierConfig(
-                configWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
+                testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
             )
 
             assertThat(latest).isEqualTo(true)
 
             systemUiCarrierConfig.processNewCarrierConfig(
-                configWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, false)
+                testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, false)
             )
 
             assertThat(latest).isEqualTo(false)
@@ -1354,13 +1354,13 @@ class MobileConnectionRepositoryTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.allowNetworkSliceIndicator)
 
             systemUiCarrierConfig.processNewCarrierConfig(
-                configWithOverride(KEY_SHOW_5G_SLICE_ICON_BOOL, true)
+                testCarrierConfigWithOverride(KEY_SHOW_5G_SLICE_ICON_BOOL, true)
             )
 
             assertThat(latest).isTrue()
 
             systemUiCarrierConfig.processNewCarrierConfig(
-                configWithOverride(KEY_SHOW_5G_SLICE_ICON_BOOL, false)
+                testCarrierConfigWithOverride(KEY_SHOW_5G_SLICE_ICON_BOOL, false)
             )
 
             assertThat(latest).isFalse()

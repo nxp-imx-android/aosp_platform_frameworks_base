@@ -26,7 +26,7 @@ import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.statusbar.pipeline.mobile.data.MobileInputLogger
-import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfigTest.Companion.createTestConfig
+import com.android.systemui.statusbar.pipeline.mobile.data.model.testCarrierConfig
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.launchIn
@@ -163,8 +163,8 @@ class CarrierConfigRepositoryImplTest : SysuiTestCase() {
         private const val SUB_ID_1 = 1
         private const val SUB_ID_2 = 2
 
-        private val DEFAULT_CONFIG = createTestConfig()
-        private val CONFIG_1 = createTestConfig()
-        private val CONFIG_2 = createTestConfig()
+        private val DEFAULT_CONFIG = testCarrierConfig()
+        private val CONFIG_1 = testCarrierConfig()
+        private val CONFIG_2 = testCarrierConfig()
     }
 }
