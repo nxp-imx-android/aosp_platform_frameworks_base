@@ -19,6 +19,9 @@ package com.android.settingslib.bluetooth;
 import static android.bluetooth.BluetoothProfile.CONNECTION_POLICY_FORBIDDEN;
 
 import static com.android.settingslib.Utils.isAudioModeOngoingCall;
+import static com.android.settingslib.bluetooth.LocalBluetoothLeBroadcastAssistant.LocalBluetoothLeBroadcastSourceState.DECRYPTION_FAILED;
+import static com.android.settingslib.bluetooth.LocalBluetoothLeBroadcastAssistant.LocalBluetoothLeBroadcastSourceState.PAUSED;
+import static com.android.settingslib.bluetooth.LocalBluetoothLeBroadcastAssistant.LocalBluetoothLeBroadcastSourceState.STREAMING;
 
 import static java.util.stream.Collectors.toList;
 
@@ -70,9 +73,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -138,6 +143,8 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
             };
     private final Context mContext;
     private final CachedBluetoothDeviceManager mDeviceManager;
+    private final boolean mHysteresisModeFixAvailable;
+    private final boolean mIsWorkProfile;
     private BluetoothLeBroadcast mServiceBroadcast;
     private BluetoothLeBroadcastAssistant mServiceBroadcastAssistant;
     private BluetoothLeAudioContentMetadata mBluetoothLeAudioContentMetadata;
@@ -158,6 +165,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
     // Cached broadcast callbacks being register before service is connected.
     private ConcurrentHashMap<BluetoothLeBroadcast.Callback, Executor>
             mCachedBroadcastCallbackExecutorMap = new ConcurrentHashMap<>();
+    private Set<BluetoothDevice> mLocalSinksPendingSourceRemoval = new HashSet<>();
 
     private final ServiceListener mServiceListener =
             new ServiceListener() {
@@ -376,6 +384,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
                                         + ", sourceId = "
                                         + sourceId);
                     }
+                    mLocalSinksPendingSourceRemoval.remove(sink);
                 }
 
                 @Override
@@ -408,6 +417,35 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
                                         + ", state = "
                                         + state);
                     }
+                    if (!Flags.audioStreamMediaServiceByReceiveState()) {
+                        Log.d(TAG, "Skip notifyPrivateBroadcastReceived, flag off.");
+                        return;
+                    }
+                    if (mIsWorkProfile) {
+                        Log.d(TAG, "Skip notifyPrivateBroadcastReceived for work profile.");
+                        return;
+                    }
+                    if (state.getBroadcastId() == mBroadcastId
+                            || !mLocalSinksPendingSourceRemoval.isEmpty()) {
+                        Log.d(TAG,
+                                "Skip notifyPrivateBroadcastReceived, onReceiveStateChanged "
+                                        + "triggered by personal audio sharing.");
+                        return;
+                    }
+                    var sourceState = LocalBluetoothLeBroadcastAssistant.getLocalSourceState(state);
+                    if (sourceState == STREAMING || sourceState == DECRYPTION_FAILED
+                            || (mHysteresisModeFixAvailable && sourceState == PAUSED)) {
+                        List<BluetoothLeAudioContentMetadata> subgroupMetadata =
+                                state.getSubgroupMetadata();
+                        String programInfo = subgroupMetadata.isEmpty() ? ""
+                                : subgroupMetadata.getFirst().getProgramInfo();
+                        notifyPrivateBroadcastReceived(
+                                sink,
+                                sourceId,
+                                state.getBroadcastId(),
+                                programInfo == null ? "" : programInfo,
+                                sourceState);
+                    }
                 }
             };
 
@@ -439,6 +477,10 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
         BluetoothAdapter.getDefaultAdapter()
                 .getProfileProxy(
                         context, mServiceListener, BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT);
+
+        mHysteresisModeFixAvailable = BluetoothUtils.isAudioSharingHysteresisModeFixAvailable(
+                context);
+        mIsWorkProfile = isWorkProfile(mContext);
     }
 
     /**
@@ -1138,6 +1180,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
                 int localBroadcastId = getLatestBroadcastId();
                 if (receiveState.getBroadcastId() != localBroadcastId) continue;
 
+                mLocalSinksPendingSourceRemoval.add(device);
                 mServiceBroadcastAssistant.removeSource(device, receiveState.getSourceId());
             }
         }
@@ -1151,7 +1194,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
             Log.d(TAG, "Skip updateFallbackActiveDeviceIfNeeded, disable flag is on");
             return;
         }
-        if (isWorkProfile(mContext)) {
+        if (mIsWorkProfile) {
             Log.d(TAG, "Skip updateFallbackActiveDeviceIfNeeded for work profile.");
             return;
         }
@@ -1279,7 +1322,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
             Log.d(TAG, "Skip notifyBroadcastStateChange, not triggered by Settings or SystemUI.");
             return;
         }
-        if (isWorkProfile(mContext)) {
+        if (mIsWorkProfile) {
             Log.d(TAG, "Skip notifyBroadcastStateChange, not triggered for work profile.");
             return;
         }
@@ -1287,6 +1330,26 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
         intent.putExtra(EXTRA_LE_AUDIO_SHARING_STATE, state);
         intent.setPackage(SETTINGS_PKG);
         Log.d(TAG, "notifyBroadcastStateChange for state = " + state + " by pkg = " + packageName);
+        mContext.sendBroadcast(intent);
+    }
+
+    private void notifyPrivateBroadcastReceived(BluetoothDevice sink, int sourceId, int broadcastId,
+            String programInfo,
+            LocalBluetoothLeBroadcastAssistant.LocalBluetoothLeBroadcastSourceState state) {
+        String packageName = mContext.getPackageName();
+        if (!packageName.equals(SYSUI_PKG)) {
+            Log.d(TAG, "Skip notifyPrivateBroadcastReceived, not triggered by SystemUI.");
+            return;
+        }
+        var data = new PrivateBroadcastReceiveData(sink, sourceId, broadcastId, programInfo, state);
+        Intent intent = new Intent(ACTION_LE_AUDIO_PRIVATE_BROADCAST_RECEIVED);
+        intent.putExtra(EXTRA_PRIVATE_BROADCAST_RECEIVE_DATA, data);
+        intent.setPackage(SETTINGS_PKG);
+        Log.d(TAG,
+                "notifyPrivateBroadcastReceived for sink = " + sink + " with sourceId = " + sourceId
+                        + " state = " + state
+                        + " programInfo =" + programInfo
+                        + " broadcastId = " + broadcastId);
         mContext.sendBroadcast(intent);
     }
 
