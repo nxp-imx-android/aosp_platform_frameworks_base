@@ -549,7 +549,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun onPromotedNotificationChipTapped_chipTappedTwice_hunHiddenOnSecondTap() =
+    fun onPromotedNotificationChipTapped_chipTappedTwice_hunHiddenOnSecondTapImmediately() =
         testScope.runTest {
             whenever(notifCollection.getEntry(entry.key)).thenReturn(entry)
 
@@ -570,8 +570,9 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
             executor.runAllReady()
             beforeFinalizeFilterListener.onBeforeFinalizeFilter(listOf(entry))
 
-            // THEN HUN is hidden
-            verify(headsUpManager).removeNotification(eq(entry.key), eq(false), any())
+            // THEN HUN is hidden and it's hidden immediately
+            verify(headsUpManager)
+                .removeNotification(eq(entry.key), /* releaseImmediately= */ eq(true), any())
         }
 
     @Test
