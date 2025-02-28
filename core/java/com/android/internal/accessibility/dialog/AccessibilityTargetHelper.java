@@ -215,7 +215,6 @@ public final class AccessibilityTargetHelper {
                         Settings.Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED);
         targets.add(colorInversion);
 
-        // TODO(b/394683600): Update Icon with the autoclick asset.
         final ToggleAllowListingFeatureTarget autoclick =
                 new ToggleAllowListingFeatureTarget(context,
                         shortcutType,
@@ -224,7 +223,7 @@ public final class AccessibilityTargetHelper {
                         AUTOCLICK_COMPONENT_NAME.flattenToString(),
                         uid,
                         context.getString(R.string.autoclick_feature_name),
-                        context.getDrawable(R.drawable.ic_accessibility_generic),
+                        context.getDrawable(R.drawable.ic_accessibility_autoclick),
                         Settings.Secure.ACCESSIBILITY_AUTOCLICK_ENABLED);
         targets.add(autoclick);
 

@@ -557,6 +557,7 @@
     <color name="accessibility_magnification_background">#F50D60</color>
     <color name="accessibility_daltonizer_background">#00BCD4</color>
     <color name="accessibility_color_inversion_background">#546E7A</color>
+    <color name="accessibility_autoclick_background">#67D4FF</color>
 
     <!-- Fullscreen magnification thumbnail color -->
     <color name="accessibility_magnification_thumbnail_stroke_color">#0C0C0C</color>
