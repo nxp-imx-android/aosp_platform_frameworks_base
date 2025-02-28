@@ -151,6 +151,18 @@ public class RestrictedPreferenceHelper {
                         UserHandle.myUserId());
     }
 
+    /**
+     * Configures the user restriction that this preference will track. This is equivalent to
+     * specifying {@link R.styleable#RestrictedPreference_userRestriction} in XML and allows
+     * configuring user restriction at runtime.
+     */
+    public void setUserRestriction(@Nullable String userRestriction) {
+        mAttrUserRestriction = userRestriction == null ||
+            RestrictedLockUtilsInternal.hasBaseUserRestriction(mContext, userRestriction,
+                UserHandle.myUserId()) ? null : userRestriction;
+        setDisabledByAdmin(checkRestrictionEnforced());
+    }
+
     public void useAdminDisabledSummary(boolean useSummary) {
         mDisabledSummary = useSummary;
     }
