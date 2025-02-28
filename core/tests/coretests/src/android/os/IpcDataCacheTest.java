@@ -452,22 +452,28 @@ public class IpcDataCacheTest {
         assertTrue(ec.isDisabled());
     }
 
-
     // Verify that invalidating the cache from an app process would fail due to lack of permissions.
     @Test
     @android.platform.test.annotations.DisabledOnRavenwood(
             reason = "SystemProperties doesn't have permission check")
     public void testPermissionFailure() {
-        // Create a cache that will write a system nonce.
-        TestCache sysCache = new TestCache(IpcDataCache.MODULE_SYSTEM, "mode1");
         try {
-            // Invalidate the cache, which writes the system property.  There must be a permission
-            // failure.
-            sysCache.invalidateCache();
-            fail("expected permission failure");
-        } catch (RuntimeException e) {
-            // The expected exception is a bare RuntimeException.  The test does not attempt to
-            // validate the text of the exception message.
+            // Disable test mode for this test.  Guarantee that the mode is enabled before the
+            // test exits.
+            IpcDataCache.setTestMode(false);
+            // Create a cache that will write a system nonce.
+            TestCache sysCache = new TestCache(IpcDataCache.MODULE_SYSTEM, "mode1");
+            try {
+                // Invalidate the cache, which writes the system property.  There must be a
+                // permission failure.
+                sysCache.invalidateCache();
+                fail("expected permission failure");
+            } catch (RuntimeException e) {
+                // The expected exception is a bare RuntimeException.  The test does not attempt
+                // to validate the text of the exception message.
+            }
+        } finally {
+            IpcDataCache.setTestMode(true);
         }
     }
 

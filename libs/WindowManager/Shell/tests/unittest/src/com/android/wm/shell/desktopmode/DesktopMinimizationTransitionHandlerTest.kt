@@ -33,6 +33,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.ShellExecutor
+import com.android.wm.shell.transition.Transitions
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -152,6 +153,24 @@ class DesktopMinimizationTransitionHandlerTest : ShellTestCase() {
             )
 
         assertTrue("Should animate going to back freeform task close transition", animates)
+    }
+
+    @Test
+    fun startAnimation_minimizeTransitionToBackFreeformTask_returnsTrue() {
+        val animates =
+            handler.startAnimation(
+                transition = mock(),
+                info =
+                    createTransitionInfo(
+                        type = Transitions.TRANSIT_MINIMIZE,
+                        task = createTask(WINDOWING_MODE_FREEFORM),
+                    ),
+                startTransaction = mock(),
+                finishTransaction = mock(),
+                finishCallback = {},
+            )
+
+        assertTrue("Should animate going to back freeform task minimize transition", animates)
     }
 
     private fun createTransitionInfo(

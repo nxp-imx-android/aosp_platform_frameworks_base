@@ -57,6 +57,12 @@ public class NotificationGroupingUtil {
     private static final VisibilityApplicator VISIBILITY_APPLICATOR = new VisibilityApplicator();
     private static final VisibilityApplicator APP_NAME_APPLICATOR = new AppNameApplicator();
     private static final ResultApplicator LEFT_ICON_APPLICATOR = new LeftIconApplicator();
+    private static final DataExtractor ICON_EXTRACTOR = new DataExtractor() {
+        @Override
+        public Object extractData(ExpandableNotificationRow row) {
+            return row.getEntry().getSbn().getNotification();
+        }
+    };
 
     private final ExpandableNotificationRow mRow;
     private final ArrayList<Processor> mProcessors = new ArrayList<>();
@@ -103,26 +109,31 @@ public class NotificationGroupingUtil {
         // To hide the icons if they are the same and the color is the same
         mProcessors.add(new Processor(mRow,
                 com.android.internal.R.id.icon,
+                ICON_EXTRACTOR,
                 iconVisibilityComparator,
                 VISIBILITY_APPLICATOR));
         // To grey out the icons when they are not the same, or they have the same color
         mProcessors.add(new Processor(mRow,
                 com.android.internal.R.id.status_bar_latest_event_content,
+                ICON_EXTRACTOR,
                 greyComparator,
                 greyApplicator));
         // To show the large icon on the left side instead if all the small icons are the same
         mProcessors.add(new Processor(mRow,
                 com.android.internal.R.id.status_bar_latest_event_content,
+                ICON_EXTRACTOR,
                 iconVisibilityComparator,
                 LEFT_ICON_APPLICATOR));
         // To only show the work profile icon in the group header
         mProcessors.add(new Processor(mRow,
                 com.android.internal.R.id.profile_badge,
+                null /* Extractor */,
                 BADGE_COMPARATOR,
                 VISIBILITY_APPLICATOR));
         // To hide the app name in group children
         mProcessors.add(new Processor(mRow,
                 com.android.internal.R.id.app_name_text,
+                null,
                 APP_NAME_COMPARATOR,
                 APP_NAME_APPLICATOR));
         // To hide the header text if it's the same
@@ -242,20 +253,23 @@ public class NotificationGroupingUtil {
 
     private static class Processor {
         private final int mId;
+        private final DataExtractor mExtractor;
         private final ViewComparator mComparator;
         private final ResultApplicator mApplicator;
         private final ExpandableNotificationRow mParentRow;
         private boolean mApply;
         private View mParentView;
+        private Object mParentData;
 
         public static Processor forTextView(ExpandableNotificationRow row, int id) {
-            return new Processor(row, id, TEXT_VIEW_COMPARATOR, VISIBILITY_APPLICATOR);
+            return new Processor(row, id, null, TEXT_VIEW_COMPARATOR, VISIBILITY_APPLICATOR);
         }
 
-        Processor(ExpandableNotificationRow row, int id,
+        Processor(ExpandableNotificationRow row, int id, DataExtractor extractor,
                 ViewComparator comparator,
                 ResultApplicator applicator) {
             mId = id;
+            mExtractor = extractor;
             mApplicator = applicator;
             mComparator = comparator;
             mParentRow = row;
@@ -265,6 +279,7 @@ public class NotificationGroupingUtil {
             NotificationViewWrapper wrapper = mParentRow.getNotificationViewWrapper();
             View header = wrapper == null ? null : wrapper.getNotificationHeader();
             mParentView = header == null ? null : header.findViewById(mId);
+            mParentData = mExtractor == null ? null : mExtractor.extractData(mParentRow);
             mApply = !mComparator.isEmpty(mParentView);
         }
 
@@ -282,7 +297,9 @@ public class NotificationGroupingUtil {
                 // when for example showing an undo notification
                 return;
             }
-            mApply = mComparator.compare(mParentView, ownView);
+            Object childData = mExtractor == null ? null : mExtractor.extractData(row);
+            mApply = mComparator.compare(mParentView, ownView,
+                    mParentData, childData);
         }
 
         public void apply(ExpandableNotificationRow row) {
@@ -314,9 +331,11 @@ public class NotificationGroupingUtil {
         /**
          * @param parent     the view with the given id in the group header
          * @param child      the view with the given id in the child notification
+         * @param parentData optional data for the parent
+         * @param childData  optional data for the child
          * @return whether to views are the same
          */
-        boolean compare(View parent, View child);
+        boolean compare(View parent, View child, Object parentData, Object childData);
 
         boolean isEmpty(View view);
     }
@@ -327,7 +346,7 @@ public class NotificationGroupingUtil {
 
     private static class BadgeComparator implements ViewComparator {
         @Override
-        public boolean compare(View parent, View child) {
+        public boolean compare(View parent, View child, Object parentData, Object childData) {
             return parent.getVisibility() != View.GONE;
         }
 
@@ -345,7 +364,7 @@ public class NotificationGroupingUtil {
 
     private static class TextViewComparator implements ViewComparator {
         @Override
-        public boolean compare(View parent, View child) {
+        public boolean compare(View parent, View child, Object parentData, Object childData) {
             TextView parentView = (TextView) parent;
             CharSequence parentText = parentView == null ? "" : parentView.getText();
             TextView childView = (TextView) child;
@@ -361,7 +380,7 @@ public class NotificationGroupingUtil {
 
     private abstract static class IconComparator implements ViewComparator {
         @Override
-        public boolean compare(View parent, View child) {
+        public boolean compare(View parent, View child, Object parentData, Object childData) {
             return false;
         }
 
@@ -421,14 +440,14 @@ public class NotificationGroupingUtil {
 
     private static class AppNameComparator extends TextViewComparator {
         @Override
-        public boolean compare(View parent, View child) {
+        public boolean compare(View parent, View child, Object parentData, Object childData) {
             if (isEmpty(child)) {
                 // In headerless notifications the AppName view exists but is usually GONE (and not
                 // populated).  We need to treat this case as equal to the header in order to
                 // deduplicate the view.
                 return true;
             }
-            return super.compare(parent, child);
+            return super.compare(parent, child, parentData, childData);
         }
     }
 

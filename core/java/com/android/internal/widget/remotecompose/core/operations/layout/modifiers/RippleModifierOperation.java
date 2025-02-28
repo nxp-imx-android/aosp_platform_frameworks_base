@@ -217,7 +217,7 @@ public class RippleModifierOperation extends DecoratorModifierOperation implemen
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "RippleModifierOperation")
+                .addType("RippleModifierOperation")
                 .add("animateRippleStart", mAnimateRippleStart)
                 .add("animateRippleX", mAnimateRippleX)
                 .add("animateRippleY", mAnimateRippleY)

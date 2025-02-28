@@ -16993,7 +16993,7 @@ package android.graphics {
     method public void setFilterBitmap(boolean);
     method public void setFlags(int);
     method public void setFontFeatureSettings(String);
-    method @FlaggedApi("com.android.text.flags.typeface_redesign_readonly") public boolean setFontVariationOverride(@Nullable String);
+    method @FlaggedApi("com.android.text.flags.typeface_redesign_readonly") public void setFontVariationOverride(@Nullable String);
     method public boolean setFontVariationSettings(String);
     method public void setHinting(int);
     method public void setLetterSpacing(float);
@@ -23332,12 +23332,12 @@ package android.media {
   public static final class MediaCodecInfo.CodecCapabilities {
     ctor public MediaCodecInfo.CodecCapabilities();
     method public static android.media.MediaCodecInfo.CodecCapabilities createFromProfileLevel(String, int, int);
-    method public android.media.MediaCodecInfo.AudioCapabilities getAudioCapabilities();
+    method @Nullable public android.media.MediaCodecInfo.AudioCapabilities getAudioCapabilities();
     method public android.media.MediaFormat getDefaultFormat();
-    method public android.media.MediaCodecInfo.EncoderCapabilities getEncoderCapabilities();
+    method @Nullable public android.media.MediaCodecInfo.EncoderCapabilities getEncoderCapabilities();
     method public int getMaxSupportedInstances();
     method public String getMimeType();
-    method public android.media.MediaCodecInfo.VideoCapabilities getVideoCapabilities();
+    method @Nullable public android.media.MediaCodecInfo.VideoCapabilities getVideoCapabilities();
     method public boolean isFeatureRequired(String);
     method public boolean isFeatureSupported(String);
     method public boolean isFormatSupported(android.media.MediaFormat);

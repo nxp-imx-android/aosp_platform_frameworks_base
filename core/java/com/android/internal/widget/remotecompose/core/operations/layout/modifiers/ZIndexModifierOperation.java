@@ -147,7 +147,7 @@ public class ZIndexModifierOperation extends DecoratorModifierOperation {
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "ZIndexModifierOperation")
+                .addType("ZIndexModifierOperation")
                 .add("value", mValue);
     }
 }

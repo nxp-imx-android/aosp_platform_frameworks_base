@@ -139,7 +139,7 @@ public class ValueStringChangeActionOperation extends Operation implements Actio
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER, SerializeTags.ACTION)
-                .add("type", "ValueIntegerExpressionChangeActionOperation")
+                .addType("ValueIntegerExpressionChangeActionOperation")
                 .add("targetValueId", mTargetValueId)
                 .add("valueId", mValueId);
     }

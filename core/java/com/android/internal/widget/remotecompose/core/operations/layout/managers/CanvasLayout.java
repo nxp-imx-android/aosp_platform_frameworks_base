@@ -154,7 +154,7 @@ public class CanvasLayout extends BoxLayout {
     @Override
     public void serialize(MapSerializer serializer) {
         super.serialize(serializer);
-        serializer.add("type", getSerializedName());
+        serializer.addType(getSerializedName());
         serializer.add("horizontalPositioning", mHorizontalPositioning);
     }
 

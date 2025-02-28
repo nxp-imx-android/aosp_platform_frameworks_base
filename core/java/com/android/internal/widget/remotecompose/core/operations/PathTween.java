@@ -161,7 +161,7 @@ public class PathTween extends PaintOperation implements VariableSupport, Serial
     @Override
     public void serialize(MapSerializer serializer) {
         serializer
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("outId", mOutId)
                 .add("pathId1", mPathId1)
                 .add("pathId2", mPathId2)

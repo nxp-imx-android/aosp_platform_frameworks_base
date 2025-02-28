@@ -103,6 +103,7 @@ open class ClockRegistry(
         fun onAvailableClocksChanged() {}
     }
 
+    private val replacementMap = ConcurrentHashMap<ClockId, ClockId>()
     private val availableClocks = ConcurrentHashMap<ClockId, ClockInfo>()
     private val clockChangeListeners = mutableListOf<ClockChangeListener>()
     private val settingObserver =
@@ -209,6 +210,7 @@ open class ClockRegistry(
                         continue
                     }
 
+                    clock.replacementTarget?.let { replacementMap[id] = it }
                     info.provider = plugin
                     onLoaded(info)
                 }
@@ -393,10 +395,11 @@ open class ClockRegistry(
     // TODO: Merge w/ CurrentClockId when we convert to a flow. We shouldn't need both behaviors.
     val activeClockId: String
         get() {
-            if (!availableClocks.containsKey(currentClockId)) {
+            var id = currentClockId
+            if (!availableClocks.containsKey(id)) {
                 return DEFAULT_CLOCK_ID
             }
-            return currentClockId
+            return replacementMap[id] ?: id
         }
 
     init {
@@ -404,6 +407,7 @@ open class ClockRegistry(
         defaultClockProvider.initialize(clockBuffers)
         for (clock in defaultClockProvider.getClocks()) {
             availableClocks[clock.clockId] = ClockInfo(clock, defaultClockProvider, null)
+            clock.replacementTarget?.let { replacementMap[clock.clockId] = it }
         }
 
         // Something has gone terribly wrong if the default clock isn't present
@@ -562,9 +566,12 @@ open class ClockRegistry(
         }
     }
 
-    fun getClocks(): List<ClockMetadata> {
-        if (!isEnabled) return listOf(availableClocks[DEFAULT_CLOCK_ID]!!.metadata)
-        return availableClocks.map { (_, clock) -> clock.metadata }
+    fun getClocks(includeDeprecated: Boolean = false): List<ClockMetadata> {
+        return when {
+            !isEnabled -> listOf(availableClocks[DEFAULT_CLOCK_ID]!!.metadata)
+            includeDeprecated -> availableClocks.map { (_, clock) -> clock.metadata }
+            else -> availableClocks.map { (_, clock) -> clock.metadata }.filter { !it.isDeprecated }
+        }
     }
 
     fun getClockPickerConfig(clockId: ClockId): ClockPickerConfig? {

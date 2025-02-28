@@ -161,7 +161,7 @@ public class CoreSemantics extends Operation implements AccessibilityModifier {
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER, SerializeTags.A11Y)
-                .add("type", "CoreSemantics")
+                .addType("CoreSemantics")
                 .add("contentDescriptionId", mContentDescriptionId)
                 .add("role", mRole)
                 .add("textId", mTextId)

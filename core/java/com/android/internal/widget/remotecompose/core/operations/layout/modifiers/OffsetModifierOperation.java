@@ -162,7 +162,7 @@ public class OffsetModifierOperation extends DecoratorModifierOperation {
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "OffsetModifierOperation")
+                .addType("OffsetModifierOperation")
                 .add("x", mX)
                 .add("y", mY);
     }

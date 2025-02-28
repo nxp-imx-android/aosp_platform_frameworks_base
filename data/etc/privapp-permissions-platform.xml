@@ -619,6 +619,8 @@ applications that come with the platform
         <permission name="android.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE"/>
         <permission name="android.permission.MANAGE_GLOBAL_SOUND_QUALITY_SERVICE"/>
         <permission name="android.permission.READ_COLOR_ZONES"/>
+        <!-- Permission required for CTS test - CtsTextClassifierTestCases -->
+        <permission name="android.permission.ACCESS_TEXT_CLASSIFIER_BY_TYPE"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.statementservice">

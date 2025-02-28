@@ -452,6 +452,14 @@ public class KeyguardSecurityContainerTest extends SysuiTestCase {
         verify(keyguardPasswordView).setDisappearAnimationListener(any());
     }
 
+    @Test
+    public void setupForDelayedAppear() {
+        mKeyguardSecurityContainer.setupForDelayedAppear();
+        assertThat(mKeyguardSecurityContainer.getTranslationY()).isEqualTo(0f);
+        assertThat(mKeyguardSecurityContainer.getAlpha()).isEqualTo(0f);
+        assertThat(mKeyguardSecurityContainer.isAppearAnimationDelayed()).isTrue();
+    }
+
     private BackEvent createBackEvent(float touchX, float progress) {
         return new BackEvent(0, 0, progress, BackEvent.EDGE_LEFT);
     }

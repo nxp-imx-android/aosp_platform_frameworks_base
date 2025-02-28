@@ -38,6 +38,18 @@ flag {
 }
 
 flag {
+    name: "enable_shell_initial_bounds_regression_bug_fix"
+    namespace: "lse_desktop_experience"
+    description: "Enables fix for Shell initial bounds regression, forcing core to calculate /n"
+                 "initial bounds in desktop launch params while respecting cascading position /n"
+                 "passed by Shell."
+    bug: "396075922"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_windowing_dynamic_initial_bounds"
     namespace: "lse_desktop_experience"
     description: "Enables new initial bounds for desktop windowing which adjust depending on app constraints"

@@ -15,19 +15,22 @@
  */
 package com.android.systemui.statusbar.notification
 
+import android.animation.AnimatorTestRule
 import android.util.FloatProperty
 import android.util.Property
 import android.view.View
-import androidx.dynamicanimation.animation.DynamicAnimation
+
 import androidx.test.annotation.UiThreadTest
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.dynamicanimation.animation.DynamicAnimation
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.notification.stack.AnimationProperties
 import com.android.systemui.statusbar.notification.stack.ViewState
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
@@ -50,6 +53,8 @@ class PhysicsPropertyAnimatorTest : SysuiTestCase() {
                 return _value
             }
         }
+    @get:Rule
+    val animatorTestRule = AnimatorTestRule(this)
     private val property: PhysicsProperty =
         PhysicsProperty(R.id.scale_x_animator_tag, effectiveProperty)
     private var finishListener: DynamicAnimation.OnAnimationEndListener? = null

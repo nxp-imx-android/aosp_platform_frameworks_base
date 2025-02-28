@@ -1323,14 +1323,13 @@ public abstract class WallpaperService extends Service {
                                 redrawNeeded ? 1 : 0));
                         return;
                     }
-
-                    final int transformHint = SurfaceControl.rotationToBufferTransform(
-                            (mDisplay.getInstallOrientation() + mDisplay.getRotation()) % 4);
-                    mSurfaceControl.setTransformHint(transformHint);
                     WindowLayout.computeSurfaceSize(mLayout, maxBounds, mWidth, mHeight,
                             mWinFrames.frame, false /* dragResizing */, mSurfaceSize);
 
                     if (mSurfaceControl.isValid()) {
+                        final int transformHint = SurfaceControl.rotationToBufferTransform(
+                            (mDisplay.getInstallOrientation() + mDisplay.getRotation()) % 4);
+                        mSurfaceControl.setTransformHint(transformHint);
                         if (mBbqSurfaceControl == null) {
                             mBbqSurfaceControl = new SurfaceControl.Builder()
                                     .setName("Wallpaper BBQ wrapper")

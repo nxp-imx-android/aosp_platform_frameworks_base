@@ -28,6 +28,7 @@ import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 
 import java.util.List;
 
@@ -228,5 +229,17 @@ public class DrawBitmapFontText extends PaintOperation implements VariableSuppor
                     glyph.mBitmapId, xPos, mY + glyph.mMarginTop, xPos2, mY + glyph.mBitmapHeight);
             xPos = xPos2 + glyph.mMarginRight;
         }
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .addType(CLASS_NAME)
+                .add("textId", mTextID)
+                .add("bitmapFontId", mBitmapFontID)
+                .add("start", mStart)
+                .add("end", mEnd)
+                .add("x", mX, mOutX)
+                .add("y", mY, mOutY);
     }
 }

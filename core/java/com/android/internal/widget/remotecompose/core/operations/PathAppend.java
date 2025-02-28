@@ -258,9 +258,6 @@ public class PathAppend extends PaintOperation implements VariableSupport, Seria
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer
-                .add("type", CLASS_NAME)
-                .add("id", mInstanceId)
-                .add("path", pathString(mFloatPath));
+        serializer.addType(CLASS_NAME).add("id", mInstanceId).add("path", pathString(mFloatPath));
     }
 }

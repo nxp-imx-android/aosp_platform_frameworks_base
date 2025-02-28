@@ -214,9 +214,6 @@ public final class PerfettoTrackEventExtra {
          * Initialize the builder for a new trace event.
          */
         public Builder init(int traceType, PerfettoTrace.Category category) {
-            if (!category.isEnabled()) {
-                return this;
-            }
             mTraceType = traceType;
             mCategory = category;
             mEventName = "";
@@ -228,7 +225,7 @@ public final class PerfettoTrackEventExtra {
 
             mExtra.reset();
             // Reset after on init in case the thread created builders without calling emit
-            return initInternal(this, null, true);
+            return initInternal(this, null, category.isEnabled());
         }
 
         /**

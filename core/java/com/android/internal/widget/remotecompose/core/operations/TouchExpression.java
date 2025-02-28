@@ -716,9 +716,9 @@ public class TouchExpression extends Operation
     @Override
     public void serialize(MapSerializer serializer) {
         serializer
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("id", mId)
-                .add("mDefValue", mDefValue, mOutDefValue)
+                .add("defValue", mDefValue, mOutDefValue)
                 .add("min", mMin, mOutMin)
                 .add("max", mMax, mOutMax)
                 .add("mode", mMode)

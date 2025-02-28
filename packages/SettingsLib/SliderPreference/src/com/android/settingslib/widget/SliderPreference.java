@@ -22,6 +22,7 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -72,6 +73,7 @@ public class SliderPreference extends Preference {
     private int mSliderIncrement;
     private boolean mAdjustable;
     private boolean mTrackingTouch;
+    private CharSequence mSliderContentDescription;
 
     /**
      * Listener reacting to the user pressing DPAD left/right keys if {@code
@@ -143,6 +145,7 @@ public class SliderPreference extends Preference {
             @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setLayoutResource(R.layout.settingslib_expressive_preference_slider);
+        setSelectable(false);
 
         TypedArray a = context.obtainStyledAttributes(
                 attrs, androidx.preference.R.styleable.SeekBarPreference, defStyleAttr,
@@ -265,6 +268,14 @@ public class SliderPreference extends Preference {
         } else {
             mSliderIncrement = (int) (mSlider.getStepSize());
         }
+        final CharSequence title = getTitle();
+        if (!TextUtils.isEmpty(mSliderContentDescription)) {
+            mSlider.setContentDescription(mSliderContentDescription);
+        } else if (!TextUtils.isEmpty(title)) {
+            mSlider.setContentDescription(title);
+        } else {
+            mSlider.setContentDescription(null);
+        }
         mSlider.setValueFrom(mMin);
         mSlider.setValueTo(mMax);
         mSlider.setValue(mSliderValue);
@@ -273,6 +284,8 @@ public class SliderPreference extends Preference {
         mSlider.clearOnChangeListeners();
         mSlider.addOnChangeListener(mChangeListener);
         mSlider.setEnabled(isEnabled());
+        mSlider.setFocusable(isSelectable());
+        mSlider.setClickable(isSelectable());
 
         // Set up slider color
         mSlider.setTrackActiveTintList(mTrackActiveColor);
@@ -469,6 +482,19 @@ public class SliderPreference extends Preference {
      */
     public void setValue(int sliderValue) {
         setValueInternal(sliderValue, true);
+    }
+
+
+    /**
+     * Sets the content description of the {@link Slider}.
+     *
+     * @param contentDescription The content description of the {@link Slider}
+     */
+    public void setSliderContentDescription(@Nullable CharSequence contentDescription) {
+        mSliderContentDescription = contentDescription;
+        if (mSlider != null) {
+            mSlider.setContentDescription(contentDescription);
+        }
     }
 
     @Override

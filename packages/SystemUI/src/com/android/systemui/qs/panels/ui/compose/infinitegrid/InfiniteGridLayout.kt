@@ -85,8 +85,6 @@ constructor(
             remember(sizedTiles) { List(sizedTiles.size) { BounceableTileViewModel() } }
         val squishiness by viewModel.squishinessViewModel.squishiness.collectAsStateWithLifecycle()
         val scope = rememberCoroutineScope()
-        var cellIndex = 0
-
         val spans by remember(sizedTiles) { derivedStateOf { sizedTiles.fastMap { it.width } } }
 
         VerticalSpannedGrid(
@@ -95,10 +93,9 @@ constructor(
             rowSpacing = dimensionResource(R.dimen.qs_tile_margin_vertical),
             spans = spans,
             keys = { sizedTiles[it].tile.spec },
-        ) { spanIndex ->
+        ) { spanIndex, column, isFirstInColumn, isLastInColumn ->
             val it = sizedTiles[spanIndex]
-            val column = cellIndex % columns
-            cellIndex += it.width
+
             Element(it.tile.spec.toElementKey(spanIndex), Modifier) {
                 Tile(
                     tile = it.tile,
@@ -106,7 +103,15 @@ constructor(
                     squishiness = { squishiness },
                     tileHapticsViewModelFactoryProvider = tileHapticsViewModelFactoryProvider,
                     coroutineScope = scope,
-                    bounceableInfo = bounceables.bounceableInfo(it, spanIndex, column, columns),
+                    bounceableInfo =
+                        bounceables.bounceableInfo(
+                            it,
+                            index = spanIndex,
+                            column = column,
+                            columns = columns,
+                            isFirstInRow = isFirstInColumn,
+                            isLastInRow = isLastInColumn,
+                        ),
                     detailsViewModel = detailsViewModel,
                 )
             }

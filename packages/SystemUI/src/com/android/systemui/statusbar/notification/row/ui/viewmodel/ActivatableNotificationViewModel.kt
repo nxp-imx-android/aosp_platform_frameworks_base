@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.row.ui.viewmodel
 
 import com.android.systemui.accessibility.domain.interactor.AccessibilityInteractor
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.flow.Flow
@@ -26,25 +27,34 @@ import kotlinx.coroutines.flow.map
 interface ActivatableNotificationViewModel : ExpandableOutlineViewModel {
     /** Does the view react to touches? */
     val isTouchable: Flow<Boolean>
+    val isBlurSupported: Flow<Boolean>
 
     companion object {
         operator fun invoke(
             a11yInteractor: AccessibilityInteractor,
-        ): ActivatableNotificationViewModel = ActivatableNotificationViewModelImpl(a11yInteractor)
+            windowRootViewBlurInteractor: WindowRootViewBlurInteractor
+        ): ActivatableNotificationViewModel =
+            ActivatableNotificationViewModelImpl(a11yInteractor, windowRootViewBlurInteractor)
     }
 }
 
 private class ActivatableNotificationViewModelImpl(
     a11yInteractor: AccessibilityInteractor,
+    windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
 ) : ActivatableNotificationViewModel {
     override val isTouchable: Flow<Boolean> =
         // If a11y touch exploration is enabled, then the activatable view should ignore touches
         a11yInteractor.isTouchExplorationEnabled.map { !it }
+    override val isBlurSupported: Flow<Boolean> =
+        windowRootViewBlurInteractor.isBlurCurrentlySupported
 }
 
 @Module
 object ActivatableNotificationViewModelModule {
     @Provides
-    fun provideViewModel(interactor: AccessibilityInteractor) =
-        ActivatableNotificationViewModel(interactor)
+    fun provideViewModel(
+        a11yInteractor: AccessibilityInteractor,
+        windowRootViewBlurInteractor: WindowRootViewBlurInteractor
+    ) =
+        ActivatableNotificationViewModel(a11yInteractor, windowRootViewBlurInteractor)
 }

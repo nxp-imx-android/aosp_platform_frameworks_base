@@ -35,9 +35,13 @@ public class LongConstant extends Operation implements Serializable {
     private static final String CLASS_NAME = "LongConstant";
 
     private static final int OP_CODE = Operations.DATA_LONG;
-    private final long mValue;
+    private long mValue;
     private final int mId;
 
+    /**
+     * @param id the id of the constant
+     * @param value the value of the constant
+     */
     public LongConstant(int id, long value) {
         mId = id;
         mValue = value;
@@ -50,6 +54,15 @@ public class LongConstant extends Operation implements Serializable {
      */
     public long getValue() {
         return mValue;
+    }
+
+    /**
+     * Set the value of the long constant
+     *
+     * @param value the value to set it to
+     */
+    public void setValue(long value) {
+        mValue = value;
     }
 
     @Override
@@ -114,6 +127,6 @@ public class LongConstant extends Operation implements Serializable {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", CLASS_NAME).add("id", mId).add("value", mValue);
+        serializer.addType(CLASS_NAME).add("id", mId).add("value", mValue);
     }
 }

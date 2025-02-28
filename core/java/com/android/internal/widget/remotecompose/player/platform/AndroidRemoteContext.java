@@ -20,6 +20,7 @@ import android.annotation.Nullable;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
@@ -30,6 +31,7 @@ import com.android.internal.widget.remotecompose.core.operations.FloatExpression
 import com.android.internal.widget.remotecompose.core.operations.ShaderData;
 import com.android.internal.widget.remotecompose.core.operations.utilities.ArrayAccess;
 import com.android.internal.widget.remotecompose.core.operations.utilities.DataMap;
+import com.android.internal.widget.remotecompose.core.types.LongConstant;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -141,6 +143,16 @@ public class AndroidRemoteContext extends RemoteContext {
     }
 
     @Override
+    public void setNamedLong(String name, long value) {
+        VarName entry = mVarNameHashMap.get(name);
+        if (entry != null) {
+            int id = entry.mId;
+            LongConstant longConstant = (LongConstant) mRemoteComposeState.getObject(id);
+            longConstant.setValue(value);
+        }
+    }
+
+    @Override
     public void setNamedDataOverride(String dataName, Object value) {
         if (mVarNameHashMap.get(dataName) != null) {
             int id = mVarNameHashMap.get(dataName).mId;
@@ -215,6 +227,27 @@ public class AndroidRemoteContext extends RemoteContext {
                         case BitmapData.TYPE_PNG_8888:
                             image = BitmapFactory.decodeByteArray(data, 0, data.length);
                             break;
+                        case BitmapData.TYPE_PNG_ALPHA_8:
+                            image = decodePreferringAlpha8(data);
+
+                            // If needed convert to ALPHA_8.
+                            if (!image.getConfig().equals(Bitmap.Config.ALPHA_8)) {
+                                Bitmap alpha8Bitmap =
+                                        Bitmap.createBitmap(
+                                                image.getWidth(),
+                                                image.getHeight(),
+                                                Bitmap.Config.ALPHA_8);
+                                Canvas canvas = new Canvas(alpha8Bitmap);
+                                Paint paint = new Paint();
+                                paint.setXfermode(
+                                        new android.graphics.PorterDuffXfermode(
+                                                android.graphics.PorterDuff.Mode.SRC));
+                                canvas.drawBitmap(image, 0, 0, paint);
+                                image.recycle(); // Release resources
+
+                                image = alpha8Bitmap;
+                            }
+                            break;
                         case BitmapData.TYPE_RAW8888:
                             image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                             int[] idata = new int[data.length / 4];
@@ -253,6 +286,12 @@ public class AndroidRemoteContext extends RemoteContext {
             }
             mRemoteComposeState.cacheData(imageId, image);
         }
+    }
+
+    private Bitmap decodePreferringAlpha8(@NonNull byte[] data) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+        return BitmapFactory.decodeByteArray(data, 0, data.length, options);
     }
 
     @Override

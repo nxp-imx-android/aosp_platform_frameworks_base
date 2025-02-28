@@ -50,3 +50,10 @@ flag {
      description: "Cache null returns from binder calls"
      bug: "372923336"
 }
+
+flag {
+     namespace: "system_performance"
+     name: "pic_test_mode"
+     description: "Updated test mode for PIC"
+     bug: "396173886"
+}

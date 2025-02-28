@@ -20,7 +20,6 @@ import android.app.Notification.MediaStyle
 import android.media.session.MediaSession
 import android.platform.test.flag.junit.FlagsParameterization
 import android.provider.Settings
-import android.service.notification.StatusBarNotification
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.dumpManager
@@ -222,16 +221,19 @@ class OriginalUnseenKeyguardCoordinatorTest(flags: FlagsParameterization) : Sysu
                         mock<ExpandableNotificationRow>().apply {
                             whenever(isMediaRow).thenReturn(true)
                         }
-                    sbn = SbnBuilder().setNotification(
-                        Notification.Builder(context, "channel").setStyle(
-                            MediaStyle().setMediaSession(
-                                MediaSession(
-                                    context,
-                                    "tag"
-                                ).sessionToken
+                    sbn =
+                        SbnBuilder()
+                            .setNotification(
+                                Notification.Builder(context, "channel")
+                                    .setStyle(
+                                        MediaStyle()
+                                            .setMediaSession(
+                                                MediaSession(context, "tag").sessionToken
+                                            )
+                                    )
+                                    .build()
                             )
-                        ).build()
-                    ).build()
+                            .build()
                 }
             collectionListener.onEntryAdded(fakeEntry)
 
@@ -628,6 +630,132 @@ class OriginalUnseenKeyguardCoordinatorTest(flags: FlagsParameterization) : Sysu
 
             // THEN: The notification is considered unseen and is not filtered out.
             assertThat(unseenFilter.shouldFilterOut(entry, 0L)).isFalse()
+        }
+    }
+
+    @Test
+    fun seenNotificationOnKeyguardMarkedAsSeenIfUpdatedBySystemServer() {
+        // GIVEN: Keyguard is showing, not dozing, unseen notification is present
+        keyguardRepository.setKeyguardShowing(true)
+        keyguardRepository.setIsDozing(false)
+        runKeyguardCoordinatorTest {
+            val fakeEntry = NotificationEntryBuilder().build()
+            collectionListener.onEntryAdded(fakeEntry)
+            keyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.AOD,
+                to = KeyguardState.LOCKSCREEN,
+                this.testScheduler,
+            )
+            testScheduler.runCurrent()
+
+            // WHEN: five seconds have passed
+            testScheduler.advanceTimeBy(5.seconds)
+            testScheduler.runCurrent()
+
+            // WHEN: Keyguard is no longer showing
+            keyguardRepository.setKeyguardShowing(false)
+            kosmos.setTransition(
+                sceneTransition = Idle(Scenes.Gone),
+                stateTransition = TransitionStep(KeyguardState.LOCKSCREEN, KeyguardState.GONE),
+            )
+
+            // WHEN: the notification is updated by the Server
+            collectionListener.onEntryUpdated(fakeEntry, UpdateSource.SystemServer)
+            testScheduler.runCurrent()
+
+            // WHEN: Keyguard is shown again
+            keyguardRepository.setKeyguardShowing(true)
+            kosmos.setTransition(
+                sceneTransition = Idle(Scenes.Lockscreen),
+                stateTransition = TransitionStep(KeyguardState.GONE, KeyguardState.AOD),
+            )
+
+            // THEN: The notification is still recognized as "seen" and is filtered out.
+            assertThat(unseenFilter.shouldFilterOut(fakeEntry, 0L)).isTrue()
+        }
+    }
+
+    @Test
+    fun seenNotificationOnKeyguardMarkedAsSeenIfUpdatedBySystemUi() {
+        // GIVEN: Keyguard is showing, not dozing, unseen notification is present
+        keyguardRepository.setKeyguardShowing(true)
+        keyguardRepository.setIsDozing(false)
+        runKeyguardCoordinatorTest {
+            val fakeEntry = NotificationEntryBuilder().build()
+            collectionListener.onEntryAdded(fakeEntry)
+            keyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.AOD,
+                to = KeyguardState.LOCKSCREEN,
+                this.testScheduler,
+            )
+            testScheduler.runCurrent()
+
+            // WHEN: five seconds have passed
+            testScheduler.advanceTimeBy(5.seconds)
+            testScheduler.runCurrent()
+
+            // WHEN: Keyguard is no longer showing
+            keyguardRepository.setKeyguardShowing(false)
+            kosmos.setTransition(
+                sceneTransition = Idle(Scenes.Gone),
+                stateTransition = TransitionStep(KeyguardState.LOCKSCREEN, KeyguardState.GONE),
+            )
+
+            // WHEN: the notification is updated by the SystemUi
+            collectionListener.onEntryUpdated(fakeEntry, UpdateSource.SystemUi)
+            testScheduler.runCurrent()
+
+            // WHEN: Keyguard is shown again
+            keyguardRepository.setKeyguardShowing(true)
+            kosmos.setTransition(
+                sceneTransition = Idle(Scenes.Lockscreen),
+                stateTransition = TransitionStep(KeyguardState.GONE, KeyguardState.AOD),
+            )
+
+            // THEN: The notification is still recognized as "seen" and is filtered out.
+            assertThat(unseenFilter.shouldFilterOut(fakeEntry, 0L)).isTrue()
+        }
+    }
+
+    @Test
+    fun seenNotificationOnKeyguardMarkedAsUnseenIfUpdatedByApp() {
+        // GIVEN: Keyguard is showing, not dozing, unseen notification is present
+        keyguardRepository.setKeyguardShowing(true)
+        keyguardRepository.setIsDozing(false)
+        runKeyguardCoordinatorTest {
+            val fakeEntry = NotificationEntryBuilder().build()
+            collectionListener.onEntryAdded(fakeEntry)
+            keyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.AOD,
+                to = KeyguardState.LOCKSCREEN,
+                this.testScheduler,
+            )
+            testScheduler.runCurrent()
+
+            // WHEN: five seconds have passed
+            testScheduler.advanceTimeBy(5.seconds)
+            testScheduler.runCurrent()
+
+            // WHEN: Keyguard is no longer showing
+            keyguardRepository.setKeyguardShowing(false)
+            kosmos.setTransition(
+                sceneTransition = Idle(Scenes.Gone),
+                stateTransition = TransitionStep(KeyguardState.LOCKSCREEN, KeyguardState.GONE),
+            )
+
+            // WHEN: the notification is updated by the App
+            collectionListener.onEntryUpdated(fakeEntry, UpdateSource.App)
+            testScheduler.runCurrent()
+
+            // WHEN: Keyguard is shown again
+            keyguardRepository.setKeyguardShowing(true)
+            kosmos.setTransition(
+                sceneTransition = Idle(Scenes.Lockscreen),
+                stateTransition = TransitionStep(KeyguardState.GONE, KeyguardState.AOD),
+            )
+
+            // THEN: The notification is now recognized as "unseen" and is not filtered out.
+            assertThat(unseenFilter.shouldFilterOut(fakeEntry, 0L)).isFalse()
         }
     }
 

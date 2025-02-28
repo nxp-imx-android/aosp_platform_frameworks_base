@@ -63,7 +63,7 @@ GIFMovie::GIFMovie(SkStream* stream)
     }
     fCurrIndex = -1;
     fLastDrawIndex = -1;
-    fPaintingColor = SkPackARGB32(0, 0, 0, 0);
+    fPaintingColor = SK_AlphaTRANSPARENT;
 }
 
 GIFMovie::~GIFMovie()
@@ -127,7 +127,7 @@ static void copyLine(uint32_t* dst, const unsigned char* src, const ColorMapObje
     for (; width > 0; width--, src++, dst++) {
         if (*src != transparent && *src < cmap->ColorCount) {
             const GifColorType& col = cmap->Colors[*src];
-            *dst = SkPackARGB32(0xFF, col.Red, col.Green, col.Blue);
+            *dst = SkColorSetRGB(col.Red, col.Green, col.Blue);
         }
     }
 }
@@ -395,10 +395,10 @@ bool GIFMovie::onGetBitmap(SkBitmap* bm)
         lastIndex = fGIF->ImageCount - 1;
     }
 
-    SkColor bgColor = SkPackARGB32(0, 0, 0, 0);
+    SkColor bgColor = SK_ColorTRANSPARENT;
     if (gif->SColorMap != nullptr && gif->SBackGroundColor < gif->SColorMap->ColorCount) {
         const GifColorType& col = gif->SColorMap->Colors[gif->SBackGroundColor];
-        bgColor = SkColorSetARGB(0xFF, col.Red, col.Green, col.Blue);
+        bgColor = SkColorSetRGB(col.Red, col.Green, col.Blue);
     }
 
     // draw each frames - not intelligent way
@@ -411,7 +411,7 @@ bool GIFMovie::onGetBitmap(SkBitmap* bm)
             if (!trans && gif->SColorMap != nullptr) {
                 fPaintingColor = bgColor;
             } else {
-                fPaintingColor = SkColorSetARGB(0, 0, 0, 0);
+                fPaintingColor = SK_ColorTRANSPARENT;
             }
 
             bm->eraseColor(fPaintingColor);

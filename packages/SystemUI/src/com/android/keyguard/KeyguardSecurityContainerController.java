@@ -18,6 +18,7 @@ package com.android.keyguard;
 
 import static android.app.StatusBarManager.SESSION_KEYGUARD;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
+import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 
 import static com.android.keyguard.KeyguardSecurityContainer.BOUNCER_DISMISSIBLE_KEYGUARD;
 import static com.android.keyguard.KeyguardSecurityContainer.BOUNCER_DISMISS_BIOMETRIC;
@@ -384,6 +385,10 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
                             && getResources().getBoolean(R.bool.update_bouncer_constraints)) {
                         boolean useSplitBouncer = orientation == ORIENTATION_LANDSCAPE;
                         mSecurityViewFlipperController.updateConstraints(useSplitBouncer);
+                    }
+                    if (orientation == ORIENTATION_PORTRAIT) {
+                        // If there is any delayed bouncer appear animation it can start now
+                        startAppearAnimationIfDelayed();
                     }
                 }
 
@@ -845,6 +850,16 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
         }
     }
 
+    /** Start appear animation which was previously delayed from opening bouncer in landscape. */
+    public void startAppearAnimationIfDelayed() {
+        if (!mView.isAppearAnimationDelayed()) {
+            return;
+        }
+        setAlpha(1f);
+        appear();
+        mView.setIsAppearAnimationDelayed(false);
+    }
+
     /** Called when the bouncer changes visibility. */
     public void onBouncerVisibilityChanged(boolean isVisible) {
         if (!isVisible) {
@@ -1300,5 +1315,14 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
         float scaledFraction = BouncerPanelExpansionCalculator.showBouncerProgress(fraction);
         setAlpha(MathUtils.constrain(1 - scaledFraction, 0f, 1f));
         mView.setTranslationY(scaledFraction * mTranslationY);
+    }
+
+    /** Set up view for delayed appear animation. */
+    public void setupForDelayedAppear() {
+        mView.setupForDelayedAppear();
+    }
+
+    public boolean isLandscapeOrientation() {
+        return mLastOrientation == Configuration.ORIENTATION_LANDSCAPE;
     }
 }

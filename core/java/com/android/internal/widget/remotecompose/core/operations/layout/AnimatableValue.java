@@ -129,6 +129,6 @@ public class AnimatableValue implements Serializable {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", "AnimatableValue").add("id", mId);
+        serializer.addType("AnimatableValue").add("id", mId);
     }
 }

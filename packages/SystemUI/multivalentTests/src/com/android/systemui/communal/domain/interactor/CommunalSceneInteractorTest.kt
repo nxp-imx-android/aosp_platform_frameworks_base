@@ -134,7 +134,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             underTest.snapToScene(
                 CommunalScenes.Communal,
                 "test",
-                ActivityTransitionAnimator.TIMINGS.totalDuration
+                ActivityTransitionAnimator.TIMINGS.totalDuration,
             )
             assertThat(currentScene).isEqualTo(CommunalScenes.Blank)
             advanceTimeBy(ActivityTransitionAnimator.TIMINGS.totalDuration)
@@ -265,6 +265,48 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
                     isUserInputOngoing = flowOf(false),
                 )
             assertThat(isIdleOnCommunal).isEqualTo(false)
+        }
+
+    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @Test
+    fun isTransitioningToOrIdleOnCommunal() =
+        testScope.runTest {
+            // isIdleOnCommunal is false when not on communal.
+            val isTransitioningToOrIdleOnCommunal by
+                collectLastValue(underTest.isTransitioningToOrIdleOnCommunal)
+            assertThat(isTransitioningToOrIdleOnCommunal).isEqualTo(false)
+
+            val transitionState: MutableStateFlow<ObservableTransitionState> =
+                MutableStateFlow(
+                    ObservableTransitionState.Transition(
+                        fromScene = CommunalScenes.Blank,
+                        toScene = CommunalScenes.Communal,
+                        currentScene = flowOf(CommunalScenes.Communal),
+                        progress = flowOf(0f),
+                        isInitiatedByUserInput = false,
+                        isUserInputOngoing = flowOf(false),
+                    )
+                )
+
+            // Start transition to communal.
+            repository.setTransitionState(transitionState)
+            assertThat(isTransitioningToOrIdleOnCommunal).isEqualTo(true)
+
+            // Finish transition to communal
+            transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Communal)
+            assertThat(isTransitioningToOrIdleOnCommunal).isEqualTo(true)
+
+            // Start transition away from communal.
+            transitionState.value =
+                ObservableTransitionState.Transition(
+                    fromScene = CommunalScenes.Communal,
+                    toScene = CommunalScenes.Blank,
+                    currentScene = flowOf(CommunalScenes.Blank),
+                    progress = flowOf(.1f),
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                )
+            assertThat(isTransitioningToOrIdleOnCommunal).isEqualTo(false)
         }
 
     @DisableFlags(FLAG_SCENE_CONTAINER)

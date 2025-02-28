@@ -133,6 +133,6 @@ public class RootContentDescription extends Operation
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", CLASS_NAME).add("contentDescriptionId", mContentDescription);
+        serializer.addType(CLASS_NAME).add("contentDescriptionId", mContentDescription);
     }
 }

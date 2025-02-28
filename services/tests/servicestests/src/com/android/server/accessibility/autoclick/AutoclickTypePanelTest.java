@@ -78,6 +78,7 @@ public class AutoclickTypePanelTest {
 
     private @AutoclickType int mActiveClickType = AUTOCLICK_TYPE_LEFT_CLICK;
     private boolean mPaused;
+    private boolean mHovered;
 
     private final ClickPanelControllerInterface clickPanelController =
             new ClickPanelControllerInterface() {
@@ -89,6 +90,11 @@ public class AutoclickTypePanelTest {
                 @Override
                 public void toggleAutoclickPause(boolean paused) {
                     mPaused = paused;
+                }
+
+                @Override
+                public void onHoverChange(boolean hovered) {
+                    mHovered = hovered;
                 }
             };
 
@@ -412,6 +418,33 @@ public class AutoclickTypePanelTest {
         upEvent.recycle();
     }
 
+    @Test
+    public void hovered_IsHovered() {
+        AutoclickLinearLayout mContext = mAutoclickTypePanel.getContentViewForTesting();
+
+        assertThat(mAutoclickTypePanel.isHovered()).isFalse();
+        mContext.onInterceptHoverEvent(getFakeMotionHoverMoveEvent());
+        assertThat(mAutoclickTypePanel.isHovered()).isTrue();
+    }
+
+    @Test
+    public void hovered_OnHoverChange_isHovered() {
+        AutoclickLinearLayout mContext = mAutoclickTypePanel.getContentViewForTesting();
+
+        mHovered = false;
+        mContext.onHoverChanged(true);
+        assertThat(mHovered).isTrue();
+    }
+
+    @Test
+    public void hovered_OnHoverChange_isNotHovered() {
+        AutoclickLinearLayout mContext = mAutoclickTypePanel.getContentViewForTesting();
+
+        mHovered = true;
+        mContext.onHoverChanged(false);
+        assertThat(mHovered).isFalse();
+    }
+
     private void verifyButtonHasSelectedStyle(@NonNull LinearLayout button) {
         GradientDrawable gradientDrawable = (GradientDrawable) button.getBackground();
         assertThat(gradientDrawable.getColor().getDefaultColor())
@@ -425,5 +458,15 @@ public class AutoclickTypePanelTest {
         assertThat(params.gravity).isEqualTo(expectedPosition[1]);
         assertThat(params.x).isEqualTo(expectedPosition[2]);
         assertThat(params.y).isEqualTo(expectedPosition[3]);
+    }
+
+    private MotionEvent getFakeMotionHoverMoveEvent() {
+        return MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 0,
+                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
+                /* x= */ 0,
+                /* y= */ 0,
+                /* metaState= */ 0);
     }
 }

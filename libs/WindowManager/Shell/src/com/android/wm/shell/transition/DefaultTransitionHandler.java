@@ -95,7 +95,6 @@ import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.window.TransitionInfo;
 import android.window.TransitionMetrics;
@@ -835,9 +834,8 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 a = mTransitionAnimation.loadVoiceActivityExitAnimation(enter, userId);
             }
         } else if (changeMode == TRANSIT_CHANGE) {
-            // In the absence of a specific adapter, we just want to keep everything stationary.
-            a = new AlphaAnimation(1.f, 1.f);
-            a.setDuration(TransitionAnimation.DEFAULT_APP_TRANSITION_DURATION);
+            // Apply end state directly by default.
+            return null;
         } else if (type == TRANSIT_RELAUNCH) {
             a = mTransitionAnimation.createRelaunchAnimation(endBounds, mInsets, endBounds);
         } else if (overrideType == ANIM_CUSTOM

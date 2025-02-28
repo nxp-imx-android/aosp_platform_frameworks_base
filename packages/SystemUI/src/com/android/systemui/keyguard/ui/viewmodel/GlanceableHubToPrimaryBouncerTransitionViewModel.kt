@@ -17,33 +17,39 @@
 package com.android.systemui.keyguard.ui.viewmodel
 
 import com.android.systemui.Flags
+import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalBackgroundType
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.keyguard.domain.interactor.FromLockscreenTransitionInteractor
+import com.android.systemui.keyguard.domain.interactor.FromGlanceableHubTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState.GLANCEABLE_HUB
 import com.android.systemui.keyguard.shared.model.KeyguardState.PRIMARY_BOUNCER
 import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
 import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.keyguard.ui.transitions.PrimaryBouncerTransition
+import com.android.systemui.statusbar.policy.KeyguardStateController
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
 class GlanceableHubToPrimaryBouncerTransitionViewModel
 @Inject
 constructor(
     private val blurConfig: BlurConfig,
     animationFlow: KeyguardTransitionAnimationFlow,
-    communalSettingsInteractor: CommunalSettingsInteractor,
+    private val communalSettingsInteractor: CommunalSettingsInteractor,
+    private val communalSceneInteractor: CommunalSceneInteractor,
+    private val keyguardStateController: KeyguardStateController,
 ) : PrimaryBouncerTransition {
     private val transitionAnimation =
         animationFlow
             .setup(
-                duration = FromLockscreenTransitionInteractor.TO_PRIMARY_BOUNCER_DURATION,
+                duration = FromGlanceableHubTransitionInteractor.TO_BOUNCER_DURATION,
                 edge = Edge.INVALID,
             )
             .setupWithoutSceneContainer(edge = Edge.create(GLANCEABLE_HUB, PRIMARY_BOUNCER))
@@ -58,6 +64,13 @@ constructor(
         } else {
             transitionAnimation.immediatelyTransitionTo(blurConfig.maxBlurRadiusPx)
         }
+
+    /** Whether to delay the animation to fade in bouncer elements. */
+    fun willDelayAppearAnimation(isLandscape: Boolean): Boolean =
+        communalSettingsInteractor.isV2FlagEnabled() &&
+            communalSceneInteractor.isIdleOnCommunal.value &&
+            !keyguardStateController.isKeyguardScreenRotationAllowed() &&
+            isLandscape
 
     override val notificationBlurRadius: Flow<Float> =
         transitionAnimation.immediatelyTransitionTo(0.0f)

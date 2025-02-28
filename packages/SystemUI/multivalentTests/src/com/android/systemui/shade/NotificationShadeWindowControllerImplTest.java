@@ -84,11 +84,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
-import java.util.List;
-import java.util.concurrent.Executor;
-
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
+
+import java.util.List;
+import java.util.concurrent.Executor;
 
 @RunWith(ParameterizedAndroidJunit4.class)
 @RunWithLooper(setAsMainLooper = true)
@@ -407,6 +407,19 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
         verify(mWindowManager).updateViewLayout(any(), mLayoutParameters.capture());
         assertThat(mLayoutParameters.getValue().screenOrientation)
                 .isEqualTo(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+    }
+
+    @Test
+    public void hubOrientationAware_layoutParamsUpdated() {
+        mNotificationShadeWindowController.setKeyguardShowing(false);
+        mNotificationShadeWindowController.setBouncerShowing(false);
+        mNotificationShadeWindowController.setGlanceableHubOrientationAware(true);
+        when(mKeyguardStateController.isKeyguardScreenRotationAllowed()).thenReturn(false);
+        mNotificationShadeWindowController.onConfigChanged(new Configuration());
+
+        verify(mWindowManager, atLeastOnce()).updateViewLayout(any(), mLayoutParameters.capture());
+        assertThat(mLayoutParameters.getValue().screenOrientation)
+                .isEqualTo(ActivityInfo.SCREEN_ORIENTATION_USER);
     }
 
     @Test

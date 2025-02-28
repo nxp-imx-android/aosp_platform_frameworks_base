@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.collection.coordinator
 
+import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
@@ -89,6 +90,7 @@ class ConversationCoordinator @Inject constructor(
             object : NotifSectioner("Priority People", BUCKET_PRIORITY_PEOPLE) {
                 override fun isInSection(entry: PipelineEntry): Boolean {
                     return getPeopleType(entry) == TYPE_IMPORTANT_PERSON
+                            && entry.representativeEntry?.channel?.id !in SYSTEM_RESERVED_IDS
                 }
             }
 
@@ -96,10 +98,12 @@ class ConversationCoordinator @Inject constructor(
     val peopleAlertingSectioner = object : NotifSectioner("People(alerting)", BUCKET_PEOPLE) {
         override fun isInSection(entry: PipelineEntry): Boolean  {
             if (SortBySectionTimeFlag.isEnabled) {
-                return highPriorityProvider.isHighPriorityConversation(entry)
-                        || isConversation(entry)
+                return (highPriorityProvider.isHighPriorityConversation(entry)
+                        || isConversation(entry))
+                        && entry.representativeEntry?.channel?.id !in SYSTEM_RESERVED_IDS
             } else {
                 return highPriorityProvider.isHighPriorityConversation(entry)
+                        && entry.representativeEntry?.channel?.id !in SYSTEM_RESERVED_IDS
             }
         }
 
@@ -111,11 +115,12 @@ class ConversationCoordinator @Inject constructor(
     }
 
     val peopleSilentSectioner = object : NotifSectioner("People(silent)", BUCKET_PEOPLE) {
-        // Because the peopleAlertingSectioner is above this one, it will claim all conversations that are alerting.
-        // All remaining conversations must be silent.
+        // Because the peopleAlertingSectioner is above this one, it will claim all conversations
+        // that are alerting. All remaining conversations must be silent.
         override fun isInSection(entry: PipelineEntry): Boolean {
             SortBySectionTimeFlag.assertInLegacyMode()
             return isConversation(entry)
+                    && entry.representativeEntry?.channel?.id !in SYSTEM_RESERVED_IDS
         }
 
         override fun getComparator(): NotifComparator {

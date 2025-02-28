@@ -73,19 +73,19 @@ public abstract class LayoutManager extends LayoutComponent implements Measurabl
     }
 
     @Override
-    public float intrinsicHeight(@Nullable RemoteContext context) {
+    public float minIntrinsicHeight(@Nullable RemoteContext context) {
         float height = computeModifierDefinedHeight(context);
         for (Component c : mChildrenComponents) {
-            height = Math.max(c.intrinsicHeight(context), height);
+            height = Math.max(c.minIntrinsicHeight(context), height);
         }
         return height;
     }
 
     @Override
-    public float intrinsicWidth(@Nullable RemoteContext context) {
+    public float minIntrinsicWidth(@Nullable RemoteContext context) {
         float width = computeModifierDefinedWidth(context);
         for (Component c : mChildrenComponents) {
-            width = Math.max(c.intrinsicWidth(context), width);
+            width = Math.max(c.minIntrinsicWidth(context), width);
         }
         return width;
     }
@@ -149,10 +149,10 @@ public abstract class LayoutManager extends LayoutComponent implements Measurabl
                 Math.min(maxHeight, computeModifierDefinedHeight(context.getContext()));
 
         if (mWidthModifier.isIntrinsicMin()) {
-            maxWidth = intrinsicWidth(context.getContext()) + mPaddingLeft + mPaddingRight;
+            maxWidth = minIntrinsicWidth(context.getContext()) + mPaddingLeft + mPaddingRight;
         }
         if (mHeightModifier.isIntrinsicMin()) {
-            maxHeight = intrinsicHeight(context.getContext()) + mPaddingTop + mPaddingBottom;
+            maxHeight = minIntrinsicHeight(context.getContext()) + mPaddingTop + mPaddingBottom;
         }
 
         float insetMaxWidth = maxWidth - mPaddingLeft - mPaddingRight;
@@ -171,6 +171,11 @@ public abstract class LayoutManager extends LayoutComponent implements Measurabl
                     mHeightModifier.isWrap(),
                     measure,
                     mCachedWrapSize);
+            int selfVisibilityAfterMeasure = measure.get(this).getVisibility();
+            if (Visibility.hasOverride(selfVisibilityAfterMeasure)
+                    && mScheduledVisibility != selfVisibilityAfterMeasure) {
+                mScheduledVisibility = selfVisibilityAfterMeasure;
+            }
             measuredWidth = mCachedWrapSize.getWidth();
             if (hasHorizontalWrap) {
                 measuredWidth += mPaddingLeft + mPaddingRight;

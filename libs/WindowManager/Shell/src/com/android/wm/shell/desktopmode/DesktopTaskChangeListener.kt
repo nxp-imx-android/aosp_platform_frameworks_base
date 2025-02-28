@@ -35,7 +35,7 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
             desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
             return
         }
-        if (isFreeformTask(taskInfo)) {
+        if (isFreeformTask(taskInfo) && !desktopRepository.isActiveTask(taskInfo.taskId)) {
             desktopRepository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
         }
     }
@@ -44,23 +44,33 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
         logD("onTaskChanging for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
         val desktopRepository: DesktopRepository =
             desktopUserRepositories.getProfile(taskInfo.userId)
-        if (!desktopRepository.isActiveTask(taskInfo.taskId)) return
-
         // TODO: b/394281403 - with multiple desks, it's possible to have a non-freeform task
         //  inside a desk, so this should be decoupled from windowing mode.
         //  Also, changes in/out of desks are handled by the [DesksTransitionObserver], which has
         //  more specific information about the desk involved in the transition, which might be
         //  more accurate than assuming it's always the default/active desk in the display, as this
         //  method does.
-        // Case 1: Freeform task is changed in Desktop Mode.
-        if (isFreeformTask(taskInfo)) {
-            if (taskInfo.isVisible) {
-                desktopRepository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
+        // Case 1: When the task change is from a task in the desktop repository which is now
+        // fullscreen,
+        // remove the task from the desktop repository since it is no longer a freeform task.
+        if (!isFreeformTask(taskInfo)) {
+            if (desktopRepository.isActiveTask(taskInfo.taskId)) {
+                desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
             }
-            desktopRepository.updateTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
-        } else {
-            // Case 2: Freeform task is changed outside Desktop Mode.
-            desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
+        } else { // Task change is a freeform task
+            if (!desktopRepository.isActiveTask(taskInfo.taskId)) {
+                // Case 2: When the task change is a freeform visible task, but the task is not
+                // yet active in the desktop repository, adds task to desktop repository.
+                desktopRepository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
+            } else {
+                // Case 3: When the task change is a freeform task which already exists as an active
+                // task in the desktop repository, updates the task state.
+                desktopRepository.updateTask(
+                    taskInfo.displayId,
+                    taskInfo.taskId,
+                    taskInfo.isVisible,
+                )
+            }
         }
     }
 
@@ -82,14 +92,22 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
         logD("onTaskMovingToFront for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
         val desktopRepository: DesktopRepository =
             desktopUserRepositories.getProfile(taskInfo.userId)
-        if (!desktopRepository.isActiveTask(taskInfo.taskId)) return
-        if (!isFreeformTask(taskInfo)) {
+        // When the task change is from a task in the desktop repository which is now fullscreen,
+        // remove the task from the desktop repository since it is no longer a freeform task.
+        if (!isFreeformTask(taskInfo) && desktopRepository.isActiveTask(taskInfo.taskId)) {
             desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
         }
-        desktopRepository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
+        if (isFreeformTask(taskInfo)) {
+            // If the task is already active in the repository, then it only moves the task to the
+            // front.
+            desktopRepository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
+        }
     }
 
     override fun onTaskMovingToBack(taskInfo: RunningTaskInfo) {
+        val desktopRepository: DesktopRepository =
+            desktopUserRepositories.getProfile(taskInfo.userId)
+        if (!desktopRepository.isActiveTask(taskInfo.taskId)) return
         logD("onTaskMovingToBack for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
         // TODO: b/367268953 - Connect this with DesktopRepository.
     }
@@ -101,7 +119,7 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
         if (!desktopRepository.isActiveTask(taskInfo.taskId)) return
         // TODO: b/370038902 - Handle Activity#finishAndRemoveTask.
         if (
-            !DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue() ||
+            !DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue ||
                 desktopRepository.isClosingTask(taskInfo.taskId)
         ) {
             // A task that's vanishing should be removed:

@@ -81,8 +81,6 @@ public class PipResizeGestureHandler implements
     private final PointF mDownSecondPoint = new PointF();
     private final PointF mLastPoint = new PointF();
     private final PointF mLastSecondPoint = new PointF();
-    private final Point mMaxSize = new Point();
-    private final Point mMinSize = new Point();
     private final Rect mLastResizeBounds = new Rect();
     private final Rect mUserResizeBounds = new Rect();
     private final Rect mDownBounds = new Rect();
@@ -95,7 +93,6 @@ public class PipResizeGestureHandler implements
     private boolean mIsEnabled;
     private boolean mEnablePinchResize;
     private boolean mEnableDragCornerResize;
-    private boolean mIsSysUiStateValid;
     private boolean mThresholdCrossed;
     private boolean mOngoingPinchToResize = false;
     private boolean mWaitingForBoundsChangeTransition = false;
@@ -152,7 +149,6 @@ public class PipResizeGestureHandler implements
     }
 
     void init() {
-        mContext.getDisplay().getRealSize(mMaxSize);
         reloadResources();
 
         final Resources res = mContext.getResources();
@@ -161,15 +157,6 @@ public class PipResizeGestureHandler implements
 
     void onConfigurationChanged() {
         reloadResources();
-    }
-
-    /**
-     * Called when SysUI state changed.
-     *
-     * @param isSysUiStateValid Is SysUI valid or not.
-     */
-    public void onSystemUiStateChanged(boolean isSysUiStateValid) {
-        mIsSysUiStateValid = isSysUiStateValid;
     }
 
     private void reloadResources() {
@@ -287,13 +274,15 @@ public class PipResizeGestureHandler implements
                 }
             }
 
+            final Point minSize = mPipBoundsState.getMinSize();
+            final Point maxSize = mPipBoundsState.getMaxSize();
             if (mOngoingPinchToResize) {
                 mPipPinchToResizeHandler.onPinchResize(mv, mDownPoint, mDownSecondPoint,
                         mDownBounds, mLastPoint, mLastSecondPoint, mLastResizeBounds, mTouchSlop,
-                        mMinSize, mMaxSize);
+                        minSize, maxSize);
             } else if (mEnableDragCornerResize) {
                 mPipDragToResizeHandler.onDragCornerResize(mv, mLastResizeBounds, mDownPoint,
-                        mDownBounds, mMinSize, mMaxSize, mTouchSlop);
+                        mDownBounds, minSize, maxSize, mTouchSlop);
             }
         }
     }
@@ -327,7 +316,7 @@ public class PipResizeGestureHandler implements
                 if (mEnablePinchResize && ev.getPointerCount() == 2) {
                     mPipPinchToResizeHandler.onPinchResize(ev, mDownPoint, mDownSecondPoint,
                             mDownBounds, mLastPoint, mLastSecondPoint, mLastResizeBounds,
-                            mTouchSlop, mMinSize, mMaxSize);
+                            mTouchSlop, mPipBoundsState.getMinSize(), mPipBoundsState.getMaxSize());
                     mOngoingPinchToResize = mAllowGesture;
                     return mAllowGesture;
                 }
@@ -407,16 +396,19 @@ public class PipResizeGestureHandler implements
             return;
         }
 
+        final Point minSize = mPipBoundsState.getMinSize();
+        final Point maxSize = mPipBoundsState.getMaxSize();
+
         // If user resize is pretty close to max size, just auto resize to max.
-        if (mLastResizeBounds.width() >= PINCH_RESIZE_AUTO_MAX_RATIO * mMaxSize.x
-                || mLastResizeBounds.height() >= PINCH_RESIZE_AUTO_MAX_RATIO * mMaxSize.y) {
-            resizeRectAboutCenter(mLastResizeBounds, mMaxSize.x, mMaxSize.y);
+        if (mLastResizeBounds.width() >= PINCH_RESIZE_AUTO_MAX_RATIO * maxSize.x
+                || mLastResizeBounds.height() >= PINCH_RESIZE_AUTO_MAX_RATIO * maxSize.y) {
+            resizeRectAboutCenter(mLastResizeBounds, maxSize.x, maxSize.y);
         }
 
         // If user resize is smaller than min size, auto resize to min
-        if (mLastResizeBounds.width() < mMinSize.x
-                || mLastResizeBounds.height() < mMinSize.y) {
-            resizeRectAboutCenter(mLastResizeBounds, mMinSize.x, mMinSize.y);
+        if (mLastResizeBounds.width() < minSize.x
+                || mLastResizeBounds.height() < minSize.y) {
+            resizeRectAboutCenter(mLastResizeBounds, minSize.x, minSize.y);
         }
 
         // get the current movement bounds
@@ -470,15 +462,6 @@ public class PipResizeGestureHandler implements
     @VisibleForTesting
     void pilferPointers() {
         mInputMonitor.pilferPointers();
-    }
-
-
-    void updateMaxSize(int maxX, int maxY) {
-        mMaxSize.set(maxX, maxY);
-    }
-
-    void updateMinSize(int minX, int minY) {
-        mMinSize.set(minX, minY);
     }
 
     void setOhmOffset(int offset) {
@@ -568,8 +551,6 @@ public class PipResizeGestureHandler implements
         pw.println(innerPrefix + "mEnableDragCornerResize=" + mEnableDragCornerResize);
         pw.println(innerPrefix + "mThresholdCrossed=" + mThresholdCrossed);
         pw.println(innerPrefix + "mOhmOffset=" + mOhmOffset);
-        pw.println(innerPrefix + "mMinSize=" + mMinSize);
-        pw.println(innerPrefix + "mMaxSize=" + mMaxSize);
     }
 
     class PipResizeInputEventReceiver extends BatchedInputEventReceiver {

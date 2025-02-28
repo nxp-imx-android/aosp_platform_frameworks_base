@@ -226,9 +226,9 @@ public class DiscreteAppOpSqlPersistenceTest {
         mDiscreteRegistry.recordDiscreteAccess(event2);
     }
 
-    /** This clears in-memory cache and push records into the database. */
     private void flushDiscreteOpsToDatabase() {
-        mDiscreteRegistry.writeAndClearOldAccessHistory();
+        // This clears in-memory cache and push records from cache into the database.
+        mDiscreteRegistry.shutdown();
     }
 
     /**

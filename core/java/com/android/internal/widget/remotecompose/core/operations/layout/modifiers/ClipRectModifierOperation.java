@@ -111,7 +111,7 @@ public class ClipRectModifierOperation extends DecoratorModifierOperation {
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "ClipRectModifierOperation")
+                .addType("ClipRectModifierOperation")
                 .add("width", mWidth)
                 .add("height", mHeight);
     }

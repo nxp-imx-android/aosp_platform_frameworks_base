@@ -33,6 +33,7 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -611,6 +612,7 @@ public class PerfettoTraceTest {
 
     @Test
     @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
+    @Ignore("b/303199244")
     public void testMessageQueue() throws Exception {
         TraceConfig traceConfig = getTraceConfig("mq");
 

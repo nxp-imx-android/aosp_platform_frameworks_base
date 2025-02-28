@@ -27,6 +27,7 @@ import com.android.internal.widget.remotecompose.core.operations.utilities.IntMa
 import com.android.internal.widget.remotecompose.core.operations.utilities.NanMap;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -36,7 +37,7 @@ import java.util.HashMap;
 public class RemoteComposeState implements CollectionsAccess {
     public static final int START_ID = 42;
     //    private static final int MAX_FLOATS = 500;
-    private static final int MAX_COLORS = 200;
+    private static int sMaxColors = 200;
 
     private static final int MAX_DATA = 1000;
     private final IntMap<Object> mIntDataMap = new IntMap<>();
@@ -52,7 +53,7 @@ public class RemoteComposeState implements CollectionsAccess {
     private final IntMap<Object> mPathMap = new IntMap<>();
     private final IntMap<float[]> mPathData = new IntMap<>();
 
-    private final boolean[] mColorOverride = new boolean[MAX_COLORS];
+    private boolean[] mColorOverride = new boolean[sMaxColors];
     @NonNull private final IntMap<ArrayAccess> mCollectionMap = new IntMap<>();
 
     private final boolean[] mDataOverride = new boolean[MAX_DATA];
@@ -318,7 +319,7 @@ public class RemoteComposeState implements CollectionsAccess {
      * @param color
      */
     public void updateColor(int id, int color) {
-        if (mColorOverride[id]) {
+        if (id < sMaxColors && mColorOverride[id]) {
             return;
         }
         mColorMap.put(id, color);
@@ -342,6 +343,10 @@ public class RemoteComposeState implements CollectionsAccess {
      * @param color
      */
     public void overrideColor(int id, int color) {
+        if (id >= sMaxColors) {
+            sMaxColors *= 2;
+            mColorOverride = Arrays.copyOf(mColorOverride, sMaxColors);
+        }
         mColorOverride[id] = true;
         mColorMap.put(id, color);
         updateListeners(id);

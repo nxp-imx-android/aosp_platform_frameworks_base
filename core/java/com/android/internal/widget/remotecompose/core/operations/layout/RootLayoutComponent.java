@@ -77,7 +77,7 @@ public class RootLayoutComponent extends Component {
                 + " x "
                 + mHeight
                 + ") "
-                + mVisibility;
+                + Visibility.toString(mVisibility);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class RootLayoutComponent extends Component {
                         + ", "
                         + mHeight
                         + "] "
-                        + mVisibility);
+                        + Visibility.toString(mVisibility));
     }
 
     /**
@@ -282,6 +282,6 @@ public class RootLayoutComponent extends Component {
     public void serialize(MapSerializer serializer) {
         super.serialize(serializer);
         serializer.addTags(SerializeTags.COMPONENT);
-        serializer.add("type", "RootLayoutComponent");
+        serializer.addType("RootLayoutComponent");
     }
 }

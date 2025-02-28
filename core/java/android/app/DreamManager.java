@@ -71,8 +71,11 @@ public class DreamManager {
     @TestApi
     @RequiresPermission(WRITE_SECURE_SETTINGS)
     public void setScreensaverEnabled(boolean enabled) {
-        Settings.Secure.putIntForUser(mContext.getContentResolver(),
-                Settings.Secure.SCREENSAVER_ENABLED, enabled ? 1 : 0, UserHandle.USER_CURRENT);
+        try {
+            mService.setScreensaverEnabled(enabled);
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
     }
 
     /**

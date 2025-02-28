@@ -3006,7 +3006,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             UidState uidState = getUidStateLocked(uid, false);
             if (uidState != null) {
                 int rawUidMode = mAppOpsCheckingService.getUidMode(
-                        uidState.uid, getPersistentId(virtualDeviceId), code);
+                        uidState.uid, getPersistentDeviceIdForOp(virtualDeviceId, code), code);
 
                 if (rawUidMode != AppOpsManager.opToDefaultMode(code)) {
                     return raw ? rawUidMode :
@@ -3069,7 +3069,7 @@ public class AppOpsService extends IAppOpsService.Stub {
 
             int switchCode = AppOpsManager.opToSwitch(code);
             int rawUidMode = mAppOpsCheckingService.getUidMode(uid,
-                    getPersistentId(virtualDeviceId), switchCode);
+                    getPersistentDeviceIdForOp(virtualDeviceId, switchCode), switchCode);
 
             if (rawUidMode != AppOpsManager.opToDefaultMode(switchCode)) {
                 return raw ? rawUidMode : evaluateForegroundMode(uid, switchCode, rawUidMode);
@@ -3396,7 +3396,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             }
             final Op op = getOpLocked(ops, code, uid, true);
             final AttributedOp attributedOp = op.getOrCreateAttribution(op, attributionTag,
-                    getPersistentId(virtualDeviceId));
+                    getPersistentDeviceIdForOp(virtualDeviceId, code));
             if (attributedOp.isRunning()) {
                 Slog.w(TAG, "Noting op not finished: uid " + uid + " pkg " + packageName + " code "
                         + code + " startTime of in progress event="
@@ -3418,15 +3418,15 @@ public class AppOpsService extends IAppOpsService.Stub {
 
                 // If there is a non-default per UID policy (we set UID op mode only if
                 // non-default) it takes over, otherwise use the per package policy.
-            } else if (mAppOpsCheckingService.getUidMode(
-                            uidState.uid, getPersistentId(virtualDeviceId), switchCode)
+            } else if (mAppOpsCheckingService.getUidMode(uidState.uid,
+                    getPersistentDeviceIdForOp(virtualDeviceId, switchCode), switchCode)
                     != AppOpsManager.opToDefaultMode(switchCode)) {
                 final int uidMode =
                         uidState.evalMode(
                                 code,
                                 mAppOpsCheckingService.getUidMode(
                                         uidState.uid,
-                                        getPersistentId(virtualDeviceId),
+                                        getPersistentDeviceIdForOp(virtualDeviceId, switchCode),
                                         switchCode));
                 if (uidMode != AppOpsManager.MODE_ALLOWED) {
                     if (DEBUG) Slog.d(TAG, "noteOperation: uid reject #" + uidMode + " for code "
@@ -3478,7 +3478,8 @@ public class AppOpsService extends IAppOpsService.Stub {
                     virtualDeviceId, flags, AppOpsManager.MODE_ALLOWED);
 
             attributedOp.accessed(proxyUid, proxyPackageName, proxyAttributionTag,
-                    getPersistentId(proxyVirtualDeviceId), uidState.getState(), flags, notedCount);
+                    getPersistentDeviceIdForOp(proxyVirtualDeviceId, code), uidState.getState(),
+                    flags, notedCount);
 
             if (shouldCollectAsyncNotedOp) {
                 collectAsyncNotedOp(uid, packageName, code, attributionTag, flags, message,
@@ -4045,7 +4046,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             }
             final Op op = getOpLocked(ops, code, uid, true);
             final AttributedOp attributedOp = op.getOrCreateAttribution(op, attributionTag,
-                    getPersistentId(virtualDeviceId));
+                    getPersistentDeviceIdForOp(virtualDeviceId, code));
             final UidState uidState = ops.uidState;
             isRestricted = isOpRestrictedLocked(uid, code, packageName, attributionTag,
                     virtualDeviceId, pvr.bypass, false);
@@ -4058,8 +4059,9 @@ public class AppOpsService extends IAppOpsService.Stub {
                 // If there is a non-default per UID policy (we set UID op mode only if
                 // non-default) it takes over, otherwise use the per package policy.
             } else if ((rawUidMode =
-                            mAppOpsCheckingService.getUidMode(
-                                    uidState.uid, getPersistentId(virtualDeviceId), switchCode))
+                    mAppOpsCheckingService.getUidMode(
+                            uidState.uid, getPersistentDeviceIdForOp(virtualDeviceId, switchCode),
+                            switchCode))
                     != AppOpsManager.opToDefaultMode(switchCode)) {
                 final int uidMode = uidState.evalMode(code, rawUidMode);
                 if (!shouldStartForMode(uidMode, startIfModeDefault)) {
@@ -4107,11 +4109,13 @@ public class AppOpsService extends IAppOpsService.Stub {
             try {
                 if (isRestricted) {
                     attributedOp.createPaused(clientId, virtualDeviceId, proxyUid, proxyPackageName,
-                            proxyAttributionTag, getPersistentId(proxyVirtualDeviceId),
+                            proxyAttributionTag,
+                            getPersistentDeviceIdForOp(proxyVirtualDeviceId, code),
                             uidState.getState(), flags, attributionFlags, attributionChainId);
                 } else {
                     attributedOp.started(clientId, virtualDeviceId, proxyUid, proxyPackageName,
-                            proxyAttributionTag, getPersistentId(proxyVirtualDeviceId),
+                            proxyAttributionTag,
+                            getPersistentDeviceIdForOp(proxyVirtualDeviceId, code),
                             uidState.getState(), flags, attributionFlags, attributionChainId);
                     startType = START_TYPE_STARTED;
                 }
@@ -4179,15 +4183,15 @@ public class AppOpsService extends IAppOpsService.Stub {
             final int switchCode = AppOpsManager.opToSwitch(code);
             // If there is a non-default mode per UID policy (we set UID op mode only if
             // non-default) it takes over, otherwise use the per package policy.
-            if (mAppOpsCheckingService.getUidMode(
-                            uidState.uid, getPersistentId(virtualDeviceId), switchCode)
+            if (mAppOpsCheckingService.getUidMode(uidState.uid,
+                    getPersistentDeviceIdForOp(virtualDeviceId, switchCode), switchCode)
                     != AppOpsManager.opToDefaultMode(switchCode)) {
                 final int uidMode =
                         uidState.evalMode(
                                 code,
                                 mAppOpsCheckingService.getUidMode(
                                         uidState.uid,
-                                        getPersistentId(virtualDeviceId),
+                                        getPersistentDeviceIdForOp(virtualDeviceId, switchCode),
                                         switchCode));
                 if (!shouldStartForMode(uidMode, startIfModeDefault)) {
                     if (DEBUG) {
@@ -4350,7 +4354,8 @@ public class AppOpsService extends IAppOpsService.Stub {
                 return;
             }
             final AttributedOp attributedOp =
-                    op.mDeviceAttributedOps.getOrDefault(getPersistentId(virtualDeviceId),
+                    op.mDeviceAttributedOps.getOrDefault(
+                            getPersistentDeviceIdForOp(virtualDeviceId, code),
                             new ArrayMap<>()).get(attributionTag);
             if (attributedOp == null) {
                 Slog.e(TAG, "Attribution not found: uid=" + uid + " pkg=" + packageName + "("
@@ -4641,7 +4646,8 @@ public class AppOpsService extends IAppOpsService.Stub {
             return true;
         }
         if (mVirtualDeviceManagerInternal == null) {
-            return true;
+            Slog.w(TAG, "VirtualDeviceManagerInternal is null when device Id is non-default");
+            return false;
         }
         if (mVirtualDeviceManagerInternal.isValidVirtualDeviceId(virtualDeviceId)) {
             mKnownDeviceIds.put(virtualDeviceId,
@@ -7310,7 +7316,13 @@ public class AppOpsService extends IAppOpsService.Stub {
         return packageNames;
     }
 
-    @NonNull private String getPersistentId(int virtualDeviceId) {
+    // For ops associated with device aware permissions, if virtual device id is non-default, we
+    // will return string version of that id provided the virtual device has corresponding camera or
+    // audio policy.
+    @NonNull private String getPersistentDeviceIdForOp(int virtualDeviceId, int op) {
+        virtualDeviceId = PermissionManager.resolveDeviceIdForPermissionCheck(mContext,
+                virtualDeviceId, AppOpsManager.opToPermission(op));
+
         if (virtualDeviceId == Context.DEVICE_ID_DEFAULT) {
             return PERSISTENT_DEVICE_ID_DEFAULT;
         }
@@ -7319,6 +7331,7 @@ public class AppOpsService extends IAppOpsService.Stub {
         }
         String persistentId =
                 mVirtualDeviceManagerInternal.getPersistentIdForDevice(virtualDeviceId);
+
         if (persistentId == null) {
             persistentId = mKnownDeviceIds.get(virtualDeviceId);
         }

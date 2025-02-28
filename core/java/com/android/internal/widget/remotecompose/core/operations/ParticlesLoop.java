@@ -33,6 +33,7 @@ import com.android.internal.widget.remotecompose.core.documentation.DocumentedOp
 import com.android.internal.widget.remotecompose.core.operations.layout.Container;
 import com.android.internal.widget.remotecompose.core.operations.utilities.AnimatedFloatExpression;
 import com.android.internal.widget.remotecompose.core.operations.utilities.NanMap;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -291,5 +292,10 @@ public class ParticlesLoop extends PaintOperation implements VariableSupport, Co
                 op.apply(context.getContext());
             }
         }
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer.addType(CLASS_NAME).add("id", mId);
     }
 }

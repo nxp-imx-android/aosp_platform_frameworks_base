@@ -17,8 +17,13 @@
 package com.android.systemui.wallpapers
 
 import android.app.Flags
+import android.content.res.Configuration.UI_MODE_NIGHT_MASK
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.RadialGradient
 import android.graphics.Shader
 import android.service.wallpaper.WallpaperService
@@ -74,9 +79,9 @@ class GradientColorWallpaper : WallpaperService() {
                         .toFloat()
                 val totalHeight = destRectF.height() + (offsetPx * 2)
                 val leftCenterX = -offsetPx
-                val leftCenterY = -offsetPx
+                val leftCenterY = totalHeight - offsetPx
                 val rightCenterX = offsetPx + destRectF.width()
-                val rightCenterY = totalHeight - offsetPx
+                val rightCenterY = -offsetPx
                 val radius = (destRectF.width() / 2) + offsetPx
 
                 canvas.drawCircle(
@@ -112,6 +117,28 @@ class GradientColorWallpaper : WallpaperService() {
                             )
                     },
                 )
+
+                val isDarkMode =
+                    context.resources.configuration.uiMode and UI_MODE_NIGHT_MASK ==
+                        UI_MODE_NIGHT_YES
+                val maskColor =
+                    ColorUtils.setAlphaComponent(
+                        if (isDarkMode) Color.BLACK else Color.WHITE,
+                        /* alpha= */ 87, // 0.34f * 255
+                    )
+                val maskPaint =
+                    Paint().apply {
+                        xfermode =
+                            PorterDuffXfermode(
+                                if (isDarkMode) {
+                                    PorterDuff.Mode.DARKEN
+                                } else {
+                                    PorterDuff.Mode.LIGHTEN
+                                }
+                            )
+                        color = maskColor
+                    }
+                canvas.drawRect(destRectF, maskPaint)
             } catch (exception: IllegalStateException) {
                 Log.d(TAG, "Fail to draw in the canvas", exception)
             } finally {

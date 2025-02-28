@@ -488,6 +488,8 @@ public class ActivityOptions extends ComponentOptions {
     private static final String KEY_ALLOW_PASS_THROUGH_ON_TOUCH_OUTSIDE =
             "android.activity.allowPassThroughOnTouchOutside";
 
+    private static final String KEY_FLEXIBLE_LAUNCH_SIZE = "android.activity.flexibleLaunchSize";
+
     /**
      * @see #setLaunchCookie
      * @hide
@@ -588,6 +590,7 @@ public class ActivityOptions extends ComponentOptions {
     @BackgroundActivityStartMode
     private int mPendingIntentCreatorBackgroundActivityStartMode =
             MODE_BACKGROUND_ACTIVITY_START_SYSTEM_DEFINED;
+    private boolean mFlexibleLaunchSize = false;
     private boolean mDisableStartingWindow;
     private boolean mAllowPassThroughOnTouchOutside;
 
@@ -1451,6 +1454,7 @@ public class ActivityOptions extends ComponentOptions {
         mPendingIntentCreatorBackgroundActivityStartMode = opts.getInt(
                 KEY_PENDING_INTENT_CREATOR_BACKGROUND_ACTIVITY_START_MODE,
                 MODE_BACKGROUND_ACTIVITY_START_SYSTEM_DEFINED);
+        mFlexibleLaunchSize = opts.getBoolean(KEY_FLEXIBLE_LAUNCH_SIZE, /* defaultValue = */ false);
         mDisableStartingWindow = opts.getBoolean(KEY_DISABLE_STARTING_WINDOW);
         mAllowPassThroughOnTouchOutside = opts.getBoolean(KEY_ALLOW_PASS_THROUGH_ON_TOUCH_OUTSIDE);
         mAnimationAbortListener = IRemoteCallback.Stub.asInterface(
@@ -2346,6 +2350,24 @@ public class ActivityOptions extends ComponentOptions {
     }
 
     /**
+     * Sets whether the size of the launch bounds is flexible, meaning it can be overridden to a
+     * different size during the launch params calculation.
+     * @hide
+     */
+    public ActivityOptions setFlexibleLaunchSize(boolean isFlexible) {
+        mFlexibleLaunchSize = isFlexible;
+        return this;
+    }
+
+    /**
+     * Gets whether the size of the launch bounds is flexible.
+     * @hide
+     */
+    public boolean getFlexibleLaunchSize() {
+        return mFlexibleLaunchSize;
+    }
+
+    /**
      * Update the current values in this ActivityOptions from those supplied
      * in <var>otherOptions</var>.  Any values
      * defined in <var>otherOptions</var> replace those in the base options.
@@ -2600,6 +2622,9 @@ public class ActivityOptions extends ComponentOptions {
                 != MODE_BACKGROUND_ACTIVITY_START_SYSTEM_DEFINED) {
             b.putInt(KEY_PENDING_INTENT_CREATOR_BACKGROUND_ACTIVITY_START_MODE,
                     mPendingIntentCreatorBackgroundActivityStartMode);
+        }
+        if (mFlexibleLaunchSize) {
+            b.putBoolean(KEY_FLEXIBLE_LAUNCH_SIZE, mFlexibleLaunchSize);
         }
         if (mDisableStartingWindow) {
             b.putBoolean(KEY_DISABLE_STARTING_WINDOW, mDisableStartingWindow);

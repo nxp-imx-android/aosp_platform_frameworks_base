@@ -247,8 +247,8 @@ public class MarqueeModifierOperation extends DecoratorModifierOperation impleme
         mComponentHeight = height;
         if (component instanceof LayoutComponent) {
             LayoutComponent layoutComponent = (LayoutComponent) component;
-            setContentWidth(layoutComponent.intrinsicWidth(context));
-            setContentHeight(layoutComponent.intrinsicHeight(context));
+            setContentWidth(layoutComponent.minIntrinsicWidth(context));
+            setContentHeight(layoutComponent.minIntrinsicHeight(context));
         }
     }
 
@@ -256,7 +256,7 @@ public class MarqueeModifierOperation extends DecoratorModifierOperation impleme
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "MarqueeModifierOperation")
+                .addType("MarqueeModifierOperation")
                 .add("iterations", mIterations)
                 .add("animationMode", mAnimationMode)
                 .add("repeatDelayMillis", mRepeatDelayMillis)

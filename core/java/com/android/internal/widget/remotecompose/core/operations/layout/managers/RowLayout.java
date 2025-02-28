@@ -136,7 +136,7 @@ public class RowLayout extends LayoutManager {
         for (Component c : mChildrenComponents) {
             c.measure(context, 0f, currentMaxWidth, 0f, maxHeight, measure);
             ComponentMeasure m = measure.get(c);
-            if (m.getVisibility() != Visibility.GONE) {
+            if (!m.isGone()) {
                 size.setWidth(size.getWidth() + m.getW());
                 size.setHeight(Math.max(size.getHeight(), m.getH()));
                 visibleChildrens++;
@@ -162,7 +162,7 @@ public class RowLayout extends LayoutManager {
         for (Component child : mChildrenComponents) {
             child.measure(context, minWidth, mw, minHeight, maxHeight, measure);
             ComponentMeasure m = measure.get(child);
-            if (m.getVisibility() != Visibility.GONE) {
+            if (!m.isGone()) {
                 mw -= m.getW();
             }
         }
@@ -170,13 +170,23 @@ public class RowLayout extends LayoutManager {
     }
 
     @Override
-    public float intrinsicWidth(@Nullable RemoteContext context) {
+    public float minIntrinsicWidth(@Nullable RemoteContext context) {
         float width = computeModifierDefinedWidth(context);
         float componentWidths = 0f;
         for (Component c : mChildrenComponents) {
-            componentWidths += c.intrinsicWidth(context);
+            componentWidths += c.minIntrinsicWidth(context);
         }
         return Math.max(width, componentWidths);
+    }
+
+    @Override
+    public float minIntrinsicHeight(@Nullable RemoteContext context) {
+        float height = computeModifierDefinedHeight(context);
+        float componentHeights = 0f;
+        for (Component c : mChildrenComponents) {
+            componentHeights = Math.max(componentHeights, c.minIntrinsicHeight(context));
+        }
+        return Math.max(height, componentHeights);
     }
 
     @Override
@@ -225,7 +235,7 @@ public class RowLayout extends LayoutManager {
             float totalWeights = 0f;
             for (Component child : mChildrenComponents) {
                 ComponentMeasure childMeasure = measure.get(child);
-                if (childMeasure.getVisibility() == Visibility.GONE) {
+                if (childMeasure.isGone()) {
                     continue;
                 }
                 if (child instanceof LayoutComponent
@@ -245,7 +255,7 @@ public class RowLayout extends LayoutManager {
                     if (child instanceof LayoutComponent
                             && ((LayoutComponent) child).getWidthModifier().hasWeight()) {
                         ComponentMeasure childMeasure = measure.get(child);
-                        if (childMeasure.getVisibility() == Visibility.GONE) {
+                        if (childMeasure.isGone()) {
                             continue;
                         }
                         float weight = ((LayoutComponent) child).getWidthModifier().getValue();
@@ -283,7 +293,7 @@ public class RowLayout extends LayoutManager {
         int visibleChildrens = 0;
         for (Component child : mChildrenComponents) {
             ComponentMeasure childMeasure = measure.get(child);
-            if (childMeasure.getVisibility() == Visibility.GONE) {
+            if (childMeasure.isGone()) {
                 continue;
             }
             childrenWidth += childMeasure.getW();
@@ -311,17 +321,22 @@ public class RowLayout extends LayoutManager {
             case SPACE_BETWEEN:
                 for (Component child : mChildrenComponents) {
                     ComponentMeasure childMeasure = measure.get(child);
-                    if (childMeasure.getVisibility() == Visibility.GONE) {
+                    if (childMeasure.isGone()) {
                         continue;
                     }
                     total += childMeasure.getW();
                 }
-                horizontalGap = (selfWidth - total) / (visibleChildrens - 1);
+                if (visibleChildrens > 1) {
+                    horizontalGap = (selfWidth - total) / (visibleChildrens - 1);
+                } else {
+                    // we center the element
+                    tx = (selfWidth - childrenWidth) / 2f;
+                }
                 break;
             case SPACE_EVENLY:
                 for (Component child : mChildrenComponents) {
                     ComponentMeasure childMeasure = measure.get(child);
-                    if (childMeasure.getVisibility() == Visibility.GONE) {
+                    if (childMeasure.isGone()) {
                         continue;
                     }
                     total += childMeasure.getW();
@@ -332,7 +347,7 @@ public class RowLayout extends LayoutManager {
             case SPACE_AROUND:
                 for (Component child : mChildrenComponents) {
                     ComponentMeasure childMeasure = measure.get(child);
-                    if (childMeasure.getVisibility() == Visibility.GONE) {
+                    if (childMeasure.isGone()) {
                         continue;
                     }
                     total += childMeasure.getW();
@@ -357,7 +372,7 @@ public class RowLayout extends LayoutManager {
             }
             childMeasure.setX(tx);
             childMeasure.setY(ty);
-            if (childMeasure.getVisibility() == Visibility.GONE) {
+            if (childMeasure.isGone()) {
                 continue;
             }
             tx += childMeasure.getW();

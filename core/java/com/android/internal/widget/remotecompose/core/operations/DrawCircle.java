@@ -112,6 +112,6 @@ public class DrawCircle extends DrawBase3 {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serialize(serializer, "cx", "cy", "radius").add("type", CLASS_NAME);
+        serialize(serializer, "cx", "cy", "radius").addType(CLASS_NAME);
     }
 }
