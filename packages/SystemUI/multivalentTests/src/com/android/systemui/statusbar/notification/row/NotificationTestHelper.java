@@ -359,6 +359,7 @@ public class NotificationTestHelper {
                 .setUid(UID)
                 .setInitialPid(2000)
                 .setNotification(summary)
+                .setUser(USER_HANDLE)
                 .setParent(GroupEntry.ROOT_ENTRY)
                 .build();
         GroupEntryBuilder groupEntry = new GroupEntryBuilder()
