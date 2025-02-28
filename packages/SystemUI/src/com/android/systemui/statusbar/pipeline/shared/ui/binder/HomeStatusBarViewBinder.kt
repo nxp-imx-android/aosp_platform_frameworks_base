@@ -47,7 +47,8 @@ import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernizat
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 /**
@@ -153,39 +154,43 @@ constructor(
                         OngoingActivityChipBinder.createBinding(primaryChipView)
 
                     launch {
-                        viewModel.primaryOngoingActivityChip.collect { primaryChipModel ->
-                            OngoingActivityChipBinder.bind(
-                                primaryChipModel,
-                                primaryChipViewBinding,
-                                iconViewStore,
+                        combine(
+                                viewModel.primaryOngoingActivityChip,
+                                viewModel.canShowOngoingActivityChips,
+                                ::Pair,
                             )
+                            .distinctUntilChanged()
+                            .collect { (primaryChipModel, areChipsAllowed) ->
+                                OngoingActivityChipBinder.bind(
+                                    primaryChipModel,
+                                    primaryChipViewBinding,
+                                    iconViewStore,
+                                )
 
-                            if (StatusBarRootModernization.isEnabled) {
-                                launch {
+                                if (StatusBarRootModernization.isEnabled) {
                                     bindLegacyPrimaryOngoingActivityChipWithVisibility(
-                                        viewModel,
+                                        areChipsAllowed,
                                         primaryChipModel,
                                         primaryChipViewBinding,
                                     )
-                                }
-                            } else {
-                                when (primaryChipModel) {
-                                    is OngoingActivityChipModel.Active ->
-                                        listener?.onOngoingActivityStatusChanged(
-                                            hasPrimaryOngoingActivity = true,
-                                            hasSecondaryOngoingActivity = false,
-                                            shouldAnimate = true,
-                                        )
+                                } else {
+                                    when (primaryChipModel) {
+                                        is OngoingActivityChipModel.Active ->
+                                            listener?.onOngoingActivityStatusChanged(
+                                                hasPrimaryOngoingActivity = true,
+                                                hasSecondaryOngoingActivity = false,
+                                                shouldAnimate = true,
+                                            )
 
-                                    is OngoingActivityChipModel.Inactive ->
-                                        listener?.onOngoingActivityStatusChanged(
-                                            hasPrimaryOngoingActivity = false,
-                                            hasSecondaryOngoingActivity = false,
-                                            shouldAnimate = primaryChipModel.shouldAnimate,
-                                        )
+                                        is OngoingActivityChipModel.Inactive ->
+                                            listener?.onOngoingActivityStatusChanged(
+                                                hasPrimaryOngoingActivity = false,
+                                                hasSecondaryOngoingActivity = false,
+                                                shouldAnimate = primaryChipModel.shouldAnimate,
+                                            )
+                                    }
                                 }
                             }
-                        }
                     }
                 }
 
@@ -199,49 +204,53 @@ constructor(
                             view.requireViewById(R.id.ongoing_activity_chip_secondary)
                         )
                     launch {
-                        viewModel.ongoingActivityChipsLegacy.collectLatest { chips ->
-                            OngoingActivityChipBinder.bind(
-                                chips.primary,
-                                primaryChipViewBinding,
-                                iconViewStore,
+                        combine(
+                                viewModel.ongoingActivityChipsLegacy,
+                                viewModel.canShowOngoingActivityChips,
+                                ::Pair,
                             )
-                            OngoingActivityChipBinder.bind(
-                                chips.secondary,
-                                secondaryChipViewBinding,
-                                iconViewStore,
-                            )
-
-                            if (StatusBarRootModernization.isEnabled) {
-                                launch {
+                            .distinctUntilChanged()
+                            .collect { (chips, areChipsAllowed) ->
+                                OngoingActivityChipBinder.bind(
+                                    chips.primary,
+                                    primaryChipViewBinding,
+                                    iconViewStore,
+                                )
+                                OngoingActivityChipBinder.bind(
+                                    chips.secondary,
+                                    secondaryChipViewBinding,
+                                    iconViewStore,
+                                )
+                                if (StatusBarRootModernization.isEnabled) {
                                     bindOngoingActivityChipsWithVisibility(
-                                        viewModel,
+                                        areChipsAllowed,
                                         chips,
                                         primaryChipViewBinding,
                                         secondaryChipViewBinding,
                                     )
+                                } else {
+                                    listener?.onOngoingActivityStatusChanged(
+                                        hasPrimaryOngoingActivity =
+                                            chips.primary is OngoingActivityChipModel.Active,
+                                        hasSecondaryOngoingActivity =
+                                            chips.secondary is OngoingActivityChipModel.Active,
+                                        // TODO(b/364653005): Figure out the animation story here.
+                                        shouldAnimate = true,
+                                    )
                                 }
-                            } else {
-                                listener?.onOngoingActivityStatusChanged(
-                                    hasPrimaryOngoingActivity =
-                                        chips.primary is OngoingActivityChipModel.Active,
-                                    hasSecondaryOngoingActivity =
-                                        chips.secondary is OngoingActivityChipModel.Active,
-                                    // TODO(b/364653005): Figure out the animation story here.
-                                    shouldAnimate = true,
-                                )
                             }
-
-                            viewModel.contentArea.collect { _ ->
-                                OngoingActivityChipBinder.resetPrimaryChipWidthRestrictions(
-                                    primaryChipViewBinding,
-                                    viewModel.ongoingActivityChipsLegacy.value.primary,
-                                )
-                                OngoingActivityChipBinder.resetSecondaryChipWidthRestrictions(
-                                    secondaryChipViewBinding,
-                                    viewModel.ongoingActivityChipsLegacy.value.secondary,
-                                )
-                                view.requestLayout()
-                            }
+                    }
+                    launch {
+                        viewModel.contentArea.collect { _ ->
+                            OngoingActivityChipBinder.resetPrimaryChipWidthRestrictions(
+                                primaryChipViewBinding,
+                                viewModel.ongoingActivityChipsLegacy.value.primary,
+                            )
+                            OngoingActivityChipBinder.resetSecondaryChipWidthRestrictions(
+                                secondaryChipViewBinding,
+                                viewModel.ongoingActivityChipsLegacy.value.secondary,
+                            )
+                            view.requestLayout()
                         }
                     }
                 }
@@ -314,48 +323,42 @@ constructor(
     }
 
     /** Bind the (legacy) single primary ongoing activity chip with the status bar visibility */
-    private suspend fun bindLegacyPrimaryOngoingActivityChipWithVisibility(
-        viewModel: HomeStatusBarViewModel,
+    private fun bindLegacyPrimaryOngoingActivityChipWithVisibility(
+        areChipsAllowed: Boolean,
         primaryChipModel: OngoingActivityChipModel,
         primaryChipViewBinding: OngoingActivityChipViewBinding,
     ) {
-        viewModel.canShowOngoingActivityChips.collectLatest { visible ->
-            if (!visible) {
-                primaryChipViewBinding.rootView.hide(shouldAnimateChange = false)
-            } else {
-                when (primaryChipModel) {
-                    is OngoingActivityChipModel.Active -> {
-                        primaryChipViewBinding.rootView.show(shouldAnimateChange = true)
-                    }
+        if (!areChipsAllowed) {
+            primaryChipViewBinding.rootView.hide(shouldAnimateChange = false)
+        } else {
+            when (primaryChipModel) {
+                is OngoingActivityChipModel.Active -> {
+                    primaryChipViewBinding.rootView.show(shouldAnimateChange = true)
+                }
 
-                    is OngoingActivityChipModel.Inactive -> {
-                        primaryChipViewBinding.rootView.hide(
-                            state = View.GONE,
-                            shouldAnimateChange = primaryChipModel.shouldAnimate,
-                        )
-                    }
+                is OngoingActivityChipModel.Inactive -> {
+                    primaryChipViewBinding.rootView.hide(
+                        state = View.GONE,
+                        shouldAnimateChange = primaryChipModel.shouldAnimate,
+                    )
                 }
             }
         }
     }
 
     /** Bind the primary/secondary chips along with the home status bar's visibility */
-    private suspend fun bindOngoingActivityChipsWithVisibility(
-        viewModel: HomeStatusBarViewModel,
+    private fun bindOngoingActivityChipsWithVisibility(
+        areChipsAllowed: Boolean,
         chips: MultipleOngoingActivityChipsModelLegacy,
         primaryChipViewBinding: OngoingActivityChipViewBinding,
         secondaryChipViewBinding: OngoingActivityChipViewBinding,
     ) {
-        viewModel.canShowOngoingActivityChips.collectLatest { canShow ->
-            if (!canShow) {
-                primaryChipViewBinding.rootView.hide(shouldAnimateChange = false)
-                secondaryChipViewBinding.rootView.hide(shouldAnimateChange = false)
-            } else {
-                primaryChipViewBinding.rootView.adjustVisibility(chips.primary.toVisibilityModel())
-                secondaryChipViewBinding.rootView.adjustVisibility(
-                    chips.secondary.toVisibilityModel()
-                )
-            }
+        if (!areChipsAllowed) {
+            primaryChipViewBinding.rootView.hide(shouldAnimateChange = false)
+            secondaryChipViewBinding.rootView.hide(shouldAnimateChange = false)
+        } else {
+            primaryChipViewBinding.rootView.adjustVisibility(chips.primary.toVisibilityModel())
+            secondaryChipViewBinding.rootView.adjustVisibility(chips.secondary.toVisibilityModel())
         }
     }
 
@@ -428,10 +431,15 @@ constructor(
     // See CollapsedStatusBarFragment#hide.
     private fun View.hide(state: Int = View.INVISIBLE, shouldAnimateChange: Boolean) {
         animate().cancel()
-        if (visibility == View.INVISIBLE || visibility == View.GONE) {
+
+        if (
+            (visibility == View.INVISIBLE && state == View.INVISIBLE) ||
+                (visibility == View.GONE && state == View.GONE)
+        ) {
             return
         }
-        if (!shouldAnimateChange) {
+        val isAlreadyHidden = visibility == View.INVISIBLE || visibility == View.GONE
+        if (!shouldAnimateChange || isAlreadyHidden) {
             alpha = 0f
             visibility = state
             return
