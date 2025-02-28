@@ -660,6 +660,59 @@ public class AutoclickControllerTest {
         assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting()).isEqualTo(-1);
     }
 
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onMotionEvent_flagOn_lazyInitAutoclickScrollPanel() {
+        assertThat(mController.mAutoclickScrollPanel).isNull();
+
+        injectFakeMouseActionHoverMoveEvent();
+
+        assertThat(mController.mAutoclickScrollPanel).isNotNull();
+    }
+
+    @Test
+    @DisableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onMotionEvent_flagOff_notInitAutoclickScrollPanel() {
+        assertThat(mController.mAutoclickScrollPanel).isNull();
+
+        injectFakeMouseActionHoverMoveEvent();
+
+        assertThat(mController.mAutoclickScrollPanel).isNull();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onDestroy_flagOn_hideAutoclickScrollPanel() {
+        injectFakeMouseActionHoverMoveEvent();
+        AutoclickScrollPanel mockAutoclickScrollPanel = mock(AutoclickScrollPanel.class);
+        mController.mAutoclickScrollPanel = mockAutoclickScrollPanel;
+
+        mController.onDestroy();
+
+        verify(mockAutoclickScrollPanel).hide();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void changeFromScrollToOtherClickType_hidesScrollPanel() {
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Set active click type to SCROLL.
+        mController.clickPanelController.handleAutoclickTypeChange(
+                AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL);
+
+        // Show the scroll panel.
+        mController.mAutoclickScrollPanel.show();
+        assertThat(mController.mAutoclickScrollPanel.isVisible()).isTrue();
+
+        // Change click type to LEFT_CLICK.
+        mController.clickPanelController.handleAutoclickTypeChange(
+                AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK);
+
+        // Verify scroll panel is hidden.
+        assertThat(mController.mAutoclickScrollPanel.isVisible()).isFalse();
+    }
+
     private void injectFakeMouseActionHoverMoveEvent() {
         MotionEvent event = getFakeMotionHoverMoveEvent();
         event.setSource(InputDevice.SOURCE_MOUSE);

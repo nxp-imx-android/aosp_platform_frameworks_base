@@ -6226,6 +6226,18 @@
     <string name="accessibility_autoclick_pause">Pause</string>
     <!-- Label for autoclick position button [CHAR LIMIT=NONE] -->
     <string name="accessibility_autoclick_position">Position</string>
+    <!-- Label for autoclick scroll up button [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_scroll_up">Scroll Up</string>
+    <!-- Label for autoclick scroll down button [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_scroll_down">Scroll Down</string>
+    <!-- Label for autoclick scroll left button [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_scroll_left">Scroll Left</string>
+    <!-- Label for autoclick scroll right button [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_scroll_right">Scroll Right</string>
+    <!-- Label for autoclick scroll exit button [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_scroll_exit">Exit Scroll Mode</string>
+    <!-- Label for autoclick scroll panel title [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_scroll_panel_title">Scroll Panel</string>
 
     <!-- Text to tell the user that a package has been forced by themselves in the RESTRICTED bucket. [CHAR LIMIT=NONE] -->
     <string name="as_app_forced_to_restricted_bucket">

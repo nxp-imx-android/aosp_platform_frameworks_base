@@ -5654,6 +5654,32 @@
   <java-symbol type="drawable" name="accessibility_autoclick_resume" />
   <java-symbol type="drawable" name="ic_accessibility_autoclick" />
 
+  <!-- Accessibility autoclick scroll panel related -->
+  <java-symbol type="layout" name="accessibility_autoclick_scroll_panel" />
+  <java-symbol type="dimen" name="accessibility_autoclick_scroll_panel_button_size" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_up" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_down" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_left" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_right" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_exit" />
+  <java-symbol type="string" name="accessibility_autoclick_scroll_up" />
+  <java-symbol type="string" name="accessibility_autoclick_scroll_down" />
+  <java-symbol type="string" name="accessibility_autoclick_scroll_left" />
+  <java-symbol type="string" name="accessibility_autoclick_scroll_right" />
+  <java-symbol type="string" name="accessibility_autoclick_scroll_exit" />
+  <java-symbol type="string" name="accessibility_autoclick_scroll_panel_title" />
+  <java-symbol type="id" name="accessibility_autoclick_scroll_panel" />
+  <java-symbol type="id" name="scroll_up_layout" />
+  <java-symbol type="id" name="scroll_down_layout" />
+  <java-symbol type="id" name="scroll_left_layout" />
+  <java-symbol type="id" name="scroll_right_layout" />
+  <java-symbol type="id" name="scroll_exit_layout" />
+  <java-symbol type="id" name="scroll_up" />
+  <java-symbol type="id" name="scroll_down" />
+  <java-symbol type="id" name="scroll_left" />
+  <java-symbol type="id" name="scroll_right" />
+  <java-symbol type="id" name="scroll_exit" />
+
   <!-- For HapticFeedbackConstants configurability defined at HapticFeedbackCustomization -->
   <java-symbol type="string" name="config_hapticFeedbackCustomizationFile" />
   <java-symbol type="xml" name="haptic_feedback_customization" />
