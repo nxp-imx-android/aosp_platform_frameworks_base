@@ -45,6 +45,7 @@ import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.pip2.animation.PipExpandAnimator;
+import com.android.wm.shell.pip2.phone.PipInteractionHandler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.splitscreen.SplitScreenController;
@@ -58,6 +59,7 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
     private final PipBoundsAlgorithm mPipBoundsAlgorithm;
     private final PipTransitionState mPipTransitionState;
     private final PipDisplayLayoutState mPipDisplayLayoutState;
+    private final PipInteractionHandler mPipInteractionHandler;
     private final Optional<SplitScreenController> mSplitScreenControllerOptional;
 
     @Nullable
@@ -72,12 +74,14 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
             PipBoundsAlgorithm pipBoundsAlgorithm,
             PipTransitionState pipTransitionState,
             PipDisplayLayoutState pipDisplayLayoutState,
+            PipInteractionHandler pipInteractionHandler,
             Optional<SplitScreenController> splitScreenControllerOptional) {
         mContext = context;
         mPipBoundsState = pipBoundsState;
         mPipBoundsAlgorithm = pipBoundsAlgorithm;
         mPipTransitionState = pipTransitionState;
         mPipDisplayLayoutState = pipDisplayLayoutState;
+        mPipInteractionHandler = pipInteractionHandler;
         mSplitScreenControllerOptional = splitScreenControllerOptional;
 
         mPipExpandAnimatorSupplier = PipExpandAnimator::new;
@@ -183,6 +187,8 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
         PipExpandAnimator animator = mPipExpandAnimatorSupplier.get(mContext, pipLeash,
                 startTransaction, finishTransaction, endBounds, startBounds, endBounds,
                 sourceRectHint, delta);
+        animator.setAnimationStartCallback(() -> mPipInteractionHandler.begin(pipLeash,
+                PipInteractionHandler.INTERACTION_EXIT_PIP));
         animator.setAnimationEndCallback(() -> {
             if (parentBeforePip != null) {
                 // TODO b/377362511: Animate local leash instead to also handle letterbox case.
@@ -190,6 +196,7 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
                 finishTransaction.setCrop(pipLeash, null);
             }
             finishTransition();
+            mPipInteractionHandler.end();
         });
         cacheAndStartTransitionAnimator(animator);
         saveReentryState();
@@ -248,6 +255,8 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
             splitController.finishEnterSplitScreen(finishTransaction);
         });
 
+        animator.setAnimationStartCallback(() -> mPipInteractionHandler.begin(pipLeash,
+                PipInteractionHandler.INTERACTION_EXIT_PIP_TO_SPLIT));
         animator.setAnimationEndCallback(() -> {
             if (parentBeforePip == null) {
                 // After PipExpandAnimator is done modifying finishTransaction, we need to make
@@ -256,6 +265,7 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
                 finishTransaction.setPosition(pipLeash, 0, 0);
             }
             finishTransition();
+            mPipInteractionHandler.end();
         });
         cacheAndStartTransitionAnimator(animator);
         saveReentryState();
