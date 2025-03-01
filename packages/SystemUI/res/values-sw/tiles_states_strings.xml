@@ -68,7 +68,7 @@
   </string-array>
   <string-array name="tile_states_bt">
     <item msgid="5330252067413512277">"Hakipatikani"</item>
-    <item msgid="5315121904534729843">"Kimezimwa"</item>
+    <item msgid="5315121904534729843">"Imezimwa"</item>
     <item msgid="503679232285959074">"Imewashwa"</item>
   </string-array>
   <string-array name="tile_states_airplane">
