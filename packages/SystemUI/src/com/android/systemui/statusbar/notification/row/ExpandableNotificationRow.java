@@ -1679,7 +1679,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             view.setBackgroundTintColor(color);
         }
         if (notificationRowTransparency() && mBackgroundNormal != null) {
-            if (NotificationBundleUi.isEnabled()) {
+            if (NotificationBundleUi.isEnabled() && mEntryAdapter != null) {
                 mBackgroundNormal.setBgIsColorized(
                         usesTransparentBackground() && mEntryAdapter.isColorized());
             } else {
