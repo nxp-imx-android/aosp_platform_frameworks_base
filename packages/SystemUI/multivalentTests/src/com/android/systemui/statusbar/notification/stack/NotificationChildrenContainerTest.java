@@ -27,6 +27,7 @@ import android.view.NotificationHeaderView;
 import android.view.View;
 import android.widget.RemoteViews;
 
+import androidx.compose.ui.platform.ComposeView;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
@@ -35,7 +36,9 @@ import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotificationTestHelper;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
+import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModelImpl;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -271,6 +274,22 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
         mChildrenContainer.requestTopRoundness(1f, SourceType.from(""), false);
 
         Assert.assertEquals(1f, header.getTopRoundness(), 0.001f);
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void initBundleHeader_composeview_is_initialized_once() {
+        View currentView = mChildrenContainer.getChildAt(mChildrenContainer.getChildCount() - 1);
+        Assert.assertFalse(currentView instanceof ComposeView);
+
+        BundleHeaderViewModelImpl viewModel = new BundleHeaderViewModelImpl();
+        mChildrenContainer.initBundleHeader(viewModel);
+        currentView = mChildrenContainer.getChildAt(mChildrenContainer.getChildCount() - 1);
+        Assert.assertTrue(currentView instanceof ComposeView);
+
+        mChildrenContainer.initBundleHeader(viewModel);
+        View finalView = mChildrenContainer.getChildAt(mChildrenContainer.getChildCount() - 1);
+        Assert.assertEquals(currentView, finalView);
     }
 
     private NotificationHeaderView createHeaderView(boolean lowPriority) {
