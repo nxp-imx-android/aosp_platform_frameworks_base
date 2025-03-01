@@ -266,13 +266,21 @@ public class AutoclickTypePanel {
     }
 
     private void initializeButtonState() {
-        mLeftClickButton.setOnClickListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_LEFT_CLICK));
-        mRightClickButton.setOnClickListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_RIGHT_CLICK));
+        // Use `createButtonListener()` to append extra pause logic to each button's click.
+        mLeftClickButton.setOnClickListener(
+                wrapWithTogglePauseListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_LEFT_CLICK)));
+        mRightClickButton.setOnClickListener(
+                wrapWithTogglePauseListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_RIGHT_CLICK)));
         mDoubleClickButton.setOnClickListener(
-                v -> togglePanelExpansion(AUTOCLICK_TYPE_DOUBLE_CLICK));
-        mScrollButton.setOnClickListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_SCROLL));
-        mDragButton.setOnClickListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_DRAG));
-        mPositionButton.setOnClickListener(v -> moveToNextCorner());
+                wrapWithTogglePauseListener(
+                        v -> togglePanelExpansion(AUTOCLICK_TYPE_DOUBLE_CLICK)));
+        mScrollButton.setOnClickListener(
+                wrapWithTogglePauseListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_SCROLL)));
+        mDragButton.setOnClickListener(
+                wrapWithTogglePauseListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_DRAG)));
+        mPositionButton.setOnClickListener(wrapWithTogglePauseListener(v -> moveToNextCorner()));
+
+        // The pause button calls `togglePause()` directly so it does not need extra logic.
         mPauseButton.setOnClickListener(v -> togglePause());
 
         // Initializes panel as collapsed state and only displays the left click button.
@@ -515,6 +523,18 @@ public class AutoclickTypePanel {
             return false;
         }
         return true;
+    }
+
+    /* Appends a check of the pause state to the button's listener. */
+    private View.OnClickListener wrapWithTogglePauseListener(View.OnClickListener listener) {
+        return v -> {
+            listener.onClick(v);
+
+            // Resumes autoclick if the button is clicked while in a paused state.
+            if (mPaused) {
+                togglePause();
+            }
+        };
     }
 
     @VisibleForTesting
