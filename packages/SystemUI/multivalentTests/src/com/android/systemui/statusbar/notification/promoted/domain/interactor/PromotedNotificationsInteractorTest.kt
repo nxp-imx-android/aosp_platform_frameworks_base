@@ -111,7 +111,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
             )
 
             val topPromotedNotificationContent by
-                collectLastValue(underTest.topPromotedNotificationContent)
+                collectLastValue(underTest.aodPromotedNotification)
 
             // THEN the ron is first because the call has no content
             assertThat(topPromotedNotificationContent?.identity?.key)
@@ -131,7 +131,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
             )
 
             val topPromotedNotificationContent by
-                collectLastValue(underTest.topPromotedNotificationContent)
+                collectLastValue(underTest.aodPromotedNotification)
 
             // THEN the call is the top notification
             assertThat(topPromotedNotificationContent?.identity?.key)
@@ -148,7 +148,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
             renderNotificationListInteractor.setRenderedList(listOf(callEntry, otherEntry))
 
             val topPromotedNotificationContent by
-                collectLastValue(underTest.topPromotedNotificationContent)
+                collectLastValue(underTest.aodPromotedNotification)
 
             // THEN there is no top promoted notification
             assertThat(topPromotedNotificationContent).isNull()
